@@ -35,7 +35,7 @@ For each verification stage V0–V12:
 
 ## Dev Stack
 
-- **Status**: Not running (clean-slate startup pending — Infra agent next).
+- **Status**: Running (clean slate, 2026-06-14). All services healthy: backend :8080 UP, gateway :8443 UP, frontend :3000 (200), portal :3002 healthy; KC realm `docteams` 200. Docker infra (b2b-postgres, b2b-keycloak, b2b-mailpit, b2b-localstack) all healthy. Encryption-key present (`integration.encryption-key` set in `application-local.yml`, backend runs `local,keycloak` profile) — no SecretStore/encryption error at startup → V1 BYOAK unblocked.
 
 ## Flags
 
@@ -68,3 +68,4 @@ For each verification stage V0–V12:
 ## Log
 
 - **2026-06-14** — Cycle initialized. Archived completed Legal-ZA cycle (ALL_DAYS_COMPLETE, 0 open gaps) to `qa_cycle/_archive_2026-06-13_legal-full-lifecycle-kc/`. Branch `bugfix_cycle_2026-06-14` created. Fresh tracker seeded. Human-in-the-loop key decision: human enters key at V1. Stack decision: clean-slate startup. Next action: Infra agent (Session 0 clean-slate startup).
+- **2026-06-14 (Infra, Session 0)** — Clean-slate stack brought up. Docker infra verified healthy (postgres/keycloak/mailpit/localstack). `keycloak-bootstrap.sh` run idempotently — padmin@docteams.local confirmed. Clean-slate teardown (0.A/0.B): **0 `tenant_verifain*` schemas** found, **0 `@verifain-test.local` KC users** found, **0 verifain `access_requests`** rows in public schema — environment was already clean, nothing to drop/delete. Encryption-key check (0.C): `integration.encryption-key` present in `application-local.yml:86` (valid 32-byte base64 dev key), backend launches with `SPRING_PROFILES_ACTIVE=local,keycloak` — **no encryption/SecretStore startup error**; V1 BYOAK unblocked. `svc.sh start all` → all 4 services healthy on first attempt. Sanity probes: backend/gateway `/actuator/health` UP, frontend 200, KC realm 200. QA Position remains V0.

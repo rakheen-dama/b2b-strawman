@@ -543,7 +543,9 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
                         const rands = Number(raw);
                         // Ignore unparseable input rather than pushing NaN into the field
                         // (NaN would fail validation and silently abort the whole submit).
-                        field.onChange(Number.isFinite(rands) ? Math.round(rands * 100) : undefined);
+                        field.onChange(
+                          Number.isFinite(rands) ? Math.round(rands * 100) : undefined
+                        );
                       }}
                     />
                   </div>

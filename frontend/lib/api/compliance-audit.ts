@@ -116,29 +116,9 @@ export interface UpdateFindingStatusRequest {
 // ---- API Functions ----
 
 export async function invokeComplianceAudit(): Promise<ComplianceAuditInvokeResponse> {
-  const raw = await api.post<{
-    executionId: string;
-    status: string;
-    output: string | null;
-    gates: AiGateListItem[];
-    costCents: number;
-    model: string;
-    durationMs: number;
-  }>("/api/ai/skills/compliance-audit", {});
-
-  let parsedOutput: ComplianceAuditOutput | null = null;
-  if (raw.output) {
-    try {
-      parsedOutput = JSON.parse(raw.output) as ComplianceAuditOutput;
-    } catch {
-      parsedOutput = null;
-    }
-  }
-
-  return {
-    ...raw,
-    output: parsedOutput,
-  };
+  // The backend returns `output` as a parsed JSON object (the markdown fence is stripped
+  // server-side), so no client-side JSON.parse is needed — consistent with the other skills.
+  return api.post<ComplianceAuditInvokeResponse>("/api/ai/skills/compliance-audit", {});
 }
 
 export async function getAuditReports(

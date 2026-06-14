@@ -42,6 +42,12 @@ public class AiSkillExecutionService {
 
   private static final Logger log = LoggerFactory.getLogger(AiSkillExecutionService.class);
 
+  // Max output tokens for a skill call. 4096 was too low: live runs showed matter-intake (~3960)
+  // and fica (~3441) brushing the ceiling and contract-review hitting it exactly (4096) → the JSON
+  // was truncated mid-object and failed to parse (AIVERIFY-005). These skills emit verbose
+  // structured reports; 16384 gives comfortable headroom while staying well under the model cap.
+  private static final int MAX_OUTPUT_TOKENS = 16384;
+
   private final AiFirmProfileService firmProfileService;
   private final AiCostService costService;
   private final IntegrationRegistry integrationRegistry;
@@ -118,7 +124,7 @@ public class AiSkillExecutionService {
                     prompts.systemPrompt(),
                     prompts.userPrompt(),
                     profile.getPreferredModel(),
-                    4096,
+                    MAX_OUTPUT_TOKENS,
                     0.2,
                     Map.of("skill-id", request.skill().skillId()),
                     request.images()));
@@ -129,7 +135,7 @@ public class AiSkillExecutionService {
                     prompts.systemPrompt(),
                     prompts.userPrompt(),
                     profile.getPreferredModel(),
-                    4096,
+                    MAX_OUTPUT_TOKENS,
                     0.2,
                     Map.of("skill-id", request.skill().skillId())));
       }

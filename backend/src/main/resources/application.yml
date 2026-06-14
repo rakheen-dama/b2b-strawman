@@ -134,7 +134,10 @@ kazi:
     anthropic:
       api-base-url: ${ANTHROPIC_API_BASE_URL:https://api.anthropic.com}
       api-version: "2023-06-01"
-      timeout-seconds: 120
+      # 120s was too short once max-tokens rose to 16384: verbose skills (contract-review,
+      # compliance-audit) generate long structured reports that exceed 120s and the HTTP read
+      # timeout cancelled the in-flight request (AIVERIFY-006). 240s accommodates the larger reports.
+      timeout-seconds: 240
       max-retries: 3
     pricing:
       claude-sonnet-4-6:

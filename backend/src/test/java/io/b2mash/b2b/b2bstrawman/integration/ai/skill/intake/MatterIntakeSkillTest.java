@@ -203,6 +203,60 @@ class MatterIntakeSkillTest {
         });
   }
 
+  /**
+   * Regression for AIVERIFY-001: live Claude wraps its JSON output in a ```json … ``` markdown
+   * fence. createGates must tolerate the fence (via the shared LlmJsonParser) and still build
+   * gates, rather than failing on the leading backtick as it did in V3.
+   */
+  @Test
+  void intakeSkill_fencedJsonOutput_isParsed_andCreatesGates() {
+    runInTenant(
+        () -> {
+          UUID customerId = createCustomerWithTemplate();
+          var context =
+              new SkillContext(
+                  customerId,
+                  "CUSTOMER",
+                  "RAF litigation matter — verifying fenced JSON tolerance",
+                  Map.of());
+
+          SkillExecutionResult result =
+              executionService.executeSkill("matter-intake", context, ownerMemberId, List.of());
+          AiExecution execution = result.execution();
+
+          // Valid matter-intake JSON wrapped in a markdown code fence, exactly as Claude returns
+          // it.
+          String fencedJson =
+              """
+              Here is the matter intake analysis:
+              ```json
+              {
+                "matterClassification": {"recommendedType": "LITIGATION", "confidence": 0.91, "reasoning": "RAF claim"},
+                "templateRecommendation": {"templateId": "00000000-0000-0000-0000-000000000099", "templateName": "RAF", "reasoning": "fits", "customisationNotes": "add SAPS task"},
+                "requiredDocuments": [],
+                "feeEstimate": {"tariffBasis": "LSSA", "estimatedRangeMinCents": 500000, "estimatedRangeMaxCents": 1000000, "reasoning": "test", "assumptions": []},
+                "conflictScreening": {"status": "CLEAR", "matches": []},
+                "riskFlags": []
+              }
+              ```
+              Let me know if you need anything further.
+              """;
+
+          List<AiExecutionGate> gates =
+              matterIntakeSkill.createGates(
+                  execution,
+                  fencedJson,
+                  new SkillContext(customerId, "CUSTOMER", "test", Map.of()));
+
+          // Both gates created: template recommendation (has templateId) and CLEAR conflict screen.
+          assertThat(gates.stream().anyMatch(g -> "SELECT_MATTER_TEMPLATE".equals(g.getGateType())))
+              .isTrue();
+          assertThat(
+                  gates.stream().anyMatch(g -> "CONFIRM_CONFLICT_SCREEN".equals(g.getGateType())))
+              .isTrue();
+        });
+  }
+
   @Test
   void intakeSkill_preflightCheck_rejectsShortDescription() {
     runInTenant(

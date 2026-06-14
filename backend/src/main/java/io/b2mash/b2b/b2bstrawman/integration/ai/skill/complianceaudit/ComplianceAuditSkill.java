@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit;
 
-import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecution;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecutionRepository;
@@ -8,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.integration.ai.gate.AiExecutionGate;
 import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfile;
 import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfileService;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.AiSkill;
+import io.b2mash.b2b.b2bstrawman.integration.ai.skill.LlmJsonParser;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.SkillContext;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,7 +19,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
@@ -36,16 +35,19 @@ public class ComplianceAuditSkill implements AiSkill {
   private final AiExecutionRepository aiExecutionRepository;
   private final AiFirmProfileService firmProfileService;
   private final ObjectMapper objectMapper;
+  private final LlmJsonParser llmJsonParser;
 
   public ComplianceAuditSkill(
       ComplianceDataCollectorService complianceDataCollectorService,
       AiExecutionRepository aiExecutionRepository,
       AiFirmProfileService firmProfileService,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      LlmJsonParser llmJsonParser) {
     this.complianceDataCollectorService = complianceDataCollectorService;
     this.aiExecutionRepository = aiExecutionRepository;
     this.firmProfileService = firmProfileService;
     this.objectMapper = objectMapper;
+    this.llmJsonParser = llmJsonParser;
   }
 
   @Override
@@ -195,14 +197,8 @@ public class ComplianceAuditSkill implements AiSkill {
   @Override
   public List<AiExecutionGate> createGates(
       AiExecution execution, String outputContent, SkillContext context) {
-    ComplianceAuditOutput output;
-    try {
-      output = objectMapper.readValue(outputContent, ComplianceAuditOutput.class);
-    } catch (JacksonException e) {
-      throw new InvalidStateException(
-          "AI response parse failed",
-          "AI response could not be parsed as valid compliance audit output: " + e.getMessage());
-    }
+    ComplianceAuditOutput output =
+        llmJsonParser.parse(objectMapper, outputContent, ComplianceAuditOutput.class);
 
     // Wrap the output under audit_output key for the gate executor
     Map<String, Object> auditOutput =

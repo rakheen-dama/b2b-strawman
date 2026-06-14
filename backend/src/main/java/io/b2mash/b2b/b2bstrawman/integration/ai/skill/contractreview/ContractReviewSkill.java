@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfileService;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.AiSkill;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.DocumentTextExtractorService;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.ExtractedText;
+import io.b2mash.b2b.b2bstrawman.integration.ai.skill.LlmJsonParser;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.SkillContext;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -25,7 +26,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
@@ -48,18 +48,21 @@ public class ContractReviewSkill implements AiSkill {
   private final ProjectRepository projectRepository;
   private final AiFirmProfileService firmProfileService;
   private final ObjectMapper objectMapper;
+  private final LlmJsonParser llmJsonParser;
 
   public ContractReviewSkill(
       DocumentTextExtractorService documentTextExtractorService,
       DocumentRepository documentRepository,
       ProjectRepository projectRepository,
       AiFirmProfileService firmProfileService,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      LlmJsonParser llmJsonParser) {
     this.documentTextExtractorService = documentTextExtractorService;
     this.documentRepository = documentRepository;
     this.projectRepository = projectRepository;
     this.firmProfileService = firmProfileService;
     this.objectMapper = objectMapper;
+    this.llmJsonParser = llmJsonParser;
   }
 
   @Override
@@ -147,14 +150,8 @@ public class ContractReviewSkill implements AiSkill {
   @Override
   public List<AiExecutionGate> createGates(
       AiExecution execution, String outputContent, SkillContext context) {
-    ContractReviewOutput output;
-    try {
-      output = objectMapper.readValue(outputContent, ContractReviewOutput.class);
-    } catch (JacksonException e) {
-      throw new InvalidStateException(
-          "AI response parse failed",
-          "AI response could not be parsed as valid contract review output: " + e.getMessage());
-    }
+    ContractReviewOutput output =
+        llmJsonParser.parse(objectMapper, outputContent, ContractReviewOutput.class);
 
     // Extract projectId: prefer context, fall back to document's project
     Object projectIdObj = context.additionalContext().get("projectId");

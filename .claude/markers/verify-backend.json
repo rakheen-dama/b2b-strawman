@@ -1,7 +1,1 @@
-{
-  "commit": "e8545cd87bee53800f09b4201f57e217fe71bde3",
-  "command": "./mvnw verify",
-  "exit": 0,
-  "ts": "2026-06-12T21:20:00Z",
-  "summary": "Wave 3 OrgSettings embeddables final head (incl. Locale.ROOT working-day parsing fix). Full verify run by orchestrator, observed: 5632 tests, 0 failures, 0 errors, 26 skipped. Log /tmp/wave3-verify3.log."
-}
+{"commit":"66be148e5","command":"./mvnw verify","exit":0,"ts":"2026-06-14T19:26:47Z","summary":"5668 tests, 0 failures, 0 errors, 26 skipped"}

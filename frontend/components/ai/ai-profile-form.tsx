@@ -27,6 +27,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@b2mash/ui/label";
 import { Loader2, X } from "lucide-react";
 import { aiProfileSchema, type AiProfileFormData } from "@/lib/schemas/ai-profile";
+import { interpretBudgetInput, BUDGET_INVALID_MESSAGE } from "@/lib/ai-budget-input";
 import { updateAiProfileAction } from "@/app/(app)/org/[slug]/settings/ai/actions";
 
 const ZA_PROVINCES = [
@@ -540,7 +541,11 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
                     <Input
                       type="number"
                       min={0}
-                      step={100}
+                      // step={1} (whole Rands). step={100} forced an arbitrary R100 floor and,
+                      // on any sub-R100 entry, the browser blanked the value → the field became
+                      // "no cap" with no feedback (AIVERIFY-012). step={1} lets any whole-Rand
+                      // amount be set; the rand↔cents conversion below keeps cents clean.
+                      step={1}
                       placeholder="e.g., 5000"
                       className="pl-7"
                       // Field holds cents; the input edits Rands. Display a STRING (never a
@@ -552,17 +557,24 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
                           : String(Math.round((field.value as number) / 100))
                       }
                       onChange={(e) => {
-                        const raw = e.target.value.trim();
-                        if (raw === "") {
-                          field.onChange(undefined); // cleared field → no cap
+                        // A typed budget must either save as a real number or show an error —
+                        // it must never silently become "no cap" (AIVERIFY-012). Read both the
+                        // string and the parsed number so a deliberately-cleared field is told
+                        // apart from a typed-but-rejected one.
+                        const decision = interpretBudgetInput(
+                          e.target.value,
+                          e.target.valueAsNumber
+                        );
+                        if (decision.kind === "invalid") {
+                          form.setError("monthlyBudgetCents", {
+                            type: "manual",
+                            message: BUDGET_INVALID_MESSAGE,
+                          });
                           return;
                         }
-                        const rands = Number(raw);
-                        // Ignore unparseable input rather than pushing NaN into the field
-                        // (NaN would fail validation and silently abort the whole submit).
-                        field.onChange(
-                          Number.isFinite(rands) ? Math.round(rands * 100) : undefined
-                        );
+                        // Valid keystroke → clear any prior error and commit the new value.
+                        form.clearErrors("monthlyBudgetCents");
+                        field.onChange(decision.kind === "value" ? decision.cents : undefined);
                       }}
                     />
                   </div>

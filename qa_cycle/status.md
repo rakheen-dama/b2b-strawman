@@ -45,7 +45,7 @@ For each verification stage V0–V12:
 
 ## Flags
 
-- (none)
+- **ENV-HEALTH (2026-06-15, V11):** a 2nd back-to-back live FICA ("Run Again") hung with coincident **HikariPool thread-starvation** warnings (housekeeper delta up to 1m21s, 12:35–12:37). Backend stayed UP (no "Request cancelled" — thread saturation, not socket death); no orphan left (0 IN_PROGRESS). Recommend a **backend restart before any further live-call-heavy stage** (e.g. V11.1 when run). Possible latent gap: connection/thread pool pressure under rapid concurrent skill calls — distinct from AIVERIFY-002 (which split the tx); worth a look if it recurs. (Orchestrator restarted backend post-V12.)
 
 ## Tracker
 

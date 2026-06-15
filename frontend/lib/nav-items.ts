@@ -25,6 +25,7 @@ import {
   FileBarChart,
   Layers,
   Brain,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import type { CAPABILITIES } from "@/lib/capabilities";
@@ -305,6 +306,15 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "AI",
     defaultExpanded: false,
     items: [
+      // Members with AI_EXECUTE (the role grant in V122__ai_foundation.sql) need an
+      // AI entry point. The matter-intake page is the member-appropriate AI surface.
+      {
+        label: "AI Intake",
+        href: (slug) => `/org/${slug}/projects/new`,
+        icon: Sparkles,
+        requiredCapability: "AI_EXECUTE",
+      },
+      // Gate-review queue — owner/admin only.
       {
         label: "AI Reviews",
         href: (slug) => `/org/${slug}/ai/reviews`,

@@ -17,9 +17,9 @@ describe("NAV_GROUPS", () => {
     }
   });
 
-  it("total items across all groups equals 29", () => {
+  it("total items across all groups equals 30", () => {
     const total = NAV_GROUPS.reduce((sum, g) => sum + g.items.length, 0);
-    expect(total).toBe(29);
+    expect(total).toBe(30);
   });
 
   it("clients, finance, and ai zones default to collapsed", () => {
@@ -52,6 +52,57 @@ describe("NAV_GROUPS", () => {
   });
 });
 
+/**
+ * AIVERIFY-011 — members with AI_EXECUTE must get an AI sidebar entry.
+ *
+ * The sidebar (`nav-zone.tsx`) filters a group's items by `requiredCapability`
+ * and renders nothing when no item passes (`if (visibleItems.length === 0) return null`).
+ * Before the fix the `ai` group held a SINGLE item gated on `AI_REVIEW`, so a plain
+ * member (who has `AI_EXECUTE` but not `AI_REVIEW`/`AI_MANAGE`) saw the whole AI group
+ * collapse to empty — no AI entry point at all. These tests guard that:
+ *   (a) the AI group exposes at least one `AI_EXECUTE`-gated item (member visibility), and
+ *   (b) the `AI_REVIEW` "AI Reviews" item is retained (owner/admin gate-review, unchanged).
+ */
+describe("AIVERIFY-011 — AI group capability gating", () => {
+  // Mirrors nav-zone.tsx's plain-member filter: a member is not admin/owner,
+  // so hasCapability(cap) === capSet.has(cap). (No module gating on the ai group.)
+  function visibleForMember(memberCaps: string[]) {
+    const ai = NAV_GROUPS.find((g) => g.id === "ai");
+    const capSet = new Set(memberCaps);
+    return (ai?.items ?? []).filter(
+      (item) => !item.requiredCapability || capSet.has(item.requiredCapability)
+    );
+  }
+
+  it("exposes at least one AI_EXECUTE-gated item so members see the AI group", () => {
+    const ai = NAV_GROUPS.find((g) => g.id === "ai");
+    const executeItems = (ai?.items ?? []).filter(
+      (item) => item.requiredCapability === "AI_EXECUTE"
+    );
+    expect(executeItems.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("retains the AI_REVIEW 'AI Reviews' item (owner/admin gate review unchanged)", () => {
+    const ai = NAV_GROUPS.find((g) => g.id === "ai");
+    const reviewItem = (ai?.items ?? []).find((item) => item.label === "AI Reviews");
+    expect(reviewItem).toBeDefined();
+    expect(reviewItem?.requiredCapability).toBe("AI_REVIEW");
+  });
+
+  it("a member with only AI_EXECUTE sees the AI group (>=1 visible item)", () => {
+    expect(visibleForMember(["AI_EXECUTE"]).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("a member with only AI_EXECUTE does NOT see the AI_REVIEW item", () => {
+    const visible = visibleForMember(["AI_EXECUTE"]);
+    expect(visible.some((i) => i.requiredCapability === "AI_REVIEW")).toBe(false);
+  });
+
+  it("a user with no AI capabilities sees no AI items (group would collapse)", () => {
+    expect(visibleForMember([]).length).toBe(0);
+  });
+});
+
 describe("UTILITY_ITEMS", () => {
   it("has exactly 3 items (Notifications, Settings, Help)", () => {
     expect(UTILITY_ITEMS).toHaveLength(3);
@@ -75,8 +126,8 @@ describe("NAV_ITEMS (backward compat)", () => {
     expect(NAV_ITEMS).toEqual(expected);
   });
 
-  it("total count is 32 (29 group items + 3 utility items)", () => {
-    expect(NAV_ITEMS).toHaveLength(32);
+  it("total count is 33 (30 group items + 3 utility items)", () => {
+    expect(NAV_ITEMS).toHaveLength(33);
   });
 
   it("includes Notifications and Settings from UTILITY_ITEMS", () => {

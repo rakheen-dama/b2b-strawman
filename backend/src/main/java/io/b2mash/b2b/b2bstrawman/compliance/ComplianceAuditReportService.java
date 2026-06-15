@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.compliance;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecution;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecutionRepository;
@@ -14,6 +15,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -62,6 +64,14 @@ public class ComplianceAuditReportService {
       reportRepository.save(previous);
       log.info("Archived previous published report id={}", previous.getId());
     }
+    // Flush the archive UPDATEs to ARCHIVED before inserting the new PUBLISHED row.
+    // Hibernate orders INSERTs ahead of UPDATEs within a flush, so without this the new
+    // PUBLISHED insert would momentarily collide with a not-yet-archived prior PUBLISHED row
+    // under the V128 partial unique index. Flushing here keeps the in-transaction re-publish
+    // sequence valid, leaving the index to fire only on a genuine concurrent insert.
+    if (publishedReports.hasContent()) {
+      reportRepository.flush();
+    }
 
     // Convert categoryScores to Map<String, Object> for JSONB storage
     Map<String, Object> categoryScoresMap = convertCategoryScores(output.categoryScores());
@@ -75,7 +85,18 @@ public class ComplianceAuditReportService {
             categoryScoresMap,
             memberId);
     report.publish(memberId);
-    report = reportRepository.save(report);
+    // Flush the PUBLISHED insert immediately so the partial unique index
+    // (uq_compliance_audit_reports_single_published, V128) fires here rather than at
+    // a deferred commit. AIVERIFY-004: two concurrent approvals of distinct compliance
+    // gates would otherwise both insert a PUBLISHED row; the index now lets exactly one
+    // win and the loser surfaces a clean 409 the reviewer can retry.
+    try {
+      report = reportRepository.saveAndFlush(report);
+    } catch (DataIntegrityViolationException concurrentPublish) {
+      throw new ResourceConflictException(
+          "Compliance report already published",
+          "Another compliance audit report was published concurrently. Please retry.");
+    }
 
     // Create findings
     List<ComplianceAuditFinding> findings = new ArrayList<>();

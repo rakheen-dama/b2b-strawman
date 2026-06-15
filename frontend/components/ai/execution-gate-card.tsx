@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { formatDateTime } from "@/lib/format";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -68,7 +69,32 @@ export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCa
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const timeRemaining = gate.status === "PENDING" ? getTimeRemaining(gate.expiresAt) : null;
+  // Live countdown — computed only after mount so it never participates in
+  // hydration. `getTimeRemaining` reads wall-clock `new Date()`, which differs
+  // between the server render and the client hydrate (network + hydration
+  // latency), so rendering it during SSR causes a hydration mismatch
+  // (AIVERIFY-009). Null on the server pass and first client render (identical
+  // → no mismatch); filled in post-mount and re-evaluated every minute so the
+  // countdown actually advances. Mirrors the `RelativeDate` precedent in
+  // components/ui/relative-date.tsx.
+  const [timeRemaining, setTimeRemaining] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (gate.status !== "PENDING") {
+      // Clear any stale countdown if the gate flips PENDING -> non-PENDING on a
+      // mounted card (e.g. right after approve/reject).
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- countdown is intentionally client/effect-driven (SSR hydration safety, AIVERIFY-009); reset on status change.
+      setTimeRemaining(null);
+      return;
+    }
+    // Computing the countdown client-only (initial state stays null on the
+    // server pass) avoids a hydration mismatch — the wall-clock value differs
+    // between server render and client mount (AIVERIFY-009).
+    const update = () => setTimeRemaining(getTimeRemaining(gate.expiresAt));
+    update();
+    const interval = setInterval(update, 60_000);
+    return () => clearInterval(interval);
+  }, [gate.status, gate.expiresAt]);
 
   function handleApprove() {
     startTransition(async () => {
@@ -119,8 +145,8 @@ export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCa
           </p>
         </div>
 
-        {/* Expiry countdown */}
-        {timeRemaining && (
+        {/* Expiry countdown — PENDING only, populated post-mount (see effect) */}
+        {gate.status === "PENDING" && timeRemaining && (
           <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
             <Clock className="size-3.5" />
             <span>{timeRemaining}</span>
@@ -156,9 +182,10 @@ export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCa
           </div>
         )}
 
-        {/* Timestamp */}
+        {/* Timestamp — deterministic (pinned en-ZA + Africa/Johannesburg) so
+            the SSR pass and client hydrate render the same string. */}
         <p className="font-mono text-xs text-slate-400 tabular-nums dark:text-slate-500">
-          {new Date(gate.createdAt).toLocaleString()}
+          {formatDateTime(gate.createdAt)}
         </p>
       </CardContent>
 

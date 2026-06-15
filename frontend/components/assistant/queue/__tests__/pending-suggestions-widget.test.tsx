@@ -4,22 +4,22 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SWRConfig } from "swr";
 
-vi.mock("@/lib/api/assistant-specialists", () => ({
-  listInvocationsClient: vi.fn(),
-  approveInvocation: vi.fn(),
-  rejectInvocation: vi.fn(),
+vi.mock("@/lib/actions/ai-invocations", () => ({
+  listPendingInvocationsAction: vi.fn(),
+  approveInvocationAction: vi.fn(),
+  rejectInvocationAction: vi.fn(),
 }));
 
 import { PendingSuggestionsWidget } from "../pending-suggestions-widget";
 import {
-  listInvocationsClient,
-  approveInvocation,
-  rejectInvocation,
-} from "@/lib/api/assistant-specialists";
+  listPendingInvocationsAction,
+  approveInvocationAction,
+  rejectInvocationAction,
+} from "@/lib/actions/ai-invocations";
 
-const mockListInvocations = listInvocationsClient as ReturnType<typeof vi.fn>;
-const mockApprove = approveInvocation as ReturnType<typeof vi.fn>;
-const mockReject = rejectInvocation as ReturnType<typeof vi.fn>;
+const mockListInvocations = listPendingInvocationsAction as ReturnType<typeof vi.fn>;
+const mockApprove = approveInvocationAction as ReturnType<typeof vi.fn>;
+const mockReject = rejectInvocationAction as ReturnType<typeof vi.fn>;
 
 /** Wrap component in SWRConfig with no cache to avoid cross-test pollution */
 function renderWidget(props: { contextEntityType: string; contextEntityId: string }) {
@@ -60,12 +60,8 @@ const EMPTY_RESPONSE = {
 describe("PendingSuggestionsWidget", () => {
   beforeEach(() => {
     mockListInvocations.mockResolvedValue(PENDING_ITEMS);
-    mockApprove.mockResolvedValue({
-      id: "inv-100",
-      status: "APPROVED",
-      appliedAt: "2026-04-19T08:00:00Z",
-    });
-    mockReject.mockResolvedValue(undefined);
+    mockApprove.mockResolvedValue({ success: true });
+    mockReject.mockResolvedValue({ success: true });
   });
 
   it("renders nothing when no pending invocations", async () => {
@@ -92,16 +88,11 @@ describe("PendingSuggestionsWidget", () => {
     expect(screen.getByText("BillingPolishPayload")).toBeDefined();
   });
 
-  it("calls listInvocationsClient with correct params", async () => {
+  it("calls listPendingInvocationsAction with correct params", async () => {
     renderWidget({ contextEntityType: "customer", contextEntityId: "cust-001" });
 
     await waitFor(() => {
-      expect(mockListInvocations).toHaveBeenCalledWith({
-        contextEntityType: "customer",
-        contextEntityId: "cust-001",
-        status: "PENDING_APPROVAL",
-        size: "10",
-      });
+      expect(mockListInvocations).toHaveBeenCalledWith("customer", "cust-001");
     });
   });
 

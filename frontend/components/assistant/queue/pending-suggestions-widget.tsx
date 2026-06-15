@@ -8,12 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { Badge } from "@b2mash/ui/badge";
 import { AI_QUEUE_STRINGS } from "@/lib/constants/ai-queue-strings";
 import {
-  approveInvocation,
-  rejectInvocation,
-  listInvocationsClient,
-  type InvocationListItemClient,
-  type InvocationPageClient,
-} from "@/lib/api/assistant-specialists";
+  approveInvocationAction,
+  rejectInvocationAction,
+  listPendingInvocationsAction,
+} from "@/lib/actions/ai-invocations";
+import type { InvocationListItem, InvocationPage } from "@/lib/api/ai-invocations";
 
 export interface PendingSuggestionsWidgetProps {
   contextEntityType: string;
@@ -27,28 +26,23 @@ export function PendingSuggestionsWidget({
   const [actionInFlight, setActionInFlight] = useState<string | null>(null);
 
   const swrKey = `pending-suggestions-${contextEntityType}-${contextEntityId}`;
-  const { data, isLoading, mutate } = useSWR<InvocationPageClient>(
+  const { data, isLoading, mutate } = useSWR<InvocationPage>(
     swrKey,
-    () =>
-      listInvocationsClient({
-        contextEntityType,
-        contextEntityId,
-        status: "PENDING_APPROVAL",
-        size: "10",
-      }),
+    () => listPendingInvocationsAction(contextEntityType, contextEntityId),
     { refreshInterval: 30000 }
   );
 
-  const invocations: InvocationListItemClient[] = data?.content ?? [];
+  const invocations: InvocationListItem[] = data?.content ?? [];
 
   const handleApprove = useCallback(
     async (id: string) => {
       setActionInFlight(id);
       try {
-        await approveInvocation(id);
-        await mutate();
-      } catch {
-        // Keep in list on failure
+        const result = await approveInvocationAction(id);
+        if (result.success) {
+          await mutate();
+        }
+        // On failure, keep the item in the list.
       } finally {
         setActionInFlight(null);
       }
@@ -60,10 +54,11 @@ export function PendingSuggestionsWidget({
     async (id: string) => {
       setActionInFlight(id);
       try {
-        await rejectInvocation(id, "Rejected from entity detail page");
-        await mutate();
-      } catch {
-        // Keep in list on failure
+        const result = await rejectInvocationAction(id, "Rejected from entity detail page");
+        if (result.success) {
+          await mutate();
+        }
+        // On failure, keep the item in the list.
       } finally {
         setActionInFlight(null);
       }

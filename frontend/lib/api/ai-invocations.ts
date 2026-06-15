@@ -89,3 +89,23 @@ export async function listInvocations(filter: InvocationFilter): Promise<Invocat
 export async function getInvocation(id: string): Promise<InvocationDetail> {
   return api.get<InvocationDetail>(`/api/assistant/invocations/${id}`);
 }
+
+export interface ApproveInvocationResult {
+  id: string;
+  status: string;
+  appliedAt: string;
+}
+
+export async function approveInvocation(
+  id: string,
+  appliedOutput?: { kind: string; [key: string]: unknown }
+): Promise<ApproveInvocationResult> {
+  return api.post<ApproveInvocationResult>(
+    `/api/assistant/invocations/${id}/approve`,
+    appliedOutput ? { appliedOutput } : {}
+  );
+}
+
+export async function rejectInvocation(id: string, rejectReason: string): Promise<void> {
+  await api.post(`/api/assistant/invocations/${id}/reject`, { rejectReason });
+}

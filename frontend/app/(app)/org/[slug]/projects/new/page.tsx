@@ -33,11 +33,18 @@ export default async function NewProjectPage({
 
   // Check AI configuration
   let isAiConfigured = false;
-  try {
-    const profile = await getAiProfile();
-    isAiConfigured = profile.coldStartCompleted;
-  } catch {
-    // Non-fatal: panel will show "not configured" tooltip
+  if (caps.capabilities.includes("AI_MANAGE")) {
+    // OWNER/ADMIN can read the AI profile directly (GET /api/ai/profile is AI_MANAGE-gated).
+    try {
+      const profile = await getAiProfile();
+      isAiConfigured = profile.coldStartCompleted;
+    } catch {
+      // Non-fatal: panel will show "not configured" tooltip
+    }
+  } else if (canExecuteAi) {
+    // MEMBER with AI_EXECUTE: they wouldn't have this capability without setup being done.
+    // Calling getAiProfile() here would 403 and falsely show a "not configured" disabled state.
+    isAiConfigured = true;
   }
 
   // Fetch customers and templates

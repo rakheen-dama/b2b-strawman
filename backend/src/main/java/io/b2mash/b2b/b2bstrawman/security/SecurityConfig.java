@@ -129,6 +129,13 @@ public class SecurityConfig {
                     // POST /api/access-requests/verify (296B) — both public endpoints
                     .requestMatchers("/api/access-requests/**")
                     .permitAll()
+                    // MCP server (Phase 78, ADR-303): the WHOLE /mcp request must traverse this
+                    // authenticated chain so TenantFilter/MemberFilter bind RequestScopes
+                    // (TENANT_ID → MEMBER_ID → ORG_ROLE → CAPABILITIES) before any MCP tool runs.
+                    // Deliberately .authenticated() (NOT permitAll + @PreAuthorize on tools), and
+                    // deliberately NOT excluded from MemberFilter/TenantFilter.shouldNotFilter.
+                    .requestMatchers("/mcp", "/mcp/**")
+                    .authenticated()
                     .requestMatchers("/internal/**")
                     .authenticated()
                     .requestMatchers("/api/**")

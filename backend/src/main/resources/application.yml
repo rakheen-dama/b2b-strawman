@@ -1,6 +1,25 @@
 spring:
   application:
     name: backend
+  ai:
+    mcp:
+      server:
+        enabled: true
+        protocol: STREAMABLE
+        name: kazi
+        version: 1.0.0
+        type: SYNC
+        instructions: >-
+          Kazi is this firm's practice-management system of record. All tools are
+          READ-ONLY; use them to ground your answers in live matter, client, time,
+          trust, compliance, document and invoice data.
+        capabilities:
+          tool: true
+          resource: true
+          prompt: false
+          completion: false
+        streamable-http:
+          mcp-endpoint: /mcp
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
   datasource:

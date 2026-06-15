@@ -9,6 +9,16 @@ spring:
     # Required: AiSpecialistInvocation*IntegrationTest @TestConfiguration classes override
     # the billingPolishApplier bean by name. Without this flag, Spring refuses the override.
     allow-bean-definition-overriding: true
+  ai:
+    mcp:
+      server:
+        enabled: true
+        protocol: STREAMABLE
+        name: kazi
+        version: 1.0.0
+        type: SYNC
+        streamable-http:
+          mcp-endpoint: /mcp
   datasource:
     app:
       maximum-pool-size: 3

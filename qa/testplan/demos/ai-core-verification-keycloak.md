@@ -40,7 +40,7 @@ This scenario **cannot pass without a real, funded Anthropic API key.** The whol
 2. **V3** — Matter-intake panel showing a *real* Claude template recommendation + conflict-screen result
 3. **V8** — Attorney approving a PENDING `MARK_KYC_COMPLETE` gate and the checklist items actually flipping to complete
 4. **V9** — Cost summary incrementing in ZAR across invocations, then a `403 budget exhausted` when the cap is set low
-5. **V12** — Audit feed showing `ai.specialist.invoked / approved / rejected` with the correct actor
+5. **V12** — Audit feed showing `ai.skill.invoked` / `ai.gate.approved` / `ai.gate.rejected` (AIVERIFY-013, authorized) with the correct actor
 
 ---
 
@@ -223,7 +223,7 @@ Run the standard Keycloak onboarding (mirror Day 0 of `legal-za-90day-keycloak.m
 
 **Actor**: Nomsa · Route: audit/activity feed (and/or `GET` audit query API)
 
-- [ ] **12.1** Confirm events exist for the run: `ai.specialist.invoked` (each skill), `ai.specialist.approved` (V8.2), `ai.specialist.rejected` (V8.4), `ai.specialist.failed` (V11.1)
+- [ ] **12.1** Confirm events exist for the run: `ai.skill.invoked` (each skill), `ai.gate.approved` (V8.2), `ai.gate.rejected` (V8.4), `ai.specialist.failed` (V11.1). <!-- AIVERIFY-013 (authorized 2026-06-15): the live skill/gate path emits `ai.skill.*`/`ai.gate.*`; the older `ai.specialist.invoked/approved/rejected` strings are registered but emitted only by the automation path. Names amended to the canonical emitted events; `ai.specialist.failed` is still the failure event. Audit completeness + actor attribution + filters all verified (V12 PASS). -->
 - [ ] **12.2** Approved/rejected events carry the correct **actor** (Nomsa) + notes; invoked events carry the skill/entity
 - [ ] **12.3** Events are filterable by actor and entity
 

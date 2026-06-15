@@ -1,0 +1,174 @@
+```json
+{
+  "overallAssessment": "INCOMPLETE",
+  "riskLevel": "HIGH",
+  "checklistReview": [
+    {
+      "checklistItemId": "146806cb-3a91-41dc-870f-f4f0d66c8587",
+      "itemName": "Proof of Identity",
+      "status": "NEEDS_REVIEW",
+      "evidenceDocument": "fica-id.pdf",
+      "reasoning": "A document labelled 'fica-id.pdf' has been uploaded and appears to be intended as proof of identity. However, text extraction from the scanned document yielded insufficient content, rendering automated verification of the document type (RSA Smart ID Card, green ID Book, or valid passport), the client's full name, identity number, and photograph impossible at this stage. Manual review by a responsible attorney or compliance officer is required to confirm that the document is an acceptable identity document under section 21 of FICA and that the particulars correspond to the client, Sipho Dlamini. Given the firm's conservative risk calibration, this item cannot be marked as satisfied on the basis of the current submission.",
+      "flags": [
+        "Text extraction failed — document content unverifiable by automated means.",
+        "Unable to confirm document type (Smart ID Card, green ID Book, or passport).",
+        "Unable to confirm identity number, full name, or photograph match.",
+        "Manual review by a compliance officer is mandatory before this item may be closed."
+      ]
+    },
+    {
+      "checklistItemId": "6a002855-4ebf-4549-8ed8-6ce183ea598e",
+      "itemName": "Proof of Address",
+      "status": "NOT_SATISFIED",
+      "evidenceDocument": null,
+      "reasoning": "No document has been uploaded that could serve as proof of residential address. FICA section 21 requires verification of a natural person's residential address by means of a utility bill, bank statement, or municipal account not older than three months. No such document has been provided for Sipho Dlamini. This item remains unsatisfied.",
+      "flags": [
+        "No proof of address document uploaded.",
+        "Document must not be older than three months from the date of onboarding.",
+        "Acceptable documents include a utility bill, bank statement, or municipal account in the client's name."
+      ]
+    },
+    {
+      "checklistItemId": "3c9d8ff4-f3ea-45dc-aeb0-2463efc459a7",
+      "itemName": "Beneficial Ownership Declaration",
+      "status": "NOT_SATISFIED",
+      "evidenceDocument": null,
+      "reasoning": "No beneficial ownership declaration has been uploaded. Although Sipho Dlamini is an individual client, the firm's checklist includes this item, which is consistent with the firm's conservative risk calibration and the enhanced CDD obligations under section 21B of FICA. A signed declaration confirming whether the client is acting on his own behalf or on behalf of another person, and identifying any beneficial owner where applicable, is required. No such document has been provided.",
+      "flags": [
+        "No beneficial ownership declaration uploaded.",
+        "Required to confirm whether client acts on own behalf or as agent or nominee.",
+        "Consistent with conservative risk calibration and section 21B enhanced CDD obligations."
+      ]
+    },
+    {
+      "checklistItemId": "7939da85-30ae-48a4-9ec3-b3e4289341ed",
+      "itemName": "Source of Funds Declaration",
+      "status": "NOT_SATISFIED",
+      "evidenceDocument": null,
+      "reasoning": "No source of funds declaration has been uploaded. The firm's conservative risk calibration requires that the source of funds be declared and documented for all clients. This is also consistent with the firm's obligations under its Risk Management and Compliance Programme (RMCP) as required by section 42 of FICA. No such document has been provided for Sipho Dlamini.",
+      "flags": [
+        "No source of funds declaration uploaded.",
+        "Required under the firm's RMCP and conservative risk calibration.",
+        "Absence of this document prevents adequate assessment of money laundering or terrorist financing risk."
+      ]
+    },
+    {
+      "checklistItemId": "d956e3da-62b1-4f58-9929-4eaf06fdfdd2",
+      "itemName": "Engagement Letter Signed",
+      "status": "NOT_SATISFIED",
+      "evidenceDocument": null,
+      "reasoning": "No signed engagement letter has been uploaded. A signed engagement letter is required to formalise the attorney-client relationship and to comply with the requirements of the Attorneys Act 53 of 1979 (as amended) and the firm's standard onboarding procedures. No such document has been provided.",
+      "flags": [
+        "No signed engagement letter uploaded.",
+        "Required to establish the formal attorney-client relationship.",
+        "Non-compliance may also engage obligations under the Attorneys Act 53 of 1979."
+      ]
+    },
+    {
+      "checklistItemId": "233f09fe-6c50-46f9-a843-3df4cd0a72d6",
+      "itemName": "Conflict Check Performed",
+      "status": "NOT_SATISFIED",
+      "evidenceDocument": null,
+      "reasoning": "This checklist item does not require a supporting document; however, there is no indication that a conflict check has been performed and recorded. The firm's RMCP and the ethical obligations of attorneys under the Attorneys Act 53 of 1979 require that a conflict of interest check be conducted and documented prior to accepting instructions. This item cannot be marked as satisfied without confirmation from the responsible attorney that the check has been completed.",
+      "flags": [
+        "No confirmation that a conflict check has been performed.",
+        "No document required, but completion must be recorded by the responsible attorney.",
+        "Ethical obligation under the Attorneys Act 53 of 1979 and the firm's RMCP."
+      ]
+    },
+    {
+      "checklistItemId": "52cbaae3-52f1-4e7c-a697-112883a70be4",
+      "itemName": "Power of Attorney Signed",
+      "status": "NOT_SATISFIED",
+      "evidenceDocument": null,
+      "reasoning": "This item is currently marked as BLOCKED, indicating a dependency on prior checklist items. No signed power of attorney has been uploaded. This item cannot be progressed until the blocking conditions are resolved. Once unblocked, a signed power of attorney will be required if the client is to authorise a representative to act on his behalf.",
+      "flags": [
+        "Item is currently BLOCKED — dependent on resolution of prior checklist items.",
+        "No power of attorney document uploaded.",
+        "Cannot be assessed until blocking conditions are cleared."
+      ]
+    },
+    {
+      "checklistItemId": "29644d9c-f41f-4ae9-b0d1-5da4aec0c9f1",
+      "itemName": "FICA Risk Assessment",
+      "status": "NOT_SATISFIED",
+      "evidenceDocument": null,
+      "reasoning": "This item is currently marked as BLOCKED and does not require a supporting document. A formal FICA risk assessment must be completed and recorded by the responsible attorney or compliance officer as part of the firm's obligations under section 42 of FICA and its RMCP. This assessment cannot be completed until the identity, address, source of funds, and beneficial ownership information have been verified. The item remains blocked and unsatisfied.",
+      "flags": [
+        "Item is currently BLOCKED — dependent on resolution of prior checklist items.",
+        "Risk assessment cannot be completed without verified identity, address, and source of funds information.",
+        "Required under section 42 of FICA and the firm's RMCP."
+      ]
+    },
+    {
+      "checklistItemId": "aca103a2-6045-47a6-b03b-a56867662790",
+      "itemName": "Sanctions Screening",
+      "status": "NOT_SATISFIED",
+      "evidenceDocument": null,
+      "reasoning": "This item is currently marked as BLOCKED and does not require a supporting document. Sanctions screening, including PEP screening as required by the firm's profile (pepScreening=true), cannot be meaningfully completed until the client's identity has been verified. The firm's conservative risk calibration and its RMCP require that sanctions and PEP screening be conducted against verified identity particulars. This item remains blocked and unsatisfied.",
+      "flags": [
+        "Item is currently BLOCKED — dependent on verified identity particulars.",
+        "PEP screening is mandatory per the firm's profile (pepScreening=true).",
+        "Screening must be conducted against verified full name and identity number.",
+        "Cannot be completed until Proof of Identity item is resolved."
+      ]
+    }
+  ],
+  "missingDocuments": [
+    "Proof of Identity — verified and legible copy of RSA Smart ID Card, green ID Book, or valid passport (the uploaded fica-id.pdf could not be verified due to failed text extraction and requires manual review).",
+    "Proof of Residential Address — utility bill, bank statement, or municipal account not older than three months, in the name of Sipho Dlamini.",
+    "Beneficial Ownership Declaration — signed declaration confirming beneficial ownership status.",
+    "Source of Funds Declaration — signed declaration disclosing the source of funds.",
+    "Engagement Letter — signed engagement letter formalising the attorney-client relationship.",
+    "Power of Attorney — signed power of attorney (once unblocked, if applicable)."
+  ],
+  "riskFlags": [
+    "Proof of Identity document (fica-id.pdf) could not be verified by automated text extraction — manual review is mandatory before any further onboarding steps are taken.",
+    "Five of nine checklist items remain entirely unsatisfied with no documents uploaded.",
+    "PEP screening (mandatory per firm profile) has not yet been conducted due to unverified identity.",
+    "Sanctions screening has not yet been conducted due to unverified identity.",
+    "FICA risk assessment cannot be completed until foundational CDD documents are verified.",
+    "The business relationship must not be established, and no legal services may be rendered, until standard CDD requirements under section 21 of FICA are satisfied.",
+    "Conservative risk calibration requires that all ambiguities in the identity document be resolved by manual review prior to proceeding.",
+    "Absence of source of funds information prevents adequate assessment of money laundering or terrorist financing risk under the firm's RMCP."
+  ],
+  "recommendedActions": [
+    {
+      "action": "REQUEST_ADDITIONAL_DOCUMENT",
+      "items": ["146806cb-3a91-41dc-870f-f4f0d66c8587"],
+      "reasoning": "The uploaded document fica-id.pdf could not be verified by automated text extraction. The responsible attorney or compliance officer must conduct a manual review of the document. If the document is found to be illegible, damaged, or otherwise insufficient, a fresh, legible copy of an acceptable identity document (RSA Smart ID Card, green ID Book, or valid passport) must be requested from the client. The document must clearly display the client's full name, identity number, date of birth, and photograph.",
+      "documentType": "Legible copy of RSA Smart ID Card, green ID Book, or valid passport — manually reviewed and verified by a responsible attorney or compliance officer."
+    },
+    {
+      "action": "REQUEST_ADDITIONAL_DOCUMENT",
+      "items": ["6a002855-4ebf-4549-8ed8-6ce183ea598e"],
+      "reasoning": "No proof of residential address has been provided. A document confirming Sipho Dlamini's residential address is required under section 21 of FICA before the business relationship may be established. The document must not be older than three months from the date of onboarding.",
+      "documentType": "Utility bill, bank statement, or municipal account not older than three months, reflecting the client's full name and residential address."
+    },
+    {
+      "action": "REQUEST_ADDITIONAL_DOCUMENT",
+      "items": ["3c9d8ff4-f3ea-45dc-aeb0-2463efc459a7"],
+      "reasoning": "No beneficial ownership declaration has been provided. The firm's conservative risk calibration and enhanced CDD obligations under section 21B of FICA require that the client declare whether he is acting on his own behalf or as agent or nominee for another person, and identify any beneficial owner where applicable.",
+      "documentType": "Signed Beneficial Ownership Declaration form, confirming whether the client acts on his own behalf and identifying any beneficial owner."
+    },
+    {
+      "action": "REQUEST_ADDITIONAL_DOCUMENT",
+      "items": ["7939da85-30ae-48a4-9ec3-b3e4289341ed"],
+      "reasoning": "No source of funds declaration has been provided. The firm's RMCP and conservative risk calibration require that the source of funds be declared and documented for all clients prior to the establishment of a business relationship.",
+      "documentType": "Signed Source of Funds Declaration form, disclosing the origin of the funds to be used in the matter."
+    },
+    {
+      "action": "REQUEST_ADDITIONAL_DOCUMENT",
+      "items": ["d956e3da-62b1-4f58-9929-4eaf06fdfdd2"],
+      "reasoning": "No signed engagement letter has been provided. A signed engagement letter is required to formalise the attorney-client relationship in accordance with the Attorneys Act 53 of 1979 and the firm's standard onboarding procedures.",
+      "documentType": "Signed Engagement Letter, duly executed by the client and the responsible attorney."
+    },
+    {
+      "action": "MARK_ITEMS_COMPLETE",
+      "items": ["233f09fe-6c50-46f9-a843-3df4cd0a72d6"],
+      "reasoning": "The Conflict Check Performed item does not require a supporting document. The responsible attorney must confirm in writing (by way of a file note or internal record) that a conflict of interest check has been conducted and that no conflict exists. Once such confirmation is recorded, this item may be marked as complete by the responsible attorney. This action is recommended for completion by the attorney — it cannot be completed by the compliance verification system.",
+      "documentType": null
+    }
+  ]
+}
+```

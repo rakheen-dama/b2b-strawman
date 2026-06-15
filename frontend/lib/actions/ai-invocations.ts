@@ -25,12 +25,21 @@ export async function listPendingInvocationsAction(
   contextEntityType: string,
   contextEntityId: string
 ): Promise<InvocationPage> {
-  return listInvocations({
-    contextEntityType,
-    contextEntityId,
-    status: "PENDING_APPROVAL",
-    size: 10,
-  });
+  try {
+    return await listInvocations({
+      contextEntityType,
+      contextEntityId,
+      status: "PENDING_APPROVAL",
+      size: 10,
+    });
+  } catch (error) {
+    // Degrade gracefully: the widget renders nothing on an empty page, so a
+    // transient backend/auth failure simply hides the widget rather than
+    // surfacing an error on every entity-detail page. (The original symptom
+    // was a hard 404; this fix must never re-introduce a page-level error.)
+    console.error("listPendingInvocationsAction failed", error);
+    return { content: [], page: { totalElements: 0, totalPages: 0, size: 10, number: 0 } };
+  }
 }
 
 export async function approveInvocationAction(id: string): Promise<ActionResult> {

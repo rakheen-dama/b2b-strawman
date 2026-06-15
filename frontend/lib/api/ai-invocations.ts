@@ -98,7 +98,7 @@ export interface ApproveInvocationResult {
 
 export async function approveInvocation(
   id: string,
-  appliedOutput?: Record<string, unknown>
+  appliedOutput?: { kind: string; [key: string]: unknown }
 ): Promise<ApproveInvocationResult> {
   return api.post<ApproveInvocationResult>(
     `/api/assistant/invocations/${id}/approve`,

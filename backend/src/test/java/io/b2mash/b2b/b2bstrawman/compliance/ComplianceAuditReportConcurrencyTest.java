@@ -52,7 +52,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ComplianceAuditReportConcurrencyTest {
 
-  private static final String ORG_ID = "org_compliance_rpt_concurrency_test";
+  // Each test method gets its own tenant schema so leftover PUBLISHED rows from one method
+  // cannot pollute the other (both methods care about the exact PUBLISHED count).
+  private static final String ORG_INSERTS = "org_compliance_rpt_conc_inserts";
+  private static final String ORG_SERVICE = "org_compliance_rpt_conc_service";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -65,23 +68,38 @@ class ComplianceAuditReportConcurrencyTest {
   @MockitoBean private ChecklistInstanceService checklistInstanceService;
   @MockitoBean private ConflictCheckService conflictCheckService;
 
-  private String tenantSchema;
-  private UUID ownerMemberId;
+  private String insertsSchema;
+  private String serviceSchema;
+  private UUID insertsOwnerId;
+  private UUID serviceOwnerId;
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Compliance Report Concurrency Test Org", null);
-    var ownerStr =
-        TestMemberHelper.syncMember(
-            mockMvc,
-            ORG_ID,
-            "user_comp_rpt_conc_owner",
-            "comp_rpt_conc_owner@test.com",
-            "Owner",
-            "owner");
-    ownerMemberId = UUID.fromString(ownerStr);
-    tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+    provisioningService.provisionTenant(ORG_INSERTS, ORG_INSERTS, null);
+    insertsOwnerId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_INSERTS,
+                "user_comp_conc_inserts",
+                "user_comp_conc_inserts@test.com",
+                "Owner",
+                "owner"));
+    insertsSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_INSERTS).orElseThrow().getSchemaName();
+
+    provisioningService.provisionTenant(ORG_SERVICE, ORG_SERVICE, null);
+    serviceOwnerId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_SERVICE,
+                "user_comp_conc_service",
+                "user_comp_conc_service@test.com",
+                "Owner",
+                "owner"));
+    serviceSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_SERVICE).orElseThrow().getSchemaName();
   }
 
   /**
@@ -92,8 +110,8 @@ class ComplianceAuditReportConcurrencyTest {
    */
   @Test
   void twoConcurrentPublishedInserts_onlyOneSurvives() throws Exception {
-    var executionA = saveExecution();
-    var executionB = saveExecution();
+    var executionA = saveExecution(insertsSchema, insertsOwnerId);
+    var executionB = saveExecution(insertsSchema, insertsOwnerId);
 
     var barrier = new CyclicBarrier(2);
     var errors = new ConcurrentLinkedQueue<Throwable>();
@@ -107,13 +125,16 @@ class ComplianceAuditReportConcurrencyTest {
       executor.shutdownNow();
     }
 
-    // Exactly one insert should have hit the partial unique index.
+    // Exactly one insert should have hit the partial unique index; the other commits.
     long constraintViolations = errors.stream().filter(this::isUniqueViolation).count();
+    assertThat(errors)
+        .as("the only acceptable failure is the index rejecting the duplicate PUBLISHED insert")
+        .allSatisfy(t -> assertThat(t).isInstanceOf(DataIntegrityViolationException.class));
     assertThat(constraintViolations)
         .as("exactly one of the two concurrent PUBLISHED inserts must be rejected by the index")
         .isEqualTo(1);
 
-    long published = countPublished();
+    long published = countPublished(insertsSchema, insertsOwnerId);
     assertThat(published)
         .as("the singleton invariant must hold: exactly one PUBLISHED report remains")
         .isEqualTo(1);
@@ -121,14 +142,14 @@ class ComplianceAuditReportConcurrencyTest {
 
   /**
    * Real-service concurrency: two threads approve distinct compliance gates simultaneously by
-   * calling {@link ComplianceAuditReportService#publishReport}. At most one ends PUBLISHED and the
-   * loser (if the race interleaves) surfaces a clean {@link ResourceConflictException}, never a
-   * duplicate.
+   * calling {@link ComplianceAuditReportService#publishReport}. Exactly one ends PUBLISHED and the
+   * loser (when the race interleaves) surfaces a clean {@link ResourceConflictException}, never a
+   * duplicate or a leaked 500.
    */
   @Test
   void twoConcurrentPublishReportCalls_atMostOnePublished() throws Exception {
-    var executionA = saveExecution();
-    var executionB = saveExecution();
+    var executionA = saveExecution(serviceSchema, serviceOwnerId);
+    var executionB = saveExecution(serviceSchema, serviceOwnerId);
 
     var barrier = new CyclicBarrier(2);
     var failures = new ConcurrentLinkedQueue<Throwable>();
@@ -142,12 +163,16 @@ class ComplianceAuditReportConcurrencyTest {
       executor.shutdownNow();
     }
 
-    // Any failure must be a clean conflict (409), not a leaked 500 / unexpected type.
+    // Any failure must be a clean conflict (409), not a leaked 500 / unexpected type, and at most
+    // one of the two concurrent publishes may fail (the loser of the race).
     assertThat(failures)
         .as("publishReport may only fail with a ResourceConflictException under concurrency")
         .allSatisfy(t -> assertThat(t).isInstanceOf(ResourceConflictException.class));
+    assertThat(failures.size())
+        .as("at most one of the two concurrent publishes may lose the race")
+        .isLessThanOrEqualTo(1);
 
-    long published = countPublished();
+    long published = countPublished(serviceSchema, serviceOwnerId);
     assertThat(published)
         .as("after two concurrent publishes, the singleton invariant must hold")
         .isEqualTo(1);
@@ -157,65 +182,83 @@ class ComplianceAuditReportConcurrencyTest {
 
   private void insertPublishedAtBarrier(
       AiExecution execution, CyclicBarrier barrier, ConcurrentLinkedQueue<Throwable> errors) {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, ownerMemberId)
-        .where(RequestScopes.ORG_ROLE, "owner")
-        .where(RequestScopes.CAPABILITIES, Set.of("AI_EXECUTE", "AI_REVIEW", "AI_MANAGE"))
-        .run(
-            () -> {
-              try {
-                // Start both inserts together so they race for the single-PUBLISHED slot.
-                barrier.await(20, TimeUnit.SECONDS);
-                transactionTemplate.executeWithoutResult(
-                    tx -> {
-                      var report =
-                          new ComplianceAuditReport(
-                              execution, "B", "Concurrent insert", Map.of(), ownerMemberId);
-                      report.publish(ownerMemberId);
-                      // saveAndFlush forces the unique-index check here; under the V128 index the
-                      // loser of the race blocks on the index entry until the winner commits, then
-                      // fails with a constraint violation.
-                      reportRepository.saveAndFlush(report);
-                    });
-              } catch (DataIntegrityViolationException uniqueViolation) {
-                errors.add(uniqueViolation);
-              } catch (Exception other) {
-                errors.add(other);
-              }
-            });
+    inScope(
+        insertsSchema,
+        ORG_INSERTS,
+        insertsOwnerId,
+        () -> {
+          try {
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var report =
+                      new ComplianceAuditReport(
+                          execution, "B", "Concurrent insert", Map.of(), insertsOwnerId);
+                  report.publish(insertsOwnerId);
+                  // Sync both transactions here — both are open and about to write the PUBLISHED
+                  // row — so they genuinely contend for the single-PUBLISHED slot. saveAndFlush
+                  // forces the V128 index check now: the loser blocks on the index entry until the
+                  // winner commits, then fails with a constraint violation.
+                  awaitBarrier(barrier);
+                  reportRepository.saveAndFlush(report);
+                });
+          } catch (DataIntegrityViolationException uniqueViolation) {
+            errors.add(uniqueViolation);
+          } catch (Exception other) {
+            errors.add(other);
+          }
+        });
   }
 
   private void publishAtBarrier(
       AiExecution execution, CyclicBarrier barrier, ConcurrentLinkedQueue<Throwable> failures) {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, ownerMemberId)
-        .where(RequestScopes.ORG_ROLE, "owner")
-        .where(RequestScopes.CAPABILITIES, Set.of("AI_EXECUTE", "AI_REVIEW", "AI_MANAGE"))
-        .run(
-            () -> {
-              try {
-                barrier.await(20, TimeUnit.SECONDS);
-                reportService.publishReport(createMockOutput(), execution.getId(), ownerMemberId);
-              } catch (RuntimeException businessFailure) {
-                failures.add(businessFailure);
-              } catch (Exception other) {
-                failures.add(other);
-              }
-            });
+    inScope(
+        serviceSchema,
+        ORG_SERVICE,
+        serviceOwnerId,
+        () -> {
+          try {
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // Open the transaction first, then sync so both publishReport transactions
+                  // interleave at the archive/insert window the bug lives in.
+                  awaitBarrier(barrier);
+                  reportService.publishReport(
+                      createMockOutput(), execution.getId(), serviceOwnerId);
+                });
+          } catch (RuntimeException businessFailure) {
+            failures.add(businessFailure);
+          } catch (Exception other) {
+            failures.add(other);
+          }
+        });
   }
 
   // --- Helpers ---
+
+  private static void awaitBarrier(CyclicBarrier barrier) {
+    try {
+      barrier.await(20, TimeUnit.SECONDS);
+    } catch (Exception e) {
+      throw new IllegalStateException("barrier sync failed", e);
+    }
+  }
 
   private boolean isUniqueViolation(Throwable t) {
     return t instanceof DataIntegrityViolationException;
   }
 
-  private long countPublished() {
-    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, ownerMemberId)
+  private void inScope(String schema, String orgId, UUID memberId, Runnable action) {
+    ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .where(RequestScopes.ORG_ID, orgId)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .where(RequestScopes.CAPABILITIES, Set.of("AI_EXECUTE", "AI_REVIEW", "AI_MANAGE"))
+        .run(action);
+  }
+
+  private long countPublished(String schema, UUID memberId) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .where(RequestScopes.MEMBER_ID, memberId)
         .where(RequestScopes.ORG_ROLE, "owner")
         .where(RequestScopes.CAPABILITIES, Set.of("AI_EXECUTE", "AI_REVIEW", "AI_MANAGE"))
         .call(
@@ -226,10 +269,9 @@ class ComplianceAuditReportConcurrencyTest {
                     .getTotalElements());
   }
 
-  private AiExecution saveExecution() {
-    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, ownerMemberId)
+  private AiExecution saveExecution(String schema, UUID memberId) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .where(RequestScopes.MEMBER_ID, memberId)
         .where(RequestScopes.ORG_ROLE, "owner")
         .where(RequestScopes.CAPABILITIES, Set.of("AI_EXECUTE", "AI_REVIEW", "AI_MANAGE"))
         .call(
@@ -239,7 +281,7 @@ class ComplianceAuditReportConcurrencyTest {
                       "compliance-audit",
                       "FIRM",
                       UUID.randomUUID(),
-                      ownerMemberId,
+                      memberId,
                       "claude-sonnet-4-6",
                       1);
               execution.markCompleted(

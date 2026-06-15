@@ -636,6 +636,13 @@
 | 559 | ClientOverviewTab | Frontend | -- | S | 559A | **Done** (PR #1394) |
 | 560 | Page Integration + Polish | Frontend | 556, 557, 558, 559 | L | 560A, 560B | **Done** (PRs #1395, #1396) |
 | 561 | QA Testplan Updates | Frontend | 556-560 | S | 561A | **Done** (PR #1397) |
+| **Phase 78 — Kazi MCP Server (Read-Only Grounded Context for the Firm's Own Claude)** | | | | | | See [tasks/phase78-mcp-server.md](tasks/phase78-mcp-server.md) |
+| 562 | MCP Runtime + Transport + Auth Skeleton | Backend | -- | L | 562A, 562B, 562C | |
+| 563 | Read Catalogue Batch 1 — Project-Access + Org-Wide Tools | Backend | 562 | L | 563A, 563B | |
+| 564 | Read Catalogue Batch 2 — Capability-Gated Tools + Firm-Profile Resource | Backend | 562 | L | 564A, 564B | |
+| 565 | Enablement + POPIA Consent (Backend) | Backend | 562 | M | 565A, 565B | |
+| 566 | MCP Connector Settings Card (Frontend) | Frontend | 565 | M | 566A | |
+| 567 | Audit / Observability + Isolation / Read-Only Hardening | Backend | 562, 563, 564, 565 | M | 567A, 567B | |
 
 
 ---

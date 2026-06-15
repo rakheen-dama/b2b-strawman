@@ -1,1 +1,1 @@
-{"commit":"f97bfe146","command":"cd frontend && pnpm install && pnpm run lint && pnpm run format:check && pnpm run build && pnpm run test","exit":0,"ts":"2026-06-14T21:59:09Z","summary":"lint 0 errors; format:check clean; build OK; 376 files, 2352 passed, 2 skipped"}
+{"commit":"83a5feca3","command":"pnpm run lint && pnpm run build && pnpm test","exit":0,"ts":"2026-06-15T07:42:41Z","summary":"post-review: lint 0 errors (112 pre-existing e2e warnings); build OK; vitest 376 files, 2358 passed, 2 skipped"}

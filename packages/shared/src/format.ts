@@ -155,6 +155,36 @@ export function formatComplianceDateWithTime(isoString: string): string {
 }
 
 /**
+ * Formats an ISO timestamp with date and time, pinning BOTH the locale
+ * (en-ZA, the product's South-African locale) AND the timeZone
+ * (Africa/Johannesburg). Unlike the other date helpers, which resolve the
+ * viewer's local zone, this renders the same wall-clock string regardless of
+ * the runtime's default timezone.
+ *
+ * Use this for any timestamp that is rendered during SSR and then hydrated on
+ * the client: `toLocaleString()` / locale-only formatters resolve the runtime's
+ * default zone, so the Node SSR runtime and the user's browser produce
+ * different strings → a React hydration mismatch ("Text content did not
+ * match"). Pinning the zone makes server and client render byte-identical.
+ * (Introduced for AIVERIFY-009 — ExecutionGateCard hydration/locale mismatch.)
+ *
+ * Returns "" for empty/invalid input.
+ */
+export function formatDateTime(isoString: string): string {
+  if (!isoString) return "";
+  const d = new Date(isoString);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-ZA", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Africa/Johannesburg",
+  });
+}
+
+/**
  * Returns true if the given "YYYY-MM-DD" deadline is strictly before today.
  * (Staff-app helper, retained.)
  */

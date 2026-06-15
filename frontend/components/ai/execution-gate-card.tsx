@@ -80,7 +80,13 @@ export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCa
   const [timeRemaining, setTimeRemaining] = useState<string | null>(null);
 
   useEffect(() => {
-    if (gate.status !== "PENDING") return;
+    if (gate.status !== "PENDING") {
+      // Clear any stale countdown if the gate flips PENDING -> non-PENDING on a
+      // mounted card (e.g. right after approve/reject).
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- countdown is intentionally client/effect-driven (SSR hydration safety, AIVERIFY-009); reset on status change.
+      setTimeRemaining(null);
+      return;
+    }
     // Computing the countdown client-only (initial state stays null on the
     // server pass) avoids a hydration mismatch — the wall-clock value differs
     // between server render and client mount (AIVERIFY-009).

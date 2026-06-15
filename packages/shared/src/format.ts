@@ -174,7 +174,10 @@ export function formatDateTime(isoString: string): string {
   if (!isoString) return "";
   const d = new Date(isoString);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("en-ZA", {
+  // toLocaleString (not toLocaleDateString) is the correct method for a
+  // date+time render — toLocaleDateString is spec'd to format only the date
+  // and may drop the time fields on strictly-conformant runtimes.
+  return d.toLocaleString("en-ZA", {
     year: "numeric",
     month: "short",
     day: "numeric",

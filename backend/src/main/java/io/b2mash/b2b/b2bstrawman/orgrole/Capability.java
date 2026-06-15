@@ -51,7 +51,13 @@ public enum Capability {
   /** View sync status of accounting entries. */
   INTEGRATION_VIEW_SYNC_STATUS,
   /** Reconcile financial discrepancies between Kazi and external systems (owner-only). */
-  FINANCIAL_RECONCILE;
+  FINANCIAL_RECONCILE,
+
+  /**
+   * Connect the firm's own Claude (MCP connector) to read live Kazi data. Front-door gate
+   * (ADR-304).
+   */
+  MCP_ACCESS;
 
   /** Capabilities restricted to the owner role — admin does NOT inherit these. */
   public static final Set<String> OWNER_ONLY =

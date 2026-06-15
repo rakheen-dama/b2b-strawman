@@ -53,3 +53,70 @@ describe("aiProfileSchema.monthlyBudgetCents (AIVERIFY-010)", () => {
     if (result.success) expect(result.data.monthlyBudgetCents).toBe(500_000);
   });
 });
+
+// AIVERIFY-010 (reopened): the form's onSubmit coerces empty notes textareas via
+// `value || null`, producing `null`. The server action re-runs aiProfileSchema.safeParse
+// on that payload BEFORE calling the backend PUT. The schema must therefore accept `null`
+// for the two optional notes fields, or the entire save is silently dropped (no PUT sent).
+describe("aiProfileSchema notes fields accept null (AIVERIFY-010)", () => {
+  it("accepts houseStyleNotes: null (the exact failing case)", () => {
+    const result = aiProfileSchema.safeParse({ ...base, houseStyleNotes: null });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts feeEstimationNotes: null (the exact failing case)", () => {
+    const result = aiProfileSchema.safeParse({ ...base, feeEstimationNotes: null });
+    expect(result.success).toBe(true);
+  });
+
+  it("still accepts empty string and undefined for notes", () => {
+    expect(
+      aiProfileSchema.safeParse({ ...base, houseStyleNotes: "", feeEstimationNotes: undefined })
+        .success
+    ).toBe(true);
+    expect(aiProfileSchema.safeParse({ ...base }).success).toBe(true);
+  });
+
+  it("still accepts a populated notes string", () => {
+    const result = aiProfileSchema.safeParse({
+      ...base,
+      houseStyleNotes: "Use formal tone.",
+      feeEstimationNotes: "R2,500/hour standard rate.",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("still enforces the 2000-char cap on notes", () => {
+    const tooLong = "x".repeat(2001);
+    expect(aiProfileSchema.safeParse({ ...base, houseStyleNotes: tooLong }).success).toBe(false);
+    expect(aiProfileSchema.safeParse({ ...base, feeEstimationNotes: tooLong }).success).toBe(false);
+  });
+
+  // End-to-end repro: the full onSubmit-shaped payload (empty notes coerced to null via
+  // `value || null`, budget edited) must validate, proving the server action would now
+  // reach the backend PUT instead of returning { success:false, error:"Invalid input" }.
+  it("accepts the full onSubmit-shaped payload with empty notes coerced to null", () => {
+    const formData = {
+      practiceAreas: ["Litigation"],
+      jurisdiction: "ZA-WC",
+      riskCalibration: "CONSERVATIVE" as const,
+      preferredModel: "claude-sonnet-4-6" as const,
+      ficaRequirements: {
+        enhancedDueDiligence: false,
+        pepScreening: false,
+        sourceOfFundsRequired: false,
+      },
+      monthlyBudgetCents: 700_000,
+      coldStartCompleted: true,
+    };
+    const emptyNotes = "";
+    const submitData = {
+      ...formData,
+      houseStyleNotes: emptyNotes || null,
+      feeEstimationNotes: emptyNotes || null,
+    };
+    const result = aiProfileSchema.safeParse(submitData);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.monthlyBudgetCents).toBe(700_000);
+  });
+});

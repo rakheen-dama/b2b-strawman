@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm, type Resolver, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
@@ -156,6 +156,17 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
     }
   }
 
+  // Never let a client-side validation rejection silently abort the submit. Without this,
+  // any field that fails the resolver would block the save with no visible feedback (the
+  // class of defect behind AIVERIFY-010). Surface it so the user can act.
+  function onInvalid(errors: FieldErrors<AiProfileFormData>) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("AI profile form validation rejected:", errors);
+    }
+    setIsError(true);
+    setMessage("Please fix the highlighted fields and try again.");
+  }
+
   function addPracticeArea(area: string) {
     const trimmed = area.trim();
     if (!trimmed) return;
@@ -177,7 +188,7 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
         {/* Practice Areas */}
         <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
           <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
@@ -347,6 +358,9 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
                 <FormControl>
                   <Textarea
                     {...field}
+                    // Schema accepts null (AIVERIFY-010), but a controlled textarea must never
+                    // receive null/undefined as its value — coerce to "" to stay controlled.
+                    value={field.value ?? ""}
                     placeholder="e.g., Use formal tone, avoid contractions, refer to clients as 'the Applicant' in immigration matters..."
                     className="min-h-[100px]"
                   />
@@ -443,6 +457,9 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
                 <FormControl>
                   <Textarea
                     {...field}
+                    // Schema accepts null (AIVERIFY-010), but a controlled textarea must never
+                    // receive null/undefined as its value — coerce to "" to stay controlled.
+                    value={field.value ?? ""}
                     placeholder="e.g., Standard consultation rate is R2,500/hour. Property transfers include conveyancing fees per tariff..."
                     className="min-h-[100px]"
                   />

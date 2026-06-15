@@ -10,9 +10,10 @@ export const aiProfileSchema = z.object({
   riskCalibration: riskCalibrationEnum,
   // The form coerces an empty textarea to `null` (`value || null`) and the backend column
   // is nullable, so the schema must accept `null` here — otherwise the server action's
-  // re-validation rejects the payload and silently drops the save (no PUT). Keep the
-  // .max(2000) cap intact. (AIVERIFY-010)
-  houseStyleNotes: z.string().max(2000).nullable().optional().or(z.literal("")),
+  // re-validation rejects the payload and silently drops the save (no PUT). `""` already
+  // passes the `.max(2000)` string branch, so no `.or(z.literal(""))` arm is needed.
+  // Accepts: string (<=2000), "", null, undefined. (AIVERIFY-010)
+  houseStyleNotes: z.string().max(2000).nullable().optional(),
   ficaRequirements: z
     .object({
       enhancedDueDiligence: z.boolean().optional(),
@@ -20,7 +21,7 @@ export const aiProfileSchema = z.object({
       sourceOfFundsRequired: z.boolean().optional(),
     })
     .optional(),
-  feeEstimationNotes: z.string().max(2000).nullable().optional().or(z.literal("")),
+  feeEstimationNotes: z.string().max(2000).nullable().optional(),
   preferredModel: preferredModelEnum,
   // A cleared budget arrives as undefined/null/NaN/"" from the number field — all mean "no cap".
   // Normalise those to undefined BEFORE validating so an emptied field never trips a silent

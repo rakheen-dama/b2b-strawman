@@ -160,7 +160,9 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
   // any field that fails the resolver would block the save with no visible feedback (the
   // class of defect behind AIVERIFY-010). Surface it so the user can act.
   function onInvalid(errors: FieldErrors<AiProfileFormData>) {
-    console.warn("AI profile form validation rejected:", errors);
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("AI profile form validation rejected:", errors);
+    }
     setIsError(true);
     setMessage("Please fix the highlighted fields and try again.");
   }

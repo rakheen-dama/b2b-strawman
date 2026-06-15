@@ -312,6 +312,7 @@ export const NAV_GROUPS: NavGroup[] = [
         label: "AI Intake",
         href: (slug) => `/org/${slug}/projects/new`,
         icon: Sparkles,
+        exact: true,
         requiredCapability: "AI_EXECUTE",
       },
       // Gate-review queue — owner/admin only.

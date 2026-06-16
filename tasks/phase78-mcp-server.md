@@ -27,7 +27,7 @@ Phase 78 opens the second head on the same body: **Claude calls Kazi.** It ships
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 562 | MCP Runtime + Transport + Auth Skeleton | Backend | -- | L | 562A, 562B, 562C | 562A **Done** (PR #1454) |
+| 562 | MCP Runtime + Transport + Auth Skeleton | Backend | -- | L | 562A, 562B, 562C | 562A **Done** (PR #1454), 562B **Done** (PR #1455) |
 | 563 | Read Catalogue Batch 1 — Project-Access + Org-Wide Tools | Backend | 562 | L | 563A, 563B | |
 | 564 | Read Catalogue Batch 2 — Capability-Gated Tools + Firm-Profile Resource | Backend | 562 (563 recommended) | L | 564A, 564B | |
 | 565 | Enablement + POPIA Consent (Backend) | Backend | 562 | M | 565A, 565B | |
@@ -126,7 +126,7 @@ Predecessors already complete:
 | Order | Slice | Summary |
 |-------|-------|---------|
 | 1a | **562A** | ✅ **Done** (PR #1454). `backend/pom.xml`: Spring AI 2.0 milestone BOM + repo + `spring-ai-starter-mcp-server-webmvc`; `spring.ai.mcp.server.protocol=STREAMABLE`. `mcp/McpServerConfig` (server identity `kazi`, version, read-only instructions, advertise `resources`+`tools` only). Spring Security wiring so `/mcp` runs the **full** filter chain (NOT `/internal/*`). |
-| 1b | **562B** | `MCP_ACCESS` added to `orgrole/Capability.java` + seeding (confirm `ALL`-expand vs seeder backfill); OAuth `/.well-known/oauth-protected-resource` metadata endpoint; `initialize` / `tools/list` / `resources/list` handshake with an **empty** registry; `mcp.session.opened` audit emission. |
+| 1b | **562B** | ✅ **Done** (PR #1455). `MCP_ACCESS` added to `orgrole/Capability.java` + seeding (confirm `ALL`-expand vs seeder backfill); OAuth `/.well-known/oauth-protected-resource` metadata endpoint; `initialize` / `tools/list` / `resources/list` handshake with an **empty** registry; `mcp.session.opened` audit emission. |
 | 1c | **562C** | `mcp/dto/` DTO base + `McpPage` envelope (`items, page, size, total, truncated`); pagination-normalisation helper (hard max 50 / audit 200, slices unbounded `List`); global per-call response-size ceiling ("narrow your query" error); read-only registry scaffold (registration point); auth-enforcement + handshake integration tests. |
 
 ### Stage 2 — Catalogue + Enablement (parallel after 562)
@@ -183,7 +183,7 @@ A realistic cadence: 562A days 1–3 (milestone-risk spike), 562B days 3–5, 56
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **562A** | 562A.1–562A.3 | ~4 backend files (1 `pom.xml` modify + 1 config + 1 security config modify + 2 yml modify) | Spring AI 2.0 milestone starter + STREAMABLE protocol; `McpServerConfig` (identity, version, read-only instructions, advertise `resources`+`tools`); Spring Security wiring so `/mcp` runs the full filter chain. | **Done** (PR #1454) |
-| **562B** | 562B.1–562B.4 | ~6 backend files (1 enum modify + 1 seeder modify/verify + 1 metadata endpoint + 1 audit emitter + 1 handshake config + 1 test) | `MCP_ACCESS` capability + seeding; OAuth protected-resource-metadata endpoint; `initialize`/`tools/list`/`resources/list` handshake with empty registry; `mcp.session.opened` audit. | |
+| **562B** | 562B.1–562B.4 | ~6 backend files (1 enum modify + 1 seeder modify/verify + 1 metadata endpoint + 1 audit emitter + 1 handshake config + 1 test) | `MCP_ACCESS` capability + seeding; OAuth protected-resource-metadata endpoint; `initialize`/`tools/list`/`resources/list` handshake with empty registry; `mcp.session.opened` audit. | **Done** (PR #1455) |
 | **562C** | 562C.1–562C.4 | ~7 backend files (1 DTO base + 1 page envelope + 1 pagination helper + 1 registry scaffold + 1 size-ceiling + 2 tests) | MCP DTO base; `McpPage` envelope; pagination-normalisation helper + global response-size ceiling; read-only registry scaffold; auth-enforcement + handshake integration tests. | |
 
 ### Tasks

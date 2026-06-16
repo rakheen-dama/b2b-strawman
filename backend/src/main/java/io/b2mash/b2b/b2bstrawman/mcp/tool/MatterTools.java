@@ -1,16 +1,14 @@
 package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
-import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
+import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpMatterDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpMatterListItem;
-import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import java.util.Map;
 import java.util.UUID;
@@ -53,7 +51,7 @@ public class MatterTools {
           "List the firm's matters (projects) visible to you. Members see only assigned matters;"
               + " owners/admins see all. Optionally filter by status (e.g. ACTIVE) or customerId."
               + " Paginated — page size is capped at 50.")
-  public McpPage<McpMatterListItem> listMatters(
+  public Object listMatters(
       @McpToolParam(required = false, description = "Zero-based page index (default 0).") int page,
       @McpToolParam(required = false, description = "Page size, capped at 50 (default 50).")
           int size,
@@ -72,6 +70,12 @@ public class MatterTools {
                     new McpMatterListItem(
                         p.id(), p.name(), p.status(), p.customerId(), p.dueDate(), p.createdAt()))
             .toList();
+    // Guard against an unbounded materialised result set: if the full list exceeds the per-call
+    // ceiling, fail with a structured error telling the LLM to narrow its query rather than ever
+    // emitting a truncated page.
+    if (McpPagination.exceedsResponseCeiling(matters.size())) {
+      return McpToolErrors.asResult(McpError.responseTooLarge(), objectMapper);
+    }
     var pageResult = McpPagination.paginate(matters, page, size, McpPagination.DEFAULT_MAX_SIZE);
     emitInvoked("list_matters");
     return pageResult;
@@ -95,16 +99,6 @@ public class MatterTools {
   }
 
   private void emitInvoked(String tool) {
-    try {
-      auditService.log(
-          AuditEventBuilder.builder()
-              .eventType("mcp.tool.invoked")
-              .entityType("mcp_tool")
-              .entityId(RequestScopes.requireMemberId())
-              .details(Map.of("tool", tool))
-              .build());
-    } catch (RuntimeException e) {
-      // Audit emission must never break a successful tool call (567 finalises richer metadata).
-    }
+    McpToolAudit.emitInvoked(tool, auditService);
   }
 }

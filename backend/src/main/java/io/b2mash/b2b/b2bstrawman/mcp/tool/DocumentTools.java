@@ -1,20 +1,18 @@
 package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
-import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.document.DocumentService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
+import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpDocumentDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpDownloadUrl;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
@@ -86,6 +84,12 @@ public class DocumentTools {
             McpError.invalidRequest("Provide either projectId or scope (ORG/CUSTOMER)."),
             objectMapper);
       }
+      // Guard against an unbounded materialised result set (org/customer scope can be large): fail
+      // with a structured error rather than ever emitting a truncated page when the full list
+      // exceeds the per-call ceiling.
+      if (McpPagination.exceedsResponseCeiling(docs.size())) {
+        return McpToolErrors.asResult(McpError.responseTooLarge(), objectMapper);
+      }
       McpPage<McpDocumentDto> pageResult =
           McpPagination.paginate(docs, page, size, McpPagination.DEFAULT_MAX_SIZE);
       emitInvoked("search_documents");
@@ -94,7 +98,9 @@ public class DocumentTools {
       return McpToolErrors.asResult(McpError.notFound("matter"), objectMapper);
     } catch (InvalidStateException e) {
       return McpToolErrors.asResult(
-          McpError.invalidRequest("Invalid scope/customerId combination."), objectMapper);
+          McpError.invalidRequest(
+              "Invalid scope. Use scope=ORG, or scope=CUSTOMER with a customerId."),
+          objectMapper);
     }
   }
 
@@ -119,16 +125,6 @@ public class DocumentTools {
   }
 
   private void emitInvoked(String tool) {
-    try {
-      auditService.log(
-          AuditEventBuilder.builder()
-              .eventType("mcp.tool.invoked")
-              .entityType("mcp_tool")
-              .entityId(RequestScopes.requireMemberId())
-              .details(Map.of("tool", tool))
-              .build());
-    } catch (RuntimeException e) {
-      // Audit emission must never break a successful tool call.
-    }
+    McpToolAudit.emitInvoked(tool, auditService);
   }
 }

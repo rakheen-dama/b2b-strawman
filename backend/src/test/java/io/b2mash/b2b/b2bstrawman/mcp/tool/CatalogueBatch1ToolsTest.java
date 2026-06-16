@@ -365,6 +365,14 @@ class CatalogueBatch1ToolsTest {
               assertThat(page.getContent())
                   .extracting(AuditEvent::getEventType)
                   .contains("mcp.tool.invoked");
+              // Assert the specific tool name made it into details, not just that *some*
+              // mcp.tool.invoked event exists.
+              assertThat(page.getContent())
+                  .anySatisfy(
+                      event -> {
+                        assertThat(event.getEventType()).isEqualTo("mcp.tool.invoked");
+                        assertThat(event.getDetails()).containsEntry("tool", "list_matters");
+                      });
             });
   }
 }

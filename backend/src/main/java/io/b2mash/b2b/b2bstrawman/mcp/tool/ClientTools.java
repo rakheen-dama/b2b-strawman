@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
-import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
@@ -8,14 +7,13 @@ import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
+import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpClientDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpClientListItem;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import java.util.Map;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
@@ -83,6 +81,11 @@ public class ClientTools {
                 ? customerService.listCustomers()
                 : customerService.listCustomersByLifecycleStatus(parsed))
             .stream().map(McpClientListItem::from).toList();
+    // Guard against an unbounded materialised result set: fail with a structured error rather than
+    // ever emitting a truncated page when the full list exceeds the per-call ceiling.
+    if (McpPagination.exceedsResponseCeiling(customers.size())) {
+      return McpToolErrors.asResult(McpError.responseTooLarge(), objectMapper);
+    }
     McpPage<McpClientListItem> pageResult =
         McpPagination.paginate(customers, page, size, McpPagination.DEFAULT_MAX_SIZE);
     emitInvoked("list_clients");
@@ -103,24 +106,12 @@ public class ClientTools {
       var dto = McpClientDto.from(customer, linkedProjects);
       emitInvoked("get_client");
       return dto;
-    } catch (ResourceNotFoundException e) {
-      return McpToolErrors.asResult(McpError.notFound("client"), objectMapper);
-    } catch (InvalidStateException e) {
+    } catch (ResourceNotFoundException | InvalidStateException e) {
       return McpToolErrors.asResult(McpError.notFound("client"), objectMapper);
     }
   }
 
   private void emitInvoked(String tool) {
-    try {
-      auditService.log(
-          AuditEventBuilder.builder()
-              .eventType("mcp.tool.invoked")
-              .entityType("mcp_tool")
-              .entityId(RequestScopes.requireMemberId())
-              .details(Map.of("tool", tool))
-              .build());
-    } catch (RuntimeException e) {
-      // Audit emission must never break a successful tool call.
-    }
+    McpToolAudit.emitInvoked(tool, auditService);
   }
 }

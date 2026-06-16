@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpClientDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -30,14 +31,17 @@ public class ClientResource {
   private final CustomerService customerService;
   private final CustomerProjectService customerProjectService;
   private final ObjectMapper objectMapper;
+  private final McpEnablementService enablement;
 
   public ClientResource(
       CustomerService customerService,
       CustomerProjectService customerProjectService,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      McpEnablementService enablement) {
     this.customerService = customerService;
     this.customerProjectService = customerProjectService;
     this.objectMapper = objectMapper;
+    this.enablement = enablement;
   }
 
   @McpResource(
@@ -47,6 +51,9 @@ public class ClientResource {
           "A single client (customer) by id, with contacts and linked matters. Org-wide read.",
       mimeType = "application/json")
   public String client(String id) {
+    if (!enablement.effectiveState()) {
+      return objectMapper.writeValueAsString(McpError.notEnabled());
+    }
     var actor = ActorContext.fromRequestScopes();
     UUID clientId;
     try {

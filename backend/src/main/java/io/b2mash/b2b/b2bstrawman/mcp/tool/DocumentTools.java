@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.document.DocumentService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
@@ -38,12 +39,17 @@ public class DocumentTools {
   private final DocumentService documentService;
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
+  private final McpEnablementService enablement;
 
   public DocumentTools(
-      DocumentService documentService, AuditService auditService, ObjectMapper objectMapper) {
+      DocumentService documentService,
+      AuditService auditService,
+      ObjectMapper objectMapper,
+      McpEnablementService enablement) {
     this.documentService = documentService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
+    this.enablement = enablement;
   }
 
   @McpTool(
@@ -66,6 +72,9 @@ public class DocumentTools {
           String scope,
       @McpToolParam(required = false, description = "Required when scope=CUSTOMER.")
           UUID customerId) {
+    if (!enablement.effectiveState()) {
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
     var actor = ActorContext.fromRequestScopes();
     try {
       List<McpDocumentDto> docs;
@@ -113,6 +122,9 @@ public class DocumentTools {
               + " document. Never returns the document bytes. Returns a non-leaking not-found error"
               + " if the document does not exist or you cannot access it.")
   public Object getDocumentUrl(@McpToolParam(description = "Document id.") UUID documentId) {
+    if (!enablement.effectiveState()) {
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
     var actor = ActorContext.fromRequestScopes();
     try {
       var result = documentService.getPresignedDownloadUrl(documentId, actor);

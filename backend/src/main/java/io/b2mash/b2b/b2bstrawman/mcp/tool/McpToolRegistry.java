@@ -19,8 +19,13 @@ import org.springframework.stereotype.Component;
  * <p>This registry is observational only — it does not itself register or gate tools; Spring AI
  * autoconfiguration performs registration from {@code @McpTool} annotations.
  *
- * <p>TODO(565B): the {@code MCP_ACCESS} front-door enablement/consent gate is NOT added here — it
- * is a later concern. This registry stays a pure read-only seam.
+ * <p>The 565B effective-state (enablement + POPIA consent) gate is intentionally NOT routed through
+ * this registry: there is no central {@code tools/call} dispatch and Spring AI 2.0.0-M6 exposes no
+ * tool-call interceptor, so the gate is a per-tool/per-resource inline guard (the first statement
+ * of every {@code @McpTool} method and {@code @McpResource} read calls {@link
+ * io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService#effectiveState()} and returns {@link
+ * io.b2mash.b2b.b2bstrawman.mcp.dto.McpError#notEnabled()} when disabled). This registry stays a
+ * pure read-only seam.
  */
 @Component
 public class McpToolRegistry {

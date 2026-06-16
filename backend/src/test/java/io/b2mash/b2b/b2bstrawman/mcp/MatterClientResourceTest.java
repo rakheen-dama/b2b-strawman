@@ -68,6 +68,7 @@ class MatterClientResourceTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ObjectMapper objectMapper;
   @Autowired private AuditService auditService;
+  @Autowired private McpEnablementService enablementService;
 
   private String tenantSchema;
   private UUID ownerUuid;
@@ -102,12 +103,15 @@ class MatterClientResourceTest {
 
     clientId = TestEntityHelper.createCustomer(mockMvc, owner, "Beta LLC", "beta@test.com");
 
-    // Seed two activity rows (audit events with project_id) on the assigned matter.
+    // Seed two activity rows (audit events with project_id) on the assigned matter, and enable the
+    // MCP connector (565B) so the resource reads pass the effective-state gate.
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, ownerUuid)
+        .where(RequestScopes.ORG_ROLE, "owner")
         .run(
             () -> {
+              enablementService.enable("popia-egress-v1");
               UUID matterUuid = UUID.fromString(assignedMatterId);
               auditService.log(
                   new AuditEventRecord(

@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.TextContent;
@@ -34,6 +35,8 @@ class ClientToolsCeilingTest {
     CustomerProjectService customerProjectService = mock(CustomerProjectService.class);
     AuditService auditService = mock(AuditService.class);
     ObjectMapper objectMapper = new ObjectMapper();
+    McpEnablementService enablement = mock(McpEnablementService.class);
+    when(enablement.effectiveState()).thenReturn(true);
 
     // One more than the ceiling so the guard trips (exceedsResponseCeiling is strictly >).
     int overCeiling = McpPagination.RESPONSE_ITEM_CEILING + 1;
@@ -49,7 +52,8 @@ class ClientToolsCeilingTest {
     when(customerService.listCustomers()).thenReturn(customers);
 
     ClientTools tools =
-        new ClientTools(customerService, customerProjectService, auditService, objectMapper);
+        new ClientTools(
+            customerService, customerProjectService, auditService, objectMapper, enablement);
 
     Object result = tools.listClients(0, 50, null);
 

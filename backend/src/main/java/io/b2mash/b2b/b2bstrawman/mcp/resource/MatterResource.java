@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.mcp.resource;
 
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpMatterDto;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -29,10 +30,13 @@ public class MatterResource {
 
   private final ProjectService projectService;
   private final ObjectMapper objectMapper;
+  private final McpEnablementService enablement;
 
-  public MatterResource(ProjectService projectService, ObjectMapper objectMapper) {
+  public MatterResource(
+      ProjectService projectService, ObjectMapper objectMapper, McpEnablementService enablement) {
     this.projectService = projectService;
     this.objectMapper = objectMapper;
+    this.enablement = enablement;
   }
 
   @McpResource(
@@ -41,6 +45,9 @@ public class MatterResource {
       description = "A single matter (project) by id, with your role on it. Project-access gated.",
       mimeType = "application/json")
   public String matter(String id) {
+    if (!enablement.effectiveState()) {
+      return objectMapper.writeValueAsString(McpError.notEnabled());
+    }
     var actor = ActorContext.fromRequestScopes();
     UUID matterId;
     try {

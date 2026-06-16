@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ModuleNotEnabledException;
+import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
@@ -41,16 +42,19 @@ public class TrustTools {
   private final OrgSettingsService orgSettingsService;
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
+  private final McpEnablementService enablement;
 
   public TrustTools(
       ClientLedgerService clientLedgerService,
       OrgSettingsService orgSettingsService,
       AuditService auditService,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      McpEnablementService enablement) {
     this.clientLedgerService = clientLedgerService;
     this.orgSettingsService = orgSettingsService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
+    this.enablement = enablement;
   }
 
   @McpTool(
@@ -67,6 +71,9 @@ public class TrustTools {
               required = false,
               description = "Client (customer) id — omit for the account total.")
           UUID customerId) {
+    if (!enablement.effectiveState()) {
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
     if (!RequestScopes.hasCapability(CAP_VIEW_TRUST)) {
       McpToolAudit.emitDenied("get_trust_balance", auditService);
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
@@ -107,6 +114,9 @@ public class TrustTools {
       @McpToolParam(required = false, description = "Zero-based page index (default 0).") int page,
       @McpToolParam(required = false, description = "Page size, capped at 50 (default 50).")
           int size) {
+    if (!enablement.effectiveState()) {
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
     if (!RequestScopes.hasCapability(CAP_VIEW_TRUST)) {
       McpToolAudit.emitDenied("list_trust_transactions", auditService);
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);

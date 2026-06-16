@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.invoice.UnbilledTimeService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
@@ -41,6 +42,7 @@ public class BillingTools {
   private final OrgSettingsService orgSettingsService;
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
+  private final McpEnablementService enablement;
 
   public BillingTools(
       InvoiceService invoiceService,
@@ -48,13 +50,15 @@ public class BillingTools {
       UnbilledTimeSummaryService unbilledTimeSummaryService,
       OrgSettingsService orgSettingsService,
       AuditService auditService,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      McpEnablementService enablement) {
     this.invoiceService = invoiceService;
     this.unbilledTimeService = unbilledTimeService;
     this.unbilledTimeSummaryService = unbilledTimeSummaryService;
     this.orgSettingsService = orgSettingsService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
+    this.enablement = enablement;
   }
 
   @McpTool(
@@ -76,6 +80,9 @@ public class BillingTools {
       @McpToolParam(required = false, description = "Zero-based page index (default 0).") int page,
       @McpToolParam(required = false, description = "Page size, capped at 50 (default 50).")
           int size) {
+    if (!enablement.effectiveState()) {
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
     if (!RequestScopes.hasCapability(CAP_INVOICING)) {
       McpToolAudit.emitDenied("list_invoices", auditService);
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
@@ -112,6 +119,9 @@ public class BillingTools {
               + " non-leaking not-found error if the invoice does not exist. Requires the INVOICING"
               + " capability.")
   public Object getInvoice(@McpToolParam(description = "Invoice id.") UUID invoiceId) {
+    if (!enablement.effectiveState()) {
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
     if (!RequestScopes.hasCapability(CAP_INVOICING)) {
       McpToolAudit.emitDenied("get_invoice", auditService);
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
@@ -146,6 +156,9 @@ public class BillingTools {
               required = false,
               description = "Matter (project) id — switches to the per-matter summary.")
           UUID projectId) {
+    if (!enablement.effectiveState()) {
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
     if (!RequestScopes.hasCapability(CAP_INVOICING)) {
       McpToolAudit.emitDenied("get_unbilled_time", auditService);
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);

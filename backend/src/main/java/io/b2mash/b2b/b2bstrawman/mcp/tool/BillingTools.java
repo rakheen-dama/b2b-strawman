@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpUnbilledSummaryItem;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpUnbilledSummaryItem.McpUnbilledMatterSummary;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummaryService;
 import java.time.LocalDate;
 import java.util.Locale;
@@ -37,6 +38,7 @@ public class BillingTools {
   private final InvoiceService invoiceService;
   private final UnbilledTimeService unbilledTimeService;
   private final UnbilledTimeSummaryService unbilledTimeSummaryService;
+  private final OrgSettingsService orgSettingsService;
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
 
@@ -44,11 +46,13 @@ public class BillingTools {
       InvoiceService invoiceService,
       UnbilledTimeService unbilledTimeService,
       UnbilledTimeSummaryService unbilledTimeSummaryService,
+      OrgSettingsService orgSettingsService,
       AuditService auditService,
       ObjectMapper objectMapper) {
     this.invoiceService = invoiceService;
     this.unbilledTimeService = unbilledTimeService;
     this.unbilledTimeSummaryService = unbilledTimeSummaryService;
+    this.orgSettingsService = orgSettingsService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
   }
@@ -126,10 +130,11 @@ public class BillingTools {
   @McpTool(
       name = "get_unbilled_time",
       description =
-          "Summarise unbilled work. Without a matterId, returns a firm-wide list of per-client"
-              + " unbilled totals (optionally bounded by periodFrom/periodTo and currency). With a"
-              + " matterId, returns a single per-matter unbilled summary. Money is returned as minor"
-              + " units plus a currency code. Requires the INVOICING capability.")
+          "Summarise unbilled work. Without a matterId, returns a firm-wide list of up to the first"
+              + " 50 clients with unbilled work (optionally bounded by periodFrom/periodTo and"
+              + " currency); if `truncated` is true, narrow the result using the period/currency"
+              + " filters. With a matterId, returns a single per-matter unbilled summary. Money is"
+              + " returned as minor units plus a currency code. Requires the INVOICING capability.")
   public Object getUnbilledTime(
       @McpToolParam(required = false, description = "Period start (inclusive), ISO date.")
           LocalDate periodFrom,
@@ -155,9 +160,13 @@ public class BillingTools {
       }
     }
 
+    String resolvedCurrency =
+        (currency == null || currency.isBlank())
+            ? orgSettingsService.getDefaultCurrency()
+            : currency.trim().toUpperCase(Locale.ROOT);
     var rows =
-        unbilledTimeService.getUnbilledSummary(periodFrom, periodTo, currency).stream()
-            .map(row -> McpUnbilledSummaryItem.from(row, currency))
+        unbilledTimeService.getUnbilledSummary(periodFrom, periodTo, resolvedCurrency).stream()
+            .map(row -> McpUnbilledSummaryItem.from(row, resolvedCurrency))
             .toList();
     if (McpPagination.exceedsResponseCeiling(rows.size())) {
       return McpToolErrors.asResult(McpError.responseTooLarge(), objectMapper);

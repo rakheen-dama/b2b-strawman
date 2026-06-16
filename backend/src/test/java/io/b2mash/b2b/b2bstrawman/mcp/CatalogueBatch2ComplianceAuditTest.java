@@ -8,7 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
@@ -21,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
@@ -54,14 +57,17 @@ class CatalogueBatch2ComplianceAuditTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ObjectMapper objectMapper;
+  @Autowired private AuditEventRepository auditEventRepository;
 
   private String clientId;
+  private String tenantSchema;
 
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "MCP Batch2 Compliance Org", null);
     TestMemberHelper.syncMember(mockMvc, ORG_ID, "user_owner", "owner@test.com", "Owner", "owner");
-    orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow();
+    tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     JwtRequestPostProcessor owner = TestJwtFactory.ownerJwt(ORG_ID, "user_owner");
     clientId = TestEntityHelper.createCustomer(mockMvc, owner, "Compliance Client", "cc@test.com");
@@ -272,6 +278,21 @@ class CatalogueBatch2ComplianceAuditTest {
     JsonNode result = readResource(member, openSession(member), "kazi://firm-profile");
     JsonNode payload = resourcePayload(result);
     assertThat(payload.at("/error").asString()).isEqualTo("forbidden");
+
+    // The resource denial path must emit mcp.access.denied, like the tool denial paths.
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () -> {
+              var page =
+                  auditEventRepository.findByFilter(
+                      null, null, null, "mcp.access.denied", null, null, PageRequest.of(0, 50));
+              assertThat(page.getContent())
+                  .anySatisfy(
+                      event -> {
+                        assertThat(event.getEventType()).isEqualTo("mcp.access.denied");
+                        assertThat(event.getDetails()).containsEntry("tool", "kazi://firm-profile");
+                      });
+            });
   }
 
   @Test

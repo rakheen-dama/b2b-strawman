@@ -311,12 +311,14 @@ class CatalogueBatch2TrustBillingTest {
   @Test
   void trustToolOnNonLegalTenantReturnsModuleDisabled() throws Exception {
     JwtRequestPostProcessor owner = TestJwtFactory.ownerJwt(NON_LEGAL_ORG_ID, "user_nl_owner");
+    // Use a dummy id, not the legal tenant's real trustAccountId: the module check must run before
+    // any entity lookup, so the call returns module_disabled regardless of whether the id exists.
     JsonNode result =
         callTool(
             owner,
             openSession(owner),
             "get_trust_balance",
-            "{\"trustAccountId\":\"%s\"}".formatted(trustAccountId));
+            "{\"trustAccountId\":\"%s\"}".formatted(UUID.randomUUID()));
     assertThat(result.at("/isError").asBoolean()).isTrue();
     JsonNode payload = resultPayload(result);
     assertThat(payload.at("/error").asString()).isEqualTo("module_disabled");

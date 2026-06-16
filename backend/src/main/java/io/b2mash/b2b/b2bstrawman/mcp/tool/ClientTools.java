@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpClientListItem;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import java.util.Locale;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
@@ -69,7 +70,11 @@ public class ClientTools {
           String lifecycleStatus) {
     LifecycleStatus parsed;
     try {
-      parsed = lifecycleStatus == null ? null : LifecycleStatus.valueOf(lifecycleStatus);
+      // Normalize LLM input (lowercase/whitespace) before the strict enum parse.
+      parsed =
+          lifecycleStatus == null
+              ? null
+              : LifecycleStatus.valueOf(lifecycleStatus.trim().toUpperCase(Locale.ROOT));
     } catch (IllegalArgumentException e) {
       return McpToolErrors.asResult(
           McpError.invalidRequest("Unknown lifecycleStatus. See the tool description for values."),

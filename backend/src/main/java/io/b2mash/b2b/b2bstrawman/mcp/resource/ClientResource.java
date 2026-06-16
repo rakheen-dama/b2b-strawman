@@ -48,12 +48,19 @@ public class ClientResource {
       mimeType = "application/json")
   public String client(String id) {
     var actor = ActorContext.fromRequestScopes();
+    UUID clientId;
     try {
-      UUID clientId = UUID.fromString(id);
+      // Parse the id in its own scope so a malformed UUID returns the same non-leaking not-found
+      // response — without masking an unrelated IllegalArgumentException from the service.
+      clientId = UUID.fromString(id);
+    } catch (IllegalArgumentException e) {
+      return objectMapper.writeValueAsString(McpError.notFound("client"));
+    }
+    try {
       var customer = customerService.getCustomer(clientId);
       var linkedProjects = customerProjectService.listProjectsForCustomer(clientId, actor);
       return objectMapper.writeValueAsString(McpClientDto.from(customer, linkedProjects));
-    } catch (ResourceNotFoundException | InvalidStateException | IllegalArgumentException e) {
+    } catch (ResourceNotFoundException | InvalidStateException e) {
       return objectMapper.writeValueAsString(McpError.notFound("client"));
     }
   }

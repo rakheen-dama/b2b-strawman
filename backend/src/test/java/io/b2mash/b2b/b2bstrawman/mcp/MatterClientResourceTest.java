@@ -14,6 +14,8 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -239,19 +241,14 @@ class MatterClientResourceTest {
     JsonNode templates =
         parseRpc(rl.getResponse().getContentAsString()).at("/result/resourceTemplates");
     assertThat(templates.isArray()).isTrue();
-    boolean hasMatter = false;
-    boolean hasClient = false;
+    List<String> uris = new ArrayList<>();
     for (JsonNode r : templates) {
-      String uri = r.at("/uriTemplate").asString();
-      if ("kazi://matter/{id}".equals(uri)) {
-        hasMatter = true;
-      }
-      if ("kazi://client/{id}".equals(uri)) {
-        hasClient = true;
-      }
+      uris.add(r.at("/uriTemplate").asString());
     }
-    assertThat(hasMatter).as("kazi://matter/{id} resource template registered").isTrue();
-    assertThat(hasClient).as("kazi://client/{id} resource template registered").isTrue();
+    // Exactly the two 563B resources — no extras (firm-profile lands in 564B).
+    assertThat(uris)
+        .as("resource template set must be exactly the two 563B resources")
+        .containsExactlyInAnyOrder("kazi://matter/{id}", "kazi://client/{id}");
   }
 
   // ---- (3) kazi://matter/{id} read for a member ------------------------------

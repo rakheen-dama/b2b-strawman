@@ -42,12 +42,19 @@ public class MatterResource {
       mimeType = "application/json")
   public String matter(String id) {
     var actor = ActorContext.fromRequestScopes();
+    UUID matterId;
     try {
-      var withRole = projectService.getProject(UUID.fromString(id), actor);
+      // Parse the id in its own scope so a malformed UUID returns the same non-leaking not-found
+      // response — without masking an unrelated IllegalArgumentException from the service.
+      matterId = UUID.fromString(id);
+    } catch (IllegalArgumentException e) {
+      return objectMapper.writeValueAsString(McpError.notFound("matter"));
+    }
+    try {
+      var withRole = projectService.getProject(matterId, actor);
       return objectMapper.writeValueAsString(
           McpMatterDto.from(withRole.project(), withRole.projectRole()));
-    } catch (ResourceNotFoundException | IllegalArgumentException e) {
-      // IllegalArgumentException: malformed id — same non-leaking response as not-found/no-access.
+    } catch (ResourceNotFoundException e) {
       return objectMapper.writeValueAsString(McpError.notFound("matter"));
     }
   }

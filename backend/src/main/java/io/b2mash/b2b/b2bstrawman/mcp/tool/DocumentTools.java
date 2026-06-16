@@ -95,7 +95,9 @@ public class DocumentTools {
       emitInvoked("search_documents");
       return pageResult;
     } catch (ResourceNotFoundException e) {
-      return McpToolErrors.asResult(McpError.notFound("matter"), objectMapper);
+      // Generic resource noun: search_documents serves project, org, and customer scopes, so a
+      // matter-specific message would mislead on the org/customer paths.
+      return McpToolErrors.asResult(McpError.notFound("document"), objectMapper);
     } catch (InvalidStateException e) {
       return McpToolErrors.asResult(
           McpError.invalidRequest(

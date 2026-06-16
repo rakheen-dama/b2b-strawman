@@ -28,7 +28,7 @@ Phase 78 opens the second head on the same body: **Claude calls Kazi.** It ships
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 562 | MCP Runtime + Transport + Auth Skeleton | Backend | -- | L | 562A, 562B, 562C | **Done** — 562A (PR #1454), 562B (PR #1455), 562C (PR #1456) |
-| 563 | Read Catalogue Batch 1 — Project-Access + Org-Wide Tools | Backend | 562 | L | 563A, 563B | |
+| 563 | Read Catalogue Batch 1 — Project-Access + Org-Wide Tools | Backend | 562 | L | 563A, 563B | **Done** — 563A, 563B (PR #1457) |
 | 564 | Read Catalogue Batch 2 — Capability-Gated Tools + Firm-Profile Resource | Backend | 562 (563 recommended) | L | 564A, 564B | |
 | 565 | Enablement + POPIA Consent (Backend) | Backend | 562 | M | 565A, 565B | |
 | 566 | MCP Connector Settings Card (Frontend) | Frontend | 565 | M | 566A | |
@@ -133,8 +133,8 @@ Predecessors already complete:
 
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
-| 2a | **563A** | Tools `list_matters`, `get_matter`, `list_clients`, `get_client`, `search_documents`, `get_document_url` + their MCP DTOs; project-access + org-wide gating; `ActorContext.fromRequestScopes()` propagation; `mcp.tool.invoked` audit; integration tests. | 564A, 565A |
-| 2b | **563B** | Tool `get_matter_activity` + resources `kazi://matter/{id}`, `kazi://client/{id}`; activity DTO; project-access gating; integration tests. | 564B, 565B |
+| 2a | **563A** | ✅ **Done** (PR #1457). Tools `list_matters`, `get_matter`, `list_clients`, `get_client`, `search_documents`, `get_document_url` + their MCP DTOs; project-access + org-wide gating; `ActorContext.fromRequestScopes()` propagation; `mcp.tool.invoked` audit; integration tests. | 564A, 565A |
+| 2b | **563B** | ✅ **Done** (PR #1457). Tool `get_matter_activity` + resources `kazi://matter/{id}`, `kazi://client/{id}`; activity DTO; project-access gating; integration tests. | 564B, 565B |
 | 2c | **564A** | Tools `get_trust_balance`, `list_trust_transactions`, `list_invoices`, `get_invoice`, `get_unbilled_time` + DTOs; `VIEW_TRUST` (+ trust module-gate tolerance) + `INVOICING` gating; integration tests. | 563A, 565A |
 | 2d | **564B** | Tools `list_compliance_gaps`, `get_audit_events` + resource `kazi://firm-profile` (`AI_MANAGE` gate) + DTOs; `CUSTOMER_MANAGEMENT` + `TEAM_OVERSIGHT` gating; integration tests. | 563B, 565B |
 | 2e | **565A** | `V129` consent migration + `mcp/consent/McpEgressConsent` entity (AiFirmProfile pattern) + `McpEgressConsentRepository`; migration + entity round-trip tests. | 563A, 564A |
@@ -260,8 +260,8 @@ A realistic cadence: 562A days 1–3 (milestone-risk spike), 562B days 3–5, 56
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **563A** | 563A.1–563A.4 | ~9 backend files (2 tool classes + 4 DTOs + 1 test + reuse helper) | `list_matters`, `get_matter` (MatterTools); `list_clients`, `get_client` (ClientTools); `search_documents`, `get_document_url` (DocumentTools); MCP DTOs; project-access + org-wide gating; `mcp.tool.invoked`. | |
-| **563B** | 563B.1–563B.3 | ~7 backend files (1 tool class + 2 resource handlers + 2 DTOs + 1 test) | `get_matter_activity` (ActivityTools); resources `kazi://matter/{id}`, `kazi://client/{id}`; activity DTO; project-access gating. | |
+| **563A** | 563A.1–563A.4 | ~9 backend files (2 tool classes + 4 DTOs + 1 test + reuse helper) | `list_matters`, `get_matter` (MatterTools); `list_clients`, `get_client` (ClientTools); `search_documents`, `get_document_url` (DocumentTools); MCP DTOs; project-access + org-wide gating; `mcp.tool.invoked`. | **Done** (PR #1457) |
+| **563B** | 563B.1–563B.3 | ~7 backend files (1 tool class + 2 resource handlers + 2 DTOs + 1 test) | `get_matter_activity` (ActivityTools); resources `kazi://matter/{id}`, `kazi://client/{id}`; activity DTO; project-access gating. | **Done** (PR #1457) |
 
 ### Tasks
 

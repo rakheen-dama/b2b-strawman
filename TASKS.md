@@ -638,7 +638,7 @@
 | 561 | QA Testplan Updates | Frontend | 556-560 | S | 561A | **Done** (PR #1397) |
 | **Phase 78 — Kazi MCP Server (Read-Only Grounded Context for the Firm's Own Claude)** | | | | | | See [tasks/phase78-mcp-server.md](tasks/phase78-mcp-server.md) |
 | 562 | MCP Runtime + Transport + Auth Skeleton | Backend | -- | L | 562A, 562B, 562C | **Done** — 562A (PR #1454), 562B (PR #1455), 562C (PR #1456) |
-| 563 | Read Catalogue Batch 1 — Project-Access + Org-Wide Tools | Backend | 562 | L | 563A, 563B | |
+| 563 | Read Catalogue Batch 1 — Project-Access + Org-Wide Tools | Backend | 562 | L | 563A, 563B | **Done** — 563A, 563B (PR #1457) |
 | 564 | Read Catalogue Batch 2 — Capability-Gated Tools + Firm-Profile Resource | Backend | 562 | L | 564A, 564B | |
 | 565 | Enablement + POPIA Consent (Backend) | Backend | 562 | M | 565A, 565B | |
 | 566 | MCP Connector Settings Card (Frontend) | Frontend | 565 | M | 566A | |

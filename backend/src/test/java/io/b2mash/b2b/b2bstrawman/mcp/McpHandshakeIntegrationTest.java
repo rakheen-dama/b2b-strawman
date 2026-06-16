@@ -2,7 +2,10 @@ package io.b2mash.b2b.b2bstrawman.mcp;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
@@ -91,12 +94,15 @@ class McpHandshakeIntegrationTest {
     if (sessionId != null) {
       builder = builder.header("Mcp-Session-Id", sessionId);
     }
-    MvcResult result = mockMvc.perform(builder).andReturn();
+    // Assert the HTTP contract explicitly: every /mcp JSON-RPC call must succeed at the transport
+    // level (2xx — a notification may answer 202, a request 200) before we trust the body.
+    MvcResult result = mockMvc.perform(builder).andExpect(status().is2xxSuccessful()).andReturn();
     // The streamable transport uses a functional RouterFunction + ServerResponse.SseBuilder, which
     // (unlike @Controller + SseEmitter) completes synchronously under MockMvc — no async dispatch.
     // Only fall through to asyncDispatch if the transport DID start an async request.
     if (result.getRequest().isAsyncStarted()) {
-      result = mockMvc.perform(asyncDispatch(result)).andReturn();
+      result =
+          mockMvc.perform(asyncDispatch(result)).andExpect(status().is2xxSuccessful()).andReturn();
     }
     return result;
   }
@@ -177,19 +183,10 @@ class McpHandshakeIntegrationTest {
   @Test
   void validTokenBindsRequestScopes() throws Exception {
     mockMvc
-        .perform(
-            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
-                    "/api/me/capabilities")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")))
-        .andExpect(
-            org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
-        .andExpect(
-            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.isOwner")
-                .value(true))
-        .andExpect(
-            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
-                    "$.capabilities")
-                .isArray());
+        .perform(get("/api/me/capabilities").with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.isOwner").value(true))
+        .andExpect(jsonPath("$.capabilities").isArray());
   }
 
   // ---- (6) mcp.session.opened emitted on initialize --------------------------

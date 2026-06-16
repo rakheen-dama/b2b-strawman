@@ -108,10 +108,14 @@ class McpAuthEnforcementTest {
           .as("garbage bearer must never authenticate to a 2xx")
           .isGreaterThanOrEqualTo(400);
     } catch (Exception e) {
-      // Decoder-init failure (offline JWKS) surfaces as a thrown exception out of the filter chain
-      // —
-      // also a denial, never an authenticated success. Acceptable for this env.
-      assertThat(e.getMessage()).containsIgnoringCase("JwtDecoder");
+      // Offline JWKS: a forged bearer fails decoder init before reaching the clean invalid_token
+      // path. The invariant is simply that it never authenticates to 2xx; accept any denial,
+      // null message included. Avoid coupling to a brittle internal message string (and the NPE
+      // risk when getMessage() is null).
+      assertThat(e)
+          .satisfiesAnyOf(
+              ex -> assertThat(ex.getMessage()).isNotNull().containsIgnoringCase("jwt"),
+              ex -> assertThat(ex.getClass().getName()).containsIgnoringCase("jwt"));
     }
   }
 

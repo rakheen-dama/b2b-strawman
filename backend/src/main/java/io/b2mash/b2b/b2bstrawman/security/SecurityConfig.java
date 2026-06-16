@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.security;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditAuthenticationEntryPoint;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionGuardFilter;
+import io.b2mash.b2b.b2bstrawman.mcp.McpSessionAuditListener;
 import io.b2mash.b2b.b2bstrawman.member.MemberFilter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantFilter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantLoggingFilter;
@@ -44,6 +45,7 @@ public class SecurityConfig {
   private final PlatformAdminFilter platformAdminFilter;
   private final CustomerAuthFilter customerAuthFilter;
   private final AuditAuthenticationEntryPoint auditAuthEntryPoint;
+  private final McpSessionAuditListener mcpSessionAuditListener;
   private final Environment environment;
 
   public SecurityConfig(
@@ -56,6 +58,7 @@ public class SecurityConfig {
       PlatformAdminFilter platformAdminFilter,
       CustomerAuthFilter customerAuthFilter,
       AuditAuthenticationEntryPoint auditAuthEntryPoint,
+      McpSessionAuditListener mcpSessionAuditListener,
       Environment environment) {
     this.jwtAuthConverter = jwtAuthConverter;
     this.apiKeyAuthFilter = apiKeyAuthFilter;
@@ -66,6 +69,7 @@ public class SecurityConfig {
     this.platformAdminFilter = platformAdminFilter;
     this.customerAuthFilter = customerAuthFilter;
     this.auditAuthEntryPoint = auditAuthEntryPoint;
+    this.mcpSessionAuditListener = mcpSessionAuditListener;
     this.environment = environment;
   }
 
@@ -129,6 +133,11 @@ public class SecurityConfig {
                     // POST /api/access-requests/verify (296B) — both public endpoints
                     .requestMatchers("/api/access-requests/**")
                     .permitAll()
+                    // MCP OAuth protected-resource metadata (Phase 78, ADR-303 / RFC 9728): PUBLIC
+                    // so the Claude client can discover the Keycloak authorization server BEFORE it
+                    // has a token, then run the authorization-code/PKCE flow.
+                    .requestMatchers("/.well-known/oauth-protected-resource")
+                    .permitAll()
                     // MCP server (Phase 78, ADR-303): the WHOLE /mcp request must traverse this
                     // authenticated chain so TenantFilter/MemberFilter bind RequestScopes
                     // (TENANT_ID → MEMBER_ID → ORG_ROLE → CAPABILITIES) before any MCP tool runs.
@@ -152,7 +161,10 @@ public class SecurityConfig {
         .addFilterAfter(memberFilter, TenantFilter.class)
         .addFilterAfter(subscriptionGuardFilter, MemberFilter.class)
         .addFilterAfter(platformAdminFilter, SubscriptionGuardFilter.class)
-        .addFilterAfter(tenantLoggingFilter, PlatformAdminFilter.class);
+        .addFilterAfter(tenantLoggingFilter, PlatformAdminFilter.class)
+        // 562B: runs after all scope-binding filters, so RequestScopes.MEMBER_ID is bound when it
+        // inspects an /mcp `initialize` POST to emit mcp.session.opened.
+        .addFilterAfter(mcpSessionAuditListener, TenantLoggingFilter.class);
 
     return http.build();
   }

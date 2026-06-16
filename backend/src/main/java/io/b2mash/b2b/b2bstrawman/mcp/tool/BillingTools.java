@@ -1,0 +1,171 @@
+package io.b2mash.b2b.b2bstrawman.mcp.tool;
+
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
+import io.b2mash.b2b.b2bstrawman.invoice.UnbilledTimeService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
+import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
+import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
+import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
+import io.b2mash.b2b.b2bstrawman.mcp.dto.McpInvoiceDto;
+import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
+import io.b2mash.b2b.b2bstrawman.mcp.dto.McpUnbilledSummaryItem;
+import io.b2mash.b2b.b2bstrawman.mcp.dto.McpUnbilledSummaryItem.McpUnbilledMatterSummary;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummaryService;
+import java.time.LocalDate;
+import java.util.Locale;
+import java.util.UUID;
+import org.springframework.ai.mcp.annotation.McpTool;
+import org.springframework.ai.mcp.annotation.McpToolParam;
+import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
+
+/**
+ * Read-only billing MCP tools (Epic 564A): {@code list_invoices}, {@code get_invoice} and {@code
+ * get_unbilled_time}. All three require the {@code INVOICING} capability, checked inline and
+ * returned as {@link McpError#forbidden()} (never thrown — throwing would leak as "Error invoking
+ * method"). Money is carried as minor units (long); invoice/unbilled DTOs already carry a currency.
+ */
+@Component
+public class BillingTools {
+
+  private static final String CAP_INVOICING = "INVOICING";
+
+  private final InvoiceService invoiceService;
+  private final UnbilledTimeService unbilledTimeService;
+  private final UnbilledTimeSummaryService unbilledTimeSummaryService;
+  private final AuditService auditService;
+  private final ObjectMapper objectMapper;
+
+  public BillingTools(
+      InvoiceService invoiceService,
+      UnbilledTimeService unbilledTimeService,
+      UnbilledTimeSummaryService unbilledTimeSummaryService,
+      AuditService auditService,
+      ObjectMapper objectMapper) {
+    this.invoiceService = invoiceService;
+    this.unbilledTimeService = unbilledTimeService;
+    this.unbilledTimeSummaryService = unbilledTimeSummaryService;
+    this.auditService = auditService;
+    this.objectMapper = objectMapper;
+  }
+
+  @McpTool(
+      name = "list_invoices",
+      description =
+          "List the firm's invoices, optionally filtered by clientId, status (DRAFT, APPROVED,"
+              + " SENT, PAID, VOID) and/or matterId. Money is returned as minor units plus a"
+              + " currency code. Paginated — page size capped at 50. Requires the INVOICING"
+              + " capability.")
+  public Object listInvoices(
+      @McpToolParam(required = false, description = "Filter by client (customer) id.")
+          UUID customerId,
+      @McpToolParam(
+              required = false,
+              description = "Filter by status: DRAFT, APPROVED, SENT, PAID, VOID.")
+          String status,
+      @McpToolParam(required = false, description = "Filter by matter (project) id.")
+          UUID projectId,
+      @McpToolParam(required = false, description = "Zero-based page index (default 0).") int page,
+      @McpToolParam(required = false, description = "Page size, capped at 50 (default 50).")
+          int size) {
+    if (!RequestScopes.hasCapability(CAP_INVOICING)) {
+      McpToolAudit.emitDenied("list_invoices", auditService);
+      return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
+    }
+    InvoiceStatus parsed;
+    try {
+      parsed =
+          status == null ? null : InvoiceStatus.valueOf(status.trim().toUpperCase(Locale.ROOT));
+    } catch (IllegalArgumentException e) {
+      return McpToolErrors.asResult(
+          McpError.invalidRequest("Unknown status. See the tool description for values."),
+          objectMapper);
+    }
+
+    var invoices =
+        invoiceService.findAll(customerId, parsed, projectId).stream()
+            .map(McpInvoiceDto::listItem)
+            .toList();
+    if (McpPagination.exceedsResponseCeiling(invoices.size())) {
+      return McpToolErrors.asResult(McpError.responseTooLarge(), objectMapper);
+    }
+    McpPage<McpInvoiceDto> result =
+        McpPagination.paginate(invoices, page, size, McpPagination.DEFAULT_MAX_SIZE);
+    McpToolAudit.emitInvoked("list_invoices", auditService);
+    return result;
+  }
+
+  @McpTool(
+      name = "get_invoice",
+      description =
+          "Fetch one invoice by id, including its line items and payment events. Line items and"
+              + " payments are capped at 50 each; the 'truncated' flag is set when either was"
+              + " clipped. Money is returned as minor units plus a currency code. Returns a"
+              + " non-leaking not-found error if the invoice does not exist. Requires the INVOICING"
+              + " capability.")
+  public Object getInvoice(@McpToolParam(description = "Invoice id.") UUID invoiceId) {
+    if (!RequestScopes.hasCapability(CAP_INVOICING)) {
+      McpToolAudit.emitDenied("get_invoice", auditService);
+      return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
+    }
+    try {
+      var invoice = invoiceService.findById(invoiceId);
+      var payments = invoiceService.getPaymentEvents(invoiceId);
+      var dto = McpInvoiceDto.detail(invoice, payments, McpPagination.DEFAULT_MAX_SIZE);
+      McpToolAudit.emitInvoked("get_invoice", auditService);
+      return dto;
+    } catch (ResourceNotFoundException e) {
+      return McpToolErrors.asResult(McpError.notFound("invoice"), objectMapper);
+    }
+  }
+
+  @McpTool(
+      name = "get_unbilled_time",
+      description =
+          "Summarise unbilled work. Without a matterId, returns a firm-wide list of per-client"
+              + " unbilled totals (optionally bounded by periodFrom/periodTo and currency). With a"
+              + " matterId, returns a single per-matter unbilled summary. Money is returned as minor"
+              + " units plus a currency code. Requires the INVOICING capability.")
+  public Object getUnbilledTime(
+      @McpToolParam(required = false, description = "Period start (inclusive), ISO date.")
+          LocalDate periodFrom,
+      @McpToolParam(required = false, description = "Period end (exclusive), ISO date.")
+          LocalDate periodTo,
+      @McpToolParam(required = false, description = "Currency code filter (3-letter).")
+          String currency,
+      @McpToolParam(
+              required = false,
+              description = "Matter (project) id — switches to the per-matter summary.")
+          UUID projectId) {
+    if (!RequestScopes.hasCapability(CAP_INVOICING)) {
+      McpToolAudit.emitDenied("get_unbilled_time", auditService);
+      return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
+    }
+    if (projectId != null) {
+      try {
+        var summary = unbilledTimeSummaryService.getProjectUnbilledSummary(projectId);
+        McpToolAudit.emitInvoked("get_unbilled_time", auditService);
+        return McpUnbilledMatterSummary.from(projectId, summary);
+      } catch (ResourceNotFoundException e) {
+        return McpToolErrors.asResult(McpError.notFound("matter"), objectMapper);
+      }
+    }
+
+    var rows =
+        unbilledTimeService.getUnbilledSummary(periodFrom, periodTo, currency).stream()
+            .map(row -> McpUnbilledSummaryItem.from(row, currency))
+            .toList();
+    if (McpPagination.exceedsResponseCeiling(rows.size())) {
+      return McpToolErrors.asResult(McpError.responseTooLarge(), objectMapper);
+    }
+    McpPage<McpUnbilledSummaryItem> result =
+        McpPagination.paginate(
+            rows, 0, McpPagination.DEFAULT_MAX_SIZE, McpPagination.DEFAULT_MAX_SIZE);
+    McpToolAudit.emitInvoked("get_unbilled_time", auditService);
+    return result;
+  }
+}

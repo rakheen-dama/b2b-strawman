@@ -39,7 +39,9 @@ import tools.jackson.databind.ObjectMapper;
  * capability check).
  *
  * <p>Extension point: 567A extends this filter for {@code mcp.tool.invoked} / {@code
- * mcp.access.denied} by inspecting other JSON-RPC methods.
+ * mcp.access.denied} by inspecting other JSON-RPC methods. Response-side instrumentation (row
+ * counts, result metadata) in 567A will require pairing a {@code ContentCachingResponseWrapper}
+ * here, or a GA-SDK lifecycle hook if one exists by that milestone.
  */
 @Component
 public class McpSessionAuditListener extends OncePerRequestFilter {
@@ -111,7 +113,7 @@ public class McpSessionAuditListener extends OncePerRequestFilter {
               .entityId(RequestScopes.requireMemberId())
               .details(Map.of("clientName", clientName, "clientVersion", clientVersion))
               .build());
-    } catch (RuntimeException e) {
+    } catch (Exception e) {
       // Audit emission must never break the handshake.
       log.warn("Failed to emit mcp.session.opened audit event for /mcp initialize", e);
     }

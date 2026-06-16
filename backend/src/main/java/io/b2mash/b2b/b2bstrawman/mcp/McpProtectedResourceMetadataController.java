@@ -30,7 +30,8 @@ public class McpProtectedResourceMetadataController {
 
   @GetMapping("/.well-known/oauth-protected-resource")
   public ResponseEntity<ProtectedResourceMetadata> metadata() {
-    return ResponseEntity.ok(new ProtectedResourceMetadata(resourceUrl, List.of(issuerUri)));
+    List<String> authorizationServers = issuerUri.isBlank() ? List.of() : List.of(issuerUri);
+    return ResponseEntity.ok(new ProtectedResourceMetadata(resourceUrl, authorizationServers));
   }
 
   /** RFC 9728 fields: {@code resource} (this MCP server's URL), {@code authorization_servers}. */

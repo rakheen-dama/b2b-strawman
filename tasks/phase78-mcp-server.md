@@ -29,7 +29,7 @@ Phase 78 opens the second head on the same body: **Claude calls Kazi.** It ships
 |------|------|-------|------|--------|--------|--------|
 | 562 | MCP Runtime + Transport + Auth Skeleton | Backend | -- | L | 562A, 562B, 562C | **Done** — 562A (PR #1454), 562B (PR #1455), 562C (PR #1456) |
 | 563 | Read Catalogue Batch 1 — Project-Access + Org-Wide Tools | Backend | 562 | L | 563A, 563B | **Done** — 563A, 563B (PR #1457) |
-| 564 | Read Catalogue Batch 2 — Capability-Gated Tools + Firm-Profile Resource | Backend | 562 (563 recommended) | L | 564A, 564B | |
+| 564 | Read Catalogue Batch 2 — Capability-Gated Tools + Firm-Profile Resource | Backend | 562 (563 recommended) | L | 564A, 564B | **Done** — 564A, 564B (PR #1458) |
 | 565 | Enablement + POPIA Consent (Backend) | Backend | 562 | M | 565A, 565B | |
 | 566 | MCP Connector Settings Card (Frontend) | Frontend | 565 | M | 566A | |
 | 567 | Audit / Observability + Isolation / Read-Only Hardening | Backend | 562, 563, 564, 565 | M | 567A, 567B | |
@@ -135,8 +135,8 @@ Predecessors already complete:
 |-------|-------|---------|-----------------------|
 | 2a | **563A** | ✅ **Done** (PR #1457). Tools `list_matters`, `get_matter`, `list_clients`, `get_client`, `search_documents`, `get_document_url` + their MCP DTOs; project-access + org-wide gating; `ActorContext.fromRequestScopes()` propagation; `mcp.tool.invoked` audit; integration tests. | 564A, 565A |
 | 2b | **563B** | ✅ **Done** (PR #1457). Tool `get_matter_activity` + resources `kazi://matter/{id}`, `kazi://client/{id}`; activity DTO; project-access gating; integration tests. | 564B, 565B |
-| 2c | **564A** | Tools `get_trust_balance`, `list_trust_transactions`, `list_invoices`, `get_invoice`, `get_unbilled_time` + DTOs; `VIEW_TRUST` (+ trust module-gate tolerance) + `INVOICING` gating; integration tests. | 563A, 565A |
-| 2d | **564B** | Tools `list_compliance_gaps`, `get_audit_events` + resource `kazi://firm-profile` (`AI_MANAGE` gate) + DTOs; `CUSTOMER_MANAGEMENT` + `TEAM_OVERSIGHT` gating; integration tests. | 563B, 565B |
+| 2c | **564A** | ✅ **Done** (PR #1458). Tools `get_trust_balance`, `list_trust_transactions`, `list_invoices`, `get_invoice`, `get_unbilled_time` + DTOs; `VIEW_TRUST` (+ trust module-gate tolerance) + `INVOICING` gating; integration tests. | 563A, 565A |
+| 2d | **564B** | ✅ **Done** (PR #1458). Tools `list_compliance_gaps`, `get_audit_events` + resource `kazi://firm-profile` (`AI_MANAGE` gate) + DTOs; `CUSTOMER_MANAGEMENT` + `TEAM_OVERSIGHT` gating; integration tests. | 563B, 565B |
 | 2e | **565A** | `V129` consent migration + `mcp/consent/McpEgressConsent` entity (AiFirmProfile pattern) + `McpEgressConsentRepository`; migration + entity round-trip tests. | 563A, 564A |
 | 2f | **565B** | `IntegrationDomain.MCP("kazi")` constant; `McpConsentService` (append GRANTED/REVOKED, latest-decision lookup); `McpEnablementService` (effective state = `OrgIntegration.enabled` AND latest consent GRANTED); wire effective-state gate into every `tools/call` (non-leaking refusal); tests. | 563B, 564B |
 
@@ -320,8 +320,8 @@ A realistic cadence: 562A days 1–3 (milestone-risk spike), 562B days 3–5, 56
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **564A** | 564A.1–564A.4 | ~9 backend files (2 tool classes + 4 DTOs + 1 test) | `get_trust_balance`, `list_trust_transactions` (TrustTools, `VIEW_TRUST` + module-gate tolerance); `list_invoices`, `get_invoice`, `get_unbilled_time` (BillingTools, `INVOICING`); DTOs. | |
-| **564B** | 564B.1–564B.4 | ~8 backend files (2 tool classes + 1 resource + 3 DTOs + 1 test) | `list_compliance_gaps` (`CUSTOMER_MANAGEMENT`), `get_audit_events` (`TEAM_OVERSIGHT`); resource `kazi://firm-profile` (`AI_MANAGE`); DTOs. | |
+| **564A** | 564A.1–564A.4 | ~9 backend files (2 tool classes + 4 DTOs + 1 test) | `get_trust_balance`, `list_trust_transactions` (TrustTools, `VIEW_TRUST` + module-gate tolerance); `list_invoices`, `get_invoice`, `get_unbilled_time` (BillingTools, `INVOICING`); DTOs. | **Done** (PR #1458) |
+| **564B** | 564B.1–564B.4 | ~8 backend files (2 tool classes + 1 resource + 3 DTOs + 1 test) | `list_compliance_gaps` (`CUSTOMER_MANAGEMENT`), `get_audit_events` (`TEAM_OVERSIGHT`); resource `kazi://firm-profile` (`AI_MANAGE`); DTOs. | **Done** (PR #1458) |
 
 ### Tasks
 

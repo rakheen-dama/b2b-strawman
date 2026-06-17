@@ -30,7 +30,7 @@ Phase 78 opens the second head on the same body: **Claude calls Kazi.** It ships
 | 562 | MCP Runtime + Transport + Auth Skeleton | Backend | -- | L | 562A, 562B, 562C | **Done** — 562A (PR #1454), 562B (PR #1455), 562C (PR #1456) |
 | 563 | Read Catalogue Batch 1 — Project-Access + Org-Wide Tools | Backend | 562 | L | 563A, 563B | **Done** — 563A, 563B (PR #1457) |
 | 564 | Read Catalogue Batch 2 — Capability-Gated Tools + Firm-Profile Resource | Backend | 562 (563 recommended) | L | 564A, 564B | **Done** — 564A, 564B (PR #1458) |
-| 565 | Enablement + POPIA Consent (Backend) | Backend | 562 | M | 565A, 565B | **Done** — 565A, 565B (PR #1459) |
+| 565 | Enablement + POPIA Consent (Backend) | Backend | 562 | M | 565A, 565B, 565C | 565A, 565B **Done** (PR #1459); 565C (REST controller) pending — see note below |
 | 566 | MCP Connector Settings Card (Frontend) | Frontend | 565 | M | 566A | |
 | 567 | Audit / Observability + Isolation / Read-Only Hardening | Backend | 562, 563, 564, 565 | M | 567A, 567B | |
 
@@ -381,6 +381,9 @@ A realistic cadence: 562A days 1–3 (milestone-risk spike), 562B days 3–5, 56
 |-------|-------|---------------|---------|
 | **565A** | 565A.1–565A.3 | ~4 backend files (1 migration + 1 entity + 1 repo + 1 test) | `V129` consent migration (append-only `mcp_egress_consents` + 2 indexes); `McpEgressConsent` entity (AiFirmProfile pattern); `McpEgressConsentRepository`; migration + round-trip tests. | **Done** (PR #1459) |
 | **565B** | 565B.1–565B.4 | ~6 backend files (1 enum modify + 1 consent service + 1 enablement service + 1 gate wiring + 1 test) | `IntegrationDomain.MCP("kazi")`; `McpConsentService` (append GRANTED/REVOKED, latest-decision); `McpEnablementService` (effective state); effective-state gate on every `tools/call` (non-leaking refusal). | **Done** (PR #1459) |
+| **565C** | 565C.1–565C.3 | ~2 backend files (1 controller + 1 test) + `McpEnablementService` (add `status()` + return DTO from enable/revoke) | `McpEnablementController` (`POST /api/integrations/mcp/enable`, `POST /api/integrations/mcp/revoke`, `GET /api/integrations/mcp/status`) — the HTTP surface the frontend (Epic 566) calls. Thin delegation to the existing 565B services; consent-first enable preserved. | |
+
+> **Note — 565C added 2026-06-17 (re-spec).** 565A/565B shipped the `McpEnablementService` / `McpConsentService` beans but **no REST controller**, so there is no HTTP endpoint for the frontend Epic 566 card to call enable/revoke/status. The generic `PATCH /api/integrations/{domain}/toggle` is unusable here because `IntegrationService.toggleIntegration` flips the flag **without recording POPIA consent**, defeating [ADR-305]'s consent-first invariant. 565C adds the missing thin HTTP adapter (no new business logic — delegates to the public 565B service methods). Authorized as an Epic 565 gap-fill so Epic 566 stays frontend-only.
 
 ### Tasks
 
@@ -393,6 +396,9 @@ A realistic cadence: 562A days 1–3 (milestone-risk spike), 562B days 3–5, 56
 | 565B.2 | Create `McpConsentService` | `backend/.../mcp/consent/McpConsentService.java` (new) | 565B.4 | Phase 72 `AiFirmProfileService` service pattern; `RequestScopes.requireMemberId()` | `@Service`. `grant(consentVersion)` appends a `GRANTED` row (consenting member from `RequestScopes`); `revoke()` appends a `REVOKED` row; `currentState()` returns latest-decision state. Used by the frontend server actions (Epic 566) and the enablement service. |
 | 565B.3 | Create `McpEnablementService` + wire effective-state gate | `backend/.../mcp/McpEnablementService.java` (new), `backend/.../mcp/tool/McpToolRegistry.java` (modify, from 562C) | 565B.4 | §11.5 effective state; `OrgIntegrationRepository.findByDomain(IntegrationDomain.MCP)` | `effectiveState()` = `OrgIntegration(domain=MCP).enabled == true` **AND** latest `mcp_egress_consents` row is `GRANTED`. Wire into every `tools/call`: if false, refuse with a **non-leaking** `McpError("not_enabled","the MCP connector is not enabled for this firm")` (no data, no member-existence, no matter-existence disclosure). `initialize` may still succeed. `enable(consentVersion)` (consent first, then `OrgIntegration.enable()` + `config_json`) and `revoke()` (`enabled=false` + append REVOKED) — re-checked per request so revoke takes effect on next call. |
 | 565B.4 | Integration tests — enablement + consent gate | `backend/src/test/java/io/b2mash/b2b/b2bstrawman/mcp/McpEnablementServiceTest.java` (new) | ~6 tests: (1) disabled tenant → non-leaking refusal at `tools/call`; (2) enabled + GRANTED → tool returns data; (3) enabled but no consent → refusal; (4) revoke → next `tools/call` refuses (no token-expiry wait); (5) consent append-only history preserved through enable/revoke/re-enable; (6) `initialize` succeeds even when disabled | 562C.4 pattern | |
+| 565C.1 | Add `status()` to `McpEnablementService` | `backend/src/main/java/io/b2mash/b2b/b2bstrawman/mcp/McpEnablementService.java` (modify) | `effectiveState()` + `McpConsentService.currentState()` already public | Add `status()` returning a `McpEnablementStatus` record (effectively-enabled flag, integration-enabled flag, server URL via `@Value("${kazi.mcp.resource-url:http://localhost:8080/mcp}")`, consent metadata). Keeps the controller a pure one-line delegate (no multi-service orchestration in the controller, per backend Controller Discipline). |
+| 565C.2 | Create `McpEnablementController` | `backend/src/main/java/io/b2mash/b2b/b2bstrawman/mcp/McpEnablementController.java` (new) | `IntegrationController` discipline + `@RequiresCapability` | `@RestController @RequestMapping("/api/integrations/mcp")`. `POST /enable` (body `{consentVersion}`, `@NotBlank`) → `service.enable(version)` → 204; `POST /revoke` → `service.revoke()` → 204; `GET /status` → `service.status()` → 200. Capability gate = same as sibling `IntegrationController` (verify: `TEAM_OVERSIGHT`). No `SecurityConfig` change (`/api/**` already JWT-protected). |
+| 565C.3 | Integration tests — controller | `backend/src/test/java/io/b2mash/b2b/b2bstrawman/mcp/McpEnablementControllerTest.java` (new) | ~5–6 tests, `IntegrationControllerTest` pattern | (1) GET /status disabled → 200, effectivelyEnabled=false, serverUrl present; (2) POST /enable then GET /status → enabled + consent GRANTED + version `popia-egress-v1` + consentedBy set; (3) POST /revoke then GET /status → effectivelyEnabled=false, consent action REVOKED; (4) enable with blank consentVersion → 400; (5) insufficient-capability role → 403; (6) cross-tenant isolation (tenant B sees its own disabled state). |
 
 ### Key Files
 
@@ -405,6 +411,13 @@ A realistic cadence: 562A days 1–3 (milestone-risk spike), 562B days 3–5, 56
 **Modify (backend):**
 - `backend/src/main/java/io/b2mash/b2b/b2bstrawman/integration/IntegrationDomain.java` — add `MCP("kazi")`
 - `backend/src/main/java/io/b2mash/b2b/b2bstrawman/mcp/tool/McpToolRegistry.java` — effective-state gate hook
+
+**Create (backend, 565C):**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/mcp/McpEnablementController.java`
+- `backend/src/test/java/io/b2mash/b2b/b2bstrawman/mcp/McpEnablementControllerTest.java`
+
+**Modify (backend, 565C):**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/mcp/McpEnablementService.java` — add `status()` + `McpEnablementStatus` record
 
 **Read for context:**
 - `backend/.../integration/OrgIntegration.java` (constructor, `enable()`, `config_json`), `OrgIntegrationRepository.java` (`findByDomain`)

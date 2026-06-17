@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegration;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegrationRepository;
 import io.b2mash.b2b.b2bstrawman.mcp.consent.McpConsentService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,11 +32,15 @@ public class McpEnablementService {
 
   private final OrgIntegrationRepository orgIntegrationRepository;
   private final McpConsentService consentService;
+  private final String resourceUrl;
 
   public McpEnablementService(
-      OrgIntegrationRepository orgIntegrationRepository, McpConsentService consentService) {
+      OrgIntegrationRepository orgIntegrationRepository,
+      McpConsentService consentService,
+      @Value("${kazi.mcp.resource-url:http://localhost:8080/mcp}") String resourceUrl) {
     this.orgIntegrationRepository = orgIntegrationRepository;
     this.consentService = consentService;
+    this.resourceUrl = resourceUrl;
   }
 
   /**
@@ -88,4 +93,35 @@ public class McpEnablementService {
             });
     consentService.revoke();
   }
+
+  /**
+   * Assembles the current per-tenant MCP enablement status for the settings UI (Epic 566). Returns
+   * the effective state, the raw {@link IntegrationDomain#MCP} enabled flag (so the UI can surface
+   * the "enabled-but-consent-revoked" edge), the connector's server URL, and the latest consent
+   * decision.
+   */
+  @Transactional(readOnly = true)
+  public McpEnablementStatus status() {
+    boolean integrationEnabled =
+        orgIntegrationRepository
+            .findByDomain(IntegrationDomain.MCP)
+            .map(OrgIntegration::isEnabled)
+            .orElse(false);
+    return new McpEnablementStatus(
+        effectiveState(), integrationEnabled, resourceUrl, consentService.currentState());
+  }
+
+  /**
+   * Settings-UI view of the connector's enablement state.
+   *
+   * @param effectivelyEnabled true when the integration is enabled AND consent is granted
+   * @param integrationEnabled the raw {@link IntegrationDomain#MCP} enabled flag alone
+   * @param serverUrl the MCP connector server URL
+   * @param consent the firm's latest POPIA data-egress consent decision
+   */
+  public record McpEnablementStatus(
+      boolean effectivelyEnabled,
+      boolean integrationEnabled,
+      String serverUrl,
+      McpConsentService.ConsentState consent) {}
 }

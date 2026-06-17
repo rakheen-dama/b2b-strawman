@@ -107,8 +107,9 @@ public class McpEnablementService {
             .findByDomain(IntegrationDomain.MCP)
             .map(OrgIntegration::isEnabled)
             .orElse(false);
-    return new McpEnablementStatus(
-        effectiveState(), integrationEnabled, resourceUrl, consentService.currentState());
+    McpConsentService.ConsentState consent = consentService.currentState();
+    boolean effectivelyEnabled = integrationEnabled && consent.granted();
+    return new McpEnablementStatus(effectivelyEnabled, integrationEnabled, resourceUrl, consent);
   }
 
   /**

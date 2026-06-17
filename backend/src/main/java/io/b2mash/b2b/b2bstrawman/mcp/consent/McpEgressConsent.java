@@ -15,7 +15,8 @@ import java.util.UUID;
  * decision to enable or disable LLM data egress is captured as a {@code GRANTED} / {@code REVOKED}
  * row; revoking never mutates a prior row — it inserts a new {@code REVOKED} record, so the table
  * is the firm's full consent audit trail. The "current" consent state is the newest row by {@code
- * consented_at} (see {@link McpEgressConsentRepository#findTopByOrderByConsentedAtDesc()}).
+ * consented_at} (see {@link
+ * McpEgressConsentRepository#findTopByOrderByConsentedAtDescCreatedAtDesc()}).
  *
  * <p>Mirrors the {@code AiFirmProfile} convention: hand-rolled UUID id via {@code @GeneratedValue},
  * {@code created_at} stamped in {@code @PrePersist}, protected no-arg constructor, domain-factory

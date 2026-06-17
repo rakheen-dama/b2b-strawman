@@ -10,9 +10,10 @@ CREATE TABLE IF NOT EXISTS mcp_egress_consents (
     created_at      timestamptz  NOT NULL DEFAULT now()
 );
 
--- Latest-decision lookup ("current consent state" = newest row by consented_at).
+-- Latest-decision lookup ("current consent state" = newest row by consented_at, tie-broken by
+-- created_at). Matches the repository ordering findTopByOrderByConsentedAtDescCreatedAtDesc().
 CREATE INDEX IF NOT EXISTS idx_mcp_egress_consents_consented_at
-    ON mcp_egress_consents (consented_at DESC);
+    ON mcp_egress_consents (consented_at DESC, created_at DESC);
 
 -- Per-member consent history (who consented, audit/POPIA reporting).
 CREATE INDEX IF NOT EXISTS idx_mcp_egress_consents_member

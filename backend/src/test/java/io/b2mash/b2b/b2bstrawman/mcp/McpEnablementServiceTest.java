@@ -179,7 +179,8 @@ class McpEnablementServiceTest {
           enablementService.enable(CONSENT_VERSION); // GRANTED
 
           assertThat(consentRepository.count()).isGreaterThanOrEqualTo(3);
-          var latest = consentRepository.findTopByOrderByConsentedAtDesc().orElseThrow();
+          var latest =
+              consentRepository.findTopByOrderByConsentedAtDescCreatedAtDesc().orElseThrow();
           assertThat(latest.isGranted()).isTrue();
           assertThat(enablementService.effectiveState()).isTrue();
         });

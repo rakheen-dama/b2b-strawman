@@ -187,8 +187,10 @@ public class IntegrationService {
           // MCP is the self-hosted Kazi connector — it has no external provider adapter to probe
           // (enablement is computed by McpEnablementService), so there is no connection to test.
           case MCP ->
-              throw new IllegalArgumentException(
-                  "The MCP connector has no external provider connection to test.");
+              throw new InvalidStateException(
+                  "Connection test not supported",
+                  "The MCP connector is self-hosted and has no external provider connection to"
+                      + " test.");
         };
 
     var integration = orgIntegrationRepository.findByDomain(domain);

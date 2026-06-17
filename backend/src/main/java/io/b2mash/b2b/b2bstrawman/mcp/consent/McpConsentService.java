@@ -41,7 +41,7 @@ public class McpConsentService {
   public McpEgressConsent revoke() {
     String version =
         repository
-            .findTopByOrderByConsentedAtDesc()
+            .findTopByOrderByConsentedAtDescCreatedAtDesc()
             .map(McpEgressConsent::getConsentVersion)
             .orElse(DEFAULT_CONSENT_VERSION);
     return repository.save(McpEgressConsent.revoke(RequestScopes.requireMemberId(), version));
@@ -51,7 +51,7 @@ public class McpConsentService {
   @Transactional(readOnly = true)
   public ConsentState currentState() {
     return repository
-        .findTopByOrderByConsentedAtDesc()
+        .findTopByOrderByConsentedAtDescCreatedAtDesc()
         .map(
             c ->
                 new ConsentState(
@@ -67,7 +67,7 @@ public class McpConsentService {
   @Transactional(readOnly = true)
   public boolean isCurrentlyGranted() {
     return repository
-        .findTopByOrderByConsentedAtDesc()
+        .findTopByOrderByConsentedAtDescCreatedAtDesc()
         .map(McpEgressConsent::isGranted)
         .orElse(false);
   }

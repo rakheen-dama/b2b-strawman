@@ -125,7 +125,8 @@ class McpEgressConsentTest {
                   var revoked =
                       repository.saveAndFlush(McpEgressConsent.revoke(memberId, "popia-egress-v1"));
 
-                  var latest = repository.findTopByOrderByConsentedAtDesc().orElseThrow();
+                  var latest =
+                      repository.findTopByOrderByConsentedAtDescCreatedAtDesc().orElseThrow();
                   assertThat(latest.getId()).isEqualTo(revoked.getId());
                   assertThat(latest.getAction()).isEqualTo("REVOKED");
                   assertThat(latest.isGranted()).isFalse();
@@ -134,7 +135,7 @@ class McpEgressConsentTest {
 
   private static void sleepMillis() {
     try {
-      Thread.sleep(2);
+      Thread.sleep(10);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }

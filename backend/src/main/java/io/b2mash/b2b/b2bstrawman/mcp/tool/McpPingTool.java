@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.stereotype.Component;
@@ -29,9 +30,9 @@ public class McpPingTool {
   @McpTool(
       name = "kazi_ping",
       description = "Health probe — returns 'ok'. Proves the read-only tool surface is wired.")
-  public String ping() {
+  public Object ping() {
     if (!enablement.effectiveState()) {
-      return objectMapper.writeValueAsString(McpError.notEnabled());
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
     return "ok";
   }

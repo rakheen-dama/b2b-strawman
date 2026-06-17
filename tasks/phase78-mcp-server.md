@@ -30,7 +30,7 @@ Phase 78 opens the second head on the same body: **Claude calls Kazi.** It ships
 | 562 | MCP Runtime + Transport + Auth Skeleton | Backend | -- | L | 562A, 562B, 562C | **Done** — 562A (PR #1454), 562B (PR #1455), 562C (PR #1456) |
 | 563 | Read Catalogue Batch 1 — Project-Access + Org-Wide Tools | Backend | 562 | L | 563A, 563B | **Done** — 563A, 563B (PR #1457) |
 | 564 | Read Catalogue Batch 2 — Capability-Gated Tools + Firm-Profile Resource | Backend | 562 (563 recommended) | L | 564A, 564B | **Done** — 564A, 564B (PR #1458) |
-| 565 | Enablement + POPIA Consent (Backend) | Backend | 562 | M | 565A, 565B | |
+| 565 | Enablement + POPIA Consent (Backend) | Backend | 562 | M | 565A, 565B | **Done** — 565A, 565B (PR #1459) |
 | 566 | MCP Connector Settings Card (Frontend) | Frontend | 565 | M | 566A | |
 | 567 | Audit / Observability + Isolation / Read-Only Hardening | Backend | 562, 563, 564, 565 | M | 567A, 567B | |
 
@@ -137,8 +137,8 @@ Predecessors already complete:
 | 2b | **563B** | ✅ **Done** (PR #1457). Tool `get_matter_activity` + resources `kazi://matter/{id}`, `kazi://client/{id}`; activity DTO; project-access gating; integration tests. | 564B, 565B |
 | 2c | **564A** | ✅ **Done** (PR #1458). Tools `get_trust_balance`, `list_trust_transactions`, `list_invoices`, `get_invoice`, `get_unbilled_time` + DTOs; `VIEW_TRUST` (+ trust module-gate tolerance) + `INVOICING` gating; integration tests. | 563A, 565A |
 | 2d | **564B** | ✅ **Done** (PR #1458). Tools `list_compliance_gaps`, `get_audit_events` + resource `kazi://firm-profile` (`AI_MANAGE` gate) + DTOs; `CUSTOMER_MANAGEMENT` + `TEAM_OVERSIGHT` gating; integration tests. | 563B, 565B |
-| 2e | **565A** | `V129` consent migration + `mcp/consent/McpEgressConsent` entity (AiFirmProfile pattern) + `McpEgressConsentRepository`; migration + entity round-trip tests. | 563A, 564A |
-| 2f | **565B** | `IntegrationDomain.MCP("kazi")` constant; `McpConsentService` (append GRANTED/REVOKED, latest-decision lookup); `McpEnablementService` (effective state = `OrgIntegration.enabled` AND latest consent GRANTED); wire effective-state gate into every `tools/call` (non-leaking refusal); tests. | 563B, 564B |
+| 2e | **565A** | ✅ **Done** (PR #1459). `V129` consent migration + `mcp/consent/McpEgressConsent` entity (AiFirmProfile pattern) + `McpEgressConsentRepository`; migration + entity round-trip tests. | 563A, 564A |
+| 2f | **565B** | ✅ **Done** (PR #1459). `IntegrationDomain.MCP("kazi")` constant; `McpConsentService` (append GRANTED/REVOKED, latest-decision lookup); `McpEnablementService` (effective state = `OrgIntegration.enabled` AND latest consent GRANTED); per-tool/per-resource effective-state gate (inline guard — orchestrator-approved; Spring AI 2.0.0-M6 has no tool-call interceptor); tests. | 563B, 564B |
 
 ### Stage 3 — Frontend Settings Card (after 565)
 
@@ -379,8 +379,8 @@ A realistic cadence: 562A days 1–3 (milestone-risk spike), 562B days 3–5, 56
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **565A** | 565A.1–565A.3 | ~4 backend files (1 migration + 1 entity + 1 repo + 1 test) | `V129` consent migration (append-only `mcp_egress_consents` + 2 indexes); `McpEgressConsent` entity (AiFirmProfile pattern); `McpEgressConsentRepository`; migration + round-trip tests. | |
-| **565B** | 565B.1–565B.4 | ~6 backend files (1 enum modify + 1 consent service + 1 enablement service + 1 gate wiring + 1 test) | `IntegrationDomain.MCP("kazi")`; `McpConsentService` (append GRANTED/REVOKED, latest-decision); `McpEnablementService` (effective state); effective-state gate on every `tools/call` (non-leaking refusal). | |
+| **565A** | 565A.1–565A.3 | ~4 backend files (1 migration + 1 entity + 1 repo + 1 test) | `V129` consent migration (append-only `mcp_egress_consents` + 2 indexes); `McpEgressConsent` entity (AiFirmProfile pattern); `McpEgressConsentRepository`; migration + round-trip tests. | **Done** (PR #1459) |
+| **565B** | 565B.1–565B.4 | ~6 backend files (1 enum modify + 1 consent service + 1 enablement service + 1 gate wiring + 1 test) | `IntegrationDomain.MCP("kazi")`; `McpConsentService` (append GRANTED/REVOKED, latest-decision); `McpEnablementService` (effective state); effective-state gate on every `tools/call` (non-leaking refusal). | **Done** (PR #1459) |
 
 ### Tasks
 

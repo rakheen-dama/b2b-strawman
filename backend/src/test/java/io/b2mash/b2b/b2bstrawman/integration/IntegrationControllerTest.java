@@ -78,12 +78,12 @@ class IntegrationControllerTest {
 
   @Test
   @Order(1)
-  void listIntegrations_returnsAllFiveDomains() throws Exception {
+  void listIntegrations_returnsAllDomains() throws Exception {
     mockMvc
         .perform(
             get("/api/integrations").with(TestJwtFactory.ownerJwt(ORG_ID, "user_intctrl_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(6)))
+        .andExpect(jsonPath("$", hasSize(7)))
         .andExpect(jsonPath("$[0].domain").value("ACCOUNTING"))
         .andExpect(jsonPath("$[0].providerSlug").value(nullValue()))
         .andExpect(jsonPath("$[0].enabled").value(false))
@@ -91,7 +91,8 @@ class IntegrationControllerTest {
         .andExpect(jsonPath("$[2].domain").value("DOCUMENT_SIGNING"))
         .andExpect(jsonPath("$[3].domain").value("EMAIL"))
         .andExpect(jsonPath("$[4].domain").value("KYC_VERIFICATION"))
-        .andExpect(jsonPath("$[5].domain").value("PAYMENT"));
+        .andExpect(jsonPath("$[5].domain").value("MCP"))
+        .andExpect(jsonPath("$[6].domain").value("PAYMENT"));
   }
 
   @Test
@@ -124,7 +125,7 @@ class IntegrationControllerTest {
         .perform(
             get("/api/integrations").with(TestJwtFactory.adminJwt(ORG_ID, "user_intctrl_admin")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(6)));
+        .andExpect(jsonPath("$", hasSize(7)));
   }
 
   @Test

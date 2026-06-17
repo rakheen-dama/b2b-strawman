@@ -76,7 +76,10 @@ class McpEnablementControllerTest {
                     """
                     {"consentVersion": ""}
                     """))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").isNotEmpty())
+        .andExpect(jsonPath("$.detail").isNotEmpty());
   }
 
   @Test
@@ -86,7 +89,10 @@ class McpEnablementControllerTest {
         .perform(
             get("/api/integrations/mcp/status")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_mcpctrl_member")))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").isNotEmpty())
+        .andExpect(jsonPath("$.detail").isNotEmpty());
   }
 
   @Test

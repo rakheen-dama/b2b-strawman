@@ -9,12 +9,14 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
+import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -28,6 +30,7 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -64,6 +67,8 @@ class CatalogueBatch1ToolsTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ObjectMapper objectMapper;
   @Autowired private AuditEventRepository auditEventRepository;
+  @Autowired private McpEnablementService enablementService;
+  @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
 
@@ -77,12 +82,26 @@ class CatalogueBatch1ToolsTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "MCP Batch1 Test Org", null);
-    TestMemberHelper.syncMember(mockMvc, ORG_ID, "user_owner", "owner@test.com", "Owner", "owner");
+    UUID ownerMemberId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_owner", "owner@test.com", "Owner", "owner"));
     String memberId =
         TestMemberHelper.syncMember(
             mockMvc, ORG_ID, "user_member", "member@test.com", "Member", "member");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+
+    // 565B: enable the MCP connector (records POPIA consent + enables the integration) so the
+    // catalogue tools exercise the happy path past the effective-state gate.
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, ownerMemberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> enablementService.enable("popia-egress-v1")));
 
     JwtRequestPostProcessor owner = TestJwtFactory.ownerJwt(ORG_ID, "user_owner");
 

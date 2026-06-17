@@ -39,6 +39,10 @@ public class IntegrationGuardService {
                       case ACCOUNTING -> s.isAccountingEnabled();
                       case AI -> s.isAiEnabled();
                       case DOCUMENT_SIGNING -> s.isDocumentSigningEnabled();
+                      // MCP is NOT gated via OrgSettings flags — its enablement is computed by
+                      // McpEnablementService (OrgIntegration + POPIA consent), so this guard never
+                      // grants it.
+                      case MCP -> false;
                       case EMAIL -> true; // unreachable due to early return
                       case KYC_VERIFICATION -> true; // unreachable due to early return
                       case PAYMENT -> true; // unreachable due to early return

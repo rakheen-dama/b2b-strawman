@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
@@ -37,12 +38,17 @@ public class MatterTools {
   private final ProjectService projectService;
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
+  private final McpEnablementService enablement;
 
   public MatterTools(
-      ProjectService projectService, AuditService auditService, ObjectMapper objectMapper) {
+      ProjectService projectService,
+      AuditService auditService,
+      ObjectMapper objectMapper,
+      McpEnablementService enablement) {
     this.projectService = projectService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
+    this.enablement = enablement;
   }
 
   @McpTool(
@@ -59,6 +65,9 @@ public class MatterTools {
           String status,
       @McpToolParam(required = false, description = "Filter to matters linked to this client id.")
           UUID customerId) {
+    if (!enablement.effectiveState()) {
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
     var actor = ActorContext.fromRequestScopes();
     // ALWAYS use the 6-arg filtered overload (the (ActorContext) overload returns a different
     // type). No saved-view (view=null) and no custom-field/tag filtering exposed via MCP
@@ -87,6 +96,9 @@ public class MatterTools {
           "Fetch one matter (project) by id, including your role on it. Returns a non-leaking"
               + " not-found error if the matter does not exist OR you cannot access it.")
   public Object getMatter(@McpToolParam(description = "Matter (project) id.") UUID id) {
+    if (!enablement.effectiveState()) {
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
     var actor = ActorContext.fromRequestScopes();
     try {
       var withRole = projectService.getProject(id, actor);

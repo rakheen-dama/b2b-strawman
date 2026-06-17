@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
@@ -33,10 +34,13 @@ public class AuditTools {
 
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
+  private final McpEnablementService enablement;
 
-  public AuditTools(AuditService auditService, ObjectMapper objectMapper) {
+  public AuditTools(
+      AuditService auditService, ObjectMapper objectMapper, McpEnablementService enablement) {
     this.auditService = auditService;
     this.objectMapper = objectMapper;
+    this.enablement = enablement;
   }
 
   @McpTool(
@@ -58,6 +62,9 @@ public class AuditTools {
       @McpToolParam(required = false, description = "Zero-based page index (default 0).") int page,
       @McpToolParam(required = false, description = "Page size, capped at 200 (default 50).")
           int size) {
+    if (!enablement.effectiveState()) {
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
     if (!RequestScopes.hasCapability(CAP_TEAM_OVERSIGHT)) {
       McpToolAudit.emitDenied("get_audit_events", auditService);
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);

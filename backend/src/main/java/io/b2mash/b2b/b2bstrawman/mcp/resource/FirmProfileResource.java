@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.mcp.resource;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfileService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpFirmProfileDto;
@@ -31,14 +32,17 @@ public class FirmProfileResource {
   private final AiFirmProfileService aiFirmProfileService;
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
+  private final McpEnablementService enablement;
 
   public FirmProfileResource(
       AiFirmProfileService aiFirmProfileService,
       AuditService auditService,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      McpEnablementService enablement) {
     this.aiFirmProfileService = aiFirmProfileService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
+    this.enablement = enablement;
   }
 
   @McpResource(
@@ -49,6 +53,9 @@ public class FirmProfileResource {
               + " house-style / fee-estimation notes. Requires the AI_MANAGE capability.",
       mimeType = "application/json")
   public String firmProfile() {
+    if (!enablement.effectiveState()) {
+      return objectMapper.writeValueAsString(McpError.notEnabled());
+    }
     if (!RequestScopes.hasCapability(CAP_AI_MANAGE)) {
       McpToolAudit.emitDenied("kazi://firm-profile", auditService);
       return objectMapper.writeValueAsString(McpError.forbidden());

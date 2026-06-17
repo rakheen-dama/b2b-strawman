@@ -10,6 +10,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -70,6 +71,7 @@ class CatalogueBatch2TrustBillingTest {
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private CustomerRepository customerRepository;
+  @Autowired private McpEnablementService enablementService;
 
   private String tenantSchema;
   private String trustAccountId;
@@ -106,6 +108,10 @@ class CatalogueBatch2TrustBillingTest {
                       }
                       settings.setEnabledModules(modules);
                       orgSettingsRepository.save(settings);
+
+                      // 565B: enable the MCP connector so the catalogue tools pass the
+                      // effective-state gate (consent recorded + integration enabled).
+                      enablementService.enable("popia-egress-v1");
 
                       // Invoice creation needs an ACTIVE customer with billing prerequisite
                       // fields — the API helper only makes a bare PROSPECT, which fails 422.
@@ -163,8 +169,27 @@ class CatalogueBatch2TrustBillingTest {
 
     // ---- Non-legal tenant: trust module NOT enabled ----
     provisioningService.provisionTenant(NON_LEGAL_ORG_ID, "MCP Batch2 NonLegal Org", null);
-    TestMemberHelper.syncMember(
-        mockMvc, NON_LEGAL_ORG_ID, "user_nl_owner", "nlowner@test.com", "NL Owner", "owner");
+    UUID nlOwnerMemberId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                NON_LEGAL_ORG_ID,
+                "user_nl_owner",
+                "nlowner@test.com",
+                "NL Owner",
+                "owner"));
+    String nonLegalSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(NON_LEGAL_ORG_ID).orElseThrow().getSchemaName();
+    // 565B: enable the MCP connector on the non-legal tenant too, so the trust tool reaches its
+    // module-disabled check (not the connector-not-enabled gate).
+    ScopedValue.where(RequestScopes.TENANT_ID, nonLegalSchema)
+        .where(RequestScopes.ORG_ID, NON_LEGAL_ORG_ID)
+        .where(RequestScopes.MEMBER_ID, nlOwnerMemberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> enablementService.enable("popia-egress-v1")));
   }
 
   // ---- JSON-RPC harness helpers ---------------------------------------------

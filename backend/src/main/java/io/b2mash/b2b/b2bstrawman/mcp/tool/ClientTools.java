@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
@@ -42,16 +43,19 @@ public class ClientTools {
   private final CustomerProjectService customerProjectService;
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
+  private final McpEnablementService enablement;
 
   public ClientTools(
       CustomerService customerService,
       CustomerProjectService customerProjectService,
       AuditService auditService,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      McpEnablementService enablement) {
     this.customerService = customerService;
     this.customerProjectService = customerProjectService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
+    this.enablement = enablement;
   }
 
   @McpTool(
@@ -68,6 +72,9 @@ public class ClientTools {
               required = false,
               description = "Filter by lifecycle status short enum name, e.g. ACTIVE.")
           String lifecycleStatus) {
+    if (!enablement.effectiveState()) {
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
     LifecycleStatus parsed;
     try {
       // Normalize LLM input (lowercase/whitespace) before the strict enum parse.
@@ -103,6 +110,9 @@ public class ClientTools {
           "Fetch one client (customer) by id, including its contact details and the matters linked"
               + " to it. Returns a non-leaking not-found error if the client does not exist.")
   public Object getClient(@McpToolParam(description = "Client (customer) id.") UUID id) {
+    if (!enablement.effectiveState()) {
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
     var actor = ActorContext.fromRequestScopes();
     try {
       var customer = customerService.getCustomer(id);

@@ -54,4 +54,14 @@ public record McpError(String error, String message) {
   public static McpError moduleDisabled(String what) {
     return new McpError("module_disabled", what + " is not enabled for this firm.");
   }
+
+  /**
+   * Connector-not-enabled error — the firm has not opted into the Kazi MCP connector (no enabled
+   * {@code MCP} integration, or POPIA data-egress consent is absent/revoked). Returned (never
+   * thrown) as the FIRST check on every tool/resource read so that, when consent is missing, no
+   * firm data — and no data/member/matter existence — is disclosed to the LLM.
+   */
+  public static McpError notEnabled() {
+    return new McpError("not_enabled", "the MCP connector is not enabled for this firm");
+  }
 }

@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceService;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
@@ -31,16 +32,19 @@ public class ComplianceTools {
   private final ChecklistInstanceService checklistInstanceService;
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
+  private final McpEnablementService enablement;
 
   public ComplianceTools(
       InformationRequestService informationRequestService,
       ChecklistInstanceService checklistInstanceService,
       AuditService auditService,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      McpEnablementService enablement) {
     this.informationRequestService = informationRequestService;
     this.checklistInstanceService = checklistInstanceService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
+    this.enablement = enablement;
   }
 
   @McpTool(
@@ -52,6 +56,9 @@ public class ComplianceTools {
               + " client does not exist. Requires the CUSTOMER_MANAGEMENT capability.")
   public Object listComplianceGaps(
       @McpToolParam(description = "Client (customer) id.") UUID customerId) {
+    if (!enablement.effectiveState()) {
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
     if (!RequestScopes.hasCapability(CAP_CUSTOMER_MANAGEMENT)) {
       McpToolAudit.emitDenied("list_compliance_gaps", auditService);
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);

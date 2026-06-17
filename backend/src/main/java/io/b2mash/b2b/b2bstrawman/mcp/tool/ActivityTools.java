@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.mcp.tool;
 import io.b2mash.b2b.b2bstrawman.activity.ActivityService;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
@@ -35,12 +36,17 @@ public class ActivityTools {
   private final ActivityService activityService;
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
+  private final McpEnablementService enablement;
 
   public ActivityTools(
-      ActivityService activityService, AuditService auditService, ObjectMapper objectMapper) {
+      ActivityService activityService,
+      AuditService auditService,
+      ObjectMapper objectMapper,
+      McpEnablementService enablement) {
     this.activityService = activityService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
+    this.enablement = enablement;
   }
 
   @McpTool(
@@ -54,6 +60,9 @@ public class ActivityTools {
       @McpToolParam(required = false, description = "Zero-based page index (default 0).") int page,
       @McpToolParam(required = false, description = "Page size, capped at 50 (default 50).")
           int size) {
+    if (!enablement.effectiveState()) {
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
     var actor = ActorContext.fromRequestScopes();
     int clampedSize = McpPagination.clampSize(size, McpPagination.DEFAULT_MAX_SIZE);
     int clampedPage = Math.max(page, 0);

@@ -30,7 +30,7 @@ Phase 78 opens the second head on the same body: **Claude calls Kazi.** It ships
 | 562 | MCP Runtime + Transport + Auth Skeleton | Backend | -- | L | 562A, 562B, 562C | **Done** — 562A (PR #1454), 562B (PR #1455), 562C (PR #1456) |
 | 563 | Read Catalogue Batch 1 — Project-Access + Org-Wide Tools | Backend | 562 | L | 563A, 563B | **Done** — 563A, 563B (PR #1457) |
 | 564 | Read Catalogue Batch 2 — Capability-Gated Tools + Firm-Profile Resource | Backend | 562 (563 recommended) | L | 564A, 564B | **Done** — 564A, 564B (PR #1458) |
-| 565 | Enablement + POPIA Consent (Backend) | Backend | 562 | M | 565A, 565B, 565C | 565A, 565B **Done** (PR #1459); 565C (REST controller) pending — see note below |
+| 565 | Enablement + POPIA Consent (Backend) | Backend | 562 | M | 565A, 565B, 565C | **Done** — 565A, 565B (PR #1459); 565C (PR #1460) |
 | 566 | MCP Connector Settings Card (Frontend) | Frontend | 565 | M | 566A | |
 | 567 | Audit / Observability + Isolation / Read-Only Hardening | Backend | 562, 563, 564, 565 | M | 567A, 567B | |
 
@@ -381,9 +381,9 @@ A realistic cadence: 562A days 1–3 (milestone-risk spike), 562B days 3–5, 56
 |-------|-------|---------------|---------|
 | **565A** | 565A.1–565A.3 | ~4 backend files (1 migration + 1 entity + 1 repo + 1 test) | `V129` consent migration (append-only `mcp_egress_consents` + 2 indexes); `McpEgressConsent` entity (AiFirmProfile pattern); `McpEgressConsentRepository`; migration + round-trip tests. | **Done** (PR #1459) |
 | **565B** | 565B.1–565B.4 | ~6 backend files (1 enum modify + 1 consent service + 1 enablement service + 1 gate wiring + 1 test) | `IntegrationDomain.MCP("kazi")`; `McpConsentService` (append GRANTED/REVOKED, latest-decision); `McpEnablementService` (effective state); effective-state gate on every `tools/call` (non-leaking refusal). | **Done** (PR #1459) |
-| **565C** | 565C.1–565C.3 | ~2 backend files (1 controller + 1 test) + `McpEnablementService` (add `status()` + return DTO from enable/revoke) | `McpEnablementController` (`POST /api/integrations/mcp/enable`, `POST /api/integrations/mcp/revoke`, `GET /api/integrations/mcp/status`) — the HTTP surface the frontend (Epic 566) calls. Thin delegation to the existing 565B services; consent-first enable preserved. | |
+| **565C** | 565C.1–565C.3 | ~2 backend files (1 controller + 1 test) + `McpEnablementService` (add `status()` + return DTO from enable/revoke) | `McpEnablementController` (`POST /api/integrations/mcp/enable`, `POST /api/integrations/mcp/revoke`, `GET /api/integrations/mcp/status`) — the HTTP surface the frontend (Epic 566) calls. Thin delegation to the existing 565B services; consent-first enable preserved. | **Done** (PR #1460) |
 
-> **Note — 565C added 2026-06-17 (re-spec).** 565A/565B shipped the `McpEnablementService` / `McpConsentService` beans but **no REST controller**, so there is no HTTP endpoint for the frontend Epic 566 card to call enable/revoke/status. The generic `PATCH /api/integrations/{domain}/toggle` is unusable here because `IntegrationService.toggleIntegration` flips the flag **without recording POPIA consent**, defeating [ADR-305]'s consent-first invariant. 565C adds the missing thin HTTP adapter (no new business logic — delegates to the public 565B service methods). Authorized as an Epic 565 gap-fill so Epic 566 stays frontend-only.
+> **Note — 565C added 2026-06-17 (re-spec), Done 2026-06-18 (PR #1460).** 565A/565B shipped the `McpEnablementService` / `McpConsentService` beans but **no REST controller**, so there is no HTTP endpoint for the frontend Epic 566 card to call enable/revoke/status. The generic `PATCH /api/integrations/{domain}/toggle` is unusable here because `IntegrationService.toggleIntegration` flips the flag **without recording POPIA consent**, defeating [ADR-305]'s consent-first invariant. 565C adds the missing thin HTTP adapter (no new business logic — delegates to the public 565B service methods). Authorized as an Epic 565 gap-fill so Epic 566 stays frontend-only.
 
 ### Tasks
 

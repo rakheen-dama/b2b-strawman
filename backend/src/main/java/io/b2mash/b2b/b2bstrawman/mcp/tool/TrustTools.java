@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.mcp.tool;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ModuleNotEnabledException;
 import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
+import io.b2mash.b2b.b2bstrawman.mcp.McpCapabilityGuard;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
@@ -12,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpTrustBalanceDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpTrustTransactionItem;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import java.util.UUID;
@@ -79,45 +79,46 @@ public class TrustTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
-    long startNanos = System.nanoTime();
-    if (!RequestScopes.hasCapability(CAP_VIEW_TRUST)) {
-      McpToolAudit.emitDenied(
-          "get_trust_balance",
-          CAP_VIEW_TRUST,
-          auditService,
-          metrics,
-          McpToolAudit.elapsed(startNanos));
-      return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
-    }
-    try {
-      String currency = orgSettingsService.getDefaultCurrency();
-      McpTrustBalanceDto dto;
-      if (customerId != null) {
-        var card = clientLedgerService.getClientLedger(customerId, trustAccountId);
-        dto =
-            new McpTrustBalanceDto(
-                trustAccountId,
-                customerId,
-                card.balance().movePointRight(2).longValueExact(),
-                currency);
-      } else {
-        var total = clientLedgerService.getTotalTrustBalance(trustAccountId);
-        dto =
-            new McpTrustBalanceDto(
-                trustAccountId, null, total.balance().movePointRight(2).longValueExact(), currency);
-      }
-      var meta =
-          McpAuditMetadata.builder()
-              .rowCount(1)
-              .entityRef(trustAccountId)
-              .entityRef(customerId)
-              .build();
-      McpToolAudit.emitInvoked(
-          "get_trust_balance", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
-      return dto;
-    } catch (ModuleNotEnabledException e) {
-      return McpToolErrors.asResult(McpError.moduleDisabled(TRUST_MODULE), objectMapper);
-    }
+    return McpCapabilityGuard.gatedTool(
+        CAP_VIEW_TRUST,
+        "get_trust_balance",
+        auditService,
+        metrics,
+        objectMapper,
+        startNanos -> {
+          try {
+            String currency = orgSettingsService.getDefaultCurrency();
+            McpTrustBalanceDto dto;
+            if (customerId != null) {
+              var card = clientLedgerService.getClientLedger(customerId, trustAccountId);
+              dto =
+                  new McpTrustBalanceDto(
+                      trustAccountId,
+                      customerId,
+                      card.balance().movePointRight(2).longValueExact(),
+                      currency);
+            } else {
+              var total = clientLedgerService.getTotalTrustBalance(trustAccountId);
+              dto =
+                  new McpTrustBalanceDto(
+                      trustAccountId,
+                      null,
+                      total.balance().movePointRight(2).longValueExact(),
+                      currency);
+            }
+            var meta =
+                McpAuditMetadata.builder()
+                    .rowCount(1)
+                    .entityRef(trustAccountId)
+                    .entityRef(customerId)
+                    .build();
+            McpToolAudit.emitInvoked(
+                "get_trust_balance", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
+            return dto;
+          } catch (ModuleNotEnabledException e) {
+            return McpToolErrors.asResult(McpError.moduleDisabled(TRUST_MODULE), objectMapper);
+          }
+        });
   }
 
   @McpTool(
@@ -135,45 +136,47 @@ public class TrustTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
-    long startNanos = System.nanoTime();
-    if (!RequestScopes.hasCapability(CAP_VIEW_TRUST)) {
-      McpToolAudit.emitDenied(
-          "list_trust_transactions",
-          CAP_VIEW_TRUST,
-          auditService,
-          metrics,
-          McpToolAudit.elapsed(startNanos));
-      return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
-    }
-    int clampedSize = McpPagination.clampSize(size, McpPagination.DEFAULT_MAX_SIZE);
-    int clampedPage = Math.max(page, 0);
-    try {
-      String currency = orgSettingsService.getDefaultCurrency();
-      var txPage =
-          clientLedgerService.getClientTransactionHistory(
-              customerId, trustAccountId, PageRequest.of(clampedPage, clampedSize));
-      var items =
-          txPage.getContent().stream()
-              .map(tx -> McpTrustTransactionItem.from(tx, currency))
-              .toList();
-      McpPage<McpTrustTransactionItem> result =
-          McpPage.of(
-              items,
-              txPage.getNumber(),
-              txPage.getSize(),
-              txPage.getTotalElements(),
-              txPage.hasNext());
-      var meta =
-          McpAuditMetadata.builder()
-              .rowCount(items.size())
-              .entityRef(trustAccountId)
-              .entityRef(customerId)
-              .build();
-      McpToolAudit.emitInvoked(
-          "list_trust_transactions", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
-      return result;
-    } catch (ModuleNotEnabledException e) {
-      return McpToolErrors.asResult(McpError.moduleDisabled(TRUST_MODULE), objectMapper);
-    }
+    return McpCapabilityGuard.gatedTool(
+        CAP_VIEW_TRUST,
+        "list_trust_transactions",
+        auditService,
+        metrics,
+        objectMapper,
+        startNanos -> {
+          int clampedSize = McpPagination.clampSize(size, McpPagination.DEFAULT_MAX_SIZE);
+          int clampedPage = Math.max(page, 0);
+          try {
+            String currency = orgSettingsService.getDefaultCurrency();
+            var txPage =
+                clientLedgerService.getClientTransactionHistory(
+                    customerId, trustAccountId, PageRequest.of(clampedPage, clampedSize));
+            var items =
+                txPage.getContent().stream()
+                    .map(tx -> McpTrustTransactionItem.from(tx, currency))
+                    .toList();
+            McpPage<McpTrustTransactionItem> result =
+                McpPage.of(
+                    items,
+                    txPage.getNumber(),
+                    txPage.getSize(),
+                    txPage.getTotalElements(),
+                    txPage.hasNext());
+            var meta =
+                McpAuditMetadata.builder()
+                    .rowCount(items.size())
+                    .entityRef(trustAccountId)
+                    .entityRef(customerId)
+                    .build();
+            McpToolAudit.emitInvoked(
+                "list_trust_transactions",
+                meta,
+                auditService,
+                metrics,
+                McpToolAudit.elapsed(startNanos));
+            return result;
+          } catch (ModuleNotEnabledException e) {
+            return McpToolErrors.asResult(McpError.moduleDisabled(TRUST_MODULE), objectMapper);
+          }
+        });
   }
 }

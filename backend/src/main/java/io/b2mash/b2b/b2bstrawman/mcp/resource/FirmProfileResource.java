@@ -3,12 +3,12 @@ package io.b2mash.b2b.b2bstrawman.mcp.resource;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfileService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
+import io.b2mash.b2b.b2bstrawman.mcp.McpCapabilityGuard;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpFirmProfileDto;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import org.springframework.ai.mcp.annotation.McpResource;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
@@ -61,20 +61,18 @@ public class FirmProfileResource {
     if (!enablement.effectiveState()) {
       return objectMapper.writeValueAsString(McpError.notEnabled());
     }
-    long startNanos = System.nanoTime();
-    if (!RequestScopes.hasCapability(CAP_AI_MANAGE)) {
-      McpToolAudit.emitDenied(
-          "kazi://firm-profile",
-          CAP_AI_MANAGE,
-          auditService,
-          metrics,
-          McpToolAudit.elapsed(startNanos));
-      return objectMapper.writeValueAsString(McpError.forbidden());
-    }
-    var profile = aiFirmProfileService.getOrCreateProfile();
-    var meta = McpAuditMetadata.builder().rowCount(1).build();
-    McpToolAudit.emitInvoked(
-        "kazi://firm-profile", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
-    return objectMapper.writeValueAsString(McpFirmProfileDto.from(profile));
+    return McpCapabilityGuard.gatedResource(
+        CAP_AI_MANAGE,
+        "kazi://firm-profile",
+        auditService,
+        metrics,
+        objectMapper,
+        startNanos -> {
+          var profile = aiFirmProfileService.getOrCreateProfile();
+          var meta = McpAuditMetadata.builder().rowCount(1).build();
+          McpToolAudit.emitInvoked(
+              "kazi://firm-profile", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
+          return objectMapper.writeValueAsString(McpFirmProfileDto.from(profile));
+        });
   }
 }

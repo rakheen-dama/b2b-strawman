@@ -31,7 +31,7 @@ Phase 78 opens the second head on the same body: **Claude calls Kazi.** It ships
 | 563 | Read Catalogue Batch 1 — Project-Access + Org-Wide Tools | Backend | 562 | L | 563A, 563B | **Done** — 563A, 563B (PR #1457) |
 | 564 | Read Catalogue Batch 2 — Capability-Gated Tools + Firm-Profile Resource | Backend | 562 (563 recommended) | L | 564A, 564B | **Done** — 564A, 564B (PR #1458) |
 | 565 | Enablement + POPIA Consent (Backend) | Backend | 562 | M | 565A, 565B, 565C | **Done** — 565A, 565B (PR #1459); 565C (PR #1460) |
-| 566 | MCP Connector Settings Card (Frontend) | Frontend | 565 | M | 566A | |
+| 566 | MCP Connector Settings Card (Frontend) | Frontend | 565 | M | 566A | **Done** (PR #1461) |
 | 567 | Audit / Observability + Isolation / Read-Only Hardening | Backend | 562, 563, 564, 565 | M | 567A, 567B | |
 
 **Slice count: 12** (5 architecture capability slices S1–S5 expanded to 6 epics / 12 numbered slices to enforce the 6–12 files / ~800 LOC slice budget; S1→Epic 562 split into 3 slices; S2→Epic 563; S3→Epic 564; S4 split into backend Epic 565 + frontend Epic 566; S5→Epic 567).
@@ -144,7 +144,7 @@ Predecessors already complete:
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 3a | **566A** | `integrations/mcp/page.tsx` "Claude / MCP Connector" card (status, server URL, connection instructions for Claude Desktop/Code, consent metadata, revoke); `integrations/mcp/actions.ts` (`enableMcpAction`, `revokeMcpAction`, `getMcpStatusAction`); link the card on the integrations hub `page.tsx`; unit tests. |
+| 3a | **566A** | ✅ **Done** (PR #1461). `integrations/mcp/page.tsx` "Claude / MCP Connector" card (status, server URL, connection instructions for Claude Desktop/Code, consent metadata, revoke); `integrations/mcp/actions.ts` (`enableMcpAction`, `revokeMcpAction`, `getMcpStatusAction`); link the card on the integrations hub `page.tsx`; unit tests. |
 
 ### Stage 4 — Convergence: Audit/Observability + Hardening (after 562–565)
 
@@ -453,7 +453,7 @@ A realistic cadence: 562A days 1–3 (milestone-risk spike), 562B days 3–5, 56
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **566A** | 566.1–566.6 | `integrations/mcp/page.tsx` connector card (status, server URL, connection instructions, consent metadata, revoke); `integrations/mcp/actions.ts` (enable/revoke/status server actions); consent acknowledgement modal; integrations hub link; unit tests (~6 tests). | |
+| **566A** | 566.1–566.6 | `integrations/mcp/page.tsx` connector card (status, server URL, connection instructions, consent metadata, revoke); `integrations/mcp/actions.ts` (enable/revoke/status server actions); consent acknowledgement modal; integrations hub link; unit tests (~6 tests). | **Done** (PR #1461) |
 
 ### Tasks
 

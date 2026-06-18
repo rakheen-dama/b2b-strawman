@@ -264,7 +264,7 @@ class McpModuleAndEnablementHardeningTest {
         body.lines()
             .filter(l -> l.startsWith("data:"))
             .map(l -> l.substring(5).trim())
-            .findFirst()
+            .reduce((__, last) -> last)
             .orElse(body.trim());
     if (json.isBlank()) {
       throw new AssertionError("empty /mcp response body");

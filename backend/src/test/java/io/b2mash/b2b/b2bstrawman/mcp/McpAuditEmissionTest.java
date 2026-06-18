@@ -129,7 +129,7 @@ class McpAuditEmissionTest {
         body.lines()
             .filter(l -> l.startsWith("data:"))
             .map(l -> l.substring(5).trim())
-            .findFirst()
+            .reduce((__, last) -> last)
             .orElse(body.trim());
     if (json.isBlank()) {
       throw new AssertionError("empty /mcp response body");
@@ -239,6 +239,36 @@ class McpAuditEmissionTest {
               assertThat(summary.values().stream().map(String::valueOf))
                   .noneMatch(v -> v.contains("Audit Client") || v.contains("ac@test.com"));
             });
+  }
+
+  // ---- (3a) the param() sink itself drops free-text/PII for ALL callers -------
+
+  @Test
+  void paramSinkDropsFreeTextAndPiiRegardlessOfCaller() {
+    // Defence-in-depth: McpAuditMetadata.Builder.param() sanitises at the sink, so even a tool that
+    // (incorrectly) passed a rich free-text object can never leak it into the params summary.
+    UUID id = UUID.randomUUID();
+    Map<String, Object> params =
+        McpAuditMetadata.builder()
+            .param("freeText", "Audit Client ac@test.com SECRET") // spaces/@ → dropped
+            .param("name", "Jane Doe") // PII free text → dropped
+            .param("object", new Object()) // arbitrary object → dropped
+            .param("status", "ACTIVE") // safe enum-shaped token → kept
+            .param("customerId", id) // UUID → kept as string id
+            .param("count", 7) // number → kept
+            .param("flag", true) // boolean → kept
+            .build()
+            .paramsSummary();
+
+    assertThat(params).doesNotContainKeys("freeText", "name", "object");
+    assertThat(params)
+        .containsEntry("status", "ACTIVE")
+        .containsEntry("customerId", id.toString())
+        .containsEntry("count", 7)
+        .containsEntry("flag", true);
+    assertThat(params.values().stream().map(String::valueOf))
+        .as("no free-text/PII value may survive the param() sink")
+        .noneMatch(v -> v.contains(" ") || v.contains("@") || v.contains("SECRET"));
   }
 
   // ---- (3b) a non-matching eventType is NOT written to the audit params summary ----

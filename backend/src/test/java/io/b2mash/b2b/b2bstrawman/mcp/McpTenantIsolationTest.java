@@ -169,7 +169,7 @@ class McpTenantIsolationTest {
             continue;
           }
           // The reflected parameter name is the canonical exposed argument name.
-          String paramName = p.getName().toLowerCase().replace("_", "");
+          String paramName = p.getName().toLowerCase(java.util.Locale.ROOT).replace("_", "");
           assertThat(FORBIDDEN_PARAM_NAMES)
               .as(
                   "tool %s.%s must not expose a tenant/org/schema override parameter ('%s')",
@@ -224,7 +224,7 @@ class McpTenantIsolationTest {
         body.lines()
             .filter(l -> l.startsWith("data:"))
             .map(l -> l.substring(5).trim())
-            .findFirst()
+            .reduce((__, last) -> last)
             .orElse(body.trim());
     if (json.isBlank()) {
       throw new AssertionError("empty /mcp response body");

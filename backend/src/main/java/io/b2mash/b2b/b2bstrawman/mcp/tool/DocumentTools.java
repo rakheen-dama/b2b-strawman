@@ -167,7 +167,13 @@ public class DocumentTools {
           McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.notFound("document"), objectMapper);
     } catch (InvalidStateException e) {
-      return McpToolErrors.asResult(McpError.notFound("document"), objectMapper);
+      // Document exists but is not yet downloadable (e.g. not UPLOADED). This is a lifecycle/state
+      // condition, NOT an access refusal — record it as an error-outcome metric (gate label
+      // "document-state") so it is distinguishable from project-access denials, and return a clear,
+      // non-leaking state error rather than masquerading as not_found.
+      metrics.recordError("get_document_url", McpToolAudit.elapsed(startNanos));
+      return McpToolErrors.asResult(
+          McpError.invalidRequest("Document is not yet available for download."), objectMapper);
     }
   }
 

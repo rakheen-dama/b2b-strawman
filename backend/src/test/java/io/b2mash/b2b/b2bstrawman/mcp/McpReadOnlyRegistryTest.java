@@ -142,7 +142,7 @@ class McpReadOnlyRegistryTest {
     for (String name : toolNames) {
       assertThat(MUTATING_VERBS)
           .as("tool '%s' must not start with a mutating verb", name)
-          .noneMatch(verb -> name.toLowerCase().startsWith(verb));
+          .noneMatch(verb -> name.toLowerCase(java.util.Locale.ROOT).startsWith(verb));
       // Trivial probe tools are the only non list_/get_/search_ tools.
       if (!PROBE_TOOL_NAMES.contains(name)) {
         assertThat(READ_TOOL_NAME.matcher(name).matches())
@@ -230,7 +230,7 @@ class McpReadOnlyRegistryTest {
         body.lines()
             .filter(l -> l.startsWith("data:"))
             .map(l -> l.substring(5).trim())
-            .findFirst()
+            .reduce((__, last) -> last)
             .orElse(body.trim());
     if (json.isBlank()) {
       throw new AssertionError("empty /mcp response body");

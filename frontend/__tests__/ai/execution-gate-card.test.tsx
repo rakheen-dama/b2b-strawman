@@ -97,11 +97,7 @@ describe("ExecutionGateCard", () => {
 
   it("does not render a countdown for non-PENDING gates", async () => {
     render(
-      <ExecutionGateCard
-        gate={makeGate({ status: "APPROVED" })}
-        onApprove={noop}
-        onReject={noop}
-      />
+      <ExecutionGateCard gate={makeGate({ status: "APPROVED" })} onApprove={noop} onReject={noop} />
     );
     // Let any post-mount effects settle, then assert no countdown.
     await screen.findByText(formatDateTime("2026-06-15T13:29:00Z"));

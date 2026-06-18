@@ -8,6 +8,8 @@ import { EmailIntegrationCard } from "@/components/integrations/EmailIntegration
 import { PaymentIntegrationCard } from "@/components/integrations/PaymentIntegrationCard";
 import { KycIntegrationCard } from "@/components/integrations/KycIntegrationCard";
 import { AccountingIntegrationCard } from "@/components/integrations/AccountingIntegrationCard";
+import { McpIntegrationCard } from "@/components/integrations/McpIntegrationCard";
+import { getMcpStatusAction } from "./mcp/actions";
 import type { IntegrationDomain, OrgIntegration, XeroConnectionResponse } from "@/lib/types";
 import type { BillingResponse } from "@/lib/internal-api";
 
@@ -76,6 +78,9 @@ export default async function IntegrationsSettingsPage({
   } catch {
     // Not connected or error — leave as null
   }
+
+  // getMcpStatusAction swallows errors and returns null — no try/catch needed.
+  const mcpStatus = await getMcpStatusAction();
 
   try {
     const billing = await api.get<BillingResponse>("/api/billing/subscription");
@@ -154,6 +159,8 @@ export default async function IntegrationsSettingsPage({
             />
           );
         })}
+
+        <McpIntegrationCard slug={slug} status={mcpStatus} />
       </div>
     </div>
   );

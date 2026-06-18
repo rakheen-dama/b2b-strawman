@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpClientDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
-import java.time.Duration;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpResource;
 import org.springframework.stereotype.Component;
@@ -80,11 +79,7 @@ public class ClientResource {
       var linkedProjects = customerProjectService.listProjectsForCustomer(clientId, actor);
       var meta = McpAuditMetadata.builder().rowCount(1).entityRef(clientId).build();
       McpToolAudit.emitInvoked(
-          "kazi://client",
-          meta,
-          auditService,
-          metrics,
-          Duration.ofNanos(System.nanoTime() - startNanos));
+          "kazi://client", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
       return objectMapper.writeValueAsString(McpClientDto.from(customer, linkedProjects));
     } catch (ResourceNotFoundException | InvalidStateException e) {
       return objectMapper.writeValueAsString(McpError.notFound("client"));

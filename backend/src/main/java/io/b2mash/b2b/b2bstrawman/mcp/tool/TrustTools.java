@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpTrustTransactionItem;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
-import java.time.Duration;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
@@ -83,7 +82,11 @@ public class TrustTools {
     long startNanos = System.nanoTime();
     if (!RequestScopes.hasCapability(CAP_VIEW_TRUST)) {
       McpToolAudit.emitDenied(
-          "get_trust_balance", CAP_VIEW_TRUST, auditService, metrics, elapsed(startNanos));
+          "get_trust_balance",
+          CAP_VIEW_TRUST,
+          auditService,
+          metrics,
+          McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
     }
     try {
@@ -110,7 +113,7 @@ public class TrustTools {
               .entityRef(customerId)
               .build();
       McpToolAudit.emitInvoked(
-          "get_trust_balance", meta, auditService, metrics, elapsed(startNanos));
+          "get_trust_balance", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
       return dto;
     } catch (ModuleNotEnabledException e) {
       return McpToolErrors.asResult(McpError.moduleDisabled(TRUST_MODULE), objectMapper);
@@ -135,7 +138,11 @@ public class TrustTools {
     long startNanos = System.nanoTime();
     if (!RequestScopes.hasCapability(CAP_VIEW_TRUST)) {
       McpToolAudit.emitDenied(
-          "list_trust_transactions", CAP_VIEW_TRUST, auditService, metrics, elapsed(startNanos));
+          "list_trust_transactions",
+          CAP_VIEW_TRUST,
+          auditService,
+          metrics,
+          McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
     }
     int clampedSize = McpPagination.clampSize(size, McpPagination.DEFAULT_MAX_SIZE);
@@ -163,14 +170,10 @@ public class TrustTools {
               .entityRef(customerId)
               .build();
       McpToolAudit.emitInvoked(
-          "list_trust_transactions", meta, auditService, metrics, elapsed(startNanos));
+          "list_trust_transactions", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
       return result;
     } catch (ModuleNotEnabledException e) {
       return McpToolErrors.asResult(McpError.moduleDisabled(TRUST_MODULE), objectMapper);
     }
-  }
-
-  private static Duration elapsed(long startNanos) {
-    return Duration.ofNanos(System.nanoTime() - startNanos);
   }
 }

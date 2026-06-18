@@ -179,27 +179,49 @@ class McpModuleAndEnablementHardeningTest {
   void revokeRefusesTheVeryNextCall() throws Exception {
     JwtRequestPostProcessor owner = TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_legal_owner");
 
-    // Before revoke: a list tool succeeds (connector enabled + consented).
-    JsonNode before =
+    // Self-contained: ensure enabled at the start (does not rely on @BeforeAll surviving an earlier
+    // method), and ALWAYS re-enable in a finally so a mid-test failure cannot leave the tenant
+    // revoked for any other method (JUnit 5 does not guarantee method order).
+    setLegalConnectorEnabled(true);
+    try {
+      // Before revoke: a list tool succeeds (connector enabled + consented).
+      JsonNode before =
+          callTool(owner, openSession(owner), "list_clients", "{\"page\":0,\"size\":50}");
+      assertThat(before.at("/isError").asBoolean(false))
+          .as("connector enabled before revoke")
+          .isFalse();
+
+      // Revoke (disables integration + appends REVOKED consent). effectiveState() is not cached.
+      setLegalConnectorEnabled(false);
+
+      // Next call is refused with not_enabled.
+      JsonNode after =
+          callTool(owner, openSession(owner), "list_clients", "{\"page\":0,\"size\":50}");
+      assertThat(after.at("/isError").asBoolean()).isTrue();
+      assertThat(payload(after).at("/error").asString()).isEqualTo("not_enabled");
+    } finally {
+      // Restore enabled state regardless of outcome — order-independent isolation.
+      setLegalConnectorEnabled(true);
+    }
+  }
+
+  // ---- (4) enabled + consented returns data ----------------------------------
+
+  @Test
+  void enabledAndConsentedTenantReturnsData() throws Exception {
+    // Set up its own state: enable the LEGAL connector explicitly rather than depending on the
+    // revoke test having re-enabled it (method order is not guaranteed).
+    setLegalConnectorEnabled(true);
+    JwtRequestPostProcessor owner = TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_legal_owner");
+    JsonNode result =
         callTool(owner, openSession(owner), "list_clients", "{\"page\":0,\"size\":50}");
-    assertThat(before.at("/isError").asBoolean(false))
-        .as("connector enabled before revoke")
-        .isFalse();
+    assertThat(result.at("/isError").asBoolean(false)).isFalse();
+    // A real (possibly empty) page is returned — not an error envelope.
+    assertThat(payload(result).has("items")).isTrue();
+  }
 
-    // Revoke (disables integration + appends REVOKED consent). effectiveState() is not cached.
-    ScopedValue.where(RequestScopes.TENANT_ID, legalSchema)
-        .where(RequestScopes.ORG_ID, LEGAL_ORG_ID)
-        .where(RequestScopes.MEMBER_ID, legalOwnerId)
-        .where(RequestScopes.ORG_ROLE, "owner")
-        .run(() -> transactionTemplate.executeWithoutResult(tx -> enablementService.revoke()));
-
-    // Next call is refused with not_enabled.
-    JsonNode after =
-        callTool(owner, openSession(owner), "list_clients", "{\"page\":0,\"size\":50}");
-    assertThat(after.at("/isError").asBoolean()).isTrue();
-    assertThat(payload(after).at("/error").asString()).isEqualTo("not_enabled");
-
-    // Re-enable so this test leaves the tenant usable for any later assertions / ordering.
+  /** Enable (consent + integration) or revoke the LEGAL tenant's MCP connector. Idempotent. */
+  private void setLegalConnectorEnabled(boolean enabled) {
     ScopedValue.where(RequestScopes.TENANT_ID, legalSchema)
         .where(RequestScopes.ORG_ID, LEGAL_ORG_ID)
         .where(RequestScopes.MEMBER_ID, legalOwnerId)
@@ -207,19 +229,13 @@ class McpModuleAndEnablementHardeningTest {
         .run(
             () ->
                 transactionTemplate.executeWithoutResult(
-                    tx -> enablementService.enable("popia-egress-v1")));
-  }
-
-  // ---- (4) enabled + consented returns data ----------------------------------
-
-  @Test
-  void enabledAndConsentedTenantReturnsData() throws Exception {
-    JwtRequestPostProcessor owner = TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_legal_owner");
-    JsonNode result =
-        callTool(owner, openSession(owner), "list_clients", "{\"page\":0,\"size\":50}");
-    assertThat(result.at("/isError").asBoolean(false)).isFalse();
-    // A real (possibly empty) page is returned — not an error envelope.
-    assertThat(payload(result).has("items")).isTrue();
+                    tx -> {
+                      if (enabled) {
+                        enablementService.enable("popia-egress-v1");
+                      } else {
+                        enablementService.revoke();
+                      }
+                    }));
   }
 
   // ---- /mcp harness ----------------------------------------------------------

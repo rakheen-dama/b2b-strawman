@@ -1,28 +1,17 @@
 package io.b2mash.b2b.b2bstrawman.mcp;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
-import io.b2mash.b2b.b2bstrawman.mcp.tool.ClientTools;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
-import io.modelcontextprotocol.spec.McpSchema.TextContent;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -49,9 +38,11 @@ import tools.jackson.databind.ObjectMapper;
  *   <li>the audit tool clamps to its higher cap (200), still server-enforced.
  *   <li>an unbounded service result is sliced and the {@code truncated} + {@code total} flags are
  *       surfaced so the client knows there is more.
- *   <li>an oversized materialised result set fails with a non-leaking {@code response_too_large}
- *       error carrying the "narrow your query" guidance (no truncated page is ever emitted).
  * </ol>
+ *
+ * <p>The response-ceiling guard ({@code response_too_large} on an oversized materialised result
+ * set) is asserted in pure-unit form by {@code ClientToolsCeilingTest} and is intentionally NOT
+ * duplicated in this heavy {@code @SpringBootTest} — see the comment at the former test 4.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -151,49 +142,16 @@ class McpPaginationCapTest {
   }
 
   // ---- (4) oversized result set → response_too_large "narrow your query" -----
-
-  @Test
-  void oversizedResultSetReturnsResponseTooLargeWithGuidance() {
-    // Drive the ceiling guard directly: a materialised list strictly larger than the response
-    // ceiling must fail with response_too_large rather than ever emit a truncated page. Done in
-    // unit form (the live path would need >200 seeded rows; the guard math is identical for all
-    // three ceiling-guarded tools — list_clients is the cheapest, no ActorContext).
-    CustomerService customerService = mock(CustomerService.class);
-    CustomerProjectService customerProjectService = mock(CustomerProjectService.class);
-    io.b2mash.b2b.b2bstrawman.audit.AuditService auditService =
-        mock(io.b2mash.b2b.b2bstrawman.audit.AuditService.class);
-    McpEnablementService enablement = mock(McpEnablementService.class);
-    when(enablement.effectiveState()).thenReturn(true);
-
-    int overCeiling = McpPagination.RESPONSE_ITEM_CEILING + 1;
-    List<Customer> customers =
-        IntStream.range(0, overCeiling)
-            .mapToObj(
-                i -> {
-                  Customer c = mock(Customer.class);
-                  when(c.getId()).thenReturn(UUID.randomUUID());
-                  return c;
-                })
-            .toList();
-    when(customerService.listCustomers()).thenReturn(customers);
-
-    ClientTools tools =
-        new ClientTools(
-            customerService,
-            customerProjectService,
-            auditService,
-            new ObjectMapper(),
-            enablement,
-            new McpMetrics(new SimpleMeterRegistry()));
-
-    Object result = tools.listClients(0, 50, null);
-    assertThat(result).isInstanceOf(CallToolResult.class);
-    CallToolResult toolResult = (CallToolResult) result;
-    assertThat(toolResult.isError()).isTrue();
-    String text = ((TextContent) toolResult.content().get(0)).text();
-    assertThat(text).contains("response_too_large");
-    assertThat(text).contains("narrow your query");
-  }
+  //
+  // The response-ceiling guard (a materialised list strictly larger than RESPONSE_ITEM_CEILING must
+  // fail with response_too_large rather than emit a truncated page) is asserted in pure-unit form
+  // by
+  // ClientToolsCeilingTest. It is deliberately NOT duplicated here: driving it through the live
+  // /mcp
+  // path would need >200 seeded rows per run, and re-running the same mock-based unit assertion
+  // inside this heavy @SpringBootTest only adds context-startup cost without extra coverage. This
+  // class keeps the live clamp/slice/truncate assertions; the ceiling math lives in
+  // ClientToolsCeilingTest (the guard idiom is identical for all three ceiling-guarded tools).
 
   // ---- /mcp harness ----------------------------------------------------------
 

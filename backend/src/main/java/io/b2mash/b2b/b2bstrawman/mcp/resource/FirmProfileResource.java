@@ -9,7 +9,6 @@ import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpFirmProfileDto;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import java.time.Duration;
 import org.springframework.ai.mcp.annotation.McpResource;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
@@ -65,17 +64,17 @@ public class FirmProfileResource {
     long startNanos = System.nanoTime();
     if (!RequestScopes.hasCapability(CAP_AI_MANAGE)) {
       McpToolAudit.emitDenied(
-          "kazi://firm-profile", CAP_AI_MANAGE, auditService, metrics, elapsed(startNanos));
+          "kazi://firm-profile",
+          CAP_AI_MANAGE,
+          auditService,
+          metrics,
+          McpToolAudit.elapsed(startNanos));
       return objectMapper.writeValueAsString(McpError.forbidden());
     }
     var profile = aiFirmProfileService.getOrCreateProfile();
     var meta = McpAuditMetadata.builder().rowCount(1).build();
     McpToolAudit.emitInvoked(
-        "kazi://firm-profile", meta, auditService, metrics, elapsed(startNanos));
+        "kazi://firm-profile", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
     return objectMapper.writeValueAsString(McpFirmProfileDto.from(profile));
-  }
-
-  private static Duration elapsed(long startNanos) {
-    return Duration.ofNanos(System.nanoTime() - startNanos);
   }
 }

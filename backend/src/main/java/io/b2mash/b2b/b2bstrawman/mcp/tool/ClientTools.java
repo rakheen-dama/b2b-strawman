@@ -17,7 +17,6 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpClientListItem;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
-import java.time.Duration;
 import java.util.Locale;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
@@ -142,7 +141,6 @@ public class ClientTools {
   }
 
   private void emitInvoked(String tool, McpAuditMetadata meta, long startNanos) {
-    McpToolAudit.emitInvoked(
-        tool, meta, auditService, metrics, Duration.ofNanos(System.nanoTime() - startNanos));
+    McpToolAudit.emitInvoked(tool, meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
   }
 }

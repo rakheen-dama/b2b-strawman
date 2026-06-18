@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpMatterDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpMatterListItem;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
-import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
@@ -129,16 +128,16 @@ public class MatterTools {
       // IS a refusal — emit mcp.access.denied (gate=project-access) so the denial is audited and
       // metered as "denied" (567A: refusal-type coverage includes project-access).
       McpToolAudit.emitDenied(
-          "get_matter", GATE_PROJECT_ACCESS, auditService, metrics, elapsed(startNanos));
+          "get_matter",
+          GATE_PROJECT_ACCESS,
+          auditService,
+          metrics,
+          McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.notFound("matter"), objectMapper);
     }
   }
 
   private void emitInvoked(String tool, McpAuditMetadata meta, long startNanos) {
-    McpToolAudit.emitInvoked(tool, meta, auditService, metrics, elapsed(startNanos));
-  }
-
-  private static Duration elapsed(long startNanos) {
-    return Duration.ofNanos(System.nanoTime() - startNanos);
+    McpToolAudit.emitInvoked(tool, meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
   }
 }

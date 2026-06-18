@@ -241,10 +241,54 @@ class McpAuditEmissionTest {
             });
   }
 
+  // ---- (3b) a non-matching eventType is NOT written to the audit params summary ----
+
+  @Test
+  void unsafeEventTypeIsNotRecordedInAuditParamsSummary() throws Exception {
+    // The audit tool's eventType is the only caller-supplied free-text field. An eventType that
+    // does
+    // not match the safe structural shape (here: contains PII-shaped free text with spaces / @ / an
+    // uppercase name) must be used by the query filter but NEVER land in the POPIA-sensitive audit
+    // params summary. Owner has TEAM_OVERSIGHT so the tool runs (no capability refusal).
+    JwtRequestPostProcessor owner = TestJwtFactory.ownerJwt(ORG_ID, "user_owner");
+    String unsafeEventType = "Audit Client ac@test.com SECRET";
+    callTool(
+        owner,
+        openSession(owner),
+        "get_audit_events",
+        "{\"page\":0,\"size\":50,\"eventType\":\"%s\"}".formatted(unsafeEventType));
+
+    var auditToolEvents =
+        readEvents("mcp.tool.invoked").stream()
+            .filter(e -> "get_audit_events".equals(e.getDetails().get("tool")))
+            .toList();
+    assertThat(auditToolEvents).isNotEmpty();
+    // No emitted audit event for this tool may carry the unsafe eventType in its params summary.
+    assertThat(auditToolEvents)
+        .allSatisfy(
+            event -> {
+              Object params = event.getDetails().get("params");
+              if (params != null) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> summary = (Map<String, Object>) params;
+                assertThat(summary).doesNotContainKey("eventType");
+                assertThat(summary.values().stream().map(String::valueOf))
+                    .as("unsafe free-text eventType must never reach the audit params summary")
+                    .noneMatch(v -> v.contains(unsafeEventType) || v.contains("ac@test.com"));
+              }
+            });
+  }
+
   // ---- (4) mcp.access.denied on each refusal type ----------------------------
 
   @Test
   void accessDeniedOnCapabilityAndProjectAccessRefusals() throws Exception {
+    // Baseline: another test method may have emitted mcp.access.denied events into this shared
+    // tenant. Capture the current count so the assertions below only inspect the NEW denials this
+    // test produces (guards against cross-method contamination satisfying the assertion
+    // spuriously).
+    int deniedBaseline = readEvents("mcp.access.denied").size();
+
     // (a) capability refusal: a member without VIEW_TRUST calling get_trust_balance.
     String denyRoleId =
         createCustomRole("mcp-567-cap-deny", Set.of("MCP_ACCESS", "CUSTOMER_MANAGEMENT"));
@@ -275,7 +319,12 @@ class McpAuditEmissionTest {
     assertThat(paResult.at("/isError").asBoolean()).isTrue();
     assertThat(parsePayload(paResult).at("/error").asString()).isEqualTo("not_found");
 
-    List<AuditEvent> denied = readEvents("mcp.access.denied");
+    List<AuditEvent> allDenied = readEvents("mcp.access.denied");
+    // Only inspect the denials emitted AFTER the baseline (this test's own refusals).
+    List<AuditEvent> denied = allDenied.subList(0, allDenied.size() - deniedBaseline);
+    assertThat(denied)
+        .as("this test produced at least the capability + project-access denials")
+        .hasSizeGreaterThanOrEqualTo(2);
     // capability denial carries the gate.
     assertThat(denied)
         .anySatisfy(

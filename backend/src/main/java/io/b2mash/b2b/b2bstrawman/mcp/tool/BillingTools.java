@@ -19,7 +19,6 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpUnbilledSummaryItem.McpUnbilledMatte
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummaryService;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Locale;
 import java.util.UUID;
@@ -92,7 +91,7 @@ public class BillingTools {
     long startNanos = System.nanoTime();
     if (!RequestScopes.hasCapability(CAP_INVOICING)) {
       McpToolAudit.emitDenied(
-          "list_invoices", CAP_INVOICING, auditService, metrics, elapsed(startNanos));
+          "list_invoices", CAP_INVOICING, auditService, metrics, McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
     }
     InvoiceStatus parsed;
@@ -121,7 +120,8 @@ public class BillingTools {
             .param("status", parsed == null ? null : parsed.name())
             .param("projectId", projectId)
             .build();
-    McpToolAudit.emitInvoked("list_invoices", meta, auditService, metrics, elapsed(startNanos));
+    McpToolAudit.emitInvoked(
+        "list_invoices", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
     return result;
   }
 
@@ -140,7 +140,7 @@ public class BillingTools {
     long startNanos = System.nanoTime();
     if (!RequestScopes.hasCapability(CAP_INVOICING)) {
       McpToolAudit.emitDenied(
-          "get_invoice", CAP_INVOICING, auditService, metrics, elapsed(startNanos));
+          "get_invoice", CAP_INVOICING, auditService, metrics, McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
     }
     try {
@@ -148,7 +148,8 @@ public class BillingTools {
       var payments = invoiceService.getPaymentEvents(invoiceId);
       var dto = McpInvoiceDto.detail(invoice, payments, McpPagination.DEFAULT_MAX_SIZE);
       var meta = McpAuditMetadata.builder().rowCount(1).entityRef(invoiceId).build();
-      McpToolAudit.emitInvoked("get_invoice", meta, auditService, metrics, elapsed(startNanos));
+      McpToolAudit.emitInvoked(
+          "get_invoice", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
       return dto;
     } catch (ResourceNotFoundException e) {
       return McpToolErrors.asResult(McpError.notFound("invoice"), objectMapper);
@@ -180,7 +181,11 @@ public class BillingTools {
     long startNanos = System.nanoTime();
     if (!RequestScopes.hasCapability(CAP_INVOICING)) {
       McpToolAudit.emitDenied(
-          "get_unbilled_time", CAP_INVOICING, auditService, metrics, elapsed(startNanos));
+          "get_unbilled_time",
+          CAP_INVOICING,
+          auditService,
+          metrics,
+          McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
     }
     if (projectId != null) {
@@ -188,7 +193,7 @@ public class BillingTools {
         var summary = unbilledTimeSummaryService.getProjectUnbilledSummary(projectId);
         var meta = McpAuditMetadata.builder().rowCount(1).entityRef(projectId).build();
         McpToolAudit.emitInvoked(
-            "get_unbilled_time", meta, auditService, metrics, elapsed(startNanos));
+            "get_unbilled_time", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
         return McpUnbilledMatterSummary.from(projectId, summary);
       } catch (ResourceNotFoundException e) {
         return McpToolErrors.asResult(McpError.notFound("matter"), objectMapper);
@@ -214,11 +219,8 @@ public class BillingTools {
             .rowCount(result.items().size())
             .param("currency", currency)
             .build();
-    McpToolAudit.emitInvoked("get_unbilled_time", meta, auditService, metrics, elapsed(startNanos));
+    McpToolAudit.emitInvoked(
+        "get_unbilled_time", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
     return result;
-  }
-
-  private static Duration elapsed(long startNanos) {
-    return Duration.ofNanos(System.nanoTime() - startNanos);
   }
 }

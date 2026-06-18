@@ -10,7 +10,6 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpMatterDto;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
-import java.time.Duration;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpResource;
 import org.springframework.stereotype.Component;
@@ -76,17 +75,18 @@ public class MatterResource {
     try {
       var withRole = projectService.getProject(matterId, actor);
       var meta = McpAuditMetadata.builder().rowCount(1).entityRef(matterId).build();
-      McpToolAudit.emitInvoked("kazi://matter", meta, auditService, metrics, elapsed(startNanos));
+      McpToolAudit.emitInvoked(
+          "kazi://matter", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
       return objectMapper.writeValueAsString(
           McpMatterDto.from(withRole.project(), withRole.projectRole()));
     } catch (ResourceNotFoundException e) {
       McpToolAudit.emitDenied(
-          "kazi://matter", GATE_PROJECT_ACCESS, auditService, metrics, elapsed(startNanos));
+          "kazi://matter",
+          GATE_PROJECT_ACCESS,
+          auditService,
+          metrics,
+          McpToolAudit.elapsed(startNanos));
       return objectMapper.writeValueAsString(McpError.notFound("matter"));
     }
-  }
-
-  private static Duration elapsed(long startNanos) {
-    return Duration.ofNanos(System.nanoTime() - startNanos);
   }
 }

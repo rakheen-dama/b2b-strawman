@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpActivityItem;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
-import java.time.Duration;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
@@ -93,16 +92,16 @@ public class ActivityTools {
     } catch (ResourceNotFoundException e) {
       // project-access denial: non-member turned away with non-leaking not_found, but audit it.
       McpToolAudit.emitDenied(
-          "get_matter_activity", GATE_PROJECT_ACCESS, auditService, metrics, elapsed(startNanos));
+          "get_matter_activity",
+          GATE_PROJECT_ACCESS,
+          auditService,
+          metrics,
+          McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.notFound("matter"), objectMapper);
     }
   }
 
   private void emitInvoked(String tool, McpAuditMetadata meta, long startNanos) {
-    McpToolAudit.emitInvoked(tool, meta, auditService, metrics, elapsed(startNanos));
-  }
-
-  private static Duration elapsed(long startNanos) {
-    return Duration.ofNanos(System.nanoTime() - startNanos);
+    McpToolAudit.emitInvoked(tool, meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
   }
 }

@@ -30,6 +30,15 @@ public final class McpToolAudit {
 
   private McpToolAudit() {}
 
+  /**
+   * Wall-clock latency since {@code startNanos} (a {@link System#nanoTime()} reading captured at
+   * the start of a tool invocation). Single shared helper for every tool/resource so the latency
+   * computation lives in one place rather than a per-class private copy.
+   */
+  public static Duration elapsed(long startNanos) {
+    return Duration.ofNanos(System.nanoTime() - startNanos);
+  }
+
   // ---- mcp.tool.invoked -------------------------------------------------------
 
   /**

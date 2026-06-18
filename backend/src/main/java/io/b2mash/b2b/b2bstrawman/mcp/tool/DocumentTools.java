@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpDownloadUrl;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
-import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
@@ -125,7 +124,11 @@ public class DocumentTools {
       // 404s is a project-access denial — emit mcp.access.denied for that case only.
       if (projectId != null) {
         McpToolAudit.emitDenied(
-            "search_documents", GATE_PROJECT_ACCESS, auditService, metrics, elapsed(startNanos));
+            "search_documents",
+            GATE_PROJECT_ACCESS,
+            auditService,
+            metrics,
+            McpToolAudit.elapsed(startNanos));
       }
       return McpToolErrors.asResult(McpError.notFound("document"), objectMapper);
     } catch (InvalidStateException e) {
@@ -157,7 +160,11 @@ public class DocumentTools {
     } catch (ResourceNotFoundException e) {
       // project-access denial (or genuinely absent) — non-leaking not_found, but audit the refusal.
       McpToolAudit.emitDenied(
-          "get_document_url", GATE_PROJECT_ACCESS, auditService, metrics, elapsed(startNanos));
+          "get_document_url",
+          GATE_PROJECT_ACCESS,
+          auditService,
+          metrics,
+          McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.notFound("document"), objectMapper);
     } catch (InvalidStateException e) {
       return McpToolErrors.asResult(McpError.notFound("document"), objectMapper);
@@ -165,10 +172,6 @@ public class DocumentTools {
   }
 
   private void emitInvoked(String tool, McpAuditMetadata meta, long startNanos) {
-    McpToolAudit.emitInvoked(tool, meta, auditService, metrics, elapsed(startNanos));
-  }
-
-  private static Duration elapsed(long startNanos) {
-    return Duration.ofNanos(System.nanoTime() - startNanos);
+    McpToolAudit.emitInvoked(tool, meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
   }
 }

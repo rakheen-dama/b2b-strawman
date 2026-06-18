@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpComplianceGapDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import java.time.Duration;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
@@ -72,7 +71,7 @@ public class ComplianceTools {
           CAP_CUSTOMER_MANAGEMENT,
           auditService,
           metrics,
-          elapsed(startNanos));
+          McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
     }
     try {
@@ -83,14 +82,10 @@ public class ComplianceTools {
               customerId, fica.status(), instances, McpPagination.DEFAULT_MAX_SIZE);
       var meta = McpAuditMetadata.builder().rowCount(1).entityRef(customerId).build();
       McpToolAudit.emitInvoked(
-          "list_compliance_gaps", meta, auditService, metrics, elapsed(startNanos));
+          "list_compliance_gaps", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
       return dto;
     } catch (ResourceNotFoundException e) {
       return McpToolErrors.asResult(McpError.notFound("client"), objectMapper);
     }
-  }
-
-  private static Duration elapsed(long startNanos) {
-    return Duration.ofNanos(System.nanoTime() - startNanos);
   }
 }

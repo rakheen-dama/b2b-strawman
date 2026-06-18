@@ -70,6 +70,13 @@ class McpReadOnlyRegistryTest {
   /** Read verbs allowed on a tool name. A mutating tool would not match any of these. */
   private static final Pattern READ_TOOL_NAME = Pattern.compile("^(list|get|search)_[a-z_]+$");
 
+  /**
+   * Trivial probe tools exempt from the read-verb pattern (they answer a liveness ping, touch no
+   * data). A future probe tool must be added here explicitly — the failure message lists this set
+   * so the diagnostic is clear.
+   */
+  private static final Set<String> PROBE_TOOL_NAMES = Set.of("kazi_ping");
+
   /** Mutating verbs that must NEVER appear at the start of a registered tool name. */
   private static final List<String> MUTATING_VERBS =
       List.of(
@@ -136,10 +143,13 @@ class McpReadOnlyRegistryTest {
       assertThat(MUTATING_VERBS)
           .as("tool '%s' must not start with a mutating verb", name)
           .noneMatch(verb -> name.toLowerCase().startsWith(verb));
-      // The trivial probe is the only non list_/get_/search_ tool.
-      if (!"kazi_ping".equals(name)) {
+      // Trivial probe tools are the only non list_/get_/search_ tools.
+      if (!PROBE_TOOL_NAMES.contains(name)) {
         assertThat(READ_TOOL_NAME.matcher(name).matches())
-            .as("catalogue tool '%s' must use a read verb (list_/get_/search_)", name)
+            .as(
+                "catalogue tool '%s' must use a read verb (list_/get_/search_) or be an allowlisted"
+                    + " probe tool %s",
+                name, PROBE_TOOL_NAMES)
             .isTrue();
       }
     }

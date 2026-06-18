@@ -6,7 +6,9 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
@@ -15,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpClientListItem;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import java.time.Duration;
 import java.util.Locale;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
@@ -44,18 +47,21 @@ public class ClientTools {
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
   private final McpEnablementService enablement;
+  private final McpMetrics metrics;
 
   public ClientTools(
       CustomerService customerService,
       CustomerProjectService customerProjectService,
       AuditService auditService,
       ObjectMapper objectMapper,
-      McpEnablementService enablement) {
+      McpEnablementService enablement,
+      McpMetrics metrics) {
     this.customerService = customerService;
     this.customerProjectService = customerProjectService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
     this.enablement = enablement;
+    this.metrics = metrics;
   }
 
   @McpTool(
@@ -75,6 +81,7 @@ public class ClientTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
+    long startNanos = System.nanoTime();
     LifecycleStatus parsed;
     try {
       // Normalize LLM input (lowercase/whitespace) before the strict enum parse.
@@ -100,7 +107,13 @@ public class ClientTools {
     }
     McpPage<McpClientListItem> pageResult =
         McpPagination.paginate(customers, page, size, McpPagination.DEFAULT_MAX_SIZE);
-    emitInvoked("list_clients");
+    var meta =
+        McpAuditMetadata.builder()
+            .rowCount(pageResult.items().size())
+            .entityRefs(pageResult.items().stream().map(McpClientListItem::id).toList())
+            .param("lifecycleStatus", parsed == null ? null : parsed.name())
+            .build();
+    emitInvoked("list_clients", meta, startNanos);
     return pageResult;
   }
 
@@ -113,20 +126,23 @@ public class ClientTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
+    long startNanos = System.nanoTime();
     var actor = ActorContext.fromRequestScopes();
     try {
       var customer = customerService.getCustomer(id);
       // linkedMatters comes from a SEPARATE service call (drift: spec said CustomerService).
       var linkedProjects = customerProjectService.listProjectsForCustomer(id, actor);
       var dto = McpClientDto.from(customer, linkedProjects);
-      emitInvoked("get_client");
+      var meta = McpAuditMetadata.builder().rowCount(1).entityRef(id).build();
+      emitInvoked("get_client", meta, startNanos);
       return dto;
     } catch (ResourceNotFoundException | InvalidStateException e) {
       return McpToolErrors.asResult(McpError.notFound("client"), objectMapper);
     }
   }
 
-  private void emitInvoked(String tool) {
-    McpToolAudit.emitInvoked(tool, auditService);
+  private void emitInvoked(String tool, McpAuditMetadata meta, long startNanos) {
+    McpToolAudit.emitInvoked(
+        tool, meta, auditService, metrics, Duration.ofNanos(System.nanoTime() - startNanos));
   }
 }

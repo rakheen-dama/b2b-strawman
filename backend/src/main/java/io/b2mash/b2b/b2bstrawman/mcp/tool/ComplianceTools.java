@@ -4,13 +4,16 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceService;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpComplianceGapDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import java.time.Duration;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
@@ -33,18 +36,21 @@ public class ComplianceTools {
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
   private final McpEnablementService enablement;
+  private final McpMetrics metrics;
 
   public ComplianceTools(
       InformationRequestService informationRequestService,
       ChecklistInstanceService checklistInstanceService,
       AuditService auditService,
       ObjectMapper objectMapper,
-      McpEnablementService enablement) {
+      McpEnablementService enablement,
+      McpMetrics metrics) {
     this.informationRequestService = informationRequestService;
     this.checklistInstanceService = checklistInstanceService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
     this.enablement = enablement;
+    this.metrics = metrics;
   }
 
   @McpTool(
@@ -59,8 +65,14 @@ public class ComplianceTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
+    long startNanos = System.nanoTime();
     if (!RequestScopes.hasCapability(CAP_CUSTOMER_MANAGEMENT)) {
-      McpToolAudit.emitDenied("list_compliance_gaps", auditService);
+      McpToolAudit.emitDenied(
+          "list_compliance_gaps",
+          CAP_CUSTOMER_MANAGEMENT,
+          auditService,
+          metrics,
+          elapsed(startNanos));
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
     }
     try {
@@ -69,10 +81,16 @@ public class ComplianceTools {
       var dto =
           McpComplianceGapDto.from(
               customerId, fica.status(), instances, McpPagination.DEFAULT_MAX_SIZE);
-      McpToolAudit.emitInvoked("list_compliance_gaps", auditService);
+      var meta = McpAuditMetadata.builder().rowCount(1).entityRef(customerId).build();
+      McpToolAudit.emitInvoked(
+          "list_compliance_gaps", meta, auditService, metrics, elapsed(startNanos));
       return dto;
     } catch (ResourceNotFoundException e) {
       return McpToolErrors.asResult(McpError.notFound("client"), objectMapper);
     }
+  }
+
+  private static Duration elapsed(long startNanos) {
+    return Duration.ofNanos(System.nanoTime() - startNanos);
   }
 }

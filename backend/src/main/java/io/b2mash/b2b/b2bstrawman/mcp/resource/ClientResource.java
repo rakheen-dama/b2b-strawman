@@ -1,13 +1,18 @@
 package io.b2mash.b2b.b2bstrawman.mcp.resource;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
+import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpClientDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import java.time.Duration;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpResource;
 import org.springframework.stereotype.Component;
@@ -32,16 +37,22 @@ public class ClientResource {
   private final CustomerProjectService customerProjectService;
   private final ObjectMapper objectMapper;
   private final McpEnablementService enablement;
+  private final AuditService auditService;
+  private final McpMetrics metrics;
 
   public ClientResource(
       CustomerService customerService,
       CustomerProjectService customerProjectService,
       ObjectMapper objectMapper,
-      McpEnablementService enablement) {
+      McpEnablementService enablement,
+      AuditService auditService,
+      McpMetrics metrics) {
     this.customerService = customerService;
     this.customerProjectService = customerProjectService;
     this.objectMapper = objectMapper;
     this.enablement = enablement;
+    this.auditService = auditService;
+    this.metrics = metrics;
   }
 
   @McpResource(
@@ -54,6 +65,7 @@ public class ClientResource {
     if (!enablement.effectiveState()) {
       return objectMapper.writeValueAsString(McpError.notEnabled());
     }
+    long startNanos = System.nanoTime();
     var actor = ActorContext.fromRequestScopes();
     UUID clientId;
     try {
@@ -66,6 +78,13 @@ public class ClientResource {
     try {
       var customer = customerService.getCustomer(clientId);
       var linkedProjects = customerProjectService.listProjectsForCustomer(clientId, actor);
+      var meta = McpAuditMetadata.builder().rowCount(1).entityRef(clientId).build();
+      McpToolAudit.emitInvoked(
+          "kazi://client",
+          meta,
+          auditService,
+          metrics,
+          Duration.ofNanos(System.nanoTime() - startNanos));
       return objectMapper.writeValueAsString(McpClientDto.from(customer, linkedProjects));
     } catch (ResourceNotFoundException | InvalidStateException e) {
       return objectMapper.writeValueAsString(McpError.notFound("client"));

@@ -2,7 +2,9 @@ package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
@@ -10,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpAuditEventItem;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import java.time.Duration;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
@@ -35,12 +38,17 @@ public class AuditTools {
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
   private final McpEnablementService enablement;
+  private final McpMetrics metrics;
 
   public AuditTools(
-      AuditService auditService, ObjectMapper objectMapper, McpEnablementService enablement) {
+      AuditService auditService,
+      ObjectMapper objectMapper,
+      McpEnablementService enablement,
+      McpMetrics metrics) {
     this.auditService = auditService;
     this.objectMapper = objectMapper;
     this.enablement = enablement;
+    this.metrics = metrics;
   }
 
   @McpTool(
@@ -65,8 +73,10 @@ public class AuditTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
+    long startNanos = System.nanoTime();
     if (!RequestScopes.hasCapability(CAP_TEAM_OVERSIGHT)) {
-      McpToolAudit.emitDenied("get_audit_events", auditService);
+      McpToolAudit.emitDenied(
+          "get_audit_events", CAP_TEAM_OVERSIGHT, auditService, metrics, elapsed(startNanos));
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
     }
     int clampedSize = McpPagination.clampSize(size, McpPagination.AUDIT_MAX_SIZE);
@@ -88,7 +98,18 @@ public class AuditTools {
             eventsPage.getSize(),
             eventsPage.getTotalElements(),
             eventsPage.hasNext());
-    McpToolAudit.emitInvoked("get_audit_events", auditService);
+    // eventType is a prefix string filter (not free-text PII); customerId is an id. Both are safe.
+    var meta =
+        McpAuditMetadata.builder()
+            .rowCount(items.size())
+            .entityRef(customerId)
+            .param("eventType", eventType)
+            .build();
+    McpToolAudit.emitInvoked("get_audit_events", meta, auditService, metrics, elapsed(startNanos));
     return result;
+  }
+
+  private static Duration elapsed(long startNanos) {
+    return Duration.ofNanos(System.nanoTime() - startNanos);
   }
 }

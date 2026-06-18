@@ -9,7 +9,9 @@ import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import java.util.List;
@@ -51,9 +53,15 @@ class ClientToolsCeilingTest {
             .toList();
     when(customerService.listCustomers()).thenReturn(customers);
 
+    McpMetrics metrics = new McpMetrics(new SimpleMeterRegistry());
     ClientTools tools =
         new ClientTools(
-            customerService, customerProjectService, auditService, objectMapper, enablement);
+            customerService,
+            customerProjectService,
+            auditService,
+            objectMapper,
+            enablement,
+            metrics);
 
     Object result = tools.listClients(0, 50, null);
 

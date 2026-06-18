@@ -2,7 +2,9 @@ package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
@@ -11,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpMatterDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpMatterListItem;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
+import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
@@ -35,20 +38,25 @@ import tools.jackson.databind.ObjectMapper;
 @Component
 public class MatterTools {
 
+  private static final String GATE_PROJECT_ACCESS = "project-access";
+
   private final ProjectService projectService;
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
   private final McpEnablementService enablement;
+  private final McpMetrics metrics;
 
   public MatterTools(
       ProjectService projectService,
       AuditService auditService,
       ObjectMapper objectMapper,
-      McpEnablementService enablement) {
+      McpEnablementService enablement,
+      McpMetrics metrics) {
     this.projectService = projectService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
     this.enablement = enablement;
+    this.metrics = metrics;
   }
 
   @McpTool(
@@ -68,6 +76,7 @@ public class MatterTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
+    long startNanos = System.nanoTime();
     var actor = ActorContext.fromRequestScopes();
     // ALWAYS use the 6-arg filtered overload (the (ActorContext) overload returns a different
     // type). No saved-view (view=null) and no custom-field/tag filtering exposed via MCP
@@ -86,7 +95,15 @@ public class MatterTools {
       return McpToolErrors.asResult(McpError.responseTooLarge(), objectMapper);
     }
     var pageResult = McpPagination.paginate(matters, page, size, McpPagination.DEFAULT_MAX_SIZE);
-    emitInvoked("list_matters");
+    // entityRefs are the ids on THIS page; params summary carries only the id/enum filters.
+    var meta =
+        McpAuditMetadata.builder()
+            .rowCount(pageResult.items().size())
+            .entityRefs(pageResult.items().stream().map(McpMatterListItem::id).toList())
+            .param("status", status)
+            .param("customerId", customerId)
+            .build();
+    emitInvoked("list_matters", meta, startNanos);
     return pageResult;
   }
 
@@ -99,18 +116,29 @@ public class MatterTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
+    long startNanos = System.nanoTime();
     var actor = ActorContext.fromRequestScopes();
     try {
       var withRole = projectService.getProject(id, actor);
       var dto = McpMatterDto.from(withRole.project(), withRole.projectRole());
-      emitInvoked("get_matter");
+      var meta = McpAuditMetadata.builder().rowCount(1).entityRef(id).build();
+      emitInvoked("get_matter", meta, startNanos);
       return dto;
     } catch (ResourceNotFoundException e) {
+      // project-access denial: a non-member is turned away with a non-leaking not_found, but this
+      // IS a refusal — emit mcp.access.denied (gate=project-access) so the denial is audited and
+      // metered as "denied" (567A: refusal-type coverage includes project-access).
+      McpToolAudit.emitDenied(
+          "get_matter", GATE_PROJECT_ACCESS, auditService, metrics, elapsed(startNanos));
       return McpToolErrors.asResult(McpError.notFound("matter"), objectMapper);
     }
   }
 
-  private void emitInvoked(String tool) {
-    McpToolAudit.emitInvoked(tool, auditService);
+  private void emitInvoked(String tool, McpAuditMetadata meta, long startNanos) {
+    McpToolAudit.emitInvoked(tool, meta, auditService, metrics, elapsed(startNanos));
+  }
+
+  private static Duration elapsed(long startNanos) {
+    return Duration.ofNanos(System.nanoTime() - startNanos);
   }
 }

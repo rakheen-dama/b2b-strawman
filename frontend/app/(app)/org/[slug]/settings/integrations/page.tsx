@@ -14,7 +14,6 @@ import type {
   IntegrationDomain,
   OrgIntegration,
   XeroConnectionResponse,
-  McpStatus,
 } from "@/lib/types";
 import type { BillingResponse } from "@/lib/internal-api";
 
@@ -66,7 +65,6 @@ export default async function IntegrationsSettingsPage({
   let providers: Partial<Record<IntegrationDomain, string[]>> = {};
   let tier = "STARTER";
   let xeroConnection: XeroConnectionResponse | null = null;
-  let mcpStatus: McpStatus | null = null;
 
   try {
     const [integrationsResult, providersResult] = await Promise.all([
@@ -85,11 +83,8 @@ export default async function IntegrationsSettingsPage({
     // Not connected or error — leave as null
   }
 
-  try {
-    mcpStatus = await getMcpStatusAction();
-  } catch {
-    // Non-fatal: leave as null (e.g. insufficient capability)
-  }
+  // getMcpStatusAction swallows errors and returns null — no try/catch needed.
+  const mcpStatus = await getMcpStatusAction();
 
   try {
     const billing = await api.get<BillingResponse>("/api/billing/subscription");

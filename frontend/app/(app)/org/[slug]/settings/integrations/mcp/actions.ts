@@ -19,14 +19,12 @@ interface ActionResult<T = undefined> {
  */
 export async function enableMcpAction(
   consentVersion: string,
-  slug?: string
+  slug: string
 ): Promise<ActionResult<McpStatus>> {
   try {
     await enableMcp(consentVersion);
-    if (slug) {
-      revalidatePath(`/org/${slug}/settings/integrations/mcp`);
-      revalidatePath(`/org/${slug}/settings/integrations`);
-    }
+    revalidatePath(`/org/${slug}/settings/integrations/mcp`);
+    revalidatePath(`/org/${slug}/settings/integrations`);
     const status = await getMcpStatus();
     return { success: true, data: status };
   } catch (error) {
@@ -44,13 +42,11 @@ export async function enableMcpAction(
  * Revokes the MCP connector — disables the integration and appends a REVOKED
  * consent row (204 No Content). Re-fetches status and revalidates.
  */
-export async function revokeMcpAction(slug?: string): Promise<ActionResult<McpStatus>> {
+export async function revokeMcpAction(slug: string): Promise<ActionResult<McpStatus>> {
   try {
     await revokeMcp();
-    if (slug) {
-      revalidatePath(`/org/${slug}/settings/integrations/mcp`);
-      revalidatePath(`/org/${slug}/settings/integrations`);
-    }
+    revalidatePath(`/org/${slug}/settings/integrations/mcp`);
+    revalidatePath(`/org/${slug}/settings/integrations`);
     const status = await getMcpStatus();
     return { success: true, data: status };
   } catch (error) {

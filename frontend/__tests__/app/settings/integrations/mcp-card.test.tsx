@@ -102,6 +102,16 @@ describe("McpConnectorCard", () => {
     ).toBeInTheDocument();
   });
 
+  it("opens the revoke confirmation dialog when the toggle is switched off", async () => {
+    const user = userEvent.setup();
+    render(<McpConnectorCard status={enabledStatus} slug="acme" serverUrl={SERVER_URL} />);
+
+    await user.click(screen.getByRole("switch", { name: "Enabled" }));
+
+    expect(screen.getByText("Revoke MCP connector access?")).toBeInTheDocument();
+    expect(mockRevokeMcpAction).not.toHaveBeenCalled();
+  });
+
   it("calls revokeMcpAction when the revoke control is confirmed", async () => {
     const user = userEvent.setup();
     render(<McpConnectorCard status={enabledStatus} slug="acme" serverUrl={SERVER_URL} />);

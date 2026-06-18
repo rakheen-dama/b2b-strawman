@@ -276,7 +276,15 @@ export function McpConnectorCard({ status, slug, serverUrl }: McpConnectorCardPr
       </CardContent>
 
       {/* POPIA consent acknowledgement modal (controlled — no asChild trigger) */}
-      <Dialog open={consentOpen} onOpenChange={(o) => !isPending && setConsentOpen(o)}>
+      <Dialog
+        open={consentOpen}
+        onOpenChange={(o) => {
+          if (!isPending) {
+            setConsentOpen(o);
+            if (!o) setError(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <div className="flex justify-center">
@@ -323,7 +331,15 @@ export function McpConnectorCard({ status, slug, serverUrl }: McpConnectorCardPr
       </Dialog>
 
       {/* Revoke confirmation */}
-      <AlertDialog open={revokeOpen} onOpenChange={(o) => !isPending && setRevokeOpen(o)}>
+      <AlertDialog
+        open={revokeOpen}
+        onOpenChange={(o) => {
+          if (!isPending) {
+            setRevokeOpen(o);
+            if (!o) setError(null);
+          }
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Revoke MCP connector access?</AlertDialogTitle>

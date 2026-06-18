@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bot, Check, Copy, ShieldCheck } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
@@ -53,6 +53,12 @@ export function McpConnectorCard({ status, slug, serverUrl }: McpConnectorCardPr
   const enabled = status?.effectivelyEnabled ?? false;
   const consent = status?.consent ?? null;
 
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(null), 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
+
   const configSnippet = `{
   "mcpServers": {
     "kazi": {
@@ -65,7 +71,6 @@ export function McpConnectorCard({ status, slug, serverUrl }: McpConnectorCardPr
     try {
       await navigator.clipboard.writeText(value);
       setCopied(key);
-      setTimeout(() => setCopied((c) => (c === key ? null : c)), 2000);
     } catch {
       // Clipboard API may not be available
     }
@@ -318,7 +323,10 @@ export function McpConnectorCard({ status, slug, serverUrl }: McpConnectorCardPr
             <Button
               type="button"
               variant="outline"
-              onClick={() => setConsentOpen(false)}
+              onClick={() => {
+                setConsentOpen(false);
+                setError(null);
+              }}
               disabled={isPending}
             >
               Cancel

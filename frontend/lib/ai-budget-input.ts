@@ -23,10 +23,7 @@ export type BudgetInputDecision =
   | { kind: "value"; cents: number }
   | { kind: "invalid" };
 
-export function interpretBudgetInput(
-  value: string,
-  valueAsNumber: number,
-): BudgetInputDecision {
+export function interpretBudgetInput(value: string, valueAsNumber: number): BudgetInputDecision {
   if (value.trim() === "") {
     // Genuinely empty field → no cap. (A step/min-blanked field also reads as "" here;
     // with step={1} + whole Rands a normal typed value is no longer blanked, so this

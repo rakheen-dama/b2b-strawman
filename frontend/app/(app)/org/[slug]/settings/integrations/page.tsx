@@ -10,11 +10,7 @@ import { KycIntegrationCard } from "@/components/integrations/KycIntegrationCard
 import { AccountingIntegrationCard } from "@/components/integrations/AccountingIntegrationCard";
 import { McpIntegrationCard } from "@/components/integrations/McpIntegrationCard";
 import { getMcpStatusAction } from "./mcp/actions";
-import type {
-  IntegrationDomain,
-  OrgIntegration,
-  XeroConnectionResponse,
-} from "@/lib/types";
+import type { IntegrationDomain, OrgIntegration, XeroConnectionResponse } from "@/lib/types";
 import type { BillingResponse } from "@/lib/internal-api";
 
 const DOMAIN_CONFIG: {

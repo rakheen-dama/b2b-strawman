@@ -4,11 +4,7 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { McpConnectorCard } from "./mcp-connector-card";
 import { getMcpStatusAction } from "./actions";
 
-export default async function McpSettingsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function McpSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const caps = await fetchMyCapabilities();
   const isAdmin = caps.isAdmin || caps.isOwner;
@@ -40,8 +36,7 @@ export default async function McpSettingsPage({
   // The MCP server URL is authoritative on the backend (kazi.mcp.resource-url),
   // surfaced via the status payload. Fall back to the gateway-fronted /mcp path.
   const serverUrl =
-    status?.serverUrl ??
-    `${process.env.NEXT_PUBLIC_GATEWAY_URL ?? "http://localhost:8443"}/mcp`;
+    status?.serverUrl ?? `${process.env.NEXT_PUBLIC_GATEWAY_URL ?? "http://localhost:8443"}/mcp`;
 
   return (
     <div className="space-y-8">

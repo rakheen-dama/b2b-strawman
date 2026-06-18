@@ -97,9 +97,7 @@ describe("McpConnectorCard", () => {
 
     expect(screen.getByText("POPIA consent")).toBeInTheDocument();
     expect(screen.getByText("popia-egress-v1")).toBeInTheDocument();
-    expect(
-      screen.getByText(/3f9a0000-0000-0000-0000-000000000001/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/3f9a0000-0000-0000-0000-000000000001/)).toBeInTheDocument();
   });
 
   it("opens the revoke confirmation dialog when the toggle is switched off", async () => {

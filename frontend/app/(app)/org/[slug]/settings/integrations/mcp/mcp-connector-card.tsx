@@ -5,13 +5,7 @@ import { useRouter } from "next/navigation";
 import { Bot, Check, Copy, ShieldCheck } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@b2mash/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { Separator } from "@b2mash/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -190,11 +184,7 @@ export function McpConnectorCard({ status, slug, serverUrl }: McpConnectorCardPr
                   aria-label="Copy server URL"
                   onClick={() => handleCopy("url", serverUrl)}
                 >
-                  {copied === "url" ? (
-                    <Check className="size-4" />
-                  ) : (
-                    <Copy className="size-4" />
-                  )}
+                  {copied === "url" ? <Check className="size-4" /> : <Copy className="size-4" />}
                 </Button>
               </div>
             </div>
@@ -208,8 +198,8 @@ export function McpConnectorCard({ status, slug, serverUrl }: McpConnectorCardPr
                 <li>Open Claude Desktop settings (or your Claude Code config).</li>
                 <li>Add a new MCP server using the URL above.</li>
                 <li>
-                  Complete the OAuth sign-in flow when prompted — Claude authenticates against
-                  your Kazi organization before any data is read.
+                  Complete the OAuth sign-in flow when prompted — Claude authenticates against your
+                  Kazi organization before any data is read.
                 </li>
               </ol>
               <div className="space-y-2">
@@ -248,9 +238,7 @@ export function McpConnectorCard({ status, slug, serverUrl }: McpConnectorCardPr
               <>
                 <Separator />
                 <div className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
-                  <p className="font-medium text-slate-700 dark:text-slate-300">
-                    POPIA consent
-                  </p>
+                  <p className="font-medium text-slate-700 dark:text-slate-300">POPIA consent</p>
                   {consent.version && (
                     <p>
                       Version: <span className="font-mono">{consent.version}</span>
@@ -299,15 +287,15 @@ export function McpConnectorCard({ status, slug, serverUrl }: McpConnectorCardPr
             </div>
             <DialogTitle className="text-center">Acknowledge POPIA responsibility</DialogTitle>
             <DialogDescription className="text-center">
-              Enabling the MCP connector lets your firm&apos;s external AI context (Claude
-              Desktop or Code) read client personal information held in Kazi.
+              Enabling the MCP connector lets your firm&apos;s external AI context (Claude Desktop
+              or Code) read client personal information held in Kazi.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
             <p>
-              Under POPIA, your firm is the responsible party for client personal information.
-              When Claude reads matters, clients, and documents through this connector, that
-              data flows into your firm&apos;s own AI environment outside Kazi.
+              Under POPIA, your firm is the responsible party for client personal information. When
+              Claude reads matters, clients, and documents through this connector, that data flows
+              into your firm&apos;s own AI environment outside Kazi.
             </p>
             <p>
               By acknowledging, you confirm the firm accepts responsibility for the lawful and
@@ -352,9 +340,8 @@ export function McpConnectorCard({ status, slug, serverUrl }: McpConnectorCardPr
           <AlertDialogHeader>
             <AlertDialogTitle>Revoke MCP connector access?</AlertDialogTitle>
             <AlertDialogDescription>
-              Claude will no longer be able to read your Kazi data through the connector. A
-              REVOKED consent record is kept for your audit trail. You can re-enable at any
-              time.
+              Claude will no longer be able to read your Kazi data through the connector. A REVOKED
+              consent record is kept for your audit trail. You can re-enable at any time.
             </AlertDialogDescription>
           </AlertDialogHeader>
           {error && (

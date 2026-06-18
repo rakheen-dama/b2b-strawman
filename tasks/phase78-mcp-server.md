@@ -32,7 +32,7 @@ Phase 78 opens the second head on the same body: **Claude calls Kazi.** It ships
 | 564 | Read Catalogue Batch 2 — Capability-Gated Tools + Firm-Profile Resource | Backend | 562 (563 recommended) | L | 564A, 564B | **Done** — 564A, 564B (PR #1458) |
 | 565 | Enablement + POPIA Consent (Backend) | Backend | 562 | M | 565A, 565B, 565C | **Done** — 565A, 565B (PR #1459); 565C (PR #1460) |
 | 566 | MCP Connector Settings Card (Frontend) | Frontend | 565 | M | 566A | **Done** (PR #1461) |
-| 567 | Audit / Observability + Isolation / Read-Only Hardening | Backend | 562, 563, 564, 565 | M | 567A, 567B | |
+| 567 | Audit / Observability + Isolation / Read-Only Hardening | Backend | 562, 563, 564, 565 | M | 567A, 567B | **Done** — 567A, 567B (PR #1462) |
 
 **Slice count: 12** (5 architecture capability slices S1–S5 expanded to 6 epics / 12 numbered slices to enforce the 6–12 files / ~800 LOC slice budget; S1→Epic 562 split into 3 slices; S2→Epic 563; S3→Epic 564; S4 split into backend Epic 565 + frontend Epic 566; S5→Epic 567).
 
@@ -510,8 +510,8 @@ A realistic cadence: 562A days 1–3 (milestone-risk spike), 562B days 3–5, 56
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **567A** | 567A.1–567A.3 | ~5 backend files (1 audit metadata builder + 1 metrics + 1 wiring modify + 1 test) | Finalise `mcp.tool.invoked` (sanitised params summary, row count, entity refs) + `mcp.access.denied` (tool, denied gate); per-tenant call-count + latency metrics (no PII labels); audit-emission tests. | |
-| **567B** | 567B.1–567B.5 | ~5 backend test files | Cross-tenant isolation test; capability-gating test per regime; read-only registry-assertion test; pagination-cap + response-ceiling test; module-gating tolerance + enablement/revoke refusal test; manual-QA evidence doc. | |
+| **567A** | 567A.1–567A.3 | ~5 backend files (1 audit metadata builder + 1 metrics + 1 wiring modify + 1 test) | Finalise `mcp.tool.invoked` (sanitised params summary, row count, entity refs) + `mcp.access.denied` (tool, denied gate); per-tenant call-count + latency metrics (no PII labels); audit-emission tests. | **Done** (PR #1462) |
+| **567B** | 567B.1–567B.5 | ~5 backend test files | Cross-tenant isolation test; capability-gating test per regime; read-only registry-assertion test; pagination-cap + response-ceiling test; module-gating tolerance + enablement/revoke refusal test; manual-QA evidence doc. | **Done** (PR #1462) |
 
 ### Tasks
 

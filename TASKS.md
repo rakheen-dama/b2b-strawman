@@ -642,7 +642,7 @@
 | 564 | Read Catalogue Batch 2 — Capability-Gated Tools + Firm-Profile Resource | Backend | 562 | L | 564A, 564B | **Done** — 564A, 564B (PR #1458) |
 | 565 | Enablement + POPIA Consent (Backend) | Backend | 562 | M | 565A, 565B | **Done** — 565A, 565B (PR #1459) |
 | 566 | MCP Connector Settings Card (Frontend) | Frontend | 565 | M | 566A | **Done** (PR #1461) |
-| 567 | Audit / Observability + Isolation / Read-Only Hardening | Backend | 562, 563, 564, 565 | M | 567A, 567B | |
+| 567 | Audit / Observability + Isolation / Read-Only Hardening | Backend | 562, 563, 564, 565 | M | 567A, 567B | **Done** — 567A, 567B (PR #1462) |
 
 
 ---

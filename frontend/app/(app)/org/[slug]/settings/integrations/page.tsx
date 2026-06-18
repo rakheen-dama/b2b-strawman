@@ -8,7 +8,14 @@ import { EmailIntegrationCard } from "@/components/integrations/EmailIntegration
 import { PaymentIntegrationCard } from "@/components/integrations/PaymentIntegrationCard";
 import { KycIntegrationCard } from "@/components/integrations/KycIntegrationCard";
 import { AccountingIntegrationCard } from "@/components/integrations/AccountingIntegrationCard";
-import type { IntegrationDomain, OrgIntegration, XeroConnectionResponse } from "@/lib/types";
+import { McpIntegrationCard } from "@/components/integrations/McpIntegrationCard";
+import { getMcpStatusAction } from "./mcp/actions";
+import type {
+  IntegrationDomain,
+  OrgIntegration,
+  XeroConnectionResponse,
+  McpStatus,
+} from "@/lib/types";
 import type { BillingResponse } from "@/lib/internal-api";
 
 const DOMAIN_CONFIG: {
@@ -59,6 +66,7 @@ export default async function IntegrationsSettingsPage({
   let providers: Partial<Record<IntegrationDomain, string[]>> = {};
   let tier = "STARTER";
   let xeroConnection: XeroConnectionResponse | null = null;
+  let mcpStatus: McpStatus | null = null;
 
   try {
     const [integrationsResult, providersResult] = await Promise.all([
@@ -75,6 +83,12 @@ export default async function IntegrationsSettingsPage({
     xeroConnection = await getXeroConnection();
   } catch {
     // Not connected or error — leave as null
+  }
+
+  try {
+    mcpStatus = await getMcpStatusAction();
+  } catch {
+    // Non-fatal: leave as null (e.g. insufficient capability)
   }
 
   try {
@@ -154,6 +168,8 @@ export default async function IntegrationsSettingsPage({
             />
           );
         })}
+
+        <McpIntegrationCard slug={slug} status={mcpStatus} />
       </div>
     </div>
   );

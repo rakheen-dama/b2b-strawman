@@ -23,6 +23,10 @@ vi.mock("@/app/(app)/org/[slug]/settings/integrations/actions", () => ({
   testConnectionAction: vi.fn().mockResolvedValue({ success: true }),
 }));
 
+vi.mock("@/app/(app)/org/[slug]/settings/integrations/mcp/actions", () => ({
+  getMcpStatusAction: vi.fn().mockResolvedValue(null),
+}));
+
 vi.mock("@/lib/actions/email", () => ({
   getEmailStats: vi.fn().mockResolvedValue({
     success: true,

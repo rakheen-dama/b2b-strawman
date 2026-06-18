@@ -253,3 +253,29 @@ export interface SyncEntryResponse {
   createdAt: string;
   completedAt: string | null;
 }
+
+// ---- MCP Connector (from McpEnablementController.java — Epic 565C/566) ----
+
+/**
+ * POPIA data-egress consent document version the firm acknowledges when enabling
+ * the MCP connector. Must match the backend
+ * {@code McpConsentService.DEFAULT_CONSENT_VERSION}.
+ */
+export const MCP_CONSENT_VERSION = "popia-egress-v1";
+
+/** Latest POPIA data-egress consent decision for the MCP connector. */
+export interface McpConsentMetadata {
+  granted: boolean;
+  action: string | null; // "GRANTED" | "REVOKED" | null
+  version: string | null; // e.g. "popia-egress-v1"
+  consentedBy: string | null; // member UUID (string)
+  consentedAt: string | null; // ISO-8601
+}
+
+/** Effective MCP connector state for the settings card. */
+export interface McpStatus {
+  effectivelyEnabled: boolean;
+  integrationEnabled: boolean;
+  serverUrl: string;
+  consent: McpConsentMetadata;
+}

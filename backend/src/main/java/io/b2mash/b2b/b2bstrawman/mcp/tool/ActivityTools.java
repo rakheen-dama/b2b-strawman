@@ -3,7 +3,9 @@ package io.b2mash.b2b.b2bstrawman.mcp.tool;
 import io.b2mash.b2b.b2bstrawman.activity.ActivityService;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
@@ -33,20 +35,25 @@ import tools.jackson.databind.ObjectMapper;
 @Component
 public class ActivityTools {
 
+  private static final String GATE_PROJECT_ACCESS = "project-access";
+
   private final ActivityService activityService;
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
   private final McpEnablementService enablement;
+  private final McpMetrics metrics;
 
   public ActivityTools(
       ActivityService activityService,
       AuditService auditService,
       ObjectMapper objectMapper,
-      McpEnablementService enablement) {
+      McpEnablementService enablement,
+      McpMetrics metrics) {
     this.activityService = activityService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
     this.enablement = enablement;
+    this.metrics = metrics;
   }
 
   @McpTool(
@@ -63,6 +70,7 @@ public class ActivityTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
+    long startNanos = System.nanoTime();
     var actor = ActorContext.fromRequestScopes();
     int clampedSize = McpPagination.clampSize(size, McpPagination.DEFAULT_MAX_SIZE);
     int clampedPage = Math.max(page, 0);
@@ -78,14 +86,22 @@ public class ActivityTools {
               activityPage.getSize(),
               activityPage.getTotalElements(),
               activityPage.hasNext());
-      emitInvoked("get_matter_activity");
+      var meta = McpAuditMetadata.builder().rowCount(items.size()).entityRef(projectId).build();
+      emitInvoked("get_matter_activity", meta, startNanos);
       return result;
     } catch (ResourceNotFoundException e) {
+      // project-access denial: non-member turned away with non-leaking not_found, but audit it.
+      McpToolAudit.emitDenied(
+          "get_matter_activity",
+          GATE_PROJECT_ACCESS,
+          auditService,
+          metrics,
+          McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.notFound("matter"), objectMapper);
     }
   }
 
-  private void emitInvoked(String tool) {
-    McpToolAudit.emitInvoked(tool, auditService);
+  private void emitInvoked(String tool, McpAuditMetadata meta, long startNanos) {
+    McpToolAudit.emitInvoked(tool, meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
   }
 }

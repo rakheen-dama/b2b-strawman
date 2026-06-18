@@ -2,7 +2,9 @@ package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
@@ -11,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.data.domain.PageRequest;
@@ -32,15 +35,30 @@ public class AuditTools {
 
   private static final String CAP_TEAM_OVERSIGHT = "TEAM_OVERSIGHT";
 
+  /**
+   * Safe shape for an audit {@code eventType} prefix filter before it is recorded in the audit
+   * params summary. {@code eventType} is the ONLY caller (LLM)-supplied free-text field on this
+   * tool; the audit details map is POPIA-sensitive JSONB, so an event-type that does not match this
+   * structural pattern (lowercase, dotted/dashed segments only) is NOT written to the params
+   * summary — it still flows to the query filter unchanged. Mirrors the dotted event-type namespace
+   * (e.g. {@code invoice.}, {@code mcp.tool.invoked}).
+   */
+  private static final Pattern SAFE_EVENT_TYPE = Pattern.compile("^[a-z][a-z0-9._-]{0,64}$");
+
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
   private final McpEnablementService enablement;
+  private final McpMetrics metrics;
 
   public AuditTools(
-      AuditService auditService, ObjectMapper objectMapper, McpEnablementService enablement) {
+      AuditService auditService,
+      ObjectMapper objectMapper,
+      McpEnablementService enablement,
+      McpMetrics metrics) {
     this.auditService = auditService;
     this.objectMapper = objectMapper;
     this.enablement = enablement;
+    this.metrics = metrics;
   }
 
   @McpTool(
@@ -65,8 +83,14 @@ public class AuditTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
+    long startNanos = System.nanoTime();
     if (!RequestScopes.hasCapability(CAP_TEAM_OVERSIGHT)) {
-      McpToolAudit.emitDenied("get_audit_events", auditService);
+      McpToolAudit.emitDenied(
+          "get_audit_events",
+          CAP_TEAM_OVERSIGHT,
+          auditService,
+          metrics,
+          McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
     }
     int clampedSize = McpPagination.clampSize(size, McpPagination.AUDIT_MAX_SIZE);
@@ -88,7 +112,20 @@ public class AuditTools {
             eventsPage.getSize(),
             eventsPage.getTotalElements(),
             eventsPage.hasNext());
-    McpToolAudit.emitInvoked("get_audit_events", auditService);
+    // customerId is an id (always safe). eventType is caller-supplied free text: record it in the
+    // POPIA-sensitive audit params summary ONLY when it matches the safe structural shape, else
+    // drop
+    // it (the builder ignores null). The query filter above still used the raw eventType verbatim.
+    String safeEventType =
+        eventType != null && SAFE_EVENT_TYPE.matcher(eventType).matches() ? eventType : null;
+    var meta =
+        McpAuditMetadata.builder()
+            .rowCount(items.size())
+            .entityRef(customerId)
+            .param("eventType", safeEventType)
+            .build();
+    McpToolAudit.emitInvoked(
+        "get_audit_events", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
     return result;
   }
 }

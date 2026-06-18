@@ -2,7 +2,9 @@ package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ModuleNotEnabledException;
+import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
@@ -43,18 +45,21 @@ public class TrustTools {
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
   private final McpEnablementService enablement;
+  private final McpMetrics metrics;
 
   public TrustTools(
       ClientLedgerService clientLedgerService,
       OrgSettingsService orgSettingsService,
       AuditService auditService,
       ObjectMapper objectMapper,
-      McpEnablementService enablement) {
+      McpEnablementService enablement,
+      McpMetrics metrics) {
     this.clientLedgerService = clientLedgerService;
     this.orgSettingsService = orgSettingsService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
     this.enablement = enablement;
+    this.metrics = metrics;
   }
 
   @McpTool(
@@ -74,8 +79,14 @@ public class TrustTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
+    long startNanos = System.nanoTime();
     if (!RequestScopes.hasCapability(CAP_VIEW_TRUST)) {
-      McpToolAudit.emitDenied("get_trust_balance", auditService);
+      McpToolAudit.emitDenied(
+          "get_trust_balance",
+          CAP_VIEW_TRUST,
+          auditService,
+          metrics,
+          McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
     }
     try {
@@ -95,7 +106,14 @@ public class TrustTools {
             new McpTrustBalanceDto(
                 trustAccountId, null, total.balance().movePointRight(2).longValueExact(), currency);
       }
-      McpToolAudit.emitInvoked("get_trust_balance", auditService);
+      var meta =
+          McpAuditMetadata.builder()
+              .rowCount(1)
+              .entityRef(trustAccountId)
+              .entityRef(customerId)
+              .build();
+      McpToolAudit.emitInvoked(
+          "get_trust_balance", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
       return dto;
     } catch (ModuleNotEnabledException e) {
       return McpToolErrors.asResult(McpError.moduleDisabled(TRUST_MODULE), objectMapper);
@@ -117,8 +135,14 @@ public class TrustTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
+    long startNanos = System.nanoTime();
     if (!RequestScopes.hasCapability(CAP_VIEW_TRUST)) {
-      McpToolAudit.emitDenied("list_trust_transactions", auditService);
+      McpToolAudit.emitDenied(
+          "list_trust_transactions",
+          CAP_VIEW_TRUST,
+          auditService,
+          metrics,
+          McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
     }
     int clampedSize = McpPagination.clampSize(size, McpPagination.DEFAULT_MAX_SIZE);
@@ -139,7 +163,14 @@ public class TrustTools {
               txPage.getSize(),
               txPage.getTotalElements(),
               txPage.hasNext());
-      McpToolAudit.emitInvoked("list_trust_transactions", auditService);
+      var meta =
+          McpAuditMetadata.builder()
+              .rowCount(items.size())
+              .entityRef(trustAccountId)
+              .entityRef(customerId)
+              .build();
+      McpToolAudit.emitInvoked(
+          "list_trust_transactions", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
       return result;
     } catch (ModuleNotEnabledException e) {
       return McpToolErrors.asResult(McpError.moduleDisabled(TRUST_MODULE), objectMapper);

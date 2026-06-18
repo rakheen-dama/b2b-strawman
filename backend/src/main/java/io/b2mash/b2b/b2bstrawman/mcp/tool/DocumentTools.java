@@ -4,7 +4,9 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.document.DocumentService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
+import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
@@ -36,20 +38,25 @@ import tools.jackson.databind.ObjectMapper;
 @Component
 public class DocumentTools {
 
+  private static final String GATE_PROJECT_ACCESS = "project-access";
+
   private final DocumentService documentService;
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
   private final McpEnablementService enablement;
+  private final McpMetrics metrics;
 
   public DocumentTools(
       DocumentService documentService,
       AuditService auditService,
       ObjectMapper objectMapper,
-      McpEnablementService enablement) {
+      McpEnablementService enablement,
+      McpMetrics metrics) {
     this.documentService = documentService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
     this.enablement = enablement;
+    this.metrics = metrics;
   }
 
   @McpTool(
@@ -75,6 +82,7 @@ public class DocumentTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
+    long startNanos = System.nanoTime();
     var actor = ActorContext.fromRequestScopes();
     try {
       List<McpDocumentDto> docs;
@@ -101,11 +109,27 @@ public class DocumentTools {
       }
       McpPage<McpDocumentDto> pageResult =
           McpPagination.paginate(docs, page, size, McpPagination.DEFAULT_MAX_SIZE);
-      emitInvoked("search_documents");
+      var meta =
+          McpAuditMetadata.builder()
+              .rowCount(pageResult.items().size())
+              .entityRef(projectId)
+              .entityRef(customerId)
+              .param("scope", projectId != null ? null : scope)
+              .build();
+      emitInvoked("search_documents", meta, startNanos);
       return pageResult;
     } catch (ResourceNotFoundException e) {
       // Generic resource noun: search_documents serves project, org, and customer scopes, so a
-      // matter-specific message would mislead on the org/customer paths.
+      // matter-specific message would mislead on the org/customer paths. A projectId search that
+      // 404s is a project-access denial — emit mcp.access.denied for that case only.
+      if (projectId != null) {
+        McpToolAudit.emitDenied(
+            "search_documents",
+            GATE_PROJECT_ACCESS,
+            auditService,
+            metrics,
+            McpToolAudit.elapsed(startNanos));
+      }
       return McpToolErrors.asResult(McpError.notFound("document"), objectMapper);
     } catch (InvalidStateException e) {
       return McpToolErrors.asResult(
@@ -125,20 +149,35 @@ public class DocumentTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
+    long startNanos = System.nanoTime();
     var actor = ActorContext.fromRequestScopes();
     try {
       var result = documentService.getPresignedDownloadUrl(documentId, actor);
       var dto = new McpDownloadUrl(result.url(), result.expiresInSeconds());
-      emitInvoked("get_document_url");
+      var meta = McpAuditMetadata.builder().rowCount(1).entityRef(documentId).build();
+      emitInvoked("get_document_url", meta, startNanos);
       return dto;
     } catch (ResourceNotFoundException e) {
+      // project-access denial (or genuinely absent) — non-leaking not_found, but audit the refusal.
+      McpToolAudit.emitDenied(
+          "get_document_url",
+          GATE_PROJECT_ACCESS,
+          auditService,
+          metrics,
+          McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.notFound("document"), objectMapper);
     } catch (InvalidStateException e) {
-      return McpToolErrors.asResult(McpError.notFound("document"), objectMapper);
+      // Document exists but is not yet downloadable (e.g. not UPLOADED). This is a lifecycle/state
+      // condition, NOT an access refusal — record it as an error-outcome metric (gate label
+      // "document-state") so it is distinguishable from project-access denials, and return a clear,
+      // non-leaking state error rather than masquerading as not_found.
+      metrics.recordError("get_document_url", McpToolAudit.elapsed(startNanos));
+      return McpToolErrors.asResult(
+          McpError.invalidRequest("Document is not yet available for download."), objectMapper);
     }
   }
 
-  private void emitInvoked(String tool) {
-    McpToolAudit.emitInvoked(tool, auditService);
+  private void emitInvoked(String tool, McpAuditMetadata meta, long startNanos) {
+    McpToolAudit.emitInvoked(tool, meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
   }
 }

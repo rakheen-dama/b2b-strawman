@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
 import java.util.List;
+import org.springframework.ai.mcp.annotation.McpResource;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration.ServerMcpAnnotatedBeans;
 import org.springframework.stereotype.Component;
@@ -47,5 +48,13 @@ public class McpToolRegistry {
    */
   public int toolBeanCount() {
     return registeredToolBeans().size();
+  }
+
+  /**
+   * All Spring beans that declare at least one {@code @McpResource} method. Introspection seam for
+   * the 567B.3 read-only-assertion test (resources are separate beans from {@code @McpTool} beans).
+   */
+  public List<Object> registeredResourceBeans() {
+    return annotatedBeans.getBeansByAnnotation(McpResource.class);
   }
 }

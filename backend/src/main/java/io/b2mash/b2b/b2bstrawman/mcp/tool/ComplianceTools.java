@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceService;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
+import io.b2mash.b2b.b2bstrawman.mcp.McpCapabilityGuard;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
@@ -12,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.mcp.McpToolAudit;
 import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpComplianceGapDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
@@ -64,28 +64,30 @@ public class ComplianceTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
-    long startNanos = System.nanoTime();
-    if (!RequestScopes.hasCapability(CAP_CUSTOMER_MANAGEMENT)) {
-      McpToolAudit.emitDenied(
-          "list_compliance_gaps",
-          CAP_CUSTOMER_MANAGEMENT,
-          auditService,
-          metrics,
-          McpToolAudit.elapsed(startNanos));
-      return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
-    }
-    try {
-      var fica = informationRequestService.getFicaStatus(customerId);
-      var instances = checklistInstanceService.getInstancesWithItemsForCustomer(customerId);
-      var dto =
-          McpComplianceGapDto.from(
-              customerId, fica.status(), instances, McpPagination.DEFAULT_MAX_SIZE);
-      var meta = McpAuditMetadata.builder().rowCount(1).entityRef(customerId).build();
-      McpToolAudit.emitInvoked(
-          "list_compliance_gaps", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
-      return dto;
-    } catch (ResourceNotFoundException e) {
-      return McpToolErrors.asResult(McpError.notFound("client"), objectMapper);
-    }
+    return McpCapabilityGuard.gatedTool(
+        CAP_CUSTOMER_MANAGEMENT,
+        "list_compliance_gaps",
+        auditService,
+        metrics,
+        objectMapper,
+        startNanos -> {
+          try {
+            var fica = informationRequestService.getFicaStatus(customerId);
+            var instances = checklistInstanceService.getInstancesWithItemsForCustomer(customerId);
+            var dto =
+                McpComplianceGapDto.from(
+                    customerId, fica.status(), instances, McpPagination.DEFAULT_MAX_SIZE);
+            var meta = McpAuditMetadata.builder().rowCount(1).entityRef(customerId).build();
+            McpToolAudit.emitInvoked(
+                "list_compliance_gaps",
+                meta,
+                auditService,
+                metrics,
+                McpToolAudit.elapsed(startNanos));
+            return dto;
+          } catch (ResourceNotFoundException e) {
+            return McpToolErrors.asResult(McpError.notFound("client"), objectMapper);
+          }
+        });
   }
 }

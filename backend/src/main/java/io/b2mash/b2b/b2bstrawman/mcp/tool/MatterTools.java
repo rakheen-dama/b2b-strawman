@@ -33,6 +33,12 @@ import tools.jackson.databind.ObjectMapper;
  *
  * <p>The MCP_ACCESS front-door capability gate is intentionally <b>not</b> applied here — it lands
  * in 565B. Tools rely on the authenticated {@code /mcp} chain plus their own per-domain gates.
+ *
+ * <p>Unlike the other read tools, these methods are <b>not</b> routed through {@link
+ * io.b2mash.b2b.b2bstrawman.mcp.McpCapabilityGuard} (issue #1463): the gate here is project-access
+ * (a per-resource membership check surfaced as a non-leaking {@code not_found}), not a capability,
+ * so it cannot be expressed as a capability guard. The {@code mcp.access.denied} (gate {@code
+ * project-access}) emission stays inline in the {@code catch} below.
  */
 @Component
 public class MatterTools {

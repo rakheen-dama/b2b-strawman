@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.mcp.tool;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
+import io.b2mash.b2b.b2bstrawman.mcp.McpCapabilityGuard;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
@@ -11,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpAuditEventItem;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.springframework.ai.mcp.annotation.McpTool;
@@ -83,49 +83,47 @@ public class AuditTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
-    long startNanos = System.nanoTime();
-    if (!RequestScopes.hasCapability(CAP_TEAM_OVERSIGHT)) {
-      McpToolAudit.emitDenied(
-          "get_audit_events",
-          CAP_TEAM_OVERSIGHT,
-          auditService,
-          metrics,
-          McpToolAudit.elapsed(startNanos));
-      return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
-    }
-    int clampedSize = McpPagination.clampSize(size, McpPagination.AUDIT_MAX_SIZE);
-    int clampedPage = Math.max(page, 0);
+    return McpCapabilityGuard.gatedTool(
+        CAP_TEAM_OVERSIGHT,
+        "get_audit_events",
+        auditService,
+        metrics,
+        objectMapper,
+        startNanos -> {
+          int clampedSize = McpPagination.clampSize(size, McpPagination.AUDIT_MAX_SIZE);
+          int clampedPage = Math.max(page, 0);
 
-    AuditEventFilter filter =
-        customerId != null
-            ? new AuditEventFilter("customer", customerId, null, eventType, null, null, null)
-            : new AuditEventFilter(null, null, null, eventType, null, null, null);
+          AuditEventFilter filter =
+              customerId != null
+                  ? new AuditEventFilter("customer", customerId, null, eventType, null, null, null)
+                  : new AuditEventFilter(null, null, null, eventType, null, null, null);
 
-    // Ordering is fixed occurredAt DESC by the audit query — do not set a Sort.
-    var eventsPage =
-        auditService.findEventsEnriched(filter, PageRequest.of(clampedPage, clampedSize));
-    var items = eventsPage.getContent().stream().map(McpAuditEventItem::from).toList();
-    McpPage<McpAuditEventItem> result =
-        McpPage.of(
-            items,
-            eventsPage.getNumber(),
-            eventsPage.getSize(),
-            eventsPage.getTotalElements(),
-            eventsPage.hasNext());
-    // customerId is an id (always safe). eventType is caller-supplied free text: record it in the
-    // POPIA-sensitive audit params summary ONLY when it matches the safe structural shape, else
-    // drop
-    // it (the builder ignores null). The query filter above still used the raw eventType verbatim.
-    String safeEventType =
-        eventType != null && SAFE_EVENT_TYPE.matcher(eventType).matches() ? eventType : null;
-    var meta =
-        McpAuditMetadata.builder()
-            .rowCount(items.size())
-            .entityRef(customerId)
-            .param("eventType", safeEventType)
-            .build();
-    McpToolAudit.emitInvoked(
-        "get_audit_events", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
-    return result;
+          // Ordering is fixed occurredAt DESC by the audit query — do not set a Sort.
+          var eventsPage =
+              auditService.findEventsEnriched(filter, PageRequest.of(clampedPage, clampedSize));
+          var items = eventsPage.getContent().stream().map(McpAuditEventItem::from).toList();
+          McpPage<McpAuditEventItem> result =
+              McpPage.of(
+                  items,
+                  eventsPage.getNumber(),
+                  eventsPage.getSize(),
+                  eventsPage.getTotalElements(),
+                  eventsPage.hasNext());
+          // customerId is an id (always safe). eventType is caller-supplied free text: record it in
+          // the POPIA-sensitive audit params summary ONLY when it matches the safe structural
+          // shape, else drop it (the builder ignores null). The query filter above still used the
+          // raw eventType verbatim.
+          String safeEventType =
+              eventType != null && SAFE_EVENT_TYPE.matcher(eventType).matches() ? eventType : null;
+          var meta =
+              McpAuditMetadata.builder()
+                  .rowCount(items.size())
+                  .entityRef(customerId)
+                  .param("eventType", safeEventType)
+                  .build();
+          McpToolAudit.emitInvoked(
+              "get_audit_events", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
+          return result;
+        });
   }
 }

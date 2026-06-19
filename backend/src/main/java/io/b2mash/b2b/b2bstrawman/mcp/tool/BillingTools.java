@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.invoice.UnbilledTimeService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
+import io.b2mash.b2b.b2bstrawman.mcp.McpCapabilityGuard;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
@@ -16,7 +17,6 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpInvoiceDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpUnbilledSummaryItem;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpUnbilledSummaryItem.McpUnbilledMatterSummary;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummaryService;
 import java.time.LocalDate;
@@ -88,41 +88,45 @@ public class BillingTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
-    long startNanos = System.nanoTime();
-    if (!RequestScopes.hasCapability(CAP_INVOICING)) {
-      McpToolAudit.emitDenied(
-          "list_invoices", CAP_INVOICING, auditService, metrics, McpToolAudit.elapsed(startNanos));
-      return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
-    }
-    InvoiceStatus parsed;
-    try {
-      parsed =
-          status == null ? null : InvoiceStatus.valueOf(status.trim().toUpperCase(Locale.ROOT));
-    } catch (IllegalArgumentException e) {
-      return McpToolErrors.asResult(
-          McpError.invalidRequest("Unknown status. See the tool description for values."),
-          objectMapper);
-    }
+    return McpCapabilityGuard.gatedTool(
+        CAP_INVOICING,
+        "list_invoices",
+        auditService,
+        metrics,
+        objectMapper,
+        startNanos -> {
+          InvoiceStatus parsed;
+          try {
+            parsed =
+                status == null
+                    ? null
+                    : InvoiceStatus.valueOf(status.trim().toUpperCase(Locale.ROOT));
+          } catch (IllegalArgumentException e) {
+            return McpToolErrors.asResult(
+                McpError.invalidRequest("Unknown status. See the tool description for values."),
+                objectMapper);
+          }
 
-    var invoices =
-        invoiceService.findAll(customerId, parsed, projectId).stream()
-            .map(McpInvoiceDto::listItem)
-            .toList();
-    if (McpPagination.exceedsResponseCeiling(invoices.size())) {
-      return McpToolErrors.asResult(McpError.responseTooLarge(), objectMapper);
-    }
-    McpPage<McpInvoiceDto> result =
-        McpPagination.paginate(invoices, page, size, McpPagination.DEFAULT_MAX_SIZE);
-    var meta =
-        McpAuditMetadata.builder()
-            .rowCount(result.items().size())
-            .param("customerId", customerId)
-            .param("status", parsed == null ? null : parsed.name())
-            .param("projectId", projectId)
-            .build();
-    McpToolAudit.emitInvoked(
-        "list_invoices", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
-    return result;
+          var invoices =
+              invoiceService.findAll(customerId, parsed, projectId).stream()
+                  .map(McpInvoiceDto::listItem)
+                  .toList();
+          if (McpPagination.exceedsResponseCeiling(invoices.size())) {
+            return McpToolErrors.asResult(McpError.responseTooLarge(), objectMapper);
+          }
+          McpPage<McpInvoiceDto> result =
+              McpPagination.paginate(invoices, page, size, McpPagination.DEFAULT_MAX_SIZE);
+          var meta =
+              McpAuditMetadata.builder()
+                  .rowCount(result.items().size())
+                  .param("customerId", customerId)
+                  .param("status", parsed == null ? null : parsed.name())
+                  .param("projectId", projectId)
+                  .build();
+          McpToolAudit.emitInvoked(
+              "list_invoices", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
+          return result;
+        });
   }
 
   @McpTool(
@@ -137,23 +141,25 @@ public class BillingTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
-    long startNanos = System.nanoTime();
-    if (!RequestScopes.hasCapability(CAP_INVOICING)) {
-      McpToolAudit.emitDenied(
-          "get_invoice", CAP_INVOICING, auditService, metrics, McpToolAudit.elapsed(startNanos));
-      return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
-    }
-    try {
-      var invoice = invoiceService.findById(invoiceId);
-      var payments = invoiceService.getPaymentEvents(invoiceId);
-      var dto = McpInvoiceDto.detail(invoice, payments, McpPagination.DEFAULT_MAX_SIZE);
-      var meta = McpAuditMetadata.builder().rowCount(1).entityRef(invoiceId).build();
-      McpToolAudit.emitInvoked(
-          "get_invoice", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
-      return dto;
-    } catch (ResourceNotFoundException e) {
-      return McpToolErrors.asResult(McpError.notFound("invoice"), objectMapper);
-    }
+    return McpCapabilityGuard.gatedTool(
+        CAP_INVOICING,
+        "get_invoice",
+        auditService,
+        metrics,
+        objectMapper,
+        startNanos -> {
+          try {
+            var invoice = invoiceService.findById(invoiceId);
+            var payments = invoiceService.getPaymentEvents(invoiceId);
+            var dto = McpInvoiceDto.detail(invoice, payments, McpPagination.DEFAULT_MAX_SIZE);
+            var meta = McpAuditMetadata.builder().rowCount(1).entityRef(invoiceId).build();
+            McpToolAudit.emitInvoked(
+                "get_invoice", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
+            return dto;
+          } catch (ResourceNotFoundException e) {
+            return McpToolErrors.asResult(McpError.notFound("invoice"), objectMapper);
+          }
+        });
   }
 
   @McpTool(
@@ -178,49 +184,53 @@ public class BillingTools {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }
-    long startNanos = System.nanoTime();
-    if (!RequestScopes.hasCapability(CAP_INVOICING)) {
-      McpToolAudit.emitDenied(
-          "get_unbilled_time",
-          CAP_INVOICING,
-          auditService,
-          metrics,
-          McpToolAudit.elapsed(startNanos));
-      return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
-    }
-    if (projectId != null) {
-      try {
-        var summary = unbilledTimeSummaryService.getProjectUnbilledSummary(projectId);
-        var meta = McpAuditMetadata.builder().rowCount(1).entityRef(projectId).build();
-        McpToolAudit.emitInvoked(
-            "get_unbilled_time", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
-        return McpUnbilledMatterSummary.from(projectId, summary);
-      } catch (ResourceNotFoundException e) {
-        return McpToolErrors.asResult(McpError.notFound("matter"), objectMapper);
-      }
-    }
+    return McpCapabilityGuard.gatedTool(
+        CAP_INVOICING,
+        "get_unbilled_time",
+        auditService,
+        metrics,
+        objectMapper,
+        startNanos -> {
+          if (projectId != null) {
+            try {
+              var summary = unbilledTimeSummaryService.getProjectUnbilledSummary(projectId);
+              var meta = McpAuditMetadata.builder().rowCount(1).entityRef(projectId).build();
+              McpToolAudit.emitInvoked(
+                  "get_unbilled_time",
+                  meta,
+                  auditService,
+                  metrics,
+                  McpToolAudit.elapsed(startNanos));
+              return McpUnbilledMatterSummary.from(projectId, summary);
+            } catch (ResourceNotFoundException e) {
+              return McpToolErrors.asResult(McpError.notFound("matter"), objectMapper);
+            }
+          }
 
-    String resolvedCurrency =
-        (currency == null || currency.isBlank())
-            ? orgSettingsService.getDefaultCurrency()
-            : currency.trim().toUpperCase(Locale.ROOT);
-    var rows =
-        unbilledTimeService.getUnbilledSummary(periodFrom, periodTo, resolvedCurrency).stream()
-            .map(row -> McpUnbilledSummaryItem.from(row, resolvedCurrency))
-            .toList();
-    if (McpPagination.exceedsResponseCeiling(rows.size())) {
-      return McpToolErrors.asResult(McpError.responseTooLarge(), objectMapper);
-    }
-    McpPage<McpUnbilledSummaryItem> result =
-        McpPagination.paginate(
-            rows, 0, McpPagination.DEFAULT_MAX_SIZE, McpPagination.DEFAULT_MAX_SIZE);
-    var meta =
-        McpAuditMetadata.builder()
-            .rowCount(result.items().size())
-            .param("currency", currency)
-            .build();
-    McpToolAudit.emitInvoked(
-        "get_unbilled_time", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
-    return result;
+          String resolvedCurrency =
+              (currency == null || currency.isBlank())
+                  ? orgSettingsService.getDefaultCurrency()
+                  : currency.trim().toUpperCase(Locale.ROOT);
+          var rows =
+              unbilledTimeService
+                  .getUnbilledSummary(periodFrom, periodTo, resolvedCurrency)
+                  .stream()
+                  .map(row -> McpUnbilledSummaryItem.from(row, resolvedCurrency))
+                  .toList();
+          if (McpPagination.exceedsResponseCeiling(rows.size())) {
+            return McpToolErrors.asResult(McpError.responseTooLarge(), objectMapper);
+          }
+          McpPage<McpUnbilledSummaryItem> result =
+              McpPagination.paginate(
+                  rows, 0, McpPagination.DEFAULT_MAX_SIZE, McpPagination.DEFAULT_MAX_SIZE);
+          var meta =
+              McpAuditMetadata.builder()
+                  .rowCount(result.items().size())
+                  .param("currency", currency)
+                  .build();
+          McpToolAudit.emitInvoked(
+              "get_unbilled_time", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
+          return result;
+        });
   }
 }

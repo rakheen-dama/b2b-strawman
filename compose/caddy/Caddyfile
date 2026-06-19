@@ -1,0 +1,34 @@
+{
+	email admin@heykazi.com
+}
+
+app-dev.heykazi.com {
+	reverse_proxy frontend:3000
+}
+
+bff-dev.heykazi.com {
+	reverse_proxy gateway:8443
+}
+
+auth-dev.heykazi.com {
+	reverse_proxy keycloak:8180
+}
+
+portal-dev.heykazi.com {
+	reverse_proxy portal:3002
+}
+
+api-dev.heykazi.com {
+	reverse_proxy backend:8080
+}
+
+storage-dev.heykazi.com {
+	reverse_proxy minio:9000
+}
+
+mail-dev.heykazi.com {
+	basic_auth {
+		{$MAIL_BASIC_AUTH_USER} {$MAIL_BASIC_AUTH_HASH}
+	}
+	reverse_proxy mailpit:8025
+}

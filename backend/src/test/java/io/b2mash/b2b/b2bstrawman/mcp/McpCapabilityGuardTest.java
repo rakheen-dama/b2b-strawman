@@ -113,6 +113,23 @@ class McpCapabilityGuardTest {
     assertThat(captor.getValue().details()).containsEntry("deniedGate", "AI_MANAGE");
   }
 
+  @Test
+  void grantedResource_runsBody_andEmitsNoDenial() {
+    AuditService audit = mock(AuditService.class);
+    McpMetrics metrics = new McpMetrics(new SimpleMeterRegistry());
+    ObjectMapper om = new ObjectMapper();
+
+    String result =
+        runScoped(
+            Set.of("MCP_ACCESS", "AI_MANAGE"),
+            () ->
+                McpCapabilityGuard.gatedResource(
+                    "AI_MANAGE", "kazi://firm-profile", audit, metrics, om, startNanos -> "ok"));
+
+    assertThat(result).isEqualTo("ok");
+    verify(audit, never()).log(org.mockito.ArgumentMatchers.any());
+  }
+
   /** Bind a member id (so the denial audit can resolve an actor) plus the capability set. */
   private static <T> T runScoped(Set<String> capabilities, java.util.function.Supplier<T> body) {
     Object[] holder = new Object[1];

@@ -57,8 +57,7 @@
       "redirectUris": [
         "http://localhost:8443/login/oauth2/code/keycloak",
         "http://localhost:3000/*",
-        "https://bff-dev.heykazi.com/login/oauth2/code/keycloak",
-        "https://app-dev.heykazi.com/*"
+        "https://bff-dev.heykazi.com/login/oauth2/code/keycloak"
       ],
       "attributes": {
         "post.logout.redirect.uris": "http://localhost:3000##http://localhost:3000/*##https://app-dev.heykazi.com##https://app-dev.heykazi.com/*"
@@ -108,16 +107,15 @@
       "directAccessGrantsEnabled": false,
       "redirectUris": [
         "https://claude.ai/api/mcp/auth_callback",
-        "http://localhost:*/callback",
-        "https://api-dev.heykazi.com/*"
+        "http://localhost:*/callback"
       ],
-      "webOrigins": ["+"],
+      "webOrigins": ["https://claude.ai"],
       "attributes": {
         "pkce.code.challenge.method": "S256",
         "post.logout.redirect.uris": "+"
       },
       "protocol": "openid-connect",
-      "fullScopeAllowed": true
+      "fullScopeAllowed": false
     },
     {
       "clientId": "admin-cli",

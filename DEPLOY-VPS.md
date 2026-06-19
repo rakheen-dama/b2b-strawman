@@ -519,9 +519,9 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --no-deps b
 
 These are tracked decisions made explicitly for the dev environment — not oversights. Each should be revisited before promoting to a production tenant-facing deployment.
 
-**(a) Keycloak runs in `start-dev` mode**
+**(a) Keycloak — RESOLVED: runs in production mode**
 
-`docker-compose.prod.yml` uses `command: start-dev --import-realm`. Dev mode disables some production hardening (e.g. it uses an embedded H2 database for Keycloak's internal cache unless `KC_DB` is set — which it is here, so Postgres is used, but other dev-mode relaxations apply). The correct production command is `start` (with explicit `KC_HOSTNAME`, `KC_HTTPS_*`, etc.). Tracked: switch to `start` when promoting to production.
+`docker-compose.prod.yml` uses `command: start --import-realm` (Keycloak production mode). This was boot-verified: the server logs `Profile prod activated`, imports the `docteams` realm, and — behind Caddy's `X-Forwarded-*` headers with `KC_HOSTNAME=https://auth-dev.heykazi.com` + `KC_PROXY_HEADERS=xforwarded` — resolves its OIDC issuer to `https://auth-dev.heykazi.com/realms/docteams`. No `KC_HOSTNAME_STRICT` or other extra config was needed. (The local dev stack `docker-compose.yml` still uses `start-dev` and is unaffected.)
 
 **(b) Shared Postgres superuser across all services**
 

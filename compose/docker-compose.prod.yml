@@ -12,7 +12,7 @@ services:
       - "127.0.0.1:5432:5432"   # loopback only — reach via SSH tunnel
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./data/postgres:/docker-entrypoint-initdb.d
+      - ./data/postgres:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -61,7 +61,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.5.0
     restart: unless-stopped
-    command: start-dev --import-realm --features=scripts
+    command: start-dev --import-realm
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak

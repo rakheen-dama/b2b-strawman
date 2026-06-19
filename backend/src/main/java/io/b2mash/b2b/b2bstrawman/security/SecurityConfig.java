@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.portal.CustomerAuthFilter;
 import java.util.List;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.support.annotation.AnnotationMatchingPointcut;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.annotation.Bean;
@@ -48,6 +49,17 @@ public class SecurityConfig {
   private final McpSessionAuditListener mcpSessionAuditListener;
   private final Environment environment;
 
+  /**
+   * RFC 9728 protected-resource-metadata claims for the MCP server (ADR-303). Spring Security 7
+   * auto-registers an {@code OAuth2ProtectedResourceMetadataFilter} at {@code
+   * /.well-known/oauth-protected-resource}; we drive its claims here so the Claude MCP client can
+   * discover the Keycloak authorization server (the default filter omits {@code
+   * authorization_servers} and derives {@code resource} from the request host).
+   */
+  private final String mcpResourceUrl;
+
+  private final String jwtIssuerUri;
+
   public SecurityConfig(
       ClerkJwtAuthenticationConverter jwtAuthConverter,
       ApiKeyAuthFilter apiKeyAuthFilter,
@@ -59,7 +71,9 @@ public class SecurityConfig {
       CustomerAuthFilter customerAuthFilter,
       AuditAuthenticationEntryPoint auditAuthEntryPoint,
       McpSessionAuditListener mcpSessionAuditListener,
-      Environment environment) {
+      Environment environment,
+      @Value("${kazi.mcp.resource-url:http://localhost:8080/mcp}") String mcpResourceUrl,
+      @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri:}") String jwtIssuerUri) {
     this.jwtAuthConverter = jwtAuthConverter;
     this.apiKeyAuthFilter = apiKeyAuthFilter;
     this.tenantFilter = tenantFilter;
@@ -71,6 +85,8 @@ public class SecurityConfig {
     this.auditAuthEntryPoint = auditAuthEntryPoint;
     this.mcpSessionAuditListener = mcpSessionAuditListener;
     this.environment = environment;
+    this.mcpResourceUrl = mcpResourceUrl;
+    this.jwtIssuerUri = jwtIssuerUri;
   }
 
   /**
@@ -135,7 +151,10 @@ public class SecurityConfig {
                     .permitAll()
                     // MCP OAuth protected-resource metadata (Phase 78, ADR-303 / RFC 9728): PUBLIC
                     // so the Claude client can discover the Keycloak authorization server BEFORE it
-                    // has a token, then run the authorization-code/PKCE flow.
+                    // has a token, then run the authorization-code/PKCE flow. Served by Spring
+                    // Security 7's built-in OAuth2ProtectedResourceMetadataFilter; its claims are
+                    // driven by the protectedResourceMetadata customizer on oauth2ResourceServer
+                    // below.
                     .requestMatchers("/.well-known/oauth-protected-resource")
                     .permitAll()
                     // MCP server (Phase 78, ADR-303): the WHOLE /mcp request must traverse this
@@ -155,7 +174,21 @@ public class SecurityConfig {
             oauth2 ->
                 oauth2
                     .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter))
-                    .authenticationEntryPoint(auditAuthEntryPoint))
+                    .authenticationEntryPoint(auditAuthEntryPoint)
+                    // RFC 9728 (ADR-303): the built-in OAuth2ProtectedResourceMetadataFilter serves
+                    // /.well-known/oauth-protected-resource. By default it omits
+                    // `authorization_servers` and derives `resource` from the request host, which
+                    // breaks remote MCP OAuth discovery. Drive the claims so the Claude MCP client
+                    // can discover the Keycloak authorization server before it has a token.
+                    .protectedResourceMetadata(
+                        metadata ->
+                            metadata.protectedResourceMetadataCustomizer(
+                                builder -> {
+                                  builder.resource(mcpResourceUrl);
+                                  if (!jwtIssuerUri.isBlank()) {
+                                    builder.authorizationServer(jwtIssuerUri);
+                                  }
+                                })))
         .addFilterBefore(apiKeyAuthFilter, BearerTokenAuthenticationFilter.class)
         .addFilterAfter(tenantFilter, BearerTokenAuthenticationFilter.class)
         .addFilterAfter(memberFilter, TenantFilter.class)

@@ -6,6 +6,7 @@ export default {
   },
   "getting-started": "Getting Started",
   features: "Features",
+  ai: "AI",
   admin: "Administration",
   verticals: "Industry Guides",
 };

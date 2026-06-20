@@ -1,0 +1,97 @@
+---
+title: "AI Specialists"
+description: "Focused, attorney-grade AI skills for legal work — FICA verification, matter intake, contract review, drafting, and compliance audit — grounded in your firm's data and SA law."
+---
+
+import { Callout } from "nextra/components"
+
+# AI Specialists
+
+AI Specialists are focused, one-shot skills for specific legal tasks. Unlike the conversational
+[AI Assistant](/features/ai-assistant), a specialist takes a defined input (a client, a document, a
+matter), runs once, and returns **structured, cited output** — and where it proposes a consequential
+change, it creates an item in the [approval queue](/ai/review-and-approval) for an attorney to sign off.
+
+Every specialist is grounded in your [AI firm profile](/ai/firm-profile-and-cost) (practice areas,
+house style, risk posture) and South African legal knowledge, and runs on your organisation's own
+Anthropic key (see [Integrations](/admin/integrations)). Triggering a specialist requires the
+`AI_EXECUTE` capability.
+
+## The specialists
+
+### FICA Verification
+
+Reviews a client's FICA/KYC file — their onboarding checklist and uploaded documents — and reports what
+is complete, what is missing, and the risk level. For a trust or company client it accounts for
+beneficial-ownership requirements.
+
+- **Trigger:** a client's detail page.
+- **Output:** overall assessment (complete / incomplete / needs review), risk level, a per-item
+  checklist review, missing documents, and recommended actions.
+- **Gate:** proposing to mark checklist items complete creates a **Mark KYC Complete** approval gate —
+  the items are only marked once an attorney approves.
+
+See also [FICA Verification](/features/fica-verification) for the underlying checklist workflow.
+
+### Matter Intake
+
+Triages a prospective matter from a short description: recommends the matter type and template,
+estimates a fee on the applicable tariff basis, screens existing clients and matters for conflicts, and
+flags early risks (prescription, deadlines).
+
+- **Trigger:** a client's detail page, with a description of the new matter.
+- **Output:** matter classification, template recommendation, required documents, a fee estimate (ZAR
+  range), conflict screening result, and risk flags.
+
+### Contract Review
+
+Reads an uploaded agreement and produces a clause-level review against your risk posture, with South
+African statutory references where relevant.
+
+- **Trigger:** a document's detail page.
+- **Output:** document classification, an executive summary, findings (severity, clause reference,
+  statutory reference, recommendation), and missing protections.
+
+### Drafting
+
+Generates a first draft from a template and a matter's context — filling variables from real data and
+producing narrative sections in your house style.
+
+- **Trigger:** a template / document page on a matter.
+- **Output:** variable fills (with source and confidence), narrative sections, clause recommendations,
+  and warnings where information is missing.
+
+### Compliance Audit
+
+Runs a firm-wide compliance review across your matters, clients, documents, and trust accounting, and
+grades it.
+
+- **Trigger:** the organisation's compliance settings.
+- **Output:** an overall grade, category scores, findings (with regulatory basis), and prioritised
+  recommendations — surfacing issues like trust shortfalls or outstanding FICA items.
+
+<Callout type="warning">
+  Every specialist output is a **draft for attorney review**. Specialists never change a record on their
+  own — anything consequential waits in the [approval queue](/ai/review-and-approval).
+</Callout>
+
+## What you'll see
+
+When you run a specialist, HeyKazi shows the structured result, the model used, the run duration, and
+the **cost in ZAR** (metered against your [monthly budget](/ai/firm-profile-and-cost)). Any approval
+gates the specialist created are listed with their reasoning, ready for review.
+
+## Limitations
+
+- **Requires BYOAK** — a specialist will not run until an admin configures an Anthropic API key in
+  [Integrations](/admin/integrations).
+- **Document-dependent skills need documents** — Contract Review and document-based FICA review need the
+  relevant file uploaded to the matter or client first.
+- **Budget-capped** — if your organisation's monthly AI budget is reached, specialists are blocked until
+  the budget is raised.
+
+## Related
+
+- [AI Review & Approval](/ai/review-and-approval) — sign off on what specialists propose
+- [AI Firm Profile & Cost](/ai/firm-profile-and-cost) — how specialists are grounded and metered
+- [FICA Verification](/features/fica-verification) · [Documents & Templates](/features/documents)

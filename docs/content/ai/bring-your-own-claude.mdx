@@ -1,0 +1,86 @@
+---
+title: "Bring Your Own Claude"
+description: "Connect your own Claude — Claude Code, Desktop, or claude.ai — to your live HeyKazi data over a secure, read-only MCP connection, with SA-legal skills grounded in your matters."
+---
+
+import { Callout, Steps } from "nextra/components"
+
+# Bring Your Own Claude
+
+If your team already uses Claude, you don't have to copy-paste matter details into it. HeyKazi exposes
+your firm's data to **your own Claude** over a secure, read-only connection, so the Claude your lawyers
+already use becomes grounded in your live matters, trust ledger, unbilled time, and compliance state.
+
+> **Bring your own Claude — HeyKazi provides the grounded context.**
+
+This is the mirror image of the [in-product AI](/ai/overview): there, HeyKazi calls Claude; here, your
+Claude reads HeyKazi. Your own Claude subscription pays the token bill, and the connection is
+**read-only** — your Claude can read and draft, but never changes your HeyKazi data.
+
+## How it works
+
+HeyKazi runs an **MCP server** (Model Context Protocol) that your Claude connects to. The connection is:
+
+- **Per-user authenticated** — your Claude signs in as a HeyKazi member via OAuth. It sees only what
+  that member's role allows — the same permission checks as the app.
+- **Read-only** — the tools expose your matters, clients, unbilled time, trust balances, compliance
+  gaps, and documents for *reading*. Nothing is written back.
+- **Consent-gated (POPIA)** — client data only flows to your Claude after your firm grants explicit
+  data-egress consent (Settings → Integrations → MCP). Revoke it any time.
+- **Audited** — every read is logged, so you have a defensible record of what AI touched which client
+  data.
+
+## The Kazi legal skill pack
+
+Alongside the connection, HeyKazi publishes a Claude plugin — **`kazi-legal-za`** — of South-African
+legal skills that run in your Claude and orchestrate the HeyKazi data into outcomes. All are
+**read-only and draft-only**: a lawyer reviews each draft and commits the result back in HeyKazi by
+hand.
+
+| Skill | What it does |
+|-------|--------------|
+| **Fee-note run** | Draft fee notes from unbilled time, in your house style with LSSA / contingency-fee context. |
+| **FICA gap review** | Identify a client's missing FICA/KYC documents and draft the request. |
+| **Matter brief** | A plain-language, client-ready status update for a matter. |
+| **Intake triage** | Conflict-check a new matter against existing clients; recommend forum, governing law, and deadlines. |
+| **§86 trust reconciliation** | A read-only anomaly screen over the trust ledger (e.g. debit balances), framed by the Legal Practice Act. |
+| **Kazi bridge** | Run any upstream `claude-for-legal` skill against a matter's live HeyKazi data. |
+
+## Connecting
+
+<Steps>
+### Enable MCP + grant consent
+
+In HeyKazi, go to **Settings → Integrations → MCP** and enable the connector, granting the POPIA
+data-egress consent.
+
+### Install the plugin
+
+Add the `claude-for-legal-sa` marketplace in your Claude client and install the **`kazi-legal-za`**
+plugin.
+
+### Connect your Claude
+
+Point the plugin at your firm's MCP endpoint and sign in (OAuth). Then run the plugin's
+`connect-kazi` skill to confirm the connection and load your house style.
+</Steps>
+
+<Callout type="info">
+  Connecting is per-user: each lawyer signs in as themselves and only sees the matters and clients their
+  HeyKazi role permits. There is no shared service account.
+</Callout>
+
+## Bring Your Own Claude vs in-product AI
+
+| | In-product AI | Bring Your Own Claude |
+|---|---|---|
+| Who runs it | HeyKazi, on your Anthropic key | Your own Claude client + subscription |
+| Direction | HeyKazi → Claude | Your Claude → HeyKazi (read-only) |
+| Can it change data? | Yes, **after** [attorney approval](/ai/review-and-approval) | Never — read & draft only |
+| Best for | Structured tasks, gated write-back, in-app workflow | Lawyers who live in Claude and want grounded context |
+
+## Related
+
+- [AI in HeyKazi](/ai/overview) — the overall AI model
+- [AI Specialists](/ai/specialists) — the in-product equivalent skills
+- [Trust Accounting](/features/trust-accounting) · [FICA Verification](/features/fica-verification)

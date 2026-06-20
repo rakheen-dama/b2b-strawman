@@ -65,6 +65,10 @@ $RECYCLE.BIN/
 !.env.example
 !.env.template
 !.env.local.example
+# VPS production env (real secrets — never commit)
+compose/.env.prod
+# Allow the example template to be tracked despite *.env.* pattern above
+!compose/.env.prod.example
 
 # Logs
 logs

@@ -43,6 +43,11 @@ aws:
   s3:
     region: ${AWS_REGION:us-east-1}
     bucket-name: ${AWS_S3_BUCKET}
+    endpoint: ${AWS_S3_ENDPOINT:}
+    presigner-endpoint: ${AWS_S3_PRESIGNER_ENDPOINT:}
+  credentials:
+    access-key-id: ${AWS_CREDENTIALS_ACCESS_KEY_ID:}
+    secret-access-key: ${AWS_CREDENTIALS_SECRET_ACCESS_KEY:}
 
 internal:
   api:

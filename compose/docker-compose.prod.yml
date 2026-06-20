@@ -184,6 +184,10 @@ services:
     restart: unless-stopped
     environment:
       BACKEND_URL: http://backend:8080
+      # Keycloak mode routes server-side calls (request-access action, /bff/me)
+      # through the gateway BFF. Without this the Next container falls back to
+      # localhost:8443 and every server-side gateway call fails.
+      GATEWAY_URL: http://gateway:8443
       INTERNAL_API_KEY: ${INTERNAL_API_KEY}
     depends_on:
       backend:

@@ -69,6 +69,14 @@ jobs:
             NEXT_PUBLIC_PORTAL_API_URL=https://api-dev.heykazi.com
           tags: ghcr.io/${{ env.OWNER }}/kazi-portal:${{ env.TAG }}
 
+      - name: Build & push docs
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docs/Dockerfile
+          push: true
+          tags: ghcr.io/${{ env.OWNER }}/kazi-docs:${{ env.TAG }}
+
   deploy:
     needs: build-push
     runs-on: ubuntu-latest

@@ -88,11 +88,11 @@ From this point the runbook uses `USER@HOST` to mean your operator account and V
 
 ---
 
-## 3. DNS — 7 A Records
+## 3. DNS — 8 A Records
 
 All records are managed in **AWS Route 53**, hosted zone `heykazi.com`.
 
-Create the following 7 A records pointing to the VPS IP (TTL 300 is fine for a dev env):
+Create the following 8 A records pointing to the VPS IP (TTL 300 is fine for a dev env):
 
 | Hostname | Type | Value |
 |---|---|---|
@@ -103,6 +103,15 @@ Create the following 7 A records pointing to the VPS IP (TTL 300 is fine for a d
 | `api-dev.heykazi.com` | A | VPS_IP |
 | `storage-dev.heykazi.com` | A | VPS_IP |
 | `mail-dev.heykazi.com` | A | VPS_IP |
+| `docs.heykazi.com` | A | VPS_IP |
+
+> **Docs site** is the Nextra documentation, self-hosted on this box (static
+> export served by a `caddy:alpine` container, reverse-proxied at `docs.heykazi.com`).
+> It is **not** on Vercel — point the `docs.heykazi.com` A record at the VPS like
+> the others. The frontend's `NEXT_PUBLIC_DOCS_URL` already defaults to
+> `https://docs.heykazi.com`, so the in-app help links + marketing footer resolve
+> with no frontend rebuild. (Note: `docs` has no `-dev` suffix because the
+> frontend image bakes that exact default; keeping it avoids a frontend rebuild.)
 
 Caddy uses HTTP-01 ACME for TLS. Once these records resolve and ports 80/443 are open, certificates issue automatically on first request. You do not need to do anything extra for TLS — watch Caddy logs during first boot to confirm.
 
@@ -276,6 +285,10 @@ curl -sI https://storage-dev.heykazi.com | head -1
 
 # Mailpit (expect 401 — Caddy basic auth is active)
 curl -sI https://mail-dev.heykazi.com | head -1
+
+# Docs site (expect 200; title "HeyKazi Documentation")
+curl -sI https://docs.heykazi.com | head -1
+curl -s https://docs.heykazi.com/_pagefind/pagefind.js -o /dev/null -w "search index -> %{http_code}\n"
 ```
 
 ### Browser end-to-end
@@ -592,10 +605,10 @@ email theme is cached in production mode — changing `KC_INVITE_BOUNCE_BASE_URL
 If you change `heykazi.com` (or the `-dev` prefix), update every place the host is
 pinned — these are not all driven by a single variable:
 
-- **DNS** — 7 A records (§3).
-- **`compose/caddy/Caddyfile`** — the 7 vhost blocks.
+- **DNS** — 8 A records (§3).
+- **`compose/caddy/Caddyfile`** — the 8 vhost blocks (incl. `docs.heykazi.com`).
 - **`compose/docker-compose.prod.yml`** — `KC_HOSTNAME`, `JWT_ISSUER_URI`/`JWT_JWK_SET_URI`, `AWS_S3_PRESIGNER_ENDPOINT`, `KEYCLOAK_ISSUER`, `FRONTEND_URL`, `APP_BASE_URL`, `PORTAL_BASE_URL`, `HEYKAZI_BASE_URL`/`HEYKAZI_FRONTEND_URL`, `CLERK_ISSUER`/`CLERK_JWKS_URI`, `SERVER_SERVLET_SESSION_COOKIE_DOMAIN`, `KC_INVITE_BOUNCE_BASE_URL`, `KAZI_MCP_RESOURCE_URL`.
-- **`.github/workflows/deploy-vps.yml`** — the frontend `NEXT_PUBLIC_*` build args (then rebuild).
+- **`.github/workflows/deploy-vps.yml`** — the frontend `NEXT_PUBLIC_*` build args, incl. `NEXT_PUBLIC_DOCS_URL` if docs moves off `docs.heykazi.com` (then rebuild).
 - **`compose/keycloak/realm-export.json`** — `gateway-bff` redirect URIs / web origins / post-logout, and `mcp-claude` redirect URIs (re-import or edit in the admin console).
 
 ---

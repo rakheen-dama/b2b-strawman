@@ -198,38 +198,43 @@ grep CHANGE_ME .env.prod   # must return nothing
 
 ## 5. Repo Secrets (GitHub)
 
-Go to **GitHub → Settings → Secrets and variables → Actions** for the `rakheen-dama/b2b-strawman` repository and add these three secrets:
+The deploy uses a **box-pull** model: CI only builds and pushes images to GHCR — it does **not** SSH into the box (GitHub runner IPs are dropped at the provider edge, and inbound CI SSH is fragile + burns metered Actions minutes on a private repo). So **no `VPS_SSH_*` secrets are needed.** The box pulls for itself via `scripts/deploy.sh` (§6). The only credential is the box's own GHCR login (next step).
 
-| Secret name | Value |
-|---|---|
-| `VPS_SSH_HOST` | VPS IPv4 address |
-| `VPS_SSH_USER` | `kazi` (or `root` if you skipped creating a non-root user) |
-| `VPS_SSH_KEY` | Contents of the **private** SSH key whose public half is on the box |
-
-The deploy workflow (`.github/workflows/deploy-vps.yml`) uses these to SSH into the box and run `docker compose pull && up`.
+> If you previously set `VPS_SSH_HOST` / `VPS_SSH_USER` / `VPS_SSH_KEY`, they're now unused and can be deleted.
 
 ---
 
-## 6. First Boot — Trigger the Workflow
+## 6. First Boot — Build, then Deploy on the Box
 
-### Step 1 — Authenticate the box to GHCR (one-time manual step)
+### Step 1 — Authenticate the box to GHCR (one-time)
 
-The GHCR images (`ghcr.io/rakheen-dama/kazi-*`) are **private**. The deploy workflow logs in automatically, but for any manual `docker compose pull` or `up` you run on the box, you must authenticate first using a GitHub Personal Access Token with `read:packages` scope:
+The GHCR images (`ghcr.io/rakheen-dama/kazi-*`) are **private**, so the box must log in once. The login persists in `~/.docker/config.json`.
 
 ```bash
 # On the VPS
 echo "GHCR_PAT" | docker login ghcr.io -u rakheen-dama --password-stdin
 ```
 
-Generate the PAT at: GitHub → Settings → Developer settings → Personal access tokens → Fine-grained (or classic with `read:packages`).
+Generate the PAT at: GitHub → Settings → Developer settings → Personal access tokens → Fine-grained (or classic with `read:packages`). For unattended re-auth, you can instead drop the PAT in `~/.config/kazi/ghcr_pat` (chmod 600) — `deploy.sh` will use it automatically.
 
-### Step 2 — Trigger the workflow
+### Step 2 — Build & push the images (CI)
 
 1. Go to **GitHub → Actions → deploy-vps**.
 2. Click **Run workflow** → leave `tag` as `dev` → **Run workflow**.
-3. The workflow builds and pushes all four images, then SSHes into the box and runs `pull` + `up`.
+3. The workflow builds and pushes all five images (backend, gateway, frontend, portal, docs) to GHCR. It does not touch the box.
 
-### Step 3 — Watch Caddy for TLS cert issuance
+### Step 3 — Deploy on the box
+
+Run the box-side deploy (pulls config via git, pulls images, brings the stack up, reloads Caddy):
+
+```bash
+ssh USER@HOST 'bash /opt/kazi/compose/scripts/deploy.sh'
+# …or interactively:
+ssh USER@HOST
+bash /opt/kazi/compose/scripts/deploy.sh
+```
+
+### Step 4 — Watch Caddy for TLS cert issuance
 
 ```bash
 ssh USER@HOST
@@ -237,9 +242,9 @@ cd /opt/kazi/compose
 docker compose --env-file .env.prod -f docker-compose.prod.yml logs -f caddy
 ```
 
-Look for lines like `certificate obtained successfully` for each of the 7 hostnames. This happens on the first inbound request to each hostname, so trigger it by curling them from your laptop (see Section 7).
+Look for `certificate obtained successfully` for each of the 8 hostnames. This happens on the first inbound request to each hostname, so trigger it by curling them from your laptop (see Section 7).
 
-### Manual start (if the workflow SSH step fails)
+### Manual start (step-by-step equivalent of `deploy.sh`)
 
 If you need to start the stack by hand on the box:
 
@@ -515,9 +520,10 @@ Add to crontab after the dump line:
 
 ### Redeploy (standard — after any code push to main)
 
-1. Go to **GitHub → Actions → deploy-vps → Run workflow**.
-2. The workflow builds fresh `:dev` images, pushes to GHCR, and SSHes to the box to pull and restart containers.
-3. No manual box access is required for a normal redeploy.
+1. Go to **GitHub → Actions → deploy-vps → Run workflow** (builds + pushes fresh `:dev` images to GHCR).
+2. Deploy on the box: `ssh USER@HOST 'bash /opt/kazi/compose/scripts/deploy.sh'`.
+
+`deploy.sh` does it all: `git pull` (config), GHCR auth, `compose pull`, `up -d`, and a Caddy config reload (so Caddyfile/vhost changes take effect — `up -d` alone does **not** reload a bind-mounted Caddyfile). Keycloak realm/theme changes still need a manual `up -d --force-recreate keycloak`.
 
 ### Manual pull and restart on the box
 
@@ -593,6 +599,8 @@ if a symptom recurs, or when you re-point the deploy at a new domain.
 | Accept-invite page "invalid link" | frontend image lacked `NEXT_PUBLIC_KEYCLOAK_URL` → kcUrl validator defaulted to `localhost:8180` | `frontend/Dockerfile` + `deploy-vps.yml` build args (PR #1469) — **rebuild required** |
 | Invite email link points at `localhost:3000` | Keycloak `org-invite.ftl` email theme hard-coded the bounce base | env-driven via `theme.properties` + `KC_INVITE_BOUNCE_BASE_URL` (PR #1469) — **KC restart required** |
 | OAuth `redirect_uri` built as `http://…:8443` | gateway didn't honour `X-Forwarded-*` behind Caddy | `docker-compose.prod.yml` gateway: `SERVER_FORWARD_HEADERS_STRATEGY: framework` |
+| New vhost gives `tlsv1 alert internal error` (no cert) | Caddyfile is bind-mounted; editing it + `up -d` does **not** reload Caddy, so the new vhost/cert never loads | reload Caddy: `scripts/deploy.sh` does it, or `docker compose … exec caddy caddy reload --config /etc/caddy/Caddyfile` (or `up -d --force-recreate caddy`) |
+| CI `deploy-vps` SSH step `i/o timeout` | inbound CI SSH is dropped at the provider edge (rotating runner IPs); not fail2ban | n/a — the deploy is **box-pull** now (CI builds+pushes only; run `scripts/deploy.sh` on the box) |
 
 Two of these need more than a container restart when triggered:
 `NEXT_PUBLIC_*` values are **baked into the frontend image at build time** — changing

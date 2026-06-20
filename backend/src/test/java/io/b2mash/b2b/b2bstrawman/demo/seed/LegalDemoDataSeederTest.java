@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
@@ -44,6 +45,7 @@ class LegalDemoDataSeederTest {
   private final TimeEntryRepository timeEntryRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final TrustTransactionRepository trustTransactionRepository;
+  private final ChecklistInstanceRepository checklistInstanceRepository;
 
   private String schemaName;
   private UUID orgId;
@@ -59,7 +61,8 @@ class LegalDemoDataSeederTest {
       ProjectRepository projectRepository,
       TimeEntryRepository timeEntryRepository,
       TrustAccountRepository trustAccountRepository,
-      TrustTransactionRepository trustTransactionRepository) {
+      TrustTransactionRepository trustTransactionRepository,
+      ChecklistInstanceRepository checklistInstanceRepository) {
     this.legalDemoDataSeeder = legalDemoDataSeeder;
     this.tenantProvisioningService = tenantProvisioningService;
     this.tenantTransactionHelper = tenantTransactionHelper;
@@ -70,6 +73,7 @@ class LegalDemoDataSeederTest {
     this.timeEntryRepository = timeEntryRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.trustTransactionRepository = trustTransactionRepository;
+    this.checklistInstanceRepository = checklistInstanceRepository;
   }
 
   @BeforeAll
@@ -176,6 +180,26 @@ class LegalDemoDataSeederTest {
         });
     assertTrue(result.get()[0], "Seeder must create at least one trust account");
     assertTrue(result.get()[1], "Seeder must leave at least one trust creditor in debit");
+  }
+
+  @Test
+  void seeder_seedsFicaChecklistForLegalZaTenant() {
+    // The shared @BeforeAll tenant is provisioned "legal" (no legal-za compliance pack), so the
+    // checklist step skips there. Provision a real legal-za tenant — which installs the FICA pack —
+    // and verify the seeder instantiates the trust-onboarding checklist.
+    String slug = "legal-za-fica-test-" + UUID.randomUUID().toString().substring(0, 8);
+    tenantProvisioningService.provisionTenant(slug, "Legal ZA FICA Test Org", "legal-za");
+    String s = mappingRepository.findByExternalOrgId(slug).orElseThrow().getSchemaName();
+    UUID o = organizationRepository.findByExternalOrgId(slug).orElseThrow().getId();
+
+    legalDemoDataSeeder.seed(s, o);
+
+    var checklistCount = new AtomicReference<Long>();
+    tenantTransactionHelper.executeInTenantTransaction(
+        s, o.toString(), t -> checklistCount.set(checklistInstanceRepository.count()));
+    assertTrue(
+        checklistCount.get() >= 1,
+        "Seeder must instantiate a FICA checklist for the trust client on a legal-za tenant");
   }
 
   @Test

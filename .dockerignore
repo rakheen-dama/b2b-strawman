@@ -1,5 +1,5 @@
-# Deny-by-default: the only root-context Docker builds are frontend/ and
-# portal/ (workspace images). Everything else — especially env files with
+# Deny-by-default: the only root-context Docker builds are frontend/, portal/
+# and docs/ (workspace images). Everything else — especially env files with
 # secrets (compose/.env*), infra/, and Terraform state — stays out of the
 # build context stream.
 *
@@ -9,13 +9,17 @@
 !tsconfig.base.json
 !frontend
 !portal
+!docs
 !packages
 # Re-deny heavy/generated paths inside the allowed trees
 frontend/node_modules
 portal/node_modules
+docs/node_modules
 packages/*/node_modules
 frontend/.next
 portal/.next
+docs/.next
+docs/out
 frontend/test-results
 portal/test-results
 frontend/playwright-report

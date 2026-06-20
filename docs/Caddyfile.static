@@ -1,0 +1,13 @@
+# Inner Caddy config for the docs static-export image (docs/Dockerfile).
+# Serves the Nextra `out/` export on :80 over the internal Docker network;
+# the main edge Caddy reverse-proxies docs.heykazi.com -> docs:80.
+:80 {
+	root * /srv
+	encode gzip zstd
+
+	# Next.js static export emits `features/invoicing.html` etc. while links are
+	# extensionless (`/features/invoicing`). Map clean URLs -> the .html file,
+	# then directory index, then fall back to the export's 404 page.
+	try_files {path} {path}.html {path}/ /404.html
+	file_server
+}

@@ -9,17 +9,18 @@ All commands are copy-pasteable. Placeholder values are in `ALL_CAPS`.
 
 1. [Provision the VPS](#1-provision-the-vps)
 2. [Harden the Server](#2-harden-the-server)
-3. [DNS — 7 A Records](#3-dns--7-a-records)
+3. [DNS — 8 A Records](#3-dns--8-a-records)
 4. [Place Files and Fill `.env.prod`](#4-place-files-and-fill-envprod)
 5. [Repo Secrets (GitHub)](#5-repo-secrets-github)
-6. [First Boot — Trigger the Workflow](#6-first-boot--trigger-the-workflow)
+6. [First Boot — Build, then Deploy on the Box](#6-first-boot--build-then-deploy-on-the-box)
 7. [Verify (Observed, per CLAUDE.md gate 3)](#7-verify-observed-per-claudemd-gate-3)
 8. [Laptop Admin Access (SSH Tunnels)](#8-laptop-admin-access-ssh-tunnels)
 9. [Connect Claude Code to MCP](#9-connect-claude-code-to-mcp)
 10. [Backups](#10-backups)
 11. [Ongoing Ops](#11-ongoing-ops)
 12. [Troubleshooting — Split-Subdomain Gotchas](#12-troubleshooting--split-subdomain-gotchas)
-13. [Security Hardening — Known Deferrals](#13-security-hardening--known-deferrals)
+13. [Going Private](#13-going-private)
+14. [Security Hardening — Known Deferrals](#14-security-hardening--known-deferrals)
 
 ---
 
@@ -621,7 +622,56 @@ pinned — these are not all driven by a single variable:
 
 ---
 
-## 13. Security Hardening — Known Deferrals
+## 13. Going Private
+
+Making `b2b-strawman` private is mostly transparent, but four things need attention.
+
+### (a) Box `git pull` — add a read-only deploy key (REQUIRED)
+
+The box clones over **unauthenticated HTTPS**, which only works while the repo is public. Once private, `cd /opt/kazi && git pull` — and therefore `scripts/deploy.sh`'s first step — fails. Fix it **before** flipping the repo:
+
+```bash
+# On the box, as the kazi user:
+ssh-keygen -t ed25519 -f ~/.ssh/kazi_deploy -N "" -C "kazi-vps-deploy"
+cat ~/.ssh/kazi_deploy.pub
+```
+
+GitHub → repo **Settings → Deploy keys → Add deploy key** → paste the public key, leave **"Allow write access" unchecked** (read-only). Then point the box's remote at SSH:
+
+```bash
+cd /opt/kazi
+git remote set-url origin git@github.com:rakheen-dama/b2b-strawman.git
+printf 'Host github.com\n  IdentityFile ~/.ssh/kazi_deploy\n  IdentitiesOnly yes\n' >> ~/.ssh/config
+git pull   # must succeed against the private repo
+```
+
+A deploy key is scoped to this one repo — cleaner than a PAT, and it can't write.
+
+### (b) GitHub Actions minutes become metered
+
+Public repos get **unlimited** Actions minutes; private repos get a monthly free allotment (**2000 min** on the Free plan; more on Pro/Team). The `deploy-vps` workflow builds 5 images (~6–15 min/run). Occasional deploys stay well under the cap — just don't trigger it in a tight loop. (The box-pull model already keeps re-deploys off CI; only the image build runs there.)
+
+### (c) GHCR packages
+
+The images are already pulled with auth (the box's `read:packages` PAT / `~/.config/kazi/ghcr_pat`), so going private changes nothing for the deploy. Note: making the **repo** private does **not** auto-change existing **package** visibility — if you want the `kazi-*` packages explicitly private too, set each one's visibility under GitHub → your profile → Packages → *package* → Package settings. The box pull works either way (it's authenticated).
+
+### (d) Claude agents
+
+- **Local Claude Code is unaffected** — it works as you, using your `gh` token (which has the `repo` scope, covering private repos) on your local clone. Everything in this repo's workflow (files, branches, PRs, merges, the merge gate, the GitHub MCP) keeps working identically.
+- **Cloud / remote Claude agents** authenticate via a GitHub **App**, not your local token, and a GitHub App only sees private repos you've granted it. If you use remote/cloud execution, scheduled cloud routines, the claude.ai ↔ GitHub connector, or the Claude GitHub App, grant it access: GitHub → **Settings → Applications** → the relevant app → add `b2b-strawman`.
+
+### Verify after flipping private
+
+```bash
+ssh USER@HOST 'cd /opt/kazi && git pull'                       # deploy key works
+ssh USER@HOST 'bash /opt/kazi/compose/scripts/deploy.sh'       # full box-pull deploy still works
+```
+
+> Also delete the now-unused `VPS_SSH_HOST` / `VPS_SSH_USER` / `VPS_SSH_KEY` repo secrets (§5) — the box-pull model no longer uses them.
+
+---
+
+## 14. Security Hardening — Known Deferrals
 
 These are tracked decisions made explicitly for the dev environment — not oversights. Each should be revisited before promoting to a production tenant-facing deployment.
 
@@ -639,4 +689,4 @@ The `DATABASE_URL` and `DATABASE_MIGRATION_URL` env vars embed `user=` and `pass
 
 ---
 
-*Runbook version: 2026-06-20 (adds §12 split-subdomain troubleshooting after a live deploy surfaced five host-config gotchas — PRs #1467–#1469). Artifacts: `compose/docker-compose.prod.yml`, `compose/.env.prod.example`, `compose/caddy/Caddyfile`, `.github/workflows/deploy-vps.yml`.*
+*Runbook version: 2026-06-21 (§12 split-subdomain troubleshooting — PRs #1467–#1469; self-hosted docs site #1478; box-pull deploy #1479; §13 Going Private). Artifacts: `compose/docker-compose.prod.yml`, `compose/.env.prod.example`, `compose/caddy/Caddyfile`, `compose/scripts/deploy.sh`, `compose/scripts/keycloak-bootstrap.sh`, `docs/Dockerfile`, `.github/workflows/deploy-vps.yml`.*

@@ -28,6 +28,19 @@ REALM="docteams"
 KC_CONTAINER="${KC_CONTAINER:-b2b-keycloak}"
 KCADM="docker exec ${KC_CONTAINER} /opt/keycloak/bin/kcadm.sh"
 
+# kcadm runs INSIDE the Keycloak container, so it talks to Keycloak over the
+# container's own loopback — never the public URL. This decouples it from
+# KEYCLOAK_URL (which the host-side curl calls use). On the VPS, Keycloak has no
+# published host port, so KEYCLOAK_URL is the public Caddy host while KCADM_SERVER
+# stays in-container; on local dev both default to localhost:8180.
+KCADM_SERVER="${KCADM_SERVER:-http://localhost:8180}"
+
+# Dev-credential seeding (step [5/8] create padmin/password + step [7/8] reset
+# every org member's password to "password") is LOCAL-DEV convenience only. It is
+# DANGEROUS on a public deploy: a weak backdoor admin and a mass password reset of
+# real users. Set SEED_DEV_CREDENTIALS=false on the VPS. Default true = dev unchanged.
+SEED_DEV_CREDENTIALS="${SEED_DEV_CREDENTIALS:-true}"
+
 echo "=== Keycloak Bootstrap ==="
 echo ""
 
@@ -51,7 +64,7 @@ fi
 # ---- Authenticate admin ----
 echo "[2/8] Authenticating admin..."
 $KCADM config credentials \
-  --server "${KEYCLOAK_URL}" \
+  --server "${KCADM_SERVER}" \
   --realm master \
   --user "${KEYCLOAK_ADMIN}" \
   --password "${KEYCLOAK_ADMIN_PASSWORD}"
@@ -139,6 +152,9 @@ ORG_ROLE_OK=$($KCADM get "clients/${CLIENT_KC_ID}/protocol-mappers/models" -r "$
 # ---- Create platform admin user and assign to existing platform-admins group ----
 echo "[5/8] Creating platform admin user..."
 
+if [[ "${SEED_DEV_CREDENTIALS}" != "true" ]]; then
+  echo "  [skipped — SEED_DEV_CREDENTIALS=false; create the platform admin via the Keycloak admin console]"
+else
 # Look up the platform-admins group (created by realm-export.json)
 GROUP_ID=$($KCADM get groups -r "${REALM}" --fields id,name \
   | jq -r '.[] | select(.name=="platform-admins") | .id' 2>/dev/null || true)
@@ -182,8 +198,9 @@ $KCADM update "users/${PADMIN_ID}/groups/${GROUP_ID}" \
   -n 2>/dev/null || true
 
 echo "  ${PADMIN_EMAIL} / password -> platform-admins group"
+fi
 
-# ---- Backfill org_role attribute and passwords on existing org members ----
+# ---- Backfill org_role attribute on existing org members (safe for prod) ----
 echo "[6/8] Backfilling org_role for existing organization members..."
 
 # Iterate all organizations, find the creator (stored as org attribute), set org_role=owner.
@@ -250,8 +267,12 @@ else
   done
 fi
 
-# ---- Backfill passwords for existing org members (local dev only) ----
+# ---- Backfill passwords for existing org members (LOCAL DEV ONLY) ----
 echo "[7/8] Backfilling passwords for existing organization members..."
+
+if [[ "${SEED_DEV_CREDENTIALS}" != "true" ]]; then
+  echo "  [skipped — SEED_DEV_CREDENTIALS=false; will NOT reset real users' passwords]"
+else
 
 # Re-fetch token (may have expired during org_role backfill)
 TOKEN=$(curl -sf "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
@@ -289,6 +310,8 @@ else
       fi
     done
   done
+fi
+
 fi
 
 # ---- Configure MCP OAuth dynamic client registration (DCR) ----
@@ -356,8 +379,12 @@ echo ""
 echo "=== Keycloak Bootstrap Complete ==="
 echo ""
 echo "  Mappers: groups, org-role (on gateway-bff)"
-echo "  User:    padmin@docteams.local / password"
-echo "  Org members: password backfilled to 'password' for local dev login"
+if [[ "${SEED_DEV_CREDENTIALS}" == "true" ]]; then
+  echo "  User:    padmin@docteams.local / password"
+  echo "  Org members: password backfilled to 'password' for local dev login"
+else
+  echo "  Dev credentials: SKIPPED (SEED_DEV_CREDENTIALS=false) — no padmin seeded, no passwords reset"
+fi
 echo "  MCP DCR:  Trusted Hosts (localhost,claude.ai) + allowed scopes set; service_account removed"
 echo ""
 echo "  Users must log out and back in to get the updated org_role claim in their JWT."

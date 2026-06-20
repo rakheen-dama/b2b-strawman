@@ -18,7 +18,8 @@ All commands are copy-pasteable. Placeholder values are in `ALL_CAPS`.
 9. [Connect Claude Code to MCP](#9-connect-claude-code-to-mcp)
 10. [Backups](#10-backups)
 11. [Ongoing Ops](#11-ongoing-ops)
-12. [Security Hardening — Known Deferrals](#12-security-hardening--known-deferrals)
+12. [Troubleshooting — Split-Subdomain Gotchas](#12-troubleshooting--split-subdomain-gotchas)
+13. [Security Hardening — Known Deferrals](#13-security-hardening--known-deferrals)
 
 ---
 
@@ -162,6 +163,14 @@ openssl rand -base64 32
 # Replace YOURPASS with the password you want to protect the Mailpit UI
 docker run --rm caddy caddy hash-password --plaintext 'YOURPASS'
 ```
+
+> **⚠️ Escape the Mailpit hash.** The bcrypt hash contains `$` characters, and
+> docker-compose interpolates `$`. You **must double every `$` to `$$`** when you
+> paste the hash into `.env.prod`, or compose mangles it and Mailpit login always
+> fails (`$2a$14$abc…` → `$$2a$$14$$abc…`). Verify with
+> `docker compose --env-file .env.prod -f docker-compose.prod.yml config | grep MAIL_BASIC_AUTH_HASH`
+> — the printed hash must keep its full `$2a$14$…` form. Log in with the **plaintext**
+> password (the `--plaintext` value), not the hash.
 
 **Key notes:**
 - `IMAGE_OWNER` must be set to `rakheen-dama` (the GitHub owner) — the workflow pushes images to `ghcr.io/rakheen-dama/kazi-*`.
@@ -335,21 +344,9 @@ Then `ssh kazi-vps -N` forwards both tunnels simultaneously.
 
 ## 9. Connect Claude Code to MCP
 
-### Dependency — backend PR #1465 required
+### Dependency — backend MCP metadata fix (MERGED #1465)
 
-Claude MCP OAuth auto-discovery relies on `/.well-known/oauth-protected-resource` advertising the Keycloak issuer. This endpoint is implemented in backend PR **#1465** (`fix/mcp-protected-resource-metadata`). Until that PR is merged to `main` and the `:dev` backend image is rebuilt, the MCP server is reachable but Keycloak auto-discovery will not work — Claude Code will not be able to complete the PKCE flow automatically.
-
-Check PR status:
-
-```bash
-gh pr view 1465 --repo rakheen-dama/b2b-strawman
-```
-
-If merged, rebuild the image:
-
-```bash
-# On GitHub: re-run the deploy-vps workflow to build a fresh :dev image
-```
+Claude MCP OAuth auto-discovery relies on `/.well-known/oauth-protected-resource` advertising the Keycloak issuer. Under Spring Security 7 a built-in endpoint shadowed the custom one (no `authorization_servers`). This is fixed and merged to `main` (PR **#1465**), so any `:dev` image built after that merge includes it — no action needed beyond deploying a current image. If you ever see Claude fail PKCE discovery, confirm the backend image post-dates the #1465 merge and rebuild via the `deploy-vps` workflow.
 
 ### Add the MCP server to Claude Code
 
@@ -515,7 +512,43 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --no-deps b
 
 ---
 
-## 12. Security Hardening — Known Deferrals
+## 12. Troubleshooting — Split-Subdomain Gotchas
+
+The stack puts each service on its own `*-dev.heykazi.com` subdomain. The app and
+gateway were designed same-origin (one host, or `/bff` path), so several config
+values that "just work" on `localhost` need explicit per-host wiring. All of the
+below are **already fixed in the committed config** — this table is for diagnosis
+if a symptom recurs, or when you re-point the deploy at a new domain.
+
+| Symptom | Cause | Where it's fixed |
+|---|---|---|
+| Mailpit login always fails | bcrypt hash's `$` mangled by compose interpolation | `.env.prod` — escape `$`→`$$` (see §4) |
+| `/request-access` "Unable to reach the server" | frontend server actions had no `GATEWAY_URL` (fell back to `localhost:8443`) | `docker-compose.prod.yml` frontend: `GATEWAY_URL: http://gateway:8443` (PR #1467) |
+| Login loops — "redirected you too many times" | gateway `SESSION` cookie was host-only on `bff-dev`; middleware on `app-dev` never saw it | `docker-compose.prod.yml` gateway: `SERVER_SERVLET_SESSION_COOKIE_DOMAIN: heykazi.com` (PR #1468) |
+| Accept-invite page "invalid link" | frontend image lacked `NEXT_PUBLIC_KEYCLOAK_URL` → kcUrl validator defaulted to `localhost:8180` | `frontend/Dockerfile` + `deploy-vps.yml` build args (PR #1469) — **rebuild required** |
+| Invite email link points at `localhost:3000` | Keycloak `org-invite.ftl` email theme hard-coded the bounce base | env-driven via `theme.properties` + `KC_INVITE_BOUNCE_BASE_URL` (PR #1469) — **KC restart required** |
+| OAuth `redirect_uri` built as `http://…:8443` | gateway didn't honour `X-Forwarded-*` behind Caddy | `docker-compose.prod.yml` gateway: `SERVER_FORWARD_HEADERS_STRATEGY: framework` |
+
+Two of these need more than a container restart when triggered:
+`NEXT_PUBLIC_*` values are **baked into the frontend image at build time** — changing
+them requires re-running the `deploy-vps` workflow (no runtime override). The Keycloak
+email theme is cached in production mode — changing `KC_INVITE_BOUNCE_BASE_URL` (or the
+`.ftl`) requires `docker compose ... up -d --force-recreate keycloak`.
+
+### Re-pointing at a different base domain
+
+If you change `heykazi.com` (or the `-dev` prefix), update every place the host is
+pinned — these are not all driven by a single variable:
+
+- **DNS** — 7 A records (§3).
+- **`compose/caddy/Caddyfile`** — the 7 vhost blocks.
+- **`compose/docker-compose.prod.yml`** — `KC_HOSTNAME`, `JWT_ISSUER_URI`/`JWT_JWK_SET_URI`, `AWS_S3_PRESIGNER_ENDPOINT`, `KEYCLOAK_ISSUER`, `FRONTEND_URL`, `APP_BASE_URL`, `PORTAL_BASE_URL`, `HEYKAZI_BASE_URL`/`HEYKAZI_FRONTEND_URL`, `CLERK_ISSUER`/`CLERK_JWKS_URI`, `SERVER_SERVLET_SESSION_COOKIE_DOMAIN`, `KC_INVITE_BOUNCE_BASE_URL`, `KAZI_MCP_RESOURCE_URL`.
+- **`.github/workflows/deploy-vps.yml`** — the frontend `NEXT_PUBLIC_*` build args (then rebuild).
+- **`compose/keycloak/realm-export.json`** — `gateway-bff` redirect URIs / web origins / post-logout, and `mcp-claude` redirect URIs (re-import or edit in the admin console).
+
+---
+
+## 13. Security Hardening — Known Deferrals
 
 These are tracked decisions made explicitly for the dev environment — not oversights. Each should be revisited before promoting to a production tenant-facing deployment.
 
@@ -533,4 +566,4 @@ The `DATABASE_URL` and `DATABASE_MIGRATION_URL` env vars embed `user=` and `pass
 
 ---
 
-*Runbook version: 2026-06-19. Artifacts: `compose/docker-compose.prod.yml`, `compose/.env.prod.example`, `compose/caddy/Caddyfile`, `.github/workflows/deploy-vps.yml`.*
+*Runbook version: 2026-06-20 (adds §12 split-subdomain troubleshooting after a live deploy surfaced five host-config gotchas — PRs #1467–#1469). Artifacts: `compose/docker-compose.prod.yml`, `compose/.env.prod.example`, `compose/caddy/Caddyfile`, `.github/workflows/deploy-vps.yml`.*

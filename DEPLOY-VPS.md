@@ -359,20 +359,46 @@ which is invalid at the authorization endpoint (→ "invalid_scope … service_a
 redirect hosts, allows the OIDC optional scopes Claude needs (incl. `offline_access`), and removes the
 `service_account` scope. It **must be run after every fresh Keycloak realm import** — this config
 cannot live in `realm-export.json` because Keycloak re-adds the defaults on import. The script is
-idempotent and also sets up the gateway-bff mappers, the platform-admin user, and org_role backfill.
+idempotent and also sets up the gateway-bff mappers and the `org_role` backfill.
+
+**Prerequisites on the box:** the script uses `jq` and `curl` (curl is usually present, `jq` is not on a base Ubuntu image):
+
+```bash
+sudo apt-get update && sudo apt-get install -y jq curl
+```
+
+**Run it (VPS-safe invocation):**
 
 ```bash
 ssh USER@HOST
 cd /opt/kazi/compose
-# Point at the box's Keycloak + admin creds; KC_CONTAINER overrides the kcadm container name if needed.
+# Find the Keycloak container name for the kazi-prod project (usually kazi-prod-keycloak-1):
+docker compose -p kazi-prod ps --format '{{.Name}}' | grep keycloak
+
+# SEED_DEV_CREDENTIALS=false is REQUIRED on the VPS — it skips the dev-only steps
+# that create a padmin/password backdoor and reset every existing user's password
+# to "password". KCADM_SERVER stays in-container; KEYCLOAK_URL is the public host
+# (Keycloak has no published host port on the VPS).
+SEED_DEV_CREDENTIALS=false \
 KEYCLOAK_URL=https://auth-dev.heykazi.com \
-KEYCLOAK_ADMIN=<admin> KEYCLOAK_ADMIN_PASSWORD=<pwd> KC_CONTAINER=<keycloak-container> \
+KCADM_SERVER=http://localhost:8180 \
+KEYCLOAK_ADMIN=<admin> KEYCLOAK_ADMIN_PASSWORD=<pwd> \
+KC_CONTAINER=kazi-prod-keycloak-1 \
   bash scripts/keycloak-bootstrap.sh
 ```
 
-Without this step, `claude mcp add` will fail the PKCE flow with "Host not trusted" or "invalid_scope".
+This applies only the prod-relevant steps: `org_role` user-profile registration, the `gateway-bff`
+mappers, the `org_role` backfill on existing members, and the constrained MCP DCR policy. It does **not**
+seed dev passwords — create your platform-admin via the Keycloak admin console (one-time; the realm
+imports with no users).
+
+Without the DCR step, `claude mcp add` will fail the PKCE flow with "Host not trusted" or "invalid_scope".
 (The static `mcp-claude` client in `realm-export.json` stays as a fallback; with DCR enabled, Claude
 self-registers and the Trusted Hosts policy constrains it to the same redirect hosts.)
+
+> ⚠️ Re-running the script later (e.g. after a fresh realm re-import) — always keep
+> `SEED_DEV_CREDENTIALS=false` on the VPS, or step [7/8] will reset every then-existing
+> user's password to `"password"`.
 
 ### Add the MCP server to Claude Code
 

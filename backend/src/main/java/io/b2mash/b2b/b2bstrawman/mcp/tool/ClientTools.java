@@ -70,9 +70,10 @@ public class ClientTools {
               + " (PROSPECT, ONBOARDING, ACTIVE, DORMANT, OFFBOARDING, OFFBOARDED). Paginated —"
               + " page size is capped at 50.")
   public Object listClients(
-      @McpToolParam(required = false, description = "Zero-based page index (default 0).") int page,
+      @McpToolParam(required = false, description = "Zero-based page index (default 0).")
+          Integer page,
       @McpToolParam(required = false, description = "Page size, capped at 50 (default 50).")
-          int size,
+          Integer size,
       @McpToolParam(
               required = false,
               description = "Filter by lifecycle status short enum name, e.g. ACTIVE.")

@@ -71,9 +71,10 @@ public class MatterTools {
               + " owners/admins see all. Optionally filter by status (e.g. ACTIVE) or customerId."
               + " Paginated — page size is capped at 50.")
   public Object listMatters(
-      @McpToolParam(required = false, description = "Zero-based page index (default 0).") int page,
+      @McpToolParam(required = false, description = "Zero-based page index (default 0).")
+          Integer page,
       @McpToolParam(required = false, description = "Page size, capped at 50 (default 50).")
-          int size,
+          Integer size,
       @McpToolParam(required = false, description = "Filter by short status enum, e.g. ACTIVE.")
           String status,
       @McpToolParam(required = false, description = "Filter to matters linked to this client id.")

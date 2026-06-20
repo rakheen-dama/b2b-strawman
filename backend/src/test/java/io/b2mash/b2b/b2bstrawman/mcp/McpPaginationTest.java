@@ -50,6 +50,19 @@ class McpPaginationTest {
   }
 
   @Test
+  void paginateNullPageAndSizeDefaultToFirstPage() {
+    // Optional MCP paging params arrive as null when the client omits them. paginate must NOT
+    // unbox-NPE — it defaults to page 0 / the server default size. (Regression: list_clients and
+    // the other paginated tools threw NPE when called without page/size.)
+    McpPage<Integer> page = McpPagination.paginate(range(120), null, null, 50);
+    assertThat(page.items()).hasSize(50).containsExactlyElementsOf(range(50));
+    assertThat(page.page()).isZero();
+    assertThat(page.size()).isEqualTo(50);
+    assertThat(page.total()).isEqualTo(120);
+    assertThat(page.truncated()).isTrue();
+  }
+
+  @Test
   void paginateFirstPageWithMoreToCome() {
     McpPage<Integer> page = McpPagination.paginate(range(120), 0, 50, 50);
     assertThat(page.items()).hasSize(50).containsExactlyElementsOf(range(50));

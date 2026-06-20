@@ -153,6 +153,11 @@ services:
     environment:
       # NO SPRING_PROFILES_ACTIVE → default profile → jdbc session store (no Redis)
       SERVER_SERVLET_SESSION_COOKIE_SECURE: "true"
+      # Frontend (app-dev) and gateway (bff-dev) are different subdomains, so the
+      # SESSION cookie must be scoped to the parent domain or the Next middleware
+      # on app-dev never sees it and the OAuth login loops forever. SameSite=Lax
+      # still sends it because the subdomains are same-site (heykazi.com).
+      SERVER_SERVLET_SESSION_COOKIE_DOMAIN: heykazi.com
       # Caddy terminates TLS and proxies plain HTTP to :8443; honour X-Forwarded-*
       # so the OAuth2 redirect_uri is built as https://bff-dev… (not http://…:8443).
       SERVER_FORWARD_HEADERS_STRATEGY: framework

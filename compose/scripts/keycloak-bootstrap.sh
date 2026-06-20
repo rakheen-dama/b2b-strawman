@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 # keycloak-bootstrap.sh — Bootstrap Keycloak after realm import.
 # Adds protocol mappers to the gateway-bff client, creates the platform admin user,
-# and backfills org_role attributes on existing organization members.
+# backfills org_role attributes on existing organization members, and configures the MCP OAuth
+# dynamic-client-registration (DCR) policies so the firm's Claude can connect to the MCP server.
 # The platform-admins group is already created by the realm-export.json import.
+#
+# REQUIRED after every fresh Keycloak import (local dev AND the VPS deploy) — the MCP DCR config
+# below cannot live in realm-export.json (Keycloak re-adds the default service_account scope and
+# default registration policies on import), so it must be applied here post-import.
 #
 # Does NOT create organizations or tenant users — those go through the product's provisioning flow.
 #
@@ -18,14 +23,16 @@ KEYCLOAK_ADMIN="${KEYCLOAK_ADMIN:-admin}"
 KEYCLOAK_ADMIN_PASSWORD="${KEYCLOAK_ADMIN_PASSWORD:-admin}"
 REALM="docteams"
 
-# Use kcadm.sh from Docker container
-KCADM="docker exec b2b-keycloak /opt/keycloak/bin/kcadm.sh"
+# Use kcadm.sh from the Keycloak Docker container (override KC_CONTAINER on the VPS if the
+# container is named differently, e.g. a compose-generated name).
+KC_CONTAINER="${KC_CONTAINER:-b2b-keycloak}"
+KCADM="docker exec ${KC_CONTAINER} /opt/keycloak/bin/kcadm.sh"
 
 echo "=== Keycloak Bootstrap ==="
 echo ""
 
 # ---- Wait for Keycloak to be ready ----
-echo "[1/7] Waiting for Keycloak..."
+echo "[1/8] Waiting for Keycloak..."
 MAX_WAIT=120
 ELAPSED=0
 while [[ $ELAPSED -lt $MAX_WAIT ]]; do
@@ -42,7 +49,7 @@ if [[ $ELAPSED -ge $MAX_WAIT ]]; then
 fi
 
 # ---- Authenticate admin ----
-echo "[2/7] Authenticating admin..."
+echo "[2/8] Authenticating admin..."
 $KCADM config credentials \
   --server "${KEYCLOAK_URL}" \
   --realm master \
@@ -50,7 +57,7 @@ $KCADM config credentials \
   --password "${KEYCLOAK_ADMIN_PASSWORD}"
 
 # ---- Register org_role in User Profile ----
-echo "[3/7] Registering org_role in user profile..."
+echo "[3/8] Registering org_role in user profile..."
 
 # Keycloak 26.x uses strict user profile — unregistered attributes are silently stripped.
 # We must declare org_role before it can be set on any user.
@@ -81,7 +88,7 @@ else
 fi
 
 # ---- Add Protocol Mappers to gateway-bff client ----
-echo "[4/7] Configuring protocol mappers on gateway-bff client..."
+echo "[4/8] Configuring protocol mappers on gateway-bff client..."
 
 CLIENT_KC_ID=$($KCADM get clients -r "${REALM}" --fields id,clientId \
   | jq -r '.[] | select(.clientId=="gateway-bff") | .id' 2>/dev/null || true)
@@ -130,7 +137,7 @@ ORG_ROLE_OK=$($KCADM get "clients/${CLIENT_KC_ID}/protocol-mappers/models" -r "$
 [[ "$ORG_ROLE_OK" == "org-role" ]] && echo "  org-role mapper OK" || echo "  ERROR: org-role mapper MISSING"
 
 # ---- Create platform admin user and assign to existing platform-admins group ----
-echo "[5/7] Creating platform admin user..."
+echo "[5/8] Creating platform admin user..."
 
 # Look up the platform-admins group (created by realm-export.json)
 GROUP_ID=$($KCADM get groups -r "${REALM}" --fields id,name \
@@ -177,7 +184,7 @@ $KCADM update "users/${PADMIN_ID}/groups/${GROUP_ID}" \
 echo "  ${PADMIN_EMAIL} / password -> platform-admins group"
 
 # ---- Backfill org_role attribute and passwords on existing org members ----
-echo "[6/7] Backfilling org_role for existing organization members..."
+echo "[6/8] Backfilling org_role for existing organization members..."
 
 # Iterate all organizations, find the creator (stored as org attribute), set org_role=owner.
 # All other org members without org_role get member as default.
@@ -244,7 +251,7 @@ else
 fi
 
 # ---- Backfill passwords for existing org members (local dev only) ----
-echo "[7/7] Backfilling passwords for existing organization members..."
+echo "[7/8] Backfilling passwords for existing organization members..."
 
 # Re-fetch token (may have expired during org_role backfill)
 TOKEN=$(curl -sf "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
@@ -284,12 +291,74 @@ else
   done
 fi
 
+# ---- Configure MCP OAuth dynamic client registration (DCR) ----
+echo "[8/8] Configuring MCP OAuth dynamic-client-registration policies..."
+
+# Claude (and other MCP clients) self-register via OAuth Dynamic Client Registration. Keycloak's
+# default anonymous client-registration policies block this:
+#   - Trusted Hosts: empty allowlist + source-host match  -> "Host not trusted"
+#   - Allowed Client Scopes: only default scopes permitted -> optional scopes rejected
+#   - the built-in `service_account` scope appears in scopes_supported but is invalid at the
+#     authorization endpoint -> "invalid_scope: ... service_account ..."
+# Enable DCR but keep it CONSTRAINED: trust only localhost + claude.ai redirect hosts, allow the
+# OIDC optional scopes Claude needs (incl. offline_access), and drop the service_account scope.
+# Idempotent — safe to re-run. Uses the REST API (kcadm array config is unreliable).
+TOKEN=$(curl -sf "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
+  -d "grant_type=password&client_id=admin-cli&username=${KEYCLOAK_ADMIN}&password=${KEYCLOAK_ADMIN_PASSWORD}" \
+  | jq -r '.access_token')
+
+CRP_TYPE="org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy"
+POLICIES=$(curl -sf "${KEYCLOAK_URL}/admin/realms/${REALM}/components?type=${CRP_TYPE}" \
+  -H "Authorization: Bearer ${TOKEN}" 2>/dev/null || echo "[]")
+
+# Trusted Hosts: allow localhost + claude.ai callback hosts; disable the source-host check (the
+# registration request arrives via the reverse proxy / Docker gateway, not the client's own IP).
+TH_ID=$(echo "$POLICIES" | jq -r '.[] | select(.providerId=="trusted-hosts") | .id' | head -1)
+if [[ -n "$TH_ID" ]]; then
+  TH=$(echo "$POLICIES" | jq --arg id "$TH_ID" '.[] | select(.id==$id)
+    | .config["trusted-hosts"]=["localhost","127.0.0.1","claude.ai"]
+    | .config["host-sending-registration-request-must-match"]=["false"]
+    | .config["client-uris-must-match"]=["true"]')
+  curl -sf -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/components/${TH_ID}" \
+    -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" -d "$TH" \
+    && echo "  Trusted Hosts policy -> localhost,127.0.0.1,claude.ai (source-host check off)" \
+    || echo "  WARN: failed to update Trusted Hosts policy"
+else
+  echo "  WARN: Trusted Hosts policy not found"
+fi
+
+# Allowed Client Scopes (anonymous + authenticated): permit the valid interactive OIDC optional
+# scopes Claude requests. service_account is deliberately excluded.
+for ACS_ID in $(echo "$POLICIES" | jq -r '.[] | select(.providerId=="allowed-client-templates") | .id'); do
+  ACS=$(echo "$POLICIES" | jq --arg id "$ACS_ID" '.[] | select(.id==$id)
+    | .config["allowed-client-scopes"]=["offline_access","organization","address","phone","microprofile-jwt"]
+    | .config["allow-default-scopes"]=["true"]')
+  curl -sf -X PUT "${KEYCLOAK_URL}/admin/realms/${REALM}/components/${ACS_ID}" \
+    -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" -d "$ACS" \
+    && echo "  Allowed Client Scopes policy configured (${ACS_ID})" \
+    || echo "  WARN: failed to update Allowed Client Scopes policy ${ACS_ID}"
+done
+
+# Remove the built-in service_account scope so it never appears in scopes_supported (it is invalid
+# at the authorization endpoint and breaks Claude's PKCE flow). No client uses it for app function.
+SA_ID=$(curl -sf "${KEYCLOAK_URL}/admin/realms/${REALM}/client-scopes" \
+  -H "Authorization: Bearer ${TOKEN}" | jq -r '.[] | select(.name=="service_account") | .id' | head -1)
+if [[ -n "$SA_ID" ]]; then
+  curl -sf -X DELETE "${KEYCLOAK_URL}/admin/realms/${REALM}/client-scopes/${SA_ID}" \
+    -H "Authorization: Bearer ${TOKEN}" \
+    && echo "  service_account scope removed" \
+    || echo "  WARN: failed to remove service_account scope"
+else
+  echo "  service_account scope already absent"
+fi
+
 echo ""
 echo "=== Keycloak Bootstrap Complete ==="
 echo ""
 echo "  Mappers: groups, org-role (on gateway-bff)"
 echo "  User:    padmin@docteams.local / password"
 echo "  Org members: password backfilled to 'password' for local dev login"
+echo "  MCP DCR:  Trusted Hosts (localhost,claude.ai) + allowed scopes set; service_account removed"
 echo ""
 echo "  Users must log out and back in to get the updated org_role claim in their JWT."
 echo ""

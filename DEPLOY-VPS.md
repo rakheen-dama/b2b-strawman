@@ -348,6 +348,32 @@ Then `ssh kazi-vps -N` forwards both tunnels simultaneously.
 
 Claude MCP OAuth auto-discovery relies on `/.well-known/oauth-protected-resource` advertising the Keycloak issuer. Under Spring Security 7 a built-in endpoint shadowed the custom one (no `authorization_servers`). This is fixed and merged to `main` (PR **#1465**), so any `:dev` image built after that merge includes it — no action needed beyond deploying a current image. If you ever see Claude fail PKCE discovery, confirm the backend image post-dates the #1465 merge and rebuild via the `deploy-vps` workflow.
 
+### Prerequisite — enable MCP dynamic client registration (run `keycloak-bootstrap.sh`)
+
+Claude authenticates to the MCP server via OAuth **Dynamic Client Registration** (DCR): it registers
+itself with Keycloak on first connect. Keycloak's *default* anonymous client-registration policies
+block this — empty Trusted Hosts (→ "Host not trusted") and the built-in `service_account` scope,
+which is invalid at the authorization endpoint (→ "invalid_scope … service_account").
+
+`keycloak-bootstrap.sh` configures a **constrained** DCR posture: trusts only `localhost` + `claude.ai`
+redirect hosts, allows the OIDC optional scopes Claude needs (incl. `offline_access`), and removes the
+`service_account` scope. It **must be run after every fresh Keycloak realm import** — this config
+cannot live in `realm-export.json` because Keycloak re-adds the defaults on import. The script is
+idempotent and also sets up the gateway-bff mappers, the platform-admin user, and org_role backfill.
+
+```bash
+ssh USER@HOST
+cd /opt/kazi/compose
+# Point at the box's Keycloak + admin creds; KC_CONTAINER overrides the kcadm container name if needed.
+KEYCLOAK_URL=https://auth-dev.heykazi.com \
+KEYCLOAK_ADMIN=<admin> KEYCLOAK_ADMIN_PASSWORD=<pwd> KC_CONTAINER=<keycloak-container> \
+  bash scripts/keycloak-bootstrap.sh
+```
+
+Without this step, `claude mcp add` will fail the PKCE flow with "Host not trusted" or "invalid_scope".
+(The static `mcp-claude` client in `realm-export.json` stays as a fallback; with DCR enabled, Claude
+self-registers and the Trusted Hosts policy constrains it to the same redirect hosts.)
+
 ### Add the MCP server to Claude Code
 
 ```bash

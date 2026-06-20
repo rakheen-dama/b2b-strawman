@@ -53,6 +53,10 @@ jobs:
             NEXT_PUBLIC_AUTH_MODE=keycloak
             NEXT_PUBLIC_GATEWAY_URL=https://bff-dev.heykazi.com
             NEXT_PUBLIC_BACKEND_URL=https://api-dev.heykazi.com
+            NEXT_PUBLIC_KEYCLOAK_URL=https://auth-dev.heykazi.com
+            NEXT_PUBLIC_KEYCLOAK_REALM=docteams
+            NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=gateway-bff
+            NEXT_PUBLIC_APP_URL=https://app-dev.heykazi.com
           tags: ghcr.io/${{ env.OWNER }}/kazi-frontend:${{ env.TAG }}
 
       - name: Build & push portal

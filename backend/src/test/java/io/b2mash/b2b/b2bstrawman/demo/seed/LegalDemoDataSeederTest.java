@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
@@ -12,8 +13,12 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeAll;
@@ -38,6 +43,9 @@ class LegalDemoDataSeederTest {
   private final CustomerRepository customerRepository;
   private final ProjectRepository projectRepository;
   private final TimeEntryRepository timeEntryRepository;
+  private final TrustAccountRepository trustAccountRepository;
+  private final TrustTransactionRepository trustTransactionRepository;
+  private final ChecklistInstanceRepository checklistInstanceRepository;
 
   private String schemaName;
   private UUID orgId;
@@ -51,7 +59,10 @@ class LegalDemoDataSeederTest {
       OrganizationRepository organizationRepository,
       CustomerRepository customerRepository,
       ProjectRepository projectRepository,
-      TimeEntryRepository timeEntryRepository) {
+      TimeEntryRepository timeEntryRepository,
+      TrustAccountRepository trustAccountRepository,
+      TrustTransactionRepository trustTransactionRepository,
+      ChecklistInstanceRepository checklistInstanceRepository) {
     this.legalDemoDataSeeder = legalDemoDataSeeder;
     this.tenantProvisioningService = tenantProvisioningService;
     this.tenantTransactionHelper = tenantTransactionHelper;
@@ -60,6 +71,9 @@ class LegalDemoDataSeederTest {
     this.customerRepository = customerRepository;
     this.projectRepository = projectRepository;
     this.timeEntryRepository = timeEntryRepository;
+    this.trustAccountRepository = trustAccountRepository;
+    this.trustTransactionRepository = trustTransactionRepository;
+    this.checklistInstanceRepository = checklistInstanceRepository;
   }
 
   @BeforeAll
@@ -142,6 +156,63 @@ class LegalDemoDataSeederTest {
         });
     assertTrue(
         allInRange.get(), "All billing rate snapshots must be within R1,200-R3,500 legal range");
+  }
+
+  @Test
+  void seeder_seedsTrustAccountingWithCreditorInDebit() {
+    var result = new AtomicReference<boolean[]>();
+    tenantTransactionHelper.executeInTenantTransaction(
+        schemaName,
+        orgId.toString(),
+        t -> {
+          boolean hasAccount = trustAccountRepository.count() >= 1;
+          // Net per creditor: DEPOSIT adds, PAYMENT subtracts. At least one must be in debit.
+          Map<UUID, BigDecimal> net = new HashMap<>();
+          for (var txn : trustTransactionRepository.findAll()) {
+            BigDecimal signed =
+                "DEPOSIT".equals(txn.getTransactionType())
+                    ? txn.getAmount()
+                    : txn.getAmount().negate();
+            net.merge(txn.getCustomerId(), signed, BigDecimal::add);
+          }
+          boolean hasDebit = net.values().stream().anyMatch(v -> v.signum() < 0);
+          result.set(new boolean[] {hasAccount, hasDebit});
+        });
+    assertTrue(result.get()[0], "Seeder must create at least one trust account");
+    assertTrue(result.get()[1], "Seeder must leave at least one trust creditor in debit");
+  }
+
+  @Test
+  void seeder_seedsFicaChecklistForLegalZaTenant() {
+    // The shared @BeforeAll tenant is provisioned "legal" (no legal-za compliance pack), so the
+    // checklist step skips there. Provision a real legal-za tenant — which installs the FICA pack —
+    // and verify the seeder instantiates the trust-onboarding checklist.
+    String slug = "legal-za-fica-test-" + UUID.randomUUID().toString().substring(0, 8);
+    tenantProvisioningService.provisionTenant(slug, "Legal ZA FICA Test Org", "legal-za");
+    String s = mappingRepository.findByExternalOrgId(slug).orElseThrow().getSchemaName();
+    UUID o = organizationRepository.findByExternalOrgId(slug).orElseThrow().getId();
+
+    legalDemoDataSeeder.seed(s, o);
+
+    var checklistCount = new AtomicReference<Long>();
+    tenantTransactionHelper.executeInTenantTransaction(
+        s, o.toString(), t -> checklistCount.set(checklistInstanceRepository.count()));
+    assertTrue(
+        checklistCount.get() >= 1,
+        "Seeder must instantiate a FICA checklist for the trust client on a legal-za tenant");
+  }
+
+  @Test
+  void seeder_leavesUnbilledTime() {
+    var hasUnbilled = new AtomicReference<Boolean>();
+    tenantTransactionHelper.executeInTenantTransaction(
+        schemaName,
+        orgId.toString(),
+        t ->
+            hasUnbilled.set(
+                timeEntryRepository.findAll().stream().anyMatch(e -> e.getInvoiceId() == null)));
+    assertTrue(
+        hasUnbilled.get(), "Seeder must leave unbilled time entries for the fee-note-run skill");
   }
 
   @Test

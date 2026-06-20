@@ -1,5 +1,11 @@
 package io.b2mash.b2b.b2bstrawman.demo.seed;
 
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstance;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceItem;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceItemRepository;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceRepository;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateItemRepository;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
@@ -18,7 +24,14 @@ import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleRegistry;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -59,6 +72,12 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
   };
 
   private final VerticalModuleRegistry verticalModuleRegistry;
+  private final TrustAccountRepository trustAccountRepository;
+  private final TrustTransactionRepository trustTransactionRepository;
+  private final ChecklistTemplateRepository checklistTemplateRepository;
+  private final ChecklistTemplateItemRepository checklistTemplateItemRepository;
+  private final ChecklistInstanceRepository checklistInstanceRepository;
+  private final ChecklistInstanceItemRepository checklistInstanceItemRepository;
 
   public LegalDemoDataSeeder(
       TenantTransactionHelper tenantTransactionHelper,
@@ -71,7 +90,13 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
       InvoiceRepository invoiceRepository,
       InvoiceLineRepository invoiceLineRepository,
       ProjectMemberRepository projectMemberRepository,
-      VerticalModuleRegistry verticalModuleRegistry) {
+      VerticalModuleRegistry verticalModuleRegistry,
+      TrustAccountRepository trustAccountRepository,
+      TrustTransactionRepository trustTransactionRepository,
+      ChecklistTemplateRepository checklistTemplateRepository,
+      ChecklistTemplateItemRepository checklistTemplateItemRepository,
+      ChecklistInstanceRepository checklistInstanceRepository,
+      ChecklistInstanceItemRepository checklistInstanceItemRepository) {
     super(
         tenantTransactionHelper,
         memberRepository,
@@ -84,6 +109,12 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
         invoiceLineRepository,
         projectMemberRepository);
     this.verticalModuleRegistry = verticalModuleRegistry;
+    this.trustAccountRepository = trustAccountRepository;
+    this.trustTransactionRepository = trustTransactionRepository;
+    this.checklistTemplateRepository = checklistTemplateRepository;
+    this.checklistTemplateItemRepository = checklistTemplateItemRepository;
+    this.checklistInstanceRepository = checklistInstanceRepository;
+    this.checklistInstanceItemRepository = checklistInstanceItemRepository;
   }
 
   @Override
@@ -123,10 +154,17 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
     List<TimeEntry> timeEntries =
         createTimeEntries(taskIds, allMemberIds, 200, 90, true, RATES, rand);
 
-    // 7. Invoices (10) from unbilled time entries
+    // 7. Invoices from unbilled time entries (leaves a pool of unbilled time on purpose)
     createInvoices(customers, timeEntries, primaryMemberId, rand);
 
-    // 8. Legal-specific entities (court dates, adverse parties, tariff items)
+    // 8. Trust accounting: one SECTION_86 account with deposits + a payment that leaves one
+    //    trust creditor in debit (a Rule 54.14.9 anomaly the trust-reconciliation skill flags).
+    seedTrustAccounting(customers, primaryMemberId);
+
+    // 9. FICA/KYC checklist for the trust client (required items pending = compliance gaps).
+    seedFicaChecklist(customers);
+
+    // 10. Legal-specific entities (court dates, adverse parties, tariff items)
     seedLegalSpecificEntities();
 
     log.info(
@@ -136,6 +174,142 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
         projects.size(),
         taskIds.size(),
         timeEntries.size());
+  }
+
+  /**
+   * Seeds one SECTION_86 trust account with deposits and a payment that leaves one trust creditor
+   * in debit — a Rule 54.14.9 ("no trust creditor in debit") anomaly the trust-reconciliation skill
+   * is meant to flag. Balances count RECORDED/APPROVED transactions: DEPOSIT adds, PAYMENT
+   * subtracts.
+   */
+  private void seedTrustAccounting(List<CustomerInfo> customers, UUID createdBy) {
+    List<CustomerInfo> active =
+        customers.stream().filter(c -> c.status() == LifecycleStatus.ACTIVE).toList();
+    if (active.size() < 2) {
+      log.info("Not enough active customers for trust seeding -- skipping");
+      return;
+    }
+    CustomerInfo healthy =
+        active.stream()
+            .filter(c -> c.name().equals("Dlamini Property Trust"))
+            .findFirst()
+            .orElse(active.get(0));
+    CustomerInfo inDebit =
+        active.stream().filter(c -> !c.id().equals(healthy.id())).findFirst().orElseThrow();
+
+    TrustAccount account =
+        new TrustAccount(
+            "Trust Account — Main",
+            "Standard Bank",
+            "051001",
+            "0123456789",
+            TrustAccountType.SECTION_86,
+            true,
+            false,
+            null,
+            daysAgoDate(120),
+            "Primary section 86 trust account (demo)");
+    account = trustAccountRepository.save(account);
+    UUID accountId = account.getId();
+
+    // Healthy creditor: 50 000 in, 20 000 out -> +30 000.
+    saveTrustTxn(
+        accountId, "DEPOSIT", "50000.00", healthy.id(), "Funds received on account", 60, createdBy);
+    saveTrustTxn(
+        accountId,
+        "PAYMENT",
+        "20000.00",
+        healthy.id(),
+        "Disbursement — transfer duty",
+        30,
+        createdBy);
+    // Debit creditor: 15 000 in, 18 000 out -> -3 000 (overpayment in error).
+    saveTrustTxn(
+        accountId, "DEPOSIT", "15000.00", inDebit.id(), "Deposit on account", 50, createdBy);
+    saveTrustTxn(
+        accountId,
+        "PAYMENT",
+        "18000.00",
+        inDebit.id(),
+        "Payment out (overpayment in error)",
+        20,
+        createdBy);
+
+    log.info(
+        "Trust accounting seeded: 1 SECTION_86 account, 4 transactions (creditor {} left in debit)",
+        inDebit.name());
+  }
+
+  private void saveTrustTxn(
+      UUID accountId,
+      String type,
+      String amount,
+      UUID customerId,
+      String description,
+      int daysAgo,
+      UUID recordedBy) {
+    LocalDate date = daysAgoDate(daysAgo);
+    TrustTransaction txn =
+        new TrustTransaction(
+            accountId,
+            type,
+            new BigDecimal(amount),
+            customerId,
+            null,
+            null,
+            "%s-%s".formatted(type.substring(0, 3), date),
+            description,
+            date,
+            "RECORDED",
+            recordedBy);
+    trustTransactionRepository.save(txn);
+  }
+
+  /**
+   * Instantiates the FICA trust-client onboarding checklist for the trust customer so its required
+   * items are PENDING — i.e. compliance gaps the fica-gap-review skill surfaces. Gracefully skips
+   * if the compliance pack template is not installed for this tenant (e.g. non legal-za
+   * provisioning).
+   */
+  private void seedFicaChecklist(List<CustomerInfo> customers) {
+    CustomerInfo trustClient =
+        customers.stream()
+            .filter(c -> c.name().equals("Dlamini Property Trust"))
+            .findFirst()
+            .orElse(null);
+    if (trustClient == null) {
+      return;
+    }
+    var template = checklistTemplateRepository.findBySlug("legal-za-trust-client-onboarding");
+    if (template.isEmpty()) {
+      log.info("FICA trust-onboarding template not installed -- skipping checklist seeding");
+      return;
+    }
+    UUID templateId = template.get().getId();
+    // Create the instance + items directly via repositories (the seeder's established pattern),
+    // rather than the service path which audits and would need member-scope binding. Items default
+    // to PENDING, so the required ones are the compliance gaps fica-gap-review reads.
+    ChecklistInstance instance =
+        checklistInstanceRepository.save(
+            new ChecklistInstance(templateId, trustClient.id(), Instant.now()));
+    var templateItems =
+        checklistTemplateItemRepository.findByTemplateIdOrderBySortOrder(templateId);
+    for (var ti : templateItems) {
+      checklistInstanceItemRepository.save(
+          new ChecklistInstanceItem(
+              instance.getId(),
+              ti.getId(),
+              ti.getName(),
+              ti.getDescription(),
+              ti.getSortOrder(),
+              ti.isRequired(),
+              ti.isRequiresDocument(),
+              ti.getRequiredDocumentLabel()));
+    }
+    log.info(
+        "FICA trust-onboarding checklist instantiated for {} ({} items, required ones pending)",
+        trustClient.name(),
+        templateItems.size());
   }
 
   /**
@@ -192,16 +366,12 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
 
     List<CustomerInfo> results = new ArrayList<>();
     for (CustomerSpec spec : specs) {
+      // The trust client drives the FICA trust-onboarding checklist + a trust creditor balance.
+      CustomerType type =
+          spec.name().equals("Dlamini Property Trust") ? CustomerType.TRUST : CustomerType.COMPANY;
       Customer customer =
           new Customer(
-              spec.name(),
-              spec.email(),
-              spec.phone(),
-              null,
-              null,
-              createdBy,
-              CustomerType.COMPANY,
-              spec.status());
+              spec.name(), spec.email(), spec.phone(), null, null, createdBy, type, spec.status());
       customer = customerRepository.save(customer);
       results.add(new CustomerInfo(customer.getId(), spec.name(), spec.email(), spec.status()));
     }
@@ -352,9 +522,13 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
     List<CustomerInfo> activeCustomers =
         customers.stream().filter(c -> c.status() == LifecycleStatus.ACTIVE).toList();
 
-    // Split time entries into groups for 10 invoices
+    // Split time entries into groups for 10 invoices. Reserve ~20% as unbilled on purpose so
+    // the fee-note-run skill (and the unbilled-time read model) has data to work with.
     List<TimeEntry> unbilled = timeEntries.stream().filter(e -> e.getInvoiceId() == null).toList();
-    int entriesPerInvoice = Math.max(1, unbilled.size() / 10);
+    int reserve = Math.max(10, unbilled.size() / 5);
+    List<TimeEntry> billable =
+        unbilled.size() > reserve ? unbilled.subList(0, unbilled.size() - reserve) : List.of();
+    int entriesPerInvoice = Math.max(1, billable.size() / 10);
 
     // Invoice status distribution: 2 DRAFT, 4 SENT, 3 PAID, 1 VOID
     String[] statusTargets = {
@@ -364,10 +538,10 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
     int invoiceCount = 0;
     for (int i = 0; i < 10; i++) {
       int start = i * entriesPerInvoice;
-      int end = (i == 9) ? unbilled.size() : start + entriesPerInvoice;
-      if (start >= unbilled.size()) break;
+      int end = (i == 9) ? billable.size() : start + entriesPerInvoice;
+      if (start >= billable.size()) break;
 
-      List<TimeEntry> batch = new ArrayList<>(unbilled.subList(start, end));
+      List<TimeEntry> batch = new ArrayList<>(billable.subList(start, end));
       if (batch.isEmpty()) continue;
 
       CustomerInfo customer = activeCustomers.get(i % activeCustomers.size());

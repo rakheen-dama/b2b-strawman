@@ -77,9 +77,10 @@ public class AuditTools {
               required = false,
               description = "Filter by event type, prefix match (e.g. 'invoice.').")
           String eventType,
-      @McpToolParam(required = false, description = "Zero-based page index (default 0).") int page,
+      @McpToolParam(required = false, description = "Zero-based page index (default 0).")
+          Integer page,
       @McpToolParam(required = false, description = "Page size, capped at 200 (default 50).")
-          int size) {
+          Integer size) {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }

@@ -51,9 +51,13 @@ public final class McpPagination {
    * Slice an unbounded firm-side list into a page envelope, clamping size to {@code hardMax} and
    * page to a non-negative index.
    */
-  public static <T> McpPage<T> paginate(List<T> all, int page, int requestedSize, int hardMax) {
-    int size = clampSize(requestedSize, hardMax);
-    int p = Math.max(page, 0);
+  public static <T> McpPage<T> paginate(
+      List<T> all, Integer page, Integer requestedSize, int hardMax) {
+    // page/size are optional MCP tool params. Spring AI binds an omitted param to null, so they
+    // arrive boxed and nullable — never unbox blindly (that NPEs the whole tool call). Default a
+    // null/negative page to 0 and a null/non-positive size to the server default (via clampSize).
+    int size = clampSize(requestedSize == null ? 0 : requestedSize, hardMax);
+    int p = (page == null) ? 0 : Math.max(page, 0);
     long total = all.size();
     // Widen to long before multiplying: page is LLM-sourced, so a runaway page index would
     // otherwise overflow int, wrap negative, and make subList throw IndexOutOfBoundsException.

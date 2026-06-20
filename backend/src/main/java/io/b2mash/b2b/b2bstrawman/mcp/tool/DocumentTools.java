@@ -66,9 +66,10 @@ public class DocumentTools {
               + " (project-access enforced), or scope=ORG / scope=CUSTOMER for org-wide search"
               + " (customerId is required when scope=CUSTOMER). Paginated — page size capped at 50.")
   public Object searchDocuments(
-      @McpToolParam(required = false, description = "Zero-based page index (default 0).") int page,
+      @McpToolParam(required = false, description = "Zero-based page index (default 0).")
+          Integer page,
       @McpToolParam(required = false, description = "Page size, capped at 50 (default 50).")
-          int size,
+          Integer size,
       @McpToolParam(
               required = false,
               description = "Search documents within this matter (project).")

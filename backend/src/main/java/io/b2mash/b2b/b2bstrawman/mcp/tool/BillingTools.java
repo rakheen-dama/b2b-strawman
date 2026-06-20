@@ -82,9 +82,10 @@ public class BillingTools {
           String status,
       @McpToolParam(required = false, description = "Filter by matter (project) id.")
           UUID projectId,
-      @McpToolParam(required = false, description = "Zero-based page index (default 0).") int page,
+      @McpToolParam(required = false, description = "Zero-based page index (default 0).")
+          Integer page,
       @McpToolParam(required = false, description = "Page size, capped at 50 (default 50).")
-          int size) {
+          Integer size) {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
     }

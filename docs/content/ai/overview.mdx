@@ -1,0 +1,67 @@
+---
+title: "AI in HeyKazi"
+description: "How HeyKazi uses AI — specialists grounded in your firm's data, attorney-approval gates, your own Anthropic key, and the option to bring your own Claude over a secure connection."
+---
+
+import { Callout } from "nextra/components"
+
+# AI in HeyKazi
+
+HeyKazi's AI is built around one idea: **AI grounded in your firm's own data, under your control.** It
+reads your matters, clients, trust ledger, time, and compliance state to produce work that reflects how
+*your* practice actually operates — and it never acts on anything sensitive without an attorney's
+approval.
+
+Three principles run through every AI feature:
+
+- **Bring Your Own API Key (BYOAK).** AI runs on your organisation's own Anthropic key, so you control
+  cost, usage, and data egress. See [Integrations](/admin/integrations) to set it up.
+- **Draft-first, human-approved.** AI proposes; a person decides. Consequential actions are held in an
+  [approval queue](/ai/review-and-approval) for attorney sign-off before anything changes.
+- **Grounded and SA-tuned.** Output is shaped by your [AI firm profile](/ai/firm-profile-and-cost)
+  (practice areas, house style, risk posture) and South African legal knowledge (FICA, the Legal
+  Practice Act, LSSA tariffs).
+
+## Two ways to use AI
+
+### 1. Inside HeyKazi (AI on your data)
+
+- **[AI Assistant](/features/ai-assistant)** — a conversational helper that answers questions, looks up
+  your data, and drafts content from any page.
+- **[AI Specialists](/ai/specialists)** — focused, one-shot skills for legal tasks: FICA verification,
+  matter intake, contract review, drafting, and compliance audit. Each returns structured, cited
+  output and routes consequential actions through the [approval queue](/ai/review-and-approval).
+
+Both run server-side on your Anthropic key and are metered against your
+[monthly budget](/ai/firm-profile-and-cost).
+
+### 2. Bring Your Own Claude (your Claude, Kazi's context)
+
+If your team already uses Claude (Claude Code, Claude Desktop, or claude.ai), you can connect it
+directly to your HeyKazi data over a secure, **read-only** connection — see
+**[Bring Your Own Claude](/ai/bring-your-own-claude)**. Your firm's own Claude becomes grounded in your
+live matters and trust ledger, and your own Claude subscription pays the token bill.
+
+<Callout type="info">
+  The two paths complement each other: in-product AI is **HeyKazi calling Claude** (and writing back,
+  gated); Bring Your Own Claude is **your Claude reading HeyKazi** (never writing). Both are scoped to
+  what each user is allowed to see, and both are fully audited.
+</Callout>
+
+## Safety, privacy, and audit
+
+- **Scoped to the user.** Every AI feature only ever reads data the current member is permitted to see —
+  the same role and capability checks as the rest of the app.
+- **Audited.** AI activity is recorded in the [audit log](/admin/org-settings) (the `ai.specialist.*`
+  events for in-product AI; read events for Bring Your Own Claude), giving you a defensible trail of
+  what AI touched.
+- **POPIA-aware.** Sending client data to an AI provider is a deliberate, opt-in choice — controlled by
+  your API key for in-product AI, and by an explicit data-egress consent for Bring Your Own Claude.
+
+## Related
+
+- [AI Specialists](/ai/specialists) — the focused legal skills
+- [AI Review & Approval](/ai/review-and-approval) — the attorney sign-off queue
+- [AI Firm Profile & Cost](/ai/firm-profile-and-cost) — grounding and budget
+- [Bring Your Own Claude](/ai/bring-your-own-claude) — connect your own Claude over MCP
+- [Integrations](/admin/integrations) — configure your Anthropic API key (BYOAK)

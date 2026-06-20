@@ -1,0 +1,78 @@
+---
+title: "AI Firm Profile & Cost"
+description: "Ground HeyKazi's AI in how your firm actually works, and keep AI spend under control with a monthly budget and per-run cost metering in ZAR."
+---
+
+import { Callout, Steps } from "nextra/components"
+
+# AI Firm Profile & Cost
+
+Two settings shape every AI feature in HeyKazi: the **firm profile** (what the AI knows about your
+practice) and the **cost controls** (how much you let it spend). Both live under **Settings → AI** and
+require the `AI_MANAGE` capability.
+
+## AI firm profile
+
+The firm profile is how the AI produces output that sounds like *your* firm rather than generic legal
+boilerplate. The [AI Assistant](/features/ai-assistant) and every [specialist](/ai/specialists) read it
+before they run.
+
+| Field | What it does |
+|-------|--------------|
+| **Practice areas** | The areas you work in — steers matter classification and recommendations. |
+| **Province / jurisdiction** | Anchors regulatory and court context for South Africa. |
+| **Risk calibration** | Conservative / moderate / aggressive — how cautious the AI's advice should be. |
+| **House style** | Tone and conventions for drafted text (e.g. plain-language, cite statutes by section). |
+| **FICA requirements** | Your CDD posture — enhanced due diligence, PEP screening. |
+| **Preferred model** | Which Anthropic model the AI uses. |
+
+<Steps>
+### Open Settings → AI
+
+Go to **Settings → AI**.
+
+### Fill in your practice profile
+
+Add your practice areas, province, risk calibration, house-style notes, and FICA posture. The more you
+provide, the more the AI's output matches your conventions.
+
+### Save
+
+Saved immediately. Subsequent AI runs use the updated profile.
+</Steps>
+
+<Callout type="info">
+  A blank firm profile still works, but the AI falls back to generic, conservative South African
+  defaults. Populating it is the single biggest lever on output quality.
+</Callout>
+
+## Cost control
+
+HeyKazi's AI runs on **your own Anthropic key** (BYOAK — see [Integrations](/admin/integrations)), so
+you pay Anthropic directly and control the spend.
+
+### Per-run cost
+
+Every AI run records its cost in **ZAR** (converted from token usage at the configured rate), the model
+used, and token counts. You see the cost on each specialist result and in the execution history.
+
+### Monthly budget
+
+Set a **monthly budget** (in ZAR) on the AI settings page. HeyKazi tracks spend across all AI runs for
+the calendar month:
+
+- The **cost summary** shows spend so far, the budget, and the remaining amount.
+- When spend reaches the budget, further AI runs are **blocked** with a clear message until you raise or
+  remove the cap.
+- Leaving the budget unset means no cap (unlimited) — spend is still tracked and visible.
+
+<Callout type="warning">
+  The budget is a hard stop for in-product AI. If specialists or the assistant suddenly refuse to run,
+  check the cost summary — you have likely hit the monthly cap.
+</Callout>
+
+## Related
+
+- [Integrations](/admin/integrations) — set your Anthropic API key (BYOAK)
+- [AI Specialists](/ai/specialists) — what consumes the budget
+- [AI in HeyKazi](/ai/overview) — the overall AI model

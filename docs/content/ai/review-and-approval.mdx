@@ -1,0 +1,67 @@
+---
+title: "AI Review & Approval"
+description: "AI proposes, an attorney decides. Review and approve or reject the actions HeyKazi's AI specialists recommend before anything changes."
+---
+
+import { Callout, Steps } from "nextra/components"
+
+# AI Review & Approval
+
+HeyKazi's AI never changes a record on its own. When an [AI Specialist](/ai/specialists) recommends a
+consequential action — marking a FICA checklist complete, applying a recommendation — it creates an
+**approval gate**. The action only happens once a person with review authority approves it. This keeps
+the liability surface where it belongs: with the attorney, not the model.
+
+## The approval queue
+
+Gates appear in the **AI Reviews** queue (Settings → AI → Reviews). Reviewing requires the `AI_REVIEW`
+capability — typically owners, admins, and supervising attorneys.
+
+Each gate shows:
+
+- **What the AI proposes** — the specific change (e.g. which checklist items to mark complete).
+- **The AI's reasoning** — why it recommends the action.
+- **Where it came from** — the specialist run that produced it.
+- **An expiry** — gates lapse if not actioned (default **72 hours**).
+
+## Approving or rejecting
+
+<Steps>
+### Open a pending gate
+
+Go to the **Reviews** queue and open a gate in the **Pending** tab.
+
+### Review the proposal and reasoning
+
+Read what the AI wants to do and why. Open the underlying client, matter, or document if you need
+context.
+
+### Approve or reject
+
+- **Approve** — the proposed action is applied (for example, the checklist items are marked complete).
+  You can add notes.
+- **Reject** — nothing changes. Add a note explaining why; the proposal is discarded.
+</Steps>
+
+<Callout type="info">
+  Approving a gate is what *executes* the change. Rejecting leaves your data exactly as it was. Either
+  way, the decision — who, when, and any notes — is recorded.
+</Callout>
+
+## Expiry
+
+A gate that is neither approved nor rejected within its window (72 hours by default) is automatically
+marked **expired** and its action is never applied. Expired gates remain visible in the review history.
+
+## Audit trail
+
+Every step is written to the [audit log](/admin/org-settings): the specialist invocation
+(`ai.specialist.invoked`), and the disposition (`ai.specialist.approved`, `ai.specialist.rejected`, or
+`ai.specialist.expired`) with the reviewing member and timestamp. This gives you a defensible,
+POPIA-friendly record of every AI-suggested change and who signed off on it.
+
+## Related
+
+- [AI Specialists](/ai/specialists) — what creates gates
+- [AI in HeyKazi](/ai/overview) — the draft-first, human-approved model
+- [Team & Permissions](/admin/team-permissions) — who gets the `AI_REVIEW` capability

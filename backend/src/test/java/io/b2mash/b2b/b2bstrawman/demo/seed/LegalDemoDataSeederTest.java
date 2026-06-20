@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfileRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -46,6 +47,7 @@ class LegalDemoDataSeederTest {
   private final TrustAccountRepository trustAccountRepository;
   private final TrustTransactionRepository trustTransactionRepository;
   private final ChecklistInstanceRepository checklistInstanceRepository;
+  private final AiFirmProfileRepository aiFirmProfileRepository;
 
   private String schemaName;
   private UUID orgId;
@@ -62,7 +64,8 @@ class LegalDemoDataSeederTest {
       TimeEntryRepository timeEntryRepository,
       TrustAccountRepository trustAccountRepository,
       TrustTransactionRepository trustTransactionRepository,
-      ChecklistInstanceRepository checklistInstanceRepository) {
+      ChecklistInstanceRepository checklistInstanceRepository,
+      AiFirmProfileRepository aiFirmProfileRepository) {
     this.legalDemoDataSeeder = legalDemoDataSeeder;
     this.tenantProvisioningService = tenantProvisioningService;
     this.tenantTransactionHelper = tenantTransactionHelper;
@@ -74,6 +77,7 @@ class LegalDemoDataSeederTest {
     this.trustAccountRepository = trustAccountRepository;
     this.trustTransactionRepository = trustTransactionRepository;
     this.checklistInstanceRepository = checklistInstanceRepository;
+    this.aiFirmProfileRepository = aiFirmProfileRepository;
   }
 
   @BeforeAll
@@ -200,6 +204,26 @@ class LegalDemoDataSeederTest {
     assertTrue(
         checklistCount.get() >= 1,
         "Seeder must instantiate a FICA checklist for the trust client on a legal-za tenant");
+  }
+
+  @Test
+  void seeder_populatesFirmProfile() {
+    var result = new AtomicReference<boolean[]>();
+    tenantTransactionHelper.executeInTenantTransaction(
+        schemaName,
+        orgId.toString(),
+        t -> {
+          var profile = aiFirmProfileRepository.findAll().stream().findFirst().orElseThrow();
+          result.set(
+              new boolean[] {
+                !profile.getPracticeAreas().isEmpty(),
+                profile.getHouseStyleNotes() != null,
+                profile.getFeeEstimationNotes() != null
+              });
+        });
+    assertTrue(result.get()[0], "Firm profile must have practice areas");
+    assertTrue(result.get()[1], "Firm profile must have house-style notes");
+    assertTrue(result.get()[2], "Firm profile must have fee-estimation notes");
   }
 
   @Test

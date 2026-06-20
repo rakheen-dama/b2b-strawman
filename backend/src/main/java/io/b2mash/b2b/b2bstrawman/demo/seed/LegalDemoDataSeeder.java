@@ -10,6 +10,8 @@ import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
+import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfile;
+import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfileRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
@@ -34,6 +36,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -78,6 +81,7 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
   private final ChecklistTemplateItemRepository checklistTemplateItemRepository;
   private final ChecklistInstanceRepository checklistInstanceRepository;
   private final ChecklistInstanceItemRepository checklistInstanceItemRepository;
+  private final AiFirmProfileRepository aiFirmProfileRepository;
 
   public LegalDemoDataSeeder(
       TenantTransactionHelper tenantTransactionHelper,
@@ -96,7 +100,8 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
       ChecklistTemplateRepository checklistTemplateRepository,
       ChecklistTemplateItemRepository checklistTemplateItemRepository,
       ChecklistInstanceRepository checklistInstanceRepository,
-      ChecklistInstanceItemRepository checklistInstanceItemRepository) {
+      ChecklistInstanceItemRepository checklistInstanceItemRepository,
+      AiFirmProfileRepository aiFirmProfileRepository) {
     super(
         tenantTransactionHelper,
         memberRepository,
@@ -115,6 +120,7 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
     this.checklistTemplateItemRepository = checklistTemplateItemRepository;
     this.checklistInstanceRepository = checklistInstanceRepository;
     this.checklistInstanceItemRepository = checklistInstanceItemRepository;
+    this.aiFirmProfileRepository = aiFirmProfileRepository;
   }
 
   @Override
@@ -163,6 +169,10 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
 
     // 9. FICA/KYC checklist for the trust client (required items pending = compliance gaps).
     seedFicaChecklist(customers);
+
+    // 9b. AI firm profile — practice areas + house style so the AI skills (fee notes, briefs,
+    //     FICA requests) have real grounding instead of generic conservative defaults.
+    seedFirmProfile(primaryMemberId);
 
     // 10. Legal-specific entities (court dates, adverse parties, tariff items)
     seedLegalSpecificEntities();
@@ -310,6 +320,43 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
         "FICA trust-onboarding checklist instantiated for {} ({} items, required ones pending)",
         trustClient.name(),
         templateItems.size());
+  }
+
+  /**
+   * Populates the AI firm profile with the demo practice's areas, jurisdiction, and house style so
+   * the AI-grounded skills (fee notes, matter briefs, FICA requests) work from real conventions
+   * rather than empty defaults. Created via the repository (the seeder's pattern) — no audit/scope.
+   */
+  private void seedFirmProfile(UUID createdBy) {
+    AiFirmProfile profile =
+        aiFirmProfileRepository.findAll().stream()
+            .findFirst()
+            .orElseGet(() -> new AiFirmProfile(createdBy));
+    profile.updateProfile(
+        List.of(
+            "Conveyancing",
+            "Estate Administration",
+            "Commercial Litigation",
+            "Labour Law",
+            "Commercial & Corporate"),
+        "ZA",
+        "CONSERVATIVE",
+        "Plain-language client communication; formal but accessible. Cite SA statutes by section "
+            + "(e.g. FICA s21, LPA s86). Every AI output is a draft for attorney review.",
+        Map.of(
+            "default_cdd_tier", "standard",
+            "enhanced_dd_triggers", "PEPs, trusts, cash > R25 000 (FICA s28)",
+            "trust_client_docs",
+                "trust deed, Master's Letters of Authority, trustee IDs (FIC s21A)"),
+        "Bill in 6-minute units. VAT-registered (15%). Party-and-party costs recoverable per the "
+            + "applicable court tariff; attorney-and-client by agreement. Contingency fees per the "
+            + "Contingency Fees Act — success fee capped at 25% of the award and at double the normal fee.",
+        null,
+        null,
+        true,
+        createdBy);
+    aiFirmProfileRepository.save(profile);
+    log.info("AI firm profile seeded: {} practice areas, house style + fee conventions", 5);
   }
 
   /**

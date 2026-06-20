@@ -9,16 +9,13 @@
 
   See `qa_cycle/fix-specs/GAP-L-01.md`.
 
-  TODO(GAP-L-01 prod rollout): bounceBase is hard-coded to localhost:3000 for
-  the local dev QA cycle — see qa_cycle/fix-specs/GAP-L-01.md "Production
-  concern" note. Before staging/prod ship, route this through either:
-    (a) a realm-scoped SMTP attribute read via `${realm.attributes['...']}`,
-    (b) the `frontendBaseUrl` used by KeycloakProvisioningClient.java, or
-    (c) a custom KC SPI that injects per-environment config.
-  CodeRabbit review on PR #1065 flagged this — deferred as an explicit non-goal
-  of the legal-za QA cycle (intent was to unblock QA, not ship prod infra).
+  bounceBase is env-driven via theme.properties (`bounceBase` key, backed by
+  KC_INVITE_BOUNCE_BASE_URL). Local dev falls back to localhost:3000; the VPS/
+  prod deploy sets KC_INVITE_BOUNCE_BASE_URL=https://app-dev.heykazi.com/accept-invite.
+  The FTL `!` default is a second safety net if the property is unavailable.
+  Resolves the GAP-L-01 prod-rollout TODO (flagged by CodeRabbit on PR #1065).
 -->
-<#assign bounceBase = "http://localhost:3000/accept-invite">
+<#assign bounceBase = (properties.bounceBase)!"http://localhost:3000/accept-invite">
 <#assign bounceUrl = bounceBase + "?kcUrl=" + link?url('UTF-8')>
 <h1>You've been invited to join ${organization.name}</h1>
 <#if firstName?? && lastName??>

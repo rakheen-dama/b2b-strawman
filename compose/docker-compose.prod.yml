@@ -74,6 +74,10 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      # Frontend bounce base baked into the org-invite email link by the docteams
+      # email theme (org-invite.ftl via theme.properties). Must be the public app
+      # host or invite emails point at localhost:3000.
+      KC_INVITE_BOUNCE_BASE_URL: https://app-dev.heykazi.com/accept-invite
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
       - ./keycloak/providers:/opt/keycloak/providers

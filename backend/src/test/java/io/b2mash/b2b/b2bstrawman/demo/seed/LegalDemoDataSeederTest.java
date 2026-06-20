@@ -12,8 +12,12 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeAll;
@@ -38,6 +42,8 @@ class LegalDemoDataSeederTest {
   private final CustomerRepository customerRepository;
   private final ProjectRepository projectRepository;
   private final TimeEntryRepository timeEntryRepository;
+  private final TrustAccountRepository trustAccountRepository;
+  private final TrustTransactionRepository trustTransactionRepository;
 
   private String schemaName;
   private UUID orgId;
@@ -51,7 +57,9 @@ class LegalDemoDataSeederTest {
       OrganizationRepository organizationRepository,
       CustomerRepository customerRepository,
       ProjectRepository projectRepository,
-      TimeEntryRepository timeEntryRepository) {
+      TimeEntryRepository timeEntryRepository,
+      TrustAccountRepository trustAccountRepository,
+      TrustTransactionRepository trustTransactionRepository) {
     this.legalDemoDataSeeder = legalDemoDataSeeder;
     this.tenantProvisioningService = tenantProvisioningService;
     this.tenantTransactionHelper = tenantTransactionHelper;
@@ -60,6 +68,8 @@ class LegalDemoDataSeederTest {
     this.customerRepository = customerRepository;
     this.projectRepository = projectRepository;
     this.timeEntryRepository = timeEntryRepository;
+    this.trustAccountRepository = trustAccountRepository;
+    this.trustTransactionRepository = trustTransactionRepository;
   }
 
   @BeforeAll
@@ -142,6 +152,43 @@ class LegalDemoDataSeederTest {
         });
     assertTrue(
         allInRange.get(), "All billing rate snapshots must be within R1,200-R3,500 legal range");
+  }
+
+  @Test
+  void seeder_seedsTrustAccountingWithCreditorInDebit() {
+    var result = new AtomicReference<boolean[]>();
+    tenantTransactionHelper.executeInTenantTransaction(
+        schemaName,
+        orgId.toString(),
+        t -> {
+          boolean hasAccount = trustAccountRepository.count() >= 1;
+          // Net per creditor: DEPOSIT adds, PAYMENT subtracts. At least one must be in debit.
+          Map<UUID, BigDecimal> net = new HashMap<>();
+          for (var txn : trustTransactionRepository.findAll()) {
+            BigDecimal signed =
+                "DEPOSIT".equals(txn.getTransactionType())
+                    ? txn.getAmount()
+                    : txn.getAmount().negate();
+            net.merge(txn.getCustomerId(), signed, BigDecimal::add);
+          }
+          boolean hasDebit = net.values().stream().anyMatch(v -> v.signum() < 0);
+          result.set(new boolean[] {hasAccount, hasDebit});
+        });
+    assertTrue(result.get()[0], "Seeder must create at least one trust account");
+    assertTrue(result.get()[1], "Seeder must leave at least one trust creditor in debit");
+  }
+
+  @Test
+  void seeder_leavesUnbilledTime() {
+    var hasUnbilled = new AtomicReference<Boolean>();
+    tenantTransactionHelper.executeInTenantTransaction(
+        schemaName,
+        orgId.toString(),
+        t ->
+            hasUnbilled.set(
+                timeEntryRepository.findAll().stream().anyMatch(e -> e.getInvoiceId() == null)));
+    assertTrue(
+        hasUnbilled.get(), "Seeder must leave unbilled time entries for the fee-note-run skill");
   }
 
   @Test

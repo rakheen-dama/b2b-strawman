@@ -1,4 +1,8 @@
 name: deploy-vps
+# Builds and pushes the stack images to GHCR. It does NOT deploy to the box:
+# inbound CI SSH to the VPS is dropped at the provider edge and is fragile, so
+# the box pulls for itself. After this run finishes, deploy on the box with:
+#   ssh USER@HOST 'bash /opt/kazi/compose/scripts/deploy.sh'
 on:
   workflow_dispatch:
     inputs:
@@ -77,19 +81,7 @@ jobs:
           push: true
           tags: ghcr.io/${{ env.OWNER }}/kazi-docs:${{ env.TAG }}
 
-  deploy:
-    needs: build-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: SSH pull & up
-        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
-        with:
-          host: ${{ secrets.VPS_SSH_HOST }}
-          username: ${{ secrets.VPS_SSH_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /opt/kazi/compose
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker compose --env-file .env.prod -f docker-compose.prod.yml pull
-            docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
-            docker image prune -f
+      - name: Deploy reminder
+        run: |
+          echo "Images pushed to ghcr.io/${OWNER}/kazi-*:${TAG}."
+          echo "Deploy on the box: ssh USER@HOST 'bash /opt/kazi/compose/scripts/deploy.sh'"

@@ -27,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.packs.PackCatalogService;
 import io.b2mash.b2b.b2bstrawman.packs.PackInstallService;
 import io.b2mash.b2b.b2bstrawman.packs.PackType;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
+import io.b2mash.b2b.b2bstrawman.seeder.DealPipelinePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
@@ -71,6 +72,7 @@ class TenantProvisioningServiceTest {
   @Mock private RatePackSeeder ratePackSeeder;
   @Mock private ProjectTemplatePackSeeder projectTemplatePackSeeder;
   @Mock private SchedulePackSeeder schedulePackSeeder;
+  @Mock private DealPipelinePackSeeder dealPipelinePackSeeder;
   @Mock private LegalTariffSeeder legalTariffSeeder;
 
   @Mock

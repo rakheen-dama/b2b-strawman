@@ -1,0 +1,13 @@
+{
+  "packId": "deal-pipeline-consulting-za",
+  "verticalProfile": "consulting-za",
+  "version": 1,
+  "stages": [
+    { "name": "Lead",          "position": 0, "defaultProbabilityPct": 10,  "stageType": "OPEN" },
+    { "name": "Qualified",     "position": 1, "defaultProbabilityPct": 30,  "stageType": "OPEN" },
+    { "name": "Proposal sent", "position": 2, "defaultProbabilityPct": 50,  "stageType": "OPEN" },
+    { "name": "Negotiation",   "position": 3, "defaultProbabilityPct": 75,  "stageType": "OPEN" },
+    { "name": "Won",           "position": 4, "defaultProbabilityPct": 100, "stageType": "WON"  },
+    { "name": "Lost",          "position": 5, "defaultProbabilityPct": 0,   "stageType": "LOST" }
+  ]
+}

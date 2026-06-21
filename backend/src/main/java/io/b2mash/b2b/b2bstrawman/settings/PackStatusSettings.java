@@ -72,6 +72,10 @@ public class PackStatusSettings {
   @Column(name = "project_template_pack_status", columnDefinition = "jsonb")
   private List<Map<String, Object>> projectTemplatePackStatus;
 
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "deal_pipeline_pack_status", columnDefinition = "jsonb")
+  private List<Map<String, Object>> dealPipelinePackStatus;
+
   protected PackStatusSettings() {}
 
   private static Map<String, Object> newEntry(String packId, Object version) {
@@ -319,5 +323,33 @@ public class PackStatusSettings {
             entry ->
                 packId.equals(entry.get("packId"))
                     && ((Number) entry.get("version")).intValue() == version);
+  }
+
+  // --- Deal-pipeline pack ---
+
+  public List<Map<String, Object>> getDealPipelinePackStatus() {
+    return dealPipelinePackStatus;
+  }
+
+  /**
+   * Records a deal-pipeline pack application. Idempotent -- skips if already applied (by packId).
+   */
+  public void recordDealPipelinePackApplication(String packId, int version) {
+    if (isDealPipelinePackApplied(packId)) {
+      return;
+    }
+    if (this.dealPipelinePackStatus == null) {
+      this.dealPipelinePackStatus = new ArrayList<>();
+    }
+    this.dealPipelinePackStatus.add(newEntry(packId, version));
+  }
+
+  /** Returns true if the given deal-pipeline pack has been applied (by packId, any version). */
+  public boolean isDealPipelinePackApplied(String packId) {
+    if (this.dealPipelinePackStatus == null) {
+      return false;
+    }
+    return this.dealPipelinePackStatus.stream()
+        .anyMatch(entry -> packId.equals(entry.get("packId")));
   }
 }

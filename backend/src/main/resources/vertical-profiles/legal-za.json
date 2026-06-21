@@ -10,7 +10,8 @@
     "compliance": ["fica-kyc-za"],
     "template": ["legal-za"],
     "clause": ["conveyancing-za-clauses"],
-    "request": ["conveyancing-intake-za", "fica-onboarding-pack", "legal-za-liquidation-distribution"]
+    "request": ["conveyancing-intake-za", "fica-onboarding-pack", "legal-za-liquidation-distribution"],
+    "deal_pipeline": ["deal-pipeline-legal-za"]
   },
   "taxDefaults": [
     { "name": "VAT", "rate": 15.00, "default": true }

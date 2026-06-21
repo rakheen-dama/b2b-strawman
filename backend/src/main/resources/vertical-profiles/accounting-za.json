@@ -11,7 +11,8 @@
     "template": ["accounting-za"],
     "clause": ["accounting-za-clauses"],
     "automation": ["automation-accounting-za"],
-    "request": ["year-end-info-request-za"]
+    "request": ["year-end-info-request-za"],
+    "deal_pipeline": ["deal-pipeline-accounting-za"]
   },
   "rateCardDefaults": {
     "currency": "ZAR",

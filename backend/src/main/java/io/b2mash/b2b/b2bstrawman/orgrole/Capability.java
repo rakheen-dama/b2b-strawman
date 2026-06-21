@@ -57,7 +57,16 @@ public enum Capability {
    * Connect the firm's own Claude (MCP connector) to read live Kazi data. Front-door gate
    * (ADR-304).
    */
-  MCP_ACCESS;
+  MCP_ACCESS,
+
+  /** View deals and the sales pipeline (Phase 80 CRM — default-on for Owner/Admin). */
+  VIEW_DEALS,
+  /** Create, edit, and move deals (Phase 80 CRM — default-on for Owner/Admin). */
+  MANAGE_DEALS,
+  /** Win, lose, or reopen deals (Phase 80 CRM — default-on for Owner/Admin). */
+  CLOSE_DEALS,
+  /** Configure pipeline stages (Phase 80 CRM — default-on for Owner/Admin). */
+  MANAGE_PIPELINE;
 
   /** Capabilities restricted to the owner role — admin does NOT inherit these. */
   public static final Set<String> OWNER_ONLY =

@@ -71,6 +71,7 @@ class OrgSettingsSchemaSnapshotTest {
       created_at | timestamp with time zone | NO
       data_protection_jurisdiction | character varying(10) | YES
       data_request_deadline_days | integer | YES
+      deal_pipeline_pack_status | jsonb | YES
       default_billing_run_currency | character varying(3) | YES
       default_currency | character varying(3) | NO
       default_expense_markup_percent | numeric(5,2) | YES

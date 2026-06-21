@@ -1,0 +1,12 @@
+{
+  "packId": "deal-pipeline-legal-za",
+  "verticalProfile": "legal-za",
+  "version": 1,
+  "stages": [
+    { "name": "Enquiry",        "position": 0, "defaultProbabilityPct": 10,  "stageType": "OPEN" },
+    { "name": "Conflict check", "position": 1, "defaultProbabilityPct": 30,  "stageType": "OPEN" },
+    { "name": "Engagement",     "position": 2, "defaultProbabilityPct": 60,  "stageType": "OPEN" },
+    { "name": "Won",            "position": 3, "defaultProbabilityPct": 100, "stageType": "WON"  },
+    { "name": "Lost",           "position": 4, "defaultProbabilityPct": 0,   "stageType": "LOST" }
+  ]
+}

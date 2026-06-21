@@ -75,9 +75,15 @@ public class BffController {
       return ResponseEntity.ok(BffUserInfo.unauthenticated());
     }
 
-    log.info("BFF /me claims: {}", user.getClaims());
     BffUserInfoExtractor.OrgInfo orgInfo = BffUserInfoExtractor.extractOrgInfo(user);
     List<String> groups = extractGroups(user);
+
+    // Epic 570B.2: /bff/me is polled per page load, so keep PII off the INFO log
+    // (POPIA hardening). The full claim set is only emitted at DEBUG; the INFO
+    // line carries the non-PII subject id + org slug for routine observability.
+    log.debug("BFF /me claims: {}", user.getClaims());
+    log.info(
+        "BFF /me sub={} orgSlug={}", user.getSubject(), orgInfo != null ? orgInfo.slug() : null);
 
     return ResponseEntity.ok(
         new BffUserInfo(

@@ -102,10 +102,28 @@ public class GatewaySecurityConfig {
     return source;
   }
 
+  /** Path segment of the branded post-logout confirmation route (Epic 570A). */
+  static final String POST_LOGOUT_PATH = "/signed-out";
+
+  /**
+   * Resolves the post-logout redirect target: the branded first-party {@code /signed-out}
+   * confirmation route under the frontend origin. Package-private for unit testing.
+   */
+  static String postLogoutRedirectUri(String frontendUrl) {
+    String normalized =
+        frontendUrl.endsWith("/")
+            ? frontendUrl.substring(0, frontendUrl.length() - 1)
+            : frontendUrl;
+    return normalized + POST_LOGOUT_PATH;
+  }
+
   private LogoutSuccessHandler oidcLogoutSuccessHandler() {
     OidcClientInitiatedLogoutSuccessHandler handler =
         new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
-    handler.setPostLogoutRedirectUri(frontendUrl);
+    // Epic 570B.1: land RP-initiated logout on the branded first-party
+    // `/signed-out` confirmation page instead of the unstyled frontend root,
+    // killing the post-logout whitelabel leak.
+    handler.setPostLogoutRedirectUri(postLogoutRedirectUri(frontendUrl));
     return handler;
   }
 

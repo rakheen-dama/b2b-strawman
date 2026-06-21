@@ -384,6 +384,15 @@ KC_ACCESS_TOKEN_LIFESPAN="${KC_ACCESS_TOKEN_LIFESPAN:-300}"
 KC_SSO_IDLE_TIMEOUT="${KC_SSO_IDLE_TIMEOUT:-1800}"
 KC_SSO_MAX_LIFESPAN="${KC_SSO_MAX_LIFESPAN:-36000}"
 
+# Lifetimes are seconds; reject non-integer overrides early (jq --argjson would otherwise
+# abort the whole script under `set -euo pipefail` with an opaque parse error).
+for _var in KC_ACCESS_TOKEN_LIFESPAN KC_SSO_IDLE_TIMEOUT KC_SSO_MAX_LIFESPAN; do
+  if [[ ! "${!_var}" =~ ^[0-9]+$ ]]; then
+    echo "  ERROR: ${_var} must be an integer number of seconds (got: '${!_var}')"
+    exit 1
+  fi
+done
+
 # Re-fetch token (may have expired during earlier steps)
 TOKEN=$(curl -sf "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
   -d "grant_type=password&client_id=admin-cli&username=${KEYCLOAK_ADMIN}&password=${KEYCLOAK_ADMIN_PASSWORD}" \
@@ -403,7 +412,10 @@ HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X PUT \
 if [[ "$HTTP_CODE" == "204" || "$HTTP_CODE" == "200" ]]; then
   echo "  lifetimes set: access=${KC_ACCESS_TOKEN_LIFESPAN}s idle=${KC_SSO_IDLE_TIMEOUT}s max=${KC_SSO_MAX_LIFESPAN}s"
 else
-  echo "  ERROR: failed to set realm lifetimes (HTTP ${HTTP_CODE})"
+  # Fail fast: a silently-misconfigured lifetime policy is the exact failure class this step
+  # exists to prevent — never report bootstrap success on a bad PUT.
+  echo "  ERROR: failed to set realm lifetimes (HTTP ${HTTP_CODE}) — bootstrap INCOMPLETE"
+  exit 1
 fi
 
 echo ""

@@ -44,7 +44,7 @@ The standard "backend OR frontend, never both" slice rule is extended: a slice b
 | 569 | Graceful Expiry Funnel + Branded `/sign-in` Route + Return-To | Frontend | 568 | L | 569A, 569B | **Done** (PR #1483) |
 | 570 | Branded `/signed-out` Page + Logout Redirect Wiring (+ optional PII-log hardening) | Frontend + gateway | 569 | M | 570A, 570B | |
 | 571 | Change-Password via `kc_action=UPDATE_PASSWORD` | gateway + Frontend | 572 (for branded page) | M | 571A, 571B | |
-| 572 | Keycloak Theme Visible-Brand Rebrand + Page Coverage | theme | -- | M | 572A, 572B | |
+| 572 | Keycloak Theme Visible-Brand Rebrand + Page Coverage | theme | -- | M | 572A, 572B | **Done** (PR #1485) |
 
 **Slice count: 9** (architecture §11.10's 6 capability slices re-mapped to enforce the unmixed-category + 6–12 files / ~800 LOC budget). Slice 1 → Epic 568 (split keycloak-config 568A / gateway 568B). Slice 2 → Epic 569 (funnel-lib+route 569A / entry-point wiring 569B, both frontend). Slice 3 + slice 6 → Epic 570 (frontend route 570A / gateway redirect + optional PII log 570B). Slice 4 → Epic 571 (gateway wiring 571A / frontend entry 571B — category split). Slice 5 → Epic 572 (page coverage 572A / visible-brand audit + JAR rebuild 572B).
 
@@ -118,8 +118,8 @@ GAP-L-22 stale-handoff guard; Keycloakify docteams theme)
 |-------|-------|----------|---------|-----------------------|
 | 1a | **568A** ✅ | keycloak-config | `realm-export.json` lifetimes (`accessTokenLifespan:300`, `ssoSessionIdleTimeout:1800`, `ssoSessionMaxLifespan:36000`); env-override `PUT` in `keycloak-bootstrap.sh`; import-assertion. **Done** (PR #1482) | 568B, 572A, 572B |
 | 1b | **568B** ✅ | gateway | `application.yml` session `timeout` `8h`→`${GATEWAY_SESSION_TIMEOUT:10h}`; Redis prod parity; config test. **Done** (PR #1482) | 568A, 572A, 572B |
-| 1c | **572A** | theme | Bring `Error.tsx` / `Info.tsx` / logout surface under the Kazi theme; confirm/brand `LoginUpdatePassword`. | 568A/B, 572B |
-| 1d | **572B** | theme | Visible-brand audit of all login pages + email `*.ftl`; JAR rebuild + redeploy; browser render verification. | 568A/B, 572A |
+| 1c | **572A** ✅ | theme | Bring `Error.tsx` / `Info.tsx` / logout surface under the Kazi theme; confirm/brand `LoginUpdatePassword`. **Done** (PR #1485) | 568A/B, 572B |
+| 1d | **572B** ✅ | theme | Visible-brand audit of all login pages + email `*.ftl`; JAR rebuild + redeploy; browser render verification. **Done** (PR #1485) | 568A/B, 572A |
 
 ### Stage 2 — Expiry funnel + branded sign-in (after 568)
 
@@ -417,8 +417,8 @@ Stage 4:  [571A → 571B]                                ← change-password (af
 
 | Slice | Tasks | Files Touched | Summary | Status |
 |-------|-------|---------------|---------|--------|
-| **572A** | 572A.1–572A.3 | ~5 (Error.tsx + Info.tsx + logout surface + LoginUpdatePassword confirm/override + shared template/CSS) | Bring `Error.tsx`/`Info.tsx`/logout under the Kazi theme; confirm/brand `login-update-password`. | |
-| **572B** | 572B.1–572B.3 | ~8-10 (login pages audit + email ftl audit + JAR rebuild artifacts + browser verification notes) | Visible-brand audit of all login pages + email templates; JAR rebuild/redeploy; browser render verification of every page. | |
+| **572A** | 572A.1–572A.3 | ~5 (Error.tsx + Info.tsx + logout surface + LoginUpdatePassword confirm/override + shared template/CSS) | Bring `Error.tsx`/`Info.tsx`/logout under the Kazi theme; confirm/brand `login-update-password`. | **Done** (PR #1485) |
+| **572B** | 572B.1–572B.3 | ~8-10 (login pages audit + email ftl audit + JAR rebuild artifacts + browser verification notes) | Visible-brand audit of all login pages + email templates; JAR rebuild/redeploy; browser render verification of every page. | **Done** (PR #1485) |
 
 ### Tasks
 

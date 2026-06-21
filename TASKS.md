@@ -648,7 +648,7 @@
 | 569 | Graceful Expiry Funnel + Branded `/sign-in` Route + Return-To | Frontend | 568 | L | 569A, 569B | **Done** (PR #1483) |
 | 570 | Branded `/signed-out` Page + Logout Redirect Wiring (+ optional PII-log) | Frontend + gateway | 569 | M | 570A, 570B | |
 | 571 | Change-Password via `kc_action=UPDATE_PASSWORD` | gateway + Frontend | 572 | M | 571A, 571B | |
-| 572 | Keycloak Theme Visible-Brand Rebrand + Page Coverage | theme | -- | M | 572A, 572B | |
+| 572 | Keycloak Theme Visible-Brand Rebrand + Page Coverage | theme | -- | M | 572A, 572B | **Done** (PR #1485) |
 
 
 ---

@@ -1,6 +1,7 @@
 package io.b2mash.b2b.gateway.config;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +12,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -60,6 +65,11 @@ public class GatewaySecurityConfig {
         .oauth2Login(
             oauth2 ->
                 oauth2
+                    .authorizationEndpoint(
+                        authorization ->
+                            authorization.authorizationRequestResolver(
+                                changePasswordAuthorizationRequestResolver(
+                                    clientRegistrationRepository)))
                     .defaultSuccessUrl(frontendUrl + "/dashboard", true)
                     .successHandler(oauth2LoginSuccessHandler()))
         .logout(
@@ -100,6 +110,73 @@ public class GatewaySecurityConfig {
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", config);
     return source;
+  }
+
+  /**
+   * Sentinel query parameter the frontend appends to the standard authorization endpoint ({@code
+   * /oauth2/authorization/keycloak?kc_action=update_password}) to initiate the Keycloak
+   * change-password required action (Epic 571A). Lower-case so the frontend URL stays conventional;
+   * the resolver maps it to the real KC {@code kc_action=UPDATE_PASSWORD} param.
+   */
+  static final String CHANGE_PASSWORD_SENTINEL_PARAM = "kc_action";
+
+  static final String CHANGE_PASSWORD_SENTINEL_VALUE = "update_password";
+
+  /** Keycloak authorization-endpoint param + value for the change-password required action. */
+  static final String KC_ACTION_PARAM = "kc_action";
+
+  static final String KC_ACTION_UPDATE_PASSWORD = "UPDATE_PASSWORD";
+
+  /**
+   * Authorization-request resolver that rides the existing {@code keycloak} OAuth client and, when
+   * the standard authorization request carries the change-password sentinel ({@code
+   * ?kc_action=update_password}), appends {@code kc_action=UPDATE_PASSWORD} to the outgoing
+   * authorization request. Keycloak then renders its {@code login-update-password} required-action
+   * page under the already-branded login theme (Epic 572). The normal login path is left unchanged.
+   *
+   * <p>Package-private for unit testing.
+   */
+  static OAuth2AuthorizationRequestResolver changePasswordAuthorizationRequestResolver(
+      ClientRegistrationRepository clientRegistrationRepository) {
+    DefaultOAuth2AuthorizationRequestResolver delegate =
+        new DefaultOAuth2AuthorizationRequestResolver(
+            clientRegistrationRepository,
+            OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI);
+    return new OAuth2AuthorizationRequestResolver() {
+      @Override
+      public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
+        return withChangePassword(delegate.resolve(request), request);
+      }
+
+      @Override
+      public OAuth2AuthorizationRequest resolve(
+          HttpServletRequest request, String clientRegistrationId) {
+        return withChangePassword(delegate.resolve(request, clientRegistrationId), request);
+      }
+    };
+  }
+
+  /**
+   * If the inbound request carries the change-password sentinel and the delegate produced an
+   * authorization request, returns a copy with {@code kc_action=UPDATE_PASSWORD} added to the
+   * authorization-endpoint parameters; otherwise returns the request unchanged.
+   *
+   * <p>Package-private for unit testing — exercised without a live Keycloak.
+   */
+  static OAuth2AuthorizationRequest withChangePassword(
+      OAuth2AuthorizationRequest authorizationRequest, HttpServletRequest request) {
+    if (authorizationRequest == null || !isChangePasswordRequest(request)) {
+      return authorizationRequest;
+    }
+    return OAuth2AuthorizationRequest.from(authorizationRequest)
+        .additionalParameters(params -> params.put(KC_ACTION_PARAM, KC_ACTION_UPDATE_PASSWORD))
+        .build();
+  }
+
+  /** True when the request opts into the change-password flow via the sentinel query param. */
+  static boolean isChangePasswordRequest(HttpServletRequest request) {
+    return CHANGE_PASSWORD_SENTINEL_VALUE.equalsIgnoreCase(
+        request.getParameter(CHANGE_PASSWORD_SENTINEL_PARAM));
   }
 
   /** Path segment of the branded post-logout confirmation route (Epic 570A). */

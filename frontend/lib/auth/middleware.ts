@@ -8,7 +8,7 @@ const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:844
 const PUBLIC_ROUTES = [
   "/",
   "/sign-in(.*)",
-  "/signed-out(.*)",
+  "/signed-out",
   "/sign-up(.*)",
   "/api/webhooks(.*)",
   "/portal(.*)",

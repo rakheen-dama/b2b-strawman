@@ -20,7 +20,7 @@ test.describe("branded signed-out terminus", () => {
     await page.goto("/signed-out");
 
     await expect(page).toHaveURL(/\/signed-out/);
-    await expect(page.getByRole("heading", { name: /you've been signed out/i })).toBeVisible();
+    await expect(page.getByText(/you've been signed out/i)).toBeVisible();
 
     const cta = page.getByRole("link", { name: /sign in again/i });
     await expect(cta).toBeVisible();

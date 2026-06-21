@@ -102,16 +102,6 @@ public class GatewaySecurityConfig {
     return source;
   }
 
-  private LogoutSuccessHandler oidcLogoutSuccessHandler() {
-    OidcClientInitiatedLogoutSuccessHandler handler =
-        new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
-    // Epic 570B.1: land RP-initiated logout on the branded first-party
-    // `/signed-out` confirmation page instead of the unstyled frontend root,
-    // killing the post-logout whitelabel leak.
-    handler.setPostLogoutRedirectUri(postLogoutRedirectUri(frontendUrl));
-    return handler;
-  }
-
   /** Path segment of the branded post-logout confirmation route (Epic 570A). */
   static final String POST_LOGOUT_PATH = "/signed-out";
 
@@ -121,6 +111,16 @@ public class GatewaySecurityConfig {
    */
   static String postLogoutRedirectUri(String frontendUrl) {
     return frontendUrl + POST_LOGOUT_PATH;
+  }
+
+  private LogoutSuccessHandler oidcLogoutSuccessHandler() {
+    OidcClientInitiatedLogoutSuccessHandler handler =
+        new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
+    // Epic 570B.1: land RP-initiated logout on the branded first-party
+    // `/signed-out` confirmation page instead of the unstyled frontend root,
+    // killing the post-logout whitelabel leak.
+    handler.setPostLogoutRedirectUri(postLogoutRedirectUri(frontendUrl));
+    return handler;
   }
 
   private AuthenticationSuccessHandler oauth2LoginSuccessHandler() {

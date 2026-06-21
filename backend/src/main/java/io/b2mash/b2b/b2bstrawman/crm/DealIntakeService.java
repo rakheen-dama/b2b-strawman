@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.crm.dto.DealResponse;
 import io.b2mash.b2b.b2bstrawman.crm.dto.IntakeRequest;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -68,9 +69,12 @@ public class DealIntakeService {
             newCustomer.name(),
             newCustomer.email(),
             newCustomer.phone(),
-            null,
-            null,
-            actingMemberId);
+            null, // idNumber
+            null, // notes
+            actingMemberId,
+            null, // customFields
+            null, // appliedFieldGroups
+            CustomerType.INDIVIDUAL); // explicit; lifecycleStatus defaults to PROSPECT
     return created.getId();
   }
 }

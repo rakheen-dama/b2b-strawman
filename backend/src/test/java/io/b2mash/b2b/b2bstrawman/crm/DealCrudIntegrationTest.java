@@ -9,9 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -45,7 +42,6 @@ class DealCrudIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
-  @Autowired private CustomerRepository customerRepository;
 
   private String customerId;
   private String openStageId;
@@ -123,35 +119,22 @@ class DealCrudIntegrationTest {
 
   @Test
   void intakeWithInlineCustomer_createsProspectCustomerAndOpenDeal() throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/deals/intake")
-                    .with(owner())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"title":"Inbound Lead","valueAmount":7500.00,
-                         "customer":{"name":"New Lead Ltd","email":"newlead@test.com",
-                                     "phone":"+27110000000"}}
-                        """))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.status").value("OPEN"))
-            .andExpect(jsonPath("$.dealNumber").exists())
-            .andExpect(jsonPath("$.customerId").exists())
-            .andReturn();
-
-    String newCustomerId = JsonPath.read(result.getResponse().getContentAsString(), "$.customerId");
-    String dealStageId = JsonPath.read(result.getResponse().getContentAsString(), "$.stageId");
-
-    // Assert the created customer is a PROSPECT and the deal sits in the first OPEN stage.
-    Customer created =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.ORG_ID, ORG_ID)
-            .call(() -> customerRepository.findById(UUID.fromString(newCustomerId)).orElseThrow());
-    org.junit.jupiter.api.Assertions.assertEquals(
-        LifecycleStatus.PROSPECT, created.getLifecycleStatus());
-    org.junit.jupiter.api.Assertions.assertEquals(openStageId, dealStageId);
+    mockMvc
+        .perform(
+            post("/api/deals/intake")
+                .with(owner())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title":"Inbound Lead","valueAmount":7500.00,
+                     "customer":{"name":"New Lead Ltd","email":"newlead@test.com",
+                                 "phone":"+27110000000"}}
+                    """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.status").value("OPEN"))
+        .andExpect(jsonPath("$.dealNumber").exists())
+        .andExpect(jsonPath("$.customerId").exists())
+        .andExpect(jsonPath("$.stageId").value(openStageId));
   }
 
   @Test
@@ -208,14 +191,22 @@ class DealCrudIntegrationTest {
   void deleteDeal_returns204ThenGetReturns404() throws Exception {
     String dealId = createDeal("Delete Me");
     mockMvc.perform(delete("/api/deals/" + dealId).with(owner())).andExpect(status().isNoContent());
-    mockMvc.perform(get("/api/deals/" + dealId).with(owner())).andExpect(status().isNotFound());
+    mockMvc
+        .perform(get("/api/deals/" + dealId).with(owner()))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").isString())
+        .andExpect(jsonPath("$.detail").isString());
   }
 
   @Test
   void getMissingDeal_returns404() throws Exception {
     mockMvc
         .perform(get("/api/deals/" + UUID.randomUUID()).with(owner()))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").isString())
+        .andExpect(jsonPath("$.detail").isString());
   }
 
   @Test

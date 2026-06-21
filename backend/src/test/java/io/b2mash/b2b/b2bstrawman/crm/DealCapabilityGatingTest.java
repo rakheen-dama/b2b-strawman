@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
@@ -131,14 +132,20 @@ class DealCapabilityGatingTest {
   void memberWithoutViewDeals_cannotList() throws Exception {
     mockMvc
         .perform(get("/api/deals").with(TestJwtFactory.memberJwt(ORG_ID, NOCAP_SUBJECT)))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").isString())
+        .andExpect(jsonPath("$.detail").isString());
   }
 
   @Test
   void memberWithoutViewDeals_cannotGetById() throws Exception {
     mockMvc
         .perform(get("/api/deals/" + dealId).with(TestJwtFactory.memberJwt(ORG_ID, NOCAP_SUBJECT)))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").isString())
+        .andExpect(jsonPath("$.detail").isString());
   }
 
   // --- MANAGE_DEALS gating (viewer has VIEW only, so write paths are forbidden) ---
@@ -155,7 +162,10 @@ class DealCapabilityGatingTest {
                     {"customerId":"%s","title":"Should Be Forbidden"}
                     """
                         .formatted(customerId)))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").isString())
+        .andExpect(jsonPath("$.detail").isString());
   }
 
   @Test
@@ -169,7 +179,10 @@ class DealCapabilityGatingTest {
                     """
                     {"title":"X","customer":{"name":"Y","email":"y@test.com","phone":null}}
                     """))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").isString())
+        .andExpect(jsonPath("$.detail").isString());
   }
 
   @Test
@@ -183,7 +196,10 @@ class DealCapabilityGatingTest {
                     """
                     {"title":"Nope"}
                     """))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").isString())
+        .andExpect(jsonPath("$.detail").isString());
   }
 
   @Test
@@ -191,6 +207,9 @@ class DealCapabilityGatingTest {
     mockMvc
         .perform(
             delete("/api/deals/" + dealId).with(TestJwtFactory.memberJwt(ORG_ID, VIEWER_SUBJECT)))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").isString())
+        .andExpect(jsonPath("$.detail").isString());
   }
 }

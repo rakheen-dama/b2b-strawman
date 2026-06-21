@@ -86,7 +86,10 @@ class DealTenantIsolationTest {
     // Not visible in B → 404 (schema boundary)
     mockMvc
         .perform(get("/api/deals/" + dealIdA).with(TestJwtFactory.ownerJwt(ORG_B_ID, OWNER_B)))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").isString())
+        .andExpect(jsonPath("$.detail").isString());
   }
 
   @Test

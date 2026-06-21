@@ -11,7 +11,7 @@ export default function LogoutConfirm(
   const { msg, msgStr } = i18n;
 
   return (
-    <Layout title="Sign out">
+    <Layout title={msgStr("doLogout")}>
       <p className="mb-6 text-sm text-slate-600">{msg("logoutConfirmHeader")}</p>
 
       <form

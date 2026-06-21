@@ -12,7 +12,7 @@ export default function LoginUpdatePassword(
   const { msgStr } = i18n;
 
   return (
-    <Layout title="Update your password">
+    <Layout title={msgStr("updatePasswordTitle")}>
       {/* Error/info message from Keycloak */}
       {message && message.type !== "success" && (
         <div

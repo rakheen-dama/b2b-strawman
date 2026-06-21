@@ -35,7 +35,7 @@ KCADM="docker exec ${KC_CONTAINER} /opt/keycloak/bin/kcadm.sh"
 # stays in-container; on local dev both default to localhost:8180.
 KCADM_SERVER="${KCADM_SERVER:-http://localhost:8180}"
 
-# Dev-credential seeding (step [5/8] create padmin/password + step [7/8] reset
+# Dev-credential seeding (step [5/9] create padmin/password + step [7/9] reset
 # every org member's password to "password") is LOCAL-DEV convenience only. It is
 # DANGEROUS on a public deploy: a weak backdoor admin and a mass password reset of
 # real users. Set SEED_DEV_CREDENTIALS=false on the VPS. Default true = dev unchanged.
@@ -45,7 +45,7 @@ echo "=== Keycloak Bootstrap ==="
 echo ""
 
 # ---- Wait for Keycloak to be ready ----
-echo "[1/8] Waiting for Keycloak..."
+echo "[1/9] Waiting for Keycloak..."
 MAX_WAIT=120
 ELAPSED=0
 while [[ $ELAPSED -lt $MAX_WAIT ]]; do
@@ -62,7 +62,7 @@ if [[ $ELAPSED -ge $MAX_WAIT ]]; then
 fi
 
 # ---- Authenticate admin ----
-echo "[2/8] Authenticating admin..."
+echo "[2/9] Authenticating admin..."
 $KCADM config credentials \
   --server "${KCADM_SERVER}" \
   --realm master \
@@ -70,7 +70,7 @@ $KCADM config credentials \
   --password "${KEYCLOAK_ADMIN_PASSWORD}"
 
 # ---- Register org_role in User Profile ----
-echo "[3/8] Registering org_role in user profile..."
+echo "[3/9] Registering org_role in user profile..."
 
 # Keycloak 26.x uses strict user profile — unregistered attributes are silently stripped.
 # We must declare org_role before it can be set on any user.
@@ -101,7 +101,7 @@ else
 fi
 
 # ---- Add Protocol Mappers to gateway-bff client ----
-echo "[4/8] Configuring protocol mappers on gateway-bff client..."
+echo "[4/9] Configuring protocol mappers on gateway-bff client..."
 
 CLIENT_KC_ID=$($KCADM get clients -r "${REALM}" --fields id,clientId \
   | jq -r '.[] | select(.clientId=="gateway-bff") | .id' 2>/dev/null || true)
@@ -150,7 +150,7 @@ ORG_ROLE_OK=$($KCADM get "clients/${CLIENT_KC_ID}/protocol-mappers/models" -r "$
 [[ "$ORG_ROLE_OK" == "org-role" ]] && echo "  org-role mapper OK" || echo "  ERROR: org-role mapper MISSING"
 
 # ---- Create platform admin user and assign to existing platform-admins group ----
-echo "[5/8] Creating platform admin user..."
+echo "[5/9] Creating platform admin user..."
 
 if [[ "${SEED_DEV_CREDENTIALS}" != "true" ]]; then
   echo "  [skipped — SEED_DEV_CREDENTIALS=false; create the platform admin via the Keycloak admin console]"
@@ -201,7 +201,7 @@ echo "  ${PADMIN_EMAIL} / password -> platform-admins group"
 fi
 
 # ---- Backfill org_role attribute on existing org members (safe for prod) ----
-echo "[6/8] Backfilling org_role for existing organization members..."
+echo "[6/9] Backfilling org_role for existing organization members..."
 
 # Iterate all organizations, find the creator (stored as org attribute), set org_role=owner.
 # All other org members without org_role get member as default.
@@ -268,7 +268,7 @@ else
 fi
 
 # ---- Backfill passwords for existing org members (LOCAL DEV ONLY) ----
-echo "[7/8] Backfilling passwords for existing organization members..."
+echo "[7/9] Backfilling passwords for existing organization members..."
 
 if [[ "${SEED_DEV_CREDENTIALS}" != "true" ]]; then
   echo "  [skipped — SEED_DEV_CREDENTIALS=false; will NOT reset real users' passwords]"
@@ -315,7 +315,7 @@ fi
 fi
 
 # ---- Configure MCP OAuth dynamic client registration (DCR) ----
-echo "[8/8] Configuring MCP OAuth dynamic-client-registration policies..."
+echo "[8/9] Configuring MCP OAuth dynamic-client-registration policies..."
 
 # Claude (and other MCP clients) self-register via OAuth Dynamic Client Registration. Keycloak's
 # default anonymous client-registration policies block this:
@@ -375,6 +375,49 @@ else
   echo "  service_account scope already absent"
 fi
 
+# ---- Apply realm session/token lifetimes (env-overridable; defaults match realm-export.json) ----
+# Prod hardening knob: a firm may shorten idle/max without editing committed defaults. Uses the REST
+# API (curl + bearer token) — kcadm array config is unreliable, and a realm PUT is the safe idiom.
+echo "[9/9] Applying realm session/token lifetimes..."
+
+KC_ACCESS_TOKEN_LIFESPAN="${KC_ACCESS_TOKEN_LIFESPAN:-300}"
+KC_SSO_IDLE_TIMEOUT="${KC_SSO_IDLE_TIMEOUT:-1800}"
+KC_SSO_MAX_LIFESPAN="${KC_SSO_MAX_LIFESPAN:-36000}"
+
+# Lifetimes are seconds; reject non-integer overrides early (jq --argjson would otherwise
+# abort the whole script under `set -euo pipefail` with an opaque parse error).
+for _var in KC_ACCESS_TOKEN_LIFESPAN KC_SSO_IDLE_TIMEOUT KC_SSO_MAX_LIFESPAN; do
+  if [[ ! "${!_var}" =~ ^[0-9]+$ ]]; then
+    echo "  ERROR: ${_var} must be an integer number of seconds (got: '${!_var}')"
+    exit 1
+  fi
+done
+
+# Re-fetch token (may have expired during earlier steps)
+TOKEN=$(curl -sf "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
+  -d "grant_type=password&client_id=admin-cli&username=${KEYCLOAK_ADMIN}&password=${KEYCLOAK_ADMIN_PASSWORD}" \
+  | jq -r '.access_token')
+
+LIFETIMES_JSON=$(jq -n \
+  --argjson at "$KC_ACCESS_TOKEN_LIFESPAN" \
+  --argjson idle "$KC_SSO_IDLE_TIMEOUT" \
+  --argjson max "$KC_SSO_MAX_LIFESPAN" \
+  '{accessTokenLifespan:$at, ssoSessionIdleTimeout:$idle, ssoSessionMaxLifespan:$max}')
+
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X PUT \
+  "${KEYCLOAK_URL}/admin/realms/${REALM}" \
+  -H "Authorization: Bearer ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d "$LIFETIMES_JSON")
+if [[ "$HTTP_CODE" == "204" || "$HTTP_CODE" == "200" ]]; then
+  echo "  lifetimes set: access=${KC_ACCESS_TOKEN_LIFESPAN}s idle=${KC_SSO_IDLE_TIMEOUT}s max=${KC_SSO_MAX_LIFESPAN}s"
+else
+  # Fail fast: a silently-misconfigured lifetime policy is the exact failure class this step
+  # exists to prevent — never report bootstrap success on a bad PUT.
+  echo "  ERROR: failed to set realm lifetimes (HTTP ${HTTP_CODE}) — bootstrap INCOMPLETE"
+  exit 1
+fi
+
 echo ""
 echo "=== Keycloak Bootstrap Complete ==="
 echo ""
@@ -386,6 +429,7 @@ else
   echo "  Dev credentials: SKIPPED (SEED_DEV_CREDENTIALS=false) — no padmin seeded, no passwords reset"
 fi
 echo "  MCP DCR:  Trusted Hosts (localhost,claude.ai) + allowed scopes set; service_account removed"
+echo "  Lifetimes: access=${KC_ACCESS_TOKEN_LIFESPAN}s idle=${KC_SSO_IDLE_TIMEOUT}s max=${KC_SSO_MAX_LIFESPAN}s"
 echo ""
 echo "  Users must log out and back in to get the updated org_role claim in their JWT."
 echo ""

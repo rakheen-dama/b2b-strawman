@@ -8,11 +8,25 @@ export default function LoginUpdatePassword(
   props: PageProps<Extract<KcContext, { pageId: "login-update-password.ftl" }>, I18n>
 ) {
   const { kcContext, i18n } = props;
-  const { url, messagesPerField, isAppInitiatedAction } = kcContext;
+  const { url, messagesPerField, isAppInitiatedAction, message } = kcContext;
   const { msgStr } = i18n;
 
   return (
     <Layout title="Update your password">
+      {/* Error/info message from Keycloak */}
+      {message && message.type !== "success" && (
+        <div
+          className={`mb-4 rounded-md px-4 py-3 text-sm ${
+            message.type === "error"
+              ? "bg-red-50 text-red-700 border border-red-200"
+              : "bg-blue-50 text-blue-700 border border-blue-200"
+          }`}
+        >
+          {/* kcSanitize is Keycloak's built-in HTML sanitizer — safe for rendering server messages */}
+          <span dangerouslySetInnerHTML={{ __html: kcSanitize(message.summary) }} />
+        </div>
+      )}
+
       <form action={url.loginAction} method="post" className="space-y-4">
         <div>
           <label

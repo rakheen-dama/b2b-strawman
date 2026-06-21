@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { LogOut } from "lucide-react";
+import { clientRedirectToReLogin } from "@/lib/auth/expiry";
+import { captureReturnTo } from "@/lib/auth/return-to";
 
 const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443";
 
@@ -25,17 +27,34 @@ export function useBffUser(): BffUserInfo | null {
     let cancelled = false;
 
     fetch(`${GATEWAY_URL}/bff/me`, { credentials: "include" })
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => {
+        if (cancelled) return null;
+        if (!res.ok) {
+          // 401/unauthenticated — session expired. Funnel to branded re-login
+          // instead of silently showing a stale fallback menu.
+          clientRedirectToReLogin(
+            captureReturnTo({ pathname: location.pathname, search: location.search })
+          );
+          return null;
+        }
+        return res.json();
+      })
       .then((data) => {
-        if (!cancelled && data?.authenticated) {
+        if (cancelled || !data) return;
+        if (data.authenticated) {
           setUser({
             name: data.name || "User",
             email: data.email || "",
           });
+        } else {
+          // authenticated:false — session expired.
+          clientRedirectToReLogin(
+            captureReturnTo({ pathname: location.pathname, search: location.search })
+          );
         }
       })
       .catch(() => {
-        // Silently fail — user menu will show fallback
+        // Network error — silently fail; user menu shows fallback.
       });
 
     return () => {

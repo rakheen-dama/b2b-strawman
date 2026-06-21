@@ -146,7 +146,10 @@ describe("Keycloak BFF middleware", () => {
       expect(response.status).toBe(200);
     });
 
-    it("redirects to KC login when /bff/me reports unauthenticated despite fresh-login signal", async () => {
+    it("funnels to branded /sign-in?reason=expired when /bff/me reports unauthenticated (Epic 569)", async () => {
+      // 569B.3: the generic-expiry arm now redirects to the branded re-login
+      // route with reason=expired + returnTo, instead of bouncing to KC with
+      // prompt=login (that stays reserved for the user-mismatch arm).
       mockBffMe({ authenticated: false, userId: null });
       const middleware = await loadMiddleware();
       const request = createRequest("/dashboard", "session-abc-123", {
@@ -157,7 +160,12 @@ describe("Keycloak BFF middleware", () => {
 
       expect(response.status).toBe(307);
       const location = response.headers.get("location")!;
-      expect(location).toContain("prompt=login");
+      expect(location).toContain("/sign-in");
+      expect(location).toContain("reason=expired");
+      expect(location).not.toContain("prompt=login");
+      // Stale SESSION is cleared on the funnel response.
+      const setCookie = response.headers.get("set-cookie") ?? "";
+      expect(setCookie).toContain("SESSION=");
     });
 
     it("does not call /bff/me when the KC_LAST_LOGIN_SUB cookie is absent (zero overhead on normal navigation)", async () => {

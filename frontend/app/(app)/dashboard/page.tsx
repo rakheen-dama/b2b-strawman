@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AUTH_MODE, getAuthContext, getSessionIdentity } from "@/lib/auth/server";
+import { ReturnToHandler } from "./return-to-handler";
 
 const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443";
 
@@ -40,6 +41,7 @@ export default async function DashboardRedirectPage() {
     }
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <ReturnToHandler />
         <div className="w-full max-w-md space-y-6 rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="text-center">
             <h1 className="font-display text-2xl font-semibold text-slate-900">

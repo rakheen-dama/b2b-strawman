@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextMiddleware, NextRequest } from "next/server";
+import { captureReturnTo, safeReturnTo } from "./return-to";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443";
@@ -82,7 +83,8 @@ function createKeycloakMiddleware(): NextMiddleware {
     if (lastLoginSubCookie?.value) {
       const mismatchResponse = await verifySessionHandoff(
         sessionCookie.value,
-        lastLoginSubCookie.value
+        lastLoginSubCookie.value,
+        request
       );
       if (mismatchResponse) {
         return mismatchResponse;
@@ -108,7 +110,8 @@ function createKeycloakMiddleware(): NextMiddleware {
  */
 async function verifySessionHandoff(
   sessionCookieValue: string,
-  expectedSub: string
+  expectedSub: string,
+  request: NextRequest
 ): Promise<NextResponse | null> {
   let actualSub: string | null = null;
   try {
@@ -123,9 +126,11 @@ async function verifySessionHandoff(
     }
     const body = (await response.json()) as { authenticated?: boolean; userId?: string | null };
     if (!body.authenticated || !body.userId) {
-      // Not authenticated after a "fresh login" — something's genuinely off;
-      // send the user back through login rather than rendering a stale shell.
-      return redirectToKeycloakLogin(/* clearSession */ true);
+      // 569B.3 — generic expiry: the SESSION cookie is present but /bff/me says
+      // the session is no longer authenticated. Funnel to the branded re-login
+      // route with reason=expired + the captured returnTo, instead of bouncing
+      // straight to Keycloak. (The user-mismatch arm below STAYS prompt=login.)
+      return redirectToExpiredSignIn(request);
     }
     actualSub = body.userId;
   } catch {
@@ -166,6 +171,22 @@ function redirectToKeycloakLogin(clearSession: boolean): NextResponse {
     // stale ID on subsequent requests.
     response.cookies.set("SESSION", "", { path: "/", maxAge: 0 });
   }
+  clearLastLoginSubCookie(response);
+  return response;
+}
+
+/**
+ * 569B.3 — graceful expiry funnel at the middleware edge. Builds a same-origin
+ * redirect to the branded `/sign-in?reason=expired&returnTo=<validated path>`,
+ * clears the stale SESSION + one-shot login-sub cookies. `returnTo` is the
+ * current request path, passed through the allowlist guard.
+ */
+function redirectToExpiredSignIn(request: NextRequest): NextResponse {
+  const signInUrl = new URL("/sign-in", request.nextUrl.origin);
+  signInUrl.searchParams.set("reason", "expired");
+  signInUrl.searchParams.set("returnTo", safeReturnTo(captureReturnTo(request)));
+  const response = NextResponse.redirect(signInUrl.toString());
+  response.cookies.set("SESSION", "", { path: "/", maxAge: 0 });
   clearLastLoginSubCookie(response);
   return response;
 }

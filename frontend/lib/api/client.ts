@@ -1,8 +1,9 @@
 import "server-only";
 
 import { getAuthToken, AUTH_MODE } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import { notFound } from "next/navigation";
+import { redirectToReLogin } from "@/lib/auth/expiry";
+import { safeReturnTo } from "@/lib/auth/return-to";
 import type { ProblemDetail } from "@/lib/types";
 
 const GATEWAY_URL = process.env.GATEWAY_URL || "http://localhost:8443";
@@ -44,6 +45,32 @@ export async function getAuthFetchOptions(method: string = "GET"): Promise<{
   };
 }
 
+/**
+ * Best-effort resolution of the current request path for the expiry funnel.
+ * Server actions have no request object, so we read it from the incoming
+ * headers (`x-pathname` if a middleware set it, else the `referer` path).
+ * Always passes through {@link safeReturnTo}, so any failure / untrusted value
+ * fails safe to `/dashboard`.
+ */
+async function resolveServerReturnTo(): Promise<string> {
+  try {
+    const { headers } = await import("next/headers");
+    const h = await headers();
+    const explicit = h.get("x-pathname");
+    if (explicit) {
+      return safeReturnTo(explicit);
+    }
+    const referer = h.get("referer");
+    if (referer) {
+      const url = new URL(referer);
+      return safeReturnTo(`${url.pathname}${url.search}`);
+    }
+  } catch {
+    // headers() unavailable (non-request scope) — fall through to default.
+  }
+  return "/dashboard";
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -76,7 +103,8 @@ export async function apiRequest<T>(endpoint: string, options: ApiRequestOptions
   try {
     authOptions = await getAuthFetchOptions(method);
   } catch {
-    redirect("/sign-in");
+    // No usable session — funnel to the branded re-login route.
+    redirectToReLogin(await resolveServerReturnTo(), "expired");
   }
 
   const response = await fetch(`${API_BASE}${endpoint}`, {
@@ -163,7 +191,12 @@ export function isSubscriptionError(error: unknown): "required" | "locked" | nul
 export function handleApiError(error: unknown): never {
   if (error instanceof ApiError) {
     if (error.status === 401) {
-      redirect("/sign-in");
+      // Expired / unauthenticated (incl. the manual-redirect 3xx pre-mapped to
+      // 401 in apiRequest). Funnel to the branded re-login route. handleApiError
+      // is synchronous (`never`) and called from many catch blocks, so we can't
+      // await headers() here — fail safe to /dashboard; the allowlist guard and
+      // the dashboard read-back keep the user oriented.
+      redirectToReLogin("/dashboard", "expired");
     }
 
     // Subscription-related 403s: re-throw with a user-friendly message

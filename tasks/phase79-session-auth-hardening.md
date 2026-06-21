@@ -43,7 +43,7 @@ The standard "backend OR frontend, never both" slice rule is extended: a slice b
 | 568 | Session/Token Lifetimes + Gateway Session Alignment | keycloak-config + gateway | -- | S | 568A, 568B | **Done** (PR #1482) |
 | 569 | Graceful Expiry Funnel + Branded `/sign-in` Route + Return-To | Frontend | 568 | L | 569A, 569B | **Done** (PR #1483) |
 | 570 | Branded `/signed-out` Page + Logout Redirect Wiring (+ optional PII-log hardening) | Frontend + gateway | 569 | M | 570A, 570B | **Done** (PR #1484) |
-| 571 | Change-Password via `kc_action=UPDATE_PASSWORD` | gateway + Frontend | 572 (for branded page) | M | 571A, 571B | |
+| 571 | Change-Password via `kc_action=UPDATE_PASSWORD` | gateway + Frontend | 572 (for branded page) | M | 571A, 571B | **Done** (PR #1486) |
 | 572 | Keycloak Theme Visible-Brand Rebrand + Page Coverage | theme | -- | M | 572A, 572B | **Done** (PR #1485) |
 
 **Slice count: 9** (architecture §11.10's 6 capability slices re-mapped to enforce the unmixed-category + 6–12 files / ~800 LOC budget). Slice 1 → Epic 568 (split keycloak-config 568A / gateway 568B). Slice 2 → Epic 569 (funnel-lib+route 569A / entry-point wiring 569B, both frontend). Slice 3 + slice 6 → Epic 570 (frontend route 570A / gateway redirect + optional PII log 570B). Slice 4 → Epic 571 (gateway wiring 571A / frontend entry 571B — category split). Slice 5 → Epic 572 (page coverage 572A / visible-brand audit + JAR rebuild 572B).
@@ -357,8 +357,8 @@ Stage 4:  [571A → 571B]                                ← change-password (af
 
 | Slice | Tasks | Files Touched | Summary | Status |
 |-------|-------|---------------|---------|--------|
-| **571A** | 571A.1–571A.2 | ~3 (GatewaySecurityConfig or BffController modify + 1 test + verify yml) | Gateway initiation that adds `kc_action=UPDATE_PASSWORD` to the OAuth client's authorization request; clean return-to-app; gateway test. | |
-| **571B** | 571B.1–571B.2 | ~3 (user-menu-bff modify + 1 e2e + verify portal) | "Account & Security" user-menu item triggering 571A; Playwright change-password e2e; portal entry where applicable (likely omitted — magic-link). | |
+| **571A** | 571A.1–571A.2 | ~3 (GatewaySecurityConfig or BffController modify + 1 test + verify yml) | Gateway initiation that adds `kc_action=UPDATE_PASSWORD` to the OAuth client's authorization request; clean return-to-app; gateway test. | **Done** (PR #1486) |
+| **571B** | 571B.1–571B.2 | ~3 (user-menu-bff modify + 1 e2e + verify portal) | "Account & Security" user-menu item triggering 571A; Playwright change-password e2e; portal entry where applicable (likely omitted — magic-link). | **Done** (PR #1486) |
 
 ### Tasks
 

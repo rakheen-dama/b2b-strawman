@@ -1,1 +1,7 @@
-{"commit":"c9b3b39ad","command":"pnpm run lint && pnpm run build && pnpm test","exit":0,"ts":"2026-06-15T14:12:53Z","summary":"lint 0 errors (112 pre-existing warnings); build OK; vitest 378 files, 2376 passed / 2 skipped"}
+{
+  "commit": "412ff331e448d2732f0f754b20fe82b6b1e8912b",
+  "command": "NODE_OPTIONS='' pnpm run lint && pnpm run build && pnpm test && pnpm run format",
+  "exit": 0,
+  "ts": "2026-06-21T12:06:47Z",
+  "summary": "Epic 571 frontend: lint 0 errors, build compiled successfully, vitest 2413 passed / 2 skipped, prettier clean. Observed by fixer agent on PR #1486 head."
+}

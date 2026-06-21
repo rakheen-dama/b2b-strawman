@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AUTH_MODE, getAuthContext, getSessionIdentity } from "@/lib/auth/server";
+import { ReturnToHandler } from "@/components/auth/return-to-handler";
 
 const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443";
 
@@ -12,7 +13,11 @@ export default async function DashboardRedirectPage() {
       const ctx = await getAuthContext();
       orgSlug = ctx.orgSlug;
       authenticated = true;
-    } catch {
+    } catch (e) {
+      // getAuthContext() can now call redirectToReLogin() internally, which
+      // throws NEXT_REDIRECT — re-throw so the branded /sign-in funnel fires
+      // instead of being swallowed into the no-org fall-through below.
+      if ((e as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) throw e;
       // Either the user is not authenticated at all (expired session) OR they
       // are authenticated but have no active org claims. getSessionIdentity()
       // below distinguishes between the two.
@@ -28,7 +33,10 @@ export default async function DashboardRedirectPage() {
       const identity = await getSessionIdentity();
       authenticated = true;
       isPlatformAdmin = identity.groups.includes("platform-admins");
-    } catch {
+    } catch (e) {
+      // getSessionIdentity() can now call redirectToReLogin() internally, which
+      // throws NEXT_REDIRECT — re-throw so the branded /sign-in funnel fires.
+      if ((e as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) throw e;
       // Not authenticated — BFF said authenticated: false.
       authenticated = false;
     }
@@ -40,6 +48,7 @@ export default async function DashboardRedirectPage() {
     }
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <ReturnToHandler />
         <div className="w-full max-w-md space-y-6 rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="text-center">
             <h1 className="font-display text-2xl font-semibold text-slate-900">

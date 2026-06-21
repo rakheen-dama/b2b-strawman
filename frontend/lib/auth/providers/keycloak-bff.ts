@@ -3,6 +3,21 @@ import "server-only";
 import { cache } from "react";
 import { cookies } from "next/headers";
 import type { AuthContext, SessionIdentity } from "../types";
+import { redirectToReLogin } from "../expiry";
+
+/**
+ * Sentinel error thrown by the raw probe on a non-ok /bff/me response. The
+ * null-tolerant getters (getCurrentUserEmail / getCurrentUserInfo) catch this
+ * and return null; the identity-required getters let it surface so the request
+ * funnels to re-login. Kept distinct so we don't accidentally funnel inside a
+ * try/catch that is meant to swallow.
+ */
+class BffUnauthenticatedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "BffUnauthenticatedError";
+  }
+}
 
 const GATEWAY_URL = process.env.GATEWAY_URL || "http://localhost:8443";
 const BFF_TIMEOUT_MS = 5_000;
@@ -39,7 +54,10 @@ async function fetchBffMeInternal(cookieHeader: string): Promise<BffUserInfo> {
   });
 
   if (!response.ok) {
-    throw new Error(`BFF /bff/me request failed with status ${response.status}`);
+    // Non-ok (401/redirect/etc.) means the session is gone. Throw a typed
+    // sentinel: the identity-required getters below funnel to re-login, while
+    // the null-tolerant getters catch it and return null (unchanged behaviour).
+    throw new BffUnauthenticatedError(`BFF /bff/me request failed with status ${response.status}`);
   }
 
   return response.json() as Promise<BffUserInfo>;
@@ -67,7 +85,8 @@ export async function getSessionIdentity(): Promise<SessionIdentity> {
   const info = await fetchBffMe();
 
   if (!info.authenticated || !info.userId) {
-    throw new Error("User is not authenticated via BFF");
+    // Genuinely unauthenticated (expired session) → graceful re-login funnel.
+    redirectToReLogin("/dashboard", "expired");
   }
 
   return {
@@ -79,8 +98,16 @@ export async function getSessionIdentity(): Promise<SessionIdentity> {
 export async function getAuthContext(): Promise<AuthContext> {
   const info = await fetchBffMe();
 
-  if (!info.authenticated || !info.userId || !info.orgId || !info.orgSlug) {
-    throw new Error("No active organization — user is not authenticated via BFF");
+  if (!info.authenticated || !info.userId) {
+    // Genuinely unauthenticated (expired session) → graceful re-login funnel.
+    redirectToReLogin("/dashboard", "expired");
+  }
+
+  if (!info.orgId || !info.orgSlug) {
+    // Authenticated but no active org — NOT an expiry. Throw a regular error so
+    // callers (e.g. dashboard/page.tsx) can distinguish no-org from
+    // unauthenticated. Do NOT funnel here (would break the no-org pending-state).
+    throw new Error("No active organization for the authenticated BFF user");
   }
 
   return {

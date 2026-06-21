@@ -8,6 +8,14 @@ vi.mock("next/headers", () => ({
   cookies: vi.fn(),
 }));
 
+// Mock next/navigation redirect (Epic 569 funnel). redirect() is `never` — make
+// it throw a recognisable NEXT_REDIRECT so the funnel can be asserted.
+vi.mock("next/navigation", () => ({
+  redirect: vi.fn((url: string) => {
+    throw new Error(`NEXT_REDIRECT:${url}`);
+  }),
+}));
+
 // Mock global fetch
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
@@ -66,7 +74,7 @@ describe("Keycloak BFF auth provider", () => {
     );
   });
 
-  it("getAuthContext() throws when user is not authenticated", async () => {
+  it("getAuthContext() funnels to /sign-in?reason=expired when user is not authenticated (Epic 569)", async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       json: () =>
@@ -81,9 +89,28 @@ describe("Keycloak BFF auth provider", () => {
         }),
     });
 
-    await expect(getAuthContext()).rejects.toThrow(
-      "No active organization — user is not authenticated via BFF"
-    );
+    // Genuinely unauthenticated → graceful re-login funnel (NEXT_REDIRECT).
+    await expect(getAuthContext()).rejects.toThrow("NEXT_REDIRECT:/sign-in?reason=expired");
+  });
+
+  it("getAuthContext() throws (does NOT funnel) when authenticated but no active org", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          authenticated: true,
+          userId: "kc-user-123",
+          email: "alice@example.com",
+          name: "Alice Smith",
+          picture: null,
+          orgId: null,
+          orgSlug: null,
+        }),
+    });
+
+    // Authenticated-but-no-org must stay a plain error so dashboard/page.tsx can
+    // render the pending-state card rather than redirecting to re-login.
+    await expect(getAuthContext()).rejects.toThrow("No active organization");
   });
 
   it("getAuthToken() throws with BFF mode error", async () => {

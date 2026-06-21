@@ -1,8 +1,8 @@
 import "server-only";
 
 import { getAuthToken } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { api, ApiError } from "./client";
+import { api, ApiError, resolveServerReturnTo } from "./client";
+import { redirectToReLogin } from "@/lib/auth/expiry";
 
 // ---- Response Interfaces ----
 
@@ -118,7 +118,7 @@ export async function exportReportCsv(
   try {
     token = await getAuthToken();
   } catch {
-    redirect("/sign-in");
+    redirectToReLogin(await resolveServerReturnTo(), "expired");
   }
   const qs = buildExportQueryParams(parameters);
 
@@ -146,7 +146,7 @@ export async function exportReportPdf(
   try {
     token = await getAuthToken();
   } catch {
-    redirect("/sign-in");
+    redirectToReLogin(await resolveServerReturnTo(), "expired");
   }
   const qs = buildExportQueryParams(parameters);
 

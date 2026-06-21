@@ -1,7 +1,7 @@
 import "server-only";
 
-import { redirect } from "next/navigation";
-import { api, ApiError, API_BASE, getAuthFetchOptions } from "./client";
+import { api, ApiError, API_BASE, getAuthFetchOptions, resolveServerReturnTo } from "./client";
+import { redirectToReLogin } from "@/lib/auth/expiry";
 import type {
   TemplateListResponse,
   TemplateDetailResponse,
@@ -59,7 +59,7 @@ export async function previewTemplate(
   try {
     authOptions = await getAuthFetchOptions("POST");
   } catch {
-    redirect("/sign-in");
+    redirectToReLogin(await resolveServerReturnTo(), "expired");
   }
 
   const response = await fetch(`${API_BASE}/api/templates/${id}/preview`, {
@@ -92,7 +92,7 @@ export async function uploadDocxTemplate(
   try {
     authOptions = await getAuthFetchOptions("POST");
   } catch {
-    redirect("/sign-in");
+    redirectToReLogin(await resolveServerReturnTo(), "expired");
   }
 
   const formData = new FormData();
@@ -135,7 +135,7 @@ export async function replaceDocxFile(
   try {
     authOptions = await getAuthFetchOptions("PUT");
   } catch {
-    redirect("/sign-in");
+    redirectToReLogin(await resolveServerReturnTo(), "expired");
   }
 
   const formData = new FormData();
@@ -177,7 +177,7 @@ export async function downloadDocxTemplate(templateId: string): Promise<string> 
   try {
     authOptions = await getAuthFetchOptions("GET");
   } catch {
-    redirect("/sign-in");
+    redirectToReLogin(await resolveServerReturnTo(), "expired");
   }
 
   const response = await fetch(`${API_BASE}/api/templates/${templateId}/docx/download`, {

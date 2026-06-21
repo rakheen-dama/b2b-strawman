@@ -23,7 +23,7 @@ spring:
       # TODO: Use Flyway migration for session schema in production
       initialize-schema: always
       table-name: SPRING_SESSION
-    timeout: 8h
+    timeout: ${GATEWAY_SESSION_TIMEOUT:10h}
 
   security:
     oauth2:

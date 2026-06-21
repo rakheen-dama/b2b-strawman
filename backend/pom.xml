@@ -28,6 +28,10 @@
     </scm>
     <properties>
         <java.version>25</java.version>
+        <!-- Empty default so Surefire's @{argLine} resolves cleanly when JaCoCo is inactive
+             (non-coverage runs, including CI). Under -Pcoverage, jacoco:prepare-agent overrides
+             this property with the agent argument, which @{argLine} then picks up at runtime. -->
+        <argLine></argLine>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -288,6 +292,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <!-- CI runs `mvnw test` with no explicit heap, so the forked test JVM used the
+                         runner default (~1.75g on a 2-core/7g ubuntu-latest). The full @SpringBootTest
+                         suite (up to 32 cached contexts) sits right at that ceiling and OOMs on the
+                         heaviest context load. Pin a headroom-safe 3g (leaves room for embedded
+                         Postgres + Maven + OS under 7g). @{argLine} preserves the JaCoCo agent under
+                         -Pcoverage. -->
+                    <argLine>@{argLine} -Xmx3g</argLine>
                     <forkedProcessExitTimeoutInSeconds>60</forkedProcessExitTimeoutInSeconds>
                     <shutdown>kill</shutdown>
                 </configuration>

@@ -647,13 +647,57 @@ git pull   # must succeed against the private repo
 
 A deploy key is scoped to this one repo — cleaner than a PAT, and it can't write.
 
+> **⚠️ Gotcha (observed 2026-06-21): deploy key → `Repository is disabled`.**
+> Right after flipping the repo private, the deploy key (impersonal access) may
+> fail with `ERROR: Repository 'rakheen-dama/b2b-strawman' is disabled. Please
+> ask the owner to check their account` — while your **own** access (laptop,
+> `gh`) still works fine. This is **not** billing and **not** the deploy key
+> being wrong: it's a transient GitHub **anti-abuse flag** on impersonal access,
+> commonly triggered by going private right after heavy automated API activity.
+> It usually clears within a day (or a note to GitHub Support resolves it).
+>
+> **Fallback — a classic `repo` PAT over HTTPS** (authenticates as you, so it
+> bypasses the impersonal-access flag):
+>
+> 1. GitHub → **Settings → Developer settings → Tokens (classic)** → scope **`repo`**.
+>    (A fine-grained token also works, but it must select **this repo** and grant
+>    **Contents: Read** — otherwise `git pull` returns `Write access to repository
+>    not granted` / 403. The classic `repo` scope avoids that fiddliness.)
+> 2. On the box:
+>    ```bash
+>    cd /opt/kazi
+>    git remote set-url origin https://rakheen-dama:<PAT>@github.com/rakheen-dama/b2b-strawman.git
+>    chmod 600 .git/config   # the token is stored here in plaintext
+>    git pull
+>    ```
+> The PAT has write scope (more than a deploy box needs) — switch back to the
+> read-only deploy key and revoke the PAT once the flag clears.
+
 ### (b) GitHub Actions minutes become metered
 
 Public repos get **unlimited** Actions minutes; private repos get a monthly free allotment (**2000 min** on the Free plan; more on Pro/Team). The `deploy-vps` workflow builds 5 images (~6–15 min/run). Occasional deploys stay well under the cap — just don't trigger it in a tight loop. (The box-pull model already keeps re-deploys off CI; only the image build runs there.)
 
-### (c) GHCR packages
+### (c) GHCR image pull — needs a `read:packages` token
 
-The images are already pulled with auth (the box's `read:packages` PAT / `~/.config/kazi/ghcr_pat`), so going private changes nothing for the deploy. Note: making the **repo** private does **not** auto-change existing **package** visibility — if you want the `kazi-*` packages explicitly private too, set each one's visibility under GitHub → your profile → Packages → *package* → Package settings. The box pull works either way (it's authenticated).
+When the repo goes private, the `kazi-*` packages become private too, and the box's `docker compose pull` fails with `error from registry: denied` unless docker is logged in to GHCR with a token that has the **`read:packages`** scope.
+
+> **⚠️ Gotcha (observed 2026-06-21).** The classic **`repo`** PAT you set up for `git pull` (§13a) does **not** cover packages — `read:packages` is a **separate** scope. Reusing the `repo`-only token for GHCR gives `denied`.
+
+Fix:
+
+1. Edit your classic PAT (or make one) and tick **`read:packages`** — a single classic token with `repo` + `read:packages` covers both `git pull` *and* the GHCR pull.
+2. Log docker into GHCR **as the `kazi` user**:
+   ```bash
+   echo "<PAT_with_read_packages>" | docker login ghcr.io -u rakheen-dama --password-stdin   # Login Succeeded
+   ```
+3. For unattended `deploy.sh`, drop the token where the script looks — **as the `kazi` user** (not via `sudo`/root, or it lands in `/root/.config/...` and the script reports `no PAT file at /home/kazi/.config/kazi/ghcr_pat`):
+   ```bash
+   mkdir -p ~/.config/kazi
+   printf '%s' "<PAT>" > ~/.config/kazi/ghcr_pat
+   chmod 700 ~/.config/kazi && chmod 600 ~/.config/kazi/ghcr_pat
+   ```
+
+Quick verify: `docker pull ghcr.io/rakheen-dama/kazi-gateway:dev` should succeed. (Package visibility is also set per-package under GitHub → your profile → Packages → *package* → Package settings, if you ever need to change it.)
 
 ### (d) Claude agents
 

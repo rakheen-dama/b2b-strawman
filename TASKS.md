@@ -649,6 +649,15 @@
 | 570 | Branded `/signed-out` Page + Logout Redirect Wiring (+ optional PII-log) | Frontend + gateway | 569 | M | 570A, 570B | **Done** (PR #1484) |
 | 571 | Change-Password via `kc_action=UPDATE_PASSWORD` | gateway + Frontend | 572 | M | 571A, 571B | **Done** (PR #1486) |
 | 572 | Keycloak Theme Visible-Brand Rebrand + Page Coverage | theme | -- | M | 572A, 572B | **Done** (PR #1485) |
+| **Phase 80 — CRM / Sales Pipeline** | | | | | | See [tasks/phase80-crm-sales-pipeline.md](tasks/phase80-crm-sales-pipeline.md) |
+| 573 | Migration + Entities + Capability + Stage Seeding | Backend | -- | L | 573A, 573B | |
+| 574 | Deal CRUD + Intake + Filtered List | Backend | 573A | L | 574A | |
+| 575 | DealTransitionService + Customer Nudge + Events/Audit/Activity | Backend | 574A | L | 575A | |
+| 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | |
+| 577 | Field / Tag / Saved-View / Audit-Metadata Registration | Backend | 574A, 575A | M | 577A | |
+| 578 | Pipeline Summary Aggregation | Backend | 574A | M | 578A | |
+| 579 | Frontend — Board + List + Intake + Stage Settings | Frontend | 574A, 575A, 578A | L | 579A, 579B | |
+| 580 | Frontend — Deal Detail + Customer Tab + Dashboard Widget + QA Capstone | Frontend | 576A, 578A, 579A | L | 580A, 580B | |
 
 
 ---

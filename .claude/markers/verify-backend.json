@@ -1,1 +1,7 @@
-{"commit":"c8be9f53c","command":"./mvnw verify","exit":0,"ts":"2026-06-15T18:57:42Z","summary":"5670 tests, 0 failures, 0 errors, 26 skipped — BUILD SUCCESS (AIVERIFY-004 full verify, salvaged after Dev socket death; incl. ComplianceAuditReportConcurrencyTest)"}
+{
+  "commit": "d2f65e5419316b09f1504c78fda5c3f04be3317c",
+  "command": "cd backend && ./mvnw verify",
+  "exit": 0,
+  "ts": "2026-06-20T18:52:11Z",
+  "summary": "fix/mcp-pagination-npe: Integer page/size across 7 paginated MCP tools + McpPagination null-default. 5766 tests, 0 failures, 0 errors (/tmp/npe-verify.log). McpPaginationTest 13/13."
+}

@@ -1,0 +1,37 @@
+# ADR-315: Win→Proposal/Project Conversion via Existing Orchestration
+
+**Status**: Accepted
+
+**Context**:
+
+When a `Deal` is won, two things should happen: the deal moves to a `WON` stage (so the board reflects reality) and the firm progresses toward delivery (a `Proposal` is accepted, a `Project` is created, the `Customer` lifecycle advances). The downstream half of that already exists and is battle-tested: `ProposalOrchestrationService.acceptProposal(...)` marks a `Proposal` accepted, nudges the `Customer` lifecycle, creates a `Project` (`proposal.createdProjectId`, optionally from a template), and publishes a `ProposalAcceptedEvent` (AFTER_COMMIT). Phase 80 must connect a deal's "won" exit to this chain **without rebuilding it**.
+
+This is a reuse-not-rebuild decision in a schema-per-tenant codebase where cross-aggregate references are raw UUIDs and event listeners must re-bind tenant context via `RequestScopes.runForTenant(...)` because AFTER_COMMIT runs outside the request scope. The only modelled link is a nullable `deal_id UUID` column on the existing `proposals` table (one-deal-to-many-proposals; see §11.2.3 of the architecture). The risk to avoid is a *second* conversion engine — a parallel project-creator or customer-activator — that would diverge from the proposal path and double-create projects or double-win deals. We also need clear precedence so a deal that a user already won manually is not won again when its proposal is later accepted.
+
+**Options Considered**:
+
+1. **Reuse the proposal-accept orchestration + a thin event-glue listener (CHOSEN)** — Direct status-only win runs through `DealTransitionService` (sets `status=WON`, `wonAt`, nudges the customer `PROSPECT → ONBOARDING` only if currently PROSPECT). Separately, the existing `ProposalAcceptedEvent` (AFTER_COMMIT) gains **one** new listener, `DealProposalAcceptedListener`, that — for a deal-linked proposal — marks the `Deal` WON `if (status != WON)`, idempotently. No proposal internals change; no parallel project-creation or customer-activation path is added. The two paths (manual direct win, proposal-acceptance win) are complementary.
+   - Pros: Reuses the entire, tested `acceptProposal` → `Project` → customer-lifecycle chain unchanged; the only new orchestration is a single AFTER_COMMIT listener and the deal↔proposal link column; precedence is trivial (`if status != WON`) so a deal is never double-won; status-only win remains valid for deals that never had a proposal; no divergence risk because there is exactly one project-creation path.
+   - Cons: Win can be reached by two routes (direct transition vs proposal acceptance), so the precedence rule and idempotency must be documented and tested; the AFTER_COMMIT listener must re-bind tenant context (`runForTenant`) and is asynchronous-after-commit, so the board reflects the win a beat after the proposal commits.
+2. **Status-only win with no downstream (the deal just flips WON)** — Winning a deal only changes `Deal.status`/`wonAt`; it does nothing to proposals, projects, or the customer lifecycle.
+   - Pros: Simplest possible win; zero coupling to the proposal domain; no event glue.
+   - Cons: Breaks the funnel promise — winning a deal would leave the customer in `PROSPECT` and create no project, so the firm gets no delivery hand-off; the board and the actual business state diverge (a "won" deal with no accepted proposal and no project); pushes all the conversion work onto the user manually, defeating the point of closing the loop.
+3. **Full auto-orchestration on win (auto proposal + project + activation in one click)** — Marking a deal WON auto-creates a proposal, auto-accepts it, creates the project, and activates the customer in a single bundled macro.
+   - Pros: One-click "win → everything"; fewest steps for the user.
+   - Cons: Builds a second orchestration engine parallel to `acceptProposal`, which will drift from it; auto-creating and auto-accepting a proposal skips the deliberate proposal authoring/sending/acceptance the firm (and often the client, via the portal) actually performs; double-creation and double-win hazards multiply; explicitly rejected in the founder decisions as too much v1 surface.
+
+**Decision**: Option 1 — winning reuses `ProposalOrchestrationService.acceptProposal` + the existing `ProposalAcceptedEvent` (AFTER_COMMIT); a single new listener marks a deal-linked proposal's `Deal` WON idempotently; direct status-only win is also valid; no parallel conversion engine is built.
+
+**Rationale**:
+
+1. **The downstream chain already exists and must not be forked.** `acceptProposal` already creates the `Project`, sets `createdProjectId`, and nudges the customer lifecycle. A second engine would diverge over time and risk double-creating projects. Wiring the deal's win to the *existing* event is the minimal, non-duplicating change — consistent with the phase's reuse-not-rebuild mandate.
+2. **One thin listener, on the event, not in the internals.** `DealProposalAcceptedListener` is a `@TransactionalEventListener(AFTER_COMMIT)` on the existing `ProposalAcceptedEvent`. It re-binds tenant context with `RequestScopes.runForTenant(ev.tenantId(), ev.orgId(), …)` — the exact pattern the codebase already uses for AFTER_COMMIT handlers — finds the deal by linked proposal id, and marks it WON only if it isn't already. Proposal internals are untouched; the only schema change is the nullable `deal_id` link column.
+3. **Precedence makes double-win impossible.** Direct win (`DealTransitionService` → a WON stage) is status-only and does not force-create a proposal/project. Proposal-acceptance win is idempotent (`if status != WON`). So if a user already won the deal manually, a later proposal acceptance is a no-op on the deal (the proposal still creates its project via the existing orchestration). The two paths are complementary, never conflicting.
+4. **The customer nudge is reused and guarded.** Both win paths nudge the customer `PROSPECT → ONBOARDING` *only when currently PROSPECT*, relying on the existing `Customer` lifecycle guard which rejects illegal transitions; a non-PROSPECT customer is a deliberate no-op (we never downgrade a customer because a deal closed). This reuses the same lifecycle machinery [ADR-313](ADR-313-crm-lead-model.md) chose to build the lead model on.
+
+**Consequences**:
+- Positive: The full `acceptProposal` → `Project` → customer-lifecycle chain is reused unchanged; the only new code is one AFTER_COMMIT listener, the `DealWonEvent` it publishes, and the nullable `deal_id` link column; no risk of a divergent second project-creation path; a deal is never double-won.
+- Positive: Status-only win works for deals with no proposal; proposal-acceptance win keeps the board honest for deals that close via the portal.
+- Negative: Win is reachable by two routes, so the precedence/idempotency rules must be explicitly tested (manual-then-accept, accept-then-nothing, accept-without-manual); the AFTER_COMMIT listener re-binds tenant scope and runs just after commit, so the board reflects the win a beat later.
+- Negative: A truly one-click "win → proposal+project+kickoff" macro is not available in v1 — deliberately deferred to keep v1 surface small.
+- Related: [ADR-313](ADR-313-crm-lead-model.md) (the customer the win nudges), [ADR-314](ADR-314-pipeline-stage-model.md) (the `WON` stage's `stageType` drives the transition), [ADR-316](ADR-316-deal-as-registered-entity.md) (the `deal.won` audit event emitted on win).

@@ -1,0 +1,37 @@
+# ADR-314: Pipeline & Stage Model — Single Configurable Pipeline with Data-Driven Terminals
+
+**Status**: Accepted
+
+**Context**:
+
+Phase 80's `crm` context introduces `PipelineStage` — the ordered set of stages a `Deal` moves through. We must decide how many pipelines an org gets, how stages are configured, and — critically — how the system knows that moving a deal into a particular stage means it has been *won* or *lost*. The terminal semantics drive `Deal.status`, the `wonAt`/`lostAt` timestamps, the customer-lifecycle nudge, and the weighted-value forecast, so getting them wrong is expensive.
+
+The constraints are specific to this codebase. Stages live in the per-tenant schema (`pipeline_stages`, no `tenant_id` column, pure schema-per-tenant). They are **org-configurable** — firms rename and reorder stages — and **vertical-seeded**: a legal fork ships "Enquiry → Conflict check → Engagement → (Won)/(Lost)", a consulting fork ships "Lead → Qualified → Proposal sent → Negotiation → (Won)/(Lost)", seeded at provisioning via the existing pack-seeding infrastructure (see [ADR-317](ADR-317-crm-capability-gating.md)). Because stage names are localised, fork-specific, and user-renamable, terminal behaviour cannot safely be inferred from a name. The founder decision is one configurable pipeline per org now, with multiple pipelines deferred but the schema kept ready so adding them later is not a painful migration.
+
+**Options Considered**:
+
+1. **Single org-configurable pipeline with a `stageType` enum (`OPEN`/`WON`/`LOST`) on each stage (CHOSEN)** — One ordered set of `PipelineStage`s per org. Each stage carries `name`, `position`, `defaultProbabilityPct` (0–100), and a `stageType` of `OPEN | WON | LOST`. Terminal behaviour is a property of the *data* (the `stageType`), not of the stage name. The `pipeline_stages` table reserves a nullable `pipeline_id UUID` column (always NULL in v1) so a future `Pipeline` parent can be added without rewriting the table or backfilling a synthetic default.
+   - Pros: Terminal semantics are robust to renaming, localisation, and per-fork wording — exactly the `WON`/`LOST` stages drive `Deal.status`, so the `DealTransitionService` stays generic across every vertical; firms can rename and reorder freely; default probabilities live on stages where they belong; the reserved `pipeline_id` column makes the future multi-pipeline migration additive, not destructive; matches the codebase's enum-with-terminal-set convention (`@Enumerated(EnumType.STRING)`, `TERMINAL_STATUSES` set).
+   - Cons: Requires the invariant "at least one OPEN, one WON, one LOST stage must exist", enforced in the service + config UI (a delete/archive guard), which is more logic than a fixed-stage model; orgs can in principle configure odd pipelines (e.g. many WON stages) that the UI must shepherd.
+2. **Hardcoded fixed stages (a `Stage` enum baked into the deal)** — Stages are a fixed Java enum (e.g. `LEAD, QUALIFIED, PROPOSAL, WON, LOST`); terminal-ness is the enum value itself.
+   - Pros: Trivial to implement; no configuration UI, no seeding, no invariants; terminal semantics are unambiguous (the enum *is* the terminal set).
+   - Cons: Not org-configurable — a legal firm cannot rename "Lead" to "Enquiry" or insert "Conflict check"; not vertical-fittable, which defeats the foundation/fork-friendly mandate; changing the stage set requires a code deploy + migration; cannot carry a per-stage default probability without bolting on a side table; the opposite of the configurable, vertical-seeded design the phase requires.
+3. **Full multi-pipeline from day one (a `Pipeline` parent + per-deal pipeline selection)** — Ship a `Pipeline` entity, multiple pipelines per org, a pipeline selector on every deal, and per-pipeline stage sets.
+   - Pros: Maximum flexibility (sales vs renewals vs upsell pipelines); never needs a later migration to add multi-pipeline.
+   - Cons: Large v1 surface — a `Pipeline` entity, a selector on intake/board/summary, per-pipeline seeding, per-pipeline aggregation, and a UI for managing pipelines — for a need no fork has expressed; multiplies the board, summary, and saved-view complexity; explicitly out of scope per the founder decision ("ship one"); over-engineering for a foundation phase.
+
+**Decision**: Option 1 — one org-configurable pipeline of ordered `PipelineStage`s, each with a `stageType` (`OPEN`/`WON`/`LOST`) enum and a default probability, on a schema that reserves a nullable `pipeline_id` so multi-pipeline can be added later without a painful migration.
+
+**Rationale**:
+
+1. **Terminal semantics must be data, not a string match.** A legal fork's "Engagement" and a consulting fork's "Negotiation" are both `OPEN`; each fork's "(Won)"/"(Lost)" carry `stageType=WON`/`LOST`. Matching on a localised, user-renamable name would be fragile and would break the moment a firm renamed a stage. Putting terminal behaviour in `stageType` keeps the `DealTransitionService` generic and lets orgs rename stages freely — the same lesson the codebase already applies with status enums and terminal sets.
+2. **Probability belongs on the stage, with a per-deal override.** Each stage's `defaultProbabilityPct` is the natural default for a deal in that stage; `Deal.probabilityPct` is a nullable per-deal override (null ⇒ fall back to the stage default), and `WON`/`LOST` clamp to 100/0 regardless of override. This gives a sensible forecast out of the box while letting a deal owner sharpen a specific deal (see [ADR-318](ADR-318-pipeline-metrics.md)).
+3. **Multi-pipeline-ready without shipping multi-pipeline.** Reserving a nullable `pipeline_id` column on `pipeline_stages` (and a matching reserved column on `deals`), always NULL in v1 and ignored by v1 code, means a future `Pipeline` parent and per-deal pipeline can be introduced additively — no table rewrite, no backfill of a synthetic default pipeline. This honours "design the schema so multi-pipeline is not painful to add later" while shipping exactly one pipeline.
+4. **Invariants are cheap insurance.** The "at least one OPEN/WON/LOST" rule and the "can't delete a stage with deals — archive instead" guard (reusing the existing `DeleteGuard`) keep the pipeline always-valid so the transition service never lacks a terminal stage to land in.
+
+**Consequences**:
+- Positive: Orgs rename and reorder stages freely; the `DealTransitionService` is generic across all verticals because terminal behaviour reads from `stageType`, not names; default probabilities ship per stage; the reserved `pipeline_id` makes future multi-pipeline an additive migration.
+- Positive: Stages are vertical-seeded at provisioning via pack-seeding (see [ADR-317](ADR-317-crm-capability-gating.md)), so each fork gets sensible defaults with no hand-written per-tenant SQL.
+- Negative: Requires service- and UI-level invariants ("at least one OPEN/WON/LOST", "archive don't delete a stage with deals") that a fixed-stage model would not need.
+- Negative: A `pipeline_id` column ships unused in v1 — a small, deliberate carrying cost paid to avoid a far more expensive later migration.
+- Related: [ADR-313](ADR-313-crm-lead-model.md) (the `Deal` that occupies these stages), [ADR-315](ADR-315-win-proposal-conversion-reuse.md) (how a `WON` stage drives the win flow), [ADR-318](ADR-318-pipeline-metrics.md) (how `defaultProbabilityPct` and the per-deal override feed weighted value).

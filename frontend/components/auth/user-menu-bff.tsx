@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { LogOut } from "lucide-react";
+import { LogOut, ShieldCheck } from "lucide-react";
 import { clientRedirectToReLogin } from "@/lib/auth/expiry";
 import { captureReturnTo } from "@/lib/auth/return-to";
 
@@ -81,6 +81,20 @@ export function getKeycloakLogoutUrl(): string {
 }
 
 /**
+ * Get the gateway change-password initiation URL (Epic 571A). Rides the existing `keycloak`
+ * OAuth client: the gateway-private `?bff_action=change_password` sentinel is mapped by the
+ * gateway's OAuth2AuthorizationRequestResolver to kc_action=UPDATE_PASSWORD on the authorization
+ * request, so Keycloak renders its branded `login-update-password` page (Epic 572). The sentinel
+ * name is deliberately distinct from the outbound `kc_action` param so the two can never collide
+ * (review Finding 1). The user returns to the app via the existing OAuth login success handler.
+ * The frontend never talks to Keycloak directly (BFF model) and never reaches the unbranded
+ * account console (ADR-311).
+ */
+export function getChangePasswordUrl(): string {
+  return `${GATEWAY_URL}/oauth2/authorization/keycloak?bff_action=change_password`;
+}
+
+/**
  * Performs Keycloak logout by fetching the CSRF token from the gateway
  * and submitting a hidden form POST to the gateway logout endpoint.
  * This is required because Spring Security's LogoutFilter only accepts POST with CSRF.
@@ -145,6 +159,13 @@ export function UserMenuBff() {
     });
   }
 
+  function handleChangePassword() {
+    // Top-level navigation into the gateway's OAuth client (BFF model). The gateway appends
+    // kc_action=UPDATE_PASSWORD; Keycloak renders its branded change-password page; the existing
+    // login success handler returns the user to the app.
+    window.location.href = getChangePasswordUrl();
+  }
+
   return (
     <div ref={ref} className="relative">
       <button
@@ -166,6 +187,13 @@ export function UserMenuBff() {
               {user?.email ?? ""}
             </p>
           </div>
+          <button
+            onClick={handleChangePassword}
+            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            <ShieldCheck className="h-3.5 w-3.5" />
+            Account &amp; Security
+          </button>
           <button
             onClick={handleSignOut}
             className="flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"

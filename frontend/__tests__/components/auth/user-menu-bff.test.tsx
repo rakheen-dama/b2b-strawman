@@ -8,7 +8,7 @@ vi.stubEnv("NEXT_PUBLIC_GATEWAY_URL", "http://localhost:8443");
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
 
-import { UserMenuBff } from "@/components/auth/user-menu-bff";
+import { UserMenuBff, getChangePasswordUrl } from "@/components/auth/user-menu-bff";
 
 const defaultBffResponse = {
   authenticated: true,
@@ -118,5 +118,60 @@ describe("UserMenuBff", () => {
     await waitFor(() => {
       expect(screen.getByText("?")).toBeInTheDocument();
     });
+  });
+
+  // Epic 571B — real, CI-runnable regression coverage for the "Account & Security" menu item and
+  // the change-password initiation URL. The e2e mock arm cannot DOM-interact (mock auth renders
+  // MockUserButton, NOT UserMenuBff — see auth-header-controls.tsx), so this vitest test is the
+  // genuine CI gate for the menu item + URL helper (review Finding 2).
+  it("getChangePasswordUrl targets the gateway keycloak initiation path with the bff_action sentinel", () => {
+    const url = new URL(getChangePasswordUrl());
+    expect(url.origin).toBe("http://localhost:8443");
+    expect(url.pathname).toBe("/oauth2/authorization/keycloak");
+    expect(url.searchParams.get("bff_action")).toBe("change_password");
+    // The gateway-private sentinel must NOT be the raw KC param (review Finding 1).
+    expect(url.searchParams.get("kc_action")).toBeNull();
+  });
+
+  it("renders an 'Account & Security' item that navigates to the change-password URL on click", async () => {
+    // Capture the top-level navigation the handler performs (window.location.href assignment).
+    const hrefSetter = vi.fn();
+    const originalLocation = window.location;
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: {
+        ...originalLocation,
+        get href() {
+          return originalLocation.href;
+        },
+        set href(value: string) {
+          hrefSetter(value);
+        },
+      },
+    });
+
+    try {
+      render(<UserMenuBff />);
+
+      await waitFor(() => {
+        expect(screen.getByText("AS")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("AS"));
+
+      const item = screen.getByText("Account & Security");
+      expect(item).toBeInTheDocument();
+
+      fireEvent.click(item);
+
+      expect(hrefSetter).toHaveBeenCalledWith(
+        "http://localhost:8443/oauth2/authorization/keycloak?bff_action=change_password"
+      );
+    } finally {
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        value: originalLocation,
+      });
+    }
   });
 });

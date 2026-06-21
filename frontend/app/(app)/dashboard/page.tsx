@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AUTH_MODE, getAuthContext, getSessionIdentity } from "@/lib/auth/server";
-import { ReturnToHandler } from "./return-to-handler";
+import { ReturnToHandler } from "@/components/auth/return-to-handler";
 
 const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443";
 

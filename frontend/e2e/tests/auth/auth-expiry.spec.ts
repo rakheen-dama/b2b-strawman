@@ -38,17 +38,23 @@ test.describe("graceful expiry funnel", () => {
   test("return-to round-trips the original destination after re-login", async ({ page }) => {
     await loginAs(page, "alice");
 
-    // Persist a return-to as the sign-in CTA would, then land on /dashboard
-    // (the gateway's default post-login target) and assert the read-back
-    // forwards to the original destination.
+    // Persist a return-to as the sign-in CTA would. We open /sign-in first to
+    // establish the same-origin context, then write the allowlisted
+    // destination into sessionStorage (survives the same-origin navigation to
+    // /dashboard below).
     await page.goto("/sign-in?reason=expired&returnTo=%2Forg%2Fe2e-test-org%2Fprojects");
     await page.evaluate(() => {
       window.sessionStorage.setItem("kazi.returnTo", "/org/e2e-test-org/projects");
     });
 
+    // Land on /dashboard — the gateway's default post-login target. The real
+    // redirect chain then fires: middleware rewrites /dashboard →
+    // /org/e2e-test-org/dashboard, the org dashboard RSC renders, and the
+    // mounted <ReturnToHandler/> consumes kazi.returnTo and forwards to the
+    // original destination.
     await page.goto("/dashboard");
 
-    // The dashboard read-back consumes kazi.returnTo and forwards there.
+    // Final URL is the persisted destination, reached via the full chain.
     await expect(page).toHaveURL(/\/org\/e2e-test-org\/projects/, { timeout: 15_000 });
 
     // The key is consumed (read-once).

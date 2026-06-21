@@ -38,6 +38,7 @@ import {
   addWeeks,
 } from "@/lib/date-utils";
 import { GettingStartedCard } from "@/components/dashboard/getting-started-card";
+import { ReturnToHandler } from "@/components/auth/return-to-handler";
 
 export default async function OrgDashboardPage({
   params,
@@ -153,6 +154,11 @@ export default async function OrgDashboardPage({
 
   return (
     <div className="space-y-6">
+      {/* Post-login return-to read-back. This is the real landing surface after
+          the `/dashboard` → `/org/{slug}/dashboard` redirect chain, so the
+          persisted `kazi.returnTo` is consumed + forwarded here (569A.3). */}
+      <ReturnToHandler />
+
       <GettingStartedCard activeProjectCount={kpis?.activeProjectCount} />
 
       <DashboardHeader from={from} to={to} />

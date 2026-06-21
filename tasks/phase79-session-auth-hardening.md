@@ -41,7 +41,7 @@ The standard "backend OR frontend, never both" slice rule is extended: a slice b
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 568 | Session/Token Lifetimes + Gateway Session Alignment | keycloak-config + gateway | -- | S | 568A, 568B | **Done** (PR #1482) |
-| 569 | Graceful Expiry Funnel + Branded `/sign-in` Route + Return-To | Frontend | 568 | L | 569A, 569B | |
+| 569 | Graceful Expiry Funnel + Branded `/sign-in` Route + Return-To | Frontend | 568 | L | 569A, 569B | **Done** (PR #1483) |
 | 570 | Branded `/signed-out` Page + Logout Redirect Wiring (+ optional PII-log hardening) | Frontend + gateway | 569 | M | 570A, 570B | |
 | 571 | Change-Password via `kc_action=UPDATE_PASSWORD` | gateway + Frontend | 572 (for branded page) | M | 571A, 571B | |
 | 572 | Keycloak Theme Visible-Brand Rebrand + Page Coverage | theme | -- | M | 572A, 572B | |
@@ -125,8 +125,8 @@ GAP-L-22 stale-handoff guard; Keycloakify docteams theme)
 
 | Order | Slice | Category | Summary |
 |-------|-------|----------|---------|
-| 2a | **569A** | frontend | New `lib/auth/expiry.ts` (detector + redirect builders) + `lib/auth/return-to.ts` (`safeReturnTo` allowlist) + new `(auth)/sign-in` route (reason banner, sessionStorage return-to); unit tests for funnel + allowlist. |
-| 2b | **569B** | frontend | Wire `client.ts` + `keycloak-bff.ts` + `middleware.ts` + `user-menu-bff.tsx` client fetches through the 569A funnel; Playwright expiry e2e. |
+| 2a | **569A** ✅ | frontend | New `lib/auth/expiry.ts` (detector + redirect builders) + `lib/auth/return-to.ts` (`safeReturnTo` allowlist) + new `(auth)/sign-in` route (reason banner, sessionStorage return-to); unit tests for funnel + allowlist. **Done** (PR #1483) |
+| 2b | **569B** ✅ | frontend | Wire `client.ts` + `keycloak-bff.ts` + `middleware.ts` + `user-menu-bff.tsx` client fetches through the 569A funnel; Playwright expiry e2e. **Done** (PR #1483) |
 
 ### Stage 3 — Branded signed-out + logout (after 569)
 
@@ -229,8 +229,8 @@ Stage 4:  [571A → 571B]                                ← change-password (af
 
 | Slice | Tasks | Files Touched | Summary | Status |
 |-------|-------|---------------|---------|--------|
-| **569A** | 569A.1–569A.4 | ~6 (2 new lib files + new route `page.tsx` + new `(auth)/layout.tsx` + small return-to client helper + 2 test files) | `lib/auth/expiry.ts` (detector + server/client redirect builders); `lib/auth/return-to.ts` (`captureReturnTo` + `safeReturnTo` allowlist); new `(auth)/sign-in` branded route (reason banner, sessionStorage return-to persist-before-KC + read-on-return); unit tests for funnel + allowlist. | |
-| **569B** | 569B.1–569B.4 | ~5 (client.ts modify + keycloak-bff.ts modify + middleware.ts modify + user-menu-bff.tsx modify + 1 e2e spec) | Route all entry-points through the 569A funnel; Playwright expiry e2e. | |
+| **569A** | 569A.1–569A.4 | ~6 (2 new lib files + new route `page.tsx` + new `(auth)/layout.tsx` + small return-to client helper + 2 test files) | `lib/auth/expiry.ts` (detector + server/client redirect builders); `lib/auth/return-to.ts` (`captureReturnTo` + `safeReturnTo` allowlist); new `(auth)/sign-in` branded route (reason banner, sessionStorage return-to persist-before-KC + read-on-return); unit tests for funnel + allowlist. | **Done** (PR #1483) |
+| **569B** | 569B.1–569B.4 | ~5 (client.ts modify + keycloak-bff.ts modify + middleware.ts modify + user-menu-bff.tsx modify + 1 e2e spec) | Route all entry-points through the 569A funnel; Playwright expiry e2e. | **Done** (PR #1483) |
 
 ### Tasks
 

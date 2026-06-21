@@ -22,7 +22,7 @@ This phase ships as **8 epics (573–580)**, expanded to **12 numbered slices** 
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 573 | Migration + Entities + Capability + Stage Seeding | Backend | — | L | 573A, 573B | |
+| 573 | Migration + Entities + Capability + Stage Seeding | Backend | — | L | 573A, 573B | **Done** (PR #1487) |
 | 574 | Deal CRUD + Intake + Filtered List | Backend | 573A | L | 574A | |
 | 575 | DealTransitionService + Customer Nudge + Events/Audit/Activity | Backend | 574A | L | 575A | |
 | 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | |
@@ -123,8 +123,8 @@ PHASES already complete (reused, not rebuilt):
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 1a | **573A** | V130 (`pipeline_stages` + `deals` + `proposals.deal_id` + indexes) and V131 (field-group widening guard); `PipelineStage` + `Deal` rich-domain entities; `StageType` + `DealStatus` enums; `DealCounter` + `DealCounterRepository` + `DealNumberService`; `DealRepository` + `PipelineStageRepository` (with `findOneById`, `findByCustomerId`, `findByLinkedProposalId` stub); `Capability` constants `VIEW_DEALS`/`MANAGE_DEALS`/`CLOSE_DEALS`/`MANAGE_PIPELINE` (default-on). |
-| 1b | **573B** | `DealPipelinePackSeeder extends AbstractPackSeeder`; `DealPipelinePackDefinition`; `resources/deal-pipeline-packs/{legal-za,consulting-za,accounting-za,default}.json`; `vertical-profiles/*.json` `packs.deal_pipeline` wiring; `OrgSettings.PackStatusSettings.deal_pipeline` idempotency field; `PipelineStageService` (config + invariants + `DeleteGuard`); seeder + invariants tests. |
+| 1a | **573A** ✅ Done (PR #1487) | V130 (`pipeline_stages` + `deals` + `proposals.deal_id` + indexes) and V131 (field-group widening guard); `PipelineStage` + `Deal` rich-domain entities; `StageType` + `DealStatus` enums; `DealCounter` + `DealCounterRepository` + `DealNumberService`; `DealRepository` + `PipelineStageRepository` (with `findOneById`, `findByCustomerId`, `findByLinkedProposalId` stub); `Capability` constants `VIEW_DEALS`/`MANAGE_DEALS`/`CLOSE_DEALS`/`MANAGE_PIPELINE` (default-on). |
+| 1b | **573B** ✅ Done (PR #1487) | `DealPipelinePackSeeder extends AbstractPackSeeder`; `DealPipelinePackDefinition`; `resources/deal-pipeline-packs/{legal-za,consulting-za,accounting-za,default}.json`; `vertical-profiles/*.json` `packs.deal_pipeline` wiring; `OrgSettings.PackStatusSettings.deal_pipeline` idempotency field; `PipelineStageService` (config + invariants + `DeleteGuard`); seeder + invariants tests. |
 
 ### Stage 2 — Core CRUD (sequential after 573A)
 
@@ -183,8 +183,8 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **573A** | 573A.1–573A.9 | ~11 backend files (2 migrations + 2 entities + 2 enums + 1 counter + 1 counter-repo + 1 number-service + 2 repos + 1 `Capability` mod) | V130 + V131 migrations; `PipelineStage`/`Deal` entities; `StageType`/`DealStatus` enums; `DealCounter` + repo + `DealNumberService`; `DealRepository` + `PipelineStageRepository`; `Capability` constants. |
-| **573B** | 573B.1–573B.6 | ~10 backend files (1 seeder + 1 pack-def + 4 JSON packs + N profile edits + 1 `PackStatusSettings` mod + 1 stage service + tests) | `DealPipelinePackSeeder` + `DealPipelinePackDefinition`; 4 stage-pack JSONs; `vertical-profiles/*.json` wiring; `PackStatusSettings.deal_pipeline`; `PipelineStageService`; seeder + invariants tests. |
+| **573A** ✅ Done (PR #1487) | 573A.1–573A.9 | ~11 backend files (2 migrations + 2 entities + 2 enums + 1 counter + 1 counter-repo + 1 number-service + 2 repos + 1 `Capability` mod) | V130 + V131 migrations; `PipelineStage`/`Deal` entities; `StageType`/`DealStatus` enums; `DealCounter` + repo + `DealNumberService`; `DealRepository` + `PipelineStageRepository`; `Capability` constants. |
+| **573B** ✅ Done (PR #1487) | 573B.1–573B.6 | ~10 backend files (1 seeder + 1 pack-def + 4 JSON packs + N profile edits + 1 `PackStatusSettings` mod + 1 stage service + tests) | `DealPipelinePackSeeder` + `DealPipelinePackDefinition`; 4 stage-pack JSONs; `vertical-profiles/*.json` wiring; `PackStatusSettings.deal_pipeline`; `PipelineStageService`; seeder + invariants tests. |
 
 ### Tasks
 

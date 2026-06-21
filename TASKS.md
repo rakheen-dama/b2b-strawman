@@ -650,7 +650,7 @@
 | 571 | Change-Password via `kc_action=UPDATE_PASSWORD` | gateway + Frontend | 572 | M | 571A, 571B | **Done** (PR #1486) |
 | 572 | Keycloak Theme Visible-Brand Rebrand + Page Coverage | theme | -- | M | 572A, 572B | **Done** (PR #1485) |
 | **Phase 80 — CRM / Sales Pipeline** | | | | | | See [tasks/phase80-crm-sales-pipeline.md](tasks/phase80-crm-sales-pipeline.md) |
-| 573 | Migration + Entities + Capability + Stage Seeding | Backend | -- | L | 573A, 573B | |
+| 573 | Migration + Entities + Capability + Stage Seeding | Backend | -- | L | 573A, 573B | **Done** (PR #1487) |
 | 574 | Deal CRUD + Intake + Filtered List | Backend | 573A | L | 574A | |
 | 575 | DealTransitionService + Customer Nudge + Events/Audit/Activity | Backend | 574A | L | 575A | |
 | 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | |
@@ -658,6 +658,13 @@
 | 578 | Pipeline Summary Aggregation | Backend | 574A | M | 578A | |
 | 579 | Frontend — Board + List + Intake + Stage Settings | Frontend | 574A, 575A, 578A | L | 579A, 579B | |
 | 580 | Frontend — Deal Detail + Customer Tab + Dashboard Widget + QA Capstone | Frontend | 576A, 578A, 579A | L | 580A, 580B | |
+| **Phase 81 — Inbound Correspondence & First Gated MCP Write-Back** | | | | | | See [tasks/phase81-inbound-correspondence-mcp-writeback.md](tasks/phase81-inbound-correspondence-mcp-writeback.md) |
+| 581 | Correspondence Entity + Migration + Document Link | Backend | — | M | 581A | |
+| 582 | MCP Write Capability + Audit Family + `file_correspondence` | Backend | 581A | L | 582A, 582B | |
+| 583 | `attach_document` (presigned reuse + correspondence stamp) | Backend | 581A, 582A, 582B | M | 583A | |
+| 584 | `resolve_matter_by_email` (read tool) | Backend | 582A | S | 584A | |
+| 585 | Gate-over-MCP — `propose_task` + synthetic execution + executor arm | Backend | 581A, 582B | L | 585A, 585B | |
+| 586 | Frontend — Correspondence Tab + Gate-Origin Display + QA Capstone | Frontend / Both | 581A, 582B, 583A, 585B | L | 586A, 586B, 586C | |
 
 
 ---

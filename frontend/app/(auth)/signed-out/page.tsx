@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
  * Branded "You've been signed out" confirmation page — the post-logout landing
  * target (Epic 570). Replaces the unstyled frontend root as the terminus of the
  * gateway's RP-initiated logout, killing the whitelabel leak. Public per the
- * middleware allowlist (`/signed-out(.*)`); the user reaching it has no SESSION.
+ * middleware allowlist (`/signed-out`); the user reaching it has no SESSION.
  *
  * Server Component — a static confirmation with no authenticated data fetch and
  * no client interactivity. The "Sign in again" CTA is a plain `<Link>` to the

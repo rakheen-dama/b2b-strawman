@@ -134,6 +134,13 @@ class DealCapabilityGatingTest {
         .andExpect(status().isForbidden());
   }
 
+  @Test
+  void memberWithoutViewDeals_cannotGetById() throws Exception {
+    mockMvc
+        .perform(get("/api/deals/" + dealId).with(TestJwtFactory.memberJwt(ORG_ID, NOCAP_SUBJECT)))
+        .andExpect(status().isForbidden());
+  }
+
   // --- MANAGE_DEALS gating (viewer has VIEW only, so write paths are forbidden) ---
 
   @Test

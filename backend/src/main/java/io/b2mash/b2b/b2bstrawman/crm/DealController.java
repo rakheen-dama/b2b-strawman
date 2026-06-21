@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.crm;
 
+import io.b2mash.b2b.b2bstrawman.crm.dto.CreateDealRequest;
 import io.b2mash.b2b.b2bstrawman.crm.dto.DealResponse;
 import io.b2mash.b2b.b2bstrawman.crm.dto.DealUpdateRequest;
 import io.b2mash.b2b.b2bstrawman.crm.dto.IntakeRequest;
@@ -99,22 +100,4 @@ public class DealController {
     dealService.deleteDeal(id);
     return ResponseEntity.noContent().build();
   }
-
-  /**
-   * Create-against-existing-customer request. {@code customerId} and {@code title} are required;
-   * the rest are optional (stage defaults to the first OPEN stage, owner defaults to the acting
-   * member).
-   */
-  public record CreateDealRequest(
-      @jakarta.validation.constraints.NotNull(message = "customerId is required") UUID customerId,
-      @jakarta.validation.constraints.NotBlank(message = "title is required")
-          @jakarta.validation.constraints.Size(
-              max = 200,
-              message = "title must not exceed 200 characters")
-          String title,
-      UUID stageId,
-      java.math.BigDecimal valueAmount,
-      UUID ownerId,
-      String source,
-      LocalDate expectedCloseDate) {}
 }

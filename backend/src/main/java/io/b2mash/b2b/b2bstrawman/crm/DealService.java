@@ -80,6 +80,29 @@ public class DealService {
       LocalDate expectedCloseDate,
       UUID createdBy) {
     customerService.getCustomer(customerId);
+    return createDealInternal(
+        customerId, title, stageId, valueAmount, ownerId, source, expectedCloseDate, createdBy);
+  }
+
+  /**
+   * Shared deal-creation path used by the public {@link #createDeal} entry point and by {@link
+   * DealIntakeService} (which resolves/creates the customer before delegating here). Performs stage
+   * resolution, currency resolution, deal-number allocation, persistence, and the {@code
+   * deal.created} audit emission.
+   *
+   * <p>The caller is responsible for validating that {@code customerId} references an existing
+   * customer in the current tenant. It runs within the caller's transaction — both {@link
+   * #createDeal} and {@link DealIntakeService#intake} are {@code @Transactional}.
+   */
+  DealResponse createDealInternal(
+      UUID customerId,
+      String title,
+      UUID stageId,
+      BigDecimal valueAmount,
+      UUID ownerId,
+      String source,
+      LocalDate expectedCloseDate,
+      UUID createdBy) {
     var stage = resolveStage(stageId);
     var number = dealNumberService.allocateNumber();
     var currency = resolveCurrency();
@@ -224,38 +247,5 @@ public class DealService {
             .entityId(deal.getId())
             .details(details)
             .build());
-  }
-
-  // --- Intake collaborator support (used by DealIntakeService) ---
-
-  PipelineStage resolveStageForIntake(UUID stageId) {
-    return resolveStage(stageId);
-  }
-
-  String resolveCurrencyForIntake() {
-    return resolveCurrency();
-  }
-
-  DealResponse persistIntakeDeal(
-      UUID customerId,
-      String title,
-      PipelineStage stage,
-      BigDecimal valueAmount,
-      String currency,
-      UUID ownerId,
-      String source,
-      LocalDate expectedCloseDate,
-      UUID createdBy) {
-    var number = dealNumberService.allocateNumber();
-    var deal =
-        Deal.create(
-            number, customerId, title, stage, valueAmount, currency, ownerId, source, createdBy);
-    if (expectedCloseDate != null) {
-      deal.updateExpectedClose(expectedCloseDate);
-    }
-    var saved = dealRepository.save(deal);
-    auditCreated(saved, number, title, customerId);
-    log.info("Intake created deal {} ({}) for customer {}", saved.getId(), number, customerId);
-    return toResponse(saved, stage);
   }
 }

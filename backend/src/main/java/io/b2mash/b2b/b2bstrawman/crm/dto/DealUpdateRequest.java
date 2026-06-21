@@ -26,6 +26,12 @@ public record DealUpdateRequest(
     String valueCurrency,
     UUID ownerId,
     LocalDate expectedCloseDate,
-    Integer probabilityOverride,
+    @jakarta.validation.constraints.Min(
+            value = 0,
+            message = "probabilityOverride must be between 0 and 100")
+        @jakarta.validation.constraints.Max(
+            value = 100,
+            message = "probabilityOverride must be between 0 and 100")
+        Integer probabilityOverride,
     String source,
     Map<String, Object> customFields) {}

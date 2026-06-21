@@ -31,17 +31,16 @@ public class DealIntakeService {
   @Transactional
   public DealResponse intake(IntakeRequest request, UUID actingMemberId) {
     UUID customerId = resolveCustomer(request, actingMemberId);
-
-    var stage = dealService.resolveStageForIntake(request.stageId());
-    var currency = dealService.resolveCurrencyForIntake();
     UUID ownerId = request.ownerId() != null ? request.ownerId() : actingMemberId;
 
-    return dealService.persistIntakeDeal(
+    // The customer is already resolved/validated above, so delegate to the shared (package-private)
+    // create path. This runs inside this method's transaction, preserving the single-transaction
+    // atomicity guarantee for "create a PROSPECT customer + open a deal" (ADR-313).
+    return dealService.createDealInternal(
         customerId,
         request.title(),
-        stage,
+        request.stageId(),
         request.valueAmount(),
-        currency,
         ownerId,
         request.source(),
         request.expectedCloseDate(),
@@ -51,10 +50,13 @@ public class DealIntakeService {
   private UUID resolveCustomer(IntakeRequest request, UUID actingMemberId) {
     boolean hasExisting = request.customerId() != null;
     boolean hasInline = request.customer() != null;
-    if (hasExisting == hasInline) {
+    if (hasExisting && hasInline) {
       throw new InvalidStateException(
-          "Invalid intake request",
-          "Exactly one of customerId or customer (inline) must be supplied");
+          "Invalid intake request", "Both customerId and customer supplied — provide exactly one");
+    }
+    if (!hasExisting && !hasInline) {
+      throw new InvalidStateException(
+          "Invalid intake request", "Either customerId or customer must be supplied");
     }
     if (hasExisting) {
       // 404 if the customer does not exist in this tenant.

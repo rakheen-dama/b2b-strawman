@@ -1,7 +1,7 @@
 import "server-only";
 
-import { redirect } from "next/navigation";
-import { api, ApiError, API_BASE, getAuthFetchOptions } from "./client";
+import { api, ApiError, API_BASE, getAuthFetchOptions, resolveServerReturnTo } from "./client";
+import { redirectToReLogin } from "@/lib/auth/expiry";
 import type {
   GenerateDocumentResponse,
   GeneratedDocumentListResponse,
@@ -21,7 +21,7 @@ export async function generateDocument(
   try {
     authOptions = await getAuthFetchOptions("POST");
   } catch {
-    redirect("/sign-in");
+    redirectToReLogin(await resolveServerReturnTo(), "expired");
   }
 
   const response = await fetch(`${API_BASE}/api/templates/${templateId}/generate`, {
@@ -75,7 +75,7 @@ export async function downloadGeneratedDocument(id: string): Promise<Blob> {
   try {
     authOptions = await getAuthFetchOptions("GET");
   } catch {
-    redirect("/sign-in");
+    redirectToReLogin(await resolveServerReturnTo(), "expired");
   }
 
   const response = await fetch(`${API_BASE}/api/generated-documents/${id}/download`, {
@@ -106,7 +106,7 @@ export async function downloadDocxGeneratedDocument(id: string): Promise<Blob> {
   try {
     authOptions = await getAuthFetchOptions("GET");
   } catch {
-    redirect("/sign-in");
+    redirectToReLogin(await resolveServerReturnTo(), "expired");
   }
 
   const response = await fetch(`${API_BASE}/api/generated-documents/${id}/download-docx`, {
@@ -137,7 +137,7 @@ export async function downloadCertificateBlob(id: string): Promise<Blob> {
   try {
     authOptions = await getAuthFetchOptions("GET");
   } catch {
-    redirect("/sign-in");
+    redirectToReLogin(await resolveServerReturnTo(), "expired");
   }
 
   const response = await fetch(`${API_BASE}/api/acceptance-requests/${id}/certificate`, {

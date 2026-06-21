@@ -65,10 +65,15 @@ export function safeReturnTo(raw: string | null | undefined): string {
     return DEFAULT_RETURN_TO;
   }
 
-  // Must target an allowlisted app surface.
-  const matchesAllowlist = ALLOWED_PREFIXES.some(
-    (prefix) => raw === prefix || raw.startsWith(prefix === "/" ? prefix : `${prefix}`)
-  );
+  // Must target an allowlisted app surface, with boundary-aware matching so a
+  // lookalike like `/dashboard-malicious` or `/create-orgx` can't slip through
+  // a bare `startsWith` (partial-prefix bypass).
+  const matchesAllowlist = ALLOWED_PREFIXES.some((prefix) => {
+    // Prefixes ending with "/" are subtree-only by construction (e.g. "/org/").
+    if (prefix.endsWith("/")) return raw.startsWith(prefix);
+    // Otherwise allow exact match, a nested path, or a query on the same route.
+    return raw === prefix || raw.startsWith(`${prefix}/`) || raw.startsWith(`${prefix}?`);
+  });
   if (!matchesAllowlist) {
     return DEFAULT_RETURN_TO;
   }

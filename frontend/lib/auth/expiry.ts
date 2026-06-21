@@ -13,12 +13,9 @@
  */
 
 import { redirect } from "next/navigation";
-import { safeReturnTo } from "./return-to";
+import { safeReturnTo, RETURN_TO_STORAGE_KEY } from "./return-to";
 
 type ReLoginReason = "expired";
-
-/** sessionStorage key cleared before a client-side re-login redirect. */
-const RETURN_TO_STORAGE_KEY = "kazi.returnTo";
 
 /**
  * Build the branded re-login URL: `/sign-in?reason=<reason>&returnTo=<safe>`.

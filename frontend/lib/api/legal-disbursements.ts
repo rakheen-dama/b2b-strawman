@@ -1,7 +1,7 @@
 import "server-only";
 
-import { redirect } from "next/navigation";
-import { api, API_BASE, ApiError, getAuthFetchOptions } from "./client";
+import { api, API_BASE, ApiError, getAuthFetchOptions, resolveServerReturnTo } from "./client";
+import { redirectToReLogin } from "@/lib/auth/expiry";
 
 // ---- Enums ----
 
@@ -204,7 +204,7 @@ export async function uploadReceipt(id: string, file: File): Promise<Disbursemen
   try {
     authOptions = await getAuthFetchOptions("POST");
   } catch {
-    redirect("/sign-in");
+    redirectToReLogin(await resolveServerReturnTo(), "expired");
   }
 
   const formData = new FormData();

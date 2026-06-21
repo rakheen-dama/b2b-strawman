@@ -49,6 +49,20 @@ describe("safeReturnTo — open-redirect allowlist guard", () => {
     expect(safeReturnTo("/platform-admin/access-requests")).toBe("/platform-admin/access-requests");
     expect(safeReturnTo("/create-org")).toBe("/create-org");
   });
+
+  it("rejects prefix-lookalike paths (boundary bypass) → /dashboard", () => {
+    expect(safeReturnTo("/dashboardx")).toBe("/dashboard");
+    expect(safeReturnTo("/dashboard-malicious")).toBe("/dashboard");
+    expect(safeReturnTo("/platform-adminx")).toBe("/dashboard");
+    expect(safeReturnTo("/create-orgx")).toBe("/dashboard");
+  });
+
+  it("accepts exact, query, and nested forms of allowlisted prefixes", () => {
+    expect(safeReturnTo("/dashboard")).toBe("/dashboard");
+    expect(safeReturnTo("/dashboard?tab=x")).toBe("/dashboard?tab=x");
+    expect(safeReturnTo("/dashboard/sub")).toBe("/dashboard/sub");
+    expect(safeReturnTo("/org/x/matters")).toBe("/org/x/matters");
+  });
 });
 
 describe("captureReturnTo", () => {

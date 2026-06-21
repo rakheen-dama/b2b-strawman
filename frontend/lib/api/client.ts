@@ -52,7 +52,7 @@ export async function getAuthFetchOptions(method: string = "GET"): Promise<{
  * Always passes through {@link safeReturnTo}, so any failure / untrusted value
  * fails safe to `/dashboard`.
  */
-async function resolveServerReturnTo(): Promise<string> {
+export async function resolveServerReturnTo(): Promise<string> {
   try {
     const { headers } = await import("next/headers");
     const h = await headers();

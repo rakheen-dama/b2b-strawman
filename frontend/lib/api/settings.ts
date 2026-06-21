@@ -1,7 +1,7 @@
 import "server-only";
 
-import { redirect } from "next/navigation";
-import { api, ApiError, API_BASE, getAuthFetchOptions } from "./client";
+import { api, ApiError, API_BASE, getAuthFetchOptions, resolveServerReturnTo } from "./client";
+import { redirectToReLogin } from "@/lib/auth/expiry";
 import type { OrgSettings, UpdateOrgSettingsRequest } from "@/lib/types";
 
 // ---- Org Settings (Branding) ----
@@ -37,7 +37,7 @@ export async function uploadOrgLogo(file: File): Promise<OrgSettings> {
   try {
     authOptions = await getAuthFetchOptions("POST");
   } catch {
-    redirect("/sign-in");
+    redirectToReLogin(await resolveServerReturnTo(), "expired");
   }
 
   const formData = new FormData();

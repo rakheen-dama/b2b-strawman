@@ -16,10 +16,11 @@ describe("isSessionExpired", () => {
     expect(isSessionExpired({ status: 401 })).toBe(true);
   });
 
-  it("returns true for the manual-redirect-3xx-mapped 401 (ApiError-style)", () => {
-    // client.ts maps a manual 3xx to ApiError(401), so the detector only ever
-    // sees status 401 for that case.
-    expect(isSessionExpired({ status: 401 })).toBe(true);
+  it("returns false for a raw 3xx (3xx→401 mapping is client.ts's job, not the detector's)", () => {
+    // client.ts maps a manual-redirect 3xx to ApiError(401) BEFORE the detector
+    // sees it. isSessionExpired itself only treats a literal 401 as expired, so
+    // a raw 302 must NOT be classified as expired here.
+    expect(isSessionExpired({ status: 302 })).toBe(false);
   });
 
   it("returns true for an authenticated:false /bff/me body", () => {

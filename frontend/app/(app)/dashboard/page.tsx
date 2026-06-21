@@ -13,7 +13,11 @@ export default async function DashboardRedirectPage() {
       const ctx = await getAuthContext();
       orgSlug = ctx.orgSlug;
       authenticated = true;
-    } catch {
+    } catch (e) {
+      // getAuthContext() can now call redirectToReLogin() internally, which
+      // throws NEXT_REDIRECT — re-throw so the branded /sign-in funnel fires
+      // instead of being swallowed into the no-org fall-through below.
+      if ((e as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) throw e;
       // Either the user is not authenticated at all (expired session) OR they
       // are authenticated but have no active org claims. getSessionIdentity()
       // below distinguishes between the two.
@@ -29,7 +33,10 @@ export default async function DashboardRedirectPage() {
       const identity = await getSessionIdentity();
       authenticated = true;
       isPlatformAdmin = identity.groups.includes("platform-admins");
-    } catch {
+    } catch (e) {
+      // getSessionIdentity() can now call redirectToReLogin() internally, which
+      // throws NEXT_REDIRECT — re-throw so the branded /sign-in funnel fires.
+      if ((e as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) throw e;
       // Not authenticated — BFF said authenticated: false.
       authenticated = false;
     }

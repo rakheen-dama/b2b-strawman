@@ -110,7 +110,11 @@ public class GatewaySecurityConfig {
    * confirmation route under the frontend origin. Package-private for unit testing.
    */
   static String postLogoutRedirectUri(String frontendUrl) {
-    return frontendUrl + POST_LOGOUT_PATH;
+    String normalized =
+        frontendUrl.endsWith("/")
+            ? frontendUrl.substring(0, frontendUrl.length() - 1)
+            : frontendUrl;
+    return normalized + POST_LOGOUT_PATH;
   }
 
   private LogoutSuccessHandler oidcLogoutSuccessHandler() {

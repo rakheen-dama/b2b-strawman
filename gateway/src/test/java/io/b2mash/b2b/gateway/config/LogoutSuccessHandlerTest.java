@@ -22,4 +22,10 @@ class LogoutSuccessHandlerTest {
     String resolved = GatewaySecurityConfig.postLogoutRedirectUri("https://app-dev.heykazi.com");
     assertThat(resolved).isEqualTo("https://app-dev.heykazi.com/signed-out");
   }
+
+  @Test
+  void postLogoutRedirectNormalizesTrailingSlash() {
+    String resolved = GatewaySecurityConfig.postLogoutRedirectUri("http://localhost:3000/");
+    assertThat(resolved).isEqualTo("http://localhost:3000/signed-out");
+  }
 }

@@ -11,7 +11,8 @@
     "clause": ["consulting-za-clauses"],
     "automation": ["automation-consulting-za"],
     "request": ["consulting-za-creative-brief"],
-    "compliance": ["generic-onboarding"]
+    "compliance": ["generic-onboarding"],
+    "deal_pipeline": ["deal-pipeline-consulting-za"]
   },
   "rateCardDefaults": {
     "currency": "ZAR",

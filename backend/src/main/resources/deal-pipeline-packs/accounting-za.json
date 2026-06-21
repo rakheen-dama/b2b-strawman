@@ -1,0 +1,12 @@
+{
+  "packId": "deal-pipeline-accounting-za",
+  "verticalProfile": "accounting-za",
+  "version": 1,
+  "stages": [
+    { "name": "Enquiry",           "position": 0, "defaultProbabilityPct": 10,  "stageType": "OPEN" },
+    { "name": "Scoping",           "position": 1, "defaultProbabilityPct": 35,  "stageType": "OPEN" },
+    { "name": "Engagement letter", "position": 2, "defaultProbabilityPct": 65,  "stageType": "OPEN" },
+    { "name": "Won",               "position": 3, "defaultProbabilityPct": 100, "stageType": "WON"  },
+    { "name": "Lost",              "position": 4, "defaultProbabilityPct": 0,   "stageType": "LOST" }
+  ]
+}

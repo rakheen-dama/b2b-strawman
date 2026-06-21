@@ -1,0 +1,12 @@
+{
+  "packId": "deal-pipeline-default",
+  "verticalProfile": null,
+  "version": 1,
+  "stages": [
+    { "name": "Lead",      "position": 0, "defaultProbabilityPct": 10,  "stageType": "OPEN" },
+    { "name": "Qualified", "position": 1, "defaultProbabilityPct": 40,  "stageType": "OPEN" },
+    { "name": "Proposal",  "position": 2, "defaultProbabilityPct": 70,  "stageType": "OPEN" },
+    { "name": "Won",       "position": 3, "defaultProbabilityPct": 100, "stageType": "WON"  },
+    { "name": "Lost",      "position": 4, "defaultProbabilityPct": 0,   "stageType": "LOST" }
+  ]
+}

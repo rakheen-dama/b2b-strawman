@@ -15,7 +15,7 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
  * Unit test for the gateway change-password initiation (Epic 571A.1). Verifies that the custom
  * {@link OAuth2AuthorizationRequestResolver} appends {@code kc_action=UPDATE_PASSWORD} to the
  * outgoing authorization request ONLY when the standard authorization endpoint carries the
- * change-password sentinel ({@code ?kc_action=update_password}), and that the normal login path is
+ * change-password sentinel ({@code ?bff_action=change_password}), and that the normal login path is
  * left unchanged. Pure unit — no live Keycloak, no Spring context (mirrors {@code
  * LogoutSuccessHandlerTest}).
  */
@@ -104,5 +104,48 @@ class ChangePasswordAuthorizationRequestResolverTest {
     assertThat(resolved.getAdditionalParameters())
         .containsEntry(
             GatewaySecurityConfig.KC_ACTION_PARAM, GatewaySecurityConfig.KC_ACTION_UPDATE_PASSWORD);
+  }
+
+  /**
+   * Review Finding 1: the sentinel param name ({@code bff_action}) is gateway-private and distinct
+   * from the outbound KC param ({@code kc_action}). Pin the real Spring Security 7.0.x behaviour:
+   * after resolution the outgoing authorization request must contain EXACTLY ONE {@code kc_action}
+   * entry equal to {@code UPDATE_PASSWORD}, and the inbound {@code bff_action} sentinel must NOT be
+   * forwarded into the additional parameters. {@code DefaultOAuth2AuthorizationRequestResolver}
+   * does not copy arbitrary inbound query params, so the only {@code kc_action} present is the one
+   * this resolver injects — no ambiguous/duplicate param can reach Keycloak.
+   */
+  @Test
+  void changePasswordSentinel_injectsExactlyOneKcActionAndDoesNotForwardSentinel() {
+    OAuth2AuthorizationRequestResolver resolver =
+        GatewaySecurityConfig.changePasswordAuthorizationRequestResolver(
+            clientRegistrationRepository());
+
+    MockHttpServletRequest request = authorizationRequest();
+    request.setParameter(
+        GatewaySecurityConfig.CHANGE_PASSWORD_SENTINEL_PARAM,
+        GatewaySecurityConfig.CHANGE_PASSWORD_SENTINEL_VALUE);
+
+    OAuth2AuthorizationRequest resolved = resolver.resolve(request);
+
+    assertThat(resolved).isNotNull();
+
+    // Exactly one kc_action entry, equal to UPDATE_PASSWORD (Map cannot hold duplicates; this
+    // additionally proves the value is the injected one, not an inbound-forwarded value).
+    assertThat(resolved.getAdditionalParameters())
+        .as("outgoing request must carry exactly one kc_action=UPDATE_PASSWORD")
+        .containsEntry(
+            GatewaySecurityConfig.KC_ACTION_PARAM, GatewaySecurityConfig.KC_ACTION_UPDATE_PASSWORD);
+
+    // The gateway-private sentinel must NOT leak onto the outgoing authorization request.
+    assertThat(resolved.getAdditionalParameters())
+        .as("the bff_action sentinel must not be forwarded to Keycloak")
+        .doesNotContainKey(GatewaySecurityConfig.CHANGE_PASSWORD_SENTINEL_PARAM);
+
+    // Belt-and-braces: the constants are genuinely distinct (no two constants with the same
+    // string).
+    assertThat(GatewaySecurityConfig.CHANGE_PASSWORD_SENTINEL_PARAM)
+        .as("sentinel param must differ from the outbound KC param name")
+        .isNotEqualTo(GatewaySecurityConfig.KC_ACTION_PARAM);
   }
 }

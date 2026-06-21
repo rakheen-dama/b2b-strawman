@@ -113,14 +113,17 @@ public class GatewaySecurityConfig {
   }
 
   /**
-   * Sentinel query parameter the frontend appends to the standard authorization endpoint ({@code
-   * /oauth2/authorization/keycloak?kc_action=update_password}) to initiate the Keycloak
-   * change-password required action (Epic 571A). Lower-case so the frontend URL stays conventional;
-   * the resolver maps it to the real KC {@code kc_action=UPDATE_PASSWORD} param.
+   * Gateway-private sentinel query parameter the frontend appends to the standard authorization
+   * endpoint ({@code /oauth2/authorization/keycloak?bff_action=change_password}) to initiate the
+   * Keycloak change-password required action (Epic 571A). This name is intentionally DISTINCT from
+   * the outbound Keycloak {@code kc_action} param so the inbound sentinel can never be confused
+   * with — or duplicated alongside — the param the resolver injects on the outgoing authorization
+   * request (review Finding 1). The resolver maps this sentinel to the real KC {@code
+   * kc_action=UPDATE_PASSWORD} param and does NOT forward the sentinel itself onward.
    */
-  static final String CHANGE_PASSWORD_SENTINEL_PARAM = "kc_action";
+  static final String CHANGE_PASSWORD_SENTINEL_PARAM = "bff_action";
 
-  static final String CHANGE_PASSWORD_SENTINEL_VALUE = "update_password";
+  static final String CHANGE_PASSWORD_SENTINEL_VALUE = "change_password";
 
   /** Keycloak authorization-endpoint param + value for the change-password required action. */
   static final String KC_ACTION_PARAM = "kc_action";
@@ -129,10 +132,17 @@ public class GatewaySecurityConfig {
 
   /**
    * Authorization-request resolver that rides the existing {@code keycloak} OAuth client and, when
-   * the standard authorization request carries the change-password sentinel ({@code
-   * ?kc_action=update_password}), appends {@code kc_action=UPDATE_PASSWORD} to the outgoing
+   * the standard authorization request carries the gateway-private change-password sentinel ({@code
+   * ?bff_action=change_password}), appends {@code kc_action=UPDATE_PASSWORD} to the outgoing
    * authorization request. Keycloak then renders its {@code login-update-password} required-action
    * page under the already-branded login theme (Epic 572). The normal login path is left unchanged.
+   *
+   * <p>The sentinel name ({@code bff_action}) is deliberately distinct from the outbound KC param
+   * ({@code kc_action}): {@link DefaultOAuth2AuthorizationRequestResolver} does not forward
+   * arbitrary inbound query params into the authorization request's additional parameters (verified
+   * against Spring Security 7.0.x — it only emits client_id/redirect_uri/scope/state/nonce/PKCE),
+   * so the inbound sentinel never leaks onto the wire and the only {@code kc_action} present is the
+   * single value this resolver injects (review Finding 1).
    *
    * <p>Package-private for unit testing.
    */

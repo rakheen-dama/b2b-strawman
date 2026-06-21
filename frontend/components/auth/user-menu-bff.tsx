@@ -82,14 +82,16 @@ export function getKeycloakLogoutUrl(): string {
 
 /**
  * Get the gateway change-password initiation URL (Epic 571A). Rides the existing `keycloak`
- * OAuth client: the `?kc_action=update_password` sentinel is mapped by the gateway's
- * OAuth2AuthorizationRequestResolver to kc_action=UPDATE_PASSWORD on the authorization request,
- * so Keycloak renders its branded `login-update-password` page (Epic 572). The user returns to
- * the app via the existing OAuth login success handler. The frontend never talks to Keycloak
- * directly (BFF model) and never reaches the unbranded account console (ADR-311).
+ * OAuth client: the gateway-private `?bff_action=change_password` sentinel is mapped by the
+ * gateway's OAuth2AuthorizationRequestResolver to kc_action=UPDATE_PASSWORD on the authorization
+ * request, so Keycloak renders its branded `login-update-password` page (Epic 572). The sentinel
+ * name is deliberately distinct from the outbound `kc_action` param so the two can never collide
+ * (review Finding 1). The user returns to the app via the existing OAuth login success handler.
+ * The frontend never talks to Keycloak directly (BFF model) and never reaches the unbranded
+ * account console (ADR-311).
  */
 export function getChangePasswordUrl(): string {
-  return `${GATEWAY_URL}/oauth2/authorization/keycloak?kc_action=update_password`;
+  return `${GATEWAY_URL}/oauth2/authorization/keycloak?bff_action=change_password`;
 }
 
 /**

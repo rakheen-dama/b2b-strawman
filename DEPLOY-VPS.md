@@ -647,6 +647,32 @@ git pull   # must succeed against the private repo
 
 A deploy key is scoped to this one repo — cleaner than a PAT, and it can't write.
 
+> **⚠️ Gotcha (observed 2026-06-21): deploy key → `Repository is disabled`.**
+> Right after flipping the repo private, the deploy key (impersonal access) may
+> fail with `ERROR: Repository 'rakheen-dama/b2b-strawman' is disabled. Please
+> ask the owner to check their account` — while your **own** access (laptop,
+> `gh`) still works fine. This is **not** billing and **not** the deploy key
+> being wrong: it's a transient GitHub **anti-abuse flag** on impersonal access,
+> commonly triggered by going private right after heavy automated API activity.
+> It usually clears within a day (or a note to GitHub Support resolves it).
+>
+> **Fallback — a classic `repo` PAT over HTTPS** (authenticates as you, so it
+> bypasses the impersonal-access flag):
+>
+> 1. GitHub → **Settings → Developer settings → Tokens (classic)** → scope **`repo`**.
+>    (A fine-grained token also works, but it must select **this repo** and grant
+>    **Contents: Read** — otherwise `git pull` returns `Write access to repository
+>    not granted` / 403. The classic `repo` scope avoids that fiddliness.)
+> 2. On the box:
+>    ```bash
+>    cd /opt/kazi
+>    git remote set-url origin https://rakheen-dama:<PAT>@github.com/rakheen-dama/b2b-strawman.git
+>    chmod 600 .git/config   # the token is stored here in plaintext
+>    git pull
+>    ```
+> The PAT has write scope (more than a deploy box needs) — switch back to the
+> read-only deploy key and revoke the PAT once the flag clears.
+
 ### (b) GitHub Actions minutes become metered
 
 Public repos get **unlimited** Actions minutes; private repos get a monthly free allotment (**2000 min** on the Free plan; more on Pro/Team). The `deploy-vps` workflow builds 5 images (~6–15 min/run). Occasional deploys stay well under the cap — just don't trigger it in a tight loop. (The box-pull model already keeps re-deploys off CI; only the image build runs there.)

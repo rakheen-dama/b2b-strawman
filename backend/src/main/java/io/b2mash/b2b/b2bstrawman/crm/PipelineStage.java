@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.crm;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -65,7 +66,7 @@ public class PipelineStage {
       String name, int position, int defaultProbabilityPct, StageType stageType, UUID createdBy) {
     this.name = Objects.requireNonNull(name, "name must not be null");
     this.position = position;
-    this.defaultProbabilityPct = defaultProbabilityPct;
+    this.defaultProbabilityPct = requireProbabilityPct(defaultProbabilityPct);
     this.stageType = Objects.requireNonNull(stageType, "stageType must not be null");
     this.createdBy = createdBy;
   }
@@ -90,8 +91,16 @@ public class PipelineStage {
   }
 
   public void changeDefaultProbability(int defaultProbabilityPct) {
-    this.defaultProbabilityPct = defaultProbabilityPct;
+    this.defaultProbabilityPct = requireProbabilityPct(defaultProbabilityPct);
     this.updatedAt = Instant.now();
+  }
+
+  private static int requireProbabilityPct(int defaultProbabilityPct) {
+    if (defaultProbabilityPct < 0 || defaultProbabilityPct > 100) {
+      throw new InvalidStateException(
+          "Invalid pipeline stage", "defaultProbabilityPct must be between 0 and 100");
+    }
+    return defaultProbabilityPct;
   }
 
   public void changeStageType(StageType stageType) {

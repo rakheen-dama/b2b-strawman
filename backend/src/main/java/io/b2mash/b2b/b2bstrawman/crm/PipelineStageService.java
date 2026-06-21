@@ -106,7 +106,11 @@ public class PipelineStageService {
             () -> dealRepository.existsByStageId(stageId),
             "Archive the stage instead, or move its deals to another stage.")
         .execute();
-    requireNotLastActiveOfType(stage, "delete");
+    // An archived stage does not count toward the active-of-type invariant, so deleting it can
+    // never leave the pipeline without an active stage of its type — skip the last-active guard.
+    if (!stage.isArchived()) {
+      requireNotLastActiveOfType(stage, "delete");
+    }
     pipelineStageRepository.delete(stage);
   }
 

@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.crm;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.Locale;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +39,6 @@ public class DealNumberService {
                     + " RETURNING next_number - 1")
             .getSingleResult();
     int number = ((Number) result).intValue();
-    return String.format("DEAL-%04d", number);
+    return String.format(Locale.ROOT, "DEAL-%04d", number);
   }
 }

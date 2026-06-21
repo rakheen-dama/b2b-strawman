@@ -148,6 +148,10 @@ public class Deal {
       String source,
       UUID createdBy) {
     Objects.requireNonNull(stage, "stage must not be null");
+    if (stage.getStageType() != StageType.OPEN || stage.isArchived()) {
+      throw new InvalidStateException(
+          "Invalid deal state", "new deals must start in an active OPEN stage");
+    }
     return new Deal(
         dealNumber,
         customerId,
@@ -228,7 +232,7 @@ public class Deal {
   public void moveToOpenStage(UUID newStageId, Integer newProbabilityOverride) {
     requireStatus(EnumSet.of(DealStatus.OPEN), "move");
     this.stageId = Objects.requireNonNull(newStageId, "newStageId must not be null");
-    this.probabilityPct = newProbabilityOverride;
+    this.probabilityPct = requireProbabilityPct(newProbabilityOverride);
     this.updatedAt = Instant.now();
   }
 
@@ -256,8 +260,16 @@ public class Deal {
   }
 
   public void updateProbabilityOverride(Integer probabilityPct) {
-    this.probabilityPct = probabilityPct;
+    this.probabilityPct = requireProbabilityPct(probabilityPct);
     this.updatedAt = Instant.now();
+  }
+
+  private static Integer requireProbabilityPct(Integer probabilityPct) {
+    if (probabilityPct != null && (probabilityPct < 0 || probabilityPct > 100)) {
+      throw new InvalidStateException(
+          "Invalid deal state", "probabilityPct must be between 0 and 100");
+    }
+    return probabilityPct;
   }
 
   public void updateSource(String source) {

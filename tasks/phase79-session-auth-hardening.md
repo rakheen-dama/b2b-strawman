@@ -42,7 +42,7 @@ The standard "backend OR frontend, never both" slice rule is extended: a slice b
 |------|------|-------|------|--------|--------|--------|
 | 568 | Session/Token Lifetimes + Gateway Session Alignment | keycloak-config + gateway | -- | S | 568A, 568B | **Done** (PR #1482) |
 | 569 | Graceful Expiry Funnel + Branded `/sign-in` Route + Return-To | Frontend | 568 | L | 569A, 569B | **Done** (PR #1483) |
-| 570 | Branded `/signed-out` Page + Logout Redirect Wiring (+ optional PII-log hardening) | Frontend + gateway | 569 | M | 570A, 570B | |
+| 570 | Branded `/signed-out` Page + Logout Redirect Wiring (+ optional PII-log hardening) | Frontend + gateway | 569 | M | 570A, 570B | **Done** (PR #1484) |
 | 571 | Change-Password via `kc_action=UPDATE_PASSWORD` | gateway + Frontend | 572 (for branded page) | M | 571A, 571B | |
 | 572 | Keycloak Theme Visible-Brand Rebrand + Page Coverage | theme | -- | M | 572A, 572B | **Done** (PR #1485) |
 
@@ -295,8 +295,8 @@ Stage 4:  [571A → 571B]                                ← change-password (af
 
 | Slice | Tasks | Files Touched | Summary | Status |
 |-------|-------|---------------|---------|--------|
-| **570A** | 570A.1–570A.2 | ~3 (new route `page.tsx` + middleware modify + 1 test) | New `(auth)/signed-out` branded confirmation page + "Sign in again" CTA; add `/signed-out` to middleware `PUBLIC_ROUTES`. | |
-| **570B** | 570B.1–570B.3 | ~4 (GatewaySecurityConfig modify + BffController modify + verify realm-export + 1 test) | Gateway `setPostLogoutRedirectUri` → `/signed-out`; verify `post.logout.redirect.uris`; optional `/bff/me` PII-log reduction; gateway tests. | |
+| **570A** | 570A.1–570A.2 | ~3 (new route `page.tsx` + middleware modify + 1 test) | New `(auth)/signed-out` branded confirmation page + "Sign in again" CTA; add `/signed-out` to middleware `PUBLIC_ROUTES`. | **Done** (PR #1484) |
+| **570B** | 570B.1–570B.3 | ~4 (GatewaySecurityConfig modify + BffController modify + verify realm-export + 1 test) | Gateway `setPostLogoutRedirectUri` → `/signed-out`; verify `post.logout.redirect.uris`; optional `/bff/me` PII-log reduction; gateway tests. | **Done** (PR #1484) |
 
 ### Tasks
 

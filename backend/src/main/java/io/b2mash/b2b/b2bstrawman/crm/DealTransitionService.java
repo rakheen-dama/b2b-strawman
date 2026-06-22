@@ -138,15 +138,19 @@ public class DealTransitionService {
     eventPublisher.publishEvent(event);
   }
 
+  // Fail closed on scope for this exclusive lifecycle write path: a null tenant/org would
+  // silently emit domain events with missing scope, misrouting AFTER_COMMIT processing.
+  // requireTenantId/requireOrgId throw when the scope is not bound by the filter chain.
   private static String tenant() {
-    return RequestScopes.getTenantIdOrNull();
+    return RequestScopes.requireTenantId();
   }
 
   private static String org() {
-    return RequestScopes.getOrgIdOrNull();
+    return RequestScopes.requireOrgId();
   }
 
   private static String shard() {
+    // getShardIdOrDefault never returns null/blank ("primary" default), so no guard needed.
     return RequestScopes.getShardIdOrDefault();
   }
 

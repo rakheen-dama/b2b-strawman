@@ -304,7 +304,10 @@ public class ActivityMessageFormatter {
       case "information_request" -> getRequestNumber(details);
       case "request_item" -> getItemName(details);
       case "generated_document" -> getFileName(details);
-      case "DEAL", "deal" -> details.getOrDefault("title", "deal").toString();
+      case "DEAL", "deal" -> {
+        Object title = details.get("title");
+        yield (title instanceof String s && !s.isBlank()) ? s : "deal";
+      }
       default -> "unknown";
     };
   }

@@ -24,7 +24,7 @@ This phase ships as **8 epics (573–580)**, expanded to **12 numbered slices** 
 |------|------|-------|------|--------|--------|--------|
 | 573 | Migration + Entities + Capability + Stage Seeding | Backend | — | L | 573A, 573B | **Done** (PR #1487) |
 | 574 | Deal CRUD + Intake + Filtered List | Backend | 573A | L | 574A | **Done** (PR #1488) |
-| 575 | DealTransitionService + Customer Nudge + Events/Audit/Activity | Backend | 574A | L | 575A | |
+| 575 | DealTransitionService + Customer Nudge + Events/Audit/Activity | Backend | 574A | L | 575A | **Done** (PR #1489) |
 | 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | |
 | 577 | Field / Tag / Saved-View / Audit-Metadata Registration | Backend | 574A, 575A | M | 577A | |
 | 578 | Pipeline Summary Aggregation (backend) | Backend | 574A | M | 578A | |
@@ -136,7 +136,7 @@ PHASES already complete (reused, not rebuilt):
 
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
-| 3a | **575A** | `DealTransitionService` (move/win/lose/re-open + customer PROSPECT→ONBOARDING nudge); `crm/event/{DealStageChangedEvent,DealWonEvent,DealLostEvent,DealWonEventHandler}`; `dto/TransitionRequest`; audit-metadata registration; `ActivityMessageFormatter` cases; deal-won notification; `DealTransitionServiceTest`. | 578A |
+| 3a | **575A** ✅ Done (PR #1489) | `DealTransitionService` (move/win/lose/re-open + customer PROSPECT→ONBOARDING nudge); `crm/event/{DealStageChangedEvent,DealWonEvent,DealLostEvent,DealWonEventHandler}`; `dto/TransitionRequest`; audit-metadata registration; `ActivityMessageFormatter` cases; deal-won notification; `DealTransitionServiceTest`. | 578A |
 | 3b | **577A** | `EntityType.DEAL`; V131 verification + apply; confirm `EntityTag`/`SavedView` free-form `"DEAL"`; `AuditEventGroup` `CRM`/`SALES` constant; custom-field round-trip + saved-view/tag filter tests. | 578A |
 | 3c | **578A** | `PipelineSummaryService` (weighted value, win rate 90-day window, per-stage breakdown, avg deal size / days-to-close); `dashboard/dto/PipelineSummaryResponse`; `GET /api/dashboard/pipeline-summary`; `PipelineSummaryServiceTest`. | 575A, 577A |
 
@@ -326,7 +326,7 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **575A** | 575A.1–575A.8 | ~9 backend files (1 service + 1 DTO + 4 event/handler files + 2 registry mods + 1 controller mod + 1 test) | `DealTransitionService`; `crm/event/*`; `TransitionRequest`; audit-metadata + activity-formatter registration; deal-won notification; `DealTransitionServiceTest`. |
+| **575A** ✅ Done (PR #1489) | 575A.1–575A.8 | ~9 backend files (1 service + 1 DTO + 4 event/handler files + 2 registry mods + 1 controller mod + 1 test) | `DealTransitionService`; `crm/event/*`; `TransitionRequest`; audit-metadata + activity-formatter registration; deal-won notification; `DealTransitionServiceTest`. |
 
 ### Tasks
 

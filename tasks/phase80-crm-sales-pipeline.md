@@ -23,7 +23,7 @@ This phase ships as **8 epics (573–580)**, expanded to **12 numbered slices** 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 573 | Migration + Entities + Capability + Stage Seeding | Backend | — | L | 573A, 573B | **Done** (PR #1487) |
-| 574 | Deal CRUD + Intake + Filtered List | Backend | 573A | L | 574A | |
+| 574 | Deal CRUD + Intake + Filtered List | Backend | 573A | L | 574A | **Done** (PR #1488) |
 | 575 | DealTransitionService + Customer Nudge + Events/Audit/Activity | Backend | 574A | L | 575A | |
 | 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | |
 | 577 | Field / Tag / Saved-View / Audit-Metadata Registration | Backend | 574A, 575A | M | 577A | |
@@ -130,7 +130,7 @@ PHASES already complete (reused, not rebuilt):
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 2a | **574A** | `DealService` (CRUD + filtered list); `DealIntakeService` (atomic customer+deal, reuse `CustomerService.createProspect`); `DealRepository.findFiltered` JPQL; `DealController`; `dto/{IntakeRequest,DealResponse,DealUpdateRequest,StageDto}`; CRUD/intake integration test, capability-gating test, **tenant-isolation test (mandatory)**. |
+| 2a | **574A** ✅ Done (PR #1488) | `DealService` (CRUD + filtered list); `DealIntakeService` (atomic customer+deal, reuse `CustomerService.createProspect`); `DealRepository.findFiltered` JPQL; `DealController`; `dto/{IntakeRequest,DealResponse,DealUpdateRequest,StageDto}`; CRUD/intake integration test, capability-gating test, **tenant-isolation test (mandatory)**. |
 
 ### Stage 3 — Transition + Registration + Summary (parallel after 574A)
 
@@ -265,7 +265,7 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **574A** | 574A.1–574A.7 | ~9 backend files (1 service + 1 intake service + 1 repo mod + 1 controller + 4 DTOs + 3 test files) | `DealService`, `DealIntakeService`, `DealRepository.findFiltered`, `DealController`, DTOs; CRUD/intake + capability + tenant-isolation tests. |
+| **574A** ✅ Done (PR #1488) | 574A.1–574A.7 | ~9 backend files (1 service + 1 intake service + 1 repo mod + 1 controller + 4 DTOs + 3 test files) | `DealService`, `DealIntakeService`, `DealRepository.findFiltered`, `DealController`, DTOs; CRUD/intake + capability + tenant-isolation tests. |
 
 ### Tasks
 

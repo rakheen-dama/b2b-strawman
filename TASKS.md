@@ -651,7 +651,7 @@
 | 572 | Keycloak Theme Visible-Brand Rebrand + Page Coverage | theme | -- | M | 572A, 572B | **Done** (PR #1485) |
 | **Phase 80 — CRM / Sales Pipeline** | | | | | | See [tasks/phase80-crm-sales-pipeline.md](tasks/phase80-crm-sales-pipeline.md) |
 | 573 | Migration + Entities + Capability + Stage Seeding | Backend | -- | L | 573A, 573B | **Done** (PR #1487) |
-| 574 | Deal CRUD + Intake + Filtered List | Backend | 573A | L | 574A | |
+| 574 | Deal CRUD + Intake + Filtered List | Backend | 573A | L | 574A | **Done** (PR #1488) |
 | 575 | DealTransitionService + Customer Nudge + Events/Audit/Activity | Backend | 574A | L | 575A | |
 | 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | |
 | 577 | Field / Tag / Saved-View / Audit-Metadata Registration | Backend | 574A, 575A | M | 577A | |

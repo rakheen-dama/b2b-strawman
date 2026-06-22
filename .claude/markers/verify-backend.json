@@ -1,7 +1,7 @@
 {
-  "commit": "d2f65e5419316b09f1504c78fda5c3f04be3317c",
-  "command": "cd backend && ./mvnw verify",
+  "commit": "ef22cf139f99471e5695351e1c6f406104ec4de1",
+  "command": "cd backend && ./mvnw clean verify -q",
   "exit": 0,
-  "ts": "2026-06-20T18:52:11Z",
-  "summary": "fix/mcp-pagination-npe: Integer page/size across 7 paginated MCP tools + McpPagination null-default. 5766 tests, 0 failures, 0 errors (/tmp/npe-verify.log). McpPaginationTest 13/13."
+  "ts": "2026-06-21T23:57:04Z",
+  "summary": "epic-574/deal-crud-intake-list: Deal CRUD + Intake + Filtered List (574A). 5705 tests, 0 failures, 0 errors, 26 skipped (/tmp/mvn-574-fullverify.log). 18 new deal tests: DealCrudIntegrationTest 9, DealCapabilityGatingTest 7, DealTenantIsolationTest 2."
 }

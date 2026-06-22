@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.crm.dto.CreateDealRequest;
 import io.b2mash.b2b.b2bstrawman.crm.dto.DealResponse;
 import io.b2mash.b2b.b2bstrawman.crm.dto.DealUpdateRequest;
 import io.b2mash.b2b.b2bstrawman.crm.dto.IntakeRequest;
+import io.b2mash.b2b.b2bstrawman.crm.dto.TransitionRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
@@ -34,10 +35,15 @@ public class DealController {
 
   private final DealService dealService;
   private final DealIntakeService dealIntakeService;
+  private final DealTransitionService dealTransitionService;
 
-  public DealController(DealService dealService, DealIntakeService dealIntakeService) {
+  public DealController(
+      DealService dealService,
+      DealIntakeService dealIntakeService,
+      DealTransitionService dealTransitionService) {
     this.dealService = dealService;
     this.dealIntakeService = dealIntakeService;
+    this.dealTransitionService = dealTransitionService;
   }
 
   @PostMapping("/api/deals/intake")
@@ -99,5 +105,12 @@ public class DealController {
   public ResponseEntity<Void> deleteDeal(@PathVariable UUID id) {
     dealService.deleteDeal(id);
     return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping("/api/deals/{id}/transition")
+  @RequiresCapability("MANAGE_DEALS")
+  public ResponseEntity<DealResponse> transition(
+      @PathVariable UUID id, @Valid @RequestBody TransitionRequest request) {
+    return ResponseEntity.ok(dealTransitionService.transition(id, request));
   }
 }

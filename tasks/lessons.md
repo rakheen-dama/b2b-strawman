@@ -173,3 +173,13 @@
 - The comment check and the merge must be separate tool calls: fetch top-level comment count + read any new ones → only then, in a NEW command, merge.
 - Never chain `merge` after a status query with `;` or `&&` where the merge doesn't branch on the query result.
 - CodeRabbit's "pass" check-status is not the same as "no comments" — it reports pass while still posting review comments. Gate on the comments API, not the check.
+
+## Test "count-bleed": never assert an exact global count over accumulating shared-tenant state (2026-06-22)
+
+**What happened**: `AutomationSchedulerScheduledTriggerIntegrationTest` failed CI on an unrelated PR (#1489) with `expected: 5L but was: 13L`. Root cause: the class is `@TestInstance(PER_CLASS)` against a tenant provisioned once in `@BeforeAll` and never reset between methods, so sibling methods accumulate ACTIVE projects AND due SCHEDULED rules. The test derived its expected value from a global `projectRepository.findByStatus(ACTIVE).size()` and verified `Mockito.times(activeProjectCount)`. But `processScheduledTenant()` fires *all* due rules, each project-scoped one fanning out per active project, so runner invocations = (accumulated rules) × (active projects) — far more than one rule's project count. Passed in isolation, flaked in the full suite. Fixed in PR #1490 (containment-by-id + rule-scoped delta); a suite-wide sweep confirmed it was the only instance. A reviewer's suggested "tighten back to `containsExactlyInAnyOrder` over the two seeded ids" was declined because the shared mock carries no ruleId, so accumulated rules make those ids recur → that matcher would re-flake.
+
+**How to apply**:
+- In any `@SpringBootTest`/`PER_CLASS` test whose tenant is not reset per method, do NOT assert an exact count (`times(query.size())`, `isEqualTo(repo.findAll().size())`, `.hasSize(globalCount)`) over state other methods/classes can add to. Especially scheduler/fan-out/reconciliation/`processScheduled*`/`run(null)` paths that process "all" of something.
+- Use instead: (a) containment by id — assert the specific ids you seeded are present/absent; (b) baseline+delta — `count()` before, assert the delta after; or (c) a query scoped by the id created in this test.
+- When de-flaking, never "fix" by substituting a different exact count, and beware `containsExactlyInAnyOrder` over shared-mock invocations whose ids can recur across accumulated rows — both reintroduce the flake.
+- Documented as a standing convention in `backend/CLAUDE.md` → Test coupling rules.

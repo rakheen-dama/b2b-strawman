@@ -203,6 +203,19 @@ public class ProposalService {
     return saved;
   }
 
+  /**
+   * Links a proposal to a deal by setting its (ungated) {@code dealId} result-reference. Keeps
+   * proposal persistence inside {@code ProposalService} so callers (e.g. {@code
+   * DealProposalService}) don't reach into {@link ProposalRepository} directly. Works on a proposal
+   * in any status — {@code setDealId} is not guarded by {@code requireEditable()}.
+   */
+  @Transactional
+  public Proposal linkToDeal(UUID proposalId, UUID dealId) {
+    Proposal proposal = getProposal(proposalId);
+    proposal.setDealId(dealId);
+    return proposalRepository.save(proposal);
+  }
+
   // --- 231.2: getProposal, listProposals, listByCustomer ---
 
   @Transactional(readOnly = true)

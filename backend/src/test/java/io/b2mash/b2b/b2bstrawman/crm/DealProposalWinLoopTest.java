@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
-import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
@@ -23,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.proposal.ProposalOrchestrationService;
 import io.b2mash.b2b.b2bstrawman.proposal.ProposalRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,9 +30,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
@@ -43,6 +45,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  * the acceptance transaction actually commits (AFTER_COMMIT listeners only run on commit).
  */
 @SpringBootTest
+@AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -50,6 +53,7 @@ class DealProposalWinLoopTest {
 
   private static final String ORG_ID = "org_deal_proposal_winloop_test";
 
+  @Autowired private MockMvc mockMvc;
   @Autowired private DealService dealService;
   @Autowired private DealProposalService dealProposalService;
   @Autowired private PipelineStageService pipelineStageService;
@@ -60,7 +64,6 @@ class DealProposalWinLoopTest {
   @Autowired private PortalContactRepository portalContactRepository;
   @Autowired private AuditService auditService;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private MemberSyncService memberSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -69,14 +72,14 @@ class DealProposalWinLoopTest {
   private int counter = 0;
 
   @BeforeAll
-  void setup() {
+  void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Deal Proposal WinLoop Test Org", null);
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
     memberId =
-        memberSyncService
-            .syncMember(ORG_ID, "user_dp_owner", "dp_owner@test.com", "DP Owner", null, "owner")
-            .memberId();
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_dp_owner", "dp_owner@test.com", "DP Owner", "owner"));
   }
 
   // --- Test 1: accept a deal-linked proposal -> deal marked WON ---
@@ -217,6 +220,38 @@ class DealProposalWinLoopTest {
         });
   }
 
+  // --- Test 5b: link-existing across customers is rejected (409) ---
+
+  @Test
+  void linkExisting_customerMismatch_isRejected() {
+    var ids =
+        runInTenant(
+            () -> {
+              var dealCustomer = createProspectCustomer();
+              var otherCustomer = createProspectCustomer();
+              var deal = createDeal(dealCustomer.getId(), "Mismatch deal", "4000.00");
+              var proposal = createSentLinkedProposal(otherCustomer.getId(), null, FeeModel.HOURLY);
+              return new UUID[] {deal.id(), proposal.getId()};
+            });
+
+    assertThatThrownBy(
+            () ->
+                runInTenant(
+                    () -> {
+                      dealProposalService.linkExisting(ids[0], ids[1]);
+                      return null;
+                    }))
+        .isInstanceOf(ResourceConflictException.class)
+        .hasMessageContaining("different customer");
+
+    runInTenant(
+        () -> {
+          // The proposal was not linked.
+          assertThat(proposalRepository.findById(ids[1]).orElseThrow().getDealId()).isNull();
+          return null;
+        });
+  }
+
   // --- Test 6: delete-deal-with-linked-proposal is blocked (409 via DeleteGuard) ---
 
   @Test
@@ -298,14 +333,12 @@ class DealProposalWinLoopTest {
   }
 
   private long dealWonAuditCount(UUID dealId) {
+    // AuditEventFilter already scopes by entityType DEAL + entityId + eventType "deal.won".
     return auditService
         .findEvents(
             new AuditEventFilter("DEAL", dealId, null, "deal.won", null, null, null),
             Pageable.ofSize(50))
-        .getContent()
-        .stream()
-        .filter(e -> "deal.won".equals(e.getEventType()))
-        .count();
+        .getTotalElements();
   }
 
   private <T> T runInTenant(java.util.concurrent.Callable<T> callable) {

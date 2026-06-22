@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.crm.dto.CreateDealProposalRequest;
 import io.b2mash.b2b.b2bstrawman.crm.dto.LinkedProposalDto;
 import io.b2mash.b2b.b2bstrawman.crm.event.DealWonEvent;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.proposal.Proposal;
 import io.b2mash.b2b.b2bstrawman.proposal.ProposalRepository;
@@ -112,22 +113,40 @@ public class DealProposalService {
             null, // projectTemplateId
             null); // expiresAt
 
-    proposal.setDealId(dealId);
-    var saved = proposalRepository.save(proposal);
+    var saved = proposalService.linkToDeal(proposal.getId(), dealId);
     log.info("Created proposal {} from deal {}", saved.getId(), dealId);
     return LinkedProposalDto.from(saved);
   }
 
   /**
    * Links an existing proposal to a deal. Both must exist in the current tenant; the proposal may
-   * be in any status ({@code setDealId} is ungated).
+   * be in any status ({@code setDealId} is ungated). The proposal and deal must belong to the same
+   * customer — linking across customers would corrupt the deal's linked-proposal read model, so a
+   * mismatch is rejected with a {@code 409}.
+   *
+   * <p>Re-linking a proposal that is already attached to a different deal is allowed (the previous
+   * link is overwritten) but logged at {@code WARN} so the overwrite is visible to operators.
    */
   @Transactional
   public void linkExisting(UUID dealId, UUID proposalId) {
-    dealRepository.findOneById(dealId); // validate the deal exists (throws 404 otherwise)
+    Deal deal =
+        dealRepository.findOneById(dealId); // validate the deal exists (throws 404 otherwise)
     Proposal proposal = proposalService.getProposal(proposalId);
-    proposal.setDealId(dealId);
-    proposalRepository.save(proposal);
+    if (!deal.getCustomerId().equals(proposal.getCustomerId())) {
+      throw new ResourceConflictException(
+          "Customer mismatch",
+          "Proposal %s belongs to a different customer than deal %s — they cannot be linked."
+              .formatted(proposalId, dealId));
+    }
+    UUID existingDealId = proposal.getDealId();
+    if (existingDealId != null && !existingDealId.equals(dealId)) {
+      log.warn(
+          "Re-linking proposal {} from deal {} to deal {} (previous link overwritten)",
+          proposalId,
+          existingDealId,
+          dealId);
+    }
+    proposalService.linkToDeal(proposalId, dealId);
     log.info("Linked proposal {} to deal {}", proposalId, dealId);
   }
 
@@ -151,10 +170,12 @@ public class DealProposalService {
    * DEAL_WON notification. The customer-lifecycle nudge is intentionally NOT repeated here —
    * proposal acceptance already did it (ADR-315).
    *
-   * <p>{@code REQUIRES_NEW}: this runs from the proposal-acceptance AFTER_COMMIT callback, after
-   * the outer transaction has committed. A fresh transaction is required for the win-flip to
-   * actually commit — a plain {@code REQUIRED} transaction opened during AFTER_COMMIT cleanup does
-   * not.
+   * <p>{@code REQUIRES_NEW} (empirically verified): this runs from the proposal-acceptance
+   * AFTER_COMMIT callback, after the outer transaction has committed. A fresh transaction is
+   * required for the win-flip to actually commit. This was reproduced — with a plain {@code
+   * REQUIRED} transaction opened during AFTER_COMMIT cleanup the win-flip was NOT persisted (the
+   * post-acceptance assertion read the deal as still OPEN); switching to {@code REQUIRES_NEW} made
+   * the deal commit as WON. Do not revert to plain {@code @Transactional}.
    */
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void markWonFromProposalAcceptance(UUID proposalId) {

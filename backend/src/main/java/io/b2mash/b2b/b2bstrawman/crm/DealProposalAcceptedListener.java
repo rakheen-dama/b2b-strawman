@@ -19,9 +19,12 @@ import org.springframework.transaction.event.TransactionalEventListener;
  * write commits in its own transaction (the listener itself has none — mirrors {@code
  * AccountingSyncEventListener}).
  *
- * <p>{@link ProposalAcceptedEvent} carries no {@code shardId}, so the listener uses {@code
- * runForTenant} (2-arg); {@code getShardIdOrDefault()} then returns {@code "primary"} for the
- * re-published {@code DealWonEvent}, matching what {@code DealWonEventHandler} expects.
+ * <p>{@link ProposalAcceptedEvent} carries no {@code shardId}, so the listener re-binds with {@code
+ * runForTenantOnShard}, propagating the ambient shard captured via {@code getShardIdOrDefault()}
+ * (the AFTER_COMMIT callback still runs inside the original request's shard scope; it falls back to
+ * {@code "primary"} only if unbound). New tenant bindings must be shard-aware (architecture rule
+ * D5) — a shard-unaware {@code runForTenant} would leave {@code SHARD_ID} unbound. The captured
+ * shard then flows to the re-published {@code DealWonEvent}, matching {@code DealWonEventHandler}.
  *
  * <p>Scope: flipping the deal to WON is this listener's <strong>only</strong> job. It does not
  * nudge the customer lifecycle or send notifications directly — proposal acceptance and {@code
@@ -40,9 +43,10 @@ public class DealProposalAcceptedListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onProposalAccepted(ProposalAcceptedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        RequestScopes.getShardIdOrDefault(),
         () -> {
           try {
             dealProposalService.markWonFromProposalAcceptance(event.proposalId());

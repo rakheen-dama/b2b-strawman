@@ -25,7 +25,7 @@ This phase ships as **8 epics (573–580)**, expanded to **12 numbered slices** 
 | 573 | Migration + Entities + Capability + Stage Seeding | Backend | — | L | 573A, 573B | **Done** (PR #1487) |
 | 574 | Deal CRUD + Intake + Filtered List | Backend | 573A | L | 574A | **Done** (PR #1488) |
 | 575 | DealTransitionService + Customer Nudge + Events/Audit/Activity | Backend | 574A | L | 575A | **Done** (PR #1489) |
-| 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | |
+| 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | **Done** (PR #1491) |
 | 577 | Field / Tag / Saved-View / Audit-Metadata Registration | Backend | 574A, 575A | M | 577A | |
 | 578 | Pipeline Summary Aggregation (backend) | Backend | 574A | M | 578A | |
 | 579 | Frontend — Board + List + Intake + Stage Settings | Frontend | 574A, 575A, 578A | L | 579A, 579B | |
@@ -144,7 +144,7 @@ PHASES already complete (reused, not rebuilt):
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 4a | **576A** | `proposal/Proposal.java` `deal_id` mapped column + getter/`setDealId`; `DealRepository.findByLinkedProposalId`; `DealProposalAcceptedListener` (`@TransactionalEventListener(AFTER_COMMIT)`, `runForTenant`, idempotent); `DealProposalService` create/link/list; `/api/deals/{id}/proposals` endpoints on `DealController`; `DealProposalWinLoopTest`. |
+| 4a | **576A** ✅ | `proposal/Proposal.java` `deal_id` mapped column + getter/`setDealId`; `DealRepository.findByLinkedProposalId`; `DealProposalAcceptedListener` (`@TransactionalEventListener(AFTER_COMMIT)`, `runForTenantOnShard`, idempotent); `DealProposalService` create/link/list; `/api/deals/{id}/proposals` endpoints on `DealController`; `DealProposalWinLoopTest`. **Done** (PR #1491) |
 
 ### Stage 5 — Frontend (sequential after 574A/575A/578A; 576A for 580)
 
@@ -389,7 +389,7 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **576A** | 576A.1–576A.6 | ~8 backend files (1 `Proposal` mod + 1 repo mod + 1 listener + 1 service + 1 controller mod + 1 DTO + 1 test) | `Proposal.dealId` mapped column; `findByLinkedProposalId`; `DealProposalAcceptedListener`; create/link/list endpoints; win-loop idempotency test. |
+| **576A** | 576A.1–576A.6 | ~8 backend files (1 `Proposal` mod + 1 repo mod + 1 listener + 1 service + 1 controller mod + 1 DTO + 1 test) | `Proposal.dealId` mapped column; `findByLinkedProposalId`; `DealProposalAcceptedListener`; create/link/list endpoints; win-loop idempotency test. **Done** (PR #1491) |
 
 ### Tasks
 

@@ -1,7 +1,7 @@
 {
-  "commit": "ef22cf139f99471e5695351e1c6f406104ec4de1",
+  "commit": "c0d65b36609337c1e91db6aa8ef48a9488804cd4",
   "command": "cd backend && ./mvnw clean verify -q",
   "exit": 0,
-  "ts": "2026-06-21T23:57:04Z",
-  "summary": "epic-574/deal-crud-intake-list: Deal CRUD + Intake + Filtered List (574A). 5705 tests, 0 failures, 0 errors, 26 skipped (/tmp/mvn-574-fullverify.log). 18 new deal tests: DealCrudIntegrationTest 9, DealCapabilityGatingTest 7, DealTenantIsolationTest 2."
+  "ts": "2026-06-22T20:50:59Z",
+  "summary": "epic-576/deal-proposal-link-win-loop: Deal↔Proposal Link + Win-Loop Event Glue (576A). FULL BUILD SUCCESS, 0 failures/0 errors. DealProposalWinLoopTest: 7 tests (win-loop, idempotency, unlinked no-op, create-from-deal, link-existing, customer-mismatch 409, delete-guard). Includes review fixes + ArchUnit shard-binding fix (/tmp/mvn-verify-576.log)."
 }

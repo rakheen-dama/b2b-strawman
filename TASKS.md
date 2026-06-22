@@ -653,7 +653,7 @@
 | 573 | Migration + Entities + Capability + Stage Seeding | Backend | -- | L | 573A, 573B | **Done** (PR #1487) |
 | 574 | Deal CRUD + Intake + Filtered List | Backend | 573A | L | 574A | **Done** (PR #1488) |
 | 575 | DealTransitionService + Customer Nudge + Events/Audit/Activity | Backend | 574A | L | 575A | **Done** (PR #1489) |
-| 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | |
+| 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | **Done** (PR #1491) |
 | 577 | Field / Tag / Saved-View / Audit-Metadata Registration | Backend | 574A, 575A | M | 577A | |
 | 578 | Pipeline Summary Aggregation | Backend | 574A | M | 578A | |
 | 579 | Frontend — Board + List + Intake + Stage Settings | Frontend | 574A, 575A, 578A | L | 579A, 579B | |

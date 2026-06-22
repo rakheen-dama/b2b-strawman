@@ -1,0 +1,35 @@
+# ADR-321: MCP Write-Tool Category — First Writes, Inline Enforcement, the `MCP_WRITE` Capability & Write Audit
+
+**Status**: Accepted
+
+**Context**:
+
+The Kazi MCP server (Phase 78, ADR-303/304/305) is **read-only by construction**: ~12 read tools, each gated by `McpEnablementService.effectiveState()` (integration enabled AND POPIA egress consent), authorised per-user (OAuth → `TenantFilter`/`MemberFilter` bind tenant/member/capabilities), and audited as `mcp.tool.invoked`. Phase 81 adds the **first write tools** (`file_correspondence`, `attach_document`, `propose_task`). Three questions: (1) where the cross-cutting write enforcement lives; (2) what capability authorises a write; (3) whether writes need their own POPIA consent flag. A hard constraint surfaced during scouting: **Spring AI 2.0.0-M6 exposes no `tools/call` interceptor and no central dispatch** — every cross-cutting concern is already an inline guard at the top of each read tool (`McpCapabilityGuard.gatedTool(...)`), because there is no central place to add it. `@RequiresCapability` is deliberately NOT used on MCP tools (it throws `AccessDeniedException`, which leaks the reason via Spring AI's error converter, isn't reliably intercepted without central dispatch, and bypasses the bespoke `mcp.access.denied` audit).
+
+**Options Considered** (capability shape):
+
+1. **Dedicated `MCP_WRITE` capability, inline-per-tool enforcement, `mcp.write.*` audit family, enablement-gated (no separate write consent) (CHOSEN)** — one new capability required by all three write tools; the read helper keeps the read capability; each write tool opens with the inline guard preamble (`effectiveState()` → `gatedTool("MCP_WRITE", ...)` → audit); writes emit a distinct `mcp.write.*` family.
+   - Pros: a read-only MCP user (has `MCP_ACCESS`, lacks `MCP_WRITE`) provably cannot write; one capability is simple to grant/revoke and to reason about ("can this member let AI write into Kazi?"); `mcp.write.*` gives a POPIA-defensible "what AI wrote" trail separate from "what it read"; mirrors the proven `TrustTools`/`McpCapabilityGuard` inline pattern; no consent ceremony for the lower-risk ingress direction.
+   - Cons: a new capability to seed/grant; coarse (all-or-nothing across the three write tools — can't grant `file_correspondence` but deny `propose_task`); inline guards are repeated per tool (a forgotten guard on a future tool is a real risk — must be a review checklist item).
+2. **Reuse an existing domain capability (e.g. a correspondence/task capability) for the write tools** — no new enum value; map writes onto an existing permission.
+   - Pros: no new capability; reuses role mappings.
+   - Cons: no existing capability means "may write *via the MCP/AI connector*" — conflating MCP-write with normal in-app write would let any member who can create a task in the UI also drive AI writes, defeating the read-only-MCP-user guarantee; semantically wrong (the risk being gated is *AI/automation writing*, not the underlying action).
+3. **Per-tool capabilities (`FILE_CORRESPONDENCE`, `ATTACH_DOCUMENT`, `PROPOSE_TASK`)** — one capability per write tool.
+   - Pros: fine-grained; a firm could enable filing but not task proposals.
+   - Cons: three new enum values + three role-mapping decisions for a three-tool surface; over-engineered for v1; the meaningful safety split (direct vs gated) is already enforced by *tool identity* (ADR-322), not by capability — fine-grained caps would duplicate that boundary at the wrong layer.
+
+**Decision**: Introduce one dedicated `MCP_WRITE` capability required by the three write tools (`resolve_matter_by_email` stays on the read capability `MCP_ACCESS`); enforce it inline-per-tool via `McpCapabilityGuard.gatedTool("MCP_WRITE", ...)` (there is no central interceptor); emit a distinct `mcp.write.*` audit family; and gate writes by MCP enablement only — **no separate write-consent flag** — since the POPIA risk consent addresses is egress, and these writes are ingress.
+
+**Rationale**:
+
+1. **Inline enforcement is the only correct option here.** Spring AI 2.0.0-M6 has no `tools/call` dispatch, so there is no central seam; the read tools already enforce inline, and `@RequiresCapability` is unusable on MCP tools (leaks reasons, unreliable, bypasses the bespoke audit). Write tools must replicate the inline `effectiveState()` + `gatedTool` + audit preamble. This is a deliberate, documented constraint, not a shortcut.
+2. **A dedicated `MCP_WRITE` cap delivers the read-only-user guarantee.** The phase mandate is explicit: a read-only MCP user must not be able to write. Only a distinct capability cleanly separates "can read Kazi via Claude" from "can let Claude write into Kazi." Reusing a domain capability would couple MCP-write to in-app permissions and break the guarantee.
+3. **Coarse-but-simple beats per-tool for v1.** The safety-critical split (direct Tier-1 vs gated Tier-2) is enforced by tool identity in ADR-322, not by capability. A single `MCP_WRITE` cap is enough; per-tool caps would duplicate a boundary that already lives elsewhere. `MCP_WRITE` is auto-granted to owner/admin (`OrgRoleService`); other roles need an explicit grant (V77-pattern migration if desired).
+4. **No separate write consent — enablement is the right gate.** POPIA consent (ADR-305) gates *egress* (data leaving the firm). Writes are *ingress* into Kazi and create no new egress, so a second consent toggle would be ceremony without a matching risk. Enablement ("is the MCP integration on?") is the correct write gate; a firm wanting "no AI writes" simply doesn't grant `MCP_WRITE`.
+5. **`mcp.write.*` is a POPIA asset.** A distinct write-audit family (member, tenant, target entity, tool, outcome) gives the firm a defensible record of exactly what AI *wrote* into Kazi, cleanly separable from `mcp.tool.invoked` reads.
+
+**Consequences**:
+- Positive: read-only MCP users provably cannot write; one simple capability; a clean "what AI wrote" audit trail; mirrors the proven inline guard pattern; no consent ceremony for the lower-risk direction.
+- Negative: inline guards are per-tool — a future write tool that forgets the preamble is a security hole; this MUST be enforced by a review checklist + a "read-only user rejected" test per write tool. Coarse capability can't distinguish the three write tools (acceptable for v1).
+- Negative: a new capability requires owner/admin auto-grant in code and an optional role-grant migration; the `mcp.write.*` family must be registered in `AuditEventTypeRegistry` and formatted in `ActivityMessageFormatter`.
+- Related: [ADR-303](ADR-303-mcp-authentication.md) (auth pipeline the writes ride), [ADR-304](ADR-304-mcp-tenant-isolation-capability-gating.md) (`MCP_ACCESS` read cap + capability gating that `MCP_WRITE` sits alongside), [ADR-305](ADR-305-mcp-popia-consent-audit.md) (egress consent — why writes need none), [ADR-322](ADR-322-tiered-write-safety-and-gate-over-mcp.md) (tool-identity-enforced direct-vs-gated split), [ADR-320](ADR-320-byoc-ingestion-boundary.md) (writes receive BYOC-extracted input).

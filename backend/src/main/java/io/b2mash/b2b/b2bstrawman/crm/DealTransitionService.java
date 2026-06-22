@@ -115,6 +115,9 @@ public class DealTransitionService {
    * must never downgrade an existing customer.
    */
   private void customerNudge(UUID customerId) {
+    // getCustomer is @Transactional(readOnly=true), but under REQUIRED propagation it joins THIS
+    // outer write transaction (no new tx is started), so the returned Customer is managed here and
+    // the lifecycle mutation below flushes at this transaction's commit.
     Customer c = customerService.getCustomer(customerId);
     if (c.getLifecycleStatus() == LifecycleStatus.PROSPECT) {
       c.transitionLifecycleStatus(LifecycleStatus.ONBOARDING, RequestScopes.requireMemberId());

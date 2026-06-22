@@ -304,7 +304,7 @@ public class ActivityMessageFormatter {
       case "information_request" -> getRequestNumber(details);
       case "request_item" -> getItemName(details);
       case "generated_document" -> getFileName(details);
-      case "DEAL" -> details.getOrDefault("title", "deal").toString();
+      case "DEAL", "deal" -> details.getOrDefault("title", "deal").toString();
       default -> "unknown";
     };
   }

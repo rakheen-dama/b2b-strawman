@@ -31,7 +31,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
@@ -69,10 +69,6 @@ class DealTransitionServiceTest {
   private String tenantSchema;
   private UUID memberId;
 
-  private JwtRequestPostProcessor owner() {
-    return TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUBJECT);
-  }
-
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Deal Transition Test Org", null);
@@ -104,7 +100,9 @@ class DealTransitionServiceTest {
 
   /** Creates a PROSPECT customer via the API and returns its id. */
   private UUID createCustomer(String name, String email) throws Exception {
-    return UUID.fromString(TestEntityHelper.createCustomer(mockMvc, owner(), name, email));
+    return UUID.fromString(
+        TestEntityHelper.createCustomer(
+            mockMvc, TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUBJECT), name, email));
   }
 
   /** Creates an OPEN deal against an existing customer and returns its id. */
@@ -246,7 +244,13 @@ class DealTransitionServiceTest {
                     () ->
                         dealTransitionService.transition(
                             dealId, new TransitionRequest(wonStage, null, null))))
-        .isInstanceOf(InvalidStateException.class);
+        .isInstanceOf(InvalidStateException.class)
+        .satisfies(
+            ex -> {
+              var ise = (InvalidStateException) ex;
+              assertThat(ise.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+              assertThat(ise.getBody().getDetail()).contains("win");
+            });
   }
 
   @Test
@@ -261,7 +265,13 @@ class DealTransitionServiceTest {
                     () ->
                         dealTransitionService.transition(
                             dealId, new TransitionRequest(lostStage, null, "  "))))
-        .isInstanceOf(InvalidStateException.class);
+        .isInstanceOf(InvalidStateException.class)
+        .satisfies(
+            ex -> {
+              var ise = (InvalidStateException) ex;
+              assertThat(ise.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+              assertThat(ise.getBody().getDetail()).contains("lose a deal");
+            });
   }
 
   @Test

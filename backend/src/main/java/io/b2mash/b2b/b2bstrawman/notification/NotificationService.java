@@ -191,7 +191,8 @@ public class NotificationService {
           "TRUST_RECONCILIATION_COMPLETED",
           "TRUST_INTEREST_POSTED",
           "MATTER_CLOSED",
-          "MATTER_REOPENED");
+          "MATTER_REOPENED",
+          "DEAL_WON");
 
   // --- Preference methods ---
 

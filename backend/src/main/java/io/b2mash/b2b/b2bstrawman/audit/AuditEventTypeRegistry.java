@@ -110,6 +110,20 @@ public class AuditEventTypeRegistry {
                 "invoice.*", "Invoice", AuditSeverity.INFO, AuditEventGroup.FINANCIAL),
             new AuditEventTypeMetadata(
                 "proposal.*", "Proposal", AuditSeverity.INFO, AuditEventGroup.FINANCIAL),
+            // SALES — CRM deal lifecycle (Phase 80)
+            new AuditEventTypeMetadata(
+                "deal.created", "Deal created", AuditSeverity.INFO, AuditEventGroup.SALES),
+            new AuditEventTypeMetadata(
+                "deal.stage_changed",
+                "Deal stage changed",
+                AuditSeverity.INFO,
+                AuditEventGroup.SALES),
+            new AuditEventTypeMetadata(
+                "deal.won", "Deal won", AuditSeverity.INFO, AuditEventGroup.SALES),
+            new AuditEventTypeMetadata(
+                "deal.lost", "Deal lost", AuditSeverity.INFO, AuditEventGroup.SALES),
+            new AuditEventTypeMetadata(
+                "deal.reopened", "Deal re-opened", AuditSeverity.NOTICE, AuditEventGroup.SALES),
             // AI SPECIALIST — Phase 70
             new AuditEventTypeMetadata(
                 "ai.specialist.invoked",

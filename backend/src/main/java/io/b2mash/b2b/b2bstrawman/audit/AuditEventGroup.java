@@ -21,6 +21,9 @@ public enum AuditEventGroup {
   /** Data-protection events (DSAR, export, anonymisation). */
   DATA,
 
+  /** Sales/CRM pipeline activity such as deal stage changes, wins, and losses. */
+  SALES,
+
   /**
    * Default fallback bucket for events that do not match a specific registered prefix or exact
    * type.

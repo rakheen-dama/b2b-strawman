@@ -118,6 +118,11 @@ public class ActivityMessageFormatter {
               .formatted(actorName, getItemName(details));
       case "information_request.updated" ->
           "%s updated information request %s".formatted(actorName, getRequestNumber(details));
+      case "deal.created" -> "%s created a deal".formatted(actorName);
+      case "deal.stage_changed" -> "%s moved a deal to a new stage".formatted(actorName);
+      case "deal.won" -> "%s won a deal".formatted(actorName);
+      case "deal.lost" -> "%s marked a deal as lost".formatted(actorName);
+      case "deal.reopened" -> "%s re-opened a deal".formatted(actorName);
       default -> "%s performed %s on %s".formatted(actorName, eventType, entityType);
     };
   }
@@ -299,6 +304,7 @@ public class ActivityMessageFormatter {
       case "information_request" -> getRequestNumber(details);
       case "request_item" -> getItemName(details);
       case "generated_document" -> getFileName(details);
+      case "DEAL" -> details.getOrDefault("title", "deal").toString();
       default -> "unknown";
     };
   }

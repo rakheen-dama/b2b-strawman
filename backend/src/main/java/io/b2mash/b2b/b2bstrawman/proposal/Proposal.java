@@ -99,6 +99,16 @@ public class Proposal {
   @Column(name = "project_template_id")
   private UUID projectTemplateId;
 
+  // --- CRM link (Phase 80, 576A) ---
+
+  /**
+   * Links this proposal to a CRM deal (Phase 80, 576A). Mapped column only — NOT a JPA association.
+   * The column {@code proposals.deal_id} already exists (created in V130 by 573A). One deal can
+   * have many proposals (the FK convention lives on {@code proposals}).
+   */
+  @Column(name = "deal_id")
+  private UUID dealId;
+
   // --- Lifecycle timestamps ---
 
   @Column(name = "sent_at")
@@ -343,6 +353,16 @@ public class Proposal {
     this.updatedAt = Instant.now();
   }
 
+  /**
+   * Links this proposal to a CRM deal (Phase 80, 576A). Not guarded — like the other result-
+   * reference setters, the link must be settable on a SENT/ACCEPTED proposal too (e.g. when a deal
+   * links an already-sent proposal), so {@code requireEditable()} is intentionally NOT called.
+   */
+  public void setDealId(UUID dealId) {
+    this.dealId = dealId;
+    this.updatedAt = Instant.now();
+  }
+
   // --- Getters ---
 
   public UUID getId() {
@@ -415,6 +435,10 @@ public class Proposal {
 
   public UUID getProjectTemplateId() {
     return projectTemplateId;
+  }
+
+  public UUID getDealId() {
+    return dealId;
   }
 
   public Instant getSentAt() {

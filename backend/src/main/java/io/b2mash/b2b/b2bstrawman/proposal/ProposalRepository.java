@@ -19,6 +19,14 @@ public interface ProposalRepository extends JpaRepository<Proposal, UUID> {
 
   List<Proposal> findByStatus(ProposalStatus status);
 
+  // === 576A: Deal↔Proposal link (proposals.deal_id mapped column) ===
+
+  /** Win-loop delete-guard: true when at least one proposal is linked to the given deal. */
+  boolean existsByDealId(UUID dealId);
+
+  /** Lists all proposals linked to the given deal (one deal → many proposals). */
+  List<Proposal> findByDealId(UUID dealId);
+
   @Query(
       """
       SELECT p FROM Proposal p

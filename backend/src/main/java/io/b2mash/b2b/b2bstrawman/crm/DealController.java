@@ -1,15 +1,18 @@
 package io.b2mash.b2b.b2bstrawman.crm;
 
+import io.b2mash.b2b.b2bstrawman.crm.dto.CreateDealProposalRequest;
 import io.b2mash.b2b.b2bstrawman.crm.dto.CreateDealRequest;
 import io.b2mash.b2b.b2bstrawman.crm.dto.DealResponse;
 import io.b2mash.b2b.b2bstrawman.crm.dto.DealUpdateRequest;
 import io.b2mash.b2b.b2bstrawman.crm.dto.IntakeRequest;
+import io.b2mash.b2b.b2bstrawman.crm.dto.LinkedProposalDto;
 import io.b2mash.b2b.b2bstrawman.crm.dto.TransitionRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,14 +39,17 @@ public class DealController {
   private final DealService dealService;
   private final DealIntakeService dealIntakeService;
   private final DealTransitionService dealTransitionService;
+  private final DealProposalService dealProposalService;
 
   public DealController(
       DealService dealService,
       DealIntakeService dealIntakeService,
-      DealTransitionService dealTransitionService) {
+      DealTransitionService dealTransitionService,
+      DealProposalService dealProposalService) {
     this.dealService = dealService;
     this.dealIntakeService = dealIntakeService;
     this.dealTransitionService = dealTransitionService;
+    this.dealProposalService = dealProposalService;
   }
 
   @PostMapping("/api/deals/intake")
@@ -112,5 +118,28 @@ public class DealController {
   public ResponseEntity<DealResponse> transition(
       @PathVariable UUID id, @Valid @RequestBody TransitionRequest request) {
     return ResponseEntity.ok(dealTransitionService.transition(id, request));
+  }
+
+  // === Deal↔Proposal link (Phase 80, slice 576A) ===
+
+  @GetMapping("/api/deals/{id}/proposals")
+  @RequiresCapability("VIEW_DEALS")
+  public ResponseEntity<List<LinkedProposalDto>> listProposals(@PathVariable UUID id) {
+    return ResponseEntity.ok(dealProposalService.listForDeal(id));
+  }
+
+  @PostMapping("/api/deals/{id}/proposals")
+  @RequiresCapability("MANAGE_DEALS")
+  public ResponseEntity<LinkedProposalDto> createProposalFromDeal(
+      @PathVariable UUID id, @Valid @RequestBody CreateDealProposalRequest request) {
+    var dto = dealProposalService.createFromDeal(id, request, RequestScopes.requireMemberId());
+    return ResponseEntity.created(URI.create("/api/proposals/" + dto.id())).body(dto);
+  }
+
+  @PostMapping("/api/deals/{id}/proposals/{proposalId}/link")
+  @RequiresCapability("MANAGE_DEALS")
+  public ResponseEntity<Void> linkProposal(@PathVariable UUID id, @PathVariable UUID proposalId) {
+    dealProposalService.linkExisting(id, proposalId);
+    return ResponseEntity.noContent().build();
   }
 }

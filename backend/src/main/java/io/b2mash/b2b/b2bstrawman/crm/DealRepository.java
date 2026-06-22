@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.crm;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,8 +14,8 @@ import org.springframework.data.repository.query.Param;
 /**
  * Repository for {@link Deal}. Schema-per-tenant means {@code findById} is already tenant-isolated.
  *
- * <p>{@code findByLinkedProposalId} (correlated to {@code Proposal.dealId}) is intentionally NOT
- * defined here — it lands in 576A.
+ * <p>{@code findByLinkedProposalId} (correlated to {@code Proposal.dealId}) resolves the deal
+ * linked to an accepted proposal — the win-loop entry point (576A).
  */
 public interface DealRepository extends JpaRepository<Deal, UUID> {
 
@@ -28,6 +29,14 @@ public interface DealRepository extends JpaRepository<Deal, UUID> {
 
   /** Used by {@code PipelineStageService} to block deleting a stage that still has deals. */
   boolean existsByStageId(UUID stageId);
+
+  /**
+   * Win-loop (576A): resolve a deal from an accepted proposal via the mapped {@code
+   * proposals.deal_id} column. Returns empty when the proposal has no linked deal.
+   */
+  @Query(
+      "SELECT d FROM Deal d WHERE d.id = (SELECT p.dealId FROM Proposal p WHERE p.id = :proposalId)")
+  Optional<Deal> findByLinkedProposalId(@Param("proposalId") UUID proposalId);
 
   /**
    * Paged, nullable-guarded filtered list (Phase 80, §11.3d). Each filter is ignored when its

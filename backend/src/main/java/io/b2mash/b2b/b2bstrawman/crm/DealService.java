@@ -5,6 +5,8 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.crm.dto.DealResponse;
 import io.b2mash.b2b.b2bstrawman.crm.dto.DealUpdateRequest;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
+import io.b2mash.b2b.b2bstrawman.exception.DeleteGuard;
+import io.b2mash.b2b.b2bstrawman.proposal.ProposalRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.math.BigDecimal;
@@ -46,6 +48,7 @@ public class DealService {
   private final CustomerService customerService;
   private final OrgSettingsRepository orgSettingsRepository;
   private final AuditService auditService;
+  private final ProposalRepository proposalRepository;
 
   public DealService(
       DealRepository dealRepository,
@@ -54,7 +57,8 @@ public class DealService {
       PipelineStageRepository pipelineStageRepository,
       CustomerService customerService,
       OrgSettingsRepository orgSettingsRepository,
-      AuditService auditService) {
+      AuditService auditService,
+      ProposalRepository proposalRepository) {
     this.dealRepository = dealRepository;
     this.dealNumberService = dealNumberService;
     this.pipelineStageService = pipelineStageService;
@@ -62,6 +66,7 @@ public class DealService {
     this.customerService = customerService;
     this.orgSettingsRepository = orgSettingsRepository;
     this.auditService = auditService;
+    this.proposalRepository = proposalRepository;
   }
 
   /**
@@ -176,8 +181,12 @@ public class DealService {
   @Transactional
   public void deleteDeal(UUID dealId) {
     var deal = dealRepository.findOneById(dealId);
-    // 576A: block deletion when linked proposals exist (delete-guard finalized there). For 574A
-    // there is nothing to guard against yet — proposal linking lands in 576A.
+    DeleteGuard.forEntity("deal", dealId, "delete")
+        .checkNotExists(
+            "linked proposals",
+            () -> proposalRepository.existsByDealId(dealId),
+            "Unlink or delete the linked proposals first.")
+        .execute();
     dealRepository.delete(deal);
     auditService.log(
         AuditEventBuilder.builder()

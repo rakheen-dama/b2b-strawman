@@ -26,7 +26,7 @@ This phase ships as **8 epics (573–580)**, expanded to **12 numbered slices** 
 | 574 | Deal CRUD + Intake + Filtered List | Backend | 573A | L | 574A | **Done** (PR #1488) |
 | 575 | DealTransitionService + Customer Nudge + Events/Audit/Activity | Backend | 574A | L | 575A | **Done** (PR #1489) |
 | 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | **Done** (PR #1491) |
-| 577 | Field / Tag / Saved-View / Audit-Metadata Registration | Backend | 574A, 575A | M | 577A | |
+| 577 | Field / Tag / Saved-View / Audit-Metadata Registration | Backend | 574A, 575A | M | 577A | **Done** (PR #1495) |
 | 578 | Pipeline Summary Aggregation (backend) | Backend | 574A | M | 578A | |
 | 579 | Frontend — Board + List + Intake + Stage Settings | Frontend | 574A, 575A, 578A | L | 579A, 579B | |
 | 580 | Frontend — Deal Detail + Customer Tab + Dashboard Widget + QA Capstone | Frontend | 576A, 578A, 579A | L | 580A, 580B | |
@@ -137,7 +137,7 @@ PHASES already complete (reused, not rebuilt):
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
 | 3a | **575A** ✅ Done (PR #1489) | `DealTransitionService` (move/win/lose/re-open + customer PROSPECT→ONBOARDING nudge); `crm/event/{DealStageChangedEvent,DealWonEvent,DealLostEvent,DealWonEventHandler}`; `dto/TransitionRequest`; audit-metadata registration; `ActivityMessageFormatter` cases; deal-won notification; `DealTransitionServiceTest`. | 578A |
-| 3b | **577A** | `EntityType.DEAL`; V131 verification + apply; confirm `EntityTag`/`SavedView` free-form `"DEAL"`; `AuditEventGroup` `CRM`/`SALES` constant; custom-field round-trip + saved-view/tag filter tests. | 578A |
+| 3b | **577A** ✅ Done (PR #1495) | `EntityType.DEAL`; V131 verification + apply; confirm `EntityTag`/`SavedView` free-form `"DEAL"`; `AuditEventGroup` `CRM`/`SALES` constant; custom-field round-trip + saved-view/tag filter tests. | 578A |
 | 3c | **578A** | `PipelineSummaryService` (weighted value, win rate 90-day window, per-stage breakdown, avg deal size / days-to-close); `dashboard/dto/PipelineSummaryResponse`; `GET /api/dashboard/pipeline-summary`; `PipelineSummaryServiceTest`. | 575A, 577A |
 
 ### Stage 4 — Win Loop (after 575A)
@@ -444,7 +444,7 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **577A** | 577A.1–577A.5 | ~7 backend files (1 enum mod + 1 optional field-pack JSON + 1 service mod for field-group apply + 2 test files + V131 verify) | `EntityType.DEAL`; V131 application; field-group auto-apply on deal create; tag/saved-view free-form confirm; round-trip tests. |
+| **577A** | 577A.1–577A.5 | ~7 backend files (1 enum mod + 1 optional field-pack JSON + 1 service mod for field-group apply + 2 test files + V131 verify) | `EntityType.DEAL`; V131 application; field-group auto-apply on deal create; tag/saved-view free-form confirm; round-trip tests. **Done** (PR #1495) |
 
 ### Tasks
 

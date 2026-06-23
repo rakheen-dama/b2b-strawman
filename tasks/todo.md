@@ -63,3 +63,42 @@ Mode: orchestrator + sequential implementation subagents (one PR at a time).
 
 ## Review log
 - 2026-06-10 PR #1403 (Wave 0.1): CodeRabbit raised 1 Major — denial tests used an unsynced member, so 403 could've been the unresolved-member path. Fixed by syncing `user_rc_member` in @BeforeAll; CodeRabbit auto-confirmed. CI Backend 27m pass, qodana pass. Merged.
+
+---
+
+# Backend Test Build-Time Reduction — Phase 1 (started 2026-06-22)
+
+Plan: `~/.claude/plans/iterative-gliding-sundae.md`. Sequenced; no test-deletion pass. Goal ~22-24min → ~19-20min via safe PRs. Branch: `test-speed/1a-context-consolidation`.
+
+## Baseline (DONE)
+- [x] Full run: **~26min `test` / 22:53 `clean verify`, 5809 tests, ~40 contexts**. Surfaced 1 PRE-EXISTING failure (count-bleed flake) + #1 hot class PackReconciliationRunnerTest 37.7s.
+
+## SHIPPED (stacked on branch test-speed/jobworker-packreconcile; verify running b45yfnw12)
+- [x] **Flake fix** `a70807c6e` (branch fix/automation-scheduler-count-bleed-line305) — AutomationScheduler:305 count-bleed (#1490 missed it); id-scoped. **VERIFIED green full suite (5809/0, 22:53).** Gate-unblocker, lands FIRST.
+- [x] **1D JobWorker backoff** `2926384d1` — maxRetries 3→1, ~14s→~2s. Targeted green; full verify pending (this run).
+- [x] **PackReconciliation scope** `b281484b7` — extract `reconcilePacksForTenant`; test reconciles own tenant not all (#1 hot class 37.7s→~few s; removes cross-tenant DataIntegrityViolation exposure). Targeted green (3/0); full verify pending.
+
+## DECISION (user 2026-06-22): skip low-yield 1A/1B/1C micro-consolidations
+- StorageService mocks all used (0 win). maxSize bump contraindicated (CI OOM). Module-guard/trivial conversions ~3-10s each, not worth the verify cycles. → effort redirected to PackReconciliation (done) + Phase 2 spec.
+
+## Phase 2 — DESIGN SPEC (DONE, awaiting sign-off)
+- [x] `docs/superpowers/specs/2026-06-23-test-provisioning-design.md` — Lever A golden-schema/clone provisioning (spike-gated), Lever B shard-cluster consolidation, Lever C seeder non-idempotency (DataIntegrityViolation root cause).
+
+## Measured outcome (stacked verify b45yfnw12: 5809/0, 23:02)
+- PackReconciliationRunnerTest **37.7s → 2.4s** (~35s). JobWorkerIntegrationTest **34.5s → 27.6s** (~7s). ~42s test-exec removed (below single-run wall noise; per-class numbers are the proof). Recorded in spec baseline.
+
+## PRs (user: 2 PRs, agent drives merge on green gate)
+- **PR #1492** flake-fix (base main) — 2 feature-dev reviews APPROVE + CodeRabbit pass; audit trail in body. CI: Backend+qodana pending (watcher bdjpiahqm). Merge FIRST.
+- **PR #1493** test-speed JobWorker+PackReconcile (base = #1492 branch, stacked; +comment-fix from review) — 2 reviews APPROVE, CodeRabbit DEFERRED (skipped). Retarget base→main after #1492 merges, then merge.
+- Merge-gate hook needs: `.claude/markers/verify-backend.json` (commit = ancestor of PR head, exit 0, <24h) + 2 `## Verdict: APPROVE` + `## CodeRabbit:` line in body. Body trails done; write marker just before each merge.
+
+## MERGED ✅
+- [x] **PR #1492** flake-fix MERGED (squash `39214d939`). Backend CI green 35m49s + 2 reviews + CodeRabbit. Suite green again.
+- [x] **PR #1493** JobWorker+PackReconcile MERGED (squash `d509f71a8`). Backend CI green 39m49s on rebased head `d23942e48` + 2 reviews + CodeRabbit. main content verified correct (no dup). CI-trigger gotcha hit+handled (retarget didn't fire CI → forced synchronize push).
+
+## Phase 2 — INVESTIGATED, then STOPPED (user, 2026-06-23)
+Both cheap levers turned out low-yield once measured; the only real lever is borderline + max-risk. Suite ~23min is largely irreducible without a high-risk provisioning rework.
+- **Lever A spike** (`spike/golden-schema-clone-cost`, thrown away): legal-za pipeline = **943 ms/tenant** (115 tables); stripped clone = **245 ms** → **3.8×**, but realistic clone (FK+sequence fidelity) → ~2.5–3× (borderline gate). Provisioning is NOT a multi-second monster; Lever A ceiling ~8–10% with max blast radius. **Not worth building now.**
+- **Lever B** (shard): secondary PG is ALREADY a JVM singleton → reclaimable is only context builds ≈ **~4–6s**, not the ~138s the classes total. Real value = OOM headroom/hygiene only. **Skipped.**
+- **Lever C** (seeder non-idempotency, `uq_field_group_type_slug` on 2nd reconcile): real correctness bug, deferred to a future own PR. **Not done.**
+- Decision: **STOP**. Spec (with spike numbers + corrected estimates) at `docs/superpowers/specs/2026-06-23-test-provisioning-design.md` is the record. Phase 1 (flake fix + ~42s + green suite) stands as the delivered outcome.

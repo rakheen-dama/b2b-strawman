@@ -141,10 +141,10 @@ class JobWorkerIntegrationTest {
 
   @Test
   void shouldDeadLetterAfterMaxRetries() {
-    // maxRetries=1 keeps this fast: with backoff-base-seconds=1 the single retry is scheduled
-    // 2s out (2^1*1), then the job dead-letters. maxRetries=3 would cost 2+4+8=14s of real
-    // backoff for no extra coverage — the retry-count threshold → DEAD_LETTER transition is the
-    // assertion under test, and it fires identically at the first exhausted retry.
+    // maxRetries=1 keeps this fast: on the FIRST failure newRetryCount(1) >= maxRetries(1), so the
+    // job dead-letters immediately — no backoff retry is ever scheduled. maxRetries=3 would instead
+    // cost 2+4+8=14s of real exponential backoff for no extra coverage; the retry-count threshold →
+    // DEAD_LETTER transition is the assertion under test and fires identically here.
     var job = new JobQueue(FailingTestJobHandler.JOB_TYPE, TENANT_1, ORG_1, "primary", null, 1);
     jobQueueRepository.saveAndFlush(job);
     UUID jobId = job.getId();

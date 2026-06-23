@@ -66,11 +66,21 @@ public class PipelineStageService {
   @Transactional
   public PipelineStage changeStageType(UUID stageId, StageType newType) {
     var stage = pipelineStageRepository.findOneById(stageId);
+    applyTypeChange(stage, newType);
+    return pipelineStageRepository.save(stage);
+  }
+
+  /**
+   * Applies a stage-type change to an already-loaded stage, enforcing the last-active-of-type guard
+   * first. Shared by {@link #changeStageType} and {@link #updateStage} so the guard logic lives in
+   * one place and cannot drift. No-op fields are still written, but the guard only fires when the
+   * type actually changes.
+   */
+  private void applyTypeChange(PipelineStage stage, StageType newType) {
     if (stage.getStageType() != newType) {
       requireNotLastActiveOfType(stage, "change the type of");
     }
     stage.changeStageType(newType);
-    return pipelineStageRepository.save(stage);
   }
 
   /**
@@ -84,22 +94,42 @@ public class PipelineStageService {
   public PipelineStage updateStage(
       UUID stageId, String name, int defaultProbabilityPct, StageType newType) {
     var stage = pipelineStageRepository.findOneById(stageId);
-    if (stage.getStageType() != newType) {
-      requireNotLastActiveOfType(stage, "change the type of");
-    }
-    stage.changeStageType(newType);
+    applyTypeChange(stage, newType);
     stage.rename(name);
     stage.changeDefaultProbability(defaultProbabilityPct);
     return pipelineStageRepository.save(stage);
   }
 
-  /** Repositions a stage. */
+  /**
+   * Repositions a single stage. Retained for internal/transition use; the HTTP layer uses the bulk
+   * {@link #reorderStages} path instead (slice 578B).
+   */
   @Transactional
   public PipelineStage reorderStage(UUID stageId, int newPosition) {
     var stage = pipelineStageRepository.findOneById(stageId);
     stage.changePosition(newPosition);
     return pipelineStageRepository.save(stage);
   }
+
+  /**
+   * Bulk-reorders stages to the client's desired ordering (slice 578B). Each {@link
+   * StagePositionCommand} pins a stage to a position; positions are assigned directly (per
+   * architecture §11.2.1, position is NOT a hard DB-unique constraint — the UI guarantees a
+   * conflict-free ordering, so no shifting is performed here). Returns all stages ordered by
+   * position, mirroring {@link #listStages}.
+   */
+  @Transactional
+  public List<PipelineStage> reorderStages(List<StagePositionCommand> positions) {
+    for (var command : positions) {
+      var stage = pipelineStageRepository.findOneById(command.stageId());
+      stage.changePosition(command.position());
+      pipelineStageRepository.save(stage);
+    }
+    return pipelineStageRepository.findAllByOrderByPositionAsc();
+  }
+
+  /** Command for a single stage's target position in a bulk reorder. */
+  public record StagePositionCommand(UUID stageId, int position) {}
 
   /**
    * Archives a stage. Blocked if it is the last non-archived stage of its {@link StageType}

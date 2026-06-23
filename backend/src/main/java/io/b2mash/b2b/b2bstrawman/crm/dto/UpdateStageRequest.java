@@ -20,7 +20,8 @@ public record UpdateStageRequest(
     @NotBlank(message = "name is required")
         @Size(max = 80, message = "name must not exceed 80 characters")
         String name,
-    @Min(value = 0, message = "defaultProbabilityPct must be between 0 and 100")
+    @NotNull(message = "defaultProbabilityPct is required")
+        @Min(value = 0, message = "defaultProbabilityPct must be between 0 and 100")
         @Max(value = 100, message = "defaultProbabilityPct must be between 0 and 100")
-        int defaultProbabilityPct,
+        Integer defaultProbabilityPct,
     @NotNull(message = "stageType is required") StageType stageType) {}

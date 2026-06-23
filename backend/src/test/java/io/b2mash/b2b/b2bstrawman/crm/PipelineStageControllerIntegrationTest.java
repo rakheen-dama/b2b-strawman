@@ -207,20 +207,34 @@ class PipelineStageControllerIntegrationTest {
 
   // 4
   @Test
-  void reorderStage_returns200_andReGetConfirmsNewPosition() throws Exception {
-    String id = createStage("Mover", 9, 20, "OPEN");
-    mockMvc
-        .perform(
-            post("/api/pipeline/stages/" + id + "/reorder")
-                .with(owner())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"newPosition":3}
-                    """))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.position").value(3));
+  void reorderStages_returns200_andReGetConfirmsNewPositions() throws Exception {
+    String a = createStage("MoverA", 40, 20, "OPEN");
+    String b = createStage("MoverB", 41, 20, "OPEN");
 
+    // Bulk reorder: swap the two stages' positions in a single PUT.
+    String reorderBody =
+        mockMvc
+            .perform(
+                put("/api/pipeline/stages/reorder")
+                    .with(owner())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"positions":[{"id":"%s","position":41},{"id":"%s","position":40}]}
+                        """
+                            .formatted(a, b)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    // Response carries the full ordered list including the swapped positions.
+    java.util.List<Integer> respA = JsonPath.read(reorderBody, "$[?(@.id=='" + a + "')].position");
+    java.util.List<Integer> respB = JsonPath.read(reorderBody, "$[?(@.id=='" + b + "')].position");
+    org.assertj.core.api.Assertions.assertThat(respA.getFirst()).isEqualTo(41);
+    org.assertj.core.api.Assertions.assertThat(respB.getFirst()).isEqualTo(40);
+
+    // Re-GET confirms persistence.
     String body =
         mockMvc
             .perform(get("/api/pipeline/stages").with(owner()))
@@ -228,8 +242,10 @@ class PipelineStageControllerIntegrationTest {
             .andReturn()
             .getResponse()
             .getContentAsString();
-    java.util.List<Integer> positions = JsonPath.read(body, "$[?(@.id=='" + id + "')].position");
-    org.assertj.core.api.Assertions.assertThat(positions.getFirst()).isEqualTo(3);
+    java.util.List<Integer> posA = JsonPath.read(body, "$[?(@.id=='" + a + "')].position");
+    java.util.List<Integer> posB = JsonPath.read(body, "$[?(@.id=='" + b + "')].position");
+    org.assertj.core.api.Assertions.assertThat(posA.getFirst()).isEqualTo(41);
+    org.assertj.core.api.Assertions.assertThat(posB.getFirst()).isEqualTo(40);
   }
 
   // 5
@@ -308,5 +324,56 @@ class PipelineStageControllerIntegrationTest {
         .andExpect(jsonPath("$.status").value(403))
         .andExpect(jsonPath("$.title").isString())
         .andExpect(jsonPath("$.detail").isString());
+  }
+
+  // 10
+  @Test
+  void updateStage_asViewerWithoutManagePipeline_returns403() throws Exception {
+    mockMvc
+        .perform(
+            put("/api/pipeline/stages/" + seededWonStageId)
+                .with(viewer())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name":"Nope","defaultProbabilityPct":50,"stageType":"WON"}
+                    """))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403));
+  }
+
+  // 11
+  @Test
+  void reorderStages_asViewerWithoutManagePipeline_returns403() throws Exception {
+    mockMvc
+        .perform(
+            put("/api/pipeline/stages/reorder")
+                .with(viewer())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"positions":[{"id":"%s","position":0}]}
+                    """
+                        .formatted(seededWonStageId)))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403));
+  }
+
+  // 12
+  @Test
+  void archiveStage_asViewerWithoutManagePipeline_returns403() throws Exception {
+    mockMvc
+        .perform(post("/api/pipeline/stages/" + seededWonStageId + "/archive").with(viewer()))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403));
+  }
+
+  // 13
+  @Test
+  void deleteStage_asViewerWithoutManagePipeline_returns403() throws Exception {
+    mockMvc
+        .perform(delete("/api/pipeline/stages/" + seededWonStageId).with(viewer()))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403));
   }
 }

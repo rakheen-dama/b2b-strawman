@@ -22,7 +22,8 @@ public record CreateStageRequest(
         String name,
     @NotNull(message = "position is required") @Min(value = 0, message = "position must be >= 0")
         Integer position,
-    @Min(value = 0, message = "defaultProbabilityPct must be between 0 and 100")
+    @NotNull(message = "defaultProbabilityPct is required")
+        @Min(value = 0, message = "defaultProbabilityPct must be between 0 and 100")
         @Max(value = 100, message = "defaultProbabilityPct must be between 0 and 100")
-        int defaultProbabilityPct,
+        Integer defaultProbabilityPct,
     @NotNull(message = "stageType is required") StageType stageType) {}

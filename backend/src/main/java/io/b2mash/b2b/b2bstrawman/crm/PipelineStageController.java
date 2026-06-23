@@ -1,7 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.crm;
 
+import io.b2mash.b2b.b2bstrawman.crm.PipelineStageService.StagePositionCommand;
 import io.b2mash.b2b.b2bstrawman.crm.dto.CreateStageRequest;
-import io.b2mash.b2b.b2bstrawman.crm.dto.ReorderStageRequest;
+import io.b2mash.b2b.b2bstrawman.crm.dto.ReorderStagesRequest;
 import io.b2mash.b2b.b2bstrawman.crm.dto.StageDto;
 import io.b2mash.b2b.b2bstrawman.crm.dto.UpdateStageRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -69,12 +70,16 @@ public class PipelineStageController {
     return ResponseEntity.ok(StageDto.from(stage));
   }
 
-  @PostMapping("/api/pipeline/stages/{id}/reorder")
+  @PutMapping("/api/pipeline/stages/reorder")
   @RequiresCapability("MANAGE_PIPELINE")
-  public ResponseEntity<StageDto> reorderStage(
-      @PathVariable UUID id, @Valid @RequestBody ReorderStageRequest request) {
-    var stage = pipelineStageService.reorderStage(id, request.newPosition());
-    return ResponseEntity.ok(StageDto.from(stage));
+  public ResponseEntity<List<StageDto>> reorderStages(
+      @Valid @RequestBody ReorderStagesRequest request) {
+    var commands =
+        request.positions().stream()
+            .map(p -> new StagePositionCommand(p.id(), p.position()))
+            .toList();
+    return ResponseEntity.ok(
+        pipelineStageService.reorderStages(commands).stream().map(StageDto::from).toList());
   }
 
   @PostMapping("/api/pipeline/stages/{id}/archive")

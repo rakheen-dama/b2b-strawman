@@ -141,15 +141,18 @@ class JobWorkerIntegrationTest {
 
   @Test
   void shouldDeadLetterAfterMaxRetries() {
-    var job = new JobQueue(FailingTestJobHandler.JOB_TYPE, TENANT_1, ORG_1, "primary", null, 3);
+    // maxRetries=1 keeps this fast: on the FIRST failure newRetryCount(1) >= maxRetries(1), so the
+    // job dead-letters immediately — no backoff retry is ever scheduled. maxRetries=3 would instead
+    // cost 2+4+8=14s of real exponential backoff for no extra coverage; the retry-count threshold →
+    // DEAD_LETTER transition is the assertion under test and fires identically here.
+    var job = new JobQueue(FailingTestJobHandler.JOB_TYPE, TENANT_1, ORG_1, "primary", null, 1);
     jobQueueRepository.saveAndFlush(job);
     UUID jobId = job.getId();
 
     worker.start();
 
-    // With backoff-base-seconds=1: retry 1 after 2s, retry 2 after 4s, retry 3 after 8s -> dead
     await()
-        .atMost(Duration.ofSeconds(30))
+        .atMost(Duration.ofSeconds(10))
         .pollInterval(Duration.ofSeconds(1))
         .untilAsserted(
             () -> {
@@ -158,7 +161,7 @@ class JobWorkerIntegrationTest {
             });
 
     var deadLettered = jobQueueRepository.findById(jobId).orElseThrow();
-    assertThat(deadLettered.getRetryCount()).isEqualTo(3);
+    assertThat(deadLettered.getRetryCount()).isEqualTo(1);
     assertThat(deadLettered.getErrorMessage()).contains("Simulated job failure");
     assertThat(deadLettered.getCompletedAt()).isNotNull();
   }

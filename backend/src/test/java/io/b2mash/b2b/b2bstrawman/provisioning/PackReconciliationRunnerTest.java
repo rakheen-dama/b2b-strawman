@@ -51,10 +51,11 @@ class PackReconciliationRunnerTest {
 
   @Test
   void reconciliationRunnerIsIdempotentAndPreservesSeededState() {
-    // Tenant was seeded during provisioning. One reconciliation run verifies completion,
-    // state preservation, and no-throw in a single pass. (Previously 3 separate tests —
-    // each run iterates every tenant in the DB, so merging saves meaningful wall time.)
-    assertThatCode(() -> reconciliationRunner.run(null)).doesNotThrowAnyException();
+    // Tenant was seeded during provisioning. Reconcile just THIS tenant (not every schema in the
+    // shared DB) to verify completion, state preservation, and no-throw in a single pass — the
+    // startup runner already exercises the all-tenant loop at every context boot.
+    assertThatCode(() -> reconciliationRunner.reconcilePacksForTenant(tenantSchema, ORG_ID))
+        .doesNotThrowAnyException();
 
     runInTenant(
         tenantSchema,
@@ -108,9 +109,9 @@ class PackReconciliationRunnerTest {
                           .count();
                 }));
 
-    // Run reconciliation twice
-    reconciliationRunner.run(null);
-    reconciliationRunner.run(null);
+    // Run reconciliation twice (scoped to this test's tenant — see reconcilePacksForTenant)
+    reconciliationRunner.reconcilePacksForTenant(acctSchema, acctOrgId);
+    reconciliationRunner.reconcilePacksForTenant(acctSchema, acctOrgId);
 
     // Verify counts have not increased
     runInTenant(
@@ -157,9 +158,9 @@ class PackReconciliationRunnerTest {
                   initialPackInstallCount[0] = packInstallRepository.count();
                 }));
 
-    // Run reconciliation twice
-    reconciliationRunner.run(null);
-    reconciliationRunner.run(null);
+    // Run reconciliation twice (scoped to this test's tenant — see reconcilePacksForTenant)
+    reconciliationRunner.reconcilePacksForTenant(profileSchema, profileOrgId);
+    reconciliationRunner.reconcilePacksForTenant(profileSchema, profileOrgId);
 
     // Verify PackInstall count has not increased (idempotent)
     runInTenant(

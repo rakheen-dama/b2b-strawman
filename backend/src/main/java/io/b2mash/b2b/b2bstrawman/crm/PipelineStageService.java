@@ -73,6 +73,26 @@ public class PipelineStageService {
     return pipelineStageRepository.save(stage);
   }
 
+  /**
+   * Consolidated edit used by the HTTP layer (slice 578B). Composes the three granular mutators
+   * (type, name, probability) into one transactional call so the controller stays thin and every
+   * existing invariant is preserved. The type change runs first so its last-active-of-type guard
+   * fires before any field is mutated — a guard failure rolls back the whole edit (single
+   * transaction) and never leaves a half-applied rename.
+   */
+  @Transactional
+  public PipelineStage updateStage(
+      UUID stageId, String name, int defaultProbabilityPct, StageType newType) {
+    var stage = pipelineStageRepository.findOneById(stageId);
+    if (stage.getStageType() != newType) {
+      requireNotLastActiveOfType(stage, "change the type of");
+    }
+    stage.changeStageType(newType);
+    stage.rename(name);
+    stage.changeDefaultProbability(defaultProbabilityPct);
+    return pipelineStageRepository.save(stage);
+  }
+
   /** Repositions a stage. */
   @Transactional
   public PipelineStage reorderStage(UUID stageId, int newPosition) {

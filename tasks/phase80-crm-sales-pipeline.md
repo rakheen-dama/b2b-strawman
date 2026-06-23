@@ -27,7 +27,7 @@ This phase ships as **8 epics (573–580)**, expanded to **12 numbered slices** 
 | 575 | DealTransitionService + Customer Nudge + Events/Audit/Activity | Backend | 574A | L | 575A | **Done** (PR #1489) |
 | 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | **Done** (PR #1491) |
 | 577 | Field / Tag / Saved-View / Audit-Metadata Registration | Backend | 574A, 575A | M | 577A | **Done** (PR #1495) |
-| 578 | Pipeline Summary Aggregation + Stage Config Controller (backend) | Backend | 574A | M | 578A, 578B | 578A **Done** (PR #1496) |
+| 578 | Pipeline Summary Aggregation + Stage Config Controller (backend) | Backend | 574A | M | 578A, 578B | 578A **Done** (PR #1496), 578B **Done** (PR #1498) |
 | 579 | Frontend — Board + List + Intake + Stage Settings | Frontend | 574A, 575A, 578A, 578B | L | 579A, 579B | |
 | 580 | Frontend — Deal Detail + Customer Tab + Dashboard Widget + QA Capstone | Frontend | 576A, 578A, 579A | L | 580A, 580B | |
 
@@ -497,7 +497,7 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **578A** | 578A.1–578A.4 | ~6 backend files (1 service + 1 repo mod / native queries + 1 DTO + 1 controller mod + 1 test) | `PipelineSummaryService`; native aggregation queries; `PipelineSummaryResponse`; `GET /api/dashboard/pipeline-summary`; `PipelineSummaryServiceTest`. **Done** (PR #1496) |
-| **578B** | 578B.1–578B.3 | ~5 backend files (1 controller + 3 request DTOs + 1 service mod + 1 integration test) | `PipelineStageController` (6 endpoints exposing the existing `PipelineStageService`); `CreateStageRequest`/`UpdateStageRequest`/`ReorderStageRequest`; `PipelineStageService.updateStage`; `PipelineStageControllerIntegrationTest`. **Unblocks 579B** — the planned stage-config HTTP layer was never built (only the service existed). |
+| **578B** | 578B.1–578B.3 | ~5 backend files (1 controller + 3 request DTOs + 1 service mod + 1 integration test) | `PipelineStageController` (6 endpoints exposing the existing `PipelineStageService`); `CreateStageRequest`/`UpdateStageRequest`/`ReorderStagesRequest`; `PipelineStageService.updateStage`+`reorderStages`; `PipelineStageControllerIntegrationTest`. **Unblocks 579B** — the planned stage-config HTTP layer was never built (only the service existed). **Done** (PR #1498) |
 
 ### Tasks
 

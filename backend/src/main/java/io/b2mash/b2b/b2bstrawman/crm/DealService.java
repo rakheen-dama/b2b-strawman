@@ -6,12 +6,17 @@ import io.b2mash.b2b.b2bstrawman.crm.dto.DealResponse;
 import io.b2mash.b2b.b2bstrawman.crm.dto.DealUpdateRequest;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.exception.DeleteGuard;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.proposal.ProposalRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -49,6 +54,8 @@ public class DealService {
   private final OrgSettingsRepository orgSettingsRepository;
   private final AuditService auditService;
   private final ProposalRepository proposalRepository;
+  private final FieldGroupService fieldGroupService;
+  private final CustomFieldValidator customFieldValidator;
 
   public DealService(
       DealRepository dealRepository,
@@ -58,7 +65,9 @@ public class DealService {
       CustomerService customerService,
       OrgSettingsRepository orgSettingsRepository,
       AuditService auditService,
-      ProposalRepository proposalRepository) {
+      ProposalRepository proposalRepository,
+      FieldGroupService fieldGroupService,
+      CustomFieldValidator customFieldValidator) {
     this.dealRepository = dealRepository;
     this.dealNumberService = dealNumberService;
     this.pipelineStageService = pipelineStageService;
@@ -67,6 +76,8 @@ public class DealService {
     this.orgSettingsRepository = orgSettingsRepository;
     this.auditService = auditService;
     this.proposalRepository = proposalRepository;
+    this.fieldGroupService = fieldGroupService;
+    this.customFieldValidator = customFieldValidator;
   }
 
   /**
@@ -125,6 +136,17 @@ public class DealService {
     if (expectedCloseDate != null) {
       deal.updateExpectedClose(expectedCloseDate);
     }
+    // Auto-apply DEAL field groups before save so audit events capture final state.
+    var autoApplyIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.DEAL);
+    if (!autoApplyIds.isEmpty()) {
+      var merged = new ArrayList<>(deal.getAppliedFieldGroups());
+      for (UUID id : autoApplyIds) {
+        if (!merged.contains(id)) {
+          merged.add(id);
+        }
+      }
+      deal.setAppliedFieldGroups(merged);
+    }
     var saved = dealRepository.save(deal);
     auditCreated(saved, number, title, customerId);
     log.info("Created deal {} ({}) for customer {}", saved.getId(), number, customerId);
@@ -163,7 +185,10 @@ public class DealService {
       deal.updateSource(request.source());
     }
     if (request.customFields() != null) {
-      deal.setCustomFields(request.customFields());
+      List<UUID> appliedGroups = deal.getAppliedFieldGroups();
+      Map<String, Object> validated =
+          customFieldValidator.validate(EntityType.DEAL, request.customFields(), appliedGroups);
+      deal.setCustomFields(validated);
     }
 
     var saved = dealRepository.save(deal);

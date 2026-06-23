@@ -106,10 +106,11 @@ public interface DealRepository extends JpaRepository<Deal, UUID> {
 
   /**
    * Win-rate window counts plus average days-to-close in a single aggregate row. WON/LOST are
-   * counted by {@code won_at}/{@code lost_at} falling at or after {@code windowStart}; {@code
-   * avgDaysToClose} is the mean {@code (won_at - created_at)} in days over WON deals (NULL when
-   * none). The win rate ({@code wonCount / (wonCount + lostCount)}) is computed in Java with a
-   * zero-divisor guard.
+   * counted by {@code won_at}/{@code lost_at} falling inside the half-open window {@code
+   * [windowStart, windowEnd)} — deals closed on or after {@code windowEnd} are excluded. {@code
+   * avgDaysToClose} is the mean {@code (won_at - created_at)} in days over WON deals in the same
+   * window (NULL when none). The win rate ({@code wonCount / (wonCount + lostCount)}) is computed
+   * in Java with a zero-divisor guard.
    */
   @Query(
       nativeQuery = true,
@@ -123,10 +124,12 @@ public interface DealRepository extends JpaRepository<Deal, UUID> {
           FROM deals
           WHERE (CAST(:ownerId AS UUID) IS NULL OR owner_id = :ownerId)
             AND (
-                  (status = 'WON'  AND won_at  >= :windowStart)
-               OR (status = 'LOST' AND lost_at >= :windowStart)
+                  (status = 'WON'  AND won_at  >= :windowStart AND won_at  < :windowEnd)
+               OR (status = 'LOST' AND lost_at >= :windowStart AND lost_at < :windowEnd)
                 )
           """)
   WinRateProjection winRate(
-      @Param("ownerId") UUID ownerId, @Param("windowStart") Instant windowStart);
+      @Param("ownerId") UUID ownerId,
+      @Param("windowStart") Instant windowStart,
+      @Param("windowEnd") Instant windowEnd);
 }

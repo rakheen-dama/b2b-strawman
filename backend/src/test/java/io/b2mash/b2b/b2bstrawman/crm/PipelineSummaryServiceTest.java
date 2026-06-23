@@ -18,6 +18,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
@@ -167,13 +169,20 @@ class PipelineSummaryServiceTest {
                       .setParameter("wonAt", wonAt)
                       .setParameter("id", dealId)
                       .executeUpdate();
+                  // Drop the L1 cache so a subsequent read cannot surface the pre-UPDATE entity
+                  // (the native UPDATE bypasses the persistence context).
+                  entityManager.flush();
+                  entityManager.clear();
                   return null;
                 }));
   }
 
   private PipelineSummaryResponse summaryFor(UUID ownerId) {
-    return inTenant(
-        () -> pipelineSummaryService.getSummary(new SummaryFilter(null, null, ownerId)));
+    return inTenant(() -> pipelineSummaryService.getSummary(null, null, ownerId));
+  }
+
+  private PipelineSummaryResponse summaryFor(LocalDate from, LocalDate to, UUID ownerId) {
+    return inTenant(() -> pipelineSummaryService.getSummary(from, to, ownerId));
   }
 
   // --- Tests ---
@@ -271,6 +280,52 @@ class PipelineSummaryServiceTest {
 
     // 2 / (2 + 1) = 0.6667
     assertThat(summary.winRate()).isEqualByComparingTo(new BigDecimal("0.6667"));
+  }
+
+  @Test
+  void winRate_excludesDealsClosedBeforeWindowStart() throws Exception {
+    UUID owner = UUID.randomUUID();
+    UUID customer = createCustomer("WB Co", "wb@test.com");
+    PipelineStage stage = openStages.get(0);
+
+    // 1 WON inside the default trailing-90-day window.
+    win(createDeal(customer, owner, stage.getId(), "1000.00"));
+    // 1 WON pushed OUTSIDE (older than) the 90-day window — must not raise the win count.
+    UUID old = createDeal(customer, owner, stage.getId(), "2000.00");
+    win(old);
+    Instant longAgo = Instant.now().minus(200, ChronoUnit.DAYS);
+    setTimestamps(old, longAgo.minus(10, ChronoUnit.DAYS), longAgo);
+
+    PipelineSummaryResponse summary = summaryFor(owner);
+
+    // Only the in-window WON counts → 1 / (1 + 0) = 1.0000, NOT inflated by the old deal.
+    assertThat(summary.winRate()).isEqualByComparingTo(new BigDecimal("1.0000"));
+    // Days-to-close reflects only the in-window WON (not the 200-day-old span).
+    assertThat(summary.averageDaysToClose()).isNotNull();
+    assertThat(summary.averageDaysToClose()).isLessThan(190);
+  }
+
+  @Test
+  void winRate_explicitTo_excludesDealsClosedAfterIt() throws Exception {
+    UUID owner = UUID.randomUUID();
+    UUID customer = createCustomer("WT Co", "wt@test.com");
+    PipelineStage stage = openStages.get(0);
+
+    // Both WON now. An explicit `to` of 5 days ago must exclude both (closed after `to`).
+    win(createDeal(customer, owner, stage.getId(), "1000.00"));
+    win(createDeal(customer, owner, stage.getId(), "2000.00"));
+
+    LocalDate from = LocalDate.now(ZoneOffset.UTC).minusDays(30);
+    LocalDate to = LocalDate.now(ZoneOffset.UTC).minusDays(5);
+
+    PipelineSummaryResponse summary = summaryFor(from, to, owner);
+
+    // No deals fall inside [from, to] → zero closed → winRate 0, days-to-close null.
+    assertThat(summary.winRate()).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(summary.averageDaysToClose()).isNull();
+    // The DTO still reports the inclusive caller-supplied window bounds.
+    assertThat(summary.windowFrom()).isEqualTo(from);
+    assertThat(summary.windowTo()).isEqualTo(to);
   }
 
   @Test

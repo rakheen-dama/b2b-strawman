@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.dashboard;
 
-import io.b2mash.b2b.b2bstrawman.crm.SummaryFilter;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.CrossProjectActivityItem;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.MemberHoursEntry;
@@ -150,7 +149,6 @@ public class DashboardController {
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
       @RequestParam(required = false) UUID ownerId) {
-    return ResponseEntity.ok(
-        dashboardService.getPipelineSummary(new SummaryFilter(from, to, ownerId)));
+    return ResponseEntity.ok(dashboardService.getPipelineSummary(from, to, ownerId));
   }
 }

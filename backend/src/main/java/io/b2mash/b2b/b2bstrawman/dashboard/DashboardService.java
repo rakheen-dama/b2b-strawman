@@ -7,7 +7,6 @@ import io.b2mash.b2b.b2bstrawman.audit.CrossProjectActivityProjection;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudget;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudgetRepository;
 import io.b2mash.b2b.b2bstrawman.crm.PipelineSummaryService;
-import io.b2mash.b2b.b2bstrawman.crm.SummaryFilter;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.CrossProjectActivityItem;
@@ -109,11 +108,11 @@ public class DashboardService {
   }
 
   /**
-   * Delegates to {@link PipelineSummaryService#getSummary(SummaryFilter)} (Epic 578A). The
-   * read-only transaction is owned by the delegate.
+   * Delegates to {@link PipelineSummaryService#getSummary(LocalDate, LocalDate, UUID)} (Epic 578A).
+   * The read-only transaction is owned by the delegate.
    */
-  public PipelineSummaryResponse getPipelineSummary(SummaryFilter filter) {
-    return pipelineSummaryService.getSummary(filter);
+  public PipelineSummaryResponse getPipelineSummary(LocalDate from, LocalDate to, UUID ownerId) {
+    return pipelineSummaryService.getSummary(from, to, ownerId);
   }
 
   // --- Project-scoped endpoints (Epic 75B) ---

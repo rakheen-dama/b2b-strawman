@@ -5,9 +5,11 @@ import io.b2mash.b2b.b2bstrawman.dashboard.dto.PipelineSummaryResponse.StageBrea
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,16 +40,19 @@ public class PipelineSummaryService {
   }
 
   /**
-   * Builds the pipeline summary for the given filter. Defaults the window to the trailing 90 days
-   * (start) through today (end) when {@code from}/{@code to} are null.
+   * Builds the pipeline summary for the given window and optional owner. Defaults the window to the
+   * trailing 90 days (start) through today (end) when {@code from}/{@code to} are null.
+   *
+   * @param from inclusive start of the win-rate / days-to-close window; trailing 90 days when null
+   * @param to inclusive end of the window; today when null
+   * @param ownerId optional deal-owner filter; aggregates all owners when null
    */
   @Transactional(readOnly = true)
-  public PipelineSummaryResponse getSummary(SummaryFilter filter) {
-    LocalDate windowFrom =
-        filter.from() != null ? filter.from() : LocalDate.now().minusDays(DEFAULT_WINDOW_DAYS);
-    LocalDate windowTo = filter.to() != null ? filter.to() : LocalDate.now();
+  public PipelineSummaryResponse getSummary(LocalDate from, LocalDate to, UUID ownerId) {
+    LocalDate windowFrom = from != null ? from : LocalDate.now().minusDays(DEFAULT_WINDOW_DAYS);
+    LocalDate windowTo = to != null ? to : LocalDate.now();
 
-    List<StageBreakdownProjection> rows = dealRepository.stageBreakdown(filter.ownerId());
+    List<StageBreakdownProjection> rows = dealRepository.stageBreakdown(ownerId);
 
     List<StageBreakdown> stages =
         rows.stream()
@@ -57,12 +62,15 @@ public class PipelineSummaryService {
                         r.getStageId(),
                         r.getStageName(),
                         r.getDealCount(),
-                        r.getTotalValue(),
-                        r.getWeightedValue()))
+                        scale(r.getTotalValue()),
+                        scale(r.getWeightedValue())))
             .toList();
 
     BigDecimal openWeightedValue =
-        stages.stream().map(StageBreakdown::weightedValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+        scale(
+            stages.stream()
+                .map(StageBreakdown::weightedValue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add));
 
     long openDealCount = stages.stream().mapToLong(StageBreakdown::dealCount).sum();
     BigDecimal openTotalValue =
@@ -72,9 +80,12 @@ public class PipelineSummaryService {
             ? BigDecimal.ZERO
             : openTotalValue.divide(BigDecimal.valueOf(openDealCount), 2, RoundingMode.HALF_UP);
 
-    WinRateProjection win =
-        dealRepository.winRate(
-            filter.ownerId(), windowFrom.atStartOfDay(ZoneOffset.UTC).toInstant());
+    // Half-open window: WON/LOST deals closed on or after the exclusive next-day boundary of
+    // windowTo are excluded. The response still reports windowTo as the inclusive end the caller
+    // supplied.
+    Instant windowStart = windowFrom.atStartOfDay(ZoneOffset.UTC).toInstant();
+    Instant windowEnd = windowTo.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+    WinRateProjection win = dealRepository.winRate(ownerId, windowStart, windowEnd);
 
     long closed = win.getWonCount() + win.getLostCount();
     BigDecimal winRate =
@@ -95,5 +106,14 @@ public class PipelineSummaryService {
         averageDealSize,
         averageDaysToClose,
         stages);
+  }
+
+  /**
+   * Normalises a possibly-null monetary value from PostgreSQL NUMERIC arithmetic to 2 d.p. so the
+   * response always serialises at the documented scale (ADR-318 §11.4). Null totals (empty
+   * pipeline) collapse to {@link BigDecimal#ZERO} scaled to 2 d.p.
+   */
+  private static BigDecimal scale(BigDecimal value) {
+    return (value == null ? BigDecimal.ZERO : value).setScale(2, RoundingMode.HALF_UP);
   }
 }

@@ -150,7 +150,10 @@ class DealCustomFieldsTest {
                     """
                     {"customFields":{"external_url":"not-a-url"}}
                     """))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").isNotEmpty())
+        .andExpect(jsonPath("$.detail").isNotEmpty());
   }
 
   @Test

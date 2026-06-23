@@ -27,8 +27,8 @@ This phase ships as **8 epics (573–580)**, expanded to **12 numbered slices** 
 | 575 | DealTransitionService + Customer Nudge + Events/Audit/Activity | Backend | 574A | L | 575A | **Done** (PR #1489) |
 | 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | **Done** (PR #1491) |
 | 577 | Field / Tag / Saved-View / Audit-Metadata Registration | Backend | 574A, 575A | M | 577A | **Done** (PR #1495) |
-| 578 | Pipeline Summary Aggregation (backend) | Backend | 574A | M | 578A | **Done** (PR #1496) |
-| 579 | Frontend — Board + List + Intake + Stage Settings | Frontend | 574A, 575A, 578A | L | 579A, 579B | |
+| 578 | Pipeline Summary Aggregation + Stage Config Controller (backend) | Backend | 574A | M | 578A, 578B | 578A **Done** (PR #1496) |
+| 579 | Frontend — Board + List + Intake + Stage Settings | Frontend | 574A, 575A, 578A, 578B | L | 579A, 579B | |
 | 580 | Frontend — Deal Detail + Customer Tab + Dashboard Widget + QA Capstone | Frontend | 576A, 578A, 579A | L | 580A, 580B | |
 
 **Slice count: 12** (8 architecture capability slices expanded to 12 numbered slices for the 6–10 file / ~800 LOC budget). Backend/frontend split preserved per slice — no slice mixes both scopes.
@@ -480,13 +480,13 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 
 ---
 
-## Epic 578: Pipeline Summary Aggregation (backend)
+## Epic 578: Pipeline Summary Aggregation + Stage Config Controller (backend)
 
-**Goal**: A purpose-built, single-query summary endpoint returning open weighted pipeline value, per-stage breakdown, win rate over a date window, average deal size, and optional average days-to-close — the v1 reporting surface (full `ReportDefinition` reports deferred).
+**Goal**: (578A) A purpose-built, single-query summary endpoint returning open weighted pipeline value, per-stage breakdown, win rate over a date window, average deal size, and optional average days-to-close — the v1 reporting surface (full `ReportDefinition` reports deferred). (578B) The stage-configuration HTTP layer — a thin `PipelineStageController` exposing the existing `PipelineStageService` (list/create/edit/reorder/archive/delete) — which the architecture assumed but no prior epic built; required to unblock the 579B `settings/pipeline` UI.
 
-**References**: Architecture §11.3d (aggregation SQL), §11.4 (summary API + JSON), §11.8 (testing), §11.10 Slice 6; [ADR-318](../adr/ADR-318-pipeline-metrics.md).
+**References**: Architecture §11.3d (aggregation SQL), §11.4 (summary API + JSON), §11.8 (testing), §11.9 (stage-config capability), §11.10 Slice 6; [ADR-318](../adr/ADR-318-pipeline-metrics.md).
 
-**Dependencies**: 574A (deals exist, repository in place).
+**Dependencies**: 574A (deals exist, repository in place); 578B builds on the existing `PipelineStageService`/`PipelineStage`/`StageDto` (574A).
 
 **Scope**: Backend only
 
@@ -497,6 +497,7 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **578A** | 578A.1–578A.4 | ~6 backend files (1 service + 1 repo mod / native queries + 1 DTO + 1 controller mod + 1 test) | `PipelineSummaryService`; native aggregation queries; `PipelineSummaryResponse`; `GET /api/dashboard/pipeline-summary`; `PipelineSummaryServiceTest`. **Done** (PR #1496) |
+| **578B** | 578B.1–578B.3 | ~5 backend files (1 controller + 3 request DTOs + 1 service mod + 1 integration test) | `PipelineStageController` (6 endpoints exposing the existing `PipelineStageService`); `CreateStageRequest`/`UpdateStageRequest`/`ReorderStageRequest`; `PipelineStageService.updateStage`; `PipelineStageControllerIntegrationTest`. **Unblocks 579B** — the planned stage-config HTTP layer was never built (only the service existed). |
 
 ### Tasks
 
@@ -506,6 +507,9 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 | 578A.2 | Create `PipelineSummaryResponse` DTO | `dashboard/dto/PipelineSummaryResponse.java` | 578A.4 | §11.4 summary JSON | `openWeightedValue`, `currency`, `winRate`, `windowFrom`/`windowTo`, `averageDealSize`, `averageDaysToClose`, `stages[]` (stageId/stageName/dealCount/totalValue/weightedValue). |
 | 578A.3 | Create `PipelineSummaryService` + endpoint | `crm/PipelineSummaryService.java`, `dashboard/DashboardController.java` (modify), `dashboard/DashboardService.java` (modify) | 578A.4 | `dashboard/` team-utilization summary pattern; §11.3d | `@Transactional(readOnly = true) getSummary(SummaryFilter)`: per-stage breakdown; open weighted value `Σ(value×effProb/100)` over OPEN; win rate `won/(won+lost)` over **trailing 90 days** default (window shared with widget); avg deal size; optional avg days-to-close (`wonAt − createdAt`). Single org currency v1 (defaulted from `OrgSettings`; documented limitation). `GET /api/dashboard/pipeline-summary?from&to&ownerId` — `VIEW_DEALS`, admin/owner-scoped. |
 | 578A.4 | `PipelineSummaryServiceTest` | `backend/src/test/java/.../crm/PipelineSummaryServiceTest.java` | ~7 tests: weighted value `Σ(value×effProb)` over OPEN only (WON/LOST excluded); per-stage totals + count; effective probability override vs stage default; WON=100/LOST=0 in math; win rate over window; avg deal size; avg days-to-close | §11.8 `PipelineSummaryServiceTest` row | Seed deals across stages/statuses; assert aggregation math exactly. |
+| 578B.1 | Create `PipelineStageController` + request DTOs | `crm/PipelineStageController.java`, `crm/dto/CreateStageRequest.java`, `crm/dto/UpdateStageRequest.java`, `crm/dto/ReorderStageRequest.java` | 578B.3 | `crm/DealController.java` (thin-adapter, `@RequiresCapability`, `ResponseEntity<T>`, no try/catch — exceptions extend `ErrorResponseException`); existing `crm/dto/StageDto.java` (reuse as response) | 6 endpoints over the existing `PipelineStageService`: `GET /api/pipeline/stages` (`VIEW_DEALS`); `POST /api/pipeline/stages` (201+Location); `PUT /api/pipeline/stages/{id}` (edit name/probability/type); `POST /api/pipeline/stages/{id}/reorder`; `POST /api/pipeline/stages/{id}/archive`; `DELETE /api/pipeline/stages/{id}` (204). All writes gate on `MANAGE_PIPELINE`. Reuse `StageDto.from(...)` for responses. |
+| 578B.2 | Add `updateStage` consolidation method | `crm/PipelineStageService.java` (modify) | 578B.3 | existing granular mutators (`renameStage`/`changeDefaultProbability`/`changeStageType`) | `updateStage(UUID stageId, String name, int defaultProbabilityPct, StageType newType)` — single call composing the three granular mutators so the controller stays a thin adapter. Preserve all existing invariants (last-of-type guard on type change). |
+| 578B.3 | `PipelineStageControllerIntegrationTest` | `backend/src/test/java/.../crm/PipelineStageControllerIntegrationTest.java` | ~9 tests: list returns seeded stages; create → 201 + Location + body; update persists name/probability/type; reorder persists position; archive → `archived=true`; archive last-of-type → 400 + ProblemDetail; delete with deals attached → 409 (DeleteGuard); delete archived no-deals → 204; member without `MANAGE_PIPELINE` → 403 | `DealCrudIntegrationTest` `@BeforeAll` (`provisionTenant`, `TestMemberHelper.syncMember`, `ScopedValue.where(RequestScopes.TENANT_ID...)`) | Exception→HTTP: `ResourceNotFoundException`→404, `InvalidStateException` (last-of-type)→400, `ResourceConflictException` via `DeleteGuard` (deals attached)→409. |
 
 ### Key Files
 
@@ -517,6 +521,16 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 **Modify (backend):**
 - `backend/src/main/java/io/b2mash/b2b/b2bstrawman/crm/DealRepository.java` — aggregation queries
 - `backend/src/main/java/io/b2mash/b2b/b2bstrawman/dashboard/DashboardController.java`, `DashboardService.java` — summary endpoint
+
+**Create (backend, 578B):**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/crm/PipelineStageController.java`
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/crm/dto/CreateStageRequest.java`
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/crm/dto/UpdateStageRequest.java`
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/crm/dto/ReorderStageRequest.java`
+- `backend/src/test/java/io/b2mash/b2b/b2bstrawman/crm/PipelineStageControllerIntegrationTest.java`
+
+**Modify (backend, 578B):**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/crm/PipelineStageService.java` — add `updateStage(...)` consolidation method
 
 **Read for context:**
 - `backend/src/main/java/io/b2mash/b2b/b2bstrawman/dashboard/` — existing dashboard summary/widget backend pattern (e.g. team utilization)
@@ -536,7 +550,7 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 
 **References**: Architecture §11.5.1/.3 (intake + drag sequences), §11.8 (frontend change table), §11.10 Slice 7; `frontend/CLAUDE.md` (Next.js 16, Shadcn, Keycloak).
 
-**Dependencies**: 574A (CRUD/intake/list API), 575A (transition API), 578A (summary for header). 579B depends on 579A (`lib/api/crm.ts`).
+**Dependencies**: 574A (CRUD/intake/list API), 575A (transition API), 578A (summary for header), 578B (stage config CRUD/reorder/archive API). 579B depends on 579A (`lib/api/crm.ts`) and 578B (stage endpoints).
 
 **Scope**: Frontend only
 

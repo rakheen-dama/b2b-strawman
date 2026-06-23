@@ -141,14 +141,17 @@ public class DashboardController {
    * Returns the CRM pipeline summary: open weighted value, per-stage breakdown, win rate over a
    * date window (trailing 90 days by default), average deal size, and average days-to-close. Gated
    * on {@code VIEW_DEALS} (default-on for Owner/Admin). All parameters are optional; {@code
-   * ownerId} scopes the aggregation to a single deal owner.
+   * ownerId} scopes the aggregation to a single deal owner. Admin/owner actors may scope to any
+   * owner (or all owners when {@code ownerId} is null); regular members are restricted to their own
+   * pipeline regardless of the requested {@code ownerId}.
    */
   @GetMapping("/api/dashboard/pipeline-summary")
   @RequiresCapability("VIEW_DEALS")
   public ResponseEntity<PipelineSummaryResponse> getPipelineSummary(
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-      @RequestParam(required = false) UUID ownerId) {
-    return ResponseEntity.ok(dashboardService.getPipelineSummary(from, to, ownerId));
+      @RequestParam(required = false) UUID ownerId,
+      ActorContext actor) {
+    return ResponseEntity.ok(dashboardService.getPipelineSummary(from, to, ownerId, actor));
   }
 }

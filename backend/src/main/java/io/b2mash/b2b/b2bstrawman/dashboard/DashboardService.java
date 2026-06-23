@@ -108,11 +108,16 @@ public class DashboardService {
   }
 
   /**
-   * Delegates to {@link PipelineSummaryService#getSummary(LocalDate, LocalDate, UUID)} (Epic 578A).
-   * The read-only transaction is owned by the delegate.
+   * Delegates to {@link PipelineSummaryService#getSummary(LocalDate, LocalDate, UUID,
+   * ActorContext)} (Epic 578A). Validates the date window (when both bounds are supplied) before
+   * delegating; the read-only transaction and admin/owner scoping are owned by the delegate.
    */
-  public PipelineSummaryResponse getPipelineSummary(LocalDate from, LocalDate to, UUID ownerId) {
-    return pipelineSummaryService.getSummary(from, to, ownerId);
+  public PipelineSummaryResponse getPipelineSummary(
+      LocalDate from, LocalDate to, UUID ownerId, ActorContext actor) {
+    if (from != null && to != null) {
+      requireValidDateRange(from, to);
+    }
+    return pipelineSummaryService.getSummary(from, to, ownerId, actor);
   }
 
   // --- Project-scoped endpoints (Epic 75B) ---

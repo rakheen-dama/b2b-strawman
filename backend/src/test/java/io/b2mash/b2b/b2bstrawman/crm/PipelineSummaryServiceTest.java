@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.crm;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.crm.dto.DealResponse;
@@ -8,9 +9,11 @@ import io.b2mash.b2b.b2bstrawman.crm.dto.DealUpdateRequest;
 import io.b2mash.b2b.b2bstrawman.crm.dto.TransitionRequest;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.PipelineSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.PipelineSummaryResponse.StageBreakdown;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
@@ -55,6 +58,7 @@ class PipelineSummaryServiceTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private PipelineSummaryService pipelineSummaryService;
+  @Autowired private io.b2mash.b2b.b2bstrawman.dashboard.DashboardService dashboardService;
   @Autowired private DealService dealService;
   @Autowired private DealRepository dealRepository;
   @Autowired private DealTransitionService dealTransitionService;
@@ -177,12 +181,20 @@ class PipelineSummaryServiceTest {
                 }));
   }
 
+  /**
+   * Admin actor used by the aggregation-math tests so the requested {@code ownerId} (a per-test
+   * random UUID) is honored — admin/owner scoping passes the filter through unchanged.
+   */
+  private ActorContext adminActor() {
+    return new ActorContext(memberId, Roles.ORG_ADMIN);
+  }
+
   private PipelineSummaryResponse summaryFor(UUID ownerId) {
-    return inTenant(() -> pipelineSummaryService.getSummary(null, null, ownerId));
+    return inTenant(() -> pipelineSummaryService.getSummary(null, null, ownerId, adminActor()));
   }
 
   private PipelineSummaryResponse summaryFor(LocalDate from, LocalDate to, UUID ownerId) {
-    return inTenant(() -> pipelineSummaryService.getSummary(from, to, ownerId));
+    return inTenant(() -> pipelineSummaryService.getSummary(from, to, ownerId, adminActor()));
   }
 
   // --- Tests ---
@@ -376,6 +388,59 @@ class PipelineSummaryServiceTest {
 
     assertThat(summary.averageDaysToClose()).isNull();
     assertThat(summary.winRate()).isEqualByComparingTo(BigDecimal.ZERO);
+  }
+
+  // --- CodeRabbit findings: object-level scoping + date-range validation ---
+
+  /**
+   * IDOR guard: a regular member requesting another owner's {@code ownerId} must only ever see
+   * THEIR OWN pipeline. The service overrides the requested foreign ownerId with {@code
+   * actor.memberId()}.
+   */
+  @Test
+  void memberActor_requestingForeignOwner_seesOnlyOwnPipeline() throws Exception {
+    UUID foreignOwner = UUID.randomUUID();
+    UUID customer = createCustomer("IDOR Co", "idor@test.com");
+    PipelineStage stage = openStages.get(0);
+
+    // The member (memberId) owns one deal; the foreign owner owns another (larger) deal.
+    createDeal(customer, memberId, stage.getId(), "1000.00");
+    createDeal(customer, foreignOwner, stage.getId(), "9000.00");
+
+    // A regular member actor asks for the foreign owner's pipeline.
+    ActorContext member = new ActorContext(memberId, Roles.ORG_MEMBER);
+    PipelineSummaryResponse summary =
+        inTenant(() -> pipelineSummaryService.getSummary(null, null, foreignOwner, member));
+
+    // Scoping forces ownerId -> memberId, so only the member's own 1000.00 deal is aggregated;
+    // the foreign owner's 9000.00 deal must NOT leak in.
+    StageBreakdown row = stageRow(summary, stage.getId());
+    assertThat(row.dealCount()).isEqualTo(1);
+    assertThat(row.totalValue()).isEqualByComparingTo("1000.00");
+
+    // Cross-check: an admin asking for the foreign owner DOES see the 9000.00 deal (proves the
+    // member case was actually restricted, not just empty).
+    PipelineSummaryResponse asAdmin = summaryFor(foreignOwner);
+    StageBreakdown adminRow = stageRow(asAdmin, stage.getId());
+    assertThat(adminRow.dealCount()).isEqualTo(1);
+    assertThat(adminRow.totalValue()).isEqualByComparingTo("9000.00");
+  }
+
+  /**
+   * Date-range validation: an inverted window ({@code from} after {@code to}) is rejected with the
+   * same {@link InvalidStateException} the other date-windowed dashboard endpoints throw, rather
+   * than silently producing misleading metrics.
+   */
+  @Test
+  void invertedDateRange_throwsInvalidStateException() {
+    UUID owner = UUID.randomUUID();
+    LocalDate from = LocalDate.now(ZoneOffset.UTC);
+    LocalDate to = from.minusDays(10); // from after to
+
+    assertThatThrownBy(
+            () ->
+                inTenant(() -> dashboardService.getPipelineSummary(from, to, owner, adminActor())))
+        .isInstanceOf(io.b2mash.b2b.b2bstrawman.exception.InvalidStateException.class);
   }
 
   private static StageBreakdown stageRow(PipelineSummaryResponse summary, UUID stageId) {

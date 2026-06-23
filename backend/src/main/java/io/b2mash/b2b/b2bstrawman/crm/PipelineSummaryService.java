@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.crm;
 
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.PipelineSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.PipelineSummaryResponse.StageBreakdown;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -43,16 +44,28 @@ public class PipelineSummaryService {
    * Builds the pipeline summary for the given window and optional owner. Defaults the window to the
    * trailing 90 days (start) through today (end) when {@code from}/{@code to} are null.
    *
+   * <p>Object-level scoping (mirrors {@code DashboardService.getTeamWorkload}): an admin/owner
+   * actor may aggregate any single owner via {@code ownerId} (or all owners when {@code ownerId} is
+   * null); a regular member is forced to their own {@link ActorContext#memberId()}, so any foreign
+   * {@code ownerId} they request is ignored. This prevents an IDOR where a VIEW_DEALS member reads
+   * another owner's pipeline.
+   *
    * @param from inclusive start of the win-rate / days-to-close window; trailing 90 days when null
    * @param to inclusive end of the window; today when null
-   * @param ownerId optional deal-owner filter; aggregates all owners when null
+   * @param ownerId optional deal-owner filter; aggregates all owners when null (admin/owner only)
+   * @param actor the authenticated actor used for admin/owner object-level scoping
    */
   @Transactional(readOnly = true)
-  public PipelineSummaryResponse getSummary(LocalDate from, LocalDate to, UUID ownerId) {
+  public PipelineSummaryResponse getSummary(
+      LocalDate from, LocalDate to, UUID ownerId, ActorContext actor) {
+    // Admin/owner honors the requested ownerId (null = all owners); a regular member is restricted
+    // to their own pipeline regardless of any ownerId they pass.
+    UUID resolvedOwnerId = actor.isOwnerOrAdmin() ? ownerId : actor.memberId();
+
     LocalDate windowFrom = from != null ? from : LocalDate.now().minusDays(DEFAULT_WINDOW_DAYS);
     LocalDate windowTo = to != null ? to : LocalDate.now();
 
-    List<StageBreakdownProjection> rows = dealRepository.stageBreakdown(ownerId);
+    List<StageBreakdownProjection> rows = dealRepository.stageBreakdown(resolvedOwnerId);
 
     List<StageBreakdown> stages =
         rows.stream()
@@ -85,7 +98,7 @@ public class PipelineSummaryService {
     // supplied.
     Instant windowStart = windowFrom.atStartOfDay(ZoneOffset.UTC).toInstant();
     Instant windowEnd = windowTo.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
-    WinRateProjection win = dealRepository.winRate(ownerId, windowStart, windowEnd);
+    WinRateProjection win = dealRepository.winRate(resolvedOwnerId, windowStart, windowEnd);
 
     long closed = win.getWonCount() + win.getLostCount();
     BigDecimal winRate =

@@ -111,28 +111,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
 
     for (var mapping : allMappings) {
       try {
-        var schemaName = mapping.getSchemaName();
-        var clerkOrgId = mapping.getClerkOrgId();
-
-        fieldPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-        installPacksViaPipeline(schemaName, PackType.DOCUMENT_TEMPLATE);
-        clausePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-        compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-        standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
-        requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-        installPacksViaPipeline(schemaName, PackType.AUTOMATION_TEMPLATE);
-        ratePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-        projectTemplatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-        schedulePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-        dealPipelinePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-        legalTariffSeeder.seedForTenant(schemaName, clerkOrgId);
-        // GAP-L-44 + GAP-L-27 — merge enabled_modules and reconcile taxDefaults/tax_label from
-        // the vertical profile JSON into the tenant row. Idempotent; runs for every tenant.
-        verticalProfileReconciliationSeeder.reconcile(schemaName, clerkOrgId);
-        // GAP-L-64 — auto-seed dev-only mock PSP adapter for legal-za tenants when no PAYMENT
-        // integration is configured. No-op in prod profile or when a PSP is already wired.
-        mockPaymentIntegrationSeeder.seedForTenant(schemaName, clerkOrgId);
-
+        reconcilePacksForTenant(mapping.getSchemaName(), mapping.getClerkOrgId());
         succeeded++;
       } catch (Exception e) {
         failed++;
@@ -149,6 +128,34 @@ public class PackReconciliationRunner implements ApplicationRunner {
         allMappings.size(),
         succeeded,
         failed);
+  }
+
+  /**
+   * Reconciles every idempotent pack seeder for a single tenant schema. Extracted from {@link
+   * #run(ApplicationArguments)} so callers can reconcile one tenant instead of fanning out over
+   * every schema in the shared database. The startup runner still invokes this per tenant inside
+   * its loop, so production behaviour is unchanged; tests can target their own tenant and avoid the
+   * O(all-accumulated-tenants) cost (and cross-tenant collisions) of a full reconciliation pass.
+   */
+  void reconcilePacksForTenant(String schemaName, String clerkOrgId) {
+    fieldPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+    installPacksViaPipeline(schemaName, PackType.DOCUMENT_TEMPLATE);
+    clausePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+    compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+    standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
+    requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+    installPacksViaPipeline(schemaName, PackType.AUTOMATION_TEMPLATE);
+    ratePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+    projectTemplatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+    schedulePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+    dealPipelinePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+    legalTariffSeeder.seedForTenant(schemaName, clerkOrgId);
+    // GAP-L-44 + GAP-L-27 — merge enabled_modules and reconcile taxDefaults/tax_label from
+    // the vertical profile JSON into the tenant row. Idempotent; runs for every tenant.
+    verticalProfileReconciliationSeeder.reconcile(schemaName, clerkOrgId);
+    // GAP-L-64 — auto-seed dev-only mock PSP adapter for legal-za tenants when no PAYMENT
+    // integration is configured. No-op in prod profile or when a PSP is already wired.
+    mockPaymentIntegrationSeeder.seedForTenant(schemaName, clerkOrgId);
   }
 
   private void installPacksViaPipeline(String schemaName, PackType packType) {

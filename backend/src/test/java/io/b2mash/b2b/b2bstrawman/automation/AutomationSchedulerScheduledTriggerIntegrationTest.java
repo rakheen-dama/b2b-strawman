@@ -84,9 +84,18 @@ class AutomationSchedulerScheduledTriggerIntegrationTest {
         .run(body);
   }
 
-  private long countAutomationActionFailedNotifications() {
+  /**
+   * Counts AUTOMATION_ACTION_FAILED notifications for a SPECIFIC rule. Must scope by rule id: this
+   * class runs PER_CLASS against a never-reset tenant and {@code processScheduledTenant()} fires
+   * every due rule in the tenant, so sibling methods' accumulated (and intentionally-failing) rules
+   * bump a tenant-wide failure count mid-test — the flake was {@code expected 5, got 13}. The
+   * producer tags each notification with referenceEntityType="AutomationRule" + the rule id (see
+   * {@code AutomationEventListener#sendFailureNotification}).
+   */
+  private long countAutomationActionFailedNotificationsForRule(UUID ruleId) {
     return notificationRepository.findAll().stream()
         .filter(n -> "AUTOMATION_ACTION_FAILED".equals(n.getType()))
+        .filter(n -> ruleId.equals(n.getReferenceEntityId()))
         .count();
   }
 
@@ -243,8 +252,6 @@ class AutomationSchedulerScheduledTriggerIntegrationTest {
           inactive.complete(ownerMemberId); // -> COMPLETED, not ACTIVE
           inactive = projectRepository.save(inactive);
 
-          long failedBefore = countAutomationActionFailedNotifications();
-
           // SCHEDULED rule: weekly per-matter AI summary, project-scoped contextRef, ACTIVE filter
           var rule =
               new AutomationRule(
@@ -301,8 +308,12 @@ class AutomationSchedulerScheduledTriggerIntegrationTest {
               .contains(active1.getId(), active2.getId())
               .doesNotContain(inactive.getId());
 
-          // No automation failure notifications produced by the fan-out.
-          assertThat(countAutomationActionFailedNotifications()).isEqualTo(failedBefore);
+          // This rule's fan-out (runner mocked to succeed) must produce no failure notifications.
+          // Scope to the rule id, not a tenant-wide count — see the helper javadoc (the count-bleed
+          // flake: processScheduledTenant() also fires sibling accumulated rules in this
+          // never-reset
+          // PER_CLASS tenant, so a global count was a moving target — expected 5, got 13).
+          assertThat(countAutomationActionFailedNotificationsForRule(rule.getId())).isZero();
         });
   }
 

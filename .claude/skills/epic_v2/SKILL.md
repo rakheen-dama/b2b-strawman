@@ -18,6 +18,8 @@ This prevents the builder from burning 50%+ of its context on research it only n
 
 **Context budget rule**: The orchestrator NEVER reads ARCHITECTURE.md, full phase task files, or CLAUDE.md subdirectory files. That is exclusively the scout's job.
 
+**Verify-ownership rule**: Subagents (builder + fixers) build only up to **Tier 2** (targeted tests green), then commit/push. The **orchestrator** owns the single **Tier 3** full `mvn verify`, run once on the final commit, in the background (Step 4.6). This is the efficiency backbone of v2: subagents never die mid-verify, no full verify runs on a soon-to-be-superseded intermediate commit, and the builder opens the PR at Tier-2 green so **Backend CI runs in parallel** with reviews and the orchestrator verify instead of as tail latency.
+
 ## Arguments
 
 Epic number or slice ID:
@@ -193,7 +195,9 @@ All commands run from: cd /Users/rakheendama/Projects/2026/worktree-epic-{ID}/ba
 The strategy has 3 tiers. Use the CHEAPEST tier that answers your current question:
 - **Tier 1 (Compile)**: ~30s — "Does it compile?" Use while iterating on code.
 - **Tier 2 (Targeted Tests)**: ~2-3min — "Do MY new/changed tests pass?" Use after code is written.
-- **Tier 3 (Full Verify)**: ~10-15min — "Does everything pass?" Use ONCE before commit/PR.
+- **Tier 3 (Full Verify)**: ~10-20min — "Does everything pass?" **Run by the ORCHESTRATOR only**, exactly once, on the FINAL commit (Step 4.6).
+
+**Subagents (builder + fixers) STOP at Tier 2.** They never run Tier 3. Rationale: the full verify is long-running; a subagent's turn routinely ends mid-verify, which SIGTERM-kills its own build (the "exit 143 / forked VM terminated" noise — not a real failure) and forces the orchestrator to salvage the half-done state. Worse, every Tier 3 a subagent runs is on an intermediate commit that the next fix cycle immediately invalidates — pure waste (~20 min each). The orchestrator owns ONE authoritative Tier 3 on the final commit, run in the background where it can't be turn-killed, in parallel with Backend CI and the re-reviews.
 
 **Step 0: Kill zombie processes (prevents connection pool exhaustion)**
   pgrep -f 'surefire.*worktree-epic' | xargs kill 2>/dev/null || true; sleep 2
@@ -218,20 +222,22 @@ The strategy has 3 tiers. Use the CHEAPEST tier that answers your current questi
 
   Fix and repeat Tier 2 until your tests pass. Do NOT jump to Tier 3 with failing targeted tests.
 
-**Step 4: Tier 3 — Full verify (run ONCE before commit, confirms no regressions)**
-  ./mvnw clean verify -q > /tmp/mvn-epic-{ID}.log 2>&1; MVN_EXIT=$?; if [ $MVN_EXIT -eq 0 ]; then echo "FULL BUILD SUCCESS"; grep 'Tests run:' /tmp/mvn-epic-{ID}.log | tail -1; else echo "FULL BUILD FAILED (exit $MVN_EXIT)"; FAILED=$(grep -rl 'failures="[1-9]\|errors="[1-9]' target/surefire-reports/TEST-*.xml target/failsafe-reports/TEST-*.xml 2>/dev/null | sed 's|.*/TEST-||;s|\.xml||' | paste -sd,); if [ -n "$FAILED" ]; then echo "FAILED TESTS: $FAILED"; else grep -E '\[ERROR\]' /tmp/mvn-epic-{ID}.log | head -20; fi; fi
+**Step 4: Tier 3 — Full verify (ORCHESTRATOR-ONLY — subagents must NOT run this)**
+This command is run by the orchestrator in Step 4.6, in the background, once, on the final commit:
+  ./mvnw clean verify -q > /tmp/mvn-epic-{ID}.log 2>&1; MVN_EXIT=$?; if [ $MVN_EXIT -eq 0 ]; then echo "FULL BUILD SUCCESS"; grep 'Tests run:' /tmp/mvn-epic-{ID}.log | tail -1; else echo "FULL BUILD FAILED (exit $MVN_EXIT)"; FAILED=$(grep -rl 'failures="[1-9]\|errors="[1-9]' target/surefire-reports/TEST-*.xml target/failsafe-reports/TEST-*.xml 2>/dev/null | sed 's|.*/TEST-||;s|\.xml||' | paste -sd,); if [ -n "$FAILED" ]; then echo "FAILED TESTS: $FAILED"; else echo "NO NAMED TEST FAILURES — env/fork crash (exit 143 / SIGTERM); re-kill zombies and re-run once"; grep -E '\[ERROR\]' /tmp/mvn-epic-{ID}.log | head -20; fi; fi
 
-  If Tier 3 fails on tests that are NOT yours: fix the regression (you likely broke an import or
-  changed a shared method signature). Re-run ONLY the failed tests with full logging:
-    ./mvnw verify -Dit.test="{FAILED_CLASSES}" -Dtest="{FAILED_CLASSES}" 2>&1 | tail -80
-  Then re-run Tier 3 to confirm green.
+  Interpreting a Tier 3 failure (orchestrator): if exit is non-zero but NO test class shows up
+  in the surefire/failsafe reports with failures/errors, it is an environmental zombie-JVM/heap
+  crash (SIGTERM / "forked VM terminated" / "Process Exit Code: 143"), NOT a code failure —
+  pkill the stale JVMs, wait 3s, and re-run once. A REAL regression names the failing class in
+  the reports; fix the root cause, push, and the gate re-runs.
 
 IMPORTANT: NEVER run ./mvnw clean verify without -q — full output burns 30-60KB of context per run.
 If you need to debug a compilation error, read the log file with grep:
   grep -n 'ERROR\|cannot find symbol\|Caused by' /tmp/mvn-epic-{ID}.log | head -30
 
-IMPORTANT: Do NOT skip tiers. Always go 1→2→3. Do NOT run Tier 3 repeatedly to iterate on
-failures — drop back to Tier 1 or 2, fix, then re-run Tier 3 once.
+IMPORTANT (subagents): go 1→2 then STOP. Get Tier 2 green, commit, push, and report. Do NOT run
+Tier 3 — the orchestrator owns it. (Frontend subagents: run lint/build/test as below, then stop.)
 
 ### Frontend
 
@@ -273,20 +279,22 @@ CLAUDE.md files — the brief already contains the relevant extracts.
 - Implement ONLY the tasks in the brief — nothing more
 - If the brief mentions files to modify, read those specific files before editing
 
-### 2. Build & Verify (Tiered — read the brief carefully)
-Follow the **tiered build strategy** from the brief's "Build & Verify" section:
+### 2. Build & Verify — STOP AT TIER 2 (do NOT run the full verify)
+Follow the brief's tiered build strategy, but run ONLY Tier 1 and Tier 2:
   - **Tier 1 (compile)**: Run after writing code. Fast (~30s). Iterate here for compile errors.
-  - **Tier 2 (targeted tests)**: Run only YOUR new test classes. (~2-3min). Iterate here for test failures.
-  - **Tier 3 (full verify)**: Run ONCE before commit. (~10-15min). Confirms no regressions.
+  - **Tier 2 (targeted tests)**: Run only YOUR new test classes. (~2-3min). Iterate here until green.
+  - **Tier 3 (full verify)**: **DO NOT RUN.** The orchestrator owns the single full verify on your
+    final commit. If you start `./mvnw clean verify`, it will likely be killed when your turn ends
+    mid-run (exit 143) and you'll waste ~20 min on an intermediate commit anyway.
 
-Always go 1→2→3. Never jump straight to Tier 3. Never run Tier 3 repeatedly to iterate.
-Build output is redirected to log files — only summaries enter your context.
-If the build fails:
+Go 1→2, get Tier 2 GREEN, then proceed straight to commit/push/PR. Build output is redirected to
+log files — only summaries enter your context.
+If a build fails:
   1. Kill zombie surefire processes first: pgrep -f 'surefire.*worktree-epic' | xargs kill 2>/dev/null || true; sleep 2
-  2. Read the relevant log file to understand the error
+  2. Read the relevant log file to understand the error (grep, don't cat)
   3. Fix the root cause (not symptoms)
-  4. Drop back to Tier 1 or 2, fix, then re-attempt Tier 3. Max 3 Tier-3 attempts.
-  5. If still failing after 3 Tier-3 attempts, stop and report what's failing and your hypotheses. Do NOT keep retrying — zombie processes accumulate and cause connection pool exhaustion.
+  4. Drop back to Tier 1, then re-run Tier 2. Iterate until Tier 2 is green.
+  5. If Tier 2 won't go green after several honest attempts, stop and report what's failing and your hypotheses.
 
 When reading log files for errors, use targeted reads:
   grep -n "ERROR\|FAILURE\|Caused by" /tmp/mvn-epic-{ID}.log | tail -20
@@ -297,7 +305,12 @@ When reading log files for errors, use targeted reads:
 - Commit: `git commit -m "feat(epic-{ID}): {DESCRIPTION}"`
 - Push: `git push -u origin epic-{ID}/{BRANCH_NAME}`
 
-### 4. Create PR
+### 4. Create PR (this is intentional at Tier-2 green — it starts Backend CI in parallel)
+Creating the PR now triggers the path-filtered Backend CI, which runs the full `mvn verify` in the
+cloud. That CI run then overlaps with the code reviews, fix cycles, and the orchestrator's local
+full verify — instead of being pure tail latency at the end. In the Test plan section, state plainly
+that targeted tests are green and the full verify is owned by the orchestrator + Backend CI.
+
 gh pr create --title "Epic {ID}: {TITLE}" --body "$(cat <<'EOF'
 ## Summary
 {What this epic implements — from the brief's Tasks section}
@@ -319,7 +332,8 @@ EOF
 When done, report:
 - PR number and URL
 - Files created/modified count
-- Test results summary
+- **Tier 2 targeted-test result** (the `Tests run:` line) — this is your verification bar, NOT a full verify
+- Confirmation you did NOT run Tier 3 (the orchestrator owns it)
 - Any deviations from the brief or issues encountered
 
 Do NOT stop to ask questions. Use the brief to resolve ambiguity.
@@ -551,12 +565,14 @@ Read: /Users/rakheendama/Projects/2026/worktree-epic-{ID}/.epic-brief.md
 2. For superpowers Critical/High findings: fix ALL of them. If a finding is a false positive,
    explain WHY with evidence (file:line proof).
 3. Medium findings: fix only if trivially fixable while you're already in the file. Don't expand scope.
-5. After fixing, run the appropriate build tier to verify you didn't break anything:
+4. After fixing, verify with Tier 1 + Tier 2 ONLY — do NOT run the full verify (`./mvnw clean verify`).
+   The orchestrator owns the single full verify on the final commit; a Tier 3 here will be killed when
+   your turn ends and wastes ~20 min on a commit the next cycle may supersede.
    - Format: cd /Users/rakheendama/Projects/2026/worktree-epic-{ID}/backend && ./mvnw spotless:apply 2>&1 | tail -3
    - Compile check: ./mvnw compile test-compile -q > /tmp/mvn-fix-{ID}.log 2>&1; echo $?
-   - Full verify (once): ./mvnw clean verify -q > /tmp/mvn-fix-{ID}.log 2>&1; echo $?
-6. Commit: git commit -m "fix: address review findings for Epic {ID}"
-7. Push: git push
+   - Targeted tests (the classes touching your fix): ./mvnw test -Dtest="{TEST_CLASSES}" -q > /tmp/mvn-fix-{ID}.log 2>&1; echo $?; grep 'Tests run:' /tmp/mvn-fix-{ID}.log | tail -1
+5. Commit: git commit -m "fix: address review findings for Epic {ID}"
+6. Push: git push
 
 ## Report Format
 For EACH finding, report one of:
@@ -579,7 +595,14 @@ fix cycles total). If findings persist after 2 cycles, note them in the PR descr
 After all superpowers fix cycles are complete (Step 4.4), collect CodeRabbit findings per
 Step 4.2b. If CodeRabbit has actionable findings, dispatch a fixer agent to address them
 (same pattern as Step 4.3 but with CodeRabbit findings as PRIMARY input). This is a separate
-commit from the superpowers fixes. Run full verify after fixing, commit, and push.
+commit from the superpowers fixes. The fixer runs Tier 1 + Tier 2 ONLY, then commits and pushes —
+it does NOT run the full verify (the orchestrator's Step 4.6 covers it).
+
+**Batching tip (saves a fix cycle + a CI run):** if the background CodeRabbit poll (Step 4.2a)
+has ALREADY reported `CR_STATE=present` by the time you reach Step 4.3, collect CR findings FIRST
+and feed them into the SAME fixer as the superpowers findings — one fixer pass, one commit, one
+CI re-trigger instead of two. Only fall back to a separate CR fixer cycle when CodeRabbit arrives
+after the superpowers fixer has already been dispatched.
 
 ### 4.5 — Append review audit trail to PR body (REQUIRED before merge)
 
@@ -629,6 +652,29 @@ The hook checks the PR body for ALL THREE markers before allowing merge:
 If any marker is missing or malformed, the merge will be denied with a clear reason. Fix the
 audit trail and retry — do NOT bypass the hook.
 
+### 4.6 — Orchestrator-owned full verify (the single Tier 3 — run ONCE on the final commit)
+
+This is the ONLY place a full `mvn verify` runs locally. Run it **after the final fix cycle**, on
+the final commit, so it is never invalidated by a later fix. Run it in the **background** so it
+cannot be killed by a turn ending mid-run, and so it overlaps with the re-reviews and Backend CI.
+
+```bash
+# Clear any stale JVMs first (prevents the exit-143 fork crash), then verify in the background.
+pkill -9 -f 'worktree-epic-{ID}' 2>/dev/null; pgrep -f surefire | xargs kill -9 2>/dev/null; sleep 3
+# Run as run_in_background:true — you are notified on completion; do not poll-block on it.
+cd /Users/rakheendama/Projects/2026/worktree-epic-{ID}/backend && ./mvnw clean verify -q > /tmp/mvn-{ID}-final.log 2>&1; MVN_EXIT=$?; if [ $MVN_EXIT -eq 0 ]; then echo "FULL BUILD SUCCESS"; grep 'Tests run:' /tmp/mvn-{ID}-final.log | tail -1; else echo "FULL BUILD FAILED (exit $MVN_EXIT)"; FAILED=$(grep -rl 'failures="[1-9]\|errors="[1-9]' target/surefire-reports/TEST-*.xml target/failsafe-reports/TEST-*.xml 2>/dev/null | sed 's|.*/TEST-||;s|\.xml||' | paste -sd,); if [ -n "$FAILED" ]; then echo "REAL FAILED TESTS: $FAILED"; else echo "NO NAMED TEST FAILURES — env/fork crash (143); re-kill zombies + re-run once"; fi; fi
+```
+
+Interpreting the result:
+- **FULL BUILD SUCCESS** → local merge gate satisfied.
+- **REAL FAILED TESTS: <names>** → genuine regression. Dispatch a fixer (Tier-1/Tier-2 only), push,
+  re-run THIS step. (A push also re-triggers Backend CI.)
+- **NO NAMED TEST FAILURES** with non-zero exit → environmental SIGTERM/fork crash, not code. Re-kill
+  zombies, wait 3s, re-run this step once. Do not treat it as a code failure.
+
+While this runs, the two re-reviews (Step 4.4) and Backend CI proceed in parallel — none of them
+block each other.
+
 ## Step 5 — Merge
 
 ### Auto-Merge Mode (prompt contains "auto-merge")
@@ -636,8 +682,14 @@ audit trail and retry — do NOT bypass the hook.
 Merge immediately if ALL of the following are true (after fix cycles):
 - Both superpowers reviews (bug/quality AND architecture) returned **APPROVE** OR all their
   Critical and High findings were fixed
-- Build is green (final `./mvnw verify` log shows exit 0)
-- The PR's GitHub merge state is `MERGEABLE` (`gh pr view {n} --json mergeStateStatus`)
+- **Local full verify green** — the Step 4.6 background run reported `FULL BUILD SUCCESS` (exit 0)
+- **Backend CI green** — `gh pr checks {n}` shows the `Backend` job as `pass` (and any other
+  non-skipped required check passes). The local verify and CI run the same `mvn verify`; require
+  BOTH because CI is the source of truth but the path-filtered Backend job does not always trigger
+  (see the retarget-CI gotcha) — if CI shows no Backend run, push an empty/synchronize commit to
+  force it rather than trusting the local verify alone.
+- The PR's GitHub merge state is `MERGEABLE` (`gh pr view {n} --json mergeStateStatus`; `UNSTABLE`
+  is fine only while a non-required check is still pending — confirm Backend itself is `pass`)
 - **Step 4.5 audit trail has been written to the PR body** — the merge-gate hook will reject
   the merge otherwise. Verify with: `gh pr view {n} --json body --jq .body | grep -c "## Verdict: APPROVE"`
   must return 2 (or matching "all Critical/High resolved" line), and `grep -E "## CodeRabbit: (REVIEWED|DEFERRED)"` must match once.
@@ -657,12 +709,23 @@ so the wrapper script knows this slice failed.
 ### Merge Procedure (both modes)
 
 ```bash
-# 1. Merge the PR
-gh pr merge {PR_NUMBER} --squash --delete-branch
-
-# 2. Clean up worktree
+# 1. Remove the worktree FIRST. gh pr merge --delete-branch tries to switch the local branch to
+#    main after merging; if main is checked out in another worktree (it always is — the main repo),
+#    that step fails with "'main' is already used by worktree". Removing the epic worktree first
+#    avoids the conflict. (The GitHub-side merge still succeeds even if the local step errors, but
+#    do it in this order to keep the run clean.)
 cd /Users/rakheendama/Projects/2026/b2b-strawman
 git worktree remove ../worktree-epic-<N> --force
+
+# 2. Merge the PR (run from the main repo, not the worktree)
+gh pr merge {PR_NUMBER} --squash --delete-branch
+
+# 3. If the remote/local branch wasn't auto-deleted (e.g. the post-merge checkout errored),
+#    clean it up explicitly:
+git branch -D epic-<N>/<branch-name> 2>/dev/null
+git push origin --delete epic-<N>/<branch-name> 2>/dev/null
+
+# 4. Sync main
 git pull origin main
 git fetch --prune
 ```
@@ -683,7 +746,9 @@ In **full-epic mode**, you must update ALL slices (e.g., both 450A and 450B) in 
 - **Brief is the contract**: Builder works from the brief only — if the brief is wrong, re-run the scout, don't have the builder explore
 - **Build output stays in files**: All build/test output goes to `/tmp/` log files — only summaries enter agent context
 - **No over-implementation**: Builder implements ONLY the brief's task list
-- **Verify before done**: Green build required before PR creation
+- **Tier split is non-negotiable**: subagents (builder + fixers) stop at Tier 2; the orchestrator runs the single Tier 3 (Step 4.6) once on the final commit. No subagent runs `mvn clean verify`.
+- **PR early, on Tier-2 green**: the builder opens the PR as soon as targeted tests pass, so Backend CI runs in parallel with reviews + the orchestrator verify (not as tail latency). Do NOT open it on "it compiles" — Tier 2 must be green first.
+- **Merge gate = local full verify AND Backend CI both green** (plus reviews + audit trail). Fix-on-either: if local verify OR CI reports a real failure, fix (Tier-2 only), push, both re-run.
 - **No duplicate work**: Check `git branch -a` and `gh pr list` before starting
 - **Scope boundary**: If uncertain (and not in auto-merge mode), STOP and ask the user
 

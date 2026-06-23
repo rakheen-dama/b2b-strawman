@@ -106,6 +106,9 @@ public class VariableMetadataRegistry {
       case PROJECT -> PromotedFieldSlugs.PROJECT;
       case INVOICE -> PromotedFieldSlugs.INVOICE;
       case TASK -> PromotedFieldSlugs.TASK;
+      // Deals expose no promoted template fields yet (Epic 577 registers DEAL for
+      // custom-field / field-group / tag / saved-view machinery only).
+      case DEAL -> Set.of();
     };
   }
 

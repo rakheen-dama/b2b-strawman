@@ -287,7 +287,7 @@ public class DeadlinePortalSyncService {
         }
         yield customerProjectRepository.findFirstCustomerByProjectId(entityId).orElse(null);
       }
-      case TASK, INVOICE -> {
+      case TASK, INVOICE, DEAL -> {
         // Phase 48 scanner only scans CUSTOMER/PROJECT, so these branches are not reachable from
         // the current event path. Log at debug so drift is visible if the scanner scope widens
         // later without updating this resolver.

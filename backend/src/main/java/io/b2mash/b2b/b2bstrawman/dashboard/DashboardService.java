@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.audit.CrossProjectActivityProjection;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudget;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudgetRepository;
+import io.b2mash.b2b.b2bstrawman.crm.PipelineSummaryService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.CrossProjectActivityItem;
@@ -13,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiValues;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.MemberHoursEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.PersonalDashboard;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.PipelineSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectBreakdownEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealth;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealthDetail;
@@ -76,6 +78,7 @@ public class DashboardService {
   private final CustomerProjectRepository customerProjectRepository;
   private final CustomerRepository customerRepository;
   private final ProjectAccessService projectAccessService;
+  private final PipelineSummaryService pipelineSummaryService;
 
   private final Cache<String, Object> projectCache =
       Caffeine.newBuilder().maximumSize(5_000).expireAfterWrite(Duration.ofMinutes(1)).build();
@@ -91,7 +94,8 @@ public class DashboardService {
       ProjectRepository projectRepository,
       CustomerProjectRepository customerProjectRepository,
       CustomerRepository customerRepository,
-      ProjectAccessService projectAccessService) {
+      ProjectAccessService projectAccessService,
+      PipelineSummaryService pipelineSummaryService) {
     this.taskRepository = taskRepository;
     this.timeEntryRepository = timeEntryRepository;
     this.auditEventRepository = auditEventRepository;
@@ -100,6 +104,20 @@ public class DashboardService {
     this.customerProjectRepository = customerProjectRepository;
     this.customerRepository = customerRepository;
     this.projectAccessService = projectAccessService;
+    this.pipelineSummaryService = pipelineSummaryService;
+  }
+
+  /**
+   * Delegates to {@link PipelineSummaryService#getSummary(LocalDate, LocalDate, UUID,
+   * ActorContext)} (Epic 578A). Validates the date window (when both bounds are supplied) before
+   * delegating; the read-only transaction and admin/owner scoping are owned by the delegate.
+   */
+  public PipelineSummaryResponse getPipelineSummary(
+      LocalDate from, LocalDate to, UUID ownerId, ActorContext actor) {
+    if (from != null && to != null) {
+      requireValidDateRange(from, to);
+    }
+    return pipelineSummaryService.getSummary(from, to, ownerId, actor);
   }
 
   // --- Project-scoped endpoints (Epic 75B) ---

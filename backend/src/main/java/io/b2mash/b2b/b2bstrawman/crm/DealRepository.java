@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.crm;
 
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -64,4 +65,71 @@ public interface DealRepository extends JpaRepository<Deal, UUID> {
       @Param("fromDate") LocalDate fromDate,
       @Param("toDate") LocalDate toDate,
       Pageable pageable);
+
+  // === Pipeline summary aggregation (Epic 578A, ADR-318 §11.3d) ===
+  // Schema-per-tenant: the connection provider sets search_path to the bound tenant schema, so
+  // plain
+  // FROM deals / pipeline_stages already resolves to this tenant's tables — no tenant_id predicate.
+
+  /**
+   * Per-stage breakdown of OPEN deals, one row per active OPEN stage (empty stages included via
+   * LEFT JOIN with COALESCE → zero counts). Effective probability is computed in SQL as {@code
+   * COALESCE(probability_pct, default_probability_pct)}. The optional {@code ownerId} predicate
+   * sits on the JOIN, not the WHERE, so empty stages still appear when an owner is filtered.
+   * Ordered by stage position. {@code weightedValue} summed across rows gives the open weighted
+   * pipeline value.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT s.id            AS stageId,
+                 s.name          AS stageName,
+                 s.position      AS stagePosition,
+                 COUNT(d.id)     AS dealCount,
+                 COALESCE(SUM(d.value_amount), 0) AS totalValue,
+                 COALESCE(SUM(
+                   d.value_amount *
+                   COALESCE(d.probability_pct, s.default_probability_pct) / 100.0
+                 ), 0)           AS weightedValue
+          FROM pipeline_stages s
+          LEFT JOIN deals d
+                 ON d.stage_id = s.id
+                AND d.status   = 'OPEN'
+                AND (CAST(:ownerId AS UUID) IS NULL OR d.owner_id = :ownerId)
+          WHERE s.stage_type = 'OPEN'
+            AND s.archived = false
+          GROUP BY s.id, s.name, s.position
+          ORDER BY s.position
+          """)
+  List<StageBreakdownProjection> stageBreakdown(@Param("ownerId") UUID ownerId);
+
+  /**
+   * Win-rate window counts plus average days-to-close in a single aggregate row. WON/LOST are
+   * counted by {@code won_at}/{@code lost_at} falling inside the half-open window {@code
+   * [windowStart, windowEnd)} — deals closed on or after {@code windowEnd} are excluded. {@code
+   * avgDaysToClose} is the mean {@code (won_at - created_at)} in days over WON deals in the same
+   * window (NULL when none). The win rate ({@code wonCount / (wonCount + lostCount)}) is computed
+   * in Java with a zero-divisor guard.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT
+            COUNT(*) FILTER (WHERE status = 'WON')  AS wonCount,
+            COUNT(*) FILTER (WHERE status = 'LOST') AS lostCount,
+            AVG(EXTRACT(EPOCH FROM (won_at - created_at)) / 86400.0)
+                 FILTER (WHERE status = 'WON')      AS avgDaysToClose
+          FROM deals
+          WHERE (CAST(:ownerId AS UUID) IS NULL OR owner_id = :ownerId)
+            AND (
+                  (status = 'WON'  AND won_at  >= :windowStart AND won_at  < :windowEnd)
+               OR (status = 'LOST' AND lost_at >= :windowStart AND lost_at < :windowEnd)
+                )
+          """)
+  WinRateProjection winRate(
+      @Param("ownerId") UUID ownerId,
+      @Param("windowStart") Instant windowStart,
+      @Param("windowEnd") Instant windowEnd);
 }

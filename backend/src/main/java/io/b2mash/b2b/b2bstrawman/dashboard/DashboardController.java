@@ -4,12 +4,14 @@ import io.b2mash.b2b.b2bstrawman.dashboard.dto.CrossProjectActivityItem;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.MemberHoursEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.PersonalDashboard;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.PipelineSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealth;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealthDetail;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TaskSummary;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TeamWorkloadEntry;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -131,5 +133,25 @@ public class DashboardController {
     return ResponseEntity.ok(
         dashboardService.getPersonalDashboard(
             RequestScopes.requireMemberId(), RequestScopes.TENANT_ID.get(), from, to));
+  }
+
+  // --- Pipeline summary endpoint (Epic 578A) ---
+
+  /**
+   * Returns the CRM pipeline summary: open weighted value, per-stage breakdown, win rate over a
+   * date window (trailing 90 days by default), average deal size, and average days-to-close. Gated
+   * on {@code VIEW_DEALS} (default-on for Owner/Admin). All parameters are optional; {@code
+   * ownerId} scopes the aggregation to a single deal owner. Admin/owner actors may scope to any
+   * owner (or all owners when {@code ownerId} is null); regular members are restricted to their own
+   * pipeline regardless of the requested {@code ownerId}.
+   */
+  @GetMapping("/api/dashboard/pipeline-summary")
+  @RequiresCapability("VIEW_DEALS")
+  public ResponseEntity<PipelineSummaryResponse> getPipelineSummary(
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+      @RequestParam(required = false) UUID ownerId,
+      ActorContext actor) {
+    return ResponseEntity.ok(dashboardService.getPipelineSummary(from, to, ownerId, actor));
   }
 }

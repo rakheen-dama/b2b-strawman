@@ -173,12 +173,11 @@ export default async function OrgDashboardPage({
       {/* Consulting-ZA profile-gated widget (self-gates via useProfile) */}
       <TeamUtilizationWidget slug={slug} />
 
-      {/* Sales pipeline summary (admin/owner-scoped; self-gates via useCapabilities) */}
-      {isAdmin && (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <PipelineSummaryWidget slug={slug} />
-        </div>
-      )}
+      {/* Sales pipeline summary (admin/owner-scoped; self-gates via useCapabilities,
+          mirroring TeamUtilizationWidget above — no outer server-side guard) */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <PipelineSummaryWidget slug={slug} />
+      </div>
 
       {/* Hero two-panel layout */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">

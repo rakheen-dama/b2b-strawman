@@ -36,7 +36,10 @@ export default async function DealDetailPage({
     /* non-fatal: show empty proposals panel */
   }
 
-  // Resolve customer + owner display names (mirror the board page).
+  // Resolve customer + owner display names (mirror the board page). There is no
+  // typed `getCustomer` / `listMembers` client in lib/api/ — the established
+  // convention is raw `api.get` for these read-only display lookups (see the
+  // sibling customers/[id]/page.tsx:94/147 and pipeline/page.tsx:166).
   let customerName = "Unknown customer";
   try {
     const customer = await api.get<Customer>(`/api/customers/${deal.customerId}`);

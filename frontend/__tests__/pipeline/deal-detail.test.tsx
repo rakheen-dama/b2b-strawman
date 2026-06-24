@@ -145,9 +145,11 @@ describe("CustomerDealsTab", () => {
     expect(screen.getByText("Retainer")).toBeInTheDocument();
     expect(screen.getByText("DEAL-001")).toBeInTheDocument();
     expect(screen.getByText("Won")).toBeInTheDocument();
-    // Each deal links to its detail page
-    const link = screen.getByRole("link", { name: "Acme website" });
-    expect(link).toHaveAttribute("href", "/org/acme/pipeline/d1");
+    // Each deal links to its own detail page (580A.3 AC).
+    const firstLink = screen.getByRole("link", { name: "Acme website" });
+    expect(firstLink).toHaveAttribute("href", "/org/acme/pipeline/d1");
+    const secondLink = screen.getByRole("link", { name: "Retainer" });
+    expect(secondLink).toHaveAttribute("href", "/org/acme/pipeline/d2");
   });
 
   it("shows an empty state when the customer has no deals", () => {

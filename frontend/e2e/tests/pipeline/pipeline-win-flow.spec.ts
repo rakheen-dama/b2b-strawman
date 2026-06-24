@@ -28,6 +28,7 @@ const RUN_ID = Date.now().toString(36).slice(-4);
 
 interface DealDto {
   id: string;
+  title: string;
   status: "OPEN" | "WON" | "LOST";
   stageId: string;
   stageName: string | null;
@@ -90,12 +91,16 @@ test.describe.serial("PIPE-CAP: Pipeline win-flow capstone", () => {
     await page.getByRole("button", { name: /Create Enquiry/i }).click();
     await expect(page.getByRole("dialog")).toBeHidden({ timeout: 10000 });
 
-    // Resolve the freshly-created deal + its customer through the API.
+    // Resolve the freshly-created deal + its customer through the API. Match by
+    // the run-id-suffixed DEAL_TITLE so we pick the deal THIS test created — not
+    // an arbitrary pre-seeded OPEN deal in the shared E2E tenant (which would
+    // make the PROSPECT lifecycle assertion flake).
     const dealsPage = await apiGet<{ content: DealDto[] }>(token, "/api/deals?size=200");
-    const deal = dealsPage.content.find((d) => d.status === "OPEN" && d.customerId);
-    expect(deal, "a newly created OPEN deal should exist").toBeTruthy();
+    const deal = dealsPage.content.find((d) => d.title === DEAL_TITLE && d.status === "OPEN");
+    expect(deal, `the created deal "${DEAL_TITLE}" should exist and be OPEN`).toBeTruthy();
     const dealId = deal!.id;
     const customerId = deal!.customerId;
+    expect(customerId, "the created deal should link to its prospect customer").toBeTruthy();
 
     // Customer starts as a PROSPECT (enquiry default).
     const customerBefore = await apiGet<{ lifecycleStatus: string }>(

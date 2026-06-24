@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
@@ -31,6 +30,10 @@ import { scrollToFirstError } from "@/lib/error-handler";
 import { nativeSelectClassName } from "@/lib/styles/native-select";
 import { formatCurrency } from "@/lib/format";
 import { createDealProposalAction } from "@/app/(app)/org/[slug]/pipeline/[id]/actions";
+import {
+  createDealProposalSchema,
+  type CreateDealProposalFormData,
+} from "@/lib/schemas/deal-proposal";
 import type {
   CreateDealProposalRequest,
   FeeModel,
@@ -48,13 +51,6 @@ const STATUS_BADGE: Record<
   DECLINED: { label: "Declined", variant: "destructive" },
   EXPIRED: { label: "Expired", variant: "warning" },
 };
-
-const createProposalSchema = z.object({
-  title: z.string().min(1, "Title is required").max(200, "Title must be 200 characters or fewer"),
-  feeModel: z.enum(["FIXED", "HOURLY", "RETAINER", "CONTINGENCY"]),
-  amount: z.string().optional().or(z.literal("")),
-});
-type CreateProposalFormData = z.infer<typeof createProposalSchema>;
 
 interface DealProposalsPanelProps {
   slug: string;
@@ -76,8 +72,8 @@ export function DealProposalsPanel({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const form = useForm<CreateProposalFormData>({
-    resolver: zodResolver(createProposalSchema),
+  const form = useForm<CreateDealProposalFormData>({
+    resolver: zodResolver(createDealProposalSchema),
     defaultValues: { title: "", feeModel: "FIXED", amount: "" },
   });
 
@@ -93,7 +89,7 @@ export function DealProposalsPanel({
     }
   }
 
-  async function onSubmit(values: CreateProposalFormData) {
+  async function onSubmit(values: CreateDealProposalFormData) {
     setError(null);
     setIsSubmitting(true);
     try {

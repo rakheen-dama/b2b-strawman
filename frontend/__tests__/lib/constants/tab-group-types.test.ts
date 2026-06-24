@@ -42,7 +42,7 @@ describe("resolveTabFromUrl (shared)", () => {
 });
 
 describe("CUSTOMER_TAB_ID_TO_GROUP_MAP", () => {
-  it("maps all 15 customer tab IDs correctly", () => {
+  it("maps all 16 customer tab IDs correctly", () => {
     const expectedMappings: Record<string, string> = {
       details: "details",
       fields: "details",
@@ -51,6 +51,7 @@ describe("CUSTOMER_TAB_ID_TO_GROUP_MAP", () => {
       projects: "work",
       documents: "work",
       generated: "work",
+      deals: "work",
       invoices: "finance",
       rates: "finance",
       retainer: "finance",
@@ -61,7 +62,7 @@ describe("CUSTOMER_TAB_ID_TO_GROUP_MAP", () => {
       audit: "activity",
     };
 
-    expect(Object.keys(CUSTOMER_TAB_ID_TO_GROUP_MAP)).toHaveLength(15);
+    expect(Object.keys(CUSTOMER_TAB_ID_TO_GROUP_MAP)).toHaveLength(16);
 
     for (const [tabId, groupId] of Object.entries(expectedMappings)) {
       expect(CUSTOMER_TAB_ID_TO_GROUP_MAP[tabId]).toBe(groupId);

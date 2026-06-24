@@ -30,9 +30,12 @@ import type {
   ChecklistTemplateResponse,
 } from "@/lib/types";
 import type { SetupStep, ContextGroup } from "@/components/setup/types";
+import { listDeals, getStages } from "@/lib/api/crm";
+import type { DealResponse, StageDto } from "@/lib/api/crm";
 import { TerminologyText } from "@/components/terminology-text";
 import { PROMOTED_CUSTOMER_SLUGS } from "@/lib/constants/promoted-field-slugs";
 import { CustomerProjectsPanel } from "@/components/customers/customer-projects-panel";
+import { CustomerDealsTab } from "@/components/pipeline/CustomerDealsTab";
 import { CustomerDocumentsPanel } from "@/components/documents/customer-documents-panel";
 import { CustomerGroupedTabs } from "@/components/customers/customer-grouped-tabs";
 import { ClientHeaderCardWithLifecycle } from "@/components/customers/client-header-card-with-lifecycle";
@@ -105,6 +108,22 @@ export default async function CustomerDetailPage({
     customerDocuments = await api.get<Document[]>(`/api/documents?scope=CUSTOMER&customerId=${id}`);
   } catch {
     // Non-fatal: show empty documents list if fetch fails
+  }
+
+  // Pipeline deals for the customer "Deals" tab (Epic 580A.3). Both fetches are
+  // non-fatal — the tab degrades to an empty state / disabled intake on failure.
+  let customerDeals: DealResponse[] = [];
+  try {
+    const dealsPage = await listDeals({ customerId: id, size: 100 });
+    customerDeals = dealsPage.content;
+  } catch {
+    // Non-fatal: show empty deals tab if fetch fails
+  }
+  let pipelineStages: StageDto[] = [];
+  try {
+    pipelineStages = await getStages();
+  } catch {
+    // Non-fatal: intake stage selector falls back to first open stage
   }
 
   // Org settings drive currency + module gates for both admin and non-admin
@@ -722,6 +741,16 @@ export default async function CustomerDetailPage({
             slug={slug}
             isAdmin={isAdmin}
             customerId={id}
+          />
+        }
+        dealsPanel={
+          <CustomerDealsTab
+            slug={slug}
+            customerId={id}
+            customerName={customer.name}
+            deals={customerDeals}
+            stages={pipelineStages}
+            canManage={isAdmin && customer.status === "ACTIVE"}
           />
         }
         financialsPanel={

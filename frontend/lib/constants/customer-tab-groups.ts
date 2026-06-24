@@ -40,6 +40,7 @@ export const CUSTOMER_TAB_GROUPS: readonly TabGroup[] = [
       { id: "projects", label: "Projects" },
       { id: "documents", label: "Documents" },
       { id: "generated", label: "Generated Docs" },
+      { id: "deals", label: "Deals" },
     ],
     visible: true,
   },

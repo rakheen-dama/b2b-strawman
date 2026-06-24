@@ -30,9 +30,11 @@ import type { StageDto } from "@/lib/api/crm";
 export interface StageEditDialogProps {
   slug: string;
   stage: StageDto;
+  /** Called with the persisted stage so the parent can refresh its local state. */
+  onUpdated?: (stage: StageDto) => void;
 }
 
-export function StageEditDialog({ slug, stage }: StageEditDialogProps) {
+export function StageEditDialog({ slug, stage, onUpdated }: StageEditDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +69,8 @@ export function StageEditDialog({ slug, stage }: StageEditDialogProps) {
         defaultProbabilityPct: Number(values.defaultProbabilityPct),
         stageType: values.stageType,
       });
-      if (result.success) {
+      if (result.success && result.stage) {
+        onUpdated?.(result.stage);
         handleOpenChange(false);
       } else {
         // Surface backend guard errors (e.g. 400 last-of-type on type change).

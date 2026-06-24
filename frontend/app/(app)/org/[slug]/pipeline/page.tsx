@@ -20,7 +20,30 @@ import type {
   Customer,
   OrgMember,
 } from "@/lib/types";
-import type { DealResponse, StageDto, PipelineSummaryResponse } from "@/lib/api/crm";
+import type {
+  DealResponse,
+  StageDto,
+  PipelineSummaryResponse,
+  ListDealsParams,
+  DealStatus,
+} from "@/lib/api/crm";
+
+// Max deals loaded into the board/list in a single request. The backend list is
+// paginated; full board pagination is out of scope for this PR (deferred to a
+// follow-up). This cap is explicit so larger orgs see a clear truncation note
+// rather than silently dropping deals.
+// TODO: paginate the board/list instead of capping at a fixed page size.
+const MAX_DEALS = 500;
+
+const VALID_DEAL_STATUSES: ReadonlySet<DealStatus> = new Set(["OPEN", "WON", "LOST"]);
+
+function strParam(
+  params: Record<string, string | string[] | undefined>,
+  key: string
+): string | undefined {
+  const v = params[key];
+  return typeof v === "string" && v.length > 0 ? v : undefined;
+}
 
 export default async function PipelinePage({
   params,
@@ -48,10 +71,33 @@ export default async function PipelinePage({
     /* no stages configured yet */
   }
 
+  // Wire the URL filter params the backend GET /api/deals actually supports
+  // (stageId, ownerId, customerId, status, source, fromDate, toDate) into the
+  // list request, so the board/list reflects the active filters instead of
+  // ignoring them. NOTE: saved-view (`view`) and `tags` filtering is NOT
+  // supported by the deal-list endpoint, so those UI controls don't narrow the
+  // dataset server-side yet (requires a backend change — out of scope here).
+  const rawStatus = strParam(resolvedSearchParams, "status");
+  const dealFilters: ListDealsParams = {
+    stageId: strParam(resolvedSearchParams, "stageId"),
+    ownerId: strParam(resolvedSearchParams, "ownerId"),
+    customerId: strParam(resolvedSearchParams, "customerId"),
+    status:
+      rawStatus && VALID_DEAL_STATUSES.has(rawStatus as DealStatus)
+        ? (rawStatus as DealStatus)
+        : undefined,
+    source: strParam(resolvedSearchParams, "source"),
+    fromDate: strParam(resolvedSearchParams, "fromDate"),
+    toDate: strParam(resolvedSearchParams, "toDate"),
+    sort: strParam(resolvedSearchParams, "sort"),
+  };
+
   let deals: DealResponse[] = [];
+  let dealsTruncated = false;
   try {
-    const page = await listDeals({ size: 200 });
+    const page = await listDeals({ ...dealFilters, size: MAX_DEALS });
     deals = page.content;
+    dealsTruncated = page.page.totalElements > deals.length;
   } catch {
     /* non-fatal: show empty board */
   }
@@ -159,6 +205,12 @@ export default async function PipelinePage({
       <Suspense fallback={null}>
         <PipelineFilters allTags={allTags} display={display} />
       </Suspense>
+
+      {dealsTruncated && (
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Showing the first {MAX_DEALS} deals. Use the filters above to narrow the list.
+        </p>
+      )}
 
       {stages.length === 0 ? (
         <EmptyState

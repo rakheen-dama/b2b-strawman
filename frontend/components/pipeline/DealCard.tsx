@@ -12,6 +12,8 @@ export interface DealCardProps {
   ownerName: string | null;
   /** When true, the card is rendered statically (e.g. inside DragOverlay or a non-draggable column). */
   overlay?: boolean;
+  /** When false, the card is not draggable (read-only users). Defaults to true. */
+  draggable?: boolean;
 }
 
 export function DealCardView({ deal, customerName, ownerName }: DealCardProps) {
@@ -43,9 +45,10 @@ export function DealCardView({ deal, customerName, ownerName }: DealCardProps) {
 }
 
 export function DealCard(props: DealCardProps) {
-  const { deal, overlay } = props;
+  const { deal, overlay, draggable = true } = props;
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: deal.id,
+    disabled: !draggable,
   });
 
   if (overlay) {
@@ -54,6 +57,11 @@ export function DealCard(props: DealCardProps) {
         <DealCardView {...props} />
       </div>
     );
+  }
+
+  // Read-only users: render a static (non-draggable) card with no drag affordances.
+  if (!draggable) {
+    return <DealCardView {...props} />;
   }
 
   const style: React.CSSProperties = {

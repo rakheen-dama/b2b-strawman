@@ -36,12 +36,14 @@ function StageColumn({
   customerNames,
   ownerNames,
   collapsed,
+  canManage,
 }: {
   stage: StageDto;
   deals: DealResponse[];
   customerNames: Record<string, string>;
   ownerNames: Record<string, string>;
   collapsed?: boolean;
+  canManage: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage.id });
   const total = deals.reduce((sum, d) => sum + (d.valueAmount ?? 0), 0);
@@ -70,6 +72,7 @@ function StageColumn({
             deal={deal}
             customerName={customerNames[deal.customerId] ?? "Unknown customer"}
             ownerName={deal.ownerId ? (ownerNames[deal.ownerId] ?? null) : null}
+            draggable={canManage}
           />
         ))}
         {deals.length === 0 && (
@@ -185,6 +188,7 @@ export function PipelineBoard({
               deals={dealsByStage[stage.id] ?? []}
               customerNames={customerNames}
               ownerNames={ownerNames}
+              canManage={canManage}
             />
           ))}
           {closedStages.map((stage) => (
@@ -195,6 +199,7 @@ export function PipelineBoard({
               customerNames={customerNames}
               ownerNames={ownerNames}
               collapsed
+              canManage={canManage}
             />
           ))}
         </div>

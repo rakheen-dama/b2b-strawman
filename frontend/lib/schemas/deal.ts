@@ -45,7 +45,7 @@ export type IntakeDealFormData = z.infer<typeof intakeDealSchema>;
  * to a LOST stage (400 otherwise).
  */
 export const loseDealSchema = z.object({
-  lostReason: z.string().min(1, "A reason is required to mark a deal as lost").max(2000),
+  lostReason: z.string().trim().min(1, "A reason is required to mark a deal as lost").max(2000),
 });
 
 export type LoseDealFormData = z.infer<typeof loseDealSchema>;

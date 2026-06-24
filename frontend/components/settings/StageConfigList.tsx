@@ -120,6 +120,11 @@ export function StageConfigList({ slug, stages: initialStages }: StageConfigList
     notify(`"${stage.name}" created.`);
   }
 
+  function handleUpdated(stage: StageDto) {
+    setStages((cur) => cur.map((s) => (s.id === stage.id ? stage : s)));
+    notify(`"${stage.name}" updated.`);
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -128,7 +133,10 @@ export function StageConfigList({ slug, stages: initialStages }: StageConfigList
         </p>
         <CreateStageDialog
           slug={slug}
-          nextPosition={stages.length}
+          // Derive from the max persisted position (not stages.length): after a
+          // delete, positions can be sparse (e.g. [1] with length 1), so length
+          // would collide with an existing position. Base is 0 for an empty list.
+          nextPosition={stages.reduce((max, s) => Math.max(max, s.position + 1), 0)}
           onCreated={handleCreated}
           onError={(e) => notify(e, true)}
         />
@@ -154,7 +162,7 @@ export function StageConfigList({ slug, stages: initialStages }: StageConfigList
           onReorder={handleReorder}
           renderActions={(stage) => (
             <>
-              <StageEditDialog slug={slug} stage={stage} />
+              <StageEditDialog slug={slug} stage={stage} onUpdated={handleUpdated} />
               {!stage.archived && (
                 <Button
                   variant="plain"

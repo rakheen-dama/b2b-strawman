@@ -656,7 +656,7 @@
 | 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | **Done** (PR #1491) |
 | 577 | Field / Tag / Saved-View / Audit-Metadata Registration | Backend | 574A, 575A | M | 577A | **Done** (PR #1495) |
 | 578 | Pipeline Summary Aggregation + Stage Config Controller | Backend | 574A | M | 578A, 578B | 578A **Done** (PR #1496), 578B **Done** (PR #1498) |
-| 579 | Frontend — Board + List + Intake + Stage Settings | Frontend | 574A, 575A, 578A, 578B | L | 579A, 579B | |
+| 579 | Frontend — Board + List + Intake + Stage Settings | Frontend | 574A, 575A, 578A, 578B | L | 579A, 579B | **Done** (PR #1499) |
 | 580 | Frontend — Deal Detail + Customer Tab + Dashboard Widget + QA Capstone | Frontend | 576A, 578A, 579A | L | 580A, 580B | |
 | **Phase 81 — Inbound Correspondence & First Gated MCP Write-Back** | | | | | | See [tasks/phase81-inbound-correspondence-mcp-writeback.md](tasks/phase81-inbound-correspondence-mcp-writeback.md) |
 | 581 | Correspondence Entity + Migration + Document Link | Backend | — | M | 581A | |

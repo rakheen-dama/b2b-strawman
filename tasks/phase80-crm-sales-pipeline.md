@@ -28,7 +28,7 @@ This phase ships as **8 epics (573–580)**, expanded to **12 numbered slices** 
 | 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | **Done** (PR #1491) |
 | 577 | Field / Tag / Saved-View / Audit-Metadata Registration | Backend | 574A, 575A | M | 577A | **Done** (PR #1495) |
 | 578 | Pipeline Summary Aggregation + Stage Config Controller (backend) | Backend | 574A | M | 578A, 578B | 578A **Done** (PR #1496), 578B **Done** (PR #1498) |
-| 579 | Frontend — Board + List + Intake + Stage Settings | Frontend | 574A, 575A, 578A, 578B | L | 579A, 579B | |
+| 579 | Frontend — Board + List + Intake + Stage Settings | Frontend | 574A, 575A, 578A, 578B | L | 579A, 579B | **Done** (PR #1499) |
 | 580 | Frontend — Deal Detail + Customer Tab + Dashboard Widget + QA Capstone | Frontend | 576A, 578A, 579A | L | 580A, 580B | |
 
 **Slice count: 12** (8 architecture capability slices expanded to 12 numbered slices for the 6–10 file / ~800 LOC budget). Backend/frontend split preserved per slice — no slice mixes both scopes.
@@ -150,8 +150,8 @@ PHASES already complete (reused, not rebuilt):
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 5a | **579A** | `frontend/lib/api/crm.ts`; `/pipeline/page.tsx` Kanban board (drag→transition) + list view toggle; intake dialog; filters (saved-views/tags); header weighted value + win rate. |
-| 5b | **579B** | `settings/pipeline/page.tsx` stage config: reorder, edit name/probability/type, archive, with guards (mirror `settings/capacity`). |
+| 5a | **579A** ✅ Done (PR #1499) | `frontend/lib/api/crm.ts`; `/pipeline/page.tsx` Kanban board (drag→transition) + list view toggle; intake dialog; filters (saved-views/tags); header weighted value + win rate. |
+| 5b | **579B** ✅ Done (PR #1499) | `settings/pipeline/page.tsx` stage config: reorder, edit name/probability/type, archive, with guards (mirror `settings/capacity`). |
 | 5c | **580A** | `pipeline/[id]/page.tsx` deal detail (overview, stage history, linked customer, linked proposals chips + create/send, comments, `<AuditTimeline>`); `CustomerGroupedTabs` Deals tab + inline new-deal. |
 | 5d | **580B** | `components/dashboard/pipeline-summary-widget.tsx`; compose into `dashboard/page.tsx`; `lib/dashboard-types.ts` `PipelineSummaryResponse`; E2E capstone (enquiry→stages→proposal→win→customer advanced); vertical-pack QA. |
 
@@ -572,8 +572,8 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **579A** | 579A.1–579A.5 | ~9 frontend files (1 api module + 1 page + ~5 components + 1 test) | `lib/api/crm.ts`; `/pipeline` board + list toggle; intake dialog; filters; header weighted value + win rate. |
-| **579B** | 579B.1–579B.3 | ~6 frontend files (1 page + ~4 components + 1 test) | `settings/pipeline` stage config: reorder, edit name/probability/type, archive, with guards. |
+| **579A** ✅ Done (PR #1499) | 579A.1–579A.5 | ~9 frontend files (1 api module + 1 page + ~5 components + 1 test) | `lib/api/crm.ts`; `/pipeline` board + list toggle; intake dialog; filters; header weighted value + win rate. **Known limitation**: `view`/`tags` filter controls don't narrow data server-side (`GET /api/deals` lacks the params) → tracked as **574B**. |
+| **579B** ✅ Done (PR #1499) | 579B.1–579B.3 | ~6 frontend files (1 page + ~4 components + 1 test) | `settings/pipeline` stage config: reorder, edit name/probability/type, archive, with guards. |
 
 ### Tasks
 

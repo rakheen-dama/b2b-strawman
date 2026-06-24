@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";

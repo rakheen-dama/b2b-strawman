@@ -26,15 +26,13 @@ export default async function DealDetailPage({
   const isAdmin = capData.isAdmin || capData.isOwner;
   const canManage = isAdmin || capData.capabilities.includes("MANAGE_DEALS");
 
-  // getDeal maps a backend 404 to Next.js notFound() automatically.
-  const deal = await getDeal(id);
-
-  let proposals: LinkedProposalDto[] = [];
-  try {
-    proposals = await listDealProposals(id);
-  } catch {
-    /* non-fatal: show empty proposals panel */
-  }
+  // getDeal maps a backend 404 to Next.js notFound() automatically; it must stay
+  // in the Promise.all so the notFound() still propagates. The proposals fetch is
+  // non-fatal (degrades to an empty panel) and independent, so run them in parallel.
+  const [deal, proposals] = await Promise.all([
+    getDeal(id),
+    listDealProposals(id).catch(() => [] as LinkedProposalDto[]),
+  ]);
 
   // Resolve customer + owner display names (mirror the board page). There is no
   // typed `getCustomer` / `listMembers` client in lib/api/ — the established

@@ -175,9 +175,7 @@ export default async function OrgDashboardPage({
 
       {/* Sales pipeline summary (admin/owner-scoped; self-gates via useCapabilities,
           mirroring TeamUtilizationWidget above — no outer server-side guard) */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <PipelineSummaryWidget slug={slug} />
-      </div>
+      <PipelineSummaryWidget slug={slug} />
 
       {/* Hero two-panel layout */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">

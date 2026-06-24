@@ -114,7 +114,7 @@ export default async function CustomerDetailPage({
   // non-fatal — the tab degrades to an empty state / disabled intake on failure.
   let customerDeals: DealResponse[] = [];
   try {
-    const dealsPage = await listDeals({ customerId: id });
+    const dealsPage = await listDeals({ customerId: id, size: 100 });
     customerDeals = dealsPage.content;
   } catch {
     // Non-fatal: show empty deals tab if fetch fails

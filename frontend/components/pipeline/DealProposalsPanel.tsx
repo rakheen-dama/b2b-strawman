@@ -230,11 +230,7 @@ export function DealProposalsPanel({
                     <FormItem>
                       <FormLabel>Fee model</FormLabel>
                       <FormControl>
-                        <select
-                          value={field.value}
-                          onChange={field.onChange}
-                          className={nativeSelectClassName}
-                        >
+                        <select {...field} className={nativeSelectClassName}>
                           <option value="FIXED">Fixed</option>
                           <option value="HOURLY">Hourly</option>
                           <option value="RETAINER">Retainer</option>

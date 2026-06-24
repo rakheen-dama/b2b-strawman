@@ -33,6 +33,7 @@ import { HelpTip } from "@/components/help-tip";
 import { createMessages } from "@/lib/messages";
 import { useTerminology } from "@/lib/terminology";
 
+// DEAL intentionally excluded — deal custom-field admin UI is out of scope for Epic 579 (pipeline + stage settings only).
 const ENTITY_TYPES: EntityType[] = ["PROJECT", "TASK", "CUSTOMER", "INVOICE"];
 
 const ENTITY_TYPE_LABELS: Record<EntityType, string> = {
@@ -40,6 +41,7 @@ const ENTITY_TYPE_LABELS: Record<EntityType, string> = {
   TASK: "Tasks",
   CUSTOMER: "Customers",
   INVOICE: "Invoices",
+  DEAL: "Deals",
 };
 
 interface CustomFieldsContentProps {

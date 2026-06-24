@@ -88,6 +88,7 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
     id: "clients",
     label: "Clients",
     items: [
+      { label: "Pipeline", href: "pipeline", adminOnly: true },
       { label: "Custom Fields", href: "custom-fields" },
       { label: "Tags", href: "tags" },
       { label: "Request Templates", href: "request-templates" },

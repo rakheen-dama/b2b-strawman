@@ -32,4 +32,12 @@ export const STANDARD_COLUMNS: Record<EntityType, { value: string; label: string
     { value: "dueDate", label: "Due Date" },
     { value: "createdAt", label: "Created At" },
   ],
+  DEAL: [
+    { value: "title", label: "Title" },
+    { value: "stageName", label: "Stage" },
+    { value: "status", label: "Status" },
+    { value: "valueAmount", label: "Value" },
+    { value: "expectedCloseDate", label: "Expected Close" },
+    { value: "createdAt", label: "Created At" },
+  ],
 };

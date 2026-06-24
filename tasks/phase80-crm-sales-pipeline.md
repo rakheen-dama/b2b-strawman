@@ -29,7 +29,7 @@ This phase ships as **8 epics (573–580)**, expanded to **12 numbered slices** 
 | 577 | Field / Tag / Saved-View / Audit-Metadata Registration | Backend | 574A, 575A | M | 577A | **Done** (PR #1495) |
 | 578 | Pipeline Summary Aggregation + Stage Config Controller (backend) | Backend | 574A | M | 578A, 578B | 578A **Done** (PR #1496), 578B **Done** (PR #1498) |
 | 579 | Frontend — Board + List + Intake + Stage Settings | Frontend | 574A, 575A, 578A, 578B | L | 579A, 579B | **Done** (PR #1499) |
-| 580 | Frontend — Deal Detail + Customer Tab + Dashboard Widget + QA Capstone | Frontend | 576A, 578A, 579A | L | 580A, 580B | |
+| 580 | Frontend — Deal Detail + Customer Tab + Dashboard Widget + QA Capstone | Frontend | 576A, 578A, 579A | L | 580A, 580B | **Done** (PR #1502) |
 
 **Slice count: 12** (8 architecture capability slices expanded to 12 numbered slices for the 6–10 file / ~800 LOC budget). Backend/frontend split preserved per slice — no slice mixes both scopes.
 
@@ -152,8 +152,8 @@ PHASES already complete (reused, not rebuilt):
 |-------|-------|---------|
 | 5a | **579A** ✅ Done (PR #1499) | `frontend/lib/api/crm.ts`; `/pipeline/page.tsx` Kanban board (drag→transition) + list view toggle; intake dialog; filters (saved-views/tags); header weighted value + win rate. |
 | 5b | **579B** ✅ Done (PR #1499) | `settings/pipeline/page.tsx` stage config: reorder, edit name/probability/type, archive, with guards (mirror `settings/capacity`). |
-| 5c | **580A** | `pipeline/[id]/page.tsx` deal detail (overview, stage history, linked customer, linked proposals chips + create/send, comments, `<AuditTimeline>`); `CustomerGroupedTabs` Deals tab + inline new-deal. |
-| 5d | **580B** | `components/dashboard/pipeline-summary-widget.tsx`; compose into `dashboard/page.tsx`; `lib/dashboard-types.ts` `PipelineSummaryResponse`; E2E capstone (enquiry→stages→proposal→win→customer advanced); vertical-pack QA. |
+| 5c | **580A** ✅ Done (PR #1502) | `pipeline/[id]/page.tsx` deal detail (overview, stage history, linked customer, linked proposals chips + create/send, comments, `<AuditTimeline>`); `CustomerGroupedTabs` Deals tab + inline new-deal. |
+| 5d | **580B** ✅ Done (PR #1502) | `components/dashboard/pipeline-summary-widget.tsx`; compose into `dashboard/page.tsx`; `lib/dashboard-types.ts` `PipelineSummaryResponse`; E2E capstone (enquiry→stages→proposal→win→customer advanced); vertical-pack QA. |
 
 ### Timeline
 
@@ -627,8 +627,8 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **580A** | 580A.1–580A.4 | ~8 frontend files (1 page + ~4 components + 1 customer-tabs mod + 1 test) | Deal detail page; proposals chips + create/send; activity tab; `CustomerGroupedTabs` Deals tab + inline new-deal. |
-| **580B** | 580B.1–580B.4 | ~6 files (1 widget + 1 dashboard mod + 1 types + E2E spec + QA) | `PipelineSummaryWidget`; dashboard composition; `dashboard-types.ts`; E2E capstone; vertical-pack QA. |
+| **580A** ✅ Done (PR #1502) | 580A.1–580A.4 | ~8 frontend files (1 page + ~4 components + 1 customer-tabs mod + 1 test) | Deal detail page; proposals chips + create/send; activity tab; `CustomerGroupedTabs` Deals tab + inline new-deal. **Comments deferred** (CommentSection needs projectId/TASK|DOCUMENT — backend change out of frontend scope; activity covered by `<AuditTimeline>`). |
+| **580B** ✅ Done (PR #1502) | 580B.1–580B.4 | ~6 files (1 widget + 1 dashboard mod + 1 types + E2E spec + QA) | `PipelineSummaryWidget`; dashboard composition; `dashboard-types.ts` (re-exports `PipelineSummaryResponse`); E2E capstone; vertical-pack QA. |
 
 ### Tasks
 

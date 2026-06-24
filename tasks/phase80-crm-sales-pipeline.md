@@ -23,7 +23,7 @@ This phase ships as **8 epics (573–580)**, expanded to **12 numbered slices** 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 573 | Migration + Entities + Capability + Stage Seeding | Backend | — | L | 573A, 573B | **Done** (PR #1487) |
-| 574 | Deal CRUD + Intake + Filtered List | Backend | 573A | L | 574A | **Done** (PR #1488) |
+| 574 | Deal CRUD + Intake + Filtered List | Backend | 573A | L | 574A, 574B | 574A **Done** (PR #1488) |
 | 575 | DealTransitionService + Customer Nudge + Events/Audit/Activity | Backend | 574A | L | 575A | **Done** (PR #1489) |
 | 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | **Done** (PR #1491) |
 | 577 | Field / Tag / Saved-View / Audit-Metadata Registration | Backend | 574A, 575A | M | 577A | **Done** (PR #1495) |
@@ -266,6 +266,7 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **574A** ✅ Done (PR #1488) | 574A.1–574A.7 | ~9 backend files (1 service + 1 intake service + 1 repo mod + 1 controller + 4 DTOs + 3 test files) | `DealService`, `DealIntakeService`, `DealRepository.findFiltered`, `DealController`, DTOs; CRUD/intake + capability + tenant-isolation tests. |
+| **574B** | 574B.1–574B.2 | ~3 backend files (1 repo/service mod + 1 controller mod + 1 test) | `GET /api/deals` tag + saved-view filtering. Completes the tag/saved-view predicate composition that **574A.1's note specced but 574A did not ship** — only direct `stageId/ownerId/customerId/status/source/dates` filters landed. Add `tags` (resolve → `EntityTag` join) and `view` (resolve saved-view criteria → predicates) params so the frontend pipeline filters (Epic 579A) actually narrow the dataset server-side. Unblocks the documented 579 filter limitation. |
 
 ### Tasks
 
@@ -278,6 +279,17 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 | 574A.5 | Create `DealController` | `crm/DealController.java` | 574A.5/.6 | `proposal/ProposalController.java` (thin, one service call each) | Endpoints (§11.4): `POST /api/deals/intake` (`MANAGE_DEALS`, 201 + Location), `GET /api/deals` (`VIEW_DEALS`, paginated `VIA_DTO`), `GET /api/deals/{id}` (`VIEW_DEALS`), `POST /api/deals` (`MANAGE_DEALS`), `PUT /api/deals/{id}` (`MANAGE_DEALS`), `DELETE /api/deals/{id}` (`MANAGE_DEALS`, guarded). Transition + proposals endpoints land in 575A/576A. |
 | 574A.6 | CRUD + intake integration tests | `backend/src/test/java/.../crm/DealCrudIntegrationTest.java` | ~8 tests: create against existing customer (201); intake inline PROSPECT (asserts customer created with `lifecycleStatus=PROSPECT` + deal OPEN in first OPEN stage); get (200 + JSON shape incl. `effectiveProbabilityPct`/`weightedValue`); update value/owner; filtered list by stage/owner/status; delete; 404 on missing | `DealCrudIntegrationTest` row in §11.8; phase71 MockMvc setup | MockMvc; assert 201/200/404 + JSON. |
 | 574A.7 | Capability-gating + tenant-isolation tests | `backend/src/test/java/.../crm/DealCapabilityGatingTest.java`, `crm/DealTenantIsolationTest.java` | ~6 tests: member without `VIEW_DEALS` → 403 on GET; without `MANAGE_DEALS` → 403 on intake/create/update/delete; **tenant B cannot read tenant A's deal (cross-tenant `findById` returns not-found under B's schema); tenant B `GET /api/deals` excludes A's deals** | §11.8 `DealCapabilityGatingTest` + `DealTenantIsolationTest` (mandatory) | Tenant-isolation test is **mandatory** per requirements. |
+
+#### Slice 574B — Deal List Tag / Saved-View Filtering (follow-up)
+
+**Why**: 574A.1's note planned tag/saved-view predicate composition on `findFiltered`, but 574A shipped only the direct column filters. Epic 579A's pipeline filter UI reuses the saved-view + tag components, but `GET /api/deals` ignores `view`/`tags`, so those controls don't narrow the dataset (documented limitation in PR #1499). 574B closes that gap.
+
+**Dependencies**: 574A (deal list + repo), 577A (tag / saved-view registration for the `CRM Deal` entity).
+
+| ID | Task | Files Touched | Tests | Notes |
+|----|------|---------------|-------|-------|
+| 574B.1 | Add tag + saved-view predicate composition to the deal list | `crm/DealRepository.java` and/or `crm/DealService.java` (modify) | 574B.2 | Resolve `tags` → `EntityTag` join filter (deals carrying ALL/ANY requested tags — match the customers-list semantics); resolve `view` (saved-view id) → its stored criteria → predicates, composed with the existing direct filters. No N+1. |
+| 574B.2 | Expose params on `GET /api/deals` + tests | `crm/DealController.java` (modify); `backend/src/test/java/.../crm/DealListFilterIntegrationTest.java` | ~4 tests: filter by single tag; by multiple tags; by saved view; combined with a direct filter (e.g. stage + tag) | `@RequestParam` `tags` (repeatable/CSV — match customers-list convention) + `view`; keep `VIEW_DEALS` gating. Frontend 579A already sends these params. |
 
 ### Key Files
 

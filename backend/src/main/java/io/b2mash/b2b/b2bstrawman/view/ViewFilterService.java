@@ -22,7 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class ViewFilterService {
 
   /** Allowlisted table names to prevent SQL injection via the tableName parameter. */
-  private static final Set<String> ALLOWED_TABLES = Set.of("projects", "tasks", "customers");
+  private static final Set<String> ALLOWED_TABLES =
+      Set.of("projects", "tasks", "customers", "deals");
 
   private final StatusFilterHandler statusFilterHandler;
   private final TagFilterHandler tagFilterHandler;

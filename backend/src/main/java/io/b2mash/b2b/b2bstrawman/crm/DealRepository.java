@@ -40,9 +40,21 @@ public interface DealRepository extends JpaRepository<Deal, UUID> {
   Optional<Deal> findByLinkedProposalId(@Param("proposalId") UUID proposalId);
 
   /**
-   * Paged, nullable-guarded filtered list (Phase 80, §11.3d). Each filter is ignored when its
-   * parameter is null. The {@code fromDate}/{@code toDate} window applies to {@code
-   * expectedCloseDate}. Ordered by most-recently-updated first.
+   * Paged, nullable-guarded filtered list (Phase 80, §11.3d; tag/saved-view composition 574B). Each
+   * direct filter is ignored when its parameter is null. The {@code fromDate}/{@code toDate} window
+   * applies to {@code expectedCloseDate}. Ordered by most-recently-updated first.
+   *
+   * <p>Tag filtering (574B): when {@code tagCount > 0}, a correlated subquery requires the deal to
+   * carry <b>ALL</b> requested tag slugs (ALL/AND semantics, matching the customers list and the
+   * native {@code TagFilterHandler}). {@code entity_tags} is a polymorphic join keyed by {@code
+   * (entityType, entityId)} with no FK mapped on {@link Deal}, so the slug match is expressed as an
+   * explicit {@code EntityTag}/{@code Tag} {@code ON}-join counted to {@code tagCount}.
+   *
+   * <p>Saved-view filtering (574B): when {@code viewIds} is non-null it restricts the page to the
+   * deal ids the saved view resolved server-side (via {@link
+   * io.b2mash.b2b.b2bstrawman.view.ViewFilterHelper}); {@code null} disables the restriction so the
+   * pure direct-filter path is unchanged. Keeping the restriction inside this single JPQL query
+   * preserves correct {@link Page} totals (no in-memory post-paging).
    */
   @Query(
       """
@@ -54,6 +66,12 @@ public interface DealRepository extends JpaRepository<Deal, UUID> {
         AND (:source     IS NULL OR d.source = :source)
         AND (:fromDate   IS NULL OR d.expectedCloseDate >= :fromDate)
         AND (:toDate     IS NULL OR d.expectedCloseDate <= :toDate)
+        AND (:viewIds    IS NULL OR d.id IN :viewIds)
+        AND (:tagCount = 0 OR (
+          SELECT COUNT(DISTINCT t.slug)
+          FROM EntityTag et JOIN Tag t ON t.id = et.tagId
+          WHERE et.entityType = 'DEAL' AND et.entityId = d.id AND t.slug IN :tagSlugs
+        ) = :tagCount)
       ORDER BY d.updatedAt DESC
       """)
   Page<Deal> findFiltered(
@@ -64,6 +82,9 @@ public interface DealRepository extends JpaRepository<Deal, UUID> {
       @Param("source") String source,
       @Param("fromDate") LocalDate fromDate,
       @Param("toDate") LocalDate toDate,
+      @Param("viewIds") List<UUID> viewIds,
+      @Param("tagSlugs") List<String> tagSlugs,
+      @Param("tagCount") long tagCount,
       Pageable pageable);
 
   // === Pipeline summary aggregation (Epic 578A, ADR-318 §11.3d) ===

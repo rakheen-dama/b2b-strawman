@@ -87,10 +87,12 @@ public class DealController {
           LocalDate fromDate,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
           LocalDate toDate,
+      @RequestParam(required = false) List<String> tags,
+      @RequestParam(required = false) UUID view,
       Pageable pageable) {
     return ResponseEntity.ok(
         dealService.listDeals(
-            stageId, ownerId, customerId, status, source, fromDate, toDate, pageable));
+            stageId, ownerId, customerId, status, source, fromDate, toDate, tags, view, pageable));
   }
 
   @GetMapping("/api/deals/{id}")

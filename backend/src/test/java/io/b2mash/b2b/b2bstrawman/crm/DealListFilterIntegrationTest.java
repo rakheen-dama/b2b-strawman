@@ -42,6 +42,15 @@ import org.springframework.test.web.servlet.MockMvc;
  * <p>Assertions use containment-by-id over the paged {@code $.content[*].id} (VIA_DTO shape) —
  * never an exact global count, since sibling methods accumulate deals in the shared {@code
  * PER_CLASS} tenant (count-bleed flake rule).
+ *
+ * <p><b>Shared-handler limitation (documented, not a bug):</b> because DEAL views run through the
+ * same {@code ViewFilterService} handlers as the other entities, a DEAL {@code dateRange} saved
+ * view is limited to the columns that exist on the {@code deals} table — namely {@code created_at}
+ * and {@code updated_at}. {@code DateRangeFilterHandler.ALLOWED_FIELDS} also permits {@code
+ * due_date}, but {@code deals} has no such column; a DEAL date-range view on {@code due_date} would
+ * reference a non-existent column. This is a pre-existing per-entity-field gap in the shared
+ * handler (out of scope for 574B — adding due_date support is intentionally NOT attempted); the
+ * realistic deal date filters (created_at/updated_at) work correctly.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -217,6 +226,57 @@ class DealListFilterIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[?(@.id == '" + stageAndTag + "')]").exists())
         .andExpect(jsonPath("$.content[?(@.id == '" + tagOnly + "')]").doesNotExist());
+  }
+
+  @Test
+  void filtersBySavedViewSearchOnTitle() throws Exception {
+    // DEAL saved views with a {"search": ...} filter must narrow by the deals.title column.
+    // (Regression guard: deals have a `title` column, not `name`; the search handler must map
+    // DEAL → title, otherwise this view would emit `name ILIKE ...` against deals and break.)
+    UUID matching = createDeal("Search Zephyrine Holdings");
+    UUID nonMatching = createDeal("Search Quokka Logistics");
+
+    UUID viewId = createDealSavedView("Zephyrine Search View", "{\"search\": \"Zephyrine\"}");
+
+    mockMvc
+        .perform(get("/api/deals").with(owner()).param("view", viewId.toString()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '" + matching + "')]").exists())
+        .andExpect(jsonPath("$.content[?(@.id == '" + nonMatching + "')]").doesNotExist());
+  }
+
+  @Test
+  void composesSavedViewWithTagFilter() throws Exception {
+    // view ∩ tags: a view that matches some deals, intersected with a tag, returns only deals
+    // satisfying BOTH facets (AND/intersection semantics).
+    UUID warm = createTag("Compose Warm");
+
+    UUID inViewAndTagged = createDeal("Compose ViewTag Both");
+    UUID inViewNotTagged = createDeal("Compose ViewTag ViewOnly");
+    UUID taggedNotInView = createDeal("Compose ViewTag TagOnly");
+
+    tagDeal(inViewAndTagged, List.of(warm));
+    tagDeal(taggedNotInView, List.of(warm));
+
+    // Move taggedNotInView into a WON stage so the {"status":["OPEN"]} view excludes it even though
+    // it carries the tag — proving the view AND the tag intersect.
+    transitionToStage(taggedNotInView, stageIdOfType("WON"));
+
+    UUID viewId = createDealSavedView("Compose Open Deals View", "{\"status\": [\"OPEN\"]}");
+
+    mockMvc
+        .perform(
+            get("/api/deals")
+                .with(owner())
+                .param("view", viewId.toString())
+                .param("tags", "compose_warm"))
+        .andExpect(status().isOk())
+        // satisfies BOTH (OPEN status via view AND carries the tag)
+        .andExpect(jsonPath("$.content[?(@.id == '" + inViewAndTagged + "')]").exists())
+        // in the view (OPEN) but missing the tag → excluded
+        .andExpect(jsonPath("$.content[?(@.id == '" + inViewNotTagged + "')]").doesNotExist())
+        // carries the tag but excluded by the view (WON, not OPEN) → excluded
+        .andExpect(jsonPath("$.content[?(@.id == '" + taggedNotInView + "')]").doesNotExist());
   }
 
   /** Resolves the first non-archived stage id of the given stage type via the HTTP path. */

@@ -258,15 +258,22 @@ public class DealService {
       UUID view,
       Pageable pageable) {
 
+    // Composition semantics: view, tags, and the direct column filters are intersected (AND) — a
+    // deal must satisfy ALL active facets. The saved view is resolved first into a set of matched
+    // ids that then RESTRICT the SQL page (viewIds), so it ANDs with the tag predicate and the
+    // direct filters in DealRepository#findFiltered.
+    //
     // Saved-view resolution (server-side native SQL): null view → no restriction; null result →
-    // view had no WHERE clause, fall back unrestricted; empty result → view matched nothing.
+    // view had no WHERE clause, fall back unrestricted; empty result → view matched nothing, so the
+    // intersection is necessarily empty regardless of tags/direct filters → return an empty page by
+    // design (an empty set ANDed with anything is empty).
     List<UUID> viewIds = null;
     if (view != null) {
       List<Deal> viewMatched =
           viewFilterHelper.applyViewFilter(view, "DEAL", "deals", Deal.class, null, null);
       if (viewMatched != null) {
         if (viewMatched.isEmpty()) {
-          return Page.empty(pageable);
+          return Page.empty(pageable); // empty view ∩ tags ∩ direct-filters = empty, by design
         }
         viewIds = viewMatched.stream().map(Deal::getId).toList();
       }

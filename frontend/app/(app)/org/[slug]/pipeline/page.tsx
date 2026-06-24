@@ -167,12 +167,7 @@ export default async function PipelinePage({
           description="Configure pipeline stages in settings to start tracking deals."
         />
       ) : display === "list" ? (
-        <PipelineListView
-          slug={slug}
-          deals={deals}
-          customerNames={customerNames}
-          ownerNames={ownerNames}
-        />
+        <PipelineListView deals={deals} customerNames={customerNames} ownerNames={ownerNames} />
       ) : (
         <PipelineBoard
           slug={slug}

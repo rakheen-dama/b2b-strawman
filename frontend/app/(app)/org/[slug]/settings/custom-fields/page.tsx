@@ -7,6 +7,7 @@ import { CustomFieldsContent } from "./custom-fields-content";
 import { TerminologyText } from "@/components/terminology-text";
 import type { FieldDefinitionResponse, FieldGroupResponse, EntityType } from "@/lib/types";
 
+// DEAL intentionally excluded — deal custom-field admin UI is out of scope for Epic 579 (pipeline + stage settings only).
 const ENTITY_TYPES: EntityType[] = ["PROJECT", "TASK", "CUSTOMER", "INVOICE"];
 
 export default async function CustomFieldsSettingsPage({

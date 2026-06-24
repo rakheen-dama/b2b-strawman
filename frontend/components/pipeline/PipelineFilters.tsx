@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@b2mash/ui/button";
 import { KanbanSquare, List } from "lucide-react";
 import { TagFilter } from "@/components/views/TagFilter";
@@ -14,6 +14,7 @@ export interface PipelineFiltersProps {
 
 export function PipelineFilters({ allTags, display }: PipelineFiltersProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const selectedTags = searchParams.get("tags")?.split(",").filter(Boolean) ?? [];
@@ -24,9 +25,9 @@ export function PipelineFilters({ allTags, display }: PipelineFiltersProps) {
       if (value) params.set(key, value);
       else params.delete(key);
       const qs = params.toString();
-      router.push(qs ? `?${qs}` : "?");
+      router.push(qs ? `?${qs}` : pathname);
     },
-    [router, searchParams]
+    [router, pathname, searchParams]
   );
 
   const handleTagsChange = useCallback(

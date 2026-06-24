@@ -135,7 +135,6 @@ describe("PipelineListView", () => {
   it("renders deals in a table", () => {
     render(
       <PipelineListView
-        slug="acme"
         deals={[makeDeal()]}
         customerNames={customerNames}
         ownerNames={ownerNames}
@@ -147,7 +146,7 @@ describe("PipelineListView", () => {
   });
 
   it("shows empty state when no deals", () => {
-    render(<PipelineListView slug="acme" deals={[]} customerNames={{}} ownerNames={{}} />);
+    render(<PipelineListView deals={[]} customerNames={{}} ownerNames={{}} />);
     expect(screen.getByText(/No deals match/i)).toBeInTheDocument();
   });
 });

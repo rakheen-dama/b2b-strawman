@@ -94,6 +94,7 @@ export function PipelineBoard({
   const [activeDeal, setActiveDeal] = useState<DealResponse | null>(null);
   const [winLoseDeal, setWinLoseDeal] = useState<DealResponse | null>(null);
   const [winLoseStage, setWinLoseStage] = useState<StageDto | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -139,18 +140,37 @@ export function PipelineBoard({
 
     if (targetStage.stageType === "WON" || targetStage.stageType === "LOST") {
       // Win/Lose requires confirmation (LOST needs a reason).
+      setError(null);
       setWinLoseDeal(deal);
       setWinLoseStage(targetStage);
       return;
     }
 
     // OPEN → OPEN move.
-    const result = await transitionDealAction(slug, deal.id, { targetStageId });
-    if (result.success) router.refresh();
+    setError(null);
+    try {
+      const result = await transitionDealAction(slug, deal.id, { targetStageId });
+      if (result.success) {
+        router.refresh();
+      } else {
+        // The card snaps back on refresh; surface why the move was rejected.
+        setError(result.error ?? "Could not move the deal. Please try again.");
+      }
+    } catch {
+      setError("A network error occurred while moving the deal.");
+    }
   }
 
   return (
     <>
+      {error && (
+        <p
+          role="alert"
+          className="text-destructive mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm dark:border-red-900/40 dark:bg-red-950/30"
+        >
+          {error}
+        </p>
+      )}
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}

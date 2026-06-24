@@ -1,12 +1,8 @@
-"use client";
-
-import Link from "next/link";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { AvatarCircle } from "@/components/ui/avatar-circle";
 import type { DealResponse } from "@/lib/api/crm";
 
 export interface PipelineListViewProps {
-  slug: string;
   deals: DealResponse[];
   customerNames: Record<string, string>;
   ownerNames: Record<string, string>;
@@ -25,12 +21,7 @@ function StatusBadge({ status }: { status: DealResponse["status"] }) {
   );
 }
 
-export function PipelineListView({
-  slug,
-  deals,
-  customerNames,
-  ownerNames,
-}: PipelineListViewProps) {
+export function PipelineListView({ deals, customerNames, ownerNames }: PipelineListViewProps) {
   if (deals.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-slate-300 px-4 py-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
@@ -63,12 +54,8 @@ export function PipelineListView({
               className="group border-b border-slate-100 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
             >
               <td className="px-4 py-3">
-                <Link
-                  href={`/org/${slug}/pipeline/${deal.id}`}
-                  className="font-medium text-slate-950 hover:underline dark:text-slate-50"
-                >
-                  {deal.title}
-                </Link>
+                {/* TODO(580A): link to deal detail page once it exists */}
+                <span className="font-medium text-slate-950 dark:text-slate-50">{deal.title}</span>
                 <p className="text-xs text-slate-400">{deal.dealNumber}</p>
               </td>
               <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">

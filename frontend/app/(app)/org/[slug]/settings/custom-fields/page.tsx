@@ -46,12 +46,14 @@ export default async function CustomFieldsSettingsPage({
     TASK: [],
     CUSTOMER: [],
     INVOICE: [],
+    DEAL: [],
   };
   const groupsByType: Record<EntityType, FieldGroupResponse[]> = {
     PROJECT: [],
     TASK: [],
     CUSTOMER: [],
     INVOICE: [],
+    DEAL: [],
   };
 
   try {

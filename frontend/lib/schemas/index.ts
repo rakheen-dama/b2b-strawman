@@ -85,3 +85,11 @@ export type { XeroSettingsFormData } from "./xero-settings";
 
 export { confidenceEnum, variableFillSchema, draftingVariableFillsSchema } from "./drafting";
 export type { VariableFillFormData, DraftingVariableFillsFormData } from "./drafting";
+
+export { intakeDealSchema, loseDealSchema, stageEditSchema, stageCreateSchema } from "./deal";
+export type {
+  IntakeDealFormData,
+  LoseDealFormData,
+  StageEditFormData,
+  StageCreateFormData,
+} from "./deal";

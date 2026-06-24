@@ -40,6 +40,7 @@ const ENTITY_TYPE_LABELS: Record<EntityType, string> = {
   TASK: "Tasks",
   CUSTOMER: "Customers",
   INVOICE: "Invoices",
+  DEAL: "Deals",
 };
 
 interface CustomFieldsContentProps {

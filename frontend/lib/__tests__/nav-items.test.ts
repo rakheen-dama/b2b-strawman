@@ -17,9 +17,9 @@ describe("NAV_GROUPS", () => {
     }
   });
 
-  it("total items across all groups equals 30", () => {
+  it("total items across all groups equals 31", () => {
     const total = NAV_GROUPS.reduce((sum, g) => sum + g.items.length, 0);
-    expect(total).toBe(30);
+    expect(total).toBe(31);
   });
 
   it("clients, finance, and ai zones default to collapsed", () => {
@@ -126,8 +126,8 @@ describe("NAV_ITEMS (backward compat)", () => {
     expect(NAV_ITEMS).toEqual(expected);
   });
 
-  it("total count is 33 (30 group items + 3 utility items)", () => {
-    expect(NAV_ITEMS).toHaveLength(33);
+  it("total count is 34 (31 group items + 3 utility items)", () => {
+    expect(NAV_ITEMS).toHaveLength(34);
   });
 
   it("includes Notifications and Settings from UTILITY_ITEMS", () => {
@@ -138,8 +138,8 @@ describe("NAV_ITEMS (backward compat)", () => {
 });
 
 describe("SETTINGS_ITEMS", () => {
-  it("has exactly 29 entries", () => {
-    expect(SETTINGS_ITEMS).toHaveLength(29);
+  it("has exactly 30 entries", () => {
+    expect(SETTINGS_ITEMS).toHaveLength(30);
   });
 
   it("all entries have title, description, and href function", () => {
@@ -161,6 +161,7 @@ describe("SETTINGS_ITEMS", () => {
       "Batch Billing",
       "Email",
       "Features",
+      "Pipeline",
       "Roles & Permissions",
       "Trust Accounting",
     ]);

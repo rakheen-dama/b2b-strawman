@@ -18,6 +18,10 @@ export const CAPABILITIES = {
   AI_MANAGE: "AI_MANAGE",
   AI_EXECUTE: "AI_EXECUTE",
   AI_REVIEW: "AI_REVIEW",
+  VIEW_DEALS: "VIEW_DEALS",
+  MANAGE_DEALS: "MANAGE_DEALS",
+  CLOSE_DEALS: "CLOSE_DEALS",
+  MANAGE_PIPELINE: "MANAGE_PIPELINE",
 } as const;
 
 /** Capability metadata — single source of truth for labels, descriptions, and enum values. */
@@ -81,6 +85,26 @@ export const CAPABILITY_META = [
     value: CAPABILITIES.AI_REVIEW,
     label: "AI Review",
     description: "Review and approve or reject AI-proposed actions",
+  },
+  {
+    value: CAPABILITIES.VIEW_DEALS,
+    label: "View Deals",
+    description: "View deals, the sales pipeline, and pipeline summary metrics",
+  },
+  {
+    value: CAPABILITIES.MANAGE_DEALS,
+    label: "Manage Deals",
+    description: "Create, edit, move, and win/lose deals across the pipeline",
+  },
+  {
+    value: CAPABILITIES.CLOSE_DEALS,
+    label: "Close Deals",
+    description: "Mark deals as won or lost",
+  },
+  {
+    value: CAPABILITIES.MANAGE_PIPELINE,
+    label: "Manage Pipeline",
+    description: "Configure pipeline stages, ordering, and probabilities",
   },
 ] as const;
 

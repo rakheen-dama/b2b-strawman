@@ -1,6 +1,6 @@
 // ---- Custom Fields (from FieldDefinitionController, FieldGroupController) ----
 
-export type EntityType = "PROJECT" | "TASK" | "CUSTOMER" | "INVOICE";
+export type EntityType = "PROJECT" | "TASK" | "CUSTOMER" | "INVOICE" | "DEAL";
 export type FieldType =
   | "TEXT"
   | "NUMBER"

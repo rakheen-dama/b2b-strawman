@@ -267,7 +267,9 @@ public class DealService {
     // view had no WHERE clause, fall back unrestricted; empty result → view matched nothing, so the
     // intersection is necessarily empty regardless of tags/direct filters → return an empty page by
     // design (an empty set ANDed with anything is empty).
-    List<UUID> viewIds = null;
+    boolean viewFilterActive = false;
+    List<UUID> viewIds =
+        List.of(UUID.randomUUID()); // throwaway placeholder; flag short-circuits it
     if (view != null) {
       List<Deal> viewMatched =
           viewFilterHelper.applyViewFilter(view, "DEAL", "deals", Deal.class, null, null);
@@ -275,6 +277,8 @@ public class DealService {
         if (viewMatched.isEmpty()) {
           return Page.empty(pageable); // empty view ∩ tags ∩ direct-filters = empty, by design
         }
+        // Non-empty (empty handled above): restrict the page to the resolved ids via the flag.
+        viewFilterActive = true;
         viewIds = viewMatched.stream().map(Deal::getId).toList();
       }
     }
@@ -298,6 +302,7 @@ public class DealService {
             source,
             fromDate,
             toDate,
+            viewFilterActive,
             viewIds,
             boundSlugs,
             tagCount,

@@ -50,10 +50,14 @@ public interface DealRepository extends JpaRepository<Deal, UUID> {
    * (entityType, entityId)} with no FK mapped on {@link Deal}, so the slug match is expressed as an
    * explicit {@code EntityTag}/{@code Tag} {@code ON}-join counted to {@code tagCount}.
    *
-   * <p>Saved-view filtering (574B): when {@code viewIds} is non-null it restricts the page to the
-   * deal ids the saved view resolved server-side (via {@link
-   * io.b2mash.b2b.b2bstrawman.view.ViewFilterHelper}); {@code null} disables the restriction so the
-   * pure direct-filter path is unchanged. Keeping the restriction inside this single JPQL query
+   * <p>Saved-view filtering (574B): {@code viewFilterActive} guards the restriction (mirroring the
+   * tag {@code tagCount} flag) so the query never relies on {@code IS NULL} against a
+   * collection-valued parameter, which is fragile/non-portable in HQL. When {@code
+   * viewFilterActive} is {@code true} the page is restricted to {@code viewIds} — the non-empty set
+   * of deal ids the saved view resolved server-side (via {@link
+   * io.b2mash.b2b.b2bstrawman.view.ViewFilterHelper}). When {@code false} the restriction is
+   * short-circuited and {@code viewIds} is a never-evaluated throwaway placeholder, so the pure
+   * direct-filter path is unchanged. Keeping the restriction inside this single JPQL query
    * preserves correct {@link Page} totals (no in-memory post-paging).
    */
   @Query(
@@ -66,7 +70,7 @@ public interface DealRepository extends JpaRepository<Deal, UUID> {
         AND (:source     IS NULL OR d.source = :source)
         AND (:fromDate   IS NULL OR d.expectedCloseDate >= :fromDate)
         AND (:toDate     IS NULL OR d.expectedCloseDate <= :toDate)
-        AND (:viewIds    IS NULL OR d.id IN :viewIds)
+        AND (:viewFilterActive = FALSE OR d.id IN :viewIds)
         AND (:tagCount = 0 OR (
           SELECT COUNT(DISTINCT t.slug)
           FROM EntityTag et JOIN Tag t ON t.id = et.tagId
@@ -82,6 +86,7 @@ public interface DealRepository extends JpaRepository<Deal, UUID> {
       @Param("source") String source,
       @Param("fromDate") LocalDate fromDate,
       @Param("toDate") LocalDate toDate,
+      @Param("viewFilterActive") boolean viewFilterActive,
       @Param("viewIds") List<UUID> viewIds,
       @Param("tagSlugs") List<String> tagSlugs,
       @Param("tagCount") long tagCount,

@@ -79,7 +79,17 @@ export default async function PipelinePage({
   // slugs, ANDed) as of slice 574B, so those UI controls narrow the dataset
   // server-side.
   const rawStatus = strParam(resolvedSearchParams, "status");
-  const rawTags = strParam(resolvedSearchParams, "tags");
+  // `tags` may arrive as a single CSV string (`?tags=a,b`, what the filter UI
+  // writes) or as repeated keys (`?tags=a&tags=b`, which Next.js coerces to
+  // string[]). Normalise both to a CSV before splitting so neither shape is
+  // silently dropped.
+  const rawTagsValue = resolvedSearchParams["tags"];
+  const rawTags =
+    typeof rawTagsValue === "string"
+      ? rawTagsValue
+      : Array.isArray(rawTagsValue)
+        ? rawTagsValue.join(",")
+        : undefined;
   const tags = rawTags
     ? rawTags
         .split(",")

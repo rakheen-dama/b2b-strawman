@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.proposal.ProposalRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.view.ViewFilterHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -56,6 +57,7 @@ public class DealService {
   private final ProposalRepository proposalRepository;
   private final FieldGroupService fieldGroupService;
   private final CustomFieldValidator customFieldValidator;
+  private final ViewFilterHelper viewFilterHelper;
 
   public DealService(
       DealRepository dealRepository,
@@ -67,7 +69,8 @@ public class DealService {
       AuditService auditService,
       ProposalRepository proposalRepository,
       FieldGroupService fieldGroupService,
-      CustomFieldValidator customFieldValidator) {
+      CustomFieldValidator customFieldValidator,
+      ViewFilterHelper viewFilterHelper) {
     this.dealRepository = dealRepository;
     this.dealNumberService = dealNumberService;
     this.pipelineStageService = pipelineStageService;
@@ -78,6 +81,7 @@ public class DealService {
     this.proposalRepository = proposalRepository;
     this.fieldGroupService = fieldGroupService;
     this.customFieldValidator = customFieldValidator;
+    this.viewFilterHelper = viewFilterHelper;
   }
 
   /**
@@ -226,6 +230,20 @@ public class DealService {
   /**
    * Filtered, paged list mapped to {@link DealResponse}. Stages are batch-loaded once into a map to
    * resolve {@code stageName}/{@code effectiveProbabilityPct} per row without an N+1.
+   *
+   * <p>Beyond the direct column filters (574A) this composes two opt-in pipeline filters (574B),
+   * mirroring the customers list:
+   *
+   * <ul>
+   *   <li><b>Saved view</b> ({@code view} = UUID): resolved server-side via {@link
+   *       ViewFilterHelper#applyViewFilter} against the {@code deals} table under entity type
+   *       {@code "DEAL"}; its matched ids restrict the page. A {@code null} result (view carried no
+   *       WHERE clause) falls back to the unrestricted path; an empty result yields an empty page.
+   *   <li><b>Tags</b> ({@code tags} = slug list): ALL/AND semantics — a deal must carry every
+   *       requested slug. Composed as a correlated subquery inside {@link
+   *       DealRepository#findFiltered} so {@link Page} totals stay correct (no in-memory
+   *       post-paging, no N+1).
+   * </ul>
    */
   @Transactional(readOnly = true)
   public Page<DealResponse> listDeals(
@@ -236,10 +254,59 @@ public class DealService {
       String source,
       LocalDate fromDate,
       LocalDate toDate,
+      List<String> tags,
+      UUID view,
       Pageable pageable) {
+
+    // Composition semantics: view, tags, and the direct column filters are intersected (AND) — a
+    // deal must satisfy ALL active facets. The saved view is resolved first into a set of matched
+    // ids that then RESTRICT the SQL page (viewIds), so it ANDs with the tag predicate and the
+    // direct filters in DealRepository#findFiltered.
+    //
+    // Saved-view resolution (server-side native SQL): null view → no restriction; null result →
+    // view had no WHERE clause, fall back unrestricted; empty result → view matched nothing, so the
+    // intersection is necessarily empty regardless of tags/direct filters → return an empty page by
+    // design (an empty set ANDed with anything is empty).
+    boolean viewFilterActive = false;
+    List<UUID> viewIds =
+        List.of(UUID.randomUUID()); // throwaway placeholder; flag short-circuits it
+    if (view != null) {
+      List<Deal> viewMatched =
+          viewFilterHelper.applyViewFilter(view, "DEAL", "deals", Deal.class, null, null);
+      if (viewMatched != null) {
+        if (viewMatched.isEmpty()) {
+          return Page.empty(pageable); // empty view ∩ tags ∩ direct-filters = empty, by design
+        }
+        // Non-empty (empty handled above): restrict the page to the resolved ids via the flag.
+        viewFilterActive = true;
+        viewIds = viewMatched.stream().map(Deal::getId).toList();
+      }
+    }
+
+    // Tag filter (ALL/AND, SQL-side): empty → disabled (tagCount 0). The slug list is never bound
+    // as
+    // an empty IN (a placeholder is passed when disabled; the tagCount guard short-circuits it).
+    List<String> tagSlugs =
+        tags == null
+            ? List.of()
+            : tags.stream().map(String::trim).filter(s -> !s.isEmpty()).distinct().toList();
+    long tagCount = tagSlugs.size();
+    List<String> boundSlugs = tagSlugs.isEmpty() ? List.of("") : tagSlugs;
+
     var page =
         dealRepository.findFiltered(
-            stageId, ownerId, customerId, status, source, fromDate, toDate, pageable);
+            stageId,
+            ownerId,
+            customerId,
+            status,
+            source,
+            fromDate,
+            toDate,
+            viewFilterActive,
+            viewIds,
+            boundSlugs,
+            tagCount,
+            pageable);
     Map<UUID, PipelineStage> stagesById =
         pipelineStageService.listStages().stream()
             .collect(Collectors.toMap(PipelineStage::getId, Function.identity()));

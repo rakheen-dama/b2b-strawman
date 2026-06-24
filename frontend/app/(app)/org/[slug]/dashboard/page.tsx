@@ -13,6 +13,7 @@ import { MyWeekColumn } from "@/components/dashboard/my-week-column";
 import { DeadlineWidget } from "@/components/dashboard/deadline-widget";
 import { SensitiveEventsWidget } from "@/components/dashboard/sensitive-events-widget";
 import { TeamUtilizationWidget } from "@/components/dashboard/team-utilization-widget";
+import { PipelineSummaryWidget } from "@/components/dashboard/pipeline-summary-widget";
 import { UpcomingCourtDatesWidget } from "@/components/legal/upcoming-court-dates-widget";
 import { ModuleGate } from "@/components/module-gate";
 import {
@@ -171,6 +172,13 @@ export default async function OrgDashboardPage({
 
       {/* Consulting-ZA profile-gated widget (self-gates via useProfile) */}
       <TeamUtilizationWidget slug={slug} />
+
+      {/* Sales pipeline summary (admin/owner-scoped; self-gates via useCapabilities) */}
+      {isAdmin && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <PipelineSummaryWidget slug={slug} />
+        </div>
+      )}
 
       {/* Hero two-panel layout */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">

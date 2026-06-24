@@ -26,6 +26,7 @@ interface CustomerGroupedTabsProps {
   projectsPanel: ReactNode;
   documentsPanel: ReactNode;
   generatedPanel?: ReactNode;
+  dealsPanel?: ReactNode;
   // Finance group
   invoicesPanel?: ReactNode;
   ratesPanel?: ReactNode;
@@ -51,6 +52,7 @@ export function CustomerGroupedTabs({
   projectsPanel,
   documentsPanel,
   generatedPanel,
+  dealsPanel,
   invoicesPanel,
   ratesPanel,
   retainerPanel,
@@ -85,6 +87,7 @@ export function CustomerGroupedTabs({
       projects: true,
       documents: true,
       generated: !!generatedPanel,
+      deals: !!dealsPanel,
       // Finance group — panel-gated
       invoices: !!invoicesPanel,
       rates: !!ratesPanel,
@@ -119,6 +122,7 @@ export function CustomerGroupedTabs({
   }, [
     t,
     generatedPanel,
+    dealsPanel,
     invoicesPanel,
     ratesPanel,
     retainerPanel,
@@ -186,6 +190,11 @@ export function CustomerGroupedTabs({
       {generatedPanel && (
         <TabsPrimitive.Content value="generated" className="pt-6 outline-none">
           {generatedPanel}
+        </TabsPrimitive.Content>
+      )}
+      {dealsPanel && (
+        <TabsPrimitive.Content value="deals" className="pt-6 outline-none">
+          {dealsPanel}
         </TabsPrimitive.Content>
       )}
 

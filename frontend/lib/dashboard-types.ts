@@ -1,5 +1,10 @@
 // Dashboard API response types
 
+// Pipeline summary types live in the crm API client (single source of truth).
+// Re-exported here so dashboard consumers can import them alongside the other
+// dashboard response types without duplicating the interface definitions.
+export type { PipelineSummaryResponse, PipelineStageBreakdown } from "@/lib/api/crm";
+
 export interface TrendPoint {
   period: string;
   value: number;

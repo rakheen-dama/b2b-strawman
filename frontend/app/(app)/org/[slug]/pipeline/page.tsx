@@ -71,13 +71,21 @@ export default async function PipelinePage({
     /* no stages configured yet */
   }
 
-  // Wire the URL filter params the backend GET /api/deals actually supports
-  // (stageId, ownerId, customerId, status, source, fromDate, toDate) into the
-  // list request, so the board/list reflects the active filters instead of
-  // ignoring them. NOTE: saved-view (`view`) and `tags` filtering is NOT
-  // supported by the deal-list endpoint, so those UI controls don't narrow the
-  // dataset server-side yet (requires a backend change — out of scope here).
+  // Wire the URL filter params the backend GET /api/deals supports (stageId,
+  // ownerId, customerId, status, source, fromDate, toDate) into the list
+  // request, so the board/list reflects the active filters instead of ignoring
+  // them. Saved-view (`view`) and `tags` filtering ARE now forwarded too: the
+  // deal-list endpoint accepts `view` (saved-view UUID) and `tags` (CSV of tag
+  // slugs, ANDed) as of slice 574B, so those UI controls narrow the dataset
+  // server-side.
   const rawStatus = strParam(resolvedSearchParams, "status");
+  const rawTags = strParam(resolvedSearchParams, "tags");
+  const tags = rawTags
+    ? rawTags
+        .split(",")
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0)
+    : undefined;
   const dealFilters: ListDealsParams = {
     stageId: strParam(resolvedSearchParams, "stageId"),
     ownerId: strParam(resolvedSearchParams, "ownerId"),
@@ -89,6 +97,8 @@ export default async function PipelinePage({
     source: strParam(resolvedSearchParams, "source"),
     fromDate: strParam(resolvedSearchParams, "fromDate"),
     toDate: strParam(resolvedSearchParams, "toDate"),
+    tags: tags && tags.length > 0 ? tags : undefined,
+    view: strParam(resolvedSearchParams, "view"),
     sort: strParam(resolvedSearchParams, "sort"),
   };
 

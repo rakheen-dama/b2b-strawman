@@ -150,6 +150,8 @@ export interface ListDealsParams {
   source?: string;
   fromDate?: string;
   toDate?: string;
+  tags?: string[]; // tag slugs — backend ANDs them (deal must carry ALL)
+  view?: string; // saved-view UUID
   page?: number;
   size?: number;
   sort?: string;
@@ -197,6 +199,8 @@ export async function listDeals(params: ListDealsParams = {}): Promise<Page<Deal
   if (params.source) qs.set("source", params.source);
   if (params.fromDate) qs.set("fromDate", params.fromDate);
   if (params.toDate) qs.set("toDate", params.toDate);
+  if (params.tags && params.tags.length > 0) qs.set("tags", params.tags.join(","));
+  if (params.view) qs.set("view", params.view);
   if (params.page != null) qs.set("page", String(params.page));
   if (params.size != null) qs.set("size", String(params.size));
   if (params.sort) qs.set("sort", params.sort);

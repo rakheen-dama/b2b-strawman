@@ -51,7 +51,7 @@ public class ViewFilterService {
    *
    * @param filters the filter map from SavedView.filters (JSONB)
    * @param params output map to populate with named parameter bindings
-   * @param entityType the entity type (PROJECT, TASK, CUSTOMER) — used by tag handler
+   * @param entityType the entity type (PROJECT, TASK, CUSTOMER, DEAL) — used by tag handler
    * @return WHERE clause string (no leading WHERE keyword), or empty string if no filters
    */
   public String buildWhereClause(
@@ -109,10 +109,10 @@ public class ViewFilterService {
    * transaction. Tenant isolation is provided by the dedicated schema (search_path set on
    * connection checkout) — no additional tenant_id filtering is needed in native queries.
    *
-   * @param tableName the SQL table name (projects, tasks, customers)
+   * @param tableName the SQL table name (projects, tasks, customers, deals)
    * @param entityClass the JPA entity class for result mapping
    * @param filters the filter map from SavedView.filters
-   * @param entityType the entity type string (PROJECT, TASK, CUSTOMER)
+   * @param entityType the entity type string (PROJECT, TASK, CUSTOMER, DEAL)
    * @param extraWhere optional extra WHERE clause (e.g., "project_id = :projectId")
    * @param extraParams optional extra parameters for the extra WHERE clause
    * @return filtered entity list, or null if filters produce an empty WHERE clause

@@ -23,7 +23,7 @@ This phase ships as **8 epics (573–580)**, expanded to **12 numbered slices** 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 573 | Migration + Entities + Capability + Stage Seeding | Backend | — | L | 573A, 573B | **Done** (PR #1487) |
-| 574 | Deal CRUD + Intake + Filtered List | Backend | 573A | L | 574A, 574B | 574A **Done** (PR #1488) |
+| 574 | Deal CRUD + Intake + Filtered List | Backend | 573A | L | 574A, 574B | **Done** (574A #1488, 574B #1500) |
 | 575 | DealTransitionService + Customer Nudge + Events/Audit/Activity | Backend | 574A | L | 575A | **Done** (PR #1489) |
 | 576 | Deal↔Proposal Link + Win-Loop Event Glue | Backend | 575A | M | 576A | **Done** (PR #1491) |
 | 577 | Field / Tag / Saved-View / Audit-Metadata Registration | Backend | 574A, 575A | M | 577A | **Done** (PR #1495) |
@@ -266,7 +266,7 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **574A** ✅ Done (PR #1488) | 574A.1–574A.7 | ~9 backend files (1 service + 1 intake service + 1 repo mod + 1 controller + 4 DTOs + 3 test files) | `DealService`, `DealIntakeService`, `DealRepository.findFiltered`, `DealController`, DTOs; CRUD/intake + capability + tenant-isolation tests. |
-| **574B** | 574B.1–574B.2 | ~3 backend files (1 repo/service mod + 1 controller mod + 1 test) | `GET /api/deals` tag + saved-view filtering. Completes the tag/saved-view predicate composition that **574A.1's note specced but 574A did not ship** — only direct `stageId/ownerId/customerId/status/source/dates` filters landed. Add `tags` (resolve → `EntityTag` join) and `view` (resolve saved-view criteria → predicates) params so the frontend pipeline filters (Epic 579A) actually narrow the dataset server-side. Unblocks the documented 579 filter limitation. |
+| **574B** | 574B.1–574B.2 | ~3 backend files (1 repo/service mod + 1 controller mod + 1 test) | `GET /api/deals` tag + saved-view filtering. Completes the tag/saved-view predicate composition that **574A.1's note specced but 574A did not ship** — only direct `stageId/ownerId/customerId/status/source/dates` filters landed. Add `tags` (resolve → `EntityTag` join) and `view` (resolve saved-view criteria → predicates) params so the frontend pipeline filters (Epic 579A) actually narrow the dataset server-side. Unblocks the documented 579 filter limitation. **Done** (PR #1500) — also fixed `SearchFilterHandler` DEAL→`title` + flag-guarded the saved-view predicate. **Remaining**: frontend `listDeals` must forward `tags`/`view` (trivial follow-up). |
 
 ### Tasks
 
@@ -572,7 +572,7 @@ Stage 5: [579A] -> [579B] -> [580A] -> [580B]       <- sequential frontend
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **579A** ✅ Done (PR #1499) | 579A.1–579A.5 | ~9 frontend files (1 api module + 1 page + ~5 components + 1 test) | `lib/api/crm.ts`; `/pipeline` board + list toggle; intake dialog; filters; header weighted value + win rate. **Known limitation**: `view`/`tags` filter controls don't narrow data server-side (`GET /api/deals` lacks the params) → tracked as **574B**. |
+| **579A** ✅ Done (PR #1499) | 579A.1–579A.5 | ~9 frontend files (1 api module + 1 page + ~5 components + 1 test) | `lib/api/crm.ts`; `/pipeline` board + list toggle; intake dialog; filters; header weighted value + win rate. **Known limitation**: `view`/`tags` filter controls don't narrow data server-side — backend support shipped in **574B** (PR #1500); the trivial remaining step is the frontend `listDeals` forwarding `tags`/`view` params. |
 | **579B** ✅ Done (PR #1499) | 579B.1–579B.3 | ~6 frontend files (1 page + ~4 components + 1 test) | `settings/pipeline` stage config: reorder, edit name/probability/type, archive, with guards. |
 
 ### Tasks

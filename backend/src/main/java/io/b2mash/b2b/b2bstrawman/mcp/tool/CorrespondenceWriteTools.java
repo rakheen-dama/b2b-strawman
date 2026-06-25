@@ -2,7 +2,7 @@ package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
-import io.b2mash.b2b.b2bstrawman.correspondence.Correspondence;
+import io.b2mash.b2b.b2bstrawman.correspondence.CorrespondenceScope;
 import io.b2mash.b2b.b2bstrawman.correspondence.CorrespondenceService;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.FileCorrespondenceCommand;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.FileCorrespondenceResult;
@@ -251,30 +251,36 @@ public class CorrespondenceWriteTools {
           McpError.invalidRequest("INITIATE requires correspondenceId and fileName."),
           objectMapper);
     }
-    Correspondence correspondence;
+    if (size == null || size <= 0) {
+      metrics.recordError("attach_document", McpToolAudit.elapsed(startNanos));
+      return McpToolErrors.asResult(
+          McpError.invalidRequest("INITIATE requires a positive size (bytes)."), objectMapper);
+    }
+    CorrespondenceScope scope;
     try {
-      correspondence = correspondenceService.requireById(correspondenceId);
+      scope = correspondenceService.requireScopeById(correspondenceId);
     } catch (ResourceNotFoundException e) {
       metrics.recordError("attach_document", McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.notFound("correspondence"), objectMapper);
     }
-    long sizeBytes = size == null ? 0L : size;
+    long sizeBytes = size;
     DocumentService.UploadInitResult result;
     try {
       // Scope = CUSTOMER (preferred when known) else PROJECT. The 581A linkage CHECK guarantees at
       // least one of customerId / projectId is non-null.
-      if (correspondence.getCustomerId() != null) {
+      if (scope.customerId() != null) {
         result =
             documentService.initiateCustomerUpload(
-                correspondence.getCustomerId(), fileName, contentType, sizeBytes);
+                scope.customerId(), fileName, contentType, sizeBytes);
       } else {
         result =
             documentService.initiateUpload(
-                correspondence.getProjectId(), fileName, contentType, sizeBytes, actor);
+                scope.projectId(), fileName, contentType, sizeBytes, actor);
       }
     } catch (ResourceNotFoundException e) {
+      // The customer/project resolved off the correspondence no longer exists in-tenant.
       metrics.recordError("attach_document", McpToolAudit.elapsed(startNanos));
-      return McpToolErrors.asResult(McpError.notFound("document"), objectMapper);
+      return McpToolErrors.asResult(McpError.notFound("scope"), objectMapper);
     } catch (InvalidStateException e) {
       metrics.recordError("attach_document", McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(
@@ -292,6 +298,15 @@ public class CorrespondenceWriteTools {
       return McpToolErrors.asResult(
           McpError.invalidRequest("CONFIRM requires documentId and correspondenceId."),
           objectMapper);
+    }
+    // Validate the correspondence exists IN-TENANT before stamping. A caller-supplied (possibly
+    // fabricated or wrong-tenant) correspondenceId must never be stamped onto a document — the
+    // lookup throws ResourceNotFoundException for an unknown id, which we surface as notFound.
+    try {
+      correspondenceService.requireScopeById(correspondenceId);
+    } catch (ResourceNotFoundException e) {
+      metrics.recordError("attach_document", McpToolAudit.elapsed(startNanos));
+      return McpToolErrors.asResult(McpError.notFound("correspondence"), objectMapper);
     }
     Document document;
     try {

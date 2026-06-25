@@ -77,15 +77,18 @@ public class CorrespondenceService {
   }
 
   /**
-   * Resolve a correspondence by id for scope resolution (Phase 81, {@code attach_document}). The
-   * caller reads {@code getCustomerId()} / {@code getProjectId()} to choose CUSTOMER vs PROJECT
-   * upload scope. Tenant-isolated via {@code search_path}. Throws {@link ResourceNotFoundException}
-   * when the id is unknown in this tenant.
+   * Resolve a correspondence's {@link CorrespondenceScope} by id (Phase 81, {@code
+   * attach_document}). Returns only the customer/project ids the caller needs to choose CUSTOMER vs
+   * PROJECT upload scope — the JPA entity never crosses the MCP/service boundary. Tenant-isolated
+   * via {@code search_path}. Throws {@link ResourceNotFoundException} when the id is unknown in
+   * this tenant, which the CONFIRM phase relies on to reject a fabricated or wrong-tenant {@code
+   * correspondenceId} before any stamp is applied.
    */
   @Transactional(readOnly = true)
-  public Correspondence requireById(UUID id) {
+  public CorrespondenceScope requireScopeById(UUID id) {
     return correspondenceRepository
         .findById(id)
+        .map(CorrespondenceScope::of)
         .orElseThrow(() -> new ResourceNotFoundException("Correspondence", id));
   }
 

@@ -64,6 +64,7 @@ class AttachDocumentDocumentsListTest {
   private UUID ownerMemberId;
   private UUID memberMemberId;
   private UUID matterId;
+  private UUID clientId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -81,6 +82,9 @@ class AttachDocumentDocumentsListTest {
 
     JwtRequestPostProcessor owner = TestJwtFactory.ownerJwt(ORG_ID, "user_owner");
     matterId = UUID.fromString(TestEntityHelper.createProject(mockMvc, owner, "List Matter"));
+    clientId =
+        UUID.fromString(
+            TestEntityHelper.createCustomer(mockMvc, owner, "List Client", "lc@test.com"));
 
     enableMcp();
   }
@@ -162,6 +166,29 @@ class AttachDocumentDocumentsListTest {
     return resp.correspondenceId();
   }
 
+  /** File a CUSTOMER-only correspondence (no matter) and return its id. */
+  private UUID fileCustomerCorrespondence(String messageId) {
+    var resp =
+        asOwner(
+            () ->
+                (FileCorrespondenceToolResponse)
+                    tools.fileCorrespondence(
+                        null,
+                        clientId,
+                        messageId,
+                        "Subject",
+                        "Body",
+                        null,
+                        "from@acme.co.za",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null));
+    return resp.correspondenceId();
+  }
+
   @Test
   void confirmedAttachmentAppearsInMatterDocumentsList() {
     UUID correspondenceId = fileProjectCorrespondence("<list-attach-1@mail.test>");
@@ -177,6 +204,37 @@ class AttachDocumentDocumentsListTest {
 
     var actor = new io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext(ownerMemberId, "owner");
     List<Document> docs = inTenantTx(() -> documentService.listDocuments(matterId, actor));
+    assertThat(docs).extracting(Document::getId).contains(documentId);
+    assertThat(docs)
+        .filteredOn(d -> documentId.equals(d.getId()))
+        .singleElement()
+        .satisfies(
+            d -> {
+              assertThat(d.getCorrespondenceId()).isEqualTo(correspondenceId);
+              assertThat(d.getSource()).isEqualTo(Document.Source.EMAIL_INGEST);
+            });
+  }
+
+  @Test
+  void confirmedCustomerScopedAttachmentAppearsInCustomerDocumentsList() {
+    UUID correspondenceId = fileCustomerCorrespondence("<list-attach-cust-1@mail.test>");
+
+    var init =
+        asOwner(
+            () ->
+                (AttachDocumentInitResponse)
+                    tools.attachDocument(
+                        "INITIATE",
+                        correspondenceId,
+                        "cust-listed.pdf",
+                        "application/pdf",
+                        256L,
+                        null));
+    UUID documentId = init.documentId();
+    asOwner(() -> tools.attachDocument("CONFIRM", correspondenceId, null, null, null, documentId));
+
+    // A CUSTOMER-scoped attachment surfaces via listCustomerDocuments, NOT listDocuments(matter).
+    List<Document> docs = inTenantTx(() -> documentService.listCustomerDocuments(clientId));
     assertThat(docs).extracting(Document::getId).contains(documentId);
     assertThat(docs)
         .filteredOn(d -> documentId.equals(d.getId()))

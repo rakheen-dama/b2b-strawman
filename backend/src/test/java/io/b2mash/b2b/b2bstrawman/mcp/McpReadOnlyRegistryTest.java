@@ -87,7 +87,8 @@ class McpReadOnlyRegistryTest {
    * Sanctioned write-tool names — exempt from the read-verb pattern; each is MCP_WRITE-gated (see
    * McpWriteCapabilityGateTest).
    */
-  private static final Set<String> WRITE_TOOL_NAMES = Set.of("file_correspondence");
+  private static final Set<String> WRITE_TOOL_NAMES =
+      Set.of("file_correspondence", "attach_document");
 
   /** Mutating verbs that must NEVER appear at the start of a registered tool name. */
   private static final List<String> MUTATING_VERBS =

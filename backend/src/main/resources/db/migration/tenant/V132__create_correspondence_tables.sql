@@ -31,8 +31,13 @@ CREATE TABLE correspondence (
 CREATE UNIQUE INDEX ux_correspondence_message_id ON correspondence (message_id);
 
 -- List a matter's / client's correspondence newest-first (matter-detail tab, paginated).
-CREATE INDEX ix_correspondence_project  ON correspondence (project_id, received_at DESC);
-CREATE INDEX ix_correspondence_customer ON correspondence (customer_id, received_at DESC);
+-- received_at is nullable, so the list sort is COALESCE(received_at, filed_at) DESC, filed_at DESC,
+-- id DESC (NULLs would otherwise sort FIRST under plain DESC). Index the same expression so the
+-- ORDER BY is index-backed.
+CREATE INDEX ix_correspondence_project
+    ON correspondence (project_id, COALESCE(received_at, filed_at) DESC, filed_at DESC, id DESC);
+CREATE INDEX ix_correspondence_customer
+    ON correspondence (customer_id, COALESCE(received_at, filed_at) DESC, filed_at DESC, id DESC);
 
 -- Thread grouping hook (v2); cheap to add now, avoids a later migration.
 CREATE INDEX ix_correspondence_thread   ON correspondence (thread_key);

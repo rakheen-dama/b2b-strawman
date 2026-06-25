@@ -17,10 +17,17 @@ public interface CorrespondenceRepository extends JpaRepository<Correspondence, 
   /** Idempotency lookup: re-filing the same email finds the existing row. */
   Optional<Correspondence> findByMessageId(String messageId);
 
-  @Query("SELECT c FROM Correspondence c WHERE c.projectId = :pid ORDER BY c.receivedAt DESC")
+  // receivedAt is NULLABLE; PostgreSQL sorts NULLs FIRST under DESC, so undated rows would jump
+  // ahead of genuinely recent mail. Fall back to filedAt (NOT NULL, @PrePersist-set) and break ties
+  // on id for a stable, deterministic order.
+  @Query(
+      "SELECT c FROM Correspondence c WHERE c.projectId = :pid"
+          + " ORDER BY COALESCE(c.receivedAt, c.filedAt) DESC, c.filedAt DESC, c.id DESC")
   Page<Correspondence> findByProjectId(@Param("pid") UUID projectId, Pageable pageable);
 
-  @Query("SELECT c FROM Correspondence c WHERE c.customerId = :cid ORDER BY c.receivedAt DESC")
+  @Query(
+      "SELECT c FROM Correspondence c WHERE c.customerId = :cid"
+          + " ORDER BY COALESCE(c.receivedAt, c.filedAt) DESC, c.filedAt DESC, c.id DESC")
   Page<Correspondence> findByCustomerId(@Param("cid") UUID customerId, Pageable pageable);
 
   /**

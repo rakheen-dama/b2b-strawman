@@ -157,6 +157,27 @@ class CorrespondenceServiceTest {
   }
 
   @Test
+  void reFileSameMessageIdReturnsIdempotentEvenWhenReplayLinkageIsInvalid() throws Exception {
+    // Contract: idempotency-on-messageId takes precedence over linkage validation. A replay of an
+    // already-filed message must return the existing id even if THIS call's linkage is invalid
+    // (both-null) — it must NOT throw InvalidStateException.
+    UUID projectId = UUID.randomUUID();
+    String messageId = "msg-idem-invalid-relink-" + UUID.randomUUID() + "@example.com";
+
+    FileCorrespondenceResult first =
+        runInTenant(
+            () -> correspondenceService.fileInbound(cmd(projectId, null, messageId), actor()));
+    assertThat(first.idempotent()).isFalse();
+
+    // Replay with both-null linkage (would fail validateLinkage if it ran first).
+    FileCorrespondenceResult second =
+        runInTenant(() -> correspondenceService.fileInbound(cmd(null, null, messageId), actor()));
+
+    assertThat(second.idempotent()).isTrue();
+    assertThat(second.correspondenceId()).isEqualTo(first.correspondenceId());
+  }
+
+  @Test
   void bothNullLinkageRejectedAtServiceLevel() {
     String messageId = "msg-nolink-" + UUID.randomUUID() + "@example.com";
     assertThatThrownBy(

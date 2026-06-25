@@ -33,12 +33,15 @@ public class CorrespondenceService {
    */
   @Transactional
   public FileCorrespondenceResult fileInbound(FileCorrespondenceCommand cmd, ActorContext actor) {
-    validateLinkage(cmd.customerId(), cmd.matterId());
-
+    // Idempotency FIRST: a replay of an already-filed messageId must return the existing id even if
+    // this replay's linkage args are now invalid (e.g. both-null). Validating linkage before the
+    // lookup would throw on a replay and break the idempotent-on-messageId contract.
     var existing = correspondenceRepository.findByMessageId(cmd.messageId());
     if (existing.isPresent()) {
       return FileCorrespondenceResult.idempotent(existing.get().getId());
     }
+
+    validateLinkage(cmd.customerId(), cmd.matterId());
 
     var correspondence =
         new Correspondence(

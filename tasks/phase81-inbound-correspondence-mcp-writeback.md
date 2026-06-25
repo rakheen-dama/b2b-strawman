@@ -24,7 +24,7 @@ This phase ships as **6 epics (581–586)**, expanded to **11 numbered slices** 
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 581 | Correspondence Entity + Migration + Document Link | Backend | — | M | 581A | |
+| 581 | Correspondence Entity + Migration + Document Link | Backend | — | M | 581A | **Done** (PR #1504) |
 | 582 | MCP Write Capability + Audit Family + `file_correspondence` | Backend | 581A | L | 582A, 582B | |
 | 583 | `attach_document` (presigned reuse + correspondence stamp) | Backend | 581A, 582A, 582B | M | 583A | |
 | 584 | `resolve_matter_by_email` (read tool) | Backend | 582A | S | 584A | |
@@ -126,7 +126,7 @@ PHASES already complete (reused, not rebuilt):
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 1a | **581A** | V130 migration (`correspondence` table with `chk_correspondence_linkage` CHECK + `ux_correspondence_message_id` UNIQUE + project/customer/thread indexes; `documents.correspondence_id` ALTER + index); `Correspondence` entity (mirror `AiExecutionGate`: JSONB collections, `@Version`, `@PrePersist`/`@PreUpdate`); `Direction` enum; `CorrespondenceRepository` (`findByMessageId`, paginated project/customer lists); `CorrespondenceService` (`fileInbound` idempotent upsert, `validateLinkage`, list + attachment-count); `dto/*`; `Document.correspondenceId` setter + `EMAIL_INGEST` source constant; entity/idempotency/linkage tests. |
+| 1a | **581A** | **Done** (PR #1504) — V130 migration (`correspondence` table with `chk_correspondence_linkage` CHECK + `ux_correspondence_message_id` UNIQUE + project/customer/thread indexes; `documents.correspondence_id` ALTER + index); `Correspondence` entity (mirror `AiExecutionGate`: JSONB collections, `@Version`, `@PrePersist`/`@PreUpdate`); `Direction` enum; `CorrespondenceRepository` (`findByMessageId`, paginated project/customer lists); `CorrespondenceService` (`fileInbound` idempotent upsert, `validateLinkage`, list + attachment-count); `dto/*`; `Document.correspondenceId` setter + `EMAIL_INGEST` source constant; entity/idempotency/linkage tests. |
 
 ### Stage 2 — MCP Write Capability + first write tool (sequential after 581A)
 
@@ -179,7 +179,7 @@ Stage 4: [586A] -> [586B] -> [586C]                <- backend REST -> frontend -
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **581A** | 581A.1–581A.8 | ~10 backend files (1 migration + 1 entity + 1 enum + 1 repo + 1 service + ~3 DTOs + 1 `Document` mod + 2 test files) | V130 migration; `Correspondence` entity + `Direction` enum; `CorrespondenceRepository`; `CorrespondenceService` (`fileInbound` + idempotency + linkage validation + list + attachment-count); `dto/*`; `Document.correspondenceId` setter + `EMAIL_INGEST`; entity/idempotency/linkage tests. |
+| **581A** ✅ Done (PR #1504) | 581A.1–581A.8 | ~10 backend files (1 migration + 1 entity + 1 enum + 1 repo + 1 service + ~3 DTOs + 1 `Document` mod + 2 test files) | V130 migration; `Correspondence` entity + `Direction` enum; `CorrespondenceRepository`; `CorrespondenceService` (`fileInbound` + idempotency + linkage validation + list + attachment-count); `dto/*`; `Document.correspondenceId` setter + `EMAIL_INGEST`; entity/idempotency/linkage tests. |
 
 ### Tasks
 

@@ -271,9 +271,49 @@ class AttachDocumentToolTest {
     @SuppressWarnings("unchecked")
     List<String> entityRefs = (List<String>) event.getDetails().get("entityRefs");
     assertThat(entityRefs).contains(documentId.toString(), correspondenceId.toString());
-    // "audited.pdf" is a sanitiser-safe filename (no spaces/@/:), so it survives in params.
+    // fileName is caller-controlled and can carry PII (POPIA), so it must NOT appear in the audit
+    // params — the entityRefs identify the records instead.
     @SuppressWarnings("unchecked")
     var params = (java.util.Map<String, Object>) event.getDetails().get("params");
-    assertThat(params).containsEntry("fileName", "audited.pdf");
+    if (params != null) {
+      assertThat(params).doesNotContainKey("fileName");
+    }
+  }
+
+  @Test
+  void confirmRetryDoesNotEmitDuplicateAudit() {
+    UUID correspondenceId = fileCorrespondence("<attach-audit-retry-1@mail.test>");
+
+    var init =
+        asOwner(
+            () ->
+                (AttachDocumentInitResponse)
+                    tools.attachDocument(
+                        "INITIATE", correspondenceId, "retry.pdf", "application/pdf", 32L, null));
+    UUID documentId = init.documentId();
+
+    // First confirm performs the real state change → exactly one audit event.
+    asOwner(() -> tools.attachDocument("CONFIRM", correspondenceId, null, null, null, documentId));
+    var afterFirst =
+        readEvents("mcp.write.document_attached").stream()
+            .filter(e -> documentId.equals(e.getEntityId()))
+            .toList();
+    assertThat(afterFirst).hasSize(1);
+
+    // Second (retry) confirm is an idempotent no-op → success but NO additional audit event.
+    var second =
+        asOwner(
+            () ->
+                (AttachDocumentConfirmResponse)
+                    tools.attachDocument(
+                        "CONFIRM", correspondenceId, null, null, null, documentId));
+    assertThat(second.documentId()).isEqualTo(documentId);
+    assertThat(second.status()).isEqualTo("UPLOADED");
+
+    var afterSecond =
+        readEvents("mcp.write.document_attached").stream()
+            .filter(e -> documentId.equals(e.getEntityId()))
+            .toList();
+    assertThat(afterSecond).hasSize(1);
   }
 }

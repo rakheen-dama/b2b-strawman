@@ -308,9 +308,9 @@ public class CorrespondenceWriteTools {
       metrics.recordError("attach_document", McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.notFound("correspondence"), objectMapper);
     }
-    Document document;
+    DocumentService.StampCorrespondenceResult result;
     try {
-      document = documentService.confirmAndStampCorrespondence(documentId, correspondenceId, actor);
+      result = documentService.confirmAndStampCorrespondence(documentId, correspondenceId, actor);
     } catch (ResourceNotFoundException e) {
       metrics.recordError("attach_document", McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.notFound("document"), objectMapper);
@@ -319,13 +319,19 @@ public class CorrespondenceWriteTools {
       return McpToolErrors.asResult(
           McpError.invalidRequest("Document could not be confirmed."), objectMapper);
     }
-    emitDocumentAttachedAudit(document.getId(), correspondenceId, document.getFileName());
+    Document document = result.document();
+    // CONFIRM is idempotent. Emit the state-change audit only when this call actually transitioned
+    // the document (first confirm/stamp); a no-op retry returns the same successful response but
+    // must not pollute the audit trail with a duplicate mcp.write.document_attached event.
+    if (result.stateChanged()) {
+      emitDocumentAttachedAudit(document.getId(), correspondenceId);
+    }
     metrics.recordOk("attach_document", McpToolAudit.elapsed(startNanos));
     return new AttachDocumentConfirmResponse(
         document.getId(), document.getStatus().name(), correspondenceId);
   }
 
-  private void emitDocumentAttachedAudit(UUID documentId, UUID correspondenceId, String fileName) {
+  private void emitDocumentAttachedAudit(UUID documentId, UUID correspondenceId) {
     try {
       auditService.log(
           AuditEventBuilder.builder()
@@ -333,13 +339,13 @@ public class CorrespondenceWriteTools {
               .entityType("document")
               .entityId(documentId)
               .details(
+                  // fileName is caller-controlled free text that can carry PII even when it passes
+                  // the safe-token sanitiser (e.g. john_doe_tax_return.pdf), so it is deliberately
+                  // omitted from the audit details (POPIA). The entityRefs identify the records.
                   McpAuditMetadata.builder()
                       .rowCount(1)
                       .entityRef(documentId)
                       .entityRef(correspondenceId)
-                      // fileName is best-effort: the POPIA sanitiser drops non-safe-charset
-                      // tokens (spaces, ':', '@'), so a real filename may be absent here.
-                      .param("fileName", fileName)
                       .build()
                       .toDetails("attach_document"))
               .build());

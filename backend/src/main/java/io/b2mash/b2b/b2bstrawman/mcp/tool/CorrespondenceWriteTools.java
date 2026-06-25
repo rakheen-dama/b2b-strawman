@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.correspondence.CorrespondenceService;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.FileCorrespondenceCommand;
+import io.b2mash.b2b.b2bstrawman.correspondence.dto.FileCorrespondenceResult;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
 import io.b2mash.b2b.b2bstrawman.mcp.McpCapabilityGuard;
@@ -119,36 +120,53 @@ public class CorrespondenceWriteTools {
                   receivedAt,
                   threadKey,
                   source);
-          try {
-            var result = correspondenceService.fileInbound(cmd, actor);
-            emitWriteAudit(result.correspondenceId(), result.idempotent());
-            metrics.recordOk("file_correspondence", McpToolAudit.elapsed(startNanos));
-            return new FileCorrespondenceToolResponse(
-                result.correspondenceId(), result.idempotent());
-          } catch (InvalidStateException e) {
-            metrics.recordError("file_correspondence", McpToolAudit.elapsed(startNanos));
+          var result = fileInboundOrError(cmd, actor, startNanos);
+          if (result == null) {
             return McpToolErrors.asResult(
                 McpError.invalidRequest("Provide at least one of matterId or customerId."),
                 objectMapper);
           }
+          emitWriteAudit(result.correspondenceId(), result.idempotent());
+          metrics.recordOk("file_correspondence", McpToolAudit.elapsed(startNanos));
+          return new FileCorrespondenceToolResponse(result.correspondenceId(), result.idempotent());
         });
+  }
+
+  /**
+   * Files the inbound correspondence. The try/catch wraps <b>only</b> the service call so a
+   * downstream audit-emission failure can never be miscounted as a client {@code invalid_request}
+   * error. Returns {@code null} (and records the error metric) when linkage is invalid (both ids
+   * null).
+   */
+  private FileCorrespondenceResult fileInboundOrError(
+      FileCorrespondenceCommand cmd, ActorContext actor, long startNanos) {
+    try {
+      return correspondenceService.fileInbound(cmd, actor);
+    } catch (InvalidStateException e) {
+      metrics.recordError("file_correspondence", McpToolAudit.elapsed(startNanos));
+      return null;
+    }
   }
 
   private void emitWriteAudit(UUID correspondenceId, boolean idempotent) {
     String eventType =
         idempotent ? "mcp.write.correspondence_refiled" : "mcp.write.correspondence_filed";
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType(eventType)
-            .entityType("correspondence")
-            .entityId(correspondenceId)
-            .details(
-                McpAuditMetadata.builder()
-                    .rowCount(1)
-                    .entityRef(correspondenceId)
-                    .param("idempotent", idempotent)
-                    .build()
-                    .toDetails("file_correspondence"))
-            .build());
+    try {
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType(eventType)
+              .entityType("correspondence")
+              .entityId(correspondenceId)
+              .details(
+                  McpAuditMetadata.builder()
+                      .rowCount(1)
+                      .entityRef(correspondenceId)
+                      .param("idempotent", idempotent)
+                      .build()
+                      .toDetails("file_correspondence"))
+              .build());
+    } catch (RuntimeException e) {
+      // Audit emission must never break a successful tool call.
+    }
   }
 }

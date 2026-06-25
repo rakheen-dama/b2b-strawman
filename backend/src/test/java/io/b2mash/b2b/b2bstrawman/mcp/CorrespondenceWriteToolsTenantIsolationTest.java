@@ -150,6 +150,7 @@ class CorrespondenceWriteToolsTenantIsolationTest {
                         null,
                         null,
                         null));
+    assertThat(filed.idempotent()).isFalse();
 
     boolean inB =
         inTenant(tenantB.schema(), () -> correspondenceRepository.findByMessageId(messageId))

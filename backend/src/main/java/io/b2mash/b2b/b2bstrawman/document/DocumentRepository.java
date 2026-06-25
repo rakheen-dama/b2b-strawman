@@ -36,6 +36,9 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
   @Query("SELECT COUNT(d) FROM Document d WHERE d.projectId = :projectId")
   long countByProjectId(@Param("projectId") UUID projectId);
 
+  /** Counts attachments filed to a correspondence. Used by correspondence list attachment count. */
+  long countByCorrespondenceId(UUID correspondenceId);
+
   @Query("SELECT d.id FROM Document d WHERE d.customerId IN :customerIds AND d.createdAt < :before")
   List<UUID> findIdsByCustomerIdInAndCreatedAtBefore(
       @Param("customerIds") List<UUID> customerIds, @Param("before") Instant before);

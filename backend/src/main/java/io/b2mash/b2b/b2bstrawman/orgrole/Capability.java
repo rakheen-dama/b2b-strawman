@@ -59,6 +59,14 @@ public enum Capability {
    */
   MCP_ACCESS,
 
+  /**
+   * Write to Kazi over the MCP connector (file correspondence, attach docs, propose tasks).
+   * Distinct from read {@code MCP_ACCESS} and gate-approval {@code AI_REVIEW}. Auto-granted to
+   * owner/admin (kept out of {@link #OWNER_ONLY} so admin inherits it); other roles need an
+   * explicit grant (ADR-321).
+   */
+  MCP_WRITE,
+
   /** View deals and the sales pipeline (Phase 80 CRM — default-on for Owner/Admin). */
   VIEW_DEALS,
   /** Create, edit, and move deals (Phase 80 CRM — default-on for Owner/Admin). */

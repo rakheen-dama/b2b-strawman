@@ -159,7 +159,30 @@ public class AuditEventTypeRegistry {
                 "ai.specialist.*",
                 "AI Specialist Activity",
                 AuditSeverity.INFO,
-                AuditEventGroup.STANDARD));
+                AuditEventGroup.STANDARD),
+            // MCP write family (Phase 81)
+            new AuditEventTypeMetadata(
+                "mcp.write.correspondence_filed",
+                "Correspondence Filed via MCP",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.STANDARD),
+            new AuditEventTypeMetadata(
+                "mcp.write.correspondence_refiled",
+                "Correspondence Re-filed via MCP",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.STANDARD),
+            new AuditEventTypeMetadata(
+                "mcp.write.document_attached",
+                "Document Attached via MCP",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.STANDARD),
+            new AuditEventTypeMetadata(
+                "mcp.write.task_proposed",
+                "Task Proposed via MCP",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.STANDARD),
+            new AuditEventTypeMetadata(
+                "mcp.write.*", "MCP Write", AuditSeverity.NOTICE, AuditEventGroup.STANDARD));
     var map = new HashMap<String, AuditEventTypeMetadata>();
     for (var entry : entries) {
       var previous = map.put(entry.eventType(), entry);

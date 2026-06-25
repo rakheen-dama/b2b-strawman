@@ -74,8 +74,9 @@ class AuditEventTypeRegistryTest {
   @Test
   void entriesReturnsFullCatalogueExcludingDefaultFallback() {
     // 17 base entries + 7 ai.specialist.* entries (Epic 515A) + 5 deal.* SALES entries (Epic 575A)
-    // = 29. Default fallback is synthesised inside resolve() and must NOT appear in entries().
-    assertThat(registry.entries()).hasSize(29);
+    // + 5 mcp.write.* entries (4 exact + 1 prefix, Epic 582A) = 34. Default fallback is synthesised
+    // inside resolve() and must NOT appear in entries().
+    assertThat(registry.entries()).hasSize(34);
     assertThat(registry.entries())
         .extracting(AuditEventTypeMetadata::eventType)
         .doesNotContain("(default fallback)")
@@ -84,7 +85,9 @@ class AuditEventTypeRegistryTest {
             "security.*",
             "trust.*",
             "dataprotection.*",
-            "deal.won");
+            "deal.won",
+            "mcp.write.correspondence_filed",
+            "mcp.write.*");
   }
 
   @Test
@@ -109,8 +112,8 @@ class AuditEventTypeRegistryTest {
 
   @Test
   void entriesMatchingWithEmptyOrNullReturnsAll() {
-    assertThat(registry.entriesMatching(Set.of())).hasSize(29);
-    assertThat(registry.entriesMatching(null)).hasSize(29);
+    assertThat(registry.entriesMatching(Set.of())).hasSize(34);
+    assertThat(registry.entriesMatching(null)).hasSize(34);
   }
 
   @Test

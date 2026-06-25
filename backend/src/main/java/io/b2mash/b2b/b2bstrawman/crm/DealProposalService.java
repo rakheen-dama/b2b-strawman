@@ -165,7 +165,7 @@ public class DealProposalService {
    *
    * <p>No-op when the proposal has no linked deal or the deal is already WON (no double-win, no
    * second {@code deal.won} audit row). Mirrors {@code DealTransitionService}'s WON branch:
-   * uppercase {@code "DEAL"} audit entityType + a re-published {@link DealWonEvent} (carrying
+   * lowercase {@code "deal"} audit entityType + a re-published {@link DealWonEvent} (carrying
    * {@code shardId} from {@link RequestScopes#getShardIdOrDefault()}) that drives the existing
    * DEAL_WON notification. The customer-lifecycle nudge is intentionally NOT repeated here —
    * proposal acceptance already did it (ADR-315).

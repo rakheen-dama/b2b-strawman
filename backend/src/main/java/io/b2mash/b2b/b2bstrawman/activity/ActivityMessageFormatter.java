@@ -123,6 +123,14 @@ public class ActivityMessageFormatter {
       case "deal.won" -> "%s won a deal".formatted(actorName);
       case "deal.lost" -> "%s marked a deal as lost".formatted(actorName);
       case "deal.reopened" -> "%s re-opened a deal".formatted(actorName);
+      case "mcp.write.correspondence_filed" ->
+          "%s filed an email via the MCP connector".formatted(actorName);
+      case "mcp.write.correspondence_refiled" ->
+          "%s re-filed an already-filed email via the MCP connector".formatted(actorName);
+      case "mcp.write.document_attached" ->
+          "%s attached a document to a filed email via the MCP connector".formatted(actorName);
+      case "mcp.write.task_proposed" ->
+          "%s proposed a task from a filed email (awaiting approval)".formatted(actorName);
       default -> "%s performed %s on %s".formatted(actorName, eventType, entityType);
     };
   }
@@ -307,6 +315,10 @@ public class ActivityMessageFormatter {
       case "DEAL", "deal" -> {
         Object title = details.get("title");
         yield (title instanceof String s && !s.isBlank()) ? s : "deal";
+      }
+      case "correspondence" -> {
+        Object subj = details.get("subject");
+        yield (subj instanceof String s && !s.isBlank()) ? s : "correspondence";
       }
       default -> "unknown";
     };

@@ -37,6 +37,7 @@ CREATE INDEX ix_correspondence_customer ON correspondence (customer_id, received
 -- Thread grouping hook (v2); cheap to add now, avoids a later migration.
 CREATE INDEX ix_correspondence_thread   ON correspondence (thread_key);
 
--- Link a filed attachment (a Document) back to its correspondence. Mirrors documents.ai_execution_id.
-ALTER TABLE documents ADD COLUMN correspondence_id UUID;   -- nullable; set on attach_document confirm
+-- Link a filed attachment (a Document) back to its correspondence. Mirrors documents.ai_execution_id
+-- (UUID REFERENCES ...). The correspondence table is created above, so the reference resolves.
+ALTER TABLE documents ADD COLUMN correspondence_id UUID REFERENCES correspondence(id);   -- nullable; set on attach_document confirm
 CREATE INDEX ix_documents_correspondence ON documents (correspondence_id);

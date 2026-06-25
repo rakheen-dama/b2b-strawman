@@ -22,4 +22,14 @@ public interface CorrespondenceRepository extends JpaRepository<Correspondence, 
 
   @Query("SELECT c FROM Correspondence c WHERE c.customerId = :cid ORDER BY c.receivedAt DESC")
   Page<Correspondence> findByCustomerId(@Param("cid") UUID customerId, Pageable pageable);
+
+  /**
+   * Count Documents filed to a correspondence (via {@code correspondence_id}). Querying the
+   * Document entity from JPQL keeps the attachment count inside this repository — no cross-context
+   * DocumentRepository injection in CorrespondenceService.
+   */
+  @Query(
+      "SELECT COUNT(d) FROM io.b2mash.b2b.b2bstrawman.document.Document d"
+          + " WHERE d.correspondenceId = :correspondenceId")
+  long countAttachments(@Param("correspondenceId") UUID correspondenceId);
 }

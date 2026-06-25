@@ -1,8 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.correspondence;
 
+import io.b2mash.b2b.b2bstrawman.correspondence.dto.CorrespondenceListResponse;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.FileCorrespondenceCommand;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.FileCorrespondenceResult;
-import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import java.util.UUID;
@@ -22,12 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class CorrespondenceService {
 
   private final CorrespondenceRepository correspondenceRepository;
-  private final DocumentRepository documentRepository;
 
-  public CorrespondenceService(
-      CorrespondenceRepository correspondenceRepository, DocumentRepository documentRepository) {
+  public CorrespondenceService(CorrespondenceRepository correspondenceRepository) {
     this.correspondenceRepository = correspondenceRepository;
-    this.documentRepository = documentRepository;
   }
 
   /**
@@ -61,7 +58,10 @@ public class CorrespondenceService {
             actor.memberId());
 
     try {
-      var saved = correspondenceRepository.save(correspondence);
+      // saveAndFlush forces the INSERT now so the unique(message_id) violation fires inside this
+      // try/catch (plain save() defers to commit, outside the catch — see
+      // PortalNotificationPreferenceService.getOrCreate for the codebase precedent).
+      var saved = correspondenceRepository.saveAndFlush(correspondence);
       return FileCorrespondenceResult.created(saved.getId());
     } catch (DataIntegrityViolationException race) {
       // Race backstop: a concurrent insert won the unique(message_id). Re-read the winner.
@@ -73,19 +73,25 @@ public class CorrespondenceService {
   }
 
   @Transactional(readOnly = true)
-  public Page<Correspondence> listByProject(UUID projectId, Pageable pageable) {
-    return correspondenceRepository.findByProjectId(projectId, pageable);
+  public Page<CorrespondenceListResponse> listByProject(UUID projectId, Pageable pageable) {
+    return correspondenceRepository.findByProjectId(projectId, pageable).map(this::toListResponse);
   }
 
   @Transactional(readOnly = true)
-  public Page<Correspondence> listByCustomer(UUID customerId, Pageable pageable) {
-    return correspondenceRepository.findByCustomerId(customerId, pageable);
+  public Page<CorrespondenceListResponse> listByCustomer(UUID customerId, Pageable pageable) {
+    return correspondenceRepository
+        .findByCustomerId(customerId, pageable)
+        .map(this::toListResponse);
   }
 
-  /** Number of {@code Document}s attached to a correspondence (via {@code correspondence_id}). */
-  @Transactional(readOnly = true)
-  public long attachmentCount(UUID correspondenceId) {
-    return documentRepository.countByCorrespondenceId(correspondenceId);
+  private CorrespondenceListResponse toListResponse(Correspondence c) {
+    return new CorrespondenceListResponse(
+        c.getId(),
+        c.getSubject(),
+        c.getFromAddress(),
+        c.getReceivedAt(),
+        correspondenceRepository.countAttachments(c.getId()),
+        c.getDirection());
   }
 
   private void validateLinkage(UUID customerId, UUID projectId) {

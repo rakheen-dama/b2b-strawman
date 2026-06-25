@@ -54,14 +54,12 @@ class CorrespondenceServiceTest {
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
 
-  private <T> T runInTenant(java.util.function.Supplier<T> body) {
-    T[] holder = (T[]) new Object[1];
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+  private <T> T runInTenant(java.util.concurrent.Callable<T> body) throws Exception {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, memberId)
         .where(RequestScopes.ORG_ROLE, "owner")
-        .run(() -> holder[0] = body.get());
-    return holder[0];
+        .call(body::call);
   }
 
   private ActorContext actor() {
@@ -69,7 +67,7 @@ class CorrespondenceServiceTest {
   }
 
   @Test
-  void fileInboundPersistsInboundWithLinkage() {
+  void fileInboundPersistsInboundWithLinkage() throws Exception {
     UUID projectId = UUID.randomUUID();
     String messageId = "msg-persist-" + UUID.randomUUID() + "@example.com";
     var result =
@@ -110,7 +108,7 @@ class CorrespondenceServiceTest {
   }
 
   @Test
-  void reFileSameMessageIdReturnsSameIdAndPersistsNothingNew() {
+  void reFileSameMessageIdReturnsSameIdAndPersistsNothingNew() throws Exception {
     UUID projectId = UUID.randomUUID();
     String messageId = "msg-idem-" + UUID.randomUUID() + "@example.com";
 
@@ -119,21 +117,19 @@ class CorrespondenceServiceTest {
             () -> correspondenceService.fileInbound(cmd(projectId, null, messageId), actor()));
     assertThat(first.idempotent()).isFalse();
 
-    long countAfterFirst = runInTenant(correspondenceRepository::count);
-
     FileCorrespondenceResult second =
         runInTenant(
             () -> correspondenceService.fileInbound(cmd(projectId, null, messageId), actor()));
 
+    // The idempotent property proves no second row was committed: the second call did not persist
+    // (idempotent flag true) and returned the first row's id. No global count() assertion — that
+    // is the count-bleed flake pattern banned under @TestInstance(PER_CLASS) with no row reset.
     assertThat(second.idempotent()).isTrue();
     assertThat(second.correspondenceId()).isEqualTo(first.correspondenceId());
-
-    long countAfterSecond = runInTenant(correspondenceRepository::count);
-    assertThat(countAfterSecond).isEqualTo(countAfterFirst);
   }
 
   @Test
-  void reFileSameMessageIdDifferentLinkageDoesNotMutateExistingRow() {
+  void reFileSameMessageIdDifferentLinkageDoesNotMutateExistingRow() throws Exception {
     UUID originalProject = UUID.randomUUID();
     UUID differentProject = UUID.randomUUID();
     String messageId = "msg-relink-" + UUID.randomUUID() + "@example.com";

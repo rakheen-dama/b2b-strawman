@@ -196,7 +196,7 @@ public class DealProposalService {
               auditService.log(
                   AuditEventBuilder.builder()
                       .eventType("deal.won")
-                      .entityType("DEAL")
+                      .entityType("deal")
                       .entityId(deal.getId())
                       .details(
                           Map.of(

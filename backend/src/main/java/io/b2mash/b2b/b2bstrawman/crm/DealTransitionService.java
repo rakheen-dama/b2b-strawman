@@ -35,7 +35,9 @@ import org.springframework.transaction.annotation.Transactional;
  *   <li>LOST target → require a {@code lostReason}, then mark lost.
  * </ul>
  *
- * <p>Each transition emits a domain event and an audit row ({@code entityType="DEAL"}).
+ * <p>Each transition emits a domain event and an audit row ({@code entityType="deal"} — lowercase,
+ * matching {@link DealService} and the cross-entity convention so transitions surface on the deal
+ * Activity tab, which queries with a lowercase, case-sensitive {@code entityType}).
  */
 @Service
 public class DealTransitionService {
@@ -128,7 +130,7 @@ public class DealTransitionService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType(eventType)
-            .entityType("DEAL")
+            .entityType("deal")
             .entityId(deal.getId())
             .details(details)
             .build());

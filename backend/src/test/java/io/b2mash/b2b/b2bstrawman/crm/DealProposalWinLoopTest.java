@@ -333,10 +333,10 @@ class DealProposalWinLoopTest {
   }
 
   private long dealWonAuditCount(UUID dealId) {
-    // AuditEventFilter already scopes by entityType DEAL + entityId + eventType "deal.won".
+    // AuditEventFilter already scopes by entityType "deal" + entityId + eventType "deal.won".
     return auditService
         .findEvents(
-            new AuditEventFilter("DEAL", dealId, null, "deal.won", null, null, null),
+            new AuditEventFilter("deal", dealId, null, "deal.won", null, null, null),
             Pageable.ofSize(50))
         .getTotalElements();
   }

@@ -317,8 +317,15 @@ class DealTransitionServiceTest {
     assertThat(resp.lostReason()).isNull();
   }
 
+  /**
+   * Reproduce-before-fix: the deal Activity tab queries audit events with a lowercase {@code
+   * entityType="deal"} (matching every other entity's convention and the frontend). Stage
+   * transitions must therefore be written with the same lowercase casing or they never surface on
+   * the Activity tab. This was previously written as {@code "DEAL"} (uppercase) and so transition
+   * rows were invisible.
+   */
   @Test
-  void auditRowsWritten_withUppercaseDealEntityType() throws Exception {
+  void transitionAuditRows_areQueryableByLowercaseDealEntityType() throws Exception {
     var customerId = createCustomer("Audit Co", "audit@test.com");
     var dealId = createDeal(customerId, "Audit Deal");
     UUID wonStage = inTenant(() -> pipelineStageService.firstWonStage().getId());
@@ -327,15 +334,19 @@ class DealTransitionServiceTest {
         () ->
             dealTransitionService.transition(dealId, new TransitionRequest(wonStage, null, null)));
 
-    long dealAuditRows =
+    // Query exactly as the Activity tab does: lowercase "deal". Scope to the transition event
+    // ("deal.won") so the assertion isolates the transition row — the creation row
+    // ("deal.created") is already written as "deal" by DealService and would otherwise mask the
+    // casing bug on the transition write.
+    long transitionAuditRows =
         inTenant(
             () ->
                 auditService
                     .findEvents(
-                        new AuditEventFilter("DEAL", dealId, null, null, null, null, null),
+                        new AuditEventFilter("deal", dealId, null, "deal.won", null, null, null),
                         Pageable.ofSize(50))
                     .getTotalElements());
 
-    assertThat(dealAuditRows).isGreaterThanOrEqualTo(1);
+    assertThat(transitionAuditRows).isGreaterThanOrEqualTo(1);
   }
 }

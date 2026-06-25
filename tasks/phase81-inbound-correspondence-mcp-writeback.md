@@ -25,7 +25,7 @@ This phase ships as **6 epics (581–586)**, expanded to **11 numbered slices** 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 581 | Correspondence Entity + Migration + Document Link | Backend | — | M | 581A | **Done** (PR #1504) |
-| 582 | MCP Write Capability + Audit Family + `file_correspondence` | Backend | 581A | L | 582A, 582B | |
+| 582 | MCP Write Capability + Audit Family + `file_correspondence` | Backend | 581A | L | 582A, 582B | **Done** (PR #1505) |
 | 583 | `attach_document` (presigned reuse + correspondence stamp) | Backend | 581A, 582A, 582B | M | 583A | |
 | 584 | `resolve_matter_by_email` (read tool) | Backend | 582A | S | 584A | |
 | 585 | Gate-over-MCP — `propose_task` + synthetic execution + executor arm | Backend | 581A, 582B | L | 585A, 585B | |
@@ -132,8 +132,8 @@ PHASES already complete (reused, not rebuilt):
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 2a | **582A** | `MCP_WRITE` `Capability` enum value; `OrgRoleService` owner/admin auto-grant; `AuditEventTypeRegistry` `mcp.write.*` family (`correspondence_filed`, `correspondence_refiled`, `document_attached`, `task_proposed`); `ActivityMessageFormatter` arms + `correspondence` entity-name resolver. |
-| 2b | **582B** | `CorrespondenceWriteTools` `@Component` shell + `file_correspondence` tool (inline guard preamble: `effectiveState()` → `McpCapabilityGuard.gatedTool("MCP_WRITE", …)` → `validateLinkage` → `fileInbound` → `mcp.write.*` audit); `mcp/dto/*` write DTOs; read-only-user-rejected + tenant-isolation + file-via-MCP tests. |
+| 2a | **582A** | **Done** (PR #1505) — `MCP_WRITE` `Capability` enum value; `OrgRoleService` owner/admin auto-grant; `AuditEventTypeRegistry` `mcp.write.*` family (`correspondence_filed`, `correspondence_refiled`, `document_attached`, `task_proposed`); `ActivityMessageFormatter` arms + `correspondence` entity-name resolver. |
+| 2b | **582B** | **Done** (PR #1505) — `CorrespondenceWriteTools` `@Component` shell + `file_correspondence` tool (inline guard preamble: `effectiveState()` → `McpCapabilityGuard.gatedTool("MCP_WRITE", …)` → `validateLinkage` → `fileInbound` → `mcp.write.*` audit); `mcp/dto/*` write DTOs; read-only-user-rejected + tenant-isolation + file-via-MCP tests. |
 
 ### Stage 3 — Direct write + read tool + gate plumbing (parallel after 582B)
 
@@ -242,8 +242,8 @@ Stage 4: [586A] -> [586B] -> [586C]                <- backend REST -> frontend -
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **582A** | 582A.1–582A.4 | ~4 backend files (1 `Capability` mod + 1 `OrgRoleService` mod + 1 audit-registry mod + 1 formatter mod) + 1 test | `MCP_WRITE` capability + owner/admin auto-grant; `mcp.write.*` audit-family registration; `ActivityMessageFormatter` arms + `correspondence` entity-name resolver. |
-| **582B** | 582B.1–582B.5 | ~7 backend files (1 tool component + ~2 mcp DTOs + 3 test files) | `CorrespondenceWriteTools` `@Component` + `file_correspondence` with inline write-guard preamble; `mcp/dto/*` write DTOs; file-via-MCP + read-only-rejected + tenant-isolation tests. |
+| **582A** ✅ | 582A.1–582A.4 | ~4 backend files (1 `Capability` mod + 1 `OrgRoleService` mod + 1 audit-registry mod + 1 formatter mod) + 1 test | **Done** (PR #1505) — `MCP_WRITE` capability + owner/admin auto-grant; `mcp.write.*` audit-family registration; `ActivityMessageFormatter` arms + `correspondence` entity-name resolver. |
+| **582B** ✅ | 582B.1–582B.5 | ~7 backend files (1 tool component + ~2 mcp DTOs + 3 test files) | **Done** (PR #1505) — `CorrespondenceWriteTools` `@Component` + `file_correspondence` with inline write-guard preamble; `mcp/dto/*` write DTOs; file-via-MCP + read-only-rejected + tenant-isolation tests. |
 
 ### Tasks
 

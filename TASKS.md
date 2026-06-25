@@ -660,7 +660,7 @@
 | 580 | Frontend — Deal Detail + Customer Tab + Dashboard Widget + QA Capstone | Frontend | 576A, 578A, 579A | L | 580A, 580B | **Done** (PR #1502) |
 | **Phase 81 — Inbound Correspondence & First Gated MCP Write-Back** | | | | | | See [tasks/phase81-inbound-correspondence-mcp-writeback.md](tasks/phase81-inbound-correspondence-mcp-writeback.md) |
 | 581 | Correspondence Entity + Migration + Document Link | Backend | — | M | 581A | **Done** (PR #1504) |
-| 582 | MCP Write Capability + Audit Family + `file_correspondence` | Backend | 581A | L | 582A, 582B | |
+| 582 | MCP Write Capability + Audit Family + `file_correspondence` | Backend | 581A | L | 582A, 582B | **Done** (PR #1505) |
 | 583 | `attach_document` (presigned reuse + correspondence stamp) | Backend | 581A, 582A, 582B | M | 583A | |
 | 584 | `resolve_matter_by_email` (read tool) | Backend | 582A | S | 584A | |
 | 585 | Gate-over-MCP — `propose_task` + synthetic execution + executor arm | Backend | 581A, 582B | L | 585A, 585B | |

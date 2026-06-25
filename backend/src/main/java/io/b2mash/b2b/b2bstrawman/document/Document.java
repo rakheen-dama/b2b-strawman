@@ -59,6 +59,9 @@ public class Document {
   @Column(name = "ai_execution_id")
   private UUID aiExecutionId;
 
+  @Column(name = "correspondence_id")
+  private UUID correspondenceId;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -190,6 +193,14 @@ public class Document {
     return aiExecutionId;
   }
 
+  public UUID getCorrespondenceId() {
+    return correspondenceId;
+  }
+
+  public void setCorrespondenceId(UUID correspondenceId) {
+    this.correspondenceId = correspondenceId;
+  }
+
   public Instant getCreatedAt() {
     return createdAt;
   }
@@ -247,6 +258,7 @@ public class Document {
     public static final String MANUAL = "MANUAL";
     public static final String AI_GENERATED = "AI_GENERATED";
     public static final String TEMPLATE_GENERATED = "TEMPLATE_GENERATED";
+    public static final String EMAIL_INGEST = "EMAIL_INGEST";
 
     private Source() {}
   }

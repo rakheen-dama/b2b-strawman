@@ -34,24 +34,30 @@ import tools.jackson.databind.ObjectMapper;
 /**
  * Epic 567B.3 — read-only-by-construction registry assertion (ADR-306, §11.3).
  *
- * <p>Two complementary structural proofs that the MCP surface cannot mutate state, plus a
- * negotiated-capability proof that the read-only surface never advertises a write/elicitation
- * channel:
+ * <p>Two complementary structural proofs that the MCP surface mutates state only through an
+ * explicit, MCP_WRITE-gated write-tool allowlist, plus a negotiated-capability proof that the
+ * surface never advertises a model-driven elicitation channel:
  *
  * <ol>
  *   <li>Every registered {@code @McpTool}/{@code @McpResource} name uses a read verb ({@code
  *       list_}/{@code get_}/{@code search_} or the trivial {@code kazi_ping} probe / a {@code
- *       kazi://} resource URI) — no mutating verb (create/update/delete/save/...) appears; AND the
- *       registered bean set is a subset of an explicit read-tool allowlist, so a future write-back
- *       tool (Phase 79 {@code propose_*}) would be a NEW bean and fail this gate until explicitly
- *       added.
+ *       kazi://} resource URI) — UNLESS it is a sanctioned write tool in {@link #WRITE_TOOL_NAMES}
+ *       (Phase 81, each MCP_WRITE-gated; see {@code McpWriteCapabilityGateTest}). No mutating verb
+ *       (create/update/delete/save/...) appears on ANY tool, even a write tool. The registered bean
+ *       set is a subset of the union of an explicit read-tool allowlist ({@link
+ *       #ALLOWED_TOOL_BEANS}) and the sanctioned write-tool allowlist ({@link
+ *       #ALLOWED_WRITE_TOOL_BEANS}), so an UNSANCTIONED new write-back tool is a NEW bean and fails
+ *       this gate until explicitly added.
  *   <li>{@code initialize} negotiates {@code tools} + {@code resources} but NOT {@code prompts},
- *       {@code sampling} or {@code completion} — the server never offers a model-driven write or
- *       elicitation channel.
+ *       {@code sampling} or {@code completion} — the server never offers a model-driven elicitation
+ *       channel (write tools are still {@code tools}, not prompts/sampling/elicitation).
  * </ol>
  *
  * <p>Bytecode introspection of the actual service-method calls is deliberately avoided (fragile);
- * the verb + bean-allowlist + capability-advertisement triad is the structural guarantee.
+ * the verb + bean-allowlist + capability-advertisement triad is the structural guarantee. As of
+ * Phase 81 the surface carries an explicit, MCP_WRITE-gated write-tool allowlist: the guard now
+ * proves "no tool mutates state EXCEPT the sanctioned write tools", and read tools still must use
+ * read verbs.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -76,6 +82,12 @@ class McpReadOnlyRegistryTest {
    * so the diagnostic is clear.
    */
   private static final Set<String> PROBE_TOOL_NAMES = Set.of("kazi_ping");
+
+  /**
+   * Sanctioned write-tool names — exempt from the read-verb pattern; each is MCP_WRITE-gated (see
+   * McpWriteCapabilityGateTest).
+   */
+  private static final Set<String> WRITE_TOOL_NAMES = Set.of("file_correspondence");
 
   /** Mutating verbs that must NEVER appear at the start of a registered tool name. */
   private static final List<String> MUTATING_VERBS =
@@ -112,6 +124,9 @@ class McpReadOnlyRegistryTest {
           "ActivityTools",
           "AuditTools");
 
+  /** Explicit allowlist of SANCTIONED write-tool bean classes (Phase 81 — gated by MCP_WRITE). */
+  private static final Set<String> ALLOWED_WRITE_TOOL_BEANS = Set.of("CorrespondenceWriteTools");
+
   /** Explicit allowlist of read-resource bean classes (563B + 564B). */
   private static final Set<String> ALLOWED_RESOURCE_BEANS =
       Set.of("MatterResource", "ClientResource", "FirmProfileResource");
@@ -143,13 +158,13 @@ class McpReadOnlyRegistryTest {
       assertThat(MUTATING_VERBS)
           .as("tool '%s' must not start with a mutating verb", name)
           .noneMatch(verb -> name.toLowerCase(java.util.Locale.ROOT).startsWith(verb));
-      // Trivial probe tools are the only non list_/get_/search_ tools.
-      if (!PROBE_TOOL_NAMES.contains(name)) {
+      // Trivial probe tools and sanctioned write tools are the only non list_/get_/search_ tools.
+      if (!PROBE_TOOL_NAMES.contains(name) && !WRITE_TOOL_NAMES.contains(name)) {
         assertThat(READ_TOOL_NAME.matcher(name).matches())
             .as(
-                "catalogue tool '%s' must use a read verb (list_/get_/search_) or be an allowlisted"
-                    + " probe tool %s",
-                name, PROBE_TOOL_NAMES)
+                "catalogue tool '%s' must use a read verb (list_/get_/search_), be an allowlisted"
+                    + " probe tool %s, or be a sanctioned write tool %s",
+                name, PROBE_TOOL_NAMES, WRITE_TOOL_NAMES)
             .isTrue();
       }
     }
@@ -158,8 +173,14 @@ class McpReadOnlyRegistryTest {
     List<String> toolBeanClasses = beanClassNames(registry.registeredToolBeans());
     assertThat(toolBeanClasses)
         .as(
-            "every @McpTool bean must be an allowlisted read-tool class (a write-back tool fails here)")
-        .allSatisfy(c -> assertThat(ALLOWED_TOOL_BEANS).contains(c));
+            "every @McpTool bean must be an allowlisted read-tool class or a sanctioned write-tool"
+                + " class (an unsanctioned write-back tool fails here)")
+        .allSatisfy(
+            c ->
+                assertThat(c)
+                    .matches(
+                        n -> ALLOWED_TOOL_BEANS.contains(n) || ALLOWED_WRITE_TOOL_BEANS.contains(n),
+                        "an allowlisted read-tool or sanctioned write-tool class"));
 
     // (c) resource bean-allowlist: every @McpResource bean is a known read-resource class.
     List<String> resourceBeanClasses = beanClassNames(registry.registeredResourceBeans());

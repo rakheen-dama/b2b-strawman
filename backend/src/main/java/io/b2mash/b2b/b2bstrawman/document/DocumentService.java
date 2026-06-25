@@ -444,6 +444,24 @@ public class DocumentService {
   }
 
   /**
+   * Confirms an upload and stamps the inbound-correspondence linkage in the SAME transaction (Phase
+   * 81, {@code attach_document} MCP write tool). {@link #confirmUpload} returns a managed entity
+   * while this transaction is open, so the subsequent {@code setCorrespondenceId} / {@code
+   * setSource} mutations are dirty-checked and persisted by the {@code save} flush. Calling the
+   * stamp setters on the detached entity returned from {@link #confirmUpload} <em>outside</em> a
+   * transaction would silently no-op — hence this atomic service method. Idempotent: a re-confirm
+   * of an already-UPLOADED document re-applies the same stamp.
+   */
+  @Transactional
+  public Document confirmAndStampCorrespondence(
+      UUID documentId, UUID correspondenceId, ActorContext actor) {
+    Document document = confirmUpload(documentId, actor);
+    document.setCorrespondenceId(correspondenceId);
+    document.setSource(Document.Source.EMAIL_INGEST);
+    return documentRepository.save(document);
+  }
+
+  /**
    * Cancel upload — scope-aware. For PROJECT-scoped documents, checks project access. For ORG and
    * CUSTOMER scoped documents, tenant isolation is provided by the dedicated schema (search_path).
    */

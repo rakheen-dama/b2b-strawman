@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.correspondence.dto.CorrespondenceListResponse;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.FileCorrespondenceCommand;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.FileCorrespondenceResult;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -73,6 +74,19 @@ public class CorrespondenceService {
           .map(winner -> FileCorrespondenceResult.idempotent(winner.getId()))
           .orElseThrow(() -> race);
     }
+  }
+
+  /**
+   * Resolve a correspondence by id for scope resolution (Phase 81, {@code attach_document}). The
+   * caller reads {@code getCustomerId()} / {@code getProjectId()} to choose CUSTOMER vs PROJECT
+   * upload scope. Tenant-isolated via {@code search_path}. Throws {@link ResourceNotFoundException}
+   * when the id is unknown in this tenant.
+   */
+  @Transactional(readOnly = true)
+  public Correspondence requireById(UUID id) {
+    return correspondenceRepository
+        .findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Correspondence", id));
   }
 
   @Transactional(readOnly = true)

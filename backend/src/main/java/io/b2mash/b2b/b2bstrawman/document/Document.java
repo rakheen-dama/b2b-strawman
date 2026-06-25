@@ -189,6 +189,14 @@ public class Document {
     return source;
   }
 
+  /**
+   * Set the document source label (e.g. {@link Source#EMAIL_INGEST}). Used by the inbound
+   * correspondence write path to mark a document attached via {@code attach_document} (Phase 81).
+   */
+  public void setSource(String source) {
+    this.source = source;
+  }
+
   public UUID getAiExecutionId() {
     return aiExecutionId;
   }

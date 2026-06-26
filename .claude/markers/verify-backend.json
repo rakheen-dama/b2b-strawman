@@ -1,7 +1,7 @@
 {
-  "commit": "c0d65b36609337c1e91db6aa8ef48a9488804cd4",
+  "commit": "c73199eb56b7d4f8535fb5e80090cbcafb2838a3",
   "command": "cd backend && ./mvnw clean verify -q",
   "exit": 0,
-  "ts": "2026-06-22T20:50:59Z",
-  "summary": "epic-576/deal-proposal-link-win-loop: Deal↔Proposal Link + Win-Loop Event Glue (576A). FULL BUILD SUCCESS, 0 failures/0 errors. DealProposalWinLoopTest: 7 tests (win-loop, idempotency, unlinked no-op, create-from-deal, link-existing, customer-mismatch 409, delete-guard). Includes review fixes + ArchUnit shard-binding fix (/tmp/mvn-verify-576.log)."
+  "ts": "2026-06-26T00:13:53Z",
+  "summary": "Epic 583 (PR #1506): attach_document MCP write tool (presigned reuse + correspondence stamp). FULL BUILD SUCCESS. "
 }

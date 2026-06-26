@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
@@ -34,6 +35,7 @@ class ClientToolsCeilingTest {
   @Test
   void listClientsReturnsResponseTooLargeWhenResultSetExceedsCeiling() {
     CustomerService customerService = mock(CustomerService.class);
+    CustomerRepository customerRepository = mock(CustomerRepository.class);
     CustomerProjectService customerProjectService = mock(CustomerProjectService.class);
     AuditService auditService = mock(AuditService.class);
     ObjectMapper objectMapper = new ObjectMapper();
@@ -57,6 +59,7 @@ class ClientToolsCeilingTest {
     ClientTools tools =
         new ClientTools(
             customerService,
+            customerRepository,
             customerProjectService,
             auditService,
             objectMapper,

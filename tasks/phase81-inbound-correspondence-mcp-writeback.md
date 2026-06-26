@@ -27,7 +27,7 @@ This phase ships as **6 epics (581–586)**, expanded to **11 numbered slices** 
 | 581 | Correspondence Entity + Migration + Document Link | Backend | — | M | 581A | **Done** (PR #1504) |
 | 582 | MCP Write Capability + Audit Family + `file_correspondence` | Backend | 581A | L | 582A, 582B | **Done** (PR #1505) |
 | 583 | `attach_document` (presigned reuse + correspondence stamp) | Backend | 581A, 582A, 582B | M | 583A | **Done** (PR #1506) |
-| 584 | `resolve_matter_by_email` (read tool) | Backend | 582A | S | 584A | |
+| 584 | `resolve_matter_by_email` (read tool) | Backend | 582A | S | 584A | **Done** (PR #1507) |
 | 585 | Gate-over-MCP — `propose_task` + synthetic execution + executor arm | Backend | 581A, 582B | L | 585A, 585B | |
 | 586 | Frontend — Correspondence Tab + Gate-Origin Display + QA Capstone | Frontend / Both | 581A, 582B, 583A, 585B | L | 586A, 586B, 586C | |
 
@@ -140,7 +140,7 @@ PHASES already complete (reused, not rebuilt):
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
 | 3a | **583A** ✅ **Done** (PR #1506) | `attach_document` tool (one tool, `phase` enum INITIATE\|CONFIRM) reusing `DocumentService` presigned-upload + confirm; stamp `correspondence_id` + `source=EMAIL_INGEST` on confirm; `mcp.write.document_attached` audit; INITIATE/CONFIRM + attachment-in-documents-list tests. | 584A, 585A |
-| 3b | **584A** | `resolve_matter_by_email` **read** tool in `ClientTools` (reuse `CustomerRepository.findByEmail` + `CustomerProjectService.listProjectsForCustomer`); `MCP_ACCESS` (not `MCP_WRITE`), `mcp.tool.invoked` audit; zero/many behaviour; read MCP DTOs; match/no-match/multi-matter tests. | 583A, 585A |
+| 3b | **584A** ✅ **Done** (PR #1507) | `resolve_matter_by_email` **read** tool in `ClientTools` (reuse `CustomerRepository.findByEmail` + `CustomerProjectService.listProjectsForCustomer`); `MCP_ACCESS` (not `MCP_WRITE`), `mcp.tool.invoked` audit; zero/many behaviour; read MCP DTOs; match/no-match/multi-matter tests. | 583A, 585A |
 | 3c | **585A** | `recordSyntheticMcpExecution(memberId)` (provider=MCP, cost=0, status `EXTERNALLY_EXECUTED`); `AiExecutionGateService.createGate(...)` + `findPendingGateForCorrespondence(...)`; `GateAction.CreateTaskFromCorrespondenceAction` record + sealed-permits; `GateActionExecutor` parse/execute arm + `executeCreateTask` (inject `TaskService`); synthetic-execution + executor-arm + approval-creates-task tests. | 583A, 584A |
 | 3d | **585B** | `propose_task` tool in `CorrespondenceWriteTools` (inline `MCP_WRITE` guard; v1 open-gate dedupe via `findPendingGateForCorrespondence`; create synthetic execution → `createGate`; `mcp.write.task_proposed` audit); end-to-end "propose creates PENDING gate, no Task; approve → task" test. (After 585A.) | — |
 
@@ -357,7 +357,7 @@ Stage 4: [586A] -> [586B] -> [586C]                <- backend REST -> frontend -
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **584A** | 584A.1–584A.3 | ~4 backend files (1 `ClientTools` mod + ~2 mcp read DTOs + 1 test file) | `resolve_matter_by_email` read tool in `ClientTools` (reuse `findByEmail` + matter listing); `MCP_ACCESS`, read audit; zero/many; match/no-match/multi-matter tests. |
+| **584A** ✅ **Done** (PR #1507) | 584A.1–584A.3 | ~4 backend files (1 `ClientTools` mod + ~2 mcp read DTOs + 1 test file) | `resolve_matter_by_email` read tool in `ClientTools` (reuse `findByEmail` + matter listing); `MCP_ACCESS`, read audit; zero/many; match/no-match/multi-matter tests. |
 
 ### Tasks
 

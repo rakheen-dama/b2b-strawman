@@ -97,7 +97,7 @@ class McpReadOnlyRegistryTest {
    * McpWriteCapabilityGateTest).
    */
   private static final Set<String> WRITE_TOOL_NAMES =
-      Set.of("file_correspondence", "attach_document");
+      Set.of("file_correspondence", "attach_document", "propose_task");
 
   /** Mutating verbs that must NEVER appear at the start of a registered tool name. */
   private static final List<String> MUTATING_VERBS =
@@ -165,9 +165,15 @@ class McpReadOnlyRegistryTest {
 
     // (a) tool-name verb assertion: no name starts with a mutating verb.
     for (String name : toolNames) {
-      assertThat(MUTATING_VERBS)
-          .as("tool '%s' must not start with a mutating verb", name)
-          .noneMatch(verb -> name.toLowerCase(java.util.Locale.ROOT).startsWith(verb));
+      // A sanctioned write tool (in WRITE_TOOL_NAMES) is explicitly allowed to use a write verb —
+      // e.g. propose_task (Phase 81/Epic 585) starts with the mutating verb "propose". The
+      // mutating-verb assertion is therefore scoped to NON-write tools; an unsanctioned write-back
+      // tool (a new bean using a write verb but absent from WRITE_TOOL_NAMES) still trips here.
+      if (!WRITE_TOOL_NAMES.contains(name)) {
+        assertThat(MUTATING_VERBS)
+            .as("tool '%s' must not start with a mutating verb", name)
+            .noneMatch(verb -> name.toLowerCase(java.util.Locale.ROOT).startsWith(verb));
+      }
       // Trivial probe tools, spec-mandated read-name exemptions and sanctioned write tools are the
       // only non list_/get_/search_ tools.
       if (!PROBE_TOOL_NAMES.contains(name)

@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceService;
 import io.b2mash.b2b.b2bstrawman.compliance.ComplianceAuditReportService;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.contractreview.AiReviewReportGenerator;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.drafting.AiDraftDocumentGenerator;
+import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.conflictcheck.ConflictCheckService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.conflictcheck.ConflictCheckService.ResolveRequest;
 import java.util.List;
@@ -36,6 +37,7 @@ class GateActionExecutorTest {
             mock(AiReviewReportGenerator.class),
             mock(AiDraftDocumentGenerator.class),
             mock(ComplianceAuditReportService.class),
+            mock(TaskService.class),
             JsonMapper.builder().findAndAddModules().build());
   }
 
@@ -122,5 +124,31 @@ class GateActionExecutorTest {
     assertThatThrownBy(() -> executor.execute(gate))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Unknown gate type: UNKNOWN_TYPE");
+  }
+
+  @Test
+  void execute_createTask_malformedDueDate_normalizedToIllegalState() {
+    // A malformed due_date throws DateTimeParseException (extends DateTimeException, NOT
+    // IllegalArgumentException). It must be normalized into the same IllegalStateException
+    // ("Invalid gate action data...") path used for every other invalid payload field, not leak
+    // raw.
+    var gate = mock(AiExecutionGate.class);
+    when(gate.getGateType()).thenReturn("CREATE_TASK_FROM_CORRESPONDENCE");
+    when(gate.getReviewedBy()).thenReturn(UUID.randomUUID());
+    when(gate.getProposedAction())
+        .thenReturn(
+            Map.of(
+                "correspondence_id",
+                UUID.randomUUID().toString(),
+                "project_id",
+                UUID.randomUUID().toString(),
+                "title",
+                "Respond to client",
+                "due_date",
+                "not-a-date"));
+
+    assertThatThrownBy(() -> executor.execute(gate))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Invalid gate action data for type CREATE_TASK_FROM_CORRESPONDENCE");
   }
 }

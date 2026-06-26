@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.integration.ai.gate.AiExecutionGateService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
 import io.b2mash.b2b.b2bstrawman.mcp.McpCapabilityGuard;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
@@ -20,9 +21,16 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.AttachDocumentConfirmResponse;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.AttachDocumentInitResponse;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.FileCorrespondenceToolResponse;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
+import io.b2mash.b2b.b2bstrawman.mcp.dto.ProposeTaskToolResponse;
+import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
@@ -50,6 +58,8 @@ public class CorrespondenceWriteTools {
   private final AuditService auditService;
   private final McpMetrics metrics;
   private final ObjectMapper objectMapper;
+  private final AiExecutionGateService gateService;
+  private final ProjectAccessService projectAccessService;
 
   public CorrespondenceWriteTools(
       CorrespondenceService correspondenceService,
@@ -57,13 +67,17 @@ public class CorrespondenceWriteTools {
       McpEnablementService enablement,
       AuditService auditService,
       McpMetrics metrics,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      AiExecutionGateService gateService,
+      ProjectAccessService projectAccessService) {
     this.correspondenceService = correspondenceService;
     this.documentService = documentService;
     this.enablement = enablement;
     this.auditService = auditService;
     this.metrics = metrics;
     this.objectMapper = objectMapper;
+    this.gateService = gateService;
+    this.projectAccessService = projectAccessService;
   }
 
   @McpTool(
@@ -348,6 +362,155 @@ public class CorrespondenceWriteTools {
                       .entityRef(correspondenceId)
                       .build()
                       .toDetails("attach_document"))
+              .build());
+    } catch (RuntimeException e) {
+      // Audit emission must never break a successful tool call.
+    }
+  }
+
+  private static final String CREATE_TASK_GATE_TYPE = "CREATE_TASK_FROM_CORRESPONDENCE";
+
+  /**
+   * Propose a task/deadline from a filed inbound email (Epic 585, ADR-322). This is gate
+   * <i>creation</i> over MCP — it creates ONLY a PENDING approval gate and NEVER creates the Task
+   * directly. An authorised member must approve the gate in Kazi (AI_REVIEW) before the task is
+   * created; the safety boundary is the tool's identity, not a trusted flag. The reasoning happened
+   * in the firm's own Claude (BYOC), so a synthetic, zero-cost {@link AiExecution} backs the gate
+   * to preserve {@code execution_id NOT NULL}.
+   *
+   * <p>v1 dedupe: a second proposal for the same correspondence returns the existing open gate
+   * ({@code duplicate=true}) rather than creating a duplicate PENDING gate. Carries the same {@code
+   * MCP_WRITE} write-guard preamble as the other write tools.
+   */
+  @McpTool(
+      name = "propose_task",
+      description =
+          "Propose a task/deadline from a filed email. Creates a PENDING approval gate only — it"
+              + " NEVER creates the task directly; an authorised member must approve it in Kazi"
+              + " (AI_REVIEW) before the task is created. Idempotent per open gate: a second"
+              + " proposal for the same correspondence returns the existing gate. Requires the"
+              + " MCP_WRITE capability.")
+  public Object proposeTask(
+      @McpToolParam(description = "Matter (project) id the task belongs to.") UUID projectId,
+      @McpToolParam(description = "Correspondence id the task is proposed from.")
+          UUID correspondenceId,
+      @McpToolParam(description = "Task title.") String title,
+      @McpToolParam(required = false, description = "Task description.") String description,
+      @McpToolParam(required = false, description = "Due date (ISO yyyy-MM-dd).") LocalDate dueDate,
+      @McpToolParam(required = false, description = "Assignee member id.") UUID assigneeId) {
+    if (!enablement.effectiveState()) {
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
+    return McpCapabilityGuard.gatedTool(
+        "MCP_WRITE",
+        "propose_task",
+        auditService,
+        metrics,
+        objectMapper,
+        startNanos -> {
+          if (projectId == null || correspondenceId == null || title == null || title.isBlank()) {
+            metrics.recordError("propose_task", McpToolAudit.elapsed(startNanos));
+            return McpToolErrors.asResult(
+                McpError.invalidRequest(
+                    "propose_task requires projectId, correspondenceId, title."),
+                objectMapper);
+          }
+          var actor = ActorContext.fromRequestScopes();
+          // Validate BOTH the correspondence and the project are in-tenant and accessible to the
+          // caller BEFORE seeding a gate. A caller-supplied (possibly fabricated or wrong-tenant)
+          // id
+          // must never produce a PENDING gate that only fails at approval time (poisoned gate). The
+          // project check mirrors TaskService.createTask, which gates on requireViewAccess; doing
+          // it
+          // here means an inaccessible projectId is rejected at proposal time, not after approval.
+          try {
+            correspondenceService.requireScopeById(correspondenceId);
+          } catch (ResourceNotFoundException e) {
+            metrics.recordError("propose_task", McpToolAudit.elapsed(startNanos));
+            return McpToolErrors.asResult(McpError.notFound("correspondence"), objectMapper);
+          }
+          try {
+            projectAccessService.requireViewAccess(projectId, actor);
+          } catch (ResourceNotFoundException e) {
+            metrics.recordError("propose_task", McpToolAudit.elapsed(startNanos));
+            return McpToolErrors.asResult(McpError.notFound("project"), objectMapper);
+          }
+
+          // v1 best-effort open-gate dedupe: return the existing PENDING gate instead of creating a
+          // duplicate. This check-then-act is NOT race-safe — two concurrent proposals for the same
+          // correspondence can both miss the open gate and each create one. Full idempotency-key
+          // dedupe + a DB uniqueness constraint is deferred to v2 (out of scope for this PR).
+          // Every write-path invocation is audited (POPIA), so the dedupe branch still emits
+          // mcp.write.task_proposed — flagged duplicate=true so it is distinguishable in the trail.
+          Optional<UUID> open =
+              gateService.findPendingGateForCorrespondence(correspondenceId, CREATE_TASK_GATE_TYPE);
+          if (open.isPresent()) {
+            emitTaskProposedAudit(open.get(), correspondenceId, projectId, true);
+            metrics.recordOk("propose_task", McpToolAudit.elapsed(startNanos));
+            return new ProposeTaskToolResponse(
+                open.get(),
+                "PENDING",
+                true,
+                "A task for this email is already awaiting approval in Kazi.");
+          }
+
+          // HashMap (not Map.of) because description/dueDate/assigneeId may be null; Map.of rejects
+          // null values. The JSONB column tolerates nulls; the executor's parseAction null-checks
+          // due_date / assignee_id.
+          Map<String, Object> payload = new HashMap<>();
+          payload.put("correspondence_id", correspondenceId.toString());
+          payload.put("project_id", projectId.toString());
+          payload.put("title", title);
+          payload.put("description", description);
+          payload.put("due_date", dueDate == null ? null : dueDate.toString());
+          payload.put("assignee_id", assigneeId == null ? null : assigneeId.toString());
+
+          // Synthetic execution + gate are created atomically in one transaction so a gate-creation
+          // failure can never leave the synthetic AiExecution orphaned. The JPA entities stay
+          // inside
+          // the service; the tool only handles ids.
+          UUID gateId =
+              gateService.createGateForMcpTaskProposal(
+                  actor.memberId(),
+                  correspondenceId,
+                  CREATE_TASK_GATE_TYPE,
+                  payload,
+                  "Proposed from filed email " + correspondenceId,
+                  Instant.now().plus(Duration.ofHours(72)));
+
+          emitTaskProposedAudit(gateId, correspondenceId, projectId, false);
+          metrics.recordOk("propose_task", McpToolAudit.elapsed(startNanos));
+          return new ProposeTaskToolResponse(
+              gateId,
+              "PENDING",
+              false,
+              "Task proposed. An authorised member must approve it in Kazi before it is created.");
+        });
+  }
+
+  private void emitTaskProposedAudit(
+      UUID gateId, UUID correspondenceId, UUID projectId, boolean duplicate) {
+    try {
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("mcp.write.task_proposed")
+              // The gate is the entity created; entityType uses the lowercase/snake audit-plane
+              // string (matches the ai.gate.* audit rows), NOT the EntityType enum.
+              .entityType("ai_execution_gate")
+              .entityId(gateId)
+              .details(
+                  // title/description are caller-controlled free text that can carry PII (POPIA),
+                  // so they are deliberately omitted; the entityRefs identify the records.
+                  // duplicate=true marks a dedupe hit that returned the existing open gate without
+                  // creating a second one — every write-path invocation is audited.
+                  McpAuditMetadata.builder()
+                      .rowCount(duplicate ? 0 : 1)
+                      .entityRef(gateId)
+                      .entityRef(correspondenceId)
+                      .entityRef(projectId)
+                      .param("duplicate", duplicate)
+                      .build()
+                      .toDetails("propose_task"))
               .build());
     } catch (RuntimeException e) {
       // Audit emission must never break a successful tool call.

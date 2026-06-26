@@ -133,6 +133,10 @@ public class CorrespondenceService {
   }
 
   private Pageable clamp(Pageable pageable) {
+    if (pageable.getSort().isSorted()) {
+      throw new InvalidStateException(
+          "Invalid correspondence sort", "Correspondence lists support newest-first ordering only");
+    }
     int size = McpPagination.clampSize(pageable.getPageSize(), McpPagination.DEFAULT_MAX_SIZE);
     return PageRequest.of(pageable.getPageNumber(), size);
   }

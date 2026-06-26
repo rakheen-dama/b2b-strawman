@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
@@ -161,11 +162,11 @@ class Phase81BoundaryTest {
     for (String src : correspondenceAndPhase81ToolSources()) {
       assertThat(src)
           .as("Phase 81 adds no inbound webhook / scheduled mailbox poll — ingestion is MCP-only")
-          .doesNotContain("@Scheduled")
-          .doesNotContain("@PostMapping")
-          .doesNotContain("@PutMapping")
-          .doesNotContain("ImapStore")
-          .doesNotContain("Folder.open");
+          .doesNotContain("@scheduled")
+          .doesNotContain("@postmapping")
+          .doesNotContain("@putmapping")
+          .doesNotContain("imapstore")
+          .doesNotContain("folder.open");
     }
   }
 
@@ -175,9 +176,9 @@ class Phase81BoundaryTest {
       assertThat(src)
           .as("Phase 81 adds no Anthropic/LLM call to the Kazi backend — the LLM is the client")
           .doesNotContain("anthropic")
-          .doesNotContain("AiProvider")
-          .doesNotContain("chatCompletion")
-          .doesNotContain("ChatClient")
+          .doesNotContain("aiprovider")
+          .doesNotContain("chatcompletion")
+          .doesNotContain("chatclient")
           .doesNotContain(".generate(");
     }
   }
@@ -189,7 +190,17 @@ class Phase81BoundaryTest {
     return Path.of("").toAbsolutePath();
   }
 
-  /** Reads every Java source under correspondence/ plus the Phase-81 MCP write tool. */
+  /**
+   * Reads every Java source under correspondence/ plus the Phase-81 MCP write tool, lowercased
+   * (Locale.ROOT) so a {@code Gmail}/{@code GMAIL}/{@code gmail}-style addition is caught
+   * case-insensitively by the boundary token scans.
+   *
+   * <p>Scope is intentionally limited to the Phase-81 surface (correspondence/ + the Phase-81 MCP
+   * write tool) — NOT the whole backend. The boundary assertion is "no Gmail/Google/IMAP/LLM
+   * dependency was added <i>by Phase 81</i>". The backend legitimately contains Anthropic/LLM code
+   * in the pre-existing AI core (Phase 72), so scanning the entire backend for tokens like {@code
+   * anthropic}/{@code chatclient} would false-positive on that legitimate code and break the build.
+   */
   private static List<String> correspondenceAndPhase81ToolSources() throws IOException {
     Path root = projectRoot();
     Path correspondenceDir = root.resolve("src/main/java/io/b2mash/b2b/b2bstrawman/correspondence");
@@ -208,7 +219,7 @@ class Phase81BoundaryTest {
 
   private static String readQuietly(Path p) {
     try {
-      return Files.readString(p, StandardCharsets.UTF_8);
+      return Files.readString(p, StandardCharsets.UTF_8).toLowerCase(Locale.ROOT);
     } catch (IOException e) {
       throw new RuntimeException("Failed to read " + p, e);
     }

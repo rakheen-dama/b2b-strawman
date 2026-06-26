@@ -1,7 +1,7 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getAiGates, getAiGate } from "@/lib/api/ai";
 import type { AiGateListItem } from "@/lib/api/ai";
-import type { CorrespondenceOrigin } from "@/components/ai/execution-gate-card";
+import type { CorrespondenceOrigin } from "@/lib/types";
 import { AiReviewsClient } from "./reviews-client";
 
 const CORRESPONDENCE_GATE_TYPE = "CREATE_TASK_FROM_CORRESPONDENCE";

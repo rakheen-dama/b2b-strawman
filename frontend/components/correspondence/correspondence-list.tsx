@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Mail, Paperclip, ArrowDownLeft, ArrowUpRight } from "lucide-react";
-import { Badge } from "@b2mash/ui/badge";
+import { Badge } from "@b2mash/ui";
 import { EmptyState } from "@/components/empty-state";
 import {
   Table,

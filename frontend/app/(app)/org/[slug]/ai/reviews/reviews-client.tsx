@@ -1,7 +1,8 @@
 "use client";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ExecutionGateCard, type CorrespondenceOrigin } from "@/components/ai/execution-gate-card";
+import { ExecutionGateCard } from "@/components/ai/execution-gate-card";
+import type { CorrespondenceOrigin } from "@/lib/types";
 import { approveGateAction, rejectGateAction } from "./actions";
 import type { AiGateListItem } from "@/lib/api/ai";
 import { ShieldCheck } from "lucide-react";

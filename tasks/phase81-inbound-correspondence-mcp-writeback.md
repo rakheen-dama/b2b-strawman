@@ -29,7 +29,7 @@ This phase ships as **6 epics (581–586)**, expanded to **11 numbered slices** 
 | 583 | `attach_document` (presigned reuse + correspondence stamp) | Backend | 581A, 582A, 582B | M | 583A | **Done** (PR #1506) |
 | 584 | `resolve_matter_by_email` (read tool) | Backend | 582A | S | 584A | **Done** (PR #1507) |
 | 585 | Gate-over-MCP — `propose_task` + synthetic execution + executor arm | Backend | 581A, 582B | L | 585A, 585B | **Done** (PR #1508) |
-| 586 | Frontend — Correspondence Tab + Gate-Origin Display + QA Capstone | Frontend / Both | 581A, 582B, 583A, 585B | L | 586A, 586B, 586C | |
+| 586 | Frontend — Correspondence Tab + Gate-Origin Display + QA Capstone | Frontend / Both | 581A, 582B, 583A, 585B | L | 586A, 586B, 586C | **Done** (PR #1509) |
 
 **Slice count: 11** (6 architecture capability slices expanded to 11 numbered slices for the 8-12 file / ~800 LOC budget). Backend/frontend split preserved per slice — no slice mixes both scopes. The correspondence-list REST endpoints (a thin backend read surface the frontend tab depends on) land in **586A** as a backend slice; the React UI in **586B**; the QA capstone in **586C**.
 
@@ -148,9 +148,9 @@ PHASES already complete (reused, not rebuilt):
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 4a | **586A** | (Backend) correspondence list REST: `CorrespondenceController` `GET /api/projects/{projectId}/correspondence` + `GET /api/customers/{customerId}/correspondence` (paginated, `isAuthenticated()` + existing project/customer view-access check, **no MCP capability**); `CorrespondenceListResponse` (`{id, subject, fromAddress, receivedAt, attachmentCount, direction}`); list + access-control + tenant-isolation tests. |
-| 4b | **586B** | (Frontend) read-only "Correspondence" tab on matter detail (subject, from, date, attachment count, link to documents); gate review screen shows originating correspondence (subject + link) for `CREATE_TASK_FROM_CORRESPONDENCE` gates; `lib/api` correspondence client; component tests. |
-| 4c | **586C** | (QA capstone) **observed** end-to-end run (MCP tool call → backend log → DB row / S3 object / gate record → UI); full `./mvnw verify` clean; frontend `pnpm lint && pnpm build && pnpm test` + prettier `format:check`; tenant-isolation regression; boundary asserts (no Gmail/Google/IMAP dependency, no inbound webhook/poll, no LLM call added). |
+| 4a | **586A** ✅ **Done** (PR #1509) | (Backend) correspondence list REST: `CorrespondenceController` `GET /api/projects/{projectId}/correspondence` + `GET /api/customers/{customerId}/correspondence` (paginated, `isAuthenticated()` + existing project/customer view-access check, **no MCP capability**); `CorrespondenceListResponse` (`{id, subject, fromAddress, receivedAt, attachmentCount, direction}`); list + access-control + tenant-isolation tests. |
+| 4b | **586B** ✅ **Done** (PR #1509) | (Frontend) read-only "Correspondence" tab on matter detail (subject, from, date, attachment count, link to documents); gate review screen shows originating correspondence (subject + link) for `CREATE_TASK_FROM_CORRESPONDENCE` gates; `lib/api` correspondence client; component tests. |
+| 4c | **586C** ✅ **Done** (PR #1509) | (QA capstone) **observed** end-to-end run (MCP tool call → backend log → DB row / S3 object / gate record → UI); full `./mvnw verify` clean; frontend `pnpm lint && pnpm build && pnpm test` + prettier `format:check`; tenant-isolation regression; boundary asserts (no Gmail/Google/IMAP dependency, no inbound webhook/poll, no LLM call added). |
 
 ### Timeline
 
@@ -471,9 +471,9 @@ Stage 4: [586A] -> [586B] -> [586C]                <- backend REST -> frontend -
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **586A** | 586A.1–586A.3 | ~5 backend files (1 controller + 1 response DTO + service-method confirm + 2 test files) | `CorrespondenceController` `GET …/correspondence` (paginated, view-access-gated, no MCP cap); `CorrespondenceListResponse` + attachment-count; list/access/isolation tests. |
-| **586B** | 586B.1–586B.4 | ~7 frontend files (1 tab page/component + 1 list component + 1 gate-origin component edit + 1 api client + component tests) | Matter-detail Correspondence tab; gate-origin display on the gate review screen; `lib/api` correspondence client; component tests. |
-| **586C** | 586C.1–586C.3 | ~2-3 test/QA artefacts (E2E spec + regression assertions) | Observed end-to-end run; full `./mvnw verify` + frontend `lint/build/test` + prettier; tenant-isolation + BYOC-boundary regression. |
+| **586A** ✅ **Done** (PR #1509) | 586A.1–586A.3 | ~5 backend files (1 controller + 1 response DTO + service-method confirm + 2 test files) | `CorrespondenceController` `GET …/correspondence` (paginated, view-access-gated, no MCP cap); `CorrespondenceListResponse` + attachment-count; list/access/isolation tests. |
+| **586B** ✅ **Done** (PR #1509) | 586B.1–586B.4 | ~7 frontend files (1 tab page/component + 1 list component + 1 gate-origin component edit + 1 api client + component tests) | Matter-detail Correspondence tab; gate-origin display on the gate review screen; `lib/api` correspondence client; component tests. |
+| **586C** ✅ **Done** (PR #1509) | 586C.1–586C.3 | ~2-3 test/QA artefacts (E2E spec + regression assertions) | Observed end-to-end run; full `./mvnw verify` + frontend `lint/build/test` + prettier; tenant-isolation + BYOC-boundary regression. |
 
 ### Tasks
 

@@ -36,8 +36,10 @@ import tools.jackson.databind.ObjectMapper;
  * Read-only MCP tools over the firm's clients (customers): {@code list_clients} and {@code
  * get_client} (Epic 563A, §11.4).
  *
- * <p>Access model: <b>org-wide</b> (the whole authenticated tenant sees all clients). The live
- * MCP_ACCESS front-door gate is deferred to 565B, so no capability check is applied here.
+ * <p>Access model: <b>org-wide</b> (the whole authenticated tenant sees all clients). {@code
+ * resolve_matter_by_email} (Epic 584A) is gated on {@code MCP_ACCESS} via {@link
+ * McpCapabilityGuard#gatedTool}; {@code list_clients} and {@code get_client} remain ungated pending
+ * the live MCP_ACCESS front-door gate in 565B.
  *
  * <p>{@code list_clients} deliberately OMITs the controller's tag/member-name enrichment ({@code
  * CustomerResponse.from}) — the list row is {@code {id, name, type, lifecycleStatus}} only, keeping
@@ -175,6 +177,13 @@ public class ClientTools {
           String reference) {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
+    // Spring AI 2.0.0-M6 does not guarantee non-null at dispatch for a required param; guard
+    // against
+    // a null/blank email so we return a clean MCP error rather than NPE inside the gatedTool
+    // lambda.
+    if (email == null || email.isBlank()) {
+      return McpToolErrors.asResult(McpError.invalidRequest("email is required"), objectMapper);
     }
     return McpCapabilityGuard.gatedTool(
         CAP_MCP_ACCESS,

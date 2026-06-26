@@ -84,6 +84,15 @@ class McpReadOnlyRegistryTest {
   private static final Set<String> PROBE_TOOL_NAMES = Set.of("kazi_ping");
 
   /**
+   * Read tools whose name uses a read verb mandated by the Phase 81 spec (§N.8) that pre-dates the
+   * {@code list_/get_/search_} read-verb regex. {@code resolve_*} reads (resolves) data and mutates
+   * nothing — it is MCP_ACCESS-gated (a read gate), NOT MCP_WRITE-gated. Renaming it would be an
+   * unauthorized scenario amendment, so it is exempted from the regex here (mirroring {@link
+   * #PROBE_TOOL_NAMES}). The failure message lists this set so the diagnostic is clear.
+   */
+  private static final Set<String> READ_NAME_EXEMPTIONS = Set.of("resolve_matter_by_email");
+
+  /**
    * Sanctioned write-tool names — exempt from the read-verb pattern; each is MCP_WRITE-gated (see
    * McpWriteCapabilityGateTest).
    */
@@ -159,13 +168,17 @@ class McpReadOnlyRegistryTest {
       assertThat(MUTATING_VERBS)
           .as("tool '%s' must not start with a mutating verb", name)
           .noneMatch(verb -> name.toLowerCase(java.util.Locale.ROOT).startsWith(verb));
-      // Trivial probe tools and sanctioned write tools are the only non list_/get_/search_ tools.
-      if (!PROBE_TOOL_NAMES.contains(name) && !WRITE_TOOL_NAMES.contains(name)) {
+      // Trivial probe tools, spec-mandated read-name exemptions and sanctioned write tools are the
+      // only non list_/get_/search_ tools.
+      if (!PROBE_TOOL_NAMES.contains(name)
+          && !READ_NAME_EXEMPTIONS.contains(name)
+          && !WRITE_TOOL_NAMES.contains(name)) {
         assertThat(READ_TOOL_NAME.matcher(name).matches())
             .as(
                 "catalogue tool '%s' must use a read verb (list_/get_/search_), be an allowlisted"
-                    + " probe tool %s, or be a sanctioned write tool %s",
-                name, PROBE_TOOL_NAMES, WRITE_TOOL_NAMES)
+                    + " probe tool %s, be a spec-mandated read-name exemption %s, or be a sanctioned"
+                    + " write tool %s",
+                name, PROBE_TOOL_NAMES, READ_NAME_EXEMPTIONS, WRITE_TOOL_NAMES)
             .isTrue();
       }
     }

@@ -444,6 +444,42 @@ public class DocumentService {
   }
 
   /**
+   * Confirms an upload and stamps the inbound-correspondence linkage in the SAME transaction (Phase
+   * 81, {@code attach_document} MCP write tool). {@link #confirmUpload} returns a managed entity
+   * while this transaction is open, so the subsequent {@code setCorrespondenceId} / {@code
+   * setSource} mutations are dirty-checked and persisted by the {@code save} flush. Calling the
+   * stamp setters on the detached entity returned from {@link #confirmUpload} <em>outside</em> a
+   * transaction would silently no-op — hence this atomic service method. Idempotent: a re-confirm
+   * of an already-UPLOADED document re-applies the same stamp.
+   *
+   * <p>Reports whether this call performed a real state change ({@link
+   * StampCorrespondenceResult#stateChanged()} is {@code true} when the document newly transitioned
+   * to {@code UPLOADED} and/or the correspondence stamp was newly applied) so callers can suppress
+   * duplicate state-change side effects (e.g. MCP audit events) on idempotent retries.
+   */
+  @Transactional
+  public StampCorrespondenceResult confirmAndStampCorrespondence(
+      UUID documentId, UUID correspondenceId, ActorContext actor) {
+    var existing =
+        documentRepository
+            .findById(documentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
+    boolean wasUploaded = existing.getStatus() == Document.Status.UPLOADED;
+    boolean stampAlreadyApplied =
+        wasUploaded
+            && correspondenceId.equals(existing.getCorrespondenceId())
+            && Document.Source.EMAIL_INGEST.equals(existing.getSource());
+
+    Document document = confirmUpload(documentId, actor);
+    document.setCorrespondenceId(correspondenceId);
+    document.setSource(Document.Source.EMAIL_INGEST);
+    Document saved = documentRepository.save(document);
+
+    boolean stateChanged = !wasUploaded || !stampAlreadyApplied;
+    return new StampCorrespondenceResult(saved, stateChanged);
+  }
+
+  /**
    * Cancel upload — scope-aware. For PROJECT-scoped documents, checks project access. For ORG and
    * CUSTOMER scoped documents, tenant isolation is provided by the dedicated schema (search_path).
    */
@@ -572,4 +608,11 @@ public class DocumentService {
   public record UploadInitResult(UUID documentId, String presignedUrl, long expiresInSeconds) {}
 
   public record PresignDownloadResult(String url, long expiresInSeconds) {}
+
+  /**
+   * Result of {@link #confirmAndStampCorrespondence}. {@code stateChanged} is {@code true} when the
+   * call performed a real state transition (newly confirmed and/or newly stamped) and {@code false}
+   * on an idempotent no-op retry of an already-confirmed, already-stamped document.
+   */
+  public record StampCorrespondenceResult(Document document, boolean stateChanged) {}
 }

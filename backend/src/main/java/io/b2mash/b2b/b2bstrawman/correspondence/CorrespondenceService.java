@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.correspondence.dto.CorrespondenceListResponse;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.FileCorrespondenceCommand;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.FileCorrespondenceResult;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -73,6 +74,22 @@ public class CorrespondenceService {
           .map(winner -> FileCorrespondenceResult.idempotent(winner.getId()))
           .orElseThrow(() -> race);
     }
+  }
+
+  /**
+   * Resolve a correspondence's {@link CorrespondenceScope} by id (Phase 81, {@code
+   * attach_document}). Returns only the customer/project ids the caller needs to choose CUSTOMER vs
+   * PROJECT upload scope — the JPA entity never crosses the MCP/service boundary. Tenant-isolated
+   * via {@code search_path}. Throws {@link ResourceNotFoundException} when the id is unknown in
+   * this tenant, which the CONFIRM phase relies on to reject a fabricated or wrong-tenant {@code
+   * correspondenceId} before any stamp is applied.
+   */
+  @Transactional(readOnly = true)
+  public CorrespondenceScope requireScopeById(UUID id) {
+    return correspondenceRepository
+        .findById(id)
+        .map(CorrespondenceScope::of)
+        .orElseThrow(() -> new ResourceNotFoundException("Correspondence", id));
   }
 
   @Transactional(readOnly = true)

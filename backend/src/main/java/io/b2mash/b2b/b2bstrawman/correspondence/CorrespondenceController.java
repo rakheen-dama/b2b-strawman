@@ -36,7 +36,7 @@ public class CorrespondenceController {
   @GetMapping("/api/customers/{customerId}/correspondence")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<Page<CorrespondenceListResponse>> listCustomerCorrespondence(
-      @PathVariable UUID customerId, Pageable pageable, ActorContext actor) {
-    return ResponseEntity.ok(correspondenceService.listForCustomer(customerId, actor, pageable));
+      @PathVariable UUID customerId, Pageable pageable) {
+    return ResponseEntity.ok(correspondenceService.listForCustomer(customerId, pageable));
   }
 }

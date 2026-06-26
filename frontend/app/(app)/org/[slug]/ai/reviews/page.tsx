@@ -64,10 +64,10 @@ export default async function AiReviewsPage({ params }: { params: Promise<{ slug
     historyGates = historyResult.value.content.filter((g) => g.status !== "PENDING");
   }
 
-  const correspondenceOrigins = await resolveCorrespondenceOrigins([
-    ...pendingGates,
-    ...historyGates,
-  ]);
+  // Resolve gate-origin links for PENDING gates only. Each correspondence gate requires a separate
+  // detail fetch (the list DTO carries no proposedAction); fanning that out over history gates too
+  // (up to 100) would block SSR first-byte. History-gate origins are lower-priority context.
+  const correspondenceOrigins = await resolveCorrespondenceOrigins(pendingGates);
 
   return (
     <div className="space-y-6">

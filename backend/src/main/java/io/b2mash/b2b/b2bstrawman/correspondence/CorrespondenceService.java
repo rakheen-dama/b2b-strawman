@@ -118,14 +118,14 @@ public class CorrespondenceService {
   }
 
   /**
-   * View-access-gated, page-cap-clamped customer correspondence list for the in-app REST endpoint.
-   * Customer view-access for a read is existence-in-tenant (search_path isolation guarantees a
-   * cross-tenant id is invisible) — there is no per-customer {@code requireViewAccess}. Throws
-   * {@link ResourceNotFoundException} → 404 when the customer is unknown in this tenant.
+   * Page-cap-clamped customer correspondence list for the in-app REST endpoint. Customer
+   * view-access for a read is existence-in-tenant + authenticated (search_path isolation guarantees
+   * a cross-tenant id is invisible) — there is no per-customer {@code requireViewAccess}, so no
+   * {@code ActorContext} is needed here. Throws {@link ResourceNotFoundException} → 404 when the
+   * customer is unknown in this tenant.
    */
   @Transactional(readOnly = true)
-  public Page<CorrespondenceListResponse> listForCustomer(
-      UUID customerId, ActorContext actor, Pageable pageable) {
+  public Page<CorrespondenceListResponse> listForCustomer(UUID customerId, Pageable pageable) {
     customerRepository
         .findById(customerId)
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));

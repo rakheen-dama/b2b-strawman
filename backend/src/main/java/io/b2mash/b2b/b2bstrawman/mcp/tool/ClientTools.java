@@ -1,12 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
+import io.b2mash.b2b.b2bstrawman.mcp.McpCapabilityGuard;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.mcp.McpMetrics;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
@@ -15,9 +18,14 @@ import io.b2mash.b2b.b2bstrawman.mcp.McpToolErrors;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpClientDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpClientListItem;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
+import io.b2mash.b2b.b2bstrawman.mcp.dto.McpMatterDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
+import io.b2mash.b2b.b2bstrawman.mcp.dto.ResolveMatterResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import io.b2mash.b2b.b2bstrawman.project.Project;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
@@ -28,8 +36,10 @@ import tools.jackson.databind.ObjectMapper;
  * Read-only MCP tools over the firm's clients (customers): {@code list_clients} and {@code
  * get_client} (Epic 563A, §11.4).
  *
- * <p>Access model: <b>org-wide</b> (the whole authenticated tenant sees all clients). The live
- * MCP_ACCESS front-door gate is deferred to 565B, so no capability check is applied here.
+ * <p>Access model: <b>org-wide</b> (the whole authenticated tenant sees all clients). {@code
+ * resolve_matter_by_email} (Epic 584A) is gated on {@code MCP_ACCESS} via {@link
+ * McpCapabilityGuard#gatedTool}; {@code list_clients} and {@code get_client} remain ungated pending
+ * the live MCP_ACCESS front-door gate in 565B.
  *
  * <p>{@code list_clients} deliberately OMITs the controller's tag/member-name enrichment ({@code
  * CustomerResponse.from}) — the list row is {@code {id, name, type, lifecycleStatus}} only, keeping
@@ -41,7 +51,10 @@ import tools.jackson.databind.ObjectMapper;
 @Component
 public class ClientTools {
 
+  private static final String CAP_MCP_ACCESS = "MCP_ACCESS";
+
   private final CustomerService customerService;
+  private final CustomerRepository customerRepository;
   private final CustomerProjectService customerProjectService;
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
@@ -50,12 +63,14 @@ public class ClientTools {
 
   public ClientTools(
       CustomerService customerService,
+      CustomerRepository customerRepository,
       CustomerProjectService customerProjectService,
       AuditService auditService,
       ObjectMapper objectMapper,
       McpEnablementService enablement,
       McpMetrics metrics) {
     this.customerService = customerService;
+    this.customerRepository = customerRepository;
     this.customerProjectService = customerProjectService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
@@ -139,6 +154,71 @@ public class ClientTools {
     } catch (ResourceNotFoundException | InvalidStateException e) {
       return McpToolErrors.asResult(McpError.notFound("client"), objectMapper);
     }
+  }
+
+  @McpTool(
+      name = "resolve_matter_by_email",
+      description =
+          "Resolve an inbound correspondence email to the firm's client (customer) and ALL of that"
+              + " client's matters. Pass the sender email; returns {customer, matters[]} so you can"
+              + " pick the right matter before filing. Returns {customer:null, matters:[]} when no"
+              + " client matches. subjectHint/reference are optional hints for YOUR disambiguation"
+              + " only — Kazi does no server-side fuzzy matching.")
+  public Object resolveMatterByEmail(
+      @McpToolParam(description = "Sender email address to resolve to a client.") String email,
+      @McpToolParam(
+              required = false,
+              description = "Optional email subject, a hint for your own disambiguation only.")
+          String subjectHint,
+      @McpToolParam(
+              required = false,
+              description =
+                  "Optional reference/matter number, a hint for your own disambiguation" + " only.")
+          String reference) {
+    if (!enablement.effectiveState()) {
+      return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
+    }
+    // Spring AI 2.0.0-M6 does not guarantee non-null at dispatch for a required param; guard
+    // against
+    // a null/blank email so we return a clean MCP error rather than NPE inside the gatedTool
+    // lambda.
+    if (email == null || email.isBlank()) {
+      return McpToolErrors.asResult(McpError.invalidRequest("email is required"), objectMapper);
+    }
+    return McpCapabilityGuard.gatedTool(
+        CAP_MCP_ACCESS,
+        "resolve_matter_by_email",
+        auditService,
+        metrics,
+        objectMapper,
+        startNanos -> {
+          var actor = ActorContext.fromRequestScopes();
+          Optional<Customer> customer =
+              customerRepository.findByEmail(email.trim().toLowerCase(Locale.ROOT));
+          List<Project> projects =
+              customer
+                  .map(c -> customerProjectService.listProjectsForCustomer(c.getId(), actor))
+                  .orElseGet(List::of);
+          List<McpMatterDto> matters =
+              projects.stream().map(p -> McpMatterDto.from(p, null)).toList();
+          var response =
+              new ResolveMatterResponse(
+                  customer.map(c -> McpClientDto.from(c, projects)).orElse(null), matters);
+
+          // entityRefs carries matter ids only — never the resolved email/customer name (POPIA).
+          var meta =
+              McpAuditMetadata.builder()
+                  .rowCount(matters.size())
+                  .entityRefs(matters.stream().map(McpMatterDto::id).toList())
+                  .build();
+          McpToolAudit.emitInvoked(
+              "resolve_matter_by_email",
+              meta,
+              auditService,
+              metrics,
+              McpToolAudit.elapsed(startNanos));
+          return response;
+        });
   }
 
   private void emitInvoked(String tool, McpAuditMetadata meta, long startNanos) {

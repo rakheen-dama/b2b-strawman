@@ -15,6 +15,7 @@ interface ProjectTabsProps {
   fieldsPanel: ReactNode;
   overviewPanel: ReactNode;
   documentsPanel: ReactNode;
+  correspondencePanel?: ReactNode;
   membersPanel: ReactNode;
   customersPanel: ReactNode;
   tasksPanel: ReactNode;
@@ -41,6 +42,7 @@ type TabId =
   | "fields"
   | "overview"
   | "documents"
+  | "correspondence"
   | "members"
   | "customers"
   | "tasks"
@@ -66,6 +68,7 @@ const validTabIds = new Set<string>([
   "fields",
   "overview",
   "documents",
+  "correspondence",
   "customers",
   "tasks",
   "time",
@@ -91,6 +94,7 @@ export function ProjectTabs({
   fieldsPanel,
   overviewPanel,
   documentsPanel,
+  correspondencePanel,
   membersPanel,
   customersPanel,
   tasksPanel,
@@ -158,6 +162,7 @@ export function ProjectTabs({
       customers: true,
       activity: true,
       // Panel-gated tabs (visible only when the panel prop is provided)
+      correspondence: !!correspondencePanel,
       generated: !!generatedPanel,
       staffing: !!staffingPanel,
       // Dedupe: when the legal-specific Disbursements tab is shown AND the
@@ -201,6 +206,7 @@ export function ProjectTabs({
     }));
   }, [
     t,
+    correspondencePanel,
     generatedPanel,
     staffingPanel,
     expensesPanel,
@@ -254,6 +260,11 @@ export function ProjectTabs({
       <TabsPrimitive.Content value="documents" className="pt-6 outline-none">
         {documentsPanel}
       </TabsPrimitive.Content>
+      {correspondencePanel && (
+        <TabsPrimitive.Content value="correspondence" className="pt-6 outline-none">
+          {correspondencePanel}
+        </TabsPrimitive.Content>
+      )}
       <TabsPrimitive.Content value="members" className="pt-6 outline-none">
         {membersPanel}
       </TabsPrimitive.Content>

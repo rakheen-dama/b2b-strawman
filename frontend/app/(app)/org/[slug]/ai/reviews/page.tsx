@@ -1,7 +1,36 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { getAiGates } from "@/lib/api/ai";
+import { getAiGates, getAiGate } from "@/lib/api/ai";
 import type { AiGateListItem } from "@/lib/api/ai";
+import type { CorrespondenceOrigin } from "@/lib/types";
 import { AiReviewsClient } from "./reviews-client";
+
+const CORRESPONDENCE_GATE_TYPE = "CREATE_TASK_FROM_CORRESPONDENCE";
+
+/**
+ * Resolve the originating-correspondence reference for any CREATE_TASK_FROM_CORRESPONDENCE gates.
+ * The list DTO carries no proposedAction, so we fetch each such gate's detail and read {@code
+ * project_id}/{@code correspondence_id} from its proposedAction (frontend-only — no backend change,
+ * no subject). Best-effort: a failed detail fetch simply omits that gate's link.
+ */
+async function resolveCorrespondenceOrigins(
+  gates: AiGateListItem[]
+): Promise<Record<string, CorrespondenceOrigin>> {
+  const corrGates = gates.filter((g) => g.gateType === CORRESPONDENCE_GATE_TYPE);
+  const results = await Promise.allSettled(corrGates.map((g) => getAiGate(g.id)));
+  const origins: Record<string, CorrespondenceOrigin> = {};
+  results.forEach((result, idx) => {
+    if (result.status !== "fulfilled") return;
+    const action = result.value.proposedAction ?? {};
+    const projectId = action["project_id"];
+    if (typeof projectId !== "string" || projectId.length === 0) return;
+    const correspondenceId = action["correspondence_id"];
+    origins[corrGates[idx].id] = {
+      projectId,
+      correspondenceId: typeof correspondenceId === "string" ? correspondenceId : undefined,
+    };
+  });
+  return origins;
+}
 
 export default async function AiReviewsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -35,6 +64,11 @@ export default async function AiReviewsPage({ params }: { params: Promise<{ slug
     historyGates = historyResult.value.content.filter((g) => g.status !== "PENDING");
   }
 
+  // Resolve gate-origin links for PENDING gates only. Each correspondence gate requires a separate
+  // detail fetch (the list DTO carries no proposedAction); fanning that out over history gates too
+  // (up to 100) would block SSR first-byte. History-gate origins are lower-priority context.
+  const correspondenceOrigins = await resolveCorrespondenceOrigins(pendingGates);
+
   return (
     <div className="space-y-6">
       <div>
@@ -44,7 +78,12 @@ export default async function AiReviewsPage({ params }: { params: Promise<{ slug
         </p>
       </div>
 
-      <AiReviewsClient slug={slug} pendingGates={pendingGates} historyGates={historyGates} />
+      <AiReviewsClient
+        slug={slug}
+        pendingGates={pendingGates}
+        historyGates={historyGates}
+        correspondenceOrigins={correspondenceOrigins}
+      />
     </div>
   );
 }

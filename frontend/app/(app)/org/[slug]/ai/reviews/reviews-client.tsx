@@ -2,6 +2,7 @@
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ExecutionGateCard } from "@/components/ai/execution-gate-card";
+import type { CorrespondenceOrigin } from "@/lib/types";
 import { approveGateAction, rejectGateAction } from "./actions";
 import type { AiGateListItem } from "@/lib/api/ai";
 import { ShieldCheck } from "lucide-react";
@@ -10,9 +11,16 @@ interface AiReviewsClientProps {
   slug: string;
   pendingGates: AiGateListItem[];
   historyGates: AiGateListItem[];
+  /** gateId -> originating correspondence reference (CREATE_TASK_FROM_CORRESPONDENCE gates only). */
+  correspondenceOrigins?: Record<string, CorrespondenceOrigin>;
 }
 
-export function AiReviewsClient({ slug, pendingGates, historyGates }: AiReviewsClientProps) {
+export function AiReviewsClient({
+  slug,
+  pendingGates,
+  historyGates,
+  correspondenceOrigins = {},
+}: AiReviewsClientProps) {
   async function handleApprove(gateId: string, notes?: string) {
     return approveGateAction(slug, gateId, notes);
   }
@@ -42,6 +50,8 @@ export function AiReviewsClient({ slug, pendingGates, historyGates }: AiReviewsC
               <ExecutionGateCard
                 key={gate.id}
                 gate={gate}
+                slug={slug}
+                correspondenceOrigin={correspondenceOrigins[gate.id]}
                 onApprove={handleApprove}
                 onReject={handleReject}
               />
@@ -62,6 +72,8 @@ export function AiReviewsClient({ slug, pendingGates, historyGates }: AiReviewsC
               <ExecutionGateCard
                 key={gate.id}
                 gate={gate}
+                slug={slug}
+                correspondenceOrigin={correspondenceOrigins[gate.id]}
                 onApprove={handleApprove}
                 onReject={handleReject}
               />

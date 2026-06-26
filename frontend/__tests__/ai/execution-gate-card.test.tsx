@@ -80,14 +80,14 @@ describe("formatDateTime (AIVERIFY-009 timestamp determinism)", () => {
 
 describe("ExecutionGateCard", () => {
   it("renders the deterministic timestamp (15:29 JHB), not the raw locale string", async () => {
-    render(<ExecutionGateCard gate={makeGate()} onApprove={noop} onReject={noop} />);
+    render(<ExecutionGateCard gate={makeGate()} slug="acme" onApprove={noop} onReject={noop} />);
     // The fixed createdAt (13:29 UTC) renders as 15:29 in Africa/Johannesburg.
     expect(await screen.findByText(formatDateTime("2026-06-15T13:29:00Z"))).toBeInTheDocument();
     expect(screen.getByText(formatDateTime("2026-06-15T13:29:00Z")).textContent).toContain("15:29");
   });
 
   it("shows the live countdown after mount for a PENDING gate", async () => {
-    render(<ExecutionGateCard gate={makeGate()} onApprove={noop} onReject={noop} />);
+    render(<ExecutionGateCard gate={makeGate()} slug="acme" onApprove={noop} onReject={noop} />);
     // Countdown is computed post-mount (useEffect), so it appears asynchronously.
     await waitFor(() => {
       expect(screen.getByText(/remaining/)).toBeInTheDocument();
@@ -97,7 +97,12 @@ describe("ExecutionGateCard", () => {
 
   it("does not render a countdown for non-PENDING gates", async () => {
     render(
-      <ExecutionGateCard gate={makeGate({ status: "APPROVED" })} onApprove={noop} onReject={noop} />
+      <ExecutionGateCard
+        gate={makeGate({ status: "APPROVED" })}
+        slug="acme"
+        onApprove={noop}
+        onReject={noop}
+      />
     );
     // Let any post-mount effects settle, then assert no countdown.
     await screen.findByText(formatDateTime("2026-06-15T13:29:00Z"));

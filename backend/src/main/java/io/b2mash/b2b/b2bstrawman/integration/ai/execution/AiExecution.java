@@ -88,6 +88,25 @@ public class AiExecution {
     this.createdAt = Instant.now();
   }
 
+  /**
+   * Builds a synthetic, zero-cost {@link AiExecution} for a Bring-Your-Own-Claude (BYOC) MCP
+   * proposal (Epic 585, ADR-322). Kazi made no provider call — the reasoning happened entirely in
+   * the firm's own Claude over the MCP server — so there is no model invocation, no tokens and no
+   * cost to meter. This synthetic row preserves the {@code execution_id NOT NULL} foreign key on
+   * {@link io.b2mash.b2b.b2bstrawman.integration.ai.gate.AiExecutionGate} (every gate must point at
+   * an execution) while a {@code cost_cents = 0} row is the cost-model signal that the work was
+   * done externally. The "provider = MCP / source = BYOC" semantics from the ADR are encoded into
+   * the existing columns: {@code skill_id = "mcp_propose_task"}, {@code model = "byoc"} (the column
+   * is NOT NULL so it cannot be left blank), with the terminal {@code EXTERNALLY_EXECUTED} status.
+   * All token/cost fields stay at their primitive {@code 0} defaults.
+   */
+  public static AiExecution syntheticMcpProposal(UUID memberId, UUID entityId) {
+    var execution =
+        new AiExecution("mcp_propose_task", "correspondence", entityId, memberId, "byoc", null);
+    execution.status = "EXTERNALLY_EXECUTED";
+    return execution;
+  }
+
   public void markCompleted(AiCompletionResponse response, long costCents) {
     this.status = "COMPLETED";
     this.outputContent = response.content();

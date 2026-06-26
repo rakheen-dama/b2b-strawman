@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceService;
 import io.b2mash.b2b.b2bstrawman.compliance.ComplianceAuditReportService;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.contractreview.AiReviewReportGenerator;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.drafting.AiDraftDocumentGenerator;
+import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.conflictcheck.ConflictCheckService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.conflictcheck.ConflictCheckService.ResolveRequest;
 import java.util.List;
@@ -36,6 +37,7 @@ class GateActionExecutorTest {
             mock(AiReviewReportGenerator.class),
             mock(AiDraftDocumentGenerator.class),
             mock(ComplianceAuditReportService.class),
+            mock(TaskService.class),
             JsonMapper.builder().findAndAddModules().build());
   }
 

@@ -7,8 +7,11 @@ import io.b2mash.b2b.b2bstrawman.integration.ai.skill.contractreview.AiReviewRep
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.contractreview.ContractReviewOutput;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.drafting.AiDraftDocumentGenerator;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.drafting.DraftingOutput;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.conflictcheck.ConflictCheckService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.conflictcheck.ConflictCheckService.ResolveRequest;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -28,6 +31,7 @@ public class GateActionExecutor {
   private final AiReviewReportGenerator aiReviewReportGenerator;
   private final AiDraftDocumentGenerator aiDraftDocumentGenerator;
   private final ComplianceAuditReportService complianceAuditReportService;
+  private final TaskService taskService;
   private final ObjectMapper objectMapper;
 
   public GateActionExecutor(
@@ -36,12 +40,14 @@ public class GateActionExecutor {
       AiReviewReportGenerator aiReviewReportGenerator,
       AiDraftDocumentGenerator aiDraftDocumentGenerator,
       ComplianceAuditReportService complianceAuditReportService,
+      TaskService taskService,
       ObjectMapper objectMapper) {
     this.checklistInstanceService = checklistInstanceService;
     this.conflictCheckService = conflictCheckService;
     this.aiReviewReportGenerator = aiReviewReportGenerator;
     this.aiDraftDocumentGenerator = aiDraftDocumentGenerator;
     this.complianceAuditReportService = complianceAuditReportService;
+    this.taskService = taskService;
     this.objectMapper = objectMapper;
   }
 
@@ -63,6 +69,7 @@ public class GateActionExecutor {
           executeCreateDraftDocument(a, gate.getExecution().getId(), reviewerId);
       case GateAction.PublishComplianceReportAction a ->
           executePublishComplianceReport(a, gate.getExecution().getId(), reviewerId);
+      case GateAction.CreateTaskFromCorrespondenceAction a -> executeCreateTask(a, reviewerId);
     }
   }
 
@@ -109,6 +116,48 @@ public class GateActionExecutor {
     log.info("Gate approved: published compliance report for execution={}", executionId);
   }
 
+  /**
+   * Epic 585 (ADR-322): on approval, create the proposed Task. The task is created
+   * <b>unassigned</b> (v1): {@code TaskService.createTask} silently ignores {@code assigneeId}
+   * unless the actor's org-role is admin/owner, and the reviewer's live org-role is not in scope
+   * inside the executor — so passing it here would be misleading. Assignment happens in-product
+   * after creation; any proposed {@code assigneeId} is therefore intentionally dropped.
+   *
+   * <p>A Task has no foreign key to a correspondence, and unknown custom-field keys are silently
+   * stripped by {@code CustomFieldValidator}, so the back-link cannot live in {@code customFields}.
+   * It is instead prepended to the description as a human-readable {@code "[From correspondence
+   * <id>]"} line — best-effort traceability only. The authoritative link is the {@code
+   * correspondence_id} already stored in the gate's {@code proposed_action} JSONB.
+   */
+  private void executeCreateTask(
+      GateAction.CreateTaskFromCorrespondenceAction action, UUID reviewerId) {
+    // orgRole is null on purpose: the reviewer's live role is not available here, and a null role
+    // means createTask creates the task unassigned (the v1 boundary — see javadoc).
+    var actor = new ActorContext(reviewerId, null);
+    String backLink = "[From correspondence " + action.correspondenceId() + "]";
+    String description =
+        action.description() == null || action.description().isBlank()
+            ? backLink
+            : backLink + "\n\n" + action.description();
+    var task =
+        taskService.createTask(
+            action.projectId(),
+            action.title(),
+            description,
+            "MEDIUM",
+            null,
+            action.dueDate(),
+            actor,
+            Map.of(),
+            null,
+            null);
+    log.info(
+        "Gate approved: created task {} from correspondence {} in project {}",
+        task.getId(),
+        action.correspondenceId(),
+        action.projectId());
+  }
+
   @SuppressWarnings("unchecked")
   private GateAction parseAction(String gateType, Map<String, Object> proposedAction) {
     try {
@@ -147,6 +196,18 @@ public class GateActionExecutor {
           Map<String, Object> auditOutput =
               (Map<String, Object>) proposedAction.get("audit_output");
           yield new GateAction.PublishComplianceReportAction(auditOutput);
+        }
+        case "CREATE_TASK_FROM_CORRESPONDENCE" -> {
+          UUID correspondenceId = UUID.fromString((String) proposedAction.get("correspondence_id"));
+          UUID projectId = UUID.fromString((String) proposedAction.get("project_id"));
+          String title = (String) proposedAction.get("title");
+          String description = (String) proposedAction.get("description");
+          Object dueDateRaw = proposedAction.get("due_date");
+          LocalDate dueDate = dueDateRaw == null ? null : LocalDate.parse((String) dueDateRaw);
+          Object assigneeRaw = proposedAction.get("assignee_id");
+          UUID assigneeId = assigneeRaw == null ? null : UUID.fromString((String) assigneeRaw);
+          yield new GateAction.CreateTaskFromCorrespondenceAction(
+              correspondenceId, projectId, title, description, dueDate, assigneeId);
         }
         default -> throw new IllegalArgumentException("Unknown gate type: " + gateType);
       };

@@ -160,6 +160,21 @@ public class AuditEventTypeRegistry {
                 "AI Specialist Activity",
                 AuditSeverity.INFO,
                 AuditEventGroup.STANDARD),
+            // AI EXECUTION GATES — Phase 81 (Epic 585). Gate creation/approval/rejection is a
+            // compliance-relevant audit trail (an authorised member decides whether an AI-proposed
+            // action runs). The exact ai.gate.created entry classifies the propose_task gate as
+            // NOTICE/COMPLIANCE, mirroring ai.specialist.approved; the prefix carries the remaining
+            // gate lifecycle (approved/rejected/expired) so none fall through to default INFO.
+            new AuditEventTypeMetadata(
+                "ai.gate.created",
+                "AI Execution Gate Created",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.COMPLIANCE),
+            new AuditEventTypeMetadata(
+                "ai.gate.*",
+                "AI Execution Gate Activity",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.COMPLIANCE),
             // MCP write family (Phase 81)
             new AuditEventTypeMetadata(
                 "mcp.write.correspondence_filed",

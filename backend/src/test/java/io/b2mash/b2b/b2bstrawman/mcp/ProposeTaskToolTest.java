@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -227,6 +228,22 @@ class ProposeTaskToolTest {
     assertThat(second.duplicate()).isTrue();
     assertThat(second.gateId()).isEqualTo(first.gateId());
     assertThat(second.status()).isEqualTo("PENDING");
+
+    // Every write-path invocation is audited (POPIA): the dedupe hit still emits
+    // mcp.write.task_proposed, flagged duplicate=true so it is distinguishable from the original.
+    var dedupeEvents =
+        readEvents("mcp.write.task_proposed").stream()
+            .filter(e -> first.gateId().equals(e.getEntityId()))
+            .filter(e -> Boolean.TRUE.equals(params(e).get("duplicate")))
+            .toList();
+    assertThat(dedupeEvents).hasSize(1);
+    assertThat(dedupeEvents.get(0).getEntityType()).isEqualTo("ai_execution_gate");
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<String, Object> params(AuditEvent event) {
+    Object p = event.getDetails().get("params");
+    return p instanceof Map ? (Map<String, Object>) p : Map.of();
   }
 
   @Test
@@ -307,5 +324,12 @@ class ProposeTaskToolTest {
     List<String> entityRefs = (List<String>) event.getDetails().get("entityRefs");
     assertThat(entityRefs)
         .contains(gateId.toString(), correspondenceId.toString(), matterId.toString());
+
+    // The synthetic-execution + gate creation also emits the mandatory ai.gate.created audit row
+    // (585A.2) for the same gate, on the audit plane with the lowercase/snake entityType.
+    var gateCreated =
+        readEvents("ai.gate.created").stream().filter(e -> gateId.equals(e.getEntityId())).toList();
+    assertThat(gateCreated).hasSize(1);
+    assertThat(gateCreated.get(0).getEntityType()).isEqualTo("ai_execution_gate");
   }
 }

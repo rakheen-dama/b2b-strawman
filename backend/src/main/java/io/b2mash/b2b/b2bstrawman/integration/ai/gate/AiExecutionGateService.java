@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecution;
+import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecutionService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import java.time.Instant;
 import java.util.Map;
@@ -35,6 +36,7 @@ public class AiExecutionGateService {
   private final TransactionTemplate transactionTemplate;
   private final JobEnqueuer jobEnqueuer;
   private final JobQueueProperties jobQueueProperties;
+  private final AiExecutionService aiExecutionService;
 
   public AiExecutionGateService(
       AiExecutionGateRepository gateRepository,
@@ -44,7 +46,8 @@ public class AiExecutionGateService {
       TenantScopedRunner tenantScopedRunner,
       TransactionTemplate transactionTemplate,
       JobEnqueuer jobEnqueuer,
-      JobQueueProperties jobQueueProperties) {
+      JobQueueProperties jobQueueProperties,
+      AiExecutionService aiExecutionService) {
     this.gateRepository = gateRepository;
     this.gateActionExecutor = gateActionExecutor;
     this.auditService = auditService;
@@ -53,6 +56,7 @@ public class AiExecutionGateService {
     this.transactionTemplate = transactionTemplate;
     this.jobEnqueuer = jobEnqueuer;
     this.jobQueueProperties = jobQueueProperties;
+    this.aiExecutionService = aiExecutionService;
   }
 
   /**
@@ -88,6 +92,38 @@ public class AiExecutionGateService {
             .build());
 
     return saved;
+  }
+
+  /**
+   * Atomically records a synthetic, zero-cost {@link AiExecution} (BYOC) and creates the PENDING
+   * gate it backs, in a <b>single</b> transaction (Epic 585, ADR-322). This is the entry point used
+   * by the {@code propose_task} MCP write tool: it keeps the JPA {@link AiExecution}/{@link
+   * AiExecutionGate} entities out of the tool layer and guarantees the synthetic execution can
+   * never be left orphaned if gate creation fails (both are committed or neither is). {@code
+   * recordSyntheticMcpExecution} is itself {@code @Transactional} with the default REQUIRED
+   * propagation, so it joins this method's transaction rather than committing independently.
+   *
+   * @param memberId the authenticated MCP member who invoked the proposal
+   * @param correspondenceId the filed email the task is proposed from (the execution's entity and
+   *     the gate's correspondence link)
+   * @param gateType the gate discriminator, e.g. {@code CREATE_TASK_FROM_CORRESPONDENCE}
+   * @param proposedAction the JSONB payload describing the task to create on approval
+   * @param aiReasoning a human-readable rationale (TEXT NOT NULL on the gate)
+   * @param expiresAt when the gate auto-expires (the existing scheduler reaps it)
+   * @return the id of the created PENDING gate
+   */
+  @Transactional
+  public UUID createGateForMcpTaskProposal(
+      UUID memberId,
+      UUID correspondenceId,
+      String gateType,
+      Map<String, Object> proposedAction,
+      String aiReasoning,
+      Instant expiresAt) {
+    AiExecution synthetic =
+        aiExecutionService.recordSyntheticMcpExecution(memberId, correspondenceId);
+    AiExecutionGate gate = createGate(synthetic, gateType, proposedAction, aiReasoning, expiresAt);
+    return gate.getId();
   }
 
   /**

@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.integration.ai.gate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecution;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecutionRepository;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecutionService;
@@ -18,6 +20,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -28,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -62,6 +66,7 @@ class GateOverMcpPlumbingTest {
   @Autowired private AiExecutionRepository executionRepository;
   @Autowired private TaskRepository taskRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private AuditEventRepository auditEventRepository;
 
   private String tenantSchema;
   private UUID ownerMemberId;
@@ -107,6 +112,22 @@ class GateOverMcpPlumbingTest {
     T[] holder = (T[]) new Object[1];
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .run(() -> holder[0] = transactionTemplate.execute(tx -> body.get()));
+    return holder[0];
+  }
+
+  private List<AuditEvent> readEvents(String prefix) {
+    @SuppressWarnings("unchecked")
+    List<AuditEvent>[] holder = new List[1];
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () ->
+                holder[0] =
+                    transactionTemplate.execute(
+                        tx ->
+                            auditEventRepository
+                                .findByFilter(
+                                    null, null, null, prefix, null, null, PageRequest.of(0, 200))
+                                .getContent()));
     return holder[0];
   }
 
@@ -162,6 +183,16 @@ class GateOverMcpPlumbingTest {
     assertThat(reread.getGateType()).isEqualTo(GATE_TYPE);
     assertThat(reread.getExecution()).isNotNull();
     assertThat(reread.getExecution().getId()).isNotNull();
+
+    // createGate emits the mandatory ai.gate.created audit row (585A.2) on the audit plane with the
+    // lowercase/snake entityType.
+    var created =
+        readEvents("ai.gate.created").stream()
+            .filter(e -> gate.getId().equals(e.getEntityId()))
+            .toList();
+    assertThat(created).hasSize(1);
+    assertThat(created.get(0).getEntityType()).isEqualTo("ai_execution_gate");
+    assertThat(created.get(0).getDetails()).containsEntry("gateType", GATE_TYPE);
   }
 
   @Test

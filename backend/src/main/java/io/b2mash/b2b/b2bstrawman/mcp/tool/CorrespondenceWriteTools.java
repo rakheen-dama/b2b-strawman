@@ -436,7 +436,10 @@ public class CorrespondenceWriteTools {
             return McpToolErrors.asResult(McpError.notFound("project"), objectMapper);
           }
 
-          // v1 open-gate dedupe: return the existing PENDING gate instead of creating a duplicate.
+          // v1 best-effort open-gate dedupe: return the existing PENDING gate instead of creating a
+          // duplicate. This check-then-act is NOT race-safe — two concurrent proposals for the same
+          // correspondence can both miss the open gate and each create one. Full idempotency-key
+          // dedupe + a DB uniqueness constraint is deferred to v2 (out of scope for this PR).
           // Every write-path invocation is audited (POPIA), so the dedupe branch still emits
           // mcp.write.task_proposed — flagged duplicate=true so it is distinguishable in the trail.
           Optional<UUID> open =

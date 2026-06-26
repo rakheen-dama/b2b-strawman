@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.conflictcheck.ConflictCheckService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.conflictcheck.ConflictCheckService.ResolveRequest;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -211,7 +212,13 @@ public class GateActionExecutor {
         }
         default -> throw new IllegalArgumentException("Unknown gate type: " + gateType);
       };
-    } catch (NullPointerException | ClassCastException | IllegalArgumentException e) {
+    } catch (NullPointerException
+        | ClassCastException
+        | IllegalArgumentException
+        | DateTimeException e) {
+      // DateTimeException covers DateTimeParseException from a malformed due_date — it does NOT
+      // extend IllegalArgumentException, so without this it would leak as a raw parse exception
+      // instead of the normalized IllegalStateException used for every other invalid payload field.
       if (e instanceof IllegalArgumentException && e.getMessage().startsWith("Unknown gate type")) {
         throw e;
       }

@@ -37,6 +37,9 @@ import { MatterHeaderCard } from "@/components/projects/matter-header-card";
 import { MatterDetailsTab } from "@/components/projects/matter-details-tab";
 import { MatterFieldsTab } from "@/components/projects/matter-fields-tab";
 import { DocumentsPanel } from "@/components/documents/documents-panel";
+import { CorrespondenceList } from "@/components/correspondence/correspondence-list";
+import { getProjectCorrespondence } from "@/lib/api/correspondence";
+import type { CorrespondenceListItem } from "@/lib/api/correspondence";
 import { ProjectMembersPanel } from "@/components/projects/project-members-panel";
 import { TaskListPanel } from "@/components/tasks/task-list-panel";
 import { TimeSummaryPanel } from "@/components/projects/time-summary-panel";
@@ -172,6 +175,13 @@ export default async function ProjectDetailPage({
     documents = await api.get<Document[]>(`/api/projects/${id}/documents`);
   } catch {
     // Non-fatal: show empty documents list if fetch fails
+  }
+
+  let correspondence: CorrespondenceListItem[] = [];
+  try {
+    correspondence = (await getProjectCorrespondence(id, { size: 50 })).content;
+  } catch {
+    // Non-fatal: show empty correspondence list if fetch fails
   }
 
   let members: ProjectMember[] = [];
@@ -537,6 +547,9 @@ export default async function ProjectDetailPage({
             canExecuteAi={canExecuteAi}
             templates={projectTemplates}
           />
+        }
+        correspondencePanel={
+          <CorrespondenceList items={correspondence} slug={slug} projectId={id} />
         }
         customersPanel={
           <ProjectCustomersPanel

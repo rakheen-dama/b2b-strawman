@@ -16,11 +16,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Check, X, Clock } from "lucide-react";
+import Link from "next/link";
+import { Check, X, Clock, Mail } from "lucide-react";
 import type { AiGateListItem } from "@/lib/api/ai";
+
+/**
+ * Frontend-only originating-correspondence reference for a {@code
+ * CREATE_TASK_FROM_CORRESPONDENCE} gate. Resolved by the reviews server page from the gate
+ * detail's {@code proposedAction} ({@code correspondence_id} / {@code project_id}) — there is no
+ * backend subject field, so the card renders a link to the originating matter's Correspondence tab
+ * rather than the subject text.
+ */
+export interface CorrespondenceOrigin {
+  projectId: string;
+  correspondenceId?: string;
+}
 
 interface ExecutionGateCardProps {
   gate: AiGateListItem;
+  slug: string;
+  correspondenceOrigin?: CorrespondenceOrigin;
   onApprove: (gateId: string, notes?: string) => Promise<{ success: boolean; error?: string }>;
   onReject: (gateId: string, notes?: string) => Promise<{ success: boolean; error?: string }>;
 }
@@ -62,7 +77,15 @@ function getTimeRemaining(expiresAt: string): string | null {
   return `${minutes}m remaining`;
 }
 
-export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCardProps) {
+export function ExecutionGateCard({
+  gate,
+  slug,
+  correspondenceOrigin,
+  onApprove,
+  onReject,
+}: ExecutionGateCardProps) {
+  const showCorrespondenceOrigin =
+    gate.gateType === "CREATE_TASK_FROM_CORRESPONDENCE" && !!correspondenceOrigin?.projectId;
   const [approveOpen, setApproveOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [notes, setNotes] = useState("");
@@ -144,6 +167,18 @@ export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCa
             {gate.aiReasoning}
           </p>
         </div>
+
+        {/* Originating correspondence — CREATE_TASK_FROM_CORRESPONDENCE gates only.
+            Subject is not exposed by the backend; link to the matter's Correspondence tab. */}
+        {showCorrespondenceOrigin && (
+          <Link
+            href={`/org/${slug}/projects/${correspondenceOrigin!.projectId}?tab=correspondence`}
+            className="inline-flex items-center gap-1.5 text-sm text-teal-600 hover:text-teal-700"
+          >
+            <Mail className="size-3.5" />
+            View originating correspondence
+          </Link>
+        )}
 
         {/* Expiry countdown — PENDING only, populated post-mount (see effect) */}
         {gate.status === "PENDING" && timeRemaining && (

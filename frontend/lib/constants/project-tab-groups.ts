@@ -19,7 +19,7 @@ import { buildTabIdToGroupMap } from "./tab-group-types";
 /** Backward-compat redirect: `?tab=members` -> staffing sub-tab. */
 export const MEMBERS_TAB_REDIRECT = "staffing";
 
-/** Canonical tab group definitions (7 groups, 23 sub-tabs). */
+/** Canonical tab group definitions (7 groups, 24 sub-tabs). */
 export const TAB_GROUPS: readonly TabGroup[] = [
   {
     id: "details",
@@ -42,6 +42,7 @@ export const TAB_GROUPS: readonly TabGroup[] = [
     tabs: [
       { id: "tasks", label: "Tasks" },
       { id: "documents", label: "Documents" },
+      { id: "correspondence", label: "Correspondence" },
       { id: "generated", label: "Generated Docs" },
       { id: "staffing", label: "Staffing" },
     ],

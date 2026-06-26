@@ -176,6 +176,7 @@ export function MatterIntakePanel({
                   <ExecutionGateCard
                     key={gate.id}
                     gate={gate}
+                    slug={slug}
                     onApprove={(gateId, notes) => approveGateAction(slug, gateId, notes)}
                     onReject={(gateId, notes) => rejectGateAction(slug, gateId, notes)}
                   />

@@ -3,12 +3,16 @@ package io.b2mash.b2b.b2bstrawman.correspondence;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.CorrespondenceListResponse;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.FileCorrespondenceCommand;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.FileCorrespondenceResult;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
+import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,9 +27,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class CorrespondenceService {
 
   private final CorrespondenceRepository correspondenceRepository;
+  private final ProjectAccessService projectAccessService;
+  private final CustomerRepository customerRepository;
 
-  public CorrespondenceService(CorrespondenceRepository correspondenceRepository) {
+  public CorrespondenceService(
+      CorrespondenceRepository correspondenceRepository,
+      ProjectAccessService projectAccessService,
+      CustomerRepository customerRepository) {
     this.correspondenceRepository = correspondenceRepository;
+    this.projectAccessService = projectAccessService;
+    this.customerRepository = customerRepository;
   }
 
   /**
@@ -90,6 +101,40 @@ public class CorrespondenceService {
         .findById(id)
         .map(CorrespondenceScope::of)
         .orElseThrow(() -> new ResourceNotFoundException("Correspondence", id));
+  }
+
+  /**
+   * View-access-gated, page-cap-clamped project correspondence list for the in-app REST endpoint.
+   * Enforces the SAME project view-access as the documents-list endpoints (throws {@link
+   * ResourceNotFoundException} → 404 when the caller cannot view the matter, security-by-obscurity)
+   * — NOT MCP capabilities. Clamps the requested page size to {@link
+   * McpPagination#DEFAULT_MAX_SIZE} so the LLM/UI never pulls an unbounded blob.
+   */
+  @Transactional(readOnly = true)
+  public Page<CorrespondenceListResponse> listForProject(
+      UUID projectId, ActorContext actor, Pageable pageable) {
+    projectAccessService.requireViewAccess(projectId, actor);
+    return listByProject(projectId, clamp(pageable));
+  }
+
+  /**
+   * View-access-gated, page-cap-clamped customer correspondence list for the in-app REST endpoint.
+   * Customer view-access for a read is existence-in-tenant (search_path isolation guarantees a
+   * cross-tenant id is invisible) — there is no per-customer {@code requireViewAccess}. Throws
+   * {@link ResourceNotFoundException} → 404 when the customer is unknown in this tenant.
+   */
+  @Transactional(readOnly = true)
+  public Page<CorrespondenceListResponse> listForCustomer(
+      UUID customerId, ActorContext actor, Pageable pageable) {
+    customerRepository
+        .findById(customerId)
+        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+    return listByCustomer(customerId, clamp(pageable));
+  }
+
+  private Pageable clamp(Pageable pageable) {
+    int size = McpPagination.clampSize(pageable.getPageSize(), McpPagination.DEFAULT_MAX_SIZE);
+    return PageRequest.of(pageable.getPageNumber(), size);
   }
 
   @Transactional(readOnly = true)

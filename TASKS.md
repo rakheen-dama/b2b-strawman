@@ -663,7 +663,7 @@
 | 582 | MCP Write Capability + Audit Family + `file_correspondence` | Backend | 581A | L | 582A, 582B | **Done** (PR #1505) |
 | 583 | `attach_document` (presigned reuse + correspondence stamp) | Backend | 581A, 582A, 582B | M | 583A | **Done** (PR #1506) |
 | 584 | `resolve_matter_by_email` (read tool) | Backend | 582A | S | 584A | **Done** (PR #1507) |
-| 585 | Gate-over-MCP — `propose_task` + synthetic execution + executor arm | Backend | 581A, 582B | L | 585A, 585B | |
+| 585 | Gate-over-MCP — `propose_task` + synthetic execution + executor arm | Backend | 581A, 582B | L | 585A, 585B | **Done** (PR #1508) |
 | 586 | Frontend — Correspondence Tab + Gate-Origin Display + QA Capstone | Frontend / Both | 581A, 582B, 583A, 585B | L | 586A, 586B, 586C | |
 
 

@@ -104,6 +104,47 @@ public class CorrespondenceService {
   }
 
   /**
+   * Resolve a single correspondence WITH its body + headers for the MCP {@code get_correspondence}
+   * read tool (Epic 587B). Enforces the SAME project view-access as {@link #listForProject} /
+   * {@code get_matter} — NOT MCP capabilities. The {@link Correspondence} entity never crosses the
+   * boundary: it is mapped to a body-bearing {@link CorrespondenceDetail} here (mirrors {@link
+   * #requireScopeById}).
+   *
+   * <p>DENIAL DISAMBIGUATION (587B): this method is a normal access-gated read, convention-clean
+   * and SAFE for any caller — it throws ONLY {@link ResourceNotFoundException}, for BOTH an absent
+   * / cross-tenant id AND a found-but-refused matter-scoped row (security-by-obscurity, mirroring
+   * {@code get_matter} / {@link ProjectAccessService#requireViewAccess}). It NEVER throws a 403
+   * {@code ForbiddenException} that would leak the row's existence to a future non-MCP caller.
+   *
+   * <ul>
+   *   <li><b>absent / cross-tenant id</b> ({@code findById} empty) → {@link
+   *       ResourceNotFoundException}.
+   *   <li><b>found-with-projectId but view-access refused</b> → {@link
+   *       ProjectAccessService#requireViewAccess} throws {@link ResourceNotFoundException}
+   *       (obscurity-404) — the body is never loaded.
+   *   <li><b>customer-only</b> ({@code projectId == null}) → resolves on existence-in-tenant
+   *       ({@code findById} already proved it); no access check.
+   * </ul>
+   *
+   * <p>The MCP {@code get_correspondence} tool owns the denial-audit asymmetry (emit {@code
+   * mcp.access.denied} ONLY on found-but-refused, never on an absent id) via a separate body-less
+   * {@link #requireScopeById} probe — NOT by introspecting this method's exception. See {@code
+   * CorrespondenceReadTools.get_correspondence}.
+   */
+  @Transactional(readOnly = true)
+  public CorrespondenceDetail requireDetailById(UUID id, ActorContext actor) {
+    var c =
+        correspondenceRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Correspondence", id));
+    if (c.getProjectId() != null) {
+      projectAccessService.requireViewAccess(c.getProjectId(), actor);
+    }
+    long attachmentCount = correspondenceRepository.countAttachments(id);
+    return CorrespondenceDetail.of(c, attachmentCount);
+  }
+
+  /**
    * View-access-gated, page-cap-clamped project correspondence list for the in-app REST endpoint.
    * Enforces the SAME project view-access as the documents-list endpoints (throws {@link
    * ResourceNotFoundException} → 404 when the caller cannot view the matter, security-by-obscurity)

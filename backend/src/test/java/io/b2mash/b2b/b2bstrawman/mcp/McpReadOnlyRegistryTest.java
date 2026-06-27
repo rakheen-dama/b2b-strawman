@@ -127,6 +127,7 @@ class McpReadOnlyRegistryTest {
           "McpPingTool",
           "MatterTools",
           "ClientTools",
+          "CorrespondenceReadTools",
           "TrustTools",
           "BillingTools",
           "ComplianceTools",

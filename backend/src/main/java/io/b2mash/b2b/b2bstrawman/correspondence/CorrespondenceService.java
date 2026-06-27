@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.correspondence.dto.CorrespondenceListResponse;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.FileCorrespondenceCommand;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.FileCorrespondenceResult;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
@@ -101,6 +102,46 @@ public class CorrespondenceService {
         .findById(id)
         .map(CorrespondenceScope::of)
         .orElseThrow(() -> new ResourceNotFoundException("Correspondence", id));
+  }
+
+  /**
+   * Resolve a single correspondence WITH its body + headers for the MCP {@code get_correspondence}
+   * read tool (Epic 587B). Enforces the SAME project view-access as {@link #listForProject} /
+   * {@code get_matter} — NOT MCP capabilities. The {@link Correspondence} entity never crosses the
+   * boundary: it is mapped to a body-bearing {@link CorrespondenceDetail} here (mirrors {@link
+   * #requireScopeById}).
+   *
+   * <p>DENIAL DISAMBIGUATION (587B): the MCP tool must emit {@code mcp.access.denied} ONLY on
+   * found-but-refused, never on an absent/cross-tenant id (a lookup miss is not a policy denial).
+   * To let the tool distinguish the two WITHOUT fragile exception-message introspection, this
+   * method throws DISTINCT types:
+   *
+   * <ul>
+   *   <li><b>absent / cross-tenant id</b> ({@code findById} empty) → {@link
+   *       ResourceNotFoundException} — the tool maps this to a non-leaking {@code not_found} with
+   *       NO denial audit.
+   *   <li><b>found-with-projectId but view-access refused</b> → {@link ForbiddenException} — the
+   *       tool maps this to the SAME non-leaking {@code not_found} BUT emits {@code
+   *       mcp.access.denied}. (Uses the non-throwing {@link ProjectAccessService#checkAccess} so
+   *       the refusal is a {@code ForbiddenException}, not the obscurity-404 {@code
+   *       requireViewAccess} throws.)
+   *   <li><b>customer-only</b> ({@code projectId == null}) → resolves on existence-in-tenant
+   *       ({@code findById} already proved it); no access check, no denial.
+   * </ul>
+   */
+  @Transactional(readOnly = true)
+  public CorrespondenceDetail requireDetailById(UUID id, ActorContext actor) {
+    var c =
+        correspondenceRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Correspondence", id));
+    if (c.getProjectId() != null
+        && !projectAccessService.checkAccess(c.getProjectId(), actor).canView()) {
+      throw new ForbiddenException(
+          "Correspondence access denied", "You do not have access to this correspondence");
+    }
+    long attachmentCount = correspondenceRepository.countAttachments(id);
+    return CorrespondenceDetail.of(c, attachmentCount);
   }
 
   /**

@@ -1,9 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.correspondence.CorrespondenceScope;
 import io.b2mash.b2b.b2bstrawman.correspondence.CorrespondenceService;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.CorrespondenceListResponse;
-import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpCorrespondenceDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpCorrespondenceListItem;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpError;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
+import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
@@ -55,6 +56,7 @@ public class CorrespondenceReadTools {
   private static final String GATE_PROJECT_ACCESS = "project-access";
 
   private final CorrespondenceService correspondenceService;
+  private final ProjectAccessService projectAccessService;
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
   private final McpEnablementService enablement;
@@ -62,11 +64,13 @@ public class CorrespondenceReadTools {
 
   public CorrespondenceReadTools(
       CorrespondenceService correspondenceService,
+      ProjectAccessService projectAccessService,
       AuditService auditService,
       ObjectMapper objectMapper,
       McpEnablementService enablement,
       McpMetrics metrics) {
     this.correspondenceService = correspondenceService;
+    this.projectAccessService = projectAccessService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
     this.enablement = enablement;
@@ -119,8 +123,11 @@ public class CorrespondenceReadTools {
         var pageResult = correspondenceService.listForProject(matterId, actor, pageable);
         return success(pageResult, matterId, null, startNanos);
       } catch (ResourceNotFoundException e) {
-        // Matter path: the only ResourceNotFoundException is requireViewAccess's obscurity-404 →
-        // found-but-refused → emit denial before the non-leaking not_found.
+        // Matter path: requireViewAccess throws ResourceNotFoundException for BOTH an
+        // absent/cross-tenant matter AND a refused one (security-by-obscurity) — the two are
+        // indistinguishable here. Both are treated as a denial, consistent with get_matter's
+        // precedent (which emits mcp.access.denied whether the matter is absent or merely
+        // inaccessible). Emit the denial before the non-leaking not_found.
         McpToolAudit.emitDenied(
             "list_correspondence",
             GATE_PROJECT_ACCESS,
@@ -152,14 +159,23 @@ public class CorrespondenceReadTools {
     }
     long startNanos = System.nanoTime();
     var actor = ActorContext.fromRequestScopes();
+
+    // (a) Body-less existence + linkage probe — distinguishes absent/cross-tenant (lookup miss, no
+    // denial) from found-but-refused (denial), WITHOUT loading the body or relying on exception
+    // introspection. requireScopeById throws ResourceNotFoundException only when the id is
+    // unknown in this tenant.
+    CorrespondenceScope scope;
     try {
-      var detail = correspondenceService.requireDetailById(id, actor);
-      var dto = McpCorrespondenceDto.from(detail);
-      var meta = McpAuditMetadata.builder().rowCount(1).entityRef(id).build();
-      emitInvoked("get_correspondence", meta, startNanos);
-      return dto;
-    } catch (ForbiddenException e) {
-      // (b) found-with-projectId but view-access refused → the ONLY denial path.
+      scope = correspondenceService.requireScopeById(id);
+    } catch (ResourceNotFoundException e) {
+      // absent / cross-tenant id → lookup miss, NO denial audit.
+      return McpToolErrors.asResult(McpError.notFound("correspondence"), objectMapper);
+    }
+
+    // (b) Found-with-projectId but view-access refused → the ONLY denial path. The body is never
+    // loaded. Mirrors get_matter's emitDenied-on-found-but-refused (deniedGate=project-access).
+    if (scope.projectId() != null
+        && !projectAccessService.checkAccess(scope.projectId(), actor).canView()) {
       McpToolAudit.emitDenied(
           "get_correspondence",
           GATE_PROJECT_ACCESS,
@@ -167,10 +183,16 @@ public class CorrespondenceReadTools {
           metrics,
           McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.notFound("correspondence"), objectMapper);
-    } catch (ResourceNotFoundException e) {
-      // (a) absent / cross-tenant id → lookup miss, NO denial audit.
-      return McpToolErrors.asResult(McpError.notFound("correspondence"), objectMapper);
     }
+
+    // (c) Access OK (customer-only on existence, or matter-scoped + viewable) → load the body via
+    // the now-gated requireDetailById. entityRef carries the id ONLY (POPIA — never subject/from/
+    // body).
+    var detail = correspondenceService.requireDetailById(id, actor);
+    var dto = McpCorrespondenceDto.from(detail);
+    var meta = McpAuditMetadata.builder().rowCount(1).entityRef(id).build();
+    emitInvoked("get_correspondence", meta, startNanos);
+    return dto;
   }
 
   /**

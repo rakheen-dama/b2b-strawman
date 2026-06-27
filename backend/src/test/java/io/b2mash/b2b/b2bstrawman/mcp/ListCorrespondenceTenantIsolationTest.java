@@ -16,6 +16,8 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -31,6 +33,7 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Epic 587A.4 — {@code list_correspondence} tenant isolation (search_path) + POPIA safe-refs-only
@@ -55,6 +58,7 @@ class ListCorrespondenceTenantIsolationTest {
   @Autowired private CorrespondenceReadTools readTools;
   @Autowired private CorrespondenceWriteTools writeTools;
   @Autowired private AuditEventRepository auditEventRepository;
+  @Autowired private ObjectMapper objectMapper;
 
   private Tenant tenantA;
   private Tenant tenantB;
@@ -110,24 +114,40 @@ class ListCorrespondenceTenantIsolationTest {
     Object bResult =
         runAs(tenantB, () -> readTools.listCorrespondence(tenantA.matterId(), null, 0, 50));
     // Cross-tenant matter id is unknown in B → either an empty page (owner-sees-all over an absent
-    // matter) or a not_found CallToolResult; either way B never sees A's row/body.
+    // matter) or a not_found CallToolResult; either way B never sees A's row/body. Assert BOTH
+    // shapes so the not_found path (the actual cross-tenant path) is not silently un-asserted.
     if (bResult instanceof McpPage<?> bPage) {
       assertThat(bPage.items()).isEmpty();
+    } else if (bResult instanceof CallToolResult ctr) {
+      // Non-leaking not_found, and tenant A's PII never appears in the error payload.
+      String text = ((TextContent) ctr.content().get(0)).text();
+      assertThat(objectMapper.readTree(text).get("error").asString()).isEqualTo("not_found");
+      assertThat(text).doesNotContain("Tenant A subject");
+      assertThat(text).doesNotContain("secret@a.co");
+    } else {
+      throw new AssertionError(
+          "Unexpected cross-tenant result type: " + bResult.getClass().getName());
     }
   }
 
   @Test
   void invokedAuditCarriesSafeRefsOnlyNoPii() {
     seed(tenantA, "<iso587a-a2@mail.test>", "PII subject must not leak", "pii@a.co");
+    long invokedBefore = countInvoked();
     runAs(tenantA, () -> readTools.listCorrespondence(tenantA.matterId(), null, 0, 50));
 
+    // Baseline+delta so a stale invoked event can't mask a new leaking one. readEvents is
+    // occurredAt-DESC → the new events are the LEADING slice; take exactly the delta.
+    long invokedDelta = countInvoked() - invokedBefore;
+    assertThat(invokedDelta).isGreaterThanOrEqualTo(1);
     var invoked =
         readEvents(tenantA.schema(), "mcp.tool.invoked").stream()
             .filter(e -> "list_correspondence".equals(e.getDetails().get("tool")))
+            .limit(invokedDelta)
             .toList();
-    assertThat(invoked).isNotEmpty();
+    assertThat(invoked).hasSize((int) invokedDelta);
     assertThat(invoked)
-        .anySatisfy(
+        .allSatisfy(
             event -> {
               assertThat(event.getEntityType()).isEqualTo("mcp_tool");
               assertThat(event.getDetails().get("rowCount")).isNotNull();
@@ -187,6 +207,12 @@ class ListCorrespondenceTenantIsolationTest {
               }
             });
     return holder[0];
+  }
+
+  private long countInvoked() {
+    return readEvents(tenantA.schema(), "mcp.tool.invoked").stream()
+        .filter(e -> "list_correspondence".equals(e.getDetails().get("tool")))
+        .count();
   }
 
   private List<AuditEvent> readEvents(String schema, String prefix) {

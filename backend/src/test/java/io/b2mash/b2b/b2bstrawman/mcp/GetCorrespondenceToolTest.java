@@ -129,14 +129,19 @@ class GetCorrespondenceToolTest {
     long deniedBefore = countDenied();
     CallToolResult ctr = asMember(() -> (CallToolResult) tools.getCorrespondence(matterCorrId));
     assertThat(errorCode(ctr)).isEqualTo("not_found");
-    // Found-but-refused → the ONLY path that emits mcp.access.denied.
-    assertThat(countDenied()).isGreaterThan(deniedBefore);
-    var denied =
+    // Found-but-refused → the ONLY path that emits mcp.access.denied. Baseline+delta so a stale
+    // event can't mask a wrong/missing new one. readEvents is occurredAt-DESC, so the new events
+    // are the LEADING slice — take exactly the delta.
+    long deniedAfter = countDenied();
+    long deniedDelta = deniedAfter - deniedBefore;
+    assertThat(deniedDelta).isEqualTo(1);
+    var newDenied =
         readEvents("mcp.access.denied").stream()
             .filter(e -> "get_correspondence".equals(e.getDetails().get("tool")))
+            .limit(deniedDelta)
             .toList();
-    assertThat(denied)
-        .anySatisfy(e -> assertThat(e.getDetails().get("deniedGate")).isEqualTo("project-access"));
+    assertThat(newDenied)
+        .allSatisfy(e -> assertThat(e.getDetails().get("deniedGate")).isEqualTo("project-access"));
   }
 
   @Test
@@ -152,14 +157,19 @@ class GetCorrespondenceToolTest {
 
   @Test
   void invokedAuditCarriesEntityRefOnlyNoPii() {
+    long invokedBefore = countInvoked();
     asOwner(() -> tools.getCorrespondence(matterCorrId));
-    var invoked =
+    // Baseline+delta: assert on ONLY the events this call produced, so a stale event can't mask a
+    // new leaking one. readEvents is occurredAt-DESC → new events are the LEADING slice.
+    long invokedDelta = countInvoked() - invokedBefore;
+    assertThat(invokedDelta).isEqualTo(1);
+    var newInvoked =
         readEvents("mcp.tool.invoked").stream()
             .filter(e -> "get_correspondence".equals(e.getDetails().get("tool")))
+            .limit(invokedDelta)
             .toList();
-    assertThat(invoked).isNotEmpty();
-    assertThat(invoked)
-        .anySatisfy(
+    assertThat(newInvoked)
+        .allSatisfy(
             event -> {
               assertThat(event.getEntityType()).isEqualTo("mcp_tool");
               assertThat(event.getDetails().get("rowCount")).isNotNull();
@@ -251,6 +261,12 @@ class GetCorrespondenceToolTest {
 
   private long countDenied() {
     return readEvents("mcp.access.denied").stream()
+        .filter(e -> "get_correspondence".equals(e.getDetails().get("tool")))
+        .count();
+  }
+
+  private long countInvoked() {
+    return readEvents("mcp.tool.invoked").stream()
         .filter(e -> "get_correspondence".equals(e.getDetails().get("tool")))
         .count();
   }

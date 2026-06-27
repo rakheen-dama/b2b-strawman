@@ -165,17 +165,22 @@ class ListCorrespondenceToolTest {
   @Test
   void matterPathViewAccessDenialIsNotFoundPlusDeniedAudit() {
     // A plain org:member who is not a member of `matterId` cannot view it → obscurity-404 → denial.
+    long deniedBefore = countDenied();
     CallToolResult ctr =
         asMember(() -> (CallToolResult) tools.listCorrespondence(matterId, null, 0, 50));
     assertThat(errorCode(ctr)).isEqualTo("not_found");
 
+    // Baseline+delta so a stale denial can't mask a wrong/missing new one. readEvents is
+    // occurredAt-DESC → new events are the LEADING slice; take exactly the delta.
+    long deniedDelta = countDenied() - deniedBefore;
+    assertThat(deniedDelta).isEqualTo(1);
     var denied =
         readEvents("mcp.access.denied").stream()
             .filter(e -> "list_correspondence".equals(e.getDetails().get("tool")))
+            .limit(deniedDelta)
             .toList();
-    assertThat(denied).isNotEmpty();
     assertThat(denied)
-        .anySatisfy(e -> assertThat(e.getDetails().get("deniedGate")).isEqualTo("project-access"));
+        .allSatisfy(e -> assertThat(e.getDetails().get("deniedGate")).isEqualTo("project-access"));
   }
 
   @Test
@@ -189,19 +194,12 @@ class ListCorrespondenceToolTest {
     assertThat(page.total()).isEqualTo(1);
 
     UUID unknown = UUID.randomUUID();
-    long deniedBefore =
-        readEvents("mcp.access.denied").stream()
-            .filter(e -> "list_correspondence".equals(e.getDetails().get("tool")))
-            .count();
+    long deniedBefore = countDenied();
     CallToolResult ctr =
         asOwner(() -> (CallToolResult) tools.listCorrespondence(null, unknown, 0, 50));
     assertThat(errorCode(ctr)).isEqualTo("not_found");
-    long deniedAfter =
-        readEvents("mcp.access.denied").stream()
-            .filter(e -> "list_correspondence".equals(e.getDetails().get("tool")))
-            .count();
     // A customer lookup miss must NOT emit a policy denial.
-    assertThat(deniedAfter).isEqualTo(deniedBefore);
+    assertThat(countDenied()).isEqualTo(deniedBefore);
   }
 
   @Test
@@ -290,6 +288,12 @@ class ListCorrespondenceToolTest {
               }
             });
     return holder[0];
+  }
+
+  private long countDenied() {
+    return readEvents("mcp.access.denied").stream()
+        .filter(e -> "list_correspondence".equals(e.getDetails().get("tool")))
+        .count();
   }
 
   private List<AuditEvent> readEvents(String prefix) {

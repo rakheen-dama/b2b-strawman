@@ -665,6 +665,8 @@
 | 584 | `resolve_matter_by_email` (read tool) | Backend | 582A | S | 584A | **Done** (PR #1507) |
 | 585 | Gate-over-MCP — `propose_task` + synthetic execution + executor arm | Backend | 581A, 582B | L | 585A, 585B | **Done** (PR #1508) |
 | 586 | Frontend — Correspondence Tab + Gate-Origin Display + QA Capstone | Frontend / Both | 581A, 582B, 583A, 585B | L | 586A, 586B, 586C | **Done** (PR #1509) |
+| **Phase 82 — Correspondence Read-Back over MCP** | | | | | | See [tasks/phase82-correspondence-readback.md](tasks/phase82-correspondence-readback.md) |
+| 587 | Correspondence Read-Back over MCP — `list_correspondence` + `get_correspondence` | Backend | — | M | 587A, 587B | **Done** (PR #1510) |
 
 
 ---

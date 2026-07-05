@@ -15,7 +15,7 @@
 
 ## QA Position
 
-- **Day/Checkpoint**: Day 3 COMPLETE (3.1–3.14 all PASS). Next: Day 4 (4.1 — Sipho first portal login, [PORTAL] :3002).
+- **Day/Checkpoint**: Day 4 COMPLETE (4.1–4.14 PASS). Next: Day 5 (5.1 — firm reviews FICA submission, as Bob).
 
 ## Dev Stack
 
@@ -29,6 +29,7 @@
 
 ## Log
 
+- **2026-07-06 (QA, Day 4)** — Sipho magic-link login (:3002, no Keycloak), /home + branding + identity verified, 3 FICA PDFs uploaded and per-item submitted (1/3→3/3, envelope IN_PROGRESS per OBS-403), pending count → 0, footer "Powered by Kazi". All PASS. Infra: portal dev server crashed (next MODULE_NOT_FOUND) as fallout of the Day-2 pnpm install under running servers — restarted portal+frontend, page healthy; not a product bug.
 - **2026-07-06 (QA, Day 3)** — RAF matter created from legal template (RAF-2026-001, `/projects/272be4f8…`), header card + 7 grouped tabs verified, SA-legal fields on Details>Fields (single location, Court set), Correspondence MCP empty state verified, FICA Onboarding Pack REQ-0001 sent to Sipho (3 items), magic-link email in Mailpit → portal :3002 exchange URL. All PASS, zero gaps.
 - **2026-07-06 (QA, Day 2)** — Bob login (branding persists cross-login). Sipho created (INDIVIDUAL, SA-legal step-2 promoted fields incl. ID number), conflict check "No Conflict", KYC skipped (no adapter — mandate exemption), DEAL-0001 enquiry created R87,500 and dragged to Conflict check (30%). Gap LZKC-001 (Low): /pipeline hydration mismatch from dnd-kit aria id. Infra: stale node_modules caused '@dnd-kit/core not found' build error on first /pipeline load — fixed with `pnpm install --frozen-lockfile` (deps were already in package.json+lockfile; env-only issue).
 - **2026-07-06 (QA, Day 1)** — Branding (logo→S3 + #1B3358) saved and persisted across reload; LSSA 2024/2025 High Court schedule pre-seeded (19 items, 4(a) R7800/day + 4(c) R780/hr verified); Section 86 trust account "Mathebula Trust — Main" created with dual approval, dashboard shows R 0,00. All Day 1 checkpoints PASS, zero gaps.

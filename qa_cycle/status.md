@@ -15,7 +15,7 @@
 
 ## QA Position
 
-- **Day/Checkpoint**: Day 1 COMPLETE (1.1–1.7 all PASS). Next: Day 2 (2.1 — onboard Sipho as client, as Bob).
+- **Day/Checkpoint**: Day 2 COMPLETE (2.1–2.15; KYC 2.8–2.10 SKIPPED per mandate exemption). Next: Day 3 (3.1 — create RAF matter, as Bob).
 
 ## Dev Stack
 
@@ -25,9 +25,11 @@
 
 | Gap ID | Day/Checkpoint | Summary | Severity | Owner | Status |
 |--------|----------------|---------|----------|-------|--------|
+| LZKC-001 | Day 2 / 2.11 | React hydration mismatch on `/pipeline` — dnd-kit DealCard `aria-describedby` differs server vs client (`DndDescribedBy-0` vs `-3`); console error, cosmetic only, drag works | Low | Product | OPEN |
 
 ## Log
 
+- **2026-07-06 (QA, Day 2)** — Bob login (branding persists cross-login). Sipho created (INDIVIDUAL, SA-legal step-2 promoted fields incl. ID number), conflict check "No Conflict", KYC skipped (no adapter — mandate exemption), DEAL-0001 enquiry created R87,500 and dragged to Conflict check (30%). Gap LZKC-001 (Low): /pipeline hydration mismatch from dnd-kit aria id. Infra: stale node_modules caused '@dnd-kit/core not found' build error on first /pipeline load — fixed with `pnpm install --frozen-lockfile` (deps were already in package.json+lockfile; env-only issue).
 - **2026-07-06 (QA, Day 1)** — Branding (logo→S3 + #1B3358) saved and persisted across reload; LSSA 2024/2025 High Court schedule pre-seeded (19 items, 4(a) R7800/day + 4(c) R780/hr verified); Section 86 trust account "Mathebula Trust — Main" created with dual approval, dashboard shows R 0,00. All Day 1 checkpoints PASS, zero gaps.
 - **2026-07-06 (QA, Day 0)** — Session 0 reset executed (stale prior-cycle Mathebula org/schema/KC users removed per scenario 0.C/0.D/0.E; backend restarted clean). Day 0 executed end-to-end via Playwright on the Keycloak stack: access request + OTP (Mailpit), padmin approval (tenant `tenant_5039f2d497cf` provisioned, `vertical_profile=legal-za`), Thandi KC registration → org dashboard with full legal nav, Bob (Admin) + Carol (Member) invited + registered. ALL Day 0 checkpoints PASS, zero gaps. Noted QA-harness quirk: after OAuth redirect chains, trusted pointer events stop reaching the page — workaround is explicit re-`goto` after every auth redirect (documented in day-00.md; not a product bug).
 - **2026-07-06 (Infra, stack start)** — Docker daemon was down; started Docker Desktop, then `dev-up.sh` (all 4 containers healthy, Keycloak SSL fix reapplied + KC restart). Polled `realms/docteams` → 200 first attempt. Ran `keycloak-bootstrap.sh` (idempotent; mappers, padmin, DCR trusted hosts, lifetimes). `svc.sh start all`: backend ready 36s, gateway 6s, frontend 3s, portal 3s — all RUNNING+HEALTHY per `svc.sh status`. Mailpit API sane (`total:0`). Backend startup log has 0 ERROR lines; pack reconciliation 4/4 tenants OK. Prior-cycle data left untouched. No issues.

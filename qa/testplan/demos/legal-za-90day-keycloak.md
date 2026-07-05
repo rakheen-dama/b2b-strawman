@@ -30,11 +30,12 @@
 ## Demo wow moments (capture 📸 on clean pass)
 
 1. **Day 0** — Firm dashboard with legal nav (Matters, Trust Accounting, Court Calendar, Conflict Check) + Mathebula brand colour applied
-2. **Day 2** — Conflict check "CLEAR" result with the SA legal green confirmation state
-3. **Day 5** — Matter detail page for a RAF claim, with promoted fields (matter_type, court_name, case_number) rendered inline + vertical terminology ("Matter" not "Project")
-4. **Day 33** — Profitability page with three active matters, ZAR revenue vs cost, margin ribbon
-5. **Day 47** — Fee note rendered as PDF preview with Mathebula letterhead + LSSA tariff line items
-6. **Day 88** — Audit event feed showing 90 days of activity across all three matters, filterable by actor and entity
+2. **Day 1** — Pipeline board with the legal-za stage pack (Enquiry → Conflict check → Engagement), a deal dragged into Won, and the client auto-nudged PROSPECT → ONBOARDING (Phase 80 win-loop)
+3. **Day 2** — Conflict check "CLEAR" result with the SA legal green confirmation state
+4. **Day 5** — Matter detail page for a RAF claim, with promoted fields (matter_type, court_name, case_number) rendered inline + vertical terminology ("Matter" not "Project")
+5. **Day 33** — Profitability page with three active matters, ZAR revenue vs cost, margin ribbon
+6. **Day 47** — Fee note rendered as PDF preview with Mathebula letterhead + LSSA tariff line items
+7. **Day 88** — Audit event feed showing 90 days of activity across all three matters, filterable by actor and entity
 
 ---
 
@@ -166,6 +167,14 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.55** Navigate to **Settings > Automations**
 - [ ] **0.56** Verify legal-za automation rules are listed (may be zero — legal profile has no automation pack today; if the list is empty, confirm no JS errors in console)
 
+### Phase H2: Pipeline stage pack (Phase 80)
+
+- [ ] **0.56a** Navigate to **Settings > Pipeline** (`/org/{slug}/settings/pipeline`) → page renders with heading **Pipeline** and subtitle "Configure pipeline stages, ordering, and probabilities."
+- [ ] **0.56b** Verify the `deal-pipeline-legal-za` stage pack is seeded in order: **Enquiry (10%)**, **Conflict check (30%)**, **Engagement (60%)**, **Won (100%)**, **Lost (0%)** — stage types OPEN/OPEN/OPEN/WON/LOST
+- [ ] **0.56c** Verify the **New Stage** button renders (Owner holds `MANAGE_PIPELINE`)
+- [ ] **0.56d** Verify sidebar shows a **Pipeline** nav item in the Clients group. Note: "Pipeline"/"Deals" are NOT terminology-mapped in any vertical — the label is literally "Pipeline" even under legal-za
+- [ ] **0.56e** Navigate to **Pipeline** (`/org/{slug}/pipeline`) → board renders the three open stage columns plus collapsed **Won**/**Lost** columns; empty columns show "No deals"; header shows **Open weighted value** and **Win rate** summary stats
+
 ### Phase I: Progressive disclosure check
 
 - [ ] **0.57** Navigate to **Settings > Modules**
@@ -194,6 +203,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] `legal-za-customer`, `legal-za-project` field packs loaded
 - [ ] **Field promotion verified**: 7+ customer slugs inline, `matter_type` inline on matter dialog, no duplicates in CustomFieldSection
 - [ ] 4 matter templates present from `legal-za` pack
+- [ ] **Pipeline stage pack verified**: `deal-pipeline-legal-za` seeded (Enquiry/Conflict check/Engagement/Won/Lost), Settings > Pipeline + board render (Phase 80)
 - [ ] **Progressive disclosure verified**: all 4 legal modules enabled + visible in sidebar; no foreign vertical terms
 - [ ] Trust account created
 - [ ] **Tier removal verified**: billing page flat, no upgrade UI
@@ -218,9 +228,29 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **1.10** Click into client detail → verify lifecycle badge shows **PROSPECT** in the header card (`data-testid="client-header-card"`)
 - [ ] **1.11** Navigate to **Details** tab group → **Details** sub-tab (`tab-group-details` → `tab-item-details`). Verify promoted fields render on the Details tab, NOT in the CustomFieldSection on the Fields tab
 
+### Day 1 (cont.) — Pipeline: enquiry → engagement won (Phase 80)
+
+**Actor**: Bob Ndlovu (still logged in)
+
+> **Phase 80 navigation notes**: deal cards on the board and list-view rows are NOT links (deferred in 580A) — reach a deal's detail page via the client's **Work > Deals** tab or direct URL `/org/{slug}/pipeline/{dealId}`. Win/Lose transitions happen ONLY by dragging a card into the Won/Lost column on the board (the detail page is read-only, no mark-won button). The transition endpoint is gated by `MANAGE_DEALS` (the `CLOSE_DEALS` capability exists but is not wired to any endpoint).
+
+- [ ] **1.12** Navigate to **Pipeline** (sidebar, Clients group) → board renders with the legal-za columns: **Enquiry**, **Conflict check**, **Engagement** open; **Won**/**Lost** collapsed
+- [ ] **1.13** Click **New Enquiry** → dialog titled "New Enquiry" opens. Customer mode = **Pick existing customer** → select **Sipho Dlamini**; Title = "Dlamini — civil litigation enquiry"; Value = **R150,000**; Source = "Referral"; leave stage at default (first open stage)
+- [ ] **1.14** Click **Create Enquiry** → card appears in the **Enquiry** column showing client name, title, value and **10%** probability; column count pill = 1
+- [ ] **1.15** Open Sipho's client detail → **Work** tab group → **Deals** sub-tab → panel (`data-testid="customer-deals-tab"`) shows one row: deal number **DEAL-0001**, status badge **Open** (`data-testid="customer-deal-status-badge"`)
+- [ ] **1.16** Click the deal row → deal detail at `/org/{slug}/pipeline/{id}` → status badge (`data-testid="deal-status-badge"`) = **Open**; Overview panel (`data-testid="deal-overview"`) shows Stage = Enquiry, Probability = 10%; customer link card (`data-testid="deal-customer-link"`) navigates back to Sipho
+- [ ] **1.17** Back on the Pipeline board: drag the card **Enquiry → Conflict check** (the conflict check from 1.3 just cleared) → card moves, effective probability now 30%
+- [ ] **1.18** Drag the card **Conflict check → Engagement** → card moves, probability 60%
+- [ ] **1.19** Drag the card into **Won** → "Mark deal as won" dialog opens → click **Mark as Won** → card lands in the collapsed Won column
+- [ ] **1.20** **Win-loop checkpoint (Phase 80)**: open Sipho's client detail → lifecycle badge in the header card (`data-testid="client-header-card"`) now shows **ONBOARDING** — auto-nudged from PROSPECT by the deal win, with NO manual "Start Onboarding" click
+- [ ] **1.21** Mailpit → **"You won a deal"** notification email to the deal owner (Bob); in-app notification bell shows the DEAL_WON notification
+- [ ] **1.22** Navigate to **Dashboard** (as Bob, Admin) → **Sales Pipeline** widget (`data-testid="pipeline-summary-widget"`) renders with "Open weighted value" and "Win rate" reflecting the won deal, plus a "View pipeline →" link
+- [ ] **1.23** Audit spot-check: the audit surface for the deal (deal detail → Activity tab, or Settings > Audit Log) shows `deal.created`, two `deal.stage_changed`, and `deal.won` events (entityType `deal`)
+- [ ] **1.24** 📸 **Screenshot**: Pipeline board with legal-za stage columns and the won deal
+
 ### Day 2 — FICA/KYC onboarding
 
-- [ ] **2.1** On Sipho's client detail page, click the smart primary action button **"Start Onboarding"** in the header card → verify lifecycle badge changes from **PROSPECT** to **ONBOARDING**
+- [ ] **2.1** On Sipho's client detail page, verify the lifecycle badge **already shows ONBOARDING** — auto-nudged by the Day 1 deal win (Phase 80 win-loop replaces the manual "Start Onboarding" click for won prospects); the header card's primary action no longer offers "Start Onboarding"
 - [ ] **2.2** Navigate to **Compliance** tab group → **Onboarding** sub-tab (`tab-group-compliance` → `tab-item-onboarding`) → verify FICA checklist is auto-instantiated (from `fica-kyc-za` pack)
 - [ ] **2.3** Verify checklist contains at minimum: "Certified ID Copy", "Proof of Address" (utility bill), "Source of Funds"
 - [ ] **2.4** Mark "Certified ID Copy" ✓ → add note "Verified against home affairs ID"
@@ -240,6 +270,8 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **3.6** Navigate to matter detail → verify task list is pre-populated from template (expect 5+ tasks)
 - [ ] **3.7** Assign first task to Bob, second task to Carol
 - [ ] **3.8** Verify terminology: page heading says "Matter" (not "Project"), breadcrumb shows Clients > Sipho Dlamini > Matter > ...
+- [ ] **3.9** **Correspondence tab (Phase 81)**: on the matter detail, open **Work** tab group → **Correspondence** sub-tab (`tab-group-work` → `tab-item-correspondence`) → read-only list renders its empty state: "No correspondence yet" with the description that email is filed via the firm's own Claude using the Kazi MCP tools (there is no in-app compose/write path — `file_correspondence` is MCP-only)
+- [ ] **3.10** Verify the Work group dropdown lists **five** sub-tabs: Tasks, Documents, Correspondence, Generated Docs, Staffing
 
 ### Day 4 — Engagement letter & first time entry
 
@@ -543,13 +575,14 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **90.4** **Tier removal sweep**: navigate to Settings > Billing → confirm still flat, no tier UI
 - [ ] **90.5** **Console errors**: open browser devtools → navigate through every top-level nav item → confirm zero JS errors in console
 - [ ] **90.6** **Mailpit sweep**: verify no bounced/failed emails
+- [ ] **90.7** **Pipeline RBAC negative (Phase 80)**: in a fresh browser context as Carol (Member), verify the sidebar shows **no Pipeline nav item** (the Member system role holds no `VIEW_DEALS` by default); as Thandi or Bob the board still renders with DEAL-0001 in the Won column
 
 ---
 
 ## Exit checkpoints (ALL must pass for demo-ready)
 
 - [ ] **E.1** Every step above is checked
-- [ ] **E.2** All 6 📸 wow moments captured without visual regression
+- [ ] **E.2** All 7 📸 wow moments captured without visual regression
 - [ ] **E.3** Zero BLOCKER or HIGH items in gap report (`qa/gap-reports/demo-readiness-{DATE}/legal-za.md`)
 - [ ] **E.4** **Tier removal** verified on 3+ screens (Settings > Billing, team invite flow, member count page)
 - [ ] **E.5** **Field promotion** verified on Client, Matter, Task create dialogs

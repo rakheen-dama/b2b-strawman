@@ -32,7 +32,7 @@ The story is deliberately realistic for an SA general-practice litigation firm: 
 >
 > **Group → Sub-tab mapping:**
 > - Details: details, fields
-> - Work: tasks, documents, generated, staffing
+> - Work: tasks, documents, correspondence, generated, staffing (correspondence added by Phase 81)
 > - Finance: time, expenses, disbursements, budget, rates, financials, statements, trust
 > - Client: customers, requests, customer-comments, adverse-parties
 > - Activity: activity, audit
@@ -245,10 +245,21 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **2.9** KYC adapter returns **Verified** — KYC badge renders green with verification timestamp
 - [ ] **2.10** 📸 **Screenshot**: `day-02-kyc-verified.png` — KYC verified status
 
+### Day 2 (cont.) — Open a pipeline enquiry for the RAF claim (Phase 80)
+
+> **Phase 80 navigation notes**: deal cards/list rows are NOT links (deferred in 580A) — reach the deal detail via the client's **Work > Deals** tab or direct URL. Win/Lose happens ONLY by dragging a card into the Won/Lost board column; the deal is won later, on Day 10, when the engagement is secured.
+
+- [ ] **2.11** Navigate to **Pipeline** (sidebar, Clients group) → board renders the legal-za stage columns: **Enquiry**, **Conflict check**, **Engagement** open; **Won**/**Lost** collapsed
+- [ ] **2.12** Click **New Enquiry** → Customer mode = **Pick existing customer** → **Sipho Dlamini**; Title = "Dlamini v RAF — enquiry"; Value = **R87,500** (matches the Day 7 fee estimate); Source = "Referral" → **Create Enquiry** → card appears in **Enquiry** (10%)
+- [ ] **2.13** The conflict check just cleared (2.6) → drag the card **Enquiry → Conflict check** → card moves, probability 30%
+- [ ] **2.14** Open Sipho's client detail → **Work** tab group → **Deals** sub-tab (`data-testid="customer-deals-tab"`) → row shows **DEAL-0001**, status badge **Open**
+- [ ] **2.15** 📸 **Screenshot**: `day-02-pipeline-enquiry.png` — board with the RAF enquiry in the Conflict check column
+
 **Day 2 checkpoints**
 - [ ] Client created with INDIVIDUAL type and legal-specific fields
 - [ ] Conflict check CLEAR (no false positive hits)
 - [ ] KYC verification badge visible on client detail, or KYC not-configured state logged to gap report
+- [ ] Pipeline enquiry DEAL-0001 open at the Conflict check stage (Phase 80)
 
 ---
 
@@ -266,8 +277,9 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
   - Case number: (blank at intake; populated later)
   - Primary attorney: Bob Ndlovu
 - [ ] **3.4** Submit → matter created, redirected to matter detail
-- [ ] **3.5** Verify matter detail page shows the header card (`data-testid="matter-header-card"`) with name, status, work type, client, and the grouped tab bar (`data-testid="grouped-tab-bar"`) with 7 groups: **Details** (Details, Fields), **Overview** (standalone), **Work** (Tasks, Documents, Generated Docs, Staffing), **Finance** (Time, Expenses, Disbursements, Budget/Fee Estimate, Rates, Financials, Statements, Trust), **Client** (Customers/Clients, Requests/Info Requests, Client Comments, Adverse Parties), **Schedule** (standalone — Court Dates), **Activity** (Activity sub-tab; Audit sub-tab if Team Oversight module enabled). Note: the old flat "Members" tab is replaced by Work > Staffing (`?tab=staffing`). The old "Fee Estimate" tab (legal-za term for budget) is now Finance > Budget (`?tab=budget`). Per OBS-302: no per-matter "Audit" tab in the flat list; matter audit history is in Activity group → Activity sub-tab or (if TEAM_OVERSIGHT enabled) Activity group → Audit sub-tab.
+- [ ] **3.5** Verify matter detail page shows the header card (`data-testid="matter-header-card"`) with name, status, work type, client, and the grouped tab bar (`data-testid="grouped-tab-bar"`) with 7 groups: **Details** (Details, Fields), **Overview** (standalone), **Work** (Tasks, Documents, Correspondence, Generated Docs, Staffing — Correspondence added by Phase 81), **Finance** (Time, Expenses, Disbursements, Budget/Fee Estimate, Rates, Financials, Statements, Trust), **Client** (Customers/Clients, Requests/Info Requests, Client Comments, Adverse Parties), **Schedule** (standalone — Court Dates), **Activity** (Activity sub-tab; Audit sub-tab if Team Oversight module enabled). Note: the old flat "Members" tab is replaced by Work > Staffing (`?tab=staffing`). The old "Fee Estimate" tab (legal-za term for budget) is now Finance > Budget (`?tab=budget`). Per OBS-302: no per-matter "Audit" tab in the flat list; matter audit history is in Activity group → Activity sub-tab or (if TEAM_OVERSIGHT enabled) Activity group → Audit sub-tab.
 - [ ] **3.6** Promoted fields (matter_type, court_name, case_number) render inline on Overview tab — **NOT** duplicated in the Fields tab
+- [ ] **3.6a** **Correspondence tab (Phase 81)**: open **Work** group (`tab-group-work`) → **Correspondence** sub-tab (`tab-item-correspondence`) → read-only list renders its empty state "No correspondence yet" with the description that email is filed via the firm's own Claude using the Kazi MCP tools (no in-app compose path — `file_correspondence` is MCP-only)
 - [ ] **3.7** Navigate to matter detail → click **Client** group tab (`data-testid="tab-group-client"`) → click **Requests** sub-tab (`data-testid="tab-item-requests"`) → click **+ New Info Request**
 - [ ] **3.8** Select template: **FICA Onboarding Pack** (from `legal-za` request pack)
 - [ ] **3.9** Addressee: **Sipho Dlamini** (portal contact auto-populated from client record)
@@ -368,12 +380,19 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **7.10** Mailpit → proposal email arrives at `sipho.portal@example.com` with subject containing "Proposal" or "Engagement Letter" (depends on terminology), body contains click-through to portal proposal URL (OBS-703 fix)
 - [ ] **7.11** Verify portal `/proposals` index for Sipho shows PROP-0001 in **Awaiting Your Response** with status `SENT` (firm→portal projection)
 
+### Day 7 (cont.) — Advance the deal + attach a deal-linked proposal (Phase 80)
+
+- [ ] **7.12** Navigate to the **Pipeline** board → drag DEAL-0001 **Conflict check → Engagement** (the engagement letter just went out) → card moves, probability 60%
+- [ ] **7.13** Open the deal detail (via Sipho's **Work > Deals** tab) → **Proposals** tab (`data-testid="deal-proposals-panel"`) → click **New Proposal** → dialog "New Proposal" ("Draft a proposal attached to this deal"): Title = "Fee Agreement — Dlamini v RAF", Fee model = **Hourly** (no amount field for hourly) → **Create Proposal**
+- [ ] **7.14** Verify the deal's proposals table shows the new proposal (**PROP-0002**) with status badge **Draft** (`data-testid="deal-proposal-status-badge"`), its number linking to `/org/{slug}/proposals/{id}`. It stays Draft — the deal-side dialog is deliberately minimal (Title + Fee model only; no expiry/client picker); PROP-0001 remains the engagement letter the client accepts. NOTE: PROP-0002 must NOT appear on Sipho's portal `/proposals` index (Draft proposals are not synced)
+
 **Day 7 checkpoints**
 - [ ] Proposal lifecycle: Draft → Sent succeeds end-to-end
 - [ ] Portal email dispatched (OBS-703) — subject + body verified, link reaches `/proposals/{id}` on portal
 - [ ] Portal `/proposals` projection shows PROP-0001 (firm→portal sync)
 - [ ] Frontend console clean (no hydration mismatch on `/proposals` index — OBS-704)
 - [ ] Expiry date renders consistently with the date input (no +1-day tz drift — OBS-702)
+- [ ] Deal advanced to Engagement stage; deal-linked proposal PROP-0002 created from the deal Proposals tab, Draft, not visible on portal (Phase 80)
 
 > **Out-of-scope on Day 7 (covered separately)**:
 > - Document templates from legal-za pack (`engagement-letter-litigation`,
@@ -426,6 +445,13 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **10.1** Navigate to matter RAF-2026-001 → Proposals tab → verify proposal = **Accepted** with Sipho's timestamp
 - [ ] **10.2** Matter lifecycle: verify matter has auto-transitioned to **ACTIVE** (Phase 29 lifecycle), or transition manually per current UX
 
+### Phase A2: Win the deal — engagement secured (Phase 80)
+
+- [ ] **10.2a** Navigate to the **Pipeline** board → drag DEAL-0001 from **Engagement** into **Won** → "Mark deal as won" dialog → **Mark as Won** → card lands in the collapsed Won column
+- [ ] **10.2b** **Win-nudge check**: open Sipho's client detail → if the lifecycle badge was still **PROSPECT** it now shows **ONBOARDING** (Phase 80 nudge); if Sipho had already progressed past PROSPECT (e.g. via the FICA flow) the badge is UNCHANGED — the nudge only ever fires PROSPECT → ONBOARDING and never downgrades. Record the observed state
+- [ ] **10.2c** Deal detail → status badge (`data-testid="deal-status-badge"`) = **Won**, Overview shows the won date; Mailpit shows the **"You won a deal"** notification email to Bob (deal owner from Day 2, even though Thandi performed the win)
+- [ ] **10.2d** 📸 **Screenshot**: `day-10-deal-won.png` — board with DEAL-0001 in the Won column
+
 ### Phase B: Trust deposit — bank statement import + deposit recording
 
 - [ ] **10.3** Navigate to **Trust Accounting** → **Mathebula Trust — Main** account
@@ -444,6 +470,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Day 10 checkpoints**
 - [ ] Proposal acceptance flowed from portal to firm side (timestamp matches)
+- [ ] DEAL-0001 won on the board; win-nudge behaviour recorded; owner notification email in Mailpit (Phase 80)
 - [ ] Trust deposit posts against the correct client ledger card (Section 86 compliance)
 - [ ] Client ledger + matter trust tab + account balance all reconcile to R 50,000.00
 

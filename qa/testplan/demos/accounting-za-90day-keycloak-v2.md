@@ -144,6 +144,12 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.42** Navigate to **Settings > Automations**
 - [ ] **0.43** Verify `automation-accounting-za` rules are present (expect 4+ rules from the pack — e.g. engagement budget alerts, overdue checklist reminders, VAT deadline notifications)
 
+### Phase G2: Pipeline stage pack (Phase 80)
+
+- [ ] **0.43a** Navigate to **Settings > Pipeline** (`/org/{slug}/settings/pipeline`) → verify the `deal-pipeline-accounting-za` stage pack is seeded in order: **Enquiry (10%)**, **Scoping (35%)**, **Engagement letter (65%)**, **Won (100%)**, **Lost (0%)**; **New Stage** button renders (Owner holds `MANAGE_PIPELINE`)
+- [ ] **0.43b** Verify sidebar shows a **Pipeline** nav item in the Clients group ("Pipeline"/"Deals" are NOT terminology-mapped in any vertical — the label is literally "Pipeline")
+- [ ] **0.43c** Navigate to **Pipeline** (`/org/{slug}/pipeline`) → board renders the three open stage columns plus collapsed **Won**/**Lost**; empty columns show "No deals"; header shows **Open weighted value** and **Win rate** summary stats
+
 ### Phase H: Progressive disclosure check (critical)
 
 - [ ] **0.44** Navigate to **Settings > Modules**
@@ -174,6 +180,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] `accounting-za-customer`, `accounting-za-project` field packs loaded + trust variant
 - [ ] **Field promotion verified**: customer + engagement promoted slugs inline, no duplicates
 - [ ] Accounting templates + automation pack loaded
+- [ ] **Pipeline stage pack verified**: `deal-pipeline-accounting-za` seeded (Enquiry/Scoping/Engagement letter/Won/Lost), Settings > Pipeline + board render (Phase 80)
 - [ ] **Progressive disclosure verified**: NO legal modules visible, no terminology leaks
 - [ ] **Tier removal verified**: flat billing page, no upgrade UI anywhere
 
@@ -192,9 +199,22 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **1.5** Save → client appears in list with status **PROSPECT**
 - [ ] **1.6** Open detail → click **Details** tab group → **Details** sub-tab (`tab-group-details` → `tab-item-details`) → verify promoted fields render on the Details tab (not in the Fields tab CustomFieldSection)
 
+### Day 1 (cont.) — Pipeline: enquiry → engagement won (Phase 80)
+
+> **Phase 80 navigation notes**: deal cards/list rows are NOT links (deferred in 580A) — reach the deal detail via the client's **Work > Deals** tab. Win/Lose happens ONLY by dragging a card into the Won/Lost board column (detail page is read-only).
+
+- [ ] **1.7** Navigate to **Pipeline** (sidebar, Clients group) → board renders the accounting-za columns: **Enquiry**, **Scoping**, **Engagement letter** open; **Won**/**Lost** collapsed
+- [ ] **1.8** Click **New Enquiry** → Customer mode = **Pick existing customer** → **Sipho Dlamini**; Title = "Sipho Dlamini — 2025/26 tax return"; Value = **R8,500**; Source = "Referral" → **Create Enquiry** → card appears in **Enquiry** (10%)
+- [ ] **1.9** Drag the card **Enquiry → Scoping** (35%), then **Scoping → Engagement letter** (65%) → card moves each time, column counts update
+- [ ] **1.10** Drag the card into **Won** → "Mark deal as won" dialog → **Mark as Won** → card lands in the collapsed Won column
+- [ ] **1.11** Open Sipho's client detail → **Work** tab group → **Deals** sub-tab (`data-testid="customer-deals-tab"`) → row shows **DEAL-0001** with status badge **Won** (`data-testid="customer-deal-status-badge"`)
+- [ ] **1.12** **Win-loop checkpoint (Phase 80)**: Sipho's lifecycle badge now shows **ONBOARDING** — auto-nudged from PROSPECT by the deal win
+- [ ] **1.13** Mailpit → **"You won a deal"** notification email to the deal owner (Bob)
+- [ ] **1.14** Navigate to **Dashboard** (as Bob, Admin) → **Sales Pipeline** widget (`data-testid="pipeline-summary-widget"`) renders with "Open weighted value" and "Win rate" reflecting the won deal
+
 ### Day 2 — Onboarding
 
-- [ ] **2.1** Transition Sipho to **ONBOARDING**
+- [ ] **2.1** Verify Sipho is **already ONBOARDING** — auto-nudged by the Day 1 deal win (Phase 80 win-loop); no manual transition needed
 - [ ] **2.2a** Navigate to **Work** tab group → **Documents** sub-tab (`tab-group-work` → `tab-item-documents`) → upload FICA test documents (any small text/PDF files):
   - `certified-id-sipho.txt` — for Certified ID Copy
   - `proof-of-residence-sipho.txt` — for Proof of Residence

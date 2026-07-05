@@ -176,6 +176,12 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.51** Navigate to **Settings > Automations**
 - [ ] **0.52** Verify all 6 `automation-consulting-za` rules are pre-seeded by slug: `consulting-za-budget-80`, `consulting-za-budget-exceeded`, `consulting-za-retainer-closing`, `consulting-za-task-blocked-7d`, `consulting-za-unbilled-time-30d`, `consulting-za-proposal-followup-5d`. Confirm rule names render correctly (e.g., "Project Budget Alert (80%)", "Retainer Period Closing (3 days)").
 
+### Phase G2: Pipeline stage pack (Phase 80)
+
+- [ ] **0.52a** Navigate to **Settings > Pipeline** (`/org/{slug}/settings/pipeline`) → verify the `deal-pipeline-consulting-za` stage pack is seeded in order: **Lead (10%)**, **Qualified (30%)**, **Proposal sent (50%)**, **Negotiation (75%)**, **Won (100%)**, **Lost (0%)**; **New Stage** button renders (Owner holds `MANAGE_PIPELINE`)
+- [ ] **0.52b** Verify sidebar shows a **Pipeline** nav item in the Clients group ("Pipeline"/"Deals" are NOT terminology-mapped in any vertical — the label is literally "Pipeline")
+- [ ] **0.52c** Navigate to **Pipeline** (`/org/{slug}/pipeline`) → board renders the four open stage columns plus collapsed **Won**/**Lost**; empty columns show "No deals"; header shows **Open weighted value** and **Win rate** summary stats
+
 ### Phase H: Progressive disclosure check (critical)
 
 - [ ] **0.53** Navigate to **Settings > Modules**
@@ -199,6 +205,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] Customer field pack `consulting_za_client` (5 slugs) and Project field pack `consulting_za_engagement` (5 slugs) verified
 - [ ] 5 project templates pre-seeded with `campaign_type` + `retainer_tier` defaults
 - [ ] 4 document templates, 8 clauses, 10-question request pack, 6 automation rules verified
+- [ ] **Pipeline stage pack verified**: `deal-pipeline-consulting-za` seeded (Lead/Qualified/Proposal sent/Negotiation/Won/Lost), Settings > Pipeline + board render (Phase 80)
 - [ ] **Progressive disclosure verified**: zero legal/accounting module leakage
 - [ ] **Tier removal verified**: flat billing UI
 - [ ] **Terminology verified**: Clients, Time Logs, Billing Rates active; Project / Task unchanged
@@ -229,7 +236,32 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
   - `msa_start_date`: **2026-01-15** (only visible because `msa_signed == true`)
 - [ ] **1.4** Verify common promoted fields render inline (no duplication in CustomFieldSection); verify `consulting_za_client` slugs render in the side panel; verify `msa_start_date` only appeared after `msa_signed` was toggled
 - [ ] **1.5** Save → client created, status PROSPECT
-- [ ] **1.6** Complete onboarding checklist → ACTIVE
+
+### Day 1 (cont.) — Pipeline: won deal with linked proposal + lost lead (Phase 80)
+
+> **Phase 80 navigation notes**: deal cards/list rows are NOT links (deferred in 580A) — reach the deal detail via the client's **Work > Deals** tab. Win/Lose happens ONLY by dragging a card into the Won/Lost board column (detail page is read-only).
+
+**Enquiry 1 — BrightCup, won with a linked proposal:**
+
+- [ ] **1.5a** Navigate to **Pipeline** (sidebar, Clients group) → board renders the consulting-za columns: **Lead**, **Qualified**, **Proposal sent**, **Negotiation** open; **Won**/**Lost** collapsed
+- [ ] **1.5b** Click **New Enquiry** → Customer mode = **Pick existing customer** → **BrightCup Coffee Roasters**; Title = "BrightCup — website design & build"; Value = **R120,000**; Source = "Referral" → **Create Enquiry** → card appears in **Lead** (10%)
+- [ ] **1.5c** Open BrightCup client detail → **Work** tab group → **Deals** sub-tab (`data-testid="customer-deals-tab"`) → row shows **DEAL-0001**, status **Open** → click the row to open the deal detail
+- [ ] **1.5d** **Deal→proposal link (Phase 80)**: on the deal detail, open the **Proposals** tab (`data-testid="deal-proposals-panel"`) → empty state "No proposals yet" → click **New Proposal** → dialog "New Proposal" ("Draft a proposal attached to this deal"): Title = "BrightCup — Website Design & Build SOW", Fee model = **Fixed**, Amount = **120000** → **Create Proposal**
+- [ ] **1.5e** Verify the proposals table now shows one row: proposal number linking to `/org/{slug}/proposals/{id}`, status badge **Draft** (`data-testid="deal-proposal-status-badge"`), amount R120,000. Do NOT send it — this keeps the later automation assertion (no `PROPOSAL_SENT` events, step 45.5) intact
+- [ ] **1.5f** Back on the board: drag the card **Lead → Qualified → Proposal sent → Negotiation** (one drag per stage) → card moves each time, probability climbs 30% → 50% → 75%
+- [ ] **1.5g** Drag the card into **Won** → "Mark deal as won" dialog → **Mark as Won**
+- [ ] **1.5h** **Win-loop checkpoint (Phase 80)**: BrightCup's lifecycle badge now shows **ONBOARDING** — auto-nudged from PROSPECT by the deal win; Mailpit shows the **"You won a deal"** email to Bob (deal owner)
+
+**Enquiry 2 — inline prospect, lost with mandatory reason:**
+
+- [ ] **1.5i** Click **New Enquiry** → Customer mode = **Create new prospect** → New customer name = "Karoo Wines (Pty) Ltd" (leave email/phone blank); Title = "Karoo Wines — rebrand enquiry" → **Create Enquiry** → card appears in **Lead**
+- [ ] **1.5j** **Inline-prospect checkpoint (Phase 80)**: navigate to **Clients** → verify "Karoo Wines (Pty) Ltd" now exists with status **PROSPECT** (created inline by the intake dialog in the same transaction as the deal)
+- [ ] **1.5k** On the board, drag the Karoo Wines card into **Lost** → "Mark deal as lost" dialog opens → click **Mark as Lost** with the reason field EMPTY → inline validation error "A reason is required to mark this deal as lost." blocks the transition
+- [ ] **1.5l** Enter reason = "Budget withdrawn for FY26" → **Mark as Lost** → card lands in the collapsed Lost column
+- [ ] **1.5m** Verify Karoo Wines remains **PROSPECT** (losing a deal never touches customer lifecycle); its Deals tab row shows status badge **Lost**
+- [ ] **1.5n** Navigate to **Dashboard** (as Bob, Admin) → **Sales Pipeline** widget (`data-testid="pipeline-summary-widget"`) renders "Open weighted value" and "Win rate" (1 won / 1 lost); 📸 **Screenshot**: pipeline board with won + lost columns populated
+
+- [ ] **1.6** Complete BrightCup onboarding checklist → ACTIVE (ONBOARDING → ACTIVE via the checklist; the deal win already covered PROSPECT → ONBOARDING)
 
 ### Day 2 — First project (Website Design & Build)
 

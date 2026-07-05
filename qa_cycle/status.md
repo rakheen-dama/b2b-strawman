@@ -19,7 +19,7 @@
 
 ## Dev Stack
 
-- **Status**: Not running (checked 2026-07-06: backend/gateway/frontend/portal all down, Docker infra down).
+- **Status**: Running (2026-07-06) — Docker infra healthy (Postgres :5432, Keycloak :8180, Mailpit :8025, LocalStack :4566); local services all RUNNING+HEALTHY (backend :8080, gateway :8443, frontend :3000, portal :3002); Keycloak bootstrap applied (padmin@docteams.local); backend log clean (0 ERROR), 4 tenants reconciled; Mailpit API OK (0 messages).
 
 ## Tracker
 
@@ -28,4 +28,5 @@
 
 ## Log
 
+- **2026-07-06 (Infra, stack start)** — Docker daemon was down; started Docker Desktop, then `dev-up.sh` (all 4 containers healthy, Keycloak SSL fix reapplied + KC restart). Polled `realms/docteams` → 200 first attempt. Ran `keycloak-bootstrap.sh` (idempotent; mappers, padmin, DCR trusted hosts, lifetimes). `svc.sh start all`: backend ready 36s, gateway 6s, frontend 3s, portal 3s — all RUNNING+HEALTHY per `svc.sh status`. Mailpit API sane (`total:0`). Backend startup log has 0 ERROR lines; pack reconciliation 4/4 tenants OK. Prior-cycle data left untouched. No issues.
 - **2026-07-06 (Orchestrator, cycle init)** — Branch `bugfix_cycle_2026-07-06` created. Previous cycle state archived to `_archive_2026-06-15_ai-core-live-verification/` (status.md + checkpoint-results + fix-specs). Fresh tracker seeded. Dev stack down → next action: Infra Agent (start stack).

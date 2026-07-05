@@ -15,7 +15,7 @@
 
 ## QA Position
 
-- **Day/Checkpoint**: Day 2 COMPLETE (2.1–2.15; KYC 2.8–2.10 SKIPPED per mandate exemption). Next: Day 3 (3.1 — create RAF matter, as Bob).
+- **Day/Checkpoint**: Day 3 COMPLETE (3.1–3.14 all PASS). Next: Day 4 (4.1 — Sipho first portal login, [PORTAL] :3002).
 
 ## Dev Stack
 
@@ -29,6 +29,7 @@
 
 ## Log
 
+- **2026-07-06 (QA, Day 3)** — RAF matter created from legal template (RAF-2026-001, `/projects/272be4f8…`), header card + 7 grouped tabs verified, SA-legal fields on Details>Fields (single location, Court set), Correspondence MCP empty state verified, FICA Onboarding Pack REQ-0001 sent to Sipho (3 items), magic-link email in Mailpit → portal :3002 exchange URL. All PASS, zero gaps.
 - **2026-07-06 (QA, Day 2)** — Bob login (branding persists cross-login). Sipho created (INDIVIDUAL, SA-legal step-2 promoted fields incl. ID number), conflict check "No Conflict", KYC skipped (no adapter — mandate exemption), DEAL-0001 enquiry created R87,500 and dragged to Conflict check (30%). Gap LZKC-001 (Low): /pipeline hydration mismatch from dnd-kit aria id. Infra: stale node_modules caused '@dnd-kit/core not found' build error on first /pipeline load — fixed with `pnpm install --frozen-lockfile` (deps were already in package.json+lockfile; env-only issue).
 - **2026-07-06 (QA, Day 1)** — Branding (logo→S3 + #1B3358) saved and persisted across reload; LSSA 2024/2025 High Court schedule pre-seeded (19 items, 4(a) R7800/day + 4(c) R780/hr verified); Section 86 trust account "Mathebula Trust — Main" created with dual approval, dashboard shows R 0,00. All Day 1 checkpoints PASS, zero gaps.
 - **2026-07-06 (QA, Day 0)** — Session 0 reset executed (stale prior-cycle Mathebula org/schema/KC users removed per scenario 0.C/0.D/0.E; backend restarted clean). Day 0 executed end-to-end via Playwright on the Keycloak stack: access request + OTP (Mailpit), padmin approval (tenant `tenant_5039f2d497cf` provisioned, `vertical_profile=legal-za`), Thandi KC registration → org dashboard with full legal nav, Bob (Admin) + Carol (Member) invited + registered. ALL Day 0 checkpoints PASS, zero gaps. Noted QA-harness quirk: after OAuth redirect chains, trusted pointer events stop reaching the page — workaround is explicit re-`goto` after every auth redirect (documented in day-00.md; not a product bug).

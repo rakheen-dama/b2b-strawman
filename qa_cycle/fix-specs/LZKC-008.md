@@ -27,3 +27,6 @@ Re-run Day 28 / 28.6 flow with a scratch invoice for an INDIVIDUAL client: Send 
 
 ## Estimated Effort
 S (< 30 min)
+
+## AUTHORIZED DECISION (orchestrator/user, 2026-07-06)
+**Option (b): downgrade to WARNING for INDIVIDUAL.** INDIVIDUAL without tax number → visible WARNING on send (any role can send, no owner override needed). COMPANY/TRUST keep the CRITICAL check. Update the Javadoc in StructuralPrerequisiteCheck to document the WARNING policy for INDIVIDUAL at send time.

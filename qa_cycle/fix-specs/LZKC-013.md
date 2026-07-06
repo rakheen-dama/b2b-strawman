@@ -29,3 +29,6 @@ Provision a fresh tenant (or e2e-reseed) → automation list shows `task-complet
 
 ## Estimated Effort
 M (30 min – 2 hr)
+
+## AUTHORIZED DECISION (orchestrator/user, 2026-07-06)
+**New tenants only — NO migration.** Implement steps 1–3 (defaultEnabled flag honoured by seeder + common.json defaultEnabled:false for task-completion-chain). Drop step 4 entirely (no Flyway migration; existing tenants keep their current setting). The QA tenant (tenant_5039f2d497cf) will have the rule toggled off manually via the UI by the QA agent during verification.

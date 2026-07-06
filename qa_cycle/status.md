@@ -15,7 +15,7 @@
 
 ## QA Position
 
-- **Day/Checkpoint**: Day 5 COMPLETE (5.1–5.6 + portal spot-check all PASS). Next: Day 7 (7.1 — engagement letter proposal, as Thandi).
+- **Day/Checkpoint**: Day 8 COMPLETE (Day 7 verified incl. recovery of a prior dead session's partial Day-7 execution; Day 8 accept flow all PASS). Next: Day 10 (10.1 — verify acceptance firm-side, win deal, trust deposit, as Thandi).
 
 ## Dev Stack
 
@@ -26,9 +26,13 @@
 | Gap ID | Day/Checkpoint | Summary | Severity | Owner | Status |
 |--------|----------------|---------|----------|-------|--------|
 | LZKC-001 | Day 2 / 2.11 | React hydration mismatch on `/pipeline` — dnd-kit DealCard `aria-describedby` differs server vs client (`DndDescribedBy-0` vs `-3`); console error, cosmetic only, drag works | Low | Product | OPEN |
+| LZKC-002 | Day 7 / OBS-704 check | Reproducible hydration mismatch on firm `/proposals` index — `CreateProposalDialog > DialogTrigger` radix `aria-controls` id differs server vs client; console error on every fresh load; cosmetic, page functional. Regression-class of OBS-704 fix-verification | Medium | Product | OPEN |
+| LZKC-003 | Day 7 / 7.2 | Engagement-letter dialog description reads "Create a engagement letter" — article not adjusted by legal-za term substitution | Low | Product | OPEN |
+| LZKC-004 | Day 8 / terminology | Mixed "proposal"/"engagement letter" vocabulary on client-facing copy: email subject "New proposal PROP-0001…" + seeded letter body "This proposal expires…" vs portal chrome "Engagement Letter" | Low | Product | OPEN |
 
 ## Log
 
+- **2026-07-06 (QA, Days 7–8)** — **Recovery**: found a prior QA session had executed Day 7 (~7.1–7.13) at 23:46Z and died without recording (PROP-0001 Sent + stray PROP-0002 draft + deal-linked PROP-0003 already existed; Mailpit/backend-log evidence). Re-executed 7.1–7.6 live (minted duplicate PROP-0004 before discovery; drafts have no Delete UI — PROP-0002/0004 remain as documented residue, never sync to portal) and verified all remaining Day-7 checkpoints against observed state: send/log/email/portal-projection/deal-Engagement-60%/PROP-0003-on-deal all PASS. OBS-702 tz-drift PASS; OBS-704 console-clean **FAIL** → LZKC-002 (reproducible hydration error on firm `/proposals`, CreateProposalDialog radix id). Day 8 as Sipho (fresh magic link): email link → detail (SENT) → Accept → ACCEPTED inline confirm, reload shows accepted-state (no double-accept), /home clear, list badge ACCEPTED — all PASS; 8.3 VAT-line PARTIAL per OBS-701 product shape (no new gap). New gaps: LZKC-002 (Medium), LZKC-003 (Low, "a engagement" grammar), LZKC-004 (Low, proposal/engagement-letter terminology mix). Deal-proposal numbering deviates from script (PROP-0003 not PROP-0002) due to dead-run residue.
 - **2026-07-06 (QA, Day 5)** — Bob reviewed REQ-0001: 3 PDFs retrievable (presigned URL curl-verified 200 + valid PDF), Accept×3 → envelope Completed, FICA card "Done/Verified" with canonical /information-requests route (OBS-501 ✓), full activity trail, 3+1 notification emails in Mailpit, portal shows COMPLETED 3/3 accepted (OBS-502 ✓). All PASS, zero gaps.
 - **2026-07-06 (QA, Day 4)** — Sipho magic-link login (:3002, no Keycloak), /home + branding + identity verified, 3 FICA PDFs uploaded and per-item submitted (1/3→3/3, envelope IN_PROGRESS per OBS-403), pending count → 0, footer "Powered by Kazi". All PASS. Infra: portal dev server crashed (next MODULE_NOT_FOUND) as fallout of the Day-2 pnpm install under running servers — restarted portal+frontend, page healthy; not a product bug.
 - **2026-07-06 (QA, Day 3)** — RAF matter created from legal template (RAF-2026-001, `/projects/272be4f8…`), header card + 7 grouped tabs verified, SA-legal fields on Details>Fields (single location, Court set), Correspondence MCP empty state verified, FICA Onboarding Pack REQ-0001 sent to Sipho (3 items), magic-link email in Mailpit → portal :3002 exchange URL. All PASS, zero gaps.

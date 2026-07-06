@@ -15,7 +15,7 @@
 
 ## QA Position
 
-- **Day/Checkpoint**: Day 15 COMPLETE — **ISOLATION GATE PASS** (list/URL/API probes all denied; trust R 50 000 not aggregated; activity clean). Next: Day 21 (21.1 — time entries + disbursement + court date, as Bob).
+- **Day/Checkpoint**: Day 21 COMPLETE (2 time entries 4h w/ no-rate-card warning, sheriff disbursement R 1 250 Draft/Unbilled, Pre-Trial court date 2026-07-20 on matter + court calendar). Next: Day 28 (28.1 — bulk billing run, as Thandi; PRE-CONDITION first: submit+approve the sheriff disbursement per OBS-2104, as Bob or Thandi).
 
 ## Dev Stack
 
@@ -33,6 +33,7 @@
 
 ## Log
 
+- **2026-07-06 (QA, Day 21)** — Bob (context swap via cookie clear + fresh KC login): 2 time entries (2h30m assessment + 1h30m RAF1 filing = 4h billable, "No rate card" warning path per OBS-2101; note: template has no "Draft particulars of claim" task — used the RAF1 task Day 60.7 references), sheriff disbursement R 1 250 (Sheriff Fees, Draft/Unbilled — Day 28 must approve first per OBS-2104; no explicit "recoverable" checkbox in product), Pre-Trial court date 2026-07-20 Gauteng Division Pretoria (Scheduled, visible on matter Schedule tab + /court-calendar). All PASS, zero new gaps. Harness: Schedule tab needs a real-coordinates mouse click (synthetic click doesn't switch panels). Session ending here for context budget — next agent starts at Day 28.
 - **2026-07-06 (QA, Day 15)** — **ISOLATION GATE PASS.** Phase A: /home /projects /trust /invoices /deadlines /proposals show only Sipho's data (key signal: Last trust movement = R 50 000 Sipho, not the newer R 25 000 Moroka deposit). Phase B: all 4 direct-URL probes denied (matter/request/document/trust-ledger). Phase C: API probes with Sipho JWT → 404 "not found" on Moroka project/request/document presign; trust summary+movements contain only Sipho entities; all list endpoints clean. Phase D: activity trail zero Moroka events; digest N/A (none delivered yet). Moroka emails addressed only to moroka.portal@. Zero gaps.
 - **2026-07-06 (QA, Day 14)** — Thandi: Moroka Family Trust created (TRUST type, IT 001234/2024, conflict check No Conflict), matter EST-2026-002 from Deceased Estate template, REQ-0002 (L&D Account Pack, 5 items) sent to moroka.portal@example.com, death-certificate-moroka.pdf uploaded, R 25 000 deposit DEP/2026/002 RECORDED. All isolation-target IDs captured (isolation-probe-ids.txt; doc+tx IDs via read-only SELECT). Zero gaps. Observations: no beneficial-owner fields in client create dialog; no Master's Office field in matter configure step.
 - **2026-07-06 (QA, Day 11)** — Sipho portal: trust-activity email arrived 34s after posting (subject "Trust account activity", DEPOSIT R 50 000,00, ledger deep-link); ledger renders balance card + running-balance transaction row with client-safe description; ZAR locale clean. All PASS, zero gaps. Note: `/trust` auto-forwards to the single matter ledger when only one matter has trust activity.

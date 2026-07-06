@@ -15,7 +15,7 @@
 
 ## QA Position
 
-- **Day/Checkpoint**: Day 14 COMPLETE (Moroka TRUST client + EST-2026-002 + REQ-0002 + death-certificate doc + R 25 000 deposit; probe IDs in checkpoint-results/isolation-probe-ids.txt). Next: Day 15 (15.1 — isolation checks, as Sipho on portal).
+- **Day/Checkpoint**: Day 15 COMPLETE — **ISOLATION GATE PASS** (list/URL/API probes all denied; trust R 50 000 not aggregated; activity clean). Next: Day 21 (21.1 — time entries + disbursement + court date, as Bob).
 
 ## Dev Stack
 
@@ -33,6 +33,7 @@
 
 ## Log
 
+- **2026-07-06 (QA, Day 15)** — **ISOLATION GATE PASS.** Phase A: /home /projects /trust /invoices /deadlines /proposals show only Sipho's data (key signal: Last trust movement = R 50 000 Sipho, not the newer R 25 000 Moroka deposit). Phase B: all 4 direct-URL probes denied (matter/request/document/trust-ledger). Phase C: API probes with Sipho JWT → 404 "not found" on Moroka project/request/document presign; trust summary+movements contain only Sipho entities; all list endpoints clean. Phase D: activity trail zero Moroka events; digest N/A (none delivered yet). Moroka emails addressed only to moroka.portal@. Zero gaps.
 - **2026-07-06 (QA, Day 14)** — Thandi: Moroka Family Trust created (TRUST type, IT 001234/2024, conflict check No Conflict), matter EST-2026-002 from Deceased Estate template, REQ-0002 (L&D Account Pack, 5 items) sent to moroka.portal@example.com, death-certificate-moroka.pdf uploaded, R 25 000 deposit DEP/2026/002 RECORDED. All isolation-target IDs captured (isolation-probe-ids.txt; doc+tx IDs via read-only SELECT). Zero gaps. Observations: no beneficial-owner fields in client create dialog; no Master's Office field in matter configure step.
 - **2026-07-06 (QA, Day 11)** — Sipho portal: trust-activity email arrived 34s after posting (subject "Trust account activity", DEPOSIT R 50 000,00, ledger deep-link); ledger renders balance card + running-balance transaction row with client-safe description; ZAR locale clean. All PASS, zero gaps. Note: `/trust` auto-forwards to the single matter ledger when only one matter has trust activity.
 - **2026-07-06 (QA, Day 10)** — Thandi: PROP-0001 Accepted firm-side (audit actor shows "System" for portal accept — noted for Day 85). Deal won via board drag (stepped-mouse workaround for dnd-kit; `dragTo` alone insufficient) → Won 100%, win-nudge Prospect→Onboarding observed both-states. LZKC-005 (Medium): no deal-won email to owner, in-app only. Trust deposit R 50 000 (DEP/2026/001) posts RECORDED (no dual-approval for deposits); reconciles across client ledger, matter Finance>Trust, cashbook. Observation: proposal acceptance auto-created a 2nd matter "Engagement Letter — Litigation (Dlamini v RAF)" for Sipho — will appear on portal /projects (Days 15/75/90 counts).

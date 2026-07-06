@@ -168,7 +168,24 @@ public class TemplatePackInstaller implements PackInstaller {
     var loadedPack = loadedPackOpt.get();
     TemplatePackDefinition pack = loadedPack.definition();
 
-    if (pack.version() <= parseVersion(install.getPackVersion())) {
+    String installedVersion = install.getPackVersion();
+    if (pack.version() <= parseVersion(installedVersion)) {
+      return false;
+    }
+
+    // Atomically claim the version advance before creating anything. Under concurrent
+    // reconciliation (e.g. two replicas booting simultaneously) only one transaction wins this
+    // conditional UPDATE; the loser blocks on the pack_install row lock until the winner commits,
+    // then matches zero rows and backs off — the same TOCTOU discipline install() gets from
+    // uq_pack_install_pack_id, without a new unique constraint on document_templates.
+    int claimed =
+        packInstallRepository.advancePackVersion(
+            packId, installedVersion, String.valueOf(pack.version()), pack.templates().size());
+    if (claimed == 0) {
+      log.info(
+          "Template pack {} reconcile skipped for tenant {} — version advance already claimed",
+          packId,
+          tenantId);
       return false;
     }
 
@@ -192,10 +209,6 @@ public class TemplatePackInstaller implements PackInstaller {
       }
       documentTemplateRepository.saveAll(freshUntagged);
     }
-
-    install.setPackVersion(String.valueOf(pack.version()));
-    install.setItemCount(pack.templates().size());
-    packInstallRepository.save(install);
 
     log.info(
         "Reconciled template pack {} to v{} for tenant {} ({} new templates)",

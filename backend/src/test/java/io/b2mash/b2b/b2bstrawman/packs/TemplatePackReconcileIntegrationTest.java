@@ -82,9 +82,10 @@ class TemplatePackReconcileIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var install = packInstallRepository.findByPackId(PACK_ID).orElseThrow();
-                  install.setPackVersion("5");
-                  packInstallRepository.save(install);
+                  // Rewind the recorded version to simulate a tenant installed before v6. Also
+                  // exercises the CAS guard: the expected-version match must succeed exactly once.
+                  int updated = packInstallRepository.advancePackVersion(PACK_ID, "6", "5", 16);
+                  assertThat(updated).isEqualTo(1);
                 }));
 
     packInstallService.internalInstall(PACK_ID, tenantSchema);

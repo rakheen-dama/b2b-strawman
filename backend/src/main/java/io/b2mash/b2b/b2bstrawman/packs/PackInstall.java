@@ -77,10 +77,6 @@ public class PackInstall {
     return packVersion;
   }
 
-  public void setPackVersion(String packVersion) {
-    this.packVersion = packVersion;
-  }
-
   public String getPackName() {
     return packName;
   }
@@ -95,9 +91,5 @@ public class PackInstall {
 
   public int getItemCount() {
     return itemCount;
-  }
-
-  public void setItemCount(int itemCount) {
-    this.itemCount = itemCount;
   }
 }

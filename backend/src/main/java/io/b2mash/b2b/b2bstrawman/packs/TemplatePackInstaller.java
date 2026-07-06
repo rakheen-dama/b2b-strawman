@@ -141,6 +141,79 @@ public class TemplatePackInstaller implements PackInstaller {
         tenantId);
   }
 
+  /**
+   * Reconciles an already-installed template pack with its current classpath definition. If the
+   * classpath pack version is newer than the installed version, creates any pack templates that do
+   * not exist in the tenant (matched by {@code packId + packTemplateKey}), tags them with the
+   * existing install, and advances the recorded install version. Additive only: existing templates
+   * are never modified or deleted. Note that a version bump restores any pack template the tenant
+   * is missing (including ones a member deleted) — pack upgrades re-deliver the full pack content.
+   */
+  @Override
+  @Transactional
+  public boolean reconcile(String packId, String tenantId) {
+    var installOpt = packInstallRepository.findByPackId(packId);
+    if (installOpt.isEmpty()) {
+      return false;
+    }
+    PackInstall install = installOpt.get();
+
+    var loadedPackOpt =
+        templatePackSeeder.getAvailablePacks().stream()
+            .filter(lp -> packId.equals(lp.definition().packId()))
+            .findFirst();
+    if (loadedPackOpt.isEmpty()) {
+      return false;
+    }
+    var loadedPack = loadedPackOpt.get();
+    TemplatePackDefinition pack = loadedPack.definition();
+
+    if (pack.version() <= parseVersion(install.getPackVersion())) {
+      return false;
+    }
+
+    int created = 0;
+    for (var templateDef : pack.templates()) {
+      if (documentTemplateRepository
+          .findByPackIdAndPackTemplateKey(packId, templateDef.templateKey())
+          .isPresent()) {
+        continue;
+      }
+      templatePackSeeder.applySingleTemplate(pack, templateDef, loadedPack.resource());
+      created++;
+    }
+
+    if (created > 0) {
+      var freshUntagged =
+          documentTemplateRepository.findByPackIdAndSourcePackInstallIdIsNull(packId);
+      for (DocumentTemplate dt : freshUntagged) {
+        dt.setSourcePackInstallId(install.getId());
+        dt.setContentHash(computeTemplateHash(dt));
+      }
+      documentTemplateRepository.saveAll(freshUntagged);
+    }
+
+    install.setPackVersion(String.valueOf(pack.version()));
+    install.setItemCount(pack.templates().size());
+    packInstallRepository.save(install);
+
+    log.info(
+        "Reconciled template pack {} to v{} for tenant {} ({} new templates)",
+        packId,
+        pack.version(),
+        tenantId,
+        created);
+    return true;
+  }
+
+  private static int parseVersion(String version) {
+    try {
+      return Integer.parseInt(version);
+    } catch (NumberFormatException e) {
+      return 1;
+    }
+  }
+
   @Override
   @Transactional(readOnly = true)
   public UninstallCheck checkUninstallable(String packId, String tenantId) {

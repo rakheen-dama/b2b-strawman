@@ -135,10 +135,22 @@ public class PackInstallService {
 
                   // 2. No profile affinity check for internal installs
 
-                  // 3. Idempotency check
+                  // 3. Idempotency check — but reconcile already-installed packs so templates
+                  //    added in a newer pack version reach existing tenants (LZKC-012).
                   var existing = packInstallRepository.findByPackId(packId);
                   if (existing.isPresent()) {
-                    log.info("Pack {} already installed (internal path), skipping", packId);
+                    boolean changed =
+                        resolveInstaller(catalogEntry.type()).reconcile(packId, tenantId);
+                    if (changed) {
+                      updateOrgSettingsOnInstall(catalogEntry);
+                      log.info(
+                          "Pack {} reconciled to v{} for tenant {} (internal path)",
+                          packId,
+                          catalogEntry.version(),
+                          tenantId);
+                    } else {
+                      log.info("Pack {} already installed (internal path), skipping", packId);
+                    }
                     return;
                   }
 

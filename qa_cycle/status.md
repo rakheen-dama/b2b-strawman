@@ -15,7 +15,7 @@
 
 ## QA Position
 
-- **Day/Checkpoint**: Day 10 COMPLETE (acceptance flowed firm-side, deal Won + nudge, R 50 000 trust deposit reconciled across ledger/matter/cashbook; LZKC-005 deal-won email missing). Next: Day 11 (11.1 — trust-deposit nudge email + portal /trust, as Sipho).
+- **Day/Checkpoint**: Day 11 COMPLETE (trust nudge email 34s, portal ledger reconciles R 50 000, ZAR locale clean; /trust auto-forwards to single-matter ledger — behaviour note). Next: Day 14 (14.1 — onboard Moroka Family Trust isolation target, as Thandi).
 
 ## Dev Stack
 
@@ -33,6 +33,7 @@
 
 ## Log
 
+- **2026-07-06 (QA, Day 11)** — Sipho portal: trust-activity email arrived 34s after posting (subject "Trust account activity", DEPOSIT R 50 000,00, ledger deep-link); ledger renders balance card + running-balance transaction row with client-safe description; ZAR locale clean. All PASS, zero gaps. Note: `/trust` auto-forwards to the single matter ledger when only one matter has trust activity.
 - **2026-07-06 (QA, Day 10)** — Thandi: PROP-0001 Accepted firm-side (audit actor shows "System" for portal accept — noted for Day 85). Deal won via board drag (stepped-mouse workaround for dnd-kit; `dragTo` alone insufficient) → Won 100%, win-nudge Prospect→Onboarding observed both-states. LZKC-005 (Medium): no deal-won email to owner, in-app only. Trust deposit R 50 000 (DEP/2026/001) posts RECORDED (no dual-approval for deposits); reconciles across client ledger, matter Finance>Trust, cashbook. Observation: proposal acceptance auto-created a 2nd matter "Engagement Letter — Litigation (Dlamini v RAF)" for Sipho — will appear on portal /projects (Days 15/75/90 counts).
 - **2026-07-06 (QA, Days 7–8)** — **Recovery**: found a prior QA session had executed Day 7 (~7.1–7.13) at 23:46Z and died without recording (PROP-0001 Sent + stray PROP-0002 draft + deal-linked PROP-0003 already existed; Mailpit/backend-log evidence). Re-executed 7.1–7.6 live (minted duplicate PROP-0004 before discovery; drafts have no Delete UI — PROP-0002/0004 remain as documented residue, never sync to portal) and verified all remaining Day-7 checkpoints against observed state: send/log/email/portal-projection/deal-Engagement-60%/PROP-0003-on-deal all PASS. OBS-702 tz-drift PASS; OBS-704 console-clean **FAIL** → LZKC-002 (reproducible hydration error on firm `/proposals`, CreateProposalDialog radix id). Day 8 as Sipho (fresh magic link): email link → detail (SENT) → Accept → ACCEPTED inline confirm, reload shows accepted-state (no double-accept), /home clear, list badge ACCEPTED — all PASS; 8.3 VAT-line PARTIAL per OBS-701 product shape (no new gap). New gaps: LZKC-002 (Medium), LZKC-003 (Low, "a engagement" grammar), LZKC-004 (Low, proposal/engagement-letter terminology mix). Deal-proposal numbering deviates from script (PROP-0003 not PROP-0002) due to dead-run residue.
 - **2026-07-06 (QA, Day 5)** — Bob reviewed REQ-0001: 3 PDFs retrievable (presigned URL curl-verified 200 + valid PDF), Accept×3 → envelope Completed, FICA card "Done/Verified" with canonical /information-requests route (OBS-501 ✓), full activity trail, 3+1 notification emails in Mailpit, portal shows COMPLETED 3/3 accepted (OBS-502 ✓). All PASS, zero gaps.

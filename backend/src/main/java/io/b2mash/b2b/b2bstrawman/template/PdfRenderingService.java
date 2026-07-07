@@ -73,6 +73,26 @@ public class PdfRenderingService {
   @Transactional(readOnly = true)
   public PdfResult generatePdf(
       UUID templateId, UUID entityId, UUID memberId, List<Clause> resolvedClauses) {
+    return generatePdf(templateId, entityId, memberId, resolvedClauses, Map.of());
+  }
+
+  /**
+   * Generates a PDF with optional clause content and caller-supplied extra context merged over the
+   * builder-produced context. Used by flows whose template variables cannot be derived from the
+   * primary entity alone — e.g. the matter-closure letter's {@code closure.*} / {@code matter.*}
+   * groups, which only exist while the closure request is in scope (LZKC-018).
+   *
+   * @param extraContext top-level context entries merged (shallow) over the builder-produced
+   *     context; keys colliding with builder output replace it, so callers should only pass groups
+   *     the dispatched builder does not populate
+   */
+  @Transactional(readOnly = true)
+  public PdfResult generatePdf(
+      UUID templateId,
+      UUID entityId,
+      UUID memberId,
+      List<Clause> resolvedClauses,
+      Map<String, Object> extraContext) {
     var template =
         documentTemplateRepository
             .findById(templateId)
@@ -80,6 +100,9 @@ public class PdfRenderingService {
 
     var builder = findBuilder(template.getPrimaryEntityType());
     var contextMap = new HashMap<>(builder.buildContext(entityId, memberId));
+    if (extraContext != null) {
+      contextMap.putAll(extraContext);
+    }
 
     String fullHtml = renderTemplateToHtml(template, contextMap, resolvedClauses);
     byte[] pdfBytes = htmlToPdf(fullHtml);

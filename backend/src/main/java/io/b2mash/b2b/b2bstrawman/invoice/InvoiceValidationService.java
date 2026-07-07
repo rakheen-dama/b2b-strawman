@@ -1,9 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.notification.template.EmailTerminology;
 import io.b2mash.b2b.b2bstrawman.prerequisite.StructuralPrerequisiteCheck;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.setupstatus.CustomerReadinessService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
@@ -22,18 +26,24 @@ public class InvoiceValidationService {
   private final OrganizationRepository organizationRepository;
   private final TimeEntryRepository timeEntryRepository;
   private final DocumentTemplateRepository documentTemplateRepository;
+  private final OrgSettingsRepository orgSettingsRepository;
+  private final EmailTerminology emailTerminology;
 
   public InvoiceValidationService(
       CustomerReadinessService customerReadinessService,
       CustomerRepository customerRepository,
       OrganizationRepository organizationRepository,
       TimeEntryRepository timeEntryRepository,
-      DocumentTemplateRepository documentTemplateRepository) {
+      DocumentTemplateRepository documentTemplateRepository,
+      OrgSettingsRepository orgSettingsRepository,
+      EmailTerminology emailTerminology) {
     this.customerReadinessService = customerReadinessService;
     this.customerRepository = customerRepository;
     this.organizationRepository = organizationRepository;
     this.timeEntryRepository = timeEntryRepository;
     this.documentTemplateRepository = documentTemplateRepository;
+    this.orgSettingsRepository = orgSettingsRepository;
+    this.emailTerminology = emailTerminology;
   }
 
   @Transactional(readOnly = true)
@@ -71,8 +81,9 @@ public class InvoiceValidationService {
     // For send, org name and customer fields are CRITICAL
     checks.add(checkOrgBranding(Severity.CRITICAL));
     checks.add(checkCustomerRequiredFields(invoice.getCustomerId(), Severity.CRITICAL));
-    // GAP-L-62: tax number is soft-warned at draft but CRITICAL at send (SARS requires it on
-    // issued invoices for natural persons and registered entities alike).
+    // GAP-L-62: tax number is soft-warned at draft but CRITICAL at send for COMPANY/TRUST (SARS
+    // requires it on issued invoices for registered entities). LZKC-008: INDIVIDUAL customers are
+    // downgraded to WARNING inside checkCustomerTaxNumber — natural persons don't always have one.
     checks.add(checkCustomerTaxNumber(invoice.getCustomerId(), Severity.CRITICAL));
 
     return checks;
@@ -96,22 +107,47 @@ public class InvoiceValidationService {
   }
 
   /**
-   * Hard-block guard for invoice send: the customer must have a non-blank tax number on either the
+   * Tax-number guard for invoice send: the customer must have a non-blank tax number on either the
    * promoted entity column or the JSONB custom fields map. Soft-warned at draft, critical at send
-   * (GAP-L-62 hybrid). Returns a PASSED check when the customer cannot be found — the
-   * customer-required-fields check already covers that case with a clearer message.
+   * for COMPANY/TRUST customers (GAP-L-62 hybrid). For INDIVIDUAL customers the send-time check is
+   * downgraded to a visible WARNING (LZKC-008) — SARS does not issue tax numbers to every natural
+   * person (e.g. RAF claimants), mirroring the OBS-2102 activation exemption — so any role can send
+   * without an override while the gap stays visible. Returns a PASSED check when the customer
+   * cannot be found — the customer-required-fields check already covers that case with a clearer
+   * message.
    */
   private ValidationCheck checkCustomerTaxNumber(UUID customerId, Severity severity) {
     var customerOpt = customerRepository.findById(customerId);
     if (customerOpt.isEmpty()) {
       return new ValidationCheck("customer_tax_number", severity, true, "Customer not found");
     }
-    boolean missing = StructuralPrerequisiteCheck.isTaxNumberMissing(customerOpt.get());
+    var customer = customerOpt.get();
+    // LZKC-008: INDIVIDUAL customers are never hard-blocked on tax number — cap at WARNING.
+    var effectiveSeverity =
+        customer.getCustomerType() == CustomerType.INDIVIDUAL ? Severity.WARNING : severity;
+    boolean missing = StructuralPrerequisiteCheck.isTaxNumberMissing(customer);
     return new ValidationCheck(
         "customer_tax_number",
-        severity,
+        effectiveSeverity,
         !missing,
-        missing ? "Tax Number is required to send an invoice" : "Customer tax number is set");
+        missing
+            ? "Tax Number is required to send " + invoiceNounWithArticle()
+            : "Customer tax number is set");
+  }
+
+  /**
+   * LZKC-009 (site 2): resolves the tenant's lowercase invoice noun with its indefinite article —
+   * "an invoice" by default, "a fee note" on legal-za — so validation copy matches the vocabulary
+   * shown across the rest of the firm UI.
+   */
+  private String invoiceNounWithArticle() {
+    String profile =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .map(OrgSettings::getVerticalProfile)
+            .orElse(null);
+    String noun = emailTerminology.resolve(profile).getOrDefault("invoice", "invoice");
+    return EmailTerminology.withIndefiniteArticle(noun);
   }
 
   private ValidationCheck checkOrgBranding(Severity severity) {

@@ -335,6 +335,43 @@ describe("CreateCustomerDialog", () => {
     expect(call.entityType).toBeUndefined();
   });
 
+  // LZKC-009 site 5: tax-number helper copy must follow vertical terminology
+  it("legal-za tax number helper says 'a fee note' instead of 'an invoice'", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TerminologyProvider verticalProfile="legal-za">
+        <CreateCustomerDialog slug="acme" />
+      </TerminologyProvider>
+    );
+
+    // legal-za maps Customer -> Client, so the trigger reads "New Client"
+    await user.click(screen.getByText("New Client"));
+    await waitFor(() => expect(screen.getByLabelText("Name")).toBeInTheDocument());
+
+    expect(
+      screen.getByText("(required to send a fee note; collectable later)")
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/required to send an invoice/)).toBeNull();
+  });
+
+  it("default tax number helper still says 'an invoice' without a profile", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <CreateCustomerDialog slug="acme" />
+      </TerminologyProvider>
+    );
+
+    await user.click(screen.getByText("New Customer"));
+    await waitFor(() => expect(screen.getByLabelText("Name")).toBeInTheDocument());
+
+    expect(
+      screen.getByText("(required to send an invoice; collectable later)")
+    ).toBeInTheDocument();
+  });
+
   it("skipForNow_collapsesOptionalFields", async () => {
     // Return groups with no required fields -> allRequiredFilled = true immediately
     mockFetchIntakeFields.mockResolvedValue({

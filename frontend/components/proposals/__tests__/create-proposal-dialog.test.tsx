@@ -165,23 +165,28 @@ describe("CreateProposalDialog — expiresAt timezone encoding (OBS-702)", () =>
   });
 });
 
-describe("CreateProposalDialog — SSR hydration contract (OBS-704 v3)", () => {
+describe("CreateProposalDialog — SSR hydration contract (LZKC-002, supersedes OBS-704 v3)", () => {
   afterEach(() => {
     cleanup();
   });
 
-  it("renders the DialogTrigger wrapper with aria-controls server-side (no mount-gate)", () => {
-    // OBS-704 v3 regression guard. The previous fix wrapped the Dialog tree in
-    // `if (!mounted) return <>{children}</>` to skip the Radix subtree on SSR
-    // and the first client commit, papering over an aria-controls hydration
-    // mismatch via subtree elision. The structural fix is to let Radix render
-    // normally on SSR — `@radix-ui/react-id` wraps `React.useId()` (stable
-    // across SSR + client in React 19), so the contentId allocated by the
-    // Dialog provider is the same on both sides and the aria-controls injected
-    // on the trigger is deterministic. This test asserts the SSR HTML actually
-    // contains the trigger AND that aria-controls is set — without the fix,
-    // SSR would emit the bare `children` (no Radix wrapper, no aria-controls)
-    // and re-render to the wrapped tree post-mount.
+  it("SSRs the bare trigger with no useId-derived radix ids (mount-gate)", () => {
+    // LZKC-002 regression guard — this inverts the OBS-704 v3 contract that
+    // previously lived here. OBS-704 v3 asserted Radix's aria-controls IS in
+    // the SSR HTML, on the premise that React 19's useId() is SSR-stable.
+    // That premise only holds for hydration-stable subtrees: useId values are
+    // position-derived, and the org app-shell above /proposals is NOT
+    // hydration-stable (next/dynamic ssr:false command palette, auth-gated
+    // `return null` header controls). Under that shell the SSR-stamped
+    // aria-controls id drifted on every fresh load — a guaranteed hydration
+    // mismatch (qa_cycle/fix-specs/LZKC-002.md).
+    //
+    // The mount-gate contract: SSR (and the first client commit) emit the
+    // bare consumer trigger — present (no blank-button flash; a `return null`
+    // gate would strip it) and id-free (nothing for the client to
+    // contradict). Radix wires the trigger with client-generated ids after
+    // mount. The divergent-shell hydration guard lives in
+    // __tests__/components/dialog-family-ssr.snapshot.test.tsx (LZKC-002).
     const ssrHtml = renderToString(
       <CreateProposalDialog slug="legal-test" customers={CUSTOMERS}>
         <Button data-testid="ssr-trigger">New Proposal</Button>
@@ -191,11 +196,8 @@ describe("CreateProposalDialog — SSR hydration contract (OBS-704 v3)", () => {
     // The trigger child must be in the SSR output…
     expect(ssrHtml).toContain('data-testid="ssr-trigger"');
 
-    // …and Radix's auto-injected aria-controls (id of the DialogContent) must
-    // be present on the trigger element. Match `aria-controls="radix-..."`
-    // anywhere within the SSR HTML for the trigger element. If this fails,
-    // the mount-gate was actually load-bearing and we need a deterministic-id
-    // fallback (pass aria-controls via the consumer Button directly).
-    expect(ssrHtml).toMatch(/aria-controls="radix-[^"]+"/);
+    // …and no Radix useId-derived attribute may be stamped into it.
+    expect(ssrHtml).not.toMatch(/aria-controls/);
+    expect(ssrHtml).not.toMatch(/radix-/);
   });
 });

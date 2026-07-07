@@ -4,6 +4,7 @@ import { ArrowUpRight, ArrowDownLeft, ChevronLeft, ChevronRight } from "lucide-r
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
+import { getCurrentUserEmail } from "@/lib/auth";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
@@ -20,6 +21,7 @@ import { formatCurrency, formatLocalDate } from "@/lib/format";
 import {
   transactionTypeLabel,
   type Customer,
+  type OrgMember,
   type TrustTransactionStatus,
   type TrustTransactionType,
 } from "@/lib/types";
@@ -163,6 +165,25 @@ export default async function TransactionsPage({
       // Non-fatal — pickers will render with an empty list and the dialog
       // surface its own "No clients found." empty state.
       pickerCustomers = [];
+    }
+  }
+
+  // LZKC-016: resolve the viewer's member id so the Approve button can be
+  // disabled for the member who already gave the first dual-mode approval.
+  // Non-fatal — without it the backend still rejects duplicate approvers.
+  let currentMemberId = "";
+  if (canApproveTrust) {
+    try {
+      const [email, orgMembers] = await Promise.all([
+        getCurrentUserEmail(),
+        api.get<OrgMember[]>("/api/members"),
+      ]);
+      if (email) {
+        const match = orgMembers.find((m) => m.email === email);
+        if (match) currentMemberId = match.id;
+      }
+    } catch {
+      // Non-fatal — approval progress still renders; server enforces approver rules.
     }
   }
 
@@ -381,11 +402,26 @@ export default async function TransactionsPage({
                             <Badge variant={statusBadgeVariant(tx.status)}>
                               {tx.status.replace(/_/g, " ")}
                             </Badge>
+                            {/* LZKC-016: dual-mode first approval keeps status
+                                AWAITING_APPROVAL — surface the progress. */}
+                            {tx.status === "AWAITING_APPROVAL" && tx.approvedBy && (
+                              <span
+                                className="mt-1 block text-xs text-slate-500 dark:text-slate-400"
+                                data-testid={`approval-progress-${tx.id}`}
+                              >
+                                1 of 2 approvals
+                              </span>
+                            )}
                           </td>
                           <td className="py-3">
                             {tx.status === "AWAITING_APPROVAL" && canApproveTrust && (
                               <span data-testid={`approval-actions-${tx.id}`}>
-                                <ApprovalBadge transactionId={tx.id} status={tx.status} />
+                                <ApprovalBadge
+                                  transactionId={tx.id}
+                                  status={tx.status}
+                                  firstApprovedBy={tx.approvedBy}
+                                  currentMemberId={currentMemberId}
+                                />
                               </span>
                             )}
                             {tx.status === "APPROVED" && canManageTrust && (

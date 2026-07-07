@@ -104,7 +104,7 @@ export default async function ProposalsPage({ params }: { params: Promise<{ slug
           icon={FileText}
           title={<TerminologyText template="No {proposals} yet" />}
           description={
-            <TerminologyText template="Create a {proposal} to start tracking client engagements." />
+            <TerminologyText template="Create {a proposal} to start tracking client engagements." />
           }
           secondaryLink={{ label: "Read the guide", href: docsLink("/features/proposals") }}
         />

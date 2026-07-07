@@ -36,10 +36,14 @@ public final class StructuralPrerequisiteCheck {
    *
    * <p><strong>GAP-L-62 (hybrid B + C):</strong> {@code tax_number} is NOT a hard-block
    * prerequisite for draft creation. It is collected as a soft warning during draft creation
-   * (logged + surfaced to the caller as a warning code) and hard-enforced only at invoice-send time
-   * via {@link io.b2mash.b2b.b2bstrawman.invoice.InvoiceValidationService#validateInvoiceSend}.
-   * This matches SARS semantics (the tax number is needed on the issued invoice, not the draft) and
-   * lets firms capture time/billing against prospects without first chasing a tax number.
+   * (logged + surfaced to the caller as a warning code) and hard-enforced at invoice-send time for
+   * COMPANY/TRUST customers via {@link
+   * io.b2mash.b2b.b2bstrawman.invoice.InvoiceValidationService#validateInvoiceSend}. This matches
+   * SARS semantics (the tax number is needed on the issued invoice, not the draft) and lets firms
+   * capture time/billing against prospects without first chasing a tax number. <strong>LZKC-008:
+   * for INDIVIDUAL customers the send-time check is a visible WARNING, not a hard block</strong> —
+   * SARS does not issue tax numbers to every natural person (e.g. RAF claimants), consistent with
+   * the OBS-2102 activation exemption.
    */
   private static final List<FieldCheck> INVOICE_GENERATION_FIELDS =
       List.of(
@@ -59,11 +63,11 @@ public final class StructuralPrerequisiteCheck {
    * address AND (for COMPANY/TRUST customers) a tax number. INDIVIDUAL customers are exempt from
    * the tax-number activation prerequisite — SARS does not issue tax numbers to every natural
    * person, and SA-ID (id_passport_number / {@code Customer.idNumber}) is the canonical identifier.
-   * The tax-number requirement is still strictly enforced at invoice-send time via {@link
-   * #checkInvoiceSendOnly(Customer)}, so SARS-correctness on issued invoices is preserved
-   * regardless of customer type. Not aliased to {@link #INVOICE_GENERATION_FIELDS} so that relaxing
-   * draft creation (GAP-L-62) does not leak into activation semantics. See OBS-2102 for the
-   * INDIVIDUAL activation skip.
+   * At invoice-send time the tax-number requirement is strictly enforced for COMPANY/TRUST, while
+   * INDIVIDUAL customers get a visible WARNING instead of a hard block (LZKC-008) — see {@link
+   * io.b2mash.b2b.b2bstrawman.invoice.InvoiceValidationService#validateInvoiceSend}. Not aliased to
+   * {@link #INVOICE_GENERATION_FIELDS} so that relaxing draft creation (GAP-L-62) does not leak
+   * into activation semantics. See OBS-2102 for the INDIVIDUAL activation skip.
    */
   private static final List<FieldCheck> LIFECYCLE_ACTIVATION_FIELDS =
       List.of(
@@ -130,8 +134,8 @@ public final class StructuralPrerequisiteCheck {
       }
       // OBS-2102: INDIVIDUAL customers do not need tax_number for activation — SARS does not issue
       // tax numbers to every natural person, and SA-ID (id_passport_number / Customer.idNumber) is
-      // the canonical identifier. Tax number is still hard-enforced at invoice send via
-      // checkInvoiceSendOnly(...), so SARS-correctness on issued invoices is preserved.
+      // the canonical identifier. At invoice send the tax number is hard-enforced for COMPANY/TRUST
+      // and soft-warned for INDIVIDUAL (LZKC-008) via InvoiceValidationService.validateInvoiceSend.
       if (context == PrerequisiteContext.LIFECYCLE_ACTIVATION
           && field.fieldSlug().equals("tax_number")
           && customer.getCustomerType() == CustomerType.INDIVIDUAL) {

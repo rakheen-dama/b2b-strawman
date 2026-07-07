@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.notification.channel.NotificationDispatcher;
+import io.b2mash.b2b.b2bstrawman.notification.template.EmailTerminology;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
@@ -24,6 +25,8 @@ import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalFilterCriteria;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalStats;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalSummaryDto;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.TeamMemberRequest;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -66,6 +69,8 @@ public class ProposalService {
   private final PrerequisiteService prerequisiteService;
   private final ProjectTemplateRepository projectTemplateRepository;
   private final ProposalContentSeeder proposalContentSeeder;
+  private final OrgSettingsRepository orgSettingsRepository;
+  private final EmailTerminology emailTerminology;
 
   public ProposalService(
       ProposalRepository proposalRepository,
@@ -83,7 +88,9 @@ public class ProposalService {
       NotificationDispatcher notificationDispatcher,
       PrerequisiteService prerequisiteService,
       ProjectTemplateRepository projectTemplateRepository,
-      ProposalContentSeeder proposalContentSeeder) {
+      ProposalContentSeeder proposalContentSeeder,
+      OrgSettingsRepository orgSettingsRepository,
+      EmailTerminology emailTerminology) {
     this.proposalRepository = proposalRepository;
     this.milestoneRepository = milestoneRepository;
     this.teamMemberRepository = teamMemberRepository;
@@ -100,6 +107,22 @@ public class ProposalService {
     this.prerequisiteService = prerequisiteService;
     this.projectTemplateRepository = projectTemplateRepository;
     this.proposalContentSeeder = proposalContentSeeder;
+    this.orgSettingsRepository = orgSettingsRepository;
+    this.emailTerminology = emailTerminology;
+  }
+
+  /**
+   * Resolves the tenant's lowercase noun for a proposal (LZKC-004): "engagement letter" on
+   * legal-za, "proposal" everywhere else. Feeds the content seeder so seeded letter bodies match
+   * the vocabulary the client sees in portal/email chrome.
+   */
+  private String resolveProposalNoun() {
+    String profile =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .map(OrgSettings::getVerticalProfile)
+            .orElse(null);
+    return emailTerminology.resolve(profile).getOrDefault("proposal", "proposal");
   }
 
   // --- 231.1: createProposal ---
@@ -174,7 +197,8 @@ public class ProposalService {
                 retainerHoursIncluded,
                 contingencyPercent,
                 contingencyDescription,
-                expiresAt);
+                expiresAt,
+                resolveProposalNoun());
     proposal.setContentJson(effectiveContentJson);
     if (projectTemplateId != null) proposal.setProjectTemplateId(projectTemplateId);
     if (expiresAt != null) proposal.setExpiresAt(expiresAt);

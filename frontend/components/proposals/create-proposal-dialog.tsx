@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -86,6 +86,24 @@ export function CreateProposalDialog({
   onOpenChange: controlledOnOpenChange,
 }: CreateProposalDialogProps) {
   const router = useRouter();
+  // LZKC-002: render the Radix Dialog only after mount. Radix stamps
+  // React.useId()-derived ids (the trigger's aria-controls, the content id)
+  // into SSR HTML, and useId values are position-derived — they are only
+  // stable when the SSR tree and the client's first render are structurally
+  // identical. The org app-shell above this page is not hydration-stable
+  // (next/dynamic ssr:false command palette in command-palette-provider.tsx,
+  // auth-gated `return null` header controls in auth-header-controls.tsx),
+  // so those ids drift and every fresh load of /proposals logged a
+  // hydration mismatch on the trigger (regression of OBS-704 v3 / commit
+  // 129a1f845, which removed the previous gate on the premise that React 19
+  // useId is SSR-stable — true only in an hydration-stable tree).
+  //
+  // Pre-mount we render the bare trigger, so SSR HTML and the first client
+  // commit are identical (hydration-consistent) and id-free; Radix wires the
+  // trigger with client-generated ids after mount. Guarded by
+  // __tests__/components/dialog-family-ssr.snapshot.test.tsx (LZKC-002 block).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen ?? internalOpen;
   const setOpen = controlledOnOpenChange ?? setInternalOpen;
@@ -200,6 +218,13 @@ export function CreateProposalDialog({
     }
   }
 
+  if (!mounted) {
+    // SSR + first client commit: bare trigger only (see LZKC-002 note above).
+    // Controlled call sites without a trigger (overflow-actions-menu) render
+    // nothing here — `open` can only flip via post-mount interaction.
+    return children ? <>{children}</> : null;
+  }
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
@@ -209,7 +234,7 @@ export function CreateProposalDialog({
             <TerminologyText template="New {Proposal}" />
           </DialogTitle>
           <DialogDescription>
-            <TerminologyText template="Create a {proposal} for a client engagement." />
+            <TerminologyText template="Create {a proposal} for a client engagement." />
           </DialogDescription>
         </DialogHeader>
 

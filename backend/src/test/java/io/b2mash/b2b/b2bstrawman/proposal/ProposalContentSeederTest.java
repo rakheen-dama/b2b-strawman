@@ -43,6 +43,7 @@ class ProposalContentSeederTest {
             null,
             null,
             null,
+            null,
             null);
 
     assertContentRoot(doc);
@@ -64,6 +65,7 @@ class ProposalContentSeederTest {
             null,
             new BigDecimal("5000.00"),
             "ZAR",
+            null,
             null,
             null,
             null,
@@ -92,6 +94,7 @@ class ProposalContentSeederTest {
             null,
             null,
             null,
+            null,
             null);
 
     String html = render(doc, "Test Customer");
@@ -109,6 +112,7 @@ class ProposalContentSeederTest {
             null,
             new BigDecimal("8000.00"),
             "ZAR",
+            null,
             null,
             null,
             null,
@@ -133,6 +137,7 @@ class ProposalContentSeederTest {
             new BigDecimal("40.0"),
             null,
             null,
+            null,
             null);
 
     String html = render(doc, "Test Customer");
@@ -154,6 +159,7 @@ class ProposalContentSeederTest {
             null,
             new BigDecimal("20.00"),
             "Subject to LPC Rule 59 cap.",
+            null,
             null);
 
     String html = render(doc, "Plaintiff Inc.");
@@ -165,7 +171,18 @@ class ProposalContentSeederTest {
   void noExpiresAt_omitsExpiryParagraph() {
     var doc =
         seeder.buildDefaultContent(
-            "No Expiry", FeeModel.HOURLY, null, null, null, null, null, null, null, null, null);
+            "No Expiry",
+            FeeModel.HOURLY,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null);
 
     String html = render(doc, "Test Customer");
     assertThat(html).doesNotContain("This proposal expires on");
@@ -186,17 +203,77 @@ class ProposalContentSeederTest {
             null,
             null,
             null,
-            expiresAt);
+            expiresAt,
+            null);
 
     String html = render(doc, "Test Customer");
     assertThat(html).contains("This proposal expires on 2026-12-31.");
+  }
+
+  // LZKC-004 — a tenant-resolved noun ("engagement letter" on legal-za) must replace "proposal"
+  // in the seeded expiry and standard-terms paragraphs.
+  @Test
+  void legalNoun_replacesProposalInSeededParagraphs() {
+    Instant expiresAt = Instant.parse("2026-12-31T23:59:59Z").truncatedTo(ChronoUnit.SECONDS);
+    var doc =
+        seeder.buildDefaultContent(
+            "Engagement Letter for Sipho",
+            FeeModel.HOURLY,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            expiresAt,
+            "engagement letter");
+
+    String html = render(doc, "Sipho Dlamini");
+    assertThat(html).contains("This engagement letter expires on 2026-12-31.");
+    assertThat(html)
+        .contains("This engagement letter is subject to our standard terms and conditions.");
+    assertThat(html).doesNotContain("This proposal");
+  }
+
+  @Test
+  void blankNoun_fallsBackToProposal() {
+    var doc =
+        seeder.buildDefaultContent(
+            "Blank Noun",
+            FeeModel.HOURLY,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "  ");
+
+    String html = render(doc, "Test Customer");
+    assertThat(html).contains("This proposal is subject to our standard terms and conditions.");
   }
 
   @Test
   void hourly_allFeeFieldsNull_stillProducesSendableDoc() {
     var doc =
         seeder.buildDefaultContent(
-            "Bare Hourly", FeeModel.HOURLY, null, null, null, null, null, null, null, null, null);
+            "Bare Hourly",
+            FeeModel.HOURLY,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null);
 
     assertContentRoot(doc);
     @SuppressWarnings("unchecked")
@@ -213,7 +290,7 @@ class ProposalContentSeederTest {
   void blankTitle_fallsBackToDefaultHeading() {
     var doc =
         seeder.buildDefaultContent(
-            "  ", FeeModel.HOURLY, null, null, null, null, null, null, null, null, null);
+            "  ", FeeModel.HOURLY, null, null, null, null, null, null, null, null, null, null);
 
     String html = render(doc, "Test Customer");
     assertThat(html).contains("<h2>Engagement Letter</h2>");
@@ -223,7 +300,7 @@ class ProposalContentSeederTest {
   void rootMapAndChildList_areMutable() {
     var doc =
         seeder.buildDefaultContent(
-            "Mutable", FeeModel.HOURLY, null, null, null, null, null, null, null, null, null);
+            "Mutable", FeeModel.HOURLY, null, null, null, null, null, null, null, null, null, null);
 
     assertThat(doc.get("type")).isEqualTo("doc");
     @SuppressWarnings("unchecked")

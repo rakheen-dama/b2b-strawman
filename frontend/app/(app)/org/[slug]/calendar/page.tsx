@@ -1,4 +1,5 @@
 import { getCalendarItems } from "./calendar-actions";
+import { TerminologyText } from "@/components/terminology-text";
 import type { CalendarResponse } from "./calendar-types";
 import { formatDate } from "./calendar-types";
 import { CalendarPageClient } from "./calendar-page-client";
@@ -39,7 +40,7 @@ export default async function CalendarPage({ params }: { params: Promise<{ slug:
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Calendar</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          View upcoming due dates across all projects
+          <TerminologyText template="View upcoming due dates across all {projects}" />
         </p>
       </div>
 

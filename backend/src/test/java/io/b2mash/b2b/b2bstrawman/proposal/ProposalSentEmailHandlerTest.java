@@ -51,12 +51,18 @@ class ProposalSentEmailHandlerTest {
   private static final String PORTAL_CONTACT_EMAIL = "obs703-contact@test.com";
   private static final String PORTAL_CONTACT_NAME = "OBS-703 Contact";
 
+  // LZKC-004 — legal-za tenant, used to assert engagement-letter email vocabulary
+  private static final String LEGAL_ORG_ID = "org_lzkc004_proposal_email";
+  private static final String LEGAL_CONTACT_EMAIL = "lzkc004-contact@test.com";
+
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private JdbcTemplate jdbcTemplate;
 
   private String customerId;
   private UUID portalContactId;
+  private String legalCustomerId;
+  private UUID legalPortalContactId;
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
@@ -70,8 +76,26 @@ class ProposalSentEmailHandlerTest {
             TestJwtFactory.ownerJwt(ORG_ID, "user_obs703_owner"),
             "OBS-703 Customer",
             "obs703-customer@test.com");
-    fillPrerequisiteFields(customerId);
-    portalContactId = createPortalContact(customerId, PORTAL_CONTACT_EMAIL, PORTAL_CONTACT_NAME);
+    fillPrerequisiteFields(ORG_ID, customerId);
+    portalContactId =
+        createPortalContact(ORG_ID, customerId, PORTAL_CONTACT_EMAIL, PORTAL_CONTACT_NAME);
+
+    provisioningService.provisionTenant(LEGAL_ORG_ID, "LZKC-004 Law Firm", "legal-za");
+    TestMemberHelper.syncMember(
+        mockMvc,
+        LEGAL_ORG_ID,
+        "user_lzkc004_owner",
+        "lzkc004-owner@test.com",
+        "Law Owner",
+        "owner");
+    legalCustomerId =
+        createCustomer(
+            TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_lzkc004_owner"),
+            "LZKC-004 Customer",
+            "lzkc004-customer@test.com");
+    fillPrerequisiteFields(LEGAL_ORG_ID, legalCustomerId);
+    legalPortalContactId =
+        createPortalContact(LEGAL_ORG_ID, legalCustomerId, LEGAL_CONTACT_EMAIL, "LZKC-004 Contact");
   }
 
   @BeforeEach
@@ -81,8 +105,9 @@ class ProposalSentEmailHandlerTest {
 
   @Test
   void sendProposal_dispatchesPortalNewProposalEmail() throws Exception {
-    String proposalId = createProposalWithContent("OBS-703 Send Test");
-    String proposalNumber = lookupProposalNumber(proposalId);
+    String proposalId =
+        createProposalWithContent(ORG_ID, "user_obs703_owner", customerId, "OBS-703 Send Test");
+    String proposalNumber = lookupProposalNumber(ORG_ID, proposalId);
     assertThat(proposalNumber).as("proposalNumber must be persisted by createProposal").isNotNull();
 
     mockMvc
@@ -102,6 +127,8 @@ class ProposalSentEmailHandlerTest {
     MimeMessage message = received[0];
     assertThat(message.getAllRecipients()[0].toString()).isEqualTo(PORTAL_CONTACT_EMAIL);
     assertThat(message.getSubject()).contains(proposalNumber);
+    // LZKC-004 regression guard: generic tenants keep the "proposal" vocabulary.
+    assertThat(message.getSubject()).contains("New proposal");
     assertThat(message.getSubject()).containsIgnoringCase("review");
 
     String body = extractBody(message);
@@ -110,9 +137,47 @@ class ProposalSentEmailHandlerTest {
     assertThat(body).contains(proposalNumber);
   }
 
+  @Test
+  void sendProposal_legalZa_usesEngagementLetterVocabulary() throws Exception {
+    String proposalId =
+        createProposalWithContent(
+            LEGAL_ORG_ID, "user_lzkc004_owner", legalCustomerId, "LZKC-004 Send Test");
+    String proposalNumber = lookupProposalNumber(LEGAL_ORG_ID, proposalId);
+    assertThat(proposalNumber).isNotNull();
+
+    mockMvc
+        .perform(
+            post("/api/proposals/{id}/send", proposalId)
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_lzkc004_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"portalContactId\": \"%s\"}".formatted(legalPortalContactId)))
+        .andExpect(status().isOk());
+
+    boolean delivered = greenMail.waitForIncomingEmail(5_000L, 1);
+    assertThat(delivered).as("expected one portal-new-proposal email within 5s").isTrue();
+
+    MimeMessage[] received = greenMail.getReceivedMessages();
+    assertThat(received).hasSize(1);
+    MimeMessage message = received[0];
+    assertThat(message.getAllRecipients()[0].toString()).isEqualTo(LEGAL_CONTACT_EMAIL);
+
+    // LZKC-004: subject must speak engagement-letter vocabulary, never "proposal".
+    assertThat(message.getSubject()).contains("New engagement letter " + proposalNumber);
+    assertThat(message.getSubject()).doesNotContainIgnoringCase("proposal");
+
+    // Body chrome likewise (the portal URL still contains "/proposals/" — that's a path, not copy).
+    String body = extractBody(message);
+    assertThat(body).contains("New Engagement Letter for Your Review");
+    assertThat(body).contains("has sent you an engagement letter for your review");
+    assertThat(body).contains("View Engagement Letter");
+    assertThat(body).doesNotContain("View Proposal");
+    assertThat(body).contains(proposalNumber);
+  }
+
   // --- Helpers ---
 
-  private String createProposalWithContent(String title) throws Exception {
+  private String createProposalWithContent(String orgId, String userId, String custId, String title)
+      throws Exception {
     String contentJson =
         """
         {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"OBS-703 proposal body."}]}]}
@@ -121,13 +186,13 @@ class ProposalSentEmailHandlerTest {
         """
         {"title": "%s", "customerId": "%s", "feeModel": "HOURLY", "contentJson": %s}
         """
-            .formatted(title, customerId, contentJson);
+            .formatted(title, custId, contentJson);
 
     var result =
         mockMvc
             .perform(
                 post("/api/proposals")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_obs703_owner"))
+                    .with(TestJwtFactory.ownerJwt(orgId, userId))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(json))
             .andExpect(status().isCreated())
@@ -158,29 +223,30 @@ class ProposalSentEmailHandlerTest {
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
   }
 
-  private UUID createPortalContact(String customerIdStr, String email, String displayName) {
+  private UUID createPortalContact(
+      String orgId, String customerIdStr, String email, String displayName) {
     UUID contactId = UUID.randomUUID();
-    String schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
+    String schema = SchemaNameGenerator.generateSchemaName(orgId);
     jdbcTemplate.update(
         ("INSERT INTO \"%s\".portal_contacts (id, org_id, customer_id, email, display_name,"
                 + " role, status, created_at, updated_at) VALUES (?::uuid, ?, ?::uuid, ?, ?,"
                 + " 'PRIMARY', 'ACTIVE', now(), now())")
             .formatted(schema),
         contactId.toString(),
-        ORG_ID,
+        orgId,
         customerIdStr,
         email,
         displayName);
     return contactId;
   }
 
-  private void fillPrerequisiteFields(String customerIdStr) {
-    String schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
+  private void fillPrerequisiteFields(String orgId, String customerIdStr) {
+    String schema = SchemaNameGenerator.generateSchemaName(orgId);
     TestCustomerFactory.fillPrerequisiteFields(jdbcTemplate, schema, customerIdStr);
   }
 
-  private String lookupProposalNumber(String proposalId) {
-    String schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
+  private String lookupProposalNumber(String orgId, String proposalId) {
+    String schema = SchemaNameGenerator.generateSchemaName(orgId);
     return jdbcTemplate.queryForObject(
         "SELECT proposal_number FROM \"%s\".proposals WHERE id = ?::uuid".formatted(schema),
         String.class,

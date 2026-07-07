@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -9,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -56,6 +58,8 @@ class InvoiceGenerationValidationIntegrationTest {
   @Autowired private TaskRepository taskRepository;
   @Autowired private TimeEntryRepository timeEntryRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private InvoiceRepository invoiceRepository;
+  @Autowired private InvoiceValidationService invoiceValidationService;
 
   private String tenantSchema;
   private UUID memberIdOwner;
@@ -304,76 +308,13 @@ class InvoiceGenerationValidationIntegrationTest {
   }
 
   @Test
-  void sendInvoice_missingTaxNumber_isBlocked() throws Exception {
-    // GAP-L-62: send must hard-block when the tax number is still missing on the
-    // customer — mirrors SARS requirement for issued invoices.
-    var customerIdRef = new UUID[1];
-    var taskIdRef = new UUID[1];
-
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, memberIdOwner)
-        .where(RequestScopes.ORG_ROLE, "owner")
-        .run(
-            () ->
-                transactionTemplate.executeWithoutResult(
-                    tx -> {
-                      var customer =
-                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
-                              "Send Block Client", "sendblock@test.com", memberIdOwner);
-                      customer.setTaxNumber(null);
-                      var fields = new java.util.HashMap<>(customer.getCustomFields());
-                      fields.remove("tax_number");
-                      customer.setCustomFields(fields);
-                      customer = customerRepository.save(customer);
-                      customerIdRef[0] = customer.getId();
-
-                      var project =
-                          new Project(
-                              "Send Block Project", "Send-block test project", memberIdOwner);
-                      project = projectRepository.save(project);
-                      customerProjectRepository.save(
-                          new CustomerProject(customerIdRef[0], project.getId(), memberIdOwner));
-
-                      var task =
-                          new Task(
-                              project.getId(),
-                              "Send Block Work",
-                              "Work",
-                              "MEDIUM",
-                              "TASK",
-                              null,
-                              memberIdOwner);
-                      task = taskRepository.save(task);
-                      taskIdRef[0] = task.getId();
-                    }));
-
-    UUID teId =
-        createBillableTimeEntryForTask(taskIdRef[0], LocalDate.now(), 60, "Send block work");
-
-    // Create the draft first — succeeds even without tax number (soft-warn path).
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/invoices")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        { "customerId": "%s", "currency": "ZAR",
-                          "timeEntryIds": ["%s"] }
-                        """
-                            .formatted(customerIdRef[0], teId)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String invoiceId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
-
-    mockMvc
-        .perform(
-            post("/api/invoices/" + invoiceId + "/approve")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk());
+  void sendInvoice_companyMissingTaxNumber_isBlocked() throws Exception {
+    // GAP-L-62: send must hard-block when the tax number is still missing on a
+    // COMPANY customer — mirrors SARS requirement for issued invoices. (LZKC-008
+    // downgraded INDIVIDUAL to a warning; COMPANY/TRUST stay CRITICAL.)
+    String invoiceId =
+        createApprovedInvoiceForNoTaxCustomer(
+            "Send Block Client", "sendblock@test.com", CustomerType.COMPANY, "Send Block");
 
     // Send must be blocked by the critical customer_tax_number validation check.
     mockMvc
@@ -382,8 +323,64 @@ class InvoiceGenerationValidationIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isUnprocessableEntity())
+        // Error-path convention: assert the ProblemDetail body shape (status/title/detail per
+        // RFC 9457, produced by InvoiceValidationFailedException), not just the HTTP status.
+        .andExpect(jsonPath("$.status").value(422))
+        .andExpect(jsonPath("$.title").value("Invoice validation failed"))
         .andExpect(
-            jsonPath("$.validationChecks[?(@.name == 'customer_tax_number')].passed").value(false));
+            jsonPath("$.detail")
+                .value(
+                    "Invoice has validation issues that must be resolved or overridden before"
+                        + " sending."))
+        .andExpect(jsonPath("$.canOverride").value(true))
+        .andExpect(
+            jsonPath("$.validationChecks[?(@.name == 'customer_tax_number')].passed").value(false))
+        .andExpect(
+            jsonPath("$.validationChecks[?(@.name == 'customer_tax_number')].severity")
+                .value("CRITICAL"));
+  }
+
+  @Test
+  void sendInvoice_individualMissingTaxNumber_sendsWithWarning() throws Exception {
+    // LZKC-008: INDIVIDUAL customers (e.g. RAF claimants) often have no SARS tax
+    // number. The send-side tax-number check is a visible WARNING for INDIVIDUAL,
+    // so send proceeds without any "Send Anyway" override. COMPANY/TRUST keep the
+    // CRITICAL hard-block (see sendInvoice_companyMissingTaxNumber_isBlocked).
+    String invoiceId =
+        createApprovedInvoiceForNoTaxCustomer(
+            "Individual No Tax Client", "indnotax@test.com", CustomerType.INDIVIDUAL, "Ind NoTax");
+
+    // The check is still surfaced — as a failed WARNING, not a CRITICAL.
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var invoice =
+                          invoiceRepository.findById(UUID.fromString(invoiceId)).orElseThrow();
+                      var checks = invoiceValidationService.validateInvoiceSend(invoice);
+                      var taxCheck =
+                          checks.stream()
+                              .filter(c -> c.name().equals("customer_tax_number"))
+                              .findFirst()
+                              .orElseThrow();
+                      assertThat(taxCheck.passed()).isFalse();
+                      assertThat(taxCheck.severity())
+                          .isEqualTo(InvoiceValidationService.Severity.WARNING);
+                      assertThat(invoiceValidationService.hasCriticalFailures(checks)).isFalse();
+                    }));
+
+    // Send succeeds with NO override.
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("SENT"));
   }
 
   @Test
@@ -456,6 +453,88 @@ class InvoiceGenerationValidationIntegrationTest {
   }
 
   // --- Helpers ---
+
+  /**
+   * Creates an ACTIVE customer of the given type with all prerequisite fields EXCEPT the tax number
+   * (wiped on both entity column and JSONB), a project + task, a billable time entry, then drafts
+   * and approves an invoice for it. Returns the approved invoice id.
+   */
+  private String createApprovedInvoiceForNoTaxCustomer(
+      String customerName, String customerEmail, CustomerType customerType, String labelPrefix)
+      throws Exception {
+    var customerIdRef = new UUID[1];
+    var taskIdRef = new UUID[1];
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var customer =
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
+                              customerName, customerEmail, memberIdOwner, customerType);
+                      // Wipe the tax number on both entity + JSONB.
+                      customer.setTaxNumber(null);
+                      var fields = new java.util.HashMap<>(customer.getCustomFields());
+                      fields.remove("tax_number");
+                      customer.setCustomFields(fields);
+                      customer = customerRepository.save(customer);
+                      customerIdRef[0] = customer.getId();
+
+                      var project =
+                          new Project(
+                              labelPrefix + " Project",
+                              labelPrefix + " test project",
+                              memberIdOwner);
+                      project = projectRepository.save(project);
+                      customerProjectRepository.save(
+                          new CustomerProject(customerIdRef[0], project.getId(), memberIdOwner));
+
+                      var task =
+                          new Task(
+                              project.getId(),
+                              labelPrefix + " Work",
+                              "Work",
+                              "MEDIUM",
+                              "TASK",
+                              null,
+                              memberIdOwner);
+                      task = taskRepository.save(task);
+                      taskIdRef[0] = task.getId();
+                    }));
+
+    UUID teId =
+        createBillableTimeEntryForTask(taskIdRef[0], LocalDate.now(), 60, labelPrefix + " work");
+
+    // Create the draft first — succeeds even without tax number (soft-warn path).
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/invoices")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        { "customerId": "%s", "currency": "ZAR",
+                          "timeEntryIds": ["%s"] }
+                        """
+                            .formatted(customerIdRef[0], teId)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String invoiceId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    return invoiceId;
+  }
 
   private UUID createBillableTimeEntry(LocalDate date, int durationMinutes, String description) {
     return createBillableTimeEntryForTask(taskId, date, durationMinutes, description);

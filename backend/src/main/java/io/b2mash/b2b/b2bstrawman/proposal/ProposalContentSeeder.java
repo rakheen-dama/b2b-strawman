@@ -51,6 +51,9 @@ public class ProposalContentSeeder {
    * @param contingencyPercent contingency percentage (CONTINGENCY only)
    * @param contingencyDescription optional contingency description
    * @param expiresAt optional expiry timestamp
+   * @param proposalNoun the tenant's lowercase noun for a proposal (e.g. "engagement letter" on
+   *     legal-za, resolved from {@code EmailTerminology} by the caller); null/blank falls back to
+   *     "proposal" (LZKC-004)
    * @return a Tiptap doc tree as a {@code Map<String, Object>}; never null, never empty
    */
   public Map<String, Object> buildDefaultContent(
@@ -64,8 +67,10 @@ public class ProposalContentSeeder {
       BigDecimal retainerHoursIncluded,
       BigDecimal contingencyPercent,
       String contingencyDescription,
-      Instant expiresAt) {
+      Instant expiresAt,
+      String proposalNoun) {
 
+    String noun = proposalNoun != null && !proposalNoun.isBlank() ? proposalNoun : "proposal";
     var content = new ArrayList<Map<String, Object>>();
 
     // Heading (h2): proposal title
@@ -107,7 +112,8 @@ public class ProposalContentSeeder {
     if (expiresAt != null) {
       content.add(
           paragraph(
-              List.of(text("This proposal expires on " + DATE_FORMAT.format(expiresAt) + "."))));
+              List.of(
+                  text("This " + noun + " expires on " + DATE_FORMAT.format(expiresAt) + "."))));
     }
 
     // Standard terms paragraph (always)
@@ -115,7 +121,9 @@ public class ProposalContentSeeder {
         paragraph(
             List.of(
                 text(
-                    "This proposal is subject to our standard terms and conditions."
+                    "This "
+                        + noun
+                        + " is subject to our standard terms and conditions."
                         + " Please contact us if you have any questions."))));
 
     var doc = new LinkedHashMap<String, Object>();

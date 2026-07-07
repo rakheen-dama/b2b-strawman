@@ -1,1 +1,1 @@
-{"commit":"b4587bacd","command":"./mvnw verify","exit":0,"ts":"2026-07-07T13:10:08Z","summary":"5919 tests, 0 failures, 0 errors, 26 skipped (full suite on HEAD b4587bacd, 24:10 min, round 3)"}
+{"commit":"db01ceb6f","command":"./mvnw verify","exit":0,"ts":"2026-07-07T18:11:51Z","summary":"5921 tests, 0 failures, 0 errors, 26 skipped (combined verify on cycle-merged HEAD)"}

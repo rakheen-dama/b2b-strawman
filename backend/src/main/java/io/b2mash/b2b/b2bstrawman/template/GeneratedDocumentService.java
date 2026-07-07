@@ -383,8 +383,10 @@ public class GeneratedDocumentService {
 
   /**
    * Resolves the default invoice template based on the org's vertical profile. If verticalProfile
-   * is "accounting-za", returns the "invoice-za" pack template if it exists. Otherwise returns the
-   * generic "invoice" pack template if it exists. Falls back gracefully.
+   * is "accounting-za", returns the "invoice-za" pack template if it exists. If verticalProfile is
+   * "legal-za", returns the "fee-note-za" pack template if it exists (LZKC-012 — the line-item fee
+   * note, not the cover letter). Otherwise returns the generic "invoice" pack template if it
+   * exists. Falls back gracefully.
    *
    * <p>Uses {@code packTemplateKey} (the stable identifier from the template pack definition)
    * rather than slug (which is auto-generated from the template name).
@@ -399,6 +401,13 @@ public class GeneratedDocumentService {
     if ("accounting-za".equals(verticalProfile)) {
       Optional<DocumentTemplate> preferred =
           documentTemplateRepository.findByPackIdAndPackTemplateKey("accounting-za", "invoice-za");
+      if (preferred.isPresent()) {
+        return preferred;
+      }
+    }
+    if ("legal-za".equals(verticalProfile)) {
+      Optional<DocumentTemplate> preferred =
+          documentTemplateRepository.findByPackIdAndPackTemplateKey("legal-za", "fee-note-za");
       if (preferred.isPresent()) {
         return preferred;
       }

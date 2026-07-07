@@ -29,7 +29,7 @@ import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";
 import { createCustomer } from "@/app/(app)/org/[slug]/customers/actions";
 import { createMessages } from "@/lib/messages";
 import { scrollToFirstError } from "@/lib/error-handler";
-import { useTerminology } from "@/lib/terminology";
+import { useTerminology, withIndefiniteArticle } from "@/lib/terminology";
 import { useSubscription } from "@/lib/subscription-context";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { fetchIntakeFields } from "@/app/(app)/org/[slug]/customers/intake-actions";
@@ -402,7 +402,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                         <span className="text-muted-foreground font-normal">
                           {entityTypeValue === "INDIVIDUAL"
                             ? "(auto-filled from ID Number; editable)"
-                            : "(required to send an invoice; collectable later)"}
+                            : `(required to send ${withIndefiniteArticle(t("invoice"))}; collectable later)`}
                         </span>
                       </FormLabel>
                       <FormControl>

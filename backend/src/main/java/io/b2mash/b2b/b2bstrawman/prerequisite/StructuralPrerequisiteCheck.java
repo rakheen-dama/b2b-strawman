@@ -182,6 +182,16 @@ public final class StructuralPrerequisiteCheck {
    * for COMPANY/TRUST, visible WARNING for INDIVIDUAL (GAP-L-62 + LZKC-008).
    */
   public static List<PrerequisiteViolation> checkInvoiceSendOnly(Customer customer) {
+    return checkInvoiceSendOnly(customer, "an invoice");
+  }
+
+  /**
+   * Like {@link #checkInvoiceSendOnly(Customer)}, but with the tenant's invoice noun phrase ("an
+   * invoice" / "a fee note") supplied by a caller that can resolve the vertical profile — this
+   * class is a static utility with no settings access (LZKC-009 site 2).
+   */
+  public static List<PrerequisiteViolation> checkInvoiceSendOnly(
+      Customer customer, String invoiceNounWithArticle) {
     Map<String, Object> customFields = customer.getCustomFields();
     List<PrerequisiteViolation> violations = new ArrayList<>();
     for (FieldCheck field : INVOICE_SEND_ONLY_FIELDS) {
@@ -189,7 +199,7 @@ public final class StructuralPrerequisiteCheck {
         violations.add(
             new PrerequisiteViolation(
                 "STRUCTURAL",
-                field.displayName() + " is required to send an invoice",
+                field.displayName() + " is required to send " + invoiceNounWithArticle,
                 "CUSTOMER",
                 customer.getId(),
                 field.fieldSlug(),

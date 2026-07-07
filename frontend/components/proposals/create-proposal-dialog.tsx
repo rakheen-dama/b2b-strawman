@@ -234,7 +234,7 @@ export function CreateProposalDialog({
             <TerminologyText template="New {Proposal}" />
           </DialogTitle>
           <DialogDescription>
-            <TerminologyText template="Create a {proposal} for a client engagement." />
+            <TerminologyText template="Create {a proposal} for a client engagement." />
           </DialogDescription>
         </DialogHeader>
 

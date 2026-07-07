@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceLineResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceResponse;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
+import io.b2mash.b2b.b2bstrawman.notification.template.EmailTerminology;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tax.TaxCalculationService;
@@ -38,6 +39,7 @@ public class InvoiceRenderingService {
   private final OrgSettingsRepository orgSettingsRepository;
   private final TaxCalculationService taxCalculationService;
   private final TariffItemRepository tariffItemRepository;
+  private final EmailTerminology emailTerminology;
 
   public InvoiceRenderingService(
       InvoiceRepository invoiceRepository,
@@ -47,7 +49,8 @@ public class InvoiceRenderingService {
       ITemplateEngine templateEngine,
       OrgSettingsRepository orgSettingsRepository,
       TaxCalculationService taxCalculationService,
-      TariffItemRepository tariffItemRepository) {
+      TariffItemRepository tariffItemRepository,
+      EmailTerminology emailTerminology) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.projectRepository = projectRepository;
@@ -56,6 +59,7 @@ public class InvoiceRenderingService {
     this.orgSettingsRepository = orgSettingsRepository;
     this.taxCalculationService = taxCalculationService;
     this.tariffItemRepository = tariffItemRepository;
+    this.emailTerminology = emailTerminology;
   }
 
   @Transactional(readOnly = true)
@@ -109,6 +113,11 @@ public class InvoiceRenderingService {
         orgSettings != null ? orgSettings.getTax().getTaxRegistrationLabel() : "Tax Number";
     String taxLabel = orgSettings != null ? orgSettings.getTax().getTaxLabel() : "Tax";
     boolean taxInclusive = orgSettings != null && orgSettings.getTax().isTaxInclusive();
+    // LZKC-009 (site 1): the preview header/title noun follows the tenant's vertical profile
+    // ("Fee Note: DRAFT" on legal-za).
+    String verticalProfile = orgSettings != null ? orgSettings.getVerticalProfile() : null;
+    String invoiceTerm =
+        emailTerminology.resolve(verticalProfile).getOrDefault("Invoice", "Invoice");
 
     Context ctx = new Context();
     ctx.setVariable("invoice", invoice);
@@ -120,6 +129,7 @@ public class InvoiceRenderingService {
     ctx.setVariable("taxRegistrationLabel", taxRegistrationLabel);
     ctx.setVariable("taxLabel", taxLabel);
     ctx.setVariable("taxInclusive", taxInclusive);
+    ctx.setVariable("invoiceTerm", invoiceTerm);
 
     return templateEngine.process("invoice-preview", ctx);
   }

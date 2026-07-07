@@ -49,3 +49,16 @@ export function useTerminology(): TerminologyContextValue {
   const ctx = useContext(TerminologyContext);
   return ctx ?? DEFAULT_TERMINOLOGY;
 }
+
+// ---- Helpers ----
+
+/**
+ * Prefixes a resolved term with the correct indefinite article ("a"/"an").
+ * Terminology substitution can change the initial sound of a noun
+ * (e.g. legal-za `proposal` → "engagement letter"), so hardcoded articles in
+ * copy break ("a engagement letter"). A simple initial-vowel test is
+ * sufficient for the current term sets (LZKC-003).
+ */
+export function withIndefiniteArticle(term: string): string {
+  return (/^[aeiou]/i.test(term) ? "an " : "a ") + term;
+}

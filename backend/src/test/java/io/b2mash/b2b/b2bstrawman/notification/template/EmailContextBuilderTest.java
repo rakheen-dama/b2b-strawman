@@ -76,6 +76,12 @@ class EmailContextBuilderTest {
     assertThat(context).containsEntry("invoiceTermLower", "fee note");
     assertThat(context).containsEntry("invoiceTermPlural", "Fee Notes");
     assertThat(context).containsEntry("invoiceTermPluralLower", "fee notes");
+
+    // LZKC-004 — proposal nouns resolve to engagement-letter vocabulary
+    assertThat(terminology).containsEntry("Proposal", "Engagement Letter");
+    assertThat(context).containsEntry("proposalTerm", "Engagement Letter");
+    assertThat(context).containsEntry("proposalTermLower", "engagement letter");
+    assertThat(context).containsEntry("proposalTermLowerWithArticle", "an engagement letter");
   }
 
   @Test
@@ -93,6 +99,11 @@ class EmailContextBuilderTest {
     assertThat(context).containsEntry("invoiceTermLower", "invoice");
     assertThat(context).containsEntry("invoiceTermPlural", "Invoices");
     assertThat(context).containsEntry("invoiceTermPluralLower", "invoices");
+
+    // LZKC-004 — proposal keys fall back to identity for generic tenants
+    assertThat(context).containsEntry("proposalTerm", "Proposal");
+    assertThat(context).containsEntry("proposalTermLower", "proposal");
+    assertThat(context).containsEntry("proposalTermLowerWithArticle", "a proposal");
   }
 
   @Test

@@ -93,16 +93,19 @@ public final class TestCustomerFactory {
    */
   public static Customer createActiveCustomerWithPrerequisiteFields(
       String name, String email, UUID createdBy) {
+    return createActiveCustomerWithPrerequisiteFields(
+        name, email, createdBy, CustomerType.INDIVIDUAL);
+  }
+
+  /**
+   * Creates an ACTIVE customer of the given {@link CustomerType} with prerequisite fields
+   * pre-filled on both entity columns and JSONB. Safe for invoice creation and proposal sending
+   * flows.
+   */
+  public static Customer createActiveCustomerWithPrerequisiteFields(
+      String name, String email, UUID createdBy, CustomerType type) {
     var customer =
-        new Customer(
-            name,
-            email,
-            null,
-            null,
-            null,
-            createdBy,
-            CustomerType.INDIVIDUAL,
-            LifecycleStatus.ACTIVE);
+        new Customer(name, email, null, null, null, createdBy, type, LifecycleStatus.ACTIVE);
     customer.setCustomFields(new HashMap<>(prerequisiteCustomFields()));
     // Also set promoted entity columns
     customer.setAddressLine1("123 Test Street");

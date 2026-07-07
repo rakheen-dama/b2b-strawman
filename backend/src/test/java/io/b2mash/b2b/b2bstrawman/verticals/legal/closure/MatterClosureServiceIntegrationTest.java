@@ -81,6 +81,7 @@ class MatterClosureServiceIntegrationTest {
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private MatterClosureService matterClosureService;
+  @Autowired private MatterClosureContextBuilder matterClosureContextBuilder;
   @Autowired private MatterClosureLogRepository matterClosureLogRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
@@ -577,6 +578,48 @@ class MatterClosureServiceIntegrationTest {
     assertThat(pdfText)
         .as("matter.duration_months must render a value (0 — matter created today)")
         .containsPattern("Duration \\(months\\):\\s*0");
+  }
+
+  // ==========================================================================
+  // PR #1519 review follow-up — closure.date must come from the PERSISTED
+  // project.closedAt, not render-time LocalDate.now(): a letter re-rendered
+  // later (or a render straddling midnight UTC) must still carry the real
+  // closure date. now() remains only as the not-yet-closed fallback.
+  // ==========================================================================
+
+  @Test
+  void buildClosureContext_usesPersistedClosedAtDate_notRenderTimeNow() {
+    UUID projectId = createProject("Persisted Closure Date Matter");
+
+    runInTenantAsOwner(
+        () ->
+            matterClosureService.close(
+                projectId,
+                new ClosureRequest(
+                    ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
+                memberId));
+
+    // Backdate the persisted closure timestamp — as if the letter is re-rendered long after the
+    // close. Pre-fix, buildClosureContext stamps today's date; post-fix it must use closed_at.
+    Instant persistedClose = Instant.parse("2024-03-15T10:00:00Z");
+    jdbcTemplate.update(
+        "UPDATE \"%s\".projects SET closed_at = ? WHERE id = ?".formatted(tenantSchema),
+        java.sql.Timestamp.from(persistedClose),
+        projectId);
+
+    Map<String, Object> context =
+        runInTenantReturning(
+            () ->
+                matterClosureContextBuilder.buildClosureContext(
+                    projectId,
+                    new ClosureRequest(
+                        ClosureReason.CONCLUDED, "re-render", false, false, false, null)));
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> closure = (Map<String, Object>) context.get("closure");
+    assertThat(closure.get("date"))
+        .as("closure.date must be the persisted closed_at (UTC), not render-time now()")
+        .isEqualTo("2024-03-15");
   }
 
   // ==========================================================================

@@ -323,6 +323,16 @@ class InvoiceGenerationValidationIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isUnprocessableEntity())
+        // Error-path convention: assert the ProblemDetail body shape (status/title/detail per
+        // RFC 9457, produced by InvoiceValidationFailedException), not just the HTTP status.
+        .andExpect(jsonPath("$.status").value(422))
+        .andExpect(jsonPath("$.title").value("Invoice validation failed"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "Invoice has validation issues that must be resolved or overridden before"
+                        + " sending."))
+        .andExpect(jsonPath("$.canOverride").value(true))
         .andExpect(
             jsonPath("$.validationChecks[?(@.name == 'customer_tax_number')].passed").value(false))
         .andExpect(

@@ -177,21 +177,10 @@ public final class StructuralPrerequisiteCheck {
 
   /**
    * Evaluates the send-only prerequisite fields (currently just {@code tax_number}) and returns the
-   * list of violations. Supports the invoice-send tax-number policy (see {@link
-   * io.b2mash.b2b.b2bstrawman.invoice.InvoiceValidationService#validateInvoiceSend}): hard block
-   * for COMPANY/TRUST, visible WARNING for INDIVIDUAL (GAP-L-62 + LZKC-008).
+   * list of violations. Used by {@link io.b2mash.b2b.b2bstrawman.invoice.InvoiceValidationService}
+   * to hard-block invoice send when the customer is still missing a tax number — see GAP-L-62.
    */
   public static List<PrerequisiteViolation> checkInvoiceSendOnly(Customer customer) {
-    return checkInvoiceSendOnly(customer, "an invoice");
-  }
-
-  /**
-   * Like {@link #checkInvoiceSendOnly(Customer)}, but with the tenant's invoice noun phrase ("an
-   * invoice" / "a fee note") supplied by a caller that can resolve the vertical profile — this
-   * class is a static utility with no settings access (LZKC-009 site 2).
-   */
-  public static List<PrerequisiteViolation> checkInvoiceSendOnly(
-      Customer customer, String invoiceNounWithArticle) {
     Map<String, Object> customFields = customer.getCustomFields();
     List<PrerequisiteViolation> violations = new ArrayList<>();
     for (FieldCheck field : INVOICE_SEND_ONLY_FIELDS) {
@@ -199,7 +188,7 @@ public final class StructuralPrerequisiteCheck {
         violations.add(
             new PrerequisiteViolation(
                 "STRUCTURAL",
-                field.displayName() + " is required to send " + invoiceNounWithArticle,
+                field.displayName() + " is required to send an invoice",
                 "CUSTOMER",
                 customer.getId(),
                 field.fieldSlug(),

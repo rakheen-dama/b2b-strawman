@@ -106,12 +106,18 @@ public class InvoiceEmailService {
               invoice.getId().toString(),
               tenantSchema);
 
-      // 6. Construct attachment
-      var attachment =
-          new EmailAttachment(invoice.getInvoiceNumber() + ".pdf", "application/pdf", pdfBytes);
-
-      // 7. Send with attachment
-      var result = provider.sendEmailWithAttachment(message, attachment);
+      // 6/7. Send — with the rendered PDF attached when one is available. A null pdfBytes means
+      // no suitable invoice template could be resolved (see InvoiceEmailEventListener / the
+      // LZKC-012 legal-za guard in GeneratedDocumentService.resolveDefaultInvoiceTemplate): the
+      // email still goes out (it carries the portal link), just without an attachment, rather
+      // than attaching the wrong document.
+      var result =
+          pdfBytes == null
+              ? provider.sendEmail(message)
+              : provider.sendEmailWithAttachment(
+                  message,
+                  new EmailAttachment(
+                      invoice.getInvoiceNumber() + ".pdf", "application/pdf", pdfBytes));
 
       // 8. Record delivery
       deliveryLogService.record(

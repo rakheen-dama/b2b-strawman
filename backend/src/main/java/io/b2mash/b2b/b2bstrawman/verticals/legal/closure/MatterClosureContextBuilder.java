@@ -84,10 +84,21 @@ public class MatterClosureContextBuilder {
     // Note: `reason` stays as the raw enum token (kept for integrations/analytics that filter by
     // enum); `reason_label` is the user-facing display string rendered in the closure letter.
     // CR-Minor-2: the legal-za closure-letter template binds to closure.reason_label.
+    // closure.date is the PERSISTED closure timestamp (project.closedAt, stamped by
+    // Project#closeMatter inside performClose), not render-time "now" — a letter re-rendered
+    // later (or a render straddling midnight UTC) must still carry the real closure date. The
+    // now() fallback only covers the not-yet-closed edge (e.g. a preview before the close
+    // transaction has stamped closedAt).
+    Instant closedAt = project.getClosedAt();
+    LocalDate closureDate =
+        closedAt != null
+            ? closedAt.atZone(ZoneOffset.UTC).toLocalDate()
+            : LocalDate.now(ZoneOffset.UTC);
+
     var closureMap = new LinkedHashMap<String, Object>();
     closureMap.put("reason", req.reason().name());
     closureMap.put("reason_label", reasonLabel(req.reason()));
-    closureMap.put("date", LocalDate.now(ZoneOffset.UTC).toString());
+    closureMap.put("date", closureDate.toString());
     closureMap.put("notes", req.notes() != null ? req.notes() : "");
     context.put("closure", closureMap);
 

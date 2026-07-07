@@ -442,9 +442,16 @@ public class GeneratedDocumentService {
   /**
    * Resolves the default invoice template based on the org's vertical profile. If verticalProfile
    * is "accounting-za", returns the "invoice-za" pack template if it exists. If verticalProfile is
-   * "legal-za", returns the "fee-note-za" pack template if it exists (LZKC-012 — the line-item fee
-   * note, not the cover letter). Otherwise returns the generic "invoice" pack template if it
-   * exists. Falls back gracefully.
+   * "legal-za", returns the "fee-note-za" pack template — and ONLY that template (LZKC-012 — the
+   * line-item fee note, not the cover letter): if it is unavailable (e.g. pack reconciliation
+   * failed or has not run yet), this returns {@link Optional#empty()} rather than falling back to a
+   * generic INVOICE template, which for legal-za tenants is the old cover letter and would silently
+   * resurrect the LZKC-012 bug. Callers must degrade gracefully on empty (e.g. {@code
+   * InvoiceEmailEventListener} sends the invoice email without a PDF attachment).
+   *
+   * <p>For accounting-za and generic profiles the fallback chain is: profile-preferred key → the
+   * generic "invoice" pack key → the first active INVOICE-type template. The last step lives here
+   * (not in callers) so the legal-za guard above cannot be bypassed by a caller-side fallback.
    *
    * <p>Uses {@code packTemplateKey} (the stable identifier from the template pack definition)
    * rather than slug (which is auto-generated from the template name).
@@ -456,6 +463,10 @@ public class GeneratedDocumentService {
             .findForCurrentTenant()
             .map(OrgSettings::getVerticalProfile)
             .orElse(null);
+    if ("legal-za".equals(verticalProfile)) {
+      // LZKC-012 guard: fee note or nothing — never the generic cover letter.
+      return documentTemplateRepository.findByPackIdAndPackTemplateKey("legal-za", "fee-note-za");
+    }
     if ("accounting-za".equals(verticalProfile)) {
       Optional<DocumentTemplate> preferred =
           documentTemplateRepository.findByPackIdAndPackTemplateKey("accounting-za", "invoice-za");
@@ -463,18 +474,17 @@ public class GeneratedDocumentService {
         return preferred;
       }
     }
-    if ("legal-za".equals(verticalProfile)) {
-      Optional<DocumentTemplate> preferred =
-          documentTemplateRepository.findByPackIdAndPackTemplateKey("legal-za", "fee-note-za");
-      if (preferred.isPresent()) {
-        return preferred;
-      }
-    }
     // Fallback: try a generic "invoice" template from any pack
     var genericCandidates = documentTemplateRepository.findByPackTemplateKey("invoice");
-    return genericCandidates.isEmpty()
-        ? Optional.empty()
-        : Optional.of(genericCandidates.getFirst());
+    if (!genericCandidates.isEmpty()) {
+      return Optional.of(genericCandidates.getFirst());
+    }
+    // Last resort: the first active INVOICE-type template (e.g. a firm-authored template with no
+    // pack key). Moved here from InvoiceEmailEventListener so it is profile-aware.
+    return documentTemplateRepository
+        .findByPrimaryEntityTypeAndActiveTrueOrderBySortOrder(TemplateEntityType.INVOICE)
+        .stream()
+        .findFirst();
   }
 
   /**

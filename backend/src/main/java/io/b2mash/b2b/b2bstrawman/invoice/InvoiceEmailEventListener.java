@@ -2,10 +2,8 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 
 import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService;
 import io.b2mash.b2b.b2bstrawman.template.PdfResult;
-import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,19 +22,16 @@ public class InvoiceEmailEventListener {
   private final InvoiceRepository invoiceRepository;
   private final InvoiceEmailService invoiceEmailService;
   private final GeneratedDocumentService generatedDocumentService;
-  private final DocumentTemplateRepository documentTemplateRepository;
   private final TransactionTemplate requiresNewTransactionTemplate;
 
   public InvoiceEmailEventListener(
       InvoiceRepository invoiceRepository,
       InvoiceEmailService invoiceEmailService,
       GeneratedDocumentService generatedDocumentService,
-      DocumentTemplateRepository documentTemplateRepository,
       PlatformTransactionManager transactionManager) {
     this.invoiceRepository = invoiceRepository;
     this.invoiceEmailService = invoiceEmailService;
     this.generatedDocumentService = generatedDocumentService;
-    this.documentTemplateRepository = documentTemplateRepository;
     // The listener runs AFTER_COMMIT, where the originating transaction is already complete. A
     // plain (REQUIRES) transaction started here does not commit independently, so the persisted
     // GeneratedDocument would never reach the database. REQUIRES_NEW forces a fresh, independently
@@ -65,26 +60,23 @@ public class InvoiceEmailEventListener {
       }
 
       // 2. Find invoice template and generate PDF.
-      // LZKC-012 — prefer the vertical-profile default (legal-za fee-note-za / accounting-za
-      // invoice-za), which is the line-item client document. Falling back to the first active
-      // INVOICE template preserves behaviour for tenants without a profile-specific template
-      // (previously that fallback was the only selection and picked the cover letter for
-      // legal-za tenants, so the client never received a real fee note).
-      var templateOpt =
-          generatedDocumentService
-              .resolveDefaultInvoiceTemplate()
-              .or(
-                  () ->
-                      documentTemplateRepository
-                          .findByPrimaryEntityTypeAndActiveTrueOrderBySortOrder(
-                              TemplateEntityType.INVOICE)
-                          .stream()
-                          .findFirst());
+      // LZKC-012 — the vertical-profile-aware default: legal-za fee-note-za / accounting-za
+      // invoice-za, i.e. the line-item client document. The entire fallback chain (including the
+      // first-active-INVOICE-template last resort for non-legal-za tenants) lives inside
+      // resolveDefaultInvoiceTemplate so that a legal-za tenant whose fee-note template is
+      // unavailable resolves EMPTY here — never the generic cover letter, which was the LZKC-012
+      // bug (the client received a cover letter instead of a real fee note).
+      var templateOpt = generatedDocumentService.resolveDefaultInvoiceTemplate();
 
       if (templateOpt.isEmpty()) {
+        // Degrade gracefully: still deliver the invoice email (it carries the portal link the
+        // client pays through) — just without a PDF attachment, rather than attaching the wrong
+        // document or silently dropping the email.
         log.warn(
-            "No invoice document template found, skipping PDF generation for invoice={}",
+            "No suitable invoice document template found, sending invoice email without PDF"
+                + " attachment for invoice={}",
             event.entityId());
+        invoiceEmailService.sendInvoiceEmail(invoice, null);
         return;
       }
 

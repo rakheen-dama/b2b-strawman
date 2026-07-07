@@ -43,6 +43,22 @@ public interface PackInstaller {
   void install(String packId, String tenantId, String memberId);
 
   /**
+   * Reconciles an already-installed pack against its current classpath definition. Called by the
+   * startup reconciliation path ({@code PackInstallService.internalInstall}) when a {@link
+   * PackInstall} row already exists, so that content added to a pack in a newer version reaches
+   * tenants that installed an earlier version. Implementations must be additive only (never delete
+   * or overwrite tenant content) and idempotent.
+   *
+   * @param packId the unique pack identifier
+   * @param tenantId the tenant schema name
+   * @return {@code true} if content was added or the recorded pack version advanced, {@code false}
+   *     if this was a no-op
+   */
+  default boolean reconcile(String packId, String tenantId) {
+    return false;
+  }
+
+  /**
    * Checks whether a pack can be safely uninstalled. Returns an {@link UninstallCheck} with gate
    * results. Blocking reasons may include content modifications, generated document references, or
    * clone references.

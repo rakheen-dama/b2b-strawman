@@ -1,6 +1,6 @@
 {
   "packId": "legal-za",
-  "version": 5,
+  "version": 6,
   "verticalProfile": "legal-za",
   "name": "SA Legal Templates",
   "description": "Document templates for South African law firms: engagement letters, court filings, and correspondence",
@@ -169,6 +169,17 @@
       "cssFile": null,
       "description": "Instruction letter to the bond institution to cancel the mortgage bond and furnish the title deed and Form J consent.",
       "sortOrder": 16,
+      "acceptanceEligible": false
+    },
+    {
+      "templateKey": "fee-note-za",
+      "name": "Fee Note",
+      "category": "OTHER",
+      "primaryEntityType": "INVOICE",
+      "contentFile": "fee-note-za.json",
+      "cssFile": null,
+      "description": "Client-facing fee note with itemised fees and disbursements, VAT breakdown, matter reference, and totals.",
+      "sortOrder": 17,
       "acceptanceEligible": false
     }
   ]

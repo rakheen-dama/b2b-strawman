@@ -1,12 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.closure;
 
-import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.template.TemplateContextHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureReason;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementApprovalStatus;
@@ -28,15 +26,20 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Assembles the rendering context for the {@code matter-closure-letter} Tiptap template (Phase 67,
- * Epic 489B, task 489.15). Layers closure-specific {@code closure.*} and {@code matter.*} variables
- * on top of the usual {@code project.*}, {@code customer.*}, {@code org.*} shape.
+ * Assembles the closure-specific rendering context for the {@code matter-closure-letter} Tiptap
+ * template (Phase 67, Epic 489B, task 489.15): the {@code closure.*} and {@code matter.*} variable
+ * groups referenced by architecture §67.9.1.
  *
- * <p>This class is a standalone utility — it does NOT implement {@code TemplateContextBuilder} (the
- * auto-dispatched PDF pipeline handles project-entity context via {@code ProjectContextBuilder}).
- * It is kept as an explicit component for preview/testing of the closure-specific variable shape,
- * and as a single source of truth for the "fees billed / disbursements / duration" aggregates
- * referenced by architecture §67.9.1.
+ * <p>This class does NOT implement {@code TemplateContextBuilder} — the template is registered with
+ * {@code primaryEntityType: PROJECT}, so the auto-dispatched PDF pipeline resolves the base {@code
+ * project.*} / {@code customer.*} / {@code org.*} context via {@code ProjectContextBuilder}. The
+ * closure letter additionally needs the closure-time variables, which only exist while the {@code
+ * ClosureRequest} is in scope; {@code MatterClosureService.generateClosureLetterSafely} builds them
+ * here and threads them through {@code GeneratedDocumentService.generateForProject} as extra
+ * context, merged over the builder-produced base context before rendering (LZKC-018).
+ *
+ * <p>{@code org.principal_attorney} (referenced by the template) has no backing OrgSettings field
+ * yet and intentionally stays blank — it is not emitted here.
  */
 @Component
 public class MatterClosureContextBuilder {
@@ -45,61 +48,37 @@ public class MatterClosureContextBuilder {
       Set.of(InvoiceStatus.SENT, InvoiceStatus.PAID);
 
   private final ProjectRepository projectRepository;
-  private final CustomerRepository customerRepository;
   private final InvoiceRepository invoiceRepository;
   private final DisbursementRepository disbursementRepository;
-  private final TemplateContextHelper templateContextHelper;
 
   public MatterClosureContextBuilder(
       ProjectRepository projectRepository,
-      CustomerRepository customerRepository,
       InvoiceRepository invoiceRepository,
-      DisbursementRepository disbursementRepository,
-      TemplateContextHelper templateContextHelper) {
+      DisbursementRepository disbursementRepository) {
     this.projectRepository = projectRepository;
-    this.customerRepository = customerRepository;
     this.invoiceRepository = invoiceRepository;
     this.disbursementRepository = disbursementRepository;
-    this.templateContextHelper = templateContextHelper;
   }
 
   /**
-   * Returns a map with {@code project.*}, {@code customer.*}, {@code closure.*}, {@code matter.*},
-   * and {@code org.*} keys suitable for Tiptap variable substitution.
+   * Returns a map with {@code closure.*} and {@code matter.*} keys suitable for merging over the
+   * {@code ProjectContextBuilder}-produced base context for Tiptap variable substitution. Values
+   * are pre-formatted (ISO date, plain decimal strings) — these keys carry no format hints in
+   * {@code VariableMetadataRegistry}, so the renderer emits them verbatim.
    *
    * <p>{@code @Transactional(readOnly = true)} so Hibernate lazy associations resolve within a
    * session — Spring Boot 4 disables OSIV by default, so the context assembly must run inside a
-   * transaction to avoid {@code LazyInitializationException} (H5).
+   * transaction to avoid {@code LazyInitializationException} (H5). When invoked from {@code
+   * generateClosureLetterSafely}'s {@code REQUIRES_NEW} transaction it simply participates.
    */
   @Transactional(readOnly = true)
-  public Map<String, Object> build(UUID projectId, ClosureRequest req) {
+  public Map<String, Object> buildClosureContext(UUID projectId, ClosureRequest req) {
     var project =
         projectRepository
             .findById(projectId)
             .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
 
     Map<String, Object> context = new HashMap<>();
-
-    // project.*
-    var projectMap = new LinkedHashMap<String, Object>();
-    projectMap.put("id", project.getId());
-    projectMap.put("name", project.getName());
-    projectMap.put("description", project.getDescription());
-    context.put("project", projectMap);
-
-    // customer.*
-    if (project.getCustomerId() != null) {
-      customerRepository
-          .findById(project.getCustomerId())
-          .ifPresent(
-              customer -> {
-                var customerMap = new LinkedHashMap<String, Object>();
-                customerMap.put("id", customer.getId());
-                customerMap.put("name", customer.getName());
-                customerMap.put("email", customer.getEmail());
-                context.put("customer", customerMap);
-              });
-    }
 
     // closure.*
     // Note: `reason` stays as the raw enum token (kept for integrations/analytics that filter by
@@ -118,14 +97,6 @@ public class MatterClosureContextBuilder {
     matterMap.put("total_disbursements", totalDisbursementsBilled(projectId).toPlainString());
     matterMap.put("duration_months", durationMonths(project.getCreatedAt()));
     context.put("matter", matterMap);
-
-    // org.* — reuse the shared org context helper so branding/logo/name come through consistently.
-    // The `principal_attorney` variable referenced by the template has no first-class OrgSettings
-    // field yet — we emit an empty string so the renderer doesn't blow up on a missing key (task
-    // 489.15 pins the variable name; future phases can back it with a real field).
-    var orgMap = new LinkedHashMap<String, Object>(templateContextHelper.buildOrgContext());
-    orgMap.putIfAbsent("principal_attorney", "");
-    context.put("org", orgMap);
 
     return context;
   }

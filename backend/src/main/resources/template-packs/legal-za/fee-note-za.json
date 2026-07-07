@@ -1,0 +1,176 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [
+        { "type": "text", "text": "FEE NOTE" }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "From:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "org.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "VAT Registration No:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "org.taxRegistrationNumber" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "To:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "customer.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Client VAT Number:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "customerVatNumber" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Matter:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "project.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Matter Reference:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "project.referenceNumber" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Fee Note Number:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "invoice.invoiceNumber" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Issue Date:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "invoice.issueDate" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Due Date:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "invoice.dueDate" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Currency:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "invoice.currency" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Fees and Disbursements" }
+      ]
+    },
+    {
+      "type": "loopTable",
+      "attrs": {
+        "dataSource": "lines",
+        "columns": [
+          { "header": "Description", "key": "description" },
+          { "header": "Qty", "key": "quantity", "format": "number" },
+          { "header": "Unit Price (excl. VAT)", "key": "unitPrice", "format": "currency" },
+          { "header": "VAT", "key": "taxAmount", "format": "currency" },
+          { "header": "Total (incl. VAT)", "key": "lineTotal", "format": "currency" }
+        ]
+      }
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Amount Summary" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Subtotal (excl. VAT):" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "invoice.subtotal" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "VAT:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "invoice.taxAmount" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Total Due:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "invoice.total" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Payment Details" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Please use the fee note number as your payment reference. Banking details are available on request or as provided in your engagement letter. Kindly settle this fee note by the due date." }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "italic" }], "text": "Where the practice is registered for VAT, this fee note constitutes a tax invoice as defined in section 20 of the Value-Added Tax Act 89 of 1991." }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.documentFooterText" } }
+      ]
+    }
+  ]
+}

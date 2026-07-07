@@ -82,37 +82,52 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
   @Override
   protected void applyPack(TemplatePackDefinition pack, Resource packResource, String tenantId) {
     for (TemplatePackTemplate templateDef : pack.templates()) {
-      TemplateCategory category = TemplateCategory.valueOf(templateDef.category());
-      TemplateEntityType entityType = TemplateEntityType.valueOf(templateDef.primaryEntityType());
-
-      String css =
-          templateDef.cssFile() != null
-              ? loadTemplateContentAsString(packResource, templateDef.cssFile())
-              : null;
-
-      String slug = DocumentTemplate.generateSlug(templateDef.name());
-
-      // Load content as JSONB Map for the primary content field
-      Map<String, Object> contentJson = null;
-      if (templateDef.contentFile() != null && templateDef.contentFile().endsWith(".json")) {
-        contentJson = loadTemplateContentAsJson(packResource, templateDef.contentFile());
-      }
-      if (contentJson == null) {
-        throw new IllegalStateException(
-            "Template definition has no JSON content file: " + templateDef.contentFile());
-      }
-
-      var dt = new DocumentTemplate(entityType, templateDef.name(), slug, category, contentJson);
-      dt.setDescription(templateDef.description());
-      dt.setCss(css);
-      dt.setSource(TemplateSource.PLATFORM);
-      dt.setPackId(pack.packId());
-      dt.setPackTemplateKey(templateDef.templateKey());
-      dt.setSortOrder(templateDef.sortOrder());
-      dt.setAcceptanceEligible(Boolean.TRUE.equals(templateDef.acceptanceEligible()));
-
-      documentTemplateRepository.save(dt);
+      createTemplate(pack, templateDef, packResource);
     }
+  }
+
+  /**
+   * Creates a single pack template row. Public delegate used by {@code TemplatePackInstaller}
+   * reconciliation to deliver templates added in a newer pack version to tenants that installed an
+   * earlier version. Caller is responsible for tenant scoping and duplicate checks.
+   */
+  public void applySingleTemplate(
+      TemplatePackDefinition pack, TemplatePackTemplate templateDef, Resource packResource) {
+    createTemplate(pack, templateDef, packResource);
+  }
+
+  private void createTemplate(
+      TemplatePackDefinition pack, TemplatePackTemplate templateDef, Resource packResource) {
+    TemplateCategory category = TemplateCategory.valueOf(templateDef.category());
+    TemplateEntityType entityType = TemplateEntityType.valueOf(templateDef.primaryEntityType());
+
+    String css =
+        templateDef.cssFile() != null
+            ? loadTemplateContentAsString(packResource, templateDef.cssFile())
+            : null;
+
+    String slug = DocumentTemplate.generateSlug(templateDef.name());
+
+    // Load content as JSONB Map for the primary content field
+    Map<String, Object> contentJson = null;
+    if (templateDef.contentFile() != null && templateDef.contentFile().endsWith(".json")) {
+      contentJson = loadTemplateContentAsJson(packResource, templateDef.contentFile());
+    }
+    if (contentJson == null) {
+      throw new IllegalStateException(
+          "Template definition has no JSON content file: " + templateDef.contentFile());
+    }
+
+    var dt = new DocumentTemplate(entityType, templateDef.name(), slug, category, contentJson);
+    dt.setDescription(templateDef.description());
+    dt.setCss(css);
+    dt.setSource(TemplateSource.PLATFORM);
+    dt.setPackId(pack.packId());
+    dt.setPackTemplateKey(templateDef.templateKey());
+    dt.setSortOrder(templateDef.sortOrder());
+    dt.setAcceptanceEligible(Boolean.TRUE.equals(templateDef.acceptanceEligible()));
+
+    documentTemplateRepository.save(dt);
   }
 
   private String loadTemplateContentAsString(Resource packJsonResource, String filename) {

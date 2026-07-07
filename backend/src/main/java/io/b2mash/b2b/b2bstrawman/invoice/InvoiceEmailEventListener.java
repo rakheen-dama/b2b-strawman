@@ -64,12 +64,22 @@ public class InvoiceEmailEventListener {
         return;
       }
 
-      // 2. Find invoice template and generate PDF
+      // 2. Find invoice template and generate PDF.
+      // LZKC-012 — prefer the vertical-profile default (legal-za fee-note-za / accounting-za
+      // invoice-za), which is the line-item client document. Falling back to the first active
+      // INVOICE template preserves behaviour for tenants without a profile-specific template
+      // (previously that fallback was the only selection and picked the cover letter for
+      // legal-za tenants, so the client never received a real fee note).
       var templateOpt =
-          documentTemplateRepository
-              .findByPrimaryEntityTypeAndActiveTrueOrderBySortOrder(TemplateEntityType.INVOICE)
-              .stream()
-              .findFirst();
+          generatedDocumentService
+              .resolveDefaultInvoiceTemplate()
+              .or(
+                  () ->
+                      documentTemplateRepository
+                          .findByPrimaryEntityTypeAndActiveTrueOrderBySortOrder(
+                              TemplateEntityType.INVOICE)
+                          .stream()
+                          .findFirst());
 
       if (templateOpt.isEmpty()) {
         log.warn(

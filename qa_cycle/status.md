@@ -48,6 +48,7 @@ ALL_DAYS_COMPLETE
 | LZKC-019 | Day 61 / 61.9 | Matter activity feed prints raw audit event keys for portal/doc events ("performed portal.document.downloaded on document", "statement.generated on generated_document") without document names; task events get friendly copy | Low | Dev | SPEC_READY (M — covers the whole missing-event-type class) |
 | LZKC-020 | Day 88 / 88.4 | Portal engagement-letter acceptance attributed to "System" in activity feeds and missing from client's "Your actions" trail — all other portal actions correctly attributed to the contact | Low | Dev | SPEC_READY (S, forward-only; historical rows stay "System" unless backfill authorized) |
 | LZKC-021 | Day 90 / 90.1 | "projects" terminology leaks on My Work ("Your tasks and time tracking across all projects") and Calendar ("across all projects", "All Projects" filter, "Projects" tab) despite legal-za substitution | Low | Dev | SPEC_READY (S) |
+| LZKC-022 | fix-loop review find | **Systemic (pre-existing)**: ALL notification-email deep links omit the `/org/{slug}` prefix (`EmailContextBuilder.appUrl` + bare paths: `/pipeline/{id}`, `/invoices/{id}`, `/proposals/{id}`, `/projects/{p}/tasks/{t}`); no middleware rewrite exists for bare top-level paths → firm-side email links 404. Found by PR #1515 review; every sibling branch shares the gap. Needs Product triage (cross-cutting, one mechanism) | Medium | Product | OPEN |
 
 ## Log
 

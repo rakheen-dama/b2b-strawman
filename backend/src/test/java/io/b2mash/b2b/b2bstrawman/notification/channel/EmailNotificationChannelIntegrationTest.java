@@ -226,6 +226,48 @@ class EmailNotificationChannelIntegrationTest {
   }
 
   @Test
+  void deliver_maps_deal_won_to_template() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              UUID dealId = UUID.randomUUID();
+              var notification =
+                  notificationRepository.save(
+                      new Notification(
+                          memberId,
+                          "DEAL_WON",
+                          "You won a deal",
+                          "A deal you own has been marked as won.",
+                          "DEAL",
+                          dealId,
+                          null));
+
+              boolean delivered = emailChannel.deliver(notification, RECIPIENT_EMAIL);
+
+              assertThat(delivered).isTrue();
+              assertThat(greenMail.getReceivedMessages()).hasSize(1);
+              try {
+                var message = greenMail.getReceivedMessages()[0];
+                assertThat(message.getAllRecipients()[0].toString()).isEqualTo(RECIPIENT_EMAIL);
+                assertThat(message.getSubject()).isEqualTo("You won a deal");
+                String content = new String(message.getInputStream().readAllBytes());
+                assertThat(content).contains("/pipeline/");
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+
+              var log =
+                  deliveryLogRepository.findAll().stream()
+                      .filter(l -> notification.getId().equals(l.getReferenceId()))
+                      .findFirst();
+              assertThat(log).isPresent();
+              assertThat(log.get().getTemplateName()).isEqualTo("notification-deal-won");
+              assertThat(log.get().getStatus()).isEqualTo(EmailDeliveryStatus.SENT);
+            });
+  }
+
+  @Test
   void deliver_email_contains_branding() {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)

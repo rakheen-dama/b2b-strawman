@@ -86,6 +86,7 @@ public class MatterClosureService {
   private final CapabilityAuthorizationService capabilityAuthorizationService;
   private final OrgSettingsService orgSettingsService;
   private final GeneratedDocumentService generatedDocumentService;
+  private final MatterClosureContextBuilder matterClosureContextBuilder;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final StatementService statementService;
@@ -107,6 +108,7 @@ public class MatterClosureService {
       CapabilityAuthorizationService capabilityAuthorizationService,
       OrgSettingsService orgSettingsService,
       GeneratedDocumentService generatedDocumentService,
+      MatterClosureContextBuilder matterClosureContextBuilder,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       StatementService statementService,
@@ -119,6 +121,7 @@ public class MatterClosureService {
     this.capabilityAuthorizationService = capabilityAuthorizationService;
     this.orgSettingsService = orgSettingsService;
     this.generatedDocumentService = generatedDocumentService;
+    this.matterClosureContextBuilder = matterClosureContextBuilder;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.statementService = statementService;
@@ -176,7 +179,7 @@ public class MatterClosureService {
     UUID closureLetterDocId = null;
     if (req.generateClosureLetter()) {
       closureLetterDocId =
-          self.generateClosureLetterSafely(projectId, internal.closureLogId(), actingMemberId);
+          self.generateClosureLetterSafely(projectId, internal.closureLogId(), req, actingMemberId);
     }
 
     // GAP-L-93: Statement of Account generation in its OWN separate transaction. Failure MUST NOT
@@ -371,13 +374,25 @@ public class MatterClosureService {
    * (GAP-L-74 part B: client-facing per scenario step 61.8). This eliminates the OBS-2106 race
    * where the listener could observe an INTERNAL visibility before the post-generation flip
    * committed, dropping the portal email; no follow-up event or dedup-coalescence is needed.
+   *
+   * <p>LZKC-018: the template's {@code closure.*} / {@code matter.*} variables cannot be produced
+   * by the PROJECT-dispatched {@code ProjectContextBuilder} (they depend on the in-flight {@link
+   * ClosureRequest}), so they are assembled by {@link MatterClosureContextBuilder} here and merged
+   * over the base context via the extra-context {@code generateForProject} overload.
    */
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public UUID generateClosureLetterSafely(UUID projectId, UUID closureLogId, UUID actingMemberId) {
+  public UUID generateClosureLetterSafely(
+      UUID projectId, UUID closureLogId, ClosureRequest req, UUID actingMemberId) {
     try {
+      Map<String, Object> closureContext =
+          matterClosureContextBuilder.buildClosureContext(projectId, req);
       var result =
           generatedDocumentService.generateForProject(
-              projectId, CLOSURE_LETTER_SLUG, actingMemberId, Document.Visibility.PORTAL);
+              projectId,
+              CLOSURE_LETTER_SLUG,
+              actingMemberId,
+              Document.Visibility.PORTAL,
+              closureContext);
       if (result == null || result.generatedDocument() == null) {
         return null;
       }

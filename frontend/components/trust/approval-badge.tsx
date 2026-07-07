@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@b2mash/ui/button";
@@ -31,9 +33,20 @@ import { rejectionReasonSchema, type RejectionReasonFormData } from "@/lib/schem
 interface ApprovalBadgeProps {
   transactionId: string;
   status: string;
+  /** Member who gave the first (dual-mode) approval, if any (LZKC-016). */
+  firstApprovedBy?: string | null;
+  /** Current viewer's member id — used to disable Approve for the member
+   *  who already gave the first approval (LZKC-016). */
+  currentMemberId?: string | null;
 }
 
-export function ApprovalBadge({ transactionId, status }: ApprovalBadgeProps) {
+export function ApprovalBadge({
+  transactionId,
+  status,
+  firstApprovedBy,
+  currentMemberId,
+}: ApprovalBadgeProps) {
+  const router = useRouter();
   const [isApproving, setIsApproving] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,12 +55,24 @@ export function ApprovalBadge({ transactionId, status }: ApprovalBadgeProps) {
     return null;
   }
 
+  const alreadyApprovedByViewer =
+    !!firstApprovedBy && !!currentMemberId && firstApprovedBy === currentMemberId;
+
   async function handleApprove() {
     setError(null);
     setIsApproving(true);
     try {
       const result = await approveTransaction(transactionId);
-      if (!result.success) {
+      if (result.success) {
+        // LZKC-016: the first dual-mode approval keeps the transaction in
+        // AWAITING_APPROVAL — say so explicitly instead of registering silently.
+        if (result.transaction?.status === "AWAITING_APPROVAL") {
+          toast.success("Approval recorded — 1 of 2 approvals. A second approver is required.");
+        } else {
+          toast.success("Transaction approved");
+        }
+        router.refresh();
+      } else {
         setError(result.error ?? "Failed to approve");
       }
     } catch {
@@ -63,7 +88,10 @@ export function ApprovalBadge({ transactionId, status }: ApprovalBadgeProps) {
         variant="outline"
         size="sm"
         onClick={handleApprove}
-        disabled={isApproving}
+        disabled={isApproving || alreadyApprovedByViewer}
+        title={
+          alreadyApprovedByViewer ? "A different member must give the second approval" : undefined
+        }
         data-testid="approve-button"
       >
         {isApproving ? (
@@ -71,7 +99,7 @@ export function ApprovalBadge({ transactionId, status }: ApprovalBadgeProps) {
         ) : (
           <CheckCircle2 className="mr-1 size-3" />
         )}
-        Approve
+        {alreadyApprovedByViewer ? "Approved by you" : "Approve"}
       </Button>
       <Button
         variant="destructive"

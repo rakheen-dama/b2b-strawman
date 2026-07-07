@@ -141,6 +141,92 @@ public class TemplatePackInstaller implements PackInstaller {
         tenantId);
   }
 
+  /**
+   * Reconciles an already-installed template pack with its current classpath definition. If the
+   * classpath pack version is newer than the installed version, creates any pack templates that do
+   * not exist in the tenant (matched by {@code packId + packTemplateKey}), tags them with the
+   * existing install, and advances the recorded install version. Additive only: existing templates
+   * are never modified or deleted. Note that a version bump restores any pack template the tenant
+   * is missing (including ones a member deleted) — pack upgrades re-deliver the full pack content.
+   */
+  @Override
+  @Transactional
+  public boolean reconcile(String packId, String tenantId) {
+    var installOpt = packInstallRepository.findByPackId(packId);
+    if (installOpt.isEmpty()) {
+      return false;
+    }
+    PackInstall install = installOpt.get();
+
+    var loadedPackOpt =
+        templatePackSeeder.getAvailablePacks().stream()
+            .filter(lp -> packId.equals(lp.definition().packId()))
+            .findFirst();
+    if (loadedPackOpt.isEmpty()) {
+      return false;
+    }
+    var loadedPack = loadedPackOpt.get();
+    TemplatePackDefinition pack = loadedPack.definition();
+
+    String installedVersion = install.getPackVersion();
+    if (pack.version() <= parseVersion(installedVersion)) {
+      return false;
+    }
+
+    // Atomically claim the version advance before creating anything. Under concurrent
+    // reconciliation (e.g. two replicas booting simultaneously) only one transaction wins this
+    // conditional UPDATE; the loser blocks on the pack_install row lock until the winner commits,
+    // then matches zero rows and backs off — the same TOCTOU discipline install() gets from
+    // uq_pack_install_pack_id, without a new unique constraint on document_templates.
+    int claimed =
+        packInstallRepository.advancePackVersion(
+            packId, installedVersion, String.valueOf(pack.version()), pack.templates().size());
+    if (claimed == 0) {
+      log.info(
+          "Template pack {} reconcile skipped for tenant {} — version advance already claimed",
+          packId,
+          tenantId);
+      return false;
+    }
+
+    int created = 0;
+    for (var templateDef : pack.templates()) {
+      if (documentTemplateRepository
+          .findByPackIdAndPackTemplateKey(packId, templateDef.templateKey())
+          .isPresent()) {
+        continue;
+      }
+      templatePackSeeder.applySingleTemplate(pack, templateDef, loadedPack.resource());
+      created++;
+    }
+
+    if (created > 0) {
+      var freshUntagged =
+          documentTemplateRepository.findByPackIdAndSourcePackInstallIdIsNull(packId);
+      for (DocumentTemplate dt : freshUntagged) {
+        dt.setSourcePackInstallId(install.getId());
+        dt.setContentHash(computeTemplateHash(dt));
+      }
+      documentTemplateRepository.saveAll(freshUntagged);
+    }
+
+    log.info(
+        "Reconciled template pack {} to v{} for tenant {} ({} new templates)",
+        packId,
+        pack.version(),
+        tenantId,
+        created);
+    return true;
+  }
+
+  private static int parseVersion(String version) {
+    try {
+      return Integer.parseInt(version);
+    } catch (NumberFormatException e) {
+      return 1;
+    }
+  }
+
   @Override
   @Transactional(readOnly = true)
   public UninstallCheck checkUninstallable(String packId, String tenantId) {

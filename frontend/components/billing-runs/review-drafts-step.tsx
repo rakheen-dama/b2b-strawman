@@ -81,6 +81,10 @@ export function ReviewDraftsStep({
 
       // If already generated, just reload items without re-generating
       if (hasGenerated.current) {
+        // Clear the flag a cancelled generate mount may have left behind
+        // (StrictMode mount/cleanup/remount) — otherwise the wizard hangs
+        // on "Generating invoices...".
+        setIsGenerating(false);
         setIsLoading(true);
         try {
           const itemsResult = await getItemsAction(billingRunId);
@@ -101,15 +105,23 @@ export function ReviewDraftsStep({
       }
 
       setIsGenerating(true);
+      // Mark BEFORE awaiting: StrictMode (and any cancel-then-remount) re-runs
+      // this effect while the ref persists — the remount must take the reload
+      // branch above instead of issuing a second generate against a run that is
+      // no longer in PREVIEW (LZKC-006). Reset only on real generation failure.
+      hasGenerated.current = true;
+      let generateSucceeded = false;
       try {
         const genResult = await generateAction(billingRunId);
-        if (cancelled) return;
         if (!genResult.success) {
+          hasGenerated.current = false;
+          if (cancelled) return;
           setError(genResult.error ?? "Failed to generate invoices.");
           setIsGenerating(false);
           return;
         }
-        hasGenerated.current = true;
+        generateSucceeded = true;
+        if (cancelled) return;
         setIsGenerating(false);
 
         setIsLoading(true);
@@ -121,6 +133,11 @@ export function ReviewDraftsStep({
           setError(itemsResult.error ?? "Failed to load items.");
         }
       } catch {
+        // Only clear the guard if generation itself failed — a failed items
+        // load after a successful generate must NOT trigger a re-generate.
+        if (!generateSucceeded) {
+          hasGenerated.current = false;
+        }
         if (!cancelled) {
           setError("An unexpected error occurred.");
         }

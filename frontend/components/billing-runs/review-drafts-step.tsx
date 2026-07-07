@@ -36,6 +36,16 @@ const PAYMENT_TERMS_OPTIONS = [
   { value: "NET_60", label: "Net 60" },
 ];
 
+// Backend BillingRunGenerationService rejects generating a non-PREVIEW run
+// with this message. When a fresh mount of this step re-generates a run that
+// an earlier mount already generated (the wizard unmounts the step on Back,
+// so an in-instance guard cannot help), the run's drafts already exist —
+// treat the rejection as "already generated" and load them instead of
+// dead-ending the wizard (LZKC-006).
+function isAlreadyGeneratedError(error: string | undefined): boolean {
+  return !!error && error.includes("Only billing runs in PREVIEW status can be generated");
+}
+
 interface ReviewDraftsStepProps {
   slug: string;
   billingRunId: string;
@@ -70,8 +80,16 @@ export function ReviewDraftsStep({
   const [batchPaymentTerms, setBatchPaymentTerms] = useState("");
   const [isBatchUpdating, setIsBatchUpdating] = useState(false);
 
-  // Guard against duplicate generation when navigating back to this step
-  const hasGenerated = useRef(false);
+  // Deduplicates generation across duplicate effect runs: React StrictMode's
+  // mount/cleanup/remount re-runs this effect on the SAME component instance,
+  // so both runs must converge on ONE generate call and only load drafts
+  // after it settles — a second call would hit a run no longer in PREVIEW and
+  // dead-end the wizard (LZKC-006). Keyed by billingRunId so a different run
+  // still generates.
+  const generateRef = useRef<{
+    billingRunId: string;
+    promise: Promise<Awaited<ReturnType<typeof generateAction>>>;
+  } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,52 +97,46 @@ export function ReviewDraftsStep({
     async function generateAndLoad() {
       setError(null);
 
-      // If already generated, just reload items without re-generating
-      if (hasGenerated.current) {
-        // Clear the flag a cancelled generate mount may have left behind
-        // (StrictMode mount/cleanup/remount) — otherwise the wizard hangs
-        // on "Generating invoices...".
-        setIsGenerating(false);
-        setIsLoading(true);
-        try {
-          const itemsResult = await getItemsAction(billingRunId);
-          if (cancelled) return;
-          if (itemsResult.success && itemsResult.items) {
-            setItems(itemsResult.items);
-          } else {
-            setError(itemsResult.error ?? "Failed to load items.");
-          }
-        } catch {
-          if (!cancelled) {
-            setError("An unexpected error occurred.");
-          }
-        } finally {
-          if (!cancelled) setIsLoading(false);
+      if (!generateRef.current || generateRef.current.billingRunId !== billingRunId) {
+        setIsGenerating(true);
+        generateRef.current = { billingRunId, promise: generateAction(billingRunId) };
+      }
+
+      let genResult: Awaited<ReturnType<typeof generateAction>>;
+      try {
+        genResult = await generateRef.current.promise;
+      } catch {
+        // Generation itself threw — clear the guard so the next mount retries.
+        if (generateRef.current?.billingRunId === billingRunId) {
+          generateRef.current = null;
+        }
+        if (!cancelled) {
+          setError("An unexpected error occurred.");
+          setIsGenerating(false);
+          setIsLoading(false);
         }
         return;
       }
 
-      setIsGenerating(true);
-      // Mark BEFORE awaiting: StrictMode (and any cancel-then-remount) re-runs
-      // this effect while the ref persists — the remount must take the reload
-      // branch above instead of issuing a second generate against a run that is
-      // no longer in PREVIEW (LZKC-006). Reset only on real generation failure.
-      hasGenerated.current = true;
-      let generateSucceeded = false;
-      try {
-        const genResult = await generateAction(billingRunId);
-        if (!genResult.success) {
-          hasGenerated.current = false;
-          if (cancelled) return;
-          setError(genResult.error ?? "Failed to generate invoices.");
-          setIsGenerating(false);
-          return;
+      if (!genResult.success && !isAlreadyGeneratedError(genResult.error)) {
+        // Real generation failure — clear the guard so the next mount retries.
+        if (generateRef.current?.billingRunId === billingRunId) {
+          generateRef.current = null;
         }
-        generateSucceeded = true;
         if (cancelled) return;
+        setError(genResult.error ?? "Failed to generate invoices.");
         setIsGenerating(false);
+        setIsLoading(false);
+        return;
+      }
 
-        setIsLoading(true);
+      // Generated now — or already generated for this run (a remounted step,
+      // e.g. after Back → Next, gets the backend's PREVIEW-status rejection).
+      // Either way the drafts exist: load them.
+      if (cancelled) return;
+      setIsGenerating(false);
+      setIsLoading(true);
+      try {
         const itemsResult = await getItemsAction(billingRunId);
         if (cancelled) return;
         if (itemsResult.success && itemsResult.items) {
@@ -133,19 +145,11 @@ export function ReviewDraftsStep({
           setError(itemsResult.error ?? "Failed to load items.");
         }
       } catch {
-        // Only clear the guard if generation itself failed — a failed items
-        // load after a successful generate must NOT trigger a re-generate.
-        if (!generateSucceeded) {
-          hasGenerated.current = false;
-        }
         if (!cancelled) {
           setError("An unexpected error occurred.");
         }
       } finally {
-        if (!cancelled) {
-          setIsGenerating(false);
-          setIsLoading(false);
-        }
+        if (!cancelled) setIsLoading(false);
       }
     }
 

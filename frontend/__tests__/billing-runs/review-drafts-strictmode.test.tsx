@@ -5,6 +5,11 @@
  * generate never marked the ref and the remount issued a SECOND generate — which
  * the backend rejects with "Only billing runs in PREVIEW status can be generated.
  * Current status: COMPLETED", dead-ending the wizard.
+ *
+ * Also covers the production-reachable variant (review finding): the wizard
+ * unmounts this step on Back, so a Back → Next remount is a brand-new instance
+ * whose generate hits the same backend rejection — it must load the existing
+ * drafts instead of dead-ending.
  */
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { StrictMode } from "react";
@@ -64,16 +69,32 @@ const strictModeItems: BillingRunItem[] = [
 ];
 
 describe("ReviewDraftsStep under StrictMode (LZKC-006)", () => {
-  it("generates exactly once across the StrictMode mount/cleanup/remount cycle", async () => {
-    // Mirror the backend: the first generate succeeds (run goes PREVIEW → COMPLETED);
-    // any subsequent generate is rejected with the PREVIEW-status error.
+  it("generates exactly once across the StrictMode mount/cleanup/remount cycle and only loads drafts after generation settles", async () => {
+    // Mirror the backend: the first generate succeeds (run goes PREVIEW →
+    // COMPLETED) after a short delay; any subsequent generate is rejected with
+    // the PREVIEW-status error. getItems reflects the run's REAL state — no
+    // drafts exist until generation has settled — so a remount that reloads
+    // items before the in-flight generate completes would render an empty
+    // table instead of the drafts.
+    let generationCompleted = false;
     mockGenerate.mockImplementation(() => {
-      if (mockGenerate.mock.calls.length === 1) {
-        return Promise.resolve({ success: true, billingRun: { id: "run-sm-1" } });
+      if (mockGenerate.mock.calls.length > 1) {
+        return Promise.resolve({ success: false, error: PREVIEW_ONLY_ERROR });
       }
-      return Promise.resolve({ success: false, error: PREVIEW_ONLY_ERROR });
+      return new Promise((resolve) =>
+        setTimeout(() => {
+          generationCompleted = true;
+          resolve({ success: true, billingRun: { id: "run-sm-1" } });
+        }, 20)
+      );
     });
-    mockGetItems.mockResolvedValue({ success: true, items: strictModeItems });
+    mockGetItems.mockImplementation(() =>
+      Promise.resolve(
+        generationCompleted
+          ? { success: true, items: strictModeItems }
+          : { success: true, items: [] }
+      )
+    );
 
     render(
       <StrictMode>
@@ -87,7 +108,8 @@ describe("ReviewDraftsStep under StrictMode (LZKC-006)", () => {
       </StrictMode>
     );
 
-    // The wizard must reach the drafts table, not the dead-end error screen.
+    // The wizard must reach the drafts table, not the dead-end error screen
+    // and not a prematurely-loaded empty table.
     await waitFor(() => {
       expect(screen.getByText("StrictMode Attorneys")).toBeInTheDocument();
     });
@@ -95,9 +117,54 @@ describe("ReviewDraftsStep under StrictMode (LZKC-006)", () => {
     expect(mockGenerate).toHaveBeenCalledTimes(1);
   });
 
+  it("recovers when a fresh remount re-generates an already-generated run (Back → Next)", async () => {
+    // The wizard conditionally renders this step, so Back fully unmounts it.
+    // A later Next mounts a NEW instance whose generate call hits the
+    // backend's PREVIEW-status rejection — the step must treat that as
+    // "already generated" and load the existing drafts.
+    mockGenerate.mockImplementation(() => {
+      if (mockGenerate.mock.calls.length === 1) {
+        return Promise.resolve({ success: true, billingRun: { id: "run-sm-3" } });
+      }
+      return Promise.resolve({ success: false, error: PREVIEW_ONLY_ERROR });
+    });
+    mockGetItems.mockResolvedValue({ success: true, items: strictModeItems });
+
+    const first = render(
+      <ReviewDraftsStep
+        slug="test-org"
+        billingRunId="run-sm-3"
+        currency="ZAR"
+        onBack={vi.fn()}
+        onNext={vi.fn()}
+      />
+    );
+    await waitFor(() => {
+      expect(screen.getByText("StrictMode Attorneys")).toBeInTheDocument();
+    });
+    first.unmount();
+
+    render(
+      <ReviewDraftsStep
+        slug="test-org"
+        billingRunId="run-sm-3"
+        currency="ZAR"
+        onBack={vi.fn()}
+        onNext={vi.fn()}
+      />
+    );
+    await waitFor(() => {
+      expect(screen.getByText("StrictMode Attorneys")).toBeInTheDocument();
+    });
+    expect(screen.queryByText(PREVIEW_ONLY_ERROR)).not.toBeInTheDocument();
+    // Fresh instance did re-call generate (per-instance guard cannot prevent
+    // that) but the rejection was handled as already-generated.
+    expect(mockGenerate).toHaveBeenCalledTimes(2);
+  });
+
   it("keeps retry possible when generation genuinely fails", async () => {
     // Without StrictMode: a real generation failure must surface the error
-    // (and not be swallowed by the guard).
+    // (and not be swallowed by the already-generated fallback).
     mockGenerate.mockResolvedValue({
       success: false,
       error: "Failed to generate invoices for this run.",

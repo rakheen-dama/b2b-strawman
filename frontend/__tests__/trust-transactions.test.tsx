@@ -11,6 +11,26 @@ const mockRecordDeposit = vi.fn();
 const mockApproveTransaction = vi.fn();
 const mockRejectTransaction = vi.fn();
 const mockReverseTransaction = vi.fn();
+const mockRouterRefresh = vi.fn();
+const mockToastSuccess = vi.fn();
+
+// ── Mock sonner (LZKC-016: approval feedback toast) ──────────────
+vi.mock("sonner", () => ({
+  toast: {
+    success: (...args: unknown[]) => mockToastSuccess(...args),
+    error: vi.fn(),
+  },
+}));
+
+// ── Mock server-side auth (page resolves current member) ─────────
+vi.mock("@/lib/auth", () => ({
+  AUTH_MODE: "mock",
+  getSessionIdentity: vi.fn().mockResolvedValue(null),
+  getAuthContext: vi.fn().mockResolvedValue(null),
+  getAuthToken: vi.fn().mockResolvedValue(null),
+  getCurrentUserEmail: vi.fn().mockResolvedValue(null),
+  getCurrentUserInfo: vi.fn().mockResolvedValue(null),
+}));
 
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/transactions/actions", () => ({
   fetchTransactions: (...args: unknown[]) => mockFetchTransactions(...args),
@@ -77,7 +97,7 @@ vi.mock("next/navigation", () => ({
   },
   useRouter: () => ({
     push: vi.fn(),
-    refresh: vi.fn(),
+    refresh: mockRouterRefresh,
     replace: vi.fn(),
     back: vi.fn(),
     forward: vi.fn(),
@@ -314,6 +334,117 @@ describe("Trust Transactions", () => {
 
     expect(screen.getByTestId("approve-button")).toBeInTheDocument();
     expect(screen.getByTestId("reject-button")).toBeInTheDocument();
+  });
+
+  // ── LZKC-016: dual-approval first Approve must not register silently ──
+
+  it("shows a 1-of-2 toast and refreshes after a first dual-mode approve (LZKC-016)", async () => {
+    // Backend keeps status AWAITING_APPROVAL after the first dual-mode
+    // approval and returns the updated transaction; the badge must surface it.
+    mockApproveTransaction.mockResolvedValue({
+      success: true,
+      transaction: makeTx({
+        id: "tx-pending",
+        status: "AWAITING_APPROVAL",
+        approvedBy: "member-1",
+        approvedAt: "2026-06-01T10:00:00Z",
+      }),
+    });
+    const user = userEvent.setup();
+
+    render(<ApprovalBadge transactionId="tx-pending" status="AWAITING_APPROVAL" />);
+    await user.click(screen.getByTestId("approve-button"));
+
+    await waitFor(() => {
+      expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringMatching(/1 of 2/i));
+    });
+    expect(mockRouterRefresh).toHaveBeenCalled();
+  });
+
+  it("shows an approved toast when the approve completes the transaction (LZKC-016)", async () => {
+    mockApproveTransaction.mockResolvedValue({
+      success: true,
+      transaction: makeTx({
+        id: "tx-pending",
+        status: "APPROVED",
+        approvedBy: "member-1",
+        secondApprovedBy: "member-2",
+      }),
+    });
+    const user = userEvent.setup();
+
+    render(<ApprovalBadge transactionId="tx-pending" status="AWAITING_APPROVAL" />);
+    await user.click(screen.getByTestId("approve-button"));
+
+    await waitFor(() => {
+      expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringMatching(/approved/i));
+    });
+    expect(mockRouterRefresh).toHaveBeenCalled();
+  });
+
+  it("disables Approve for the member who already gave the first approval (LZKC-016)", () => {
+    render(
+      <ApprovalBadge
+        transactionId="tx-pending"
+        status="AWAITING_APPROVAL"
+        firstApprovedBy="member-1"
+        currentMemberId="member-1"
+      />
+    );
+
+    const approveButton = screen.getByTestId("approve-button");
+    expect(approveButton).toBeDisabled();
+    expect(approveButton).toHaveTextContent(/approved by you/i);
+  });
+
+  it("keeps Approve enabled for a different second approver (LZKC-016)", () => {
+    render(
+      <ApprovalBadge
+        transactionId="tx-pending"
+        status="AWAITING_APPROVAL"
+        firstApprovedBy="member-1"
+        currentMemberId="member-2"
+      />
+    );
+
+    expect(screen.getByTestId("approve-button")).not.toBeDisabled();
+  });
+
+  it("renders a 1-of-2-approvals indicator on partially approved rows (LZKC-016)", async () => {
+    mockFetchTransactions.mockResolvedValue({
+      content: [
+        makeTx({
+          id: "tx-partial",
+          reference: "PAY/2026/001",
+          transactionType: "PAYMENT",
+          amount: 70000,
+          status: "AWAITING_APPROVAL",
+          approvedBy: "member-1",
+          approvedAt: "2026-06-01T10:00:00Z",
+        }),
+        makeTx({
+          id: "tx-fresh",
+          reference: "PAY/2026/002",
+          transactionType: "PAYMENT",
+          amount: 70000,
+          status: "AWAITING_APPROVAL",
+          approvedBy: null,
+          approvedAt: null,
+        }),
+      ],
+      totalElements: 2,
+      totalPages: 1,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderTransactionsPage();
+
+    // Partially approved row shows progress; fresh row does not.
+    expect(screen.getByTestId("approval-progress-tx-partial")).toHaveTextContent(
+      "1 of 2 approvals"
+    );
+    expect(screen.queryByTestId("approval-progress-tx-fresh")).toBeNull();
   });
 
   // Test 4: Reject dialog requires reason

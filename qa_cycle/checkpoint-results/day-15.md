@@ -19,7 +19,7 @@
 
 | # | Result | Evidence |
 |---|--------|----------|
-| 15.9 | PASS | `/projects/54baf135-…` → "The requested resource was not found." denial page; all 5 underlying fetches 404 from backend (`/portal/projects/{id}[/summary|tasks|documents|comments]`) |
+| 15.9 | PASS | `/projects/54baf135-…` → "The requested resource was not found." denial page; all 5 underlying fetches 404 from backend (`/portal/projects/{id}[/summary \| tasks \| documents \| comments]`) |
 | 15.10 | PASS | `/requests/6b6b6b7d-…` → "The requested resource was not found." |
 | 15.11 | PASS | `/documents/733d2950-…` → 404 page (portal exposes no such route; document access is via project scope — API probe in Phase C) |
 | 15.12 | PASS | `/trust/54baf135-…` (portal's real trust-ledger URL shape) → "No trust balance is recorded for this matter" + transactions/statements not found; R 25 000 never rendered |

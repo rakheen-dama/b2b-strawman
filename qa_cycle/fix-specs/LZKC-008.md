@@ -13,8 +13,8 @@ Day 28 / 28.6: sending INV-0001 for Sipho (INDIVIDUAL, RAF claimant) raised CRIT
 - (b) Downgrade to WARNING for INDIVIDUAL (sendable by any role, still visible).
 - (c) Keep as-is and amend the scenario — requires explicit authorization per CLAUDE.md §6.
 
-## Fix (option a, pending authorization; option b is the same file/line)
-In `InvoiceValidationService.checkCustomerTaxNumber` (line 105): after loading the customer, return a passed check when `customerOpt.get().getCustomerType() == CustomerType.INDIVIDUAL`, mirroring the OBS-2102 activation exemption. Keep the CRITICAL check for COMPANY/TRUST. Update the Javadoc in `StructuralPrerequisiteCheck.java:59-66` to reflect the new policy.
+## Fix (AS IMPLEMENTED — authorized option b)
+In `InvoiceValidationService.checkCustomerTaxNumber` (line 105): cap the check severity at **WARNING** when `customerOpt.get().getCustomerType() == CustomerType.INDIVIDUAL` (check stays visible, `passed=false`, no owner override needed). Keep the CRITICAL check for COMPANY/TRUST. Update the Javadoc in `StructuralPrerequisiteCheck.java:59-66` to reflect the new policy. (Historical note: option (a) full exemption was considered and rejected — a passed check would suppress the visible warning entirely.)
 
 ## Scope
 Backend only

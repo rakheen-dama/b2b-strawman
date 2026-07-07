@@ -14,15 +14,15 @@ Day 60 / 60.7: every task marked Done auto-spawned an IN_PROGRESS "Follow-up: {t
 1. Add optional `Boolean defaultEnabled` to `AutomationTemplateDefinition` (null → true, so all other templates keep current behaviour).
 2. In `AutomationTemplateSeeder.applyPack` (lines 84-95): after `ruleRepository.save(rule)`, call `rule.toggle()` (AutomationRule.java:96) when `defaultEnabled == Boolean.FALSE` (or set enabled before save if a setter path is cleaner).
 3. `common.json`: add `"defaultEnabled": false` to the `task-completion-chain` block only. Rule stays available for firms that want it — just off by default.
-4. New Flyway tenant migration (`backend/src/main/resources/db/migration/tenant/V<next>__disable_task_completion_chain_default.sql`): `UPDATE automation_rule SET enabled = false WHERE template_slug = 'task-completion-chain' AND source = 'TEMPLATE';` (idempotent). Note: next free tenant migration number must be checked at dev time — Phase 80/81 collisions precedent (V132 not V130).
+(Step 4 removed — AUTHORIZED DECISION below: new tenants only, NO migration.)
 
 **Product-decision note:** disabling by default is a behaviour change for all tenants including any that deliberately use the follow-up chain. The migration flips it off for everyone (we cannot distinguish "deliberately kept on" from "never noticed"). Orchestrator should confirm the migration scope (option: migration only for tenants where the rule was never manually toggled — but no toggle-audit exists, so blanket-off is the practical choice).
 
 ## Scope
 Backend only
 Files to modify: `AutomationTemplateDefinition.java`, `AutomationTemplateSeeder.java`, `automation-templates/common.json`
-Files to create: 1 Flyway tenant migration
-Migration needed: yes (data-only, idempotent)
+Files to create: none
+Migration needed: no (authorized: new tenants only)
 
 ## Verification
 Provision a fresh tenant (or e2e-reseed) → automation list shows `task-completion-chain` disabled; mark a task Done → no "Follow-up:" task spawns. Existing tenant after migration: same observation. Toggle the rule on manually → chain works as before. Seeder unit test asserts defaultEnabled=false is honoured.

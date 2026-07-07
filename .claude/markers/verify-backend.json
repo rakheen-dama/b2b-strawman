@@ -1,7 +1,1 @@
-{
-  "commit": "325f7121bf7e3d94247aa42399d1e0b401a07ce2",
-  "command": "cd backend && ./mvnw clean verify -q",
-  "exit": 0,
-  "ts": "2026-06-27T11:22:00Z",
-  "summary": "Epic 587 (PR #1510): Correspondence Read-Back over MCP — list/get_correspondence. Full verify green. "
-}
+{"commit":"0f38022ec","command":"./mvnw verify","exit":0,"ts":"2026-07-07T19:07:11Z","summary":"5922 tests, 0 failures, 0 errors, 26 skipped (combined verify on cycle-merged HEAD)"}

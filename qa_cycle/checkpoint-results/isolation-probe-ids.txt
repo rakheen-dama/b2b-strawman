@@ -1,0 +1,12 @@
+# Moroka entity IDs for Day 15 / Day 90 isolation probes (tenant_5039f2d497cf)
+morokaClientId=559a9e8f-7904-418a-8ae7-358ca9a93871
+morokaMatterId=54baf135-7cd3-4b77-b6ef-5de5742291a3
+morokaInfoRequestId=6b6b6b7d-90d2-4028-9777-5de923e55dc1   # REQ-0002 Liquidation and Distribution Account Pack (5 items)
+morokaDocumentId=733d2950-e1df-4498-8181-1e2764fe25ad      # death-certificate-moroka.pdf
+morokaTrustTxId=eed7ad82-8ec6-4676-bdc0-cda261e7c16a       # DEP/2026/002 R 25 000,00
+
+# Sipho reference IDs
+siphoClientId=f6f8050d-34fd-47c0-8894-0c5617dc8251
+siphoMatterId=272be4f8-255b-40d5-8129-225cf79c08a9         # RAF-2026-001
+siphoAutoMatter=(auto-created by proposal accept: "Engagement Letter — Litigation (Dlamini v RAF)")
+siphoTrustTxId=d75a4d1c-84f3-487c-a56d-1a9c5dfd2623        # DEP/2026/001 R 50 000,00

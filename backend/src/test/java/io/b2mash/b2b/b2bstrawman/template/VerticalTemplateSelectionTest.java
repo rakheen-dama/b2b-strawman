@@ -27,6 +27,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 class VerticalTemplateSelectionTest {
   private static final String ORG_ID_ZA = "org_vert_tmpl_za";
   private static final String ORG_ID_DEFAULT = "org_vert_tmpl_default";
+  private static final String ORG_ID_LEGAL = "org_vert_tmpl_legal";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private GeneratedDocumentService generatedDocumentService;
@@ -36,8 +37,10 @@ class VerticalTemplateSelectionTest {
 
   private String tenantSchemaZa;
   private String tenantSchemaDefault;
+  private String tenantSchemaLegal;
   private UUID memberIdZa;
   private UUID memberIdDefault;
+  private UUID memberIdLegal;
 
   @BeforeAll
   void setup() throws Exception {
@@ -68,6 +71,20 @@ class VerticalTemplateSelectionTest {
                 "owner"));
     tenantSchemaDefault =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_DEFAULT).orElseThrow().getSchemaName();
+
+    // Org 3: legal-za vertical profile
+    provisioningService.provisionTenant(ORG_ID_LEGAL, "Vertical Legal Org", "legal-za");
+    memberIdLegal =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID_LEGAL,
+                "user_vert_legal_owner",
+                "vert_legal@test.com",
+                "Vert Legal Owner",
+                "owner"));
+    tenantSchemaLegal =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_LEGAL).orElseThrow().getSchemaName();
   }
 
   @Test
@@ -84,6 +101,25 @@ class VerticalTemplateSelectionTest {
 
                       assertThat(result).isPresent();
                       assertThat(result.get().getPackTemplateKey()).isEqualTo("invoice-za");
+                    }));
+  }
+
+  @Test
+  void resolvesFeeNoteZaForLegalZaProfile() {
+    // LZKC-012 — legal-za tenants must resolve the line-item fee note, not the cover letter.
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchemaLegal)
+        .where(RequestScopes.ORG_ID, ORG_ID_LEGAL)
+        .where(RequestScopes.MEMBER_ID, memberIdLegal)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var result = generatedDocumentService.resolveDefaultInvoiceTemplate();
+
+                      assertThat(result).isPresent();
+                      assertThat(result.get().getPackId()).isEqualTo("legal-za");
+                      assertThat(result.get().getPackTemplateKey()).isEqualTo("fee-note-za");
                     }));
   }
 

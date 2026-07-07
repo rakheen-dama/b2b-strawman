@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -29,12 +30,18 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ReopenRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.event.MatterClosedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.event.MatterReopenedEvent;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -84,6 +91,7 @@ class MatterClosureServiceIntegrationTest {
   @Autowired private RetentionPolicyRepository retentionPolicyRepository;
   @Autowired private AuditService auditService;
   @Autowired private AuditEventRepository auditEventRepository;
+  @Autowired private StorageService storageService;
 
   private String tenantSchema;
   private UUID memberId;
@@ -504,6 +512,71 @@ class MatterClosureServiceIntegrationTest {
                   assertThat(linkedDoc.getProjectId()).isEqualTo(projectId);
                   assertThat(linkedDoc.getFileName()).startsWith("matter-closure-letter");
                 }));
+  }
+
+  // ==========================================================================
+  // LZKC-018 — closure letter must render populated closure.* / matter.*
+  // template variables (Date, Reason, notes, fees, disbursements, duration).
+  // Pre-fix, the PROJECT-dispatched ProjectContextBuilder supplied none of
+  // these keys, so every variable resolved to "" in the client-facing PDF.
+  // ==========================================================================
+
+  @Test
+  void close_withGenerateClosureLetter_rendersClosureVariablesInPdf() {
+    UUID projectId = createProject("LZKC-018 Closure Variables Matter");
+    String closureNotes = "Handover to client complete; LZKC-018 marker note.";
+
+    var response =
+        runInTenantReturning(
+            () ->
+                matterClosureService.close(
+                    projectId,
+                    new ClosureRequest(
+                        ClosureReason.CONCLUDED,
+                        closureNotes,
+                        /* generateClosureLetter */ true,
+                        /* generateStatementOfAccount */ false,
+                        /* override */ true,
+                        VALID_JUSTIFICATION),
+                    memberId));
+
+    assertThat(response.closureLetterDocumentId())
+        .as("closure letter GeneratedDocument id must be set when generateClosureLetter=true")
+        .isNotNull();
+
+    String pdfText =
+        runInTenantReturning(
+            () -> {
+              var generated =
+                  generatedDocumentRepository
+                      .findById(response.closureLetterDocumentId())
+                      .orElseThrow();
+              byte[] pdfBytes = storageService.download(generated.getS3Key());
+              try (var doc = Loader.loadPDF(pdfBytes)) {
+                return new PDFTextStripper().getText(doc);
+              } catch (IOException e) {
+                throw new UncheckedIOException("Failed to extract closure letter PDF text", e);
+              }
+            });
+
+    assertThat(pdfText)
+        .as("closure.reason_label must render the human-readable reason")
+        .contains("Matter concluded");
+    assertThat(pdfText)
+        .as("closure.date must render the closure date (ISO, per MatterClosureContextBuilder)")
+        .contains(LocalDate.now(ZoneOffset.UTC).toString());
+    assertThat(pdfText)
+        .as("closure.notes must render the operator notes")
+        .contains("LZKC-018 marker note");
+    assertThat(pdfText)
+        .as("matter.total_fees_billed must render a value (0 — no billed invoices seeded)")
+        .containsPattern("Total fees billed:\\s*0");
+    assertThat(pdfText)
+        .as("matter.total_disbursements must render a value (0 — no billed disbursements seeded)")
+        .containsPattern("Total disbursements:\\s*0");
+    assertThat(pdfText)
+        .as("matter.duration_months must render a value (0 — matter created today)")
+        .containsPattern("Duration \\(months\\):\\s*0");
   }
 
   // ==========================================================================

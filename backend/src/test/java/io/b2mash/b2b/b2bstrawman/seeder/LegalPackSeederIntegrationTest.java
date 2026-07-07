@@ -120,7 +120,8 @@ class LegalPackSeederIntegrationTest {
                   // Phase 67, Epic 492B added 4 conveyancing templates (13th-16th):
                   // offer-to-purchase, deed-of-transfer, power-of-attorney-to-pass-transfer,
                   // bond-cancellation-instruction.
-                  assertThat(legalTemplates).hasSize(16);
+                  // LZKC-012 added fee-note-za (17th template).
+                  assertThat(legalTemplates).hasSize(17);
                   assertThat(legalTemplates)
                       .extracting(t -> t.getSlug())
                       .contains(
@@ -129,7 +130,8 @@ class LegalPackSeederIntegrationTest {
                           "offer-to-purchase",
                           "deed-of-transfer",
                           "power-of-attorney-to-pass-transfer",
-                          "bond-cancellation-instruction");
+                          "bond-cancellation-instruction",
+                          "fee-note");
                 }));
   }
 

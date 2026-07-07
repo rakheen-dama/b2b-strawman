@@ -151,6 +151,34 @@ public class GeneratedDocumentService {
       List<ClauseSelection> clauseSelections,
       UUID memberId,
       String intendedVisibility) {
+    return generateDocument(
+        templateId,
+        entityId,
+        saveToDocuments,
+        acknowledgeWarnings,
+        clauseSelections,
+        memberId,
+        intendedVisibility,
+        Map.of());
+  }
+
+  /**
+   * Variant of {@link #generateDocument(UUID, UUID, boolean, boolean, List, UUID, String)} that
+   * additionally merges {@code extraContext} (shallow, top-level keys) over the context produced by
+   * the auto-dispatched {@link TemplateContextBuilder} — both for required-field validation and for
+   * rendering. Used by flows whose template variables cannot be derived from the primary entity
+   * alone, e.g. the matter-closure letter's {@code closure.*} / {@code matter.*} groups (LZKC-018).
+   */
+  @Transactional
+  public GenerationResult generateDocument(
+      UUID templateId,
+      UUID entityId,
+      boolean saveToDocuments,
+      boolean acknowledgeWarnings,
+      List<ClauseSelection> clauseSelections,
+      UUID memberId,
+      String intendedVisibility,
+      Map<String, Object> extraContext) {
     // 0. Check action-point prerequisites
     var template =
         documentTemplateRepository
@@ -167,8 +195,13 @@ public class GeneratedDocumentService {
       }
     }
 
-    // 0b. Validate required fields before generation
-    var contextMap = pdfRenderingService.buildContext(templateId, entityId, memberId);
+    // 0b. Validate required fields before generation (against the same merged context that
+    // rendering will see)
+    var contextMap =
+        new HashMap<>(pdfRenderingService.buildContext(templateId, entityId, memberId));
+    if (extraContext != null) {
+      contextMap.putAll(extraContext);
+    }
     var validationResult =
         templateValidationService.validateRequiredFields(
             template.getRequiredContextFields(), contextMap);
@@ -180,9 +213,10 @@ public class GeneratedDocumentService {
     // 0b. Resolve clauses
     var resolvedClauses = clauseResolver.resolveClauses(templateId, clauseSelections);
 
-    // 1. Generate PDF (clause-aware)
+    // 1. Generate PDF (clause-aware, extra context merged over the builder-produced context)
     var pdfResult =
-        pdfRenderingService.generatePdf(templateId, entityId, memberId, resolvedClauses);
+        pdfRenderingService.generatePdf(
+            templateId, entityId, memberId, resolvedClauses, extraContext);
 
     // 2. Load template metadata
     var templateDetail = documentTemplateService.getById(templateId);
@@ -334,13 +368,37 @@ public class GeneratedDocumentService {
    */
   public GenerationResult generateForProject(
       UUID projectId, String templateSlug, UUID actingMemberId, String intendedVisibility) {
+    return generateForProject(
+        projectId, templateSlug, actingMemberId, intendedVisibility, Map.of());
+  }
+
+  /**
+   * Variant of {@link #generateForProject(UUID, String, UUID, String)} that additionally merges
+   * {@code extraContext} over the builder-produced context before validation and rendering. Used by
+   * {@code MatterClosureService.generateClosureLetterSafely} to supply the closure letter's {@code
+   * closure.*} / {@code matter.*} variables, which the PROJECT-dispatched {@code
+   * ProjectContextBuilder} cannot produce (LZKC-018).
+   */
+  public GenerationResult generateForProject(
+      UUID projectId,
+      String templateSlug,
+      UUID actingMemberId,
+      String intendedVisibility,
+      Map<String, Object> extraContext) {
     var template =
         documentTemplateRepository
             .findBySlug(templateSlug)
             .orElseThrow(
                 () -> new ResourceNotFoundException("DocumentTemplate", "slug=" + templateSlug));
     return generateDocument(
-        template.getId(), projectId, true, true, List.of(), actingMemberId, intendedVisibility);
+        template.getId(),
+        projectId,
+        true,
+        true,
+        List.of(),
+        actingMemberId,
+        intendedVisibility,
+        extraContext);
   }
 
   /**
@@ -383,8 +441,10 @@ public class GeneratedDocumentService {
 
   /**
    * Resolves the default invoice template based on the org's vertical profile. If verticalProfile
-   * is "accounting-za", returns the "invoice-za" pack template if it exists. Otherwise returns the
-   * generic "invoice" pack template if it exists. Falls back gracefully.
+   * is "accounting-za", returns the "invoice-za" pack template if it exists. If verticalProfile is
+   * "legal-za", returns the "fee-note-za" pack template if it exists (LZKC-012 — the line-item fee
+   * note, not the cover letter). Otherwise returns the generic "invoice" pack template if it
+   * exists. Falls back gracefully.
    *
    * <p>Uses {@code packTemplateKey} (the stable identifier from the template pack definition)
    * rather than slug (which is auto-generated from the template name).
@@ -399,6 +459,13 @@ public class GeneratedDocumentService {
     if ("accounting-za".equals(verticalProfile)) {
       Optional<DocumentTemplate> preferred =
           documentTemplateRepository.findByPackIdAndPackTemplateKey("accounting-za", "invoice-za");
+      if (preferred.isPresent()) {
+        return preferred;
+      }
+    }
+    if ("legal-za".equals(verticalProfile)) {
+      Optional<DocumentTemplate> preferred =
+          documentTemplateRepository.findByPackIdAndPackTemplateKey("legal-za", "fee-note-za");
       if (preferred.isPresent()) {
         return preferred;
       }

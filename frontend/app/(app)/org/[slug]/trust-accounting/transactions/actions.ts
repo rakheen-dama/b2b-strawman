@@ -36,6 +36,12 @@ interface ActionResult {
   error?: string;
 }
 
+export interface ApproveTransactionResult extends ActionResult {
+  /** Updated transaction returned by the approve endpoint (LZKC-016) —
+   *  lets the UI distinguish a completed approval from the first of two. */
+  transaction?: TrustTransaction;
+}
+
 // ── Fetch actions ─────────────────────────────────────────────────
 
 export async function fetchTransactions(
@@ -194,11 +200,13 @@ export async function recordRefund(
 
 // ── Approval actions ──────────────────────────────────────────────
 
-export async function approveTransaction(transactionId: string): Promise<ActionResult> {
+export async function approveTransaction(transactionId: string): Promise<ApproveTransactionResult> {
   try {
-    await api.post(`/api/trust-transactions/${transactionId}/approve`);
+    const transaction = await api.post<TrustTransaction>(
+      `/api/trust-transactions/${transactionId}/approve`
+    );
     revalidatePath("/", "layout");
-    return { success: true };
+    return { success: true, transaction };
   } catch (error) {
     return {
       success: false,

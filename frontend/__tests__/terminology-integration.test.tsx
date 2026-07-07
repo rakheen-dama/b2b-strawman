@@ -172,14 +172,16 @@ describe("364B: terminology text template replacement", () => {
     expect(screen.getByText("No engagement letters yet")).toBeInTheDocument();
   });
 
-  it("replaces {proposal} in template with 'engagement letter' for accounting-za", () => {
+  it("replaces {a proposal} with an article-adjusted 'an engagement letter' for accounting-za", () => {
+    // LZKC-003: copy that needs an indefinite article uses the {a term} token so the article
+    // tracks the substituted noun ("a proposal" -> "an engagement letter").
     render(
       <TerminologyProvider verticalProfile="accounting-za">
-        <TerminologyText template="Create a {proposal} to get started." />
+        <TerminologyText template="Create {a proposal} to get started." />
       </TerminologyProvider>
     );
 
-    expect(screen.getByText("Create a engagement letter to get started.")).toBeInTheDocument();
+    expect(screen.getByText("Create an engagement letter to get started.")).toBeInTheDocument();
   });
 
   it("passes through template unchanged with null profile", () => {

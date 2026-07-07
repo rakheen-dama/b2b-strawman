@@ -115,10 +115,14 @@ public class ProposalSentEmailHandler {
                   "expiresAtFormatted",
                   proposal.getExpiresAt().atZone(ZoneOffset.UTC).format(EXPIRES_AT_FMT));
             }
+            // LZKC-004: subject uses the tenant's vocabulary ("New engagement letter PROP-0001
+            // for your review" on legal-za). Phrasing is deliberately article-free.
+            String proposalTermLower =
+                String.valueOf(context.getOrDefault("proposalTermLower", "proposal"));
             context.put(
                 "subject",
-                "%s: New proposal %s for your review"
-                    .formatted(orgName, proposal.getProposalNumber()));
+                "%s: New %s %s for your review"
+                    .formatted(orgName, proposalTermLower, proposal.getProposalNumber()));
 
             portalEmailService.sendNewProposalEmail(contact, context);
           } catch (Exception e) {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title th:text="'Invoice ' + (${invoice.invoiceNumber} != null ? ${invoice.invoiceNumber} : 'DRAFT')">Invoice Preview</title>
+    <title th:text="(${invoiceTerm} != null ? ${invoiceTerm} : 'Invoice') + ' ' + (${invoice.invoiceNumber} != null ? ${invoice.invoiceNumber} : 'DRAFT')">Invoice Preview</title>
     <style>
         /* Reset and Base */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -236,7 +236,7 @@
     </div>
     <div class="header-right">
         <div class="invoice-number"
-             th:text="'Invoice: ' + (${invoice.invoiceNumber} != null ? ${invoice.invoiceNumber} : 'DRAFT')">
+             th:text="(${invoiceTerm} != null ? ${invoiceTerm} : 'Invoice') + ': ' + (${invoice.invoiceNumber} != null ? ${invoice.invoiceNumber} : 'DRAFT')">
             Invoice: INV-0001
         </div>
         <div class="meta-line" th:if="${invoice.issueDate != null}"

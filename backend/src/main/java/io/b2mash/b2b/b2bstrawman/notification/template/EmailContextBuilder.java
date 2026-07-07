@@ -93,6 +93,14 @@ public class EmailContextBuilder {
     context.put("invoiceTermLower", terminology.getOrDefault("invoice", "invoice"));
     context.put("invoiceTermPlural", terminology.getOrDefault("Invoices", "Invoices"));
     context.put("invoiceTermPluralLower", terminology.getOrDefault("invoices", "invoices"));
+    // LZKC-004 -- proposal nouns (legal-za "Proposal" -> "Engagement Letter"). The with-article
+    // variant exists because the substitution flips the leading sound ("a proposal" vs "an
+    // engagement letter").
+    String proposalTermLower = terminology.getOrDefault("proposal", "proposal");
+    context.put("proposalTerm", terminology.getOrDefault("Proposal", "Proposal"));
+    context.put("proposalTermLower", proposalTermLower);
+    context.put(
+        "proposalTermLowerWithArticle", EmailTerminology.withIndefiniteArticle(proposalTermLower));
 
     return context;
   }

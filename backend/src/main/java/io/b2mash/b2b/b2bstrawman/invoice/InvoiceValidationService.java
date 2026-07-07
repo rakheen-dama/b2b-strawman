@@ -2,8 +2,11 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.notification.template.EmailTerminology;
 import io.b2mash.b2b.b2bstrawman.prerequisite.StructuralPrerequisiteCheck;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.setupstatus.CustomerReadinessService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
@@ -22,18 +25,24 @@ public class InvoiceValidationService {
   private final OrganizationRepository organizationRepository;
   private final TimeEntryRepository timeEntryRepository;
   private final DocumentTemplateRepository documentTemplateRepository;
+  private final OrgSettingsRepository orgSettingsRepository;
+  private final EmailTerminology emailTerminology;
 
   public InvoiceValidationService(
       CustomerReadinessService customerReadinessService,
       CustomerRepository customerRepository,
       OrganizationRepository organizationRepository,
       TimeEntryRepository timeEntryRepository,
-      DocumentTemplateRepository documentTemplateRepository) {
+      DocumentTemplateRepository documentTemplateRepository,
+      OrgSettingsRepository orgSettingsRepository,
+      EmailTerminology emailTerminology) {
     this.customerReadinessService = customerReadinessService;
     this.customerRepository = customerRepository;
     this.organizationRepository = organizationRepository;
     this.timeEntryRepository = timeEntryRepository;
     this.documentTemplateRepository = documentTemplateRepository;
+    this.orgSettingsRepository = orgSettingsRepository;
+    this.emailTerminology = emailTerminology;
   }
 
   @Transactional(readOnly = true)
@@ -111,7 +120,24 @@ public class InvoiceValidationService {
         "customer_tax_number",
         severity,
         !missing,
-        missing ? "Tax Number is required to send an invoice" : "Customer tax number is set");
+        missing
+            ? "Tax Number is required to send " + invoiceNounWithArticle()
+            : "Customer tax number is set");
+  }
+
+  /**
+   * LZKC-009 (site 2): resolves the tenant's lowercase invoice noun with its indefinite article —
+   * "an invoice" by default, "a fee note" on legal-za — so validation copy matches the vocabulary
+   * shown across the rest of the firm UI.
+   */
+  private String invoiceNounWithArticle() {
+    String profile =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .map(OrgSettings::getVerticalProfile)
+            .orElse(null);
+    String noun = emailTerminology.resolve(profile).getOrDefault("invoice", "invoice");
+    return EmailTerminology.withIndefiniteArticle(noun);
   }
 
   private ValidationCheck checkOrgBranding(Severity severity) {

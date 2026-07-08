@@ -237,8 +237,10 @@ class AutomationTemplateControllerTest {
   }
 
   @Test
-  void seeder_createsRulesWithEnabledTrue() {
-    // Check that the seeder-created rules (from provisioning) are enabled by default
+  void seeder_honoursDefaultEnabledFlag() {
+    // Seeded rules come from provisioning and are created by the SYSTEM user (all-zeros UUID).
+    // Filter on createdBy so rules activated via the API by sibling tests don't bleed in.
+    UUID systemUserId = new UUID(0L, 0L);
     List<AutomationRule> seededRules =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .where(RequestScopes.ORG_ID, ORG_ID)
@@ -247,12 +249,27 @@ class AutomationTemplateControllerTest {
                     ruleRepository.findAllByOrderByCreatedAtDesc().stream()
                         .filter(
                             r ->
-                                r.getSource() == RuleSource.TEMPLATE && r.getTemplateSlug() != null)
+                                r.getSource() == RuleSource.TEMPLATE
+                                    && r.getTemplateSlug() != null
+                                    && systemUserId.equals(r.getCreatedBy()))
                         .toList());
 
-    // All seeded rules should be enabled (best-practice automations work out of the box)
-    boolean allEnabled = seededRules.stream().allMatch(AutomationRule::isEnabled);
-    assertTrue(allEnabled, "Seeder should create enabled template rules");
+    // LZKC-013: task-completion-chain declares defaultEnabled=false — it must seed disabled
+    List<AutomationRule> chainRules =
+        seededRules.stream()
+            .filter(r -> "task-completion-chain".equals(r.getTemplateSlug()))
+            .toList();
+    assertTrue(!chainRules.isEmpty(), "task-completion-chain should still be seeded");
+    assertTrue(
+        chainRules.stream().noneMatch(AutomationRule::isEnabled),
+        "task-completion-chain should seed disabled (defaultEnabled=false)");
+
+    // All other seeded rules keep the current behaviour: enabled out of the box
+    boolean othersEnabled =
+        seededRules.stream()
+            .filter(r -> !"task-completion-chain".equals(r.getTemplateSlug()))
+            .allMatch(AutomationRule::isEnabled);
+    assertTrue(othersEnabled, "All other seeded template rules should remain enabled");
   }
 
   // --- Capability Tests (added in Epic 315B) ---

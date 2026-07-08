@@ -107,9 +107,11 @@ public class ActivityMessageFormatter {
           "%s cancelled information request %s".formatted(actorName, getRequestNumber(details));
       case "information_request.completed" ->
           "%s completed — all items accepted".formatted(getRequestNumber(details));
-      case "information_request.item_submitted" ->
-          "Client submitted \"%s\" for %s"
-              .formatted(getItemName(details), getRequestNumber(details));
+      // LZKC-019: "information_request.item_submitted" kept as a zero-risk alias of the key
+      // actually emitted by PortalInformationRequestService ("portal.request_item.submitted").
+      case "information_request.item_submitted", "portal.request_item.submitted" ->
+          "%s submitted \"%s\" for %s"
+              .formatted(actorName, getItemName(details), getRequestNumber(details));
       case "information_request.item_accepted" ->
           "%s accepted \"%s\" for %s"
               .formatted(actorName, getItemName(details), getRequestNumber(details));
@@ -131,6 +133,30 @@ public class ActivityMessageFormatter {
           "%s attached a document to a filed email via the MCP connector".formatted(actorName);
       case "mcp.write.task_proposed" ->
           "%s proposed a task from a filed email (awaiting approval)".formatted(actorName);
+      // LZKC-019: portal / document / statement / closure events used to fall through to the
+      // raw default below ("<actor> performed portal.document.downloaded on document").
+      case "portal.document.downloaded" ->
+          "%s downloaded document \"%s\"".formatted(actorName, getFileName(details));
+      case "portal.document.upload_initiated" ->
+          "%s started uploading document \"%s\"".formatted(actorName, getFileName(details));
+      case "portal.document.acknowledged" -> formatDocumentAcknowledged(actorName, details);
+      case "portal.invoice.paid" -> formatInvoicePaid(actorName, details);
+      case "statement.generated" ->
+          "%s generated a statement of account \"%s\"".formatted(actorName, getFileName(details));
+      case "document.generated_with_clauses" ->
+          "%s generated a document with clauses from template \"%s\""
+              .formatted(actorName, getTemplateName(details));
+      case "document.created" ->
+          "%s created document \"%s\"".formatted(actorName, getFileName(details));
+      case "document.accessed" ->
+          "%s downloaded document \"%s\"".formatted(actorName, getFileName(details));
+      case "document.visibility_changed" ->
+          "%s changed document visibility to %s"
+              .formatted(actorName, extractNewValue(details.get("visibility")));
+      case "matter_closure.closed" -> "%s closed the matter".formatted(actorName);
+      case "matter_closure.reopened" -> "%s reopened the matter".formatted(actorName);
+      case "matter.closure.override_used" ->
+          "%s used an override to close the matter".formatted(actorName);
       default -> "%s performed %s on %s".formatted(actorName, eventType, entityType);
     };
   }
@@ -171,6 +197,22 @@ public class ActivityMessageFormatter {
   private String getFileName(Map<String, Object> details) {
     Object fileName = details.get("file_name");
     return fileName instanceof String s ? s : "unknown";
+  }
+
+  private String formatDocumentAcknowledged(String actorName, Map<String, Object> details) {
+    Object fileName = details.get("file_name");
+    if (fileName instanceof String s && !s.isBlank()) {
+      return "%s acknowledged document \"%s\"".formatted(actorName, s);
+    }
+    return "%s acknowledged a document".formatted(actorName);
+  }
+
+  private String formatInvoicePaid(String actorName, Map<String, Object> details) {
+    Object invoiceNumber = details.get("invoice_number");
+    if (invoiceNumber instanceof String s && !s.isBlank()) {
+      return "%s paid fee note %s".formatted(actorName, s);
+    }
+    return "%s paid a fee note".formatted(actorName);
   }
 
   private String getParentType(Map<String, Object> details) {

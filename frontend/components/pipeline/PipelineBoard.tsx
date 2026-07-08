@@ -174,7 +174,13 @@ export function PipelineBoard({
           {error}
         </p>
       )}
+      {/* LZKC-001: a stable `id` keeps dnd-kit's aria-describedby target
+          deterministic across the SSR and client passes. Without it, dnd-kit
+          falls back to a module-level counter that drifts between passes
+          (DndDescribedBy-0 vs -3), causing a hydration mismatch on every
+          draggable DealCard. */}
       <DndContext
+        id="pipeline-board"
         sensors={sensors}
         collisionDetection={closestCorners}
         onDragStart={handleDragStart}

@@ -86,6 +86,39 @@ class VariableFormatterTest {
     assertThat(VariableFormatter.format("value", "unknown")).isEqualTo("value");
   }
 
+  // --- LZKC-007/017: "image" type hint renders an <img> element (letterhead logo) ---
+
+  @Test
+  void image_type_hint_renders_img_element_with_escaped_src() {
+    assertThat(
+            VariableFormatter.format(
+                "http://test-storage/test-bucket/logos/org/logo.png?download=true", "image"))
+        .isEqualTo(
+            "<img class=\"letterhead-logo\""
+                + " src=\"http://test-storage/test-bucket/logos/org/logo.png?download=true\""
+                + " alt=\"Logo\"/>");
+  }
+
+  @Test
+  void image_type_hint_escapes_html_metacharacters_in_url() {
+    assertThat(VariableFormatter.format("https://x.test/logo.png?a=1&b=\"2\"", "image"))
+        .isEqualTo(
+            "<img class=\"letterhead-logo\""
+                + " src=\"https://x.test/logo.png?a=1&amp;b=&quot;2&quot;\" alt=\"Logo\"/>");
+  }
+
+  @Test
+  void image_type_hint_rejects_non_http_urls() {
+    assertThat(VariableFormatter.format("javascript:alert(1)", "image")).isEmpty();
+    assertThat(VariableFormatter.format("data:text/html,x", "image")).isEmpty();
+    assertThat(VariableFormatter.format("  ", "image")).isEmpty();
+  }
+
+  @Test
+  void image_type_hint_null_value_returns_empty_string() {
+    assertThat(VariableFormatter.format(null, "image")).isEmpty();
+  }
+
   @Test
   void html_characters_are_escaped() {
     assertThat(VariableFormatter.format("<script>alert(1)</script>", null))

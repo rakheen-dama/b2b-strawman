@@ -39,6 +39,7 @@ public final class VariableFormatter {
       case "currency" -> formatCurrency(value, effectiveLocale);
       case "date" -> formatDate(value);
       case "number" -> formatNumber(value, effectiveLocale);
+      case "image" -> formatImage(value);
       default -> HtmlUtils.htmlEscape(String.valueOf(value));
     };
   }
@@ -96,6 +97,24 @@ public final class VariableFormatter {
     } catch (Exception e) {
       return HtmlUtils.htmlEscape(String.valueOf(value));
     }
+  }
+
+  /**
+   * Renders an {@code <img>} element for the "image" type hint (letterhead logo, LZKC-007). The
+   * value is expected to be a server-generated presigned URL ({@code org.logoUrl} from {@code
+   * TemplateContextHelper.buildOrgContext}); anything that is not a plain http(s) URL renders as an
+   * empty string so a missing/odd value degrades to "no logo" instead of broken markup. The URL is
+   * HTML-attribute-escaped; sizing comes from the {@code letterhead-logo} class in
+   * document-default.css.
+   */
+  private static String formatImage(Object value) {
+    String url = String.valueOf(value).trim();
+    if (!(url.startsWith("https://") || url.startsWith("http://"))) {
+      return "";
+    }
+    return "<img class=\"letterhead-logo\" src=\""
+        + HtmlUtils.htmlEscape(url)
+        + "\" alt=\"Logo\"/>";
   }
 
   private static String formatNumber(Object value, Locale locale) {

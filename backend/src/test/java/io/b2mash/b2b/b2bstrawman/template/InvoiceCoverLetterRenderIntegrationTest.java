@@ -9,6 +9,8 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
@@ -45,6 +47,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 class InvoiceCoverLetterRenderIntegrationTest {
 
   private static final String ORG_ID = "org_invoice_cover_letter_render_test";
+  private static final String LOGO_S3_KEY = "org/invoice-cover-letter-test/branding/logo.png";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -54,6 +57,9 @@ class InvoiceCoverLetterRenderIntegrationTest {
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private InvoiceContextBuilder invoiceContextBuilder;
   @Autowired private TiptapRenderer tiptapRenderer;
+  @Autowired private PdfRenderingService pdfRenderingService;
+  @Autowired private OrgSettingsRepository orgSettingsRepository;
+  @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
@@ -116,5 +122,67 @@ class InvoiceCoverLetterRenderIntegrationTest {
     assertThat(html.get()).contains("INV-9001");
     // The sibling "Total Amount:" placeholder (invoice.total) resolves from the same context.
     assertThat(html.get()).contains("1250.00");
+  }
+
+  /**
+   * LZKC-007 (part 1): the pack cover letter carries an {@code org.logoUrl} letterhead node,
+   * rendered through the registry-driven {@code image} format hint on the {@link
+   * PdfRenderingService} preview/generate pipeline. With a branding logo configured, the rendered
+   * letter must embed the presigned logo URL; with none, it must render cleanly without an {@code
+   * <img>} element.
+   */
+  @Test
+  void coverLetterRendersLetterheadLogoViaPdfRenderingPipeline() {
+    var withLogo = new AtomicReference<String>();
+    var withoutLogo = new AtomicReference<String>();
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var customer =
+                          customerRepository.save(
+                              TestCustomerFactory.createActiveCustomer(
+                                  "Logo Client (Pty) Ltd", "logo@acme.test", memberId));
+
+                      var invoice =
+                          new Invoice(
+                              customer.getId(),
+                              "ZAR",
+                              "Logo Client (Pty) Ltd",
+                              "logo@acme.test",
+                              "2 Main Road, Cape Town",
+                              "Render Test Org",
+                              memberId);
+                      invoice.recalculateTotals(
+                          new BigDecimal("900.00"), false, BigDecimal.ZERO, false);
+                      invoice.approve("INV-9002", memberId);
+                      invoice = invoiceRepository.save(invoice);
+
+                      var template =
+                          documentTemplateRepository
+                              .findByPackIdAndPackTemplateKey("common", "invoice-cover-letter")
+                              .orElseThrow();
+
+                      var settings = orgSettingsService.getOrCreateForCurrentTenant();
+                      settings.getBranding().setLogoS3Key(LOGO_S3_KEY);
+                      orgSettingsRepository.save(settings);
+                      withLogo.set(
+                          pdfRenderingService.previewHtml(
+                              template.getId(), invoice.getId(), memberId));
+
+                      settings.getBranding().setLogoS3Key(null);
+                      orgSettingsRepository.save(settings);
+                      withoutLogo.set(
+                          pdfRenderingService.previewHtml(
+                              template.getId(), invoice.getId(), memberId));
+                    }));
+
+    assertThat(withLogo.get()).contains("<img class=\"letterhead-logo\"");
+    assertThat(withLogo.get()).contains("http://test-storage/test-bucket/" + LOGO_S3_KEY);
+    assertThat(withoutLogo.get()).doesNotContain("<img");
+    assertThat(withoutLogo.get()).contains("INV-9002");
   }
 }

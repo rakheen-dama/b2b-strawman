@@ -10,6 +10,12 @@ body {
     color: #333;
 }
 
+/* Letterhead logo (org.logoUrl rendered via the "image" format hint — LZKC-007) */
+img.letterhead-logo {
+    max-height: 60px;
+    max-width: 240px;
+}
+
 .header {
     border-bottom: 3px solid var(--brand-color, #1a1a2e);
     padding-bottom: 10px;

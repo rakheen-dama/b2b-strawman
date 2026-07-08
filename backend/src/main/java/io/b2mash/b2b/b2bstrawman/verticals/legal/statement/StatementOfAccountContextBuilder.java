@@ -66,6 +66,40 @@ public class StatementOfAccountContextBuilder {
   private static final DateTimeFormatter REFERENCE_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
   private static final String TRUST_ACCOUNTING_MODULE = "trust_accounting";
 
+  /**
+   * Format hints for the standalone (non-loop-table) variables this builder produces. The SoA path
+   * bypasses {@code PdfRenderingService.buildFormatHints} (its keys come from {@code
+   * VariableMetadataRegistry}, which does not know the statement-specific namespaces), so the hints
+   * live here next to the context shape they describe. Without them, standalone amounts rendered
+   * raw {@code BigDecimal.toString()} ("1250.00") while loop-table columns rendered locale-aware
+   * currency ("R50&nbsp;000,00") — mixed number locales in one document (LZKC-017).
+   */
+  private static final Map<String, String> FORMAT_HINTS =
+      Map.ofEntries(
+          Map.entry("statement.period_start", "date"),
+          Map.entry("statement.period_end", "date"),
+          Map.entry("statement.generation_date", "date"),
+          Map.entry("matter.opened_date", "date"),
+          Map.entry("fees.total_hours", "number"),
+          Map.entry("fees.total_amount_excl_vat", "currency"),
+          Map.entry("fees.vat_amount", "currency"),
+          Map.entry("fees.total_amount_incl_vat", "currency"),
+          Map.entry("disbursements.total", "currency"),
+          Map.entry("trust.opening_balance", "currency"),
+          Map.entry("trust.closing_balance", "currency"),
+          Map.entry("summary.total_fees", "currency"),
+          Map.entry("summary.total_disbursements", "currency"),
+          Map.entry("summary.previous_balance_owing", "currency"),
+          Map.entry("summary.payments_received", "currency"),
+          Map.entry("summary.closing_balance_owing", "currency"),
+          Map.entry("summary.trust_balance_held", "currency"),
+          Map.entry("org.logoUrl", "image"));
+
+  /** Format hints matching the context produced by {@link #build}. */
+  static Map<String, String> formatHints() {
+    return FORMAT_HINTS;
+  }
+
   // Mirror the canonical credit/debit classifications used by ClientLedgerService and
   // TrustReconciliationService so every ledger type produced by the trust subsystem renders
   // in either the deposits or payments section (otherwise the activity list stops reconciling
@@ -193,6 +227,10 @@ public class StatementOfAccountContextBuilder {
     var orgMap = new LinkedHashMap<String, Object>(templateContextHelper.buildOrgContext());
     orgMap.putIfAbsent("bankingDetails", "");
     context.put("org", orgMap);
+
+    // _locale — so standalone currency/number variables format in the tenant's locale, matching
+    // the loop-table columns (LZKC-017).
+    templateContextHelper.populateLocale(context);
 
     return context;
   }

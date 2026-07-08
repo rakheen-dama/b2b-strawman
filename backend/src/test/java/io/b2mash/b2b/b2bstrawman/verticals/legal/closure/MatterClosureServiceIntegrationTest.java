@@ -33,7 +33,6 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.event.MatterReopenedEve
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -565,7 +564,7 @@ class MatterClosureServiceIntegrationTest {
         .contains("Matter concluded");
     assertThat(pdfText)
         .as("closure.date must render the closure date (ISO, per MatterClosureContextBuilder)")
-        .contains(LocalDate.now(ZoneOffset.UTC).toString());
+        .contains(response.closedAt().atZone(ZoneOffset.UTC).toLocalDate().toString());
     assertThat(pdfText)
         .as("closure.notes must render the operator notes")
         .contains("LZKC-018 marker note");

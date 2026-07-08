@@ -1,6 +1,6 @@
 {
   "packId": "common",
-  "version": 1,
+  "version": 2,
   "name": "Common Templates",
   "description": "Standard document templates for all organizations",
   "templates": [

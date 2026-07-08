@@ -2,6 +2,12 @@
   "type": "doc",
   "content": [
     {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.logoUrl" } }
+      ]
+    },
+    {
       "type": "heading",
       "attrs": { "level": 1 },
       "content": [
@@ -34,7 +40,7 @@
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Invoice Number:" },
         { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "invoice.number" } }
+        { "type": "variable", "attrs": { "key": "invoice.invoiceNumber" } }
       ]
     },
     {

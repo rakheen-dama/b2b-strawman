@@ -204,11 +204,13 @@ class PortalDocumentNotificationHandlerIntegrationTest {
   }
 
   /**
-   * Two events within 5 minutes for the same (customer, project) → only one email. Mirrors the
-   * closure-pack scenario where multiple documents are generated in seconds.
+   * LZKC-015: two DIFFERENT document types within 5 minutes for the same (customer, project) → one
+   * email per document. Mirrors the closure-pack scenario (closure letter + SoA generated in
+   * seconds): pre-fix the dedup key omitted the template name, so the closure letter claimed the
+   * key and the SoA "Document ready" email was silently swallowed.
    */
   @Test
-  void dedupCoalescesBatchSendsForSameCustomerAndProject() {
+  void distinctDocumentTypesInSameBatchEachSendEmail() {
     UUID gd1 = UUID.randomUUID();
     UUID gd2 = UUID.randomUUID();
 
@@ -216,7 +218,28 @@ class PortalDocumentNotificationHandlerIntegrationTest {
     publishEvent(gd2, projectId, "statement-of-account", "PROJECT", "PORTAL");
 
     MimeMessage[] received = greenMail.getReceivedMessages();
-    assertThat(received).hasSize(1);
+    assertThat(received)
+        .as("LZKC-015: closure letter + SoA are distinct documents — one email each")
+        .hasSize(2);
+  }
+
+  /**
+   * Re-emission of the SAME document type within 5 minutes for the same (customer, project) → still
+   * only one email. Guards the residual dedup semantics after LZKC-015 widened the key to (tenant,
+   * customer, project, template).
+   */
+  @Test
+  void sameDocumentTypeReEmissionStillDedups() {
+    UUID gd1 = UUID.randomUUID();
+    UUID gd2 = UUID.randomUUID();
+
+    publishEvent(gd1, projectId, "statement-of-account", "PROJECT", "PORTAL");
+    publishEvent(gd2, projectId, "statement-of-account", "PROJECT", "PORTAL");
+
+    MimeMessage[] received = greenMail.getReceivedMessages();
+    assertThat(received)
+        .as("same doc type re-emitted within the window must remain deduped")
+        .hasSize(1);
   }
 
   /** Different projects (same customer) must NOT dedup against each other. */

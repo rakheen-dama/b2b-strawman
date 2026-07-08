@@ -329,7 +329,10 @@ public class VariableMetadataRegistry {
             new VariableInfo("org.defaultCurrency", "Default Currency", "string"),
             new VariableInfo("org.brandColor", "Brand Color", "string"),
             new VariableInfo("org.documentFooterText", "Document Footer", "string"),
-            new VariableInfo("org.logoUrl", "Logo URL", "string")));
+            // Type "image": rendered as an <img> letterhead element by VariableFormatter
+            // (LZKC-007). The non-"string" type also routes it into
+            // PdfRenderingService.buildFormatHints for every entity type.
+            new VariableInfo("org.logoUrl", "Logo", "image")));
   }
 
   private VariableGroup buildGeneratedGroup() {

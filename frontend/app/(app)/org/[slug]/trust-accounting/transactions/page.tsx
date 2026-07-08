@@ -179,7 +179,7 @@ export default async function TransactionsPage({
         api.get<OrgMember[]>("/api/members"),
       ]);
       if (email) {
-        const match = orgMembers.find((m) => m.email === email);
+        const match = orgMembers.find((m) => m.email?.toLowerCase() === email.toLowerCase());
         if (match) currentMemberId = match.id;
       }
     } catch {

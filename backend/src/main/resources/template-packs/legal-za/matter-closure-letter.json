@@ -2,6 +2,10 @@
   "type": "doc",
   "content": [
     {
+      "type": "paragraph",
+      "content": [{ "type": "variable", "attrs": { "key": "org.logoUrl" } }]
+    },
+    {
       "type": "heading",
       "attrs": { "level": 1 },
       "content": [{ "type": "variable", "attrs": { "key": "org.name" } }]

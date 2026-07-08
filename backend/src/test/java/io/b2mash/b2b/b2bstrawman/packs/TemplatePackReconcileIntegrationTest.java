@@ -7,6 +7,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -38,11 +40,16 @@ class TemplatePackReconcileIntegrationTest {
   private static final String PACK_ID = "legal-za";
   private static final String NEW_TEMPLATE_KEY = "fee-note-za";
 
+  private static final String COMMON_PACK_ID = "common";
+  private static final String COVER_LETTER_KEY = "invoice-cover-letter";
+  private static final String EDITED_TEMPLATE_KEY = "engagement-letter";
+
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private PackInstallService packInstallService;
   @Autowired private PackInstallRepository packInstallRepository;
   @Autowired private DocumentTemplateRepository documentTemplateRepository;
+  @Autowired private TemplatePackInstaller templatePackInstaller;
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
@@ -84,9 +91,10 @@ class TemplatePackReconcileIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  // Rewind the recorded version to simulate a tenant installed before v6. Also
-                  // exercises the CAS guard: the expected-version match must succeed exactly once.
-                  int updated = packInstallRepository.advancePackVersion(PACK_ID, "6", "5", 16);
+                  // Rewind the recorded version to simulate a tenant installed before v6 (the
+                  // version that introduced fee-note-za). Also exercises the CAS guard: the
+                  // expected-version match must succeed exactly once.
+                  int updated = packInstallRepository.advancePackVersion(PACK_ID, "7", "5", 16);
                   assertThat(updated).isEqualTo(1);
                 }));
 
@@ -107,7 +115,7 @@ class TemplatePackReconcileIntegrationTest {
                   assertThat(feeNote.getContentHash()).isNotBlank();
 
                   // Install row advanced to the classpath pack version
-                  assertThat(install.getPackVersion()).isEqualTo("6");
+                  assertThat(install.getPackVersion()).isEqualTo("7");
                   assertThat(install.getItemCount()).isEqualTo(17);
                 }));
 
@@ -126,6 +134,181 @@ class TemplatePackReconcileIntegrationTest {
                           packTemplates.stream()
                               .filter(t -> NEW_TEMPLATE_KEY.equals(t.getPackTemplateKey())))
                       .hasSize(1);
+                }));
+  }
+
+  /**
+   * Regression test for LZKC-010's existing-tenant delivery: a content fix to a pack template (e.g.
+   * the {@code invoice.number} → {@code invoice.invoiceNumber} placeholder typo in the common
+   * pack's invoice cover letter) must reach tenants that already have the pack — but only for
+   * templates the tenant has NOT modified. Tenant-edited templates (stored content hash no longer
+   * matches the current content) are preserved untouched.
+   */
+  @Test
+  void reconcileRefreshesUnmodifiedTemplateContentButPreservesTenantEdits() {
+    Map<String, Object> staleCoverLetterContent =
+        Map.of(
+            "type",
+            "doc",
+            "content",
+            List.of(
+                Map.of(
+                    "type",
+                    "paragraph",
+                    "content",
+                    List.of(
+                        Map.of("type", "variable", "attrs", Map.of("key", "invoice.number"))))));
+
+    Map<String, Object> tenantEditedContent =
+        Map.of(
+            "type",
+            "doc",
+            "content",
+            List.of(
+                Map.of(
+                    "type",
+                    "paragraph",
+                    "content",
+                    List.of(Map.of("type", "text", "text", "Tenant customized engagement")))));
+
+    // --- Phase 1: simulate a tenant seeded from an older pack version ---
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // Cover letter: stale pack content whose stored hash MATCHES its content —
+                  // i.e. the tenant never touched it; it is simply from an older pack version.
+                  var coverLetter =
+                      documentTemplateRepository
+                          .findByPackIdAndPackTemplateKey(COMMON_PACK_ID, COVER_LETTER_KEY)
+                          .orElseThrow();
+                  coverLetter.updateContent(
+                      coverLetter.getName(),
+                      coverLetter.getDescription(),
+                      staleCoverLetterContent,
+                      coverLetter.getCss());
+                  coverLetter.setContentHash(
+                      templatePackInstaller.computeContentHash(
+                          staleCoverLetterContent, coverLetter.getCss()));
+                  documentTemplateRepository.save(coverLetter);
+
+                  // Engagement letter: tenant-edited content — stored hash does NOT match.
+                  var engagement =
+                      documentTemplateRepository
+                          .findByPackIdAndPackTemplateKey(COMMON_PACK_ID, EDITED_TEMPLATE_KEY)
+                          .orElseThrow();
+                  engagement.updateContent(
+                      engagement.getName(),
+                      engagement.getDescription(),
+                      tenantEditedContent,
+                      engagement.getCss());
+                  // contentHash deliberately left as the original install-time hash -> mismatch
+                  documentTemplateRepository.save(engagement);
+
+                  // Rewind the recorded common-pack version to simulate pre-v2 install.
+                  int updated =
+                      packInstallRepository.advancePackVersion(COMMON_PACK_ID, "3", "1", 3);
+                  assertThat(updated).isEqualTo(1);
+                }));
+
+    // --- Phase 2: startup reconciliation ---
+    packInstallService.internalInstall(COMMON_PACK_ID, tenantSchema);
+
+    // --- Phase 3: unmodified template refreshed, tenant-edited template preserved ---
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var install = packInstallRepository.findByPackId(COMMON_PACK_ID).orElseThrow();
+                  assertThat(install.getPackVersion()).isEqualTo("3");
+
+                  var coverLetter =
+                      documentTemplateRepository
+                          .findByPackIdAndPackTemplateKey(COMMON_PACK_ID, COVER_LETTER_KEY)
+                          .orElseThrow();
+                  String coverLetterJson = coverLetter.getContent().toString();
+                  assertThat(coverLetterJson).contains("invoice.invoiceNumber");
+                  assertThat(coverLetterJson).doesNotContain("key=invoice.number");
+                  // Hash re-pinned to the refreshed content so the template still reads as
+                  // pristine (uninstall gate + future reconciles).
+                  assertThat(coverLetter.getContentHash())
+                      .isEqualTo(
+                          templatePackInstaller.computeContentHash(
+                              coverLetter.getContent(), coverLetter.getCss()));
+
+                  var engagement =
+                      documentTemplateRepository
+                          .findByPackIdAndPackTemplateKey(COMMON_PACK_ID, EDITED_TEMPLATE_KEY)
+                          .orElseThrow();
+                  assertThat(engagement.getContent().toString())
+                      .contains("Tenant customized engagement");
+                }));
+  }
+
+  /**
+   * LZKC-007 (part 1): the legal-za pack is now also covered by the content-refresh reconcile path
+   * (v6 → v7 letterhead-logo template update). A tenant on an older pack version whose
+   * statement-of-account template is pristine (stored hash matches content) must receive the
+   * updated content — including the new {@code org.logoUrl} letterhead node — on startup
+   * reconciliation.
+   */
+  @Test
+  void reconcileRefreshesUnmodifiedLegalZaTemplateContent() {
+    Map<String, Object> staleSoaContent =
+        Map.of(
+            "type",
+            "doc",
+            "content",
+            List.of(
+                Map.of(
+                    "type",
+                    "paragraph",
+                    "content",
+                    List.of(
+                        Map.of(
+                            "type", "variable", "attrs", Map.of("key", "statement.reference"))))));
+
+    // --- Phase 1: simulate a pristine tenant seeded from an older (pre-v7) pack version ---
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var soa =
+                      documentTemplateRepository
+                          .findByPackIdAndPackTemplateKey(PACK_ID, "statement-of-account")
+                          .orElseThrow();
+                  soa.updateContent(
+                      soa.getName(), soa.getDescription(), staleSoaContent, soa.getCss());
+                  // Hash pinned to the stale content -> reads as pristine (never tenant-edited).
+                  soa.setContentHash(
+                      templatePackInstaller.computeContentHash(staleSoaContent, soa.getCss()));
+                  documentTemplateRepository.save(soa);
+
+                  int updated = packInstallRepository.advancePackVersion(PACK_ID, "7", "6", 17);
+                  assertThat(updated).isEqualTo(1);
+                }));
+
+    // --- Phase 2: startup reconciliation ---
+    packInstallService.internalInstall(PACK_ID, tenantSchema);
+
+    // --- Phase 3: pristine template refreshed to v7 content (letterhead logo node present) ---
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var install = packInstallRepository.findByPackId(PACK_ID).orElseThrow();
+                  assertThat(install.getPackVersion()).isEqualTo("7");
+
+                  var soa =
+                      documentTemplateRepository
+                          .findByPackIdAndPackTemplateKey(PACK_ID, "statement-of-account")
+                          .orElseThrow();
+                  String soaJson = soa.getContent().toString();
+                  assertThat(soaJson).contains("org.logoUrl");
+                  assertThat(soaJson).contains("summary.closing_balance_owing");
+                  assertThat(soa.getContentHash())
+                      .isEqualTo(
+                          templatePackInstaller.computeContentHash(soa.getContent(), soa.getCss()));
                 }));
   }
 

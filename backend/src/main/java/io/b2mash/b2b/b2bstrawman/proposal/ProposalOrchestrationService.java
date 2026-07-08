@@ -167,7 +167,11 @@ public class ProposalOrchestrationService {
       // Activity feed (AuditEventRepository.findByProjectId) and the portal Firm-actions trail
       // (findActivityFirmForCustomer) both scope on details->>'project_id'; without it this
       // client-safe milestone is silently dropped from both feeds.
-      auditService.log(
+      // LZKC-020: attribute the acceptance to the portal contact who accepted it. Without an
+      // explicit actor the builder falls back to RequestScopes.MEMBER_ID, which is unbound on
+      // portal requests — the event renders as "System" in firm feeds and is dropped from the
+      // portal "Your actions" trail (which filters actor_type = PORTAL_CONTACT).
+      var acceptedAudit =
           AuditEventBuilder.builder()
               .eventType("proposal.accepted")
               .entityType("proposal")
@@ -176,8 +180,11 @@ public class ProposalOrchestrationService {
                   Map.of(
                       "proposal_number", proposal.getProposalNumber(),
                       "customer_id", proposal.getCustomerId().toString(),
-                      "project_id", project.getId().toString()))
-              .build());
+                      "project_id", project.getId().toString()));
+      if (portalContactId != null) {
+        acceptedAudit.actorId(portalContactId).actorType("PORTAL_CONTACT").source("PORTAL");
+      }
+      auditService.log(acceptedAudit.build());
 
       // Step 4: Assign team members
       var assignedMemberIds =

@@ -1,1 +1,1 @@
-{"commit":"a76614778","command":"pnpm test (full, serial) && pnpm run lint && pnpm run build && pnpm run format:check","exit":0,"ts":"2026-07-08T03:44:17Z","summary":"389 files / 2461 passed / 2 skipped — run on main-repo checkout with PR diff applied (worktree env unstable under machine load; serial workers)"}
+{"commit":"55f3f05cd","command":"pnpm test (serial) && pnpm run lint && pnpm run build && pnpm run format:check","exit":0,"ts":"2026-07-08T06:17:55Z","summary":"390 files / 2463 passed / 2 skipped (main-repo ground, serial)"}

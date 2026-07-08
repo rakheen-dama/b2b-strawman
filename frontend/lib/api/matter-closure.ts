@@ -58,6 +58,9 @@ export interface ClosureLogEntry {
   id: string;
   projectId: string;
   closedBy: string;
+  // LZKC-014: display name resolved server-side via MemberNameResolver;
+  // null when the member row no longer exists.
+  closedByName: string | null;
   closedAt: string;
   reason: string;
   notes: string | null;
@@ -67,6 +70,8 @@ export interface ClosureLogEntry {
   closureLetterDocumentId: string | null;
   reopenedAt: string | null;
   reopenedBy: string | null;
+  // LZKC-014: see closedByName.
+  reopenedByName: string | null;
   reopenNotes: string | null;
 }
 

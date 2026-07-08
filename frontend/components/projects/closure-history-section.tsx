@@ -114,7 +114,8 @@ function ClosureHistoryRow({ entry }: { entry: ClosureLogEntry }) {
               )}
             </div>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Closed by {entry.closedBy}
+              {/* LZKC-014: prefer the server-resolved member name; fall back to the raw id. */}
+              Closed by {entry.closedByName ?? entry.closedBy}
             </p>
             {entry.overrideUsed && entry.overrideJustification && (
               <p

@@ -24,7 +24,18 @@ public record AutomationTemplateDefinition(
     TriggerType triggerType,
     Map<String, Object> triggerConfig,
     List<Map<String, Object>> conditions,
-    List<TemplateActionDefinition> actions) {
+    List<TemplateActionDefinition> actions,
+    Boolean defaultEnabled) {
+
+  /**
+   * Whether the seeder should create the rule enabled. Optional in pack JSON — absent ({@code
+   * null}) means enabled, preserving the historical default. Only {@code "defaultEnabled": false}
+   * changes behaviour (LZKC-013: {@code task-completion-chain} seeds disabled so it doesn't fight
+   * the matter-closure Open-Tasks gate; firms opt in by toggling it on).
+   */
+  public boolean seedEnabled() {
+    return !Boolean.FALSE.equals(defaultEnabled);
+  }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   public record TemplateActionDefinition(

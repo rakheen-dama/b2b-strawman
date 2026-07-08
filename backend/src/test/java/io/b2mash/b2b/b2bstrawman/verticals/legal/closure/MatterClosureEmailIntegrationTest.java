@@ -51,9 +51,10 @@ import org.springframework.transaction.support.TransactionTemplate;
  *       DocumentGeneratedEvent}s with explicit {@code visibility=PORTAL} (SoA via {@code
  *       StatementService}, closure-letter via the OBS-2106 Part 2 follow-up event in {@code
  *       MatterClosureService#publishPortalReadyFollowUp}).
- *   <li>Assert the GreenMail JVM singleton receives exactly ONE portal-document-ready email (dedup
- *       coalesces the two events into a single send per the 5-minute Caffeine window in {@code
- *       PortalDocumentNotificationHandler}).
+ *   <li>Assert the GreenMail JVM singleton receives one portal-document-ready email PER document
+ *       (LZKC-015): the 5-minute Caffeine dedup in {@code PortalDocumentNotificationHandler} keys
+ *       on (tenant, customer, project, template), so distinct doc types each notify while genuine
+ *       re-emissions of the same doc type stay deduped.
  * </ol>
  *
  * <p>Without this test, OBS-2106 would re-regress silently: the existing closure-letter test
@@ -147,17 +148,20 @@ class MatterClosureEmailIntegrationTest {
   void resetGreenMail() throws Exception {
     greenMail.purgeEmailFromAllMailboxes();
     // Each @Test creates its OWN projectId via createProject(...), so the dedup key
-    // (tenant:customer:project) differs across tests — no need to invalidate the Caffeine cache,
-    // and the clearDedupCacheForTesting() hook is package-private to portal/ anyway.
+    // (tenant:customer:project:template) differs across tests — no need to invalidate the Caffeine
+    // cache, and the clearDedupCacheForTesting() hook is package-private to portal/ anyway.
   }
 
   /**
-   * OBS-2106 regression guard: closing a matter with both closure-letter and SoA enabled MUST land
-   * exactly one portal-document-ready email at the PortalContact. Both documents publish
-   * DocumentGeneratedEvent with visibility=PORTAL; dedup coalesces them into a single send.
+   * OBS-2106 regression guard, amended by LZKC-015: closing a matter with both closure-letter and
+   * SoA enabled MUST land one portal-document-ready email PER document (two total) at the
+   * PortalContact. Both documents publish DocumentGeneratedEvent with visibility=PORTAL; the dedup
+   * key includes the template name, so distinct doc types each notify while genuine re-emissions of
+   * the same doc type stay deduped. (Pre-LZKC-015 the key omitted the template name, so the closure
+   * letter claimed the key and the SoA email was silently swallowed — Day 60/61, cycle 2026-07-06.)
    */
   @Test
-  void close_withClosureLetterAndSoa_dispatchesExactlyOnePortalEmail() throws Exception {
+  void close_withClosureLetterAndSoa_dispatchesOnePortalEmailPerDocument() throws Exception {
     UUID projectId = createProject("OBS-2106 Closure Pack Matter");
 
     var response =
@@ -184,19 +188,30 @@ class MatterClosureEmailIntegrationTest {
 
     // Allow AFTER_COMMIT listeners + GreenMail SMTP delivery to settle. GreenMail's
     // waitForIncomingEmail handles both the listener queue drain and the SMTP receive.
-    boolean delivered = greenMail.waitForIncomingEmail(5_000L, 1);
+    boolean delivered = greenMail.waitForIncomingEmail(5_000L, 2);
     assertThat(delivered)
-        .as("OBS-2106: at least one portal-document-ready email must arrive within 5s of close")
+        .as(
+            "LZKC-015: TWO portal-document-ready emails (closure letter + SoA) must arrive within"
+                + " 5s of close")
         .isTrue();
 
     MimeMessage[] received = greenMail.getReceivedMessages();
     assertThat(received)
         .as(
-            "OBS-2106 dedup invariant: closure-letter + SoA inside the same 5-min window must"
-                + " coalesce to a single portal email keyed on (tenant, customer, project)")
-        .hasSize(1);
-    assertThat(received[0].getAllRecipients()[0].toString()).isEqualTo(CONTACT_EMAIL);
-    assertThat(received[0].getSubject()).containsIgnoringCase("document ready");
+            "LZKC-015: closure-letter + SoA are distinct documents — the client must be notified"
+                + " once per document, not once per (tenant, customer, project)")
+        .hasSize(2);
+    for (MimeMessage message : received) {
+      assertThat(message.getAllRecipients()[0].toString()).isEqualTo(CONTACT_EMAIL);
+      assertThat(message.getSubject()).containsIgnoringCase("document ready");
+    }
+    // One email per document type: subjects carry the generated file names, which embed the
+    // template slugs ("Closure Letter ..." pdf vs "Statement of Account ..." pdf).
+    assertThat(received)
+        .extracting(MimeMessage::getSubject)
+        .as("one email references the closure letter, the other the statement of account")
+        .anySatisfy(subject -> assertThat(subject).containsIgnoringCase("closure"))
+        .anySatisfy(subject -> assertThat(subject).containsIgnoringCase("statement"));
   }
 
   /**

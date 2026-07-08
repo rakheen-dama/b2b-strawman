@@ -46,8 +46,11 @@ import org.springframework.transaction.support.TransactionTemplate;
  *       generation (slice 22 / GAP-L-74-followup).
  *   <li>Template name is in the per-tenant {@code OrgSettings.portalNotificationDocTypes} allowlist
  *       (default {@code ["matter-closure-letter", "statement-of-account"]}).
- *   <li>5-minute Caffeine dedup keyed on {@code tenant + ":" + customer + ":" + project} — closure
- *       packs may fan out into multiple documents within seconds; only the first send wins.
+ *   <li>5-minute Caffeine dedup keyed on {@code tenant + ":" + customer + ":" + project + ":" +
+ *       template} — closure packs may fan out into multiple documents within seconds; each distinct
+ *       document type notifies once, and re-emissions of the same document type within the window
+ *       are deduped (LZKC-015: the key previously omitted the template, so the closure letter
+ *       swallowed the sibling Statement-of-Account email).
  * </ol>
  *
  * <p>Runs {@code AFTER_COMMIT} on a fresh ScopedValue binding via {@link
@@ -219,9 +222,13 @@ public class PortalDocumentNotificationHandler {
       return;
     }
 
-    // 4. Dedup on (tenant, customer, project) — coalesces multi-document closure batches into a
-    //    single email. The first event in the 5-minute window wins.
-    String dedupKey = event.tenantId() + ":" + ctx.customerId() + ":" + projectId;
+    // 4. Dedup on (tenant, customer, project, template) — LZKC-015: the key must include the
+    //    document type, otherwise the first document of a closure batch (the closure letter)
+    //    claims the key and the sibling Statement of Account's "Document ready" email is silently
+    //    swallowed. Distinct doc types each notify; re-emissions of the SAME doc type within the
+    //    5-minute window stay deduped.
+    String dedupKey =
+        event.tenantId() + ":" + ctx.customerId() + ":" + projectId + ":" + templateName;
     if (dedupCache.getIfPresent(dedupKey) != null) {
       log.info(
           "Skipping portal-document-ready: dedup hit (key={}, template={})",

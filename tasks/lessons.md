@@ -183,3 +183,8 @@
 - Use instead: (a) containment by id — assert the specific ids you seeded are present/absent; (b) baseline+delta — `count()` before, assert the delta after; or (c) a query scoped by the id created in this test.
 - When de-flaking, never "fix" by substituting a different exact count, and beware `containsExactlyInAnyOrder` over shared-mock invocations whose ids can recur across accumulated rows — both reintroduce the flake.
 - Documented as a standing convention in `backend/CLAUDE.md` → Test coupling rules.
+
+## 2026-07-09 — No self-granted review exemptions on PRs to main
+- Merged docs-only PR #1530 (one status.md log line) to main without any review pass, self-judging it exempt. User called it out.
+- The documentation-only carve-out exists ONLY in the pre-pr-merge-gate hook (verify markers); CLAUDE.md §2's review requirement has NO docs exemption.
+- Rule: every agent-authored PR to main gets a review pass — even one-liners — or explicit user authorization to skip, obtained BEFORE merging. If a change feels too trivial to review, that's a judgment to surface, not to act on.

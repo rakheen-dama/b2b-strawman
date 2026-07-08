@@ -362,7 +362,15 @@ public class StatementService {
   private String renderHtml(DocumentTemplate template, Map<String, Object> context) {
     Map<String, Object> content =
         template.getContent() != null ? template.getContent() : Map.of("type", "doc");
-    return tiptapRenderer.render(content, context, Map.of(), template.getCss(), Map.of());
+    // LZKC-017: pass the SoA-specific format hints so standalone amounts/dates render with the
+    // same locale treatment as loop-table columns (this path bypasses
+    // PdfRenderingService.buildFormatHints — see StatementOfAccountContextBuilder.formatHints()).
+    return tiptapRenderer.render(
+        content,
+        context,
+        Map.of(),
+        template.getCss(),
+        StatementOfAccountContextBuilder.formatHints());
   }
 
   private String buildFileName(String templateSlug, Project project, LocalDate periodEnd) {

@@ -187,4 +187,4 @@
 ## 2026-07-09 — No self-granted review exemptions on PRs to main
 - Merged docs-only PR #1530 (one status.md log line) to main without any review pass, self-judging it exempt. User called it out.
 - The documentation-only carve-out exists ONLY in the pre-pr-merge-gate hook (verify markers); CLAUDE.md §2's review requirement has NO docs exemption.
-- Rule: every agent-authored PR to main gets a review pass — even one-liners — or explicit user authorization to skip, obtained BEFORE merging. If a change feels too trivial to review, that's a judgment to surface, not to act on.
+- Rule (user-stated policy 2026-07-09): **ALL PRs must be reviewed — no exemptions**, docs-only included, regardless of size or target branch. If a review was skipped, obtain a retrospective review immediately. If a change feels too trivial to review, that's a judgment to surface, not to act on.

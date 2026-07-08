@@ -7,12 +7,15 @@ import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackDefinition;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
+import io.b2mash.b2b.b2bstrawman.template.TemplatePackTemplate;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -143,10 +146,20 @@ public class TemplatePackInstaller implements PackInstaller {
 
   /**
    * Reconciles an already-installed template pack with its current classpath definition. If the
-   * classpath pack version is newer than the installed version, creates any pack templates that do
-   * not exist in the tenant (matched by {@code packId + packTemplateKey}), tags them with the
-   * existing install, and advances the recorded install version. Additive only: existing templates
-   * are never modified or deleted. Note that a version bump restores any pack template the tenant
+   * classpath pack version is newer than the installed version:
+   *
+   * <ul>
+   *   <li>creates any pack templates that do not exist in the tenant (matched by {@code packId +
+   *       packTemplateKey}) and tags them with the existing install;
+   *   <li>refreshes the content/CSS of existing pack templates the tenant has <b>not</b> modified
+   *       (stored content hash still matches the row's current content) to the classpath version —
+   *       this is how content fixes (e.g. LZKC-010's {@code invoice.number} placeholder typo) reach
+   *       existing tenants. Tenant-edited templates are never touched, and templates without a
+   *       recorded content hash are left alone (unknown provenance);
+   *   <li>advances the recorded install version.
+   * </ul>
+   *
+   * <p>Templates are never deleted. Note that a version bump restores any pack template the tenant
    * is missing (including ones a member deleted) — pack upgrades re-deliver the full pack content.
    */
   @Override
@@ -190,10 +203,15 @@ public class TemplatePackInstaller implements PackInstaller {
     }
 
     int created = 0;
+    int refreshed = 0;
     for (var templateDef : pack.templates()) {
-      if (documentTemplateRepository
-          .findByPackIdAndPackTemplateKey(packId, templateDef.templateKey())
-          .isPresent()) {
+      var existing =
+          documentTemplateRepository.findByPackIdAndPackTemplateKey(
+              packId, templateDef.templateKey());
+      if (existing.isPresent()) {
+        if (refreshIfUnmodified(existing.get(), templateDef, loadedPack.resource())) {
+          refreshed++;
+        }
         continue;
       }
       templatePackSeeder.applySingleTemplate(pack, templateDef, loadedPack.resource());
@@ -211,11 +229,42 @@ public class TemplatePackInstaller implements PackInstaller {
     }
 
     log.info(
-        "Reconciled template pack {} to v{} for tenant {} ({} new templates)",
+        "Reconciled template pack {} to v{} for tenant {} ({} new templates, {} refreshed)",
         packId,
         pack.version(),
         tenantId,
-        created);
+        created,
+        refreshed);
+    return true;
+  }
+
+  /**
+   * Refreshes a pack template's content/CSS to the current classpath pack content, but only when
+   * the tenant has not modified it: the stored content hash must still match the row's current
+   * content. Returns {@code true} if the template was refreshed. The content hash is re-pinned to
+   * the refreshed content so the template continues to read as pristine for the uninstall gate and
+   * future reconciles.
+   */
+  private boolean refreshIfUnmodified(
+      DocumentTemplate template, TemplatePackTemplate templateDef, Resource packResource) {
+    String storedHash = template.getContentHash();
+    if (storedHash == null) {
+      return false; // unknown provenance — never overwrite
+    }
+    if (!storedHash.equals(computeTemplateHash(template))) {
+      return false; // tenant-edited — preserve the tenant's changes
+    }
+
+    var packContent = templatePackSeeder.loadTemplateContent(templateDef, packResource);
+    String packHash = computeContentHash(packContent.content(), packContent.css());
+    if (storedHash.equals(packHash)) {
+      return false; // already on current pack content
+    }
+
+    template.updateContent(
+        template.getName(), template.getDescription(), packContent.content(), packContent.css());
+    template.setContentHash(packHash);
+    documentTemplateRepository.save(template);
     return true;
   }
 
@@ -315,14 +364,22 @@ public class TemplatePackInstaller implements PackInstaller {
   }
 
   private String computeTemplateHash(DocumentTemplate dt) {
-    if (dt.getContent() == null) {
+    return computeContentHash(dt.getContent(), dt.getCss());
+  }
+
+  /**
+   * Computes the canonical content hash over a template's content JSON + CSS. Package-visible so
+   * tests can pin hashes for simulated pack states.
+   */
+  String computeContentHash(Map<String, Object> content, String css) {
+    if (content == null) {
       return null;
     }
     // Include both content and css in the hash
     var hashInput = new java.util.LinkedHashMap<String, Object>();
-    hashInput.put("content", dt.getContent());
-    if (dt.getCss() != null) {
-      hashInput.put("css", dt.getCss());
+    hashInput.put("content", content);
+    if (css != null) {
+      hashInput.put("css", css);
     }
     var node = objectMapper.valueToTree(hashInput);
     String canonical = ContentHashUtil.canonicalizeJson(node);

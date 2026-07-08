@@ -34,7 +34,7 @@
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Invoice Number:" },
         { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "invoice.number" } }
+        { "type": "variable", "attrs": { "key": "invoice.invoiceNumber" } }
       ]
     },
     {

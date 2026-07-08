@@ -128,7 +128,9 @@ class VisualRegressionTest {
         "org",
         Map.of("name", "Consulting Group SA", "documentFooterText", "Thank you for your business"));
     context.put("customer", Map.of("name", "Client Corp"));
-    context.put("invoice", Map.of("number", "INV-2026-001", "total", "R 15,000.00"));
+    // LZKC-010: the template's variable key is invoice.invoiceNumber (matching
+    // InvoiceContextBuilder); the old "number" key was the placeholder typo that rendered blank.
+    context.put("invoice", Map.of("invoiceNumber", "INV-2026-001", "total", "R 15,000.00"));
 
     String html = renderer.render(doc, context, Map.of(), null);
 

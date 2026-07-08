@@ -92,6 +92,11 @@ public class AutomationTemplateSeeder extends AbstractPackSeeder<AutomationTempl
               RuleSource.TEMPLATE,
               template.slug(),
               SYSTEM_USER_ID);
+      if (!template.seedEnabled()) {
+        // LZKC-013: template opted out of default-on seeding (e.g. task-completion-chain).
+        // The constructor sets enabled=true, so flip it before the initial save.
+        rule.toggle();
+      }
       rule = ruleRepository.save(rule);
 
       for (var actionDef : template.actions()) {

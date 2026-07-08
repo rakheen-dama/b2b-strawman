@@ -7,6 +7,7 @@
       "name": "Task Completion Chain",
       "description": "Automatically creates a follow-up task when a task is completed",
       "category": "workflow",
+      "defaultEnabled": false,
       "triggerType": "TASK_STATUS_CHANGED",
       "triggerConfig": { "toStatus": "DONE" },
       "conditions": [],

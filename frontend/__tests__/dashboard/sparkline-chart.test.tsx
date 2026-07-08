@@ -25,6 +25,24 @@ describe("SparklineChart", () => {
     expect(linePath!.getAttribute("d")).toBeTruthy();
   });
 
+  it("renders a single data point without a malformed path (LZKC-011)", () => {
+    const { container } = render(<SparklineChart data={[42]} />);
+
+    const svg = container.querySelector("svg");
+    expect(svg).toBeInTheDocument();
+
+    // Every rendered <path> must have a valid d starting with a moveto command
+    const paths = container.querySelectorAll("path");
+    paths.forEach((p) => {
+      const d = p.getAttribute("d");
+      expect(d).toMatch(/^[Mm]/);
+    });
+
+    // The single point still renders as the end dot
+    const circle = container.querySelector("circle");
+    expect(circle).toBeInTheDocument();
+  });
+
   it("handles empty data array gracefully", () => {
     const { container } = render(<SparklineChart data={[]} />);
 

@@ -83,6 +83,7 @@ public class EmailContextBuilder {
     context.put("recipientName", recipientName);
     context.put("unsubscribeUrl", unsubscribeUrl);
     context.put("appUrl", appBaseUrl);
+    context.put("orgAppUrl", orgScopedAppUrl());
 
     // GAP-L-65 -- terminology overrides keyed by verticalProfile (e.g. legal-za "Invoice" ->
     // "Fee Note"). Convenience keys avoid Thymeleaf null-safety gymnastics in templates.
@@ -103,6 +104,18 @@ public class EmailContextBuilder {
         "proposalTermLowerWithArticle", EmailTerminology.withIndefiniteArticle(proposalTermLower));
 
     return context;
+  }
+
+  /**
+   * Org-scoped frontend base URL ({@code {appBaseUrl}/org/{slug}}) for CTA deep links — all app
+   * routes live under the org prefix (LZKC-022). The bound ORG_ID is the Keycloak organization
+   * alias, which is the same string the frontend uses as its {@code /org/[slug]} route segment.
+   * (Clerk-mode JWTs carry the slug in a separate {@code o.slg} claim that is not persisted; org
+   * links assume Keycloak/mock auth.) Falls back to the bare base URL when no org scope is bound.
+   */
+  private String orgScopedAppUrl() {
+    String orgId = RequestScopes.getOrgIdOrNull();
+    return orgId != null ? appBaseUrl + "/org/" + orgId : appBaseUrl;
   }
 
   private String resolveOrgName() {

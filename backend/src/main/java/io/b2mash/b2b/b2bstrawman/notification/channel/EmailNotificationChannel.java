@@ -240,7 +240,9 @@ public class EmailNotificationChannel implements NotificationChannel {
     context.put("notificationBody", notification.getBody());
 
     String type = notification.getType();
+    // LZKC-022 — all app routes live under /org/{slug}; bare top-level deep links 404.
     String appUrl = (String) context.get("appUrl");
+    String orgAppUrl = (String) context.getOrDefault("orgAppUrl", appUrl);
 
     switch (type) {
       case "TASK_ASSIGNED", "TASK_CLAIMED", "TASK_UPDATED" -> {
@@ -251,14 +253,16 @@ public class EmailNotificationChannel implements NotificationChannel {
               case "TASK_CLAIMED" -> "claimed";
               default -> "updated";
             });
+        // No dedicated task route exists — the project page opens the task detail sheet via
+        // query params, matching the in-app notification deep-link convention.
         context.put(
             "taskUrl",
             notification.getReferenceEntityId() != null
                     && notification.getReferenceProjectId() != null
-                ? appUrl
+                ? orgAppUrl
                     + "/projects/"
                     + notification.getReferenceProjectId()
-                    + "/tasks/"
+                    + "?tab=tasks&taskId="
                     + notification.getReferenceEntityId()
                 : null);
       }
@@ -273,13 +277,14 @@ public class EmailNotificationChannel implements NotificationChannel {
         context.put("documentUrl", null);
       }
       case "MEMBER_INVITED" -> {
-        context.put("joinUrl", appUrl);
+        // Bare /org/{slug} has no page — the org landing route is the dashboard.
+        context.put("joinUrl", orgAppUrl + "/dashboard");
       }
       case "BUDGET_ALERT" -> {
         context.put(
             "projectUrl",
             notification.getReferenceEntityId() != null
-                ? appUrl + "/projects/" + notification.getReferenceEntityId()
+                ? orgAppUrl + "/projects/" + notification.getReferenceEntityId()
                 : null);
       }
       case "INVOICE_APPROVED", "INVOICE_SENT", "INVOICE_PAID", "INVOICE_VOIDED" -> {
@@ -288,7 +293,7 @@ public class EmailNotificationChannel implements NotificationChannel {
         context.put(
             "invoiceUrl",
             notification.getReferenceEntityId() != null
-                ? appUrl + "/invoices/" + notification.getReferenceEntityId()
+                ? orgAppUrl + "/invoices/" + notification.getReferenceEntityId()
                 : null);
       }
       case "RECURRING_PROJECT_CREATED", "SCHEDULE_SKIPPED", "SCHEDULE_COMPLETED" -> {
@@ -299,27 +304,42 @@ public class EmailNotificationChannel implements NotificationChannel {
               case "SCHEDULE_SKIPPED" -> "skipped";
               default -> "completed";
             });
-        context.put("scheduleUrl", appUrl);
+        // RECURRING_PROJECT_CREATED references the created project; the other two reference the
+        // recurring schedule itself.
+        String scheduleSection =
+            "RECURRING_PROJECT_CREATED".equals(type) ? "projects" : "schedules";
+        context.put(
+            "scheduleUrl",
+            notification.getReferenceEntityId() != null
+                ? orgAppUrl + "/" + scheduleSection + "/" + notification.getReferenceEntityId()
+                : orgAppUrl + "/dashboard");
       }
       case "RETAINER_PERIOD_READY_TO_CLOSE",
           "RETAINER_PERIOD_CLOSED",
           "RETAINER_APPROACHING_CAPACITY",
           "RETAINER_FULLY_CONSUMED",
           "RETAINER_TERMINATED" -> {
-        context.put("retainerUrl", appUrl);
+        // Only agreement references have a detail page; period references (READY_TO_CLOSE) carry
+        // a period id, so they link to the retainers list.
+        context.put(
+            "retainerUrl",
+            "RETAINER_AGREEMENT".equals(notification.getReferenceEntityType())
+                    && notification.getReferenceEntityId() != null
+                ? orgAppUrl + "/retainers/" + notification.getReferenceEntityId()
+                : orgAppUrl + "/retainers");
       }
       case "PROPOSAL_SENT", "PROPOSAL_ACCEPTED", "PROPOSAL_EXPIRED", "PROPOSAL_DECLINED" -> {
         context.put(
             "proposalUrl",
             notification.getReferenceEntityId() != null
-                ? appUrl + "/proposals/" + notification.getReferenceEntityId()
+                ? orgAppUrl + "/proposals/" + notification.getReferenceEntityId()
                 : null);
       }
       case "DEAL_WON" -> {
         context.put(
             "dealUrl",
             notification.getReferenceEntityId() != null
-                ? appUrl + "/pipeline/" + notification.getReferenceEntityId()
+                ? orgAppUrl + "/pipeline/" + notification.getReferenceEntityId()
                 : null);
       }
       default -> {

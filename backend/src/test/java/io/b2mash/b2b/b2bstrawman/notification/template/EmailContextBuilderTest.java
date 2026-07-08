@@ -107,6 +107,28 @@ class EmailContextBuilderTest {
   }
 
   @Test
+  void buildBaseContext_exposesOrgScopedAppUrl() {
+    Map<String, Object> context =
+        ScopedValue.where(RequestScopes.TENANT_ID, genericSchema)
+            .where(RequestScopes.ORG_ID, GENERIC_ORG_ID)
+            .call(() -> emailContextBuilder.buildBaseContext("Customer", null));
+
+    // LZKC-022 — appUrl stays the bare base (safe non-404 fallback); orgAppUrl carries the
+    // /org/{slug} prefix used by all firm-side CTA deep links.
+    assertThat(context).containsEntry("appUrl", "http://localhost:3000");
+    assertThat(context).containsEntry("orgAppUrl", "http://localhost:3000/org/" + GENERIC_ORG_ID);
+  }
+
+  @Test
+  void buildBaseContext_withoutOrgScope_orgAppUrlFallsBackToBase() {
+    Map<String, Object> context =
+        ScopedValue.where(RequestScopes.TENANT_ID, genericSchema)
+            .call(() -> emailContextBuilder.buildBaseContext("Customer", null));
+
+    assertThat(context).containsEntry("orgAppUrl", "http://localhost:3000");
+  }
+
+  @Test
   void buildBaseContext_unknownVerticalProfile_fallsBackToIdentity() {
     // Set an unknown vertical profile -- EmailTerminology should return an empty map and the
     // convenience keys should fall back to identity.

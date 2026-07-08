@@ -505,4 +505,259 @@ class ActivityMessageFormatterTest {
     assertThat(bareItem.actorAvatarUrl()).isNull();
     assertThat(bareItem.message()).doesNotContain("System").doesNotContain("Unknown");
   }
+
+  // ---------- LZKC-019: portal/document/statement/closure events must render friendly copy ----
+  // Pre-fix these all fell through to the raw default:
+  // "<actor> performed <event.key> on <entity_type>".
+
+  private AuditEvent portalContactEvent(
+      String eventType, String entityType, UUID portalContactId, Map<String, Object> details) {
+    var record =
+        new AuditEventRecord(
+            eventType,
+            entityType,
+            ENTITY_ID,
+            portalContactId,
+            "PORTAL_CONTACT",
+            "PORTAL",
+            null,
+            null,
+            details);
+    return new AuditEvent(record);
+  }
+
+  private PortalContact siphoContact(UUID portalContactId) {
+    return TestIds.withId(
+        new PortalContact(
+            "org_test",
+            UUID.randomUUID(),
+            "sipho@example.com",
+            "Sipho Dlamini",
+            PortalContact.ContactRole.PRIMARY),
+        portalContactId);
+  }
+
+  @Test
+  void portalDocumentDownloadedRendersFileNameNotRawKey() {
+    UUID portalContactId = UUID.randomUUID();
+    var event =
+        portalContactEvent(
+            "portal.document.downloaded",
+            "document",
+            portalContactId,
+            Map.of(
+                "file_name",
+                "statement-of-account-2026-03.pdf",
+                "project_id",
+                UUID.randomUUID().toString(),
+                "scope",
+                "PROJECT",
+                "customer_id",
+                UUID.randomUUID().toString()));
+    var item =
+        formatter.format(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
+    assertThat(item.message())
+        .isEqualTo("Sipho Dlamini downloaded document \"statement-of-account-2026-03.pdf\"");
+    assertThat(item.message()).doesNotContain("performed");
+  }
+
+  @Test
+  void portalDocumentUploadInitiatedRendersFileName() {
+    UUID portalContactId = UUID.randomUUID();
+    var event =
+        portalContactEvent(
+            "portal.document.upload_initiated",
+            "document",
+            portalContactId,
+            Map.of("file_name", "FICA-ID-copy.pdf", "request_id", UUID.randomUUID().toString()));
+    var item =
+        formatter.format(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
+    assertThat(item.message())
+        .isEqualTo("Sipho Dlamini started uploading document \"FICA-ID-copy.pdf\"");
+    assertThat(item.message()).doesNotContain("performed");
+  }
+
+  @Test
+  void portalRequestItemSubmittedRendersItemAndRequestNumber() {
+    UUID portalContactId = UUID.randomUUID();
+    var event =
+        portalContactEvent(
+            "portal.request_item.submitted",
+            "request_item",
+            portalContactId,
+            Map.of("item_name", "Proof of address", "request_number", "REQ-0042"));
+    var item =
+        formatter.format(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
+    assertThat(item.message())
+        .isEqualTo("Sipho Dlamini submitted \"Proof of address\" for REQ-0042");
+    assertThat(item.message()).doesNotContain("performed");
+  }
+
+  @Test
+  void informationRequestItemSubmittedAliasStillRendersFriendlyCopy() {
+    // Legacy key kept as an alias of portal.request_item.submitted (zero-risk, dead emitter).
+    var event =
+        createEvent(
+            "information_request.item_submitted",
+            "request_item",
+            Map.of("item_name", "ID copy", "request_number", "REQ-0007"));
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    assertThat(item.message()).isEqualTo("Alice submitted \"ID copy\" for REQ-0007");
+    assertThat(item.message()).doesNotContain("performed");
+  }
+
+  @Test
+  void portalInvoicePaidRendersInvoiceNumber() {
+    UUID portalContactId = UUID.randomUUID();
+    var event =
+        portalContactEvent(
+            "portal.invoice.paid",
+            "invoice",
+            portalContactId,
+            Map.of("invoice_number", "INV-0012", "amount", "1500.00"));
+    var item =
+        formatter.format(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
+    assertThat(item.message()).isEqualTo("Sipho Dlamini paid fee note INV-0012");
+    assertThat(item.message()).doesNotContain("performed");
+  }
+
+  @Test
+  void portalInvoicePaidWithoutInvoiceNumberRendersNeutralCopy() {
+    UUID portalContactId = UUID.randomUUID();
+    var event =
+        portalContactEvent(
+            "portal.invoice.paid", "invoice", portalContactId, Map.of("invoice_number", ""));
+    var item =
+        formatter.format(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
+    assertThat(item.message()).isEqualTo("Sipho Dlamini paid a fee note");
+  }
+
+  @Test
+  void portalDocumentAcknowledgedRendersFileNameWhenPresent() {
+    UUID portalContactId = UUID.randomUUID();
+    var event =
+        portalContactEvent(
+            "portal.document.acknowledged",
+            "document",
+            portalContactId,
+            Map.of("file_name", "engagement-letter.pdf"));
+    var item =
+        formatter.format(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
+    assertThat(item.message())
+        .isEqualTo("Sipho Dlamini acknowledged document \"engagement-letter.pdf\"");
+  }
+
+  @Test
+  void portalDocumentAcknowledgedWithoutFileNameRendersNeutralCopy() {
+    UUID portalContactId = UUID.randomUUID();
+    var event =
+        portalContactEvent("portal.document.acknowledged", "document", portalContactId, Map.of());
+    var item =
+        formatter.format(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
+    assertThat(item.message()).isEqualTo("Sipho Dlamini acknowledged a document");
+    assertThat(item.message()).doesNotContain("performed");
+  }
+
+  @Test
+  void statementGeneratedRendersFileName() {
+    var event =
+        createEvent(
+            "statement.generated",
+            "generated_document",
+            Map.of(
+                "file_name", "statement-of-account-2026-03.pdf",
+                "project_id", UUID.randomUUID().toString(),
+                "period_start", "2026-03-01",
+                "period_end", "2026-03-31"));
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    assertThat(item.message())
+        .isEqualTo("Alice generated a statement of account \"statement-of-account-2026-03.pdf\"");
+    assertThat(item.message()).doesNotContain("performed");
+    assertThat(item.entityName()).isEqualTo("statement-of-account-2026-03.pdf");
+  }
+
+  @Test
+  void documentGeneratedWithClausesRendersTemplateName() {
+    // Emitter (GeneratedDocumentService) carries template_name + clause metadata, no file_name.
+    var event =
+        createEvent(
+            "document.generated_with_clauses",
+            "generated_document",
+            Map.of("template_name", "Engagement Letter", "clause_count", 3));
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    assertThat(item.message())
+        .isEqualTo("Alice generated a document with clauses from template \"Engagement Letter\"");
+    assertThat(item.message()).doesNotContain("performed");
+  }
+
+  @Test
+  void documentCreatedRendersFileName() {
+    var event =
+        createEvent(
+            "document.created", "document", Map.of("scope", "PROJECT", "file_name", "Mandate.pdf"));
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    assertThat(item.message()).isEqualTo("Alice created document \"Mandate.pdf\"");
+    assertThat(item.message()).doesNotContain("performed");
+  }
+
+  @Test
+  void documentAccessedRendersFileName() {
+    var event =
+        createEvent(
+            "document.accessed",
+            "document",
+            Map.of("scope", "PROJECT", "file_name", "Q4 Report.pdf"));
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    assertThat(item.message()).isEqualTo("Alice downloaded document \"Q4 Report.pdf\"");
+    assertThat(item.message()).doesNotContain("performed");
+  }
+
+  @Test
+  void documentVisibilityChangedRendersNewVisibility() {
+    // Emitter (DocumentService.toggleVisibility) carries only a visibility from/to delta.
+    var event =
+        createEvent(
+            "document.visibility_changed",
+            "document",
+            Map.of("visibility", Map.of("from", "INTERNAL", "to", "SHARED")));
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    assertThat(item.message()).isEqualTo("Alice changed document visibility to SHARED");
+    assertThat(item.message()).doesNotContain("performed");
+  }
+
+  @Test
+  void matterClosureClosedRendersFriendlyCopy() {
+    var event =
+        createEvent(
+            "matter_closure.closed",
+            "project",
+            Map.of("reason", "COMPLETED", "override_used", false));
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    assertThat(item.message()).isEqualTo("Alice closed the matter");
+    assertThat(item.message()).doesNotContain("performed");
+  }
+
+  @Test
+  void matterClosureReopenedRendersFriendlyCopy() {
+    var event =
+        createEvent(
+            "matter_closure.reopened",
+            "project",
+            Map.of("closure_log_id", UUID.randomUUID().toString()));
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    assertThat(item.message()).isEqualTo("Alice reopened the matter");
+    assertThat(item.message()).doesNotContain("performed");
+  }
+
+  @Test
+  void matterClosureOverrideUsedRendersFriendlyCopy() {
+    var event =
+        createEvent(
+            "matter.closure.override_used",
+            "matter_closure",
+            Map.of("justification", "Client instruction", "reason", "COMPLETED"));
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    assertThat(item.message()).isEqualTo("Alice used an override to close the matter");
+    assertThat(item.message()).doesNotContain("performed");
+  }
 }

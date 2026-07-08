@@ -12,6 +12,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.Notification;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import jakarta.mail.Multipart;
+import jakarta.mail.internet.MimeMessage;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -251,8 +253,8 @@ class EmailNotificationChannelIntegrationTest {
                 var message = greenMail.getReceivedMessages()[0];
                 assertThat(message.getAllRecipients()[0].toString()).isEqualTo(RECIPIENT_EMAIL);
                 assertThat(message.getSubject()).isEqualTo("You won a deal");
-                String content = new String(message.getInputStream().readAllBytes());
-                assertThat(content).contains("/pipeline/");
+                assertThat(decodedContent(message))
+                    .contains("/org/" + ORG_ID + "/pipeline/" + dealId);
               } catch (Exception e) {
                 throw new RuntimeException(e);
               }
@@ -292,9 +294,278 @@ class EmailNotificationChannelIntegrationTest {
             });
   }
 
+  // LZKC-022 — CTA deep links must carry the /org/{slug} prefix: the app has no bare top-level
+  // routes, so un-prefixed links 404. The bound ORG_ID doubles as the route slug (Keycloak org
+  // alias).
+
+  @Test
+  void deliver_task_email_links_to_org_scoped_task_deep_link() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              UUID taskId = UUID.randomUUID();
+              UUID projectId = UUID.randomUUID();
+              var notification =
+                  notificationRepository.save(
+                      new Notification(
+                          memberId,
+                          "TASK_ASSIGNED",
+                          "Task assigned",
+                          null,
+                          "TASK",
+                          taskId,
+                          projectId));
+
+              emailChannel.deliver(notification, RECIPIENT_EMAIL);
+
+              assertThat(greenMail.getReceivedMessages()).hasSize(1);
+              // No /tasks/{id} route exists — the working deep link is the project page with the
+              // task sheet opened via query params. The & renders HTML-escaped inside th:href.
+              assertThat(decodedContent(greenMail.getReceivedMessages()[0]))
+                  .contains(
+                      "/org/"
+                          + ORG_ID
+                          + "/projects/"
+                          + projectId
+                          + "?tab=tasks&amp;taskId="
+                          + taskId);
+            });
+  }
+
+  @Test
+  void deliver_invoice_email_links_to_org_scoped_invoice() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              UUID invoiceId = UUID.randomUUID();
+              var notification =
+                  notificationRepository.save(
+                      new Notification(
+                          memberId,
+                          "INVOICE_SENT",
+                          "Invoice sent",
+                          null,
+                          "INVOICE",
+                          invoiceId,
+                          null));
+
+              emailChannel.deliver(notification, RECIPIENT_EMAIL);
+
+              assertThat(greenMail.getReceivedMessages()).hasSize(1);
+              assertThat(decodedContent(greenMail.getReceivedMessages()[0]))
+                  .contains("/org/" + ORG_ID + "/invoices/" + invoiceId);
+            });
+  }
+
+  @Test
+  void deliver_proposal_email_links_to_org_scoped_proposal() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              UUID proposalId = UUID.randomUUID();
+              var notification =
+                  notificationRepository.save(
+                      new Notification(
+                          memberId,
+                          "PROPOSAL_SENT",
+                          "Proposal sent",
+                          null,
+                          "PROPOSAL",
+                          proposalId,
+                          null));
+
+              emailChannel.deliver(notification, RECIPIENT_EMAIL);
+
+              assertThat(greenMail.getReceivedMessages()).hasSize(1);
+              assertThat(decodedContent(greenMail.getReceivedMessages()[0]))
+                  .contains("/org/" + ORG_ID + "/proposals/" + proposalId);
+            });
+  }
+
+  @Test
+  void deliver_budget_alert_links_to_org_scoped_project() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              UUID projectId = UUID.randomUUID();
+              var notification =
+                  notificationRepository.save(
+                      new Notification(
+                          memberId,
+                          "BUDGET_ALERT",
+                          "Budget alert",
+                          null,
+                          "PROJECT",
+                          projectId,
+                          null));
+
+              emailChannel.deliver(notification, RECIPIENT_EMAIL);
+
+              assertThat(greenMail.getReceivedMessages()).hasSize(1);
+              assertThat(decodedContent(greenMail.getReceivedMessages()[0]))
+                  .contains("/org/" + ORG_ID + "/projects/" + projectId);
+            });
+  }
+
+  @Test
+  void deliver_member_invited_links_to_org_dashboard() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              var notification =
+                  savedNotification(memberId, "MEMBER_INVITED", "You have been invited");
+
+              emailChannel.deliver(notification, RECIPIENT_EMAIL);
+
+              assertThat(greenMail.getReceivedMessages()).hasSize(1);
+              // Bare /org/{slug} has no page — the org landing route is the dashboard.
+              assertThat(decodedContent(greenMail.getReceivedMessages()[0]))
+                  .contains("/org/" + ORG_ID + "/dashboard");
+            });
+  }
+
+  @Test
+  void deliver_schedule_skipped_links_to_org_scoped_schedule() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              UUID scheduleId = UUID.randomUUID();
+              var notification =
+                  notificationRepository.save(
+                      new Notification(
+                          memberId,
+                          "SCHEDULE_SKIPPED",
+                          "Schedule skipped",
+                          null,
+                          "RECURRING_SCHEDULE",
+                          scheduleId,
+                          null));
+
+              emailChannel.deliver(notification, RECIPIENT_EMAIL);
+
+              assertThat(greenMail.getReceivedMessages()).hasSize(1);
+              assertThat(decodedContent(greenMail.getReceivedMessages()[0]))
+                  .contains("/org/" + ORG_ID + "/schedules/" + scheduleId);
+            });
+  }
+
+  @Test
+  void deliver_recurring_project_created_links_to_org_scoped_project() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              UUID projectId = UUID.randomUUID();
+              var notification =
+                  notificationRepository.save(
+                      new Notification(
+                          memberId,
+                          "RECURRING_PROJECT_CREATED",
+                          "Recurring project created",
+                          null,
+                          "PROJECT",
+                          projectId,
+                          projectId));
+
+              emailChannel.deliver(notification, RECIPIENT_EMAIL);
+
+              assertThat(greenMail.getReceivedMessages()).hasSize(1);
+              // References the created project, not the schedule — link to the project.
+              assertThat(decodedContent(greenMail.getReceivedMessages()[0]))
+                  .contains("/org/" + ORG_ID + "/projects/" + projectId);
+            });
+  }
+
+  @Test
+  void deliver_retainer_agreement_email_links_to_org_scoped_retainer() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              UUID agreementId = UUID.randomUUID();
+              var notification =
+                  notificationRepository.save(
+                      new Notification(
+                          memberId,
+                          "RETAINER_APPROACHING_CAPACITY",
+                          "Retainer approaching capacity",
+                          null,
+                          "RETAINER_AGREEMENT",
+                          agreementId,
+                          null));
+
+              emailChannel.deliver(notification, RECIPIENT_EMAIL);
+
+              assertThat(greenMail.getReceivedMessages()).hasSize(1);
+              assertThat(decodedContent(greenMail.getReceivedMessages()[0]))
+                  .contains("/org/" + ORG_ID + "/retainers/" + agreementId);
+            });
+  }
+
+  @Test
+  void deliver_retainer_period_email_links_to_retainers_list() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              UUID periodId = UUID.randomUUID();
+              var notification =
+                  notificationRepository.save(
+                      new Notification(
+                          memberId,
+                          "RETAINER_PERIOD_READY_TO_CLOSE",
+                          "Retainer period ready to close",
+                          null,
+                          "RETAINER_PERIOD",
+                          periodId,
+                          null));
+
+              emailChannel.deliver(notification, RECIPIENT_EMAIL);
+
+              assertThat(greenMail.getReceivedMessages()).hasSize(1);
+              // The reference is a period id, not an agreement id — /retainers/{periodId} would
+              // 404, so the CTA targets the retainers list.
+              String content = decodedContent(greenMail.getReceivedMessages()[0]);
+              assertThat(content).contains("/org/" + ORG_ID + "/retainers");
+              assertThat(content).doesNotContain("/retainers/" + periodId);
+            });
+  }
+
   private Notification savedNotification(UUID recipientMemberId, String type, String title) {
     var notification =
         new Notification(recipientMemberId, type, title, null, "TASK", UUID.randomUUID(), null);
     return notificationRepository.save(notification);
+  }
+
+  /**
+   * Decodes every text part of the message. Raw MIME bytes are quoted-printable encoded, whose soft
+   * line breaks split long URLs mid-string — substring assertions must run on decoded content.
+   */
+  private String decodedContent(MimeMessage message) {
+    try {
+      return decodePart(message.getContent());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private String decodePart(Object content) throws Exception {
+    if (content instanceof String text) {
+      return text;
+    }
+    if (content instanceof Multipart multipart) {
+      var sb = new StringBuilder();
+      for (int i = 0; i < multipart.getCount(); i++) {
+        sb.append(decodePart(multipart.getBodyPart(i).getContent()));
+      }
+      return sb.toString();
+    }
+    return "";
   }
 }

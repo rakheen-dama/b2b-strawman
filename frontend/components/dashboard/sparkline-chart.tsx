@@ -95,15 +95,17 @@ export function SparklineChart({
           </linearGradient>
         </defs>
       )}
-      {showGradient && <path d={fillPath} fill={`url(#${gradientId})`} />}
-      <path
-        d={linePath}
-        fill="none"
-        stroke={color}
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      {showGradient && linePath && <path d={fillPath} fill={`url(#${gradientId})`} />}
+      {linePath && (
+        <path
+          d={linePath}
+          fill="none"
+          stroke={color}
+          strokeWidth={1.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      )}
       {/* End dot */}
       <circle
         cx={coords[coords.length - 1][0]}

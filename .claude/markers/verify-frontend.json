@@ -1,1 +1,1 @@
-{"commit":"d76232ecc","command":"pnpm run lint && pnpm run build && pnpm test && pnpm run format:check","exit":0,"ts":"2026-07-07T19:36:59Z","summary":"389 files / 2460 passed / 2 skipped (combined verify on cycle-merged HEAD)"}
+{"commit":"a76614778","command":"pnpm test (full, serial) && pnpm run lint && pnpm run build && pnpm run format:check","exit":0,"ts":"2026-07-08T03:44:17Z","summary":"389 files / 2461 passed / 2 skipped — run on main-repo checkout with PR diff applied (worktree env unstable under machine load; serial workers)"}

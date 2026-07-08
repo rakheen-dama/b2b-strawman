@@ -366,6 +366,73 @@ class MatterClosureControllerIntegrationTest {
   }
 
   // ==========================================================================
+  // LZKC-014 — GET /log must resolve member names for closedBy / reopenedBy,
+  // not leak raw UUIDs to the closure-history UI.
+  // ==========================================================================
+
+  @Test
+  void legalTenant_GET_log_resolvesClosedByName_andReopenedByName() throws Exception {
+    UUID projectId = createProject("Log Name Resolution Matter");
+
+    String closeBody =
+        """
+        {
+          "reason": "CONCLUDED",
+          "notes": "Close for name-resolution test.",
+          "generateClosureLetter": false,
+          "override": true,
+          "overrideJustification": "%s"
+        }
+        """
+            .formatted(VALID_JUSTIFICATION);
+
+    mockMvc
+        .perform(
+            post("/api/matters/" + projectId + "/closure/close")
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(closeBody))
+        .andExpect(status().isOk());
+
+    // Closed entry: raw id retained for machine consumers, display name resolved alongside.
+    mockMvc
+        .perform(
+            get("/api/matters/" + projectId + "/closure/log")
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(1)))
+        .andExpect(jsonPath("$[0].closedBy").value(legalOwnerMemberId.toString()))
+        .andExpect(jsonPath("$[0].closedByName").value("Closure Ctrl Owner"))
+        .andExpect(jsonPath("$[0].reopenedBy").value(org.hamcrest.Matchers.nullValue()))
+        .andExpect(jsonPath("$[0].reopenedByName").value(org.hamcrest.Matchers.nullValue()));
+
+    // Reopen the matter and verify reopenedByName is resolved too.
+    String reopenBody =
+        """
+        {
+          "notes": "Reopening for name-resolution test."
+        }
+        """;
+    mockMvc
+        .perform(
+            post("/api/matters/" + projectId + "/closure/reopen")
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(reopenBody))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            get("/api/matters/" + projectId + "/closure/log")
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(1)))
+        .andExpect(jsonPath("$[0].closedByName").value("Closure Ctrl Owner"))
+        .andExpect(jsonPath("$[0].reopenedBy").value(legalOwnerMemberId.toString()))
+        .andExpect(jsonPath("$[0].reopenedByName").value("Closure Ctrl Owner"));
+  }
+
+  // ==========================================================================
   // GAP-OBS-Day60-RetentionShape — matter detail surfaces retentionEndsOn
   // ==========================================================================
 

@@ -493,6 +493,45 @@ class ProposalOrchestrationServiceTest {
         });
   }
 
+  // --- LZKC-020: proposal.accepted audit must be attributed to the portal contact ---
+
+  @Test
+  void acceptProposal_attributesAuditEventToPortalContact() {
+    var setup =
+        runInTenant(
+            () -> {
+              var customer = createProspectCustomer();
+              var proposal = createSentProposal(customer.getId(), FeeModel.HOURLY, null, null);
+              return new TestSetup(
+                  customer.getId(), proposal.getId(), proposal.getPortalContactId());
+            });
+
+    var result =
+        runInTenant(
+            () -> orchestrationService.acceptProposal(setup.proposalId, setup.portalContactId));
+
+    runInTenant(
+        () -> {
+          var accepted =
+              auditEventRepository
+                  .findByProjectId(result.projectId().toString(), null, null, PageRequest.of(0, 50))
+                  .getContent()
+                  .stream()
+                  .filter(e -> "proposal.accepted".equals(e.getEventType()))
+                  .filter(e -> setup.proposalId.equals(e.getEntityId()))
+                  .findFirst()
+                  .orElseThrow(() -> new AssertionError("proposal.accepted audit event not found"));
+
+          // Portal acceptance must be attributed to the portal contact, not "System".
+          // The portal "Your actions" trail filters actor_type = PORTAL_CONTACT AND
+          // actor_id = <contact>, so a SYSTEM/null actor drops the event from that feed.
+          assertThat(accepted.getActorType()).isEqualTo("PORTAL_CONTACT");
+          assertThat(accepted.getActorId()).isEqualTo(setup.portalContactId);
+          assertThat(accepted.getSource()).isEqualTo("PORTAL");
+          return null;
+        });
+  }
+
   // --- Negative tests ---
 
   @Test

@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -34,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -91,6 +94,7 @@ public class MatterClosureService {
   private final ApplicationEventPublisher eventPublisher;
   private final StatementService statementService;
   private final RetentionPolicyRepository retentionPolicyRepository;
+  private final MemberNameResolver memberNameResolver;
 
   /**
    * Self-reference used to invoke {@link #performClose}, {@link #generateClosureLetterSafely}, and
@@ -113,6 +117,7 @@ public class MatterClosureService {
       ApplicationEventPublisher eventPublisher,
       StatementService statementService,
       RetentionPolicyRepository retentionPolicyRepository,
+      MemberNameResolver memberNameResolver,
       @Lazy MatterClosureService self) {
     this.orderedGates = gates.stream().sorted(Comparator.comparingInt(ClosureGate::order)).toList();
     this.projectRepository = projectRepository;
@@ -126,6 +131,7 @@ public class MatterClosureService {
     this.eventPublisher = eventPublisher;
     this.statementService = statementService;
     this.retentionPolicyRepository = retentionPolicyRepository;
+    this.memberNameResolver = memberNameResolver;
     this.self = self;
   }
 
@@ -526,9 +532,16 @@ public class MatterClosureService {
     moduleGuard.requireModule(MODULE_ID);
     // Ensure the project exists in this tenant so we don't silently return [] for an unrelated id.
     requireProject(projectId);
-    return matterClosureLogRepository.findByProjectIdOrderByClosedAtDesc(projectId).stream()
-        .map(ClosureLogResponse::from)
-        .toList();
+    var logs = matterClosureLogRepository.findByProjectIdOrderByClosedAtDesc(projectId);
+    // LZKC-014: batch-resolve closedBy/reopenedBy member ids to display names so the
+    // closure-history UI renders "Closed by Thandi Mathebula", not a raw UUID.
+    var memberNames =
+        memberNameResolver.resolveNames(
+            logs.stream()
+                .flatMap(l -> Stream.of(l.getClosedBy(), l.getReopenedBy()))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet()));
+    return logs.stream().map(l -> ClosureLogResponse.from(l, memberNames)).toList();
   }
 
   // ---------- helpers ----------

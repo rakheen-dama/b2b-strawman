@@ -96,17 +96,20 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
     createTemplate(pack, templateDef, packResource);
   }
 
-  private void createTemplate(
-      TemplatePackDefinition pack, TemplatePackTemplate templateDef, Resource packResource) {
-    TemplateCategory category = TemplateCategory.valueOf(templateDef.category());
-    TemplateEntityType entityType = TemplateEntityType.valueOf(templateDef.primaryEntityType());
+  /** Content + CSS of a pack template as defined on the classpath. */
+  public record TemplateContent(Map<String, Object> content, String css) {}
 
+  /**
+   * Loads a pack template's content JSON and CSS from the classpath pack resource. Used by {@code
+   * TemplatePackInstaller} reconciliation to refresh unmodified tenant templates to the current
+   * pack content.
+   */
+  public TemplateContent loadTemplateContent(
+      TemplatePackTemplate templateDef, Resource packResource) {
     String css =
         templateDef.cssFile() != null
             ? loadTemplateContentAsString(packResource, templateDef.cssFile())
             : null;
-
-    String slug = DocumentTemplate.generateSlug(templateDef.name());
 
     // Load content as JSONB Map for the primary content field
     Map<String, Object> contentJson = null;
@@ -117,6 +120,19 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
       throw new IllegalStateException(
           "Template definition has no JSON content file: " + templateDef.contentFile());
     }
+    return new TemplateContent(contentJson, css);
+  }
+
+  private void createTemplate(
+      TemplatePackDefinition pack, TemplatePackTemplate templateDef, Resource packResource) {
+    TemplateCategory category = TemplateCategory.valueOf(templateDef.category());
+    TemplateEntityType entityType = TemplateEntityType.valueOf(templateDef.primaryEntityType());
+
+    TemplateContent templateContent = loadTemplateContent(templateDef, packResource);
+    String css = templateContent.css();
+    Map<String, Object> contentJson = templateContent.content();
+
+    String slug = DocumentTemplate.generateSlug(templateDef.name());
 
     var dt = new DocumentTemplate(entityType, templateDef.name(), slug, category, contentJson);
     dt.setDescription(templateDef.description());

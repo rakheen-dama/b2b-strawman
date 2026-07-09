@@ -117,6 +117,9 @@ public class Customer {
   @Column(name = "financial_year_end")
   private LocalDate financialYearEnd;
 
+  @Column(name = "collections_exempt", nullable = false)
+  private boolean collectionsExempt;
+
   protected Customer() {}
 
   public Customer(
@@ -435,6 +438,15 @@ public class Customer {
 
   public void setFinancialYearEnd(LocalDate financialYearEnd) {
     this.financialYearEnd = financialYearEnd;
+    this.updatedAt = Instant.now();
+  }
+
+  public boolean isCollectionsExempt() {
+    return collectionsExempt;
+  }
+
+  public void setCollectionsExempt(boolean collectionsExempt) {
+    this.collectionsExempt = collectionsExempt;
     this.updatedAt = Instant.now();
   }
 }

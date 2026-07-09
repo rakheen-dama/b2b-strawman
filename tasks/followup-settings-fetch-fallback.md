@@ -1,6 +1,6 @@
 # Follow-up Fix Spec: Silent-Defaults on Settings Fetch Failure (bug class)
 
-**Status**: PLANNED — not yet implemented
+**Status**: DONE — implemented and merged (PR #1537, 2026-07-09). All 8 pages fixed + `settings/error.tsx` added + 3 regression tests. Verification: both reviews APPROVE (0 findings), CodeRabbit no actionable findings, Frontend CI pass, and an observed Playwright check on the e2e stack (backend stopped → recovery UI, no overwritable defaults form; backend restored → full recovery). Live-check note: with the whole backend down the settings *layout*'s `fetchMyCapabilities()` fails first and the parent app boundary catches (layout errors bypass sibling error.tsx); `settings/error.tsx` covers the page-level partial-failure case, unit-tested.
 **Origin**: CodeRabbit finding on PR #1536 (collections settings page), fixed there for collections only; investigation on 2026-07-10 confirmed the same defect in 8 sibling settings pages.
 **Authorization note**: this is a same-bug-class cluster fix (8 identical instances + shared error boundary). Per the Quality Gates (§7 scope discipline), shipping them in ONE PR requires explicit authorization — granted by the user's request to define and plan this follow-up. Confirm again at implementation kickoff.
 

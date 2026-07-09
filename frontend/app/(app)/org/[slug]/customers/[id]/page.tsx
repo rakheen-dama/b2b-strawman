@@ -40,6 +40,7 @@ import { CustomerDocumentsPanel } from "@/components/documents/customer-document
 import { CustomerGroupedTabs } from "@/components/customers/customer-grouped-tabs";
 import { ClientHeaderCardWithLifecycle } from "@/components/customers/client-header-card-with-lifecycle";
 import { ClientDetailsTab } from "@/components/customers/client-details-tab";
+import { CollectionsExemptionToggle } from "@/components/customers/collections-exemption-toggle";
 import { ClientFieldsTab } from "@/components/customers/client-fields-tab";
 import { ClientTagsTab } from "@/components/customers/client-tags-tab";
 import { ClientOverviewTab } from "@/components/customers/client-overview-tab";
@@ -563,7 +564,17 @@ export default async function CustomerDetailPage({
 
       {/* Grouped Tabs — all panels as ReactNode props */}
       <CustomerGroupedTabs
-        detailsPanel={<ClientDetailsTab customer={customer} />}
+        detailsPanel={
+          <div className="space-y-6">
+            <ClientDetailsTab customer={customer} />
+            <CollectionsExemptionToggle
+              slug={slug}
+              customerId={id}
+              isAdmin={isAdmin}
+              exempt={customer.collectionsExempt ?? false}
+            />
+          </div>
+        }
         fieldsPanel={
           <ClientFieldsTab
             entityId={id}

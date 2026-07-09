@@ -47,6 +47,9 @@ export interface Customer {
   registrationNumber?: string | null;
   entityType?: string | null;
   financialYearEnd?: string | null;
+  // Collections exemption (Phase 83, Epic 588C). Optional so the UI tolerates an
+  // older backend that doesn't yet expose the flag.
+  collectionsExempt?: boolean;
 }
 
 export interface TransitionResponse {

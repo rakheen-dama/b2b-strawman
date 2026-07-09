@@ -2,6 +2,7 @@
 
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
+import { setCollectionsExemption } from "@/lib/api/collections";
 import { revalidatePath } from "next/cache";
 import type {
   Project,
@@ -26,6 +27,31 @@ interface UploadInitResult {
 
 export async function fetchCustomerProjects(customerId: string): Promise<Project[]> {
   return api.get<Project[]>(`/api/customers/${customerId}/projects`);
+}
+
+// Collections exemption toggle (Phase 83, Epic 588C). Admin/owner-only — the
+// backend also enforces this; the client-side check gives a fast, clear message.
+export async function setCollectionsExemptionAction(
+  slug: string,
+  customerId: string,
+  exempt: boolean
+): Promise<ActionResult> {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
+    return { success: false, error: "Only admins and owners can change collections exemption." };
+  }
+
+  try {
+    await setCollectionsExemption(customerId, exempt);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to update collections exemption." };
+  }
+
+  revalidatePath(`/org/${slug}/customers/${customerId}`);
+  return { success: true };
 }
 
 export async function fetchProjects(): Promise<Project[]> {

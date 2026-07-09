@@ -19,6 +19,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   rates: "Rates & Currency",
   tax: "Tax",
   "time-tracking": "Time Tracking",
+  collections: "Collections",
   "custom-fields": "Custom Fields",
   tags: "Tags",
   templates: "Templates",

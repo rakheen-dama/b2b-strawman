@@ -62,7 +62,7 @@ public class CollectionActivity {
   private int daysOverdueAtAction;
 
   @Column(name = "reason", length = 255)
-  private String reason; // machine-readable cause for SKIPPED/CANCELLED_PAYMENT
+  private String reason; // machine-readable cause for SKIPPED/CANCELLED_PAYMENT/SEND_FAILED/FLAGGED
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -124,6 +124,18 @@ public class CollectionActivity {
   }
 
   /**
+   * Transition to {@link CollectionActivityStatus#SEND_FAILED} (approved but the mail provider
+   * failed; no email left). Scan-retryable back to {@link CollectionActivityStatus#PROPOSED}.
+   * Records the failed attempt's email-delivery log (nullable — the executor may fail before a log
+   * row exists) and a machine-readable reason.
+   */
+  public void markSendFailed(UUID emailDeliveryLogId, String reason) {
+    this.status = CollectionActivityStatus.SEND_FAILED;
+    this.emailDeliveryLogId = emailDeliveryLogId;
+    this.reason = reason;
+  }
+
+  /**
    * Transition to {@link CollectionActivityStatus#SKIPPED} with a machine-readable reason. The
    * {@code gateId} is intentionally retained (e.g. on {@code gate_expired}) so the last-known draft
    * stays traceable until a later re-proposal overwrites it.
@@ -145,6 +157,15 @@ public class CollectionActivity {
   /** Transition to {@link CollectionActivityStatus#REJECTED} (a human declined to chase). */
   public void markRejected() {
     this.status = CollectionActivityStatus.REJECTED;
+  }
+
+  /**
+   * Transition to {@link CollectionActivityStatus#FLAGGED} (ESCALATION stage only; terminal, no
+   * email sent — raised for a partner call) with a machine-readable reason.
+   */
+  public void markFlagged(String reason) {
+    this.status = CollectionActivityStatus.FLAGGED;
+    this.reason = reason;
   }
 
   public UUID getId() {

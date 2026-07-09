@@ -112,6 +112,33 @@ class CollectionActivityRepositoryTest {
           assertThat(reloaded.getUpdatedAt()).isNotNull();
           assertThat(reloaded.getVersion()).isEqualTo(0);
         });
+
+    // Remaining mutators round-trip on the same row: SEND_FAILED (scan-retryable), then FLAGGED
+    // (terminal). The entity does not guard transitions — this exercises persistence only.
+    UUID failedLogId = UUID.randomUUID();
+    runInTenant(
+        () -> {
+          var reloaded = collectionActivityRepository.findOneById(idHolder[0]).orElseThrow();
+          reloaded.markSendFailed(failedLogId, "provider_failure");
+          collectionActivityRepository.saveAndFlush(reloaded);
+        });
+
+    runInTenant(
+        () -> {
+          var reloaded = collectionActivityRepository.findOneById(idHolder[0]).orElseThrow();
+          assertThat(reloaded.getStatus()).isEqualTo(CollectionActivityStatus.SEND_FAILED);
+          assertThat(reloaded.getEmailDeliveryLogId()).isEqualTo(failedLogId);
+          assertThat(reloaded.getReason()).isEqualTo("provider_failure");
+          reloaded.markFlagged("escalation_partner_call");
+          collectionActivityRepository.saveAndFlush(reloaded);
+        });
+
+    runInTenant(
+        () -> {
+          var reloaded = collectionActivityRepository.findOneById(idHolder[0]).orElseThrow();
+          assertThat(reloaded.getStatus()).isEqualTo(CollectionActivityStatus.FLAGGED);
+          assertThat(reloaded.getReason()).isEqualTo("escalation_partner_call");
+        });
   }
 
   @Test

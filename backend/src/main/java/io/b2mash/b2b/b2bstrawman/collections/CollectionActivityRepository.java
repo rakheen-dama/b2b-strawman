@@ -34,10 +34,10 @@ public interface CollectionActivityRepository extends JpaRepository<CollectionAc
   @Query("SELECT a FROM CollectionActivity a WHERE a.invoiceId = :invoiceId")
   List<CollectionActivity> findByInvoiceId(@Param("invoiceId") UUID invoiceId);
 
-  /** Customer chase-history page, newest-first. */
+  /** Customer chase-history page, newest-first ({@code id} as deterministic tie-breaker). */
   @Query(
       "SELECT a FROM CollectionActivity a WHERE a.customerId = :customerId"
-          + " ORDER BY a.createdAt DESC")
+          + " ORDER BY a.createdAt DESC, a.id DESC")
   Page<CollectionActivity> findByCustomerId(
       @Param("customerId") UUID customerId, Pageable pageable);
 }

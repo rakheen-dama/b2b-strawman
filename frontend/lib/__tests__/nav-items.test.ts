@@ -138,8 +138,8 @@ describe("NAV_ITEMS (backward compat)", () => {
 });
 
 describe("SETTINGS_ITEMS", () => {
-  it("has exactly 30 entries", () => {
-    expect(SETTINGS_ITEMS).toHaveLength(30);
+  it("has exactly 31 entries", () => {
+    expect(SETTINGS_ITEMS).toHaveLength(31);
   });
 
   it("all entries have title, description, and href function", () => {

@@ -389,6 +389,11 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
     href: (slug) => `/org/${slug}/settings/time-tracking`,
   },
   {
+    title: "Collections",
+    description: "Configure overdue-invoice reminder stages and escalation",
+    href: (slug) => `/org/${slug}/settings/collections`,
+  },
+  {
     title: "Custom Fields",
     description: "Define custom fields and groups for projects, tasks, and customers",
     href: (slug) => `/org/${slug}/settings/custom-fields`,

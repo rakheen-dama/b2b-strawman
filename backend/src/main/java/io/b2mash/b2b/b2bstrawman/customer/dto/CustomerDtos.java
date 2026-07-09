@@ -108,7 +108,8 @@ public final class CustomerDtos {
       String contactEmail,
       String contactPhone,
       String entityType,
-      LocalDate financialYearEnd) {
+      LocalDate financialYearEnd,
+      boolean collectionsExempt) {
 
     public static CustomerResponse from(Customer customer) {
       return from(customer, List.of(), Map.of());
@@ -150,7 +151,8 @@ public final class CustomerDtos {
           customer.getContactEmail(),
           customer.getContactPhone(),
           customer.getEntityType(),
-          customer.getFinancialYearEnd());
+          customer.getFinancialYearEnd(),
+          customer.isCollectionsExempt());
     }
   }
 

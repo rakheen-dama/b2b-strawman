@@ -760,4 +760,95 @@ class ActivityMessageFormatterTest {
     assertThat(item.message()).isEqualTo("Alice used an override to close the matter");
     assertThat(item.message()).doesNotContain("performed");
   }
+
+  // ---------- COLLECTIONS — Phase 83 (Epic 588B). Dunning lifecycle + policy changes. ----------
+
+  @Test
+  void collectionsPolicyUpdatedRendersFriendlyCopy() {
+    var event =
+        createEvent(
+            "collections.policy.updated",
+            "org_settings",
+            Map.of("stage1_days", Map.of("from", 7, "to", 5)));
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    assertThat(item.message()).isEqualTo("Alice updated the collections policy");
+    assertThat(item.message()).doesNotContain("performed");
+  }
+
+  @Test
+  void collectionsReminderSentRendersInvoiceNumberAndEntityName() {
+    var event =
+        createEvent(
+            "collections.reminder.sent",
+            "collection_activity",
+            Map.of("invoice_number", "INV-0042", "stage", "STAGE_1"));
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    assertThat(item.message()).isEqualTo("Alice sent a collection reminder for INV-0042");
+    assertThat(item.message()).doesNotContain("performed");
+    assertThat(item.entityName()).isEqualTo("INV-0042");
+  }
+
+  @Test
+  void collectionsReminderCancelledRendersNeutralSystemCopy() {
+    var record =
+        new AuditEventRecord(
+            "collections.reminder.cancelled",
+            "collection_activity",
+            ENTITY_ID,
+            null,
+            "SYSTEM",
+            "INTERNAL",
+            null,
+            null,
+            Map.of("invoice_number", "INV-0042"));
+    var event = new AuditEvent(record);
+    var item = formatter.format(event, Map.of(), emptyPortalContactMap());
+    assertThat(item.message()).isEqualTo("A collection reminder was cancelled for INV-0042");
+    assertThat(item.message()).doesNotContain("performed");
+  }
+
+  @Test
+  void collectionsEscalationFlaggedRendersSystemCopy() {
+    var record =
+        new AuditEventRecord(
+            "collections.escalation.flagged",
+            "collection_activity",
+            ENTITY_ID,
+            null,
+            "SYSTEM",
+            "INTERNAL",
+            null,
+            null,
+            Map.of("invoice_number", "INV-0042"));
+    var event = new AuditEvent(record);
+    var item = formatter.format(event, Map.of(), emptyPortalContactMap());
+    assertThat(item.message()).isEqualTo("INV-0042 was flagged for collections escalation");
+    assertThat(item.message()).doesNotContain("performed");
+  }
+
+  @Test
+  void collectionsDigestSentRendersSystemCopy() {
+    var record =
+        new AuditEventRecord(
+            "collections.digest.sent",
+            "org_settings",
+            ENTITY_ID,
+            null,
+            "SYSTEM",
+            "INTERNAL",
+            null,
+            null,
+            Map.of());
+    var event = new AuditEvent(record);
+    var item = formatter.format(event, Map.of(), emptyPortalContactMap());
+    assertThat(item.message()).isEqualTo("The weekly cash digest was sent");
+    assertThat(item.message()).doesNotContain("performed");
+  }
+
+  @Test
+  void collectionActivityEntityNameFallsBackWhenNoInvoiceNumber() {
+    var event = createEvent("collections.reminder.sent", "collection_activity", Map.of());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    assertThat(item.entityName()).isEqualTo("collection activity");
+  }
 }

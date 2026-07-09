@@ -192,7 +192,11 @@ public class NotificationService {
           "TRUST_INTEREST_POSTED",
           "MATTER_CLOSED",
           "MATTER_REOPENED",
-          "DEAL_WON");
+          "DEAL_WON",
+          // COLLECTIONS — Phase 83 (Epic 588B). Registration only; emission lands in 589A
+          // (escalation) and 593B (digest). Listed here so members can mute them via preferences.
+          "COLLECTION_ESCALATED",
+          "CASH_DIGEST");
 
   // --- Preference methods ---
 

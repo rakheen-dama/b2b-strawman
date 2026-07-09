@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.customer;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
+import io.b2mash.b2b.b2bstrawman.customer.dto.CollectionsExemptionRequest;
+import io.b2mash.b2b.b2bstrawman.customer.dto.CollectionsExemptionResponse;
 import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.CreateCustomerRequest;
 import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.CustomerProjectResponse;
 import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.CustomerResponse;
@@ -334,6 +336,18 @@ public class CustomerController {
       @PathVariable UUID id, @Valid @RequestBody SetFieldGroupsRequest request) {
     var fieldDefs = customerService.setFieldGroups(id, request.appliedFieldGroups());
     return ResponseEntity.ok(fieldDefs);
+  }
+
+  // Collections exemption (Phase 83, §2.3). CUSTOMER_MANAGEMENT gates the endpoint; the service
+  // additionally enforces admin/owner-only (that capability is grantable to custom member roles).
+  @PutMapping("/{id}/collections-exemption")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
+  public ResponseEntity<CollectionsExemptionResponse> setCollectionsExemption(
+      @PathVariable UUID id,
+      @Valid @RequestBody CollectionsExemptionRequest request,
+      ActorContext actor) {
+    return ResponseEntity.ok(
+        customerService.setCollectionsExemption(id, request.collectionsExempt(), actor));
   }
 
   @PostMapping("/{id}/tags")

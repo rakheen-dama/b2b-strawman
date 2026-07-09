@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
@@ -43,8 +44,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-// Methods share one tenant, so the fresh-state read + deterministic old-value audit assertion must
-// run before any mutating PUT. Order guarantees that.
+// Methods share one tenant, so the fresh-state defaults read must run before any mutating PUT.
+// Order guarantees that. (The audit test captures its own pre-PUT baseline and is order-robust.)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CollectionsSettingsApiTest {
 
@@ -139,7 +140,13 @@ class CollectionsSettingsApiTest {
                     }
                     """))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.status").value(400));
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Invalid collections thresholds"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "Thresholds must be strictly increasing: stage1 < stage2 < stage3 <"
+                        + " escalate"));
   }
 
   @Test
@@ -161,7 +168,12 @@ class CollectionsSettingsApiTest {
                     }
                     """))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.status").value(400));
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("stage1DaysOverdue"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message").value("stage1DaysOverdue must be at least 1"));
   }
 
   @Test
@@ -182,12 +194,28 @@ class CollectionsSettingsApiTest {
                       "escalateDaysOverdue": 50
                     }
                     """))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
   }
 
   @Test
   @Order(2)
   void putWritesPolicyUpdatedAuditRowWithOldAndNewValues() throws Exception {
+    // Capture the actual pre-PUT value so the old-value assertion does not depend on run order
+    // (a prior mutating PUT against the shared tenant would otherwise break a hardcoded default).
+    String preBody =
+        mockMvc
+            .perform(
+                get("/api/settings/collections")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_coll_owner")))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    int preStage1 = JsonPath.read(preBody, "$.stage1DaysOverdue");
+
     mockMvc
         .perform(
             put("/api/settings/collections")
@@ -205,6 +233,7 @@ class CollectionsSettingsApiTest {
                     """))
         .andExpect(status().isOk());
 
+    // findByFilter orders by occurredAt DESC, so getFirst() is the event this PUT just wrote.
     var events = readEvents("collections.policy.updated");
     assertThat(events).isNotEmpty();
     var details = events.getFirst().getDetails();
@@ -215,8 +244,8 @@ class CollectionsSettingsApiTest {
     @SuppressWarnings("unchecked")
     Map<String, Object> stage1Map = (Map<String, Object>) stage1Delta;
     assertThat(stage1Map).containsKeys("from", "to");
-    // Old stage1 default was 7; new value is 3 — the delta carries both.
-    assertThat(String.valueOf(stage1Map.get("from"))).isEqualTo("7");
+    // The delta carries both the captured pre-PUT value and the new value.
+    assertThat(String.valueOf(stage1Map.get("from"))).isEqualTo(String.valueOf(preStage1));
     assertThat(String.valueOf(stage1Map.get("to"))).isEqualTo("3");
   }
 

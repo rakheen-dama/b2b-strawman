@@ -140,7 +140,10 @@ class CustomerCollectionsExemptionTest {
                     """
                     {"collectionsExempt": true}
                     """))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
   }
 
   @Test

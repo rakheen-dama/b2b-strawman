@@ -30,12 +30,7 @@ export default async function ProjectNamingPage({ params }: { params: Promise<{ 
     );
   }
 
-  let settings: OrgSettings = { defaultCurrency: "USD" };
-
-  const settingsResult = await api.get<OrgSettings>("/api/settings").catch(() => null);
-  if (settingsResult) {
-    settings = settingsResult;
-  }
+  const settings = await api.get<OrgSettings>("/api/settings");
 
   return (
     <div className="space-y-8">

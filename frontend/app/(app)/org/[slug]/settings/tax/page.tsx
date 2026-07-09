@@ -27,9 +27,7 @@ export default async function TaxSettingsPage({ params }: { params: Promise<{ sl
     );
   }
 
-  let settings: OrgSettings = { defaultCurrency: "USD" };
-  const settingsResult = await api.get<OrgSettings>("/api/settings").catch(() => null);
-  if (settingsResult) settings = settingsResult;
+  const settings = await api.get<OrgSettings>("/api/settings");
 
   const taxRates = await api
     .get<TaxRateResponse[]>("/api/tax-rates?includeInactive=true")

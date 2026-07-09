@@ -22,7 +22,7 @@ This phase ships as **7 epics (588–594)**, expanded to **15 numbered slices** 
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 588 | Collections Foundation — Migration, Policy Embeddable, Ledger Entity, Registrations, Settings UI | Backend + Frontend (split slices) | — | L | 588A, 588B, 588C | |
+| 588 | Collections Foundation — Migration, Policy Embeddable, Ledger Entity, Registrations, Settings UI | Backend + Frontend (split slices) | — | L | 588A, 588B, 588C | 588A **Done** (PR #1534) |
 | 589 | Scan Engine + Escalation + Payment Cancellation | Backend | 588A, 588B | L | 589A, 589B | |
 | 590 | Drafting Skill + Gated Send Executor | Backend | 589 | L | 590A, 590B | |
 | 591 | Batch Approval + Collections Read APIs + Collections Frontend | Backend + Frontend (split slices) | 590 | L | 591A, 591B, 591C | |
@@ -146,7 +146,7 @@ REUSED (not rebuilt):
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 1a | **588A** | V133 migration (org_settings +5, customers.collections_exempt, collection_activities + UNIQUE/status/customer indexes, conditional invoked_by ALTER); `CollectionsSettings` embeddable + `OrgSettings` wiring + `OrgSettingsSchemaSnapshotTest` deliberate pin update; `CollectionActivity` entity + `CollectionStage`/`CollectionActivityStatus` enums + repository; `Customer.collectionsExempt` field. |
+| 1a | **588A** | V133 migration (org_settings +5, customers.collections_exempt, collection_activities + UNIQUE/status/customer indexes, conditional invoked_by ALTER); `CollectionsSettings` embeddable + `OrgSettings` wiring + `OrgSettingsSchemaSnapshotTest` deliberate pin update; `CollectionActivity` entity + `CollectionStage`/`CollectionActivityStatus` enums + repository; `Customer.collectionsExempt` field. **Done** (PR #1534) |
 | 1b | **588B** | `AuditEventTypeRegistry` +5 `collections.*` types (count 36→41) + `ActivityMessageFormatter` arms + `collection_activity` entity resolver; `NOTIFICATION_TYPES` + `COLLECTION_ESCALATED`/`CASH_DIGEST`; `GET/PUT /api/settings/collections` (strictly-increasing validation, `collections.policy.updated` audit); `PUT /api/customers/{id}/collections-exemption` (admin/owner). |
 
 ### Stage 2 — Policy UI ∥ Scan engine (parallel after 588B)
@@ -209,7 +209,7 @@ Stage 5: [594A]                                          <- QA capstone
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **588A** | 588A.1–588A.6 | ~9 backend files (1 migration + 1 embeddable + 1 OrgSettings mod + 1 entity + 2 enums + 1 repo + 1 Customer mod + 1–2 test mods/files) | V133; `CollectionsSettings` + wiring + snapshot-pin update; `CollectionActivity` + enums + repository; `Customer.collectionsExempt` field mapping. |
+| **588A** | 588A.1–588A.6 | ~9 backend files (1 migration + 1 embeddable + 1 OrgSettings mod + 1 entity + 2 enums + 1 repo + 1 Customer mod + 1–2 test mods/files) | V133; `CollectionsSettings` + wiring + snapshot-pin update; `CollectionActivity` + enums + repository; `Customer.collectionsExempt` field mapping. **Done** (PR #1534) |
 | **588B** | 588B.1–588B.6 | ~9 backend files (registry mod + formatter mod + NotificationService mod + settings service/controller mods + customer service/controller mods + 2 test files) | Audit +5 (36→41) + formatter arms; `NOTIFICATION_TYPES` +2; settings GET/PUT with validation + policy audit; exemption endpoint. |
 | **588C** | 588C.1–588C.4 | ~7 frontend files (settings page + actions + 1 client component + customer-detail mod + lib/api client + 1–2 tests) | `settings/collections` policy card; customer exemption toggle; `lib/api/collections.ts` settings/exemption clients. |
 

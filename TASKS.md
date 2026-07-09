@@ -668,7 +668,7 @@
 | **Phase 82 — Correspondence Read-Back over MCP** | | | | | | See [tasks/phase82-correspondence-readback.md](tasks/phase82-correspondence-readback.md) |
 | 587 | Correspondence Read-Back over MCP — `list_correspondence` + `get_correspondence` | Backend | — | M | 587A, 587B | **Done** (PR #1510) |
 | **Phase 83 — Collections & Cash Intelligence** | | | | | | See [tasks/phase83-collections-cash-intelligence.md](tasks/phase83-collections-cash-intelligence.md) |
-| 588 | Collections Foundation — Migration, Policy Embeddable, Ledger Entity, Registrations, Settings UI | Backend + Frontend | — | L | 588A, 588B, 588C | |
+| 588 | Collections Foundation — Migration, Policy Embeddable, Ledger Entity, Registrations, Settings UI | Backend + Frontend | — | L | 588A, 588B, 588C | 588A **Done** (PR #1534) |
 | 589 | Scan Engine + Escalation + Payment Cancellation | Backend | 588A, 588B | L | 589A, 589B | |
 | 590 | Drafting Skill + Gated Send Executor | Backend | 589 | L | 590A, 590B | |
 | 591 | Batch Approval + Collections Read APIs + Collections Frontend | Backend + Frontend | 590 | L | 591A, 591B, 591C | |

@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditDeltaBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceService;
+import io.b2mash.b2b.b2bstrawman.customer.dto.CollectionsExemptionResponse;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.DeleteGuard;
@@ -473,7 +474,7 @@ public class CustomerService {
    * catalogue pin is deliberate); the flag is visible on the customer row.
    */
   @Transactional
-  public CustomerController.CollectionsExemptionResponse setCollectionsExemption(
+  public CollectionsExemptionResponse setCollectionsExemption(
       UUID customerId, boolean exempt, ActorContext actor) {
     if (!actor.isOwnerOrAdmin()) {
       throw new ForbiddenException(
@@ -485,8 +486,7 @@ public class CustomerService {
             .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
     customer.setCollectionsExempt(exempt);
     var saved = repository.save(customer);
-    return new CustomerController.CollectionsExemptionResponse(
-        saved.getId(), saved.isCollectionsExempt());
+    return new CollectionsExemptionResponse(saved.getId(), saved.isCollectionsExempt());
   }
 
   @Transactional

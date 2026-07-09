@@ -36,8 +36,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 /**
  * Integration tests for the collections / dunning policy settings API (Phase 83, Epic 588B): {@code
  * GET/PUT /api/settings/collections}. Covers fresh-tenant defaults, PUT round-trip + persistence,
- * threshold validation (non-increasing and &lt; 1 → 400), member-forbidden (403), and the {@code
- * collections.policy.updated} audit row (asserted via the audit repository, not logs).
+ * threshold validation (non-increasing, &lt; 1, and omitted collectionsEnabled → 400),
+ * member-forbidden (403), and the {@code collections.policy.updated} audit row (asserted via the
+ * audit repository, not logs).
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -178,6 +179,31 @@ class CollectionsSettingsApiTest {
 
   @Test
   @Order(6)
+  void putRejectsOmittedCollectionsEnabled() throws Exception {
+    // Full-replace contract: omitting collectionsEnabled must be a 400, not a silent false.
+    mockMvc
+        .perform(
+            put("/api/settings/collections")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_coll_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "stage1DaysOverdue": 7,
+                      "stage2DaysOverdue": 21,
+                      "stage3DaysOverdue": 45,
+                      "escalateDaysOverdue": 60
+                    }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("collectionsEnabled"));
+  }
+
+  @Test
+  @Order(7)
   void putForbiddenForMember() throws Exception {
     mockMvc
         .perform(

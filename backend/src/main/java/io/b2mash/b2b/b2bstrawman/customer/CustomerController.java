@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.customer;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
+import io.b2mash.b2b.b2bstrawman.customer.dto.CollectionsExemptionRequest;
+import io.b2mash.b2b.b2bstrawman.customer.dto.CollectionsExemptionResponse;
 import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.CreateCustomerRequest;
 import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.CustomerProjectResponse;
 import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.CustomerResponse;
@@ -399,10 +401,4 @@ public class CustomerController {
   public ResponseEntity<DormancyCheckResult> runDormancyCheck() {
     return ResponseEntity.ok(customerLifecycleService.runDormancyCheck());
   }
-
-  /** Request to set/clear the per-customer collections exemption (Phase 83, §2.3). */
-  public record CollectionsExemptionRequest(boolean collectionsExempt) {}
-
-  /** Minimal echo of the collections-exemption flag after a set/clear (Phase 83, §2.3). */
-  public record CollectionsExemptionResponse(UUID id, boolean collectionsExempt) {}
 }

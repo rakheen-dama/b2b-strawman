@@ -148,9 +148,10 @@ class CustomerCollectionsExemptionTest {
 
   @Test
   void unknownCustomerReturns404ProblemDetail() throws Exception {
+    var unknownId = UUID.randomUUID();
     mockMvc
         .perform(
-            put("/api/customers/{id}/collections-exemption", UUID.randomUUID())
+            put("/api/customers/{id}/collections-exemption", unknownId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exempt_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -159,7 +160,8 @@ class CustomerCollectionsExemptionTest {
                     """))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.status").value(404))
-        .andExpect(jsonPath("$.title").exists());
+        .andExpect(jsonPath("$.title").value("Customer not found"))
+        .andExpect(jsonPath("$.detail").value("No customer found with id " + unknownId));
   }
 
   private boolean readExemptFlag(UUID customerId) {

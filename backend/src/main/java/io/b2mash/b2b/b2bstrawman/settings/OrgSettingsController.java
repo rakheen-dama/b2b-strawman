@@ -2,11 +2,13 @@ package io.b2mash.b2b.b2bstrawman.settings;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
+import io.b2mash.b2b.b2bstrawman.settings.dto.CollectionsSettingsResponse;
 import io.b2mash.b2b.b2bstrawman.settings.dto.DataProtectionSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.SettingsResponse;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateAcceptanceSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateBatchBillingSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateCapacitySettingsRequest;
+import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateCollectionsSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateComplianceSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateExpenseSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdatePortalDigestCadenceRequest;
@@ -57,6 +59,28 @@ public class OrgSettingsController {
             request.aiEnabled(),
             request.documentSigningEnabled(),
             request.projectNamingPattern(),
+            actor));
+  }
+
+  // Collections / dunning policy (Phase 83, §4.2). GET is member-readable (no capability); PUT is
+  // admin/owner via TEAM_OVERSIGHT + a service-side role check. PUT (full-replace), not PATCH, per
+  // §4.2 — all five fields are meaningful on every call.
+  @GetMapping("/collections")
+  public ResponseEntity<CollectionsSettingsResponse> getCollectionsSettings() {
+    return ResponseEntity.ok(orgSettingsService.getCollectionsSettings());
+  }
+
+  @PutMapping("/collections")
+  @RequiresCapability("TEAM_OVERSIGHT")
+  public ResponseEntity<CollectionsSettingsResponse> updateCollectionsSettings(
+      @Valid @RequestBody UpdateCollectionsSettingsRequest request, ActorContext actor) {
+    return ResponseEntity.ok(
+        orgSettingsService.updateCollectionsSettings(
+            request.collectionsEnabled(),
+            request.stage1DaysOverdue(),
+            request.stage2DaysOverdue(),
+            request.stage3DaysOverdue(),
+            request.escalateDaysOverdue(),
             actor));
   }
 

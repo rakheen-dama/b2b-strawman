@@ -197,7 +197,36 @@ public class AuditEventTypeRegistry {
                 AuditSeverity.NOTICE,
                 AuditEventGroup.STANDARD),
             new AuditEventTypeMetadata(
-                "mcp.write.*", "MCP Write", AuditSeverity.NOTICE, AuditEventGroup.STANDARD));
+                "mcp.write.*", "MCP Write", AuditSeverity.NOTICE, AuditEventGroup.STANDARD),
+            // COLLECTIONS — Phase 83 (Epic 588B). Dunning-engine lifecycle + policy changes.
+            // Gate propose/approve/reject for reminders stay covered by ai.gate.* — not
+            // re-registered.
+            // All exact entries → no prefix-severity invariant participation.
+            new AuditEventTypeMetadata(
+                "collections.reminder.sent",
+                "Collection Reminder Sent",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.STANDARD),
+            new AuditEventTypeMetadata(
+                "collections.reminder.cancelled",
+                "Collection Reminder Cancelled",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.STANDARD),
+            new AuditEventTypeMetadata(
+                "collections.escalation.flagged",
+                "Collection Escalation Flagged",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.STANDARD),
+            new AuditEventTypeMetadata(
+                "collections.digest.sent",
+                "Cash Digest Sent",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.STANDARD),
+            new AuditEventTypeMetadata(
+                "collections.policy.updated",
+                "Collections Policy Updated",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.STANDARD));
     var map = new HashMap<String, AuditEventTypeMetadata>();
     for (var entry : entries) {
       var previous = map.put(entry.eventType(), entry);

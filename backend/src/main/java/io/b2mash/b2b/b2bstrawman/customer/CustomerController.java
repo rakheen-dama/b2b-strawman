@@ -336,6 +336,18 @@ public class CustomerController {
     return ResponseEntity.ok(fieldDefs);
   }
 
+  // Collections exemption (Phase 83, §2.3). CUSTOMER_MANAGEMENT gates the endpoint; the service
+  // additionally enforces admin/owner-only (that capability is grantable to custom member roles).
+  @PutMapping("/{id}/collections-exemption")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
+  public ResponseEntity<CollectionsExemptionResponse> setCollectionsExemption(
+      @PathVariable UUID id,
+      @Valid @RequestBody CollectionsExemptionRequest request,
+      ActorContext actor) {
+    return ResponseEntity.ok(
+        customerService.setCollectionsExemption(id, request.collectionsExempt(), actor));
+  }
+
   @PostMapping("/{id}/tags")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<List<TagResponse>> setCustomerTags(
@@ -387,4 +399,10 @@ public class CustomerController {
   public ResponseEntity<DormancyCheckResult> runDormancyCheck() {
     return ResponseEntity.ok(customerLifecycleService.runDormancyCheck());
   }
+
+  /** Request to set/clear the per-customer collections exemption (Phase 83, §2.3). */
+  public record CollectionsExemptionRequest(boolean collectionsExempt) {}
+
+  /** Minimal echo of the collections-exemption flag after a set/clear (Phase 83, §2.3). */
+  public record CollectionsExemptionResponse(UUID id, boolean collectionsExempt) {}
 }

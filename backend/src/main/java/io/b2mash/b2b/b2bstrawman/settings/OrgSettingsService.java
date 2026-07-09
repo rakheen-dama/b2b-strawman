@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
+import io.b2mash.b2b.b2bstrawman.settings.dto.CollectionsSettingsResponse;
 import io.b2mash.b2b.b2bstrawman.settings.dto.DataProtectionSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.ModuleSettingsResponse;
 import io.b2mash.b2b.b2bstrawman.settings.dto.ModuleSettingsResponse.ModuleStatus;
@@ -753,6 +754,124 @@ public class OrgSettingsService {
             .build());
 
     return toSettingsResponse(settings);
+  }
+
+  // --- Collections / dunning policy (Phase 83, Epic 588B) ---
+
+  /**
+   * Reads the collections / dunning policy group (Phase 83, §4.2). Member-readable. Returns
+   * baked-in defaults ({@code false, 7, 21, 45, 60}) for a fresh tenant with no {@code
+   * org_settings} row yet — without persisting — mirroring {@link #getSettingsWithBranding()}.
+   */
+  @Transactional(readOnly = true)
+  public CollectionsSettingsResponse getCollectionsSettings() {
+    return orgSettingsRepository
+        .findForCurrentTenant()
+        .map(s -> toCollectionsResponse(s.getCollections()))
+        .orElse(new CollectionsSettingsResponse(false, 7, 21, 45, 60));
+  }
+
+  /**
+   * Updates the collections / dunning policy (Phase 83, §4.2). Admin/owner only. Full-replace
+   * semantics: all five fields are meaningful on every call. Thresholds are validated service-side
+   * — each ≥ 1 and strictly increasing (stage1 &lt; stage2 &lt; stage3 &lt; escalate) — as a
+   * semantic rule, not a DB constraint. Audits {@code collections.policy.updated} with old/new
+   * numbers only (POPIA: no PII in details).
+   */
+  @Transactional
+  public CollectionsSettingsResponse updateCollectionsSettings(
+      boolean collectionsEnabled,
+      Integer stage1DaysOverdue,
+      Integer stage2DaysOverdue,
+      Integer stage3DaysOverdue,
+      Integer escalateDaysOverdue,
+      ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
+    validateCollectionsThresholds(
+        stage1DaysOverdue, stage2DaysOverdue, stage3DaysOverdue, escalateDaysOverdue);
+
+    var settings =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .orElseGet(
+                () -> {
+                  var newSettings = new OrgSettings(DEFAULT_CURRENCY);
+                  return orgSettingsRepository.save(newSettings);
+                });
+
+    // Capture OLD values BEFORE mutating so the audit delta is accurate.
+    var collections = settings.getCollections();
+    boolean oldEnabled = collections.isCollectionsEnabled();
+    Integer oldStage1 = collections.getStage1DaysOverdue();
+    Integer oldStage2 = collections.getStage2DaysOverdue();
+    Integer oldStage3 = collections.getStage3DaysOverdue();
+    Integer oldEscalate = collections.getEscalateDaysOverdue();
+
+    collections.updateCollectionsSettings(
+        collectionsEnabled,
+        stage1DaysOverdue,
+        stage2DaysOverdue,
+        stage3DaysOverdue,
+        escalateDaysOverdue);
+    settings.touchUpdatedAt();
+    settings = orgSettingsRepository.save(settings);
+
+    log.info(
+        "Updated collections policy: enabled={}, stage1={}, stage2={}, stage3={}, escalate={}",
+        collectionsEnabled,
+        stage1DaysOverdue,
+        stage2DaysOverdue,
+        stage3DaysOverdue,
+        escalateDaysOverdue);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("collections.policy.updated")
+            .entityType("org_settings")
+            .entityId(settings.getId())
+            .details(
+                Map.of(
+                    "collections_enabled", Map.of("from", oldEnabled, "to", collectionsEnabled),
+                    "stage1_days", Map.of("from", oldStage1, "to", stage1DaysOverdue),
+                    "stage2_days", Map.of("from", oldStage2, "to", stage2DaysOverdue),
+                    "stage3_days", Map.of("from", oldStage3, "to", stage3DaysOverdue),
+                    "escalate_days", Map.of("from", oldEscalate, "to", escalateDaysOverdue)))
+            .build());
+
+    return toCollectionsResponse(settings.getCollections());
+  }
+
+  /**
+   * Enforces the collections-threshold invariant service-side (Phase 83, §2.1): each threshold ≥ 1
+   * and strictly increasing. Semantic exception → HTTP 400.
+   */
+  private void validateCollectionsThresholds(
+      Integer stage1, Integer stage2, Integer stage3, Integer escalate) {
+    if (stage1 == null
+        || stage2 == null
+        || stage3 == null
+        || escalate == null
+        || stage1 < 1
+        || stage2 < 1
+        || stage3 < 1
+        || escalate < 1) {
+      throw new InvalidStateException(
+          "Invalid collections thresholds", "Each days-overdue threshold must be at least 1");
+    }
+    if (!(stage1 < stage2 && stage2 < stage3 && stage3 < escalate)) {
+      throw new InvalidStateException(
+          "Invalid collections thresholds",
+          "Thresholds must be strictly increasing: stage1 < stage2 < stage3 < escalate");
+    }
+  }
+
+  private static CollectionsSettingsResponse toCollectionsResponse(CollectionsSettings c) {
+    return new CollectionsSettingsResponse(
+        c.isCollectionsEnabled(),
+        c.getStage1DaysOverdue(),
+        c.getStage2DaysOverdue(),
+        c.getStage3DaysOverdue(),
+        c.getEscalateDaysOverdue());
   }
 
   /**

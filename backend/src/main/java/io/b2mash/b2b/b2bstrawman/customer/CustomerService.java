@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceService;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.DeleteGuard;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -18,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupResolver;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.retainer.RetainerAgreementRepository;
@@ -460,6 +462,31 @@ public class CustomerService {
       result.put((String) row[0], ((Number) row[1]).longValue());
     }
     return result;
+  }
+
+  /**
+   * Sets or clears the per-customer collections exemption (Phase 83, §2.3). Admin/owner only per
+   * architecture §9 — enforced here in addition to the controller's {@code CUSTOMER_MANAGEMENT}
+   * capability, because that capability is grantable to custom member roles.
+   *
+   * <p>No audit event: the architecture registers no audit type for exemption changes (the 41-entry
+   * catalogue pin is deliberate); the flag is visible on the customer row.
+   */
+  @Transactional
+  public CustomerController.CollectionsExemptionResponse setCollectionsExemption(
+      UUID customerId, boolean exempt, ActorContext actor) {
+    if (!actor.isOwnerOrAdmin()) {
+      throw new ForbiddenException(
+          "Insufficient permissions", "Only admins and owners can change collections exemption");
+    }
+    var customer =
+        repository
+            .findById(customerId)
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+    customer.setCollectionsExempt(exempt);
+    var saved = repository.save(customer);
+    return new CustomerController.CollectionsExemptionResponse(
+        saved.getId(), saved.isCollectionsExempt());
   }
 
   @Transactional

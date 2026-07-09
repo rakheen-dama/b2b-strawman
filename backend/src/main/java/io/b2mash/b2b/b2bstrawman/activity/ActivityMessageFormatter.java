@@ -133,6 +133,20 @@ public class ActivityMessageFormatter {
           "%s attached a document to a filed email via the MCP connector".formatted(actorName);
       case "mcp.write.task_proposed" ->
           "%s proposed a task from a filed email (awaiting approval)".formatted(actorName);
+      // COLLECTIONS — Phase 83 (Epic 588B). POPIA: never interpolate client names/emails/subjects;
+      // only the invoice number (a reference) is surfaced. System-emitted events (actorId == null)
+      // render the actor as "System" via resolveActorName.
+      case "collections.reminder.sent" ->
+          "%s sent a collection reminder for %s"
+              .formatted(actorName, getInvoiceNumber(details, "an overdue invoice"));
+      case "collections.reminder.cancelled" ->
+          "A collection reminder was cancelled for %s"
+              .formatted(getInvoiceNumber(details, "an overdue invoice"));
+      case "collections.escalation.flagged" ->
+          "%s was flagged for collections escalation"
+              .formatted(getInvoiceNumber(details, "An overdue invoice"));
+      case "collections.digest.sent" -> "The weekly cash digest was sent";
+      case "collections.policy.updated" -> "%s updated the collections policy".formatted(actorName);
       // LZKC-019: portal / document / statement / closure events used to fall through to the
       // raw default below ("<actor> performed portal.document.downloaded on document").
       case "portal.document.downloaded" ->
@@ -340,6 +354,11 @@ public class ActivityMessageFormatter {
     return name instanceof String s ? s : "unknown template";
   }
 
+  private String getInvoiceNumber(Map<String, Object> details, String fallback) {
+    Object num = details.get("invoice_number");
+    return (num instanceof String s && !s.isBlank()) ? s : fallback;
+  }
+
   private String resolveEntityName(String entityType, Map<String, Object> details) {
     return switch (entityType) {
       case "task" -> getTitle(details);
@@ -361,6 +380,10 @@ public class ActivityMessageFormatter {
       case "correspondence" -> {
         Object subj = details.get("subject");
         yield (subj instanceof String s && !s.isBlank()) ? s : "correspondence";
+      }
+      case "collection_activity" -> {
+        Object num = details.get("invoice_number");
+        yield (num instanceof String s && !s.isBlank()) ? s : "collection activity";
       }
       default -> "unknown";
     };

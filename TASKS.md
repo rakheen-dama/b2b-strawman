@@ -667,6 +667,14 @@
 | 586 | Frontend — Correspondence Tab + Gate-Origin Display + QA Capstone | Frontend / Both | 581A, 582B, 583A, 585B | L | 586A, 586B, 586C | **Done** (PR #1509) |
 | **Phase 82 — Correspondence Read-Back over MCP** | | | | | | See [tasks/phase82-correspondence-readback.md](tasks/phase82-correspondence-readback.md) |
 | 587 | Correspondence Read-Back over MCP — `list_correspondence` + `get_correspondence` | Backend | — | M | 587A, 587B | **Done** (PR #1510) |
+| **Phase 83 — Collections & Cash Intelligence** | | | | | | See [tasks/phase83-collections-cash-intelligence.md](tasks/phase83-collections-cash-intelligence.md) |
+| 588 | Collections Foundation — Migration, Policy Embeddable, Ledger Entity, Registrations, Settings UI | Backend + Frontend | — | L | 588A, 588B, 588C | |
+| 589 | Scan Engine + Escalation + Payment Cancellation | Backend | 588A, 588B | L | 589A, 589B | |
+| 590 | Drafting Skill + Gated Send Executor | Backend | 589 | L | 590A, 590B | |
+| 591 | Batch Approval + Collections Read APIs + Collections Frontend | Backend + Frontend | 590 | L | 591A, 591B, 591C | |
+| 592 | Debtor Triage + Trust-Aware Advisor Seam | Backend + Frontend | 589 (592B: 591B) | M | 592A, 592B | |
+| 593 | Weekly Cash Digest | Backend | 589A, 592A | L | 593A, 593B | |
+| 594 | QA Capstone — Observed End-to-End Lifecycle | E2E/Process | 588–593 | M | 594A | |
 
 
 ---

@@ -57,6 +57,8 @@ class OrgSettingsSchemaSnapshotTest {
    * drift cannot pass silently (Hibernate ddl-auto is none here — Flyway owns DDL — so the
    * information_schema snapshot is the only guard).
    */
+  // V133 (Phase 83): the five collections_* columns added below are a deliberate, authorised pin
+  // update (CollectionsSettings embeddable + V133 migration), not an accidental drift.
   private static final String EXPECTED_SNAPSHOT =
       """
       acceptance_expiry_days | integer | YES
@@ -67,6 +69,11 @@ class OrgSettingsSchemaSnapshotTest {
       billing_email_rate_limit | integer | NO
       brand_color | character varying(7) | YES
       clause_pack_status | jsonb | YES
+      collections_enabled | boolean | NO
+      collections_escalate_days | integer | YES
+      collections_stage1_days | integer | YES
+      collections_stage2_days | integer | YES
+      collections_stage3_days | integer | YES
       compliance_pack_status | jsonb | YES
       created_at | timestamp with time zone | NO
       data_protection_jurisdiction | character varying(10) | YES

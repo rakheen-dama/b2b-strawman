@@ -201,6 +201,27 @@ public class OrgSettings {
   private TimeReminderSettings timeReminder = new TimeReminderSettings();
 
   /**
+   * Collections / dunning policy group (Phase 83): master enable switch + the four days-overdue
+   * thresholds (stage 1-3 reminders, escalation flag). Persisted inline on {@code org_settings} via
+   * {@code @Embedded} — column names pinned by {@code @AttributeOverride} (V133; deliberate
+   * OrgSettingsSchemaSnapshotTest pin update). Initialised non-null so a fresh entity and an
+   * all-null DB row never NPE on {@link #getCollections()}. ({@code collections_enabled} is NOT
+   * NULL, so the group never fully materialises as NULL on reload — but the null-safe getter is
+   * kept for symmetry.)
+   */
+  @Embedded
+  @AttributeOverride(
+      name = "collectionsEnabled",
+      column = @Column(name = "collections_enabled", nullable = false))
+  @AttributeOverride(name = "stage1DaysOverdue", column = @Column(name = "collections_stage1_days"))
+  @AttributeOverride(name = "stage2DaysOverdue", column = @Column(name = "collections_stage2_days"))
+  @AttributeOverride(name = "stage3DaysOverdue", column = @Column(name = "collections_stage3_days"))
+  @AttributeOverride(
+      name = "escalateDaysOverdue",
+      column = @Column(name = "collections_escalate_days"))
+  private CollectionsSettings collections = new CollectionsSettings();
+
+  /**
    * Billing-run configuration group (Wave 3.4): batch async threshold, per-run email rate limit,
    * and the optional default billing-run currency override. Persisted inline on {@code
    * org_settings} via {@code @Embedded} — column names pinned by {@code @AttributeOverride} for
@@ -368,6 +389,14 @@ public class OrgSettings {
       timeReminder = new TimeReminderSettings();
     }
     return timeReminder;
+  }
+
+  /** Returns the collections / dunning policy settings group. Never null. */
+  public CollectionsSettings getCollections() {
+    if (collections == null) {
+      collections = new CollectionsSettings();
+    }
+    return collections;
   }
 
   /** Returns the pack-application status settings group. Never null. */

@@ -392,6 +392,7 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
     title: "Collections",
     description: "Configure overdue-invoice reminder stages and escalation",
     href: (slug) => `/org/${slug}/settings/collections`,
+    adminOnly: true,
   },
   {
     title: "Custom Fields",

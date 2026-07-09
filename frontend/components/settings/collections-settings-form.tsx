@@ -130,12 +130,12 @@ export function CollectionsSettingsForm({
 
           {/* Stage 1 */}
           <div>
-            <label
+            <Label
               htmlFor="stage1-days"
               className="block text-sm font-medium text-slate-700 dark:text-slate-300"
             >
               Stage 1 (days overdue)
-            </label>
+            </Label>
             <Input
               id="stage1-days"
               type="number"
@@ -149,12 +149,12 @@ export function CollectionsSettingsForm({
 
           {/* Stage 2 */}
           <div>
-            <label
+            <Label
               htmlFor="stage2-days"
               className="block text-sm font-medium text-slate-700 dark:text-slate-300"
             >
               Stage 2 (days overdue)
-            </label>
+            </Label>
             <Input
               id="stage2-days"
               type="number"
@@ -168,12 +168,12 @@ export function CollectionsSettingsForm({
 
           {/* Stage 3 */}
           <div>
-            <label
+            <Label
               htmlFor="stage3-days"
               className="block text-sm font-medium text-slate-700 dark:text-slate-300"
             >
               Stage 3 (days overdue)
-            </label>
+            </Label>
             <Input
               id="stage3-days"
               type="number"
@@ -187,12 +187,12 @@ export function CollectionsSettingsForm({
 
           {/* Escalation */}
           <div>
-            <label
+            <Label
               htmlFor="escalate-days"
               className="block text-sm font-medium text-slate-700 dark:text-slate-300"
             >
               Escalation (days overdue)
-            </label>
+            </Label>
             <Input
               id="escalate-days"
               type="number"
@@ -217,6 +217,8 @@ export function CollectionsSettingsForm({
         </Button>
         {message && (
           <p
+            role="alert"
+            aria-live="polite"
             className={`text-sm ${
               isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
             }`}

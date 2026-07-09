@@ -76,7 +76,7 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
         requiredModule: "bulk_billing",
       },
       { label: "Capacity", href: "capacity" },
-      { label: "Collections", href: "collections" },
+      { label: "Collections", href: "collections", adminOnly: true },
       {
         label: "Trust Accounting",
         href: "trust-accounting",

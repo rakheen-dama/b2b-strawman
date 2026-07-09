@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getCollectionsSettings } from "@/lib/api/collections";
-import type { CollectionsSettingsResponse } from "@/lib/api/collections";
 import { CollectionsSettingsForm } from "@/components/settings/collections-settings-form";
 
 export default async function CollectionsSettingsPage({
@@ -32,19 +31,10 @@ export default async function CollectionsSettingsPage({
     );
   }
 
-  // Backend supplies sensible defaults when the policy has never been set.
-  let settings: CollectionsSettingsResponse = {
-    collectionsEnabled: false,
-    stage1DaysOverdue: 7,
-    stage2DaysOverdue: 21,
-    stage3DaysOverdue: 45,
-    escalateDaysOverdue: 60,
-  };
-
-  const settingsResult = await getCollectionsSettings().catch(() => null);
-  if (settingsResult) {
-    settings = settingsResult;
-  }
+  // Backend supplies sensible defaults when the policy has never been set (never 404s),
+  // so a failure here is a real fetch error — let it propagate to the error boundary
+  // rather than silently rendering defaults an admin could save over an existing policy.
+  const settings = await getCollectionsSettings();
 
   return (
     <div className="space-y-8">

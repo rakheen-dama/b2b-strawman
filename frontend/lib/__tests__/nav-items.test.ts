@@ -159,6 +159,7 @@ describe("SETTINGS_ITEMS", () => {
       "Audit log",
       "Automations",
       "Batch Billing",
+      "Collections",
       "Email",
       "Features",
       "Pipeline",

@@ -78,9 +78,10 @@ public class CollectionsPaymentListener {
       log.warn("InvoicePaidEvent has null tenantId, dropping: invoice={}", event.entityId());
       return;
     }
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> cancelPendingReminders(event.entityId(), event.invoiceNumber(), REASON_INVOICE_PAID));
   }
 
@@ -90,9 +91,10 @@ public class CollectionsPaymentListener {
       log.warn("InvoiceVoidedEvent has null tenantId, dropping: invoice={}", event.entityId());
       return;
     }
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () ->
             cancelPendingReminders(event.entityId(), event.invoiceNumber(), REASON_INVOICE_VOIDED));
   }

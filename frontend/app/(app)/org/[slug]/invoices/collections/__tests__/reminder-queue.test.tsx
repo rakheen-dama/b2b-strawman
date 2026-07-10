@@ -12,6 +12,15 @@ vi.mock("@/app/(app)/org/[slug]/invoices/collections/actions", () => ({
   rejectReminderGateAction: (...args: unknown[]) => mockRejectReminderGateAction(...args),
 }));
 
+// Stub DOMPurify so the wiring is provable in happy-dom: the component must call
+// sanitize with the raw bodyHtml, and what renders must be the sanitizer's OUTPUT
+// (the real strip-unsafe-markup behavior is DOMPurify's own, exercised in the browser).
+const mockSanitize = vi.fn((html: string) => html.replace("<script>alert(1)</script>", ""));
+
+vi.mock("dompurify", () => ({
+  default: { sanitize: (html: string) => mockSanitize(html) },
+}));
+
 afterEach(() => {
   cleanup();
 });
@@ -19,6 +28,7 @@ afterEach(() => {
 beforeEach(() => {
   mockBatchApproveGatesAction.mockReset();
   mockRejectReminderGateAction.mockReset();
+  mockSanitize.mockClear();
 });
 
 function makeGate(overrides: Partial<AiGateListItem> = {}): AiGateListItem {
@@ -124,25 +134,27 @@ describe("ReminderQueue — multi-select + batch approve", () => {
     expect(screen.getByText(/No reminders awaiting approval/)).toBeInTheDocument();
   });
 
-  it("runs the bodyHtml through client-side sanitization and still renders safe markup", () => {
-    // The defense-in-depth DOMPurify layer only truly strips markup in a real browser
-    // DOM; happy-dom cannot be trusted to reproduce browser sanitization, so this test
-    // only asserts the wiring (sanitize runs without throwing, safe content flows through
-    // to the rendered preview). The strip-unsafe-markup behavior is DOMPurify's own,
-    // exercised in the browser at runtime.
+  it("runs the bodyHtml through client-side sanitization and renders the sanitizer's output", () => {
+    const rawHtml = "<p>Please settle your outstanding invoice.</p><script>alert(1)</script>";
     const gates = [makeGate({ id: "gate-a" })];
     const previews: Record<string, ReminderPreview> = {
       "gate-a": makePreview({
         subject: "Reminder A",
-        bodyHtml: "<p>Please settle your outstanding invoice.</p>",
+        bodyHtml: rawHtml,
       }),
     };
-    render(<ReminderQueue slug="acme" gates={gates} previews={previews} />);
+    const { container } = render(<ReminderQueue slug="acme" gates={gates} previews={previews} />);
+
+    // sanitize must not run for collapsed cards (also proves the SSR-unreachable claim).
+    expect(mockSanitize).not.toHaveBeenCalled();
 
     // Expand the reminder card so the bodyHtml preview mounts and DOMPurify.sanitize runs.
     fireEvent.click(screen.getByRole("button", { name: /Reminder A/ }));
 
-    // The sanitized safe markup is rendered.
+    // The component passed the RAW html to the sanitizer...
+    expect(mockSanitize).toHaveBeenCalledWith(rawHtml);
+    // ...and what renders is the sanitizer's OUTPUT: script gone, safe markup kept.
     expect(screen.getByText("Please settle your outstanding invoice.")).toBeInTheDocument();
+    expect(container.querySelector("script")).toBeNull();
   });
 });

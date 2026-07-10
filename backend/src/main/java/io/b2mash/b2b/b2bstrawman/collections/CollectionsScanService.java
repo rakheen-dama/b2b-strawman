@@ -16,7 +16,10 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * The deterministic dunning engine (Phase 83, ADR-325). One {@link #scanForTenant()} call derives
@@ -67,6 +70,15 @@ public class CollectionsScanService {
   private final AuditService auditService;
   private final AiExecutionGateService gateService;
 
+  /**
+   * REQUIRES_NEW template that isolates each candidate in its own physical transaction so one bad
+   * row (a flush-time constraint race, a throwing {@code expirePendingGate}/audit write, or a
+   * composer that participates in the tx) cannot mark the shared scan transaction rollback-only and
+   * poison the whole tenant scan (§3.1). Mirrors the per-item isolation of {@code
+   * AutomationActionExecutor} / {@code BillingRunGenerationService}.
+   */
+  private final TransactionTemplate requiresNewTransactionTemplate;
+
   public CollectionsScanService(
       EntityManager entityManager,
       OrgSettingsRepository orgSettingsRepository,
@@ -76,7 +88,8 @@ public class CollectionsScanService {
       ReminderComposer reminderComposer,
       NotificationService notificationService,
       AuditService auditService,
-      AiExecutionGateService gateService) {
+      AiExecutionGateService gateService,
+      PlatformTransactionManager transactionManager) {
     this.entityManager = entityManager;
     this.orgSettingsRepository = orgSettingsRepository;
     this.activityRepository = activityRepository;
@@ -86,6 +99,9 @@ public class CollectionsScanService {
     this.notificationService = notificationService;
     this.auditService = auditService;
     this.gateService = gateService;
+    this.requiresNewTransactionTemplate = new TransactionTemplate(transactionManager);
+    this.requiresNewTransactionTemplate.setPropagationBehavior(
+        TransactionDefinition.PROPAGATION_REQUIRES_NEW);
   }
 
   /** Counts for the job log. */
@@ -116,7 +132,12 @@ public class CollectionsScanService {
 
     for (var candidate : candidates) {
       try {
-        var outcome = processCandidate(candidate, policy);
+        // REQUIRES_NEW: each candidate commits/rolls back in its own physical transaction, so a
+        // persistence failure on one row (constraint race, throwing gate-expiry/audit write, or a
+        // participating composer) rolls back ONLY that candidate and cannot mark the shared scan
+        // transaction rollback-only — the loop below keeps processing later candidates cleanly.
+        var outcome =
+            requiresNewTransactionTemplate.execute(status -> processCandidate(candidate, policy));
         proposed += outcome.proposed();
         skipped += outcome.skipped();
         escalated += outcome.escalated();

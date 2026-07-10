@@ -18,6 +18,19 @@ import java.util.Optional;
  * (We deliberately avoid {@code @ConditionalOnMissingBean}: it only has order-independent semantics
  * inside auto-configuration classes, and would risk registering both beans and breaking startup for
  * a plain component-scanned seam.)
+ *
+ * <p><strong>Failure signalling contract (590A).</strong> Three distinct outcomes map to three
+ * distinct scan dispositions:
+ *
+ * <ul>
+ *   <li>{@link Optional#empty()} — drafting is not wired at all (the no-op composer): {@code
+ *       SKIPPED(draft_unavailable)}, retryable.
+ *   <li>{@link AiUnavailableException} — the AI pre-flight failed (provider unconfigured, or no
+ *       firm-profile row exists to invoke a skill from job context): {@code
+ *       SKIPPED(ai_unavailable)}, retryable — the jobs themselves never crash on AI unavailability.
+ *   <li>any other {@code RuntimeException} — the draft attempt itself failed (provider error,
+ *       FAILED execution, unparseable output): {@code SKIPPED(draft_failed)}, retryable.
+ * </ul>
  */
 public interface ReminderComposer {
 
@@ -27,7 +40,21 @@ public interface ReminderComposer {
    * @return the PENDING {@link AiExecutionGate} carrying the draft, or {@link Optional#empty()}
    *     when drafting is unavailable (the scan records {@code SKIPPED(draft_unavailable)}, which is
    *     retryable — the next scan re-evaluates the row).
+   * @throws AiUnavailableException when the AI pre-flight fails (the scan records {@code
+   *     SKIPPED(ai_unavailable)}, retryable)
    */
   Optional<AiExecutionGate> compose(
       CollectionActivity activity, Invoice invoice, Customer customer);
+
+  /**
+   * Signals that AI drafting is unavailable for this tenant right now — the AI provider is not
+   * configured (NoOp provider resolved) or no {@code AiFirmProfile} row exists (a skill cannot be
+   * system-invoked from job context without one, Phase 83 §6.4). Distinct from a draft
+   * <em>failure</em>: the scan maps this to the retryable {@code SKIPPED(ai_unavailable)} reason.
+   */
+  class AiUnavailableException extends RuntimeException {
+    public AiUnavailableException(String message) {
+      super(message);
+    }
+  }
 }

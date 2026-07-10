@@ -57,7 +57,11 @@ public class AiExecution {
   @Column(name = "duration_ms")
   private Long durationMs;
 
-  @Column(name = "invoked_by", nullable = false)
+  // Nullable since V133 (Phase 83): system-invoked skills (collections_scan / cash_digest job
+  // context) record no member — a null invokedBy means "system". V133 dropped the column's NOT
+  // NULL; this annotation must match or Hibernate's flush-time nullability check rejects the
+  // system invocation with a PropertyValueException.
+  @Column(name = "invoked_by")
   private UUID invokedBy;
 
   @Column(name = "firm_profile_version")

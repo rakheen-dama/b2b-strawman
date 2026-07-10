@@ -42,6 +42,7 @@ public class CollectionsScanService {
   static final String REASON_NO_RECIPIENT = "no_recipient";
   static final String REASON_DRAFT_UNAVAILABLE = "draft_unavailable";
   static final String REASON_DRAFT_FAILED = "draft_failed";
+  static final String REASON_AI_UNAVAILABLE = "ai_unavailable";
 
   private static final List<CollectionStage> REMINDER_STAGES =
       List.of(CollectionStage.STAGE_1, CollectionStage.STAGE_2, CollectionStage.STAGE_3);
@@ -312,6 +313,16 @@ public class CollectionsScanService {
         activity.markSkipped(REASON_DRAFT_UNAVAILABLE);
         skipped++;
       }
+    } catch (ReminderComposer.AiUnavailableException e) {
+      // AI pre-flight failed (provider unconfigured / no firm profile) — distinct retryable
+      // disposition (§6.4): the jobs themselves never crash on AI unavailability.
+      log.info(
+          "CollectionsScanService: AI unavailable for invoice {} stage {}: {}",
+          invoiceId,
+          target,
+          e.getMessage());
+      activity.markSkipped(REASON_AI_UNAVAILABLE);
+      skipped++;
     } catch (RuntimeException e) {
       // A bad draft must not sink the batch — record it retryable and continue.
       log.warn(

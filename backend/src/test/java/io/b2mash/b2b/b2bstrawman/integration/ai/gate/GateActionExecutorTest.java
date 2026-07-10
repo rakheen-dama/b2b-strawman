@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceService;
+import io.b2mash.b2b.b2bstrawman.collections.CollectionReminderSendService;
 import io.b2mash.b2b.b2bstrawman.compliance.ComplianceAuditReportService;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.contractreview.AiReviewReportGenerator;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.drafting.AiDraftDocumentGenerator;
@@ -38,6 +39,7 @@ class GateActionExecutorTest {
             mock(AiDraftDocumentGenerator.class),
             mock(ComplianceAuditReportService.class),
             mock(TaskService.class),
+            mock(CollectionReminderSendService.class),
             JsonMapper.builder().findAndAddModules().build());
   }
 

@@ -24,7 +24,7 @@ This phase ships as **7 epics (588–594)**, expanded to **15 numbered slices** 
 |------|------|-------|------|--------|--------|--------|
 | 588 | Collections Foundation — Migration, Policy Embeddable, Ledger Entity, Registrations, Settings UI | Backend + Frontend (split slices) | — | L | 588A, 588B, 588C | **Done** — 588A (PR #1534), 588B (PR #1535), 588C (PR #1536) |
 | 589 | Scan Engine + Escalation + Payment Cancellation | Backend | 588A, 588B | L | 589A, 589B | **Done** — 589A, 589B (PR #1538) |
-| 590 | Drafting Skill + Gated Send Executor | Backend | 589 | L | 590A, 590B | |
+| 590 | Drafting Skill + Gated Send Executor | Backend | 589 | L | 590A, 590B | **Done** — 590A, 590B (PR #1539) |
 | 591 | Batch Approval + Collections Read APIs + Collections Frontend | Backend + Frontend (split slices) | 590 | L | 591A, 591B, 591C | |
 | 592 | Debtor Triage + Trust-Aware Advisor Seam | Backend + Frontend (split slices) | 589 (592B also 591B) | M | 592A, 592B | |
 | 593 | Weekly Cash Digest | Backend | 589A, 592A (types from 588A) | L | 593A, 593B | |
@@ -161,8 +161,8 @@ REUSED (not rebuilt):
 
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
-| 3a | **590A** | `CollectionReminderSkill` + `system.txt`/`output-schema.json`; `AiReminderComposer` (system-invoked via `AiSkillExecutionService`, replaces no-op); `StubAiProvider` canned reminder output; `draft_failed`/`ai_unavailable` skip semantics. | 592A |
-| 3b | **590B** | `SendCollectionReminderAction` + `GateAction` permits + `parseAction`/`execute` arms; `CollectionReminderSendService` (mirror `InvoiceEmailService`) + `collection-reminder.html` template; `CollectionsTenantIsolationTest` (mandatory). | 592A |
+| 3a | **590A** | `CollectionReminderSkill` + `system.txt`/`output-schema.json`; `AiReminderComposer` (system-invoked via `AiSkillExecutionService`, replaces no-op); `StubAiProvider` canned reminder output; `draft_failed`/`ai_unavailable` skip semantics. **Done** (PR #1539) | 592A |
+| 3b | **590B** | `SendCollectionReminderAction` + `GateAction` permits + `parseAction`/`execute` arms; `CollectionReminderSendService` (mirror `InvoiceEmailService`) + `collection-reminder.html` template; `CollectionsTenantIsolationTest` (mandatory). **Done** (PR #1539) | 592A |
 | 3c | **592A** | `CollectionsTriageService` (deterministic signals); `CollectionsAdvisor` SPI + no-op default; `verticals/legal/collections/TrustAwareCollectionsAdvisor` (fail-open on `DataAccessException`); core-has-no-legal-imports boundary test. | 590A, 590B, 591A |
 
 ### Stage 4 — Approval surface + frontend ∥ Digest
@@ -318,8 +318,8 @@ Stage 5: [594A]                                          <- QA capstone
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **590A** | 590A.1–590A.4 | ~8 backend files (1 skill + 2 prompt assets + 1 composer + 1 output record + StubAiProvider mod + possible AiSkillExecutionService mod + 1–2 test files) | `CollectionReminderSkill` + prompts/schema; `AiReminderComposer` (system-invoked); stub outputs; draft-failure skip semantics. |
-| **590B** | 590B.1–590B.5 | ~8 backend files (GateAction mod + executor mod + 1 send service + 1 template + 3 test files) | `SendCollectionReminderAction` + parse/execute arms; `CollectionReminderSendService` + `collection-reminder.html`; executor + tenant-isolation tests. |
+| **590A** | 590A.1–590A.4 | ~8 backend files (1 skill + 2 prompt assets + 1 composer + 1 output record + StubAiProvider mod + possible AiSkillExecutionService mod + 1–2 test files) | `CollectionReminderSkill` + prompts/schema; `AiReminderComposer` (system-invoked); stub outputs; draft-failure skip semantics. **Done** (PR #1539) |
+| **590B** | 590B.1–590B.5 | ~8 backend files (GateAction mod + executor mod + 1 send service + 1 template + 3 test files) | `SendCollectionReminderAction` + parse/execute arms; `CollectionReminderSendService` + `collection-reminder.html`; executor + tenant-isolation tests. **Done** (PR #1539; incl. authorized V134 `email_delivery_log` CHECK-constraint migration + review-cycle `ReminderHtmlSanitizer` and system-invocation notification fan-out) |
 
 ### Tasks
 

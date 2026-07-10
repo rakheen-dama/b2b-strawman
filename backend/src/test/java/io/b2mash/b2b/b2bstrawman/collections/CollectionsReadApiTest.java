@@ -264,12 +264,16 @@ class CollectionsReadApiTest {
 
   @Test
   void activities_notFoundForUnknownInvoice() throws Exception {
+    var unknownInvoiceId = UUID.randomUUID();
     mockMvc
         .perform(
             get("/api/collections/activities")
-                .param("invoiceId", UUID.randomUUID().toString())
+                .param("invoiceId", unknownInvoiceId.toString())
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_read_owner")))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").value("Invoice not found"))
+        .andExpect(jsonPath("$.detail").value("No invoice found with id " + unknownInvoiceId));
   }
 
   @Test

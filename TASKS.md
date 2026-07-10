@@ -671,7 +671,7 @@
 | 588 | Collections Foundation — Migration, Policy Embeddable, Ledger Entity, Registrations, Settings UI | Backend + Frontend | — | L | 588A, 588B, 588C | **Done** — 588A (PR #1534), 588B (PR #1535), 588C (PR #1536) |
 | 589 | Scan Engine + Escalation + Payment Cancellation | Backend | 588A, 588B | L | 589A, 589B | **Done** — 589A, 589B (PR #1538) |
 | 590 | Drafting Skill + Gated Send Executor | Backend | 589 | L | 590A, 590B | **Done** — 590A, 590B (PR #1539) |
-| 591 | Batch Approval + Collections Read APIs + Collections Frontend | Backend + Frontend | 590 | L | 591A, 591B, 591C | |
+| 591 | Batch Approval + Collections Read APIs + Collections Frontend | Backend + Frontend | 590 | L | 591A, 591B, 591C | 591A **Done** (PR #1540) |
 | 592 | Debtor Triage + Trust-Aware Advisor Seam | Backend + Frontend | 589 (592B: 591B) | M | 592A, 592B | |
 | 593 | Weekly Cash Digest | Backend | 589A, 592A | L | 593A, 593B | |
 | 594 | QA Capstone — Observed End-to-End Lifecycle | E2E/Process | 588–593 | M | 594A | |

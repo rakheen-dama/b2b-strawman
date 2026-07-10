@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.integration.ai.gate;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -65,9 +66,21 @@ public class AiExecutionGateController {
     return ResponseEntity.ok(GateDetailResponse.from(gateService.reject(id, reviewerId, notes)));
   }
 
+  @PostMapping("/batch-approve")
+  @PreAuthorize("isAuthenticated()")
+  @RequiresCapability("AI_REVIEW")
+  public ResponseEntity<AiExecutionGateService.BatchApproveResult> batchApprove(
+      @RequestBody BatchApproveRequest request) {
+    UUID reviewerId = RequestScopes.requireMemberId();
+    return ResponseEntity.ok(
+        gateService.batchApprove(request.gateIds(), reviewerId, request.notes()));
+  }
+
   // ── DTOs ────────────────────────────────────────────────────────────────────
 
   public record GateReviewRequest(String notes) {}
+
+  public record BatchApproveRequest(List<UUID> gateIds, String notes) {}
 
   public record GateListResponse(
       UUID id,

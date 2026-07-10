@@ -111,6 +111,16 @@ public class AiExecutionGate {
     this.status = "EXPIRED";
   }
 
+  /**
+   * Expires this gate, recording a machine-readable review note (Phase 83: the underlying action
+   * became moot, e.g. the invoice was paid/voided). Delegates the PENDING-only guard to {@link
+   * #expire()}.
+   */
+  public void expire(String reviewNote) {
+    expire();
+    this.reviewNotes = reviewNote;
+  }
+
   // ── Getters ───────────────────────────────────────────────────────────────
 
   public UUID getId() {

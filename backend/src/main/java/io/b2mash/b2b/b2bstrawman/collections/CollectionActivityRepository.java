@@ -34,6 +34,10 @@ public interface CollectionActivityRepository extends JpaRepository<CollectionAc
   @Query("SELECT a FROM CollectionActivity a WHERE a.invoiceId = :invoiceId")
   List<CollectionActivity> findByInvoiceId(@Param("invoiceId") UUID invoiceId);
 
+  /** Gate-lifecycle listener lookup: the activity carrying this gate as its current/last draft. */
+  @Query("SELECT a FROM CollectionActivity a WHERE a.gateId = :gateId")
+  Optional<CollectionActivity> findByGateId(@Param("gateId") UUID gateId);
+
   /** Customer chase-history page, newest-first ({@code id} as deterministic tie-breaker). */
   @Query(
       "SELECT a FROM CollectionActivity a WHERE a.customerId = :customerId"

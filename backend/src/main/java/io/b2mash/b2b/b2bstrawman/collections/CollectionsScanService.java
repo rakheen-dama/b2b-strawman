@@ -1,0 +1,324 @@
+package io.b2mash.b2b.b2bstrawman.collections;
+
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
+import io.b2mash.b2b.b2bstrawman.settings.CollectionsSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Tuple;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * The deterministic dunning engine (Phase 83, ADR-325). One {@link #scanForTenant()} call derives
+ * overdue candidates at query time, selects the <em>highest eligible stage per invoice per
+ * scan</em> (recording lower un-actioned stages as {@code SKIPPED(superseded_by_higher_stage)} so
+ * the {@code (invoice, stage)} ledger stays complete), flags {@code ESCALATION} deterministically
+ * (row + {@code COLLECTION_ESCALATED} notification + audit — no gate, no AI, no email), and
+ * delegates drafting to the {@link ReminderComposer} seam.
+ *
+ * <p>Fully integration-testable without any AI machinery: with the 589 default {@link
+ * NoOpReminderComposer}, every due reminder lands as {@code SKIPPED(draft_unavailable)} —
+ * retryable, so each activity is automatically re-proposed once slice 590A's real composer deploys.
+ */
+@Service
+public class CollectionsScanService {
+
+  private static final Logger log = LoggerFactory.getLogger(CollectionsScanService.class);
+
+  static final String REASON_SUPERSEDED = "superseded_by_higher_stage";
+  static final String REASON_NO_RECIPIENT = "no_recipient";
+  static final String REASON_DRAFT_UNAVAILABLE = "draft_unavailable";
+  static final String REASON_DRAFT_FAILED = "draft_failed";
+
+  private static final List<CollectionStage> REMINDER_STAGES =
+      List.of(CollectionStage.STAGE_1, CollectionStage.STAGE_2, CollectionStage.STAGE_3);
+
+  private static final String CANDIDATE_SQL =
+      """
+      SELECT i.id             AS invoice_id,
+             i.customer_id     AS customer_id,
+             i.customer_email  AS customer_email,
+             (CURRENT_DATE - i.due_date) AS days_overdue
+      FROM   invoices i
+      JOIN   customers c ON c.id = i.customer_id
+      WHERE  i.status = 'SENT'
+        AND  i.due_date < CURRENT_DATE
+        AND  c.collections_exempt = false
+      ORDER  BY i.due_date
+      """;
+
+  private final EntityManager entityManager;
+  private final OrgSettingsRepository orgSettingsRepository;
+  private final CollectionActivityRepository activityRepository;
+  private final InvoiceRepository invoiceRepository;
+  private final CustomerRepository customerRepository;
+  private final ReminderComposer reminderComposer;
+  private final NotificationService notificationService;
+  private final AuditService auditService;
+
+  public CollectionsScanService(
+      EntityManager entityManager,
+      OrgSettingsRepository orgSettingsRepository,
+      CollectionActivityRepository activityRepository,
+      InvoiceRepository invoiceRepository,
+      CustomerRepository customerRepository,
+      ReminderComposer reminderComposer,
+      NotificationService notificationService,
+      AuditService auditService) {
+    this.entityManager = entityManager;
+    this.orgSettingsRepository = orgSettingsRepository;
+    this.activityRepository = activityRepository;
+    this.invoiceRepository = invoiceRepository;
+    this.customerRepository = customerRepository;
+    this.reminderComposer = reminderComposer;
+    this.notificationService = notificationService;
+    this.auditService = auditService;
+  }
+
+  /** Counts for the job log. */
+  public record ScanResult(int proposed, int skipped, int escalated, int superseded) {}
+
+  /**
+   * Runs one tenant's daily scan (steps 1-6 of ADR-325 §3.1). Tenant {@code search_path} is already
+   * bound by the {@code JobWorker}. No-ops when collections is disabled (or no {@code org_settings}
+   * row exists).
+   */
+  @Transactional
+  public ScanResult scanForTenant() {
+    // Step 1 — policy load.
+    var settings = orgSettingsRepository.findForCurrentTenant().orElse(null);
+    if (settings == null || !settings.getCollections().isCollectionsEnabled()) {
+      log.debug("CollectionsScanService: collections disabled or unconfigured — no-op");
+      return new ScanResult(0, 0, 0, 0);
+    }
+    var policy = settings.getCollections();
+
+    // Step 2 — candidate query (exempt customers produce no rows at all).
+    var candidates = loadCandidates();
+
+    int proposed = 0;
+    int skipped = 0;
+    int escalated = 0;
+    int superseded = 0;
+
+    for (var candidate : candidates) {
+      try {
+        var outcome = processCandidate(candidate, policy);
+        proposed += outcome.proposed();
+        skipped += outcome.skipped();
+        escalated += outcome.escalated();
+        superseded += outcome.superseded();
+      } catch (RuntimeException e) {
+        // One bad candidate must not sink the tenant's scan.
+        log.warn(
+            "CollectionsScanService: failed processing invoice {}: {}",
+            candidate.invoiceId(),
+            e.getMessage());
+      }
+    }
+
+    log.info(
+        "CollectionsScanService: scan complete — proposed={}, skipped={}, escalated={},"
+            + " superseded={}",
+        proposed,
+        skipped,
+        escalated,
+        superseded);
+    return new ScanResult(proposed, skipped, escalated, superseded);
+  }
+
+  private ScanResult processCandidate(Candidate candidate, CollectionsSettings policy) {
+    int proposed = 0;
+    int skipped = 0;
+    int escalated = 0;
+    int superseded = 0;
+
+    var invoiceId = candidate.invoiceId();
+    var customerId = candidate.customerId();
+    int days = candidate.daysOverdue();
+
+    var invoice = invoiceRepository.findById(invoiceId).orElse(null);
+    if (invoice == null) {
+      return new ScanResult(0, 0, 0, 0);
+    }
+
+    // Step 4 — escalation (independent of / in addition to the reminder ladder; no gate/AI/email).
+    Integer escalate = policy.getEscalateDaysOverdue();
+    if (escalate != null
+        && days >= escalate
+        && activityRepository
+            .findByInvoiceIdAndStage(invoiceId, CollectionStage.ESCALATION)
+            .isEmpty()) {
+      var escalationRow =
+          new CollectionActivity(
+              invoiceId,
+              customerId,
+              CollectionStage.ESCALATION,
+              CollectionActivityStatus.FLAGGED,
+              days,
+              "escalated");
+      escalationRow = activityRepository.save(escalationRow);
+      notificationService.notifyAdminsAndOwners(
+          "COLLECTION_ESCALATED",
+          "Invoice "
+              + invoice.getInvoiceNumber()
+              + " is "
+              + days
+              + " days overdue — flagged for a partner call",
+          null,
+          "INVOICE",
+          invoiceId);
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("collections.escalation.flagged")
+              .entityType("collection_activity")
+              .entityId(escalationRow.getId())
+              .actorType("SYSTEM")
+              .source("SCHEDULER")
+              .details(
+                  Map.of(
+                      "invoice_id", invoiceId.toString(),
+                      "invoice_number", nullSafe(invoice.getInvoiceNumber()),
+                      "days_overdue", String.valueOf(days)))
+              .build());
+      escalated++;
+    }
+
+    // Step 3 — reminder ladder: highest threshold-crossed stage is the target for this scan.
+    var target = highestCrossedStage(days, policy);
+    if (target == null) {
+      return new ScanResult(proposed, skipped, escalated, superseded);
+    }
+
+    // Record any lower un-actioned stages as SKIPPED(superseded_by_higher_stage) — ledger
+    // completeness. Existing rows (any status) are left untouched.
+    for (var stage : REMINDER_STAGES) {
+      if (stage.ordinal() >= target.ordinal()) {
+        break;
+      }
+      Integer threshold = thresholdFor(stage, policy);
+      if (threshold != null
+          && days >= threshold
+          && activityRepository.findByInvoiceIdAndStage(invoiceId, stage).isEmpty()) {
+        activityRepository.save(
+            new CollectionActivity(
+                invoiceId,
+                customerId,
+                stage,
+                CollectionActivityStatus.SKIPPED,
+                days,
+                REASON_SUPERSEDED));
+        superseded++;
+      }
+    }
+
+    // Target stage: skip if already actioned in a non-retryable status; otherwise (absent or
+    // retryable SKIPPED/SEND_FAILED) (re-)propose in place.
+    var existing = activityRepository.findByInvoiceIdAndStage(invoiceId, target).orElse(null);
+    if (existing != null && !isRetryable(existing.getStatus())) {
+      return new ScanResult(proposed, skipped, escalated, superseded);
+    }
+
+    var activity =
+        existing != null
+            ? existing
+            : new CollectionActivity(
+                invoiceId, customerId, target, CollectionActivityStatus.SKIPPED, days, null);
+
+    // Step 5 — recipient check.
+    if (candidate.customerEmail() == null || candidate.customerEmail().isBlank()) {
+      activity.markSkipped(REASON_NO_RECIPIENT);
+      activityRepository.save(activity);
+      skipped++;
+      return new ScanResult(proposed, skipped, escalated, superseded);
+    }
+
+    // Step 6 — draft via the composer seam.
+    var customer = customerRepository.findById(customerId).orElse(null);
+    if (customer == null) {
+      activity.markSkipped(REASON_NO_RECIPIENT);
+      activityRepository.save(activity);
+      skipped++;
+      return new ScanResult(proposed, skipped, escalated, superseded);
+    }
+
+    try {
+      var gate = reminderComposer.compose(activity, invoice, customer);
+      if (gate.isPresent()) {
+        activity.markProposed(gate.get().getId(), days);
+        proposed++;
+      } else {
+        activity.markSkipped(REASON_DRAFT_UNAVAILABLE);
+        skipped++;
+      }
+    } catch (RuntimeException e) {
+      // A bad draft must not sink the batch — record it retryable and continue.
+      log.warn(
+          "CollectionsScanService: composer failed for invoice {} stage {}: {}",
+          invoiceId,
+          target,
+          e.getMessage());
+      activity.markSkipped(REASON_DRAFT_FAILED);
+      skipped++;
+    }
+    activityRepository.save(activity);
+
+    return new ScanResult(proposed, skipped, escalated, superseded);
+  }
+
+  private List<Candidate> loadCandidates() {
+    var query = entityManager.createNativeQuery(CANDIDATE_SQL, Tuple.class);
+    @SuppressWarnings("unchecked")
+    List<Tuple> tuples = query.getResultList();
+    return tuples.stream()
+        .map(
+            t ->
+                new Candidate(
+                    t.get("invoice_id", UUID.class),
+                    t.get("customer_id", UUID.class),
+                    t.get("customer_email", String.class),
+                    ((Number) t.get("days_overdue")).intValue()))
+        .toList();
+  }
+
+  private static CollectionStage highestCrossedStage(int days, CollectionsSettings policy) {
+    CollectionStage target = null;
+    for (var stage : REMINDER_STAGES) {
+      Integer threshold = thresholdFor(stage, policy);
+      if (threshold != null && days >= threshold) {
+        target = stage;
+      }
+    }
+    return target;
+  }
+
+  private static Integer thresholdFor(CollectionStage stage, CollectionsSettings policy) {
+    return switch (stage) {
+      case STAGE_1 -> policy.getStage1DaysOverdue();
+      case STAGE_2 -> policy.getStage2DaysOverdue();
+      case STAGE_3 -> policy.getStage3DaysOverdue();
+      case ESCALATION -> policy.getEscalateDaysOverdue();
+    };
+  }
+
+  private static boolean isRetryable(CollectionActivityStatus status) {
+    return status == CollectionActivityStatus.SKIPPED
+        || status == CollectionActivityStatus.SEND_FAILED;
+  }
+
+  private static String nullSafe(String value) {
+    return value != null ? value : "";
+  }
+
+  private record Candidate(
+      UUID invoiceId, UUID customerId, String customerEmail, int daysOverdue) {}
+}

@@ -69,11 +69,12 @@ public class AiExecutionGateController {
   @PostMapping("/batch-approve")
   @PreAuthorize("isAuthenticated()")
   @RequiresCapability("AI_REVIEW")
-  public ResponseEntity<AiExecutionGateService.BatchApproveResult> batchApprove(
+  public ResponseEntity<BatchApproveResponse> batchApprove(
       @RequestBody BatchApproveRequest request) {
     UUID reviewerId = RequestScopes.requireMemberId();
     return ResponseEntity.ok(
-        gateService.batchApprove(request.gateIds(), reviewerId, request.notes()));
+        BatchApproveResponse.from(
+            gateService.batchApprove(request.gateIds(), reviewerId, request.notes())));
   }
 
   // ── DTOs ────────────────────────────────────────────────────────────────────
@@ -81,6 +82,21 @@ public class AiExecutionGateController {
   public record GateReviewRequest(String notes) {}
 
   public record BatchApproveRequest(List<UUID> gateIds, String notes) {}
+
+  /** Per-gate outcome for {@code POST /batch-approve}. {@code error} is null on success. */
+  public record GateDisposition(UUID gateId, String outcome, String error) {
+    static GateDisposition from(AiExecutionGateService.GateDisposition disposition) {
+      return new GateDisposition(disposition.gateId(), disposition.outcome(), disposition.error());
+    }
+  }
+
+  /** Response envelope for {@code POST /batch-approve} (§4.3 {@code {results:[...]}}). */
+  public record BatchApproveResponse(List<GateDisposition> results) {
+    public static BatchApproveResponse from(AiExecutionGateService.BatchApproveResult result) {
+      return new BatchApproveResponse(
+          result.results().stream().map(GateDisposition::from).toList());
+    }
+  }
 
   public record GateListResponse(
       UUID id,

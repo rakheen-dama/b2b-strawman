@@ -25,7 +25,7 @@ This phase ships as **7 epics (588–594)**, expanded to **15 numbered slices** 
 | 588 | Collections Foundation — Migration, Policy Embeddable, Ledger Entity, Registrations, Settings UI | Backend + Frontend (split slices) | — | L | 588A, 588B, 588C | **Done** — 588A (PR #1534), 588B (PR #1535), 588C (PR #1536) |
 | 589 | Scan Engine + Escalation + Payment Cancellation | Backend | 588A, 588B | L | 589A, 589B | **Done** — 589A, 589B (PR #1538) |
 | 590 | Drafting Skill + Gated Send Executor | Backend | 589 | L | 590A, 590B | **Done** — 590A, 590B (PR #1539) |
-| 591 | Batch Approval + Collections Read APIs + Collections Frontend | Backend + Frontend (split slices) | 590 | L | 591A, 591B, 591C | 591A **Done** (PR #1540) |
+| 591 | Batch Approval + Collections Read APIs + Collections Frontend | Backend + Frontend (split slices) | 590 | L | 591A, 591B, 591C | 591A **Done** (PR #1540), 591B **Done** (PR #1541) |
 | 592 | Debtor Triage + Trust-Aware Advisor Seam | Backend + Frontend (split slices) | 589 (592B also 591B) | M | 592A, 592B | |
 | 593 | Weekly Cash Digest | Backend | 589A, 592A (types from 588A) | L | 593A, 593B | |
 | 594 | QA Capstone — Observed End-to-End Lifecycle | E2E / Process | 588–593 | M | 594A | |
@@ -171,7 +171,7 @@ REUSED (not rebuilt):
 |-------|-------|---------|-----------------------|
 | 4a | **591A** | `POST /api/ai/gates/batch-approve` (per-gate tx, per-gate dispositions, 200-always); `CollectionsController` read APIs (`/api/collections/debtors`, `/debtors/{customerId}`, `/activities?invoiceId=`) + paged native debtor-book query (signals wired from 592A when present, else empty). **Done** (PR #1540) | 592A, 593A |
 | 4b | **593A** | Extract shared aging-bucket helper from `InvoiceAgingReportQuery`; `CashDigestData` record + deterministic assembly (aging, billed vs collected, stale WIP, reminder activity, triage signals); `CashDigestHandler` (`cash_digest`) + weekly enqueue. | 591A, 591B |
-| 4c | **591B** | (Frontend) `invoices/collections` debtors page + pending-reminder queue (multi-select, `ExecutionGateCard` preview, batch approve); `lib/api/ai.ts` `batchApproveAiGates`; `lib/api/collections.ts` debtors/activities clients; nav item. | 593A, 593B, 591C |
+| 4c | **591B** | (Frontend) `invoices/collections` debtors page + pending-reminder queue (multi-select, `ExecutionGateCard` preview, batch approve); `lib/api/ai.ts` `batchApproveAiGates`; `lib/api/collections.ts` debtors/activities clients; nav item. **Done** (PR #1541) | 593A, 593B, 591C |
 | 4d | **591C** | (Frontend) invoice-detail activity-ledger section + customer-detail chase-history section. | 591B, 593B |
 | 4e | **593B** | `CashDigestSkill` + prompts + stub output; `cash-digest.html` (conditional narrative block); `CASH_DIGEST` notification + email delivery to owners/admins; AI-disabled numbers-only fallback; `collections.digest.sent` audit. | 591B, 591C |
 | 4f | **592B** | (Frontend) triage-signal badges on the debtors page (after 591B + 592A). | 593B |
@@ -368,7 +368,7 @@ Stage 5: [594A]                                          <- QA capstone
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **591A** | 591A.1–591A.4 | ~8 backend files (gate controller/service mods + 1 collections controller + 1 read service/query + 2–3 test files) | Batch-approve endpoint; debtors/drill-in/activities read APIs + paged native debtor-book query. **Done** (PR #1540; debtor book grouped per (customer, currency)) |
-| **591B** | 591B.1–591B.4 | ~9 frontend files (page + 2–3 client components + actions + 2 lib/api mods + nav mod + 1–2 tests) | Debtors page + pending-reminder queue with multi-select preview + batch approve; nav entry. |
+| **591B** | 591B.1–591B.4 | ~9 frontend files (page + 2–3 client components + actions + 2 lib/api mods + nav mod + 1–2 tests) | Debtors page + pending-reminder queue with multi-select preview + batch approve; nav entry. **Done** (PR #1541; DOMPurify defense-in-depth on bodyHtml preview) |
 | **591C** | 591C.1–591C.2 | ~5 frontend files (invoice-detail mod + customer-detail mod + 1 shared history component + 1 test) | Invoice activity-ledger section; customer chase-history section. |
 
 ### Tasks

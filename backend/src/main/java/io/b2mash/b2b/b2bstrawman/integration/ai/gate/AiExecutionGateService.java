@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.integration.ai.gate;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
@@ -9,24 +10,37 @@ import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecution;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecutionService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ProblemDetail;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.ErrorResponse;
 
 @Service
 public class AiExecutionGateService {
 
   private static final Logger log = LoggerFactory.getLogger(AiExecutionGateService.class);
+
+  /** Hard cap for {@link #batchApprove} (Phase 83, ADR-326 B1). */
+  public static final int BATCH_APPROVE_MAX = 100;
+
+  private static final String OUTCOME_APPROVED_EXECUTED = "APPROVED_EXECUTED";
+  private static final String OUTCOME_FAILED = "FAILED";
 
   private final AiExecutionGateRepository gateRepository;
   private final GateActionExecutor gateActionExecutor;
@@ -37,6 +51,7 @@ public class AiExecutionGateService {
   private final JobEnqueuer jobEnqueuer;
   private final JobQueueProperties jobQueueProperties;
   private final AiExecutionService aiExecutionService;
+  private final AiExecutionGateService selfProxy;
 
   public AiExecutionGateService(
       AiExecutionGateRepository gateRepository,
@@ -47,7 +62,8 @@ public class AiExecutionGateService {
       TransactionTemplate transactionTemplate,
       JobEnqueuer jobEnqueuer,
       JobQueueProperties jobQueueProperties,
-      AiExecutionService aiExecutionService) {
+      AiExecutionService aiExecutionService,
+      @Lazy @Autowired AiExecutionGateService selfProxy) {
     this.gateRepository = gateRepository;
     this.gateActionExecutor = gateActionExecutor;
     this.auditService = auditService;
@@ -57,6 +73,7 @@ public class AiExecutionGateService {
     this.jobEnqueuer = jobEnqueuer;
     this.jobQueueProperties = jobQueueProperties;
     this.aiExecutionService = aiExecutionService;
+    this.selfProxy = selfProxy;
   }
 
   /**
@@ -163,6 +180,84 @@ public class AiExecutionGateService {
 
     return gate;
   }
+
+  /**
+   * Approves many gates in one request, each in its own physical transaction (Phase 83, ADR-326
+   * B1). Generic over gate types — a batch is N independent {@link #approve} calls; one
+   * already-expired gate (e.g. its invoice was paid in the meantime) must NOT block the other
+   * winners. Always returns a 200-eligible result; per-gate failures ride in the disposition list,
+   * not the HTTP status. Reuses the existing single-gate {@link #approve} path (which runs the
+   * action + audits {@code ai.gate.approved} + publishes {@link AiGateApprovedEvent}) — no new send
+   * path, no new audit type.
+   *
+   * <p>Deliberately NOT annotated {@code @Transactional}. If the bulk entry carried a transaction,
+   * an inner {@link #approve} failure would mark it rollback-only and Spring would throw {@code
+   * UnexpectedRollbackException} at commit, undoing the siblings whose dispositions recorded
+   * APPROVED_EXECUTED. Each id therefore runs via {@link #approveInNewTransaction} (REQUIRES_NEW)
+   * through the self proxy.
+   */
+  public BatchApproveResult batchApprove(List<UUID> gateIds, UUID reviewerId, String notes) {
+    if (gateIds == null || gateIds.isEmpty()) {
+      throw new InvalidStateException("Empty batch-approve", "At least one gate id is required");
+    }
+    if (gateIds.size() > BATCH_APPROVE_MAX) {
+      throw new InvalidStateException(
+          "Batch-approve cap exceeded",
+          "At most " + BATCH_APPROVE_MAX + " gates may be approved per request");
+    }
+    var results = new ArrayList<GateDisposition>(gateIds.size());
+    for (UUID gateId : gateIds) {
+      try {
+        selfProxy.approveInNewTransaction(gateId, reviewerId, notes);
+        results.add(new GateDisposition(gateId, OUTCOME_APPROVED_EXECUTED, null));
+      } catch (RuntimeException ex) {
+        String message = errorMessage(ex);
+        log.warn("Batch-approve: gate {} disposition FAILED: {}", gateId, message);
+        results.add(new GateDisposition(gateId, OUTCOME_FAILED, message));
+      }
+    }
+    return new BatchApproveResult(results);
+  }
+
+  /**
+   * REQUIRES_NEW variant of {@link #approve} used by {@link #batchApprove}. Each id runs in its own
+   * physical transaction so a failure on one id does not poison an outer transaction and lose
+   * siblings. Invoked through the self proxy so the transactional advice applies.
+   */
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public AiExecutionGate approveInNewTransaction(UUID gateId, UUID reviewerId, String notes) {
+    return approve(gateId, reviewerId, notes);
+  }
+
+  /**
+   * Renders a per-gate failure into a stable disposition message. Semantic exceptions ({@code
+   * InvalidStateException}, {@code ResourceNotFoundException}) are {@link ErrorResponse}s whose
+   * {@link ProblemDetail} carries a deterministic title/detail (unlike their {@code getMessage()},
+   * which Spring leaves null).
+   */
+  private static String errorMessage(RuntimeException ex) {
+    if (ex instanceof ErrorResponse errorResponse) {
+      ProblemDetail body = errorResponse.getBody();
+      String title = body.getTitle();
+      String detail = body.getDetail();
+      if (title != null && detail != null) {
+        return title + ": " + detail;
+      }
+      if (detail != null) {
+        return detail;
+      }
+      if (title != null) {
+        return title;
+      }
+    }
+    return ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName();
+  }
+
+  /** Per-gate outcome for {@link #batchApprove}. {@code error} is null on success. */
+  public record GateDisposition(UUID gateId, String outcome, String error) {}
+
+  /** Result envelope for {@link #batchApprove} (§4.3 {@code {results:[...]}}). */
+  public record BatchApproveResult(List<GateDisposition> results) {}
 
   @Transactional
   public AiExecutionGate reject(UUID gateId, UUID reviewerId, String notes) {

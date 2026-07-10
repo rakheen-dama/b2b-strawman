@@ -50,4 +50,101 @@ export async function setCollectionsExemption(
   );
 }
 
-// ---- Debtors / Activities (591B — do not implement here) ----
+// ---- Debtors / Activities Types (591B) ----
+
+export interface DebtorBuckets {
+  current: number;
+  d30: number;
+  d60: number;
+  d90plus: number;
+}
+
+export interface DebtorLastActivity {
+  stage: string;
+  status: string;
+  at: string;
+}
+
+export interface DebtorResponse {
+  customerId: string;
+  customerName: string;
+  outstandingTotal: number;
+  currency: string;
+  invoiceCount: number;
+  oldestDaysOverdue: number;
+  buckets: DebtorBuckets;
+  signals: string[];
+  collectionsExempt: boolean;
+  lastActivity: DebtorLastActivity | null;
+}
+
+export interface PaginatedDebtorsResponse {
+  content: DebtorResponse[];
+  page: { totalElements: number; totalPages: number; size: number; number: number };
+}
+
+export interface OutstandingInvoice {
+  invoiceId: string;
+  invoiceNumber: string;
+  total: number;
+  currency: string;
+  dueDate: string;
+  daysOverdue: number;
+}
+
+export interface CollectionActivityResponse {
+  id: string;
+  invoiceId: string;
+  stage: string;
+  status: string;
+  reason: string | null;
+  gateId: string | null;
+  daysOverdueAtAction: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DebtorDetailResponse {
+  customerId: string;
+  customerName: string;
+  collectionsExempt: boolean;
+  outstandingInvoices: OutstandingInvoice[];
+  activities: {
+    content: CollectionActivityResponse[];
+    page: { totalElements: number; totalPages: number; size: number; number: number };
+  };
+}
+
+// ---- Debtors / Activities API Functions (591B) ----
+
+export async function getDebtors(params: {
+  page?: number;
+  size?: number;
+}): Promise<PaginatedDebtorsResponse> {
+  const searchParams = new URLSearchParams();
+  if (params.page !== undefined) searchParams.set("page", String(params.page));
+  if (params.size !== undefined) searchParams.set("size", String(params.size));
+  const qs = searchParams.toString();
+  return api.get<PaginatedDebtorsResponse>(`/api/collections/debtors${qs ? `?${qs}` : ""}`);
+}
+
+export async function getDebtorDetail(
+  customerId: string,
+  params: { page?: number; size?: number } = {}
+): Promise<DebtorDetailResponse> {
+  const searchParams = new URLSearchParams();
+  if (params.page !== undefined) searchParams.set("page", String(params.page));
+  if (params.size !== undefined) searchParams.set("size", String(params.size));
+  const qs = searchParams.toString();
+  return api.get<DebtorDetailResponse>(
+    `/api/collections/debtors/${customerId}${qs ? `?${qs}` : ""}`
+  );
+}
+
+export async function getInvoiceActivities(
+  invoiceId: string
+): Promise<CollectionActivityResponse[]> {
+  return api.get<CollectionActivityResponse[]>(
+    `/api/collections/activities?invoiceId=${invoiceId}`
+  );
+}

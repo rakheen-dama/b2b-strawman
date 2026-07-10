@@ -27,6 +27,7 @@ import {
   Brain,
   Sparkles,
   KanbanSquare,
+  HandCoins,
   type LucideIcon,
 } from "lucide-react";
 import type { CAPABILITIES } from "@/lib/capabilities";
@@ -199,6 +200,13 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Layers,
         requiredCapability: "INVOICING",
         requiredModule: "bulk_billing",
+      },
+      {
+        label: "Collections",
+        href: (slug) => `/org/${slug}/invoices/collections`,
+        icon: HandCoins,
+        exact: true,
+        requiredCapability: "INVOICING",
       },
       {
         label: "Profitability",

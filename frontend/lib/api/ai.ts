@@ -158,6 +158,28 @@ export async function rejectAiGate(id: string, notes?: string): Promise<AiGateDe
   return api.post<AiGateDetail>(`/api/ai/gates/${id}/reject`, notes ? { notes } : {});
 }
 
+// ---- Batch Approve Types ----
+
+export interface GateDisposition {
+  gateId: string;
+  outcome: string; // "APPROVED_EXECUTED" | "FAILED"
+  error: string | null;
+}
+
+export interface BatchApproveResponse {
+  results: GateDisposition[];
+}
+
+export async function batchApproveAiGates(
+  gateIds: string[],
+  notes?: string
+): Promise<BatchApproveResponse> {
+  return api.post<BatchApproveResponse>(
+    "/api/ai/gates/batch-approve",
+    notes ? { gateIds, notes } : { gateIds }
+  );
+}
+
 // ---- Execution API Functions ----
 
 export async function getAiExecutions(params: {

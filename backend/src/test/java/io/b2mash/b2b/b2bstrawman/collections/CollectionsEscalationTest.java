@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
@@ -20,14 +21,17 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
@@ -54,6 +58,7 @@ class CollectionsEscalationTest {
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private NotificationRepository notificationRepository;
   @Autowired private AuditEventRepository auditEventRepository;
+  @MockitoSpyBean private AuditService auditService;
 
   private String tenantSchema;
   private UUID ownerMemberId;
@@ -83,6 +88,14 @@ class CollectionsEscalationTest {
           settings.getCollections().updateCollectionsSettings(true, 7, 21, 45, 60);
           orgSettingsRepository.save(settings);
         });
+  }
+
+  @BeforeEach
+  void resetSpies() {
+    // Each test configures its own audit-service stubbing; reset so a spy stub from one test
+    // (the rollback case below) never bleeds into the idempotent-escalation test. A reset spy
+    // calls the real AuditService by default.
+    Mockito.reset(auditService);
   }
 
   private void runInTenant(Runnable body) {
@@ -156,6 +169,38 @@ class CollectionsEscalationTest {
               .containsEntry("invoice_id", invoiceId.toString())
               .containsKey("invoice_number")
               .containsEntry("days_overdue", "70");
+        });
+  }
+
+  @Test
+  void notificationNotSent_whenCandidateTransactionRollsBackAfterEscalationRecorded() {
+    // 80d overdue crosses the 60d escalate threshold. Force a failure AFTER the ESCALATION row +
+    // pending-notification are recorded but BEFORE the candidate tx commits, by throwing from the
+    // escalation audit write. The candidate REQUIRES_NEW tx rolls back, so the ESCALATION row is
+    // never durable — and the notification (now fired only post-commit) must therefore NOT go out.
+    // Pre-fix, the notification was sent inline before the audit write and would have leaked,
+    // producing a duplicate on the next scan and breaking escalated-once.
+    UUID invoiceId = seedSentInvoice("Rollback Co", 80);
+
+    Mockito.doThrow(new RuntimeException("audit boom — forces candidate tx rollback"))
+        .when(auditService)
+        .log(
+            Mockito.argThat(
+                record ->
+                    record != null && "collections.escalation.flagged".equals(record.eventType())));
+
+    // Scan must not blow up — one bad candidate is swallowed by the per-candidate try/catch.
+    runInTenant(scanService::scanForTenant);
+
+    runInTenant(
+        () -> {
+          // Escalation row rolled back with the candidate tx — not durable.
+          assertThat(
+                  activityRepository.findByInvoiceIdAndStage(invoiceId, CollectionStage.ESCALATION))
+              .isEmpty();
+          // And crucially, no escalation notification was sent (fires only after commit now).
+          assertThat(hasEscalationNotification(ownerMemberId, invoiceId)).isFalse();
+          assertThat(hasEscalationNotification(adminMemberId, invoiceId)).isFalse();
         });
   }
 

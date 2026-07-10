@@ -211,7 +211,9 @@ public class AiExecutionGateService {
         selfProxy.approveInNewTransaction(gateId, reviewerId, notes);
         results.add(new GateDisposition(gateId, OUTCOME_APPROVED_EXECUTED, null));
       } catch (RuntimeException ex) {
-        results.add(new GateDisposition(gateId, OUTCOME_FAILED, errorMessage(ex)));
+        String message = errorMessage(ex);
+        log.warn("Batch-approve: gate {} disposition FAILED: {}", gateId, message);
+        results.add(new GateDisposition(gateId, OUTCOME_FAILED, message));
       }
     }
     return new BatchApproveResult(results);

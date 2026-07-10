@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.collections;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import java.math.BigDecimal;
@@ -27,8 +28,10 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>Tenant isolation is by {@code search_path} (schema-per-tenant); the native queries carry no
  * {@code tenant_id} predicate. The debtor book aggregates outstanding ({@code status = 'SENT'})
- * invoices per customer using the 4-bucket §4.1 aging split ({@code current} ≤ 0 days, {@code d30}
- * = 1–30, {@code d60} = 31–60, {@code d90plus} = 61+). Unlike the collections SCAN, the debtor book
+ * invoices per {@code (customer, currency)} pair — invoice currency is per-invoice and a customer
+ * with mixed-currency invoices surfaces as one row per currency, each carrying a single {@code
+ * currency} — using the 4-bucket §4.1 aging split ({@code current} ≤ 0 days, {@code d30} = 1–30,
+ * {@code d60} = 31–60, {@code d90plus} = 61+). Unlike the collections SCAN, the debtor book
  * INCLUDES {@code collections_exempt} customers (surfacing the flag) and INCLUDES not-yet-overdue
  * SENT invoices (they land in the {@code current} bucket).
  *
@@ -46,7 +49,7 @@ public class CollectionsReadService {
           MAX(c.name) AS customer_name,
           bool_or(c.collections_exempt) AS collections_exempt,
           SUM(i.total) AS outstanding_total,
-          MAX(i.currency) AS currency,
+          i.currency AS currency,
           COUNT(*) AS invoice_count,
           MAX(CURRENT_DATE - i.due_date) AS oldest_days_overdue,
           COALESCE(SUM(i.total) FILTER (WHERE CURRENT_DATE - i.due_date <= 0), 0) AS bucket_current,
@@ -70,8 +73,25 @@ public class CollectionsReadService {
       ) la ON true
       WHERE i.status = 'SENT'
         AND i.due_date IS NOT NULL
-      GROUP BY i.customer_id
-      ORDER BY outstanding_total DESC
+      GROUP BY i.customer_id, i.currency
+      ORDER BY outstanding_total DESC, i.customer_id, i.currency
+      LIMIT :limit OFFSET :offset
+      """;
+
+  /**
+   * Counts debtor-book groups (one per {@code (customer_id, currency)} pair) for the {@link Page}
+   * total. Mirrors {@link #DEBTOR_BOOK_SQL}'s WHERE/GROUP BY exactly so the count agrees with the
+   * paged rows.
+   */
+  private static final String DEBTOR_BOOK_COUNT_SQL =
+      """
+      SELECT COUNT(*) FROM (
+          SELECT 1
+          FROM invoices i
+          WHERE i.status = 'SENT'
+            AND i.due_date IS NOT NULL
+          GROUP BY i.customer_id, i.currency
+      ) grouped
       """;
 
   private static final String OUTSTANDING_INVOICES_SQL =
@@ -93,27 +113,32 @@ public class CollectionsReadService {
   private final EntityManager entityManager;
   private final CustomerRepository customerRepository;
   private final CollectionActivityRepository activityRepository;
+  private final InvoiceRepository invoiceRepository;
 
   public CollectionsReadService(
       EntityManager entityManager,
       CustomerRepository customerRepository,
-      CollectionActivityRepository activityRepository) {
+      CollectionActivityRepository activityRepository,
+      InvoiceRepository invoiceRepository) {
     this.entityManager = entityManager;
     this.customerRepository = customerRepository;
     this.activityRepository = activityRepository;
+    this.invoiceRepository = invoiceRepository;
   }
 
   /**
-   * Paged debtor book: per-customer outstanding aggregation. In-memory paging over the aggregate.
+   * Paged debtor book: per-{@code (customer, currency)} outstanding aggregation. Pagination is
+   * pushed into SQL ({@code LIMIT}/{@code OFFSET}) with a separate {@code COUNT} for the total, so
+   * only the requested page is materialised (no full-book slice in Java).
    */
   @Transactional(readOnly = true)
   public Page<DebtorResponse> getDebtors(Pageable pageable) {
-    var allRows = queryDebtorRows();
-    int total = allRows.size();
-    int offset = (int) pageable.getOffset();
-    int end = Math.min(offset + pageable.getPageSize(), total);
-    var pageContent = offset >= total ? List.<DebtorResponse>of() : allRows.subList(offset, end);
-    return new PageImpl<>(pageContent, pageable, total);
+    long total = countDebtorRows();
+    if (pageable.getOffset() >= total) {
+      return new PageImpl<>(List.of(), pageable, total);
+    }
+    var rows = queryDebtorRows(pageable.getPageSize(), pageable.getOffset());
+    return new PageImpl<>(rows, pageable, total);
   }
 
   /** One customer's outstanding invoices plus a paged chase history. */
@@ -137,6 +162,9 @@ public class CollectionsReadService {
   /** The activity ledger for one invoice (invoice detail tab), newest-first. */
   @Transactional(readOnly = true)
   public List<ActivityResponse> getInvoiceActivities(UUID invoiceId) {
+    if (!invoiceRepository.existsById(invoiceId)) {
+      throw new ResourceNotFoundException("Invoice", invoiceId);
+    }
     return activityRepository.findByInvoiceId(invoiceId).stream()
         .sorted(
             (a, b) -> {
@@ -147,8 +175,15 @@ public class CollectionsReadService {
         .toList();
   }
 
-  private List<DebtorResponse> queryDebtorRows() {
+  private long countDebtorRows() {
+    var query = entityManager.createNativeQuery(DEBTOR_BOOK_COUNT_SQL);
+    return ((Number) query.getSingleResult()).longValue();
+  }
+
+  private List<DebtorResponse> queryDebtorRows(int limit, long offset) {
     var query = entityManager.createNativeQuery(DEBTOR_BOOK_SQL, Tuple.class);
+    query.setParameter("limit", limit);
+    query.setParameter("offset", offset);
     @SuppressWarnings("unchecked")
     List<Tuple> tuples = query.getResultList();
     var rows = new ArrayList<DebtorResponse>(tuples.size());

@@ -61,6 +61,7 @@ class CollectionsReadApiTest {
 
   private UUID custAlpha;
   private UUID invA3;
+  private UUID custDelta;
 
   @BeforeAll
   void setup() throws Exception {
@@ -89,6 +90,11 @@ class CollectionsReadApiTest {
           // Charlie: a single SENT invoice due in the future → the `current` bucket.
           UUID custCharlie = seedCustomer("Charlie Current Co", "charlie@test.com", false);
           seedFutureSentInvoice(custCharlie, "Charlie Current Co", "INV-C1", 30000, 10);
+
+          // Delta: mixed-currency debtor → splits into one debtor row per currency.
+          custDelta = seedCustomer("Delta Mixed Co", "delta@test.com", false);
+          seedSentInvoiceCurrency(custDelta, "Delta Mixed Co", "INV-D1", 5000, 40, "ZAR");
+          seedSentInvoiceCurrency(custDelta, "Delta Mixed Co", "INV-D2", 3000, 40, "USD");
 
           // Two activities on Alpha (591A.4 status+reason visibility + drill-in paging).
           activityRepository.save(
@@ -136,10 +142,32 @@ class CollectionsReadApiTest {
         customerId, name, invoiceNumber, amount, LocalDate.now().plusDays(daysAhead));
   }
 
+  private UUID seedSentInvoiceCurrency(
+      UUID customerId,
+      String name,
+      String invoiceNumber,
+      long amount,
+      int daysOverdue,
+      String currency) {
+    return seedInvoice(
+        customerId, name, invoiceNumber, amount, LocalDate.now().minusDays(daysOverdue), currency);
+  }
+
   private UUID seedInvoice(
       UUID customerId, String name, String invoiceNumber, long amount, LocalDate dueDate) {
+    return seedInvoice(customerId, name, invoiceNumber, amount, dueDate, "ZAR");
+  }
+
+  private UUID seedInvoice(
+      UUID customerId,
+      String name,
+      String invoiceNumber,
+      long amount,
+      LocalDate dueDate,
+      String currency) {
     var invoice =
-        new Invoice(customerId, "ZAR", name, name + "@test.com", null, "Read Org", ownerMemberId);
+        new Invoice(
+            customerId, currency, name, name + "@test.com", null, "Read Org", ownerMemberId);
     invoice.updateDraft(dueDate, null, null, BigDecimal.ZERO);
     invoice.recalculateTotals(BigDecimal.valueOf(amount), false, BigDecimal.ZERO, false);
     invoice.approve(invoiceNumber, ownerMemberId);
@@ -155,13 +183,14 @@ class CollectionsReadApiTest {
                 get("/api/collections/debtors")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_read_owner")))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.page.totalElements").value(3))
+            // 3 single-currency debtors + Delta split into 2 currency rows = 5 groups.
+            .andExpect(jsonPath("$.page.totalElements").value(5))
             .andReturn()
             .getResponse()
             .getContentAsString();
 
     JsonNode content = objectMapper.readTree(response).get("content");
-    assertThat(content).hasSize(3);
+    assertThat(content).hasSize(5);
 
     // Ordered by outstandingTotal DESC: Alpha (412000) > Bravo (50000) > Charlie (30000).
     JsonNode alpha = content.get(0);
@@ -196,6 +225,51 @@ class CollectionsReadApiTest {
     assertThat(charlie.get("buckets").get("current").decimalValue())
         .isEqualByComparingTo(new BigDecimal("30000.00"));
     assertThat(charlie.get("collectionsExempt").asBoolean()).isFalse();
+  }
+
+  @Test
+  void debtors_mixedCurrencyCustomerSplitsIntoRowPerCurrency() throws Exception {
+    var response =
+        mockMvc
+            .perform(
+                get("/api/collections/debtors")
+                    .param("size", "50")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_read_owner")))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    JsonNode content = objectMapper.readTree(response).get("content");
+    BigDecimal zarTotal = null;
+    BigDecimal usdTotal = null;
+    int deltaRows = 0;
+    for (JsonNode row : content) {
+      if (!custDelta.toString().equals(row.get("customerId").asText())) {
+        continue;
+      }
+      deltaRows++;
+      switch (row.get("currency").asText()) {
+        case "ZAR" -> zarTotal = row.get("outstandingTotal").decimalValue();
+        case "USD" -> usdTotal = row.get("outstandingTotal").decimalValue();
+        default -> {
+          // unexpected currency — leave totals null so the assertion below fails loudly
+        }
+      }
+    }
+    assertThat(deltaRows).as("Delta appears once per currency").isEqualTo(2);
+    assertThat(zarTotal).isEqualByComparingTo(new BigDecimal("5000.00"));
+    assertThat(usdTotal).isEqualByComparingTo(new BigDecimal("3000.00"));
+  }
+
+  @Test
+  void activities_notFoundForUnknownInvoice() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/collections/activities")
+                .param("invoiceId", UUID.randomUUID().toString())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_read_owner")))
+        .andExpect(status().isNotFound());
   }
 
   @Test
@@ -279,6 +353,8 @@ class CollectionsReadApiTest {
                 .param("invoiceId", invA3.toString())
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_read_member")))
         .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.status").value(403));
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
   }
 }

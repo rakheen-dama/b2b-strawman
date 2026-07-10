@@ -251,6 +251,42 @@ public class AiExecutionGateService {
     return expired != null ? expired : 0;
   }
 
+  /**
+   * Expires ONE pending gate because its underlying action became moot (Phase 83, ADR-325: an
+   * invoice being paid/voided cancels a pending collection reminder). No-ops (returns {@code
+   * false}) when the gate is missing or not PENDING — the approve/reject path may have won the
+   * race, which is fine (§5.2).
+   *
+   * <p>Deliberately does NOT publish {@link AiGateExpiredEvent}: the caller ({@code
+   * CollectionsPaymentListener}) performs the activity transition itself, so a re-entrant expiry
+   * event would double-process it (flipping the just-cancelled activity back to {@code
+   * SKIPPED(gate_expired)}). The {@code ai.gate.expired} audit row is still written.
+   */
+  @Transactional
+  public boolean expirePendingGate(UUID gateId, String reviewNote) {
+    var gate = gateRepository.findById(gateId).orElse(null);
+    if (gate == null || !"PENDING".equals(gate.getStatus())) {
+      return false;
+    }
+    gate.expire(reviewNote);
+    gateRepository.save(gate);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("ai.gate.expired")
+            .entityType("ai_execution_gate")
+            .entityId(gate.getId())
+            .actorType("SYSTEM")
+            .source("SYSTEM")
+            .details(
+                Map.of(
+                    "gateType", gate.getGateType(),
+                    "executionId", gate.getExecution().getId().toString(),
+                    "reason", reviewNote != null ? reviewNote : ""))
+            .build());
+    return true;
+  }
+
   /** List gates with filtering — used by controller. */
   public Page<AiExecutionGate> listGates(String status, String gateType, Pageable pageable) {
     if (gateType != null && status != null) {

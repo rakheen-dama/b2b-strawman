@@ -1,0 +1,6 @@
+{
+  "subject": "Payment reminder: INV-STUB-0001",
+  "bodyHtml": "<p>We hope this message finds you well. Our records show that an invoice on your account remains unpaid past its due date.</p><p>We would appreciate it if you could arrange payment at your earliest convenience using the details below. If payment has already been made, please disregard this reminder.</p>",
+  "bodyText": "We hope this message finds you well. Our records show that an invoice on your account remains unpaid past its due date.\n\nWe would appreciate it if you could arrange payment at your earliest convenience using the details below. If payment has already been made, please disregard this reminder.",
+  "reasoning": "Canned stub draft: stage-appropriate friendly reminder referencing the fixed test invoice number INV-STUB-0001, with no amounts, dates or links in the letter body (frame-owns-facts)."
+}

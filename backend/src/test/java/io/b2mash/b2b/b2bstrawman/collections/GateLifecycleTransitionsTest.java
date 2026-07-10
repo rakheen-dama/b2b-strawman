@@ -43,7 +43,7 @@ import org.springframework.test.web.servlet.MockMvc;
  *   <li>Reject → activity {@code REJECTED} (terminal for the stage); the next scan does NOT
  *       re-propose that stage.
  *   <li>Expiry → activity {@code SKIPPED(gate_expired)} (retryable; gateId retained); the next scan
- *       re-evaluates the row in place (landing as {@code SKIPPED(draft_unavailable)} with the 589
+ *       re-evaluates the row in place (landing as {@code SKIPPED(ai_unavailable)} with the 590A
  *       no-op composer), proving the retry loop fired.
  * </ul>
  */
@@ -234,8 +234,8 @@ class GateLifecycleTransitionsTest {
           rowId[0] = row.getId();
         });
 
-    // Next scan re-evaluates the retryable row in place → SKIPPED(draft_unavailable) (no-op
-    // composer).
+    // Next scan re-evaluates the retryable row in place → SKIPPED(ai_unavailable) (590A AI
+    // composer pre-flight — no firm profile in this tenant).
     runInTenant(scanService::scanForTenant);
 
     runInTenant(
@@ -246,7 +246,7 @@ class GateLifecycleTransitionsTest {
                   .orElseThrow();
           assertThat(row.getId()).isEqualTo(rowId[0]);
           assertThat(row.getStatus()).isEqualTo(CollectionActivityStatus.SKIPPED);
-          assertThat(row.getReason()).isEqualTo("draft_unavailable");
+          assertThat(row.getReason()).isEqualTo("ai_unavailable");
         });
   }
 
@@ -284,14 +284,14 @@ class GateLifecycleTransitionsTest {
           var staleGate = gateRepository.findById(staleGateId).orElseThrow();
           assertThat(staleGate.getStatus()).isEqualTo("EXPIRED");
 
-          // The higher target stage exists (SKIPPED(draft_unavailable) under the 589 no-op
-          // composer).
+          // The higher target stage exists (SKIPPED(ai_unavailable) under the 590A composer
+          // pre-flight — no firm profile in this tenant).
           var stage2 =
               activityRepository
                   .findByInvoiceIdAndStage(invoiceId, CollectionStage.STAGE_2)
                   .orElseThrow();
           assertThat(stage2.getStatus()).isEqualTo(CollectionActivityStatus.SKIPPED);
-          assertThat(stage2.getReason()).isEqualTo("draft_unavailable");
+          assertThat(stage2.getReason()).isEqualTo("ai_unavailable");
 
           // Invariant: no activity for this invoice is left PROPOSED — at most one active reminder
           // (here zero, the no-op composer proposes none).

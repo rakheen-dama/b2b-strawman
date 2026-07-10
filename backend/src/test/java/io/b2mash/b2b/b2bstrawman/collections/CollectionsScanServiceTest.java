@@ -29,10 +29,11 @@ import org.springframework.test.web.servlet.MockMvc;
 /**
  * Correctness tests for {@link CollectionsScanService} (Phase 83, 589A.4): stage-per-threshold
  * selection, highest-stage supersession, customer exemption (zero rows), blank-recipient skip +
- * in-place retry, the no-op composer's {@code SKIPPED(draft_unavailable)} outcome, and the
- * disabled-policy no-op. Entity-driven SENT-invoice seeding, embedded Postgres, ScopedValue tenant
- * binding — no Testcontainers. With the 589 {@link NoOpReminderComposer} every reminder lands as
- * {@code SKIPPED(draft_unavailable)}.
+ * in-place retry, the composer's retryable-skip outcome, and the disabled-policy no-op.
+ * Entity-driven SENT-invoice seeding, embedded Postgres, ScopedValue tenant binding — no
+ * Testcontainers. Since 590A the {@code @Primary} {@link AiReminderComposer} supersedes the 589
+ * {@link NoOpReminderComposer}; this tenant has no AI firm profile, so every reminder lands as the
+ * pre-flight {@code SKIPPED(ai_unavailable)} (retryable, like the old {@code draft_unavailable}).
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -118,9 +119,10 @@ class CollectionsScanServiceTest {
           assertThat(rows).hasSize(1);
           var row = rows.get(0);
           assertThat(row.getStage()).isEqualTo(CollectionStage.STAGE_1);
-          // No-op composer → draft_unavailable (retryable).
+          // 590A AI composer pre-flight, no firm profile in this tenant → ai_unavailable
+          // (retryable).
           assertThat(row.getStatus()).isEqualTo(CollectionActivityStatus.SKIPPED);
-          assertThat(row.getReason()).isEqualTo("draft_unavailable");
+          assertThat(row.getReason()).isEqualTo("ai_unavailable");
           assertThat(row.getDaysOverdueAtAction()).isEqualTo(10);
         });
   }
@@ -152,7 +154,7 @@ class CollectionsScanServiceTest {
 
           assertThat(stage3).isPresent();
           assertThat(stage3.get().getStatus()).isEqualTo(CollectionActivityStatus.SKIPPED);
-          assertThat(stage3.get().getReason()).isEqualTo("draft_unavailable");
+          assertThat(stage3.get().getReason()).isEqualTo("ai_unavailable");
         });
   }
 
@@ -198,10 +200,11 @@ class CollectionsScanServiceTest {
           var rows = activityRepository.findByInvoiceId(invoiceId);
           assertThat(rows).hasSize(1);
           var row = rows.get(0);
-          // Same row id, reason changed from no_recipient → draft_unavailable (no-op composer).
+          // Same row id, reason changed from no_recipient → ai_unavailable (590A composer
+          // pre-flight — no firm profile in this tenant).
           assertThat(row.getId()).isEqualTo(rowId[0]);
           assertThat(row.getStatus()).isEqualTo(CollectionActivityStatus.SKIPPED);
-          assertThat(row.getReason()).isEqualTo("draft_unavailable");
+          assertThat(row.getReason()).isEqualTo("ai_unavailable");
         });
   }
 

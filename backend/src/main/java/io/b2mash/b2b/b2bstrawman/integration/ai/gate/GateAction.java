@@ -16,7 +16,8 @@ public sealed interface GateAction
         GateAction.CreateReviewReportAction,
         GateAction.CreateDraftDocumentAction,
         GateAction.PublishComplianceReportAction,
-        GateAction.CreateTaskFromCorrespondenceAction {
+        GateAction.CreateTaskFromCorrespondenceAction,
+        GateAction.SendCollectionReminderAction {
 
   record MarkKycCompleteAction(List<UUID> checklistItemIds, String completionNotes)
       implements GateAction {}
@@ -48,5 +49,22 @@ public sealed interface GateAction
       String description,
       LocalDate dueDate,
       UUID assigneeId)
+      implements GateAction {}
+
+  /**
+   * Phase 83 (ADR-326): send one AI-drafted collection reminder on approval. This executor branch
+   * is the ONLY code path that emails a client a collection reminder — no direct send endpoint
+   * exists by construction. The AI owns only {@code subject}/{@code bodyHtml}/{@code bodyText}
+   * (letter paragraphs); invoice facts and the payment CTA are template-rendered by {@code
+   * CollectionReminderSendService} (frame-owns-facts, ADR-327).
+   */
+  record SendCollectionReminderAction(
+      UUID collectionActivityId,
+      UUID invoiceId,
+      UUID customerId,
+      String stage, // CollectionStage name, for the audit/details payload
+      String subject, // AI-drafted
+      String bodyHtml, // AI-drafted letter body (paragraphs only)
+      String bodyText)
       implements GateAction {}
 }

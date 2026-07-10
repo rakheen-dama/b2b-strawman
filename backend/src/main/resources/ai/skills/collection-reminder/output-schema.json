@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "required": ["subject", "bodyHtml", "bodyText", "reasoning"],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "description": "The email subject line for this reminder. Reference the invoice/fee-note number. Keep it concise and professional."
+    },
+    "bodyHtml": {
+      "type": "string",
+      "description": "The letter paragraphs ONLY, as simple HTML (<p>…</p> blocks). Do NOT include the invoice facts table, the amount, the due date, or any payment link — those are rendered by the system frame. Write only the human-language message: greeting-free body paragraphs in the required stage tone."
+    },
+    "bodyText": {
+      "type": "string",
+      "description": "The same letter paragraphs as plain text (no HTML tags), for the plain-text approver payload."
+    },
+    "reasoning": {
+      "type": "string",
+      "description": "A short internal rationale for the approver: why this tone/framing was chosen given the stage, days overdue and relationship context. Not shown to the client."
+    }
+  }
+}

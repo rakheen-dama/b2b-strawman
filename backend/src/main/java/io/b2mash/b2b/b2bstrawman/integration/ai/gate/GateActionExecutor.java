@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.integration.ai.gate;
 
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceService;
+import io.b2mash.b2b.b2bstrawman.collections.CollectionReminderSendService;
 import io.b2mash.b2b.b2bstrawman.compliance.ComplianceAuditReportService;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.ComplianceAuditOutput;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.contractreview.AiReviewReportGenerator;
@@ -33,6 +34,7 @@ public class GateActionExecutor {
   private final AiDraftDocumentGenerator aiDraftDocumentGenerator;
   private final ComplianceAuditReportService complianceAuditReportService;
   private final TaskService taskService;
+  private final CollectionReminderSendService collectionReminderSendService;
   private final ObjectMapper objectMapper;
 
   public GateActionExecutor(
@@ -42,6 +44,7 @@ public class GateActionExecutor {
       AiDraftDocumentGenerator aiDraftDocumentGenerator,
       ComplianceAuditReportService complianceAuditReportService,
       TaskService taskService,
+      CollectionReminderSendService collectionReminderSendService,
       ObjectMapper objectMapper) {
     this.checklistInstanceService = checklistInstanceService;
     this.conflictCheckService = conflictCheckService;
@@ -49,6 +52,7 @@ public class GateActionExecutor {
     this.aiDraftDocumentGenerator = aiDraftDocumentGenerator;
     this.complianceAuditReportService = complianceAuditReportService;
     this.taskService = taskService;
+    this.collectionReminderSendService = collectionReminderSendService;
     this.objectMapper = objectMapper;
   }
 
@@ -71,7 +75,22 @@ public class GateActionExecutor {
       case GateAction.PublishComplianceReportAction a ->
           executePublishComplianceReport(a, gate.getExecution().getId(), reviewerId);
       case GateAction.CreateTaskFromCorrespondenceAction a -> executeCreateTask(a, reviewerId);
+      case GateAction.SendCollectionReminderAction a -> executeSendCollectionReminder(a);
     }
+  }
+
+  /**
+   * Phase 83 (ADR-326): the ONLY send path for collection reminders. Thin delegation — the send
+   * mechanics (provider resolve, frame-owns-facts render, rate limit, delivery log, activity
+   * transition, audit) live in {@link CollectionReminderSendService}.
+   */
+  private void executeSendCollectionReminder(GateAction.SendCollectionReminderAction action) {
+    collectionReminderSendService.sendReminder(action);
+    log.info(
+        "Gate approved: dispatched collection reminder for activity={} invoice={} stage={}",
+        action.collectionActivityId(),
+        action.invoiceId(),
+        action.stage());
   }
 
   private void executeMarkKycComplete(GateAction.MarkKycCompleteAction action, UUID reviewerId) {
@@ -209,6 +228,17 @@ public class GateActionExecutor {
           UUID assigneeId = assigneeRaw == null ? null : UUID.fromString((String) assigneeRaw);
           yield new GateAction.CreateTaskFromCorrespondenceAction(
               correspondenceId, projectId, title, description, dueDate, assigneeId);
+        }
+        case "SEND_COLLECTION_REMINDER" -> {
+          UUID activityId = UUID.fromString((String) proposedAction.get("collection_activity_id"));
+          UUID invoiceId = UUID.fromString((String) proposedAction.get("invoice_id"));
+          UUID customerId = UUID.fromString((String) proposedAction.get("customer_id"));
+          String stage = (String) proposedAction.get("stage");
+          String subject = (String) proposedAction.get("subject");
+          String bodyHtml = (String) proposedAction.get("body_html");
+          String bodyText = (String) proposedAction.get("body_text");
+          yield new GateAction.SendCollectionReminderAction(
+              activityId, invoiceId, customerId, stage, subject, bodyHtml, bodyText);
         }
         default -> throw new IllegalArgumentException("Unknown gate type: " + gateType);
       };

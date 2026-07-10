@@ -249,4 +249,56 @@ class GateLifecycleTransitionsTest {
           assertThat(row.getReason()).isEqualTo("draft_unavailable");
         });
   }
+
+  /**
+   * Review-fix regression (Epic 589): a lower stage left {@code PROPOSED} from an earlier scan (a
+   * live, un-reviewed gate) must be superseded in place when a later scan targets a higher stage —
+   * its stale PENDING gate expired — so the client can never hold two concurrently-PROPOSED gates
+   * for one invoice. Before the fix the supersede loop only wrote SKIPPED rows for lower stages
+   * with NO existing row; a lingering PROPOSED lower stage kept its live gate.
+   */
+  @Test
+  void supersede_expiresStalePendingLowerStageGate_whenHigherStageBecomesEligible() {
+    // 30d overdue crosses stage1(7) + stage2(21) → highest eligible = STAGE_2.
+    UUID invoiceId = seedSentInvoice("Supersede Co", 30);
+    UUID customerId = customerIdFor(invoiceId);
+    // A stale STAGE_1 reminder left PROPOSED from an earlier scan, its gate still PENDING.
+    UUID staleGateId =
+        seedProposedActivityWithGate(
+            invoiceId, customerId, Instant.now().plus(Duration.ofHours(72)));
+
+    runInTenant(scanService::scanForTenant);
+
+    runInTenant(
+        () -> {
+          // STAGE_1 superseded in place: SKIPPED(superseded_by_higher_stage), gateId retained.
+          var stage1 =
+              activityRepository
+                  .findByInvoiceIdAndStage(invoiceId, CollectionStage.STAGE_1)
+                  .orElseThrow();
+          assertThat(stage1.getStatus()).isEqualTo(CollectionActivityStatus.SKIPPED);
+          assertThat(stage1.getReason()).isEqualTo("superseded_by_higher_stage");
+          assertThat(stage1.getGateId()).isEqualTo(staleGateId);
+
+          // Its stale PENDING gate is now EXPIRED — the stale reminder can never be sent.
+          var staleGate = gateRepository.findById(staleGateId).orElseThrow();
+          assertThat(staleGate.getStatus()).isEqualTo("EXPIRED");
+
+          // The higher target stage exists (SKIPPED(draft_unavailable) under the 589 no-op
+          // composer).
+          var stage2 =
+              activityRepository
+                  .findByInvoiceIdAndStage(invoiceId, CollectionStage.STAGE_2)
+                  .orElseThrow();
+          assertThat(stage2.getStatus()).isEqualTo(CollectionActivityStatus.SKIPPED);
+          assertThat(stage2.getReason()).isEqualTo("draft_unavailable");
+
+          // Invariant: no activity for this invoice is left PROPOSED — at most one active reminder
+          // (here zero, the no-op composer proposes none).
+          assertThat(
+                  activityRepository.findByInvoiceIdAndStatus(
+                      invoiceId, CollectionActivityStatus.PROPOSED))
+              .isEmpty();
+        });
+  }
 }

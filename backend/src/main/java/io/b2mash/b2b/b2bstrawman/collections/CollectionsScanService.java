@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.collections;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.integration.ai.gate.AiExecutionGateService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.settings.CollectionsSettings;
@@ -64,6 +65,7 @@ public class CollectionsScanService {
   private final ReminderComposer reminderComposer;
   private final NotificationService notificationService;
   private final AuditService auditService;
+  private final AiExecutionGateService gateService;
 
   public CollectionsScanService(
       EntityManager entityManager,
@@ -73,7 +75,8 @@ public class CollectionsScanService {
       CustomerRepository customerRepository,
       ReminderComposer reminderComposer,
       NotificationService notificationService,
-      AuditService auditService) {
+      AuditService auditService,
+      AiExecutionGateService gateService) {
     this.entityManager = entityManager;
     this.orgSettingsRepository = orgSettingsRepository;
     this.activityRepository = activityRepository;
@@ -82,6 +85,7 @@ public class CollectionsScanService {
     this.reminderComposer = reminderComposer;
     this.notificationService = notificationService;
     this.auditService = auditService;
+    this.gateService = gateService;
   }
 
   /** Counts for the job log. */
@@ -199,16 +203,24 @@ public class CollectionsScanService {
       return new ScanResult(proposed, skipped, escalated, superseded);
     }
 
-    // Record any lower un-actioned stages as SKIPPED(superseded_by_higher_stage) — ledger
-    // completeness. Existing rows (any status) are left untouched.
+    // Record any lower threshold-crossed stages as SKIPPED(superseded_by_higher_stage) — ledger
+    // completeness AND the "at most one active reminder per invoice" invariant (ADR-325). A lower
+    // stage with no row yet is created SKIPPED; a lower stage still PROPOSED from an earlier scan
+    // (a live, un-reviewed gate) is superseded in place — its PENDING gate is expired so the client
+    // can never receive two overlapping reminders out of order. Any other existing status
+    // (terminal,
+    // or already retryable-skipped) is left untouched; it can't produce a second reminder because
+    // the scan only (re-)proposes the target stage, never a lower one.
     for (var stage : REMINDER_STAGES) {
       if (stage.ordinal() >= target.ordinal()) {
         break;
       }
       Integer threshold = thresholdFor(stage, policy);
-      if (threshold != null
-          && days >= threshold
-          && activityRepository.findByInvoiceIdAndStage(invoiceId, stage).isEmpty()) {
+      if (threshold == null || days < threshold) {
+        continue;
+      }
+      var lower = activityRepository.findByInvoiceIdAndStage(invoiceId, stage).orElse(null);
+      if (lower == null) {
         activityRepository.save(
             new CollectionActivity(
                 invoiceId,
@@ -217,6 +229,16 @@ public class CollectionsScanService {
                 CollectionActivityStatus.SKIPPED,
                 days,
                 REASON_SUPERSEDED));
+        superseded++;
+      } else if (lower.getStatus() == CollectionActivityStatus.PROPOSED) {
+        // Expire the stale pending gate (defensive null-check: PROPOSED rows carry a gateId), then
+        // transition to SKIPPED(superseded) — markSkipped retains the gateId per §2.2 so the last
+        // draft stays traceable.
+        if (lower.getGateId() != null) {
+          gateService.expirePendingGate(lower.getGateId(), REASON_SUPERSEDED);
+        }
+        lower.markSkipped(REASON_SUPERSEDED);
+        activityRepository.save(lower);
         superseded++;
       }
     }

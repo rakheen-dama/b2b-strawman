@@ -123,4 +123,26 @@ describe("ReminderQueue — multi-select + batch approve", () => {
     render(<ReminderQueue slug="acme" gates={[]} previews={{}} />);
     expect(screen.getByText(/No reminders awaiting approval/)).toBeInTheDocument();
   });
+
+  it("runs the bodyHtml through client-side sanitization and still renders safe markup", () => {
+    // The defense-in-depth DOMPurify layer only truly strips markup in a real browser
+    // DOM; happy-dom cannot be trusted to reproduce browser sanitization, so this test
+    // only asserts the wiring (sanitize runs without throwing, safe content flows through
+    // to the rendered preview). The strip-unsafe-markup behavior is DOMPurify's own,
+    // exercised in the browser at runtime.
+    const gates = [makeGate({ id: "gate-a" })];
+    const previews: Record<string, ReminderPreview> = {
+      "gate-a": makePreview({
+        subject: "Reminder A",
+        bodyHtml: "<p>Please settle your outstanding invoice.</p>",
+      }),
+    };
+    render(<ReminderQueue slug="acme" gates={gates} previews={previews} />);
+
+    // Expand the reminder card so the bodyHtml preview mounts and DOMPurify.sanitize runs.
+    fireEvent.click(screen.getByRole("button", { name: /Reminder A/ }));
+
+    // The sanitized safe markup is rendered.
+    expect(screen.getByText("Please settle your outstanding invoice.")).toBeInTheDocument();
+  });
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import DOMPurify from "dompurify";
 import { ChevronDown, ChevronRight, Inbox } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
@@ -245,8 +246,8 @@ export function ReminderQueue({ slug, gates, previews }: ReminderQueueProps) {
                     {preview?.bodyHtml ? (
                       <div
                         className="mt-1 space-y-2 text-sm text-slate-700 dark:text-slate-300 [&_a]:text-teal-600 [&_p]:my-1"
-                        // eslint-disable-next-line react/no-danger -- bodyHtml is sanitized server-side (ReminderHtmlSanitizer) at gate creation.
-                        dangerouslySetInnerHTML={{ __html: preview.bodyHtml }}
+                        // eslint-disable-next-line react/no-danger -- bodyHtml is defense-in-depth sanitized: server-side at gate creation (ReminderHtmlSanitizer) and again client-side here (DOMPurify), because the content is AI-drafted from customer/invoice data (prompt-injection surface).
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(preview.bodyHtml) }}
                       />
                     ) : (
                       <p className="mt-1 text-sm whitespace-pre-wrap text-slate-700 dark:text-slate-300">

@@ -55,8 +55,10 @@ export default async function CollectionsPage({ params }: { params: Promise<{ sl
   try {
     const page = await getDebtors({ page: 0, size: 50 });
     debtors = page.content;
-  } catch {
-    // Non-fatal: show the empty debtor book.
+  } catch (error) {
+    // Non-fatal: show the empty debtor book, but surface the failure in logs so a
+    // failed fetch is not silently indistinguishable from "no outstanding balances".
+    console.error("Failed to load debtors for collections page", error);
   }
 
   let gates: AiGateListItem[] | null = null;
@@ -71,8 +73,10 @@ export default async function CollectionsPage({ params }: { params: Promise<{ sl
       });
       gates = page.content;
       previews = await resolveReminderPreviews(gates);
-    } catch {
-      // Non-fatal: show the empty queue.
+    } catch (error) {
+      // Non-fatal: show the empty queue, but log so a failed fetch is not silently
+      // indistinguishable from "no reminders awaiting approval".
+      console.error("Failed to load reminder gates for collections page", error);
       gates = [];
     }
   }

@@ -23,7 +23,7 @@ This phase ships as **7 epics (588–594)**, expanded to **15 numbered slices** 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 588 | Collections Foundation — Migration, Policy Embeddable, Ledger Entity, Registrations, Settings UI | Backend + Frontend (split slices) | — | L | 588A, 588B, 588C | **Done** — 588A (PR #1534), 588B (PR #1535), 588C (PR #1536) |
-| 589 | Scan Engine + Escalation + Payment Cancellation | Backend | 588A, 588B | L | 589A, 589B | |
+| 589 | Scan Engine + Escalation + Payment Cancellation | Backend | 588A, 588B | L | 589A, 589B | **Done** — 589A, 589B (PR #1538) |
 | 590 | Drafting Skill + Gated Send Executor | Backend | 589 | L | 590A, 590B | |
 | 591 | Batch Approval + Collections Read APIs + Collections Frontend | Backend + Frontend (split slices) | 590 | L | 591A, 591B, 591C | |
 | 592 | Debtor Triage + Trust-Aware Advisor Seam | Backend + Frontend (split slices) | 589 (592B also 591B) | M | 592A, 592B | |
@@ -154,8 +154,8 @@ REUSED (not rebuilt):
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
 | 2a | **588C** | (Frontend) `settings/collections` policy card (enable + 4 thresholds, increasing-order client validation); customer-detail exemption toggle (admin/owner); `lib/api/collections.ts` settings/exemption clients. **Done** (PR #1536) | 589A, 589B |
-| 2b | **589A** | `ReminderComposer` seam + `NoOpReminderComposer`; `CollectionsScanService` (candidate query, highest-stage selection, supersede/skip semantics, escalation flag + `COLLECTION_ESCALATED` notification + audit); `CollectionsScanHandler` (`collections_scan`) + daily recurring enqueue registration. | 588C, 589B |
-| 2c | **589B** | `CollectionsPaymentListener` — AFTER_COMMIT on `InvoicePaidEvent`/`InvoiceVoidedEvent` → expire pending gates + `CANCELLED_PAYMENT`; listeners for `AiGateRejectedEvent` → `REJECTED`, `AiGateExpiredEvent` → `SKIPPED(gate_expired)`. All-three-routes cancellation tests. | 588C, 589A |
+| 2b | **589A** | `ReminderComposer` seam + `NoOpReminderComposer`; `CollectionsScanService` (candidate query, highest-stage selection, supersede/skip semantics, escalation flag + `COLLECTION_ESCALATED` notification + audit); `CollectionsScanHandler` (`collections_scan`) + daily recurring enqueue registration. **Done** (PR #1538) | 588C, 589B |
+| 2c | **589B** | `CollectionsPaymentListener` — AFTER_COMMIT on `InvoicePaidEvent`/`InvoiceVoidedEvent` → expire pending gates + `CANCELLED_PAYMENT`; listeners for `AiGateRejectedEvent` → `REJECTED`, `AiGateExpiredEvent` → `SKIPPED(gate_expired)`. All-three-routes cancellation tests. **Done** (PR #1538) | 588C, 589A |
 
 ### Stage 3 — AI send path (sequential) ∥ Triage seam
 
@@ -268,8 +268,8 @@ Stage 5: [594A]                                          <- QA capstone
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **589A** | 589A.1–589A.5 | ~9 backend files (seam iface + no-op + scan service + handler + enqueue-registration mod + 3–4 test files) | `ReminderComposer` + `NoOpReminderComposer`; `CollectionsScanService` (candidate query, stage selection, supersede/skip, escalation); `CollectionsScanHandler` + daily recurring enqueue. |
-| **589B** | 589B.1–589B.3 | ~5 backend files (1 listener + 2–3 test files) | `CollectionsPaymentListener` (paid/void → cancel; reject → REJECTED; expiry → SKIPPED(gate_expired)); all-three-routes cancellation tests. |
+| **589A** | 589A.1–589A.5 | ~9 backend files (seam iface + no-op + scan service + handler + enqueue-registration mod + 3–4 test files) | `ReminderComposer` + `NoOpReminderComposer`; `CollectionsScanService` (candidate query, stage selection, supersede/skip, escalation); `CollectionsScanHandler` + daily recurring enqueue. **Done** (PR #1538) |
+| **589B** | 589B.1–589B.3 | ~5 backend files (1 listener + 2–3 test files) | `CollectionsPaymentListener` (paid/void → cancel; reject → REJECTED; expiry → SKIPPED(gate_expired)); all-three-routes cancellation tests. **Done** (PR #1538) |
 
 ### Tasks
 

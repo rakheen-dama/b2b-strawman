@@ -109,6 +109,14 @@ public class CollectionReminderSendService {
       return;
     }
 
+    // Tenant context must be bound to rate-limit and stamp delivery tracking. Guard before any
+    // RequestScopes.TENANT_ID.get() (backend/CLAUDE.md anti-pattern) — mirrors InvoiceEmailService.
+    if (!RequestScopes.TENANT_ID.isBound()) {
+      log.warn(
+          "Skipping collection reminder for activity {} — no tenant context", activity.getId());
+      return;
+    }
+
     // 1. Resolve provider
     EmailProvider provider =
         integrationRegistry.resolve(IntegrationDomain.EMAIL, EmailProvider.class);
@@ -127,9 +135,11 @@ public class CollectionReminderSendService {
         invoice.getDueDate() != null
             ? String.valueOf(ChronoUnit.DAYS.between(invoice.getDueDate(), LocalDate.now()))
             : String.valueOf(activity.getDaysOverdueAtAction()));
-    // AI-drafted parts (approved on the gate).
+    // AI-drafted parts (approved on the gate). body_html is already sanitized at draft time when it
+    // enters the gate; re-sanitize here defensively (defense in depth) so th:utext can never render
+    // model-forged links/CTAs into the frame-owned email.
     context.put("subject", action.subject());
-    context.put("reminderBodyHtml", action.bodyHtml());
+    context.put("reminderBodyHtml", ReminderHtmlSanitizer.sanitize(action.bodyHtml()));
     // GAP-L-64 — always populate portalUrl so the CTA renders with a working href even when no
     // PSP is configured (paymentUrl null keeps the Pay Now block hidden).
     context.put("portalUrl", portalBaseUrl + "/invoices/" + invoice.getId());

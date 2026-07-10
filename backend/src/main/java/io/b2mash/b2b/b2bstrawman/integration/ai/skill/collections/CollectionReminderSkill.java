@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.integration.ai.skill.collections;
 import io.b2mash.b2b.b2bstrawman.collections.CollectionActivity;
 import io.b2mash.b2b.b2bstrawman.collections.CollectionActivityRepository;
 import io.b2mash.b2b.b2bstrawman.collections.CollectionStage;
+import io.b2mash.b2b.b2bstrawman.collections.ReminderHtmlSanitizer;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -181,7 +182,9 @@ public class CollectionReminderSkill implements AiSkill {
             .orElseThrow(() -> new ResourceNotFoundException("CollectionActivity", activityId));
 
     // snake_case keys per the parseAction convention; ids come from the SkillContext-loaded
-    // activity (deterministic), never from model output.
+    // activity (deterministic), never from model output. body_html is sanitized HERE — the moment
+    // model output enters the gate — so the approver reviews exactly the (allowlisted) markup that
+    // will be sent, and no forged link/CTA can survive into the frame-owned email (ADR-327).
     Map<String, Object> proposedAction =
         Map.of(
             "collection_activity_id", activityId.toString(),
@@ -189,7 +192,7 @@ public class CollectionReminderSkill implements AiSkill {
             "customer_id", activity.getCustomerId().toString(),
             "stage", activity.getStage().name(),
             "subject", nullSafe(output.subject()),
-            "body_html", nullSafe(output.bodyHtml()),
+            "body_html", ReminderHtmlSanitizer.sanitize(output.bodyHtml()),
             "body_text", nullSafe(output.bodyText()));
 
     var gate =

@@ -24,6 +24,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.StubAiProvider;
@@ -44,6 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -81,6 +83,7 @@ class AiReminderComposerTest {
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private AiExecutionGateRepository gateRepository;
   @Autowired private AiFirmProfileRepository firmProfileRepository;
+  @Autowired private NotificationRepository notificationRepository;
   @Autowired private CollectionReminderSkill skill;
   @Autowired private ReminderComposer composer;
   @Autowired private StubAiProvider stubAiProvider;
@@ -341,6 +344,37 @@ class AiReminderComposerTest {
                   assertThat(execution.getEntityType()).isEqualTo("collection_activity");
                   assertThat(execution.getEntityId()).isEqualTo(activity.getId());
                 }));
+  }
+
+  @Test
+  void systemInvokedDraft_notifiesOwnersAndAdmins_evenThoughInvokedByIsNull() {
+    // System invocation carries invokedBy=null; Notification.recipientMemberId is NOT NULL, so the
+    // "gate pending review" notification must fan out to org owners/admins instead of silently
+    // failing to flush. Proves reviewers ARE told a SEND_COLLECTION_REMINDER gate awaits approval.
+    var ids = seedSentInvoice("Notify Co", "notify@test.com", 10, randomInvoiceNumber(), false);
+
+    runInTenant(scanService::scanForTenant);
+
+    runInTenant(
+        () -> {
+          var activity =
+              activityRepository
+                  .findByInvoiceIdAndStage(ids[0], CollectionStage.STAGE_1)
+                  .orElseThrow();
+          assertThat(activity.getStatus()).isEqualTo(CollectionActivityStatus.PROPOSED);
+          UUID gateId = activity.getGateId();
+
+          var notifications =
+              notificationRepository
+                  .findByRecipientMemberId(memberId, PageRequest.of(0, 100))
+                  .getContent();
+          assertThat(notifications)
+              .anySatisfy(
+                  n -> {
+                    assertThat(n.getType()).isEqualTo("ai.gate.pending");
+                    assertThat(n.getReferenceEntityId()).isEqualTo(gateId);
+                  });
+        });
   }
 
   @Test

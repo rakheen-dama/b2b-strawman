@@ -181,15 +181,21 @@ public class AiExecutionPersistenceService {
   }
 
   private void sendGateNotification(AiExecutionGate gate, UUID invokedBy) {
+    String title = "AI verification requires your review";
+    String body = "Gate type: " + gate.getGateType() + " — " + gate.getAiReasoning();
     try {
-      notificationService.createNotification(
-          invokedBy,
-          "ai.gate.pending",
-          "AI verification requires your review",
-          "Gate type: " + gate.getGateType() + " — " + gate.getAiReasoning(),
-          "ai_execution_gate",
-          gate.getId(),
-          null);
+      if (invokedBy == null) {
+        // System-invoked from job context (e.g. the collections scan, §6.4): there is no single
+        // invoking member to notify, and Notification.recipientMemberId is NOT NULL — a null
+        // recipient would throw on flush and be swallowed below, leaving reviewers unaware a gate
+        // is pending. Fan the review notification out to org owners/admins instead (mirrors
+        // CollectionsScanService.fireEscalationNotification's notifyAdminsAndOwners pattern).
+        notificationService.notifyAdminsAndOwners(
+            "ai.gate.pending", title, body, "ai_execution_gate", gate.getId());
+      } else {
+        notificationService.createNotification(
+            invokedBy, "ai.gate.pending", title, body, "ai_execution_gate", gate.getId(), null);
+      }
     } catch (Exception e) {
       log.warn("Failed to send gate notification for gate {}: {}", gate.getId(), e.getMessage());
     }

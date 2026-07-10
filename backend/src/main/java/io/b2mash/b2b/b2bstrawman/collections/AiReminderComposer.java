@@ -75,12 +75,17 @@ public class AiReminderComposer implements ReminderComposer {
 
     // Pre-flight 2: a firm-profile row must exist — checked WITHOUT creating one, because
     // getOrCreateProfile() requires a bound MEMBER_ID that job context does not have.
-    if (firmProfileRepository.findAll().isEmpty()) {
+    // Existence-only
+    // count query (one per tenant) avoids materializing the profile rows we immediately discard.
+    if (firmProfileRepository.count() == 0) {
       throw new AiUnavailableException("No AI firm profile exists for tenant");
     }
 
-    // The scan may hand us a not-yet-persisted activity row; the skill resolves it by id inside
-    // the same candidate transaction, so persist it first (idempotent for managed rows).
+    // Seam-ownership tradeoff: the scan may hand us a not-yet-persisted (transient) activity row,
+    // and the skill resolves that row by id (findOneById), so the composer MUST persist it first.
+    // save() returns the managed instance; the scan's own later save (markProposed/markSkipped)
+    // mutates that SAME managed instance within this one REQUIRES_NEW candidate transaction, so
+    // there is no double-insert and no divergent copy. Idempotent for already-managed rows.
     CollectionActivity persisted = activityRepository.save(activity);
 
     var context =

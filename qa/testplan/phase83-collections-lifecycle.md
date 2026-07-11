@@ -375,7 +375,14 @@ FROM public.org_schema_mapping WHERE org_id = 'e2e-test-org';
 
 **Evidence**: `cp-12-b2-cancelled-payment.png`, `cp-12-reapprove-refused.png`.
 
+**Status: [x] PASS** — manual "Record Payment" deviation (see §3.1.2).
+
 **Evidence log (CP-12):**
+- INV-0004 (B2) detail → "Record Payment" (reference "QA-CP12-PAYMENT") → "Confirm Payment". Invoice → **PAID** (observed in UI header).
+- AFTER_COMMIT listener fired: B2 "Collection activity" → **Stage 1 Cancelled Payment / Invoice Paid** (UI + DB: STAGE_1=CANCELLED_PAYMENT reason=invoice_paid). Gate → **EXPIRED** (DB). `cp-12-b2-cancelled-payment.png`.
+- Queue no longer lists B2 → "No reminders". `cp-12-reapprove-refused.png`.
+- Audit `collections.reminder.cancelled` → 1 row `{stage:STAGE_1, reason:invoice_paid, invoice_number:INV-0004, actor:System}`.
+- **Re-approve refusal** (gate no longer in queue UI → tested via sanctioned gate API): single `POST /api/ai/gates/{id}/approve` → **HTTP 400** `{"detail":"Gate must be PENDING but was EXPIRED","title":"Invalid gate status"}`; batch `POST /api/ai/gates/batch-approve` → HTTP 200 with disposition `{outcome:"FAILED","error":"Invalid gate status: Gate must be PENDING but was EXPIRED"}`.
 
 ## 17. CP-13 — Cash digest (AI on)
 
@@ -390,9 +397,17 @@ FROM public.org_schema_mapping WHERE org_id = 'e2e-test-org';
 | CP-13.5 | Bell (Alice + Bob) | "Your weekly cash digest is ready" | [ ] |
 | CP-13.6 | Audit `GET /api/audit-events?eventType=collections.digest.sent` | details `{recipients, emails_sent, ai_narrated, outstanding_total}` | [ ] |
 
-**Evidence**: Mailpit message IDs, `cp-13-digest-email.png`, `cp-13-digest-bell.png`.
+**Evidence**: Mailpit message IDs, `cp-13-digest-email.png`, `cp-13-digest-bell.png`, `cp-13-bob-digest-bell.png`.
+
+**Status: [x] PASS**
 
 **Evidence log (CP-13):**
+- **Seed-state discrepancy (documented, not a product bug):** the seeded tenant contained only Alice (owner) + Carol (member) — **Bob (admin) was absent**. The first digest run therefore correctly sent to 1 recipient (Alice, the only owner/admin) and excluded Carol (member). To exercise the full owner+admin recipient set, **Bob was provisioned via the sanctioned internal members-sync path** (`POST /internal/members/sync`, orgRole=admin, exactly as `seed.sh` does — HTTP 201) and the digest re-run. Logged as **GAP-P83-004** (seed/environment).
+- **[FLAGGED job trigger]** `INSERT ... 'cash_digest' ...` → job COMPLETED (~6 s). Mailpit cleared before each run.
+- Digest emails (subject **"Weekly cash digest"**) → **`alice@e2e-test.local` AND `bob@e2e-test.local`**, NOT `carol@e2e-test.local`. IDs `Vr89aXG7qKqAfFAQpYNJ9P` (alice), `3GcC6cc3ohXVVoAQRemoki` (bob).
+- Body: deterministic tables (Outstanding **6900.00**, Current/30/60/90 buckets, Billed vs Collected, stale WIP) **PLUS** an AI narrative block (shape-based — "Summary"/"Risk" sections + narrative sentences e.g. "significant shortfall in cash conversion this week"). `cp-13-digest-email.png`.
+- Bell "Your weekly cash digest is ready" for **Alice** (`cp-13-digest-bell.png`) and **Bob** (`cp-13-bob-digest-bell.png`).
+- Audit `collections.digest.sent` → `{recipients:2, emails_sent:2, ai_narrated:true, outstanding_total:6900.00}`.
 
 ## 18. CP-14 — AI off → numbers-only digest
 
@@ -405,7 +420,14 @@ FROM public.org_schema_mapping WHERE org_id = 'e2e-test-org';
 
 **Evidence**: `cp-14-numbers-only-digest.png` + message ID.
 
+**Status: [x] PASS**
+
 **Evidence log (CP-14):**
+- Integrations → AI Assistant "Enabled" toggled OFF → badge **"Disabled"** (provider resolves to `noop` → narrative null).
+- **[FLAGGED job trigger]** Mailpit cleared, re-triggered `cash_digest` → COMPLETED. Digest still delivered to **alice + bob** (IDs `2dhZPiutSEqgs7ABHfWaCC` / `oGTp2RLfonFYbRBTNv5Cvm`).
+- Body: deterministic tables present (Outstanding 6900, Billed, Collected, Current) but **NO narrative / AI-risks block** — the "Summary"/"Risk"/narrative sentences are absent; body shrank from ~11 922 → ~8 363 chars vs the AI-on digest. `cp-14-numbers-only-digest.png`.
+- Audit `collections.digest.sent` → `{recipients:2, emails_sent:2, ai_narrated:false, outstanding_total:6900.00}`.
+- Bell still fires "Your weekly cash digest is ready" (Alice bell now shows 3 digest notifications across all runs).
 
 ## 19. CP-15 — Exempt customer produced nothing
 
@@ -419,7 +441,13 @@ FROM public.org_schema_mapping WHERE org_id = 'e2e-test-org';
 
 **Evidence**: `cp-15-gamma-no-activity.png`.
 
+**Status: [x] PASS**
+
 **Evidence log (CP-15):**
+- INV-0005 (Gamma, exempt) detail "Collection activity" → **"No collection activity for this invoice yet."** `cp-15-gamma-no-activity.png`.
+- Gamma customer detail "Chase history" → "No chase history for this customer yet." (observed in CP-04). Debtor book Gamma row → **"Exempt"** badge (CP-07).
+- `GET /api/collections/activities?invoiceId=2e6d10fb-...` → **`[]`**. DB: 0 `collection_activities` rows for INV-0005.
+- Mailpit: **0 emails** to `accounts@gamma.example.com` across the entire run.
 
 ## 20. CP-16 — Regression gates + gap report
 
@@ -437,12 +465,18 @@ NOT run them. The gap report is appended below.
 
 ## 21. Execution Summary
 
-_(populated after execution)_
+Executed 2026-07-11 against the E2E mock-auth stack (frontend 3001 / backend 8081 / Mailpit 8026 / Postgres 5433), browser-driven via Playwright MCP, with a live Anthropic key (BYOAK) so the full AI ladder was exercised.
 
-- PASS:
-- FAIL:
-- DEFERRED:
-- BLOCKED:
+- **PASS: 16** — CP-00, CP-01, CP-02, CP-03, CP-04, CP-05, CP-06, CP-07, CP-08, CP-09, CP-10, CP-11, CP-12, CP-13, CP-14, CP-15.
+- **FAIL: 0**
+- **DEFERRED: 1** — CP-16 backend + frontend regression gates are **orchestrator-owned** (no product code changed this epic → baseline confirmation; not run by the QA agent). The CP-16 gap report itself is complete (below).
+- **BLOCKED: 0**
+
+Notes:
+- All three authorized deviations were used and flagged: job_queue INSERT trigger (CP-06/09/13/14), manual "Record Payment" (CP-12), live BYOAK key via UI dialog (CP-03, never persisted anywhere).
+- Every `job_queue` INSERT and every psql read is flagged `[FLAGGED job trigger]` / "flagged read-only" in its evidence log.
+- Two seed-state gaps (missing Acme customer, missing Bob admin) were root-caused and repaired via sanctioned product-API / internal-sync paths, not raw SQL — filed as GAP-P83-004.
+- Artefacts: 21 screenshots under `qa/testplan/artifacts/phase83/`; Mailpit message IDs, job-row statuses, and audit JSON excerpts inline above.
 
 ---
 
@@ -466,4 +500,54 @@ for re-spec.
 
 ### Gaps filed
 
-_(populated during execution)_
+None of these are product-behaviour defects in the Phase 83 collections/cash feature set — the lifecycle itself passed end-to-end. They are environment/trigger/seed gaps surfaced by running the capstone on the e2e stack. No product code was fixed and no scenario was amended (quality gates §6/§7).
+
+### GAP-P83-001: No on-demand trigger endpoint for `collections_scan` / `cash_digest`
+
+**Track**: CP-06, CP-13, CP-14
+**Step**: CP-06.1
+**Category**: missing-feature
+**Severity**: major
+**Description**: Phase 83 ships only cron fan-outs (collections daily 06:00, digest Monday 07:00). There is no HTTP trigger to run a scan or digest on demand — `JobQueueAdminController` only lists/retries/deletes; there is no analogue to `portal`'s `POST /internal/portal/digest/run-weekly`. QA therefore could not trigger the loop through any product surface.
+**Evidence**: `collections/CollectionsScanScheduler.java:27-32`, `collections/CashDigestScheduler.java:27-32`, `infrastructure/jobqueue/JobQueueAdminController.java:16-49` (no enqueue); contrast `portal/notification/PortalDigestInternalController.java:32-40`. Execution used the authorized `INSERT INTO public.job_queue (...)` fallback (flagged in every use).
+**Suggested fix**: add internal endpoints `POST /internal/collections/scan/run` and `POST /internal/collections/digest/run-weekly` (INTERNAL_API_KEY-gated, tenant fan-out) mirroring `PortalDigestInternalController`. Product work — out of scope for Epic 594.
+
+### GAP-P83-002: e2e Docker image has no stub AI provider (stub-parity gap)
+
+**Track**: CP-03, CP-07, CP-10, CP-13
+**Step**: CP-03
+**Category**: missing-feature (test-infra)
+**Severity**: minor
+**Description**: The Epic 594 task text assumed a "stub AI provider" on the e2e stack (port 3001). `StubAiProvider` + `ai/stubs/*/response.json` are test-JVM only (`testutil/TestAiConfiguration.java`); the e2e backend runs `SPRING_PROFILES_ACTIVE=e2e` with no AI env, so AI resolves to `noop`. Exercising drafting/gates/emails/narrative therefore requires a **live** Anthropic key (BYOAK) — which was provided and used for this run. Without a key, CP-07/09/10/11/12/13-narrative would be DEFERRED and only the deterministic remainder observable.
+**Evidence**: `testutil/StubAiProvider.java:90-97`, `testutil/TestAiConfiguration.java:9-12`, `collections/AiReminderComposer.java:76-79`; e2e compose has zero AI env.
+**Suggested fix**: bake a stub/`fake` AI provider into the e2e image (activate a deterministic composer under the `e2e` profile) so the AI ladder is exercisable without a live key and without per-call cost. Test-infra work — out of scope for Epic 594.
+
+### GAP-P83-003: accounting-za profile — trust-balance customer & `TRUST_FUNDS_AVAILABLE` badge unobservable
+
+**Track**: (optional trust step, dropped)
+**Step**: n/a
+**Category**: documented-profile-limitation
+**Severity**: cosmetic
+**Description**: The e2e tenant is `accounting-za`, which has no trust-accounting module, so the optional "one customer with a trust balance" step and the `TRUST_FUNDS_AVAILABLE` triage badge cannot be produced or observed. Not a defect — a profile limitation.
+**Evidence**: `compose/docker-compose.e2e.yml:148`, `compose/seed/seed.sh:39` (vertical=accounting-za); badge `frontend/components/collections/triage-badges.tsx:11-17`.
+**Suggested fix**: none required. If trust-badge coverage is wanted, run this capstone against a `legal-za` tenant. Documented, not filed for fix.
+
+### GAP-P83-004: Freshly-seeded e2e tenant was missing the Acme customer and the Bob (admin) member
+
+**Track**: CP-00, CP-04, CP-13
+**Step**: CP-00.4
+**Category**: seed/environment-error
+**Severity**: minor
+**Description**: The brief's CP-00 expected the seeded tenant to contain customer "Acme Corp" (ACTIVE) and members Alice/Bob/Carol. The freshly-seeded DB actually contained **zero customers** and only **Alice (owner) + Carol (member)** — **Acme Corp and Bob (admin) were absent** (`seed.sh` Steps 3 and 5 apparently did not take on this stack). Downstream impact: the invoice matrix needed Acme, and the digest owner+admin recipient set needed Bob. Both were created via the sanctioned product-API (`POST /api/customers` + lifecycle) and internal members-sync (`POST /internal/members/sync`, HTTP 201) paths — never raw SQL — and the affected checkpoints re-run cleanly.
+**Evidence**: flagged read-only psql `SELECT ... FROM tenant_7d218705360b.customers` → 0 rows pre-seed; `... FROM members JOIN org_roles` → only owner+member. `seed.sh:82-89` (member sync), `:131-207` (Acme create+activate).
+**Suggested fix**: investigate why the e2e boot-seed's customer + Bob-member steps did not persist on this reseed (idempotency/ordering, or a partial-wipe reseed that didn't re-run `seed.sh`). Environment/tooling — out of scope for Epic 594 product code.
+
+### GAP-P83-005: Firm-profile "Complete Setup" produced two `ai_firm_profiles` rows (low-confidence, unreproduced)
+
+**Track**: CP-03
+**Step**: CP-03.5
+**Category**: ui-error (possible double-submit)
+**Severity**: minor
+**Description**: After a single "Complete Setup" click on `/settings/ai`, the tenant's `ai_firm_profiles` table held **2** rows (earliest timestamp coincided with page load). The composer only checks `count() > 0`, so AI drafting worked correctly and the lifecycle was unaffected; but two profile rows from one setup flow suggests a missing submit-guard / an on-load autosave. **Not isolated to a definite mechanism this cycle** — logged as a low-confidence observation for investigation, not a confirmed defect, per reproduce-before-fix.
+**Evidence**: flagged read-only psql `SELECT count(*), min(created_at) FROM tenant_7d218705360b.ai_firm_profiles` → `2`.
+**Suggested fix**: if reproduced, disable the submit button while the mutation is in flight and/or make firm-profile creation upsert-by-tenant. Needs reproduction first — out of scope for Epic 594.

@@ -1,0 +1,107 @@
+<div xmlns:th="http://www.thymeleaf.org">
+  <h2 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #111827;">Weekly cash digest</h2>
+  <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    Hi <span th:text="${recipientName != null ? recipientName : 'there'}">there</span>,
+  </p>
+  <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    Here is this week's cash position for <span th:text="${orgName != null ? orgName : 'your firm'}">your firm</span>.
+  </p>
+
+  <!-- Outstanding + aging buckets (always rendered from CashDigestData) -->
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 16px 0;">
+    <tr>
+      <td style="padding: 16px; background-color: #f9fafb; border-radius: 6px;">
+        <span style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Total Outstanding</span><br/>
+        <span style="font-size: 22px; color: #111827; font-weight: 600;" th:text="${outstandingTotal != null ? outstandingTotal : '0'}">0</span>
+        <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 12px 0 0 0;">
+          <tr>
+            <td style="padding: 4px 0; font-size: 13px; color: #374151;">Current</td>
+            <td style="padding: 4px 0; font-size: 13px; color: #111827; text-align: right;" th:text="${bucketCurrent}">0</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 0; font-size: 13px; color: #374151;">1&ndash;30 days</td>
+            <td style="padding: 4px 0; font-size: 13px; color: #111827; text-align: right;" th:text="${bucketD30}">0</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 0; font-size: 13px; color: #374151;">31&ndash;60 days</td>
+            <td style="padding: 4px 0; font-size: 13px; color: #111827; text-align: right;" th:text="${bucketD60}">0</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 0; font-size: 13px; color: #374151;">61+ days</td>
+            <td style="padding: 4px 0; font-size: 13px; color: #111827; text-align: right;" th:text="${bucketD90Plus}">0</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Billed vs collected (trailing 7 days) -->
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 16px 0;">
+    <tr>
+      <td style="padding: 4px 0; width: 50%;">
+        <span style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Billed (last 7 days)</span><br/>
+        <span style="font-size: 16px; color: #111827; font-weight: 500;" th:text="${billed}">0</span>
+      </td>
+      <td style="padding: 4px 0; width: 50%;">
+        <span style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Collected (last 7 days)</span><br/>
+        <span style="font-size: 16px; color: #111827; font-weight: 500;" th:text="${collected}">0</span>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Stale unbilled WIP -->
+  <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    Stale unbilled work (older than 30 days):
+    <strong th:text="${staleWipEntryCount}">0</strong> entries,
+    <strong th:text="${staleWipHours}">0.0</strong> hours.
+  </p>
+
+  <!-- Reminder activity summary (counts by status) -->
+  <div th:if="${activityCounts != null and !activityCounts.isEmpty()}" style="margin: 0 0 16px 0;">
+    <span style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Collections activity (last 7 days)</span>
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 6px 0 0 0;">
+      <tr th:each="entry : ${activityCounts}">
+        <td style="padding: 3px 0; font-size: 13px; color: #374151;" th:text="${entry.key}">STATUS</td>
+        <td style="padding: 3px 0; font-size: 13px; color: #111827; text-align: right;" th:text="${entry.value}">0</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Top debtor risks with deterministic triage signals (rendered even when AI is disabled) -->
+  <div th:if="${topRisks != null and !topRisks.isEmpty()}" style="margin: 0 0 8px 0;">
+    <h3 style="margin: 16px 0 8px 0; font-size: 15px; font-weight: 600; color: #111827;">Top debtors</h3>
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+      <tr th:each="risk : ${topRisks}">
+        <td style="padding: 6px 0; border-bottom: 1px solid #f3f4f6;">
+          <span style="font-size: 14px; color: #111827; font-weight: 500;" th:text="${risk.customerName}">Customer</span>
+          <span style="font-size: 13px; color: #6b7280;">
+            &mdash; <span th:text="${risk.currency}">ZAR</span> <span th:text="${risk.outstanding}">0</span>
+          </span>
+          <span th:if="${risk.signals != null and !risk.signals.isEmpty()}" style="display: block; font-size: 12px; color: #b45309;"
+                th:text="${#strings.listJoin(risk.signals, ', ')}">SIGNALS</span>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- AI narration + ranked risks — the ONE conditional block (absent when AI is disabled/unavailable) -->
+  <div th:if="${narrative != null}" style="margin: 20px 0 0 0; padding: 16px; background-color: #f9fafb; border-radius: 6px;">
+    <h3 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #111827;">Summary</h3>
+    <p style="margin: 0 0 12px 0; font-size: 14px; line-height: 1.6; color: #374151;" th:text="${narrative}">Narrative summary.</p>
+    <div th:if="${aiRisks != null and !aiRisks.isEmpty()}">
+      <h4 style="margin: 12px 0 6px 0; font-size: 14px; font-weight: 600; color: #111827;">Risks to watch</h4>
+      <div th:each="airisk : ${aiRisks}" style="margin: 0 0 10px 0;">
+        <span style="font-size: 14px; color: #111827; font-weight: 500;" th:text="${airisk.customerName}">Customer</span>
+        <p style="margin: 2px 0 0 0; font-size: 13px; line-height: 1.5; color: #374151;" th:text="${airisk.why}">Why.</p>
+        <p style="margin: 2px 0 0 0; font-size: 13px; line-height: 1.5; color: #6b7280;">
+          Suggested: <span th:text="${airisk.suggestedAction}">Action.</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <p style="margin: 20px 0 0 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    Best,<br/>
+    <span th:text="${orgName != null ? orgName : 'Kazi'}">Kazi</span>
+  </p>
+</div>

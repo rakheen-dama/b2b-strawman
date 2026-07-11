@@ -55,6 +55,9 @@ public class InvoiceAgingReportQuery implements ReportQuery {
     }
     var customerId = parseUuid(parameters, "customerId");
 
+    // Bucket boundaries (current / 1-30 / 31-60 / 61-90 / 90+) are defined once in AgingBuckets and
+    // shared with the collections debtor book + cash digest (593A). The keys and labels remain
+    // byte-identical to the historical inline CASE — pinned by InvoiceAgingReportQueryTest.
     var sql =
         """
         SELECT
@@ -67,19 +70,14 @@ public class InvoiceAgingReportQuery implements ReportQuery {
             i.currency AS currency,
             i.status AS status,
             CAST(:asOfDate AS DATE) - i.due_date AS days_overdue,
-            CASE
-                WHEN CAST(:asOfDate AS DATE) - i.due_date <= 0 THEN 'CURRENT'
-                WHEN CAST(:asOfDate AS DATE) - i.due_date BETWEEN 1 AND 30 THEN '1_30'
-                WHEN CAST(:asOfDate AS DATE) - i.due_date BETWEEN 31 AND 60 THEN '31_60'
-                WHEN CAST(:asOfDate AS DATE) - i.due_date BETWEEN 61 AND 90 THEN '61_90'
-                ELSE '90_PLUS'
-            END AS age_bucket
+            %s AS age_bucket
         FROM invoices i
         WHERE i.status = 'SENT'
           AND i.due_date IS NOT NULL
           AND (CAST(:customerId AS UUID) IS NULL OR i.customer_id = CAST(:customerId AS UUID))
         ORDER BY days_overdue DESC
-        """;
+        """
+            .formatted(AgingBuckets.reportCaseSql("CAST(:asOfDate AS DATE) - i.due_date"));
 
     var query = entityManager.createNativeQuery(sql, Tuple.class);
     query.setParameter("asOfDate", asOfDate);
@@ -110,14 +108,7 @@ public class InvoiceAgingReportQuery implements ReportQuery {
   }
 
   private String mapBucketLabel(String bucket) {
-    return switch (bucket) {
-      case "CURRENT" -> "Current";
-      case "1_30" -> "1-30 Days";
-      case "31_60" -> "31-60 Days";
-      case "61_90" -> "61-90 Days";
-      case "90_PLUS" -> "90+ Days";
-      default -> bucket;
-    };
+    return AgingBuckets.reportBucketLabel(bucket);
   }
 
   private Map<String, Object> computeSummary(List<Map<String, Object>> rows) {
@@ -139,23 +130,23 @@ public class InvoiceAgingReportQuery implements ReportQuery {
       var amount = (BigDecimal) row.get("amount");
 
       switch (bucket) {
-        case "CURRENT" -> {
+        case AgingBuckets.KEY_CURRENT -> {
           currentCount++;
           currentAmount = currentAmount.add(amount);
         }
-        case "1_30" -> {
+        case AgingBuckets.KEY_1_30 -> {
           bucket1_30Count++;
           bucket1_30Amount = bucket1_30Amount.add(amount);
         }
-        case "31_60" -> {
+        case AgingBuckets.KEY_31_60 -> {
           bucket31_60Count++;
           bucket31_60Amount = bucket31_60Amount.add(amount);
         }
-        case "61_90" -> {
+        case AgingBuckets.KEY_61_90 -> {
           bucket61_90Count++;
           bucket61_90Amount = bucket61_90Amount.add(amount);
         }
-        case "90_PLUS" -> {
+        case AgingBuckets.KEY_90_PLUS -> {
           bucket90PlusCount++;
           bucket90PlusAmount = bucket90PlusAmount.add(amount);
         }

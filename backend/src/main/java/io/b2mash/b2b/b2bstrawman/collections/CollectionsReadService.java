@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.reporting.AgingBuckets;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import java.math.BigDecimal;
@@ -37,12 +38,19 @@ import org.springframework.transaction.annotation.Transactional;
  * INCLUDES {@code collections_exempt} customers (surfacing the flag) and INCLUDES not-yet-overdue
  * SENT invoices (they land in the {@code current} bucket).
  *
- * <p>The bucket CASE is kept self-contained here; 593A extracts a shared {@code AgingBuckets}
- * helper. {@code signals} is populated by {@link CollectionsTriageService} (wired 592A.4) — one
- * deterministic-signal computation per debtor-book row.
+ * <p>The four-way bucket boundaries are shared with the aging report and cash digest via {@link
+ * AgingBuckets} (extracted 593A). {@code signals} is populated by {@link CollectionsTriageService}
+ * (wired 592A.4) — one deterministic-signal computation per debtor-book row.
  */
 @Service
 public class CollectionsReadService {
+
+  /**
+   * The SQL expression yielding integer days-overdue for a joined {@code invoices i} row. Fed to
+   * {@link AgingBuckets} so the debtor-book four-way split (593A) shares its boundaries with the
+   * aging report and the cash digest.
+   */
+  private static final String AGE_EXPR = "CURRENT_DATE - i.due_date";
 
   private static final String DEBTOR_BOOK_SQL =
       """
@@ -54,13 +62,10 @@ public class CollectionsReadService {
           i.currency AS currency,
           COUNT(*) AS invoice_count,
           MAX(CURRENT_DATE - i.due_date) AS oldest_days_overdue,
-          COALESCE(SUM(i.total) FILTER (WHERE CURRENT_DATE - i.due_date <= 0), 0) AS bucket_current,
-          COALESCE(SUM(i.total) FILTER (WHERE CURRENT_DATE - i.due_date BETWEEN 1 AND 30), 0)
-              AS bucket_d30,
-          COALESCE(SUM(i.total) FILTER (WHERE CURRENT_DATE - i.due_date BETWEEN 31 AND 60), 0)
-              AS bucket_d60,
-          COALESCE(SUM(i.total) FILTER (WHERE CURRENT_DATE - i.due_date >= 61), 0)
-              AS bucket_d90plus,
+          COALESCE(SUM(i.total) FILTER (WHERE %1$s), 0) AS bucket_current,
+          COALESCE(SUM(i.total) FILTER (WHERE %2$s), 0) AS bucket_d30,
+          COALESCE(SUM(i.total) FILTER (WHERE %3$s), 0) AS bucket_d60,
+          COALESCE(SUM(i.total) FILTER (WHERE %4$s), 0) AS bucket_d90plus,
           MAX(la.stage) AS last_stage,
           MAX(la.status) AS last_status,
           MAX(la.at) AS last_at
@@ -78,7 +83,12 @@ public class CollectionsReadService {
       GROUP BY i.customer_id, i.currency
       ORDER BY outstanding_total DESC, i.customer_id, i.currency
       LIMIT :limit OFFSET :offset
-      """;
+      """
+          .formatted(
+              AgingBuckets.currentPredicate(AGE_EXPR),
+              AgingBuckets.d30Predicate(AGE_EXPR),
+              AgingBuckets.d60Predicate(AGE_EXPR),
+              AgingBuckets.d90PlusPredicate(AGE_EXPR));
 
   /**
    * Counts debtor-book groups (one per {@code (customer_id, currency)} pair) for the {@link Page}

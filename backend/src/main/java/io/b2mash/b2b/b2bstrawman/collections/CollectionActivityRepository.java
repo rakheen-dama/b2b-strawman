@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.collections;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,4 +45,15 @@ public interface CollectionActivityRepository extends JpaRepository<CollectionAc
           + " ORDER BY a.createdAt DESC, a.id DESC")
   Page<CollectionActivity> findByCustomerId(
       @Param("customerId") UUID customerId, Pageable pageable);
+
+  /**
+   * Reminder-activity counts grouped by status over the trailing window (Phase 83, 593A cash
+   * digest). Windowed on {@code updatedAt} — status transitions happen in place on the single
+   * (invoice, stage) row, so {@code updatedAt} reflects the latest transition where {@code
+   * createdAt} would miss re-proposals.
+   */
+  @Query(
+      "SELECT a.status AS status, COUNT(a) AS count FROM CollectionActivity a"
+          + " WHERE a.updatedAt >= :since GROUP BY a.status")
+  List<CollectionActivityStatusCount> countByStatusSince(@Param("since") Instant since);
 }

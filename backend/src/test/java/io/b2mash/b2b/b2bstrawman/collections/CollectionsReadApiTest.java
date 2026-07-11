@@ -18,10 +18,8 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustBalanceFactory;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -108,7 +106,11 @@ class CollectionsReadApiTest {
           // index-based assertions on rows 0-2 untouched.
           custEcho = seedCustomer("Echo Trust Co", "echo@test.com", false);
           seedSentInvoice(custEcho, "Echo Trust Co", "INV-E1", 1000, 20);
-          seedTrustBalance(custEcho, BigDecimal.valueOf(84200));
+          TestTrustBalanceFactory.seedTrustBalance(
+              trustAccountRepository,
+              clientLedgerCardRepository,
+              custEcho,
+              BigDecimal.valueOf(84200));
 
           // Two activities on Alpha (591A.4 status+reason visibility + drill-in paging).
           activityRepository.save(
@@ -187,26 +189,6 @@ class CollectionsReadApiTest {
     invoice.approve(invoiceNumber, ownerMemberId);
     invoice.markSent();
     return invoiceRepository.save(invoice).getId();
-  }
-
-  /** Trust-seeding recipe copied verbatim from {@code CollectionsTriageServiceTest}. */
-  private void seedTrustBalance(UUID customerId, BigDecimal amount) {
-    var trustAccount =
-        new TrustAccount(
-            "Read Test Trust",
-            "Test Bank",
-            "002",
-            "9876543210",
-            TrustAccountType.INVESTMENT,
-            false,
-            false,
-            null,
-            LocalDate.now(),
-            null);
-    var savedTrustAccount = trustAccountRepository.save(trustAccount);
-    var ledgerCard = new ClientLedgerCard(savedTrustAccount.getId(), customerId);
-    ledgerCard.addDeposit(amount, LocalDate.now());
-    clientLedgerCardRepository.save(ledgerCard);
   }
 
   @Test

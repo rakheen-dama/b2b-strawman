@@ -43,7 +43,10 @@ describe("<TriageBadges>", () => {
     expect(screen.getByText("Trust funds available")).toBeInTheDocument();
     // Tooltip content is portalled and hover-only — assert the cursor-help trigger
     // wraps the badge (actor-display precedent: no hover simulation in happy-dom).
-    expect(badge.closest("span.cursor-help")).not.toBeNull();
+    const trigger = badge.closest("span.cursor-help");
+    expect(trigger).not.toBeNull();
+    // Keyboard users must be able to reach the ADR-329 detail — the trigger is focusable.
+    expect(trigger).toHaveAttribute("tabindex", "0");
   });
 
   it("humanizes unknown advisor signals and defaults to the warning variant", () => {

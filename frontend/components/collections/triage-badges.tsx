@@ -58,7 +58,7 @@ export interface TriageBadgesProps {
 export function TriageBadges({ signals, signalDetails }: TriageBadgesProps) {
   if (signals.length === 0) return null;
   return (
-    <>
+    <TooltipProvider>
       {signals.map((signal) => {
         const detail = signalDetails?.[signal];
         const badge = (
@@ -70,16 +70,18 @@ export function TriageBadges({ signals, signalDetails }: TriageBadgesProps) {
           return <span key={signal}>{badge}</span>;
         }
         return (
-          <TooltipProvider key={signal}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="cursor-help">{badge}</span>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">{detail}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip key={signal}>
+            <TooltipTrigger asChild>
+              {/* tabIndex makes the trust-detail tooltip reachable by keyboard, not just hover
+                  (Radix Tooltip opens on focus) — the ADR-329 detail must not be mouse-only. */}
+              <span tabIndex={0} className="cursor-help">
+                {badge}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">{detail}</TooltipContent>
+          </Tooltip>
         );
       })}
-    </>
+    </TooltipProvider>
   );
 }

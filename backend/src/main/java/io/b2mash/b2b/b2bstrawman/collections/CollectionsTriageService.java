@@ -10,6 +10,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +47,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CollectionsTriageService {
 
+  private static final Logger log = LoggerFactory.getLogger(CollectionsTriageService.class);
+
   private static final int DRIFTING_MARGIN_DAYS = 14;
   private static final long SERIAL_LATE_THRESHOLD_DAYS = 30;
 
@@ -68,7 +72,9 @@ public class CollectionsTriageService {
   @Transactional(readOnly = true)
   public List<String> signalsFor(UUID customerId) {
     List<Invoice> invoices = invoiceRepository.findByCustomerId(customerId);
-    LocalDate today = LocalDate.now();
+    // UTC to match medianDaysToPay, which normalizes paid_at to UTC — otherwise, around midnight,
+    // the JVM default zone could disagree with the median and flip DRIFTING across hosts.
+    LocalDate today = LocalDate.now(ZoneOffset.UTC);
 
     Long median = medianDaysToPay(invoices);
     long oldestCurrentDaysOverdue = oldestCurrentDaysOverdue(invoices, today);
@@ -99,13 +105,31 @@ public class CollectionsTriageService {
   /**
    * Merged {@link CollectionsAdvisor} advice (signal + detail) across every advisor bean — for
    * drafting context (and the 593B cash digest later). Each advisor is responsible for its own
-   * fail-open behaviour (ADR-329).
+   * fail-open behaviour (ADR-329), but as a hard boundary this method also isolates each advisor
+   * call: a thrown advisor is logged and skipped, never allowed to escape.
+   *
+   * <p>This isolation matters because {@code adviceFor} is called from {@code
+   * AiReminderComposer.compose} inside the collections scan's per-candidate {@code REQUIRES_NEW}
+   * transaction. This method's {@code @Transactional} joins that transaction
+   * (PROPAGATION_REQUIRED), so if an advisor exception escaped {@code adviceFor} the transaction
+   * interceptor would mark the shared candidate transaction rollback-only — producing an {@code
+   * UnexpectedRollbackException} at commit even though the composer's own catch degrades to no
+   * annotations. Catching per-advisor here keeps a broken advisor from ever turning a draftable
+   * reminder into {@code SKIPPED(draft_failed)}.
    */
   @Transactional(readOnly = true)
   public List<CollectionsAdvisor.CollectionsAdvice> adviceFor(UUID customerId) {
     List<CollectionsAdvisor.CollectionsAdvice> advice = new ArrayList<>();
     for (CollectionsAdvisor advisor : advisors) {
-      advice.addAll(advisor.adviseFor(customerId));
+      try {
+        advice.addAll(advisor.adviseFor(customerId));
+      } catch (RuntimeException e) {
+        log.debug(
+            "Advisor {} failed for customer {}: {}",
+            advisor.getClass().getSimpleName(),
+            customerId,
+            e.getMessage());
+      }
     }
     return List.copyOf(advice);
   }

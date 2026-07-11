@@ -61,7 +61,10 @@ class CashDigestServiceTest {
   private static final String NOAI_ORG_ID = "org_cash_digest_noai_test";
 
   private static final String NARRATIVE_SENTINEL = "STUB-DIGEST-NARRATIVE";
-  private static final String AI_RISK_SENTINEL = "Stub Risk Co";
+  // Distinctive prose from the stub AI risk's `why`. The stub risk is grounded to the seeded debtor
+  // (DETERMINISTIC_DEBTOR) so the narrate() grounding filter keeps it; this sentinel — which only
+  // renders inside the aiRisks block — proves the AI risk survived and rendered.
+  private static final String AI_RISK_SENTINEL = "STUB-DIGEST-RISK-WHY";
   private static final String DETERMINISTIC_DEBTOR = "Real Debtor Co";
 
   @Autowired private MockMvc mockMvc;
@@ -173,9 +176,8 @@ class CashDigestServiceTest {
     assertThat(greenMail.waitForIncomingEmail(5_000L, 3)).isTrue();
     MimeMessage[] received = greenMail.getReceivedMessages();
     var recipients = recipientAddresses(received);
-    assertThat(recipients)
-        .contains(aiOwnerEmail, aiAdminEmail, aiMutedOwnerEmail)
-        .doesNotContain(aiMemberEmail);
+    // Exactly one email per owner/admin (three), none to the plain member — no duplicate sends.
+    assertThat(recipients).containsExactlyInAnyOrder(aiOwnerEmail, aiAdminEmail, aiMutedOwnerEmail);
 
     // Every AI-enabled email carries the narration sentinel + the AI-only risk + the deterministic
     // debtor from the always-rendered table.
@@ -198,10 +200,10 @@ class CashDigestServiceTest {
           assertThat(hasCashDigestBell(aiMutedOwnerId)).isFalse();
           assertThat(hasCashDigestBell(aiMemberId)).isFalse();
 
-          // One CASH_DIGEST delivery-log row per recipient email.
+          // Exactly one CASH_DIGEST delivery-log row per recipient email — no duplicates, none for
+          // the plain member.
           assertThat(deliveredEmails(orgSettingsId))
-              .contains(aiOwnerEmail, aiAdminEmail, aiMutedOwnerEmail)
-              .doesNotContain(aiMemberEmail);
+              .containsExactlyInAnyOrder(aiOwnerEmail, aiAdminEmail, aiMutedOwnerEmail);
 
           // Exactly one audit row for this run.
           var audits =
@@ -228,7 +230,8 @@ class CashDigestServiceTest {
 
     assertThat(greenMail.waitForIncomingEmail(5_000L, 1)).isTrue();
     MimeMessage[] received = greenMail.getReceivedMessages();
-    assertThat(recipientAddresses(received)).contains(noAiOwnerEmail);
+    // Exactly one email to the sole owner — no duplicate send.
+    assertThat(recipientAddresses(received)).containsExactly(noAiOwnerEmail);
 
     String body = extractBody(received[0]);
     // Numbers-only fallback: the deterministic debtor renders, but no narration block.
@@ -243,7 +246,8 @@ class CashDigestServiceTest {
         () -> {
           UUID orgSettingsId = orgSettingsRepository.findForCurrentTenant().orElseThrow().getId();
           assertThat(hasCashDigestBell(noAiOwnerId)).isTrue();
-          assertThat(deliveredEmails(orgSettingsId)).contains(noAiOwnerEmail);
+          // Exactly one delivery-log row for the sole owner.
+          assertThat(deliveredEmails(orgSettingsId)).containsExactly(noAiOwnerEmail);
           var audits =
               auditEventRepository
                   .findByFilter(

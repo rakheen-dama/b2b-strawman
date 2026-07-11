@@ -2,8 +2,8 @@
   "narrative": "STUB-DIGEST-NARRATIVE: Cash position is under control this week, with collections tracking billed work closely and a small amount of aged debt to watch.",
   "topRisks": [
     {
-      "customerName": "Stub Risk Co",
-      "why": "Outstanding balance has drifted well past this customer's usual days-to-pay and reminders have gone unanswered.",
+      "customerName": "Real Debtor Co",
+      "why": "STUB-DIGEST-RISK-WHY: Outstanding balance has drifted well past this customer's usual days-to-pay and reminders have gone unanswered.",
       "suggestedAction": "Call the account contact directly before the next dunning stage."
     }
   ]

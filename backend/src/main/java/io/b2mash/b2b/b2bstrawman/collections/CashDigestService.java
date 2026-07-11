@@ -36,13 +36,17 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.ObjectMapper;
 
 /**
@@ -57,7 +61,15 @@ import tools.jackson.databind.ObjectMapper;
  * disabled/unconfigured, or narration fails for any reason, the digest degrades to a numbers-only
  * email (one Thymeleaf conditional) — the job never crashes on AI unavailability (§6.4). The digest
  * is the owner's lockup report and ships ungated (no {@code collectionsEnabled} gate — design note
- * 5); members opt out via notification preferences.
+ * 5). A member's notification preference mutes only the in-app bell (via {@code createIfEnabled});
+ * the email still goes to every owner/admin — the mute governs the bell, not the email (§8.4).
+ *
+ * <p><strong>No outer transaction.</strong> {@link #processTenant()} is deliberately NOT
+ * {@code @Transactional} (mirroring {@code PortalDigestScheduler}): a single DB transaction must
+ * never be held open across the LLM round-trip or the per-recipient SMTP sends. Assembly runs in
+ * its own short read-only transaction; each delivery side effect (bell, delivery-log, audit)
+ * commits in its own transaction, so an already-sent email can never be rolled back by a later
+ * failure.
  */
 @Service
 public class CashDigestService {
@@ -128,6 +140,14 @@ public class CashDigestService {
   private final EmailRateLimiter emailRateLimiter;
   private final AuditService auditService;
 
+  /**
+   * Short read-only transaction for the deterministic assembly pass. Explicit (not method-level
+   * {@code @Transactional}) so it applies on every call path — including {@code processTenant()}'s
+   * self-invocation of {@link #assembleData()}, where an annotation would be bypassed by Spring's
+   * proxy AOP — without holding a transaction across narration/delivery.
+   */
+  private final TransactionTemplate readTransactionTemplate;
+
   public CashDigestService(
       EntityManager entityManager,
       TimeEntryRepository timeEntryRepository,
@@ -145,7 +165,8 @@ public class CashDigestService {
       EmailTemplateRenderer emailTemplateRenderer,
       EmailDeliveryLogService deliveryLogService,
       EmailRateLimiter emailRateLimiter,
-      AuditService auditService) {
+      AuditService auditService,
+      PlatformTransactionManager transactionManager) {
     this.entityManager = entityManager;
     this.timeEntryRepository = timeEntryRepository;
     this.activityRepository = activityRepository;
@@ -163,10 +184,16 @@ public class CashDigestService {
     this.deliveryLogService = deliveryLogService;
     this.emailRateLimiter = emailRateLimiter;
     this.auditService = auditService;
+    this.readTransactionTemplate = new TransactionTemplate(transactionManager);
+    this.readTransactionTemplate.setReadOnly(true);
   }
 
-  /** Assemble → narrate → deliver for the current tenant. */
-  @Transactional
+  /**
+   * Assemble → narrate → deliver for the current tenant. Deliberately NOT {@code @Transactional} —
+   * assembly gets its own short read-only transaction, narration runs transaction-free (the LLM
+   * call must not pin a DB connection), and each delivery side effect commits in its own
+   * transaction so a failure mid-recipient-loop can never roll back emails that were already sent.
+   */
   public void processTenant() {
     CashDigestData data = assembleData();
     CashDigestOutput narration = narrate(data);
@@ -178,9 +205,17 @@ public class CashDigestService {
    * outstanding + four-way aging buckets, billed vs collected for the trailing 7 days, stale
    * unbilled WIP older than 30 days, reminder-activity counts by status, and the top debtor risks
    * (reusing the 591A/592A debtor book, which already carries the triage signals).
+   *
+   * <p>Runs inside a short read-only transaction via {@link #readTransactionTemplate} — a real
+   * transaction on every call path (proxy or self-invocation from {@link #processTenant()}) that is
+   * committed before narration and delivery begin, so the DB connection is not held across the LLM
+   * round-trip.
    */
-  @Transactional(readOnly = true)
   public CashDigestData assembleData() {
+    return readTransactionTemplate.execute(status -> assembleDataInTransaction());
+  }
+
+  private CashDigestData assembleDataInTransaction() {
     Tuple totals =
         (Tuple) entityManager.createNativeQuery(TOTALS_SQL, Tuple.class).getSingleResult();
     BigDecimal outstandingTotal = toBigDecimal(totals.get("outstanding_total"));
@@ -272,6 +307,10 @@ public class CashDigestService {
       CashDigestOutput output =
           llmJsonParser.parse(
               objectMapper, result.execution().getOutputContent(), CashDigestOutput.class);
+      // Prompt-injection / hallucination guard: drop any AI risk whose customer isn't in the
+      // assembled debtor book. The template's numbers already win (ADR-328 A1); this keeps a
+      // hallucinated debtor name out of the prose too. Grounding happens before truncation.
+      output = dropUngroundedRisks(output, data);
       // Defensive truncation — the prompt asks for at most three risks; enforce it in code too.
       if (output.topRisks() != null && output.topRisks().size() > MAX_AI_RISKS) {
         output =
@@ -282,6 +321,38 @@ public class CashDigestService {
       log.warn("Cash digest narration failed — falling back to numbers-only: {}", e.getMessage());
       return null;
     }
+  }
+
+  /**
+   * Drops any AI-ranked risk whose {@code customerName} does not match a debtor in the assembled
+   * {@link CashDigestData#topRisks()} book (case-insensitive, trimmed). The template already prints
+   * only the authoritative deterministic figures (ADR-328 A1), so this is defence-in-depth against
+   * a hallucinated or injected debtor name reaching the owner's inbox in prose.
+   */
+  private CashDigestOutput dropUngroundedRisks(CashDigestOutput output, CashDigestData data) {
+    if (output.topRisks() == null || output.topRisks().isEmpty()) {
+      return output;
+    }
+    Set<String> knownDebtors =
+        data.topRisks().stream()
+            .map(r -> normalizeName(r.customerName()))
+            .filter(n -> !n.isEmpty())
+            .collect(Collectors.toSet());
+    List<CashDigestOutput.TopRisk> grounded =
+        output.topRisks().stream()
+            .filter(r -> knownDebtors.contains(normalizeName(r.customerName())))
+            .toList();
+    if (grounded.size() == output.topRisks().size()) {
+      return output;
+    }
+    log.warn(
+        "Cash digest: dropped {} AI risk(s) whose customer is not in the debtor book",
+        output.topRisks().size() - grounded.size());
+    return new CashDigestOutput(output.narrative(), grounded);
+  }
+
+  private static String normalizeName(String name) {
+    return name == null ? "" : name.trim().toLowerCase(Locale.ROOT);
   }
 
   /**
@@ -402,7 +473,7 @@ public class CashDigestService {
     context.put("billed", data.billed().toPlainString());
     context.put("collected", data.collected().toPlainString());
     context.put("staleWipEntryCount", data.staleWipEntryCount());
-    context.put("staleWipHours", String.format("%.1f", data.staleWipHours()));
+    context.put("staleWipHours", String.format(Locale.ROOT, "%.1f", data.staleWipHours()));
     context.put("activityCounts", data.activityCountsByStatus());
     context.put("topRisks", data.topRisks());
 

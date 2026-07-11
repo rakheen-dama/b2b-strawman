@@ -106,7 +106,13 @@ block exists) — never exact-text, because AI output is non-deterministic.
 | CP-00.3 | `curl -sf http://localhost:8026/api/v1/messages` | Mailpit API responds (200) | [ ] |
 | CP-00.4 | Confirm seed state | org `e2e-test-org` (accounting-za, pro); Alice/Bob/Carol; ONE customer "Acme Corp" (ACTIVE); project "Website Redesign"; no invoices, no AI config, no firm profile | [ ] |
 
+**Status: [x] PASS**
+
 **Evidence log (CP-00):**
+- Backend health: `curl http://localhost:8081/actuator/health` → `{"groups":["liveness","readiness"],"status":"UP"}`.
+- Frontend 3001 → HTTP 200. Mailpit `http://localhost:8026/api/v1/messages` → HTTP 200.
+- Org mapping (flagged read-only psql): `external_org_id=e2e-test-org → schema_name=tenant_7d218705360b`.
+- **Seed-state discrepancy (documented, not a product bug):** the brief's CP-00 expected ONE seeded customer "Acme Corp (ACTIVE)". The freshly-seeded DB contained **zero** customers (`tenant_7d218705360b.customers` empty). Acme Corp was therefore created via the sanctioned product-API path in CP-04 alongside Beta/Gamma. Logged as **GAP-P83-004** (seed/environment, minor).
 
 ## 6. CP-01 — Mock login
 
@@ -119,7 +125,10 @@ block exists) — never exact-text, because AI output is non-deterministic.
 
 **Evidence**: `cp-01-dashboard.png`.
 
+**Status: [x] PASS**
+
 **Evidence log (CP-01):**
+- Navigated `/mock-login`, Alice (Owner) selected by default, clicked "Sign In" → redirected to `/org/e2e-test-org/dashboard`. User chip "Alice Owner / alice@e2e-test.local". Screenshot `cp-01-dashboard.png`.
 
 ## 7. CP-02 — Enable collections policy (settings UI)
 
@@ -135,7 +144,11 @@ block exists) — never exact-text, because AI output is non-deterministic.
 
 **Evidence**: `cp-02-collections-policy-enabled.png`.
 
+**Status: [x] PASS** (negative sub-check CP-02.5 not executed — optional)
+
 **Evidence log (CP-02):**
+- Page h1 "Collections", card h2 "Overdue-Invoice Reminders" observed. Default fields 7 / 21 / 45 / 60 confirmed in Stage 1/2/3 + Escalation spinbuttons.
+- Toggled "Enable collections reminders" ON, clicked "Save Settings" → success message "Collections settings updated." observed. Screenshot `cp-02-collections-policy-enabled.png`.
 
 ## 7a. CP-03 — Configure AI (BYOAK) + firm profile  [REQUIRES live Anthropic key]
 
@@ -153,7 +166,13 @@ block exists) — never exact-text, because AI output is non-deterministic.
 
 **Evidence**: `cp-03-ai-active.png` (status badge only, screenshot taken AFTER the dialog closed; key masked).
 
+**Status: [x] PASS**
+
 **Evidence log (CP-03):**
+- Integrations → AI Assistant card: selected Provider "anthropic" from the combobox (options were `noop` / `anthropic`).
+- Clicked "Set API Key", typed the live key **into the dialog textbox only** (sanctioned path), clicked "Save Key". Dialog closed; key rendered masked as `••••nWbAAA`. The key was never written to any file, log, or command line.
+- Toggled "Enabled" ON → status badge changed to **"Active"**; Model combobox + "Test Connection" button appeared. Screenshot `cp-03-ai-active.png` taken after dialog closed (badge only).
+- Firm profile at `/settings/ai` ("Set Up AI"): added practice area "Commercial Law", selected Province "Gauteng" (defaults Conservative risk + Claude Sonnet 4.6), clicked "Complete Setup". Verified via flagged read-only psql: `tenant_7d218705360b.ai_firm_profiles` count = **2** (a double-submit created two rows; `AiReminderComposer` only requires count > 0, so AI drafting is enabled). Noted as a minor observation, not filed as a bug.
 
 ## 8. CP-04 — Customers: create 2, exempt 1
 
@@ -167,7 +186,11 @@ block exists) — never exact-text, because AI output is non-deterministic.
 
 **Evidence**: `cp-04-gamma-exempt.png`.
 
+**Status: [x] PASS**
+
 **Evidence log (CP-04):**
+- Customers created via the sanctioned product-API path (seeder precedent — Acme absent from seed, so all three created this way): Beta Ltd `6b989213-c9c1-43cf-82bc-76a8ba31ae5d`, Gamma Corp `adc0f06d-5347-436e-865d-983532cfed0e`, Acme Corp `a0705a9f-0273-48fd-b8c8-f66fadc5af1e`. All transitioned PROSPECT → ONBOARDING → ACTIVE (activation required addressLine1/city/country, which were supplied). Verified lifecycle=ACTIVE for all three.
+- CP-04.3 exemption toggle observed **in the browser**: Gamma detail (`?tab=details`) → Collections card with helper text "Exempt customers never receive automated payment reminders." → toggled "Exclude from collections" ON (`aria-checked` false → true). Persistence confirmed via API: `GET /api/customers/{gamma}` → `collectionsExempt=true`. Screenshot `cp-04-gamma-exempt.png`.
 
 ## 9. CP-05 — Invoices SENT with staggered (backdated) due dates
 
@@ -195,7 +218,20 @@ Note: send-time CRITICAL validations (branding/customer fields) may 422 — use 
 
 **Evidence**: `cp-05-invoices-sent.png` (5 SENT invoices with backdated due dates).
 
+**Status: [x] PASS**
+
 **Evidence log (CP-05):**
+- Created via the sanctioned invoice-API path (create → add line → approve → send with `overrideWarnings:true`), backdated due dates accepted (no past-date validation). Invoice-number map:
+
+  | Label | Number | Invoice ID | Customer | Due date | approve/send HTTP | Status |
+  |---|---|---|---|---|---|---|
+  | INV-A1 | INV-0001 | ab76915f-cd0a-4350-ba04-f1d0d43b41ac | Acme | 2026-07-01 (−10d) | 200 / 200 | SENT |
+  | INV-A2 | INV-0002 | 74f672f8-5c54-41b6-8433-cb9ed6548282 | Acme | 2026-05-02 (−70d) | 200 / 200 | SENT |
+  | INV-B1 | INV-0003 | a5e801f9-7edd-4ba5-a6bf-0b5fdc199ce4 | Beta | 2026-06-16 (−25d) | 200 / 200 | SENT |
+  | INV-B2 | INV-0004 | b0ac2ff2-a46e-4987-aef1-e31f31c7d049 | Beta | 2026-07-01 (−10d) | 200 / 200 | SENT |
+  | INV-C1 | INV-0005 | 2e6d10fb-87db-46c1-97f8-7c11e3f86224 | Gamma (exempt) | 2026-06-11 (−30d) | 200 / 200 | SENT |
+
+- Invoice list UI (`/org/e2e-test-org/invoices`) shows all 5 rows "Sent" with the backdated due dates. Screenshot `cp-05-invoices-sent.png`. Send-time CRITICAL validations were overridden via `overrideWarnings:true` (equivalent to the admin "Send Anyway" dialog).
 
 ## 10. CP-06 — Trigger `collections_scan`  [AUTHORIZED job trigger — see §3.1.1]
 

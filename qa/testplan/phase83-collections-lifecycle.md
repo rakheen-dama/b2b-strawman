@@ -172,7 +172,7 @@ block exists) — never exact-text, because AI output is non-deterministic.
 - Integrations → AI Assistant card: selected Provider "anthropic" from the combobox (options were `noop` / `anthropic`).
 - Clicked "Set API Key", typed the live key **into the dialog textbox only** (sanctioned path), clicked "Save Key". Dialog closed; key rendered masked as `••••nWbAAA`. The key was never written to any file, log, or command line.
 - Toggled "Enabled" ON → status badge changed to **"Active"**; Model combobox + "Test Connection" button appeared. Screenshot `cp-03-ai-active.png` taken after dialog closed (badge only).
-- Firm profile at `/settings/ai` ("Set Up AI"): added practice area "Commercial Law", selected Province "Gauteng" (defaults Conservative risk + Claude Sonnet 4.6), clicked "Complete Setup". Verified via flagged read-only psql: `tenant_7d218705360b.ai_firm_profiles` count = **2** (a double-submit created two rows; `AiReminderComposer` only requires count > 0, so AI drafting is enabled). Noted as a minor observation, not filed as a bug.
+- Firm profile at `/settings/ai` ("Set Up AI"): added practice area "Commercial Law", selected Province "Gauteng" (defaults Conservative risk + Claude Sonnet 4.6), clicked "Complete Setup". Verified via flagged read-only psql: `tenant_7d218705360b.ai_firm_profiles` count = **2** (a double-submit created two rows; `AiReminderComposer` only requires count > 0, so AI drafting is enabled). Filed as **GAP-P83-005** (possible UI double-submit defect — unreproduced).
 
 ## 8. CP-04 — Customers: create 2, exempt 1
 
@@ -248,7 +248,7 @@ FROM public.org_schema_mapping WHERE org_id = 'e2e-test-org';
 |---|--------|----------|--------|
 | CP-06.1 | Execute the authorized INSERT (flagged) | Row enqueued PENDING | [ ] |
 | CP-06.2 | Poll `SELECT job_type,status,error_message FROM public.job_queue ORDER BY created_at DESC LIMIT 5;` (read-only, flagged), up to ~90 s | `collections_scan` row → COMPLETED | [ ] |
-| CP-06.3 | Backend log excerpt: `docker compose -f compose/docker-compose.e2e.yml logs backend | grep -i collections` | scan ran | [ ] |
+| CP-06.3 | Backend log excerpt: `docker compose -f compose/docker-compose.e2e.yml logs backend \| grep -i collections` | scan ran | [ ] |
 
 **Evidence**: job row COMPLETED + backend log excerpt.
 
@@ -273,7 +273,7 @@ FROM public.org_schema_mapping WHERE org_id = 'e2e-test-org';
 | CP-07.5 | Expand each card (chevron) | Subject + Message preview of the real draft | [ ] |
 | CP-07.6 | INV-A2 detail → "Collection activity" | STAGE_3 PROPOSED + STAGE_1/2 SKIPPED(`superseded_by_higher_stage`) + ESCALATION FLAGGED | [ ] |
 
-**Evidence**: `cp-07-queue-4-drafts.png`, `cp-07-stage3-draft-expanded.png`, `cp-07-inv-a2-ledger.png`, `cp-07-debtor-book.png`.
+**Evidence**: `cp-07-queue-4-drafts.png` (single full-page capture — shows BOTH the debtor-book Signals badges and the pending-reminders queue), `cp-07-stage3-draft-expanded.png`, `cp-07-inv-a2-ledger.png`.
 
 **Status: [x] PASS**
 
@@ -500,7 +500,7 @@ for re-spec.
 
 ### Gaps filed
 
-None of these are product-behaviour defects in the Phase 83 collections/cash feature set — the lifecycle itself passed end-to-end. They are environment/trigger/seed gaps surfaced by running the capstone on the e2e stack. No product code was fixed and no scenario was amended (quality gates §6/§7).
+The lifecycle itself passed end-to-end — none of these change a PASS verdict. They are not all environment-only, though: **GAP-P83-001 is a product gap** (no on-demand trigger endpoint for `collections_scan`/`cash_digest`) and **GAP-P83-005 is a possible UI defect** (firm-profile double-submit, unreproduced). GAP-P83-002/003/004 are e2e-stack/seed limitations. No product code was fixed and no scenario was amended (quality gates §6/§7).
 
 ### GAP-P83-001: No on-demand trigger endpoint for `collections_scan` / `cash_digest`
 

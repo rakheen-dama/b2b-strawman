@@ -74,6 +74,8 @@ export interface DebtorResponse {
   oldestDaysOverdue: number;
   buckets: DebtorBuckets;
   signals: string[];
+  /** 592B additive: advisor detail strings by signal name; absent/empty when no advice. */
+  signalDetails?: Record<string, string>;
   collectionsExempt: boolean;
   lastActivity: DebtorLastActivity | null;
 }

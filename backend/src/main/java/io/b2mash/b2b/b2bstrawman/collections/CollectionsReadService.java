@@ -194,10 +194,13 @@ public class CollectionsReadService {
     var rows = new ArrayList<DebtorResponse>(tuples.size());
     // A mixed-currency customer surfaces as one row per currency; triage signals are per-CUSTOMER,
     // so compute them once per DISTINCT customer on the page rather than once per (customer,
-    // currency) row. Bounded by page size; 593A extracts a set-based batch API for the seam.
-    Map<UUID, List<String>> signalsByCustomer = new HashMap<>();
+    // currency) row (memoised across a customer's per-currency rows; bounded by page size). The
+    // single TriageResult carries both the §3.4 signal names and the advisor-contributed detail
+    // strings (592B) from ONE advisor pass. 593A extracts a set-based batch API for the seam.
+    Map<UUID, CollectionsTriageService.TriageResult> triageByCustomer = new HashMap<>();
     for (Tuple t : tuples) {
       UUID customerId = t.get("customer_id", UUID.class);
+      var triage = triageByCustomer.computeIfAbsent(customerId, triageService::triageFor);
       var buckets =
           new Buckets(
               toBigDecimal(t.get("bucket_current")),
@@ -214,7 +217,8 @@ public class CollectionsReadService {
               toInt(t.get("invoice_count")),
               toInt(t.get("oldest_days_overdue")),
               buckets,
-              signalsByCustomer.computeIfAbsent(customerId, this::signalsFor),
+              triage.signals(),
+              triage.signalDetails(),
               Boolean.TRUE.equals(t.get("collections_exempt", Boolean.class)),
               lastActivity));
     }
@@ -251,17 +255,6 @@ public class CollectionsReadService {
         a.getDaysOverdueAtAction(),
         a.getCreatedAt(),
         a.getUpdatedAt());
-  }
-
-  /**
-   * Triage signals for a customer (§3.4) — the deterministic four ({@code DRIFTING}, {@code
-   * SERIAL_LATE}, {@code GONE_QUIET}, {@code ESCALATED}) plus any advisor-contributed signals.
-   * Delegated to {@link CollectionsTriageService}, which owns the signal engine (592A.4). Invoked
-   * once per DISTINCT customer on the page (memoised across a customer's per-currency rows; bounded
-   * by page size). 593A extracts a set-based batch API for this seam.
-   */
-  private List<String> signalsFor(UUID customerId) {
-    return triageService.signalsFor(customerId);
   }
 
   private static LastActivity toLastActivity(Tuple t) {
@@ -331,6 +324,7 @@ public class CollectionsReadService {
       int oldestDaysOverdue,
       Buckets buckets,
       List<String> signals,
+      Map<String, String> signalDetails,
       boolean collectionsExempt,
       LastActivity lastActivity) {}
 

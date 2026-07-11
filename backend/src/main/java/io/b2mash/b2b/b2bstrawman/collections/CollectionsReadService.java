@@ -13,7 +13,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -36,8 +38,8 @@ import org.springframework.transaction.annotation.Transactional;
  * SENT invoices (they land in the {@code current} bucket).
  *
  * <p>The bucket CASE is kept self-contained here; 593A extracts a shared {@code AgingBuckets}
- * helper. {@code signals} is the empty-list seam replaced by {@code CollectionsTriageService}
- * wiring in 592A.4.
+ * helper. {@code signals} is populated by {@link CollectionsTriageService} (wired 592A.4) — one
+ * deterministic-signal computation per debtor-book row.
  */
 @Service
 public class CollectionsReadService {
@@ -114,16 +116,19 @@ public class CollectionsReadService {
   private final CustomerRepository customerRepository;
   private final CollectionActivityRepository activityRepository;
   private final InvoiceRepository invoiceRepository;
+  private final CollectionsTriageService triageService;
 
   public CollectionsReadService(
       EntityManager entityManager,
       CustomerRepository customerRepository,
       CollectionActivityRepository activityRepository,
-      InvoiceRepository invoiceRepository) {
+      InvoiceRepository invoiceRepository,
+      CollectionsTriageService triageService) {
     this.entityManager = entityManager;
     this.customerRepository = customerRepository;
     this.activityRepository = activityRepository;
     this.invoiceRepository = invoiceRepository;
+    this.triageService = triageService;
   }
 
   /**
@@ -187,6 +192,10 @@ public class CollectionsReadService {
     @SuppressWarnings("unchecked")
     List<Tuple> tuples = query.getResultList();
     var rows = new ArrayList<DebtorResponse>(tuples.size());
+    // A mixed-currency customer surfaces as one row per currency; triage signals are per-CUSTOMER,
+    // so compute them once per DISTINCT customer on the page rather than once per (customer,
+    // currency) row. Bounded by page size; 593A extracts a set-based batch API for the seam.
+    Map<UUID, List<String>> signalsByCustomer = new HashMap<>();
     for (Tuple t : tuples) {
       UUID customerId = t.get("customer_id", UUID.class);
       var buckets =
@@ -205,7 +214,7 @@ public class CollectionsReadService {
               toInt(t.get("invoice_count")),
               toInt(t.get("oldest_days_overdue")),
               buckets,
-              signalsFor(customerId),
+              signalsByCustomer.computeIfAbsent(customerId, this::signalsFor),
               Boolean.TRUE.equals(t.get("collections_exempt", Boolean.class)),
               lastActivity));
     }
@@ -245,11 +254,14 @@ public class CollectionsReadService {
   }
 
   /**
-   * Triage signals for a customer. Empty until 592A.4 replaces this seam with {@code
-   * CollectionsTriageService} wiring. Do not populate here — 592A owns the signal engine.
+   * Triage signals for a customer (§3.4) — the deterministic four ({@code DRIFTING}, {@code
+   * SERIAL_LATE}, {@code GONE_QUIET}, {@code ESCALATED}) plus any advisor-contributed signals.
+   * Delegated to {@link CollectionsTriageService}, which owns the signal engine (592A.4). Invoked
+   * once per DISTINCT customer on the page (memoised across a customer's per-currency rows; bounded
+   * by page size). 593A extracts a set-based batch API for this seam.
    */
   private List<String> signalsFor(UUID customerId) {
-    return List.of();
+    return triageService.signalsFor(customerId);
   }
 
   private static LastActivity toLastActivity(Tuple t) {

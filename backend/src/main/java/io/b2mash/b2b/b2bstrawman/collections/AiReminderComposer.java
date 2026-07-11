@@ -13,6 +13,8 @@ import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
@@ -51,16 +53,19 @@ public class AiReminderComposer implements ReminderComposer {
   private final AiFirmProfileRepository firmProfileRepository;
   private final IntegrationRegistry integrationRegistry;
   private final CollectionActivityRepository activityRepository;
+  private final CollectionsTriageService triageService;
 
   public AiReminderComposer(
       AiSkillExecutionService skillExecutionService,
       AiFirmProfileRepository firmProfileRepository,
       IntegrationRegistry integrationRegistry,
-      CollectionActivityRepository activityRepository) {
+      CollectionActivityRepository activityRepository,
+      CollectionsTriageService triageService) {
     this.skillExecutionService = skillExecutionService;
     this.firmProfileRepository = firmProfileRepository;
     this.integrationRegistry = integrationRegistry;
     this.activityRepository = activityRepository;
+    this.triageService = triageService;
   }
 
   @Override
@@ -99,7 +104,7 @@ public class AiReminderComposer implements ReminderComposer {
                 + " (stage "
                 + persisted.getStage().name()
                 + ")",
-            Map.of());
+            advisorContext(persisted.getCustomerId()));
 
     // System invocation: invokedBy = null (§6.4) — metering rides the AiExecution row unchanged.
     SkillExecutionResult result =
@@ -127,5 +132,34 @@ public class AiReminderComposer implements ReminderComposer {
         persisted.getId(),
         result.gates().getFirst().getId());
     return Optional.of(result.gates().getFirst());
+  }
+
+  /**
+   * Builds the skill's {@code additionalContext} carrying advisor annotations (592A.4). Advice is
+   * <em>acknowledgeable context only</em> — never an instruction to promise transfers (ADR-329);
+   * the skill's {@code <advisor-annotations>} prompt block already treats it that way. Each {@link
+   * CollectionsAdvisor.CollectionsAdvice} is formatted as one {@code SIGNAL: detail} line.
+   *
+   * <p>Advice is optional garnish: this runs inside the scan's per-candidate transaction, so any
+   * failure is swallowed to {@link Map#of()} — a broken advisor can never turn a draftable reminder
+   * into {@code SKIPPED(draft_failed)}. (The trust advisor already fails open internally; this is a
+   * belt-and-braces guard for any other advisor.)
+   */
+  private Map<String, Object> advisorContext(UUID customerId) {
+    try {
+      List<CollectionsAdvisor.CollectionsAdvice> advice = triageService.adviceFor(customerId);
+      if (advice.isEmpty()) {
+        return Map.of();
+      }
+      String annotations =
+          advice.stream()
+              .map(a -> a.signal() + ": " + a.detail())
+              .collect(Collectors.joining("\n"));
+      return Map.of("advisor_annotations", annotations);
+    } catch (RuntimeException e) {
+      log.debug(
+          "Advisor annotation assembly failed for customer {}: {}", customerId, e.getMessage());
+      return Map.of();
+    }
   }
 }

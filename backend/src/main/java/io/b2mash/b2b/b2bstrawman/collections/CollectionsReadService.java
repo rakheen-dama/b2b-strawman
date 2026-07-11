@@ -36,8 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
  * SENT invoices (they land in the {@code current} bucket).
  *
  * <p>The bucket CASE is kept self-contained here; 593A extracts a shared {@code AgingBuckets}
- * helper. {@code signals} is the empty-list seam replaced by {@code CollectionsTriageService}
- * wiring in 592A.4.
+ * helper. {@code signals} is populated by {@link CollectionsTriageService} (wired 592A.4) — one
+ * deterministic-signal computation per debtor-book row.
  */
 @Service
 public class CollectionsReadService {
@@ -114,16 +114,19 @@ public class CollectionsReadService {
   private final CustomerRepository customerRepository;
   private final CollectionActivityRepository activityRepository;
   private final InvoiceRepository invoiceRepository;
+  private final CollectionsTriageService triageService;
 
   public CollectionsReadService(
       EntityManager entityManager,
       CustomerRepository customerRepository,
       CollectionActivityRepository activityRepository,
-      InvoiceRepository invoiceRepository) {
+      InvoiceRepository invoiceRepository,
+      CollectionsTriageService triageService) {
     this.entityManager = entityManager;
     this.customerRepository = customerRepository;
     this.activityRepository = activityRepository;
     this.invoiceRepository = invoiceRepository;
+    this.triageService = triageService;
   }
 
   /**
@@ -245,11 +248,13 @@ public class CollectionsReadService {
   }
 
   /**
-   * Triage signals for a customer. Empty until 592A.4 replaces this seam with {@code
-   * CollectionsTriageService} wiring. Do not populate here — 592A owns the signal engine.
+   * Triage signals for a customer (§3.4) — the deterministic four ({@code DRIFTING}, {@code
+   * SERIAL_LATE}, {@code GONE_QUIET}, {@code ESCALATED}) plus any advisor-contributed signals.
+   * Delegated to {@link CollectionsTriageService}, which owns the signal engine (592A.4). Invoked
+   * once per debtor-book row (bounded by page size).
    */
   private List<String> signalsFor(UUID customerId) {
-    return List.of();
+    return triageService.signalsFor(customerId);
   }
 
   private static LastActivity toLastActivity(Tuple t) {

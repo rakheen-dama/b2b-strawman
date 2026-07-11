@@ -26,7 +26,7 @@ This phase ships as **7 epics (588–594)**, expanded to **15 numbered slices** 
 | 589 | Scan Engine + Escalation + Payment Cancellation | Backend | 588A, 588B | L | 589A, 589B | **Done** — 589A, 589B (PR #1538) |
 | 590 | Drafting Skill + Gated Send Executor | Backend | 589 | L | 590A, 590B | **Done** — 590A, 590B (PR #1539) |
 | 591 | Batch Approval + Collections Read APIs + Collections Frontend | Backend + Frontend (split slices) | 590 | L | 591A, 591B, 591C | **Done** — 591A (PR #1540), 591B (PR #1541), 591C (PR #1542) |
-| 592 | Debtor Triage + Trust-Aware Advisor Seam | Backend + Frontend (split slices) | 589 (592B also 591B) | M | 592A, 592B | |
+| 592 | Debtor Triage + Trust-Aware Advisor Seam | Backend + Frontend (split slices) | 589 (592B also 591B) | M | 592A, 592B | 592A **Done** (PR #1543) |
 | 593 | Weekly Cash Digest | Backend | 589A, 592A (types from 588A) | L | 593A, 593B | |
 | 594 | QA Capstone — Observed End-to-End Lifecycle | E2E / Process | 588–593 | M | 594A | |
 
@@ -163,7 +163,7 @@ REUSED (not rebuilt):
 |-------|-------|---------|-----------------------|
 | 3a | **590A** | `CollectionReminderSkill` + `system.txt`/`output-schema.json`; `AiReminderComposer` (system-invoked via `AiSkillExecutionService`, replaces no-op); `StubAiProvider` canned reminder output; `draft_failed`/`ai_unavailable` skip semantics. **Done** (PR #1539) | 592A |
 | 3b | **590B** | `SendCollectionReminderAction` + `GateAction` permits + `parseAction`/`execute` arms; `CollectionReminderSendService` (mirror `InvoiceEmailService`) + `collection-reminder.html` template; `CollectionsTenantIsolationTest` (mandatory). **Done** (PR #1539) | 592A |
-| 3c | **592A** | `CollectionsTriageService` (deterministic signals); `CollectionsAdvisor` SPI + no-op default; `verticals/legal/collections/TrustAwareCollectionsAdvisor` (fail-open on `DataAccessException`); core-has-no-legal-imports boundary test. | 590A, 590B, 591A |
+| 3c | **592A** | `CollectionsTriageService` (deterministic signals); `CollectionsAdvisor` SPI + no-op default; `verticals/legal/collections/TrustAwareCollectionsAdvisor` (fail-open on `DataAccessException`); core-has-no-legal-imports boundary test. **Done** (PR #1543) | 590A, 590B, 591A |
 
 ### Stage 4 — Approval surface + frontend ∥ Digest
 
@@ -420,7 +420,7 @@ Stage 5: [594A]                                          <- QA capstone
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **592A** | 592A.1–592A.4 | ~8 backend files (1 triage service + 1 SPI + 1 no-op + 1 advice record + 1 legal advisor + 3 test files) | Triage signals; advisor SPI + no-op; `TrustAwareCollectionsAdvisor`; boundary test; wire signals into 591A's read service + 590A's skill context. |
+| **592A** | 592A.1–592A.4 | ~8 backend files (1 triage service + 1 SPI + 1 no-op + 1 advice record + 1 legal advisor + 3 test files) | Triage signals; advisor SPI + no-op; `TrustAwareCollectionsAdvisor`; boundary test; wire signals into 591A's read service + 590A's skill context. **Done** (PR #1543; skill wiring landed in `AiReminderComposer` — 590A's skill already reads `advisor_annotations`; signals memoised per distinct customer per page, set-based batch deferred to 593A) |
 | **592B** | 592B.1 | ~3 frontend files (badge component + debtors table mod + 1 test) | Signal badges with `TRUST_FUNDS_AVAILABLE` detail tooltip. |
 
 ### Tasks

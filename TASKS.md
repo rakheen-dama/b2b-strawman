@@ -672,7 +672,7 @@
 | 589 | Scan Engine + Escalation + Payment Cancellation | Backend | 588A, 588B | L | 589A, 589B | **Done** — 589A, 589B (PR #1538) |
 | 590 | Drafting Skill + Gated Send Executor | Backend | 589 | L | 590A, 590B | **Done** — 590A, 590B (PR #1539) |
 | 591 | Batch Approval + Collections Read APIs + Collections Frontend | Backend + Frontend | 590 | L | 591A, 591B, 591C | **Done** — 591A (PR #1540), 591B (PR #1541), 591C (PR #1542) |
-| 592 | Debtor Triage + Trust-Aware Advisor Seam | Backend + Frontend | 589 (592B: 591B) | M | 592A, 592B | |
+| 592 | Debtor Triage + Trust-Aware Advisor Seam | Backend + Frontend | 589 (592B: 591B) | M | 592A, 592B | 592A **Done** (PR #1543) |
 | 593 | Weekly Cash Digest | Backend | 589A, 592A | L | 593A, 593B | |
 | 594 | QA Capstone — Observed End-to-End Lifecycle | E2E/Process | 588–593 | M | 594A | |
 

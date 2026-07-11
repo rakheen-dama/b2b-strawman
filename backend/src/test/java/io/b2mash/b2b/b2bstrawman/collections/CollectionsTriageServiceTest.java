@@ -12,10 +12,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustBalanceFactory;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -144,7 +142,11 @@ class CollectionsTriageServiceTest {
           // Trust: positive aggregate trust balance → advisor contributes TRUST_FUNDS_AVAILABLE.
           custTrust = seedCustomer("Trust Co", "trust@test.com");
           seedSentInvoice(custTrust, "Trust Co", "INV-T1", 20);
-          seedTrustBalance(custTrust, BigDecimal.valueOf(1000));
+          TestTrustBalanceFactory.seedTrustBalance(
+              trustAccountRepository,
+              clientLedgerCardRepository,
+              custTrust,
+              BigDecimal.valueOf(1000));
 
           // NoTrust: outstanding invoice but no ledger card → zero balance → no advice.
           custNoTrust = seedCustomer("No Trust Co", "notrust@test.com");
@@ -264,24 +266,5 @@ class CollectionsTriageServiceTest {
     invoice.updateDraft(dueDate, null, null, BigDecimal.ZERO);
     invoice.recalculateTotals(BigDecimal.valueOf(1000), false, BigDecimal.ZERO, false);
     return invoice;
-  }
-
-  private void seedTrustBalance(UUID customerId, BigDecimal amount) {
-    var trustAccount =
-        new TrustAccount(
-            "Triage Trust",
-            "Test Bank",
-            "002",
-            "9876543210",
-            TrustAccountType.INVESTMENT,
-            false,
-            false,
-            null,
-            LocalDate.now(),
-            null);
-    var savedTrustAccount = trustAccountRepository.save(trustAccount);
-    var ledgerCard = new ClientLedgerCard(savedTrustAccount.getId(), customerId);
-    ledgerCard.addDeposit(amount, LocalDate.now());
-    clientLedgerCardRepository.save(ledgerCard);
   }
 }

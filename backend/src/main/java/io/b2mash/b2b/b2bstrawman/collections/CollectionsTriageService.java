@@ -8,7 +8,9 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,11 +68,22 @@ public class CollectionsTriageService {
   }
 
   /**
-   * The signal names for the debtors API: the deterministic four (in a stable order) followed by
-   * advisor-contributed signal names, de-duplicated. Consumed per debtor-book row.
+   * Full triage result for one customer (592B): the §3.4 signal names (deterministic four in a
+   * stable order followed by advisor-contributed signal names, de-duplicated) plus the
+   * advisor-contributed detail strings keyed by signal (e.g. {@code {"TRUST_FUNDS_AVAILABLE": "R 84
+   * 200,00 held in trust"}}). One computation per customer — the debtors page memoises this per
+   * distinct customer per page so signals and details are derived from a SINGLE advisor pass.
+   */
+  public record TriageResult(List<String> signals, Map<String, String> signalDetails) {}
+
+  /**
+   * Full triage result for the debtors API: the deterministic four ({@code DRIFTING}, {@code
+   * SERIAL_LATE}, {@code GONE_QUIET}, {@code ESCALATED}) followed by advisor-contributed signal
+   * names (de-duplicated) plus the advisor detail strings keyed by signal. Consumed per debtor-book
+   * row.
    */
   @Transactional(readOnly = true)
-  public List<String> signalsFor(UUID customerId) {
+  public TriageResult triageFor(UUID customerId) {
     List<Invoice> invoices = invoiceRepository.findByCustomerId(customerId);
     // UTC to match medianDaysToPay, which normalizes paid_at to UTC — otherwise, around midnight,
     // the JVM default zone could disagree with the median and flip DRIFTING across hosts.
@@ -94,12 +107,26 @@ public class CollectionsTriageService {
     if (isEscalated(outstanding)) {
       signals.add("ESCALATED");
     }
+    Map<String, String> details = new LinkedHashMap<>();
     for (CollectionsAdvisor.CollectionsAdvice advice : adviceFor(customerId)) {
       if (!signals.contains(advice.signal())) {
         signals.add(advice.signal());
       }
+      if (advice.detail() != null && !advice.detail().isBlank()) {
+        details.putIfAbsent(advice.signal(), advice.detail());
+      }
     }
-    return List.copyOf(signals);
+    return new TriageResult(List.copyOf(signals), Map.copyOf(details));
+  }
+
+  /**
+   * The signal names for the debtors API: the deterministic four (in a stable order) followed by
+   * advisor-contributed signal names, de-duplicated. Delegates to {@link #triageFor(UUID)} (592B)
+   * and returns just the signal list — kept for callers that don't need advisor detail strings.
+   */
+  @Transactional(readOnly = true)
+  public List<String> signalsFor(UUID customerId) {
+    return triageFor(customerId).signals();
   }
 
   /**

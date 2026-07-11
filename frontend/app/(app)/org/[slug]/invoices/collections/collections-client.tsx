@@ -3,6 +3,7 @@ import { Badge } from "@b2mash/ui/badge";
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import type { AiGateListItem } from "@/lib/api/ai";
 import type { DebtorResponse } from "@/lib/api/collections";
+import { TriageBadges } from "@/components/collections/triage-badges";
 import { ReminderQueue, type ReminderPreview } from "./reminder-queue";
 
 interface CollectionsClientProps {
@@ -131,11 +132,10 @@ export function CollectionsClient({ slug, debtors, gates, previews }: Collection
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap items-center gap-1">
                         {debtor.collectionsExempt && <Badge variant="neutral">Exempt</Badge>}
-                        {debtor.signals.map((signal) => (
-                          <Badge key={signal} variant="warning">
-                            {signal}
-                          </Badge>
-                        ))}
+                        <TriageBadges
+                          signals={debtor.signals}
+                          signalDetails={debtor.signalDetails}
+                        />
                         {!debtor.collectionsExempt && debtor.signals.length === 0 && (
                           <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
                         )}

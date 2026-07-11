@@ -18,6 +18,9 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustBalanceFactory;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -55,6 +58,8 @@ class CollectionsReadApiTest {
   @Autowired private CustomerRepository customerRepository;
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private CollectionActivityRepository activityRepository;
+  @Autowired private TrustAccountRepository trustAccountRepository;
+  @Autowired private ClientLedgerCardRepository clientLedgerCardRepository;
 
   private String tenantSchema;
   private UUID ownerMemberId;
@@ -62,6 +67,7 @@ class CollectionsReadApiTest {
   private UUID custAlpha;
   private UUID invA3;
   private UUID custDelta;
+  private UUID custEcho;
 
   @BeforeAll
   void setup() throws Exception {
@@ -95,6 +101,16 @@ class CollectionsReadApiTest {
           custDelta = seedCustomer("Delta Mixed Co", "delta@test.com", false);
           seedSentInvoiceCurrency(custDelta, "Delta Mixed Co", "INV-D1", 5000, 40, "ZAR");
           seedSentInvoiceCurrency(custDelta, "Delta Mixed Co", "INV-D2", 3000, 40, "USD");
+
+          // Echo: trust-funded debtor (592B) — small total so it sorts LAST and leaves the
+          // index-based assertions on rows 0-2 untouched.
+          custEcho = seedCustomer("Echo Trust Co", "echo@test.com", false);
+          seedSentInvoice(custEcho, "Echo Trust Co", "INV-E1", 1000, 20);
+          TestTrustBalanceFactory.seedTrustBalance(
+              trustAccountRepository,
+              clientLedgerCardRepository,
+              custEcho,
+              BigDecimal.valueOf(84200));
 
           // Two activities on Alpha (591A.4 status+reason visibility + drill-in paging).
           activityRepository.save(
@@ -183,16 +199,18 @@ class CollectionsReadApiTest {
                 get("/api/collections/debtors")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_read_owner")))
             .andExpect(status().isOk())
-            // 3 single-currency debtors + Delta split into 2 currency rows = 5 groups.
-            .andExpect(jsonPath("$.page.totalElements").value(5))
+            // 4 single-currency debtors (Alpha, Bravo, Charlie, Echo) + Delta split into 2 currency
+            // rows = 6 groups. Echo (592B) is the trust-funded debtor added below.
+            .andExpect(jsonPath("$.page.totalElements").value(6))
             .andReturn()
             .getResponse()
             .getContentAsString();
 
     JsonNode content = objectMapper.readTree(response).get("content");
-    assertThat(content).hasSize(5);
+    assertThat(content).hasSize(6);
 
-    // Ordered by outstandingTotal DESC: Alpha (412000) > Bravo (50000) > Charlie (30000).
+    // Ordered by outstandingTotal DESC: Alpha (412000) > Bravo (50000) > Charlie (30000) …
+    // > Echo (1000) last.
     JsonNode alpha = content.get(0);
     assertThat(alpha.get("customerName").asText()).isEqualTo("Alpha Naidoo Co");
     assertThat(alpha.get("customerId").asText()).isEqualTo(custAlpha.toString());
@@ -203,6 +221,9 @@ class CollectionsReadApiTest {
     assertThat(alpha.get("oldestDaysOverdue").asInt()).isEqualTo(62);
     assertThat(alpha.get("collectionsExempt").asBoolean()).isFalse();
     assertThat(alpha.get("signals")).isEmpty();
+    // signalDetails (592B) is ALWAYS present, never null — empty object when no advice.
+    assertThat(alpha.get("signalDetails").isObject()).isTrue();
+    assertThat(alpha.get("signalDetails")).isEmpty();
     JsonNode buckets = alpha.get("buckets");
     assertThat(buckets.get("current").decimalValue()).isEqualByComparingTo(BigDecimal.ZERO);
     assertThat(buckets.get("d30").decimalValue()).isEqualByComparingTo(new BigDecimal("120000.00"));
@@ -260,6 +281,37 @@ class CollectionsReadApiTest {
     assertThat(deltaRows).as("Delta appears once per currency").isEqualTo(2);
     assertThat(zarTotal).isEqualByComparingTo(new BigDecimal("5000.00"));
     assertThat(usdTotal).isEqualByComparingTo(new BigDecimal("3000.00"));
+  }
+
+  @Test
+  void debtors_signalDetailsCarriesTrustAdvice() throws Exception {
+    var response =
+        mockMvc
+            .perform(
+                get("/api/collections/debtors")
+                    .param("size", "50")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_read_owner")))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    JsonNode content = objectMapper.readTree(response).get("content");
+    JsonNode echo = null;
+    for (JsonNode row : content) {
+      if (custEcho.toString().equals(row.get("customerId").asText())) {
+        echo = row;
+      }
+    }
+    assertThat(echo).as("Echo Trust Co debtor row present").isNotNull();
+    // Advisor-contributed signal name in the list…
+    assertThat(echo.get("signals")).hasSize(1);
+    assertThat(echo.get("signals").get(0).asText()).isEqualTo("TRUST_FUNDS_AVAILABLE");
+    // …and its ADR-329 detail string in the additive map, verbatim ("held in trust").
+    JsonNode details = echo.get("signalDetails");
+    assertThat(details.size()).isEqualTo(1);
+    assertThat(details.get("TRUST_FUNDS_AVAILABLE").asText())
+        .isEqualTo("R 84 200,00 held in trust");
   }
 
   @Test

@@ -25,6 +25,7 @@ function makeDebtor(overrides: Partial<DebtorResponse> = {}): DebtorResponse {
     oldestDaysOverdue: 62,
     buckets: { current: 0, d30: 120000, d60: 180000, d90plus: 112000 },
     signals: [],
+    signalDetails: {},
     collectionsExempt: false,
     lastActivity: { stage: "STAGE_3", status: "SENT", at: "2026-07-02T08:11:00Z" },
     ...overrides,
@@ -68,6 +69,26 @@ describe("CollectionsClient — debtor book", () => {
 
     // Present last-activity renders its status badge.
     expect(screen.getByText("Sent")).toBeInTheDocument();
+  });
+
+  it("renders triage signal badges with human labels and the trust badge", () => {
+    render(
+      <CollectionsClient
+        slug="acme"
+        debtors={[
+          makeDebtor({
+            signals: ["GONE_QUIET", "TRUST_FUNDS_AVAILABLE"],
+            signalDetails: { TRUST_FUNDS_AVAILABLE: "R 84 200,00 held in trust" },
+          }),
+        ]}
+        gates={null}
+        previews={{}}
+      />
+    );
+    expect(screen.getByText("Gone quiet")).toBeInTheDocument();
+    expect(screen.getByText("Trust funds available")).toBeInTheDocument();
+    // Raw enum names must not render.
+    expect(screen.queryByText("TRUST_FUNDS_AVAILABLE")).not.toBeInTheDocument();
   });
 
   it("hides the pending-reminder queue section when gates is null", () => {

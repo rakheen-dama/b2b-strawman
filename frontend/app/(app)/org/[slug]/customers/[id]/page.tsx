@@ -41,6 +41,10 @@ import { CustomerGroupedTabs } from "@/components/customers/customer-grouped-tab
 import { ClientHeaderCardWithLifecycle } from "@/components/customers/client-header-card-with-lifecycle";
 import { ClientDetailsTab } from "@/components/customers/client-details-tab";
 import { CollectionsExemptionToggle } from "@/components/customers/collections-exemption-toggle";
+import { CollectionsHistoryTable } from "@/components/collections/collections-history-table";
+import { CollectionsHistoryPagination } from "@/components/collections/collections-history-pagination";
+import { getDebtorDetail, type DebtorDetailResponse } from "@/lib/api/collections";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { ClientFieldsTab } from "@/components/customers/client-fields-tab";
 import { ClientTagsTab } from "@/components/customers/client-tags-tab";
 import { ClientOverviewTab } from "@/components/customers/client-overview-tab";
@@ -81,14 +85,32 @@ import Link from "next/link";
 
 export default async function CustomerDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string; id: string }>;
+  searchParams: Promise<{ chasePage?: string }>;
 }) {
   const { slug, id } = await params;
+  const { chasePage } = await searchParams;
+  const chasePageNum = Math.max(0, Number.parseInt(chasePage ?? "0", 10) || 0);
   const caps = await fetchMyCapabilities();
 
   const isAdmin = caps.isAdmin || caps.isOwner;
   const isOwner = caps.isOwner;
+
+  // Chase-history ledger (591C.2). The customer detail page is visible to plain
+  // members without INVOICING, so gate the fetch — the section is hidden rather
+  // than erroring when the viewer can't see collections data.
+  const canViewCollections =
+    caps.isAdmin || caps.isOwner || caps.capabilities.includes("INVOICING");
+  let debtorDetail: DebtorDetailResponse | null = null;
+  if (canViewCollections) {
+    try {
+      debtorDetail = await getDebtorDetail(id, { page: chasePageNum });
+    } catch {
+      // Non-fatal: chase-history section is hidden if the fetch fails
+    }
+  }
 
   let customer: Customer;
   try {
@@ -573,6 +595,26 @@ export default async function CustomerDetailPage({
               isAdmin={isAdmin}
               exempt={customer.collectionsExempt ?? false}
             />
+            {debtorDetail && (
+              <Card data-testid="chase-history-card">
+                <CardHeader>
+                  <CardTitle>Chase history</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <CollectionsHistoryTable
+                    activities={debtorDetail.activities.content}
+                    slug={slug}
+                    emptyMessage="No chase history for this customer yet."
+                  />
+                  <CollectionsHistoryPagination
+                    slug={slug}
+                    customerId={id}
+                    number={debtorDetail.activities.page.number}
+                    totalPages={debtorDetail.activities.page.totalPages}
+                  />
+                </CardContent>
+              </Card>
+            )}
           </div>
         }
         fieldsPanel={

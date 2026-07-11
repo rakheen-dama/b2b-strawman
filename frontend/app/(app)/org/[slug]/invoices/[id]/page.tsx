@@ -30,6 +30,8 @@ import { XeroStatusChip } from "@/components/invoices/XeroStatusChip";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { PendingSuggestionsWidget } from "@/components/assistant/queue/pending-suggestions-widget";
+import { CollectionsHistoryTable } from "@/components/collections/collections-history-table";
+import { getInvoiceActivities, type CollectionActivityResponse } from "@/lib/api/collections";
 
 export default async function InvoiceDetailPage({
   params,
@@ -68,6 +70,16 @@ export default async function InvoiceDetailPage({
     } catch {
       // Non-fatal: payment events section won't render data
     }
+  }
+
+  // Collection activity ledger (591C.1). Activities only exist once a reminder
+  // has been proposed (SENT+ invoices), but the API safely returns [] for a
+  // known invoice with none — so the fetch is unconditional and non-fatal.
+  let collectionActivities: CollectionActivityResponse[] = [];
+  try {
+    collectionActivities = await getInvoiceActivities(id);
+  } catch {
+    // Non-fatal: collection activity section renders its empty state
   }
 
   // Tax rates for the line item tax dropdown
@@ -176,6 +188,18 @@ export default async function InvoiceDetailPage({
           slug={slug}
           isAdmin={isAdmin}
           customerId={invoice!.customerId}
+        />
+      </div>
+
+      {/* Collection activity ledger (591C.1) */}
+      <div className="space-y-4">
+        <h2 className="font-display text-lg text-slate-950 dark:text-slate-50">
+          Collection activity
+        </h2>
+        <CollectionsHistoryTable
+          activities={collectionActivities}
+          slug={slug}
+          emptyMessage="No collection activity for this invoice yet."
         />
       </div>
 

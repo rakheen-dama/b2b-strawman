@@ -674,7 +674,7 @@
 | 591 | Batch Approval + Collections Read APIs + Collections Frontend | Backend + Frontend | 590 | L | 591A, 591B, 591C | **Done** — 591A (PR #1540), 591B (PR #1541), 591C (PR #1542) |
 | 592 | Debtor Triage + Trust-Aware Advisor Seam | Backend + Frontend | 589 (592B: 591B) | M | 592A, 592B | **Done** — 592A (PR #1543), 592B (PR #1544) |
 | 593 | Weekly Cash Digest | Backend | 589A, 592A | L | 593A, 593B | **Done** — 593A, 593B (PR #1545) |
-| 594 | QA Capstone — Observed End-to-End Lifecycle | E2E/Process | 588–593 | M | 594A | |
+| 594 | QA Capstone — Observed End-to-End Lifecycle | E2E/Process | 588–593 | M | 594A | **Done** (PR #1546) |
 
 
 ---

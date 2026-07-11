@@ -28,7 +28,7 @@ This phase ships as **7 epics (588–594)**, expanded to **15 numbered slices** 
 | 591 | Batch Approval + Collections Read APIs + Collections Frontend | Backend + Frontend (split slices) | 590 | L | 591A, 591B, 591C | **Done** — 591A (PR #1540), 591B (PR #1541), 591C (PR #1542) |
 | 592 | Debtor Triage + Trust-Aware Advisor Seam | Backend + Frontend (split slices) | 589 (592B also 591B) | M | 592A, 592B | **Done** — 592A (PR #1543), 592B (PR #1544) |
 | 593 | Weekly Cash Digest | Backend | 589A, 592A (types from 588A) | L | 593A, 593B | **Done** — 593A, 593B (PR #1545) |
-| 594 | QA Capstone — Observed End-to-End Lifecycle | E2E / Process | 588–593 | M | 594A | |
+| 594 | QA Capstone — Observed End-to-End Lifecycle | E2E / Process | 588–593 | M | 594A | **Done** (PR #1546) |
 
 **Slice count: 15** (7 architecture capability slices expanded to 15 for the sizing budget). Backend/frontend split preserved per slice.
 
@@ -180,7 +180,7 @@ REUSED (not rebuilt):
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 5a | **594A** | Browser-driven observed lifecycle on the E2E stack (policy on → seed overdue via product APIs/UI → scan → queue → batch approve → Mailpit email with payment CTA → webhook-sim payment → cancellation in UI; escalation notification; digest email + bell; exempt customer produces nothing); screenshots + evidence trail; full `./mvnw verify` + `pnpm lint && pnpm build && pnpm test` + `format:check`; gap report. |
+| 5a | **594A** | Browser-driven observed lifecycle on the E2E stack (policy on → seed overdue via product APIs/UI → scan → queue → batch approve → Mailpit email with payment CTA → webhook-sim payment → cancellation in UI; escalation notification; digest email + bell; exempt customer produces nothing); screenshots + evidence trail; full `./mvnw verify` + `pnpm lint && pnpm build && pnpm test` + `format:check`; gap report. **Done** (PR #1546) |
 
 ### Timeline
 
@@ -511,7 +511,7 @@ Stage 5: [594A]                                          <- QA capstone
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **594A** | 594A.1–594A.3 | test-plan doc + Playwright artefacts + screenshots dir (no product code) | Scripted observed lifecycle + regression gates + gap report. |
+| **594A** | 594A.1–594A.3 | test-plan doc + Playwright artefacts + screenshots dir (no product code) | Scripted observed lifecycle + regression gates + gap report. **Done** (PR #1546) |
 
 ### Tasks
 

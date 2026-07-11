@@ -252,7 +252,13 @@ FROM public.org_schema_mapping WHERE org_id = 'e2e-test-org';
 
 **Evidence**: job row COMPLETED + backend log excerpt.
 
+**Status: [x] PASS** — AUTHORIZED job trigger used (flagged).
+
 **Evidence log (CP-06):**
+- **[FLAGGED job trigger]** `INSERT INTO public.job_queue (job_type, tenant_id, org_id) VALUES ('collections_scan','tenant_7d218705360b','e2e-test-org');` → `INSERT 0 1`.
+- Polled job row (flagged read-only psql): CLAIMED for ~45 s (live AI drafting), then **COMPLETED** (~48 s total).
+- Backend log: `CollectionsScanService: scan complete — proposed=4, skipped=0, escalated=1, superseded=3` (jobId 6ead81d5..., jobType collections_scan, tenant tenant_7d218705360b).
+- Activity rows created (flagged read-only psql) exactly match the matrix: INV-0001 STAGE_1 PROPOSED(10d); INV-0002 STAGE_3 PROPOSED(70d)+STAGE_1/2 SKIPPED(superseded_by_higher_stage)+ESCALATION FLAGGED; INV-0003 STAGE_2 PROPOSED(25d)+STAGE_1 SKIPPED; INV-0004 STAGE_1 PROPOSED(10d); **INV-0005 (Gamma, exempt) → zero rows.**
 
 ## 11. CP-07 — Queue shows drafts with correct stages
 
@@ -267,9 +273,19 @@ FROM public.org_schema_mapping WHERE org_id = 'e2e-test-org';
 | CP-07.5 | Expand each card (chevron) | Subject + Message preview of the real draft | [ ] |
 | CP-07.6 | INV-A2 detail → "Collection activity" | STAGE_3 PROPOSED + STAGE_1/2 SKIPPED(`superseded_by_higher_stage`) + ESCALATION FLAGGED | [ ] |
 
-**Evidence**: `cp-07-queue-4-drafts.png`, `cp-07-inv-a2-ledger.png`, `cp-07-debtor-book.png`.
+**Evidence**: `cp-07-queue-4-drafts.png`, `cp-07-stage3-draft-expanded.png`, `cp-07-inv-a2-ledger.png`, `cp-07-debtor-book.png`.
+
+**Status: [x] PASS**
 
 **Evidence log (CP-07):**
+- Page h1 "Collections". Debtor book: **Beta Ltd** (2 invoices, R3 450, 25d overdue), **Acme Corp** (2 invoices, 70d overdue, Signals **"Escalated"**), **Gamma Corp** (1 invoice, 30d overdue, Signals **"Exempt"**, "No chase history").
+- Pending reminders: **"4 reminders awaiting approval"** with correct stages (live-AI subjects, shape-based — each references its invoice number):
+  - INV-0004 "Friendly Reminder: INV-0004 – Payment Due" — **Stage 1**
+  - INV-0001 "Friendly Reminder: Invoice INV-0001 – Payment Due" — **Stage 1**
+  - INV-0003 "Payment Reminder – INV-0003 Now Overdue" — **Stage 2**
+  - INV-0002 "Final Reminder: Outstanding Payment Required — INV-0002" — **Stage 3**
+- Expanded Stage 3 (INV-0002) card: real AI narrative referencing invoice INV-0002 + "payment link provided below" + "Acme Corp"; gate "Send Collection Reminder" **PENDING**, **"2d 23h remaining"** (~72 h expiry). Approve/Reject buttons + AI-reasoning block present. `cp-07-stage3-draft-expanded.png`.
+- INV-0002 detail "Collection activity": Stage 3 Proposed (Gate: Review) + Stage 2 Skipped (Superseded By Higher Stage) + Stage 1 Skipped (Superseded By Higher Stage) + Escalation Flagged (Escalated), all 70d overdue. `cp-07-inv-a2-ledger.png`.
 
 ## 12. CP-08 — Escalation: bell + audit
 
@@ -279,9 +295,14 @@ FROM public.org_schema_mapping WHERE org_id = 'e2e-test-org';
 | CP-08.2 | Log in as Carol (member) → bell | Does NOT contain the escalation notification | [ ] |
 | CP-08.3 | Audit `GET /api/audit-events?eventType=collections.escalation.flagged` | One row, entityType `collection_activity`, details `{invoice_id, invoice_number, days_overdue}` | [ ] |
 
-**Evidence**: `cp-08-escalation-bell.png` + audit JSON excerpt.
+**Evidence**: `cp-08-escalation-bell.png`, `cp-08-carol-no-escalation.png` + audit JSON excerpt.
+
+**Status: [x] PASS**
 
 **Evidence log (CP-08):**
+- Alice notifications page: **"Invoice INV-0002 is 70 days overdue — flagged for a partner call"** present. `cp-08-escalation-bell.png`.
+- Carol (member) — logged in via `/mock-login` (confirmed chip `carol@e2e-test.local`): notifications page shows **"You're all caught up"**, NO escalation notification. `cp-08-carol-no-escalation.png`.
+- Audit `GET /api/audit-events?eventType=collections.escalation.flagged` → one row: `{"eventType":"collections.escalation.flagged","entityType":"collection_activity","details":{"actor_name":"System","invoice_id":"74f672f8-...","days_overdue":"70","invoice_number":"INV-0002"}}`.
 
 ## 13. CP-09 — Reject one draft (terminal per stage)
 
@@ -295,7 +316,12 @@ FROM public.org_schema_mapping WHERE org_id = 'e2e-test-org';
 
 **Evidence**: `cp-09-b1-rejected.png`.
 
+**Status: [x] PASS**
+
 **Evidence log (CP-09):**
+- Expanded INV-0003 (Beta, Stage 2) card → "Reject" → "Reject Gate Action" dialog (reason "QA capstone CP-09: reject terminal-per-stage test") → confirmed. Pending count dropped **4 → "3 reminders awaiting approval"**.
+- INV-0003 detail "Collection activity" → **Stage 2 Rejected** + Stage 1 Skipped. `cp-09-b1-rejected.png`. DB confirm: STAGE_2=REJECTED, STAGE_1=SKIPPED.
+- **[FLAGGED job trigger]** re-enqueued `collections_scan` → COMPLETED (no new drafting). After re-scan B1 unchanged (STAGE_2 REJECTED, no new gate); total `collection_activities` count still 8. Reject is terminal per stage.
 
 ## 14. CP-10 — Batch approve the rest → Mailpit
 
@@ -308,9 +334,17 @@ FROM public.org_schema_mapping WHERE org_id = 'e2e-test-org';
 | CP-10.3 | Mailpit: 2 messages to `contact@acme.example.com` | Subject references invoice number (shape); body has facts table (invoice number, amount, due date) + payment CTA href | [ ] |
 | CP-10.4 | `curl "http://localhost:8026/api/v1/search?query=to%3Acontact%40acme.example.com"` → record IDs; `GET /api/v1/message/{id}` | Message IDs recorded; CTA href present (portal-URL fallback — no PSP domain asserted) | [ ] |
 
-**Evidence**: Mailpit message IDs + `cp-10-reminder-email.png`.
+**Evidence**: Mailpit message IDs + `cp-10-batch-approved.png`.
+
+**Status: [x] PASS**
 
 **Evidence log (CP-10):**
+- Mailpit cleared (`DELETE /api/v1/messages` → total 0). Selected INV-0001 + INV-0002 (B2/INV-0004 left unselected), clicked "Approve selected (2)".
+- "Last batch result": **2 × "Approved"** (Reminder ce40ef1e, Reminder 0cd3a45d). Pending dropped to "1 reminder awaiting approval". `cp-10-batch-approved.png`.
+- Mailpit (`search?query=to:contact@acme.example.com`) → **2 messages**:
+  - `cFQQFgHQxkTgVZYSXTRDcc` — "Friendly Reminder: Invoice INV-0001 – Payment Due"
+  - `UirTRhJJnaYyMpEzg7M8Eu` — "Final Reminder: Outstanding Payment Required — INV-0002"
+- Body (rendered HTML view): template-rendered facts table — **Invoice Number INV-0001, Amount Due 1725, Due Date 2026-07-01** — and payment CTA href `http://localhost:3002/invoices/ab76915f-...` (portal-URL fallback; no PSP configured on e2e — CTA href exists, no PSP domain asserted, per GAP-L-64 precedent). Live-AI subjects reference invoice numbers (shape-based).
 
 ## 15. CP-11 — Ledger shows SENT + audit
 
@@ -321,7 +355,11 @@ FROM public.org_schema_mapping WHERE org_id = 'e2e-test-org';
 
 **Evidence**: `cp-11-a1-sent-ledger.png`.
 
+**Status: [x] PASS**
+
 **Evidence log (CP-11):**
+- INV-0001 detail "Collection activity" → **Stage 1 Sent**. `cp-11-a1-sent-ledger.png`. DB confirm: INV-0001 STAGE_1=SENT, INV-0002 STAGE_3=SENT (ESCALATION still FLAGGED, independent).
+- Audit `GET /api/audit-events?eventType=collections.reminder.sent` → **2 rows**, actor "Alice Owner"; sample details `{stage:STAGE_3, invoice_number:INV-0002, delivery_log_id:da3e616a-...}`.
 
 ## 16. CP-12 — Payment cancels the pending gate  [deviation: manual route — see §3.1.2]
 

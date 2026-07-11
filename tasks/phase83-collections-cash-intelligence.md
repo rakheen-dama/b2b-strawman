@@ -27,7 +27,7 @@ This phase ships as **7 epics (588–594)**, expanded to **15 numbered slices** 
 | 590 | Drafting Skill + Gated Send Executor | Backend | 589 | L | 590A, 590B | **Done** — 590A, 590B (PR #1539) |
 | 591 | Batch Approval + Collections Read APIs + Collections Frontend | Backend + Frontend (split slices) | 590 | L | 591A, 591B, 591C | **Done** — 591A (PR #1540), 591B (PR #1541), 591C (PR #1542) |
 | 592 | Debtor Triage + Trust-Aware Advisor Seam | Backend + Frontend (split slices) | 589 (592B also 591B) | M | 592A, 592B | **Done** — 592A (PR #1543), 592B (PR #1544) |
-| 593 | Weekly Cash Digest | Backend | 589A, 592A (types from 588A) | L | 593A, 593B | |
+| 593 | Weekly Cash Digest | Backend | 589A, 592A (types from 588A) | L | 593A, 593B | **Done** — 593A, 593B (PR #1545) |
 | 594 | QA Capstone — Observed End-to-End Lifecycle | E2E / Process | 588–593 | M | 594A | |
 
 **Slice count: 15** (7 architecture capability slices expanded to 15 for the sizing budget). Backend/frontend split preserved per slice.
@@ -170,10 +170,10 @@ REUSED (not rebuilt):
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
 | 4a | **591A** | `POST /api/ai/gates/batch-approve` (per-gate tx, per-gate dispositions, 200-always); `CollectionsController` read APIs (`/api/collections/debtors`, `/debtors/{customerId}`, `/activities?invoiceId=`) + paged native debtor-book query (signals wired from 592A when present, else empty). **Done** (PR #1540) | 592A, 593A |
-| 4b | **593A** | Extract shared aging-bucket helper from `InvoiceAgingReportQuery`; `CashDigestData` record + deterministic assembly (aging, billed vs collected, stale WIP, reminder activity, triage signals); `CashDigestHandler` (`cash_digest`) + weekly enqueue. | 591A, 591B |
+| 4b | **593A** | Extract shared aging-bucket helper from `InvoiceAgingReportQuery`; `CashDigestData` record + deterministic assembly (aging, billed vs collected, stale WIP, reminder activity, triage signals); `CashDigestHandler` (`cash_digest`) + weekly enqueue. **Done** (PR #1545) | 591A, 591B |
 | 4c | **591B** | (Frontend) `invoices/collections` debtors page + pending-reminder queue (multi-select, `ExecutionGateCard` preview, batch approve); `lib/api/ai.ts` `batchApproveAiGates`; `lib/api/collections.ts` debtors/activities clients; nav item. **Done** (PR #1541) | 593A, 593B, 591C |
 | 4d | **591C** | (Frontend) invoice-detail activity-ledger section + customer-detail chase-history section. **Done** (PR #1542) | 591B, 593B |
-| 4e | **593B** | `CashDigestSkill` + prompts + stub output; `cash-digest.html` (conditional narrative block); `CASH_DIGEST` notification + email delivery to owners/admins; AI-disabled numbers-only fallback; `collections.digest.sent` audit. | 591B, 591C |
+| 4e | **593B** | `CashDigestSkill` + prompts + stub output; `cash-digest.html` (conditional narrative block); `CASH_DIGEST` notification + email delivery to owners/admins; AI-disabled numbers-only fallback; `collections.digest.sent` audit. **Done** (PR #1545) | 591B, 591C |
 | 4f | **592B** | (Frontend) triage-signal badges on the debtors page (after 591B + 592A). **Done** (PR #1544) | 593B |
 
 ### Stage 5 — QA Capstone
@@ -465,8 +465,8 @@ Stage 5: [594A]                                          <- QA capstone
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **593A** | 593A.1–593A.3 | ~7 backend files (bucket helper + InvoiceAgingReportQuery mod + CollectionsReadService mod + CashDigestData + assembly service + handler + 1 test file) | Bucket-helper extraction; `CashDigestData` deterministic assembly; `cash_digest` handler + weekly enqueue. |
-| **593B** | 593B.1–593B.3 | ~8 backend files (skill + 2 prompt assets + output record + template + StubAiProvider mod + delivery wiring in the digest service + 1–2 test files) | `CashDigestSkill`; template with conditional narrative; notification + email delivery; AI-off fallback; audit. |
+| **593A** | 593A.1–593A.3 | ~7 backend files (bucket helper + InvoiceAgingReportQuery mod + CollectionsReadService mod + CashDigestData + assembly service + handler + 1 test file) | Bucket-helper extraction; `CashDigestData` deterministic assembly; `cash_digest` handler + weekly enqueue. **Done** (PR #1545) |
+| **593B** | 593B.1–593B.3 | ~8 backend files (skill + 2 prompt assets + output record + template + StubAiProvider mod + delivery wiring in the digest service + 1–2 test files) | `CashDigestSkill`; template with conditional narrative; notification + email delivery; AI-off fallback; audit. **Done** (PR #1545; V135 migration added — `CASH_DIGEST` in email-delivery-log CHECK constraint, mirrors V134; StubAiProvider needed no Java change — convention-loaded `ai/stubs/cash-digest/response.json`) |
 
 ### Tasks
 

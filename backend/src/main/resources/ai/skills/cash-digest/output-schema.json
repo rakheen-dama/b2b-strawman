@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "required": ["narrative", "topRisks"],
+  "properties": {
+    "narrative": {
+      "type": "string",
+      "description": "A concise, owner-facing paragraph on the firm's cash position: total outstanding and its aging, billed vs collected for the period, stale unbilled work, and what the collections engine did. Reference only figures present in the supplied data; never invent numbers."
+    },
+    "topRisks": {
+      "type": "array",
+      "maxItems": 3,
+      "description": "Up to three ranked top-debtor risks, most concerning first.",
+      "items": {
+        "type": "object",
+        "required": ["customerName", "why", "suggestedAction"],
+        "properties": {
+          "customerName": {
+            "type": "string",
+            "description": "The debtor's name, taken verbatim from the supplied data."
+          },
+          "why": {
+            "type": "string",
+            "description": "Why this debtor is a risk, grounded in the supplied signals and figures."
+          },
+          "suggestedAction": {
+            "type": "string",
+            "description": "One concrete next action for the firm. Do not promise anything on the firm's behalf."
+          }
+        }
+      }
+    }
+  }
+}

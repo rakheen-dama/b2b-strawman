@@ -499,4 +499,24 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
         AND te.invoice_id IS NULL
       """)
   UnbilledTimeSummaryProjection countUnbilledByProjectId(@Param("projectId") UUID projectId);
+
+  /**
+   * Tenant-wide unbilled-time aggregation for stale WIP older than {@code cutoff} (Phase 83, 593A).
+   * Unbilled = billable AND invoice_id IS NULL; "stale" = worked on or before the cutoff date. No
+   * project join — the cash digest reports the whole book's aged unbilled WIP. Mirrors {@link
+   * #countUnbilledByProjectId(UUID)}'s projection + WHERE shape (the "existing query surface").
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT
+        COUNT(te.id) AS entryCount,
+        COALESCE(SUM(te.duration_minutes), 0) / 60.0 AS totalHours
+      FROM time_entries te
+      WHERE te.billable = true
+        AND te.invoice_id IS NULL
+        AND te.date < :cutoff
+      """)
+  UnbilledTimeSummaryProjection countUnbilledOlderThan(@Param("cutoff") LocalDate cutoff);
 }

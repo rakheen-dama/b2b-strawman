@@ -72,3 +72,16 @@ via the Dependabot API: 9 high / 6 medium / 5 low remain, reconciling exactly to
 Verification beyond CI: auth e2e specs (`e2e/tests/auth/*`, 11 passed / 0 failed) ran against the
 branch-built mock stack, observing the proxy/middleware surface that next 16.2.6's auth-bypass fixes
 touch (reviewer-B requirement; vitest cannot execute edge middleware).
+
+## Wave 2 EXECUTED — PR #1549 merged (`e3e96180b`, 2026-07-12)
+
+`tools/claude-slack-bot/` deleted (owner-authorized). **20 → 7 open alerts**; zero high remain outside
+build tooling. Untracked local leftovers (node_modules, .env with Slack tokens) swept from disk too.
+
+Remaining 7 (verified post-merge):
+- Wave 3 (4): keycloak-theme vite →6.4.3 (1 high + 1 med, build-time only), @babel/core →7.29.6 (low);
+  mock-idp qs →6.15.2 (med, E2E-only).
+- Wave 1 straggler (1): root-lock @babel/core 7.29.0 → 7.29.6 (low) — the one targeted transitive the
+  lockfile heal missed; fixable, fold into Wave 3.
+- Upstream-blocked (2): postcss 8.4.31 (pinned inside next 16.2.6, med), esbuild 0.27.7 (pinned by
+  vite 7.3.5, low). Re-check on next/vite releases; dismissal candidates.

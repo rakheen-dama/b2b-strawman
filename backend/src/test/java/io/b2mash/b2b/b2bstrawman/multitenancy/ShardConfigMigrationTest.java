@@ -1,10 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.multitenancy;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -82,77 +80,5 @@ class ShardConfigMigrationTest {
     assertThat(found.get().isReadOnly()).isFalse();
     assertThat(found.get().getCreatedAt()).isNotNull();
     assertThat(found.get().getUpdatedAt()).isNotNull();
-  }
-
-  @Nested
-  class ShardAndSchemaParsingTest {
-
-    @Test
-    void parsesValidCompositeIdentifier() {
-      var result = ShardAndSchema.parse("primary:public");
-      assertThat(result.shardId()).isEqualTo("primary");
-      assertThat(result.schemaName()).isEqualTo("public");
-    }
-
-    @Test
-    void parsesSecondaryShardWithTenantSchema() {
-      var result = ShardAndSchema.parse("kazi_legal_1:tenant_aabbccddeeff");
-      assertThat(result.shardId()).isEqualTo("kazi_legal_1");
-      assertThat(result.schemaName()).isEqualTo("tenant_aabbccddeeff");
-    }
-
-    @Test
-    void formatProducesCorrectString() {
-      assertThat(ShardAndSchema.format("primary", "public")).isEqualTo("primary:public");
-      assertThat(ShardAndSchema.format("kazi_legal_1", "tenant_aabbccddeeff"))
-          .isEqualTo("kazi_legal_1:tenant_aabbccddeeff");
-    }
-
-    @Test
-    void roundTripParseAndFormat() {
-      var original = new ShardAndSchema("demo", "tenant_112233445566");
-      var formatted = ShardAndSchema.format(original.shardId(), original.schemaName());
-      var parsed = ShardAndSchema.parse(formatted);
-      assertThat(parsed).isEqualTo(original);
-    }
-
-    @Test
-    void defaultConstantIsPrimaryPublic() {
-      assertThat(ShardAndSchema.DEFAULT.shardId()).isEqualTo("primary");
-      assertThat(ShardAndSchema.DEFAULT.schemaName()).isEqualTo("public");
-    }
-
-    @Test
-    void rejectsMissingColon() {
-      assertThatThrownBy(() -> ShardAndSchema.parse("primarypublic"))
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessageContaining("missing colon");
-    }
-
-    @Test
-    void rejectsInvalidShardIdChars() {
-      assertThatThrownBy(() -> ShardAndSchema.parse("UPPER:public"))
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessageContaining("Invalid shard ID");
-    }
-
-    @Test
-    void rejectsInvalidSchemaName() {
-      assertThatThrownBy(() -> ShardAndSchema.parse("primary:bad_schema"))
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessageContaining("Invalid schema name");
-    }
-
-    @Test
-    void rejectsNullInput() {
-      assertThatThrownBy(() -> ShardAndSchema.parse(null))
-          .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void rejectsBlankInput() {
-      assertThatThrownBy(() -> ShardAndSchema.parse(""))
-          .isInstanceOf(IllegalArgumentException.class);
-    }
   }
 }

@@ -1,68 +1,58 @@
 package io.b2mash.b2b.b2bstrawman.notification.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.util.Map;
-import org.junit.jupiter.api.BeforeAll;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 
 /**
  * Verifies that {@link EmailContextBuilder} threads the firm's vertical profile through {@link
  * EmailTerminology}, exposing {@code terminology}, {@code invoiceTerm}, {@code invoiceTermLower},
  * and the plural variants in the email base context (GAP-L-65).
+ *
+ * <p>Plain unit test: the builder's dependencies are mocked and the vertical profile is stubbed on
+ * an in-memory {@link OrgSettings}. The DB round-trip of {@code verticalProfile} is covered by the
+ * legal-za integration tests (e.g. {@code InvoiceTerminologyLegalZaTest}).
  */
-@SpringBootTest
-@Import(TestcontainersConfiguration.class)
-@ActiveProfiles("test")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class EmailContextBuilderTest {
 
   private static final String LEGAL_ORG_ID = "org_email_ctx_legal";
-  private static final String LEGAL_ORG_NAME = "Email Ctx Law Firm";
   private static final String GENERIC_ORG_ID = "org_email_ctx_generic";
-  private static final String GENERIC_ORG_NAME = "Email Ctx Generic Firm";
+  private static final String LEGAL_SCHEMA = "tenant_email_ctx_legal";
+  private static final String GENERIC_SCHEMA = "tenant_email_ctx_generic";
 
-  @Autowired private EmailContextBuilder emailContextBuilder;
-  @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
-  @Autowired private OrgSettingsRepository orgSettingsRepository;
+  private final OrgSettingsRepository orgSettingsRepository = mock(OrgSettingsRepository.class);
+  private final OrganizationRepository organizationRepository = mock(OrganizationRepository.class);
+  private final EmailContextBuilder emailContextBuilder =
+      new EmailContextBuilder(
+          orgSettingsRepository,
+          organizationRepository,
+          mock(StorageService.class),
+          new EmailTerminology(),
+          "http://localhost:3000",
+          "Kazi");
 
-  private String legalSchema;
-  private String genericSchema;
-
-  @BeforeAll
-  void setup() {
-    provisioningService.provisionTenant(LEGAL_ORG_ID, LEGAL_ORG_NAME, "legal-za");
-    legalSchema = orgSchemaMappingRepository.findByClerkOrgId(LEGAL_ORG_ID).get().getSchemaName();
-
-    provisioningService.provisionTenant(GENERIC_ORG_ID, GENERIC_ORG_NAME, null);
-    genericSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(GENERIC_ORG_ID).get().getSchemaName();
-    // Defensive: ensure verticalProfile remains null for the generic tenant.
-    ScopedValue.where(RequestScopes.TENANT_ID, genericSchema)
-        .run(
-            () -> {
-              OrgSettings settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
-              settings.setVerticalProfile(null);
-              orgSettingsRepository.save(settings);
-            });
+  /** Stubs the tenant's {@link OrgSettings} with the given vertical profile (null = generic). */
+  private void stubVerticalProfile(String verticalProfile) {
+    OrgSettings settings = new OrgSettings("ZAR");
+    settings.setVerticalProfile(verticalProfile);
+    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.of(settings));
   }
 
   @Test
   void buildBaseContext_legalZa_resolvesInvoiceTermToFeeNote() {
+    stubVerticalProfile("legal-za");
+
     Map<String, Object> context =
-        ScopedValue.where(RequestScopes.TENANT_ID, legalSchema)
+        ScopedValue.where(RequestScopes.TENANT_ID, LEGAL_SCHEMA)
             .where(RequestScopes.ORG_ID, LEGAL_ORG_ID)
             .call(() -> emailContextBuilder.buildBaseContext("Customer", null));
 
@@ -86,8 +76,10 @@ class EmailContextBuilderTest {
 
   @Test
   void buildBaseContext_genericTenant_fallsBackToInvoice() {
+    stubVerticalProfile(null);
+
     Map<String, Object> context =
-        ScopedValue.where(RequestScopes.TENANT_ID, genericSchema)
+        ScopedValue.where(RequestScopes.TENANT_ID, GENERIC_SCHEMA)
             .where(RequestScopes.ORG_ID, GENERIC_ORG_ID)
             .call(() -> emailContextBuilder.buildBaseContext("Customer", null));
 
@@ -108,8 +100,10 @@ class EmailContextBuilderTest {
 
   @Test
   void buildBaseContext_exposesOrgScopedAppUrl() {
+    stubVerticalProfile(null);
+
     Map<String, Object> context =
-        ScopedValue.where(RequestScopes.TENANT_ID, genericSchema)
+        ScopedValue.where(RequestScopes.TENANT_ID, GENERIC_SCHEMA)
             .where(RequestScopes.ORG_ID, GENERIC_ORG_ID)
             .call(() -> emailContextBuilder.buildBaseContext("Customer", null));
 
@@ -121,8 +115,10 @@ class EmailContextBuilderTest {
 
   @Test
   void buildBaseContext_withoutOrgScope_orgAppUrlFallsBackToBase() {
+    stubVerticalProfile(null);
+
     Map<String, Object> context =
-        ScopedValue.where(RequestScopes.TENANT_ID, genericSchema)
+        ScopedValue.where(RequestScopes.TENANT_ID, GENERIC_SCHEMA)
             .call(() -> emailContextBuilder.buildBaseContext("Customer", null));
 
     assertThat(context).containsEntry("orgAppUrl", "http://localhost:3000");
@@ -130,18 +126,12 @@ class EmailContextBuilderTest {
 
   @Test
   void buildBaseContext_unknownVerticalProfile_fallsBackToIdentity() {
-    // Set an unknown vertical profile -- EmailTerminology should return an empty map and the
+    // An unknown vertical profile -- EmailTerminology should return an empty map and the
     // convenience keys should fall back to identity.
-    ScopedValue.where(RequestScopes.TENANT_ID, genericSchema)
-        .run(
-            () -> {
-              OrgSettings settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
-              settings.setVerticalProfile("retail-uk");
-              orgSettingsRepository.save(settings);
-            });
+    stubVerticalProfile("retail-uk");
 
     Map<String, Object> context =
-        ScopedValue.where(RequestScopes.TENANT_ID, genericSchema)
+        ScopedValue.where(RequestScopes.TENANT_ID, GENERIC_SCHEMA)
             .where(RequestScopes.ORG_ID, GENERIC_ORG_ID)
             .call(() -> emailContextBuilder.buildBaseContext("Customer", null));
 
@@ -150,14 +140,5 @@ class EmailContextBuilderTest {
     assertThat(terminology).isEmpty();
     assertThat(context).containsEntry("invoiceTerm", "Invoice");
     assertThat(context).containsEntry("invoiceTermLower", "invoice");
-
-    // Reset for hygiene if other tests run after.
-    ScopedValue.where(RequestScopes.TENANT_ID, genericSchema)
-        .run(
-            () -> {
-              OrgSettings settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
-              settings.setVerticalProfile(null);
-              orgSettingsRepository.save(settings);
-            });
   }
 }

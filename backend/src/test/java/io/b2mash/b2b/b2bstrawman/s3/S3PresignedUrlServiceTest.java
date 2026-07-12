@@ -3,22 +3,19 @@ package io.b2mash.b2b.b2bstrawman.s3;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
+import io.b2mash.b2b.b2bstrawman.testutil.InMemoryStorageService;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 
-/** Tests the StorageService (S3StorageAdapter) and S3PresignedUrlService key builders. */
-@SpringBootTest
-@Import(TestcontainersConfiguration.class)
-@ActiveProfiles("test")
+/**
+ * Tests the S3PresignedUrlService key builder and the StorageService contract (URL generation, byte
+ * round-trip, key validation) against {@link InMemoryStorageService} — the same test double the
+ * Spring test context registers as primary, which mirrors S3StorageAdapter's key validation.
+ */
 class S3PresignedUrlServiceTest {
 
-  @Autowired private StorageService storageService;
+  private final StorageService storageService = new InMemoryStorageService();
 
   @Test
   void presignedUrlsAreGenerated() {

@@ -1,45 +1,34 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
-import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import java.util.List;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest
-@Import(TestcontainersConfiguration.class)
-@ActiveProfiles("test")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+/**
+ * Plain unit test: all three field paths resolve against the static {@link
+ * VariableMetadataRegistry} groups, so the custom-field repository is mocked to return no
+ * definitions. Custom-field merge behaviour is covered by {@code VariableMetadataEndpointTest}.
+ */
 class DocxFieldValidatorTest {
 
-  private static final String ORG_ID = "org_field_validator_test";
-  private static final String SCHEMA_NAME = SchemaNameGenerator.generateSchemaName(ORG_ID);
-
-  @Autowired private DocxFieldValidator validator;
-  @Autowired private TenantProvisioningService provisioningService;
-
-  @BeforeAll
-  void setUp() {
-    provisioningService.provisionTenant(ORG_ID, "Field Validator Test Org", null);
-  }
+  private final FieldDefinitionRepository fieldDefinitionRepository =
+      mock(FieldDefinitionRepository.class);
+  private final DocxFieldValidator validator =
+      new DocxFieldValidator(new VariableMetadataRegistry(fieldDefinitionRepository));
 
   @Test
   void validateFields_mixedValidUnknown_returnsCorrectStatuses() {
+    when(fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(any()))
+        .thenReturn(List.of());
+
     List<String> fieldPaths = List.of("customer.name", "project.name", "nonexistent.field");
 
-    // Run validation within tenant scope so FieldDefinitionRepository can resolve custom fields
-    var results =
-        ScopedValue.where(RequestScopes.TENANT_ID, SCHEMA_NAME)
-            .call(() -> validator.validateFields(fieldPaths, TemplateEntityType.PROJECT));
+    var results = validator.validateFields(fieldPaths, TemplateEntityType.PROJECT);
 
     assertThat(results).hasSize(3);
 

@@ -11,8 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 /**
- * In-memory StorageService for tests. Replaces LocalStack S3 for all tests except
- * S3PresignedUrlServiceTest which needs real presigned URL HTTP round-trips.
+ * In-memory StorageService for tests. Replaces real S3 (formerly LocalStack) for ALL tests —
+ * registered as the {@code @Primary} storage bean by {@code TestcontainersConfiguration} and also
+ * instantiated directly by plain unit tests (e.g. {@code S3PresignedUrlServiceTest}).
  */
 public class InMemoryStorageService implements StorageService {
 

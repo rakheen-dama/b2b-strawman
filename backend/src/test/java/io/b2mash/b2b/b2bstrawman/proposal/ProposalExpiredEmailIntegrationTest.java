@@ -38,7 +38,7 @@ import org.springframework.test.web.servlet.MockMvc;
  *
  * <p>Drives the full production path: POST proposal → POST send → JDBC-backdate {@code expires_at}
  * → invoke {@link ProposalExpiryProcessor#processExpiredProposals()} → AFTER_COMMIT listener fires
- * the portal email. Asserts on the GreenMail singleton (port 13025) and on the proposal status.
+ * the portal email. Asserts on the GreenMail singleton (dynamic port) and on the proposal status.
  */
 @SpringBootTest
 @AutoConfigureMockMvc

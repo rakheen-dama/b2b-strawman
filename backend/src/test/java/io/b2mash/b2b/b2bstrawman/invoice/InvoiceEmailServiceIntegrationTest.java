@@ -36,7 +36,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class InvoiceEmailServiceIntegrationTest {
 
-  // JVM-singleton GreenMail on port 13025 (see GreenMailTestSupport + application-test.yml).
+  // JVM-singleton GreenMail on a dynamic port (see GreenMailTestSupport + application-test.yml).
   // Test resets the inbox in @BeforeEach for isolation.
   private static final GreenMail greenMail =
       io.b2mash.b2b.b2bstrawman.testutil.GreenMailTestSupport.getInstance();

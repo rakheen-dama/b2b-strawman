@@ -53,7 +53,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class InvoiceEmailFallbackGuardIntegrationTest {
 
-  // JVM-singleton GreenMail on port 13025 (see GreenMailTestSupport + application-test.yml).
+  // JVM-singleton GreenMail on a dynamic port (see GreenMailTestSupport + application-test.yml).
   private static final GreenMail greenMail = GreenMailTestSupport.getInstance();
 
   private static final String ORG_ID = "org_lzkc012_fallback_guard";

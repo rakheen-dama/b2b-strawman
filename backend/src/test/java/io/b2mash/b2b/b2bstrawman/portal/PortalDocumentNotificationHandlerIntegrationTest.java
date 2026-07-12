@@ -39,7 +39,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  *
  * <p>Each test publishes a synthetic {@link DocumentGeneratedEvent} via {@link
  * ApplicationEventPublisher} inside a tenant-scoped transaction so the {@code AFTER_COMMIT}
- * listener fires. Assertions are made against the GreenMail JVM singleton (port 13025).
+ * listener fires. Assertions are made against the GreenMail JVM singleton (dynamic port).
  */
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)

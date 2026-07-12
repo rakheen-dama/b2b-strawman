@@ -43,7 +43,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class InformationRequestNotificationAuditIntegrationTest {
   private static final String ORG_ID = "org_inforeq_notif_test";
 
-  // JVM-singleton GreenMail on port 13025 (see GreenMailTestSupport + application-test.yml).
+  // JVM-singleton GreenMail on a dynamic port (see GreenMailTestSupport + application-test.yml).
   private static final GreenMail greenMail = GreenMailTestSupport.getInstance();
 
   @Autowired private MockMvc mockMvc;

@@ -35,8 +35,8 @@ import org.springframework.test.web.servlet.MockMvc;
  * POST /api/proposals/{id}/send} so we exercise the full pipeline from controller through service
  * through event publication and the listener.
  *
- * <p>Asserts against the {@link GreenMailTestSupport} JVM singleton on port 13025 (per backend
- * CLAUDE.md — never start a new GreenMail instance).
+ * <p>Asserts against the {@link GreenMailTestSupport} JVM singleton on its dynamic port (per
+ * backend CLAUDE.md — never start a new GreenMail instance).
  */
 @SpringBootTest
 @AutoConfigureMockMvc

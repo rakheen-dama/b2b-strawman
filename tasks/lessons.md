@@ -184,6 +184,19 @@
 - When de-flaking, never "fix" by substituting a different exact count, and beware `containsExactlyInAnyOrder` over shared-mock invocations whose ids can recur across accumulated rows — both reintroduce the flake.
 - Documented as a standing convention in `backend/CLAUDE.md` → Test coupling rules.
 
+## macOS sleep absorption fakes monster-slow tests in unattended runs (2026-07-12)
+
+**Symptom**: A detached full `./mvnw clean verify` reported 60 min wall (norm ~23–26 min), and the surefire reports showed two absurd outliers: one testcase at 988s (`InvoiceLifecycleIntegrationTest.shouldRejectApproveWhenNotDraft`, every sibling ≤1.5s) and one class with 1013s of setup time but 0.2s of testcase time (`StatementControllerIntegrationTest`). Neither file had changed in weeks. It looked exactly like a new pathological hot class or a hung process.
+
+**Root cause**: The machine went to system sleep twice mid-run ("Maintenance Sleep" 989s, "Sleep Service Back to Sleep" 977s). Processes are frozen during sleep but wall-clock keeps advancing, so whatever testcase (or `@BeforeAll`) is in flight absorbs the entire sleep window into its measured time. `pmset -g log` matched both stalls to the second. A nohup'd Maven build does not prevent idle sleep — no user activity, no sleep assertion.
+
+**Fix**: Full verifies go through `backend/scripts/verify.sh`, which runs Maven under `caffeinate -is` (falls back to bare `./mvnw` where caffeinate doesn't exist). Shipped in PR #1547.
+
+**Detection / triage rule**: Before diagnosing a suddenly-monster-slow test class from an unattended run, check the shape and the power log:
+1. One testcase (or class setup) absorbing ~all the class time while siblings stay normal, in a file with no recent changes → suspect sleep, not code.
+2. `pmset -g log | grep -E "Entering Sleep"` — if a sleep window's duration (the trailing `N secs`) ≈ the stall and its timestamp falls inside the run, it's proven environmental — and unlike most "environmental" claims, this one comes with second-level evidence, which is the bar `feedback_test_failures_not_environmental` requires.
+3. Correct the run's wall time by subtracting matched sleep windows before comparing against any baseline.
+
 ## No self-granted review exemptions on PRs to main (2026-07-09)
 - Merged docs-only PR #1530 (one status.md log line) to main without any review pass, self-judging it exempt. User called it out.
 - The documentation-only carve-out exists ONLY in the pre-pr-merge-gate hook (verify markers); CLAUDE.md §2's review requirement has NO docs exemption.

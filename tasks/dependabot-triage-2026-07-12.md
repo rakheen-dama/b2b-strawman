@@ -56,3 +56,19 @@ workspace build). One PR, reviewed (no exemptions).
 
 next 21 + axios 6 (slack-bot) + vite 4 (3 workspace + 1 keycloak-theme) + undici 3 + ws 2 +
 form-data 1 = 37. → Wave 1 removes 28, Wave 2 removes 8, Wave 3 removes 1.
+
+---
+## Wave 1 EXECUTED — PR #1548 merged (`069d99c70`, 2026-07-12)
+
+Result: **89 → 20 open alerts** (69 closed; better than the ~63 estimate because review caught
+`docs/package.json` still pinning next `^16.2.4` — both reviewers, independently). Verified post-merge
+via the Dependabot API: 9 high / 6 medium / 5 low remain, reconciling exactly to:
+- 13 = tools/claude-slack-bot (8 high) — **Wave 2, awaiting delete-vs-keep decision**
+- 4 = compose tooling (1 high: keycloak-theme vite) — Wave 3
+- 3 = upstream-blocked: postcss 8.4.31 (exact-pinned inside next 16.2.6), esbuild 0.27.7 (pinned by
+  vite 7.3.5 `^0.27`). No in-range patch exists; re-check on each next/vite release. Candidates for
+  dismissal with reason "vulnerable code not reachable / awaiting upstream".
+
+Verification beyond CI: auth e2e specs (`e2e/tests/auth/*`, 11 passed / 0 failed) ran against the
+branch-built mock stack, observing the proxy/middleware surface that next 16.2.6's auth-bypass fixes
+touch (reviewer-B requirement; vitest cannot execute edge middleware).

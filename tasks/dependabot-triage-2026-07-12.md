@@ -85,3 +85,17 @@ Remaining 7 (verified post-merge):
   lockfile heal missed; fixable, fold into Wave 3.
 - Upstream-blocked (2): postcss 8.4.31 (pinned inside next 16.2.6, med), esbuild 0.27.7 (pinned by
   vite 7.3.5, low). Re-check on next/vite releases; dismissal candidates.
+
+## Wave 3 EXECUTED — PR #1550 merged (`6f77138d4`, 2026-07-12)
+
+Theme vite 6.4.3 + babel 7.29.7 (standalone lockfile regen — NOTE: `pnpm install` inside
+compose/keycloak/theme picks up the ROOT workspace context and mutates the root lockfile; use
+`--ignore-workspace`), mock-idp qs 6.15.3 via npm overrides (express 4 pins ~6.14.0 even at 4.22.1),
+root-lock @babel/core 7.29.7 straggler healed. One pre-existing CI flake triaged in the PR body
+(invoice-generation-with-expenses waitFor timeout — follow-up candidate, unbundled).
+
+## FINAL STATE: 89 → 2 open alerts (both upstream-blocked)
+
+- postcss 8.4.31 (medium, root lock) — exact-pinned inside next 16.2.6; re-check each next release.
+- esbuild 0.27.7 (low, root lock) — pinned by vite 7.3.5 `^0.27`; re-check each vite release.
+Both are dismissal candidates ("awaiting upstream patch"); left open so Dependabot re-flags on new advisories.

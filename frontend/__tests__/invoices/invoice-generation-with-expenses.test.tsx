@@ -8,6 +8,10 @@ import type { UnbilledTimeResponse, InvoiceLineResponse, ExpenseCategory } from 
 // Mock specialist launcher (auto-mock from __mocks__/specialist-launcher-button.tsx)
 vi.mock("@/components/assistant/specialist-launcher-button");
 
+// Dialog-step transitions resolve chained mocked promises through multiple
+// re-renders; loaded CI runners exceed RTL's 1s default (observed: PR #1550 CI).
+const TRANSITION_TIMEOUT = 5000;
+
 const mockFetchUnbilledTime = vi.fn();
 const mockCreateInvoiceDraft = vi.fn();
 const mockValidateInvoiceGeneration = vi.fn();
@@ -120,9 +124,12 @@ describe("Invoice Generation — expense selection", () => {
     await user.click(screen.getByText("New Invoice"));
     await user.click(screen.getByText("Fetch Unbilled Time"));
 
-    await waitFor(() => {
-      expect(screen.getByTestId("expense-selection-section")).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByTestId("expense-selection-section")).toBeInTheDocument();
+      },
+      { timeout: TRANSITION_TIMEOUT }
+    );
 
     // USD expense is visible
     expect(screen.getByText("Software license")).toBeInTheDocument();
@@ -149,9 +156,12 @@ describe("Invoice Generation — expense selection", () => {
     await user.click(screen.getByText("New Invoice"));
     await user.click(screen.getByText("Fetch Unbilled Time"));
 
-    await waitFor(() => {
-      expect(screen.getByTestId("expense-selection-section")).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByTestId("expense-selection-section")).toBeInTheDocument();
+      },
+      { timeout: TRANSITION_TIMEOUT }
+    );
 
     // Running total should include time (200) + expense (55) = 255
     // 2 items: 1 time entry + 1 USD expense auto-selected
@@ -178,27 +188,36 @@ describe("Invoice Generation — expense selection", () => {
     await user.click(screen.getByText("New Invoice"));
     await user.click(screen.getByText("Fetch Unbilled Time"));
 
-    await waitFor(() => {
-      expect(screen.getByTestId("expense-selection-section")).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByTestId("expense-selection-section")).toBeInTheDocument();
+      },
+      { timeout: TRANSITION_TIMEOUT }
+    );
 
     // Click validate then create
     await user.click(screen.getByText("Validate & Create Draft"));
 
-    await waitFor(() => {
-      expect(screen.getByText("Create Draft")).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Create Draft")).toBeInTheDocument();
+      },
+      { timeout: TRANSITION_TIMEOUT }
+    );
 
     await user.click(screen.getByText("Create Draft"));
 
-    await waitFor(() => {
-      expect(mockCreateInvoiceDraft).toHaveBeenCalledWith("acme", "c1", {
-        customerId: "c1",
-        currency: "USD",
-        timeEntryIds: ["te1"],
-        expenseIds: ["exp1"],
-      });
-    });
+    await waitFor(
+      () => {
+        expect(mockCreateInvoiceDraft).toHaveBeenCalledWith("acme", "c1", {
+          customerId: "c1",
+          currency: "USD",
+          timeEntryIds: ["te1"],
+          expenseIds: ["exp1"],
+        });
+      },
+      { timeout: TRANSITION_TIMEOUT }
+    );
   });
 });
 

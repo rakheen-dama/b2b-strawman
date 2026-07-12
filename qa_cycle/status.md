@@ -41,7 +41,7 @@ Also known (no IDs; observations/deferred epics from prior cycle — re-observe 
 
 ## QA Position
 
-- **Day/Checkpoint**: Day 0 — not started.
+- **Day/Checkpoint**: Day 3 — checkpoint 3.1 (Days 0–2 complete, all PASS; KYC 2.8–2.10 skipped per mandate exemption).
 
 ## Dev Stack
 
@@ -64,4 +64,7 @@ Also known (no IDs; observations/deferred epics from prior cycle — re-observe 
 ## Log
 
 - **2026-07-12 (Orchestrator, cycle init)** — Branch `bugfix_cycle_2026-07-12` created. Prior cycle state (status.md, checkpoint-results/, fix-specs/) archived to `_archive_2026-07-12_legal-full-lifecycle-kc-cycle2026-07-06/`. Fresh tracker seeded with carried-forward open items LZKC-023…027. Dev stack status unknown → next action: Infra Agent (verify/start stack).
+- **2026-07-12 (QA, Session 0 + Day 0)** — Session 0 reset executed per scenario 0.C/0.D/0.E (stale prior-cycle Mathebula org/schema/KC org+users removed; backend restarted clean; Mailpit purged). Day 0 all 32 checkpoints PASS: access request + OTP → padmin approval (tenant `tenant_5039f2d497cf` re-provisioned, profile legal-za) → Thandi KC registration → team invites → Bob/Carol registered; JIT member sync verified (Owner/Admin/Member). No new gaps. Harness note: trusted Playwright input events dropped session-wide this run (worse than the documented post-OAuth-only quirk); synthetic-event workaround used, outcomes verified via product-visible effects.
+- **2026-07-12 (QA, Day 1)** — All checkpoints PASS: logo + #1B3358 brand colour saved and persist across logout/login (verified in Bob's fresh session); LSSA 2024/2025 High Court schedule pre-seeded (19 items, 4(a) R7800/day + 4(c) R780/hr); Section 86 trust account "Mathebula Trust — Main" created, module page shows R 0,00 balance. No new gaps.
+- **2026-07-12 (QA, Day 2)** — All checkpoints PASS (KYC 2.8–2.10 SKIPPED per mandate WONT_FIX exemption, unchanged from prior cycle): Sipho Dlamini created (INDIVIDUAL, SA-legal promoted fields incl. ID 8501015800088); conflict check CLEAR; DEAL-0001 created R87 500 and dragged to Conflict check (30%); client Work>Deals row verified. LZKC-001 pipeline hydration fix holds (0 console errors). No new gaps.
 - **2026-07-12 (Infra, stack start)** — Docker infra confirmed healthy (postgres/keycloak/mailpit/localstack, up 4 days); realm `docteams` 200; keycloak-bootstrap re-run idempotently. Backend + gateway were DOWN (stale PIDs, ports free) → started fresh via `svc.sh start backend gateway` (ready in 30s/6s), so both run current `main` code post-2026-07-09 merges. Frontend/portal left running (HMR serves current source). Backend log clean (no ERROR/WARN; prior-cycle Mathebula automation jobs firing on schedule is expected). Mailpit API OK (7 old messages, untouched). All 4 services RUNNING+HEALTHY — QA may proceed with Day 0.

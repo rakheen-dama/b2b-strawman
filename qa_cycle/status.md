@@ -45,7 +45,15 @@ Also known (no IDs; observations/deferred epics from prior cycle — re-observe 
 
 ## Dev Stack
 
-- **Status**: Unknown (last confirmed running 2026-07-09). Infra Agent must verify Docker infra + all 4 local services before QA starts.
+- **Status**: VERIFIED RUNNING (2026-07-12, Infra Agent)
+- **Docker infra** (all healthy, up 4 days): b2b-postgres :5432, b2b-keycloak :8180, b2b-mailpit :1025/:8025, b2b-localstack :4566. Keycloak realm `docteams` returns 200; `keycloak-bootstrap.sh` re-run (idempotent) — padmin present, mappers/lifetimes/DCR policy applied.
+- **Local services** (svc.sh status all RUNNING+HEALTHY):
+  - backend :8080 — freshly started 2026-07-12 (was down, stale PID; ports were free, no orphan holders). Runs current `main` code.
+  - gateway :8443 — freshly started 2026-07-12 (was down, stale PID). Runs current `main` code.
+  - frontend :3000 — running since 2026-07-08 (PID 10342); HMR serves current branch source, no restart needed.
+  - portal :3002 — running since 2026-07-08 (PID 10397); HMR, no restart needed.
+- **Backend log**: clean — no ERROR/WARN lines after startup; only INFO (prior-cycle Mathebula tenant automation jobs firing on schedule, expected leftover data).
+- **Mailpit**: API responsive; 7 prior-cycle messages present (left untouched per cycle note).
 
 ## Tracker
 
@@ -56,3 +64,4 @@ Also known (no IDs; observations/deferred epics from prior cycle — re-observe 
 ## Log
 
 - **2026-07-12 (Orchestrator, cycle init)** — Branch `bugfix_cycle_2026-07-12` created. Prior cycle state (status.md, checkpoint-results/, fix-specs/) archived to `_archive_2026-07-12_legal-full-lifecycle-kc-cycle2026-07-06/`. Fresh tracker seeded with carried-forward open items LZKC-023…027. Dev stack status unknown → next action: Infra Agent (verify/start stack).
+- **2026-07-12 (Infra, stack start)** — Docker infra confirmed healthy (postgres/keycloak/mailpit/localstack, up 4 days); realm `docteams` 200; keycloak-bootstrap re-run idempotently. Backend + gateway were DOWN (stale PIDs, ports free) → started fresh via `svc.sh start backend gateway` (ready in 30s/6s), so both run current `main` code post-2026-07-09 merges. Frontend/portal left running (HMR serves current source). Backend log clean (no ERROR/WARN; prior-cycle Mathebula automation jobs firing on schedule is expected). Mailpit API OK (7 old messages, untouched). All 4 services RUNNING+HEALTHY — QA may proceed with Day 0.

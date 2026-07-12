@@ -1,0 +1,13 @@
+# Isolation probe IDs — Day 14 setup (cycle 2026-07-12), tenant tenant_5039f2d497cf
+# Targets for Day 15 portal probes (Sipho must NOT reach any of these)
+
+morokaClientId=51247065-644b-4387-b11b-303960087727
+morokaMatterId=690b8246-a999-4cad-9fcc-cf76544f268f            # EST-2026-002 "Estate Late Peter Moroka"
+morokaInfoRequestId=a2452183-1736-4ec7-9d44-b1fe943d9b53       # REQ-0002 "Liquidation and Distribution Account Pack" (5 items)
+morokaDocumentId=40d050cc-c8b7-4067-b512-de7e83aa2ed4          # death-certificate-moroka.pdf (via read-only SELECT, evidence only)
+morokaTrustTxId=b1127479-cbd0-4b85-8b2e-c183e4f6cf59           # DEP/2026/002 R 25 000,00 (via read-only SELECT, evidence only)
+
+# Sipho's own (positive controls)
+siphoCustomerId=d0c7daf5-7085-4560-afb9-e9e937db5abc
+siphoMatterId=66451e87-4723-49c4-b363-e696b68ff6b0             # RAF-2026-001
+siphoTrustTxId=20558df8-79ea-4b7f-9dfe-d3a4da3e3b43            # DEP/2026/001 R 50 000,00

@@ -18,6 +18,18 @@ public class GreenMailLauncherSessionListener implements LauncherSessionListener
 
   @Override
   public void launcherSessionOpened(LauncherSession session) {
-    GreenMailTestSupport.getInstance();
+    try {
+      GreenMailTestSupport.getInstance();
+    } catch (Throwable startupFailure) {
+      // Must be Throwable: a static-init failure surfaces as ExceptionInInitializerError (an
+      // Error). Never abort the launcher session — a GreenMail startup problem should fail the
+      // email tests (with their familiar NoClassDefFoundError signature), not every test in the
+      // JVM before a single one runs.
+      System.err.println(
+          "[GreenMailLauncherSessionListener] GreenMail failed to start — email tests will fail;"
+              + " non-email tests are unaffected. Sweep stale JVMs with"
+              + " backend/scripts/verify-preflight.sh and retry. Cause: "
+              + startupFailure);
+    }
   }
 }

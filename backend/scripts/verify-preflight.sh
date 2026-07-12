@@ -39,7 +39,12 @@ while read -r pid etime cmd; do
 done < <(ps -axo pid=,etime=,command= \
           | grep -E 'java' \
           | grep -E 'surefirebooter|ForkedBooter|classworlds\.launcher|maven\.home' \
+          | grep -E 'b2b-strawman' \
           | grep -v grep || true)
+# The 'b2b-strawman' filter scopes both the kill and the refusal to THIS project
+# (main repo + its b2b-strawman-* worktrees, whose paths appear in the JVM command
+# line via -Dmaven.multiModuleProjectDirectory / the surefirebooter jar path).
+# Maven builds of unrelated projects are never touched.
 
 if (( live > 0 )); then
   echo "preflight: another verify appears to be RUNNING (${live} live JVM(s))." >&2

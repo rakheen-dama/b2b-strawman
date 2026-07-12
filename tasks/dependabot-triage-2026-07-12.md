@@ -99,3 +99,9 @@ root-lock @babel/core 7.29.7 straggler healed. One pre-existing CI flake triaged
 - postcss 8.4.31 (medium, root lock) — exact-pinned inside next 16.2.6; re-check each next release.
 - esbuild 0.27.7 (low, root lock) — pinned by vite 7.3.5 `^0.27`; re-check each vite release.
 Both are dismissal candidates ("awaiting upstream patch"); left open so Dependabot re-flags on new advisories.
+
+## Follow-up closed: invoice-generation waitFor flake — PR #1551 merged (`1e9742785`)
+
+Reproduced deterministically (1.5s injected mock delay = exact CI signature), fixed with
+TRANSITION_TIMEOUT=5000 on all 5 async-transition waitFors + TEST_TIMEOUT=15s (vitest default
+testTimeout is also 5s and would have raced the waitFor). Merged after 3 consecutive green CI runs.

@@ -220,6 +220,14 @@
             <version>2.1.2</version>
             <scope>test</scope>
         </dependency>
+        <!-- Compile-time dependency for GreenMailLauncherSessionListener (LauncherSessionListener).
+             Surefire provides the launcher at runtime, but not on the test compile classpath.
+             Version managed by the Spring Boot BOM (JUnit BOM import). -->
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.wiremock</groupId>
             <artifactId>wiremock-standalone</artifactId>

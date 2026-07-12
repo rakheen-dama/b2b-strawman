@@ -50,16 +50,17 @@ spring:
   flyway:
     enabled: false
 
-  # Mail config — points at GreenMail test port 13025. The 3 email integration tests
-  # (InvoiceEmailServiceIntegrationTest, PortalEmailServiceIntegrationTest,
-  # EmailNotificationChannelIntegrationTest) each spin up a GreenMail server on this
-  # port in their own @BeforeAll/@AfterAll — they run sequentially, so the port is
-  # free between test classes. Having these static defaults here instead of
-  # per-class @DynamicPropertySource blocks lets all three share the same Spring
-  # context cache key (no context rebuild between them).
+  # Mail config — points at the JVM-wide GreenMail singleton (GreenMailTestSupport).
+  # The port is DYNAMIC: GreenMailLauncherSessionListener forces the singleton's
+  # static init at JUnit launcher-session start, which scans 13025-13125 for a free
+  # port, binds GreenMail there, and sets the greenmail.smtp.port system property —
+  # all before any Spring test context resolves spring.mail.port. The :13025 fallback
+  # only applies under exotic non-JUnit-Platform runners. Keeping the placeholder here
+  # (instead of per-class @DynamicPropertySource) preserves a single Spring context
+  # cache key across all email tests (config SOURCES are hashed, not resolved values).
   mail:
     host: localhost
-    port: 13025
+    port: ${greenmail.smtp.port:13025}
     username: ""
     password: ""
     properties:

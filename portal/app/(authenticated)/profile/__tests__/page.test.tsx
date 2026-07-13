@@ -104,7 +104,9 @@ describe("ProfilePage", () => {
     });
   });
 
-  it("displays role badge", async () => {
+  // LZKC-031 PR-2 (class D): role codes map to client-facing labels, not a
+  // prettified enum — QA's Day-90 scan saw "Role: General Customer" on /profile.
+  it("displays GENERAL role as client-facing 'Contact' label", async () => {
     mockPortalGet.mockResolvedValue({
       contactId: "contact-1",
       customerId: "cust-1",
@@ -117,7 +119,59 @@ describe("ProfilePage", () => {
     render(<ProfilePage />);
 
     await waitFor(() => {
-      expect(screen.getByText("General")).toBeInTheDocument();
+      expect(screen.getByText("Contact")).toBeInTheDocument();
+    });
+    expect(screen.queryByText("General")).not.toBeInTheDocument();
+  });
+
+  it("displays PRIMARY role as 'Primary Contact'", async () => {
+    mockPortalGet.mockResolvedValue({
+      contactId: "contact-1",
+      customerId: "cust-1",
+      customerName: "Acme Corp",
+      email: "alice@acme.com",
+      displayName: "Alice Smith",
+      role: "PRIMARY",
+    });
+
+    render(<ProfilePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Primary Contact")).toBeInTheDocument();
+    });
+  });
+
+  it("displays BILLING role as 'Billing Contact'", async () => {
+    mockPortalGet.mockResolvedValue({
+      contactId: "contact-1",
+      customerId: "cust-1",
+      customerName: "Acme Corp",
+      email: "alice@acme.com",
+      displayName: "Alice Smith",
+      role: "BILLING",
+    });
+
+    render(<ProfilePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Billing Contact")).toBeInTheDocument();
+    });
+  });
+
+  it("falls back to prettified enum for unknown role codes", async () => {
+    mockPortalGet.mockResolvedValue({
+      contactId: "contact-1",
+      customerId: "cust-1",
+      customerName: "Acme Corp",
+      email: "alice@acme.com",
+      displayName: "Alice Smith",
+      role: "APPROVER",
+    });
+
+    render(<ProfilePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Approver")).toBeInTheDocument();
     });
   });
 

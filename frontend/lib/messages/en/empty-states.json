@@ -25,7 +25,7 @@
   "myWork": {
     "list": {
       "heading": "No tasks assigned to you",
-      "description": "Tasks assigned to you across all projects will appear here. Head to a project to create or pick up tasks.",
+      "description": "Tasks assigned to you across all {projects} will appear here. Head to {a project} to create or pick up tasks.",
       "cta": "Browse projects"
     }
   },
@@ -39,7 +39,7 @@
   "timeEntries": {
     "list": {
       "heading": "No time entries yet",
-      "description": "Track time against tasks to monitor effort, calculate costs, and generate accurate invoices.",
+      "description": "Track time against tasks to monitor effort, calculate costs, and generate accurate {invoices}.",
       "cta": "Log time"
     }
   },

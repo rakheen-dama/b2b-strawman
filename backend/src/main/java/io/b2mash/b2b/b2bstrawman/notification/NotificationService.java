@@ -22,9 +22,12 @@ import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
+import io.b2mash.b2b.b2bstrawman.notification.template.EmailTerminology;
 import io.b2mash.b2b.b2bstrawman.schedule.event.RecurringProjectCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.schedule.event.ScheduleCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.schedule.event.ScheduleSkippedEvent;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import java.util.ArrayList;
@@ -58,6 +61,8 @@ public class NotificationService {
   private final DocumentRepository documentRepository;
   private final ProjectMemberRepository projectMemberRepository;
   private final MemberRepository memberRepository;
+  private final OrgSettingsRepository orgSettingsRepository;
+  private final EmailTerminology emailTerminology;
 
   public NotificationService(
       NotificationRepository notificationRepository,
@@ -66,7 +71,9 @@ public class NotificationService {
       TaskRepository taskRepository,
       DocumentRepository documentRepository,
       ProjectMemberRepository projectMemberRepository,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      OrgSettingsRepository orgSettingsRepository,
+      EmailTerminology emailTerminology) {
     this.notificationRepository = notificationRepository;
     this.notificationPreferenceRepository = notificationPreferenceRepository;
     this.commentRepository = commentRepository;
@@ -74,6 +81,24 @@ public class NotificationService {
     this.documentRepository = documentRepository;
     this.projectMemberRepository = projectMemberRepository;
     this.memberRepository = memberRepository;
+    this.orgSettingsRepository = orgSettingsRepository;
+    this.emailTerminology = emailTerminology;
+  }
+
+  /**
+   * Resolves the tenant's user-visible term for "Invoice" (LZKC-031 class D). Notification titles
+   * are generated once and stored, so the vertical vocabulary must be applied at creation time —
+   * via the same {@link EmailTerminology} map that drives transactional-email copy (GAP-L-65 / PR
+   * #1518). Tenants without a vertical profile (or without an {@code OrgSettings} row) fall back to
+   * "Invoice". Existing notification rows keep their original copy.
+   */
+  private String invoiceTerm() {
+    String namespace =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .map(OrgSettings::getVerticalProfile)
+            .orElse(null);
+    return emailTerminology.resolve(namespace).getOrDefault("Invoice", "Invoice");
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -566,7 +591,8 @@ public class NotificationService {
     }
     recipients.remove(event.actorMemberId());
     var title =
-        "Invoice %s for %s has been sent".formatted(event.invoiceNumber(), event.customerName());
+        "%s %s for %s has been sent"
+            .formatted(invoiceTerm(), event.invoiceNumber(), event.customerName());
     return createNotificationsForRecipients(recipients, "INVOICE_SENT", title, event.entityId());
   }
 
@@ -580,7 +606,8 @@ public class NotificationService {
     }
     recipients.remove(event.actorMemberId());
     var title =
-        "Invoice %s for %s has been paid".formatted(event.invoiceNumber(), event.customerName());
+        "%s %s for %s has been paid"
+            .formatted(invoiceTerm(), event.invoiceNumber(), event.customerName());
     return createNotificationsForRecipients(recipients, "INVOICE_PAID", title, event.entityId());
   }
 

@@ -3,6 +3,7 @@
 import { Clock } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
+import { TerminologyText } from "@/components/terminology-text";
 import { createMessages } from "@/lib/messages";
 import { formatDuration } from "@/lib/format";
 import type { MyWorkTimeEntryItem } from "@/lib/types";
@@ -33,7 +34,7 @@ export function TodayTimeEntries({ entries }: TodayTimeEntriesProps) {
           <EmptyState
             icon={Clock}
             title={t("timeEntries.list.heading")}
-            description={t("timeEntries.list.description")}
+            description={<TerminologyText template={t("timeEntries.list.description")} />}
           />
         </div>
       ) : (

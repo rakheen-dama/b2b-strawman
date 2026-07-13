@@ -257,13 +257,35 @@ describe("Invoice Tax UI", () => {
   });
 
   describe("Tax breakdown in totals section", () => {
+    it("renders rate name and percent from a backend-shaped breakdown payload (LZKC-028)", () => {
+      // Backend TaxBreakdownEntry record serializes rateName/ratePercent
+      // (backend/.../tax/dto/TaxBreakdownEntry.java) — feed exactly that shape.
+      const invoice = makeInvoice({
+        hasPerLineTax: true,
+        taxBreakdown: [
+          {
+            rateName: "VAT — Standard",
+            ratePercent: 15,
+            taxableAmount: 1000,
+            taxAmount: 150,
+          },
+        ],
+      });
+
+      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+
+      // Must render the tax name + percent, not the literal "(%)"
+      expect(screen.getByText("VAT — Standard (15%)")).toBeInTheDocument();
+      expect(screen.queryByText(/^\s*\(%\)\s*$/)).not.toBeInTheDocument();
+    });
+
     it("shows tax breakdown entries when hasPerLineTax is true", () => {
       const invoice = makeInvoice({
         hasPerLineTax: true,
         taxBreakdown: [
           {
-            taxRateName: "VAT",
-            taxRatePercent: 15,
+            rateName: "VAT",
+            ratePercent: 15,
             taxableAmount: 1000,
             taxAmount: 150,
           },
@@ -307,8 +329,8 @@ describe("Invoice Tax UI", () => {
         hasPerLineTax: true,
         taxBreakdown: [
           {
-            taxRateName: "VAT",
-            taxRatePercent: 15,
+            rateName: "VAT",
+            ratePercent: 15,
             taxableAmount: 1000,
             taxAmount: 150,
           },

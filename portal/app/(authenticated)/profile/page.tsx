@@ -33,8 +33,19 @@ function ProfileSkeleton() {
   );
 }
 
+// LZKC-031 PR-2 (class D): PortalContact.ContactRole codes map to client-facing
+// labels — prettifying the enum rendered "General" next to the "Customer" field
+// label, which QA's Day-90 scan read as "Role: General Customer".
+const ROLE_LABELS: Record<string, string> = {
+  PRIMARY: "Primary Contact",
+  BILLING: "Billing Contact",
+  GENERAL: "Contact",
+};
+
 function formatRole(role: string): string {
-  return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+  return (
+    ROLE_LABELS[role] ?? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
+  );
 }
 
 export default function ProfilePage() {

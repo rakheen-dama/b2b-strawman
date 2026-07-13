@@ -204,11 +204,23 @@ public class BillingRunGenerationService {
     String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
     eventPublisher.publishEvent(
         new BillingRunCompletedEvent(
-            completedRun.getId(), completedRun.getName(), finalSuccessCount, tenantId, orgId));
+            completedRun.getId(),
+            completedRun.getName(),
+            completedRun.getPeriodFrom(),
+            completedRun.getPeriodTo(),
+            finalSuccessCount,
+            tenantId,
+            orgId));
     if (finalFailureCount > 0) {
       eventPublisher.publishEvent(
           new BillingRunFailuresEvent(
-              completedRun.getId(), completedRun.getName(), finalFailureCount, tenantId, orgId));
+              completedRun.getId(),
+              completedRun.getName(),
+              completedRun.getPeriodFrom(),
+              completedRun.getPeriodTo(),
+              finalFailureCount,
+              tenantId,
+              orgId));
     }
 
     log.info(
@@ -364,7 +376,13 @@ public class BillingRunGenerationService {
           auditService.log(AuditEventBuilder.billingRunSent(freshRun, finalSuccessCount));
           eventPublisher.publishEvent(
               new BillingRunSentEvent(
-                  billingRunId, freshRun.getName(), finalSuccessCount, sendTenantId, sendOrgId));
+                  billingRunId,
+                  freshRun.getName(),
+                  freshRun.getPeriodFrom(),
+                  freshRun.getPeriodTo(),
+                  finalSuccessCount,
+                  sendTenantId,
+                  sendOrgId));
         });
 
     log.info(

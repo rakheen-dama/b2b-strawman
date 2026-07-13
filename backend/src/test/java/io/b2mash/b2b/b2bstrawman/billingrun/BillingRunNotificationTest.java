@@ -26,7 +26,9 @@ import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -183,13 +185,20 @@ class BillingRunNotificationTest {
     assertThat(generatedAudits).isNotEmpty();
     assertThat(generatedAudits.getLast().entityId()).isEqualTo(billingRunId);
 
-    // Verify BILLING_RUN_COMPLETED notification was created
-    var completedNotifs =
+    // Verify BILLING_RUN_COMPLETED notification was created with the run name and a
+    // count-aware invoice phrase (LZKC-032: singular "1 invoice", not "1 invoices")
+    var completedTitles =
         jdbcTemplate.queryForList(
-            "SELECT id, title, type FROM \"%s\".notifications WHERE type = ?"
+            "SELECT title FROM \"%s\".notifications WHERE type = ? AND reference_entity_id = ?"
                 .formatted(tenantSchema),
-            "BILLING_RUN_COMPLETED");
-    assertThat(completedNotifs).isNotEmpty();
+            String.class,
+            "BILLING_RUN_COMPLETED",
+            billingRunId);
+    assertThat(completedTitles).isNotEmpty();
+    assertThat(completedTitles.getFirst())
+        .contains("Notif Test Run")
+        .contains("1 invoice generated")
+        .doesNotContain("1 invoices");
   }
 
   @Test
@@ -303,6 +312,92 @@ class BillingRunNotificationTest {
                     }
                     """))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @Order(7)
+  void generate_blankRunName_notificationFallsBackToPeriod() throws Exception {
+    // Seed a fresh unbilled time entry for a second run
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var entry =
+                          new TimeEntry(
+                              taskId,
+                              memberIdOwner,
+                              LocalDate.now().minusDays(3),
+                              60,
+                              true,
+                              null,
+                              "BRN blank-name work");
+                      entry.snapshotBillingRate(new BigDecimal("1800.00"), "USD");
+                      timeEntryRepository.save(entry);
+                    }));
+
+    var periodFrom = LocalDate.now().minusDays(30);
+    var periodTo = LocalDate.now();
+
+    // Create billing run with an EMPTY name (the Day-28 wizard does not require one)
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/billing-runs")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brn_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "name": "",
+                          "periodFrom": "%s",
+                          "periodTo": "%s",
+                          "currency": "USD",
+                          "includeExpenses": false,
+                          "includeRetainers": false
+                        }
+                        """
+                            .formatted(periodFrom, periodTo)))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    var blankNameRunId =
+        UUID.fromString(JsonPath.read(createResult.getResponse().getContentAsString(), "$.id"));
+
+    mockMvc
+        .perform(
+            post("/api/billing-runs/" + blankNameRunId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brn_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/api/billing-runs/" + blankNameRunId + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brn_owner")))
+        .andExpect(status().isOk());
+
+    var titles =
+        jdbcTemplate.queryForList(
+            "SELECT title FROM \"%s\".notifications WHERE type = ? AND reference_entity_id = ?"
+                .formatted(tenantSchema),
+            String.class,
+            "BILLING_RUN_COMPLETED",
+            blankNameRunId);
+    assertThat(titles).isNotEmpty();
+
+    var periodFormat = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
+    var expectedFallback =
+        "%s – %s".formatted(periodFormat.format(periodFrom), periodFormat.format(periodTo));
+    // Spec acceptance (LZKC-032.md:31): the period fallback renders UNQUOTED —
+    // e.g. `Billing run 01 Jul 2026 – 31 Jul 2026 completed — 1 invoice generated`
+    assertThat(titles.getFirst())
+        .isEqualTo("Billing run %s completed — 1 invoice generated".formatted(expectedFallback))
+        .doesNotContain("\"");
   }
 
   private record AuditRow(

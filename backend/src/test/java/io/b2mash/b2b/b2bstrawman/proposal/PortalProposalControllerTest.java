@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.proposal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -595,6 +596,90 @@ class PortalProposalControllerTest {
                     {"reason": "Changed mind"}
                     """))
         .andExpect(status().isConflict());
+  }
+
+  // --- LZKC-025: proposal.declined audit must be attributed to the portal contact ---
+
+  @Test
+  void declineProposal_attributesAuditEventToPortalContact() throws Exception {
+    // Seed a dedicated SENT proposal so this test does not race the other decline tests
+    var proposalIdHolder = new UUID[1];
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .run(
+            () -> {
+              var proposal =
+                  proposalService.createProposal(
+                      "Decline Audit Attribution Proposal",
+                      customerId,
+                      FeeModel.FIXED,
+                      memberId,
+                      portalContactId,
+                      new BigDecimal("7500.00"),
+                      "ZAR",
+                      null,
+                      null,
+                      null,
+                      null,
+                      null,
+                      null,
+                      null,
+                      Map.of("type", "doc", "content", List.of()),
+                      null,
+                      null);
+              proposalIdHolder[0] = proposal.getId();
+              proposalService.sendProposal(proposal.getId(), portalContactId);
+            });
+    var auditProposalId = proposalIdHolder[0];
+
+    // Seed portal read-model row (AFTER_COMMIT sync handler may not fire in test transaction)
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              var proposal = proposalService.getProposal(auditProposalId);
+              seedPortalProposal(
+                  auditProposalId,
+                  customerId,
+                  portalContactId,
+                  proposal.getProposalNumber(),
+                  "Decline Audit Attribution Proposal",
+                  "SENT",
+                  "FIXED",
+                  new BigDecimal("7500.00"),
+                  "ZAR",
+                  "<p>Decline audit attribution content</p>",
+                  "[]",
+                  proposal.getSentAt(),
+                  null);
+            });
+
+    mockMvc
+        .perform(
+            post("/portal/api/proposals/{id}/decline", auditProposalId)
+                .header("Authorization", "Bearer " + portalToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"reason": "Going another direction"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("DECLINED"));
+
+    // Portal decline must be attributed to the portal contact, not "System".
+    // The portal "Your actions" trail filters actor_type = PORTAL_CONTACT AND
+    // actor_id = <contact>, so a SYSTEM/null actor drops the event from that feed.
+    var auditRows =
+        jdbcTemplate.queryForList(
+            "SELECT actor_id, actor_type, source FROM %s.audit_events WHERE event_type = 'proposal.declined' AND entity_id = ?"
+                .formatted(tenantSchema),
+            auditProposalId);
+    assertThat(auditRows).hasSize(1);
+    var auditRow = auditRows.get(0);
+    assertThat(auditRow.get("actor_type")).isEqualTo("PORTAL_CONTACT");
+    assertThat(auditRow.get("actor_id")).isEqualTo(portalContactId);
+    assertThat(auditRow.get("source")).isEqualTo("PORTAL");
   }
 
   // --- Auth tests ---

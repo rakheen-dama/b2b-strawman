@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TerminologyText } from "@/components/terminology-text";
 
 interface OnboardingCustomer {
   id: string;
@@ -48,7 +49,7 @@ export function OnboardingPipelineSection({ customers, orgSlug }: OnboardingPipe
       </h2>
       {sorted.length === 0 ? (
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          No customers currently in onboarding
+          <TerminologyText template="No {customers} currently in onboarding" />
         </p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">

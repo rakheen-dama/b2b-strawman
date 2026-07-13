@@ -126,10 +126,10 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ sl
                   Period
                 </th>
                 <th className="hidden px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase md:table-cell dark:text-slate-400">
-                  Customers
+                  <TerminologyText template="{Customers}" />
                 </th>
                 <th className="hidden px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase md:table-cell dark:text-slate-400">
-                  Invoices
+                  <TerminologyText template="{Invoices}" />
                 </th>
                 <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Total

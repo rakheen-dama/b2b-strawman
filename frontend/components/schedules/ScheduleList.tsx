@@ -21,6 +21,7 @@ import {
   deleteScheduleAction,
 } from "@/app/(app)/org/[slug]/schedules/actions";
 import { formatDate } from "@/lib/format";
+import { useTerminology } from "@/lib/terminology";
 import { FREQUENCY_LABELS } from "@/lib/schedule-constants";
 import type { ScheduleStatus } from "@/lib/schedule-constants";
 import type { ScheduleResponse } from "@/lib/api/schedules";
@@ -38,6 +39,7 @@ interface ScheduleListProps {
 }
 
 export function ScheduleList({ slug, schedules }: ScheduleListProps) {
+  const { t } = useTerminology();
   const [activeTab, setActiveTab] = useState<ScheduleStatus | "ALL">("ACTIVE");
   const [errorMessages, setErrorMessages] = useState<Record<string, string>>({});
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
@@ -131,7 +133,7 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
           </h2>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             {activeTab === "ACTIVE"
-              ? "Create a recurring schedule to automate project creation."
+              ? `Create a recurring schedule to automate ${t("project")} creation.`
               : activeTab === "PAUSED"
                 ? "No schedules are currently paused."
                 : activeTab === "COMPLETED"
@@ -241,8 +243,8 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Pause Schedule</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Pausing this schedule will stop automatic project creation. You
-                                  can resume it at any time.
+                                  Pausing this schedule will stop automatic {t("project")} creation.
+                                  You can resume it at any time.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>

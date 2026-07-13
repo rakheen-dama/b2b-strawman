@@ -17,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { formatCurrency } from "@/lib/format";
+import { useTerminology } from "@/lib/terminology";
 import {
   getItemsAction,
   getBillingRunAction,
@@ -33,6 +34,7 @@ interface SendStepProps {
 
 export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps) {
   const router = useRouter();
+  const { t } = useTerminology();
   const [items, setItems] = useState<BillingRunItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -125,7 +127,7 @@ export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps
               Billing Run Complete
             </h3>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              Invoices have been processed.
+              {t("Invoices")} have been processed.
             </p>
           </div>
 
@@ -178,7 +180,7 @@ export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps
         <div className="rounded-lg border border-slate-200 bg-white p-8 dark:border-slate-800 dark:bg-slate-950">
           <div className="text-center">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              Sending Invoices...
+              Sending {t("Invoices")}...
             </h3>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Please wait while invoices are being sent.
@@ -202,10 +204,10 @@ export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
               <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Customer
+                {t("Customer")}
               </th>
               <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Invoice #
+                {t("Invoice")} #
               </th>
               <th className="px-4 py-3 text-right font-medium text-slate-600 dark:text-slate-400">
                 Total

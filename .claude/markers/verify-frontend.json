@@ -1,1 +1,1 @@
-{"commit":"ba050d9b8+LZKC-027","command":"pnpm run lint && pnpm run build && pnpm test && pnpm run format:check","exit":0,"ts":"2026-07-13T10:49:00Z","summary":"402 files / 2505 passed / 2 skipped (fix/LZKC-027 worktree; logs /tmp/{lint,build,test,fmt}-027.log)"}
+{"commit":"6152f4a30+LZKC-031-pr1","command":"pnpm run lint && pnpm run build && pnpm test && pnpm run format:check","exit":0,"ts":"2026-07-13T11:29:10Z","summary":"403 files / 2519 passed / 2 skipped (fix/LZKC-031-pr1 worktree, incl. pause-dialog review fix; logs /tmp/{lint,build,test,fmt}-031a.log)"}

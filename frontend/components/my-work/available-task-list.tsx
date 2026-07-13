@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/format";
+import { useTerminology } from "@/lib/terminology";
 import { cn } from "@/lib/utils";
 import type { MyWorkTaskItem, TaskPriority } from "@/lib/types";
 
@@ -48,6 +49,7 @@ interface AvailableTaskListProps {
 
 export function AvailableTaskList({ tasks, slug, onTaskClick }: AvailableTaskListProps) {
   const router = useRouter();
+  const { t } = useTerminology();
   const [isOpen, setIsOpen] = useState(tasks.length > 0);
 
   return (
@@ -76,7 +78,7 @@ export function AvailableTaskList({ tasks, slug, onTaskClick }: AvailableTaskLis
                 <TableHeader>
                   <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
                     <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                      Project
+                      {t("Project")}
                     </TableHead>
                     <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                       Title

@@ -16,6 +16,7 @@ import type {
   ProjectProfitabilitySummary,
 } from "@/lib/types";
 import { TerminologyHeading } from "@/components/terminology-heading";
+import { TerminologyText } from "@/components/terminology-text";
 
 interface CustomerFinancialsTabProps {
   profitability: CustomerProfitabilityResponse | null;
@@ -129,7 +130,7 @@ export function CustomerFinancialsTab({
   return (
     <div className="space-y-6">
       <h3 className="font-display text-lg text-slate-950 dark:text-slate-50">
-        Customer Profitability
+        <TerminologyText template="{Customer} Profitability" />
       </h3>
       {profitability.currencies.map((curr) => (
         <div key={curr.currency} className="space-y-3">

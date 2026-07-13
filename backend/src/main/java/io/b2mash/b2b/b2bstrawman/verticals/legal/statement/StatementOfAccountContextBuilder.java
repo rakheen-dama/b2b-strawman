@@ -526,13 +526,19 @@ public class StatementOfAccountContextBuilder {
           preferred);
       trustAccountId = preferred;
     }
-    BigDecimal opening =
-        clientLedgerService.getClientBalanceAsOfDate(customer.getId(), trustAccountId, periodStart);
-    BigDecimal closing =
-        clientLedgerService.getClientBalanceAsOfDate(customer.getId(), trustAccountId, periodEnd);
+    // LZKC-030: take BOTH balances from the ledger statement itself — it computes its opening
+    // as of periodStart.minusDays(1) and its closing as opening + itemised lines, so
+    // opening/deposits/payments/closing are self-reconciling by construction. Recomputing them
+    // via getClientBalanceAsOfDate(periodStart) double-counted period-start-day transactions:
+    // that query is date-INCLUSIVE (`transactionDate <= :asOfDate`), so a deposit dated ON the
+    // period start appeared in the opening balance AND in the itemised Deposits table, breaking
+    // the Section 86 statement's self-reconciliation. Both balances are non-null (the underlying
+    // query COALESCEs to 0).
     var statement =
         clientLedgerService.getClientLedgerStatement(
             customer.getId(), trustAccountId, periodStart, periodEnd);
+    BigDecimal opening = statement.openingBalance();
+    BigDecimal closing = statement.closingBalance();
     var deposits = new ArrayList<TrustTxDto>();
     var payments = new ArrayList<TrustTxDto>();
     for (var line : statement.transactions()) {
@@ -554,11 +560,7 @@ public class StatementOfAccountContextBuilder {
       // canonical sets in ClientLedgerService, so an unknown type here means a new type was
       // added without updating both classifiers.
     }
-    return new TrustBlock(
-        opening != null ? opening : BigDecimal.ZERO,
-        deposits,
-        payments,
-        closing != null ? closing : BigDecimal.ZERO);
+    return new TrustBlock(opening, deposits, payments, closing);
   }
 
   private BigDecimal previousBalanceOwing(Project project, LocalDate periodStart) {

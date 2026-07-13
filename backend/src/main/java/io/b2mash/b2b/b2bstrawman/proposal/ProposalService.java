@@ -805,7 +805,7 @@ public class ProposalService {
   // --- 234.6: declineProposal ---
 
   @Transactional
-  public Proposal declineProposal(UUID proposalId, String reason) {
+  public Proposal declineProposal(UUID proposalId, String reason, UUID portalContactId) {
     var proposal =
         proposalRepository
             .findById(proposalId)
@@ -817,7 +817,12 @@ public class ProposalService {
     var saved = proposalRepository.save(proposal);
 
     // Audit
-    auditService.log(
+    // LZKC-025: attribute the decline to the portal contact who declined it (same class as
+    // LZKC-020 on the accept path). Without an explicit actor the builder falls back to
+    // RequestScopes.MEMBER_ID, which is unbound on portal requests — the event renders as
+    // "System" in firm feeds and is dropped from the portal "Your actions" trail (which
+    // filters actor_type = PORTAL_CONTACT).
+    var declinedAudit =
         AuditEventBuilder.builder()
             .eventType("proposal.declined")
             .entityType("proposal")
@@ -827,8 +832,11 @@ public class ProposalService {
                     "proposal_number",
                     proposal.getProposalNumber(),
                     "reason",
-                    reason != null ? reason : ""))
-            .build());
+                    reason != null ? reason : ""));
+    if (portalContactId != null) {
+      declinedAudit.actorId(portalContactId).actorType("PORTAL_CONTACT").source("PORTAL");
+    }
+    auditService.log(declinedAudit.build());
 
     // Portal sync
     proposalPortalSyncService.updatePortalProposalStatus(proposalId, "DECLINED");

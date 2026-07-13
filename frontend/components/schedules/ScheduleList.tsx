@@ -243,8 +243,8 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Pause Schedule</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Pausing this schedule will stop automatic project creation. You
-                                  can resume it at any time.
+                                  Pausing this schedule will stop automatic {t("project")} creation.
+                                  You can resume it at any time.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>

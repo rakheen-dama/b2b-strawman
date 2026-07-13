@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { TerminologyProvider } from "@/lib/terminology";
+import { ScheduleList } from "@/components/schedules/ScheduleList";
+import type { ScheduleResponse } from "@/lib/api/schedules";
 import { AssignedTaskList } from "@/components/my-work/assigned-task-list";
 import { AvailableTaskList } from "@/components/my-work/available-task-list";
 import { UrgencyTaskList } from "@/components/my-work/urgency-task-list";
@@ -30,6 +33,14 @@ vi.mock("@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-step-actions",
   getItemsAction: vi.fn(() => Promise.resolve({ success: true, items: [sendStepItem()] })),
   getBillingRunAction: vi.fn(() => Promise.resolve({ success: true })),
   batchSendAction: vi.fn(() => Promise.resolve({ success: true })),
+}));
+
+// ScheduleList imports server action modules for pause/resume/delete.
+vi.mock("@/app/(app)/org/[slug]/schedules/actions", () => ({
+  pauseScheduleAction: vi.fn(() => Promise.resolve({ success: true })),
+  resumeScheduleAction: vi.fn(() => Promise.resolve({ success: true })),
+  deleteScheduleAction: vi.fn(() => Promise.resolve({ success: true })),
+  createScheduleAction: vi.fn(),
 }));
 
 afterEach(() => {
@@ -204,5 +215,51 @@ describe("LZKC-031: Profitability terminology", () => {
       <CustomerFinancialsTab profitability={profitability} projectBreakdown={null} />
     );
     expect(screen.getByText("Customer Profitability")).toBeTruthy();
+  });
+});
+
+// ---- Schedules pause-dialog copy (spec's ScheduleList "x2" second site) ----
+
+describe("LZKC-031: ScheduleList pause-dialog terminology", () => {
+  const activeSchedule: ScheduleResponse = {
+    id: "sch-1",
+    templateId: "pt-1",
+    templateName: "Monthly Bookkeeping",
+    customerId: "cust-1",
+    customerName: "Acme Corp",
+    frequency: "MONTHLY",
+    startDate: "2026-01-01",
+    endDate: null,
+    leadTimeDays: 3,
+    status: "ACTIVE",
+    nextExecutionDate: "2026-03-01",
+    lastExecutedAt: "2026-02-01T10:00:00Z",
+    executionCount: 2,
+    projectLeadMemberId: null,
+    projectLeadName: null,
+    nameOverride: null,
+    createdBy: "user-1",
+    createdByName: null,
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: "2026-02-01T10:00:00Z",
+  };
+
+  it("pause dialog reads 'stop automatic matter creation' for legal-za", async () => {
+    const user = userEvent.setup();
+    withProfile("legal-za", <ScheduleList slug="test-org" schedules={[activeSchedule]} />);
+    await user.click(screen.getByTitle("Pause schedule"));
+    expect(
+      screen.getByText(/Pausing this schedule will stop automatic matter creation/)
+    ).toBeTruthy();
+    expect(screen.queryByText(/stop automatic project creation/)).toBeNull();
+  });
+
+  it("pause dialog keeps 'stop automatic project creation' without a profile", async () => {
+    const user = userEvent.setup();
+    withProfile(null, <ScheduleList slug="test-org" schedules={[activeSchedule]} />);
+    await user.click(screen.getByTitle("Pause schedule"));
+    expect(
+      screen.getByText(/Pausing this schedule will stop automatic project creation/)
+    ).toBeTruthy();
   });
 });

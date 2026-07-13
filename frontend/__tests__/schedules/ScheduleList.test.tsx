@@ -125,6 +125,11 @@ describe("ScheduleList", () => {
     const user = userEvent.setup();
     render(<ScheduleList slug="acme" schedules={[ACTIVE_SCHEDULE]} />);
     await user.click(screen.getByTitle("Pause schedule"));
+    // The dialog copy is terminology-routed via t("project") (LZKC-031). With no
+    // TerminologyProvider mounted, useTerminology() falls back to the identity
+    // translation, so the default-profile wording renders here. Profile-driven
+    // substitution (legal-za "matter") is pinned in
+    // __tests__/lzkc-031-terminology-residuals.test.tsx.
     expect(
       screen.getByText(/Pausing this schedule will stop automatic project creation/)
     ).toBeInTheDocument();

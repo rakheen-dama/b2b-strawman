@@ -212,6 +212,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
   - Branch Code: **051001** (real Standard Bank universal branch code; required field)
   - Account number: `12345678` (test placeholder)
   - Type: **SECTION_86** (Legal Practice Act)
+  - Tick **Require dual approval**; set **Payment approval threshold: R 50 000** (LZKC-029 amendment, user-authorized 2026-07-13 option (a): the product defaults dual approval OFF even for SECTION_86 — the scenario must enable it explicitly so the Day-60 R 70 000 payout exercises the two-approver flow while smaller operations stay single-approval)
   - (OBS-103 closed: branch code is a hard-required field — real banks always have one. The Standard Bank universal code `051001` is the realistic value.)
 - [ ] **1.6** Trust account saves, no validation error, appears in list with balance **R 0.00**
 - [ ] **1.7** 📸 Optional screenshot: `day-01-trust-account-created.png`
@@ -850,8 +851,9 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 **A4: Approve trust payment (clear Trust Balance gate — Section 86 dual-approval)**
 
 - [ ] **60.12** Navigate to Trust Accounting → locate trust payment PAY/2026/001 (R 70,000) recorded by Thandi, status AWAITING_APPROVAL
-- [ ] **60.13** Bob approves the payment (Bob is not the recorder, satisfying Section 86 dual-approval constraint: "recorder cannot be sole approver")
-- [ ] **60.14** Verify payment status transitions to APPROVED → trust balance for Sipho/RAF-2026-001 drops to **R 0.00**
+- [ ] **60.13** Bob gives the **first** approval (Bob is not the recorder). Verify the LZKC-016 first-approval feedback: toast "Approval recorded — 1 of 2 approvals…", the row shows a **"1 of 2 approvals"** badge, and Bob's Approve button becomes disabled **"Approved by you"** (R 70 000 exceeds the R 50 000 threshold set in 1.5, so TWO approvers are required)
+- [ ] **60.13b** Context/actor switch → a **second, different member** (Thandi — the recorder may act as an approver, but the same member cannot approve twice) gives the second approval
+- [ ] **60.14** Verify payment status transitions to APPROVED after the second approval → trust balance for Sipho/RAF-2026-001 drops to **R 0.00**
 - [ ] **60.15** Client ledger shows payment-out of R 70,000, running balance R 0.00
 
 ### Phase B: Verify all gates green (pre-closure check)

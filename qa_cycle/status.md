@@ -71,6 +71,7 @@ ALL_DAYS_COMPLETE
 
 | LZKC-033 | fix-verify walk | Billing-runs list active-run banner renders `“” is currently in preview.` for unnamed runs — `frontend/app/(app)/org/[slug]/invoices/billing-runs/page.tsx:93` hardcodes `&ldquo;{activeRun.name}&rdquo;`; wizard has no name field so every UI-created run hits the empty-quoted path. Same empty-name class as LZKC-032, different frontend site outside PR #1554's scope. Evidence `checkpoint-results/fixverify-033-empty-quoted-preview-banner.png` | Low | Product | OPEN |
 | LZKC-034 | fix-verify walk | Client-detail header "Edit" smart-action is fully inert for ACTIVE/DORMANT clients — `client-header-card.tsx:41` renders "Edit" but `client-header-card-with-lifecycle.tsx:70` passes `onPrimaryAction=undefined` when there is no lifecycle transition target → button has no onClick (probed live on Sipho: no dialog/navigation/popup attrs). Working alternative exists: More actions → "Edit Client" | Low | Product | OPEN |
+| LZKC-035 | PR #1561 integration review | Notification-title vocabulary inconsistency on legal-za tenants: billing-run titles (`NotificationEventHandler.pluralize:553-555`, #1554 scope) hardcode "invoice" while invoice-lifecycle titles (`NotificationService.invoiceTerm`, #1560) render "Fee Note" — same tenant, same domain concept, two vocabularies. Fix = adopt `invoiceTerm()`-equivalent resolution in the billing-run title path (+ the handleInvoiceApproved/Voided sites already noted). Neither parent PR individually wrong; composition gap | Low | Product | OPEN (follow-up) |
 
 ## Log
 

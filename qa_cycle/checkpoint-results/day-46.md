@@ -1,38 +1,39 @@
-# Day 46 — Sipho responds to second info request + trust re-check + isolation spot-check `[PORTAL]` — 2026-07-06
+# Day 46 — Sipho responds to second info request + trust re-check + isolation spot-check `[PORTAL]` — cycle 2026-07-12 (executed 2026-07-13)
 
-**Actor**: Sipho Dlamini (portal :3002, magic-link auth — no Keycloak).
-
-**Recovery note (Day-7 pattern)**: a prior QA session died mid-Day-46 without recording. DB evidence (read-only SELECT) shows it had already consumed the REQ-0003 magic link and submitted both items at 13:42:49Z / 13:43:07Z (this session started 14:43Z). Its uploads: `hospital-discharge-summary.pdf` (461 B) + `orthopaedic-report.pdf` (466 B), both `application/pdf`, status UPLOADED, linked as `document_id` on the two REQ-0003 request items. Remaining checkpoints verified live against observed state.
+**Actor**: Sipho Dlamini (:3002). Existing session from Day 30 magic link (00:35Z) still valid — no re-login needed (46.1 satisfied by the standing authenticated session; a fresh REQ-0003 magic link exists in Mailpit `9riaNx3n63YRmSVKw57HCC` had it been needed).
 
 ## Checkpoints
 
 | # | Result | Evidence |
 |---|--------|----------|
-| 46.1 | PASS (recovery) | Original REQ-0003 magic link (`8d-ej5bH…`, Mailpit `ZbBQntCejBJgR3Z3JBKtQf`) rejected with "Link expired or invalid" — consumed by the dead session. Fresh link requested via portal `/login` ([portal-contact-email]) → Mailpit `n9UFTnrfqYEAAV84GcCbp4` "Your portal access link from Mathebula & Partners" → `/auth/exchange?token=[REDACTED]` → authenticated (landed `/projects`, sidebar "Sipho Dlamini") |
-| 46.2 | PASS (recovered) | Pre-submission pending state was exercised by the dead session (DB `submitted_at` timestamps prove the click-through + submit happened). Observed now: `/requests` lists **REQ-0003 · Dlamini v Road Accident Fund · IN_PROGRESS · 2/2 submitted** (plus REQ-0001 COMPLETED 3/3) |
-| 46.3 | PASS (recovered + observed) | REQ-0003 detail (`/requests/0ef0dfe2-56c8-48a6-b619-973d00e33826`): **Hospital discharge summary — "Submitted — status: SUBMITTED"** and **Orthopaedic report — "Submitted — status: SUBMITTED"**, header "2/2 submitted • status IN_PROGRESS". Envelope IN_PROGRESS (not COMPLETED) is correct product shape per OBS-403 — completion needs firm-side accept (Day 60.3–60.5). DB: both items SUBMITTED with document_ids `ee92cacc…` / `5c3ecf2e…` |
-| 46.4 | PASS (cycle-local figure) | `/trust` auto-forwards to matter ledger `272be4f8` (single-matter behaviour, consistent Day 11): **Trust balance R 70 000,00 — As of 6 Jul 2026**. Script's R 71 000 includes the cycle-15 OBS-1101 R 1 000 carry-over that does not exist in this fresh cycle (documented Day 45) |
-| 46.5 | PASS (2 deposits, cycle-local) | Transactions table, newest first: **6 Jul 2026 · DEPOSIT · "Top-up per engagement letter" · R 20 000,00 · running R 70 000,00** then **6 Jul 2026 · DEPOSIT · "Initial trust deposit — RAF-2026-001" · R 50 000,00 · running R 50 000,00**. Dates/amounts/running balances correct; the scripted third R 1 000 deposit is the phantom carry-over — N/A here |
-| 46.6 | PASS | Passive isolation: trust view shows only Sipho's matter ledger; no Moroka R 25 000 anywhere; `/trust` index itself forwards straight to Sipho's single matter |
-| 46.7 | PASS | `/home` → "Pending info requests **0**" (medical-evidence request no longer pending); Recent fee notes INV-0001 R 1 250,00; Last trust movement R 20 000,00 · 6 Jul 2026 |
-| 46.8 | PASS | 📸 `qa_cycle/checkpoint-results/day-46-portal-trust-two-deposits.png` |
+| 46.1 | PASS | Authenticated portal session (magic-link auth verified live on Day 30; REQ-0003 email link available) |
+| 46.2 | PASS | `/home`: "Pending info requests 1"; `/requests` lists REQ-0003 SENT 0/2 → detail `/requests/9deb64e0-0154-4999-aace-7a87fc5b2e07` |
+| 46.3 | PASS | Per-item Upload file → Upload and submit: hospital-discharge-summary.pdf then orthopaedic-report.pdf → both "Submitted — status: SUBMITTED", envelope "2/2 submitted • status IN_PROGRESS" (OBS-403 shape: envelope completes on firm acceptance, Day 60). 📸 `day-46-req0003-submitted.png` |
+| 46.4 | PASS | `/trust` auto-forwards to Sipho's single active ledger: **Trust balance R 70 000,00** (cycle-correct; scripted R 71 000 includes a prior-cycle-only R 1 000 deposit — Day-45 amendment note) |
+| 46.5 | PASS | Transactions newest-first with correct running balances: 13 Jul 2026 DEPOSIT "Top-up per engagement letter" R 20 000,00 → R 70 000,00; 12 Jul 2026 DEPOSIT "Initial trust deposit — RAF-2026-001" R 50 000,00 → R 50 000,00. Two deposits this cycle (scenario's three includes the phantom R 1 000). Client-safe descriptions, SA locale. 📸 `day-46-portal-trust-two-deposits.png` |
+| 46.6 | PASS | Isolation: no Moroka R 25 000 anywhere on ledger/transactions; ledger scoped to matter 66451e87 (Sipho's) |
+| 46.7 | PASS | `/home`: "Pending info requests 0" after submission |
+| 46.8 | PASS | Screenshots as above |
 
-## Day 46 day-level checkpoints
+## Day-level checkpoints
 
-- Second info request lifecycle complete (portal side — both items SUBMITTED): **PASS**
-- Trust balance update visible on portal (both deposits): **PASS at R 70 000** (cycle-local)
-- Isolation holds — no Moroka data leak 31+ days after explicit check: **PASS**
+- Second info request lifecycle (client side) complete: **PASS** (firm acceptance leg belongs to Day 60)
+- Trust balance update visible on portal (both deposits): **PASS**
+- Isolation holds 31 scenario-days after explicit check: **PASS**
 
-## Console
+## New gaps
 
-Only console error on portal pages: `favicon.ico` 404 (present all cycle, environment noise, not an app JS error). No hydration/JS errors.
+None.
 
-## Gaps
+## Observations
 
-None new.
+- Ledger card still titled "Matter 66451e87" (UUID prefix, not matter name) — pre-existing Day-11 observation, not re-filed.
+- Console clean on all portal navigations (0 errors).
 
-## Notes for Day 60
+## Handoff for Day 60
 
-- REQ-0003 items await firm-side Accept ×2 (Bob) → envelope COMPLETED (60.1–60.5).
-- Trust payout PAY/2026/001 must be **R 70 000** (not the script's R 71 000) for the balance to zero.
-- Court date in this cycle is **Pre-Trial 2026-07-20 Gauteng Division Pretoria** (script's "Jun 4 2026" text is stale — cycle-local date from Day 21).
+- REQ-0003 `9deb64e0-0154-4999-aace-7a87fc5b2e07` — 2/2 SUBMITTED awaiting firm Accept ×2 (gate: info requests).
+- 9 open template tasks on RAF-2026-001; Pre-Trial court date 2026-07-26 Scheduled (gate: court dates).
+- Trust balance R 70 000 → Day-60 payment-out PAY/2026/001 R 70 000 requires dual approval (recorder ≠ sole approver; prior cycle needed TWO approvers for R 70 000).
+- `task-completion-chain` automation: prior cycle it auto-spawned Follow-up tasks on Done (LZKC-013 was fixed as new-tenants-only + defaultEnabled=false honoured by seeder) — this tenant was re-provisioned in Session 0 AFTER the fix, so expect NO follow-up spawn; if one spawns, that's a regression of LZKC-013 (file new gap).
+- INV-0001 PAID; final-bill gate should be green.

@@ -1,63 +1,76 @@
-# Day 60 — Firm matter closure + Statement of Account `[FIRM]` — 2026-07-06
+# Day 60 — Firm matter closure + Statement of Account `[FIRM]` — cycle 2026-07-12 (executed 2026-07-13)
 
-**Actors**: Thandi Mathebula (Owner) + Bob Ndlovu (Admin). Three context swaps (cookie clear + fresh KC login each): Thandi (record payout) → Bob (gates A1–A4, first approval) → Thandi (second approval + closure).
+**Actors**: Bob Ndlovu (gates A1–A3, sole trust approval) + Thandi Mathebula (payment record, closure). Three KC context swaps (cookie-clear + fresh two-step login each): Bob (standing session, A1–A3) → Thandi (record PAY/2026/001) → Bob (approve) → Thandi (closure).
 
-**Pre-step (scenario gap, not in script)**: 60.12 presumes PAY/2026/001 already "recorded by Thandi". No prior day records it, so Thandi recorded it first: Trust Accounting → Record Transaction → Record Payment — Client Sipho Dlamini, Matter Dlamini v RAF, **R 70 000** (cycle-local figure; script's R 71 000 includes the phantom cycle-15 R 1 000), ref **PAY/2026/001**, desc "Trust payout to client on matter conclusion…" → row **AWAITING APPROVAL**.
+**Pre-step (scenario gap, same as prior cycle)**: 60.12 presumes PAY/2026/001 already recorded. Thandi recorded it: Trust Accounting → Transactions → Record Transaction → Record Payment — Client Sipho Dlamini, Matter Dlamini v Road Accident Fund, **R 70 000** (cycle-correct figure, not scripted R 71 000), ref **PAY/2026/001** → row AWAITING APPROVAL. DB `recorded_by` = Thandi Mathebula (`619a21e7…`).
 
-## Phase A — gate resolution (Bob)
+## Phase A — gate resolution
 
 | # | Result | Evidence |
 |---|--------|----------|
-| 60.1 | PASS | Matter → Client > Requests: REQ-0001 Completed 3/3, REQ-0003 In Progress 0/2 accepted → opened REQ-0003 detail |
-| 60.2 | PASS | Both items **Submitted** with files `hospital-discharge-summary.pdf` / `orthopaedic-report.pdf` (Day 46 uploads), Accept/Reject buttons per item |
-| 60.3 | PASS | Accept item 1 → "Hospital discharge summary — Accepted" |
-| 60.4 | PASS | Accept item 2 → both Accepted, envelope auto-transitioned: header badge **Completed**, "2/2 accepted", "Completed on 6 Jul 2026" |
-| 60.5 | PASS | REQ-0003 = COMPLETED; REQ-0001 already COMPLETED (Day 5). Mailpit: 2× "Item accepted" + "Request REQ-0003 completed" emails to sipho.portal@ (15:09Z) |
-| 60.6 | PASS | Work > Tasks: all 9 RAF-template tasks listed Open |
-| 60.7 | PASS + **LZKC-013** | Task status is a staged dropdown (Open → In Progress → Done; Done not offered from Open; Cancelled offered from any). Set both time-logged tasks Done ("Initial RAF claim assessment & instructions" 2h30m, "File RAF1 claim form…" 1h30m), cancelled the other 7. **Product surprise**: each Done fired the default-on `task-completion-chain` automation (`backend/src/main/resources/automation-templates/common.json` slug `task-completion-chain`, trigger TASK_STATUS_CHANGED→DONE, action CREATE_TASK "Follow-up: {{task.name}}" assigned PROJECT_OWNER) → 2 auto-spawned IN_PROGRESS "Follow-up:" tasks that would block the closure gate. Cancelled both via UI |
-| 60.8 | PASS | DB (read-only): 11 tasks — 2 DONE, 9 CANCELLED, zero OPEN/IN_PROGRESS. UI tasks tab shows empty list under default Open+In Progress filter (copy quirk: generic "No tasks yet" empty state) |
-| 60.9 | PASS (cycle-local date) | Schedule tab: Pre-Trial **2026-07-20** Gauteng Division, Pretoria, Scheduled (script's "Jun 4 2026" is stale text) |
-| 60.10 | PASS | Row Actions → menu (Edit / Postpone / Cancel / **Record Outcome**) → Record Outcome dialog → outcome text recorded → status **Heard** |
-| 60.11 | PASS | Row no longer Scheduled (Heard); closure gate later confirms "No court dates scheduled for today or later" |
-| 60.12 | PASS (with pre-step) | PAY/2026/001 R 70 000,00 AWAITING APPROVAL in transactions list (recorded by Thandi — DB `recorded_by`=Thandi) |
-| 60.13 | PASS (product shape: TWO approvers) | Bob clicked Approve → approval registered (DB `approved_by`=Bob 15:16:31Z) — **but with zero UI feedback** (row stayed AWAITING APPROVAL, no toast, no 1/2 indicator → LZKC-016). Bob's second click surfaced inline "Second approver must be different from the first" — R 70 000 payment requires dual approvers, recorder-not-sole-approver honoured |
-| 60.14 | PASS | Thandi (second approver, recorder but not sole) clicked Approve → row **APPROVED** (action column now "Reverse"). Sipho trust balance → R 0,00 |
-| 60.15 | PASS | Client Ledgers: Sipho Dlamini — Trust Balance **R 0,00**, Total Deposits R 70 000,00, Total Payments R 70 000,00. Moroka untouched R 25 000,00 |
+| 60.1 | PASS | Matter → Client > Requests: REQ-0001 Completed 3/3 accepted, REQ-0003 In Progress 0/2 accepted → opened REQ-0003 detail (`9deb64e0…`) |
+| 60.2 | PASS | Both items **Submitted** with Day-46 files `hospital-discharge-summary.pdf` / `orthopaedic-report.pdf`, Accept/Reject per item |
+| 60.3 | PASS | Accept item 1 → "Hospital discharge summary — Accepted", progress 1/2 accepted |
+| 60.4 | PASS | Accept item 2 → both Accepted, envelope auto-transitioned: header **Completed**, "2/2 accepted", "Completed on 13 Jul 2026" |
+| 60.5 | PASS | DB: REQ-0001 + REQ-0003 both COMPLETED. Mailpit: 2× "Item accepted" (00:58:57Z, 00:59:15Z) + "Request REQ-0003 completed" (00:59:15Z) to sipho.portal@. Note: these client emails link to `http://localhost:3000/portal` — carried-forward latent find h (InformationRequestEmailService legacy embedded /portal), re-observed, NOT re-filed |
+| 60.6 | PASS | Work > Tasks: all 9 RAF-template tasks listed, all Open |
+| 60.7 | PASS — **LZKC-013 fix HOLDS** | Staged dropdown confirmed (from Open: Open/In Progress/Cancelled — no Done; from In Progress: +Done). "Initial RAF claim assessment & instructions" (2h30m) and "File RAF1 claim form…" (1h30m) → Open→In Progress→Done; other 7 → Cancelled. **Zero "Follow-up:" tasks auto-spawned on either Done transition** (DB checked after each: task count stayed 9). Post-fix tenant behaves correctly |
+| 60.8 | PASS | DB: 2 DONE + 7 CANCELLED, zero OPEN/IN_PROGRESS. UI default Open+In Progress filter shows empty list (known "No tasks yet" generic empty-state copy quirk, re-observed) |
+| 60.9 | PASS | Schedule tab: Pre-Trial **2026-07-26** Gauteng Division, Pretoria, **Scheduled** (harness: tab needs separated mouse down/pause/up AND a URL without `?tab=` param — with `?tab=tasks` present the param kept re-forcing the tasks panel) |
+| 60.10 | PASS | Row Actions → Edit/Postpone/Cancel/**Record Outcome** → dialog → outcome text recorded → status **Heard**. DB: status HEARD, outcome populated |
+| 60.11 | PASS | Row no longer Scheduled; closure gate later shows "No court dates scheduled for today or later" green |
+| 60.12 | PASS (with pre-step) | Bob's view: PAY/2026/001 · Payment · R 70 000,00 · AWAITING APPROVAL with Approve/Reject |
+| 60.13 | PARTIAL → **LZKC-029** | Bob clicked Approve → toast "Transaction approved" → row went **directly to APPROVED** (action column "Reverse") on a SINGLE approval. Root cause (DB, read-only): this cycle's trust account has `require_dual_approval = false`, `payment_approval_threshold = NULL` — scenario Day 1 step 1.5 never instructs enabling dual approval; prior cycle's QA had enabled it beyond-script ("dual approval enabled" in archive day-01.md), this cycle's Day 1 followed the script literally. Product behaved correctly for its config. Consequence: Section 86 dual-approval leg (two approvers, 1-of-2 feedback) NOT exercisable this cycle |
+| 60.14 | PASS (single-approval path) | Payment APPROVED (approved_by = Bob `24257f0c…` 01:11:55Z, second_approved_by NULL). Trust balance → R 0,00 |
+| 60.15 | PASS | Client Ledgers: Sipho Dlamini — Balance **R 0,00**, Total Deposits R 70 000,00, Total Payments R 70 000,00, last transaction 13 Jul 2026. Moroka Family Trust untouched R 25 000,00. 📸 `day-60-client-ledgers-zero-balance.png` |
 
 ## Phase B — gate report (Thandi)
 
 | # | Result | Evidence |
 |---|--------|----------|
-| 60.16 | PASS (location note) | Close Matter is a **matter-header button** (alongside Complete Matter), not the scripted sidebar-footer `sidebar-lifecycle-action` — scenario text stale; button found and worked |
-| 60.17 | PASS — **all 9 gates GREEN** | Dialog "Close matter": trust balance R0.00 · all disbursements approved · approved disbursements settled · final bill issued no unbilled items · no court dates today or later · no prescription timers running · all tasks resolved · all info requests closed · no document acceptances pending. 📸 `day-60-closure-gates-green.png` |
+| 60.16 | PASS (location note, same as prior cycle) | Close Matter is a matter-header button (alongside Complete Matter), not the scripted sidebar-footer — scenario text still stale |
+| 60.17 | PASS — **all 9 gates GREEN** | "Close matter" dialog: trust balance R0.00 · all disbursements approved · approved disbursements settled · final bill issued no unbilled items · no court dates today or later · no prescription timers · all tasks resolved · all info requests closed · no document acceptances pending — every gate green check. 📸 `day-60-closure-gates-green.png` |
 
 ## Phase C — closure
 
 | # | Result | Evidence |
 |---|--------|----------|
 | 60.18 | PASS | Continue → Step 2 close form |
-| 60.19 | PASS | Reason **Concluded** (default; options Concluded / Client terminated / Referred out / Other), notes added |
-| 60.20 | PASS | Both flags present and checked: "Generate closure letter" + "Generate Statement of Account (Section 86 ledger reconciliation)" |
-| 60.21 | PASS | Confirm → matter header **Closed** badge, Reopen Matter button, closure history "6 Jul 2026 · Concluded" |
-| 60.22 | PASS + **LZKC-014** | Work > Documents: `matter-closure-letter-dlamini-v-road-accident-fund-2026-07-06.pdf` (1.6 KB) + `statement-of-account-dlamini-v-road-accident-fund-2026-07-06.pdf` (5.0 KB), both Uploaded, both `visibility=PORTAL` (DB). Closure history renders "Closed by 0768ccd3-8ebd-4d35-880f-ecb0bcf9f0d8" — **raw member UUID instead of "Thandi Mathebula"** |
-| 60.23 | PASS (product shape) | DB: `projects.retention_clock_started_at = 2026-07-06 15:19:26`; active retention policy MATTER / **1825 days (5y)** / MATTER_CLOSED / ARCHIVE (ADR-249 mechanism present). No computed end-date because org `legal_matter_retention_years` is unset — Overview shows accurate guidance banner "retention period isn't configured… Configure retention period →". Scenario's literal "end_date = today + 5 years" row doesn't exist as such; clock+policy model instead |
+| 60.19 | PASS | Reason **Concluded** (default; options Concluded / Client terminated / Referred out / Other), notes filled |
+| 60.20 | PASS | Both flags present and pre-checked: "Generate closure letter" + "Generate Statement of Account (Section 86 ledger reconciliation)" |
+| 60.21 | PASS | Close matter → header **Closed** badge, **Reopen Matter** button, closure history "13 Jul 2026 · Concluded". 📸 `day-60-matter-closed.png` |
+| 60.22 | PASS — **LZKC-014 fix HOLDS** | Work > Documents: `matter-closure-letter-…-2026-07-13.pdf` (2.2 KB) + `statement-of-account-…-2026-07-13.pdf` (5.5 KB), both Uploaded, both `visibility=PORTAL` (DB). Closure history renders "**Closed by Thandi Mathebula**" — name, no raw UUID |
+| 60.23 | PASS (product shape, unchanged) | DB `projects.retention_clock_started_at = 2026-07-13 01:15:27`; status CLOSED. Overview banner: "Retention clock started on 13 Jul 2026. Your firm's matter-retention period isn't configured yet…" + "Configure retention period →" link (org `legal_matter_retention_years` unset — same accurate guidance as prior cycle) |
 
-## Day 60 day-level checkpoints
+## Day-level checkpoints
 
-- All 4 closure gates resolved before closure (trust dual-approval, court date, tasks, info requests): **PASS**
+- All closure gates resolved before closure attempt: **PASS** (trust approval single-leg per config — see LZKC-029; court date Heard; tasks resolved; info requests completed)
 - Matter closes cleanly, no override: **PASS**
 - Statement of Account PDF generated + attached: **PASS**
-- Notification email "Your Statement of Account is ready": **FAIL → LZKC-015** — only the closure letter got a "Document ready: matter-closure-letter-…" email (15:19:26Z, Mailpit `TVipfc75zA7KqXbLid62Be`); no email for the sibling SoA document (confirmed after 20s wait). Also present: "Trust account activity" (payout) email 15:18:13Z |
+- Notification emails: **PASS — LZKC-015 fix HOLDS**: TWO "Document ready" emails at 01:15:27Z — closure letter (`nuTgde32whYBwfg3Xs6pnk`) AND statement of account (`9F7ec4bYThN66Rfpode8EH`), both to sipho.portal@example.com
+
+## Fix re-verifications
+
+| Fix | Status |
+|-----|--------|
+| LZKC-013 (no auto Follow-up on Done) | **HOLDS** — verified on both Done transitions, DB-confirmed |
+| LZKC-014 (closure history shows name) | **HOLDS** — "Closed by Thandi Mathebula" |
+| LZKC-015 (two Document-ready emails) | **HOLDS** — closure letter + SoA emails both fired |
+| LZKC-016 (dual-approval 1-of-2 feedback) | **NOT TESTABLE this cycle** — dual approval not configured on the account (LZKC-029); single-approval path gave correct "Transaction approved" toast |
+| LZKC-022 (email deep links) | Day-60 leg: all 3 info-request emails → known latent find h (:3000/portal, carried-forward); trust-activity email → correct `:3002/trust/{matterId}`; both doc-ready emails → correct `:3002/projects/{matterId}` portal links. No firm-side notification email fired this day. Click-through due Day 61.1 |
 
 ## New gaps
 
-- **LZKC-013 (Low)** — `task-completion-chain` automation is default-on: every task marked Done auto-spawns an IN_PROGRESS "Follow-up:" task assigned to project owner, directly fighting the closure Open-Tasks gate (user must cancel each follow-up to close a matter).
-- **LZKC-014 (Low)** — Matter closure history shows raw member UUID ("Closed by 0768ccd3-…") instead of member name.
-- **LZKC-015 (Low)** — SoA generated at closure gets no "Document ready" email while the closure letter does — inconsistent sibling-document notification; scenario expects an SoA-ready email.
-- **LZKC-016 (Medium)** — Trust dual-approval UX: first Approve registers silently (no toast, no status change, no "1/2 approvals" indicator, no confirm dialog); row still shows AWAITING APPROVAL with an active Approve button; the only feedback is an inline error when the same user clicks again.
+- **LZKC-029 (Medium)** — Section 86 dual-approval never engages on a script-faithful run: scenario Day 1 (step 1.5) omits enabling dual approval on the trust account, and the product defaults `require_dual_approval=false` / no threshold even for SECTION_86 accounts, so the R 70 000 trust payout was approvable by a single approver (Bob) — the scripted "Section 86 dual-approval" constraint (60.13) and the LZKC-016 approval-feedback UX are silently skipped. Two decisions needed (Product): (a) amend scenario Day 1 to enable dual approval + set threshold (scenario amendment — requires authorization); (b) consider whether SECTION_86-type accounts should default dual approval on (compliance posture, LPA s86). Filed OPEN / Owner Product.
 
 ## Notes for Day 61
 
-- No SoA email exists — Day 61.1 must use the closure-letter "Document ready" email link, or navigate the portal directly to the matter Documents.
-- SoA doc: `statement-of-account-dlamini-v-road-accident-fund-2026-07-06.pdf`, 5.0 KB firm-side, PORTAL visibility.
-- Trust: 2 deposits (50k, 20k) + 1 payment out (70k), closing balance R 0.00; fee note INV-0001 R 1 250 PAID (Day 30).
+- SoA doc: `statement-of-account-dlamini-v-road-accident-fund-2026-07-13.pdf`, 5.5 KB firm-side, PORTAL visibility.
+- This cycle a real **SoA "Document ready" email exists** (LZKC-015 fixed) — use it for 61.1 click-through (Mailpit `9F7ec4bYThN66Rfpode8EH`).
+- Trust: 2 deposits (50k Day 10, 20k Day 45) + 1 payment out (70k Day 60), closing balance R 0.00; INV-0001 R 1 250 PAID (Day 30).
+- SoA content: expect LZKC-017 pt1 fix (letterhead logo + uniform ZAR locale); Payment Instructions/banking + VAT Reg blank = known deferred pt2, do NOT re-file.
+- Closure letter: expect LZKC-018 fix (Date, Reason, fees, disbursements, duration populated).
+
+## Console
+
+0 application errors across all Day-60 interactions (only `localhost:8080/favicon.ico` 401 — off-app origin, cosmetic).

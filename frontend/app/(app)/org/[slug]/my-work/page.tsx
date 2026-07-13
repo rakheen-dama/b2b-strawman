@@ -34,6 +34,7 @@ import { fetchPersonalDashboard } from "@/lib/actions/dashboard";
 import { getMyExpenses } from "@/lib/actions/expense-actions";
 import { ApiError } from "@/lib/api";
 import { EmptyState } from "@/components/empty-state";
+import { TerminologyText } from "@/components/terminology-text";
 import { createMessages } from "@/lib/messages";
 import { ClipboardList } from "lucide-react";
 import Link from "next/link";
@@ -241,7 +242,7 @@ export default async function MyWorkPage({
             <EmptyState
               icon={ClipboardList}
               title={t("myWork.list.heading")}
-              description={t("myWork.list.description")}
+              description={<TerminologyText template={t("myWork.list.description")} />}
               actionLabel={t("myWork.list.cta")}
               actionHref={`/org/${slug}/projects`}
             />

@@ -28,7 +28,10 @@ import io.b2mash.b2b.b2bstrawman.notification.channel.NotificationDispatcher;
 import io.b2mash.b2b.b2bstrawman.schedule.event.RecurringProjectCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.schedule.event.ScheduleCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.schedule.event.ScheduleSkippedEvent;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
@@ -459,9 +462,10 @@ public class NotificationEventHandler {
         () -> {
           try {
             var title =
-                "Billing run \"%s\" completed — %d invoices generated"
+                "%s completed — %s generated"
                     .formatted(
-                        event.runName() != null ? event.runName() : "", event.totalInvoices());
+                        billingRunLabel(event.runName(), event.periodFrom(), event.periodTo()),
+                        pluralize(event.totalInvoices(), "invoice"));
             var notifications =
                 notificationService.notifyAdminsAndOwners(
                     "BILLING_RUN_COMPLETED", title, null, "BILLING_RUN", event.billingRunId());
@@ -483,9 +487,10 @@ public class NotificationEventHandler {
         () -> {
           try {
             var title =
-                "Billing run \"%s\" had %d failures"
+                "%s had %s"
                     .formatted(
-                        event.runName() != null ? event.runName() : "", event.failureCount());
+                        billingRunLabel(event.runName(), event.periodFrom(), event.periodTo()),
+                        pluralize(event.failureCount(), "failure"));
             var notifications =
                 notificationService.notifyAdminsAndOwners(
                     "BILLING_RUN_FAILURES", title, null, "BILLING_RUN", event.billingRunId());
@@ -507,8 +512,10 @@ public class NotificationEventHandler {
         () -> {
           try {
             var title =
-                "Billing run \"%s\" — %d invoices sent"
-                    .formatted(event.runName() != null ? event.runName() : "", event.totalSent());
+                "%s — %s sent"
+                    .formatted(
+                        billingRunLabel(event.runName(), event.periodFrom(), event.periodTo()),
+                        pluralize(event.totalSent(), "invoice"));
             var notifications =
                 notificationService.notifyAdminsAndOwners(
                     "BILLING_RUN_SENT", title, null, "BILLING_RUN", event.billingRunId());
@@ -520,6 +527,32 @@ public class NotificationEventHandler {
                 e);
           }
         });
+  }
+
+  private static final DateTimeFormatter BILLING_PERIOD_FORMAT =
+      DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
+
+  /**
+   * Renders the billing-run token for notification titles (LZKC-032). A real name is quoted
+   * ("Billing run \"July Run\""); a null/blank name falls back to the UNQUOTED billing period
+   * ("Billing run 01 Jul 2026 – 31 Jul 2026"); if the period is also missing (defensive — the
+   * production publisher always supplies it), plain "Billing run". Never empty quotes.
+   */
+  private static String billingRunLabel(String runName, LocalDate periodFrom, LocalDate periodTo) {
+    if (runName != null && !runName.isBlank()) {
+      return "Billing run \"%s\"".formatted(runName);
+    }
+    if (periodFrom != null && periodTo != null) {
+      return "Billing run %s – %s"
+          .formatted(
+              BILLING_PERIOD_FORMAT.format(periodFrom), BILLING_PERIOD_FORMAT.format(periodTo));
+    }
+    return "Billing run";
+  }
+
+  /** Count-aware phrase for simple s-plural nouns: "1 invoice", "2 invoices". */
+  private static String pluralize(int count, String noun) {
+    return count == 1 ? "1 " + noun : count + " " + noun + "s";
   }
 
   /**

@@ -12,6 +12,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { formatCurrency, formatCurrencySafe } from "@/lib/format";
+import { useTerminology } from "@/lib/terminology";
 import { getOrgProfitability } from "@/app/(app)/org/[slug]/profitability/actions";
 import type { OrgProfitabilityResponse, ProjectProfitabilitySummary } from "@/lib/types";
 import { ArrowUpDown, ChevronDown, ChevronRight } from "lucide-react";
@@ -109,6 +110,7 @@ export function CustomerProfitabilitySection({
   initialFrom,
   initialTo,
 }: CustomerProfitabilitySectionProps) {
+  const { t } = useTerminology();
   const [data, setData] = useState<OrgProfitabilityResponse>(initialData);
   const [from, setFrom] = useState(initialFrom);
   const [to, setTo] = useState(initialTo);
@@ -160,7 +162,7 @@ export function CustomerProfitabilitySection({
     <Card>
       <CardHeader>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle>Customer Profitability</CardTitle>
+          <CardTitle>{t("Customer")} Profitability</CardTitle>
           <div className="flex items-center gap-2">
             <label htmlFor="cust-prof-from" className="text-sm text-slate-600 dark:text-slate-400">
               From

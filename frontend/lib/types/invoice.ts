@@ -36,9 +36,11 @@ export interface InvoiceLineResponse {
   lineSource: string | null;
 }
 
+// Mirrors backend record tax/dto/TaxBreakdownEntry.java (rateName/ratePercent —
+// NOT taxRateName/taxRatePercent, which are per-line fields on InvoiceLineResponse).
 export interface TaxBreakdownEntry {
-  taxRateName: string;
-  taxRatePercent: number;
+  rateName: string;
+  ratePercent: number;
   taxableAmount: number;
   taxAmount: number;
 }

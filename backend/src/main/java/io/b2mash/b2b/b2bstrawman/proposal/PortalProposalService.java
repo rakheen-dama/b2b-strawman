@@ -173,8 +173,10 @@ public class PortalProposalService {
           "Proposal expired", "This proposal expired on " + portalRow.expiresAt());
     }
 
-    // Execute decline using the already-bound tenant context from CustomerAuthFilter
-    proposalService.declineProposal(proposalId, reason);
+    // Execute decline using the already-bound tenant context from CustomerAuthFilter.
+    // Pass the portal contact so the proposal.declined audit event is attributed to the
+    // contact who declined (LZKC-025), mirroring the accept path (LZKC-020).
+    proposalService.declineProposal(proposalId, reason, portalContactId);
 
     log.info("Portal decline completed for proposal {}", proposalId);
 

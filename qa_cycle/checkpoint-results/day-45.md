@@ -1,26 +1,35 @@
-# Day 45 — Firm: second info request + second trust deposit `[FIRM]` — 2026-07-06
+# Day 45 — Firm: second info request + second trust deposit `[FIRM]` — cycle 2026-07-12 (executed 2026-07-13)
 
-**Actor**: Bob Ndlovu (Admin). Context swap: cookies cleared, fresh Keycloak login `bob@mathebula-test.local` / `SecureP@ss2` (first attempt with Thandi's password failed with KC "Invalid password." — correct per-user passwords are in the scenario §credentials table). Sidebar confirms Bob Ndlovu.
+**Actor**: Bob Ndlovu (:3000, existing KC session).
+
+**Balance amendment for this cycle**: the scenario's amended R 71 000 expectation included a prior-cycle R 1 000 OBS-1101 verify deposit that does NOT exist in this cycle's data. Correct expectation here: R 50 000 (Day 10) + R 20 000 (Day 45) = **R 70 000**.
 
 ## Checkpoints
 
 | # | Result | Evidence |
 |---|--------|----------|
-| 45.1 | PASS (product-shape note) | Matter RAF-2026-001 → Client group tab → **Requests** sub-tab (`tab-item-requests`; info requests live under Client, not Work) → New Request → "Create Information Request" dialog (ad-hoc template, portal contact pre-bound to Sipho). No request *title* field exists in the product — scenario's "Supporting medical evidence" carried via the two item names/descriptions. Items: **Hospital discharge summary** + **Orthopaedic report** (both file-upload, required), due date 2026-07-13 (Day 52), reminder 5d → **Send Now** → **REQ-0003 · Sent · 0/2 accepted** in the requests table (numbering matches scenario expectation — REQ-0002 is Moroka's) |
-| 45.2 | PASS | Mailpit `ZbBQntCejBJgR3Z3JBKtQf` → `sipho.portal@example.com`, subject "Information request REQ-0003 from Mathebula & Partners", body "…2 item(s) that require your attention", **View Request** magic link `http://localhost:3002/auth/exchange?token=8d-ej5bH…&orgId=mathebula-partners` |
-| 45.3 | PASS | Trust Accounting → Record Transaction → **Record Deposit**: Client Sipho Dlamini, Matter "Dlamini v Road Accident Fund", Amount 20000, Reference **DEP/2026/003**, Description "Top-up per engagement letter", date 2026-07-06 → transaction list shows DEP/2026/003 · Deposit · R 20 000,00 · **RECORDED** |
-| 45.4 | PASS (amended figure) | Deposits post RECORDED without dual-approval (consistent with Day 10). Client Ledgers: **Sipho Dlamini · Trust Balance R 70 000,00** (Total Deposits R 70 000,00 / Payments R 0 / Fee Transfers R 0). **This cycle's correct figure is R 70 000** (R 50 000 Day 10 + R 20 000 Day 45): the script's R 71 000 amendment included a cycle-15 OBS-1101 R 1 000 verify-deposit that does not exist in this fresh 2026-07-06 cycle. Moroka Family Trust R 25 000,00 listed separately, untouched |
-| 45.5 | PASS | Matter RAF-2026-001 Finance > Trust: "Trust Balance — Funds Held **R 70 000,00**", Deposits R 70 000,00, Payments R 0,00, Fee Transfers R 0,00, last transaction 2026/07/06. No fee-transfer-out applied (as scripted) |
+| 45.1 | PASS | Matter RAF-2026-001 → Client · Requests → New Request (ad-hoc, portal contact Sipho pre-selected): items "Hospital discharge summary" + "Orthopaedic report", due 2026-07-20 (Day 52), Send Now → **REQ-0003 · Sent · 0/2 accepted · 13 Jul 2026** in requests table. (Product dialog has no request-title field — request identified as REQ-0003 on the matter; scenario's "Supporting medical evidence" title is advisory. Numbering REQ-0003 because REQ-0002 is Moroka's — matches prior cycle) |
+| 45.2 | PASS | Mailpit `9riaNx3n63YRmSVKw57HCC` → sipho.portal@example.com, subject "Information request REQ-0003 from Mathebula & Partners", body "2 item(s)", **View Request** = fresh magic-link (`/auth/exchange?token=…&orgId=mathebula-partners`) |
+| 45.3 | PASS | Trust Accounting → Transactions → Record Transaction ▸ Record Deposit: client Sipho, matter Dlamini v RAF, **R 20 000**, ref DEP/2026/003, description "Top-up per engagement letter", date 2026-07-13 → row **DEP/2026/003 · Deposit · R 20 000,00 · RECORDED** |
+| 45.4 | PASS (no dual-approval leg) | Deposits post directly to RECORDED (no approval workflow for deposits — same product shape as Days 10/14; dual-approval applies to payments). Client Ledgers: **Sipho Dlamini R 70 000,00** (deposits R 70 000,00 / payments R 0,00); Moroka unchanged R 25 000,00 |
+| 45.5 | PASS | Matter Finance > Trust: balance **R 70 000,00**, Deposits R 70 000,00, last transaction 2026/07/13. 📸 `day-45-matter-trust-70000.png` |
 
-## Day 45 day-level checkpoints
+## Day-level checkpoints
 
-- Second info request dispatched: **PASS** (REQ-0003, 2 items, magic-link email in Mailpit)
-- Trust balance reconciles on client ledger and matter trust tab: **PASS at R 70 000** (cycle-local figure; R 71 000 amendment N/A — no OBS-1101 carry-over deposit in this cycle's data)
+- Second info request dispatched: **PASS**
+- Trust balance reconciles (client ledger + matter trust tab): **PASS at R 70 000** (cycle-correct amendment of the scripted R 71 000 — no OBS-1101 carry-over deposit exists this cycle)
 
-## Gaps
+## New gaps
 
-None new.
+None.
 
-## Notes for Day 46
+## Observations
 
-- Magic-link token for REQ-0003: `8d-ej5bH…` (Mailpit `ZbBQntCejBJgR3Z3JBKtQf`). Portal expectations: trust balance **R 70 000**, transaction list = 2 Sipho deposits (R 50 000 + R 20 000) — the scripted "three deposits" includes the phantom R 1 000; expect two.
+- Trust-activity email to Sipho fired within seconds of posting (Mailpit `M7RVmLeghCjgD4hAZBfBzU`: DEPOSIT R 20 000,00, deep link `:3002/trust/66451e87…`) — faster than prior cycle's ~3 min.
+- Matter trust tab renders "Last transaction: 2026/07/13" (slash format) while tables elsewhere use "13 Jul 2026" — cosmetic date-locale inconsistency, observation only.
+- Console clean across all Day-45 navigations (one 404 was QA's own wrong URL guess `/trust`, not a product route).
+
+## Handoff for Day 46
+
+- REQ-0003 id visible at `/org/mathebula-partners/information-requests/…` (link in requests table); portal magic link token in Mailpit `9riaNx3n63YRmSVKw57HCC`.
+- Sipho trust balance R 70 000 (3 transactions: DEP/2026/001 R 50 000 12 Jul, DEP/2026/003 R 20 000 13 Jul; Moroka's DEP/2026/002 R 25 000 must NOT appear on portal).

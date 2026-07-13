@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { ScheduleList } from "@/components/schedules/ScheduleList";
+import { TerminologyText } from "@/components/terminology-text";
 import { ScheduleCreateDialog } from "@/components/schedules/ScheduleCreateDialog";
 import { getSchedules } from "@/lib/api/schedules";
 import { getProjectTemplates } from "@/lib/api/templates";
@@ -76,7 +77,7 @@ export default async function SchedulesPage({ params }: { params: Promise<{ slug
           Recurring Schedules
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Automate project creation with recurring schedules based on templates.
+          <TerminologyText template="Automate {project} creation with recurring schedules based on templates." />
         </p>
       </div>
 

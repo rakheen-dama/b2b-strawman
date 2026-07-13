@@ -1,4 +1,6 @@
+import type { ReactNode } from "react";
 import { Card } from "@b2mash/ui/card";
+import { TerminologyText } from "@/components/terminology-text";
 import { formatCurrency } from "@/lib/format";
 import type { BillingRun } from "@/lib/api/billing-runs";
 
@@ -6,7 +8,7 @@ interface BillingRunSummaryCardsProps {
   billingRun: BillingRun;
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function StatCard({ label, value }: { label: ReactNode; value: string }) {
   return (
     <Card>
       <div className="flex flex-col gap-1 px-4 py-3">
@@ -26,8 +28,11 @@ export function BillingRunSummaryCards({ billingRun }: BillingRunSummaryCardsPro
 
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-      <StatCard label="Customers" value={String(totalCustomers)} />
-      <StatCard label="Invoices Generated" value={String(totalInvoices)} />
+      <StatCard label={<TerminologyText template="{Customers}" />} value={String(totalCustomers)} />
+      <StatCard
+        label={<TerminologyText template="{Invoices} Generated" />}
+        value={String(totalInvoices)}
+      />
       <StatCard label="Sent" value={String(totalSent)} />
       <StatCard label="Failed" value={String(totalFailed)} />
       <StatCard label="Total Amount" value={formatCurrency(totalAmount, billingRun.currency)} />

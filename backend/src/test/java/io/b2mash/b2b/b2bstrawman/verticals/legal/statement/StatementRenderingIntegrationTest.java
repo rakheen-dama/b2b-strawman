@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
@@ -23,7 +24,9 @@ import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -76,6 +79,7 @@ class StatementRenderingIntegrationTest {
   @Autowired private TaskRepository taskRepository;
   @Autowired private TimeEntryRepository timeEntryRepository;
   @Autowired private ObjectMapper objectMapper;
+  @Autowired private StatementOfAccountContextBuilder statementContextBuilder;
 
   private String tenantSchema;
   private UUID memberId;
@@ -101,7 +105,10 @@ class StatementRenderingIntegrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var settings = orgSettingsService.getOrCreateForCurrentTenant();
-                  settings.setEnabledModules(List.of("disbursements"));
+                  // trust_accounting added for the LZKC-030 repro below; with no trust activity
+                  // for this class's shared customer, the other tests' trust block stays empty
+                  // exactly as it was when only `disbursements` was enabled.
+                  settings.setEnabledModules(List.of("disbursements", "trust_accounting"));
                   settings.updateCurrency("ZAR");
                   orgSettingsRepository.save(settings);
 
@@ -171,6 +178,112 @@ class StatementRenderingIntegrationTest {
     assertThat(html).contains("Statement of Account");
   }
 
+  /**
+   * LZKC-030 (QA Day 61): a matter whose FIRST trust deposit falls ON the statement period start
+   * date must print a DB-true opening balance that EXCLUDES that deposit — the deposit is already
+   * itemised in the Deposits table, so counting it in the opening double-counts it and the Section
+   * 86 statement stops self-reconciling (printed: opening R50 000 + deposits − payments ≠ closing).
+   *
+   * <p>DB-true reproduction: seeds a real trust account + a real R50 000 deposit dated exactly on
+   * the period start via the API, then builds the SoA context through the full real stack (builder
+   * → ClientLedgerService → TrustTransactionRepository → Postgres).
+   */
+  @Test
+  void trustOpeningBalance_excludesDepositOnPeriodStartDate_andSelfReconciles() throws Exception {
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_stmt_render_owner");
+
+    // Dedicated customer + matter so this test's trust activity cannot leak into the shared
+    // rendering fixtures used by the locale/letterhead tests above.
+    UUID[] ids = new UUID[2]; // [0] customerId, [1] projectId
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      createActiveCustomer("Dlamini", "dlamini_trust@test.com", memberId);
+                  customer = customerRepository.saveAndFlush(customer);
+                  ids[0] = customer.getId();
+
+                  var project = new Project("Dlamini v RAF", "Trust boundary matter", memberId);
+                  project.setCustomerId(customer.getId());
+                  project = projectRepository.saveAndFlush(project);
+                  ids[1] = project.getId();
+                }));
+
+    var accountResult =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts")
+                    .with(ownerJwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "accountName": "LZKC-030 Trust Account",
+                          "bankName": "Test Bank",
+                          "branchCode": "250655",
+                          "accountNumber": "62000000030",
+                          "accountType": "GENERAL",
+                          "isPrimary": false,
+                          "requireDualApproval": false,
+                          "openedDate": "2026-01-15"
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String trustAccountId = TestEntityHelper.extractId(accountResult);
+
+    // The deposit lands exactly ON the statement period start date (2026-04-01).
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/" + trustAccountId + "/transactions/deposit")
+                .with(ownerJwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "customerId": "%s",
+                      "amount": 50000.00,
+                      "reference": "DEP/2026/001",
+                      "description": "Initial RAF settlement deposit",
+                      "transactionDate": "2026-04-01"
+                    }
+                    """
+                        .formatted(ids[0])))
+        .andExpect(status().isCreated());
+
+    Map<String, Object> context =
+        runInTenantAndGet(
+            () ->
+                statementContextBuilder.build(
+                    ids[1], LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 30)));
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> trust = (Map<String, Object>) context.get("trust");
+    @SuppressWarnings("unchecked")
+    List<Map<String, Object>> deposits = (List<Map<String, Object>>) trust.get("deposits");
+    @SuppressWarnings("unchecked")
+    List<Map<String, Object>> payments = (List<Map<String, Object>>) trust.get("payments");
+
+    // The period-start-day deposit is itemised exactly once.
+    assertThat(deposits).hasSize(1);
+    assertThat(payments).isEmpty();
+
+    BigDecimal opening = (BigDecimal) trust.get("opening_balance");
+    BigDecimal closing = (BigDecimal) trust.get("closing_balance");
+    assertThat(opening)
+        .as("DB-true opening before 2026-04-01 is R0 — the same-day deposit must not be counted")
+        .isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(closing).isEqualByComparingTo(new BigDecimal("50000.00"));
+
+    // Self-reconciliation invariant: opening + Σdeposits − Σpayments == closing.
+    BigDecimal depositTotal =
+        deposits.stream()
+            .map(d -> new BigDecimal(d.get("amount").toString()))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    assertThat(opening.add(depositTotal)).isEqualByComparingTo(closing);
+  }
+
   // ---------- helpers ----------
 
   private void setLogoS3Key(String s3Key) {
@@ -212,5 +325,11 @@ class StatementRenderingIntegrationTest {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .run(action);
+  }
+
+  private <T> T runInTenantAndGet(Supplier<T> action) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .call(action::get);
   }
 }

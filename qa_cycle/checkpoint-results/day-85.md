@@ -1,25 +1,25 @@
-# Day 85 — Firm final closure paperwork `[FIRM]` — 2026-07-06
+# Day 85 — Firm final closure paperwork `[FIRM]` — cycle 2026-07-12 (run 2026-07-13)
 
-**Actor**: Thandi Mathebula (existing firm session).
+**Actor**: Thandi Mathebula (firm :3000 — standing session still valid).
 
 ## Checkpoints
 
 | # | Result | Evidence |
 |---|--------|----------|
-| 85.1 | PASS | Matter RAF-2026-001 (Closed) Work > Documents still lists `matter-closure-letter-dlamini-v-road-accident-fund-2026-07-06.pdf` (1.6 KB) and `statement-of-account-…pdf` (5.0 KB), plus FICA ×3 and medical-evidence ×2 |
-| 85.2 | SKIPPED (conditional not met) | "If tenant workflow requires it, generate a final closing letter" — no tenant workflow requirement exists; the Day 60 closure letter is the closing correspondence. Product does expose Generate Document (template picker) on the closed matter if needed |
-| 85.3 | PASS (cycle-local product shape) | DB (read-only): `retention_clock_started_at = 2026-07-06 15:19:26` persists on CLOSED matter; active MATTER retention policy 1825 days (5y) / MATTER_CLOSED / ARCHIVE unchanged since closure. Scenario's "end_date ≈ today + 5y − 25d" doesn't apply literally in a single-day cycle, and computed deletion date remains blank pending org `legal_matter_retention_years` (Day 60 note) |
-| 85.4 | PASS (matter activity feed = the shipped audit surface) | Matter Activity tab, lookback **90 days**: full history renders (matter created → info requests → time entries → tasks incl. automation follow-ups → court date → closure → doc generation → portal downloads). **Filter by actor** combobox lists Bob Ndlovu / Sipho Dlamini / Thandi Mathebula — i.e. firm users AND portal contact. Actor=**Sipho Dlamini** → exactly his portal actions: `portal.document.downloaded` ×2 (Day 61), `portal.request_item.submitted` + `portal.document.upload_initiated` (Days 46/4), `portal.invoice.paid` (Day 30). Note: raw event-key copy (LZKC-019, already logged) and `portal.invoice.paid` "invoice" wording (LZKC-009 family) |
-| 85.5 | PASS | 📸 `day-85-firm-audit-filtered.png` (actor=Sipho filtered feed) |
+| 85.1 | PASS | Matter RAF-2026-001 (Closed) Work > Documents lists `matter-closure-letter-dlamini-v-road-accident-fund-2026-07-13.pdf` (2.2 KB) and `statement-of-account-dlamini-v-road-accident-fund-2026-07-13.pdf` (5.5 KB) — byte sizes match Day-60/61 records — plus FICA ×3 (fica-id/address/bank) and Day-46 medical evidence |
+| 85.2 | SKIPPED (conditional not met — prior-cycle precedent) | "If tenant workflow requires it…" — no tenant workflow requires a final closing letter; the Day-60 closure letter is the closing correspondence. Product does expose **Generate Document** on the closed matter if a firm wanted one |
+| 85.3 | PASS (cycle-local product shape, unchanged from prior cycle) | DB (read-only): `projects.retention_clock_started_at = 2026-07-13 01:15:27` persists on CLOSED matter; active **MATTER / 1825 days (5y) / MATTER_CLOSED / ARCHIVE** retention policy unchanged since closure (created at closure moment 01:15:27); CUSTOMER 1825d + AUDIT_EVENT 2555d policies also active. Scenario's "end_date ≈ today + 5y − 25d" doesn't apply literally in a compressed cycle, and the computed deletion date remains blank pending org `legal_matter_retention_years` (still NULL — Day-60 period-unconfigured banner shape) |
+| 85.4 | PASS (matter activity feed = shipped audit surface, per precedent) | Matter Activity tab, lookback **90 days**: unfiltered feed renders full history (portal downloads → SoA/closure-letter generation → "Thandi Mathebula closed the matter" → Bob's task CANCELLED/DONE transitions → REQ-0003 accepts/submits → task IN_PROGRESS/DONE progression), friendly copy throughout — **LZKC-019 holds** ("Closed by Thandi Mathebula" in Closure history — LZKC-014 holds). **Filter by actor** combobox lists Bob Ndlovu / Sipho Dlamini / Thandi Mathebula — firm users AND portal contact. Actor=**Sipho Dlamini** (+ Load more ×2) → exactly his 13 portal actions: downloads ×2 (Day 61), REQ-0003 submits+uploads ×4 (Day 46), **"Sipho Dlamini paid fee note INV-0001"** (Day 30 — "fee note" wording, no LZKC-009 "invoice" leak here this cycle), REQ-0001 FICA submits+uploads ×6 (Day 4). Engagement-letter accept absent from the *matter* feed because proposal events are proposal/client-scoped, not matter-scoped — same shape as prior-cycle 85.4 PASS (and the acceptance IS correctly attributed elsewhere: portal trail Day 75 evidence + firm proposal audit Day 10) |
+| 85.5 | PASS | 📸 `day-85-firm-audit-filtered.png` (actor=Sipho filtered 90-day feed) |
 
 ## Day 85 day-level checkpoints
 
-- Matter retention row persists correctly: **PASS** (clock + active 5y MATTER policy; computed date pending org setting — Day 60 product-shape note)
+- Matter retention row persists correctly: **PASS** (clock + active 5y MATTER policy; computed date pending org setting — known product shape)
 - Audit log filters by actor for BOTH firm users AND portal contacts: **PASS**
 
-## Observations (not new gaps)
+## Console
 
-- "View audit" control in Closure history does not visibly navigate/open anything when clicked (tested real-coordinate click). The Activity tab supplies the audit view, so no functional loss — folded into LZKC-019's audit-surface polish rather than a new row.
+0 firm-side JS errors during Day 85 flows.
 
 ## Gaps
 

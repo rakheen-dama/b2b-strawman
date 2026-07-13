@@ -102,8 +102,17 @@ export function StageReorder({ stages, onReorder, renderActions }: StageReorderP
     onReorder(reordered.map((s) => s.id));
   }
 
+  // LZKC-024 (same class as LZKC-001): a stable `id` keeps dnd-kit's
+  // aria-describedby target deterministic across the SSR and client passes;
+  // without it a module-level counter drifts between passes and every
+  // sortable row hydration-mismatches.
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext
+      id="stage-reorder"
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
       <SortableContext items={stages.map((s) => s.id)} strategy={verticalListSortingStrategy}>
         <div className="space-y-2">
           {stages.map((stage) => (

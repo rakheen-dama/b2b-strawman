@@ -1,6 +1,7 @@
 import type { Document, DocumentScope, DocumentStatus } from "@/lib/types";
 import { Badge } from "@b2mash/ui/badge";
 import { OrgDocumentUpload } from "@/components/documents/org-document-upload";
+import { TerminologyText } from "@/components/terminology-text";
 import { formatDate, formatFileSize } from "@/lib/format";
 import { FileText, FileImage, FileSpreadsheet, FileArchive, File } from "lucide-react";
 
@@ -58,7 +59,7 @@ export function OrgDocumentsSection({ slug, documents, isAdmin }: OrgDocumentsSe
         {isAdmin && <OrgDocumentUpload slug={slug} />}
       </div>
       <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        Organization-level documents shared across all projects.
+        <TerminologyText template="Organization-level documents shared across all {projects}." />
       </p>
 
       {documents.length === 0 ? (

@@ -405,4 +405,59 @@ class ModuleSettingsIntegrationTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value("Validation failed"));
   }
+
+  // --- LZKC-026 — features-page save must not drop registry-unknown profile-owned ids ---
+  @Test
+  @Order(12)
+  void putModules_preservesRegistryUnknownProfileOwnedModules() throws Exception {
+    // legal-za seeds "deadlines" (vertical-profiles/legal-za.json), a slug deliberately NOT in
+    // VerticalModuleRegistry — it is owned by PortalDeadlineService.MODULE_ID. After test 10 the
+    // PROFILE_ORG tenant has profile=null and enabledModules=[resource_planning]; re-applying
+    // legal-za seeds the profile-owned ids again.
+    mockMvc
+        .perform(
+            patch("/api/settings/vertical-profile")
+                .with(TestJwtFactory.ownerJwt(PROFILE_ORG_ID, "user_msi_profile_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"verticalProfile": "legal-za"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.enabledModules", hasItems("deadlines", "trust_accounting")));
+
+    // The LZKC-026 repro: enabling automation_builder via the features page silently removed
+    // "deadlines". The horizontal-set replacement must preserve every id that is not a
+    // registry-known HORIZONTAL module — vertical ids AND registry-unknown profile-owned ids.
+    mockMvc
+        .perform(
+            put("/api/settings/modules")
+                .with(TestJwtFactory.ownerJwt(PROFILE_ORG_ID, "user_msi_profile_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"enabledModules": ["automation_builder"]}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath(
+                "$.enabledModules",
+                hasItems("deadlines", "trust_accounting", "automation_builder")))
+        // horizontal subset is fully replaced: resource_planning was not in the request
+        .andExpect(jsonPath("$.enabledModules", not(hasItem("resource_planning"))));
+
+    // Inverse hole: disabling all horizontal modules must also preserve the unknown id.
+    mockMvc
+        .perform(
+            put("/api/settings/modules")
+                .with(TestJwtFactory.ownerJwt(PROFILE_ORG_ID, "user_msi_profile_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"enabledModules": []}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.enabledModules", hasItems("deadlines", "trust_accounting")))
+        .andExpect(jsonPath("$.enabledModules", not(hasItem("automation_builder"))));
+  }
 }

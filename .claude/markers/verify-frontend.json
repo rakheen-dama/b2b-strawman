@@ -1,1 +1,1 @@
-{"commit":"55f3f05cd","command":"pnpm test (serial) && pnpm run lint && pnpm run build && pnpm run format:check","exit":0,"ts":"2026-07-08T06:17:55Z","summary":"390 files / 2463 passed / 2 skipped (main-repo ground, serial)"}
+{"commit":"ba050d9b8+LZKC-027","command":"pnpm run lint && pnpm run build && pnpm test && pnpm run format:check","exit":0,"ts":"2026-07-13T10:49:00Z","summary":"402 files / 2505 passed / 2 skipped (fix/LZKC-027 worktree; logs /tmp/{lint,build,test,fmt}-027.log)"}

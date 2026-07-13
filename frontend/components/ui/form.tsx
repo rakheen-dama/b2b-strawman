@@ -9,7 +9,7 @@ import {
   type FieldPath,
   type FieldValues,
 } from "react-hook-form";
-import { Label as LabelPrimitive } from "radix-ui";
+import { Label as LabelPrimitive, Slot } from "radix-ui";
 
 import { cn } from "@/lib/utils";
 import { Label } from "@b2mash/ui/label";
@@ -83,18 +83,18 @@ function FormLabel({ className, ...props }: React.ComponentProps<typeof LabelPri
   );
 }
 
-function FormControl({ ...props }: React.ComponentProps<typeof React.Fragment>) {
+function FormControl({ ...props }: React.ComponentProps<typeof Slot.Root>) {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
 
-  // We pass the props to the child element
-  const child = React.Children.only(props.children) as React.ReactElement<Record<string, unknown>>;
-
-  return React.cloneElement(child, {
-    id: formItemId,
-    "aria-describedby": !error ? formDescriptionId : `${formDescriptionId} ${formMessageId}`,
-    "aria-invalid": !!error,
-    ...child.props,
-  });
+  return (
+    <Slot.Root
+      data-slot="form-control"
+      id={formItemId}
+      aria-describedby={!error ? formDescriptionId : `${formDescriptionId} ${formMessageId}`}
+      aria-invalid={!!error}
+      {...props}
+    />
+  );
 }
 
 function FormDescription({ className, ...props }: React.ComponentProps<"p">) {

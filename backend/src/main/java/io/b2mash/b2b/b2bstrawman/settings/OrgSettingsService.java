@@ -440,8 +440,10 @@ public class OrgSettingsService {
   }
 
   /**
-   * Replaces the set of enabled horizontal modules for the current tenant. Vertical modules
-   * (managed by the vertical profile) are preserved. Admin-or-owner only. See ADR-239.
+   * Replaces the set of enabled horizontal modules for the current tenant. All other enabled ids
+   * are preserved: vertical modules (managed by the vertical profile) and ids unknown to the module
+   * registry (profile-owned slugs such as {@code deadlines}, owned by {@code
+   * PortalDeadlineService#MODULE_ID}). Admin-or-owner only. See ADR-239.
    *
    * @throws InvalidStateException if any requested ID is unknown or is a vertical module
    * @throws io.b2mash.b2b.b2bstrawman.exception.ForbiddenException if the actor is not admin/owner
@@ -468,17 +470,20 @@ public class OrgSettingsService {
     var settings = getOrCreateForCurrentTenant();
     List<String> before = List.copyOf(settings.getEnabledModules());
 
-    // Keep vertical modules as-is; replace horizontal modules with the request payload.
-    List<String> verticalIds =
+    // Only the horizontal subset is replaceable via this endpoint. Preserve everything else:
+    // vertical modules AND ids unknown to the registry — profile-owned slugs such as
+    // PortalDeadlineService.MODULE_ID ("deadlines") are deliberately not registered here
+    // (LZKC-026: dropping unknown ids clobbered "deadlines" on every features-page save).
+    List<String> preservedIds =
         before.stream()
             .filter(
                 id ->
                     moduleRegistry
                         .getModule(id)
-                        .map(m -> m.category() == ModuleCategory.VERTICAL)
-                        .orElse(false))
+                        .map(m -> m.category() != ModuleCategory.HORIZONTAL)
+                        .orElse(true))
             .toList();
-    List<String> merged = new ArrayList<>(verticalIds);
+    List<String> merged = new ArrayList<>(preservedIds);
     for (String id : requestedModuleIds) {
       if (!merged.contains(id)) {
         merged.add(id);

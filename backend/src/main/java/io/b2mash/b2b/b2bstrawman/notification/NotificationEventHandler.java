@@ -459,9 +459,10 @@ public class NotificationEventHandler {
         () -> {
           try {
             var title =
-                "Billing run \"%s\" completed — %d invoices generated"
+                "%s completed — %s generated"
                     .formatted(
-                        event.runName() != null ? event.runName() : "", event.totalInvoices());
+                        billingRunLabel(event.runName()),
+                        pluralize(event.totalInvoices(), "invoice"));
             var notifications =
                 notificationService.notifyAdminsAndOwners(
                     "BILLING_RUN_COMPLETED", title, null, "BILLING_RUN", event.billingRunId());
@@ -483,9 +484,10 @@ public class NotificationEventHandler {
         () -> {
           try {
             var title =
-                "Billing run \"%s\" had %d failures"
+                "%s had %s"
                     .formatted(
-                        event.runName() != null ? event.runName() : "", event.failureCount());
+                        billingRunLabel(event.runName()),
+                        pluralize(event.failureCount(), "failure"));
             var notifications =
                 notificationService.notifyAdminsAndOwners(
                     "BILLING_RUN_FAILURES", title, null, "BILLING_RUN", event.billingRunId());
@@ -507,8 +509,9 @@ public class NotificationEventHandler {
         () -> {
           try {
             var title =
-                "Billing run \"%s\" — %d invoices sent"
-                    .formatted(event.runName() != null ? event.runName() : "", event.totalSent());
+                "%s — %s sent"
+                    .formatted(
+                        billingRunLabel(event.runName()), pluralize(event.totalSent(), "invoice"));
             var notifications =
                 notificationService.notifyAdminsAndOwners(
                     "BILLING_RUN_SENT", title, null, "BILLING_RUN", event.billingRunId());
@@ -520,6 +523,21 @@ public class NotificationEventHandler {
                 e);
           }
         });
+  }
+
+  /**
+   * Renders the billing-run token for notification titles. A null/blank run name renders as plain
+   * "Billing run" (no empty quotes) — defensive, since publishers may not sanitise the name.
+   */
+  private static String billingRunLabel(String runName) {
+    return (runName == null || runName.isBlank())
+        ? "Billing run"
+        : "Billing run \"%s\"".formatted(runName);
+  }
+
+  /** Count-aware phrase for simple s-plural nouns: "1 invoice", "2 invoices". */
+  private static String pluralize(int count, String noun) {
+    return count == 1 ? "1 " + noun : count + " " + noun + "s";
   }
 
   /**

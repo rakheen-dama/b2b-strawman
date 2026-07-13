@@ -6,6 +6,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunEvents.BillingRunCompletedEvent;
+import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunEvents.BillingRunFailuresEvent;
+import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunEvents.BillingRunSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.MemberAddedToProjectEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
@@ -22,6 +25,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
@@ -29,6 +33,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Integration test verifying that domain events carry the orgId field and that the
@@ -47,6 +52,8 @@ class NotificationEventHandlerIntegrationTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private ApplicationEvents events;
   @Autowired private NotificationRepository notificationRepository;
+  @Autowired private ApplicationEventPublisher eventPublisher;
+  @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
   private String projectId;
@@ -399,6 +406,71 @@ class NotificationEventHandlerIntegrationTest {
                       n ->
                           "MEMBER_INVITED".equals(n.getType())
                               && n.getTitle().contains("You were added to project"));
+            });
+  }
+
+  // --- LZKC-032: billing-run notification titles (blank-name fallback + pluralisation) ---
+
+  @Test
+  void billingRunCompleted_blankName_singularCount_rendersReadableTitle() {
+    var runId = UUID.randomUUID();
+    eventPublisher.publishEvent(new BillingRunCompletedEvent(runId, "", 1, tenantSchema, ORG_ID));
+
+    assertThat(billingRunNotificationTitle("BILLING_RUN_COMPLETED", runId))
+        .isEqualTo("Billing run completed — 1 invoice generated");
+  }
+
+  @Test
+  void billingRunCompleted_namedRun_pluralCount_keepsQuotedName() {
+    var runId = UUID.randomUUID();
+    eventPublisher.publishEvent(
+        new BillingRunCompletedEvent(runId, "July Run", 2, tenantSchema, ORG_ID));
+
+    assertThat(billingRunNotificationTitle("BILLING_RUN_COMPLETED", runId))
+        .isEqualTo("Billing run \"July Run\" completed — 2 invoices generated");
+  }
+
+  @Test
+  void billingRunFailures_blankName_singleFailure_rendersReadableTitle() {
+    var runId = UUID.randomUUID();
+    eventPublisher.publishEvent(new BillingRunFailuresEvent(runId, "", 1, tenantSchema, ORG_ID));
+
+    assertThat(billingRunNotificationTitle("BILLING_RUN_FAILURES", runId))
+        .isEqualTo("Billing run had 1 failure");
+  }
+
+  @Test
+  void billingRunSent_nullName_singularCount_rendersReadableTitle() {
+    var runId = UUID.randomUUID();
+    // BillingRunSentEvent is handled AFTER_COMMIT — publish inside a transaction
+    transactionTemplate.executeWithoutResult(
+        tx ->
+            eventPublisher.publishEvent(
+                new BillingRunSentEvent(runId, null, 1, tenantSchema, ORG_ID)));
+
+    assertThat(billingRunNotificationTitle("BILLING_RUN_SENT", runId))
+        .isEqualTo("Billing run — 1 invoice sent");
+  }
+
+  /** Fetches the owner's notification title for the given type + billing-run reference id. */
+  private String billingRunNotificationTitle(String type, UUID billingRunId) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .call(
+            () -> {
+              var notifs =
+                  notificationRepository.findByRecipientMemberId(
+                      memberIdOwner, PageRequest.of(0, 200));
+              return notifs.getContent().stream()
+                  .filter(
+                      n ->
+                          type.equals(n.getType()) && billingRunId.equals(n.getReferenceEntityId()))
+                  .findFirst()
+                  .map(Notification::getTitle)
+                  .orElseThrow(
+                      () ->
+                          new AssertionError(
+                              "No %s notification found for run %s".formatted(type, billingRunId)));
             });
   }
 }

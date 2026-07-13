@@ -21,8 +21,10 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.SendInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class BillingRunGenerationService {
 
   private static final Logger log = LoggerFactory.getLogger(BillingRunGenerationService.class);
+
+  private static final DateTimeFormatter PERIOD_FORMAT =
+      DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
 
   private final BillingRunRepository billingRunRepository;
   private final BillingRunItemRepository billingRunItemRepository;
@@ -202,13 +207,14 @@ public class BillingRunGenerationService {
 
     String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
     String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String runDisplayName = displayName(completedRun);
     eventPublisher.publishEvent(
         new BillingRunCompletedEvent(
-            completedRun.getId(), completedRun.getName(), finalSuccessCount, tenantId, orgId));
+            completedRun.getId(), runDisplayName, finalSuccessCount, tenantId, orgId));
     if (finalFailureCount > 0) {
       eventPublisher.publishEvent(
           new BillingRunFailuresEvent(
-              completedRun.getId(), completedRun.getName(), finalFailureCount, tenantId, orgId));
+              completedRun.getId(), runDisplayName, finalFailureCount, tenantId, orgId));
     }
 
     log.info(
@@ -364,7 +370,7 @@ public class BillingRunGenerationService {
           auditService.log(AuditEventBuilder.billingRunSent(freshRun, finalSuccessCount));
           eventPublisher.publishEvent(
               new BillingRunSentEvent(
-                  billingRunId, freshRun.getName(), finalSuccessCount, sendTenantId, sendOrgId));
+                  billingRunId, displayName(freshRun), finalSuccessCount, sendTenantId, sendOrgId));
         });
 
     log.info(
@@ -377,6 +383,20 @@ public class BillingRunGenerationService {
   }
 
   // --- Private helpers ---
+
+  /**
+   * Non-blank display name for billing-run notification events: the run's name when present,
+   * otherwise the billing period formatted as "dd MMM yyyy – dd MMM yyyy" (LZKC-032 — the creation
+   * wizard does not require a name).
+   */
+  static String displayName(BillingRun run) {
+    if (run.getName() != null && !run.getName().isBlank()) {
+      return run.getName();
+    }
+    return "%s – %s"
+        .formatted(
+            PERIOD_FORMAT.format(run.getPeriodFrom()), PERIOD_FORMAT.format(run.getPeriodTo()));
+  }
 
   private String truncate(String text, int maxLength) {
     if (text == null) return null;

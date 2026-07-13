@@ -151,10 +151,6 @@ class StatementOfAccountContextBuilderTest {
     // Trust: opening 100, two deposits totalling 500, one payment of 200, closing 400.
     when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
         .thenReturn(List.of(trustAccountId));
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
-        .thenReturn(new BigDecimal("100.00"));
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
-        .thenReturn(new BigDecimal("400.00"));
     var dep1 = ledgerLine("DEPOSIT", new BigDecimal("300.00"));
     var dep2 = ledgerLine("DEPOSIT", new BigDecimal("200.00"));
     var pay1 = ledgerLine("PAYMENT", new BigDecimal("200.00"));
@@ -266,10 +262,6 @@ class StatementOfAccountContextBuilderTest {
 
     when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
         .thenReturn(List.of(trustAccountId));
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
-        .thenReturn(BigDecimal.ZERO);
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
-        .thenReturn(BigDecimal.ZERO);
 
     var lines =
         List.of(
@@ -385,11 +377,8 @@ class StatementOfAccountContextBuilderTest {
 
     when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
         .thenReturn(List.of(trustAccountId));
-    // Opening read at periodStart, closing at periodEnd.
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
-        .thenReturn(new BigDecimal("750.00"));
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
-        .thenReturn(new BigDecimal("1250.00"));
+    // LZKC-030: opening/closing come from the ledger statement response (self-reconciling),
+    // not from separate as-of-date balance queries.
     when(clientLedgerService.getClientLedgerStatement(
             customerId, trustAccountId, periodStart, periodEnd))
         .thenReturn(
@@ -613,10 +602,6 @@ class StatementOfAccountContextBuilderTest {
 
     when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
         .thenReturn(List.of(trustAccountId));
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
-        .thenReturn(BigDecimal.ZERO);
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
-        .thenReturn(BigDecimal.ZERO);
     when(clientLedgerService.getClientLedgerStatement(
             customerId, trustAccountId, periodStart, periodEnd))
         .thenReturn(
@@ -702,10 +687,6 @@ class StatementOfAccountContextBuilderTest {
 
     when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
         .thenReturn(List.of(trustAccountId));
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
-        .thenReturn(BigDecimal.ZERO);
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
-        .thenReturn(BigDecimal.ZERO);
     var dep =
         new ClientLedgerService.LedgerStatementLine(
             UUID.randomUUID(),
@@ -798,10 +779,6 @@ class StatementOfAccountContextBuilderTest {
 
     when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
         .thenReturn(List.of(trustAccountId));
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
-        .thenReturn(BigDecimal.ZERO);
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
-        .thenReturn(BigDecimal.ZERO);
     when(clientLedgerService.getClientLedgerStatement(
             customerId, trustAccountId, periodStart, periodEnd))
         .thenReturn(
@@ -1004,10 +981,6 @@ class StatementOfAccountContextBuilderTest {
 
     when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
         .thenReturn(List.of(trustAccountId));
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
-        .thenReturn(BigDecimal.ZERO);
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
-        .thenReturn(new BigDecimal("70100.00"));
     var dep1 = ledgerLine("DEPOSIT", new BigDecimal("50000.00"));
     var dep2 = ledgerLine("DEPOSIT", new BigDecimal("100.00"));
     var dep3 = ledgerLine("DEPOSIT", new BigDecimal("20000.00"));
@@ -1081,10 +1054,6 @@ class StatementOfAccountContextBuilderTest {
     var primaryGeneral = trustAccountWithId(trustAccountId);
     when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
         .thenReturn(Optional.of(primaryGeneral));
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
-        .thenReturn(BigDecimal.ZERO);
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
-        .thenReturn(new BigDecimal("500.00"));
     when(clientLedgerService.getClientLedgerStatement(
             customerId, trustAccountId, periodStart, periodEnd))
         .thenReturn(
@@ -1101,7 +1070,8 @@ class StatementOfAccountContextBuilderTest {
     assertThat((BigDecimal) trust.get("closing_balance"))
         .isEqualByComparingTo(new BigDecimal("500.00"));
     // Verify the ledger query targeted the primary GENERAL id, not the secondary.
-    verify(clientLedgerService).getClientBalanceAsOfDate(customerId, trustAccountId, periodStart);
+    verify(clientLedgerService)
+        .getClientLedgerStatement(customerId, trustAccountId, periodStart, periodEnd);
   }
 
   @Test
@@ -1123,10 +1093,6 @@ class StatementOfAccountContextBuilderTest {
         .thenReturn(List.of(firstAccountId, secondAccountId));
     when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
         .thenReturn(Optional.empty());
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, firstAccountId, periodStart))
-        .thenReturn(BigDecimal.ZERO);
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, firstAccountId, periodEnd))
-        .thenReturn(new BigDecimal("250.00"));
     when(clientLedgerService.getClientLedgerStatement(
             customerId, firstAccountId, periodStart, periodEnd))
         .thenReturn(
@@ -1141,7 +1107,8 @@ class StatementOfAccountContextBuilderTest {
     Map<String, Object> trust = (Map<String, Object>) context.get("trust");
     assertThat((BigDecimal) trust.get("closing_balance"))
         .isEqualByComparingTo(new BigDecimal("250.00"));
-    verify(clientLedgerService).getClientBalanceAsOfDate(customerId, firstAccountId, periodStart);
+    verify(clientLedgerService)
+        .getClientLedgerStatement(customerId, firstAccountId, periodStart, periodEnd);
   }
 
   @Test
@@ -1170,10 +1137,6 @@ class StatementOfAccountContextBuilderTest {
     var primaryGeneral = trustAccountWithId(primaryGeneralId);
     when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
         .thenReturn(Optional.of(primaryGeneral));
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, firstAccountId, periodStart))
-        .thenReturn(BigDecimal.ZERO);
-    when(clientLedgerService.getClientBalanceAsOfDate(customerId, firstAccountId, periodEnd))
-        .thenReturn(new BigDecimal("750.00"));
     when(clientLedgerService.getClientLedgerStatement(
             customerId, firstAccountId, periodStart, periodEnd))
         .thenReturn(
@@ -1189,9 +1152,100 @@ class StatementOfAccountContextBuilderTest {
     Map<String, Object> trust = (Map<String, Object>) context.get("trust");
     assertThat((BigDecimal) trust.get("closing_balance"))
         .isEqualByComparingTo(new BigDecimal("750.00"));
-    verify(clientLedgerService).getClientBalanceAsOfDate(customerId, firstAccountId, periodStart);
+    verify(clientLedgerService)
+        .getClientLedgerStatement(customerId, firstAccountId, periodStart, periodEnd);
     verify(clientLedgerService, never())
-        .getClientBalanceAsOfDate(customerId, primaryGeneralId, periodStart);
+        .getClientLedgerStatement(customerId, primaryGeneralId, periodStart, periodEnd);
+  }
+
+  // ---------- LZKC-030: opening balance must exclude period-start-day transactions ----------
+
+  @Test
+  void trustOpening_excludesPeriodStartDayTransactions_statementSelfReconciles() {
+    // QA Day 61 repro: the matter's FIRST trust deposit (R50 000) lands ON the statement period
+    // start date. The rendered SoA printed "Opening balance: R50 000,00" while ALSO itemising
+    // that same deposit in the Deposits table — double-counting it, so the statement failed
+    // self-reconciliation (50 000 + 120 000 − 70 000 ≠ 50 000). DB-true opening before the
+    // period is R0.
+    //
+    // Stubs mirror the REAL collaborator semantics that produced the bug:
+    //  - getClientBalanceAsOfDate is date-INCLUSIVE (TrustTransactionRepository query uses
+    //    `t.transactionDate <= :asOfDate`), so at periodStart it returns 50 000 — already
+    //    counting the same-day deposit.
+    //  - getClientLedgerStatement computes its own opening at startDate.minusDays(1) and its
+    //    closing as opening + itemised lines — self-reconciling by construction.
+    // The builder must take BOTH balances from the ledger statement, never from the inclusive
+    // as-of-date query.
+    var project = projectWithCustomer("Dlamini v RAF", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Dlamini")));
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of(trustAccountId));
+    // Date-inclusive as-of balances (the buggy source): periodStart already includes the
+    // same-day deposit. Lenient because the fixed builder must never call this method.
+    lenient()
+        .when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
+        .thenReturn(new BigDecimal("50000.00"));
+    lenient()
+        .when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
+        .thenReturn(new BigDecimal("50000.00"));
+    // The ledger statement itemises the period-start-day deposit and carries the DB-true
+    // opening (R0) and self-reconciled closing (0 + 50 000 + 70 000 − 70 000 = 50 000).
+    var startDayDeposit = ledgerLine("DEPOSIT", new BigDecimal("50000.00"), periodStart);
+    var midPeriodDeposit =
+        ledgerLine("DEPOSIT", new BigDecimal("70000.00"), LocalDate.of(2026, 4, 10));
+    var payment = ledgerLine("PAYMENT", new BigDecimal("70000.00"), LocalDate.of(2026, 4, 20));
+    when(clientLedgerService.getClientLedgerStatement(
+            customerId, trustAccountId, periodStart, periodEnd))
+        .thenReturn(
+            new LedgerStatementResponse(
+                BigDecimal.ZERO,
+                new BigDecimal("50000.00"),
+                List.of(startDayDeposit, midPeriodDeposit, payment)));
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> trust = (Map<String, Object>) context.get("trust");
+    @SuppressWarnings("unchecked")
+    List<Map<String, Object>> deposits = (List<Map<String, Object>>) trust.get("deposits");
+    @SuppressWarnings("unchecked")
+    List<Map<String, Object>> payments = (List<Map<String, Object>>) trust.get("payments");
+
+    // The period-start-day deposit appears exactly once, in the itemised deposits.
+    assertThat(deposits).hasSize(2);
+    assertThat(payments).hasSize(1);
+
+    // Opening must EXCLUDE the same-day deposit (DB-true opening is R0, not R50 000).
+    BigDecimal opening = (BigDecimal) trust.get("opening_balance");
+    BigDecimal closing = (BigDecimal) trust.get("closing_balance");
+    assertThat(opening)
+        .as("Opening balance must exclude transactions dated ON the period start (LZKC-030)")
+        .isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(closing).isEqualByComparingTo(new BigDecimal("50000.00"));
+
+    // Self-reconciliation invariant: opening + Σdeposits − Σpayments == closing.
+    BigDecimal depositTotal = sumAmounts(deposits);
+    BigDecimal paymentTotal = sumAmounts(payments);
+    assertThat(opening.add(depositTotal).subtract(paymentTotal))
+        .as("Section 86 statement must self-reconcile: opening + deposits − payments == closing")
+        .isEqualByComparingTo(closing);
+
+    // The date-inclusive as-of-date query must never be consulted for the SoA trust block —
+    // it is the exact source of the double-count.
+    verify(clientLedgerService, never()).getClientBalanceAsOfDate(any(), any(), any());
+  }
+
+  private static BigDecimal sumAmounts(List<Map<String, Object>> rows) {
+    return rows.stream()
+        .map(r -> new BigDecimal(r.get("amount").toString()))
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 
   // ---------- helpers ----------
@@ -1234,15 +1288,12 @@ class StatementOfAccountContextBuilderTest {
   }
 
   private LedgerStatementLine ledgerLine(String type, BigDecimal amount) {
+    return ledgerLine(type, amount, LocalDate.of(2026, 4, 15));
+  }
+
+  private LedgerStatementLine ledgerLine(String type, BigDecimal amount, LocalDate date) {
     return new LedgerStatementLine(
-        UUID.randomUUID(),
-        type,
-        amount,
-        "REF",
-        "desc",
-        LocalDate.of(2026, 4, 15),
-        "POSTED",
-        BigDecimal.ZERO);
+        UUID.randomUUID(), type, amount, "REF", "desc", date, "POSTED", BigDecimal.ZERO);
   }
 
   private Invoice invoiceWithStatusTotalAndIssueDate(

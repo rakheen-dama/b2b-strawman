@@ -393,10 +393,11 @@ class BillingRunNotificationTest {
     var periodFormat = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
     var expectedFallback =
         "%s – %s".formatted(periodFormat.format(periodFrom), periodFormat.format(periodTo));
+    // Spec acceptance (LZKC-032.md:31): the period fallback renders UNQUOTED —
+    // e.g. `Billing run 01 Jul 2026 – 31 Jul 2026 completed — 1 invoice generated`
     assertThat(titles.getFirst())
-        .contains(expectedFallback)
-        .contains("1 invoice generated")
-        .doesNotContain("\"\"");
+        .isEqualTo("Billing run %s completed — 1 invoice generated".formatted(expectedFallback))
+        .doesNotContain("\"");
   }
 
   private record AuditRow(

@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -411,45 +412,64 @@ class NotificationEventHandlerIntegrationTest {
 
   // --- LZKC-032: billing-run notification titles (blank-name fallback + pluralisation) ---
 
+  private static final LocalDate PERIOD_FROM = LocalDate.of(2026, 7, 1);
+  private static final LocalDate PERIOD_TO = LocalDate.of(2026, 7, 31);
+
   @Test
-  void billingRunCompleted_blankName_singularCount_rendersReadableTitle() {
+  void billingRunCompleted_blankName_fallsBackToUnquotedPeriod_singularCount() {
     var runId = UUID.randomUUID();
-    eventPublisher.publishEvent(new BillingRunCompletedEvent(runId, "", 1, tenantSchema, ORG_ID));
+    eventPublisher.publishEvent(
+        new BillingRunCompletedEvent(runId, "", PERIOD_FROM, PERIOD_TO, 1, tenantSchema, ORG_ID));
 
     assertThat(billingRunNotificationTitle("BILLING_RUN_COMPLETED", runId))
-        .isEqualTo("Billing run completed — 1 invoice generated");
+        .isEqualTo("Billing run 01 Jul 2026 – 31 Jul 2026 completed — 1 invoice generated");
   }
 
   @Test
   void billingRunCompleted_namedRun_pluralCount_keepsQuotedName() {
     var runId = UUID.randomUUID();
     eventPublisher.publishEvent(
-        new BillingRunCompletedEvent(runId, "July Run", 2, tenantSchema, ORG_ID));
+        new BillingRunCompletedEvent(
+            runId, "July Run", PERIOD_FROM, PERIOD_TO, 2, tenantSchema, ORG_ID));
 
     assertThat(billingRunNotificationTitle("BILLING_RUN_COMPLETED", runId))
         .isEqualTo("Billing run \"July Run\" completed — 2 invoices generated");
   }
 
   @Test
-  void billingRunFailures_blankName_singleFailure_rendersReadableTitle() {
+  void billingRunCompleted_blankNameAndNullPeriod_rendersPlainLabel() {
+    // Defensive branch: the production publisher always supplies the period, but the handler
+    // must never render empty quotes even for an unsanitised publisher.
     var runId = UUID.randomUUID();
-    eventPublisher.publishEvent(new BillingRunFailuresEvent(runId, "", 1, tenantSchema, ORG_ID));
+    eventPublisher.publishEvent(
+        new BillingRunCompletedEvent(runId, "", null, null, 1, tenantSchema, ORG_ID));
 
-    assertThat(billingRunNotificationTitle("BILLING_RUN_FAILURES", runId))
-        .isEqualTo("Billing run had 1 failure");
+    assertThat(billingRunNotificationTitle("BILLING_RUN_COMPLETED", runId))
+        .isEqualTo("Billing run completed — 1 invoice generated");
   }
 
   @Test
-  void billingRunSent_nullName_singularCount_rendersReadableTitle() {
+  void billingRunFailures_blankName_singleFailure_rendersPeriodFallback() {
+    var runId = UUID.randomUUID();
+    eventPublisher.publishEvent(
+        new BillingRunFailuresEvent(runId, "", PERIOD_FROM, PERIOD_TO, 1, tenantSchema, ORG_ID));
+
+    assertThat(billingRunNotificationTitle("BILLING_RUN_FAILURES", runId))
+        .isEqualTo("Billing run 01 Jul 2026 – 31 Jul 2026 had 1 failure");
+  }
+
+  @Test
+  void billingRunSent_nullName_singularCount_rendersPeriodFallback() {
     var runId = UUID.randomUUID();
     // BillingRunSentEvent is handled AFTER_COMMIT — publish inside a transaction
     transactionTemplate.executeWithoutResult(
         tx ->
             eventPublisher.publishEvent(
-                new BillingRunSentEvent(runId, null, 1, tenantSchema, ORG_ID)));
+                new BillingRunSentEvent(
+                    runId, null, PERIOD_FROM, PERIOD_TO, 1, tenantSchema, ORG_ID)));
 
     assertThat(billingRunNotificationTitle("BILLING_RUN_SENT", runId))
-        .isEqualTo("Billing run — 1 invoice sent");
+        .isEqualTo("Billing run 01 Jul 2026 – 31 Jul 2026 — 1 invoice sent");
   }
 
   /** Fetches the owner's notification title for the given type + billing-run reference id. */

@@ -675,6 +675,19 @@
 | 592 | Debtor Triage + Trust-Aware Advisor Seam | Backend + Frontend | 589 (592B: 591B) | M | 592A, 592B | **Done** — 592A (PR #1543), 592B (PR #1544) |
 | 593 | Weekly Cash Digest | Backend | 589A, 592A | L | 593A, 593B | **Done** — 593A, 593B (PR #1545) |
 | 594 | QA Capstone — Observed End-to-End Lifecycle | E2E/Process | 588–593 | M | 594A | **Done** (PR #1546) |
+| **Phase 86 — Subtraction: Legal-Only Kazi, Archive the Horizontal Platform, Squash Migrations** | | | | | | See [tasks/phase86-subtraction-legal-only.md](tasks/phase86-subtraction-legal-only.md) |
+| 595 | Archive Precondition + Baseline Metrics + Confirmed Seam List | Process / read-only + hook | — | S | 595A, 595B | |
+| 596 | Remove `crm` (Phase 80) + Pipeline UI | Backend + Frontend (split) | 595 | M | 596A, 596B, 596C | |
+| 597 | Remove `proposal` (Phase 32) + Legacy In-App Portal + Portal Proposals | Backend + Frontend + Portal (split) | 596 | L | 597A, 597B, 597C, 597D | |
+| 598 | Remove `retainer` (Phase 17) + Portal Retainer | Backend + Frontend + Portal (split) | 597 | L | 598A, 598B, 598C, 598D | |
+| 599 | Remove `capacity` (Phase 38) + Resources/Utilization UI | Backend + Frontend (split) | 598 | M | 599A, 599B, 599C | |
+| 600 | Remove `schedule` recurring half (Phase 16/30), re-home Time Reminders | Backend + Frontend (split) | 599 | M | 600A, 600B, 600C | |
+| 601 | Remove `assistant` (Phases 45/52/70), re-home `provider` — AI consolidation | Backend + Frontend (split) | 600 | L | 601A, 601B, 601C, 601D | |
+| 602 | Remove PayFast Platform Subscription Path (Phase 57) | Backend + Frontend (split) | 595 (parallel with 596–601) | M | 602A, 602B, 602C | |
+| 603 | Remove Thymeleaf Dev Harness (Phase 7) + `docs/` Site (Phase 59) + docsLink policy | Backend + Ops + Frontend (split) | 595 (parallel with 596–602) | M | 603A, 603B, 603C | |
+| 604 | Single Profile: non-legal profiles/packs/seeders/demo, `deadline/`, automation builder, terminology entries | Backend + Frontend + Portal (split) | 601, 602, 603 | L | 604A, 604B, 604C, 604D, 604E, 604F | |
+| 605 | Migration Squash → tenant V1 / global V1 | Backend + Ops | 596–604 merged, `main` verify clean | L | 605A, 605B, 605C | |
+| 606 | Documentation Sweep + ADR Supersession + QA Capstone | Docs + E2E/Process | 605 | M | 606A, 606B, 606C | |
 
 
 ---

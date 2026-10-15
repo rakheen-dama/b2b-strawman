@@ -88,7 +88,7 @@ Resurrection (ADR-330, recorded so it is not re-derived): `git fetch --tags orig
 | 18 | `VerticalModuleRegistry` modules (total / vertical / horizontal) | **12 / 8 / 4** (pins `VerticalModuleRegistryTest:22,192,98`) | 12 / 8 / 4 | yes | |
 | 19 | Frontend `page.tsx` | **126** | 126 | yes | |
 | 20 | Portal `page.tsx` | **22** | 22 | yes | |
-| 21 | Full backend verify wall time (`backend/scripts/verify.sh`) | `<ORCHESTRATOR: fill from timed verify>` | — | — | |
+| 21 | Full backend verify wall time (`backend/scripts/verify.sh`) | 1555 s (25 min 55 s) — `backend/scripts/verify.sh -q` on 2026-10-16, 6084 tests run, 2 pre-existing calendar-rolling failures (PR #1563) | — | — | |
 
 Note on row 10: the main repo has a generated, git-ignored `frontend/next-env.d.ts` (one file, six lines) that the fresh worktree does not, so it accounts for the whole difference from the scout's count. `git ls-files frontend | grep -cE '\.(ts|tsx)$'` = 1,584 in both trees, so 606C should re-run row 10 in a tree without `next-env.d.ts`, or with `git ls-files`.
 

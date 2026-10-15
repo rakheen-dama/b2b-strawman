@@ -22,9 +22,11 @@
 
 set -euo pipefail
 
-INPUT="${1:-}"
-if [[ -z "$INPUT" ]]; then
-  # Hook called without input — let it pass; the actual hook receives stdin.
+# Claude Code pipes the tool-call payload on stdin and passes NO positional args
+# (.claude/settings.json). The previous "$1" guard therefore exited before reading
+# stdin on every real invocation, so the gate never enforced. Only skip when stdin
+# is an interactive terminal (manual invocation with nothing piped).
+if [[ -t 0 ]]; then
   exit 0
 fi
 

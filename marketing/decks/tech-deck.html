@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kazi — Tech Presentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#0b0f1a; --card:#111827; --ink:#f8fafc; --muted:#94a3b8; --line:rgba(255,255,255,.09); --teal:#2dd4bf; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans",system-ui,sans-serif; }
+  .slide { display:none; height:100vh; padding:7vh 9vw; flex-direction:column; justify-content:center; position:relative; overflow:hidden;
+    background: radial-gradient(700px 400px at 85% -10%, rgba(45,212,191,.08), transparent 60%), var(--bg); }
+  .slide.active { display:flex; }
+  .grid-bg { position:absolute; inset:0; opacity:.04; pointer-events:none;
+    background-image:linear-gradient(to right,#fff 1px,transparent 1px),linear-gradient(to bottom,#fff 1px,transparent 1px);
+    background-size:64px 64px; }
+  .kicker { display:inline-flex; align-items:center; gap:.5rem; font-size:.85rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); margin-bottom:1.4rem; }
+  .kicker::before { content:""; width:2rem; height:2px; background:var(--teal); }
+  h1 { font-family:Sora,sans-serif; font-weight:700; font-size:clamp(2.1rem,5vw,4rem); line-height:1.08; letter-spacing:-.02em; }
+  h2 { font-family:Sora,sans-serif; font-weight:700; font-size:clamp(1.7rem,3.6vw,2.8rem); line-height:1.12; letter-spacing:-.02em; margin-bottom:2rem; max-width:26ch; }
+  .accent { background:linear-gradient(90deg,#2dd4bf,#5eead4); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .lead { font-size:clamp(1.05rem,1.6vw,1.3rem); color:var(--muted); max-width:56ch; line-height:1.6; }
+  .cards { display:grid; gap:1.1rem; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:1.3rem 1.4rem; }
+  .card h3 { font-family:Sora,sans-serif; font-size:1.05rem; font-weight:600; margin-bottom:.5rem; }
+  .card p { font-size:.95rem; color:var(--muted); line-height:1.55; }
+  ul.big { list-style:none; display:grid; gap:.95rem; max-width:66ch; }
+  ul.big li { padding-left:1.6rem; position:relative; font-size:clamp(.98rem,1.4vw,1.18rem); color:#cbd5e1; line-height:1.55; }
+  ul.big li::before { content:"→"; position:absolute; left:0; color:var(--teal); }
+  ul.big li strong { color:var(--ink); }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1.2rem; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:1.5rem; }
+  .stat b { display:block; font-family:"JetBrains Mono",monospace; font-size:clamp(1.8rem,3vw,2.6rem); font-weight:700; color:var(--teal); letter-spacing:-.02em; }
+  .stat span { font-size:.92rem; color:var(--muted); }
+  code, .mono { font-family:"JetBrains Mono",monospace; }
+  .pipeline { display:flex; flex-wrap:wrap; gap:.55rem; align-items:center; margin:1.2rem 0 1.8rem; }
+  .pipeline span { background:var(--card); border:1px solid rgba(45,212,191,.3); border-radius:10px; padding:.5rem .9rem; font-family:"JetBrains Mono",monospace; font-size:.92rem; color:var(--teal); }
+  .pipeline i { color:#475569; font-style:normal; }
+  .footer { position:absolute; bottom:2.2rem; left:9vw; right:9vw; display:flex; justify-content:space-between; font-size:.8rem; color:#475569; font-family:"JetBrains Mono",monospace; }
+  .counter { position:fixed; bottom:.7rem; right:9vw; font-family:"JetBrains Mono",monospace; font-size:.75rem; color:#475569; z-index:5; }
+  .hint { position:fixed; bottom:.7rem; left:9vw; font-family:"JetBrains Mono",monospace; font-size:.75rem; color:#334155; z-index:5; }
+  @media print { .slide{display:flex; height:100vh; page-break-after:always;} .hint,.counter{display:none;} }
+</style>
+</head>
+<body>
+
+<section class="slide active"><div class="grid-bg"></div>
+  <div class="kicker">kazi.africa</div>
+  <h1>A production SaaS built by<br><span class="accent">one person and a fleet of agents</span>.</h1>
+  <p class="lead" style="margin-top:1.6rem">Kazi: practice management for South African law firms.<br>The product is real. The build process is the interesting part.</p>
+  <div class="footer"><span>Kazi · engineering story</span><span>hello@kazi.africa</span></div>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">The product, in one slide</div>
+  <h2>Multi-tenant practice management</h2>
+  <ul class="big">
+    <li>Matters, time → fee notes → payments → collections — the full revenue engine.</li>
+    <li><strong>LPA s86 trust accounting</strong> — approval-gated payments, continuous three-way reconciliation, immutable audit.</li>
+    <li>FICA/POPIA compliance, document generation, client portal, Xero integration.</li>
+    <li>Lighthouse vertical: <strong>SA small law firms</strong> — chosen because statutory trust accounting is the hardest fork.</li>
+  </ul>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">Receipts</div>
+  <h2>The numbers <span class="mono" style="font-size:.55em;color:#475569">(checkable in git)</span></h2>
+  <div class="stats">
+    <div class="stat"><b>~18</b><span>months, one developer</span></div>
+    <div class="stat"><b>84</b><span>phases shipped</span></div>
+    <div class="stat"><b>1,500+</b><span>merged PRs</span></div>
+    <div class="stat"><b>~285</b><span>architecture decision records</span></div>
+    <div class="stat"><b>135+</b><span>tenant schema migrations</span></div>
+    <div class="stat"><b>3</b><span>deployable apps, one monorepo</span></div>
+  </div>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">Architecture</div>
+  <h2>Deliberately boring choices, executed deeply</h2>
+  <div class="cards">
+    <div class="card"><h3>Frontend + portal</h3><p>Next.js 16 · React 19 · TypeScript · Tailwind v4 · Shadcn — app shell and a separate client portal.</p></div>
+    <div class="card"><h3>Backend</h3><p>Spring Boot 4 · <strong>Java 25</strong> · Maven. Gateway BFF in front, Keycloak OIDC (orgs, RBAC).</p></div>
+    <div class="card"><h3>Data</h3><p>PostgreSQL 16, <strong>schema-per-tenant</strong> via Hibernate + Flyway. S3 for documents.</p></div>
+    <div class="card"><h3>Repo</h3><p>pnpm workspace monorepo — frontend, portal, backend, shared UI/domain packages, infra.</p></div>
+  </div>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">Isolation</div>
+  <h2>Schema-per-tenant, <span class="accent">all the way down</span></h2>
+  <ul class="big">
+    <li>One Postgres schema per firm — a trust ledger is the last place you want a missing <code>WHERE</code> clause.</li>
+    <li>Tenant context on Java 25 <strong><code>ScopedValue</code></strong> — structured, immutable, virtual-thread-friendly. Not ThreadLocal.</li>
+    <li>Flyway migrates every tenant schema; provisioning a firm is an API call.</li>
+    <li>Trade-off owned: migration fan-out cost vs. blast-radius containment. For compliance-heavy verticals, <strong>isolation wins</strong>.</li>
+  </ul>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">Product thesis</div>
+  <h2>Horizontal platform, <span class="accent">vertical forks</span></h2>
+  <ul class="big">
+    <li>The foundation is horizontal: projects, customers, time, billing, documents, audit, portal.</li>
+    <li>Verticals are <strong>profile packs</strong> — terminology, modules, templates, compliance packs (legal-za: trust accounting, FICA, court calendar; accounting-za; consulting-za).</li>
+    <li>A module registry + capability-based RBAC gate vertical surface per tenant.</li>
+    <li>Legal was picked as lighthouse <strong>because it's the hardest</strong> — surviving statutory trust accounting validates the foundation for every easier fork.</li>
+  </ul>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">The new part</div>
+  <h2>An <span class="accent">MCP server</span> over the practice</h2>
+  <ul class="big">
+    <li>A firm's staff point <strong>their own Claude</strong> at their practice data — OAuth + per-firm POPIA consent, read-only by default.</li>
+    <li>Distributed skill pack (<code>kazi-legal-za</code>): fee-note drafting, s86 trust screening, FICA gap review, email filing, intake triage.</li>
+    <li>Write-back is <strong>gated</strong>: the AI proposes, a human approves inside the app — a first-class "AI gate" entity, fully audited.</li>
+    <li>Same service layer + read-model as the UI. No parallel data path. No prompt-injected SQL.</li>
+  </ul>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">Process</div>
+  <h2>An agent fleet with a constitution</h2>
+  <div class="pipeline">
+    <span>/ideate</span><i>→</i><span>/architecture</span><i>→</i><span>/breakdown</span><i>→</i><span>/phase</span><i>→</i><span>/epic</span>
+  </div>
+  <ul class="big">
+    <li>Conversation → requirements → ADRs → epics → merged PRs, each step a versioned skill in the repo.</li>
+    <li>Each epic: an agent in an isolated git worktree; scout → builder pipelines; the orchestrator owns merges.</li>
+    <li>Every agent-authored PR passes independent review gates before merge.</li>
+    <li><strong>The dev process itself is code-reviewed.</strong></li>
+  </ul>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">The hard problem</div>
+  <h2>Keeping an agent fleet <span class="accent">honest</span></h2>
+  <ul class="big">
+    <li>Full <code>mvnw verify</code> + full frontend suite before merge — targeted tests never gate a merge.</li>
+    <li><strong>"PASS means observed"</strong> — QA agents drive a real browser against a real stack. Inferring pass from "code looks right" is forbidden.</li>
+    <li><strong>Reproduce-before-fix</strong> — no fix without a local repro. The spec might be wrong; the bug isn't.</li>
+    <li>A merge-gate hook <strong>physically blocks</strong> <code>gh pr merge</code> unless the bar is met.</li>
+    <li>Every correction becomes a standing rule in a lessons file. The ruleset is the asset.</li>
+  </ul>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">War stories</div>
+  <h2>What the process caught</h2>
+  <div class="cards">
+    <div class="card"><h3>The "green" that wasn't</h3><p>Agents ran same-package tests only; a test elsewhere broke. Rule since: full verify or it didn't happen.</p></div>
+    <div class="card"><h3>PASS by vibes</h3><p>Agents claimed PASS on behaviour nobody observed. Rule since: browser-observed evidence or it's DEFERRED.</p></div>
+    <div class="card"><h3>Debt-register landmines</h3><p>Recorded "known fixes" that would have broken prod. Rule since: register entries are hypotheses until reproduced.</p></div>
+  </div>
+  <p class="lead" style="margin-top:1.8rem">Agent throughput is easy. Agent <strong style="color:#f8fafc">trust</strong> is the engineering problem.</p>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">Trajectory</div>
+  <h2>Where it's going</h2>
+  <ul class="big">
+    <li><strong>Now:</strong> 2–3 design-partner firms this quarter — the bottleneck is adoption, not capability. Feature freeze says so.</li>
+    <li><strong>Next build:</strong> auditor-defensible data take-on — migration wizard with trust control totals that must tie to the bank, to the cent.</li>
+    <li><strong>Then:</strong> the fork thesis — same foundation, accounting firms and consultancies.</li>
+    <li>Open questions worth arguing about: WIP take-on, mail/calendar sync, multi-region.</li>
+  </ul>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">Work with me</div>
+  <h2>Come argue with the process</h2>
+  <ul class="big">
+    <li>Looking for engineers curious about <strong>agent-orchestrated development at production quality</strong> — and possibly a first hire as pilots convert.</li>
+    <li>What you get: a codebase with ~285 ADRs of recorded <em>why</em>, a build process that survives scrutiny, a real vertical market.</li>
+    <li>The repo receipts are real. I'll show you anything.</li>
+  </ul>
+  <p class="lead" style="margin-top:2rem">hello@kazi.africa &nbsp;·&nbsp; kazi.africa</p>
+  <div class="footer"><span>Kazi · b2mash</span><span>&nbsp;</span></div>
+</section>
+
+<div class="hint">← → to navigate · P to print</div>
+<div class="counter" id="counter"></div>
+<script>
+  const slides=[...document.querySelectorAll('.slide')];let i=0;
+  const show=n=>{slides[i].classList.remove('active');i=(n+slides.length)%slides.length;slides[i].classList.add('active');
+    document.getElementById('counter').textContent=(i+1)+' / '+slides.length;};
+  show(0);
+  addEventListener('keydown',e=>{
+    if(['ArrowRight','PageDown',' '].includes(e.key))show(i+1);
+    else if(['ArrowLeft','PageUp'].includes(e.key))show(i-1);
+    else if(e.key==='Home')show(0);else if(e.key==='End')show(slides.length-1);
+    else if(e.key==='p'||e.key==='P')print();});
+  addEventListener('click',e=>{if(e.clientX>innerWidth/2)show(i+1);else show(i-1);});
+</script>
+</body>
+</html>

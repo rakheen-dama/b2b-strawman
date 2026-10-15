@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kazi — Exec Presentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#0b0f1a; --card:#111827; --ink:#f8fafc; --muted:#94a3b8; --line:rgba(255,255,255,.09); --teal:#2dd4bf; --teal-dk:#0d9488; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans",system-ui,sans-serif; }
+  .slide { display:none; height:100vh; padding:7vh 9vw; flex-direction:column; justify-content:center; position:relative; overflow:hidden;
+    background: radial-gradient(700px 400px at 85% -10%, rgba(45,212,191,.08), transparent 60%), var(--bg); }
+  .slide.active { display:flex; }
+  .grid-bg { position:absolute; inset:0; opacity:.04; pointer-events:none;
+    background-image:linear-gradient(to right,#fff 1px,transparent 1px),linear-gradient(to bottom,#fff 1px,transparent 1px);
+    background-size:64px 64px; }
+  .kicker { display:inline-flex; align-items:center; gap:.5rem; font-size:.85rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); margin-bottom:1.4rem; }
+  .kicker::before { content:""; width:2rem; height:2px; background:var(--teal); }
+  h1 { font-family:Sora,sans-serif; font-weight:700; font-size:clamp(2.2rem,5.2vw,4.2rem); line-height:1.08; letter-spacing:-.02em; }
+  h2 { font-family:Sora,sans-serif; font-weight:700; font-size:clamp(1.8rem,3.8vw,3rem); line-height:1.12; letter-spacing:-.02em; margin-bottom:2.2rem; max-width:22ch; }
+  .accent { background:linear-gradient(90deg,#2dd4bf,#5eead4); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .lead { font-size:clamp(1.05rem,1.6vw,1.35rem); color:var(--muted); max-width:52ch; line-height:1.6; }
+  .cards { display:grid; gap:1.1rem; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:1.4rem 1.5rem; }
+  .card h3 { font-family:Sora,sans-serif; font-size:1.08rem; font-weight:600; margin-bottom:.55rem; color:var(--ink); }
+  .card p { font-size:.98rem; color:var(--muted); line-height:1.55; }
+  .num { font-family:"JetBrains Mono",monospace; color:var(--teal); font-size:.85rem; display:block; margin-bottom:.7rem; }
+  ul.big { list-style:none; display:grid; gap:1rem; max-width:62ch; }
+  ul.big li { padding-left:1.6rem; position:relative; font-size:clamp(1rem,1.5vw,1.25rem); color:#cbd5e1; line-height:1.55; }
+  ul.big li::before { content:"→"; position:absolute; left:0; color:var(--teal); }
+  ul.big li strong { color:var(--ink); }
+  .pill { display:inline-block; border:1px solid rgba(45,212,191,.35); background:rgba(45,212,191,.1); color:var(--teal); border-radius:999px; padding:.4rem 1rem; font-size:.9rem; font-weight:500; margin:.25rem .3rem .25rem 0; }
+  .footer { position:absolute; bottom:2.2rem; left:9vw; right:9vw; display:flex; justify-content:space-between; font-size:.8rem; color:#475569; font-family:"JetBrains Mono",monospace; }
+  .counter { position:fixed; bottom:.7rem; right:9vw; font-family:"JetBrains Mono",monospace; font-size:.75rem; color:#475569; z-index:5; }
+  .hint { position:fixed; bottom:.7rem; left:9vw; font-family:"JetBrains Mono",monospace; font-size:.75rem; color:#334155; z-index:5; }
+  .flow { display:flex; flex-wrap:wrap; gap:.6rem; align-items:center; margin-top:1.6rem; }
+  .flow span { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:.55rem .95rem; font-size:.92rem; color:#cbd5e1; }
+  .flow em { color:var(--teal); font-style:normal; }
+  @media print { .slide{display:flex; height:100vh; page-break-after:always;} .hint,.counter{display:none;} }
+</style>
+</head>
+<body>
+
+<section class="slide active"><div class="grid-bg"></div>
+  <div class="kicker">kazi.africa</div>
+  <h1>Run your firm without<br>the <span class="accent">month-end dread</span>.</h1>
+  <p class="lead" style="margin-top:1.6rem">Kazi — practice management for South African law firms.<br>Matters, fee notes, trust accounting, FICA. And your own AI, working on your practice.</p>
+  <div class="footer"><span>Kazi · design-partner briefing</span><span>hello@kazi.africa</span></div>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">The problem</div>
+  <h2>The three worst days of your month</h2>
+  <div class="cards">
+    <div class="card"><span class="num">01</span><h3>The fee-note run</h3><p>An evening — or three — reconstructing what everyone actually did from timesheets, sticky notes, and memory.</p></div>
+    <div class="card"><span class="num">02</span><h3>The trust reconciliation</h3><p>An Excel file, a bank statement, and hope the three-way tie works out. If it doesn't, that's a Legal Practice Act problem, not an admin problem.</p></div>
+    <div class="card"><span class="num">03</span><h3>Debtors &amp; FICA</h3><p>Last month's fee notes, unpaid, with nobody whose job it is to chase them. FICA files that live in a cabinet.</p></div>
+  </div>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">What Kazi is</div>
+  <h2>One system for the firm's back office</h2>
+  <ul class="big">
+    <li><strong>Matters &amp; time</strong> — everything captured as it happens, not reconstructed at month-end.</li>
+    <li><strong>Fee notes</strong> — drafted from recorded time, in your house style, VAT and contingency caps applied.</li>
+    <li><strong>Trust accounting</strong> — under LPA s86, continuously reconciled.</li>
+    <li><strong>FICA</strong> — a per-client checklist, not a filing cabinet.</li>
+    <li><strong>Debtors</strong> — statements and follow-ups on a schedule, not when someone remembers.</li>
+    <li><strong>Client portal</strong> — clients see matter status and documents; fewer "any update?" calls.</li>
+  </ul>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">Compliance</div>
+  <h2>Trust accounting you can <span class="accent">defend</span></h2>
+  <div class="cards">
+    <div class="card"><h3>Approval-gated payments</h3><p>No money leaves trust without an explicit, recorded approval.</p></div>
+    <div class="card"><h3>Immutable audit trail</h3><p>Every entry, every change, every actor — recorded and unchangeable.</p></div>
+    <div class="card"><h3>Three-way reconciliation</h3><p>Bank ↔ cashbook ↔ client ledgers, held continuously — not once a month in Excel.</p></div>
+    <div class="card"><h3>Auditor-ready</h3><p>When your auditor arrives, the file is a download, not a scramble.</p></div>
+  </div>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">Live demo</div>
+  <h2>The part <span class="accent">nobody else has</span></h2>
+  <p class="lead" style="margin-bottom:1.4rem">Point your own AI at your practice — grounded in your firm's real data.</p>
+  <div>
+    <span class="pill">Draft the month's fee notes from unbilled time</span>
+    <span class="pill">Screen the trust account against s86</span>
+    <span class="pill">Check a client's FICA gaps &amp; draft the request</span>
+    <span class="pill">File an email into the right matter</span>
+  </div>
+  <p class="lead" style="margin-top:2rem"><strong style="color:#f8fafc">The AI drafts. A human approves — inside Kazi.</strong><br>Your data, your AI, your approval.</p>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">Migration</div>
+  <h2>Switching is <span class="accent">our job</span>, not yours</h2>
+  <ul class="big">
+    <li>You provide exports — GhostPractice, AJS, Lexpro, or your bookkeeper's spreadsheets. CSV is fine.</li>
+    <li>We migrate your <strong>clients, open matters, debtor balances, and trust balances</strong>.</li>
+    <li>The trust take-on is auditor-defensible: nothing commits until client balances tie to your bank balance at cutover — <strong>to the cent</strong>.</li>
+    <li>You receive a full take-on report for your records and your auditor.</li>
+  </ul>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">Continuity</div>
+  <h2>Your data is <span class="accent">always yours</span></h2>
+  <div class="cards">
+    <div class="card"><span class="num">01</span><h3>Full export, any time</h3><p>By you, from the product — clients, matters, documents, ledgers. Built, not promised.</p></div>
+    <div class="card"><span class="num">02</span><h3>Documented take-off path</h3><p>If you leave, you leave with everything, in usable formats.</p></div>
+    <div class="card"><span class="num">03</span><h3>Exit clause in writing</h3><p>Written into the pilot agreement. You should stay because it's good — not because you're stuck.</p></div>
+  </div>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">The offer</div>
+  <h2>The design-partner pilot</h2>
+  <ul class="big">
+    <li><strong>Free for six months</strong> — full product, no feature holdbacks.</li>
+    <li><strong>Founder-run take-on and onboarding</strong> — I move your data personally.</li>
+    <li><strong>Runs in parallel</strong> with your current system — no burned bridges.</li>
+    <li><strong>Full export + exit clause</strong> if you walk away.</li>
+  </ul>
+  <p class="lead" style="margin-top:1.8rem">Two to three firms only — each gets white-glove treatment.</p>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">In return</div>
+  <h2>What we ask</h2>
+  <ul class="big">
+    <li><strong>30 minutes of feedback a week</strong> — you shape what gets built next.</li>
+    <li><strong>A reference at launch</strong> — with your approval, when it's earned.</li>
+  </ul>
+  <p class="lead" style="margin-top:2rem">After the pilot: a <strong style="color:#f8fafc">flat firm-level fee</strong> — R2,500–R5,000/month by firm size.<br>Unlimited users. No per-seat pricing.</p>
+</section>
+
+<section class="slide"><div class="grid-bg"></div>
+  <div class="kicker">Next step</div>
+  <h2>Live within weeks</h2>
+  <div class="flow">
+    <span><em>1</em> · One hour with your bookkeeper + sample exports</span>
+    <span><em>2</em> · We confirm the migration plan</span>
+    <span><em>3</em> · Pilot letter</span>
+    <span><em>4</em> · You're live</span>
+  </div>
+  <p class="lead" style="margin-top:2.4rem">hello@kazi.africa &nbsp;·&nbsp; kazi.africa/legal</p>
+  <div class="footer"><span>Kazi · practice management for SA law firms</span><span>&nbsp;</span></div>
+</section>
+
+<div class="hint">← → to navigate · P to print</div>
+<div class="counter" id="counter"></div>
+<script>
+  const slides=[...document.querySelectorAll('.slide')];let i=0;
+  const show=n=>{slides[i].classList.remove('active');i=(n+slides.length)%slides.length;slides[i].classList.add('active');
+    document.getElementById('counter').textContent=(i+1)+' / '+slides.length;};
+  show(0);
+  addEventListener('keydown',e=>{
+    if(['ArrowRight','PageDown',' '].includes(e.key))show(i+1);
+    else if(['ArrowLeft','PageUp'].includes(e.key))show(i-1);
+    else if(e.key==='Home')show(0);else if(e.key==='End')show(slides.length-1);
+    else if(e.key==='p'||e.key==='P')print();});
+  addEventListener('click',e=>{if(e.clientX>innerWidth/2)show(i+1);else show(i-1);});
+</script>
+</body>
+</html>

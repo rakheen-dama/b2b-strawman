@@ -229,11 +229,13 @@ class PrescriptionTrackerServiceTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  // Create a RUNNING tracker
+                  // Create a RUNNING tracker. Cause-of-action date is relative to today so the
+                  // prescription date (~2 years out) stays well outside the 90-day WARNED window
+                  // that computeEffectiveStatus applies at query time.
                   prescriptionTrackerService.create(
                       new CreatePrescriptionTrackerRequest(
                           projectId,
-                          LocalDate.of(2024, 1, 1),
+                          LocalDate.now().minusYears(1),
                           "GENERAL_3Y",
                           null,
                           "Running tracker"),

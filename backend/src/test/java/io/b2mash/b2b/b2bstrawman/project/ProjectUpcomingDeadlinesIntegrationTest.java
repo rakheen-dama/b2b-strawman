@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtDate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtDateRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -87,9 +88,13 @@ class ProjectUpcomingDeadlinesIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  // Customer with FYE so DeadlineCalculationService produces rows for our matter
+                  // Customer with FYE so DeadlineCalculationService produces rows for our matter.
+                  // FYE is derived from today (end of next month) so the matter's tax-year
+                  // deadlines always fall inside the service's [today, today+365] window,
+                  // regardless of when the suite runs.
+                  var fye = YearMonth.now().plusMonths(1).atEndOfMonth();
                   var customer = createActiveCustomer("Acme Corp", "acme@test.com", memberId);
-                  customer.setCustomFields(Map.of("financial_year_end", "2025-02-28"));
+                  customer.setCustomFields(Map.of("financial_year_end", fye.toString()));
                   customer = customerRepository.saveAndFlush(customer);
                   customerId = customer.getId();
 
@@ -97,7 +102,7 @@ class ProjectUpcomingDeadlinesIntegrationTest {
                   var project = new Project("Acme Tax Matter", "Tax filing matter", memberId);
                   project.setCustomerId(customerId);
                   project.setWorkType("tax");
-                  project.setCustomFields(Map.of("tax_year", "2026"));
+                  project.setCustomFields(Map.of("tax_year", String.valueOf(fye.getYear())));
                   project = projectRepository.saveAndFlush(project);
                   projectId = project.getId();
 
@@ -138,8 +143,8 @@ class ProjectUpcomingDeadlinesIntegrationTest {
                   // the deadline-type registry — they need no seeding. The calculator's
                   // findLinkedProject() infers the link via project.workType == category AND
                   // project.customFields.tax_year == period_key. With workType="tax" and
-                  // tax_year="2026", every "tax"-category deadline for period "2026" will
-                  // surface as linkedProjectId == this matter.
+                  // tax_year=<FYE year>, every in-window "tax"-category deadline for that
+                  // period will surface as linkedProjectId == this matter.
                 }));
   }
 
@@ -162,8 +167,10 @@ class ProjectUpcomingDeadlinesIntegrationTest {
             result.getResponse().getContentAsString(),
             new com.fasterxml.jackson.core.type.TypeReference<>() {});
 
-    // 1 future court date + 3 regulatory deadlines linked to this matter (sars_provisional_1,
-    // sars_provisional_3, sars_annual_return for periodKey=2026 with FYE 2025-02-28).
+    // 1 future court date + 3 regulatory deadlines linked to this matter. With FYE = end of
+    // next month and periodKey = FYE year: sars_provisional_2 (FYE, ~1-2 months out),
+    // sars_provisional_1 (FYE+6m) and sars_provisional_3 (FYE+7m) all fall inside the 365-day
+    // lookahead; sars_annual_return (FYE+12m) falls just beyond it.
     org.assertj.core.api.Assertions.assertThat(rows).hasSizeGreaterThanOrEqualTo(3);
 
     long courtCount = rows.stream().filter(r -> "COURT".equals(r.get("type"))).count();

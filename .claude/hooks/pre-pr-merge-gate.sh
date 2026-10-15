@@ -56,6 +56,19 @@ if [[ -z "$HEAD_BRANCH" ]]; then
   exit 0
 fi
 
+# Phase 86 (subtraction) precondition: the horizontal platform must be archived
+# before any deletion PR lands. Scoped to phase86/* branches (CLAUDE.md §10).
+# Runs before the docs-only early allow below so docs-only phase86 PRs are checked too.
+# Fail-closed: if `git ls-remote` fails (e.g. no network) the pipeline fails and the merge is denied.
+# PHASE86_ARCHIVE_TAG exists only so the check can be exercised with a bogus tag name in tests.
+PHASE86_TAG="${PHASE86_ARCHIVE_TAG:-horizontal-platform-final}"
+if [[ "$HEAD_BRANCH" == phase86/* || "$HEAD_BRANCH" == epic/86-* ]]; then
+  if ! git -C "$REPO_ROOT" ls-remote --tags origin "refs/tags/$PHASE86_TAG" | grep -q -- "$PHASE86_TAG"; then
+    printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"pre-pr-merge-gate: tag horizontal-platform-final is not on origin. Phase 86 deletions require the archive tag (ADR-330)."}}\n'
+    exit 0
+  fi
+fi
+
 CHANGED_FILES="$(gh pr diff "$PR_NUM" --name-only 2>/dev/null || true)"
 
 needs_backend=false

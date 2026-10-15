@@ -54,3 +54,12 @@ Unchanged: SA small-to-medium law firms (legal-za). The horizontal multi-vertica
 - Tag `horizontal-platform-final` → commit `7f47f9629` on `main` (pushed to origin).
 - Mirror: https://github.com/rakheen-dama/kazi-horizontal-archive (private, archived/read-only; 1,257 branches + all tags; GitHub's `refs/pull/*` cannot be mirrored and were not).
 - Phase 86 slice 1 precondition is satisfied.
+
+## Archive verified (2026-10-16, Epic 595 / slice 595A)
+- `git ls-remote --tags origin refs/tags/horizontal-platform-final` → `22b528628fd618e6ca7c6324521341ebbc43ea01`
+  (annotated tag object); `horizontal-platform-final^{commit}` → `7f47f96295192aab1970b22a36231d73d4beada9`,
+  tagged 2026-10-15 22:17:47 +0200, an ancestor of `origin/main` (`37150816e` at verification,
+  2026-10-15T22:20:34Z UTC).
+- Mirror `https://github.com/rakheen-dama/kazi-horizontal-archive` resolves; `HEAD` → `7f47f9629…` (same commit).
+- Merge-gate hook now denies `gh pr merge` on `phase86/*` / `epic/86-*` branches when the tag is missing from
+  origin (`.claude/hooks/pre-pr-merge-gate.sh`, ADR-330 B1, §11.8.5). Record: `tasks/phase86-subtraction.md`.

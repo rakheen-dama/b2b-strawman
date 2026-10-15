@@ -49,3 +49,8 @@ Unchanged: SA small-to-medium law firms (legal-za). The horizontal multi-vertica
 - `/api/matters/{projectId}/closure` already exists: the wire vocabulary is mixed today, which is the
   symptom 87 fixes.
 - Outputs: `requirements/claude-code-prompt-phase86.md`, `requirements/claude-code-prompt-phase87.md`.
+
+## Archive executed (2026-10-15)
+- Tag `horizontal-platform-final` → commit `7f47f9629` on `main` (pushed to origin).
+- Mirror: https://github.com/rakheen-dama/kazi-horizontal-archive (private, archived/read-only; 1,257 branches + all tags; GitHub's `refs/pull/*` cannot be mirrored and were not).
+- Phase 86 slice 1 precondition is satisfied.

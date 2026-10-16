@@ -23,7 +23,7 @@ See the final section "Open Questions / verify-at-build-time" — every `verify`
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 595 | Archive Precondition + Baseline Metrics + Confirmed Seam List | Process / read-only + hook | — | S | 595A, 595B | **Done** (PR #1564) |
-| 596 | Remove `crm` (Phase 80) + Pipeline UI | Backend + Frontend (split) | 595 | M | 596A, 596B, 596C | Not started |
+| 596 | Remove `crm` (Phase 80) + Pipeline UI | Backend + Frontend (split) | 595 | M | 596A, 596B, 596C | **Done** (PR #1565) |
 | 597 | Remove `proposal` (Phase 32) + Legacy In-App Portal + Portal Proposals | Backend + Frontend + Portal (split) | 596 | L | 597A, 597B, 597C, 597D | Not started |
 | 598 | Remove `retainer` (Phase 17) + Portal Retainer | Backend + Frontend + Portal (split) | 597 | L | 598A, 598B, 598C, 598D | Not started |
 | 599 | Remove `capacity` (Phase 38) + Resources/Utilization UI | Backend + Frontend (split) | 598 | M | 599A, 599B, 599C | Not started |
@@ -115,9 +115,9 @@ KEPT (never touched by any slice — the compiler and McpReadOnlyRegistryTest gu
 
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
-| 1a | **596A** | Delete `crm/**` + `DealPipelinePack*` + `deal-pipeline-packs/`; tenant `V136__drop_crm.sql`; compile-critical seams (dashboard, provisioning, PackStatusSettings, reconciliation seeder, legal-za.json); snapshot pin −1; provisioning tests. | 602A, 603A |
-| 1b | **596B** | Residue seams: `ViewFilterService`, `SearchFilterHandler`, `AuditEventGroup.SALES`, `AuditEventTypeRegistry` 41→36 (+test), `DEAL_WON` notification, 4 `Capability` constants; `DashboardWithoutPipelineTest`. | 602B, 603B |
-| 1c | **596C** | (Frontend) pipeline routes/components/lib/api/crm.ts/schemas/nav/capabilities mirror; dashboard widget; e2e `pipeline/`; nav test. | 602C, 603C |
+| 1a | **596A** | Delete `crm/**` + `DealPipelinePack*` + `deal-pipeline-packs/`; tenant `V136__drop_crm.sql`; compile-critical seams (dashboard, provisioning, PackStatusSettings, reconciliation seeder, legal-za.json); snapshot pin −1; provisioning tests. | **Done** (PR #1565) |
+| 1b | **596B** | Residue seams: `ViewFilterService`, `SearchFilterHandler`, `AuditEventGroup.SALES`, `AuditEventTypeRegistry` 41→36 (+test), `DEAL_WON` notification, 4 `Capability` constants; `DashboardWithoutPipelineTest`. | **Done** (PR #1565) |
+| 1c | **596C** | (Frontend) pipeline routes/components/lib/api/crm.ts/schemas/nav/capabilities mirror; dashboard widget; e2e `pipeline/`; nav test. | **Done** (PR #1565) |
 | 1d | **597A** | Delete `proposal/**` + `ProposalSentEvent` + 3 email templates; tenant `V137__drop_proposals.sql` + global `V26__drop_portal_proposals.sql`; compile-critical seams (`DatabaseAuditService`, `DomainEvent`, automation trigger 4 files, `NotificationEventHandler`, `PortalEmailNotificationChannel`, prerequisite if it imports proposal, `TenantScopeBindingTest:199-202`); the 3 `PROPOSAL_SENT` automation-template rules + `LegalZaAutomationPackTest`/`ConsultingZaAutomationPackTest` pins (597A.5, 595B). | 602, 603 |
 | 1e | **597B** | Residue: `EmailTerminology`/`EmailContextBuilder`, `PrerequisiteContext.PROPOSAL_SEND` + branch + tests, `TemplateCategory.PROPOSAL`, audit 36→35, 4 notification types, portal notification prefs + digest assembler; `compose/seed/lib/proposals.sh` + `lifecycle-test.sh` calls; `EngagementLetterWithoutProposalIntegrationTest`; QA plan amendments. | 602, 603 |
 | 1f | **597C** | (Frontend) `proposals/**` routes, `components/proposals/**`, schemas/types, **entire `app/portal/**`**, `lib/api/portal-proposals.ts`, overflow-actions entry, template-category `PROPOSAL` mirror, nav, e2e `proposals/` + `portal/portal-proposal-acceptance.spec.ts` + legal-lifecycle amendments. | 602, 603 |
@@ -251,9 +251,9 @@ KEPT (never touched by any slice — the compiler and McpReadOnlyRegistryTest gu
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **596A** | 596A.1–596A.4 | ~10 surviving-file edits (+ ~45 deletions, 1 new migration) | Delete `crm/**` + seeder + packs; `V136__drop_crm.sql`; compile-critical seams; snapshot pin −1; provisioning tests. |
-| **596B** | 596B.1–596B.4 | ~9 edits (+1 new test) | View/search/audit/notification/capability residue; audit test 41→36; `DashboardWithoutPipelineTest`. |
-| **596C** | 596C.1–596C.4 | ~10 edits (+ ~15 deletions) | Pipeline routes/components/API/schemas/nav/capabilities mirror; dashboard widget; e2e `pipeline/`. |
+| **596A** | 596A.1–596A.4 | ~10 surviving-file edits (+ ~45 deletions, 1 new migration) | **Done** (PR #1565) — Delete `crm/**` + seeder + packs; `V136__drop_crm.sql`; compile-critical seams; snapshot pin −1; provisioning tests. |
+| **596B** | 596B.1–596B.4 | ~9 edits (+1 new test) | **Done** (PR #1565) — View/search/audit/notification/capability residue; audit test 41→36; `DashboardWithoutPipelineTest`. |
+| **596C** | 596C.1–596C.4 | ~10 edits (+ ~15 deletions) | **Done** (PR #1565) — Pipeline routes/components/API/schemas/nav/capabilities mirror; dashboard widget; e2e `pipeline/`. |
 
 ### Tasks
 

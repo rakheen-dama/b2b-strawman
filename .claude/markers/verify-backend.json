@@ -1,1 +1,7 @@
-{"commit":"b4e8ac434","command":"bash backend/scripts/verify.sh -q (full suite, caffeinate; worktree-fix-date-rolling-tests)","exit":0,"ts":"2026-10-16T05:51:25Z","summary":"6084 testcases / 0 failing classes / 26 skipped — full verify on fix/date-rolling-backend-tests (PR #1563), log /tmp/mvn-1563-final.log; Backend CI pass"}
+{
+  "commit": "c080b48db",
+  "command": "bash backend/scripts/verify.sh -q (caffeinate ./mvnw verify -q)",
+  "exit": 0,
+  "ts": "2026-10-16T07:20:18Z",
+  "summary": "Epic 596 / PR #1565 worktree: 761 classes, 6009 testcases / 0 failures / 0 errors / 26 skipped — 08:52:55→09:19:47 (~27 min; one 147s Maintenance Sleep at 09:17 absorbed). PR head d29c39556 adds only a frontend test-line removal on top."
+}

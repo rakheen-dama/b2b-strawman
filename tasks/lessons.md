@@ -201,3 +201,14 @@
 - Merged docs-only PR #1530 (one status.md log line) to main without any review pass, self-judging it exempt. User called it out.
 - The documentation-only carve-out exists ONLY in the pre-pr-merge-gate hook (verify markers); CLAUDE.md §2's review requirement has NO docs exemption.
 - Rule (user-stated policy 2026-07-09): **ALL PRs must be reviewed — no exemptions**, docs-only included, regardless of size or target branch. If a review was skipped, obtain a retrospective review immediately. If a change feels too trivial to review, that's a judgment to surface, not to act on.
+
+## Stale `.next` cache fakes a Turbopack `next/font/google` build failure (2026-10-16)
+
+**Symptom**: `pnpm run build` in a worktree exited 1 with 24 Turbopack errors, all `Module not found: Can't resolve '@vercel/turbopack-next/internal/font/google/font'` / "next/font/google queries have exactly one entry", traced to `app/layout.tsx`'s IBM Plex Sans import — a file the PR (Epic 596, #1565) never touched. Frontend CI on the same commit was green and the builder's earlier build in the same worktree had passed.
+
+**Root cause**: the second build ran on top of the builder's existing `.next` Turbopack cache (plus a concurrent full backend verify loading the machine). `rm -rf .next` and rebuilding passed cleanly with zero font errors — reproduced-and-resolved, not dismissed.
+
+**How to apply**:
+- A `next/font/google` resolution error in a file the diff doesn't touch, on a tree whose CI build is green → suspect the local `.next` cache first. Re-run once with `rm -rf .next` before investigating code.
+- Marker-grade frontend verifies should start from a clean `.next` (`rm -rf .next` before `pnpm run build`) so the verify can't inherit a builder's cache state.
+- Still record the first failure honestly in the marker summary / PR; the clean rerun is the evidence, not the assumption.

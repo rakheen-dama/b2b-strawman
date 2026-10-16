@@ -1,1 +1,7 @@
-{"commit":"1d492b74a+LZKC-031-pr2","command":"pnpm run lint && pnpm run build && pnpm test && pnpm run format:check","exit":0,"ts":"2026-07-13T11:50:59Z","summary":"404 files / 2523 passed / 2 skipped (fix/LZKC-031-pr2 worktree; log scratchpad/lzkc031/frontend-gate.log)"}
+{
+  "commit": "d29c39556",
+  "command": "cd frontend && pnpm install && pnpm run lint && pnpm run build && pnpm test && pnpm run format:check",
+  "exit": 0,
+  "ts": "2026-10-16T07:06:09Z",
+  "summary": "Epic 596 / PR #1565 worktree: lint 0, build 0 (clean .next rerun; first run hit stale-cache next/font/google Turbopack error), vitest 399 files / 2500 passed / 2 skipped, format:check 0"
+}

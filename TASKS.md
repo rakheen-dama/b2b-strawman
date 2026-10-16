@@ -677,7 +677,7 @@
 | 594 | QA Capstone — Observed End-to-End Lifecycle | E2E/Process | 588–593 | M | 594A | **Done** (PR #1546) |
 | **Phase 86 — Subtraction: Legal-Only Kazi, Archive the Horizontal Platform, Squash Migrations** | | | | | | See [tasks/phase86-subtraction-legal-only.md](tasks/phase86-subtraction-legal-only.md) |
 | 595 | Archive Precondition + Baseline Metrics + Confirmed Seam List | Process / read-only + hook | — | S | 595A, 595B | **Done** (PR #1564) |
-| 596 | Remove `crm` (Phase 80) + Pipeline UI | Backend + Frontend (split) | 595 | M | 596A, 596B, 596C | |
+| 596 | Remove `crm` (Phase 80) + Pipeline UI | Backend + Frontend (split) | 595 | M | 596A, 596B, 596C | **Done** (PR #1565) |
 | 597 | Remove `proposal` (Phase 32) + Legacy In-App Portal + Portal Proposals | Backend + Frontend + Portal (split) | 596 | L | 597A, 597B, 597C, 597D | |
 | 598 | Remove `retainer` (Phase 17) + Portal Retainer | Backend + Frontend + Portal (split) | 597 | L | 598A, 598B, 598C, 598D | |
 | 599 | Remove `capacity` (Phase 38) + Resources/Utilization UI | Backend + Frontend (split) | 598 | M | 599A, 599B, 599C | |

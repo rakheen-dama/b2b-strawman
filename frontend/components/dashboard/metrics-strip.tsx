@@ -48,7 +48,7 @@ export function MetricsStrip({ kpis, projectHealth }: MetricsStripProps) {
   return (
     <div
       data-testid="metrics-strip"
-      className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6"
+      className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5"
     >
       {/* Active Projects */}
       <div

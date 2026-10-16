@@ -12,7 +12,6 @@ import {
   updateSelections,
   excludeCustomer,
   includeCustomer,
-  getRetainerPreview,
   type BillingRun,
   type BillingRunItem,
   type BillingRunPreview,
@@ -21,7 +20,6 @@ import {
   type UnbilledExpense,
   type UnbilledDisbursement,
   type UpdateEntrySelectionsRequest,
-  type RetainerPeriodPreview,
 } from "@/lib/api/billing-runs";
 
 interface ActionResult {
@@ -97,10 +95,6 @@ interface UnbilledDisbursementResult extends ActionResult {
 
 interface UpdateSelectionsResult extends ActionResult {
   item?: BillingRunItem;
-}
-
-interface RetainerPreviewResult extends ActionResult {
-  retainers?: RetainerPeriodPreview[];
 }
 
 export async function getUnbilledTimeAction(
@@ -224,24 +218,5 @@ export async function includeCustomerAction(
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to include customer." };
-  }
-}
-
-export async function getRetainerPreviewAction(
-  billingRunId: string
-): Promise<RetainerPreviewResult> {
-  const caps = await fetchMyCapabilities();
-  if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Permission denied." };
-  }
-
-  try {
-    const retainers = await getRetainerPreview(billingRunId);
-    return { success: true, retainers };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to load retainer preview." };
   }
 }

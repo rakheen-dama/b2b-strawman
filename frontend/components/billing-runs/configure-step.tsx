@@ -5,19 +5,17 @@ import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { createBillingRunAction } from "@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions";
 
 interface ConfigureStepProps {
   slug: string;
-  onNext: (billingRunId: string, currency: string, includeRetainers?: boolean) => void;
+  onNext: (billingRunId: string, currency: string) => void;
 }
 
 export function ConfigureStep({ slug, onNext }: ConfigureStepProps) {
   const [periodFrom, setPeriodFrom] = useState("");
   const [periodTo, setPeriodTo] = useState("");
   const [cutOffDate, setCutOffDate] = useState("");
-  const [includeRetainers, setIncludeRetainers] = useState(false);
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,16 +44,11 @@ export function ConfigureStep({ slug, onNext }: ConfigureStepProps) {
         periodTo,
         currency: "ZAR",
         includeExpenses: true,
-        includeRetainers,
         cutOffDate: cutOffDate || undefined,
         notes: notes || undefined,
       });
       if (result.success && result.billingRun) {
-        onNext(
-          result.billingRun.id,
-          result.billingRun.currency,
-          result.billingRun.includeRetainers
-        );
+        onNext(result.billingRun.id, result.billingRun.currency);
       } else {
         setError(result.error ?? "Failed to create billing run.");
       }
@@ -108,18 +101,6 @@ export function ConfigureStep({ slug, onNext }: ConfigureStepProps) {
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Only include time entries logged up to this date.
           </p>
-        </div>
-
-        {/* Include Retainers */}
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="includeRetainers"
-            checked={includeRetainers}
-            onCheckedChange={(checked) => setIncludeRetainers(checked === true)}
-          />
-          <Label htmlFor="includeRetainers" className="cursor-pointer">
-            Include retainers
-          </Label>
         </div>
 
         {/* Notes */}

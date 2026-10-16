@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
 import { PRIORITY_BADGE, STATUS_BADGE } from "@/components/tasks/task-badge-config";
 import { describeRecurrence } from "@/lib/recurrence";
-import type { Task, RetainerSummaryResponse } from "@/lib/types";
+import type { Task } from "@/lib/types";
 
 function isOverdue(dueDate: string | null, status: string): boolean {
   if (!dueDate || status === "DONE" || status === "CANCELLED") return false;
@@ -26,7 +26,6 @@ interface TaskListTableRowProps {
   projectId: string;
   currentMemberId: string | null;
   canManage: boolean;
-  retainerSummary?: RetainerSummaryResponse | null;
   isActioning: boolean;
   onOpenTask: (id: string) => void;
   onClaim: (id: string) => void;
@@ -41,7 +40,6 @@ export function TaskListTableRow({
   projectId,
   currentMemberId,
   canManage,
-  retainerSummary,
   isActioning,
   onOpenTask,
   onClaim,
@@ -145,7 +143,6 @@ export function TaskListTableRow({
               projectId={projectId}
               taskId={task.id}
               memberId={currentMemberId}
-              retainerSummary={retainerSummary}
             >
               <Button size="xs" variant="outline" onClick={(e) => e.stopPropagation()}>
                 <Clock className="size-3" />

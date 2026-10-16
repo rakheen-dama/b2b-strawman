@@ -3,7 +3,6 @@ import {
   ClipboardList,
   CalendarDays,
   FolderOpen,
-  FileText,
   Users,
   UserRound,
   Bell,
@@ -133,12 +132,6 @@ export const NAV_GROUPS: NavGroup[] = [
         href: (slug) => `/org/${slug}/customers`,
         icon: UserRound,
         requiredCapability: "CUSTOMER_MANAGEMENT",
-      },
-      {
-        label: "Retainers",
-        href: (slug) => `/org/${slug}/retainers`,
-        icon: FileText,
-        requiredCapability: "INVOICING",
       },
       {
         label: "Compliance",

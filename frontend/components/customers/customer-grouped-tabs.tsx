@@ -29,7 +29,6 @@ interface CustomerGroupedTabsProps {
   // Finance group
   invoicesPanel?: ReactNode;
   ratesPanel?: ReactNode;
-  retainerPanel?: ReactNode;
   financialsPanel?: ReactNode;
   trustPanel?: ReactNode;
   // Compliance group
@@ -53,7 +52,6 @@ export function CustomerGroupedTabs({
   generatedPanel,
   invoicesPanel,
   ratesPanel,
-  retainerPanel,
   financialsPanel,
   trustPanel,
   onboardingPanel,
@@ -88,7 +86,6 @@ export function CustomerGroupedTabs({
       // Finance group — panel-gated
       invoices: !!invoicesPanel,
       rates: !!ratesPanel,
-      retainer: !!retainerPanel,
       financials: !!financialsPanel,
       trust: showTrust,
       // Compliance group — panel-gated
@@ -106,7 +103,6 @@ export function CustomerGroupedTabs({
         let label = tab.label;
         if (tab.id === "projects") label = t("Projects");
         if (tab.id === "invoices") label = t("Invoices");
-        if (tab.id === "retainer") label = t("Retainer");
         if (tab.id === "audit") label = auditTabLabel(t);
 
         return {
@@ -121,7 +117,6 @@ export function CustomerGroupedTabs({
     generatedPanel,
     invoicesPanel,
     ratesPanel,
-    retainerPanel,
     financialsPanel,
     showTrust,
     onboardingPanel,
@@ -198,11 +193,6 @@ export function CustomerGroupedTabs({
       {ratesPanel && (
         <TabsPrimitive.Content value="rates" className="pt-6 outline-none">
           {ratesPanel}
-        </TabsPrimitive.Content>
-      )}
-      {retainerPanel && (
-        <TabsPrimitive.Content value="retainer" className="pt-6 outline-none">
-          {retainerPanel}
         </TabsPrimitive.Content>
       )}
       {financialsPanel && (

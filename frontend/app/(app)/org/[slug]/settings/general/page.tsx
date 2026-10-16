@@ -87,7 +87,6 @@ export default async function GeneralSettingsPage({
       <PortalSettingsSection
         slug={slug}
         currentCadence={settings.portalDigestCadence ?? "WEEKLY"}
-        currentMemberDisplay={settings.portalRetainerMemberDisplay ?? "FIRST_NAME_ROLE"}
       />
 
       <OrgDocumentsSection slug={slug} documents={documents} isAdmin={true} />

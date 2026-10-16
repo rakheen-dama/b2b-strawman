@@ -25,7 +25,6 @@ const baseProps = {
   setupProgressData: null,
   lifecyclePrompt: null,
   unbilledTimeData: null,
-  activeRetainer: null,
   templateReadiness: null,
   pendingSuggestions: null,
   ficaPanel: null,
@@ -96,8 +95,8 @@ describe("ClientOverviewTab", () => {
     expect(screen.getByTestId("unbilled-time-card")).toBeInTheDocument();
   });
 
-  // Test 3: Renders unbilled time and retainer cards in 2-column grid
-  it("renders unbilled time and retainer cards in 2-column grid", () => {
+  // Test 3: Renders unbilled time card with amount, hours and actions in financial summary
+  it("renders unbilled time card in financial summary", () => {
     render(
       <ClientOverviewTab
         {...baseProps}
@@ -106,13 +105,6 @@ describe("ClientOverviewTab", () => {
           hours: "16.0",
           createInvoiceHref: "?tab=invoices",
           viewTimeHref: "?tab=time",
-        }}
-        activeRetainer={{
-          name: "Monthly Retainer",
-          status: "ACTIVE",
-          allocatedHours: 40,
-          consumedHours: 12,
-          remainingHours: 28,
         }}
       />
     );
@@ -123,14 +115,6 @@ describe("ClientOverviewTab", () => {
     expect(screen.getByText("16.0 hours")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Create Invoice" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "View Time" })).toBeInTheDocument();
-
-    // Retainer card
-    expect(screen.getByTestId("retainer-status-card")).toBeInTheDocument();
-    expect(screen.getByText("Monthly Retainer")).toBeInTheDocument();
-    expect(screen.getByText("ACTIVE")).toBeInTheDocument();
-    expect(screen.getByText("12")).toBeInTheDocument();
-    expect(screen.getByText(/\/ 40 hours used/)).toBeInTheDocument();
-    expect(screen.getByText(/(28 remaining)/)).toBeInTheDocument();
   });
 
   // Test 4: Renders "everything looks good" state when all sections empty

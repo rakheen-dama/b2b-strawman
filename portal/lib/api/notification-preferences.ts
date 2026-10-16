@@ -3,14 +3,13 @@ import { portalFetch, portalGet } from "@/lib/api-client";
 /**
  * Portal notification preferences (Epic 498C, ADR-258).
  *
- * Five per-contact opt-out toggles plus the read-only firm-level digest cadence
+ * Four per-contact opt-out toggles plus the read-only firm-level digest cadence
  * — the portal UI renders the cadence as a "Your firm sends weekly digests"
- * hint. All five boolean toggles default to `true` on first read.
+ * hint. All four boolean toggles default to `true` on first read.
  */
 export interface NotificationPreferences {
   digestEnabled: boolean;
   trustActivityEnabled: boolean;
-  retainerUpdatesEnabled: boolean;
   deadlineRemindersEnabled: boolean;
   actionRequiredEnabled: boolean;
   firmDigestCadence: "WEEKLY" | "BIWEEKLY" | "OFF";
@@ -27,7 +26,7 @@ export async function getPreferences(): Promise<NotificationPreferences> {
 }
 
 /**
- * Persists updated notification preferences. Accepts the five boolean toggles
+ * Persists updated notification preferences. Accepts the four boolean toggles
  * only — `firmDigestCadence` is firm-level and cannot be set from the portal.
  */
 export async function updatePreferences(

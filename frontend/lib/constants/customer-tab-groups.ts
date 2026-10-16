@@ -49,7 +49,6 @@ export const CUSTOMER_TAB_GROUPS: readonly TabGroup[] = [
     tabs: [
       { id: "invoices", label: "Invoices" },
       { id: "rates", label: "Rates" },
-      { id: "retainer", label: "Retainer" },
       { id: "financials", label: "Financials" },
       { id: "trust", label: "Trust" },
     ],

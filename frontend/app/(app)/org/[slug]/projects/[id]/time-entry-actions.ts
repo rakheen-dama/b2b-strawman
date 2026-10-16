@@ -63,7 +63,7 @@ export async function createTimeEntry(
   }
 
   revalidatePath(`/org/${slug}/projects/${projectId}`);
-  // Also revalidate customer pages so retainer summaries refresh (BUG-004)
+  // Also revalidate customer pages so customer unbilled summaries refresh (BUG-004)
   revalidatePath(`/org/${slug}/customers`, "layout");
 
   return { success: true };

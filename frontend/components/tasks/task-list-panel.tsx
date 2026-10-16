@@ -25,7 +25,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import type {
   Task,
   TaskStatus,
-  RetainerSummaryResponse,
   TagResponse,
   FieldDefinitionResponse,
   FieldGroupResponse,
@@ -54,7 +53,6 @@ interface TaskListPanelProps {
   canManage: boolean;
   currentMemberId: string | null;
   isAdmin?: boolean;
-  retainerSummary?: RetainerSummaryResponse | null;
   members?: { id: string; name: string; email: string }[];
   allTags?: TagResponse[];
   fieldDefinitions?: FieldDefinitionResponse[];
@@ -71,7 +69,6 @@ export function TaskListPanel({
   canManage,
   currentMemberId,
   isAdmin = false,
-  retainerSummary,
   members = [],
   allTags = [],
   fieldDefinitions = [],
@@ -371,7 +368,6 @@ export function TaskListPanel({
                     projectId={projectId}
                     currentMemberId={currentMemberId}
                     canManage={canManage}
-                    retainerSummary={retainerSummary}
                     isActioning={actionTaskId === task.id && isPending}
                     onOpenTask={openTask}
                     onClaim={(id) => handleTaskAction(id, claimTask, "claim")}

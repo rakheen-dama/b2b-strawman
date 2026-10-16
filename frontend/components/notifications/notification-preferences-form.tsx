@@ -49,15 +49,6 @@ const NOTIFICATION_TYPE_LABELS: Record<string, { label: string; category: string
   RECURRING_PROJECT_CREATED: { label: "Recurring Project Created", category: "Scheduling" },
   SCHEDULE_SKIPPED: { label: "Schedule Skipped", category: "Scheduling" },
   SCHEDULE_COMPLETED: { label: "Schedule Completed", category: "Scheduling" },
-  // Retainers
-  RETAINER_PERIOD_READY_TO_CLOSE: {
-    label: "Retainer Period Ready to Close",
-    category: "Retainers",
-  },
-  RETAINER_PERIOD_CLOSED: { label: "Retainer Period Closed", category: "Retainers" },
-  RETAINER_APPROACHING_CAPACITY: { label: "Retainer Approaching Capacity", category: "Retainers" },
-  RETAINER_FULLY_CONSUMED: { label: "Retainer Fully Consumed", category: "Retainers" },
-  RETAINER_TERMINATED: { label: "Retainer Terminated", category: "Retainers" },
   // Time Tracking
   TIME_REMINDER: { label: "Time Reminders", category: "Time Tracking" },
   // Resource Planning
@@ -125,7 +116,6 @@ export function NotificationPreferencesForm({
     "Billing & Invoicing",
     "Client Requests",
     "Scheduling",
-    "Retainers",
     "Time Tracking",
     "Resource Planning",
     "Security",

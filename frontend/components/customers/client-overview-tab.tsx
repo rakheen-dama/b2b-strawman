@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { CheckCircle, Clock, RefreshCw } from "lucide-react";
+import { CheckCircle, Clock } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { Button } from "@b2mash/ui/button";
 import { SetupProgressCard } from "@/components/setup/setup-progress-card";
@@ -8,7 +8,6 @@ import { TemplateReadinessCard } from "@/components/setup/template-readiness-car
 import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBadge";
 import type { SetupStep, ContextGroup, TemplateReadinessItem } from "@/components/setup/types";
 import type { LifecycleStatus } from "@/lib/types/customer";
-import { cn } from "@/lib/utils";
 
 interface ClientOverviewTabProps {
   /** Section A: Client Readiness — SetupProgressCard props */
@@ -31,15 +30,6 @@ interface ClientOverviewTabProps {
     hours: string;
     createInvoiceHref: string;
     viewTimeHref: string;
-  } | null;
-
-  /** Section C: Financial summary — retainer summary */
-  activeRetainer: {
-    name: string;
-    status: string;
-    allocatedHours: number | null;
-    consumedHours: number | null;
-    remainingHours: number | null;
   } | null;
 
   /** Section D: Template readiness — TemplateReadinessCard props */
@@ -68,7 +58,6 @@ export function ClientOverviewTab({
   setupProgressData,
   lifecyclePrompt,
   unbilledTimeData,
-  activeRetainer,
   templateReadiness,
   pendingSuggestions,
   ficaPanel,
@@ -80,7 +69,6 @@ export function ClientOverviewTab({
     setupProgressData !== null ||
     lifecyclePrompt !== null ||
     unbilledTimeData !== null ||
-    activeRetainer !== null ||
     templateReadiness !== null ||
     pendingSuggestions !== null ||
     ficaPanel !== null;
@@ -103,7 +91,7 @@ export function ClientOverviewTab({
     );
   }
 
-  const hasFinancialSummary = unbilledTimeData !== null || activeRetainer !== null;
+  const hasFinancialSummary = unbilledTimeData !== null;
 
   return (
     <div data-testid="client-overview-tab" className="space-y-4">
@@ -125,7 +113,7 @@ export function ClientOverviewTab({
 
       {/* Section C: Financial Summary */}
       {hasFinancialSummary && (
-        <div className={cn("grid gap-4", unbilledTimeData && activeRetainer && "md:grid-cols-2")}>
+        <div className="grid gap-4">
           {unbilledTimeData && (
             <Card data-testid="unbilled-time-card">
               <CardHeader>
@@ -149,39 +137,6 @@ export function ClientOverviewTab({
                     <Link href={unbilledTimeData.viewTimeHref}>View Time</Link>
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {activeRetainer && (
-            <Card data-testid="retainer-status-card">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <RefreshCw className="h-4 w-4 text-slate-400 dark:text-slate-500" />
-                  <CardTitle className="text-base">Retainer</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-sm font-medium">{activeRetainer.name}</p>
-                <p className="text-muted-foreground text-xs tracking-wider uppercase">
-                  {activeRetainer.status}
-                </p>
-                {activeRetainer.allocatedHours !== null &&
-                  activeRetainer.consumedHours !== null && (
-                    <div className="text-sm">
-                      <span className="font-mono tabular-nums">{activeRetainer.consumedHours}</span>
-                      <span className="text-muted-foreground">
-                        {" "}
-                        / {activeRetainer.allocatedHours} hours used
-                      </span>
-                      {activeRetainer.remainingHours !== null && (
-                        <span className="text-muted-foreground">
-                          {" "}
-                          ({activeRetainer.remainingHours} remaining)
-                        </span>
-                      )}
-                    </div>
-                  )}
               </CardContent>
             </Card>
           )}

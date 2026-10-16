@@ -189,7 +189,6 @@ function NotificationsPageInner() {
     const next: NotificationPreferencesUpdate = {
       digestEnabled: false,
       trustActivityEnabled: prefs.trustActivityEnabled,
-      retainerUpdatesEnabled: prefs.retainerUpdatesEnabled,
       deadlineRemindersEnabled: prefs.deadlineRemindersEnabled,
       actionRequiredEnabled: prefs.actionRequiredEnabled,
     };
@@ -211,7 +210,6 @@ function NotificationsPageInner() {
     const next: NotificationPreferencesUpdate = {
       digestEnabled: prefs.digestEnabled,
       trustActivityEnabled: prefs.trustActivityEnabled,
-      retainerUpdatesEnabled: prefs.retainerUpdatesEnabled,
       deadlineRemindersEnabled: prefs.deadlineRemindersEnabled,
       actionRequiredEnabled: prefs.actionRequiredEnabled,
       [field]: value,
@@ -229,7 +227,6 @@ function NotificationsPageInner() {
     const next: NotificationPreferencesUpdate = {
       digestEnabled: false,
       trustActivityEnabled: false,
-      retainerUpdatesEnabled: false,
       deadlineRemindersEnabled: false,
       actionRequiredEnabled: false,
     };
@@ -304,14 +301,6 @@ function NotificationsPageInner() {
                   checked={prefs.trustActivityEnabled}
                   disabled={isSaving}
                   onChange={(v) => handleToggle("trustActivityEnabled", v)}
-                />
-                <ToggleRow
-                  id="pref-retainer"
-                  label="Retainer updates"
-                  description="Hour usage, thresholds, and top-up reminders on your retainers."
-                  checked={prefs.retainerUpdatesEnabled}
-                  disabled={isSaving}
-                  onChange={(v) => handleToggle("retainerUpdatesEnabled", v)}
                 />
                 <ToggleRow
                   id="pref-deadline"

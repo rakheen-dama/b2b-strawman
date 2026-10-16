@@ -35,14 +35,13 @@ const BREAKPOINTS: Breakpoint[] = [
 ];
 
 /**
- * 9 representative portal pages. Detail routes that need a seeded id
- * (trust matter, retainer, invoice) are resolved at runtime via
+ * 8 representative portal pages. Detail routes that need a seeded id
+ * (trust matter, invoice) are resolved at runtime via
  * `beforeAll` — see the stub below; supply real ids via env when available.
  */
 const PAGES: Array<{ path: string; name: string }> = [
   { path: "/home", name: "home-populated" },
   { path: "/trust", name: "trust-matter-list" },
-  { path: "/retainer", name: "retainer-list" },
   { path: "/deadlines", name: "deadlines-list" },
   { path: "/invoices", name: "invoices-list" },
   { path: "/projects", name: "projects-list" },

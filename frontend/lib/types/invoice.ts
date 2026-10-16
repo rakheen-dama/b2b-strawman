@@ -10,7 +10,6 @@ export type InvoiceLineType =
   | "TIME"
   | "EXPENSE"
   | "DISBURSEMENT"
-  | "RETAINER"
   | "MANUAL"
   | "TARIFF"
   | "FIXED_FEE";
@@ -237,22 +236,4 @@ export interface ValidationCheck {
   severity: ValidationSeverity;
   passed: boolean;
   message: string;
-}
-
-// ---- Retainers (shared types for client components — API functions live in @/lib/api/retainers) ----
-
-export type RetainerType = "HOUR_BANK" | "FIXED_FEE";
-
-export interface RetainerSummaryResponse {
-  hasActiveRetainer: boolean;
-  agreementId: string | null;
-  agreementName: string | null;
-  type: RetainerType | null;
-  allocatedHours: number | null;
-  consumedHours: number | null;
-  remainingHours: number | null;
-  percentConsumed: number | null;
-  isOverage: boolean;
-  periodStart: string | null;
-  periodEnd: string | null;
 }

@@ -36,7 +36,6 @@ const mockBillingRun: BillingRun = {
   periodTo: "2026-03-31",
   currency: "ZAR",
   includeExpenses: true,
-  includeRetainers: false,
   totalCustomers: 5,
   totalInvoices: 4,
   totalAmount: 125000.0,

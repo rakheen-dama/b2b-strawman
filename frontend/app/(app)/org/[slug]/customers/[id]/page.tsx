@@ -67,9 +67,6 @@ import {
 import { RequestList } from "@/components/information-requests/request-list";
 import { CreateRequestDialog } from "@/components/information-requests/create-request-dialog";
 import { isXeroConnected } from "@/lib/api/integrations";
-import { fetchRetainers, fetchPeriods } from "@/lib/api/retainers";
-import type { RetainerResponse, PeriodSummary } from "@/lib/api/retainers";
-import { CustomerRetainerTab } from "@/components/customers/customer-retainer-tab";
 import { PendingSuggestionsWidget } from "@/components/assistant/queue/pending-suggestions-widget";
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { checkPrerequisites } from "@/lib/prerequisites";
@@ -294,32 +291,6 @@ export default async function CustomerDetailPage({
     return { state: "unverified" };
   })();
 
-  // Fetch retainer data for the Retainer tab
-  let customerRetainers: RetainerResponse[] = [];
-  try {
-    customerRetainers = await fetchRetainers({ customerId: id });
-  } catch {
-    // Non-fatal: retainer tab will show empty state
-  }
-
-  // Find active/most-recent retainer
-  const activeRetainer =
-    customerRetainers.find((r) => r.status === "ACTIVE") ??
-    customerRetainers.find((r) => r.status === "PAUSED") ??
-    customerRetainers[0] ??
-    null;
-
-  // Fetch periods for the active/latest retainer
-  let retainerPeriods: PeriodSummary[] = [];
-  if (activeRetainer) {
-    try {
-      const periodsRes = await fetchPeriods(activeRetainer.id, 0);
-      retainerPeriods = periodsRes.content;
-    } catch {
-      // Non-fatal: period history table will show empty
-    }
-  }
-
   // Fetch information requests for the Requests tab
   let customerRequests: InformationRequestResponse[] = [];
   try {
@@ -327,15 +298,6 @@ export default async function CustomerDetailPage({
   } catch {
     // Non-fatal: requests tab will show empty state
   }
-
-  // Retainers can be established at any non-terminal lifecycle stage (including
-  // PROSPECT / ONBOARDING), so the tab is visible unless the customer is in a
-  // terminal state (OFFBOARDING / OFFBOARDED / ANONYMIZED).
-  const showRetainerTab =
-    (customer.lifecycleStatus !== "OFFBOARDED" &&
-      customer.lifecycleStatus !== "OFFBOARDING" &&
-      customer.lifecycleStatus !== "ANONYMIZED") ||
-    customerRetainers.length > 0;
 
   // Build template name lookup for the onboarding panel
   const checklistTemplateNames: Record<string, string> = {};
@@ -666,20 +628,6 @@ export default async function CustomerDetailPage({
                   }
                 : null
             }
-            activeRetainer={
-              activeRetainer
-                ? {
-                    name: activeRetainer.name,
-                    status: activeRetainer.status,
-                    allocatedHours:
-                      activeRetainer.currentPeriod?.allocatedHours ??
-                      activeRetainer.allocatedHours ??
-                      null,
-                    consumedHours: activeRetainer.currentPeriod?.consumedHours ?? null,
-                    remainingHours: activeRetainer.currentPeriod?.remainingHours ?? null,
-                  }
-                : null
-            }
             templateReadiness={
               customerTemplateReadiness.length > 0
                 ? {
@@ -734,18 +682,6 @@ export default async function CustomerDetailPage({
               slug={slug}
               canManage={isAdmin && customer.status === "ACTIVE"}
               defaultCurrency={defaultCurrency}
-            />
-          ) : undefined
-        }
-        retainerPanel={
-          showRetainerTab ? (
-            <CustomerRetainerTab
-              retainer={activeRetainer}
-              allRetainers={customerRetainers}
-              periods={retainerPeriods}
-              slug={slug}
-              customerId={id}
-              canManage={isAdmin && customer.status === "ACTIVE"}
             />
           ) : undefined
         }

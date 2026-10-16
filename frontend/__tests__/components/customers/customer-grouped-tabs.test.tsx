@@ -80,7 +80,6 @@ const allPanels = {
   generatedPanel: <div>Generated</div>,
   invoicesPanel: <div>Invoices</div>,
   ratesPanel: <div>Rates</div>,
-  retainerPanel: <div>Retainer</div>,
   financialsPanel: <div>Financials</div>,
   trustPanel: <div>Trust</div>,
   onboardingPanel: <div>Onboarding</div>,

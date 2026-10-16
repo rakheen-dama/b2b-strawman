@@ -32,13 +32,11 @@ export function BillingRunWizard({
   const [billingRunId, setBillingRunId] = useState<string | null>(initialBillingRunId ?? null);
   // TODO: Read org's default currency from org settings when available
   const [currency, setCurrency] = useState("ZAR");
-  const [includeRetainers, setIncludeRetainers] = useState(false);
   const [cherryPickItems, setCherryPickItems] = useState<BillingRunItem[]>([]);
 
-  function handleConfigureNext(newBillingRunId: string, runCurrency: string, retainers?: boolean) {
+  function handleConfigureNext(newBillingRunId: string, runCurrency: string) {
     setBillingRunId(newBillingRunId);
     setCurrency(runCurrency);
-    if (retainers !== undefined) setIncludeRetainers(retainers);
     setCurrentStep(2);
   }
 
@@ -111,7 +109,6 @@ export function BillingRunWizard({
         <CherryPickStep
           billingRunId={billingRunId}
           currency={currency}
-          includeRetainers={includeRetainers}
           items={cherryPickItems}
           onBack={handleBack}
           onNext={handleNext}

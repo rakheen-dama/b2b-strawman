@@ -324,43 +324,6 @@ test.describe.serial("Day 1 — Sipho Ndlovu Onboarding", () => {
       await captureScreenshot(page, "litigation-template-action-items", { curated: true });
     }
   });
-
-  // ── 1.23-1.28: Engagement letter for Sipho ────────────────────────
-  test("Alice: Create engagement letter for Sipho", async ({ page }) => {
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/proposals`);
-
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Engagement letters/proposals page not accessible");
-      return;
-    }
-
-    const newBtn = page.getByRole("button", { name: /New (Proposal|Engagement Letter)/i }).first();
-    const hasNewBtn = await newBtn.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasNewBtn) {
-      await newBtn.click();
-      await page.waitForTimeout(1000);
-
-      // Fill engagement letter details
-      const nameField = page.getByRole("textbox", { name: /name|title/i }).first();
-      const hasName = await nameField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasName) {
-        await nameField.fill(`Engagement Letter — Sipho Ndlovu ${RUN_ID}`);
-      }
-
-      const createBtn = page.getByRole("button", { name: /Create|Save|Send/i }).first();
-      const hasCreate = await createBtn.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasCreate) {
-        await createBtn.click();
-        await page.waitForTimeout(2000);
-      }
-    }
-  });
 });
 
 // ═══════════════════════════════════════════════════════════════════

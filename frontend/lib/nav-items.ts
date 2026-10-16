@@ -135,12 +135,6 @@ export const NAV_GROUPS: NavGroup[] = [
         requiredCapability: "CUSTOMER_MANAGEMENT",
       },
       {
-        label: "Proposals",
-        href: (slug) => `/org/${slug}/proposals`,
-        icon: FileText,
-        requiredCapability: "INVOICING",
-      },
-      {
         label: "Retainers",
         href: (slug) => `/org/${slug}/retainers`,
         icon: FileText,

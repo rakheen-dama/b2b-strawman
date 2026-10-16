@@ -108,21 +108,6 @@ export function formatLocalDate(yyyyMmDd: string): string {
   });
 }
 
-/**
- * Renders an ISO instant as a calendar date in the viewer's local zone.
- * Intended for proposal expiry / matter due-date fields where the underlying
- * value is a wall-clock end-of-day instant. (Staff-app helper, retained;
- * flipped from en-US month-first to en-GB day-first.)
- */
-export function formatProposalExpiresAt(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 /**
  * Formats an ISO timestamp as a short date (en-ZA locale: "01 May 2026").

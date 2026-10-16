@@ -134,7 +134,7 @@ The 500A specs use `waitForLoadState('domcontentloaded') + waitForTimeout(500)` 
 
 Both are documented as follow-up tooling improvements in `tasks/phase68-gap-report.md` (`GAP-015`). They are **not** applied in slice 500B (no spec-file edits in this PR — that scope belonged to 500A).
 
-## Expected baselines (15 files, profile-gated subset)
+## Expected baselines (13 files, profile-gated subset)
 
 | File | Source spec | Profile gating |
 |---|---|---|
@@ -142,8 +142,6 @@ Both are documented as follow-up tooling improvements in `tasks/phase68-gap-repo
 | `day-00-info-request-detail.png` | `day-00-07.spec.ts` | all profiles |
 | `day-03-info-request-submitted.png` | `day-00-07.spec.ts` | all profiles |
 | `day-07-deadlines-list.png` | `day-00-07.spec.ts` | accounting-za / legal-za only |
-| `day-14-proposal-review.png` | `day-14-30.spec.ts` | all profiles |
-| `day-14-proposal-accepted.png` | `day-14-30.spec.ts` | all profiles |
 | `day-21-trust-balance.png` | `day-14-30.spec.ts` | legal-za only |
 | `day-30-retainer-hour-bank.png` | `day-14-30.spec.ts` | consulting-za / legal-za |
 | `day-45-invoice-detail.png` | `day-45-75.spec.ts` | all profiles |
@@ -154,7 +152,7 @@ Both are documented as follow-up tooling improvements in `tasks/phase68-gap-repo
 | `day-85-notifications-biweekly.png` | `day-85-90.spec.ts` | all profiles |
 | `day-90-activity-trail.png` | `day-85-90.spec.ts` | all profiles |
 
-Total: 15 distinct PNGs after a full three-tenant run.
+Total: 13 distinct PNGs after a full three-tenant run.
 
 ## Convention
 

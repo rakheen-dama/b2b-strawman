@@ -324,7 +324,7 @@ function NotificationsPageInner() {
                 <ToggleRow
                   id="pref-action"
                   label="Action-required notifications"
-                  description={`${t("Invoice")}, proposal, acceptance, and information-request emails.`}
+                  description={`${t("Invoice")}, acceptance, and information-request emails.`}
                   checked={prefs.actionRequiredEnabled}
                   disabled={isSaving}
                   onChange={(v) => handleToggle("actionRequiredEnabled", v)}

@@ -88,11 +88,6 @@ const TRIGGER_TYPE_OPTIONS: { value: TriggerType; label: string; description: st
     description: "Triggered when an information request is completed",
   },
   {
-    value: "PROPOSAL_SENT",
-    label: "Proposal Sent",
-    description: "Triggered when a proposal is sent to a customer",
-  },
-  {
     value: "FIELD_DATE_APPROACHING",
     label: "Date Approaching",
     description: "Triggered when a tracked date field is approaching",

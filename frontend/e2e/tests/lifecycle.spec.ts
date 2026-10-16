@@ -92,12 +92,6 @@ test.describe.serial("Day 1 — First Client Onboarding", () => {
     await expect(page.getByText(/active/i).first()).toBeVisible();
   });
 
-  test("Proposals page shows Kgosi proposal", async ({ page }) => {
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/proposals`);
-    await expect(page.getByText(/Kgosi/i)).toBeVisible();
-  });
-
   test("Retainers page shows Kgosi retainer", async ({ page }) => {
     await loginAs(page, "alice");
     await page.goto(`${BASE}/retainers`);

@@ -1,7 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import type { Document } from "@/lib/types";
 
 // Mock next/navigation
@@ -166,16 +165,5 @@ describe("Sidebar nav label changes", () => {
     renderSidebar();
 
     expect(screen.queryByRole("link", { name: "Documents" })).not.toBeInTheDocument();
-  });
-
-  it("renders Proposals in Clients group", async () => {
-    const user = userEvent.setup();
-    renderSidebar();
-
-    // Expand Clients group (defaultExpanded: false)
-    const clientsHeader = screen.getByText("Clients");
-    await user.click(clientsHeader.closest("button")!);
-
-    expect(screen.getByText("Proposals")).toBeInTheDocument();
   });
 });

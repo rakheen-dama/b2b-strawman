@@ -370,57 +370,6 @@ test.describe.serial("Interactive Lifecycle — Invoicing", () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════
-//  Interactive Lifecycle — Proposals
-// ═══════════════════════════════════════════════════════════════════
-test.describe.serial("Interactive Lifecycle — Proposals", () => {
-  test("Alice: Open New Proposal dialog and verify form fields", async ({ page }) => {
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/proposals`);
-    await expect(
-      page.getByRole("heading", { name: /Proposals|Engagement Letters/i, level: 1 })
-    ).toBeVisible({ timeout: 10000 });
-
-    // Click "New Proposal"
-    await page.getByRole("button", { name: /New (Proposal|Engagement Letter)/i }).click();
-    await expect(
-      page.getByRole("dialog", { name: /New (Proposal|Engagement Letter)/i })
-    ).toBeVisible({ timeout: 5000 });
-
-    // Verify all form fields are present
-    await expect(page.getByRole("textbox", { name: "Title" })).toBeVisible();
-    await expect(page.getByRole("combobox", { name: /Customer|Client/i })).toBeVisible();
-    await expect(page.getByRole("combobox", { name: "Fee Model" })).toBeVisible();
-    await expect(page.getByRole("spinbutton", { name: /Retainer Amount/ })).toBeVisible();
-    await expect(page.getByRole("textbox", { name: "Currency" })).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /Create (Proposal|Engagement Letter)/i })
-    ).toBeVisible();
-    await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
-
-    // Close dialog
-    await page.getByRole("button", { name: "Cancel" }).click();
-    await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 5000 });
-  });
-
-  test("Alice: View existing proposal detail", async ({ page }) => {
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/proposals`);
-    await expect(
-      page.getByRole("heading", { name: /Proposals|Engagement Letters/i, level: 1 })
-    ).toBeVisible({ timeout: 10000 });
-
-    // Click on the existing seed proposal
-    await page.getByRole("link", { name: /Monthly Bookkeeping/ }).click();
-
-    // Wait for detail page
-    await expect(page.getByText(/Monthly Bookkeeping/).first()).toBeVisible({ timeout: 10000 });
-
-    // Verify it shows a status (Sent from seed data)
-    await expect(page.getByText(/Sent/).first()).toBeVisible({ timeout: 5000 });
-  });
-});
-
-// ═══════════════════════════════════════════════════════════════════
 //  Interactive Lifecycle — RBAC
 // ═══════════════════════════════════════════════════════════════════
 test.describe.serial("Interactive Lifecycle — RBAC", () => {

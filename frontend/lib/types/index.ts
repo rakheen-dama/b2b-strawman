@@ -12,7 +12,6 @@ export * from "./field";
 export * from "./billing";
 export * from "./settings";
 export * from "./expense";
-export * from "./proposal";
 export * from "./data-protection";
 export * from "./deadline";
 export * from "./legal";

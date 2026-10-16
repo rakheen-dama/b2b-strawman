@@ -26,13 +26,6 @@ do_reset() {
       -d "{\"clerkOrgId\": \"${ORG_ID}\", \"orgName\": \"E2E Test Organization\"}")
     check_status "Re-provision org" "$STATUS"
 
-    STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-      -X POST "${BACKEND_URL}/internal/orgs/plan-sync" \
-      -H "Content-Type: application/json" \
-      -H "X-API-KEY: ${API_KEY}" \
-      -d "{\"clerkOrgId\": \"${ORG_ID}\", \"planSlug\": \"pro\"}")
-    check_status "Plan sync" "$STATUS"
-
     # Re-sync members
     for user in "user_e2e_alice alice@e2e-test.local Alice_Owner owner" \
                 "user_e2e_bob bob@e2e-test.local Bob_Admin admin" \

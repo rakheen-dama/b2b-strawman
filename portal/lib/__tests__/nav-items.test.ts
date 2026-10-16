@@ -5,8 +5,8 @@ describe("PORTAL_NAV_ITEMS", () => {
   // GAP-P-07: "documents" entry removed — the /documents route is not
   // implemented. Restore once the page exists (ideally behind a module).
   // GAP-OBS-Portal-Activity (E4.3): "activity" entry added after "acceptance".
-  it("includes all 10 canonical entries", () => {
-    expect(PORTAL_NAV_ITEMS).toHaveLength(10);
+  it("includes all 9 canonical entries", () => {
+    expect(PORTAL_NAV_ITEMS).toHaveLength(9);
     expect(PORTAL_NAV_ITEMS.map((i) => i.id)).toEqual([
       "home",
       "projects",
@@ -14,7 +14,6 @@ describe("PORTAL_NAV_ITEMS", () => {
       "retainer",
       "deadlines",
       "invoices",
-      "proposals",
       "requests",
       "acceptance",
       "activity",
@@ -55,7 +54,7 @@ describe("filterNavItems", () => {
     expect(filtered.some((i) => i.id === "invoices")).toBe(true);
   });
 
-  it("always includes home, projects, invoices, proposals (no gates)", () => {
+  it("always includes home, projects, invoices (no gates)", () => {
     const filtered = filterNavItems(PORTAL_NAV_ITEMS, {
       enabledModules: [],
     });
@@ -63,7 +62,6 @@ describe("filterNavItems", () => {
     expect(ids).toContain("home");
     expect(ids).toContain("projects");
     expect(ids).toContain("invoices");
-    expect(ids).toContain("proposals");
     // GAP-P-07: "documents" is no longer in the nav; no assertion needed.
     expect(ids).not.toContain("documents");
   });

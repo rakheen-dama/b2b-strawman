@@ -95,7 +95,7 @@ public class ProcessingActivityService {
         "None");
     seedIfAbsent(
         "Project Documentation",
-        "Documents, proposals, correspondence related to engagements",
+        "Documents and correspondence related to engagements",
         "contractual_necessity",
         "Clients",
         "Duration of engagement + 5 years",

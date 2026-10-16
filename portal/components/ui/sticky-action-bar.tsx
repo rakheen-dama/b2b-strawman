@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
  * <div className="space-y-8 pb-24 md:pb-0">
  *   ...page content...
  *   <StickyActionBar>
- *     <Button className="flex-1 min-h-11">Accept Proposal</Button>
+ *     <Button className="flex-1 min-h-11">Accept</Button>
  *     <Button variant="outline" className="flex-1 min-h-11">Decline</Button>
  *   </StickyActionBar>
  * </div>

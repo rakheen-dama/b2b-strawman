@@ -12,8 +12,6 @@ import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
-import io.b2mash.b2b.b2bstrawman.proposal.Proposal;
-import io.b2mash.b2b.b2bstrawman.proposal.ProposalRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.time.Instant;
@@ -32,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,7 +53,6 @@ public class DatabaseAuditService implements AuditService {
   private final CustomerProjectRepository customerProjectRepository;
   private final InvoiceRepository invoiceRepository;
   private final DocumentRepository documentRepository;
-  private final ProposalRepository proposalRepository;
   private final InformationRequestRepository informationRequestRepository;
   private final TrustTransactionRepository trustTransactionRepository;
   private final AcceptanceRequestRepository acceptanceRequestRepository;
@@ -68,7 +64,6 @@ public class DatabaseAuditService implements AuditService {
       CustomerProjectRepository customerProjectRepository,
       InvoiceRepository invoiceRepository,
       DocumentRepository documentRepository,
-      ProposalRepository proposalRepository,
       InformationRequestRepository informationRequestRepository,
       TrustTransactionRepository trustTransactionRepository,
       AcceptanceRequestRepository acceptanceRequestRepository) {
@@ -78,7 +73,6 @@ public class DatabaseAuditService implements AuditService {
     this.customerProjectRepository = customerProjectRepository;
     this.invoiceRepository = invoiceRepository;
     this.documentRepository = documentRepository;
-    this.proposalRepository = proposalRepository;
     this.informationRequestRepository = informationRequestRepository;
     this.trustTransactionRepository = trustTransactionRepository;
     this.acceptanceRequestRepository = acceptanceRequestRepository;
@@ -302,7 +296,7 @@ public class DatabaseAuditService implements AuditService {
   @Transactional(readOnly = true)
   // TODO(epic-505 follow-up): extract a CustomerChildEntityResolver in datarequest/ to remove
   // audit→domain coupling — tracked for a future cleanup epic. Today this method directly depends
-  // on seven domain repositories (incl. legal vertical), which is a layering inversion the brief
+  // on six domain repositories (incl. legal vertical), which is a layering inversion the brief
   // explicitly authorised but the architecture reviewer flagged as a follow-up cleanup.
   public Stream<AuditEvent> findEventsForCustomer(UUID customerId) {
     // Resolve every child-entity ID owned by the customer. Each list is read in a separate query
@@ -316,10 +310,6 @@ public class DatabaseAuditService implements AuditService {
         invoiceRepository.findByCustomerId(customerId).stream().map(Invoice::getId).toList();
     var documentIds =
         documentRepository.findByCustomerId(customerId).stream().map(Document::getId).toList();
-    var proposalIds =
-        proposalRepository.findByCustomerId(customerId, PageRequest.of(0, 10_000)).stream()
-            .map(Proposal::getId)
-            .toList();
     var informationRequestIds =
         informationRequestRepository.findByCustomerId(customerId).stream()
             .map(InformationRequest::getId)
@@ -336,7 +326,6 @@ public class DatabaseAuditService implements AuditService {
     String[] childTypes = {
       "project",
       "invoice",
-      "proposal",
       "information_request",
       "document",
       "trust_transaction",
@@ -346,7 +335,6 @@ public class DatabaseAuditService implements AuditService {
         Stream.of(
                 projectIds,
                 invoiceIds,
-                proposalIds,
                 informationRequestIds,
                 documentIds,
                 trustTransactionIds,

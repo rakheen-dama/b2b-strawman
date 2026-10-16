@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Archive, FileText, LayoutTemplate, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { Archive, LayoutTemplate, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import {
   DropdownMenu,
@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
 import { GenerateStatementOfAccountAction } from "@/components/projects/generate-statement-action";
-import { CreateProposalDialog } from "@/components/proposals/create-proposal-dialog";
 import { SaveAsTemplateDialog } from "@/components/templates/SaveAsTemplateDialog";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
 import { DeleteProjectDialog } from "@/components/projects/delete-project-dialog";
@@ -31,15 +30,13 @@ interface OverflowActionsMenuProps {
   isOwner: boolean;
   /** Document templates for Generate Document sub-menu */
   templates: TemplateListResponse[];
-  /** Primary customer (for engagement letter, statement) */
+  /** Primary customer (for Generate Document) */
   primaryCustomer: { id: string; name: string; email: string } | null;
   projectTags: TagResponse[];
   /** Full project object for EditProjectDialog */
   project: Project;
   /** Tasks for SaveAsTemplateDialog */
   tasks: Task[];
-  /** Primary customer lifecycle status for engagement letter gate */
-  primaryCustomerLifecycleStatus?: string;
 }
 
 export function OverflowActionsMenu({
@@ -56,7 +53,6 @@ export function OverflowActionsMenu({
   projectTags,
   project,
   tasks,
-  primaryCustomerLifecycleStatus,
 }: OverflowActionsMenuProps) {
   const { t } = useTerminology();
   const [isPending, startTransition] = useTransition();
@@ -65,19 +61,10 @@ export function OverflowActionsMenu({
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [templateOpen, setTemplateOpen] = useState(false);
-  const [proposalOpen, setProposalOpen] = useState(false);
 
   const [archiveError, setArchiveError] = useState<string | null>(null);
 
   const isArchived = projectStatus === "ARCHIVED";
-
-  // Engagement letter gate: canManage + customer linked + customer not offboarded/anonymized
-  const canCreateEngagementLetter =
-    canManage &&
-    primaryCustomer !== null &&
-    primaryCustomerLifecycleStatus !== "OFFBOARDED" &&
-    primaryCustomerLifecycleStatus !== "OFFBOARDING" &&
-    primaryCustomerLifecycleStatus !== "ANONYMIZED";
 
   function handleArchive() {
     setArchiveError(null);
@@ -128,14 +115,6 @@ export function OverflowActionsMenu({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" data-testid="overflow-actions-menu">
-          {/* New Engagement Letter */}
-          {canCreateEngagementLetter && (
-            <DropdownMenuItem onSelect={() => setProposalOpen(true)}>
-              <FileText className="mr-2 size-4" />
-              New Engagement Letter
-            </DropdownMenuItem>
-          )}
-
           {/* Save as Template */}
           {canManage && (
             <DropdownMenuItem onSelect={() => setTemplateOpen(true)}>
@@ -144,9 +123,7 @@ export function OverflowActionsMenu({
             </DropdownMenuItem>
           )}
 
-          {(canCreateEngagementLetter || canManage) && (canEdit || isAdmin || isOwner) && (
-            <DropdownMenuSeparator />
-          )}
+          {canManage && (canEdit || isAdmin || isOwner) && <DropdownMenuSeparator />}
 
           {/* Edit Matter */}
           {canEdit && (
@@ -178,17 +155,6 @@ export function OverflowActionsMenu({
       </DropdownMenu>
 
       {/* Dialogs rendered outside DropdownMenuContent — no Slot collision (OBS-2103) */}
-      {canCreateEngagementLetter && primaryCustomer && (
-        <CreateProposalDialog
-          slug={slug}
-          customers={[primaryCustomer]}
-          defaultCustomerId={primaryCustomer.id}
-          defaultFeeModel="HOURLY"
-          open={proposalOpen}
-          onOpenChange={setProposalOpen}
-        />
-      )}
-
       {canManage && (
         <SaveAsTemplateDialog
           slug={slug}

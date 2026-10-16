@@ -472,9 +472,9 @@ class PortalEmailNotificationChannelIntegrationTest {
   /**
    * Reflection-based scope assertion (ADR-258). Verifies the channel subscribes ONLY to the three
    * allowed event types. This guards against future regressions where a listener is added for
-   * {@code InvoiceSentEvent}, {@code AcceptanceRequestSentEvent}, {@code ProposalSentEvent}, or
-   * {@code InformationRequestSentEvent} — all of which already have upstream email senders and
-   * would cause double-sends if the channel also fired on them.
+   * {@code InvoiceSentEvent}, {@code AcceptanceRequestSentEvent}, or {@code
+   * InformationRequestSentEvent} — all of which already have upstream email senders and would cause
+   * double-sends if the channel also fired on them.
    */
   @Test
   void channelSubscribesOnlyToAllowedEventTypes() {

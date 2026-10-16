@@ -551,42 +551,6 @@ day_01_first_client() {
     check_status "Send info request"
   fi
 
-  # ── 1.4 Create proposal (as Alice) ────────────────────────────
-  echo ""
-  echo "  -- 1.4 Proposal: Monthly Bookkeeping --"
-  expires_at=$(date -v+30d -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -d "+30 days" -u +%Y-%m-%dT%H:%M:%SZ)
-
-  existing_proposals=$(api_get "/api/proposals?size=200" "$ALICE_JWT")
-  kgosi_proposal=$(echo "$existing_proposals" | jq -r ".content[]? | select(.title == \"Monthly Bookkeeping — Kgosi Construction\") | .id" 2>/dev/null | head -1)
-
-  if [ -n "$kgosi_proposal" ] && [ "$kgosi_proposal" != "null" ]; then
-    echo "    [skip] Kgosi proposal exists (${kgosi_proposal})"
-    KGOSI_PROPOSAL_ID="$kgosi_proposal"
-  else
-    prop_body=$(api_post "/api/proposals" "{
-      \"title\": \"Monthly Bookkeeping — Kgosi Construction\",
-      \"customerId\": \"${KGOSI_ID}\",
-      \"feeModel\": \"RETAINER\",
-      \"retainerAmount\": 5500.00,
-      \"retainerCurrency\": \"ZAR\",
-      \"retainerHoursIncluded\": 10,
-      \"contentJson\": {\"summary\": \"Monthly bookkeeping services including bank reconciliation, VAT returns, and financial reporting for Kgosi Construction.\"},
-      \"expiresAt\": \"${expires_at}\"
-    }" "$ALICE_JWT")
-    check_status "Create proposal"
-    KGOSI_PROPOSAL_ID=$(echo "$prop_body" | jq -r '.id')
-  fi
-  export KGOSI_PROPOSAL_ID
-
-  # Send proposal (requires portalContactId)
-  prop_detail=$(api_get "/api/proposals/${KGOSI_PROPOSAL_ID}" "$ALICE_JWT")
-  _prop_status=$(echo "$prop_detail" | jq -r '.status')
-  if [ "$_prop_status" = "DRAFT" ]; then
-    api_post "/api/proposals/${KGOSI_PROPOSAL_ID}/send" \
-      "{\"portalContactId\": \"${KGOSI_PORTAL_CONTACT_ID}\"}" "$ALICE_JWT" > /dev/null
-    check_status "Send proposal"
-  fi
-
   # ── 1.5 Complete FICA & activate customer ──────────────────────
   echo ""
   echo "  -- 1.5 Complete FICA & Activate --"
@@ -1283,14 +1247,6 @@ day_90_review() {
     _preview_status=$(last_status)
     echo "    Template preview: HTTP ${_preview_status}"
   fi
-
-  # ── 90.6 Proposal stats ───────────────────────────────────────
-  echo ""
-  echo "  -- 90.6 Proposal Stats --"
-  stats=$(api_get "/api/proposals/stats" "$ALICE_JWT")
-  assert_http "Proposal stats" "2"
-  summary=$(api_get "/api/proposals/summary" "$ALICE_JWT")
-  assert_http "Proposal summary" "2"
 }
 
 # ═══════════════════════════════════════════════════════════════════

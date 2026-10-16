@@ -28,7 +28,6 @@ public class InformationRequestEmailService {
   private final EmailContextBuilder emailContextBuilder;
   private final EmailDeliveryLogService deliveryLogService;
   private final EmailRateLimiter emailRateLimiter;
-  private final String appBaseUrl;
   private final String portalBaseUrl;
 
   public InformationRequestEmailService(
@@ -37,14 +36,12 @@ public class InformationRequestEmailService {
       EmailContextBuilder emailContextBuilder,
       EmailDeliveryLogService deliveryLogService,
       EmailRateLimiter emailRateLimiter,
-      @Value("${docteams.app.base-url:http://localhost:3000}") String appBaseUrl,
       @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl) {
     this.integrationRegistry = integrationRegistry;
     this.emailTemplateRenderer = emailTemplateRenderer;
     this.emailContextBuilder = emailContextBuilder;
     this.deliveryLogService = deliveryLogService;
     this.emailRateLimiter = emailRateLimiter;
-    this.appBaseUrl = appBaseUrl;
     this.portalBaseUrl = portalBaseUrl;
   }
 
@@ -84,7 +81,7 @@ public class InformationRequestEmailService {
     context.put("contactName", contactName);
     context.put("itemName", itemName);
     context.put("requestNumber", requestNumber);
-    context.put("portalUrl", appBaseUrl + "/portal");
+    context.put("portalUrl", portalBaseUrl + "/requests/" + requestId);
     String orgName = (String) context.get("orgName");
     context.put("subject", "Item accepted — %s (%s)".formatted(itemName, orgName));
     sendEmail("request-item-accepted", recipientEmail, context, requestId);
@@ -102,7 +99,7 @@ public class InformationRequestEmailService {
     context.put("itemName", itemName);
     context.put("requestNumber", requestNumber);
     context.put("rejectionReason", rejectionReason);
-    context.put("portalUrl", appBaseUrl + "/portal");
+    context.put("portalUrl", portalBaseUrl + "/requests/" + requestId);
     String orgName = (String) context.get("orgName");
     context.put("subject", "Item requires re-submission — %s (%s)".formatted(itemName, orgName));
     sendEmail("request-item-rejected", recipientEmail, context, requestId);
@@ -123,7 +120,7 @@ public class InformationRequestEmailService {
         pendingItems.stream()
             .map(item -> Map.of("name", item.getName(), "status", item.getStatus().name()))
             .toList());
-    context.put("portalUrl", appBaseUrl + "/portal");
+    context.put("portalUrl", portalBaseUrl + "/requests/" + requestId);
     String orgName = (String) context.get("orgName");
     context.put(
         "subject",
@@ -142,7 +139,7 @@ public class InformationRequestEmailService {
     context.put("contactName", contactName);
     context.put("requestNumber", requestNumber);
     context.put("totalItems", String.valueOf(totalItems));
-    context.put("portalUrl", appBaseUrl + "/portal");
+    context.put("portalUrl", portalBaseUrl + "/requests/" + requestId);
     String orgName = (String) context.get("orgName");
     context.put("subject", "Request %s completed (%s)".formatted(requestNumber, orgName));
     sendEmail("request-completed", recipientEmail, context, requestId);

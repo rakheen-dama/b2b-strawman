@@ -196,10 +196,6 @@ class TenantScopeBindingTest {
           "io.b2mash.b2b.b2bstrawman.portal.CustomerAuthFilter",
           "io.b2mash.b2b.b2bstrawman.portal.PortalBrandingService",
           "io.b2mash.b2b.b2bstrawman.portal.notification.PortalEmailNotificationChannel",
-          "io.b2mash.b2b.b2bstrawman.proposal.ProposalAcceptedEventHandler",
-          "io.b2mash.b2b.b2bstrawman.proposal.ProposalExpiredEventHandler",
-          "io.b2mash.b2b.b2bstrawman.proposal.ProposalPortalSyncEventHandler",
-          "io.b2mash.b2b.b2bstrawman.proposal.ProposalSentEmailHandler",
           "io.b2mash.b2b.b2bstrawman.provisioning.PackReconciliationRunner",
           "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustNotificationHandler");
 

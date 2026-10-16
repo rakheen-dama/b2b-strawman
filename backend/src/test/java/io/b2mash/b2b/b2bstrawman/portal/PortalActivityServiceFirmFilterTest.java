@@ -250,10 +250,8 @@ class PortalActivityServiceFirmFilterTest {
   }
 
   @Test
-  void firmTab_includes_invoice_proposal_statement_closure() {
+  void firmTab_includes_invoice_statement_closure() {
     seedFirmEvent("invoice.sent");
-    seedFirmEvent("proposal.sent");
-    seedFirmEvent("proposal.accepted");
     seedFirmEvent("statement.generated");
     seedFirmEvent("matter_closure.closed");
 
@@ -261,19 +259,13 @@ class PortalActivityServiceFirmFilterTest {
 
     assertThat(page.getContent())
         .extracting(PortalActivityEventResponse::eventType)
-        .contains(
-            "invoice.sent",
-            "proposal.sent",
-            "proposal.accepted",
-            "statement.generated",
-            "matter_closure.closed");
+        .contains("invoice.sent", "statement.generated", "matter_closure.closed");
   }
 
   @Test
   void firmTab_humanises_event_labels() {
     seedFirmEvent("statement.generated");
     seedFirmEvent("information_request.sent");
-    seedFirmEvent("proposal.sent");
     seedFirmEvent("matter_closure.closed");
     seedFirmEvent("trust_transaction.approved");
     seedFirmEvent("document.generated");
@@ -292,7 +284,6 @@ class PortalActivityServiceFirmFilterTest {
         .isEqualTo("Statement of Account generated");
     assertThat(summariesByType.get("information_request.sent"))
         .isEqualTo("Information request sent to you");
-    assertThat(summariesByType.get("proposal.sent")).isEqualTo("Engagement letter sent to you");
     assertThat(summariesByType.get("matter_closure.closed")).isEqualTo("Matter closed");
     assertThat(summariesByType.get("trust_transaction.approved"))
         .isEqualTo("Trust transaction recorded");

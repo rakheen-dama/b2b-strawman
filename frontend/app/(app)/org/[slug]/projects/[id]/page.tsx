@@ -467,9 +467,6 @@ export default async function ProjectDetailPage({
           projectTags={projectTags}
           project={project}
           tasks={tasks}
-          primaryCustomerLifecycleStatus={
-            customers.length > 0 ? customers[0].lifecycleStatus : undefined
-          }
         />
       </div>
 

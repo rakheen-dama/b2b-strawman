@@ -76,7 +76,7 @@ describe("PortalSidebar (desktop)", () => {
     cleanup();
   });
 
-  it("renders all 9 nav items for legal-za with all modules enabled", () => {
+  it("renders all 8 nav items for legal-za with all modules enabled", () => {
     render(<PortalSidebar />);
     for (const label of [
       "Home",
@@ -85,7 +85,6 @@ describe("PortalSidebar (desktop)", () => {
       "Retainer",
       "Deadlines",
       "Invoices",
-      "Proposals",
       "Requests",
       "Acceptance",
     ]) {
@@ -130,16 +129,6 @@ describe("PortalSidebar terminology (accounting-za)", () => {
     );
     expect(screen.getByText("Engagements")).toBeInTheDocument();
     expect(screen.queryByText("Matters")).not.toBeInTheDocument();
-  });
-
-  it("renders 'Engagement Letters' instead of 'Proposals' for accounting-za", () => {
-    render(
-      <TerminologyProvider verticalProfile="accounting-za">
-        <PortalSidebar />
-      </TerminologyProvider>,
-    );
-    expect(screen.getByText("Engagement Letters")).toBeInTheDocument();
-    expect(screen.queryByText("Proposals")).not.toBeInTheDocument();
   });
 });
 

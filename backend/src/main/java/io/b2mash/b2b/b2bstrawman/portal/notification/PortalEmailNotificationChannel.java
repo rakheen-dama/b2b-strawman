@@ -53,8 +53,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  * </ol>
  *
  * <p>Per ADR-258 (no-double-send), this channel never subscribes to {@code InvoiceSentEvent},
- * {@code AcceptanceRequestSentEvent}, {@code ProposalSentEvent}, or {@code
- * InformationRequestSentEvent} — those retain their existing Phase-24/28/32/34 listeners.
+ * {@code AcceptanceRequestSentEvent}, or {@code InformationRequestSentEvent} — those retain their
+ * existing Phase-24/28/34 listeners.
  *
  * <p>Fire-and-forget: each listener catches exceptions and swallows them so a failed email never
  * rolls back the originating firm-side transaction.

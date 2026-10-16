@@ -138,7 +138,7 @@ class DocumentAuditNotificationTest {
                           TemplateEntityType.PROJECT,
                           "Clone Source Template",
                           "clone-source-audit",
-                          TemplateCategory.PROPOSAL,
+                          TemplateCategory.OTHER,
                           CONTENT);
                   template.setSource(TemplateSource.PLATFORM);
                   template = documentTemplateRepository.save(template);

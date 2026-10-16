@@ -84,7 +84,7 @@ class SchedulerMigrationBatch2BTest {
   }
 
   @Test
-  void allNineteenHandlersRegisteredInRegistry() {
+  void allEighteenHandlersRegisteredInRegistry() {
     Set<String> allExpectedTypes =
         Set.of(
             // Batch 1 (5)
@@ -93,10 +93,9 @@ class SchedulerMigrationBatch2BTest {
             "accounting_sync_drain",
             "accounting_payment_poll",
             "time_reminder_check",
-            // Batch 2A (7)
+            // Batch 2A (6)
             "recurring_schedule_execute",
             "dormancy_check",
-            "proposal_expiry",
             "acceptance_expiry",
             "magic_link_cleanup",
             "ai_gate_expiry",
@@ -111,7 +110,7 @@ class SchedulerMigrationBatch2BTest {
             "portal_digest");
 
     assertThat(handlerRegistry.getRegisteredTypes()).containsAll(allExpectedTypes);
-    assertThat(handlerRegistry.getRegisteredTypes()).hasSizeGreaterThanOrEqualTo(19);
+    assertThat(handlerRegistry.getRegisteredTypes()).hasSizeGreaterThanOrEqualTo(18);
   }
 
   @Test

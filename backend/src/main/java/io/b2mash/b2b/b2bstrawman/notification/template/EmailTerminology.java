@@ -9,10 +9,8 @@ import org.springframework.stereotype.Component;
  * {@code "legal-za"}) -- the same key feeds the portal {@code <TerminologyProvider>}, so a single
  * customer record renders with one consistent vocabulary across firm UI, portal UI, and email.
  *
- * <p>Invoice nouns were mapped first (slice 19); LZKC-004 added the proposal nouns so client-facing
- * engagement-letter emails and seeded letter bodies stop leaking "proposal" on legal-za tenants.
- * Field names like {@code invoiceNumber} are intentionally NOT translated -- only the user-visible
- * nouns.
+ * <p>Invoice nouns were mapped in slice 19. Field names like {@code invoiceNumber} are
+ * intentionally NOT translated -- only the user-visible nouns.
  */
 @Component
 public class EmailTerminology {
@@ -24,11 +22,7 @@ public class EmailTerminology {
                   "invoice", "fee note",
                   "invoices", "fee notes",
                   "Invoice", "Fee Note",
-                  "Invoices", "Fee Notes",
-                  "proposal", "engagement letter",
-                  "proposals", "engagement letters",
-                  "Proposal", "Engagement Letter",
-                  "Proposals", "Engagement Letters"),
+                  "Invoices", "Fee Notes"),
           "accounting-za", Map.of(),
           "consulting-za", Map.of());
 
@@ -46,9 +40,9 @@ public class EmailTerminology {
 
   /**
    * Prefixes a resolved noun with the correct indefinite article ("a"/"an"). Terminology
-   * substitution can change the initial sound of a noun (legal-za {@code invoice} -> "fee note",
-   * {@code proposal} -> "engagement letter"), so copy with a hardcoded article breaks. A simple
-   * initial-vowel test is sufficient for the current term sets (LZKC-003/LZKC-004/LZKC-009).
+   * substitution can change the initial sound of a noun (legal-za {@code invoice} -> "fee note"),
+   * so copy with a hardcoded article breaks. A simple initial-vowel test is sufficient for the
+   * current term sets (LZKC-003/LZKC-004/LZKC-009).
    */
   public static String withIndefiniteArticle(String noun) {
     if (noun == null || noun.isBlank()) {

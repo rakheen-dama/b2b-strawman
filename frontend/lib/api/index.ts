@@ -29,7 +29,6 @@ export * from "./capacity";
 export * from "./email";
 export * from "./integrations";
 export * from "./org-roles";
-export * from "./portal-requests";
 export * from "./reports";
 export {
   type ScheduleStatus,

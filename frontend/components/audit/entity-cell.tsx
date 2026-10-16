@@ -4,7 +4,6 @@ const ENTITY_ROUTES: Record<string, (id: string) => string> = {
   customer: (id) => `/customers/${id}`,
   project: (id) => `/projects/${id}`,
   invoice: (id) => `/invoices/${id}`,
-  proposal: (id) => `/proposals/${id}`,
   information_request: (id) => `/information-requests/${id}`,
   document: (id) => `/documents/${id}`,
   trust_transaction: (id) => `/trust-accounting/transactions/${id}`,

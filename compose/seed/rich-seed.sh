@@ -106,11 +106,6 @@ if should_run "comments"; then
   seed_comments
 fi
 
-if should_run "proposals"; then
-  . "${SCRIPT_DIR}/lib/proposals.sh"
-  seed_proposals
-fi
-
 # ── Portal resync (always runs — idempotent) ───────────────────────
 echo ""
 echo "==> Portal resync"
@@ -136,7 +131,6 @@ echo "  Invoices:     2"
 echo "  Retainers:    1"
 echo "  Documents:    3"
 echo "  Comments:     5"
-echo "  Proposals:    1"
 echo ""
 echo "  Login: http://localhost:3001/mock-login"
 echo ""

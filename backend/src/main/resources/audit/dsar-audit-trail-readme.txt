@@ -25,9 +25,8 @@ SCOPE
 The audit trail includes events the system recorded in connection with the
 data subject:
   * events whose entity is the data subject's customer record
-  * events on the data subject's projects, invoices, proposals,
-    information requests, documents, trust transactions, and acceptance
-    requests
+  * events on the data subject's projects, invoices, information
+    requests, documents, trust transactions, and acceptance requests
   * events that reference the data subject's customer ID in their
     metadata
 

@@ -51,13 +51,6 @@ public final class StructuralPrerequisiteCheck {
           new FieldCheck("city", "City", Customer::getCity),
           new FieldCheck("country", "Country", Customer::getCountry));
 
-  /** Required fields for PROPOSAL_SEND context. */
-  private static final List<FieldCheck> PROPOSAL_SEND_FIELDS =
-      List.of(
-          new FieldCheck("contact_name", "Contact Name", Customer::getContactName),
-          new FieldCheck("contact_email", "Contact Email", Customer::getContactEmail),
-          new FieldCheck("address_line1", "Address Line 1", Customer::getAddressLine1));
-
   /**
    * Required fields for LIFECYCLE_ACTIVATION context. An active customer must have a full billing
    * address AND (for COMPANY/TRUST customers) a tax number. INDIVIDUAL customers are exempt from
@@ -88,7 +81,6 @@ public final class StructuralPrerequisiteCheck {
   private static final Map<PrerequisiteContext, List<FieldCheck>> CONTEXT_FIELDS =
       Map.of(
           PrerequisiteContext.INVOICE_GENERATION, INVOICE_GENERATION_FIELDS,
-          PrerequisiteContext.PROPOSAL_SEND, PROPOSAL_SEND_FIELDS,
           PrerequisiteContext.LIFECYCLE_ACTIVATION, LIFECYCLE_ACTIVATION_FIELDS);
 
   /**
@@ -101,22 +93,6 @@ public final class StructuralPrerequisiteCheck {
    * @return a list of violations for null fields, empty if all required fields are populated
    */
   public static List<PrerequisiteViolation> check(Customer customer, PrerequisiteContext context) {
-    return check(customer, context, false);
-  }
-
-  /**
-   * Like {@link #check(Customer, PrerequisiteContext)}, but allows the caller to declare that an
-   * alternative source of recipient identity exists (e.g. an ACTIVE portal_contact with email) so
-   * that the {@code contact_name}/{@code contact_email} structural checks for PROPOSAL_SEND can be
-   * skipped. Other field checks (address, etc.) are unaffected.
-   *
-   * <p>Rationale: for legal-za INDIVIDUAL customers, recipient identity is held in {@code
-   * portal_contact}, not on the {@code Customer} entity columns. Hard-requiring those columns is a
-   * stale invariant from before {@code portal_contact} became the canonical proposal recipient. See
-   * BUG-CYCLE26-06.
-   */
-  public static List<PrerequisiteViolation> check(
-      Customer customer, PrerequisiteContext context, boolean portalContactIdentitySatisfied) {
     List<FieldCheck> requiredFields = CONTEXT_FIELDS.get(context);
     if (requiredFields == null) {
       return List.of();
@@ -126,12 +102,6 @@ public final class StructuralPrerequisiteCheck {
     List<PrerequisiteViolation> violations = new ArrayList<>();
 
     for (FieldCheck field : requiredFields) {
-      if (portalContactIdentitySatisfied
-          && context == PrerequisiteContext.PROPOSAL_SEND
-          && (field.fieldSlug().equals("contact_name")
-              || field.fieldSlug().equals("contact_email"))) {
-        continue;
-      }
       // OBS-2102: INDIVIDUAL customers do not need tax_number for activation — SARS does not issue
       // tax numbers to every natural person, and SA-ID (id_passport_number / Customer.idNumber) is
       // the canonical identifier. At invoice send the tax number is hard-enforced for COMPANY/TRUST
@@ -160,7 +130,7 @@ public final class StructuralPrerequisiteCheck {
    * Returns the set of slugs that this structural check would enforce for the given context. Used
    * by {@link PrerequisiteService} to dedup FieldDefinition-based violations <em>only</em> for
    * slugs that are already covered structurally — so promoted slugs in contexts without structural
-   * coverage (historically, any non-INVOICE/PROPOSAL/LIFECYCLE context) still get checked by the
+   * coverage (historically, any non-INVOICE/LIFECYCLE context) still get checked by the
    * custom-field path and never silently disappear.
    */
   public static Set<String> coveredSlugs(PrerequisiteContext context) {

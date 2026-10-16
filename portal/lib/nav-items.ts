@@ -5,7 +5,6 @@ import {
   FileText,
   CalendarClock,
   Receipt,
-  ClipboardList,
   MessageSquare,
   FileCheck,
   Activity,
@@ -68,12 +67,6 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
     icon: Receipt,
   },
   {
-    id: "proposals",
-    href: "/proposals",
-    labelKey: "portal.nav.proposals",
-    icon: ClipboardList,
-  },
-  {
     id: "requests",
     href: "/requests",
     labelKey: "portal.nav.requests",
@@ -110,7 +103,6 @@ export const PORTAL_NAV_LABELS: Record<string, string> = {
   "portal.nav.retainer": "Retainer",
   "portal.nav.deadlines": "Deadlines",
   "portal.nav.invoices": "Invoices",
-  "portal.nav.proposals": "Proposals",
   "portal.nav.requests": "Requests",
   "portal.nav.acceptance": "Acceptance",
   "portal.nav.activity": "Activity",

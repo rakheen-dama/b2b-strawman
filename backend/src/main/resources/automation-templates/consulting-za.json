@@ -137,39 +137,6 @@
           "sortOrder": 0
         }
       ]
-    },
-    {
-      "slug": "consulting-za-proposal-followup-5d",
-      "name": "Proposal Follow-Up (5 days)",
-      "description": "Sends a follow-up email and reminder five days after a proposal is sent so the agency can chase a decision before the lead goes cold.",
-      "category": "sales",
-      "triggerType": "PROPOSAL_SENT",
-      "triggerConfig": {},
-      "conditions": [],
-      "actions": [
-        {
-          "actionType": "SEND_NOTIFICATION",
-          "actionConfig": {
-            "recipientType": "PROJECT_OWNER",
-            "title": "Follow up on proposal: {{customer.name}}",
-            "message": "It has been 5 days since the proposal for {{customer.name}} (R{{proposal.total}}) was sent. Check in with the client and update the opportunity status."
-          },
-          "delayDuration": 5,
-          "delayUnit": "DAYS",
-          "sortOrder": 0
-        },
-        {
-          "actionType": "SEND_EMAIL",
-          "actionConfig": {
-            "recipientType": "CUSTOMER_CONTACT",
-            "subject": "Following up on our proposal",
-            "body": "Dear {{customer.name}},\n\nWe wanted to check in on the proposal we sent through five days ago for the value of R{{proposal.total}}. Please let us know if you have any questions or if there is anything we can clarify to help you make a decision.\n\nKind regards,\n{{org.name}}"
-          },
-          "delayDuration": 5,
-          "delayUnit": "DAYS",
-          "sortOrder": 1
-        }
-      ]
     }
   ]
 }

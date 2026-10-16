@@ -6,7 +6,6 @@ public enum TemplateCategory {
   COVER_LETTER,
   PROJECT_SUMMARY,
   NDA,
-  PROPOSAL,
   REPORT,
   COMPLIANCE,
   CLOSURE,

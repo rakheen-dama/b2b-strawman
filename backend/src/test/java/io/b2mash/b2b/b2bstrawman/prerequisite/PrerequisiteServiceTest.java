@@ -158,15 +158,12 @@ class PrerequisiteServiceTest {
 
   @Test
   void checkForContext_contextWithNoMatchingFields_returnsPassed() {
-    // Field is required for INVOICE_GENERATION, not PROPOSAL_SEND
-    mockFieldDefinitions(PrerequisiteContext.PROPOSAL_SEND);
-    // Structural check for PROPOSAL_SEND needs customer with promoted fields + portal contacts
-    mockCustomerWithPromotedFields(Map.of());
-    mockPortalContactWithEmail();
+    // No field definition is required for PROJECT_CREATION, and it has no structural checks
+    mockFieldDefinitions(PrerequisiteContext.PROJECT_CREATION);
 
     var result =
         service.checkForContext(
-            PrerequisiteContext.PROPOSAL_SEND, EntityType.CUSTOMER, CUSTOMER_ID);
+            PrerequisiteContext.PROJECT_CREATION, EntityType.CUSTOMER, CUSTOMER_ID);
 
     assertThat(result.passed()).isTrue();
     assertThat(result.violations()).isEmpty();
@@ -227,7 +224,6 @@ class PrerequisiteServiceTest {
         .isEqualTo("Customer Activation");
     assertThat(PrerequisiteContext.INVOICE_GENERATION.getDisplayLabel())
         .isEqualTo("Invoice Generation");
-    assertThat(PrerequisiteContext.PROPOSAL_SEND.getDisplayLabel()).isEqualTo("Proposal Sending");
     assertThat(PrerequisiteContext.DOCUMENT_GENERATION.getDisplayLabel())
         .isEqualTo("Document Generation");
     assertThat(PrerequisiteContext.PROJECT_CREATION.getDisplayLabel())
@@ -260,23 +256,6 @@ class PrerequisiteServiceTest {
     assertThat(result.violations().getFirst().code()).isEqualTo("STRUCTURAL");
     assertThat(result.violations().getFirst().message())
         .contains("email address or portal contact");
-  }
-
-  @Test
-  void structuralCheck_proposalSend_missingPortalContact_returnsViolation() {
-    mockFieldDefinitions(PrerequisiteContext.PROPOSAL_SEND);
-    // Customer with all promoted fields set (structural field checks pass)
-    mockCustomerWithPromotedFields(Map.of());
-    when(portalContactRepository.findByCustomerId(CUSTOMER_ID)).thenReturn(List.of());
-
-    var result =
-        service.checkForContext(
-            PrerequisiteContext.PROPOSAL_SEND, EntityType.CUSTOMER, CUSTOMER_ID);
-
-    assertThat(result.passed()).isFalse();
-    assertThat(result.violations()).hasSize(1);
-    assertThat(result.violations().getFirst().code()).isEqualTo("STRUCTURAL");
-    assertThat(result.violations().getFirst().message()).contains("portal contact");
   }
 
   @Test
@@ -362,33 +341,6 @@ class PrerequisiteServiceTest {
     assertThat(result.violations().getFirst().message()).contains("City");
   }
 
-  @Test
-  void structuralFieldCheck_proposalSend_customerMissingContactEmail_returnsViolation() {
-    mockFieldDefinitions(PrerequisiteContext.PROPOSAL_SEND);
-    var customer =
-        TestCustomerFactory.createCustomerWithStatus(
-            "No Contact Customer", "nocontact@test.com", MEMBER_ID, LifecycleStatus.PROSPECT);
-    customer.setCustomFields(Map.of());
-    customer.setContactName("John Doe");
-    // contactEmail is null
-    customer.setAddressLine1("123 Main St");
-    when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customer));
-    // No portal contacts either (triggers both structural field check AND portal contact check)
-    when(portalContactRepository.findByCustomerId(CUSTOMER_ID)).thenReturn(List.of());
-
-    var result =
-        service.checkForContext(
-            PrerequisiteContext.PROPOSAL_SEND, EntityType.CUSTOMER, CUSTOMER_ID);
-
-    assertThat(result.passed()).isFalse();
-    // Should have structural violation for contact_email AND portal contact violation
-    assertThat(result.violations()).hasSizeGreaterThanOrEqualTo(2);
-    assertThat(result.violations())
-        .anyMatch(v -> "STRUCTURAL".equals(v.code()) && "contact_email".equals(v.fieldSlug()));
-    assertThat(result.violations())
-        .anyMatch(v -> "STRUCTURAL".equals(v.code()) && v.message().contains("portal contact"));
-  }
-
   // --- Promoted-slug dedup / LIFECYCLE_ACTIVATION tests ---
 
   @Test
@@ -447,7 +399,7 @@ class PrerequisiteServiceTest {
   void lifecycleActivation_promotedSlugFieldDefinition_notSilentlyDropped() {
     // A FieldDefinition requires "address_line1" for LIFECYCLE_ACTIVATION. Previously this was
     // silently dropped because the dedup filter used a global promoted-slug set but the
-    // structural check only ran for INVOICE_GENERATION / PROPOSAL_SEND. Now LIFECYCLE_ACTIVATION
+    // structural check only ran for INVOICE_GENERATION. Now LIFECYCLE_ACTIVATION
     // has structural coverage, so the missing field MUST produce a violation (structural).
     var fd = createFieldDefinition("Address Line 1", "address_line1", FieldType.TEXT);
     fd.setRequiredForContexts(new ArrayList<>(List.of("LIFECYCLE_ACTIVATION")));
@@ -531,7 +483,7 @@ class PrerequisiteServiceTest {
 
   /**
    * Creates a mock customer with JSONB custom fields AND promoted entity columns set. Use this when
-   * testing INVOICE_GENERATION or PROPOSAL_SEND contexts where structural checks will run.
+   * testing INVOICE_GENERATION or LIFECYCLE_ACTIVATION contexts where structural checks will run.
    */
   private void mockCustomerWithPromotedFields(Map<String, Object> customFields) {
     var customer =

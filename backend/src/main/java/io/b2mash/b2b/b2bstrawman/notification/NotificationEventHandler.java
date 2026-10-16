@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.event.InvoiceVoidedEvent;
 import io.b2mash.b2b.b2bstrawman.event.MemberAddedToProjectEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectCompletedEvent;
-import io.b2mash.b2b.b2bstrawman.event.ProposalSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskCancelledEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
@@ -428,28 +427,6 @@ public class NotificationEventHandler {
                 "Failed to create notifications for project.archived event={}",
                 event.entityId(),
                 e);
-          }
-        });
-  }
-
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-  public void onProposalSent(ProposalSentEvent event) {
-    RequestScopes.runForTenantOnShard(
-        event.tenantId(),
-        event.orgId(),
-        event.shardId(),
-        () -> {
-          try {
-            String title =
-                "Proposal %s has been sent"
-                    .formatted(event.details().getOrDefault("proposal_number", ""));
-            var notifications =
-                notificationService.notifyAdminsAndOwners(
-                    "PROPOSAL_SENT", title, null, "PROPOSAL", event.entityId());
-            dispatchAll(notifications);
-          } catch (Exception e) {
-            log.warn(
-                "Failed to create notifications for proposal.sent event={}", event.entityId(), e);
           }
         });
   }

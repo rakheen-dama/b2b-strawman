@@ -26,8 +26,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * GAP-L-34 — verifies that creating a customer (PROSPECT, no lifecycle transition) auto-creates a
- * PortalContact so downstream firm-side portal flows (information requests, proposals, fee notes)
- * are unblocked. Complements the pre-existing PROSPECT → ONBOARDING auto-creation covered by {@link
+ * PortalContact so downstream firm-side portal flows (information requests, fee notes) are
+ * unblocked. Complements the pre-existing PROSPECT → ONBOARDING auto-creation covered by {@link
  * PortalContactAutoCreationTest}.
  */
 @SpringBootTest

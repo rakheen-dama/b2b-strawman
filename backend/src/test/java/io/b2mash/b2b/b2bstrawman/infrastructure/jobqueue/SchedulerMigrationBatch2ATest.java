@@ -63,12 +63,11 @@ class SchedulerMigrationBatch2ATest {
   }
 
   @Test
-  void allSevenBatch2AHandlersRegisteredWithCorrectJobTypes() {
+  void allSixBatch2AHandlersRegisteredWithCorrectJobTypes() {
     Set<String> expectedTypes =
         Set.of(
             "recurring_schedule_execute",
             "dormancy_check",
-            "proposal_expiry",
             "acceptance_expiry",
             "magic_link_cleanup",
             "ai_gate_expiry",
@@ -84,7 +83,7 @@ class SchedulerMigrationBatch2ATest {
   }
 
   @Test
-  void allTwelveHandlersRegisteredInRegistry() {
+  void allElevenHandlersRegisteredInRegistry() {
     Set<String> allExpectedTypes =
         Set.of(
             // Batch 1 (5)
@@ -93,17 +92,16 @@ class SchedulerMigrationBatch2ATest {
             "accounting_sync_drain",
             "accounting_payment_poll",
             "time_reminder_check",
-            // Batch 2A (7)
+            // Batch 2A (6)
             "recurring_schedule_execute",
             "dormancy_check",
-            "proposal_expiry",
             "acceptance_expiry",
             "magic_link_cleanup",
             "ai_gate_expiry",
             "field_date_scan");
 
     assertThat(handlerRegistry.getRegisteredTypes()).containsAll(allExpectedTypes);
-    assertThat(handlerRegistry.getRegisteredTypes()).hasSizeGreaterThanOrEqualTo(12);
+    assertThat(handlerRegistry.getRegisteredTypes()).hasSizeGreaterThanOrEqualTo(11);
   }
 
   @Test
@@ -113,7 +111,6 @@ class SchedulerMigrationBatch2ATest {
     // We verify that the worker claims and processes each specific job.
     var job1 = new JobQueue("recurring_schedule_execute", TENANT_1, ORG_1, "primary", null, 1);
     var job2 = new JobQueue("dormancy_check", TENANT_1, ORG_1, "primary", null, 1);
-    var job3 = new JobQueue("proposal_expiry", TENANT_1, ORG_1, "primary", null, 1);
     var job4 = new JobQueue("acceptance_expiry", TENANT_1, ORG_1, "primary", null, 1);
     var job5 = new JobQueue("magic_link_cleanup", TENANT_1, ORG_1, "primary", null, 1);
     var job6 = new JobQueue("ai_gate_expiry", TENANT_1, ORG_1, "primary", null, 1);
@@ -121,7 +118,6 @@ class SchedulerMigrationBatch2ATest {
 
     jobQueueRepository.saveAndFlush(job1);
     jobQueueRepository.saveAndFlush(job2);
-    jobQueueRepository.saveAndFlush(job3);
     jobQueueRepository.saveAndFlush(job4);
     jobQueueRepository.saveAndFlush(job5);
     jobQueueRepository.saveAndFlush(job6);
@@ -136,7 +132,6 @@ class SchedulerMigrationBatch2ATest {
             () -> {
               var j1 = jobQueueRepository.findById(job1.getId()).orElseThrow();
               var j2 = jobQueueRepository.findById(job2.getId()).orElseThrow();
-              var j3 = jobQueueRepository.findById(job3.getId()).orElseThrow();
               var j4 = jobQueueRepository.findById(job4.getId()).orElseThrow();
               var j5 = jobQueueRepository.findById(job5.getId()).orElseThrow();
               var j6 = jobQueueRepository.findById(job6.getId()).orElseThrow();
@@ -144,7 +139,6 @@ class SchedulerMigrationBatch2ATest {
 
               assertThat(j1.getStatus()).isIn(JobStatus.COMPLETED, JobStatus.DEAD_LETTER);
               assertThat(j2.getStatus()).isIn(JobStatus.COMPLETED, JobStatus.DEAD_LETTER);
-              assertThat(j3.getStatus()).isIn(JobStatus.COMPLETED, JobStatus.DEAD_LETTER);
               assertThat(j4.getStatus()).isIn(JobStatus.COMPLETED, JobStatus.DEAD_LETTER);
               assertThat(j5.getStatus()).isIn(JobStatus.COMPLETED, JobStatus.DEAD_LETTER);
               assertThat(j6.getStatus()).isIn(JobStatus.COMPLETED, JobStatus.DEAD_LETTER);

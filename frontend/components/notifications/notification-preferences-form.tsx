@@ -24,11 +24,6 @@ const NOTIFICATION_TYPE_LABELS: Record<string, { label: string; category: string
   MEMBER_INVITED: { label: "Member Invited", category: "Collaboration" },
   DOCUMENT_GENERATED: { label: "Document Generated", category: "Collaboration" },
   ACCEPTANCE_COMPLETED: { label: "Acceptance Completed", category: "Collaboration" },
-  // Proposals
-  PROPOSAL_SENT: { label: "Proposal Sent", category: "Proposals" },
-  PROPOSAL_ACCEPTED: { label: "Proposal Accepted", category: "Proposals" },
-  PROPOSAL_DECLINED: { label: "Proposal Declined", category: "Proposals" },
-  PROPOSAL_EXPIRED: { label: "Proposal Expired", category: "Proposals" },
   // Billing & Invoicing
   BUDGET_ALERT: { label: "Budget Alert", category: "Billing & Invoicing" },
   INVOICE_APPROVED: { label: "Invoice Approved", category: "Billing & Invoicing" },
@@ -127,7 +122,6 @@ export function NotificationPreferencesForm({
     "Tasks",
     "Projects",
     "Collaboration",
-    "Proposals",
     "Billing & Invoicing",
     "Client Requests",
     "Scheduling",

@@ -26,28 +26,6 @@
       ]
     },
     {
-      "slug": "engagement-letter-followup",
-      "name": "Engagement Letter Follow-up",
-      "description": "Creates a follow-up task when an engagement letter (proposal) is sent to the client",
-      "category": "engagement",
-      "triggerType": "PROPOSAL_SENT",
-      "triggerConfig": {},
-      "conditions": [],
-      "actions": [
-        {
-          "actionType": "CREATE_TASK",
-          "actionConfig": {
-            "title": "Follow up on engagement letter: {{customer.name}}",
-            "description": "The engagement letter for {{customer.name}} was sent. Follow up to confirm receipt and obtain signed copy.",
-            "assignToType": "PROJECT_OWNER"
-          },
-          "delayDuration": 7,
-          "delayUnit": "DAYS",
-          "sortOrder": 0
-        }
-      ]
-    },
-    {
       "slug": "investment-maturity-reminder",
       "name": "Investment Maturity Reminder",
       "description": "Sends a notification 30 days before a trust investment reaches its maturity date",

@@ -103,7 +103,6 @@ describe("FieldDefinitionDialog", () => {
 
     expect(screen.getByLabelText("Customer Activation")).toBeInTheDocument();
     expect(screen.getByLabelText("Invoice Generation")).toBeInTheDocument();
-    expect(screen.getByLabelText("Proposal Sending")).toBeInTheDocument();
     expect(screen.getByLabelText("Document Generation")).toBeInTheDocument();
     expect(screen.getByLabelText("Project Creation")).toBeInTheDocument();
 

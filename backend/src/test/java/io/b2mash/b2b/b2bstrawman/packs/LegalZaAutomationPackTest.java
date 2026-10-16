@@ -47,7 +47,6 @@ class LegalZaAutomationPackTest {
   private static final List<String> EXPECTED_SLUGS =
       List.of(
           "matter-onboarding-reminder",
-          "engagement-letter-followup",
           "investment-maturity-reminder",
           "reconciliation-overdue-reminder",
           "pending-approval-aging");

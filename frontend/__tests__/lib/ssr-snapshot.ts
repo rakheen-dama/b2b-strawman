@@ -1,5 +1,5 @@
 /**
- * SSR snapshot harness — generalised from PR #1262's `CreateProposalDialog`
+ * SSR snapshot harness — generalised from PR #1262's dialog SSR
  * structural assertion (audit-03 fix-spec recommendation #4).
  *
  * The bug class this defends against is *silent structural drift* in a
@@ -8,8 +8,8 @@
  * LZKC-002 added: React 19's `useId` is only SSR-stable when the SSR tree
  * and the client's first render are structurally identical. Under the org
  * app-shell (which has client-divergent nodes) SSR-stamped radix ids are a
- * hydration hazard, so `CreateProposalDialog` deliberately SSRs an id-free
- * bare trigger (mount-gate), while dialogs on hydration-stable subtrees may
+ * hydration hazard, so dialogs mounted there should SSR an id-free bare
+ * trigger (mount-gate), while dialogs on hydration-stable subtrees may
  * still SSR the full Radix wrapper (e.g. `LogExpenseDialog`).
  *
  * `renderDialogToSsr` runs a JSX element through `react-dom/server`'s

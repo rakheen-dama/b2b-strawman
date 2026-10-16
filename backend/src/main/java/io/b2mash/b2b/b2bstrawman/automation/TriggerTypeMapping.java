@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.event.InvoiceVoidedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectReopenedEvent;
-import io.b2mash.b2b.b2bstrawman.event.ProposalSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TimeEntryChangedEvent;
@@ -41,7 +40,6 @@ public final class TriggerTypeMapping {
           Map.entry(InvoiceVoidedEvent.class, TriggerType.INVOICE_STATUS_CHANGED),
           Map.entry(
               InformationRequestCompletedEvent.class, TriggerType.INFORMATION_REQUEST_COMPLETED),
-          Map.entry(ProposalSentEvent.class, TriggerType.PROPOSAL_SENT),
           Map.entry(CustomerStatusChangedEvent.class, TriggerType.CUSTOMER_STATUS_CHANGED),
           Map.entry(FieldDateApproachingEvent.class, TriggerType.FIELD_DATE_APPROACHING));
 

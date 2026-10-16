@@ -79,7 +79,7 @@ public final class TestChecklistHelper {
     String idNumber = (String) body.getOrDefault("idNumber", null);
     // Build a minimal PUT payload that preserves identity + name/email and fills the four
     // structural slugs enforced by LIFECYCLE_ACTIVATION (address_line1, city, country,
-    // tax_number). Contact name/email are filled too so PROPOSAL_SEND tests pass.
+    // tax_number). Contact name/email are filled too.
     String payload =
         """
         {

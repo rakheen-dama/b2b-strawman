@@ -55,10 +55,6 @@ vi.mock("@/components/templates/SaveAsTemplateDialog", () => ({
   SaveAsTemplateDialog: () => <div data-testid="save-template-dialog" />,
 }));
 
-vi.mock("@/components/proposals/create-proposal-dialog", () => ({
-  CreateProposalDialog: () => <div data-testid="create-proposal-dialog" />,
-}));
-
 // Mock standalone components rendered outside dropdown
 vi.mock("@/components/templates/GenerateDocumentDropdown", () => ({
   GenerateDocumentDropdown: () => (
@@ -124,7 +120,6 @@ const defaultProps = {
   projectTags: [] as TagResponse[],
   project: mockProject,
   tasks: [],
-  primaryCustomerLifecycleStatus: "ACTIVE",
 };
 
 // ---- Tests ----

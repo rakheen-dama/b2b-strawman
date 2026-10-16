@@ -15,7 +15,7 @@ public enum AuditEventGroup {
   /** Compliance milestones such as matter closures and audit-log exports. */
   COMPLIANCE,
 
-  /** Financial activity such as trust transactions, invoices, and proposals. */
+  /** Financial activity such as trust transactions and invoices. */
   FINANCIAL,
 
   /** Data-protection events (DSAR, export, anonymisation). */

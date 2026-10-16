@@ -4,8 +4,7 @@ import { getPortalJwt, loginAsPortalContact } from "../../helpers/auth";
 /**
  * Epic 500A — Portal client-POV 90-day lifecycle: Day 14 → Day 30.
  *
- * Exercises checkpoints 4–6 from `qa/testplan/demos/portal-client-90day-keycloak.md`:
- *   - Day 14: Client reviews + accepts proposal                                  [all profiles]
+ * Exercises checkpoints 5–6 from `qa/testplan/demos/portal-client-90day-keycloak.md`:
  *   - Day 21: Trust-deposit nudge, views balance on /trust                       [legal-za only]
  *   - Day 30: Client views hour-bank remaining + consumption on /retainer        [consulting-za / legal-za]
  *
@@ -26,7 +25,7 @@ const PORTAL_EMAIL =
   process.env.PORTAL_CONTACT_EMAIL || "sipho.portal@example.com";
 const SKIP = process.env.SKIP_PORTAL_BASELINES === "true";
 
-test.describe.serial("Day 14–30 — Portal Client Lifecycle (Checkpoints 4–6)", () => {
+test.describe.serial("Day 14–30 — Portal Client Lifecycle (Checkpoints 5–6)", () => {
   test.beforeAll(async () => {
     test.skip(
       SKIP,
@@ -44,90 +43,6 @@ test.describe.serial("Day 14–30 — Portal Client Lifecycle (Checkpoints 4–6
       return;
     }
     await loginAsPortalContact(page, jwt);
-  });
-
-  // ── Checkpoint 4 — Day 14: proposal review + accept ────────────────────
-  test("Day 14: Client opens proposal list and detail view", async ({ page }) => {
-    await page.goto("/proposals");
-    await page.waitForLoadState("domcontentloaded");
-    await page.waitForTimeout(500);
-
-    const main = page.locator("main");
-    if (!(await main.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "/proposals not rendered — tenant may not have proposals seeded");
-      return;
-    }
-
-    // Click into the first pending proposal row/link
-    const proposalLink = page
-      .getByRole("link", { name: /proposal|pending|review/i })
-      .first();
-    if (await proposalLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await proposalLink.click();
-      await page.waitForLoadState("domcontentloaded");
-      await page.waitForTimeout(500);
-    }
-
-    await expect(page).toHaveScreenshot("day-14-proposal-review.png", {
-      fullPage: true,
-      animations: "disabled",
-    });
-  });
-
-  test("Day 14: Client accepts proposal", async ({ page }) => {
-    await page.goto("/proposals");
-    await page.waitForLoadState("domcontentloaded");
-    await page.waitForTimeout(500);
-
-    const proposalLink = page
-      .getByRole("link", { name: /proposal|pending|review/i })
-      .first();
-    if (!(await proposalLink.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "No pending proposal rendered — firm-side prerequisite not met");
-      return;
-    }
-
-    await proposalLink.click();
-    await page.waitForLoadState("domcontentloaded");
-    await page.waitForTimeout(500);
-
-    const acceptBtn = page
-      .getByRole("button", { name: /accept|approve|agree/i })
-      .first();
-    if (!(await acceptBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "Accept action not rendered — proposal may already be accepted");
-      return;
-    }
-
-    await acceptBtn.click();
-    await page.waitForTimeout(800);
-
-    // Some variants route through a confirm dialog; others are inline.
-    const confirmBtn = page
-      .getByRole("button", { name: /confirm|yes|accept/i })
-      .first();
-    if (await confirmBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await confirmBtn.click();
-      await page.waitForTimeout(1000);
-    }
-
-    await page.waitForLoadState("domcontentloaded");
-
-    // Soft assertion: accepted state indicator
-    expect
-      .soft(
-        await page
-          .getByText(/accepted|agreed|confirmed/i)
-          .first()
-          .isVisible({ timeout: 5000 })
-          .catch(() => false),
-      )
-      .toBeTruthy();
-
-    await expect(page).toHaveScreenshot("day-14-proposal-accepted.png", {
-      fullPage: true,
-      animations: "disabled",
-    });
   });
 
   // ── Checkpoint 5 — Day 21: trust balance (legal-za only) ───────────────

@@ -22,7 +22,7 @@ import org.springframework.test.context.TestConstructor;
  *   <li>{@code severities = {NOTICE}} → prefix-matched rows under {@code matter.closure.*}
  *       included, but the CRITICAL exact-string {@code matter.closure.override_used} is excluded
  *       via the prefix-vs-exact conflict logic.
- *   <li>{@code severities = {INFO}} → INFO-registered prefixes (invoice.*, proposal.*) AND
+ *   <li>{@code severities = {INFO}} → INFO-registered prefixes (e.g. invoice.*) AND
  *       default-fallback rows (eventTypes not in the registry, e.g. {@code task.created}) are
  *       returned.
  * </ul>

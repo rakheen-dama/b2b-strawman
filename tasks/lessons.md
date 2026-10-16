@@ -212,3 +212,8 @@
 - A `next/font/google` resolution error in a file the diff doesn't touch, on a tree whose CI build is green → suspect the local `.next` cache first. Re-run once with `rm -rf .next` before investigating code.
 - Marker-grade frontend verifies should start from a clean `.next` (`rm -rf .next` before `pnpm run build`) so the verify can't inherit a builder's cache state.
 - Still record the first failure honestly in the marker summary / PR; the clean rerun is the evidence, not the assumption.
+
+## `backend/scripts/verify.sh` appends args AFTER `verify` — `verify.sh clean` runs verify, then wipes the reports (2026-10-16)
+- `verify.sh` does `exec caffeinate -is ./mvnw verify "$@"`, so `verify.sh clean -q` executes goals in order `verify clean`: the suite runs, then `clean` deletes `target/surefire-reports` — a failure would leave nothing to triage. Caught during Epic 597 only because the process list showed `verify clean -q`.
+- Killing a `nohup bash -c '…; echo EXIT > marker'` wrapper with `pkill -f` on a pattern does NOT reliably kill the exec'd Maven/Surefire JVMs — two verifies ended up sharing one `target/`. After any abort: `ps -p <pids>` to confirm death, then `kill -9` by PID before relaunching.
+- **How to apply:** for a clean full verify run `bash scripts/verify-preflight.sh` then `caffeinate -is ./mvnw clean verify -q` (goal order explicit), or call `verify.sh` with no positional goals.

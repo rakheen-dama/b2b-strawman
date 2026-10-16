@@ -1,1 +1,7 @@
-{"commit":"1d492b74a+LZKC-031-pr2","command":"pnpm run lint && pnpm run build && pnpm test && pnpm run format:check","exit":0,"ts":"2026-07-13T11:52:23Z","summary":"42 files / 194 passed / 0 failed, lint 0 errors (7 pre-existing warnings), prettier clean (fix/LZKC-031-pr2 worktree; log scratchpad/lzkc031/portal-gate2.log; first run had 1 load-induced comment-section timeout, 3/3 isolated re-runs + this clean full re-run green)"}
+{
+  "commit": "6a9373a0c",
+  "command": "cd portal && pnpm install && pnpm run lint && rm -rf .next && pnpm run build && pnpm test",
+  "exit": 0,
+  "ts": "2026-10-16T18:18:46Z",
+  "summary": "Epic 597 / PR #1566 final head: lint 0 errors/6 warnings (pre-existing); build OK (clean .next); vitest 42 files, 193 passed. Note: CI Portal job on this head timed out comment-section.test.tsx 'close to limit' (5000ms; types 1850 chars per-keystroke, ~3.2s locally) — untouched pre-existing timing defect, passed on prior CI run of this PR; re-run requested."
+}

@@ -1,7 +1,7 @@
 {
-  "commit": "d29c39556",
-  "command": "cd frontend && pnpm install && pnpm run lint && pnpm run build && pnpm test && pnpm run format:check",
+  "commit": "6a9373a0c",
+  "command": "cd frontend && pnpm install && pnpm run lint && rm -rf .next && pnpm run build && pnpm test && pnpm run format:check",
   "exit": 0,
-  "ts": "2026-10-16T07:06:09Z",
-  "summary": "Epic 596 / PR #1565 worktree: lint 0, build 0 (clean .next rerun; first run hit stale-cache next/font/google Turbopack error), vitest 399 files / 2500 passed / 2 skipped, format:check 0"
+  "ts": "2026-10-16T18:18:46Z",
+  "summary": "Epic 597 / PR #1566 final head: lint 0 errors/103 warnings (pre-existing); build OK (clean .next); vitest 390 files, 2453 passed | 2 skipped; prettier clean."
 }

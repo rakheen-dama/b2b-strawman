@@ -164,19 +164,6 @@ public class OrgSettings {
   private ExpenseSettings expense = new ExpenseSettings();
 
   /**
-   * Capacity-planning group (Wave 3.4): the firm-wide default weekly capacity hours. Persisted
-   * inline on {@code org_settings} via {@code @Embedded} — column name/precision pinned by
-   * {@code @AttributeOverride} for zero schema change. Single nullable column, so it can
-   * materialise as NULL on reload; initialised non-null + lazy-fallback {@link #getCapacity()}
-   * keeps it NPE-safe.
-   */
-  @Embedded
-  @AttributeOverride(
-      name = "defaultWeeklyCapacityHours",
-      column = @Column(name = "default_weekly_capacity_hours", precision = 5, scale = 2))
-  private CapacitySettings capacity = new CapacitySettings();
-
-  /**
    * Time-tracking reminder group (Wave 3.5): the daily time-entry reminder enabled toggle,
    * working-day CSV, fire time, and minimum-minutes threshold. Persisted inline on {@code
    * org_settings} via {@code @Embedded} — column names pinned by {@code @AttributeOverride} for
@@ -361,14 +348,6 @@ public class OrgSettings {
     return expense;
   }
 
-  /** Returns the capacity-planning settings group. Never null. */
-  public CapacitySettings getCapacity() {
-    if (capacity == null) {
-      capacity = new CapacitySettings();
-    }
-    return capacity;
-  }
-
   /** Returns the billing-run configuration settings group. Never null. */
   public BillingSettings getBilling() {
     if (billing == null) {
@@ -424,10 +403,10 @@ public class OrgSettings {
 
   /**
    * Bumps {@code updatedAt} to now. Embeddable-group setters
-   * (tax/billing/capacity/expense/time-reminder/pack-status/data-protection/data-request) do not
-   * touch the owning entity's timestamp; service methods that mutate a group through {@link
-   * #getTax()}/{@link #getBilling()}/etc. call this to preserve the explicit timestamp-bump
-   * semantics the former top-level entity mutators provided.
+   * (tax/billing/expense/time-reminder/pack-status/data-protection/data-request) do not touch the
+   * owning entity's timestamp; service methods that mutate a group through {@link #getTax()}/{@link
+   * #getBilling()}/etc. call this to preserve the explicit timestamp-bump semantics the former
+   * top-level entity mutators provided.
    */
   public void touchUpdatedAt() {
     this.updatedAt = Instant.now();

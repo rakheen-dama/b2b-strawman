@@ -46,7 +46,6 @@ public class OrgSettingsService {
 
   private static final Logger log = LoggerFactory.getLogger(OrgSettingsService.class);
   private static final String DEFAULT_CURRENCY = "USD";
-  private static final BigDecimal DEFAULT_WEEKLY_CAPACITY_HOURS = new BigDecimal("40.00");
   private static final Duration LOGO_URL_EXPIRY = Duration.ofHours(1);
   private static final long MAX_LOGO_SIZE = 2 * 1024 * 1024; // 2MB
   private static final java.util.Set<String> ALLOWED_LOGO_CONTENT_TYPES =
@@ -134,7 +133,6 @@ public class OrgSettingsService {
                 "17:00", // timeReminderTime
                 4.0, // timeReminderMinHours
                 null, // defaultExpenseMarkupPercent
-                DEFAULT_WEEKLY_CAPACITY_HOURS, // defaultWeeklyCapacityHours
                 50, // billingBatchAsyncThreshold
                 5, // billingEmailRateLimit
                 null, // defaultBillingRunCurrency
@@ -343,9 +341,6 @@ public class OrgSettingsService {
             : null,
         settings.getTimeReminder().getTimeReminderMinHours(),
         settings.getExpense().getDefaultExpenseMarkupPercent(),
-        settings.getCapacity().getDefaultWeeklyCapacityHours() != null
-            ? settings.getCapacity().getDefaultWeeklyCapacityHours()
-            : DEFAULT_WEEKLY_CAPACITY_HOURS,
         settings.getBilling().getBillingBatchAsyncThreshold(),
         settings.getBilling().getBillingEmailRateLimit(),
         settings.getBilling().getDefaultBillingRunCurrency(),
@@ -875,49 +870,6 @@ public class OrgSettingsService {
         c.getStage2DaysOverdue(),
         c.getStage3DaysOverdue(),
         c.getEscalateDaysOverdue());
-  }
-
-  /**
-   * Returns the org default weekly capacity hours, falling back to 40.0 if no settings row or null
-   * field.
-   */
-  @Transactional(readOnly = true)
-  public BigDecimal getDefaultWeeklyCapacityHours() {
-    return orgSettingsRepository
-        .findForCurrentTenant()
-        .map(s -> s.getCapacity().getDefaultWeeklyCapacityHours())
-        .orElse(DEFAULT_WEEKLY_CAPACITY_HOURS);
-  }
-
-  /** Updates the default weekly capacity hours. Requires admin or owner role. */
-  @Transactional
-  public SettingsResponse updateDefaultWeeklyCapacityHours(BigDecimal hours, ActorContext actor) {
-    requireAdminOrOwner(actor.orgRole());
-
-    var settings =
-        orgSettingsRepository
-            .findForCurrentTenant()
-            .orElseGet(
-                () -> {
-                  var s = new OrgSettings(DEFAULT_CURRENCY);
-                  return orgSettingsRepository.save(s);
-                });
-
-    settings.getCapacity().setDefaultWeeklyCapacityHours(hours);
-    settings.touchUpdatedAt();
-    settings = orgSettingsRepository.save(settings);
-
-    log.info("Updated default weekly capacity hours to {}", hours);
-
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("org_settings.capacity_updated")
-            .entityType("org_settings")
-            .entityId(settings.getId())
-            .details(Map.of("default_weekly_capacity_hours", hours.toString()))
-            .build());
-
-    return toSettingsResponse(settings);
   }
 
   /** Updates batch billing settings. */

@@ -60,29 +60,27 @@ class ConsultingZaProfileProvisioningTest {
     assertThat(p.profileId()).isEqualTo("consulting-za");
     assertThat(p.name()).isEqualTo("South African Agency & Consulting Firm");
     assertThat(p.currency()).isEqualTo("ZAR");
-    // GAP-C-04 + GAP-C-07: consulting-za ships with resource_planning (TeamUtilizationWidget)
-    // and automation_builder (Automations UI) enabled so the dashboard and Day-45 automations
-    // checkpoint work without manual module toggling. GAP-P-01 also enables information_requests.
+    // GAP-C-07: consulting-za ships with automation_builder (Automations UI) enabled so the
+    // Day-45 automations checkpoint works without manual module toggling. GAP-P-01 also enables
+    // information_requests. (The resource-planning module was removed in Phase 86 / Epic 599.)
     assertThat(p.enabledModules())
-        .containsExactlyInAnyOrder(
-            "resource_planning", "automation_builder", "information_requests");
+        .containsExactlyInAnyOrder("automation_builder", "information_requests");
     assertThat(p.terminologyNamespace()).isEqualTo("en-ZA-consulting");
     assertThat(p.packs()).containsKey("field");
   }
 
   @Test
-  void orgSettingsEnablesResourcePlanningAndAutomationBuilder() {
-    // GAP-C-04 + GAP-C-07: verify the freshly provisioned consulting-za tenant has both
-    // modules written to org_settings.enabled_modules so moduleGuard.requireModule(...) does
-    // not 403 on UtilizationService / AutomationRuleController.
+  void orgSettingsEnablesAutomationBuilderAndInformationRequests() {
+    // GAP-C-07 + GAP-P-01: verify the freshly provisioned consulting-za tenant has both modules
+    // written to org_settings.enabled_modules so moduleGuard.requireModule(...) does not 403 on
+    // AutomationRuleController or the portal information-request flows.
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
                   assertThat(settings.getEnabledModules())
-                      .containsExactlyInAnyOrder(
-                          "resource_planning", "automation_builder", "information_requests");
+                      .containsExactlyInAnyOrder("automation_builder", "information_requests");
                 }));
   }
 

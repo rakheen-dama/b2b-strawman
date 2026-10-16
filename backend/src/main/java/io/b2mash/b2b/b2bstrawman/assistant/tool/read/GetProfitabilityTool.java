@@ -77,7 +77,7 @@ public class GetProfitabilityTool implements AssistantTool {
           return Map.of("error", "Invalid projectId format: " + projectIdStr);
         }
 
-        var response = reportService.getProjectProfitability(projectId, null, null, actor, false);
+        var response = reportService.getProjectProfitability(projectId, null, null, actor);
 
         var result = new LinkedHashMap<String, Object>();
         result.put("type", "project");
@@ -95,7 +95,7 @@ public class GetProfitabilityTool implements AssistantTool {
         return Map.of("error", "Invalid customerId format: " + customerIdStr);
       }
 
-      var response = reportService.getCustomerProfitability(customerId, null, null, actor, false);
+      var response = reportService.getCustomerProfitability(customerId, null, null, actor);
 
       var result = new LinkedHashMap<String, Object>();
       result.put("type", "customer");

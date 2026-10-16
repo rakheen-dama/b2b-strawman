@@ -31,7 +31,6 @@ public record SettingsResponse(
     String timeReminderTime,
     Double timeReminderMinHours,
     BigDecimal defaultExpenseMarkupPercent,
-    BigDecimal defaultWeeklyCapacityHours,
     Integer billingBatchAsyncThreshold,
     Integer billingEmailRateLimit,
     String defaultBillingRunCurrency,

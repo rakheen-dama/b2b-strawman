@@ -76,21 +76,16 @@ class ModuleSettingsIntegrationTest {
   // --- Task 470.13 case 1 ---
   @Test
   @Order(1)
-  void getModules_returnsFourHorizontalModulesAllDisabledByDefault() throws Exception {
+  void getModules_returnsThreeHorizontalModulesAllDisabledByDefault() throws Exception {
     mockMvc
         .perform(
             get("/api/settings/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_msi_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.modules.length()").value(4))
+        .andExpect(jsonPath("$.modules.length()").value(3))
         .andExpect(
             jsonPath(
                 "$.modules[*].id",
-                containsInAnyOrder(
-                    "resource_planning",
-                    "bulk_billing",
-                    "automation_builder",
-                    "information_requests")))
-        .andExpect(jsonPath("$.modules[?(@.id == 'resource_planning')].enabled", hasItem(false)))
+                containsInAnyOrder("bulk_billing", "automation_builder", "information_requests")))
         .andExpect(jsonPath("$.modules[?(@.id == 'bulk_billing')].enabled", hasItem(false)))
         .andExpect(jsonPath("$.modules[?(@.id == 'automation_builder')].enabled", hasItem(false)))
         .andExpect(
@@ -108,10 +103,10 @@ class ModuleSettingsIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"enabledModules": ["resource_planning", "bulk_billing"]}
+                    {"enabledModules": ["information_requests", "bulk_billing"]}
                     """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.enabledModules", hasItems("resource_planning", "bulk_billing")));
+        .andExpect(jsonPath("$.enabledModules", hasItems("information_requests", "bulk_billing")));
   }
 
   // --- Task 470.13 case 3 ---
@@ -122,7 +117,7 @@ class ModuleSettingsIntegrationTest {
         .perform(
             get("/api/settings/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_msi_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.modules[?(@.id == 'resource_planning')].enabled", hasItem(true)))
+        .andExpect(jsonPath("$.modules[?(@.id == 'information_requests')].enabled", hasItem(true)))
         .andExpect(jsonPath("$.modules[?(@.id == 'bulk_billing')].enabled", hasItem(true)))
         .andExpect(jsonPath("$.modules[?(@.id == 'automation_builder')].enabled", hasItem(false)));
   }
@@ -177,7 +172,7 @@ class ModuleSettingsIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"enabledModules": ["resource_planning", "automation_builder"]}
+                    {"enabledModules": ["information_requests", "automation_builder"]}
                     """))
         .andExpect(status().isOk());
 
@@ -192,7 +187,7 @@ class ModuleSettingsIntegrationTest {
                     {"enabledModules": []}
                     """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.enabledModules", not(hasItem("resource_planning"))))
+        .andExpect(jsonPath("$.enabledModules", not(hasItem("information_requests"))))
         .andExpect(jsonPath("$.enabledModules", not(hasItem("bulk_billing"))))
         .andExpect(jsonPath("$.enabledModules", not(hasItem("automation_builder"))));
 
@@ -201,7 +196,7 @@ class ModuleSettingsIntegrationTest {
         .perform(
             get("/api/settings/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_msi_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.modules[?(@.id == 'resource_planning')].enabled", hasItem(false)))
+        .andExpect(jsonPath("$.modules[?(@.id == 'information_requests')].enabled", hasItem(false)))
         .andExpect(jsonPath("$.modules[?(@.id == 'bulk_billing')].enabled", hasItem(false)))
         .andExpect(jsonPath("$.modules[?(@.id == 'automation_builder')].enabled", hasItem(false)));
   }
@@ -226,7 +221,7 @@ class ModuleSettingsIntegrationTest {
                 "$.enabledModules",
                 hasItems("trust_accounting", "court_calendar", "conflict_check", "lssa_tariff")));
 
-    // Enable resource_planning via module toggle
+    // Enable automation_builder via module toggle
     mockMvc
         .perform(
             put("/api/settings/modules")
@@ -234,7 +229,7 @@ class ModuleSettingsIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"enabledModules": ["resource_planning"]}
+                    {"enabledModules": ["automation_builder"]}
                     """))
         .andExpect(status().isOk())
         .andExpect(
@@ -245,7 +240,7 @@ class ModuleSettingsIntegrationTest {
                     "court_calendar",
                     "conflict_check",
                     "lssa_tariff",
-                    "resource_planning")));
+                    "automation_builder")));
 
     // Double-check via GET /api/settings
     mockMvc
@@ -259,7 +254,7 @@ class ModuleSettingsIntegrationTest {
                     "court_calendar",
                     "conflict_check",
                     "lssa_tariff",
-                    "resource_planning")));
+                    "automation_builder")));
   }
 
   // --- Task 470.13 case 8 ---
@@ -273,7 +268,7 @@ class ModuleSettingsIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"enabledModules": ["resource_planning"]}
+                    {"enabledModules": ["information_requests"]}
                     """))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.title").value("Access denied"))
@@ -332,10 +327,10 @@ class ModuleSettingsIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"enabledModules": ["resource_planning"]}
+                    {"enabledModules": ["automation_builder"]}
                     """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.enabledModules", hasItem("resource_planning")));
+        .andExpect(jsonPath("$.enabledModules", hasItem("automation_builder")));
 
     // Step 2: change vertical profile to legal-za (adds legal vertical modules).
     mockMvc
@@ -356,15 +351,15 @@ class ModuleSettingsIntegrationTest {
                     "court_calendar",
                     "conflict_check",
                     "lssa_tariff",
-                    "resource_planning")));
+                    "automation_builder")));
 
-    // Step 3: GET /api/settings/modules must show resource_planning as enabled.
+    // Step 3: GET /api/settings/modules must show automation_builder as enabled.
     mockMvc
         .perform(
             get("/api/settings/modules")
                 .with(TestJwtFactory.ownerJwt(PROFILE_ORG_ID, "user_msi_profile_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.modules[?(@.id == 'resource_planning')].enabled", hasItem(true)));
+        .andExpect(jsonPath("$.modules[?(@.id == 'automation_builder')].enabled", hasItem(true)));
 
     // Step 4: GET /api/settings must contain both legal vertical + horizontal module.
     mockMvc
@@ -375,9 +370,9 @@ class ModuleSettingsIntegrationTest {
         .andExpect(
             jsonPath(
                 "$.enabledModules",
-                hasItems("trust_accounting", "court_calendar", "resource_planning")));
+                hasItems("trust_accounting", "court_calendar", "automation_builder")));
 
-    // Step 5: clearing profile (null) must still preserve resource_planning.
+    // Step 5: clearing profile (null) must still preserve automation_builder.
     mockMvc
         .perform(
             patch("/api/settings/vertical-profile")
@@ -388,7 +383,7 @@ class ModuleSettingsIntegrationTest {
                     {"verticalProfile": null}
                     """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.enabledModules", hasItem("resource_planning")))
+        .andExpect(jsonPath("$.enabledModules", hasItem("automation_builder")))
         .andExpect(jsonPath("$.enabledModules", not(hasItem("trust_accounting"))));
   }
 
@@ -412,7 +407,7 @@ class ModuleSettingsIntegrationTest {
   void putModules_preservesRegistryUnknownProfileOwnedModules() throws Exception {
     // legal-za seeds "deadlines" (vertical-profiles/legal-za.json), a slug deliberately NOT in
     // VerticalModuleRegistry — it is owned by PortalDeadlineService.MODULE_ID. After test 10 the
-    // PROFILE_ORG tenant has profile=null and enabledModules=[resource_planning]; re-applying
+    // PROFILE_ORG tenant has profile=null and enabledModules=[automation_builder]; re-applying
     // legal-za seeds the profile-owned ids again.
     mockMvc
         .perform(
@@ -443,8 +438,9 @@ class ModuleSettingsIntegrationTest {
             jsonPath(
                 "$.enabledModules",
                 hasItems("deadlines", "trust_accounting", "automation_builder")))
-        // horizontal subset is fully replaced: resource_planning was not in the request
-        .andExpect(jsonPath("$.enabledModules", not(hasItem("resource_planning"))));
+        // horizontal subset is fully replaced: legal-za's re-apply seeded bulk_billing, which was
+        // not in the request
+        .andExpect(jsonPath("$.enabledModules", not(hasItem("bulk_billing"))));
 
     // Inverse hole: disabling all horizontal modules must also preserve the unknown id.
     mockMvc

@@ -64,6 +64,9 @@ class OrgSettingsSchemaSnapshotTest {
   // V139 (Phase 86 slice 4 / Epic 598B): portal_retainer_member_display removed — deliberate,
   // authorised pin update (PortalSettings.portalRetainerMemberDisplay dropped +
   // V139__drop_portal_retainer_member_display.sql), not drift.
+  // V140 (Phase 86 slice 5 / Epic 599A): default_weekly_capacity_hours removed — deliberate,
+  // authorised pin update (capacity settings embeddable dropped + V140__drop_capacity.sql), not
+  // drift.
   private static final String EXPECTED_SNAPSHOT =
       """
       acceptance_expiry_days | integer | YES
@@ -88,7 +91,6 @@ class OrgSettingsSchemaSnapshotTest {
       default_expense_markup_percent | numeric(5,2) | YES
       default_request_reminder_days | integer | YES
       default_retention_months | integer | YES
-      default_weekly_capacity_hours | numeric(5,2) | YES
       digest_last_sent_at | timestamp with time zone | YES
       document_footer_text | text | YES
       document_signing_enabled | boolean | NO

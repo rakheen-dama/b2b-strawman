@@ -16,10 +16,10 @@ class VerticalModuleRegistryTest {
   }
 
   @Test
-  void getAllModules_returnsElevenModulesWithCorrectIds() {
+  void getAllModules_returnsTenModulesWithCorrectIds() {
     var modules = registry.getAllModules();
 
-    assertThat(modules).hasSize(11);
+    assertThat(modules).hasSize(10);
     assertThat(modules)
         .extracting(VerticalModuleRegistry.ModuleDefinition::id)
         .containsExactlyInAnyOrder(
@@ -28,7 +28,6 @@ class VerticalModuleRegistryTest {
             "conflict_check",
             "regulatory_deadlines",
             "lssa_tariff",
-            "resource_planning",
             "bulk_billing",
             "automation_builder",
             "information_requests",
@@ -91,33 +90,15 @@ class VerticalModuleRegistryTest {
   }
 
   @Test
-  void getHorizontalModules_returnsFourHorizontalModules() {
+  void getHorizontalModules_returnsThreeHorizontalModules() {
     var horizontal = registry.getHorizontalModules();
 
-    assertThat(horizontal).hasSize(4);
+    assertThat(horizontal).hasSize(3);
     assertThat(horizontal)
         .extracting(VerticalModuleRegistry.ModuleDefinition::id)
-        .containsExactlyInAnyOrder(
-            "resource_planning", "bulk_billing", "automation_builder", "information_requests");
+        .containsExactlyInAnyOrder("bulk_billing", "automation_builder", "information_requests");
     assertThat(horizontal)
         .allSatisfy(m -> assertThat(m.category()).isEqualTo(ModuleCategory.HORIZONTAL));
-  }
-
-  @Test
-  void getModule_resourcePlanningIsHorizontalWithCorrectNavItems() {
-    var module = registry.getModule("resource_planning");
-
-    assertThat(module).isPresent();
-    assertThat(module.get().name()).isEqualTo("Resource Planning");
-    assertThat(module.get().category()).isEqualTo(ModuleCategory.HORIZONTAL);
-    assertThat(module.get().defaultEnabledFor()).isEmpty();
-    assertThat(module.get().navItems()).hasSize(2);
-    assertThat(module.get().navItems().get(0).path()).isEqualTo("/resources");
-    assertThat(module.get().navItems().get(0).label()).isEqualTo("Resources");
-    assertThat(module.get().navItems().get(0).zone()).isEqualTo("work");
-    assertThat(module.get().navItems().get(1).path()).isEqualTo("/resources/utilization");
-    assertThat(module.get().navItems().get(1).label()).isEqualTo("Utilization");
-    assertThat(module.get().navItems().get(1).zone()).isEqualTo("work");
   }
 
   @Test

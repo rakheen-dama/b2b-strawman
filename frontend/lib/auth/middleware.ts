@@ -11,7 +11,6 @@ const PUBLIC_ROUTES = [
   "/signed-out",
   "/sign-up(.*)",
   "/api/webhooks(.*)",
-  "/portal(.*)",
   "/mock-login(.*)",
   "/request-access(.*)",
   "/accept-invite(.*)",

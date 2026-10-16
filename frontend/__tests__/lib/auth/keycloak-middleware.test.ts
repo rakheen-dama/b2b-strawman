@@ -73,15 +73,6 @@ describe("Keycloak BFF middleware", () => {
     expect(response.status).toBe(200);
   });
 
-  it("passes through on portal routes without SESSION cookie", async () => {
-    const middleware = await loadMiddleware();
-    const request = createRequest("/portal/some-token");
-
-    const response = (await middleware(request, {} as never)) as NextResponse;
-
-    expect(response.status).toBe(200);
-  });
-
   describe("GAP-L-22 — post-registration session handoff", () => {
     const originalFetch = globalThis.fetch;
 

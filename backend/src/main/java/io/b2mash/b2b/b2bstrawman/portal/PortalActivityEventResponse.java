@@ -89,12 +89,6 @@ public record PortalActivityEventResponse(
       case "information_request.item_accepted" -> "Information request item accepted";
       case "information_request.item_rejected" -> "Information request item needs re-submission";
       case "information_request.reminder_sent" -> "Reminder sent for information request";
-      case "proposal.sent" -> "Engagement letter sent to you";
-      case "proposal.accepted" -> "Engagement letter accepted";
-      case "proposal.declined" -> "Engagement letter declined";
-      case "proposal.expired" -> "Engagement letter expired";
-      case "proposal.withdrawn" -> "Engagement letter withdrawn";
-      case "proposal.acceptance.completed" -> "Engagement letter accepted";
       case "invoice.sent" -> "Fee note sent to you";
       case "invoice.payment_recorded" -> "Payment recorded";
       case "invoice.payment_reversed" -> "Payment reversed";

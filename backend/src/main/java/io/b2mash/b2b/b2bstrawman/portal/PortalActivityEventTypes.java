@@ -25,13 +25,6 @@ public final class PortalActivityEventTypes {
           "information_request.item_accepted",
           "information_request.item_rejected",
           "information_request.reminder_sent",
-          // Proposals / engagement letters (client-facing)
-          "proposal.sent",
-          "proposal.accepted",
-          "proposal.declined",
-          "proposal.expired",
-          "proposal.withdrawn",
-          "proposal.acceptance.completed",
           // Invoices / fee notes (client-facing)
           "invoice.sent",
           "invoice.payment_recorded",

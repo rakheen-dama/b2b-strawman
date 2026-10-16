@@ -1,14 +1,14 @@
 # QA Lifecycle: Portal Client-POV 90-Day (Keycloak Mode)
 
 **Vertical profiles**: `legal-za` / `accounting-za` / `consulting-za` (mixed — one run exercises all three vertical gating branches)
-**Story**: "The client quarter" — a portal contact receives a magic-link invitation, onboards, submits info requests, accepts a proposal, pays an invoice, downloads a Statement of Account / financial statement, and closes out the quarter on the client-facing portal at `http://localhost:3002`.
+**Story**: "The client quarter" — a portal contact receives a magic-link invitation, onboards, submits info requests, pays an invoice, downloads a Statement of Account / financial statement, and closes out the quarter on the client-facing portal at `http://localhost:3002`.
 **Stack**: Keycloak dev stack (frontend 3000 / backend 8080 / gateway 8443 / keycloak 8180 / mailpit 8025 / **portal 3002**)
 **Master doc**: `qa/testplan/demo-readiness-keycloak-master.md`
 **Driver**: `/qa-cycle-kc qa/testplan/demos/portal-client-90day-keycloak.md`
 
 **Supersedes**: none — this is the first client-POV lifecycle, deliberately distinct from the firm-side 90-day spines (`legal-za-90day-keycloak.md`, `accounting-za-90day-keycloak-v2.md`, `consulting-agency-90day-keycloak.md`).
 
-> **Scope note**: This is a **client-POV** lifecycle. Every checkpoint below is performed **on the portal** (`http://localhost:3002`) as a portal contact — **not** a firm user. The firm-side state the client reacts to (matters created, proposals issued, invoices posted, deadlines scheduled, documents generated) is assumed present via the three corresponding firm-side lifecycles, which must have been run first against the same three tenants.
+> **Scope note**: This is a **client-POV** lifecycle. Every checkpoint below is performed **on the portal** (`http://localhost:3002`) as a portal contact — **not** a firm user. The firm-side state the client reacts to (matters created, invoices posted, deadlines scheduled, documents generated) is assumed present via the three corresponding firm-side lifecycles, which must have been run first against the same three tenants.
 
 ---
 
@@ -40,19 +40,18 @@
 
 | Tenant | Firm-side lifecycle already run | Produces |
 |---|---|---|
-| `mathebula-partners` (legal-za) | `legal-za-90day-keycloak.md` Days 0–21 minimum | Matter + info requests + proposal + trust deposit |
+| `mathebula-partners` (legal-za) | `legal-za-90day-keycloak.md` Days 0–21 minimum | Matter + info requests + trust deposit |
 | `ledger-collective` (accounting-za) | `accounting-za-90day-keycloak-v2.md` Days 0–60 | Engagement + deadlines + generated financial statement |
 | `keystone-consulting` (consulting-za) | `consulting-agency-90day-keycloak.md` Days 0–30 | Retainer engagement + hour-bank + invoice |
 
 ## Demo wow moments (capture 📸 on clean pass)
 
 1. **Day 0** — Portal home populated with pending info requests for a newly onboarded client (`/home`)
-2. **Day 14** — Proposal accept flow success state (`/proposals/[id]` → Accept → confirmation)
-3. **Day 21** — Trust balance card showing first deposit (`/trust`) `[legal-za only]`
-4. **Day 30** — Hour-bank remaining + current-period consumption (`/retainer`) `[consulting-za / legal-za]`
-5. **Day 45** — Pay-invoice success state (`/invoices/[id]` → Pay → receipt)
-6. **Day 60** — Generated document download (`/deadlines` or `/projects` → open doc) `[legal-za SoA / accounting-za financial statement]`
-7. **Day 90** — Final digest + activity trail of the quarter
+2. **Day 21** — Trust balance card showing first deposit (`/trust`) `[legal-za only]`
+3. **Day 30** — Hour-bank remaining + current-period consumption (`/retainer`) `[consulting-za / legal-za]`
+4. **Day 45** — Pay-invoice success state (`/invoices/[id]` → Pay → receipt)
+5. **Day 60** — Generated document download (`/deadlines` or `/projects` → open doc) `[legal-za SoA / accounting-za financial statement]`
+6. **Day 90** — Final digest + activity trail of the quarter
 
 ---
 
@@ -131,23 +130,10 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ---
 
-## Day 14 — Review + accept proposal  `[all profiles]`
+## Day 14 — removed (Phase 86)
 
-**Actor**: Sipho Dlamini (all profiles exercise this — use the profile whose firm-side lifecycle has a proposal issued)
-
-- [ ] **14.1** Navigate to `/proposals` → verify the list renders at least one proposal in **"Pending acceptance"** state
-- [ ] **14.2** Click into the proposal → `/proposals/[id]` detail renders: scope, fee estimate / retainer terms, effective date, Accept / Decline buttons
-- [ ] **14.3** 📸 **Screenshot**: `day-14-proposal-review.png` — full proposal detail
-- [ ] **14.4** Click **Accept** → confirmation dialog or inline acceptance toggle
-- [ ] **14.5** (If required by tenant) complete acceptance step on `/acceptance` or `/accept/[token]` (some profiles route acceptance through a dedicated flow)
-- [ ] **14.6** Verify proposal status transitions to **"Accepted"** → acceptance timestamp + actor recorded
-- [ ] **14.7** 📸 **Screenshot**: `day-14-proposal-accepted.png` — success / confirmation state
-- [ ] **14.8** Navigate back to `/home` → verify proposal no longer appears in "Pending acceptance" surface
-
-**Day 14 checkpoints**
-- [ ] Proposal acceptance recorded (firm-side can verify via their proposals page)
-- [ ] No double-accept bug: clicking Accept again shows already-accepted state, not a second state transition
-- [ ] Terminology: portal copy reads "proposal" consistently (not "SOW" / "engagement letter" in the same flow)
+> The portal proposal review/accept flow was removed in Phase 86 (Epic 597, ADR-336). Steps 14.x
+> are intentionally absent.
 
 ---
 
@@ -270,16 +256,16 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Sipho Dlamini (or whichever narrator completes the quarter)
 
-- [ ] **90.1** Open Mailpit → verify final / quarter-summary digest email arrived. Subject contains "quarter summary" or "your activity" or "Q1 recap". Body summarises the period (proposals accepted, invoices paid, documents downloaded)
+- [ ] **90.1** Open Mailpit → verify final / quarter-summary digest email arrived. Subject contains "quarter summary" or "your activity" or "Q1 recap". Body summarises the period (invoices paid, documents downloaded)
 - [ ] **90.2** Click through from the digest → lands on `/home` (or `/profile` → Activity, depending on portal surface)
 - [ ] **90.3** Navigate to the activity trail view (may be `/home` scrolled to activity section, or `/profile/activity` — use whichever the portal exposes)
-- [ ] **90.4** Verify the activity trail shows **at least** the key events from prior days: Day 3 submit, Day 14 accept, Day 45 pay, Day 60 download, Day 75 mark-read, Day 85 profile update
+- [ ] **90.4** Verify the activity trail shows **at least** the key events from prior days: Day 3 submit, Day 45 pay, Day 60 download, Day 75 mark-read, Day 85 profile update
 - [ ] **90.5** Verify each entry has a timestamp and (where applicable) a deep-link back to the original context
 - [ ] **90.6** 📸 **Screenshot**: `day-90-activity-trail.png`
 
 **Day 90 checkpoints**
 - [ ] Quarter digest body matches the activity trail (no "missing event" discrepancy between email and in-app view)
-- [ ] Terminology sweep: activity trail uses client-facing vocabulary consistently (e.g. "proposal accepted", not firm-side "offer converted")
+- [ ] Terminology sweep: activity trail uses client-facing vocabulary consistently
 - [ ] No 500 / JS console errors across the full lifecycle walkthrough on a single browser session
 
 ---

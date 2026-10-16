@@ -105,11 +105,9 @@ public class AuditEventTypeRegistry {
                 "Role Capabilities Changed",
                 AuditSeverity.WARNING,
                 AuditEventGroup.SECURITY),
-            // FINANCIAL — invoice / proposal
+            // FINANCIAL — invoice
             new AuditEventTypeMetadata(
                 "invoice.*", "Invoice", AuditSeverity.INFO, AuditEventGroup.FINANCIAL),
-            new AuditEventTypeMetadata(
-                "proposal.*", "Proposal", AuditSeverity.INFO, AuditEventGroup.FINANCIAL),
             // AI SPECIALIST — Phase 70
             new AuditEventTypeMetadata(
                 "ai.specialist.invoked",

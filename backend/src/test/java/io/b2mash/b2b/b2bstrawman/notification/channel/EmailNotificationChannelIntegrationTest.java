@@ -318,32 +318,6 @@ class EmailNotificationChannelIntegrationTest {
   }
 
   @Test
-  void deliver_proposal_email_links_to_org_scoped_proposal() {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .run(
-            () -> {
-              UUID proposalId = UUID.randomUUID();
-              var notification =
-                  notificationRepository.save(
-                      new Notification(
-                          memberId,
-                          "PROPOSAL_SENT",
-                          "Proposal sent",
-                          null,
-                          "PROPOSAL",
-                          proposalId,
-                          null));
-
-              emailChannel.deliver(notification, RECIPIENT_EMAIL);
-
-              assertThat(greenMail.getReceivedMessages()).hasSize(1);
-              assertThat(decodedContent(greenMail.getReceivedMessages()[0]))
-                  .contains("/org/" + ORG_ID + "/proposals/" + proposalId);
-            });
-  }
-
-  @Test
   void deliver_budget_alert_links_to_org_scoped_project() {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)

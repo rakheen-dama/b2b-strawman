@@ -47,7 +47,6 @@ public sealed interface DomainEvent
         ExpenseCreatedEvent,
         ExpenseDeletedEvent,
         TaskRecurrenceCreatedEvent,
-        ProposalSentEvent,
         InformationRequestSentEvent,
         InformationRequestCancelledEvent,
         InformationRequestCompletedEvent,

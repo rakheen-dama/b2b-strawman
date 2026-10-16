@@ -462,10 +462,6 @@ class ProjectTemplatePrerequisiteTest {
     assertThat(afterCount[0]).isGreaterThan(beforeCount[0]);
   }
 
-  // Note: ProposalOrchestrationService follows the identical prerequisite notification pattern
-  // tested in scheduleExecution_prerequisitesNotMet_createsProjectAndNotifies above.
-  // A full proposal acceptance test exists in ProposalOrchestrationServiceTest.
-
   // --- Helpers ---
 
   private UUID[] createTemplateAndField(String uniqueSuffix) {

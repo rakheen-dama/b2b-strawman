@@ -80,22 +80,6 @@ public class ActivityMessageFormatter {
       case "project_member.removed" ->
           "%s removed %s from the project"
               .formatted(actorName, details.getOrDefault("name", "a member"));
-      case "proposal.created" ->
-          "%s created proposal \"%s\"".formatted(actorName, getProposalNumber(details));
-      case "proposal.updated" ->
-          "%s updated proposal \"%s\"".formatted(actorName, getProposalNumber(details));
-      case "proposal.deleted" ->
-          "%s deleted proposal \"%s\"".formatted(actorName, getProposalNumber(details));
-      case "proposal.sent" ->
-          "%s sent proposal \"%s\"".formatted(actorName, getProposalNumber(details));
-      case "proposal.accepted" ->
-          "Proposal \"%s\" was accepted".formatted(getProposalNumber(details));
-      case "proposal.declined" ->
-          "Proposal \"%s\" was declined".formatted(getProposalNumber(details));
-      case "proposal.expired" ->
-          "Proposal \"%s\" has expired".formatted(getProposalNumber(details));
-      case "proposal.withdrawn" ->
-          "%s withdrew proposal \"%s\"".formatted(actorName, getProposalNumber(details));
       case "information_request.created" ->
           "%s created information request %s".formatted(actorName, getRequestNumber(details));
       case "information_request.sent" ->
@@ -324,11 +308,6 @@ public class ActivityMessageFormatter {
     return member != null ? member.getAvatarUrl() : null;
   }
 
-  private String getProposalNumber(Map<String, Object> details) {
-    Object num = details.get("proposal_number");
-    return num instanceof String s ? s : "unknown";
-  }
-
   private String getRequestNumber(Map<String, Object> details) {
     Object num = details.get("request_number");
     return num instanceof String s ? s : "unknown";
@@ -364,7 +343,6 @@ public class ActivityMessageFormatter {
         Object name = details.get("name");
         yield name instanceof String s ? s : "member";
       }
-      case "proposal" -> getProposalNumber(details);
       case "information_request" -> getRequestNumber(details);
       case "request_item" -> getItemName(details);
       case "generated_document" -> getFileName(details);

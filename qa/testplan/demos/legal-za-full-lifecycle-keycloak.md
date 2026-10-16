@@ -104,12 +104,11 @@ When transitioning from `[FIRM]` to `[PORTAL]` or back:
 ## Demo wow moments (capture 📸 on clean pass)
 
 1. **Day 2** — Conflict check CLEAR + KYC Verified, on Sipho's client record `[FIRM]`
-2. **Day 8** — Proposal accept confirmation, client-POV on `/proposals/[id]` `[PORTAL]`
-3. **Day 11** — Trust balance card with first deposit, `/trust` `[PORTAL]`
-4. **Day 15** — **Isolation** — Sipho's `/home` showing only his matter; direct-URL probe to Moroka's matter denied `[PORTAL]`
-5. **Day 30** — PayFast sandbox success + receipt on `/invoices/[id]` `[PORTAL]`
-6. **Day 61** — Statement of Account PDF downloaded from `/projects/[matterId]` Documents tab `[PORTAL]`
-7. **Day 88** — Matter activity feed (firm-side) alongside client's 90-day activity trail (portal-side) — side-by-side capture
+2. **Day 11** — Trust balance card with first deposit, `/trust` `[PORTAL]`
+3. **Day 15** — **Isolation** — Sipho's `/home` showing only his matter; direct-URL probe to Moroka's matter denied `[PORTAL]`
+4. **Day 30** — PayFast sandbox success + receipt on `/invoices/[id]` `[PORTAL]`
+5. **Day 61** — Statement of Account PDF downloaded from `/projects/[matterId]` Documents tab `[PORTAL]`
+6. **Day 88** — Matter activity feed (firm-side) alongside client's 90-day activity trail (portal-side) — side-by-side capture
 
 ---
 
@@ -354,84 +353,11 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ---
 
-## Day 7 — Firm drafts + sends proposal (engagement letter)  `[FIRM]`
+## Day 7 / Day 8 — removed (Phase 86)
 
-**Actor**: Thandi Mathebula (Owner — signs proposals) — context swap, login as Thandi
-
-> **Scenario amendment (OBS-701, WONT_FIX)**: The product's proposal authoring is a
-> thin lifecycle wrapper (Title / Client / Fee Model / rate-or-retainer / Expiry).
-> There is no template-picker, no fee-estimate line-item builder, and no Tiptap
-> scope editor in the proposal dialog — those are separate surfaces:
-> doc-template instantiation lives in the matter's "Generate Document" action
-> (legal-za pack: `engagement-letter-litigation`), and matter-level fee-estimate
-> work lives on the matter's "Fee Estimate" tab (Budget). Day 7 has been rewritten
-> to drive the proposal flow that actually exists; the template/tariff/Tiptap
-> surfaces are exercised separately on Day 88 if relevant. Same pattern as Day 4
-> OBS-401/402/403.
-
-- [ ] **7.1** Navigate to matter RAF-2026-001 → click **+ New Engagement Letter** (legal-za term map for "+ New Proposal")
-- [ ] **7.2** Engagement-letter dialog opens with Client pre-filled = Sipho Dlamini (disabled, from matter context)
-- [ ] **7.3** Set Title = "Engagement Letter — Litigation (Dlamini v RAF)"
-- [ ] **7.4** Fee Model = **Hourly** (legal-za default for engagement letters); set Hourly Rate Note = "R 2,500/hr (LSSA tariff High Court Party-and-Party 2024/2025) — 30h Bob Ndlovu (attorney) + 5h Thandi Mathebula (senior partner) ≈ R 87,500.00 estimate."
-- [ ] **7.5** Set Expiry Date = Day 17 (7-day acceptance window from Day 10 effective)
-- [ ] **7.6** Click **Create Proposal** → redirected to `/org/{slug}/proposals/{id}`; status badge = **Draft**, PROP-0001 reference assigned
-- [ ] **7.7** On detail page, click **Send Proposal** → recipient combobox lists portal contacts → select `Sipho Dlamini (sipho.portal@example.com)` → click **Send**
-- [ ] **7.8** Proposal status transitions to **Sent**; **Sent: {date}** field appears in Proposal Details; action button changes to **Withdraw**
-- [ ] **7.9** Backend log confirms `Sent proposal {id} to contact {portalContactId}` and `Portal sync completed for proposal PROP-0001 after commit`
-- [ ] **7.10** Mailpit → proposal email arrives at `sipho.portal@example.com` with subject containing "Proposal" or "Engagement Letter" (depends on terminology), body contains click-through to portal proposal URL (OBS-703 fix)
-- [ ] **7.11** Verify portal `/proposals` index for Sipho shows PROP-0001 in **Awaiting Your Response** with status `SENT` (firm→portal projection)
-
-### Day 7 (cont.) — Advance the deal + attach a deal-linked proposal (Phase 80)
-
-- [ ] **7.12** Navigate to the **Pipeline** board → drag DEAL-0001 **Conflict check → Engagement** (the engagement letter just went out) → card moves, probability 60%
-- [ ] **7.13** Open the deal detail (via Sipho's **Work > Deals** tab) → **Proposals** tab (`data-testid="deal-proposals-panel"`) → click **New Proposal** → dialog "New Proposal" ("Draft a proposal attached to this deal"): Title = "Fee Agreement — Dlamini v RAF", Fee model = **Hourly** (no amount field for hourly) → **Create Proposal**
-- [ ] **7.14** Verify the deal's proposals table shows the new proposal (**PROP-0002**) with status badge **Draft** (`data-testid="deal-proposal-status-badge"`), its number linking to `/org/{slug}/proposals/{id}`. It stays Draft — the deal-side dialog is deliberately minimal (Title + Fee model only; no expiry/client picker); PROP-0001 remains the engagement letter the client accepts. NOTE: PROP-0002 must NOT appear on Sipho's portal `/proposals` index (Draft proposals are not synced)
-
-**Day 7 checkpoints**
-- [ ] Proposal lifecycle: Draft → Sent succeeds end-to-end
-- [ ] Portal email dispatched (OBS-703) — subject + body verified, link reaches `/proposals/{id}` on portal
-- [ ] Portal `/proposals` projection shows PROP-0001 (firm→portal sync)
-- [ ] Frontend console clean (no hydration mismatch on `/proposals` index — OBS-704)
-- [ ] Expiry date renders consistently with the date input (no +1-day tz drift — OBS-702)
-- [ ] Deal advanced to Engagement stage; deal-linked proposal PROP-0002 created from the deal Proposals tab, Draft, not visible on portal (Phase 80)
-
-> **Out-of-scope on Day 7 (covered separately)**:
-> - Document templates from legal-za pack (`engagement-letter-litigation`,
->   `letter-of-demand`, `power-of-attorney`, `client-trust-statement`, etc.) are
->   instantiated via the matter / customer **Generate Document** action — see
->   Day 2 customer detail (4 doc templates rendered) and matter "Generate
->   Document" surface. They are NOT wired into proposal authoring.
-> - LSSA tariff line items are surfaced under matter **Fee Estimate** tab
->   (`Budget` mapped to Fee Estimate) and via `/org/{slug}/legal/tariffs`. They
->   are NOT auto-populated into proposals.
-> - Rich-text scope authoring is not currently supported in the proposal dialog
->   — backend auto-seeds a minimal Tiptap doc from the form fields when no
->   `contentJson` is supplied (`ProposalContentSeeder.buildDefaultContent`).
-
----
-
-## Day 8 — Sipho reviews + accepts proposal  `[PORTAL]`
-
-**Context swap** — close firm context, open portal context on port 3002.
-
-**Actor**: Sipho Dlamini (returning portal contact — reuses the Day 4 magic-link session IF still valid, else re-requests one)
-
-- [ ] **8.1** Mailpit → open the proposal email → click the proposal link → lands on `/proposals/[id]` on portal
-- [ ] **8.2** Verify proposal detail page renders: scope, fee estimate breakdown (tariff lines + totals in ZAR incl. VAT), effective date, expiry, Accept / Decline buttons
-- [ ] **8.3** Verify fee estimate renders with ZAR currency symbol + VAT 15% line
-- [ ] **8.4** 📸 **Screenshot**: `day-08-proposal-review.png`
-- [ ] **8.5** Click **Accept** → acceptance confirmation dialog (or inline confirm)
-- [ ] **8.6** (If tenant routes through `/accept/[token]`) complete the acceptance step — portal reads "You are about to accept this proposal on behalf of Sipho Dlamini"
-- [ ] **8.7** Confirm acceptance → proposal status transitions to **Accepted**, timestamp + actor recorded
-- [ ] **8.8** 📸 **Screenshot**: `day-08-proposal-accepted.png` — success / confirmation state
-- [ ] **8.9** Navigate back to `/home` → "Pending proposals" surface no longer shows this proposal
-- [ ] **8.10** (Optional if visible on portal) Check `/proposals` list — accepted proposal either moves to "Past" tab or shows "Accepted" badge
-
-**Day 8 checkpoints**
-- [ ] Proposal accessible via email link without re-authentication (magic-link session valid OR transparent re-exchange)
-- [ ] Acceptance recorded (firm will verify on Day 10)
-- [ ] No double-accept bug: clicking Accept again shows already-accepted state, not a second transition
-- [ ] Terminology consistent: portal copy reads "proposal" throughout
+> The Phase 32 proposal pipeline (firm-side proposal drafting/sending on Day 7, the deal-linked
+> proposal on Day 7 (cont.), and the portal proposal review/accept on Day 8) was removed in
+> Phase 86 (Epic 597, ADR-336). Steps 7.x and 8.x are intentionally absent.
 
 ---
 
@@ -441,9 +367,8 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Thandi Mathebula
 
-### Phase A: Verify proposal acceptance flowed through
+### Phase A: Matter lifecycle
 
-- [ ] **10.1** Navigate to matter RAF-2026-001 → Proposals tab → verify proposal = **Accepted** with Sipho's timestamp
 - [ ] **10.2** Matter lifecycle: verify matter has auto-transitioned to **ACTIVE** (Phase 29 lifecycle), or transition manually per current UX
 
 ### Phase A2: Win the deal — engagement secured (Phase 80)
@@ -470,7 +395,6 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **10.9** 📸 Optional: `day-10-firm-trust-deposit-recorded.png`
 
 **Day 10 checkpoints**
-- [ ] Proposal acceptance flowed from portal to firm side (timestamp matches)
 - [ ] DEAL-0001 won on the board; win-nudge behaviour recorded; owner notification email in Mailpit (Phase 80)
 - [ ] Trust deposit posts against the correct client ledger card (Section 86 compliance)
 - [ ] Client ledger + matter trust tab + account balance all reconcile to R 50,000.00
@@ -565,7 +489,6 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
   - NO mention of Moroka, EST-2026-002, or the R 25,000 deposit
 - [ ] **15.5** Navigate to `/invoices` → verify empty or shows only Sipho's invoices (none yet; Moroka has none either at this point, so empty is correct)
 - [ ] **15.6** Navigate to `/deadlines` → verify only Sipho's matter deadlines (none / few); no Moroka Master's Office filing deadlines
-- [ ] **15.7** Navigate to `/proposals` → verify only Sipho's accepted proposal; no other
 - [ ] **15.8** 📸 **Screenshot**: `day-15-portal-home-isolated.png` — Sipho's `/home` showing only his data
 
 ### Phase B: Direct-URL probe (hard negative — Moroka IDs used)
@@ -594,7 +517,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **15.20** (If digest already delivered by Day 15) Inspect the most recent digest email for Sipho in Mailpit → verify body contains ONLY Sipho's matter refs/counts. No Moroka references.
 
 **Day 15 checkpoints (BLOCKER severity — any failure here is a HIGH/BLOCKER gap)**
-- [ ] List views on `/home`, `/projects`, `/trust`, `/invoices`, `/deadlines`, `/proposals` show ONLY Sipho's data
+- [ ] List views on `/home`, `/projects`, `/trust`, `/invoices`, `/deadlines` show ONLY Sipho's data
 - [ ] Direct-URL probes to 4+ Moroka entity IDs denied at the frontend (no matter data renders)
 - [ ] API-level probes to 4+ Moroka endpoints denied at backend (403/404, never 200)
 - [ ] Trust balance card shows R 50,000 (Sipho's only) — not R 75,000 (aggregate leak)
@@ -953,7 +876,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **85.3** Verify matter retention policy (Day 60 created) still shows `end_date ≈ today + 5 years - 25 days` (days elapsed since closure)
 - [ ] **85.4** Navigate to **Audit Log** (or platform admin view — requires Phase 69 if shipped, else firm-side activity feed):
   - Filter by matter = RAF-2026-001 → full 85-day history present
-  - Filter by actor = Sipho (portal actor) → portal actions (FICA upload, proposal accept, fee-note pay, doc downloads) all recorded
+  - Filter by actor = Sipho (portal actor) → portal actions (FICA upload, fee-note pay, doc downloads) all recorded
 - [ ] **85.5** 📸 Optional: `day-85-firm-audit-filtered.png`
 
 **Day 85 checkpoints**
@@ -969,7 +892,7 @@ This is the closing-demo wow moment: show the firm's 90-day activity feed on the
 - [ ] **88.1** `[FIRM]` On RAF-2026-001 → click **Activity** group tab (`data-testid="tab-group-activity"`) → click **Activity** sub-tab (`data-testid="tab-item-activity"`) → full 90-day history renders: matter created, info requests sent/received, time entries, disbursements, fee notes, payments, court date, matter closed, documents generated
 - [ ] **88.2** 📸 **Screenshot**: `day-88-firm-activity-feed.png` — firm-side 90-day matter activity
 - [ ] **88.3** Context swap to portal → login as Sipho → activity trail on `/home` or `/profile`
-- [ ] **88.4** Activity trail shows: FICA submit (Day 4), proposal accept (Day 8), first trust balance view (Day 11), fee-note paid (Day 30), second info-req submit (Day 46), SoA download (Day 61)
+- [ ] **88.4** Activity trail shows: FICA submit (Day 4), first trust balance view (Day 11), fee-note paid (Day 30), second info-req submit (Day 46), SoA download (Day 61)
 - [ ] **88.5** 📸 **Screenshot**: `day-88-portal-activity-trail.png` — client-POV 90-day activity
 - [ ] **88.6** Verify narrative coherence: every client-visible firm event has a matching client-side entry within ≤ 1 day delay
 
@@ -992,7 +915,7 @@ This is the closing-demo wow moment: show the firm's 90-day activity feed on the
 
 ### Portal-side regression sweep
 
-- [ ] **90.7** `[PORTAL]` Login as Sipho → walk every portal route (`/home`, `/projects`, `/invoices`, `/trust`, `/deadlines`, `/proposals`, `/profile`, `/settings/notifications`) → zero JS errors, zero 500 responses
+- [ ] **90.7** `[PORTAL]` Login as Sipho → walk every portal route (`/home`, `/projects`, `/invoices`, `/trust`, `/deadlines`, `/profile`, `/settings/notifications`) → zero JS errors, zero 500 responses
 - [ ] **90.8** `[PORTAL]` Final isolation probe: re-run Day 15 Phase B + Phase C probes against Moroka IDs → all still denied (no drift)
 - [ ] **90.9** `[PORTAL]` Final digest email reviewed in Mailpit — references ONLY Sipho's activity
 - [ ] **90.10** `[PORTAL]` Terminology sweep: no firm-side vocabulary leaked ("matter" ok because Sipho has a matter; "engagement" / "task" / "case file" should not appear as inconsistent synonyms for the same object)

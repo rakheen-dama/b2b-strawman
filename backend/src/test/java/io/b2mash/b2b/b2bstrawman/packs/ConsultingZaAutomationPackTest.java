@@ -43,8 +43,7 @@ class ConsultingZaAutomationPackTest {
           "consulting-za-budget-exceeded",
           "consulting-za-retainer-closing",
           "consulting-za-task-blocked-7d",
-          "consulting-za-unbilled-time-30d",
-          "consulting-za-proposal-followup-5d");
+          "consulting-za-unbilled-time-30d");
 
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
@@ -63,26 +62,26 @@ class ConsultingZaAutomationPackTest {
   }
 
   @Test
-  void provisioningCreatesPackInstallWithSixRules() {
+  void provisioningCreatesPackInstallWithFiveRules() {
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var install = packInstallRepository.findByPackId(PACK_ID).orElseThrow();
                   assertThat(install.getPackType()).isEqualTo(PackType.AUTOMATION_TEMPLATE);
-                  assertThat(install.getItemCount()).isEqualTo(6);
+                  assertThat(install.getItemCount()).isEqualTo(5);
                 }));
   }
 
   @Test
-  void allSixRulesHaveSourcePackInstallIdAndContentHash() {
+  void allFiveRulesHaveSourcePackInstallIdAndContentHash() {
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var install = packInstallRepository.findByPackId(PACK_ID).orElseThrow();
                   var rules = ruleRepository.findBySourcePackInstallId(install.getId());
-                  assertThat(rules).hasSize(6);
+                  assertThat(rules).hasSize(5);
                   assertThat(rules)
                       .allSatisfy(
                           r -> {

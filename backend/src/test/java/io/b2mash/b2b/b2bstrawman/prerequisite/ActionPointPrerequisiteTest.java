@@ -8,7 +8,6 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -39,8 +38,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Integration tests verifying that action-point prerequisite checks are correctly wired into
- * InvoiceService (createDraft) and ProposalService (sendProposal). Uses a real Spring context with
- * MockMvc to exercise the full request path including PrerequisiteService structural checks.
+ * InvoiceService (createDraft). Uses a real Spring context with MockMvc to exercise the full
+ * request path including PrerequisiteService structural checks.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -62,8 +61,6 @@ class ActionPointPrerequisiteTest {
 
   /** Customer WITH portal contact and prerequisite fields — prerequisites will pass. */
   private String completeCustomerId;
-
-  private UUID completeCustomerContactId;
 
   /**
    * Customer missing BOTH custom fields AND structural data — produces combined MISSING_FIELD +
@@ -118,8 +115,7 @@ class ActionPointPrerequisiteTest {
         "UPDATE \"%s\".customers SET lifecycle_status = 'ACTIVE' WHERE id = ?::uuid"
             .formatted(schemaName),
         completeCustomerId);
-    completeCustomerContactId =
-        createPortalContact(completeCustomerId, "contact@complete-test.com", "Complete Contact");
+    createPortalContact(completeCustomerId, "contact@complete-test.com", "Complete Contact");
 
     // Customer missing BOTH custom fields AND structural data (no email, no portal contact)
     combinedViolationsCustomerId =
@@ -203,37 +199,6 @@ class ActionPointPrerequisiteTest {
                     """
                         .formatted(completeCustomerId)))
         .andExpect(status().isCreated());
-  }
-
-  // --- Proposal send prerequisite tests ---
-
-  @Test
-  void sendProposal_customerMissingPrerequisites_returns422() throws Exception {
-    // Create a proposal for the incomplete customer (creation doesn't check prerequisites)
-    String proposalId = createProposalWithContent(incompleteCustomerId, "Prereq Fail Proposal");
-
-    mockMvc
-        .perform(
-            post("/api/proposals/{id}/send", proposalId)
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"portalContactId\": \"%s\"}".formatted(UUID.randomUUID())))
-        .andExpect(status().isUnprocessableEntity())
-        .andExpect(jsonPath("$.detail").exists());
-  }
-
-  @Test
-  void sendProposal_customerWithPrerequisites_succeeds() throws Exception {
-    String proposalId = createProposalWithContent(completeCustomerId, "Prereq Pass Proposal");
-
-    mockMvc
-        .perform(
-            post("/api/proposals/{id}/send", proposalId)
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"portalContactId\": \"%s\"}".formatted(completeCustomerContactId)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value("SENT"));
   }
 
   // --- 244.8: Structural violation detail tests ---
@@ -341,24 +306,9 @@ class ActionPointPrerequisiteTest {
             .andExpect(status().isUnprocessableEntity())
             .andReturn();
 
-    // Proposal 422 — structural violation (incomplete customer has no portal contact)
-    String proposalId =
-        createProposalWithContent(incompleteCustomerId, "Code Consistency Proposal");
-    var proposalResult =
-        mockMvc
-            .perform(
-                post("/api/proposals/{id}/send", proposalId)
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"portalContactId\": \"%s\"}".formatted(UUID.randomUUID())))
-            .andExpect(status().isUnprocessableEntity())
-            .andReturn();
-
-    // Both should use "STRUCTURAL" code for structural violations
+    // Structural violations use the "STRUCTURAL" code
     List<String> invoiceCodes =
         JsonPath.read(invoiceResult.getResponse().getContentAsString(), "$.violations[*].code");
-    List<String> proposalCodes =
-        JsonPath.read(proposalResult.getResponse().getContentAsString(), "$.violations[*].code");
 
     List<String> validCodes = List.of("MISSING_FIELD", "STRUCTURAL");
     for (String code : invoiceCodes) {
@@ -367,18 +317,8 @@ class ActionPointPrerequisiteTest {
           validCodes,
           hasItem(code));
     }
-    for (String code : proposalCodes) {
-      assertThat(
-          "Proposal violation code '%s' not in valid set".formatted(code),
-          validCodes,
-          hasItem(code));
-    }
-
-    // Both domains use STRUCTURAL for structural issues
     assertTrue(
         invoiceCodes.contains("STRUCTURAL"), "Invoice 422 should contain STRUCTURAL violation");
-    assertTrue(
-        proposalCodes.contains("STRUCTURAL"), "Proposal 422 should contain STRUCTURAL violation");
   }
 
   // --- 244.13: Combined prerequisite flow test ---
@@ -440,34 +380,6 @@ class ActionPointPrerequisiteTest {
                     """
                         .formatted(flowCustomerId)))
         .andExpect(status().isCreated());
-  }
-
-  private String createProposalWithContent(String customerIdStr, String title) throws Exception {
-    String contentJson =
-        """
-        {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Proposal content."}]}]}
-        """;
-    var result =
-        mockMvc
-            .perform(
-                post("/api/proposals")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "title": "%s",
-                          "customerId": "%s",
-                          "feeModel": "HOURLY",
-                          "contentJson": %s
-                        }
-                        """
-                            .formatted(title, customerIdStr, contentJson)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String location = result.getResponse().getHeader("Location");
-    assertNotNull(location, "Expected Location header");
-    return location.substring(location.lastIndexOf('/') + 1);
   }
 
   private UUID createPortalContact(String customerIdStr, String email, String displayName) {

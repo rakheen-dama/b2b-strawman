@@ -152,9 +152,9 @@ public interface AuditService {
    *
    * <ul>
    *   <li>(a) events whose {@code entity_type='customer'} AND {@code entity_id=customerId}
-   *   <li>(b) events on child entities the customer owns (projects, invoices, proposals,
-   *       information requests, documents, trust transactions, acceptance requests) — resolved by
-   *       the implementation via the corresponding child repositories
+   *   <li>(b) events on child entities the customer owns (projects, invoices, information requests,
+   *       documents, trust transactions, acceptance requests) — resolved by the implementation via
+   *       the corresponding child repositories
    *   <li>(c) events whose {@code details->>'customerId'} references the customer (best-effort, no
    *       dedicated index)
    * </ul>

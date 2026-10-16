@@ -142,7 +142,7 @@ class ClauseServiceTest {
           var templateId = UUID.randomUUID();
           jdbcTemplate.update(
               "INSERT INTO document_templates (id, name, slug, category, primary_entity_type, content, source, active, created_at, updated_at) "
-                  + "VALUES (?, 'Test Template', 'test-template-ref', 'PROPOSAL', 'PROJECT', '{\"type\":\"doc\",\"content\":[]}'::jsonb, 'ORG_CUSTOM', true, now(), now())",
+                  + "VALUES (?, 'Test Template', 'test-template-ref', 'ENGAGEMENT_LETTER', 'PROJECT', '{\"type\":\"doc\",\"content\":[]}'::jsonb, 'ORG_CUSTOM', true, now(), now())",
               templateId);
           jdbcTemplate.update(
               "INSERT INTO template_clauses (template_id, clause_id, sort_order) VALUES (?, ?, 0)",

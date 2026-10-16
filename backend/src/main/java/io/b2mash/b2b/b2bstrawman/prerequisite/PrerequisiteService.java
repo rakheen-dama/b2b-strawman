@@ -8,7 +8,6 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldUtils;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionService;
-import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateService;
 import io.b2mash.b2b.b2bstrawman.setupstatus.DocumentGenerationReadinessService;
@@ -193,46 +192,6 @@ public class PrerequisiteService {
                     null,
                     "Add a portal contact with email on the customer detail page,"
                         + " or set the customer email"));
-          }
-        }
-      }
-      case PROPOSAL_SEND -> {
-        if (entityType == EntityType.CUSTOMER) {
-          var customer = loadCustomer(entityId);
-
-          // Resolve the portal-contact recipient identity FIRST. If at least one ACTIVE
-          // portal_contact has a non-blank email, the contact_name/contact_email structural
-          // checks are satisfied via that contact (BUG-CYCLE26-06). The customer's own
-          // contact_name/contact_email columns are not the canonical identity at proposal-send
-          // time — the portal_contact is.
-          var contacts = portalContactRepository.findByCustomerId(entityId);
-          boolean hasActiveContactWithEmail =
-              contacts.stream()
-                  .anyMatch(
-                      c ->
-                          c.getStatus() == PortalContact.ContactStatus.ACTIVE
-                              && c.getEmail() != null
-                              && !c.getEmail().isBlank());
-
-          // Promoted field null-checks. address_line1 always required; contact_name +
-          // contact_email skipped when a portal_contact already provides recipient identity.
-          violations.addAll(
-              StructuralPrerequisiteCheck.check(customer, context, hasActiveContactWithEmail));
-
-          // Existence check stays — even with the structural fallback, we still need at least
-          // one ACTIVE portal_contact with email to actually send the proposal. Tightened from
-          // "any non-blank email" to "ACTIVE + non-blank email" so SUSPENDED/ARCHIVED contacts
-          // no longer satisfy the prereq.
-          if (!hasActiveContactWithEmail) {
-            violations.add(
-                new PrerequisiteViolation(
-                    "STRUCTURAL",
-                    "Customer must have a portal contact with an email address to send a proposal",
-                    entityType.name(),
-                    entityId,
-                    null,
-                    null,
-                    "Add a portal contact with email on the customer detail page"));
           }
         }
       }

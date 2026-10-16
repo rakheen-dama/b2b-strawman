@@ -5,7 +5,6 @@ import { MetricsStrip } from "@/components/dashboard/metrics-strip";
 import { TerminologyProvider } from "@/lib/terminology";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import type { KpiResponse, ProjectHealth } from "@/lib/dashboard-types";
-import type { TeamCapacityGrid } from "@/lib/api/capacity";
 
 // Mock recharts to avoid rendering issues in happy-dom
 vi.mock("recharts", () => ({
@@ -37,18 +36,6 @@ const mockKpis: KpiResponse = {
     overdueTaskCount: 5,
     averageMarginPercent: 31.8,
   },
-};
-
-const mockCapacityData: TeamCapacityGrid = {
-  members: [],
-  weekSummaries: [
-    {
-      weekStart: "2025-01-06",
-      teamTotalAllocated: 120,
-      teamTotalCapacity: 160,
-      teamUtilizationPct: 75,
-    },
-  ],
 };
 
 const mockProjectHealth: ProjectHealth[] = [
@@ -90,10 +77,7 @@ const mockProjectHealth: ProjectHealth[] = [
   },
 ];
 
-function renderWithProvider(
-  ui: React.ReactElement,
-  enabledModules: string[] = ["resource_planning"]
-) {
+function renderWithProvider(ui: React.ReactElement, enabledModules: string[] = []) {
   return render(
     <OrgProfileProvider
       verticalProfile={null}
@@ -110,26 +94,20 @@ describe("MetricsStrip", () => {
     cleanup();
   });
 
-  it("renders 6 metric cells", () => {
-    renderWithProvider(
-      <MetricsStrip
-        kpis={mockKpis}
-        capacityData={mockCapacityData}
-        projectHealth={mockProjectHealth}
-      />
-    );
+  it("renders 5 metric cells (no team-utilization tile, Epic 599)", () => {
+    renderWithProvider(<MetricsStrip kpis={mockKpis} projectHealth={mockProjectHealth} />);
 
     expect(screen.getByTestId("metrics-strip")).toBeInTheDocument();
     expect(screen.getByTestId("metric-active-projects")).toBeInTheDocument();
     expect(screen.getByTestId("metric-hours-month")).toBeInTheDocument();
     expect(screen.getByTestId("metric-revenue")).toBeInTheDocument();
     expect(screen.getByTestId("metric-overdue-tasks")).toBeInTheDocument();
-    expect(screen.getByTestId("metric-team-utilization")).toBeInTheDocument();
     expect(screen.getByTestId("metric-budget-health")).toBeInTheDocument();
+    expect(screen.queryByTestId("metric-team-utilization")).not.toBeInTheDocument();
   });
 
   it("handles null/undefined KPI values gracefully", () => {
-    renderWithProvider(<MetricsStrip kpis={null} capacityData={null} projectHealth={null} />);
+    renderWithProvider(<MetricsStrip kpis={null} projectHealth={null} />);
 
     expect(screen.getByTestId("metrics-strip")).toBeInTheDocument();
     // Should show 0 for active projects when kpis is null
@@ -139,74 +117,23 @@ describe("MetricsStrip", () => {
   });
 
   it("displays correct active project count", () => {
-    renderWithProvider(
-      <MetricsStrip
-        kpis={mockKpis}
-        capacityData={mockCapacityData}
-        projectHealth={mockProjectHealth}
-      />
-    );
+    renderWithProvider(<MetricsStrip kpis={mockKpis} projectHealth={mockProjectHealth} />);
 
     expect(screen.getByTestId("metric-active-projects")).toHaveTextContent("12");
   });
 
   it("displays overdue tasks with severity color", () => {
-    renderWithProvider(
-      <MetricsStrip
-        kpis={mockKpis}
-        capacityData={mockCapacityData}
-        projectHealth={mockProjectHealth}
-      />
-    );
+    renderWithProvider(<MetricsStrip kpis={mockKpis} projectHealth={mockProjectHealth} />);
 
     // 8 overdue tasks >= 5, should have red styling
     expect(screen.getByTestId("metric-overdue-tasks")).toHaveTextContent("8");
   });
 
   it("displays budget health dot counts", () => {
-    renderWithProvider(
-      <MetricsStrip
-        kpis={mockKpis}
-        capacityData={mockCapacityData}
-        projectHealth={mockProjectHealth}
-      />
-    );
+    renderWithProvider(<MetricsStrip kpis={mockKpis} projectHealth={mockProjectHealth} />);
 
     const budgetCell = screen.getByTestId("metric-budget-health");
     // 1 healthy, 1 at-risk, 1 critical
     expect(budgetCell).toHaveTextContent("1");
-  });
-
-  it("displays team utilization from capacity data", () => {
-    renderWithProvider(
-      <MetricsStrip
-        kpis={mockKpis}
-        capacityData={mockCapacityData}
-        projectHealth={mockProjectHealth}
-      />
-    );
-
-    expect(screen.getByTestId("metric-team-utilization")).toHaveTextContent("75%");
-  });
-
-  it("hides team utilization metric when resource_planning module is disabled", () => {
-    renderWithProvider(
-      <MetricsStrip
-        kpis={mockKpis}
-        capacityData={mockCapacityData}
-        projectHealth={mockProjectHealth}
-      />,
-      [] // empty enabledModules — resource_planning is OFF
-    );
-
-    expect(screen.getByTestId("metrics-strip")).toBeInTheDocument();
-    // The other 5 cells still render
-    expect(screen.getByTestId("metric-active-projects")).toBeInTheDocument();
-    expect(screen.getByTestId("metric-hours-month")).toBeInTheDocument();
-    expect(screen.getByTestId("metric-revenue")).toBeInTheDocument();
-    expect(screen.getByTestId("metric-overdue-tasks")).toBeInTheDocument();
-    expect(screen.getByTestId("metric-budget-health")).toBeInTheDocument();
-    // The gated cell is HIDDEN
-    expect(screen.queryByTestId("metric-team-utilization")).not.toBeInTheDocument();
   });
 });

@@ -3,15 +3,11 @@
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { Sparkline } from "@/components/dashboard/sparkline";
 import { MicroStackedBar } from "@/components/dashboard/micro-stacked-bar";
-import { RadialGauge } from "@/components/dashboard/radial-gauge";
 import { useTerminology } from "@/lib/terminology";
-import { useOrgProfile } from "@/lib/org-profile";
 import type { KpiResponse, ProjectHealth } from "@/lib/dashboard-types";
-import type { TeamCapacityGrid } from "@/lib/api/capacity";
 
 interface MetricsStripProps {
   kpis: KpiResponse | null;
-  capacityData: TeamCapacityGrid | null;
   projectHealth: ProjectHealth[] | null;
 }
 
@@ -32,15 +28,11 @@ function computeTrendDirection(
   return null;
 }
 
-export function MetricsStrip({ kpis, capacityData, projectHealth }: MetricsStripProps) {
+export function MetricsStrip({ kpis, projectHealth }: MetricsStripProps) {
   const { t } = useTerminology();
-  const { isModuleEnabled } = useOrgProfile();
-  const resourcePlanningEnabled = isModuleEnabled("resource_planning");
   const trendValues = kpis?.trend?.map((t) => t.value) ?? [];
   const billableHours = kpis ? (kpis.totalHoursLogged * (kpis.billablePercent ?? 0)) / 100 : 0;
   const nonBillableHours = kpis ? kpis.totalHoursLogged - billableHours : 0;
-
-  const utilization = capacityData?.weekSummaries?.[0]?.teamUtilizationPct ?? 0;
 
   const onTrack = projectHealth?.filter((p) => p.healthStatus === "HEALTHY").length ?? 0;
   const atRisk = projectHealth?.filter((p) => p.healthStatus === "AT_RISK").length ?? 0;
@@ -152,24 +144,6 @@ export function MetricsStrip({ kpis, capacityData, projectHealth }: MetricsStrip
           </span>
         </div>
       </div>
-
-      {/* Team Utilization (gated by resource_planning module) */}
-      {resourcePlanningEnabled && (
-        <div
-          data-testid="metric-team-utilization"
-          className="bg-card rounded-lg border border-slate-200/60 p-3"
-        >
-          <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">
-            Team Utilization
-          </p>
-          <div className="mt-1 flex items-center justify-between">
-            <span className="font-mono text-xl font-bold tabular-nums">
-              {Math.round(utilization)}%
-            </span>
-            <RadialGauge value={utilization} size={36} strokeWidth={4} />
-          </div>
-        </div>
-      )}
 
       {/* Budget Health */}
       <div

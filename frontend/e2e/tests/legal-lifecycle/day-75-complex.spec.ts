@@ -4,7 +4,7 @@
  * Create additional matters for existing clients (Sipho 2nd litigation,
  * Apex annual returns). Add adverse parties to registry (RAF, Mokoena, Pillay).
  * Run conflict stress test with multiple searches. Progress estate matter
- * (Moroka). Check resource utilization.
+ * (Moroka).
  *
  * Prerequisites:
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
@@ -379,22 +379,5 @@ test.describe.serial("Day 75 — Complex Engagement & Adverse Parties", () => {
         await page.waitForTimeout(500);
       }
     }
-  });
-
-  // ── 75.19-75.21: Resource utilization ─────────────────────────────
-  test("Alice: Check resource utilization", async ({ page }) => {
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/resources`);
-
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Resources page not accessible");
-      return;
-    }
-
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
   });
 });

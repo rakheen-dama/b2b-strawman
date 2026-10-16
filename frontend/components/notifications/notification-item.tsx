@@ -6,8 +6,6 @@ import {
   MessageSquare,
   UserPlus,
   BellRing,
-  CalendarRange,
-  CalendarOff,
   type LucideIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -27,8 +25,6 @@ const NOTIFICATION_ICON_MAP: Record<string, LucideIcon> = {
   COMMENT: MessageSquare,
   DOCUMENT: FileText,
   MEMBER: UserPlus,
-  ALLOCATION: CalendarRange,
-  LEAVE: CalendarOff,
 };
 
 function getDeepLinkUrl(orgSlug: string, notification: Notification): string | null {

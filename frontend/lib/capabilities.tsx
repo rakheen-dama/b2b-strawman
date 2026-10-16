@@ -12,7 +12,6 @@ export const CAPABILITIES = {
   TEAM_OVERSIGHT: "TEAM_OVERSIGHT",
   CUSTOMER_MANAGEMENT: "CUSTOMER_MANAGEMENT",
   AUTOMATIONS: "AUTOMATIONS",
-  RESOURCE_PLANNING: "RESOURCE_PLANNING",
   VIEW_TRUST: "VIEW_TRUST",
   AI_ASSISTANT_USE: "AI_ASSISTANT_USE",
   AI_MANAGE: "AI_MANAGE",
@@ -51,11 +50,6 @@ export const CAPABILITY_META = [
     value: CAPABILITIES.AUTOMATIONS,
     label: "Automations",
     description: "Configure workflow automations and scheduling rules",
-  },
-  {
-    value: CAPABILITIES.RESOURCE_PLANNING,
-    label: "Resource Planning",
-    description: "View and manage resource allocation and capacity planning",
   },
   {
     value: CAPABILITIES.VIEW_TRUST,

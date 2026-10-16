@@ -15,7 +15,6 @@ const NAV_ITEMS = [
   { name: "Profitability", path: `${base}/profitability` },
   { name: "Reports", path: `${base}/reports` },
   { name: "Team", path: `${base}/team` },
-  { name: "Resources", path: `${base}/resources` },
   { name: "Notifications", path: `${base}/notifications` },
   { name: "Settings", path: `${base}/settings` },
 ];

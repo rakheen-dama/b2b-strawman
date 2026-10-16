@@ -12,7 +12,6 @@ import { AdminStatsColumn } from "@/components/dashboard/admin-stats-column";
 import { MyWeekColumn } from "@/components/dashboard/my-week-column";
 import { DeadlineWidget } from "@/components/dashboard/deadline-widget";
 import { SensitiveEventsWidget } from "@/components/dashboard/sensitive-events-widget";
-import { TeamUtilizationWidget } from "@/components/dashboard/team-utilization-widget";
 import { UpcomingCourtDatesWidget } from "@/components/legal/upcoming-court-dates-widget";
 import { ModuleGate } from "@/components/module-gate";
 import {
@@ -24,19 +23,13 @@ import {
   fetchInformationRequestSummary,
   fetchAutomationSummary,
 } from "@/lib/actions/dashboard";
-import { getTeamCapacityGrid, type TeamCapacityGrid } from "@/lib/api/capacity";
 import {
   listAuditEvents,
   listFacetEventTypes,
   type AuditEventResponse,
   type EventTypeFacet,
 } from "@/lib/api/audit-events";
-import {
-  resolveDateRange,
-  getCurrentMonday,
-  formatDate as formatDateUtil,
-  addWeeks,
-} from "@/lib/date-utils";
+import { resolveDateRange } from "@/lib/date-utils";
 import { GettingStartedCard } from "@/components/dashboard/getting-started-card";
 import { ReturnToHandler } from "@/components/auth/return-to-handler";
 
@@ -141,17 +134,6 @@ export default async function OrgDashboardPage({
     sensitiveRecent = recentPage ? recentPage.content : null;
   }
 
-  // Capacity data for dashboard widgets
-  const monday = getCurrentMonday();
-  const weekEnd = addWeeks(monday, 1);
-  const weekStartStr = formatDateUtil(monday);
-  const weekEndStr = formatDateUtil(weekEnd);
-
-  let capacityGrid: TeamCapacityGrid | null = null;
-
-  // Fetch capacity grid (used by MetricsStrip for team utilization)
-  capacityGrid = await getTeamCapacityGrid(weekStartStr, weekEndStr).catch(() => null);
-
   return (
     <div className="space-y-6">
       {/* Post-login return-to read-back. This is the real landing surface after
@@ -163,14 +145,7 @@ export default async function OrgDashboardPage({
 
       <DashboardHeader from={from} to={to} />
 
-      <MetricsStrip
-        kpis={kpis ?? null}
-        capacityData={capacityGrid}
-        projectHealth={projectHealth ?? null}
-      />
-
-      {/* Consulting-ZA profile-gated widget (self-gates via useProfile) */}
-      <TeamUtilizationWidget slug={slug} />
+      <MetricsStrip kpis={kpis ?? null} projectHealth={projectHealth ?? null} />
 
       {/* Hero two-panel layout */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">

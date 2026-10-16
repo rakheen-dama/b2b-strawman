@@ -12,7 +12,7 @@ import { OrgProfileProvider } from "@/lib/org-profile";
 
 function withOrgProfile(
   children: React.ReactNode,
-  enabledModules: string[] = ["resource_planning", "automation_builder", "bulk_billing"]
+  enabledModules: string[] = ["automation_builder", "bulk_billing"]
 ) {
   return (
     <OrgProfileProvider
@@ -30,7 +30,6 @@ import type {
   KpiResponse,
   ProjectHealth,
 } from "@/lib/dashboard-types";
-import type { TeamCapacityGrid } from "@/lib/api/capacity";
 
 // Mock recharts to avoid rendering issues in happy-dom
 vi.mock("recharts", () => ({
@@ -124,18 +123,6 @@ const mockKpis: KpiResponse = {
     overdueTaskCount: 5,
     averageMarginPercent: 31.8,
   },
-};
-
-const mockCapacityData: TeamCapacityGrid = {
-  members: [],
-  weekSummaries: [
-    {
-      weekStart: "2025-01-06",
-      teamTotalAllocated: 120,
-      teamTotalCapacity: 160,
-      teamUtilizationPct: 75,
-    },
-  ],
 };
 
 const mockProjectHealth: ProjectHealth[] = [
@@ -276,15 +263,7 @@ describe("Dashboard Layout Components", () => {
   });
 
   it("MetricsStrip renders in dashboard (not KpiCardRow)", () => {
-    render(
-      withOrgProfile(
-        <MetricsStrip
-          kpis={mockKpis}
-          capacityData={mockCapacityData}
-          projectHealth={mockProjectHealth}
-        />
-      )
-    );
+    render(withOrgProfile(<MetricsStrip kpis={mockKpis} projectHealth={mockProjectHealth} />));
     expect(screen.getByTestId("metrics-strip")).toBeInTheDocument();
     expect(screen.getByTestId("metric-active-projects")).toBeInTheDocument();
   });
@@ -315,6 +294,50 @@ describe("Dashboard Layout Components", () => {
     expect(
       fs.existsSync(path.resolve(process.cwd(), "components/dashboard/pipeline-summary-widget.tsx"))
     ).toBe(false);
+  });
+
+  it("dashboard page no longer renders capacity/utilization widgets (Epic 599)", async () => {
+    // Module-level proof (same shape as the Epic 596 test above): the capacity widget files
+    // and their data sources are gone, and the page source no longer references them.
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const pageSrc = fs.readFileSync(
+      path.resolve(process.cwd(), "app/(app)/org/[slug]/dashboard/page.tsx"),
+      "utf8"
+    );
+    expect(pageSrc).not.toContain("TeamUtilizationWidget");
+    expect(pageSrc).not.toContain("getTeamCapacityGrid");
+    expect(pageSrc).not.toContain("lib/api/capacity");
+    expect(pageSrc).not.toContain("capacityData");
+    for (const f of [
+      "components/dashboard/team-capacity-widget.tsx",
+      "components/dashboard/my-schedule-widget.tsx",
+      "components/dashboard/team-utilization-widget.tsx",
+      "lib/api/capacity.ts",
+      "lib/actions/utilization.ts",
+    ]) {
+      expect(fs.existsSync(path.resolve(process.cwd(), f))).toBe(false);
+    }
+  });
+
+  it("MetricsStrip renders no team-utilization tile with every surviving module enabled (Epic 599)", () => {
+    render(
+      withOrgProfile(<MetricsStrip kpis={mockKpis} projectHealth={mockProjectHealth} />, [
+        "automation_builder",
+        "bulk_billing",
+        "information_requests",
+        "trust_accounting",
+        "court_calendar",
+        "conflict_check",
+        "lssa_tariff",
+        "disbursements",
+        "matter_closure",
+        "regulatory_deadlines",
+      ])
+    );
+    expect(screen.getByTestId("metrics-strip")).toBeInTheDocument();
+    expect(screen.queryByTestId("metric-team-utilization")).not.toBeInTheDocument();
+    expect(screen.queryByText("Team Utilization")).not.toBeInTheDocument();
   });
 
   it("admin role shows AdminStatsColumn", () => {

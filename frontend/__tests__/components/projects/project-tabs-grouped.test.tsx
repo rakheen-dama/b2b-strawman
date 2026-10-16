@@ -156,7 +156,7 @@ describe("ProjectTabs with GroupedTabBar integration", () => {
     expect(screen.queryByTestId("tab-group-schedule")).not.toBeInTheDocument();
   });
 
-  it("redirects ?tab=members to ?tab=staffing via router.replace", () => {
+  it("does not redirect ?tab=members and renders no staffing tab (Epic 599)", () => {
     mockSearchParams = new URLSearchParams("tab=members");
 
     render(
@@ -164,14 +164,15 @@ describe("ProjectTabs with GroupedTabBar integration", () => {
         {...baseProps}
         detailsPanel={<div>Details</div>}
         fieldsPanel={<div>Fields</div>}
-        staffingPanel={<div>Staffing</div>}
         budgetPanel={<div>Budget</div>}
       />
     );
 
-    // The useEffect should have called router.replace with tab=staffing
-    expect(mockReplace).toHaveBeenCalledTimes(1);
-    expect(mockReplace).toHaveBeenCalledWith(expect.stringContaining("tab=staffing"));
+    // The staffing tab (and its ?tab=members redirect) was removed with resource planning;
+    // an unknown ?tab=members now falls through to the overview default.
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("tab-item-staffing")).not.toBeInTheDocument();
+    expect(screen.getByTestId("tab-group-overview")).toBeInTheDocument();
   });
 
   it("renders activity group as standalone tab when audit is hidden", () => {

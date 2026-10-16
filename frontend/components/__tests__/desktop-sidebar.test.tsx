@@ -47,7 +47,6 @@ const ALL_CAPABILITIES = [
   "TEAM_OVERSIGHT",
   "CUSTOMER_MANAGEMENT",
   "AUTOMATIONS",
-  "RESOURCE_PLANNING",
 ];
 
 function renderSidebar() {

@@ -120,7 +120,7 @@ describe("GroupedTabBar", () => {
     expect(screen.getByTestId("tab-item-tasks")).toBeInTheDocument();
     expect(screen.getByTestId("tab-item-documents")).toBeInTheDocument();
     expect(screen.getByTestId("tab-item-generated")).toBeInTheDocument();
-    expect(screen.getByTestId("tab-item-staffing")).toBeInTheDocument();
+    expect(screen.queryByTestId("tab-item-staffing")).not.toBeInTheDocument();
   });
 });
 
@@ -131,8 +131,8 @@ describe("resolveTabFromUrl", () => {
   });
 
   it("returns overview for unknown param (members redirect handled by caller)", () => {
-    // The shared resolveTabFromUrl no longer handles the members -> staffing redirect;
-    // that is entity-specific logic handled by ProjectTabs via useEffect.
+    // Legacy ?tab=members has no redirect target (the staffing tab was removed in Epic 599),
+    // so it falls through to the overview default.
     const result = resolveTabFromUrl("members", TAB_GROUPS);
     expect(result).toEqual({ groupId: "overview", tabId: "overview" });
   });

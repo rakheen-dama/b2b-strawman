@@ -48,7 +48,7 @@ export const DEFAULT_RESOLUTION = { groupId: "overview", tabId: "overview" } as 
  * 3. Value is itself a group ID -> first visible sub-tab
  * 4. Fallback -> overview default
  *
- * NOTE: Entity-specific redirects (e.g. `members -> staffing` for projects)
+ * NOTE: Entity-specific redirects (legacy tab IDs mapped to a new sub-tab)
  * must be applied by the caller **before** invoking this function.
  */
 export function resolveTabFromUrl(

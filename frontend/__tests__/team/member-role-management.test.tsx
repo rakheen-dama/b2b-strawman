@@ -63,7 +63,6 @@ const systemRoles: OrgRole[] = [
       "TEAM_OVERSIGHT",
       "CUSTOMER_MANAGEMENT",
       "AUTOMATIONS",
-      "RESOURCE_PLANNING",
     ],
   }),
   makeOrgRole({
@@ -78,7 +77,6 @@ const systemRoles: OrgRole[] = [
       "TEAM_OVERSIGHT",
       "CUSTOMER_MANAGEMENT",
       "AUTOMATIONS",
-      "RESOURCE_PLANNING",
     ],
   }),
   makeOrgRole({
@@ -227,14 +225,13 @@ describe("MemberDetailPanel", () => {
       expect(screen.getByText("Project Management")).toBeInTheDocument();
     });
 
-    // Check that all 7 capability labels are rendered
+    // Check that all 6 capability labels are rendered
     expect(screen.getByText("Financial Visibility")).toBeInTheDocument();
     expect(screen.getByText("Invoicing")).toBeInTheDocument();
     expect(screen.getByText("Project Management")).toBeInTheDocument();
     expect(screen.getByText("Team Oversight")).toBeInTheDocument();
     expect(screen.getByText("Customer Management")).toBeInTheDocument();
     expect(screen.getByText("Automations")).toBeInTheDocument();
-    expect(screen.getByText("Resource Planning")).toBeInTheDocument();
 
     // The "+" indicator should be visible for the INVOICING override
     const addedIndicators = screen.getAllByText("+");

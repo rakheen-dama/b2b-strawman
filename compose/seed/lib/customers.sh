@@ -87,6 +87,10 @@ seed_customers() {
       \"email\": \"${_ec_email}\",
       \"phone\": \"${_ec_phone}\",
       \"type\": \"${_ec_type}\",
+      \"addressLine1\": \"1 Long Street\",
+      \"city\": \"Cape Town\",
+      \"postalCode\": \"8001\",
+      \"country\": \"ZA\",
       \"notes\": \"${_ec_notes}\"
     }" "$jwt")
     check_status "Create ${_ec_name}" || return 1

@@ -40,19 +40,6 @@ STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
   }")
 check_status "Provision org" "$STATUS"
 
-# -- Step 2: Sync plan to PRO ---------------------------------------------
-echo ""
-echo "==> Step 2: Sync plan to PRO"
-STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-  -X POST "${BACKEND_URL}/internal/orgs/plan-sync" \
-  -H "Content-Type: application/json" \
-  -H "X-API-KEY: ${API_KEY}" \
-  -d "{
-    \"clerkOrgId\": \"${ORG_ID}\",
-    \"planSlug\": \"pro\"
-  }")
-check_status "Plan sync" "$STATUS"
-
 # -- Step 3: Sync members -------------------------------------------------
 echo ""
 echo "==> Step 3: Sync members"
@@ -139,6 +126,10 @@ CUSTOMER_RESPONSE=$(curl -s -w "\n%{http_code}" \
     "name": "Acme Corp",
     "email": "contact@acme.example.com",
     "phone": "+1-555-0100",
+    "addressLine1": "1 Long Street",
+    "city": "Cape Town",
+    "postalCode": "8001",
+    "country": "ZA",
     "notes": "E2E seed customer"
   }')
 
@@ -146,60 +137,80 @@ CUSTOMER_BODY=$(echo "$CUSTOMER_RESPONSE" | sed '$d')
 CUSTOMER_STATUS=$(echo "$CUSTOMER_RESPONSE" | tail -1)
 check_status "Create customer" "$CUSTOMER_STATUS"
 
-CUSTOMER_ID=$(echo "$CUSTOMER_BODY" | jq -r '.id')
+if [ "$CUSTOMER_STATUS" = "409" ]; then
+  # Re-run against existing data (e2e-reseed.sh): resolve the existing customer
+  CUSTOMER_ID=$(curl -sf "${BACKEND_URL}/api/customers?size=200" \
+    -H "Authorization: Bearer ${ALICE_JWT}" | jq -r '
+      (if type == "array" then . else .content end)[]
+      | select(.email == "contact@acme.example.com") | .id' | head -1)
+else
+  CUSTOMER_ID=$(echo "$CUSTOMER_BODY" | jq -r '.id')
+fi
+if [ -z "$CUSTOMER_ID" ] || [ "$CUSTOMER_ID" = "null" ]; then
+  echo "    [FAIL] Could not resolve customer ID"
+  exit 1
+fi
 echo "    Customer ID: ${CUSTOMER_ID}"
 
 # -- Step 6: Transition customer to ACTIVE ----------------------------------
 echo ""
 echo "==> Step 6: Transition customer PROSPECT -> ONBOARDING -> ACTIVE"
 
-# PROSPECT -> ONBOARDING
-STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-  -X POST "${BACKEND_URL}/api/customers/${CUSTOMER_ID}/transition" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer ${ALICE_JWT}" \
-  -d '{"targetStatus": "ONBOARDING", "notes": "E2E seed: start onboarding"}')
-check_status "Transition to ONBOARDING" "$STATUS"
-
-# Complete all checklist items (required before ACTIVE transition)
-CHECKLISTS=$(curl -sf \
-  "${BACKEND_URL}/api/customers/${CUSTOMER_ID}/checklists" \
-  -H "Authorization: Bearer ${ALICE_JWT}")
-
-ITEM_IDS=$(echo "$CHECKLISTS" | jq -r '
-  [.[] | .items[]? | select(.status != "COMPLETED" and .status != "SKIPPED") | .id] | .[]
-' 2>/dev/null)
-
-for ITEM_ID in $ITEM_IDS; do
-  S=$(curl -s -o /dev/null -w "%{http_code}" \
-    -X PUT "${BACKEND_URL}/api/checklist-items/${ITEM_ID}/complete" \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer ${ALICE_JWT}" \
-    -d '{"notes":"boot-seed"}')
-  case "$S" in
-    2[0-9][0-9]) ;;
-    *) curl -s -o /dev/null -X PUT "${BACKEND_URL}/api/checklist-items/${ITEM_ID}/skip" \
-         -H "Content-Type: application/json" \
-         -H "Authorization: Bearer ${ALICE_JWT}" \
-         -d '{"reason":"boot-seed"}' ;;
-  esac
-done
-echo "    [ok] Checklists completed"
-
-# Check if auto-transitioned to ACTIVE; if not, transition explicitly
-CURRENT_STATUS=$(curl -sf \
+INITIAL_STATUS=$(curl -sf \
   "${BACKEND_URL}/api/customers/${CUSTOMER_ID}" \
   -H "Authorization: Bearer ${ALICE_JWT}" | jq -r '.lifecycleStatus')
-
-if [ "$CURRENT_STATUS" = "ACTIVE" ]; then
-  echo "    [ok] Auto-transitioned to ACTIVE"
+if [ "$INITIAL_STATUS" = "ACTIVE" ]; then
+  echo "    [ok] Already ACTIVE"
 else
+
+  # PROSPECT -> ONBOARDING
   STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
     -X POST "${BACKEND_URL}/api/customers/${CUSTOMER_ID}/transition" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${ALICE_JWT}" \
-    -d '{"targetStatus": "ACTIVE", "notes": "E2E seed: activate customer"}')
-  check_status "Transition to ACTIVE" "$STATUS"
+    -d '{"targetStatus": "ONBOARDING", "notes": "E2E seed: start onboarding"}')
+  check_status "Transition to ONBOARDING" "$STATUS"
+
+  # Complete all checklist items (required before ACTIVE transition)
+  CHECKLISTS=$(curl -sf \
+    "${BACKEND_URL}/api/customers/${CUSTOMER_ID}/checklists" \
+    -H "Authorization: Bearer ${ALICE_JWT}")
+
+  ITEM_IDS=$(echo "$CHECKLISTS" | jq -r '
+    [.[] | .items[]? | select(.status != "COMPLETED" and .status != "SKIPPED") | .id] | .[]
+  ' 2>/dev/null)
+
+  for ITEM_ID in $ITEM_IDS; do
+    S=$(curl -s -o /dev/null -w "%{http_code}" \
+      -X PUT "${BACKEND_URL}/api/checklist-items/${ITEM_ID}/complete" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer ${ALICE_JWT}" \
+      -d '{"notes":"boot-seed"}')
+    case "$S" in
+      2[0-9][0-9]) ;;
+      *) curl -s -o /dev/null -X PUT "${BACKEND_URL}/api/checklist-items/${ITEM_ID}/skip" \
+           -H "Content-Type: application/json" \
+           -H "Authorization: Bearer ${ALICE_JWT}" \
+           -d '{"reason":"boot-seed"}' ;;
+    esac
+  done
+  echo "    [ok] Checklists completed"
+
+  # Check if auto-transitioned to ACTIVE; if not, transition explicitly
+  CURRENT_STATUS=$(curl -sf \
+    "${BACKEND_URL}/api/customers/${CUSTOMER_ID}" \
+    -H "Authorization: Bearer ${ALICE_JWT}" | jq -r '.lifecycleStatus')
+
+  if [ "$CURRENT_STATUS" = "ACTIVE" ]; then
+    echo "    [ok] Auto-transitioned to ACTIVE"
+  else
+    STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+      -X POST "${BACKEND_URL}/api/customers/${CUSTOMER_ID}/transition" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer ${ALICE_JWT}" \
+      -d '{"targetStatus": "ACTIVE", "notes": "E2E seed: activate customer"}')
+    check_status "Transition to ACTIVE" "$STATUS"
+  fi
 fi
 
 # -- Step 7: Create project -------------------------------------------------

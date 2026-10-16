@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +70,7 @@ public class PortalResyncService {
 
     // Step 1: Load all tenant data within ScopedValue binding
     var projections = new ArrayList<ProjectionData>();
+    var assigneeNames = new HashMap<UUID, String>();
 
     RequestScopes.runForTenant(
         schema,
@@ -105,6 +107,15 @@ public class PortalResyncService {
 
             projections.add(new ProjectionData(project, customerId, sharedDocs, tasks));
           }
+
+          // Resolve assignee names here: members live in the tenant schema, which is not
+          // reachable from the portal transaction in Step 2.
+          projections.stream()
+              .flatMap(p -> p.tasks().stream())
+              .map(Task::getAssigneeId)
+              .filter(Objects::nonNull)
+              .distinct()
+              .forEach(id -> assigneeNames.put(id, memberNameResolver.resolveNameOrNull(id)));
         });
 
     // Step 2: Wipe and rebuild portal data atomically within a portal transaction
@@ -155,9 +166,7 @@ public class PortalResyncService {
                 // Rebuild portal tasks for this project
                 for (var task : data.tasks()) {
                   String assigneeName =
-                      task.getAssigneeId() != null
-                          ? memberNameResolver.resolveNameOrNull(task.getAssigneeId())
-                          : null;
+                      task.getAssigneeId() != null ? assigneeNames.get(task.getAssigneeId()) : null;
                   readModelRepo.upsertPortalTask(
                       task.getId(),
                       orgId,

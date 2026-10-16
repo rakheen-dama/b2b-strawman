@@ -50,21 +50,6 @@
     </p>
   </div>
 
-  <!-- Retainer usage -->
-  <div th:if="${hasRetainers}" style="margin: 0 0 20px 0;">
-    <h3 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #111827;">Retainer usage</h3>
-    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;">
-      <tr th:each="retainer : ${retainerSummaries}">
-        <td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb; font-size: 13px; color: #111827;">
-          <strong th:text="${retainer.name() != null ? retainer.name() : 'Retainer'}">Retainer</strong>
-        </td>
-        <td align="right" style="padding: 6px 0; border-bottom: 1px solid #e5e7eb; font-size: 13px; color: #374151;">
-          <span th:text="${retainer.hoursConsumed()}">0</span> / <span th:text="${retainer.hoursAllotted()}">0</span> hrs
-        </td>
-      </tr>
-    </table>
-  </div>
-
   <!-- Upcoming deadlines -->
   <div th:if="${hasDeadlines}" style="margin: 0 0 20px 0;">
     <h3 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #111827;">Upcoming deadlines</h3>

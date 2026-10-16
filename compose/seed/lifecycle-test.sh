@@ -3,7 +3,7 @@
 #
 # Rerunnable, idempotent API test script for an accounting vertical (ZA).
 # Exercises the full lifecycle: firm setup, client onboarding, time tracking,
-# invoicing, retainers, profitability, compliance, and year-end.
+# invoicing, profitability, compliance, and year-end.
 #
 # Usage:
 #   bash compose/seed/lifecycle-test.sh                  # Run all days
@@ -574,33 +574,6 @@ day_01_first_client() {
   api_post "/api/customers/${KGOSI_ID}/projects/${KGOSI_PROJECT_ID}" '{}' "$ALICE_JWT" > /dev/null
   # 409 if already linked, that's fine
 
-  # ── 1.7 Create retainer agreement ─────────────────────────────
-  echo ""
-  echo "  -- 1.7 Retainer Agreement --"
-  existing_retainers=$(api_get "/api/retainers?size=200" "$ALICE_JWT")
-  kgosi_retainer=$(echo "$existing_retainers" | jq -r '.[] | select(.name == "Kgosi Monthly Bookkeeping") | .id' 2>/dev/null | head -1)
-
-  if [ -n "$kgosi_retainer" ] && [ "$kgosi_retainer" != "null" ]; then
-    echo "    [skip] Kgosi retainer exists (${kgosi_retainer})"
-    KGOSI_RETAINER_ID="$kgosi_retainer"
-  else
-    ret_body=$(api_post "/api/retainers" "{
-      \"customerId\": \"${KGOSI_ID}\",
-      \"name\": \"Kgosi Monthly Bookkeeping\",
-      \"type\": \"HOUR_BANK\",
-      \"frequency\": \"MONTHLY\",
-      \"startDate\": \"${last_month}\",
-      \"allocatedHours\": 10,
-      \"periodFee\": 5500.00,
-      \"rolloverPolicy\": \"CARRY_FORWARD\",
-      \"rolloverCapHours\": 5,
-      \"notes\": \"R5,500/month retainer, 10 hours included\"
-    }" "$ALICE_JWT")
-    check_status "Create Kgosi retainer"
-    KGOSI_RETAINER_ID=$(echo "$ret_body" | jq -r '.id')
-  fi
-  export KGOSI_RETAINER_ID
-
   # Create tasks for the engagement
   KGOSI_T1=$(_ensure_task "$KGOSI_PROJECT_ID" "Capture bank statements and receipts" "$CAROL_MEMBER_ID" "HIGH")
   KGOSI_T2=$(_ensure_task "$KGOSI_PROJECT_ID" "Reconcile accounts" "$CAROL_MEMBER_ID" "HIGH")
@@ -656,24 +629,6 @@ day_02_additional_clients() {
   VUKANI_T1=$(_ensure_task "$VUKANI_PROJECT_ID" "Monthly reconciliation" "$CAROL_MEMBER_ID" "HIGH")
   VUKANI_T2=$(_ensure_task "$VUKANI_PROJECT_ID" "Sage accounts reconciliation" "$CAROL_MEMBER_ID" "MEDIUM")
   export VUKANI_T1 VUKANI_T2
-
-  # Vukani retainer
-  existing_retainers=$(api_get "/api/retainers?size=200" "$ALICE_JWT")
-  vukani_retainer=$(echo "$existing_retainers" | jq -r '.[] | select(.name == "Vukani Monthly Retainer") | .id' 2>/dev/null | head -1)
-  if [ -z "$vukani_retainer" ] || [ "$vukani_retainer" = "null" ]; then
-    ret_body=$(api_post "/api/retainers" "{
-      \"customerId\": \"${VUKANI_ID}\",
-      \"name\": \"Vukani Monthly Retainer\",
-      \"type\": \"HOUR_BANK\",
-      \"frequency\": \"MONTHLY\",
-      \"startDate\": \"${last_month}\",
-      \"allocatedHours\": 8,
-      \"periodFee\": 4500.00,
-      \"rolloverPolicy\": \"FORFEIT\",
-      \"notes\": \"R4,500/month retainer, 8 hours\"
-    }" "$ALICE_JWT")
-    check_status "Create Vukani retainer"
-  fi
 
   # ── Moroka Family Trust (trust, fixed fee) ─────────────────────
   echo ""

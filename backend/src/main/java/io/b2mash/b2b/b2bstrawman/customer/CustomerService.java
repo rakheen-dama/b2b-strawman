@@ -23,7 +23,6 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.retainer.RetainerAgreementRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,7 +52,6 @@ public class CustomerService {
   private final ProjectRepository projectRepository;
   private final CustomerProjectRepository customerProjectRepository;
   private final InvoiceRepository invoiceRepository;
-  private final RetainerAgreementRepository retainerAgreementRepository;
   private final io.b2mash.b2b.b2bstrawman.member.MemberNameResolver memberNameResolver;
   private final ChecklistInstanceService checklistInstanceService;
 
@@ -68,7 +66,6 @@ public class CustomerService {
       ProjectRepository projectRepository,
       CustomerProjectRepository customerProjectRepository,
       InvoiceRepository invoiceRepository,
-      RetainerAgreementRepository retainerAgreementRepository,
       io.b2mash.b2b.b2bstrawman.member.MemberNameResolver memberNameResolver,
       ChecklistInstanceService checklistInstanceService) {
     this.repository = repository;
@@ -81,7 +78,6 @@ public class CustomerService {
     this.projectRepository = projectRepository;
     this.customerProjectRepository = customerProjectRepository;
     this.invoiceRepository = invoiceRepository;
-    this.retainerAgreementRepository = retainerAgreementRepository;
     this.memberNameResolver = memberNameResolver;
     this.checklistInstanceService = checklistInstanceService;
   }
@@ -505,10 +501,6 @@ public class CustomerService {
             "invoice(s)",
             invoiceRepository.countByCustomerId(id),
             "Void or delete all invoices first.")
-        .checkCountZero(
-            "retainer agreement(s)",
-            retainerAgreementRepository.countByCustomerId(id),
-            "Cancel or delete all retainers first.")
         .execute();
 
     customer.archive();

@@ -329,8 +329,7 @@ class BillingRunPreviewCardinalityTest {
                           "periodFrom": "%s",
                           "periodTo": "%s",
                           "currency": "%s",
-                          "includeExpenses": %s,
-                          "includeRetainers": false
+                          "includeExpenses": %s
                         }
                         """
                             .formatted(name, periodFrom, periodTo, currency, includeExpenses)))

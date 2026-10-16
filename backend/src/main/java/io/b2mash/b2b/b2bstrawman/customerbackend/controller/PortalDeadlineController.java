@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
  * PortalDeadlineService} — if the authenticated customer's tenant does not have {@code deadlines}
  * enabled, every endpoint returns 404 (ADR-254: portal surfaces hide disabled modules).
  *
- * <p>Mirrors the shape of {@code PortalRetainerController}: thin delegate to a single service
- * method per endpoint, no business logic in the controller.
+ * <p>Mirrors the shape of {@code PortalTrustController}: thin delegate to a single service method
+ * per endpoint, no business logic in the controller.
  */
 @RestController
 @RequestMapping("/portal/deadlines")

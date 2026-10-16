@@ -33,7 +33,6 @@ Most checkpoints are `[all profiles]`. The following are gated:
 |---|---|---|
 | Day 0 trust-deposit seed | `[legal-za]` | Trust accounting only present on legal profile |
 | Day 0 deadline seed | `[accounting-za]` | Engagement deadlines only present on accounting profile |
-| Day 0 retainer seed | `[consulting-za]` | Hour-bank retainers only present on consulting profile |
 | Day 10 trust approval | `[legal-za]` | Trust transactions are legal-only |
 | Day 15 closure override | `[legal-za]` primary, available on all | Matter-closure surface is legal-headlined; override path universal |
 
@@ -78,14 +77,13 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.2** Create a matter via `/org/acme-corp/projects/new` (or POST `/api/projects` from a fixture). Title: `Audit Capstone Matter Day 0`. Confirm matter-creation audit row appears in the backing tenant's `audit_event` table.
 - [ ] **0.3** `[legal-za]` Post a trust deposit against the new matter (`/org/acme-corp/trust-accounting` or POST `/api/trust-transactions`). Amount: ZAR 5 000. Confirm `trust_transaction.deposited` row recorded.
 - [ ] **0.4** `[accounting-za]` Seed an engagement deadline via the deadlines surface for the new matter. Confirm deadline-creation audit row recorded.
-- [ ] **0.5** `[consulting-za]` Seed a retainer / hour-bank entry via the retainer surface for the new matter. Confirm retainer-setup audit row recorded.
 - [ ] **0.5a** `[all profiles]` **Deal events (Phase 80)**: navigate to **Pipeline** → click **New Enquiry** → Customer mode = **Create new prospect**, name `Audit Capstone Prospect Day 0`; Title = `Audit Capstone Deal Day 0` → **Create Enquiry** → drag the card from the first open stage into **Won** → confirm in the "Mark deal as won" dialog. Confirm `deal.created` and `deal.won` rows recorded (entityType `deal`, lowercase — plus the inline prospect's customer-creation event).
 
 ### Phase B: Open Audit Log page for the first time
 
 - [ ] **0.6** Navigate to `/org/acme-corp/settings/audit-log` — page renders without 500 / JS console errors.
 - [ ] **0.7** Verify h1 reads "Audit log" (case-insensitive); page heading is visible.
-- [ ] **0.8** Verify the row list shows the freshly seeded events from Phase A (login, matter creation, deal creation + `deal.won`, profile-gated trust/deadline/retainer seed). Row count ≥ 4.
+- [ ] **0.8** Verify the row list shows the freshly seeded events from Phase A (login, matter creation, deal creation + `deal.won`, profile-gated trust/deadline seed). Row count ≥ 4.
 - [ ] **0.9** Apply the **Sensitive** preset via `[data-testid="audit-preset-select"]` → option "Sensitive". URL updates with `severities=` param.
 - [ ] **0.10** Verify the Sensitive-preset list is **empty** (no CRITICAL/WARNING events seeded yet) — empty-state copy "No audit events" visible.
 - [ ] **0.11** 📸 **Screenshot** slot **#1**: `phase69-01-audit-log-empty-sensitive.png` — Audit Log page with Sensitive preset, empty state.

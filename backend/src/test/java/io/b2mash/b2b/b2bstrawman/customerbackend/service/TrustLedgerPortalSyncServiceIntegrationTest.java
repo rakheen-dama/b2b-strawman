@@ -495,7 +495,7 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
 
   // ==========================================================================
   // Cross-tenant guard (issue #1267 — must run before any future controller
-  // exposure). Mirrors the canonical guard in RetainerPortalSyncService.
+  // exposure).
   // ==========================================================================
 
   @Test

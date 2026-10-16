@@ -36,8 +36,6 @@ public class PortalEmailService {
   private static final String TRUST_ACTIVITY_REFERENCE_TYPE = "PORTAL_TRUST_ACTIVITY";
   private static final String DEADLINE_TEMPLATE_NAME = "portal-deadline-approaching";
   private static final String DEADLINE_REFERENCE_TYPE = "PORTAL_DEADLINE";
-  private static final String RETAINER_CLOSED_TEMPLATE_NAME = "portal-retainer-period-closed";
-  private static final String RETAINER_CLOSED_REFERENCE_TYPE = "PORTAL_RETAINER";
   // GAP-L-72 (slice 23) — closure-pack + Statement-of-Account per-event sends.
   private static final String DOCUMENT_READY_TEMPLATE_NAME = "portal-document-ready";
   private static final String DOCUMENT_READY_REFERENCE_TYPE = "PORTAL_DOCUMENT_READY";
@@ -187,12 +185,6 @@ public class PortalEmailService {
   public boolean sendDeadlineReminderEmail(PortalContact contact, Map<String, Object> context) {
     return sendPortalNotification(
         contact, context, DEADLINE_TEMPLATE_NAME, DEADLINE_REFERENCE_TYPE);
-  }
-
-  /** Sends the retainer-period-closed per-event email (Epic 498B). Fire-and-forget. */
-  public boolean sendRetainerClosedEmail(PortalContact contact, Map<String, Object> context) {
-    return sendPortalNotification(
-        contact, context, RETAINER_CLOSED_TEMPLATE_NAME, RETAINER_CLOSED_REFERENCE_TYPE);
   }
 
   /**

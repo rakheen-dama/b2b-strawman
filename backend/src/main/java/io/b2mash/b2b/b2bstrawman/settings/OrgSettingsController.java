@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateCollectionsSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateComplianceSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateExpenseSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdatePortalDigestCadenceRequest;
-import io.b2mash.b2b.b2bstrawman.settings.dto.UpdatePortalRetainerMemberDisplayRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateTaxSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateTimeReminderSettingsRequest;
@@ -192,14 +191,5 @@ public class OrgSettingsController {
       @Valid @RequestBody UpdatePortalDigestCadenceRequest request, ActorContext actor) {
     return ResponseEntity.ok(
         orgSettingsService.updatePortalDigestCadence(request.portalDigestCadence(), actor));
-  }
-
-  @PatchMapping("/portal-retainer-member-display")
-  @RequiresCapability("TEAM_OVERSIGHT")
-  public ResponseEntity<SettingsResponse> updatePortalRetainerMemberDisplay(
-      @Valid @RequestBody UpdatePortalRetainerMemberDisplayRequest request, ActorContext actor) {
-    return ResponseEntity.ok(
-        orgSettingsService.updatePortalRetainerMemberDisplay(
-            request.portalRetainerMemberDisplay(), actor));
   }
 }

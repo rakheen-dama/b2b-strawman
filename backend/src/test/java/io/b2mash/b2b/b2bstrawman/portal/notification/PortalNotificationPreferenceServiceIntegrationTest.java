@@ -70,7 +70,6 @@ class PortalNotificationPreferenceServiceIntegrationTest {
     assertThat(created.getPortalContactId()).isEqualTo(contactId);
     assertThat(created.isDigestEnabled()).isTrue();
     assertThat(created.isTrustActivityEnabled()).isTrue();
-    assertThat(created.isRetainerUpdatesEnabled()).isTrue();
     assertThat(created.isDeadlineRemindersEnabled()).isTrue();
     assertThat(created.isActionRequiredEnabled()).isTrue();
     assertThat(created.getLastUpdatedAt()).isNotNull();
@@ -95,12 +94,10 @@ class PortalNotificationPreferenceServiceIntegrationTest {
         runInTenantReturning(
             () ->
                 preferenceService.update(
-                    contactId,
-                    new PortalNotificationPreferenceUpdate(false, false, true, false, true)));
+                    contactId, new PortalNotificationPreferenceUpdate(false, false, false, true)));
 
     assertThat(updated.isDigestEnabled()).isFalse();
     assertThat(updated.isTrustActivityEnabled()).isFalse();
-    assertThat(updated.isRetainerUpdatesEnabled()).isTrue();
     assertThat(updated.isDeadlineRemindersEnabled()).isFalse();
     assertThat(updated.isActionRequiredEnabled()).isTrue();
 
@@ -108,7 +105,6 @@ class PortalNotificationPreferenceServiceIntegrationTest {
     var reloaded = runInTenantReturning(() -> preferenceService.getOrCreate(contactId));
     assertThat(reloaded.isDigestEnabled()).isFalse();
     assertThat(reloaded.isTrustActivityEnabled()).isFalse();
-    assertThat(reloaded.isRetainerUpdatesEnabled()).isTrue();
     assertThat(reloaded.isDeadlineRemindersEnabled()).isFalse();
     assertThat(reloaded.isActionRequiredEnabled()).isTrue();
   }

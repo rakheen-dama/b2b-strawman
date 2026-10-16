@@ -175,11 +175,6 @@ public class NotificationService {
           "RECURRING_PROJECT_CREATED",
           "SCHEDULE_SKIPPED",
           "SCHEDULE_COMPLETED",
-          "RETAINER_PERIOD_READY_TO_CLOSE",
-          "RETAINER_PERIOD_CLOSED",
-          "RETAINER_APPROACHING_CAPACITY",
-          "RETAINER_FULLY_CONSUMED",
-          "RETAINER_TERMINATED",
           "PAYMENT_FAILED",
           "PAYMENT_LINK_EXPIRED",
           "ACCEPTANCE_COMPLETED",
@@ -842,12 +837,9 @@ public class NotificationService {
     return created;
   }
 
-  // --- Admin/owner fan-out helper (used by retainer services) ---
+  // --- Admin/owner fan-out helper ---
 
-  /**
-   * Creates a notification for all org admins and owners. Used by retainer services for
-   * agreement-level notifications.
-   */
+  /** Creates a notification for each org admin and owner. */
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public List<Notification> notifyAdminsAndOwners(
       String type, String title, String body, String entityType, UUID entityId) {

@@ -33,11 +33,11 @@ import org.junit.jupiter.api.Test;
  * <ul>
  *   <li>{@code org_id} — the original projects/documents/comments/invoices/tasks/requests tables
  *       carry the Clerk org id directly.
- *   <li>{@code customer_id} — the trust-ledger, retainer, and deadline tables (V19–V21) scope by
- *       the globally-unique {@code customer_id} UUID instead and have <b>no {@code org_id}
- *       column</b>; their migrations state this explicitly ("customer_id ... uniquely identifies
- *       the firm customer in the global portal schema"). A {@code customer_id} belongs to exactly
- *       one org, so it is an equivalent tenant boundary.
+ *   <li>{@code customer_id} — the trust-ledger and deadline tables (V19, V21) scope by the
+ *       globally-unique {@code customer_id} UUID instead and have <b>no {@code org_id} column</b>;
+ *       their migrations state this explicitly ("customer_id ... uniquely identifies the firm
+ *       customer in the global portal schema"). A {@code customer_id} belongs to exactly one org,
+ *       so it is an equivalent tenant boundary.
  * </ul>
  *
  * <p>This test makes a missing predicate a build failure. It scans the source of the read-model

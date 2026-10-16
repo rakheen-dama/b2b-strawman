@@ -182,7 +182,6 @@ class TenantScopeBindingTest {
           "io.b2mash.b2b.b2bstrawman.customerbackend.handler.PortalEventHandler",
           "io.b2mash.b2b.b2bstrawman.customerbackend.service.DeadlinePortalSyncService",
           "io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalResyncService",
-          "io.b2mash.b2b.b2bstrawman.customerbackend.service.RetainerPortalSyncService",
           "io.b2mash.b2b.b2bstrawman.customerbackend.service.TrustLedgerPortalSyncService",
           "io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestEmailEventListener",
           "io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestNotificationEventListener",

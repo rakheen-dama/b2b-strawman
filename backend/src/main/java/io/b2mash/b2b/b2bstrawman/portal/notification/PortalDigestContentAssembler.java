@@ -4,11 +4,9 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalAcceptanceView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDeadlineView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalRequestView;
-import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalRetainerSummaryView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalTrustTransactionView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalDeadlineViewRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
-import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalRetainerSummaryRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
@@ -31,12 +29,12 @@ import org.springframework.stereotype.Component;
  * ADR-253.
  *
  * <p>The assembler returns {@code null} when every section is empty (no invoices, acceptances,
- * requests, trust activity, retainer snapshot, or upcoming deadline). Callers treat {@code null} as
- * a signal to suppress the digest for that contact.
+ * requests, trust activity, or upcoming deadline). Callers treat {@code null} as a signal to
+ * suppress the digest for that contact.
  *
  * <p>The {@code lookbackDays} parameter is interpreted as "since {@code now - lookbackDays}" for
  * invoice/acceptance/request/trust sections, and as "upcoming in the next {@code lookbackDays}" for
- * the deadline section. Retainer summary is a point-in-time snapshot.
+ * the deadline section.
  */
 @Component
 public class PortalDigestContentAssembler {
@@ -46,19 +44,16 @@ public class PortalDigestContentAssembler {
   private final PortalContactRepository portalContactRepository;
   private final PortalReadModelRepository portalReadModelRepository;
   private final PortalTrustReadModelRepository portalTrustReadModelRepository;
-  private final PortalRetainerSummaryRepository portalRetainerSummaryRepository;
   private final PortalDeadlineViewRepository portalDeadlineViewRepository;
 
   public PortalDigestContentAssembler(
       PortalContactRepository portalContactRepository,
       PortalReadModelRepository portalReadModelRepository,
       PortalTrustReadModelRepository portalTrustReadModelRepository,
-      PortalRetainerSummaryRepository portalRetainerSummaryRepository,
       PortalDeadlineViewRepository portalDeadlineViewRepository) {
     this.portalContactRepository = portalContactRepository;
     this.portalReadModelRepository = portalReadModelRepository;
     this.portalTrustReadModelRepository = portalTrustReadModelRepository;
-    this.portalRetainerSummaryRepository = portalRetainerSummaryRepository;
     this.portalDeadlineViewRepository = portalDeadlineViewRepository;
   }
 
@@ -115,10 +110,6 @@ public class PortalDigestContentAssembler {
       recentTrustTransactions.addAll(txns);
     }
 
-    // ── Retainer summaries (current snapshot) ──
-    List<PortalRetainerSummaryView> retainerSummaries =
-        portalRetainerSummaryRepository.findByCustomerId(customerId);
-
     // ── Upcoming deadlines (today..today+lookback) ──
     List<PortalDeadlineView> upcomingDeadlines =
         portalDeadlineViewRepository.findByCustomer(customerId, today, upcomingTo, null);
@@ -128,7 +119,6 @@ public class PortalDigestContentAssembler {
             && pendingAcceptances.isEmpty()
             && pendingRequests.isEmpty()
             && recentTrustTransactions.isEmpty()
-            && retainerSummaries.isEmpty()
             && upcomingDeadlines.isEmpty();
     if (allEmpty) {
       return null;
@@ -141,13 +131,11 @@ public class PortalDigestContentAssembler {
     bundle.put("pendingAcceptances", pendingAcceptances);
     bundle.put("pendingRequests", pendingRequests);
     bundle.put("recentTrustTransactions", recentTrustTransactions);
-    bundle.put("retainerSummaries", retainerSummaries);
     bundle.put("upcomingDeadlines", upcomingDeadlines);
     bundle.put("hasInvoices", !recentInvoices.isEmpty());
     bundle.put("hasAcceptances", !pendingAcceptances.isEmpty());
     bundle.put("hasRequests", !pendingRequests.isEmpty());
     bundle.put("hasTrustActivity", !recentTrustTransactions.isEmpty());
-    bundle.put("hasRetainers", !retainerSummaries.isEmpty());
     bundle.put("hasDeadlines", !upcomingDeadlines.isEmpty());
     return bundle;
   }

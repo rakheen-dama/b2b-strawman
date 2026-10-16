@@ -153,8 +153,7 @@ class BillingRunNotificationTest {
                           "periodFrom": "%s",
                           "periodTo": "%s",
                           "currency": "USD",
-                          "includeExpenses": false,
-                          "includeRetainers": false
+                          "includeExpenses": false
                         }
                         """
                             .formatted(LocalDate.now().minusDays(30), LocalDate.now())))
@@ -356,8 +355,7 @@ class BillingRunNotificationTest {
                           "periodFrom": "%s",
                           "periodTo": "%s",
                           "currency": "USD",
-                          "includeExpenses": false,
-                          "includeRetainers": false
+                          "includeExpenses": false
                         }
                         """
                             .formatted(periodFrom, periodTo)))

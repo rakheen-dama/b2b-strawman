@@ -26,8 +26,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  * Syncs firm-side deadline activity into the unified portal read-model ({@code
  * portal.portal_deadline_view}). Listens in {@link TransactionPhase#AFTER_COMMIT} so only committed
  * firm-side changes reach portal contacts; failures are swallowed and logged — a sync failure must
- * never roll back the originating firm transaction (mirrors {@code RetainerPortalSyncService}, see
- * ADR-253).
+ * never roll back the originating firm transaction (mirrors {@code TrustLedgerPortalSyncService},
+ * see ADR-253).
  *
  * <p>Per ADR-256, the portal surfaces four deadline sources behind a single polymorphic row, keyed
  * on {@code (source_entity, id)}:

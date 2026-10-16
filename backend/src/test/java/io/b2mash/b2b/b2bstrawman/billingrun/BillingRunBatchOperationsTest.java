@@ -447,8 +447,7 @@ class BillingRunBatchOperationsTest {
                           "periodFrom": "%s",
                           "periodTo": "%s",
                           "currency": "%s",
-                          "includeExpenses": false,
-                          "includeRetainers": false
+                          "includeExpenses": false
                         }
                         """
                             .formatted(name, periodFrom, periodTo, currency)))

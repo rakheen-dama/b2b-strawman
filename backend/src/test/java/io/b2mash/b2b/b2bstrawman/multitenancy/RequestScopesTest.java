@@ -332,8 +332,8 @@ class RequestScopesTest {
   // ========================================================================
   // runForTenantWithMember — 3-binding variant for system-actor backfills
   // (TENANT_ID + ORG_ID + MEMBER_ID = system actor sentinel UUID). Used by
-  // portal read-model backfill helpers (RetainerPortalSyncService,
-  // TrustLedgerPortalSyncService). See ADR-T008 Surface 2.
+  // portal read-model backfill helpers (TrustLedgerPortalSyncService). See
+  // ADR-T008 Surface 2.
   // ========================================================================
 
   @Test

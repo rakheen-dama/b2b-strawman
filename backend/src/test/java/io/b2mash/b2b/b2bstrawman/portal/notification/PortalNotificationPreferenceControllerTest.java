@@ -115,7 +115,7 @@ class PortalNotificationPreferenceControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.digestEnabled").value(true))
         .andExpect(jsonPath("$.trustActivityEnabled").value(true))
-        .andExpect(jsonPath("$.retainerUpdatesEnabled").value(true))
+        .andExpect(jsonPath("$.retainerUpdatesEnabled").doesNotExist())
         .andExpect(jsonPath("$.deadlineRemindersEnabled").value(true))
         .andExpect(jsonPath("$.actionRequiredEnabled").value(true))
         .andExpect(jsonPath("$.firmDigestCadence").value("WEEKLY"));
@@ -129,7 +129,6 @@ class PortalNotificationPreferenceControllerTest {
         {
           "digestEnabled": false,
           "trustActivityEnabled": false,
-          "retainerUpdatesEnabled": true,
           "deadlineRemindersEnabled": false,
           "actionRequiredEnabled": true
         }
@@ -144,7 +143,6 @@ class PortalNotificationPreferenceControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.digestEnabled").value(false))
         .andExpect(jsonPath("$.trustActivityEnabled").value(false))
-        .andExpect(jsonPath("$.retainerUpdatesEnabled").value(true))
         .andExpect(jsonPath("$.deadlineRemindersEnabled").value(false))
         .andExpect(jsonPath("$.actionRequiredEnabled").value(true));
 
@@ -173,7 +171,7 @@ class PortalNotificationPreferenceControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"digestEnabled":true,"trustActivityEnabled":true,"retainerUpdatesEnabled":true,"deadlineRemindersEnabled":true,"actionRequiredEnabled":true}
+                    {"digestEnabled":true,"trustActivityEnabled":true,"deadlineRemindersEnabled":true,"actionRequiredEnabled":true}
                     """))
         .andExpect(status().isUnauthorized());
   }

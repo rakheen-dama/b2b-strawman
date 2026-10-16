@@ -6,7 +6,6 @@ import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalEmailService;
-import io.b2mash.b2b.b2bstrawman.retainer.event.RetainerPeriodRolloverEvent;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
@@ -44,8 +43,6 @@ import org.springframework.transaction.support.TransactionTemplate;
  *       records that funds were received into trust (GAP-Trust-Nudge-Email-Missing). Other
  *       recorded-event types (TRANSFER_OUT/TRANSFER_IN) are skipped here — internal moves do not
  *       warrant a client-facing email; their portal surfacing happens via the read-model sync.
- *   <li>{@link RetainerPeriodRolloverEvent} — renders {@code portal-retainer-period-closed}; gated
- *       on {@code retainerUpdatesEnabled}.
  *   <li>{@link FieldDateApproachingEvent} — renders {@code portal-deadline-approaching}; gated on
  *       {@code deadlineRemindersEnabled}. Customer id is derived from the event's {@code details}
  *       via {@code field_value} / matter lookup is not required here because the portal-facing view
@@ -168,33 +165,6 @@ public class PortalEmailNotificationChannel {
           } catch (Exception e) {
             log.error(
                 "Portal trust-deposit email failed tenant={} customerId={}",
-                event.tenantId(),
-                event.customerId(),
-                e);
-          }
-        });
-  }
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // Retainer period closed
-  // ──────────────────────────────────────────────────────────────────────────
-
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-  public void onRetainerPeriodRollover(RetainerPeriodRolloverEvent event) {
-    RequestScopes.runForTenant(
-        event.tenantId(),
-        event.orgId(),
-        () -> {
-          try {
-            dispatchToContacts(
-                event.customerId(),
-                PortalNotificationPreference::isRetainerUpdatesEnabled,
-                contact -> buildRetainerClosedContext(contact, event),
-                portalEmailService::sendRetainerClosedEmail,
-                "retainer-closed");
-          } catch (Exception e) {
-            log.error(
-                "Portal retainer-closed email failed tenant={} customerId={}",
                 event.tenantId(),
                 event.customerId(),
                 e);
@@ -354,30 +324,6 @@ public class PortalEmailNotificationChannel {
     return context;
   }
 
-  private Map<String, Object> buildRetainerClosedContext(
-      PortalContact contact, RetainerPeriodRolloverEvent event) {
-    Map<String, Object> context =
-        emailContextBuilder.buildBaseContext(contact.getDisplayName(), null);
-    String orgName = context.getOrDefault("orgName", productName).toString();
-    context.put("subject", orgName + ": Your retainer period has closed");
-    context.put("contactName", contact.getDisplayName());
-    context.put("closedPeriodId", event.closedPeriodId());
-    context.put("newPeriodStart", event.newPeriodStart());
-    context.put("newPeriodEnd", event.newPeriodEnd());
-    context.put("nextRenewalDate", event.nextRenewalDate());
-    BigDecimal allocated = event.allocatedHours();
-    BigDecimal rollover = event.rolloverHoursOut();
-    context.put("allocatedHours", allocated != null ? allocated.toPlainString() : null);
-    context.put("rolloverHours", rollover != null ? rollover.toPlainString() : null);
-    context.put(
-        "retainerUrl",
-        event.agreementId() != null
-            ? portalBaseUrl + "/retainer/" + event.agreementId()
-            : portalBaseUrl + "/retainer");
-    context.put("portalBaseUrl", portalBaseUrl);
-    return context;
-  }
-
   private Map<String, Object> buildDeadlineContext(
       PortalContact contact, FieldDateApproachingEvent event) {
     Map<String, Object> context =
@@ -471,8 +417,7 @@ public class PortalEmailNotificationChannel {
   /**
    * Resolves the tenant's default currency code from {@code OrgSettings}, falling back to {@code
    * "ZAR"} when settings or currency code are not set. Mirrors the fallback used by {@link
-   * io.b2mash.b2b.b2bstrawman.expense.ExpenseService} and {@link
-   * io.b2mash.b2b.b2bstrawman.retainer.RetainerPeriodService}.
+   * io.b2mash.b2b.b2bstrawman.expense.ExpenseService}.
    */
   private String resolveCurrencyCode() {
     try {

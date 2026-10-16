@@ -34,7 +34,7 @@
 | Client — Retainer engagement | Thembi Nkosi | `thembi.portal@example.com` | `keystone-consulting` | `consulting-za` |
 | Firm Owner (off-screen, creates state) | Thandi Mathebula / Naledi Phiri / Lindiwe Khumalo | firm-side only | respective tenant | — |
 
-> The script uses **`sipho.portal@example.com`** as the primary "all-profile" narrator unless a checkpoint is explicitly profile-gated. Cross-tenant checkpoints (e.g. Day 30 hour-bank) switch to the tenant whose vertical exposes the feature.
+> The script uses **`sipho.portal@example.com`** as the primary "all-profile" narrator unless a checkpoint is explicitly profile-gated. Cross-tenant checkpoints switch to the tenant whose vertical exposes the feature.
 
 ## Prerequisites (firm-side state assumed present)
 
@@ -48,10 +48,9 @@
 
 1. **Day 0** — Portal home populated with pending info requests for a newly onboarded client (`/home`)
 2. **Day 21** — Trust balance card showing first deposit (`/trust`) `[legal-za only]`
-3. **Day 30** — Hour-bank remaining + current-period consumption (`/retainer`) `[consulting-za / legal-za]`
-4. **Day 45** — Pay-invoice success state (`/invoices/[id]` → Pay → receipt)
-5. **Day 60** — Generated document download (`/deadlines` or `/projects` → open doc) `[legal-za SoA / accounting-za financial statement]`
-6. **Day 90** — Final digest + activity trail of the quarter
+3. **Day 45** — Pay-invoice success state (`/invoices/[id]` → Pay → receipt)
+4. **Day 60** — Generated document download (`/deadlines` or `/projects` → open doc) `[legal-za SoA / accounting-za financial statement]`
+5. **Day 90** — Final digest + activity trail of the quarter
 
 ---
 
@@ -152,24 +151,6 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] `/trust` route renders only for a legal-za client with trust ledger entries — other profiles should 404 or show empty state
 - [ ] Amount shown matches firm-side Trust Accounting page for the same matter
 - [ ] Currency is ZAR (legal-za default)
-
----
-
-## Day 30 — Hour-bank remaining + current-period consumption  `[consulting-za / legal-za]`
-
-**Actor**: Thembi Nkosi (consulting-za) OR Sipho Dlamini (legal-za with hour-based retainer)
-
-- [ ] **30.1** Navigate to `/retainer` → verify retainer overview renders for at least one engagement/matter
-- [ ] **30.2** Verify hour-bank remaining shows (e.g., "18.5 of 40 hours remaining this period")
-- [ ] **30.3** Verify current-period consumption card shows: hours consumed, by whom (optional), most-recent work-log entries
-- [ ] **30.4** Verify the period boundary (start / end) is visible and correct per the firm-side retainer setup
-- [ ] **30.5** 📸 **Screenshot**: `day-30-retainer-hour-bank.png`
-- [ ] **30.6** For `legal-za` variant: navigate to `/projects/[matterId]` → verify matter-level retainer summary also renders
-
-**Day 30 checkpoints**
-- [ ] Hour-bank math matches firm-side retainer consumption report
-- [ ] `/retainer` shows **empty state**, not a 500, for an `accounting-za` contact (profile-gating check)
-- [ ] Period boundary displayed in ISO format or localised ZA format — consistent across both variants
 
 ---
 
@@ -275,7 +256,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **E.1** Every step above is checked across the three exercised profiles (or clearly marked N/A with rationale for profile-gated skips)
 - [ ] **E.2** All 7 📸 wow moments captured without visual regression against the Playwright baselines (once 500B populates them)
 - [ ] **E.3** Zero BLOCKER or HIGH items in gap report (`tasks/phase68-gap-report.md` — produced in slice 500B)
-- [ ] **E.4** **Profile gating** verified — `/trust` is legal-za only, `/retainer` is consulting-za + legal-za only, `/deadlines` is accounting-za + legal-za only; non-eligible profiles show empty state, NOT 500
+- [ ] **E.4** **Profile gating** verified — `/trust` is legal-za only, `/deadlines` is accounting-za + legal-za only; non-eligible profiles show empty state, NOT 500
 - [ ] **E.5** **Auth flow** — every portal interaction authenticated via magic-link → JWT (cookie + localStorage); zero Keycloak-form usage, zero firm-side user bleed-through
 - [ ] **E.6** **Terminology sweep** — zero firm-side vocabulary leaks on portal pages ("matter" / "project" / "engagement" consistent per tenant profile; no "customer" / "client" inversion)
 - [ ] **E.7** **Three-tenant coverage** — every `[all profiles]` checkpoint validated on at least two of the three tenants; every gated checkpoint validated on each applicable tenant

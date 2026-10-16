@@ -40,9 +40,6 @@ public class BillingRun {
   @Column(name = "include_expenses", nullable = false)
   private boolean includeExpenses;
 
-  @Column(name = "include_retainers", nullable = false)
-  private boolean includeRetainers;
-
   @Column(name = "total_customers")
   private Integer totalCustomers;
 
@@ -78,14 +75,12 @@ public class BillingRun {
       LocalDate periodTo,
       String currency,
       boolean includeExpenses,
-      boolean includeRetainers,
       UUID createdBy) {
     this.name = name;
     this.periodFrom = periodFrom;
     this.periodTo = periodTo;
     this.currency = currency;
     this.includeExpenses = includeExpenses;
-    this.includeRetainers = includeRetainers;
     this.status = BillingRunStatus.PREVIEW;
     this.createdBy = createdBy;
     this.totalCustomers = 0;
@@ -152,10 +147,6 @@ public class BillingRun {
 
   public boolean isIncludeExpenses() {
     return includeExpenses;
-  }
-
-  public boolean isIncludeRetainers() {
-    return includeRetainers;
   }
 
   public Integer getTotalCustomers() {

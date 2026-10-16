@@ -414,61 +414,6 @@ class EmailNotificationChannelIntegrationTest {
             });
   }
 
-  @Test
-  void deliver_retainer_agreement_email_links_to_org_scoped_retainer() {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .run(
-            () -> {
-              UUID agreementId = UUID.randomUUID();
-              var notification =
-                  notificationRepository.save(
-                      new Notification(
-                          memberId,
-                          "RETAINER_APPROACHING_CAPACITY",
-                          "Retainer approaching capacity",
-                          null,
-                          "RETAINER_AGREEMENT",
-                          agreementId,
-                          null));
-
-              emailChannel.deliver(notification, RECIPIENT_EMAIL);
-
-              assertThat(greenMail.getReceivedMessages()).hasSize(1);
-              assertThat(decodedContent(greenMail.getReceivedMessages()[0]))
-                  .contains("/org/" + ORG_ID + "/retainers/" + agreementId);
-            });
-  }
-
-  @Test
-  void deliver_retainer_period_email_links_to_retainers_list() {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .run(
-            () -> {
-              UUID periodId = UUID.randomUUID();
-              var notification =
-                  notificationRepository.save(
-                      new Notification(
-                          memberId,
-                          "RETAINER_PERIOD_READY_TO_CLOSE",
-                          "Retainer period ready to close",
-                          null,
-                          "RETAINER_PERIOD",
-                          periodId,
-                          null));
-
-              emailChannel.deliver(notification, RECIPIENT_EMAIL);
-
-              assertThat(greenMail.getReceivedMessages()).hasSize(1);
-              // The reference is a period id, not an agreement id — /retainers/{periodId} would
-              // 404, so the CTA targets the retainers list.
-              String content = decodedContent(greenMail.getReceivedMessages()[0]);
-              assertThat(content).contains("/org/" + ORG_ID + "/retainers");
-              assertThat(content).doesNotContain("/retainers/" + periodId);
-            });
-  }
-
   private Notification savedNotification(UUID recipientMemberId, String type, String title) {
     var notification =
         new Notification(recipientMemberId, type, title, null, "TASK", UUID.randomUUID(), null);

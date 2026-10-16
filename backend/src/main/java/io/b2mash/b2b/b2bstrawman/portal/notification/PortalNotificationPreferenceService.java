@@ -26,7 +26,7 @@ public class PortalNotificationPreferenceService {
   }
 
   /**
-   * Returns the preference row for the given portal contact, creating a new one with all five
+   * Returns the preference row for the given portal contact, creating a new one with all four
    * toggles defaulted to {@code true} when absent. Idempotent after the first call — subsequent
    * calls read the persisted row without resetting it. Safe against the race where two concurrent
    * callers both miss {@link PortalNotificationPreferenceRepository#findById(Object)}: the losing
@@ -49,8 +49,8 @@ public class PortalNotificationPreferenceService {
   }
 
   /**
-   * Persists an update to all five toggles for the given portal contact. Get-or-creates the row
-   * first, then applies the five values and stamps {@code lastUpdatedAt}.
+   * Persists an update to all four toggles for the given portal contact. Get-or-creates the row
+   * first, then applies the four values and stamps {@code lastUpdatedAt}.
    */
   @Transactional
   public PortalNotificationPreference update(
@@ -65,7 +65,6 @@ public class PortalNotificationPreferenceService {
     pref.update(
         dto.digestEnabled(),
         dto.trustActivityEnabled(),
-        dto.retainerUpdatesEnabled(),
         dto.deadlineRemindersEnabled(),
         dto.actionRequiredEnabled());
     return repository.save(pref);
@@ -98,17 +97,15 @@ public class PortalNotificationPreferenceService {
     return new PortalNotificationPreferencesResponse(
         pref.isDigestEnabled(),
         pref.isTrustActivityEnabled(),
-        pref.isRetainerUpdatesEnabled(),
         pref.isDeadlineRemindersEnabled(),
         pref.isActionRequiredEnabled(),
         firmCadence);
   }
 
-  /** DTO carrying the five boolean toggles for a preference update. */
+  /** DTO carrying the four boolean toggles for a preference update. */
   public record PortalNotificationPreferenceUpdate(
       boolean digestEnabled,
       boolean trustActivityEnabled,
-      boolean retainerUpdatesEnabled,
       boolean deadlineRemindersEnabled,
       boolean actionRequiredEnabled) {}
 }

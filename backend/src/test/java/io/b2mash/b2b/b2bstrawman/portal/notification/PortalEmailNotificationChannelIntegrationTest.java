@@ -16,7 +16,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.retainer.event.RetainerPeriodRolloverEvent;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
@@ -47,13 +46,11 @@ import org.springframework.transaction.support.TransactionTemplate;
  *   <li>{@link TrustTransactionApprovalEvent#approved(UUID, UUID, UUID, String, BigDecimal, UUID,
  *       UUID, UUID, String, String)} → {@code portal-trust-activity} email + delivery log entry
  *       with {@code referenceType=PORTAL_TRUST_ACTIVITY}.
- *   <li>{@link RetainerPeriodRolloverEvent} → {@code portal-retainer-period-closed} email +
- *       delivery log entry with {@code referenceType=PORTAL_RETAINER}.
  *   <li>{@link FieldDateApproachingEvent} → {@code portal-deadline-approaching} email + delivery
  *       log entry with {@code referenceType=PORTAL_DEADLINE}.
  *   <li>{@link InvoiceSentEvent} publish → ZERO new delivery-log rows with any of the new {@code
- *       PORTAL_TRUST_ACTIVITY} / {@code PORTAL_DEADLINE} / {@code PORTAL_RETAINER} reference types
- *       (no-double-send assertion per ADR-258).
+ *       PORTAL_TRUST_ACTIVITY} / {@code PORTAL_DEADLINE} reference types (no-double-send assertion
+ *       per ADR-258).
  * </ol>
  */
 @SpringBootTest
@@ -343,46 +340,6 @@ class PortalEmailNotificationChannelIntegrationTest {
   }
 
   // ──────────────────────────────────────────────────────────────────────
-  // Retainer period rollover
-  // ──────────────────────────────────────────────────────────────────────
-
-  @Test
-  void retainerRolloverEvent_triggersRetainerClosedEmail() throws Exception {
-    publishInsideTenantTxn(
-        () ->
-            eventPublisher.publishEvent(
-                new RetainerPeriodRolloverEvent(
-                    UUID.randomUUID(),
-                    customerId,
-                    UUID.randomUUID(),
-                    UUID.randomUUID(),
-                    LocalDate.now(),
-                    LocalDate.now().plusMonths(1),
-                    new BigDecimal("2.0"),
-                    new BigDecimal("10.0"),
-                    LocalDate.now().plusMonths(1),
-                    tenantSchema,
-                    ORG_ID,
-                    Instant.now())));
-
-    assertThat(greenMail.waitForIncomingEmail(5000, 1)).isTrue();
-    MimeMessage[] received = greenMail.getReceivedMessages();
-    boolean matched = false;
-    for (MimeMessage msg : received) {
-      if (CONTACT_EMAIL.equals(msg.getAllRecipients()[0].toString())
-          && msg.getSubject() != null
-          && msg.getSubject().toLowerCase().contains("retainer period has closed")) {
-        matched = true;
-        break;
-      }
-    }
-    assertThat(matched).as("retainer-period-closed email should be received").isTrue();
-
-    var logs = findLogsByReferenceType("PORTAL_RETAINER");
-    assertThat(logs).as("delivery log should record referenceType=PORTAL_RETAINER").isNotEmpty();
-  }
-
-  // ──────────────────────────────────────────────────────────────────────
   // Field date approaching (custom-field deadline)
   // ──────────────────────────────────────────────────────────────────────
 
@@ -465,7 +422,7 @@ class PortalEmailNotificationChannelIntegrationTest {
     assertThat(after)
         .as(
             "PortalEmailNotificationChannel must not subscribe to InvoiceSentEvent — "
-                + "no new PORTAL_TRUST_ACTIVITY/PORTAL_DEADLINE/PORTAL_RETAINER rows expected")
+                + "no new PORTAL_TRUST_ACTIVITY/PORTAL_DEADLINE rows expected")
         .isEqualTo(before);
   }
 
@@ -482,7 +439,6 @@ class PortalEmailNotificationChannelIntegrationTest {
         java.util.Set.of(
             TrustTransactionApprovalEvent.class,
             TrustTransactionRecordedEvent.class,
-            RetainerPeriodRolloverEvent.class,
             FieldDateApproachingEvent.class);
 
     java.util.List<Class<?>> listenerParams = new java.util.ArrayList<>();
@@ -518,9 +474,7 @@ class PortalEmailNotificationChannelIntegrationTest {
                   int n = 0;
                   for (EmailDeliveryLog log : all) {
                     String rt = log.getReferenceType();
-                    if ("PORTAL_TRUST_ACTIVITY".equals(rt)
-                        || "PORTAL_DEADLINE".equals(rt)
-                        || "PORTAL_RETAINER".equals(rt)) {
+                    if ("PORTAL_TRUST_ACTIVITY".equals(rt) || "PORTAL_DEADLINE".equals(rt)) {
                       n++;
                     }
                   }

@@ -82,16 +82,10 @@ class VerticalProfileModuleSlugValidationTest {
    * profile JSON and are tracked for separate product triage — NOT regressions this test should
    * fail on. Each entry is {@code "moduleId@profileId"}.
    *
-   * <p>{@code retainer_agreements@legal-za} / {@code @consulting-za}: the module declares {@code
-   * defaultEnabledFor} both legal-za and consulting-za, but neither profile JSON seeds it. This is
-   * an intentional "Phase 68 module that lives outside the seed" — see {@code
-   * PortalContextControllerIntegrationTest} (legal-za setup explicitly adds {@code
-   * retainer_agreements} on OrgSettings because the JSON does not). Whether the JSON should seed it
-   * (like accounting-za now seeds regulatory_deadlines) is a separate product decision, out of
-   * scope for this fix. Remove the relevant entry here when that decision lands.
+   * <p>Empty since Phase 86 Epic 598 removed the {@code retainer_agreements} module (its legal-za /
+   * consulting-za defaults were the only entries). The mechanism is kept for future triage.
    */
-  private static final Set<String> KNOWN_UNSEEDED_DEFAULTS =
-      Set.of("retainer_agreements@legal-za", "retainer_agreements@consulting-za");
+  private static final Set<String> KNOWN_UNSEEDED_DEFAULTS = Set.of();
 
   @Test
   void everyRegistryDefaultEnabledModuleIsPresentInItsProfile() {

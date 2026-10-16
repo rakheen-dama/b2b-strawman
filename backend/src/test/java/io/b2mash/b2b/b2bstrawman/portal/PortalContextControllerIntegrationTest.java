@@ -90,14 +90,11 @@ class PortalContextControllerIntegrationTest {
               // session-context resolution (role-agnostic), so we rely on the auto-provisioned
               // contact.
               // legal-za.json seeds a subset of modules; tests assert Phase 68 module IDs that
-              // live outside the seed (retainer_agreements, document_acceptance). Set them
+              // live outside the seed (document_acceptance). Set them
               // explicitly on OrgSettings.
               var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
               List<String> modules = new ArrayList<>(settings.getEnabledModules());
               // trust_accounting is already seeded by legal-za.json; no guard needed.
-              if (!modules.contains("retainer_agreements")) {
-                modules.add("retainer_agreements");
-              }
               if (!modules.contains("document_acceptance")) {
                 modules.add("document_acceptance");
               }
@@ -146,7 +143,6 @@ class PortalContextControllerIntegrationTest {
         .andExpect(jsonPath("$.tenantProfile").value("legal-za"))
         .andExpect(jsonPath("$.terminologyKey").value("en-ZA-legal"))
         .andExpect(jsonPath("$.enabledModules", hasItem("trust_accounting")))
-        .andExpect(jsonPath("$.enabledModules", hasItem("retainer_agreements")))
         .andExpect(jsonPath("$.enabledModules", hasItem("document_acceptance")))
         .andExpect(jsonPath("$.orgName").value(LEGAL_ORG_NAME));
   }

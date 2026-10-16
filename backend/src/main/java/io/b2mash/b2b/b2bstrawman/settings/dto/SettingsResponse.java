@@ -46,7 +46,5 @@ public record SettingsResponse(
     Integer financialRetentionMonths,
     String informationOfficerName,
     String informationOfficerEmail,
-    // Epic 496A: Portal retainer member display privacy toggle
-    String portalRetainerMemberDisplay,
     // Epic 498A: Firm-wide portal digest cadence (WEEKLY / BIWEEKLY / OFF)
     String portalDigestCadence) {}

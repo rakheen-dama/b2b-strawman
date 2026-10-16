@@ -25,7 +25,7 @@ function groupLinesByType(lines: InvoiceLineResponse[]) {
         ? "TARIFF"
         : type === "DISBURSEMENT"
           ? "DISBURSEMENT"
-          : type === "MANUAL" || type === "RETAINER" || type === "FIXED_FEE"
+          : type === "MANUAL" || type === "FIXED_FEE"
             ? "OTHER"
             : type;
     if (!groups[groupKey]) {

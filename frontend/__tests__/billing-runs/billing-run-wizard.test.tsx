@@ -23,7 +23,6 @@ vi.mock("@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions", 
   updateSelectionsAction: vi.fn().mockResolvedValue({ success: true }),
   excludeCustomerAction: vi.fn().mockResolvedValue({ success: true }),
   includeCustomerAction: vi.fn().mockResolvedValue({ success: true }),
-  getRetainerPreviewAction: vi.fn().mockResolvedValue({ success: true, retainers: [] }),
 }));
 
 import { BillingRunWizard } from "@/components/billing-runs/billing-run-wizard";
@@ -87,13 +86,12 @@ describe("BillingRunWizard", () => {
 });
 
 describe("ConfigureStep", () => {
-  it("renders form fields for period, retainers, and notes", () => {
+  it("renders form fields for period and notes", () => {
     const onNext = vi.fn();
     render(<ConfigureStep slug="test-org" onNext={onNext} />);
 
     expect(screen.getByLabelText("Period From")).toBeInTheDocument();
     expect(screen.getByLabelText("Period To")).toBeInTheDocument();
-    expect(screen.getByLabelText("Include retainers")).toBeInTheDocument();
     expect(screen.getByLabelText("Notes (optional)")).toBeInTheDocument();
   });
 

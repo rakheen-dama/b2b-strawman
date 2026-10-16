@@ -8,10 +8,8 @@ vi.mock("next/navigation", () => ({
 }));
 
 const mockUpdateCadence = vi.fn();
-const mockUpdateMemberDisplay = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/settings/general/portal-actions", () => ({
   updatePortalDigestCadence: (...args: unknown[]) => mockUpdateCadence(...args),
-  updatePortalRetainerMemberDisplay: (...args: unknown[]) => mockUpdateMemberDisplay(...args),
 }));
 
 import { PortalSettingsSection } from "@/components/settings/portal-settings-section";
@@ -22,35 +20,22 @@ afterEach(() => {
 });
 
 describe("PortalSettingsSection — cadence select", () => {
-  it("renders current cadence + member-display values", () => {
-    render(
-      <PortalSettingsSection
-        slug="acme"
-        currentCadence="WEEKLY"
-        currentMemberDisplay="FIRST_NAME_ROLE"
-      />
-    );
+  it("renders current cadence value", () => {
+    render(<PortalSettingsSection slug="acme" currentCadence="WEEKLY" />);
 
-    // Both selects render as comboboxes (Radix).
+    // The cadence select renders as a combobox (Radix).
     const comboboxes = screen.getAllByRole("combobox");
-    expect(comboboxes).toHaveLength(2);
+    expect(comboboxes).toHaveLength(1);
 
     // Current cadence label visible on trigger.
     expect(screen.getByText("Weekly")).toBeInTheDocument();
-    expect(screen.getByText("First name + role")).toBeInTheDocument();
   });
 
   it("persists firm-side cadence change via PATCH action", async () => {
     mockUpdateCadence.mockResolvedValue({ success: true });
     const user = userEvent.setup();
 
-    render(
-      <PortalSettingsSection
-        slug="acme"
-        currentCadence="WEEKLY"
-        currentMemberDisplay="FIRST_NAME_ROLE"
-      />
-    );
+    render(<PortalSettingsSection slug="acme" currentCadence="WEEKLY" />);
 
     const [cadenceTrigger] = screen.getAllByRole("combobox");
     await user.click(cadenceTrigger);
@@ -62,30 +47,6 @@ describe("PortalSettingsSection — cadence select", () => {
     expect(mockUpdateCadence).toHaveBeenCalledWith("acme", "BIWEEKLY");
   });
 
-  it("persists firm-side member-display change via PATCH action", async () => {
-    mockUpdateMemberDisplay.mockResolvedValue({ success: true });
-    const user = userEvent.setup();
-
-    render(
-      <PortalSettingsSection
-        slug="acme"
-        currentCadence="WEEKLY"
-        currentMemberDisplay="FIRST_NAME_ROLE"
-      />
-    );
-
-    const comboboxes = screen.getAllByRole("combobox");
-    const memberDisplayTrigger = comboboxes[1];
-
-    await user.click(memberDisplayTrigger);
-    await user.click(screen.getByRole("option", { name: /Anonymised/i }));
-
-    await waitFor(() => {
-      expect(mockUpdateMemberDisplay).toHaveBeenCalledTimes(1);
-    });
-    expect(mockUpdateMemberDisplay).toHaveBeenCalledWith("acme", "ANONYMISED");
-  });
-
   it("shows error when cadence update fails", async () => {
     mockUpdateCadence.mockResolvedValue({
       success: false,
@@ -93,13 +54,7 @@ describe("PortalSettingsSection — cadence select", () => {
     });
     const user = userEvent.setup();
 
-    render(
-      <PortalSettingsSection
-        slug="acme"
-        currentCadence="WEEKLY"
-        currentMemberDisplay="FIRST_NAME_ROLE"
-      />
-    );
+    render(<PortalSettingsSection slug="acme" currentCadence="WEEKLY" />);
 
     const [cadenceTrigger] = screen.getAllByRole("combobox");
     await user.click(cadenceTrigger);

@@ -11,23 +11,19 @@ import {
   updateSelectionsAction,
   excludeCustomerAction,
   includeCustomerAction,
-  getRetainerPreviewAction,
 } from "@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions";
 import { CherryPickCustomerDetail } from "./cherry-pick-customer-detail";
-import { CherryPickRetainerSection } from "./cherry-pick-retainer-section";
 import type {
   BillingRunItem,
   UnbilledTimeEntry,
   UnbilledExpense,
   UnbilledDisbursement,
-  RetainerPeriodPreview,
   EntrySelectionDto,
 } from "@/lib/api/billing-runs";
 
 interface CherryPickStepProps {
   billingRunId: string;
   currency: string;
-  includeRetainers: boolean;
   items: BillingRunItem[];
   onBack: () => void;
   onNext: () => void;
@@ -49,7 +45,6 @@ interface CustomerData {
 export function CherryPickStep({
   billingRunId,
   currency,
-  includeRetainers,
   items,
   onBack,
   onNext,
@@ -61,25 +56,8 @@ export function CherryPickStep({
     for (const item of items) map[item.id] = item;
     return map;
   });
-  const [retainers, setRetainers] = useState<RetainerPeriodPreview[]>([]);
-  const [includedRetainerIds, setIncludedRetainerIds] = useState<Set<string>>(new Set());
-  const [retainersLoaded, setRetainersLoaded] = useState(false);
-
   const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const pendingSelections = useRef<Record<string, EntrySelectionDto[]>>({});
-
-  useEffect(() => {
-    if (!includeRetainers || retainersLoaded) return;
-    async function loadRetainers() {
-      const result = await getRetainerPreviewAction(billingRunId);
-      if (result.success && result.retainers) {
-        setRetainers(result.retainers);
-        setIncludedRetainerIds(new Set(result.retainers.map((r) => r.agreementId)));
-      }
-      setRetainersLoaded(true);
-    }
-    loadRetainers();
-  }, [billingRunId, includeRetainers, retainersLoaded]);
 
   useEffect(() => {
     return () => {
@@ -289,15 +267,6 @@ export function CherryPickStep({
     return timeTotal + expenseTotal + disbursementTotal;
   }
 
-  function toggleRetainer(agreementId: string) {
-    setIncludedRetainerIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(agreementId)) next.delete(agreementId);
-      else next.add(agreementId);
-      return next;
-    });
-  }
-
   const activeItems = Object.values(itemStates).filter(
     (item) => item.status !== "EXCLUDED" && item.status !== "CANCELLED"
   );
@@ -371,16 +340,6 @@ export function CherryPickStep({
             </div>
           )}
         </div>
-
-        {/* Retainer Section */}
-        {includeRetainers && retainersLoaded && retainers.length > 0 && (
-          <CherryPickRetainerSection
-            retainers={retainers}
-            includedRetainerIds={includedRetainerIds}
-            currency={currency}
-            onToggleRetainer={toggleRetainer}
-          />
-        )}
 
         {/* Summary Bar */}
         <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-6 py-4 dark:border-slate-700 dark:bg-slate-900">

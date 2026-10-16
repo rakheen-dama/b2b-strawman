@@ -289,16 +289,13 @@ public class OrgSettings {
   private DataProtectionSettings dataProtection = new DataProtectionSettings();
 
   /**
-   * Customer-portal settings group (Wave 3.3): retainer member-display privacy mode, digest
-   * cadence, last-digest-sent timestamp, and the per-event notification allowlist. Persisted inline
-   * on {@code org_settings} via {@code @Embedded} — column names pinned by
-   * {@code @AttributeOverride} for zero schema change. Initialised non-null so a fresh entity and
-   * an all-null DB row never NPE on {@link #getPortal()}.
+   * Customer-portal settings group (Wave 3.3): digest cadence, last-digest-sent timestamp, and the
+   * per-event notification allowlist. Persisted inline on {@code org_settings} via
+   * {@code @Embedded} — column names pinned by {@code @AttributeOverride} for zero schema change.
+   * Initialised non-null so a fresh entity and an all-null DB row never NPE on {@link
+   * #getPortal()}.
    */
   @Embedded
-  @AttributeOverride(
-      name = "portalRetainerMemberDisplay",
-      column = @Column(name = "portal_retainer_member_display", length = 20))
   @AttributeOverride(
       name = "portalDigestCadence",
       column = @Column(name = "portal_digest_cadence", length = 12))

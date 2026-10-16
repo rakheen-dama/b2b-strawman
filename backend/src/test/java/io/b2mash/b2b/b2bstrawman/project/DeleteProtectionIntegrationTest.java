@@ -31,7 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
  * Comprehensive integration tests for delete protection guards and cross-entity integrity. Covers
  * project delete protection (tasks, time entries, invoices, status), task delete protection (time
  * entries), archive guards (task/time creation on archived projects), customer archive protection
- * (invoices, retainers), and cross-entity integrity (no cascading side effects).
+ * (invoices), and cross-entity integrity (no cascading side effects).
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -282,22 +282,6 @@ class DeleteProtectionIntegrationTest {
         .andExpect(jsonPath("$.detail", containsString("invoice")));
   }
 
-  @Test
-  void archive_customer_with_retainers_rejected() throws Exception {
-    var customerId = createActiveCustomer("Ret Archive Cust", "ret-archive-dp@test.com");
-
-    // Create a retainer agreement for this customer via API
-    createRetainer(customerId);
-
-    // Archive should be rejected
-    mockMvc
-        .perform(
-            delete("/api/customers/" + customerId)
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
-        .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.detail", containsString("retainer")));
-  }
-
   // ---- Helpers ----
 
   private String createProject(String name) throws Exception {
@@ -455,28 +439,6 @@ class DeleteProtectionIntegrationTest {
                     {"description": "Test line", "quantity": 1, "unitPrice": 100.00, "sortOrder": 0, "projectId": "%s"}
                     """
                         .formatted(projectId)))
-        .andExpect(status().isCreated());
-  }
-
-  private void createRetainer(UUID customerId) throws Exception {
-    mockMvc
-        .perform(
-            post("/api/retainers")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "customerId": "%s",
-                      "name": "Test Retainer",
-                      "type": "HOUR_BANK",
-                      "frequency": "MONTHLY",
-                      "startDate": "2026-01-01",
-                      "allocatedHours": 10,
-                      "periodFee": 1000
-                    }
-                    """
-                        .formatted(customerId)))
         .andExpect(status().isCreated());
   }
 

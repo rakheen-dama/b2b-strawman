@@ -152,7 +152,7 @@ public ResponseEntity<byte[]> exportPdf(@PathVariable String slug, @RequestParam
 }
 ```
 
-**⚠️ Known violations:** Several existing controllers (PortalAuthController, ReportingController, DataRequestController, RetainerAgreementController, MockPaymentController) predate this rule enforcement. Do NOT use them as reference patterns. All new controllers must follow this discipline. `MockPaymentController` is a **permanent, justified** ArchUnit exemption (dev/test-only PSP harness, `@Profile`-gated, never reachable in prod — see `LayerDependencyRulesTest`). `PortalBrandingController` was fixed 2026-06-11 (repository access moved into `PortalBrandingService`) and `PortalDigestInternalController` never actually injected a repository, so both were removed from the rule's exclusion list and now enforce. Repo-injection cleanup tracked in `documentation/tech-debt.md` TD-009 (closed out 2026-06-11).
+**⚠️ Known violations:** Several existing controllers (PortalAuthController, ReportingController, DataRequestController, MockPaymentController) predate this rule enforcement. Do NOT use them as reference patterns. All new controllers must follow this discipline. `MockPaymentController` is a **permanent, justified** ArchUnit exemption (dev/test-only PSP harness, `@Profile`-gated, never reachable in prod — see `LayerDependencyRulesTest`). `PortalBrandingController` was fixed 2026-06-11 (repository access moved into `PortalBrandingService`) and `PortalDigestInternalController` never actually injected a repository, so both were removed from the rule's exclusion list and now enforce. Repo-injection cleanup tracked in `documentation/tech-debt.md` TD-009 (closed out 2026-06-11).
 
 ## OrgSettings Entity (post Wave 3.3 refactor, PRs #1433–#1435)
 

@@ -5,13 +5,12 @@ describe("PORTAL_NAV_ITEMS", () => {
   // GAP-P-07: "documents" entry removed — the /documents route is not
   // implemented. Restore once the page exists (ideally behind a module).
   // GAP-OBS-Portal-Activity (E4.3): "activity" entry added after "acceptance".
-  it("includes all 9 canonical entries", () => {
-    expect(PORTAL_NAV_ITEMS).toHaveLength(9);
+  it("includes all 8 canonical entries", () => {
+    expect(PORTAL_NAV_ITEMS).toHaveLength(8);
     expect(PORTAL_NAV_ITEMS.map((i) => i.id)).toEqual([
       "home",
       "projects",
       "trust",
-      "retainer",
       "deadlines",
       "invoices",
       "requests",
@@ -66,24 +65,14 @@ describe("filterNavItems", () => {
     expect(ids).not.toContain("documents");
   });
 
-  it("includes retainer for consulting-za when module is enabled", () => {
-    const filtered = filterNavItems(PORTAL_NAV_ITEMS, {
-      tenantProfile: "consulting-za",
-      enabledModules: ["retainer_agreements"],
-    });
-    expect(filtered.some((i) => i.id === "retainer")).toBe(true);
-  });
-
   it("excludes profile-gated items when tenantProfile is undefined", () => {
     const filtered = filterNavItems(PORTAL_NAV_ITEMS, {
       enabledModules: [
         "trust_accounting",
-        "retainer_agreements",
         "deadlines",
       ],
     });
     expect(filtered.some((i) => i.id === "trust")).toBe(false);
-    expect(filtered.some((i) => i.id === "retainer")).toBe(false);
     expect(filtered.some((i) => i.id === "deadlines")).toBe(false);
   });
 });

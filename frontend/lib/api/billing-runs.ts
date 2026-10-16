@@ -26,7 +26,6 @@ export interface BillingRun {
   periodTo: string;
   currency: string;
   includeExpenses: boolean;
-  includeRetainers: boolean;
   totalCustomers: number | null;
   totalInvoices: number | null;
   totalAmount: number | null;
@@ -78,16 +77,6 @@ export interface CustomerUnbilledSummary {
   unbilledTimeAmount: number;
   unbilledExpenseAmount: number;
   totalUnbilledAmount: number;
-}
-
-export interface RetainerPeriodPreview {
-  agreementId: string;
-  customerId: string;
-  customerName: string;
-  periodStart: string;
-  periodEnd: string;
-  consumedHours: number;
-  estimatedAmount: number;
 }
 
 export interface UnbilledTimeEntry {
@@ -142,7 +131,6 @@ export interface CreateBillingRunRequest {
   periodTo: string;
   currency: string;
   includeExpenses: boolean;
-  includeRetainers: boolean;
   cutOffDate?: string;
   notes?: string;
 }
@@ -160,10 +148,6 @@ export interface EntrySelectionDto {
   entryType: EntryType;
   entryId: string;
   included: boolean;
-}
-
-export interface RetainerGenerateRequest {
-  retainerAgreementIds: string[];
 }
 
 // ---- Paginated Response ----
@@ -272,18 +256,4 @@ export async function batchSend(
   request: BatchSendRequest
 ): Promise<BatchOperationResult> {
   return api.post<BatchOperationResult>(`/api/billing-runs/${id}/send`, request);
-}
-
-export async function getRetainerPreview(id: string): Promise<RetainerPeriodPreview[]> {
-  return api.get<RetainerPeriodPreview[]>(`/api/billing-runs/${id}/retainer-preview`);
-}
-
-export async function generateRetainers(
-  id: string,
-  agreementIds: string[]
-): Promise<BillingRunItem[]> {
-  const body: RetainerGenerateRequest = {
-    retainerAgreementIds: agreementIds,
-  };
-  return api.post<BillingRunItem[]>(`/api/billing-runs/${id}/retainer-generate`, body);
 }

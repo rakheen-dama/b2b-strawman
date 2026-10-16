@@ -165,10 +165,10 @@ class PortalDigestInternalControllerIntegrationTest {
         () -> {
           preferenceService.getOrCreate(contactAId);
           preferenceService.update(
-              contactAId, new PortalNotificationPreferenceUpdate(true, true, true, true, true));
+              contactAId, new PortalNotificationPreferenceUpdate(true, true, true, true));
           preferenceService.getOrCreate(contactBId);
           preferenceService.update(
-              contactBId, new PortalNotificationPreferenceUpdate(true, true, true, true, true));
+              contactBId, new PortalNotificationPreferenceUpdate(true, true, true, true));
         });
 
     portalReadModelRepository.deletePortalInvoicesByOrg(ORG_ID);

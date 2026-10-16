@@ -54,17 +54,11 @@ export interface OrgSettings {
   informationOfficerEmail?: string | null;
   // portal settings (Epic 496A / 498A / 498C — surfaced by firm settings UI)
   portalDigestCadence?: PortalDigestCadence;
-  portalRetainerMemberDisplay?: PortalRetainerMemberDisplay;
 }
 
 // ---- Portal settings enums (shared between server actions + UI) ----
 
 export type PortalDigestCadence = "WEEKLY" | "BIWEEKLY" | "OFF";
-export type PortalRetainerMemberDisplay =
-  | "FULL_NAME"
-  | "FIRST_NAME_ROLE"
-  | "ROLE_ONLY"
-  | "ANONYMISED";
 
 export interface UpdateBatchBillingSettingsRequest {
   billingBatchAsyncThreshold: number;

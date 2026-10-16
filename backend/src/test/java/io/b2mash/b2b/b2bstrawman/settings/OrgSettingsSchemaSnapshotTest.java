@@ -61,6 +61,9 @@ class OrgSettingsSchemaSnapshotTest {
   // update (CollectionsSettings embeddable + V133 migration), not an accidental drift.
   // V136 (Phase 86 slice 2 / Epic 596A): deal_pipeline_pack_status removed — deliberate, authorised
   // pin update (PackStatusSettings.dealPipelinePackStatus dropped + V136__drop_crm.sql), not drift.
+  // V139 (Phase 86 slice 4 / Epic 598B): portal_retainer_member_display removed — deliberate,
+  // authorised pin update (PortalSettings.portalRetainerMemberDisplay dropped +
+  // V139__drop_portal_retainer_member_display.sql), not drift.
   private static final String EXPECTED_SNAPSHOT =
       """
       acceptance_expiry_days | integer | YES
@@ -101,7 +104,6 @@ class OrgSettingsSchemaSnapshotTest {
       onboarding_dismissed_at | timestamp with time zone | YES
       portal_digest_cadence | character varying(12) | YES
       portal_notification_doc_types | jsonb | NO
-      portal_retainer_member_display | character varying(20) | YES
       project_naming_pattern | character varying(500) | YES
       project_template_pack_status | jsonb | YES
       rate_pack_status | jsonb | YES

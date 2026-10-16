@@ -150,8 +150,7 @@ class BillingRunControllerTest {
                           "periodFrom": "2026-03-01",
                           "periodTo": "2026-03-31",
                           "currency": "USD",
-                          "includeExpenses": true,
-                          "includeRetainers": false
+                          "includeExpenses": true
                         }
                         """))
             .andExpect(status().isCreated())
@@ -162,7 +161,6 @@ class BillingRunControllerTest {
             .andExpect(jsonPath("$.periodTo").value("2026-03-31"))
             .andExpect(jsonPath("$.currency").value("USD"))
             .andExpect(jsonPath("$.includeExpenses").value(true))
-            .andExpect(jsonPath("$.includeRetainers").value(false))
             .andExpect(jsonPath("$.totalCustomers").value(0))
             .andExpect(jsonPath("$.totalInvoices").value(0))
             .andReturn();
@@ -185,8 +183,7 @@ class BillingRunControllerTest {
                           "periodFrom": "2026-04-01",
                           "periodTo": "2026-04-30",
                           "currency": "ZAR",
-                          "includeExpenses": false,
-                          "includeRetainers": true
+                          "includeExpenses": false
                         }
                         """))
             .andExpect(status().isCreated())
@@ -206,8 +203,7 @@ class BillingRunControllerTest {
                     """
                     {
                       "currency": "USD",
-                      "includeExpenses": false,
-                      "includeRetainers": false
+                      "includeExpenses": false
                     }
                     """))
         .andExpect(status().isBadRequest());
@@ -227,8 +223,7 @@ class BillingRunControllerTest {
                       "periodFrom": "2026-03-01",
                       "periodTo": "2026-03-31",
                       "currency": "USD",
-                      "includeExpenses": false,
-                      "includeRetainers": false
+                      "includeExpenses": false
                     }
                     """))
         .andExpect(status().isForbidden());
@@ -297,8 +292,7 @@ class BillingRunControllerTest {
                       "periodFrom": "2026-05-01",
                       "periodTo": "2026-05-31",
                       "currency": "USD",
-                      "includeExpenses": false,
-                      "includeRetainers": false
+                      "includeExpenses": false
                     }
                     """))
         .andExpect(status().isCreated());
@@ -332,8 +326,7 @@ class BillingRunControllerTest {
                           "periodFrom": "2026-06-01",
                           "periodTo": "2026-06-30",
                           "currency": "USD",
-                          "includeExpenses": false,
-                          "includeRetainers": false
+                          "includeExpenses": false
                         }
                         """))
             .andExpect(status().isCreated())

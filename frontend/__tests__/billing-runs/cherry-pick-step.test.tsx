@@ -12,7 +12,6 @@ const mockGetUnbilledDisbursements = vi.fn();
 const mockUpdateSelections = vi.fn();
 const mockExcludeCustomer = vi.fn();
 const mockIncludeCustomer = vi.fn();
-const mockGetRetainerPreview = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions", () => ({
   createBillingRunAction: vi.fn(),
@@ -24,7 +23,6 @@ vi.mock("@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions", 
   updateSelectionsAction: (...args: unknown[]) => mockUpdateSelections(...args),
   excludeCustomerAction: (...args: unknown[]) => mockExcludeCustomer(...args),
   includeCustomerAction: (...args: unknown[]) => mockIncludeCustomer(...args),
-  getRetainerPreviewAction: (...args: unknown[]) => mockGetRetainerPreview(...args),
 }));
 
 import { CherryPickStep } from "@/components/billing-runs/cherry-pick-step";
@@ -148,7 +146,6 @@ describe("CherryPickStep", () => {
         slug="test-org"
         billingRunId="run-1"
         currency="ZAR"
-        includeRetainers={false}
         items={mockItems}
         onBack={vi.fn()}
         onNext={vi.fn()}
@@ -177,7 +174,6 @@ describe("CherryPickStep", () => {
         slug="test-org"
         billingRunId="run-1"
         currency="ZAR"
-        includeRetainers={false}
         items={mockItems}
         onBack={vi.fn()}
         onNext={vi.fn()}
@@ -222,7 +218,6 @@ describe("CherryPickStep", () => {
         slug="test-org"
         billingRunId="run-1"
         currency="ZAR"
-        includeRetainers={false}
         items={mockItems}
         onBack={vi.fn()}
         onNext={vi.fn()}
@@ -269,7 +264,6 @@ describe("CherryPickStep", () => {
         slug="test-org"
         billingRunId="run-1"
         currency="ZAR"
-        includeRetainers={false}
         items={mockItems}
         onBack={vi.fn()}
         onNext={vi.fn()}
@@ -316,7 +310,6 @@ describe("CherryPickStep", () => {
       <CherryPickStep
         billingRunId="run-1"
         currency="ZAR"
-        includeRetainers={false}
         items={mockItems}
         onBack={vi.fn()}
         onNext={vi.fn()}
@@ -342,41 +335,5 @@ describe("CherryPickStep", () => {
     // Untick → subtotal becomes R 0,00.
     await user.click(checkbox);
     expect(screen.getByText(/Subtotal:\s*R[\s ]0[,.]00/)).toBeInTheDocument();
-  });
-
-  it("retainer section shows when includeRetainers is true", async () => {
-    mockGetRetainerPreview.mockResolvedValue({
-      success: true,
-      retainers: [
-        {
-          agreementId: "ret-1",
-          customerId: "cust-1",
-          customerName: "Acme Corp",
-          periodStart: "2026-03-01",
-          periodEnd: "2026-03-31",
-          consumedHours: 40.5,
-          estimatedAmount: 10000,
-        },
-      ],
-    });
-
-    render(
-      <CherryPickStep
-        slug="test-org"
-        billingRunId="run-1"
-        currency="ZAR"
-        includeRetainers={true}
-        items={mockItems}
-        onBack={vi.fn()}
-        onNext={vi.fn()}
-      />
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText("Retainer Agreements")).toBeInTheDocument();
-    });
-
-    expect(screen.getByText("40.5")).toBeInTheDocument();
-    expect(screen.getByLabelText("Include retainer for Acme Corp")).toBeInTheDocument();
   });
 });

@@ -8,7 +8,6 @@ import io.b2mash.b2b.b2bstrawman.expense.Expense;
 import io.b2mash.b2b.b2bstrawman.expense.ExpenseCategory;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.LegalDisbursement;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
@@ -28,8 +27,7 @@ public final class BillingRunDtos {
       @NotNull(message = "currency is required")
           @Size(min = 3, max = 3, message = "currency must be exactly 3 characters")
           String currency,
-      boolean includeExpenses,
-      boolean includeRetainers) {}
+      boolean includeExpenses) {}
 
   public record BillingRunResponse(
       UUID id,
@@ -39,7 +37,6 @@ public final class BillingRunDtos {
       LocalDate periodTo,
       String currency,
       boolean includeExpenses,
-      boolean includeRetainers,
       Integer totalCustomers,
       Integer totalInvoices,
       BigDecimal totalAmount,
@@ -59,7 +56,6 @@ public final class BillingRunDtos {
           run.getPeriodTo(),
           run.getCurrency(),
           run.isIncludeExpenses(),
-          run.isIncludeRetainers(),
           run.getTotalCustomers(),
           run.getTotalInvoices(),
           run.getTotalAmount(),
@@ -208,19 +204,4 @@ public final class BillingRunDtos {
   public record BatchFailure(UUID invoiceId, String reason) {}
 
   public record BatchSendRequest(LocalDate defaultDueDate, String defaultPaymentTerms) {}
-
-  public record RetainerPeriodPreview(
-      UUID agreementId,
-      UUID customerId,
-      String customerName,
-      LocalDate periodStart,
-      LocalDate periodEnd,
-      BigDecimal consumedHours,
-      BigDecimal estimatedAmount) {}
-
-  public record RetainerGenerateRequest(
-      @NotNull(message = "retainerAgreementIds is required")
-          @NotEmpty(message = "retainerAgreementIds must not be empty")
-          @Size(max = 100, message = "retainerAgreementIds must contain at most 100 entries")
-          List<UUID> retainerAgreementIds) {}
 }

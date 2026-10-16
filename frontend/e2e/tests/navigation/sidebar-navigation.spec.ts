@@ -10,7 +10,6 @@ const NAV_ITEMS = [
   { name: "Calendar", path: `${base}/calendar` },
   { name: "Projects", path: `${base}/projects` },
   { name: "Customers", path: `${base}/customers` },
-  { name: "Retainers", path: `${base}/retainers` },
   { name: "Compliance", path: `${base}/compliance` },
   { name: "Invoices", path: `${base}/invoices` },
   { name: "Profitability", path: `${base}/profitability` },

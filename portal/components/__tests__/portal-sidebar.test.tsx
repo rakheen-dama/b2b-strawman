@@ -43,7 +43,6 @@ vi.mock("@/hooks/use-portal-context", () => ({
     tenantProfile: "legal-za",
     enabledModules: [
       "trust_accounting",
-      "retainer_agreements",
       "deadlines",
       "information_requests",
       "document_acceptance",
@@ -76,13 +75,12 @@ describe("PortalSidebar (desktop)", () => {
     cleanup();
   });
 
-  it("renders all 8 nav items for legal-za with all modules enabled", () => {
+  it("renders all 7 nav items for legal-za with all modules enabled", () => {
     render(<PortalSidebar />);
     for (const label of [
       "Home",
       "Matters",
       "Trust",
-      "Retainer",
       "Deadlines",
       "Invoices",
       "Requests",

@@ -9,8 +9,6 @@ import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.CreateBillingRunR
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.DisbursementResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.ExpenseResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.LoadPreviewRequest;
-import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.RetainerGenerateRequest;
-import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.RetainerPeriodPreview;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.TimeEntryResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.UpdateEntrySelectionsRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
@@ -23,8 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Facade that preserves the original BillingRunService public API while delegating to focused
- * collaborator services: BillingRunLifecycleService, BillingRunSelectionService,
- * BillingRunGenerationService, and RetainerBillingService.
+ * collaborator services: BillingRunLifecycleService, BillingRunSelectionService, and
+ * BillingRunGenerationService.
  */
 @Service
 public class BillingRunService {
@@ -34,19 +32,16 @@ public class BillingRunService {
   private final BillingRunLifecycleService lifecycleService;
   private final BillingRunSelectionService selectionService;
   private final BillingRunGenerationService generationService;
-  private final RetainerBillingService retainerBillingService;
   private final VerticalModuleGuard moduleGuard;
 
   public BillingRunService(
       BillingRunLifecycleService lifecycleService,
       BillingRunSelectionService selectionService,
       BillingRunGenerationService generationService,
-      RetainerBillingService retainerBillingService,
       VerticalModuleGuard moduleGuard) {
     this.lifecycleService = lifecycleService;
     this.selectionService = selectionService;
     this.generationService = generationService;
-    this.retainerBillingService = retainerBillingService;
     this.moduleGuard = moduleGuard;
   }
 
@@ -166,21 +161,5 @@ public class BillingRunService {
     moduleGuard.requireModule(MODULE_ID);
 
     return generationService.batchSend(billingRunId, request, actorMemberId);
-  }
-
-  // --- Retainers ---
-
-  @Transactional(readOnly = true)
-  public List<RetainerPeriodPreview> loadRetainerPreview(UUID billingRunId) {
-    moduleGuard.requireModule(MODULE_ID);
-
-    return retainerBillingService.loadRetainerPreview(billingRunId);
-  }
-
-  public List<BillingRunItemResponse> generateRetainerInvoices(
-      UUID billingRunId, RetainerGenerateRequest request, UUID actorMemberId) {
-    moduleGuard.requireModule(MODULE_ID);
-
-    return retainerBillingService.generateRetainerInvoices(billingRunId, request, actorMemberId);
   }
 }

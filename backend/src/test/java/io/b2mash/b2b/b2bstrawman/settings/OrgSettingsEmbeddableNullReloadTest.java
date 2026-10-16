@@ -83,7 +83,7 @@ class OrgSettingsEmbeddableNullReloadTest {
           stmt.executeUpdate(
               "UPDATE org_settings SET "
                   + "logo_s3_key = NULL, brand_color = NULL, document_footer_text = NULL, "
-                  + "portal_retainer_member_display = NULL, portal_digest_cadence = NULL, "
+                  + "portal_digest_cadence = NULL, "
                   + "digest_last_sent_at = NULL, portal_notification_doc_types = '[]'::jsonb, "
                   // Expense + Capacity are single-column nullable groups (Wave 3.4) — nulling the
                   // sole column makes Hibernate materialise a NULL embedded, the genuine NPE risk.
@@ -130,7 +130,6 @@ class OrgSettingsEmbeddableNullReloadTest {
                     assertThat(reloaded.getBranding().getDocumentFooterText()).isNull();
 
                     assertThat(reloaded.getPortal()).isNotNull();
-                    assertThat(reloaded.getPortal().getPortalRetainerMemberDisplay()).isNull();
                     assertThat(reloaded.getPortal().getPortalDigestCadence()).isNull();
                     assertThat(reloaded.getPortal().getDigestLastSentAt()).isNull();
                     // null-safe accessor returns empty list, never null
@@ -139,8 +138,6 @@ class OrgSettingsEmbeddableNullReloadTest {
                     // Effective-getter fallbacks must still work on the all-null group.
                     assertThat(reloaded.getPortal().getEffectivePortalDigestCadence())
                         .isEqualTo(PortalDigestCadence.WEEKLY);
-                    assertThat(reloaded.getPortal().getEffectivePortalRetainerMemberDisplay())
-                        .isEqualTo(PortalRetainerMemberDisplay.FIRST_NAME_ROLE);
 
                     // Wave 3.4 single-column nullable groups: nulling the sole column makes the
                     // embedded materialise as NULL, so the lazy-fallback getter is the only thing

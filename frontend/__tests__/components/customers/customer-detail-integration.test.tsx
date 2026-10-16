@@ -153,7 +153,6 @@ const overviewBaseProps = {
   setupProgressData: null,
   lifecyclePrompt: null,
   unbilledTimeData: null,
-  activeRetainer: null,
   templateReadiness: null,
   pendingSuggestions: null,
   ficaPanel: null,

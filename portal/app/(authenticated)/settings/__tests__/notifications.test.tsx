@@ -65,7 +65,6 @@ function defaultPrefs(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     digestEnabled: true,
     trustActivityEnabled: true,
-    retainerUpdatesEnabled: true,
     deadlineRemindersEnabled: true,
     actionRequiredEnabled: true,
     firmDigestCadence: "WEEKLY" as const,
@@ -88,7 +87,6 @@ describe("NotificationsPage", () => {
       defaultPrefs({
         digestEnabled: true,
         trustActivityEnabled: false,
-        retainerUpdatesEnabled: true,
         deadlineRemindersEnabled: false,
         actionRequiredEnabled: true,
       }),
@@ -101,11 +99,6 @@ describe("NotificationsPage", () => {
 
     const trust = screen.getByRole("switch", { name: /Trust activity/i });
     expect(trust).not.toBeChecked();
-
-    const retainer = screen.getByRole("switch", {
-      name: /Retainer updates/i,
-    });
-    expect(retainer).toBeChecked();
 
     const deadlines = screen.getByRole("switch", {
       name: /Deadline reminders/i,
@@ -128,7 +121,6 @@ describe("NotificationsPage", () => {
       defaultPrefs({
         digestEnabled: false,
         trustActivityEnabled: false,
-        retainerUpdatesEnabled: false,
         deadlineRemindersEnabled: false,
         actionRequiredEnabled: false,
       }),
@@ -148,7 +140,6 @@ describe("NotificationsPage", () => {
     expect(mockUpdatePreferences).toHaveBeenCalledWith({
       digestEnabled: false,
       trustActivityEnabled: false,
-      retainerUpdatesEnabled: false,
       deadlineRemindersEnabled: false,
       actionRequiredEnabled: false,
     });
@@ -177,7 +168,6 @@ describe("NotificationsPage", () => {
     expect(mockUpdatePreferences).toHaveBeenCalledWith({
       digestEnabled: false,
       trustActivityEnabled: true,
-      retainerUpdatesEnabled: true,
       deadlineRemindersEnabled: true,
       actionRequiredEnabled: true,
     });

@@ -27,7 +27,6 @@ vi.mock("@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions", 
   updateSelectionsAction: vi.fn().mockResolvedValue({ success: true }),
   excludeCustomerAction: vi.fn().mockResolvedValue({ success: true }),
   includeCustomerAction: vi.fn().mockResolvedValue({ success: true }),
-  getRetainerPreviewAction: vi.fn().mockResolvedValue({ success: true, retainers: [] }),
 }));
 
 vi.mock("@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-step-actions", () => ({

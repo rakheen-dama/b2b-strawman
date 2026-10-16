@@ -74,7 +74,6 @@ function billingRun(): BillingRun {
     periodTo: "2026-07-31",
     currency: "ZAR",
     includeExpenses: false,
-    includeRetainers: false,
     totalCustomers: 3,
     totalInvoices: 4,
     totalAmount: 1000,

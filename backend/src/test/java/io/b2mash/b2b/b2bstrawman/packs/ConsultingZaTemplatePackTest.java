@@ -11,18 +11,11 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.retainer.RetainerAgreement;
-import io.b2mash.b2b.b2bstrawman.retainer.RetainerAgreementRepository;
-import io.b2mash.b2b.b2bstrawman.retainer.RetainerFrequency;
-import io.b2mash.b2b.b2bstrawman.retainer.RetainerType;
-import io.b2mash.b2b.b2bstrawman.retainer.RolloverPolicy;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.ProjectContextBuilder;
 import io.b2mash.b2b.b2bstrawman.template.TiptapRenderer;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -39,8 +32,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  * Integration tests for the {@code consulting-za} document template pack: asserts the pack is
  * discovered and installed via the Phase 65 {@link TemplatePackInstaller} pipeline when a {@code
  * consulting-za} tenant is provisioned, that all 4 agency Tiptap documents land with pack-install
- * metadata + content hashes, and that variable resolution against seeded project + retainer
- * fixtures resolves the expected keys.
+ * metadata + content hashes, and that variable resolution against a seeded project fixture resolves
+ * the expected keys.
  */
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -65,7 +58,6 @@ class ConsultingZaTemplatePackTest {
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectContextBuilder projectContextBuilder;
   @Autowired private TiptapRenderer tiptapRenderer;
-  @Autowired private RetainerAgreementRepository retainerAgreementRepository;
   @Autowired private MemberSyncService memberSyncService;
 
   private String tenantSchema;
@@ -220,98 +212,6 @@ class ConsultingZaTemplatePackTest {
                   assertThat(html).contains("Acme Brand Co.");
                   assertThat(html).contains("Website rebuild");
                   assertThat(html).contains("Website Build");
-                }));
-  }
-
-  /**
-   * Variable resolution test (Task 482.10 part 2): the monthly retainer report references {@code
-   * retainer.periodStart}, {@code retainer.periodEnd}, {@code retainer.hoursUsed}, and {@code
-   * retainer.hourBank}. There is currently no {@code RetainerContextBuilder} registered, so this
-   * test builds an equivalent context map by hand from the seeded {@link RetainerAgreement} fields,
-   * renders the template through {@link TiptapRenderer}, and asserts the resolved values actually
-   * appear in the rendered HTML — proving end-to-end that the template's variable keys are
-   * consistent with the entity shape (no invented variables) and resolve under the existing
-   * dot-walk renderer. The forbidden composed aliases (architecture 66.10) are also asserted absent
-   * from the raw template content.
-   */
-  @Test
-  void retainerReportVariablesMapToRetainerAgreementFields() {
-    runInTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  Customer customer =
-                      customerRepository.save(
-                          TestCustomerFactory.createActiveCustomer(
-                              "Retainer Client Pty Ltd",
-                              "ops@retainer-client.example.com",
-                              memberId));
-
-                  RetainerAgreement saved =
-                      retainerAgreementRepository.save(
-                          new RetainerAgreement(
-                              customer.getId(),
-                              "Monthly social media retainer",
-                              RetainerType.HOUR_BANK,
-                              RetainerFrequency.MONTHLY,
-                              LocalDate.of(2026, 4, 1),
-                              LocalDate.of(2026, 4, 30),
-                              new BigDecimal("40.00"),
-                              new BigDecimal("60000.00"),
-                              RolloverPolicy.FORFEIT,
-                              null,
-                              "Test fixture",
-                              memberId));
-
-                  // The template's variable keys MUST round-trip to RetainerAgreement fields:
-                  //   retainer.periodStart  -> RetainerAgreement.startDate
-                  //   retainer.periodEnd    -> RetainerAgreement.endDate
-                  //   retainer.hourBank     -> RetainerAgreement.allocatedHours
-                  //   retainer.hoursUsed    -> aggregated from time entries (no aggregator yet;
-                  //                            seeded as 0 for this test).
-                  assertThat(saved.getId()).isNotNull();
-                  assertThat(saved.getStartDate()).isEqualTo(LocalDate.of(2026, 4, 1));
-                  assertThat(saved.getEndDate()).isEqualTo(LocalDate.of(2026, 4, 30));
-                  assertThat(saved.getAllocatedHours())
-                      .isEqualByComparingTo(new BigDecimal("40.00"));
-
-                  var template =
-                      documentTemplateRepository.findByActiveTrueOrderBySortOrder().stream()
-                          .filter(t -> PACK_ID.equals(t.getPackId()))
-                          .filter(t -> "monthly-retainer-report".equals(t.getPackTemplateKey()))
-                          .findFirst()
-                          .orElseThrow();
-
-                  String contentJson = template.getContent().toString();
-                  assertThat(contentJson).contains("retainer.periodStart");
-                  assertThat(contentJson).contains("retainer.periodEnd");
-                  assertThat(contentJson).contains("retainer.hoursUsed");
-                  assertThat(contentJson).contains("retainer.hourBank");
-                  // Must NOT emit the forbidden composed alias (architecture 66.10).
-                  assertThat(contentJson).doesNotContain("retainer.hoursRemaining");
-                  assertThat(contentJson).doesNotContain("retainer.customerName");
-
-                  // Build a context map by hand (no RetainerContextBuilder yet) mirroring the
-                  // entity-to-template field mapping in the comment above, then render through
-                  // TiptapRenderer to prove the keys actually resolve end-to-end.
-                  BigDecimal hoursUsed = new BigDecimal("7.25");
-                  Map<String, Object> retainerCtx =
-                      Map.of(
-                          "periodStart", saved.getStartDate().toString(),
-                          "periodEnd", saved.getEndDate().toString(),
-                          "hoursUsed", hoursUsed,
-                          "hourBank", saved.getAllocatedHours());
-                  Map<String, Object> ctx =
-                      Map.of(
-                          "retainer", retainerCtx,
-                          "customer", Map.of("name", customer.getName()),
-                          "org", Map.of("name", "Consulting ZA Template Pack Test Org"));
-
-                  String html = tiptapRenderer.render(template.getContent(), ctx, Map.of(), null);
-                  assertThat(html).contains(saved.getStartDate().toString());
-                  assertThat(html).contains(saved.getEndDate().toString());
-                  assertThat(html).contains(hoursUsed.toPlainString());
-                  assertThat(html).contains(saved.getAllocatedHours().toPlainString());
                 }));
   }
 

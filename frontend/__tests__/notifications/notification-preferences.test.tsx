@@ -27,11 +27,6 @@ function makePreferences(): NotificationPreference[] {
     { notificationType: "RECURRING_PROJECT_CREATED", inAppEnabled: true, emailEnabled: false },
     { notificationType: "SCHEDULE_SKIPPED", inAppEnabled: true, emailEnabled: false },
     { notificationType: "SCHEDULE_COMPLETED", inAppEnabled: true, emailEnabled: false },
-    { notificationType: "RETAINER_PERIOD_READY_TO_CLOSE", inAppEnabled: true, emailEnabled: false },
-    { notificationType: "RETAINER_PERIOD_CLOSED", inAppEnabled: true, emailEnabled: false },
-    { notificationType: "RETAINER_APPROACHING_CAPACITY", inAppEnabled: true, emailEnabled: false },
-    { notificationType: "RETAINER_FULLY_CONSUMED", inAppEnabled: true, emailEnabled: false },
-    { notificationType: "RETAINER_TERMINATED", inAppEnabled: true, emailEnabled: false },
   ];
 }
 
@@ -44,7 +39,7 @@ describe("NotificationPreferencesForm", () => {
     cleanup();
   });
 
-  it("renders all 20 notification types with human-readable labels and toggles", () => {
+  it("renders all 15 notification types with human-readable labels and toggles", () => {
     render(<NotificationPreferencesForm initialPreferences={makePreferences()} />);
 
     expect(screen.getByText("Task Assigned")).toBeInTheDocument();
@@ -62,15 +57,10 @@ describe("NotificationPreferencesForm", () => {
     expect(screen.getByText("Recurring Project Created")).toBeInTheDocument();
     expect(screen.getByText("Schedule Skipped")).toBeInTheDocument();
     expect(screen.getByText("Schedule Completed")).toBeInTheDocument();
-    expect(screen.getByText("Retainer Period Ready to Close")).toBeInTheDocument();
-    expect(screen.getByText("Retainer Period Closed")).toBeInTheDocument();
-    expect(screen.getByText("Retainer Approaching Capacity")).toBeInTheDocument();
-    expect(screen.getByText("Retainer Fully Consumed")).toBeInTheDocument();
-    expect(screen.getByText("Retainer Terminated")).toBeInTheDocument();
 
-    // Should have 20 in-app switches + 20 email switches = 40 switches total
+    // Should have 15 in-app switches + 15 email switches = 30 switches total
     const switches = screen.getAllByRole("switch");
-    expect(switches).toHaveLength(40);
+    expect(switches).toHaveLength(30);
   });
 
   it("displays category headers for grouped notification types", () => {
@@ -80,7 +70,6 @@ describe("NotificationPreferencesForm", () => {
     expect(screen.getByText("Collaboration")).toBeInTheDocument();
     expect(screen.getByText("Billing & Invoicing")).toBeInTheDocument();
     expect(screen.getByText("Scheduling")).toBeInTheDocument();
-    expect(screen.getByText("Retainers")).toBeInTheDocument();
   });
 
   it("email toggles are not disabled", () => {

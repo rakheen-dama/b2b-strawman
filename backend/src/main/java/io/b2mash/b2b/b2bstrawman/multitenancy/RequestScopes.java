@@ -209,16 +209,16 @@ public final class RequestScopes {
    * {@code memberId}. Use when the action body needs an actor identity bound (e.g. downstream code
    * reads {@link #requireMemberId()} for audit attribution and would throw without it).
    *
-   * <p>The two current callers — {@code RetainerPortalSyncService.backfillForTenant} and {@code
-   * TrustLedgerPortalSyncService.backfillForTenant} — pass a system-actor sentinel UUID by
-   * convention (since the backfill is not initiated by a real member). The convention is the
-   * caller's responsibility, not enforced by this method: any UUID is acceptable.
+   * <p>The current caller — {@code TrustLedgerPortalSyncService.backfillForTenant} — passes a
+   * system-actor sentinel UUID by convention (since the backfill is not initiated by a real
+   * member). The convention is the caller's responsibility, not enforced by this method: any UUID
+   * is acceptable.
    *
    * <p>Tenant-isolation guard remains the caller's responsibility: this method binds whatever
    * {@code tenantId} / {@code orgId} / {@code memberId} it is handed without an authorisation
    * check. Callers that accept these values from a request parameter MUST verify they are
    * authorised for the current request scope before invoking (see {@code
-   * RetainerPortalSyncService.backfillForTenant} for the canonical guard pattern: assert {@link
+   * TrustLedgerPortalSyncService.backfillForTenant} for the canonical guard pattern: assert {@link
    * #ORG_ID} is bound and matches the supplied {@code orgId} before calling).
    *
    * @throws IllegalArgumentException if {@code tenantId} is null or blank.

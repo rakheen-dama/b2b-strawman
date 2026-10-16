@@ -77,7 +77,6 @@ public class BillingRunLifecycleService {
             request.periodTo(),
             request.currency(),
             request.includeExpenses(),
-            request.includeRetainers(),
             actorMemberId);
 
     run = billingRunRepository.save(run);

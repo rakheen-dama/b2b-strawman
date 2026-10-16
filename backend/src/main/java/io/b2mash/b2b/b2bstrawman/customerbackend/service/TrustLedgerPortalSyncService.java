@@ -322,8 +322,7 @@ public class TrustLedgerPortalSyncService {
     // Tenant-isolation guard: the authenticated caller's scoped orgId MUST match the argument.
     // Otherwise an authenticated request for org A could call backfillForTenant("orgB") and the
     // RequestScopes.runForTenantWithMember(...) below would silently rebind to org B — a
-    // cross-tenant escape. Mirrors the canonical guard in
-    // RetainerPortalSyncService.backfillForTenant. Issue #1267 / ADR-T008 follow-up.
+    // cross-tenant escape. Issue #1267 / ADR-T008 follow-up.
     String scopedOrgId = RequestScopes.ORG_ID.get();
     // Null-safe equality: a null orgId argument should fall into the deny branch, not throw NPE
     // and produce a 500 instead of the intended 403. Per CodeRabbit review on PR #1272.

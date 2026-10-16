@@ -20,8 +20,6 @@ import {
 } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
 import { formatCurrencySafe, formatDuration } from "@/lib/format";
 import type { ResolvedRate } from "@/lib/types";
-import type { RetainerSummaryResponse } from "@/lib/types";
-import { RetainerIndicator } from "@/components/time-entries/retainer-indicator";
 import { HelpTip } from "@/components/help-tip";
 
 /** Maps backend source enum to human-readable label */
@@ -44,18 +42,10 @@ interface LogTimeDialogProps {
   projectId: string;
   taskId: string;
   memberId?: string | null;
-  retainerSummary?: RetainerSummaryResponse | null;
   children: ReactNode;
 }
 
-export function LogTimeDialog({
-  slug,
-  projectId,
-  taskId,
-  memberId,
-  retainerSummary,
-  children,
-}: LogTimeDialogProps) {
+export function LogTimeDialog({ slug, projectId, taskId, memberId, children }: LogTimeDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -219,9 +209,6 @@ export function LogTimeDialog({
               </div>
             </div>
           </div>
-
-          {/* Retainer Indicator */}
-          <RetainerIndicator summary={retainerSummary ?? null} selectedDate={date} />
 
           {/* Date */}
           <div className="space-y-2">

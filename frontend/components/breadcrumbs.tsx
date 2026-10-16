@@ -41,7 +41,6 @@ const SEGMENT_LABELS: Record<string, string> = {
   customers: "Customers",
   "my-work": "My Work",
   schedules: "Recurring Schedules",
-  retainers: "Retainers",
   // Vertical module pages
   "trust-accounting": "Trust Accounting",
   "court-calendar": "Court Calendar",

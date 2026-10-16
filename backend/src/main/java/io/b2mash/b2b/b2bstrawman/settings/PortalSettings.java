@@ -13,8 +13,7 @@ import org.hibernate.type.SqlTypes;
 
 /**
  * Customer-portal settings group (Wave 3.3 embeddable refactor). Holds the firm-wide portal digest
- * cadence, the retainer-consumption member-display privacy mode, the last-successful-digest
- * timestamp, and the per-event document-notification allowlist.
+ * cadence, the last-successful-digest timestamp, and the per-event document-notification allowlist.
  *
  * <p>Persisted inline on the {@code org_settings} table via {@code @Embedded} +
  * {@code @AttributeOverride} on {@link OrgSettings}. Column names, types, and nullability are
@@ -29,16 +28,6 @@ import org.hibernate.type.SqlTypes;
  */
 @Embeddable
 public class PortalSettings {
-
-  /**
-   * Privacy toggle (ADR-255, Epic 496A) controlling how firm-member names appear on the customer
-   * portal's retainer consumption list. Null-safe default = {@link
-   * PortalRetainerMemberDisplay#FIRST_NAME_ROLE}; use {@link
-   * #getEffectivePortalRetainerMemberDisplay()} to read.
-   */
-  @Enumerated(EnumType.STRING)
-  @Column(name = "portal_retainer_member_display", length = 20)
-  private PortalRetainerMemberDisplay portalRetainerMemberDisplay;
 
   /**
    * Firm-wide cadence (Epic 498A, ADR-258) controlling how often the portal digest scheduler emails
@@ -83,24 +72,6 @@ public class PortalSettings {
     portal.portalNotificationDocTypes =
         new ArrayList<>(OrgSettings.DEFAULT_PORTAL_NOTIFICATION_DOC_TYPES);
     return portal;
-  }
-
-  public PortalRetainerMemberDisplay getPortalRetainerMemberDisplay() {
-    return portalRetainerMemberDisplay;
-  }
-
-  /**
-   * Returns the effective portal-retainer member-display mode, falling back to {@link
-   * PortalRetainerMemberDisplay#FIRST_NAME_ROLE} when unset.
-   */
-  public PortalRetainerMemberDisplay getEffectivePortalRetainerMemberDisplay() {
-    return portalRetainerMemberDisplay != null
-        ? portalRetainerMemberDisplay
-        : PortalRetainerMemberDisplay.FIRST_NAME_ROLE;
-  }
-
-  public void setPortalRetainerMemberDisplay(PortalRetainerMemberDisplay mode) {
-    this.portalRetainerMemberDisplay = mode;
   }
 
   public PortalDigestCadence getPortalDigestCadence() {

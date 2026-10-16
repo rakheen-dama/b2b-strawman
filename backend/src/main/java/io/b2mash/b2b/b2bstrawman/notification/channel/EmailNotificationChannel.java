@@ -213,12 +213,6 @@ public class EmailNotificationChannel implements NotificationChannel {
           "notification-invoice";
       case "RECURRING_PROJECT_CREATED", "SCHEDULE_SKIPPED", "SCHEDULE_COMPLETED" ->
           "notification-schedule";
-      case "RETAINER_PERIOD_READY_TO_CLOSE",
-          "RETAINER_PERIOD_CLOSED",
-          "RETAINER_APPROACHING_CAPACITY",
-          "RETAINER_FULLY_CONSUMED",
-          "RETAINER_TERMINATED" ->
-          "notification-retainer";
       case "AUTOMATION_EMAIL" -> "notification-automation";
       default -> {
         log.warn("No email template mapping for notification type '{}'", notificationType);
@@ -310,20 +304,6 @@ public class EmailNotificationChannel implements NotificationChannel {
             notification.getReferenceEntityId() != null
                 ? orgAppUrl + "/" + scheduleSection + "/" + notification.getReferenceEntityId()
                 : orgAppUrl + "/dashboard");
-      }
-      case "RETAINER_PERIOD_READY_TO_CLOSE",
-          "RETAINER_PERIOD_CLOSED",
-          "RETAINER_APPROACHING_CAPACITY",
-          "RETAINER_FULLY_CONSUMED",
-          "RETAINER_TERMINATED" -> {
-        // Only agreement references have a detail page; period references (READY_TO_CLOSE) carry
-        // a period id, so they link to the retainers list.
-        context.put(
-            "retainerUrl",
-            "RETAINER_AGREEMENT".equals(notification.getReferenceEntityType())
-                    && notification.getReferenceEntityId() != null
-                ? orgAppUrl + "/retainers/" + notification.getReferenceEntityId()
-                : orgAppUrl + "/retainers");
       }
       default -> {
         // No additional context for unmapped types

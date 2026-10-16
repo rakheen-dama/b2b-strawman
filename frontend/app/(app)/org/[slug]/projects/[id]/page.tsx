@@ -215,19 +215,6 @@ export default async function ProjectDetailPage({
     }
   }
 
-  // Fetch retainer summary for the project's primary customer (for RetainerIndicator in LogTimeDialog).
-  // Uses customers[0] — the first linked customer is treated as the primary customer for retainer lookups.
-  // The backend returns customers in link order, so index 0 is the earliest-linked (primary) customer.
-  let taskRetainerSummary: import("@/lib/types").RetainerSummaryResponse | null = null;
-  if (customers.length > 0) {
-    try {
-      const { fetchRetainerSummary } = await import("@/lib/api/retainers");
-      taskRetainerSummary = await fetchRetainerSummary(customers[0].id);
-    } catch {
-      // Non-fatal: indicator just won't show
-    }
-  }
-
   // FICA onboarding status for the matter's primary customer (GAP-L-46).
   // Surfaces on the Overview tab as a small status tile. Fetch is
   // non-fatal — when the endpoint is unreachable or the profile
@@ -574,7 +561,6 @@ export default async function ProjectDetailPage({
             canManage={canManage}
             currentMemberId={currentMemberId}
             isAdmin={isAdmin}
-            retainerSummary={taskRetainerSummary}
             members={members.map((m) => ({ id: m.memberId, name: m.name, email: m.email }))}
             allTags={allTags}
             fieldDefinitions={taskFieldDefs}

@@ -22,7 +22,6 @@ export * from "./generated-documents";
 export * from "./audit-events";
 export * from "./capabilities";
 export * from "./billing-runs";
-export * from "./retainers";
 export * from "./information-requests";
 export * from "./automations";
 export * from "./capacity";

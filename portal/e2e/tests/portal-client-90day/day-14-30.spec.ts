@@ -4,13 +4,11 @@ import { getPortalJwt, loginAsPortalContact } from "../../helpers/auth";
 /**
  * Epic 500A — Portal client-POV 90-day lifecycle: Day 14 → Day 30.
  *
- * Exercises checkpoints 5–6 from `qa/testplan/demos/portal-client-90day-keycloak.md`:
+ * Exercises checkpoint 5 from `qa/testplan/demos/portal-client-90day-keycloak.md`:
  *   - Day 21: Trust-deposit nudge, views balance on /trust                       [legal-za only]
- *   - Day 30: Client views hour-bank remaining + consumption on /retainer        [consulting-za / legal-za]
  *
  * Prerequisites: same stack contract as day-00-07.spec.ts. Day 21 requires a
- * legal-za tenant with at least one trust-deposit transaction; Day 30 requires
- * a consulting-za or legal-za tenant with a retainer engagement.
+ * legal-za tenant with at least one trust-deposit transaction.
  *
  * Run (full — slice 500B):
  *   PLAYWRIGHT_BASE_URL=http://localhost:3002 \
@@ -25,7 +23,7 @@ const PORTAL_EMAIL =
   process.env.PORTAL_CONTACT_EMAIL || "sipho.portal@example.com";
 const SKIP = process.env.SKIP_PORTAL_BASELINES === "true";
 
-test.describe.serial("Day 14–30 — Portal Client Lifecycle (Checkpoints 5–6)", () => {
+test.describe.serial("Day 14–30 — Portal Client Lifecycle (Checkpoint 5)", () => {
   test.beforeAll(async () => {
     test.skip(
       SKIP,
@@ -79,44 +77,6 @@ test.describe.serial("Day 14–30 — Portal Client Lifecycle (Checkpoints 5–6
       .toBeTruthy();
 
     await expect(page).toHaveScreenshot("day-21-trust-balance.png", {
-      fullPage: true,
-      animations: "disabled",
-    });
-  });
-
-  // ── Checkpoint 6 — Day 30: hour-bank on /retainer ──────────────────────
-  test("Day 30 [consulting-za / legal-za]: Client views hour-bank remaining", async ({
-    page,
-  }) => {
-    await page.goto("/retainer");
-    await page.waitForLoadState("domcontentloaded");
-    await page.waitForTimeout(500);
-
-    const main = page.locator("main");
-    if (!(await main.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(
-        true,
-        "/retainer not rendered — profile may not expose retainer (accounting-za gated skip)",
-      );
-      return;
-    }
-
-    const bodyText = (await page.locator("body").textContent().catch(() => "")) || "";
-    if (/something went wrong|internal server error/i.test(bodyText)) {
-      throw new Error("/retainer rendered an error page — investigate backend");
-    }
-
-    expect
-      .soft(
-        await page
-          .getByText(/retainer|hour|remaining|consumption/i)
-          .first()
-          .isVisible({ timeout: 5000 })
-          .catch(() => false),
-      )
-      .toBeTruthy();
-
-    await expect(page).toHaveScreenshot("day-30-retainer-hour-bank.png", {
       fullPage: true,
       animations: "disabled",
     });

@@ -161,27 +161,6 @@ class EmailTemplateRenderingIntegrationTest {
   }
 
   @Test
-  void render_notification_retainer_contains_retainer_details() {
-    var context = buildBaseContext("Retainer update: Premium Support");
-    context.put("retainerName", "Premium Support");
-    context.put("customerName", "Big Corp");
-    context.put("periodLabel", "February 2026");
-    context.put("utilization", "75%");
-    context.put("retainerUrl", "https://app.example.com/retainers/303");
-
-    RenderedEmail result = renderer.render("notification-retainer", context);
-
-    assertThat(result.htmlBody()).isNotEmpty();
-    assertThat(result.subject()).isEqualTo("Retainer update: Premium Support");
-    assertThat(result.htmlBody()).contains("Premium Support");
-    assertThat(result.htmlBody()).contains("Big Corp");
-    assertThat(result.htmlBody()).contains("February 2026");
-    assertThat(result.htmlBody()).contains("75%");
-    assertThat(result.htmlBody()).contains("https://app.example.com/retainers/303");
-    assertThat(result.plainTextBody()).isNotEmpty();
-  }
-
-  @Test
   void render_portal_magic_link_contains_link_and_expiry() {
     var context = buildBaseContext("Access your portal");
     context.put("magicLinkUrl", "https://portal.example.com/auth?token=xyz789");
@@ -241,7 +220,6 @@ class EmailTemplateRenderingIntegrationTest {
       "notification-budget",
       "notification-invoice",
       "notification-schedule",
-      "notification-retainer",
       "portal-magic-link",
       "invoice-delivery"
     };

@@ -135,7 +135,7 @@ class PortalDigestSchedulerIntegrationTest {
         () -> {
           preferenceService.getOrCreate(contactId);
           preferenceService.update(
-              contactId, new PortalNotificationPreferenceUpdate(true, true, true, true, true));
+              contactId, new PortalNotificationPreferenceUpdate(true, true, true, true));
         });
 
     // Clear portal read-model invoices seeded by previous tests for isolation.
@@ -201,7 +201,7 @@ class PortalDigestSchedulerIntegrationTest {
     runInTenant(
         () ->
             preferenceService.update(
-                contactId, new PortalNotificationPreferenceUpdate(false, true, true, true, true)));
+                contactId, new PortalNotificationPreferenceUpdate(false, true, true, true)));
 
     runInTenant(() -> scheduler.runWeeklyDigest());
 

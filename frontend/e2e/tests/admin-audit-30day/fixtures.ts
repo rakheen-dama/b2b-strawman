@@ -79,7 +79,6 @@ export interface Day0SeedResult {
   matterName: string;
   trustTransactionId?: string;
   deadlineId?: string;
-  retainerId?: string;
 }
 
 /**
@@ -88,13 +87,12 @@ export interface Day0SeedResult {
  * `project.created`), then optionally seed profile-gated state:
  *   - `[legal-za]`   trust deposit  → `trust_transaction.deposited`
  *   - `[accounting-za]` deadline    → `deadline.created`
- *   - `[consulting-za]` retainer    → `retainer.created`
  *
  * The login event itself is emitted by the natural `loginAs()` flow; the
  * caller drives that separately. This helper handles the API-side seeds only.
  *
- * Audit eventTypes produced: `matter.created`, optional `trust_transaction.deposited`,
- * optional `deadline.created`, optional `retainer.created`.
+ * Audit eventTypes produced: `matter.created`, optional `trust_transaction.deposited`, and
+ * optional `deadline.created`.
  */
 export async function seedDay0LoginAndMatterCreation(
   opts: SeedOpts & {
@@ -143,17 +141,6 @@ export async function seedDay0LoginAndMatterCreation(
       if (dlRes.ok()) {
         const dl = (await dlRes.json()) as { id?: string };
         result.deadlineId = dl.id;
-      }
-    }
-
-    if (opts.profile === "consulting-za") {
-      // TODO[510B-OR-PHASE-70]: retainer / hour-bank seed endpoint to be confirmed.
-      const retainerRes = await ctx.post(`${API_BASE}/api/retainers`, {
-        data: { matterId: matter.id, hours: 10 },
-      });
-      if (retainerRes.ok()) {
-        const r = (await retainerRes.json()) as { id?: string };
-        result.retainerId = r.id;
       }
     }
 

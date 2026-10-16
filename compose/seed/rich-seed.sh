@@ -91,11 +91,6 @@ if should_run "invoices"; then
   seed_invoices
 fi
 
-if should_run "retainers"; then
-  . "${SCRIPT_DIR}/lib/retainers.sh"
-  seed_retainers
-fi
-
 if should_run "documents"; then
   . "${SCRIPT_DIR}/lib/documents.sh"
   seed_documents
@@ -128,7 +123,6 @@ echo "  Projects:     6"
 echo "  Tasks:        20"
 echo "  Time entries: 16"
 echo "  Invoices:     2"
-echo "  Retainers:    1"
 echo "  Documents:    3"
 echo "  Comments:     5"
 echo ""

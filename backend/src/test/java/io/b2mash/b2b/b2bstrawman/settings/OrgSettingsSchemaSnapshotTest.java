@@ -59,6 +59,8 @@ class OrgSettingsSchemaSnapshotTest {
    */
   // V133 (Phase 83): the five collections_* columns added below are a deliberate, authorised pin
   // update (CollectionsSettings embeddable + V133 migration), not an accidental drift.
+  // V136 (Phase 86 slice 2 / Epic 596A): deal_pipeline_pack_status removed — deliberate, authorised
+  // pin update (PackStatusSettings.dealPipelinePackStatus dropped + V136__drop_crm.sql), not drift.
   private static final String EXPECTED_SNAPSHOT =
       """
       acceptance_expiry_days | integer | YES
@@ -78,7 +80,6 @@ class OrgSettingsSchemaSnapshotTest {
       created_at | timestamp with time zone | NO
       data_protection_jurisdiction | character varying(10) | YES
       data_request_deadline_days | integer | YES
-      deal_pipeline_pack_status | jsonb | YES
       default_billing_run_currency | character varying(3) | YES
       default_currency | character varying(3) | NO
       default_expense_markup_percent | numeric(5,2) | YES

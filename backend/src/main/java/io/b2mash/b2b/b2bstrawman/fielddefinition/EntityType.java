@@ -5,6 +5,5 @@ public enum EntityType {
   PROJECT,
   TASK,
   CUSTOMER,
-  INVOICE,
-  DEAL
+  INVOICE
 }

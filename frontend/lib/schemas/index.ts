@@ -10,9 +10,6 @@ export type { InviteMemberFormData } from "./invite-member";
 export { createProposalSchema } from "./proposal";
 export type { CreateProposalFormData } from "./proposal";
 
-export { createDealProposalSchema } from "./deal-proposal";
-export type { CreateDealProposalFormData } from "./deal-proposal";
-
 export { informationOfficerSchema } from "./data-protection";
 export type { InformationOfficerFormData } from "./data-protection";
 
@@ -88,11 +85,3 @@ export type { XeroSettingsFormData } from "./xero-settings";
 
 export { confidenceEnum, variableFillSchema, draftingVariableFillsSchema } from "./drafting";
 export type { VariableFillFormData, DraftingVariableFillsFormData } from "./drafting";
-
-export { intakeDealSchema, loseDealSchema, stageEditSchema, stageCreateSchema } from "./deal";
-export type {
-  IntakeDealFormData,
-  LoseDealFormData,
-  StageEditFormData,
-  StageCreateFormData,
-} from "./deal";

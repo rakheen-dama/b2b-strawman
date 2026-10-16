@@ -300,6 +300,23 @@ describe("Dashboard Layout Components", () => {
     expect(screen.getByText("Team Time")).toBeInTheDocument();
   });
 
+  it("dashboard page no longer renders a pipeline summary widget (Epic 596)", async () => {
+    // Module-level proof: the widget file is gone and the page source has no reference to it.
+    // The page itself is an async Server Component with server fetches, so we assert on the
+    // module graph rather than rendering it.
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const pageSrc = fs.readFileSync(
+      path.resolve(process.cwd(), "app/(app)/org/[slug]/dashboard/page.tsx"),
+      "utf8"
+    );
+    expect(pageSrc).not.toContain("PipelineSummaryWidget");
+    expect(pageSrc).not.toContain("pipeline-summary");
+    expect(
+      fs.existsSync(path.resolve(process.cwd(), "components/dashboard/pipeline-summary-widget.tsx"))
+    ).toBe(false);
+  });
+
   it("admin role shows AdminStatsColumn", () => {
     render(
       withOrgProfile(

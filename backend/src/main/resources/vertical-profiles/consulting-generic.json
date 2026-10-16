@@ -5,9 +5,7 @@
   "enabledModules": [],
   "locale": "en-ZA",
   "currency": "ZAR",
-  "packs": {
-    "deal_pipeline": ["deal-pipeline-default"]
-  },
+  "packs": {},
   "rateCardDefaults": {
     "currency": "ZAR",
     "billingRates": [

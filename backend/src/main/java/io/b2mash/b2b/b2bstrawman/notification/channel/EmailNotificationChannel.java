@@ -222,7 +222,6 @@ public class EmailNotificationChannel implements NotificationChannel {
       case "PROPOSAL_SENT", "PROPOSAL_ACCEPTED", "PROPOSAL_EXPIRED", "PROPOSAL_DECLINED" ->
           "notification-proposal";
       case "AUTOMATION_EMAIL" -> "notification-automation";
-      case "DEAL_WON" -> "notification-deal-won";
       default -> {
         log.warn("No email template mapping for notification type '{}'", notificationType);
         yield null;
@@ -333,13 +332,6 @@ public class EmailNotificationChannel implements NotificationChannel {
             "proposalUrl",
             notification.getReferenceEntityId() != null
                 ? orgAppUrl + "/proposals/" + notification.getReferenceEntityId()
-                : null);
-      }
-      case "DEAL_WON" -> {
-        context.put(
-            "dealUrl",
-            notification.getReferenceEntityId() != null
-                ? orgAppUrl + "/pipeline/" + notification.getReferenceEntityId()
                 : null);
       }
       default -> {

@@ -65,16 +65,7 @@ public enum Capability {
    * owner/admin (kept out of {@link #OWNER_ONLY} so admin inherits it); other roles need an
    * explicit grant (ADR-321).
    */
-  MCP_WRITE,
-
-  /** View deals and the sales pipeline (Phase 80 CRM — default-on for Owner/Admin). */
-  VIEW_DEALS,
-  /** Create, edit, and move deals (Phase 80 CRM — default-on for Owner/Admin). */
-  MANAGE_DEALS,
-  /** Win, lose, or reopen deals (Phase 80 CRM — default-on for Owner/Admin). */
-  CLOSE_DEALS,
-  /** Configure pipeline stages (Phase 80 CRM — default-on for Owner/Admin). */
-  MANAGE_PIPELINE;
+  MCP_WRITE;
 
   /** Capabilities restricted to the owner role — admin does NOT inherit these. */
   public static final Set<String> OWNER_ONLY =

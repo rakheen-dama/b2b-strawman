@@ -22,7 +22,7 @@ See the final section "Open Questions / verify-at-build-time" — every `verify`
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 595 | Archive Precondition + Baseline Metrics + Confirmed Seam List | Process / read-only + hook | — | S | 595A, 595B | Not started |
+| 595 | Archive Precondition + Baseline Metrics + Confirmed Seam List | Process / read-only + hook | — | S | 595A, 595B | **Done** (PR #1564) |
 | 596 | Remove `crm` (Phase 80) + Pipeline UI | Backend + Frontend (split) | 595 | M | 596A, 596B, 596C | Not started |
 | 597 | Remove `proposal` (Phase 32) + Legacy In-App Portal + Portal Proposals | Backend + Frontend + Portal (split) | 596 | L | 597A, 597B, 597C, 597D | Not started |
 | 598 | Remove `retainer` (Phase 17) + Portal Retainer | Backend + Frontend + Portal (split) | 597 | L | 598A, 598B, 598C, 598D | Not started |
@@ -108,8 +108,8 @@ KEPT (never touched by any slice — the compiler and McpReadOnlyRegistryTest gu
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 0a | **595A** | Verify tag + mirror (`git ls-remote --tags origin refs/tags/horizontal-platform-final`, `^{commit}` = 7f47f9629 is an ancestor of `main`); record URLs in `tasks/phase86-subtraction.md` + `.claude/ideas/phase86-87-ideation-2026-10-15.md`; add the `phase86/*` tag check to `.claude/hooks/pre-pr-merge-gate.sh`; snapshot before-metrics (backend 1,628 files/176,320 lines/796 tests; frontend 404 test files; 133/25 migrations; full-verify wall time). |
-| 0b | **595B** | Confirmed seam list per slice (file:line from IntelliJ `analyze_calls` on every public type of each removal package); resolve the §11.3 `verify` hedges; grep every `@Enumerated(STRING)` field whose enum loses a constant and assign the row-rewrite DML to the owning slice's migration. |
+| 0a | **595A** | **Done** (PR #1564) |
+| 0b | **595B** | **Done** (PR #1564) |
 
 ### Stage 1 — Serial removal chain ∥ PayFast ∥ Dead surfaces
 
@@ -205,8 +205,8 @@ KEPT (never touched by any slice — the compiler and McpReadOnlyRegistryTest gu
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **595A** | 595A.1–595A.3 | 3 files (hook + 2 markdown records) | Tag/mirror verification recorded; merge-gate hook check; before-metrics snapshot. |
-| **595B** | 595B.1–595B.3 | 1 file (`tasks/phase86-subtraction.md`, appended) | Confirmed seam list per slice 596–604 from `analyze_calls`; enum-row-rewrite list; §11.3 hedges resolved. |
+| **595A** | 595A.1–595A.3 | 3 files (hook + 2 markdown records) | **Done** (PR #1564) — Tag/mirror verification recorded; merge-gate hook tag check (+ stdin fix); before-metrics snapshot incl. 1555 s full verify. |
+| **595B** | 595B.1–595B.3 | 1 file (`tasks/phase86-subtraction.md`, appended) | **Done** (PR #1564) — 239 confirmed seam rows (101 new vs §11.3), enum-row DML list, 18 hedges resolved, 24 STOP-rule rows added; D1/D2/D3 accepted (keep). |
 
 ### Tasks
 

@@ -1,7 +1,7 @@
 {
-  "commit": "6a9373a0c",
+  "commit": "2a88a5a95",
   "command": "caffeinate -is ./mvnw clean verify -q (after scripts/verify-preflight.sh)",
   "exit": 0,
-  "ts": "2026-10-16T18:15:30Z",
-  "summary": "Epic 597 / PR #1566 worktree, final head: 5884 testcases / 0 failures / 0 errors / 26 skipped (surefire+failsafe XML testcase count) — 19:51:44→20:15:30 SAST (~24 min). Delta vs 596's 6009 = deleted proposal tests."
+  "ts": "2026-10-16T20:47:30Z",
+  "summary": "PR #1568 (portal resync assignee tenant scope) worktree: 5885 testcases / 0 failures / 0 errors / 26 skipped (surefire+failsafe XML) — 22:24→22:47 SAST (~23 min). +1 vs Epic 597 baseline = new PortalResyncIntegrationTest case."
 }

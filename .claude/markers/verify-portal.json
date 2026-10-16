@@ -1,7 +1,7 @@
 {
-  "commit": "6a9373a0c",
+  "commit": "fd58d8483",
   "command": "cd portal && pnpm install && pnpm run lint && rm -rf .next && pnpm run build && pnpm test",
   "exit": 0,
-  "ts": "2026-10-16T18:18:46Z",
-  "summary": "Epic 597 / PR #1566 final head: lint 0 errors/6 warnings (pre-existing); build OK (clean .next); vitest 42 files, 193 passed. Note: CI Portal job on this head timed out comment-section.test.tsx 'close to limit' (5000ms; types 1850 chars per-keystroke, ~3.2s locally) — untouched pre-existing timing defect, passed on prior CI run of this PR; re-run requested."
+  "ts": "2026-10-16T22:41:25Z",
+  "summary": "Epic 598 / PR #1569 final head (orchestrator re-run): lint 0 errors; build OK (clean .next); vitest 38 files, 177 passed. -16 vs baseline = deleted portal retainer tests. Portal has no format:check script."
 }

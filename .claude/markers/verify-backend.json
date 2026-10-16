@@ -1,7 +1,7 @@
 {
-  "commit": "2a88a5a95",
-  "command": "caffeinate -is ./mvnw clean verify -q (after scripts/verify-preflight.sh)",
+  "commit": "db05a5df2",
+  "command": "cd backend && bash scripts/verify-preflight.sh && caffeinate -is ./mvnw clean verify -q",
   "exit": 0,
-  "ts": "2026-10-16T20:47:30Z",
-  "summary": "PR #1568 (portal resync assignee tenant scope) worktree: 5885 testcases / 0 failures / 0 errors / 26 skipped (surefire+failsafe XML) — 22:24→22:47 SAST (~23 min). +1 vs Epic 597 baseline = new PortalResyncIntegrationTest case."
+  "ts": "2026-10-16T22:38:31Z",
+  "summary": "Epic 598 / PR #1569 (backend unchanged db05a5df2..fd58d8483 final head): 5752 testcases / 0 failures / 0 errors / 26 skipped (surefire+failsafe XML) — 22:13→22:38 UTC (~25 min). -133 vs 5885 baseline = deleted retainer test files/methods + 3 new BillingRunWithoutRetainersIntegrationTest cases. Log carries one benign '[ERROR] Surefire is going to kill self fork JVM ... after System.exit(0)' shutdown notice; exit 0, no BUILD FAILURE."
 }

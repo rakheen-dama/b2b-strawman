@@ -298,7 +298,6 @@ describe("Dashboard Layout Components", () => {
     );
     expect(screen.getByText("Project Health")).toBeInTheDocument();
     expect(screen.getByText("Team Time")).toBeInTheDocument();
-    expect(screen.queryByText("Sales Pipeline")).not.toBeInTheDocument();
   });
 
   it("dashboard page no longer renders a pipeline summary widget (Epic 596)", async () => {

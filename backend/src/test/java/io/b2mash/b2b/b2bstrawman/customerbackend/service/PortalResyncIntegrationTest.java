@@ -167,6 +167,26 @@ class PortalResyncIntegrationTest {
   }
 
   @Test
+  void resyncProjectsAssignedTaskWithAssigneeName() throws Exception {
+    // Assigned tasks need a member-name lookup, which must run in the tenant scope —
+    // not inside the portal transaction (regression: `relation "members" does not exist`).
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_resync_owner");
+    String taskId =
+        TestEntityHelper.createTask(mockMvc, ownerJwt, projectId, "Assigned resync task");
+    mockMvc
+        .perform(post("/api/tasks/" + taskId + "/claim").with(ownerJwt))
+        .andExpect(status().isOk());
+
+    resyncService.resyncOrg(ORG_ID);
+
+    var portalTasks = readModelRepo.findTasksByProject(UUID.fromString(projectId), ORG_ID);
+    assertThat(portalTasks)
+        .filteredOn(t -> t.id().equals(UUID.fromString(taskId)))
+        .singleElement()
+        .satisfies(t -> assertThat(t.assigneeName()).isEqualTo("Resync Owner"));
+  }
+
+  @Test
   void resyncWithNonExistentOrgThrows() {
     assertThatThrownBy(() -> resyncService.resyncOrg("org_nonexistent_999"))
         .isInstanceOf(ResourceNotFoundException.class);

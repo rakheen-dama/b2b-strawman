@@ -70,25 +70,23 @@ export function PortalSettingsSection({ slug, currentCadence }: PortalSettingsSe
         Control how often your clients receive portal digest emails.
       </p>
 
-      <div className="mt-6 grid gap-6 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="portal-digest-cadence">Portal digest cadence</Label>
-          <Select value={cadence} disabled={isSavingCadence} onValueChange={handleCadenceChange}>
-            <SelectTrigger id="portal-digest-cadence" className="w-full">
-              <SelectValue placeholder="Select cadence" />
-            </SelectTrigger>
-            <SelectContent>
-              {CADENCE_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            How often clients receive the weekly activity digest email.
-          </p>
-        </div>
+      <div className="mt-6 max-w-xs space-y-2">
+        <Label htmlFor="portal-digest-cadence">Portal digest cadence</Label>
+        <Select value={cadence} disabled={isSavingCadence} onValueChange={handleCadenceChange}>
+          <SelectTrigger id="portal-digest-cadence" className="w-full">
+            <SelectValue placeholder="Select cadence" />
+          </SelectTrigger>
+          <SelectContent>
+            {CADENCE_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          How often clients receive the weekly activity digest email.
+        </p>
       </div>
 
       {statusMessage && (

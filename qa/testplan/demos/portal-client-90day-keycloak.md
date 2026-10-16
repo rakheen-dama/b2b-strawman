@@ -254,7 +254,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 ## Exit checkpoints (ALL must pass for demo-ready)
 
 - [ ] **E.1** Every step above is checked across the three exercised profiles (or clearly marked N/A with rationale for profile-gated skips)
-- [ ] **E.2** All 7 📸 wow moments captured without visual regression against the Playwright baselines (once 500B populates them)
+- [ ] **E.2** All 5 📸 wow moments captured without visual regression against the Playwright baselines (once 500B populates them)
 - [ ] **E.3** Zero BLOCKER or HIGH items in gap report (`tasks/phase68-gap-report.md` — produced in slice 500B)
 - [ ] **E.4** **Profile gating** verified — `/trust` is legal-za only, `/deadlines` is accounting-za + legal-za only; non-eligible profiles show empty state, NOT 500
 - [ ] **E.5** **Auth flow** — every portal interaction authenticated via magic-link → JWT (cookie + localStorage); zero Keycloak-form usage, zero firm-side user bleed-through

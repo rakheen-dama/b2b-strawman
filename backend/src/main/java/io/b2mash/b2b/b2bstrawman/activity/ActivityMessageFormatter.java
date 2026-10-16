@@ -120,11 +120,6 @@ public class ActivityMessageFormatter {
               .formatted(actorName, getItemName(details));
       case "information_request.updated" ->
           "%s updated information request %s".formatted(actorName, getRequestNumber(details));
-      case "deal.created" -> "%s created a deal".formatted(actorName);
-      case "deal.stage_changed" -> "%s moved a deal to a new stage".formatted(actorName);
-      case "deal.won" -> "%s won a deal".formatted(actorName);
-      case "deal.lost" -> "%s marked a deal as lost".formatted(actorName);
-      case "deal.reopened" -> "%s re-opened a deal".formatted(actorName);
       case "mcp.write.correspondence_filed" ->
           "%s filed an email via the MCP connector".formatted(actorName);
       case "mcp.write.correspondence_refiled" ->
@@ -373,10 +368,6 @@ public class ActivityMessageFormatter {
       case "information_request" -> getRequestNumber(details);
       case "request_item" -> getItemName(details);
       case "generated_document" -> getFileName(details);
-      case "DEAL", "deal" -> {
-        Object title = details.get("title");
-        yield (title instanceof String s && !s.isBlank()) ? s : "deal";
-      }
       case "correspondence" -> {
         Object subj = details.get("subject");
         yield (subj instanceof String s && !s.isBlank()) ? s : "correspondence";

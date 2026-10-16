@@ -26,7 +26,6 @@ import {
   Layers,
   Brain,
   Sparkles,
-  KanbanSquare,
   HandCoins,
   type LucideIcon,
 } from "lucide-react";
@@ -134,12 +133,6 @@ export const NAV_GROUPS: NavGroup[] = [
         href: (slug) => `/org/${slug}/customers`,
         icon: UserRound,
         requiredCapability: "CUSTOMER_MANAGEMENT",
-      },
-      {
-        label: "Pipeline",
-        href: (slug) => `/org/${slug}/pipeline`,
-        icon: KanbanSquare,
-        requiredCapability: "VIEW_DEALS",
       },
       {
         label: "Proposals",
@@ -468,12 +461,6 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
     title: "Capacity",
     description: "Set default weekly capacity hours for team members",
     href: (slug) => `/org/${slug}/settings/capacity`,
-  },
-  {
-    title: "Pipeline",
-    description: "Configure pipeline stages, ordering, and probabilities",
-    href: (slug) => `/org/${slug}/settings/pipeline`,
-    adminOnly: true,
   },
   {
     title: "Email",

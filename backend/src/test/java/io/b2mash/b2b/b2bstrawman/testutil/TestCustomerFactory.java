@@ -75,7 +75,7 @@ public final class TestCustomerFactory {
 
   /**
    * Returns a custom fields map with the minimum required fields for passing prerequisite checks
-   * (INVOICE_GENERATION, PROPOSAL_SEND). Matches the seeded common-customer field pack slugs.
+   * (e.g. INVOICE_GENERATION). Matches the seeded common-customer field pack slugs.
    */
   public static Map<String, Object> prerequisiteCustomFields() {
     return Map.of(
@@ -89,7 +89,7 @@ public final class TestCustomerFactory {
 
   /**
    * Creates an ACTIVE customer with prerequisite fields pre-filled on both entity columns and
-   * JSONB. Safe for invoice creation and proposal sending flows.
+   * JSONB. Safe for invoice creation flows.
    */
   public static Customer createActiveCustomerWithPrerequisiteFields(
       String name, String email, UUID createdBy) {
@@ -99,8 +99,7 @@ public final class TestCustomerFactory {
 
   /**
    * Creates an ACTIVE customer of the given {@link CustomerType} with prerequisite fields
-   * pre-filled on both entity columns and JSONB. Safe for invoice creation and proposal sending
-   * flows.
+   * pre-filled on both entity columns and JSONB. Safe for invoice creation flows.
    */
   public static Customer createActiveCustomerWithPrerequisiteFields(
       String name, String email, UUID createdBy, CustomerType type) {
@@ -132,7 +131,7 @@ public final class TestCustomerFactory {
   /**
    * Fills prerequisite fields directly in the database via JdbcTemplate. Sets both JSONB custom
    * fields and promoted entity columns to satisfy structural prerequisite checks for
-   * INVOICE_GENERATION, PROPOSAL_SEND, and other contexts.
+   * INVOICE_GENERATION and other contexts.
    */
   public static void fillPrerequisiteFields(
       org.springframework.jdbc.core.JdbcTemplate jdbcTemplate,

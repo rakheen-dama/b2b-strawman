@@ -12,8 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Auto-creates a default {@link PortalContact} whenever a {@link CustomerCreatedEvent} carries an
- * email address. This unblocks the firm-side "send information request / proposal / fee note" flows
- * for the typical one-contact-per-customer case, with no additional UI required.
+ * email address. This unblocks the firm-side "send information request / fee note" flows for the
+ * typical one-contact-per-customer case, with no additional UI required.
  *
  * <p>GAP-L-34 — Scenario 3.9 literally reads "portal contact auto-populated from client record" —
  * auto-create is the scenario-specified behaviour. For customers needing multiple named contacts

@@ -108,7 +108,6 @@ export function formatLocalDate(yyyyMmDd: string): string {
   });
 }
 
-
 /**
  * Formats an ISO timestamp as a short date (en-ZA locale: "01 May 2026").
  * (Staff-app helper, retained.)

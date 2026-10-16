@@ -39,7 +39,6 @@ const SEGMENT_LABELS: Record<string, string> = {
   integrations: "Integrations",
   // Additional segments
   customers: "Customers",
-  proposals: "Proposals",
   "my-work": "My Work",
   schedules: "Recurring Schedules",
   retainers: "Retainers",
@@ -57,7 +56,6 @@ const PARENT_SEGMENT_FALLBACKS: Record<string, string> = {
   settings: "Settings",
   customers: "Customer",
   invoices: "Invoice",
-  proposals: "Proposal",
   "client-ledgers": "Client Ledger",
 };
 
@@ -101,7 +99,7 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
             : segment);
         // Translate labels that contain a terminology-mapped prefix
         // (e.g. "Project Templates" → "Matter Templates" in legal-za).
-        const prefixMatch = rawLabel.match(/^(Project|Customer|Client|Proposal|Invoice)\s+(.+)$/);
+        const prefixMatch = rawLabel.match(/^(Project|Customer|Client|Invoice)\s+(.+)$/);
         const label = prefixMatch ? `${t(prefixMatch[1])} ${prefixMatch[2]}` : t(rawLabel);
 
         // Build the href for intermediate segments

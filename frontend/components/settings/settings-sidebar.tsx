@@ -16,7 +16,7 @@ import { SETTINGS_NAV_GROUPS } from "./settings-nav-groups";
  */
 function translateNavLabel(label: string, t: (term: string) => string): string {
   // Map known terms that appear as a prefix in nav labels.
-  const prefixTerms = ["Project", "Customer", "Client", "Proposal", "Invoice"];
+  const prefixTerms = ["Project", "Customer", "Client", "Invoice"];
   for (const term of prefixTerms) {
     if (label.startsWith(term + " ")) {
       const mapped = t(term);

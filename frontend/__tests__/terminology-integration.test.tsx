@@ -94,19 +94,6 @@ describe("364B: terminology in breadcrumbs", () => {
     expect(screen.getByText("Clients")).toBeInTheDocument();
     expect(screen.queryByText("Customers")).not.toBeInTheDocument();
   });
-
-  it("renders Engagement Letters instead of Proposals in breadcrumb for /proposals route", () => {
-    mockUsePathname.mockReturnValue("/org/test-org/proposals");
-
-    render(
-      <TerminologyProvider verticalProfile="accounting-za">
-        <Breadcrumbs slug="test-org" />
-      </TerminologyProvider>
-    );
-
-    expect(screen.getByText("Engagement Letters")).toBeInTheDocument();
-    expect(screen.queryByText("Proposals")).not.toBeInTheDocument();
-  });
 });
 
 // ---- Test 3: Page heading via TerminologyHeading ----

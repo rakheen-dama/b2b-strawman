@@ -399,7 +399,7 @@ class PrerequisiteServiceTest {
   void lifecycleActivation_promotedSlugFieldDefinition_notSilentlyDropped() {
     // A FieldDefinition requires "address_line1" for LIFECYCLE_ACTIVATION. Previously this was
     // silently dropped because the dedup filter used a global promoted-slug set but the
-    // structural check only ran for INVOICE_GENERATION / PROPOSAL_SEND. Now LIFECYCLE_ACTIVATION
+    // structural check only ran for INVOICE_GENERATION. Now LIFECYCLE_ACTIVATION
     // has structural coverage, so the missing field MUST produce a violation (structural).
     var fd = createFieldDefinition("Address Line 1", "address_line1", FieldType.TEXT);
     fd.setRequiredForContexts(new ArrayList<>(List.of("LIFECYCLE_ACTIVATION")));

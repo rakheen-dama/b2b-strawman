@@ -245,21 +245,10 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **2.9** KYC adapter returns **Verified** — KYC badge renders green with verification timestamp
 - [ ] **2.10** 📸 **Screenshot**: `day-02-kyc-verified.png` — KYC verified status
 
-### Day 2 (cont.) — Open a pipeline enquiry for the RAF claim (Phase 80)
-
-> **Phase 80 navigation notes**: deal cards/list rows are NOT links (deferred in 580A) — reach the deal detail via the client's **Work > Deals** tab or direct URL. Win/Lose happens ONLY by dragging a card into the Won/Lost board column; the deal is won later, on Day 10, when the engagement is secured.
-
-- [ ] **2.11** Navigate to **Pipeline** (sidebar, Clients group) → board renders the legal-za stage columns: **Enquiry**, **Conflict check**, **Engagement** open; **Won**/**Lost** collapsed
-- [ ] **2.12** Click **New Enquiry** → Customer mode = **Pick existing customer** → **Sipho Dlamini**; Title = "Dlamini v RAF — enquiry"; Value = **R87,500** (matches the Day 7 fee estimate); Source = "Referral" → **Create Enquiry** → card appears in **Enquiry** (10%)
-- [ ] **2.13** The conflict check just cleared (2.6) → drag the card **Enquiry → Conflict check** → card moves, probability 30%
-- [ ] **2.14** Open Sipho's client detail → **Work** tab group → **Deals** sub-tab (`data-testid="customer-deals-tab"`) → row shows **DEAL-0001**, status badge **Open**
-- [ ] **2.15** 📸 **Screenshot**: `day-02-pipeline-enquiry.png` — board with the RAF enquiry in the Conflict check column
-
 **Day 2 checkpoints**
 - [ ] Client created with INDIVIDUAL type and legal-specific fields
 - [ ] Conflict check CLEAR (no false positive hits)
 - [ ] KYC verification badge visible on client detail, or KYC not-configured state logged to gap report
-- [ ] Pipeline enquiry DEAL-0001 open at the Conflict check stage (Phase 80)
 
 ---
 
@@ -371,13 +360,6 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **10.2** Matter lifecycle: verify matter has auto-transitioned to **ACTIVE** (Phase 29 lifecycle), or transition manually per current UX
 
-### Phase A2: Win the deal — engagement secured (Phase 80)
-
-- [ ] **10.2a** Navigate to the **Pipeline** board → drag DEAL-0001 from **Engagement** into **Won** → "Mark deal as won" dialog → **Mark as Won** → card lands in the collapsed Won column
-- [ ] **10.2b** **Win-nudge check**: open Sipho's client detail → if the lifecycle badge was still **PROSPECT** it now shows **ONBOARDING** (Phase 80 nudge); if Sipho had already progressed past PROSPECT (e.g. via the FICA flow) the badge is UNCHANGED — the nudge only ever fires PROSPECT → ONBOARDING and never downgrades. Record the observed state
-- [ ] **10.2c** Deal detail → status badge (`data-testid="deal-status-badge"`) = **Won**, Overview shows the won date; Mailpit shows the **"You won a deal"** notification email to Bob (deal owner from Day 2, even though Thandi performed the win)
-- [ ] **10.2d** 📸 **Screenshot**: `day-10-deal-won.png` — board with DEAL-0001 in the Won column
-
 ### Phase B: Trust deposit — bank statement import + deposit recording
 
 - [ ] **10.3** Navigate to **Trust Accounting** → **Mathebula Trust — Main** account
@@ -395,7 +377,6 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **10.9** 📸 Optional: `day-10-firm-trust-deposit-recorded.png`
 
 **Day 10 checkpoints**
-- [ ] DEAL-0001 won on the board; win-nudge behaviour recorded; owner notification email in Mailpit (Phase 80)
 - [ ] Trust deposit posts against the correct client ledger card (Section 86 compliance)
 - [ ] Client ledger + matter trust tab + account balance all reconcile to R 50,000.00
 

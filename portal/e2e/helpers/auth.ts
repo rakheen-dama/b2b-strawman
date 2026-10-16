@@ -3,9 +3,8 @@ import type { Page } from "@playwright/test";
 /**
  * Epic 499B — Portal auth helpers used by Playwright visual-baseline specs.
  *
- * Ports the magic-link / exchange flow from
- *   frontend/e2e/tests/portal/portal-navigation.spec.ts
- * into the portal's own e2e tree so the portal baselines can run without
+ * Ports the magic-link / exchange flow (originally in the firm-side e2e
+ * portal specs, since removed) into the portal's own e2e tree so the portal baselines can run without
  * reaching into the firm-side e2e directory.
  *
  * The portal stores the exchanged JWT in both a `portal-auth-token` cookie

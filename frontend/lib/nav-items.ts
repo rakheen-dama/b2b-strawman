@@ -114,12 +114,6 @@ export const NAV_GROUPS: NavGroup[] = [
         href: (slug) => `/org/${slug}/projects`,
         icon: FolderOpen,
       },
-      {
-        label: "Recurring Schedules",
-        href: (slug) => `/org/${slug}/schedules`,
-        icon: CalendarClock,
-        requiredCapability: "PROJECT_MANAGEMENT",
-      },
     ],
   },
   {

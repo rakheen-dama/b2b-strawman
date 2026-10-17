@@ -18,7 +18,6 @@ import io.b2mash.b2b.b2bstrawman.packs.PackType;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
-import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileReconciliationSeeder;
@@ -79,7 +78,6 @@ public class TenantProvisioningService {
   private final RequestPackSeeder requestPackSeeder;
   private final RatePackSeeder ratePackSeeder;
   private final ProjectTemplatePackSeeder projectTemplatePackSeeder;
-  private final SchedulePackSeeder schedulePackSeeder;
   private final LegalTariffSeeder legalTariffSeeder;
   private final VerticalProfileReconciliationSeeder verticalProfileReconciliationSeeder;
   private final MockPaymentIntegrationSeeder mockPaymentIntegrationSeeder;
@@ -102,7 +100,6 @@ public class TenantProvisioningService {
       RequestPackSeeder requestPackSeeder,
       RatePackSeeder ratePackSeeder,
       ProjectTemplatePackSeeder projectTemplatePackSeeder,
-      SchedulePackSeeder schedulePackSeeder,
       LegalTariffSeeder legalTariffSeeder,
       VerticalProfileReconciliationSeeder verticalProfileReconciliationSeeder,
       MockPaymentIntegrationSeeder mockPaymentIntegrationSeeder,
@@ -123,7 +120,6 @@ public class TenantProvisioningService {
     this.requestPackSeeder = requestPackSeeder;
     this.ratePackSeeder = ratePackSeeder;
     this.projectTemplatePackSeeder = projectTemplatePackSeeder;
-    this.schedulePackSeeder = schedulePackSeeder;
     this.legalTariffSeeder = legalTariffSeeder;
     this.verticalProfileReconciliationSeeder = verticalProfileReconciliationSeeder;
     this.mockPaymentIntegrationSeeder = mockPaymentIntegrationSeeder;
@@ -239,7 +235,6 @@ public class TenantProvisioningService {
             installPacksViaPipeline(schemaName, verticalProfile, PackType.AUTOMATION_TEMPLATE);
             ratePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
             projectTemplatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-            schedulePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
             legalTariffSeeder.seedForTenant(schemaName, clerkOrgId);
             // GAP-L-44 + GAP-L-27 — apply profile enabled_modules and taxDefaults to the
             // fresh tenant so the first user never sees a bare "Standard" rate or missing

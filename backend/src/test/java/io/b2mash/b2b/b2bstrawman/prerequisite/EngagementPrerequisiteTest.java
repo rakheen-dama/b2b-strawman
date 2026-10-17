@@ -272,7 +272,6 @@ class EngagementPrerequisiteTest {
         null, // taskItemRepository
         null, // projectRepository
         null, // projectMemberRepository
-        null, // scheduleRepository
         null, // auditService
         null, // eventPublisher
         null, // customerRepository

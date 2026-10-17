@@ -67,6 +67,8 @@ class OrgSettingsSchemaSnapshotTest {
   // V140 (Phase 86 slice 5 / Epic 599A): default_weekly_capacity_hours removed — deliberate,
   // authorised pin update (capacity settings embeddable dropped + V140__drop_capacity.sql), not
   // drift.
+  // V141 (Phase 86 slice 6 / Epic 600A): schedule_pack_status removed — deliberate, authorised pin
+  // update (PackStatusSettings.schedulePackStatus dropped + V141__drop_schedules.sql), not drift.
   private static final String EXPECTED_SNAPSHOT =
       """
       acceptance_expiry_days | integer | YES
@@ -112,7 +114,6 @@ class OrgSettingsSchemaSnapshotTest {
       report_pack_status | jsonb | YES
       request_pack_status | jsonb | YES
       retention_policy_enabled | boolean | NO
-      schedule_pack_status | jsonb | YES
       tax_inclusive | boolean | NO
       tax_label | character varying(20) | YES
       tax_registration_label | character varying(30) | YES

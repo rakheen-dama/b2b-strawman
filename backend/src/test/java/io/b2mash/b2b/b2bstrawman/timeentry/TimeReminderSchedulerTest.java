@@ -1,4 +1,4 @@
-package io.b2mash.b2b.b2bstrawman.schedule;
+package io.b2mash.b2b.b2bstrawman.timeentry;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,8 +16,6 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
-import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
-import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;

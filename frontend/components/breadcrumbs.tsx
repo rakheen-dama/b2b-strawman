@@ -37,7 +37,6 @@ const SEGMENT_LABELS: Record<string, string> = {
   // Additional segments
   customers: "Customers",
   "my-work": "My Work",
-  schedules: "Recurring Schedules",
   // Vertical module pages
   "trust-accounting": "Trust Accounting",
   "court-calendar": "Court Calendar",

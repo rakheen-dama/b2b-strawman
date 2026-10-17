@@ -361,59 +361,6 @@ class EmailNotificationChannelIntegrationTest {
             });
   }
 
-  @Test
-  void deliver_schedule_skipped_links_to_org_scoped_schedule() {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .run(
-            () -> {
-              UUID scheduleId = UUID.randomUUID();
-              var notification =
-                  notificationRepository.save(
-                      new Notification(
-                          memberId,
-                          "SCHEDULE_SKIPPED",
-                          "Schedule skipped",
-                          null,
-                          "RECURRING_SCHEDULE",
-                          scheduleId,
-                          null));
-
-              emailChannel.deliver(notification, RECIPIENT_EMAIL);
-
-              assertThat(greenMail.getReceivedMessages()).hasSize(1);
-              assertThat(decodedContent(greenMail.getReceivedMessages()[0]))
-                  .contains("/org/" + ORG_ID + "/schedules/" + scheduleId);
-            });
-  }
-
-  @Test
-  void deliver_recurring_project_created_links_to_org_scoped_project() {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .run(
-            () -> {
-              UUID projectId = UUID.randomUUID();
-              var notification =
-                  notificationRepository.save(
-                      new Notification(
-                          memberId,
-                          "RECURRING_PROJECT_CREATED",
-                          "Recurring project created",
-                          null,
-                          "PROJECT",
-                          projectId,
-                          projectId));
-
-              emailChannel.deliver(notification, RECIPIENT_EMAIL);
-
-              assertThat(greenMail.getReceivedMessages()).hasSize(1);
-              // References the created project, not the schedule — link to the project.
-              assertThat(decodedContent(greenMail.getReceivedMessages()[0]))
-                  .contains("/org/" + ORG_ID + "/projects/" + projectId);
-            });
-  }
-
   private Notification savedNotification(UUID recipientMemberId, String type, String title) {
     var notification =
         new Notification(recipientMemberId, type, title, null, "TASK", UUID.randomUUID(), null);

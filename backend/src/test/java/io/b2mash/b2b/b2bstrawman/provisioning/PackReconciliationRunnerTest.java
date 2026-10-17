@@ -9,8 +9,6 @@ import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.packs.PackInstallRepository;
-import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleRepository;
-import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,7 +34,6 @@ class PackReconciliationRunnerTest {
   @Autowired private ChecklistTemplateRepository templateRepository;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private BillingRateRepository billingRateRepository;
-  @Autowired private RecurringScheduleRepository recurringScheduleRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private PackInstallRepository packInstallRepository;
 
@@ -80,16 +77,16 @@ class PackReconciliationRunnerTest {
   }
 
   @Test
-  void reconciliationRunnerIdempotentWithRateAndSchedulePacks() {
-    // Provision a tenant with accounting-za profile to trigger rate/schedule seeding
+  void reconciliationRunnerIdempotentWithRatePacks() {
+    // Provision a tenant with accounting-za profile to trigger rate seeding
     String acctOrgId = "org_pack_reconciliation_acct_test";
     provisioningService.provisionTenant(
         acctOrgId, "Accounting Reconciliation Test Org", "accounting-za");
     String acctSchema =
         orgSchemaMappingRepository.findByClerkOrgId(acctOrgId).orElseThrow().getSchemaName();
 
-    // Count rates and schedules after initial provisioning
-    long[] initialCounts = new long[2];
+    // Count seeded rates after initial provisioning
+    long[] initialRateCount = new long[1];
     runInTenant(
         acctSchema,
         acctOrgId,
@@ -97,15 +94,9 @@ class PackReconciliationRunnerTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   // Count seeded rates (null memberId = org-level seeded rates)
-                  initialCounts[0] =
+                  initialRateCount[0] =
                       billingRateRepository.findAll().stream()
                           .filter(r -> r.getMemberId() == null)
-                          .count();
-                  // Count seeder-created schedules (sentinel UUID)
-                  initialCounts[1] =
-                      recurringScheduleRepository.findAll().stream()
-                          .filter(
-                              s -> SchedulePackSeeder.SEEDER_CREATED_BY.equals(s.getCreatedBy()))
                           .count();
                 }));
 
@@ -113,7 +104,7 @@ class PackReconciliationRunnerTest {
     reconciliationRunner.reconcilePacksForTenant(acctSchema, acctOrgId);
     reconciliationRunner.reconcilePacksForTenant(acctSchema, acctOrgId);
 
-    // Verify counts have not increased
+    // Verify the seeded rate count has not increased
     runInTenant(
         acctSchema,
         acctOrgId,
@@ -124,17 +115,9 @@ class PackReconciliationRunnerTest {
                       billingRateRepository.findAll().stream()
                           .filter(r -> r.getMemberId() == null)
                           .count();
-                  long scheduleCount =
-                      recurringScheduleRepository.findAll().stream()
-                          .filter(
-                              s -> SchedulePackSeeder.SEEDER_CREATED_BY.equals(s.getCreatedBy()))
-                          .count();
                   assertThat(rateCount)
                       .as("Seeded rate count should not increase after reconciliation")
-                      .isEqualTo(initialCounts[0]);
-                  assertThat(scheduleCount)
-                      .as("Seeder-created schedule count should not increase after reconciliation")
-                      .isEqualTo(initialCounts[1]);
+                      .isEqualTo(initialRateCount[0]);
                 }));
   }
 

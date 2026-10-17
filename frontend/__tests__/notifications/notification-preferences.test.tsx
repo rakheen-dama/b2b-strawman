@@ -24,9 +24,6 @@ function makePreferences(): NotificationPreference[] {
     { notificationType: "INVOICE_SENT", inAppEnabled: true, emailEnabled: false },
     { notificationType: "INVOICE_PAID", inAppEnabled: true, emailEnabled: false },
     { notificationType: "INVOICE_VOIDED", inAppEnabled: true, emailEnabled: false },
-    { notificationType: "RECURRING_PROJECT_CREATED", inAppEnabled: true, emailEnabled: false },
-    { notificationType: "SCHEDULE_SKIPPED", inAppEnabled: true, emailEnabled: false },
-    { notificationType: "SCHEDULE_COMPLETED", inAppEnabled: true, emailEnabled: false },
   ];
 }
 
@@ -39,7 +36,7 @@ describe("NotificationPreferencesForm", () => {
     cleanup();
   });
 
-  it("renders all 15 notification types with human-readable labels and toggles", () => {
+  it("renders all 12 notification types with human-readable labels and toggles", () => {
     render(<NotificationPreferencesForm initialPreferences={makePreferences()} />);
 
     expect(screen.getByText("Task Assigned")).toBeInTheDocument();
@@ -54,13 +51,10 @@ describe("NotificationPreferencesForm", () => {
     expect(screen.getByText("Invoice Sent")).toBeInTheDocument();
     expect(screen.getByText("Invoice Paid")).toBeInTheDocument();
     expect(screen.getByText("Invoice Voided")).toBeInTheDocument();
-    expect(screen.getByText("Recurring Project Created")).toBeInTheDocument();
-    expect(screen.getByText("Schedule Skipped")).toBeInTheDocument();
-    expect(screen.getByText("Schedule Completed")).toBeInTheDocument();
 
-    // Should have 15 in-app switches + 15 email switches = 30 switches total
+    // Should have 12 in-app switches + 12 email switches = 24 switches total
     const switches = screen.getAllByRole("switch");
-    expect(switches).toHaveLength(30);
+    expect(switches).toHaveLength(24);
   });
 
   it("displays category headers for grouped notification types", () => {
@@ -69,7 +63,6 @@ describe("NotificationPreferencesForm", () => {
     expect(screen.getByText("Tasks")).toBeInTheDocument();
     expect(screen.getByText("Collaboration")).toBeInTheDocument();
     expect(screen.getByText("Billing & Invoicing")).toBeInTheDocument();
-    expect(screen.getByText("Scheduling")).toBeInTheDocument();
   });
 
   it("email toggles are not disabled", () => {

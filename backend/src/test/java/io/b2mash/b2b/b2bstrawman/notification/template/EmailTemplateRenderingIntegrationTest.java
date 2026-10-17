@@ -142,25 +142,6 @@ class EmailTemplateRenderingIntegrationTest {
   }
 
   @Test
-  void render_notification_schedule_contains_schedule_details() {
-    var context = buildBaseContext("Schedule update: Monthly Review");
-    context.put("scheduleName", "Monthly Review");
-    context.put("projectName", "Client Meetings");
-    context.put("action", "created");
-    context.put("scheduleUrl", "https://app.example.com/schedules/202");
-
-    RenderedEmail result = renderer.render("notification-schedule", context);
-
-    assertThat(result.htmlBody()).isNotEmpty();
-    assertThat(result.subject()).isEqualTo("Schedule update: Monthly Review");
-    assertThat(result.htmlBody()).contains("Monthly Review");
-    assertThat(result.htmlBody()).contains("Client Meetings");
-    assertThat(result.htmlBody()).contains("created");
-    assertThat(result.htmlBody()).contains("https://app.example.com/schedules/202");
-    assertThat(result.plainTextBody()).isNotEmpty();
-  }
-
-  @Test
   void render_portal_magic_link_contains_link_and_expiry() {
     var context = buildBaseContext("Access your portal");
     context.put("magicLinkUrl", "https://portal.example.com/auth?token=xyz789");
@@ -219,7 +200,6 @@ class EmailTemplateRenderingIntegrationTest {
       "notification-member",
       "notification-budget",
       "notification-invoice",
-      "notification-schedule",
       "portal-magic-link",
       "invoice-delivery"
     };

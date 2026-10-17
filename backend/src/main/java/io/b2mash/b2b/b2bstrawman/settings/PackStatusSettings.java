@@ -11,16 +11,16 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 /**
- * Pack-application status group (Wave 3.5 embeddable refactor). Holds the ten JSONB pack-status
+ * Pack-application status group (Wave 3.5 embeddable refactor). Holds the nine JSONB pack-status
  * lists that record which content packs (field, template, compliance, report, clause, request,
- * automation, rate, schedule, project-template) have been seeded into the tenant, together with the
+ * automation, rate, project-template) have been seeded into the tenant, together with the
  * idempotency record/remove/is-applied helpers each pack seeder uses. Each list is a {@code
  * List<Map<String, Object>>} of {@code {packId, version, appliedAt}} entries.
  *
  * <p>Persisted inline on the {@code org_settings} table via {@code @Embedded} +
  * {@code @AttributeOverride} on {@link OrgSettings}. Column names and the {@code jsonb} type are
  * UNCHANGED from when these fields lived directly on the entity (zero schema change — see {@code
- * OrgSettingsSchemaSnapshotTest}). All ten columns are nullable, so an all-null group materialises
+ * OrgSettingsSchemaSnapshotTest}). All nine columns are nullable, so an all-null group materialises
  * as a NULL embedded object on reload — the lazy-fallback {@link OrgSettings#getPackStatus()}
  * getter keeps callers NPE-safe (see {@code OrgSettingsEmbeddableNullReloadTest}).
  *
@@ -63,10 +63,6 @@ public class PackStatusSettings {
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "rate_pack_status", columnDefinition = "jsonb")
   private List<Map<String, Object>> ratePackStatus;
-
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "schedule_pack_status", columnDefinition = "jsonb")
-  private List<Map<String, Object>> schedulePackStatus;
 
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "project_template_pack_status", columnDefinition = "jsonb")
@@ -257,35 +253,6 @@ public class PackStatusSettings {
       return false;
     }
     return this.ratePackStatus.stream()
-        .anyMatch(
-            entry ->
-                packId.equals(entry.get("packId"))
-                    && ((Number) entry.get("version")).intValue() == version);
-  }
-
-  // --- Schedule pack ---
-
-  public List<Map<String, Object>> getSchedulePackStatus() {
-    return schedulePackStatus;
-  }
-
-  /** Records a schedule pack application. Idempotent -- skips if already applied. */
-  public void recordSchedulePackApplication(String packId, int version) {
-    if (isSchedulePackApplied(packId, version)) {
-      return;
-    }
-    if (this.schedulePackStatus == null) {
-      this.schedulePackStatus = new ArrayList<>();
-    }
-    this.schedulePackStatus.add(newEntry(packId, version));
-  }
-
-  /** Returns true if the given schedule pack (specific version) has been applied. */
-  public boolean isSchedulePackApplied(String packId, int version) {
-    if (this.schedulePackStatus == null) {
-      return false;
-    }
-    return this.schedulePackStatus.stream()
         .anyMatch(
             entry ->
                 packId.equals(entry.get("packId"))

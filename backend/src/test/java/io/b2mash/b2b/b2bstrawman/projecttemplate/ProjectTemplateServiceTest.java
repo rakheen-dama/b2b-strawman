@@ -1,12 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
-import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
@@ -20,15 +17,12 @@ import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.SaveFromProjectRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.TemplateTaskRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.UpdateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.schedule.RecurringSchedule;
-import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleRepository;
 import io.b2mash.b2b.b2bstrawman.tag.Tag;
 import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -63,8 +57,6 @@ class ProjectTemplateServiceTest {
   @Autowired private ProjectRepository projectRepository;
   @Autowired private TaskRepository taskRepository;
   @Autowired private ProjectMemberRepository projectMemberRepository;
-  @Autowired private RecurringScheduleRepository scheduleRepository;
-  @Autowired private CustomerRepository customerRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -182,7 +174,7 @@ class ProjectTemplateServiceTest {
   }
 
   @Test
-  void deleteTemplate_noSchedules_succeeds() {
+  void deleteTemplate_succeeds() {
     runInTenant(
         () -> {
           var request =
@@ -194,50 +186,6 @@ class ProjectTemplateServiceTest {
 
           assertThatThrownBy(() -> templateService.get(created.id()))
               .isInstanceOf(ResourceNotFoundException.class);
-        });
-  }
-
-  @Test
-  void deleteTemplate_withActiveSchedule_throws409() {
-    runInTenant(
-        () -> {
-          // Setup: create template + schedule in one transaction
-          UUID templateId =
-              transactionTemplate.execute(
-                  tx -> {
-                    var template =
-                        templateRepository.saveAndFlush(
-                            new ProjectTemplate(
-                                "Protected Template",
-                                "{customer}",
-                                null,
-                                false,
-                                "MANUAL",
-                                null,
-                                memberId));
-
-                    var customer =
-                        customerRepository.saveAndFlush(
-                            createActiveCustomer("Schedule Customer", "cust@test.com", memberId));
-
-                    scheduleRepository.saveAndFlush(
-                        new RecurringSchedule(
-                            template.getId(),
-                            customer.getId(),
-                            null,
-                            "MONTHLY",
-                            LocalDate.now(),
-                            null,
-                            0,
-                            null,
-                            memberId));
-
-                    return template.getId();
-                  });
-
-          // Assert: delete should throw (in its own transaction via @Transactional)
-          assertThatThrownBy(() -> templateService.delete(templateId))
-              .isInstanceOf(ResourceConflictException.class);
         });
   }
 

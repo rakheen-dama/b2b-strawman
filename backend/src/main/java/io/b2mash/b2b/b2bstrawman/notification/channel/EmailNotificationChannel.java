@@ -211,8 +211,6 @@ public class EmailNotificationChannel implements NotificationChannel {
       case "BUDGET_ALERT" -> "notification-budget";
       case "INVOICE_APPROVED", "INVOICE_SENT", "INVOICE_PAID", "INVOICE_VOIDED" ->
           "notification-invoice";
-      case "RECURRING_PROJECT_CREATED", "SCHEDULE_SKIPPED", "SCHEDULE_COMPLETED" ->
-          "notification-schedule";
       case "AUTOMATION_EMAIL" -> "notification-automation";
       default -> {
         log.warn("No email template mapping for notification type '{}'", notificationType);
@@ -286,24 +284,6 @@ public class EmailNotificationChannel implements NotificationChannel {
             notification.getReferenceEntityId() != null
                 ? orgAppUrl + "/invoices/" + notification.getReferenceEntityId()
                 : null);
-      }
-      case "RECURRING_PROJECT_CREATED", "SCHEDULE_SKIPPED", "SCHEDULE_COMPLETED" -> {
-        context.put(
-            "action",
-            switch (type) {
-              case "RECURRING_PROJECT_CREATED" -> "created";
-              case "SCHEDULE_SKIPPED" -> "skipped";
-              default -> "completed";
-            });
-        // RECURRING_PROJECT_CREATED references the created project; the other two reference the
-        // recurring schedule itself.
-        String scheduleSection =
-            "RECURRING_PROJECT_CREATED".equals(type) ? "projects" : "schedules";
-        context.put(
-            "scheduleUrl",
-            notification.getReferenceEntityId() != null
-                ? orgAppUrl + "/" + scheduleSection + "/" + notification.getReferenceEntityId()
-                : orgAppUrl + "/dashboard");
       }
       default -> {
         // No additional context for unmapped types

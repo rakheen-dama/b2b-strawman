@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache";
 
 interface SeedingSummary {
   rateCardsTiersSeeded?: number;
-  scheduleTemplatesSeeded?: number;
 }
 
 interface ActionResult {

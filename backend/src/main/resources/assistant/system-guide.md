@@ -28,7 +28,6 @@ Project and document management.
 | Projects | `/org/{slug}/projects` | List of all projects. Click a project to see its detail page with tasks, documents, time, and budget tabs |
 | Project Detail | `/org/{slug}/projects/{id}` | Project overview with tabs: Tasks, Documents, Time, Budget, Financials, Activity |
 | Documents | `/org/{slug}/documents` | Organisation-wide document list |
-| Recurring Schedules | `/org/{slug}/schedules` | Recurring task schedules and templates |
 
 ### Zone 3: Clients
 Customer and client management.

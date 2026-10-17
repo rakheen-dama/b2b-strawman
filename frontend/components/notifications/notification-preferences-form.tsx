@@ -45,18 +45,12 @@ const NOTIFICATION_TYPE_LABELS: Record<string, { label: string; category: string
     label: "Request Draft Created",
     category: "Client Requests",
   },
-  // Scheduling
-  RECURRING_PROJECT_CREATED: { label: "Recurring Project Created", category: "Scheduling" },
-  SCHEDULE_SKIPPED: { label: "Schedule Skipped", category: "Scheduling" },
-  SCHEDULE_COMPLETED: { label: "Schedule Completed", category: "Scheduling" },
   // Time Tracking
   TIME_REMINDER: { label: "Time Reminders", category: "Time Tracking" },
   // Security & Compliance
   ROLE_PERMISSIONS_CHANGED: { label: "Role Permissions Changed", category: "Security" },
   RETENTION_PURGE_WARNING: { label: "Retention Purge Warning", category: "Security" },
   DSAR_DEADLINE_WARNING: { label: "DSAR Deadline Warning", category: "Security" },
-  // System
-  POST_CREATE_ACTION_FAILED: { label: "Post-Create Action Failed", category: "System" },
 };
 
 interface NotificationPreferencesFormProps {
@@ -111,10 +105,8 @@ export function NotificationPreferencesForm({
     "Collaboration",
     "Billing & Invoicing",
     "Client Requests",
-    "Scheduling",
     "Time Tracking",
     "Security",
-    "System",
     "Other",
   ];
   const sortedCategories = categoryOrder.filter((c) => grouped[c]);

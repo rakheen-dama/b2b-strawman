@@ -167,8 +167,7 @@ export function TemplateList({ slug, templates, canManage }: TemplateListProps) 
                           <AlertDialogTitle>Delete Template</AlertDialogTitle>
                           <AlertDialogDescription>
                             Are you sure you want to delete &quot;{template.name}&quot;? This action
-                            cannot be undone. If this template has active recurring schedules,
-                            deletion will be blocked.
+                            cannot be undone.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

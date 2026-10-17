@@ -49,9 +49,8 @@ class CustomerAuthFilterDevPortalGateTest {
 
   @Test
   void devPortalPath_isNotSkipped_underProdProfile() {
-    // The mock-payment checkout does not exist in prod — the skip is withheld so the filter runs
-    // and the
-    // missing Bearer token yields 401.
+    // The mock-payment checkout does not exist in prod — the skip is withheld so the filter
+    // runs and the missing Bearer token yields 401.
     var filter = filterForProfiles("prod");
     assertThat(shouldNotFilter(filter, "/portal/dev/mock-payment")).isFalse();
   }

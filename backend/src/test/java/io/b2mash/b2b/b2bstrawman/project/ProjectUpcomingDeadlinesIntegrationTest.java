@@ -18,9 +18,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtDate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtDateRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.YearMonth;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -37,8 +35,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  * Controller-level integration test for {@code GET /api/projects/{id}/upcoming-deadlines} (GAP-L-58
  * / E9.3).
  *
- * <p>Asserts that with 1 court date + 2 regulatory deadlines linked to the same matter, the
- * endpoint returns 3 rows ordered by date ASC with each row tagged by its source type.
+ * <p>Asserts that with two future court dates and one past court date on a matter, the endpoint
+ * returns exactly the two future rows, ordered by date ASC and tagged {@code COURT}. The regulatory
+ * deadlines source ({@code regulatory_deadlines} module) was removed in Phase 86 (Epic 604A).
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -73,14 +72,13 @@ class ProjectUpcomingDeadlinesIntegrationTest {
             TestMemberHelper.syncMember(
                 mockMvc, ORG_ID, "user_pud_owner", "pud_owner@test.com", "PUD Owner", "owner"));
 
-    // Enable BOTH modules — this matches a hypothetical multi-vertical org. Tests prove the
-    // aggregator unions both sources; the per-vertical default profiles are a separate concern.
+    // Enable court_calendar — the only remaining source of matter deadlines.
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var settings = orgSettingsService.getOrCreateForCurrentTenant();
-                  settings.setEnabledModules(List.of("court_calendar", "regulatory_deadlines"));
+                  settings.setEnabledModules(List.of("court_calendar"));
                   orgSettingsRepository.save(settings);
                 }));
 
@@ -88,25 +86,32 @@ class ProjectUpcomingDeadlinesIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  // Customer with FYE so DeadlineCalculationService produces rows for our matter.
-                  // FYE is derived from today (end of next month) so the matter's tax-year
-                  // deadlines always fall inside the service's [today, today+365] window,
-                  // regardless of when the suite runs.
-                  var fye = YearMonth.now().plusMonths(1).atEndOfMonth();
                   var customer = createActiveCustomer("Acme Corp", "acme@test.com", memberId);
-                  customer.setCustomFields(Map.of("financial_year_end", fye.toString()));
                   customer = customerRepository.saveAndFlush(customer);
                   customerId = customer.getId();
 
-                  // Project with workType="tax" + tax_year so findLinkedProject() picks it up
-                  var project = new Project("Acme Tax Matter", "Tax filing matter", memberId);
+                  var project = new Project("Acme v Beta", "Litigation matter", memberId);
                   project.setCustomerId(customerId);
-                  project.setWorkType("tax");
-                  project.setCustomFields(Map.of("tax_year", String.valueOf(fye.getYear())));
                   project = projectRepository.saveAndFlush(project);
                   projectId = project.getId();
 
-                  // 1 future court date — must surface as type=COURT
+                  // 2 future court dates (saved later-first) — both must surface as type=COURT,
+                  // ordered by date ASC.
+                  var laterCd =
+                      new CourtDate(
+                          projectId,
+                          customerId,
+                          "TRIAL",
+                          LocalDate.now().plusDays(90),
+                          LocalTime.of(10, 0),
+                          "Johannesburg High Court",
+                          "2026/CIV/124",
+                          "Judge Later",
+                          "Trial",
+                          7,
+                          memberId);
+                  courtDateRepository.saveAndFlush(laterCd);
+
                   var futureDate = LocalDate.now().plusDays(45);
                   var cd =
                       new CourtDate(
@@ -138,18 +143,11 @@ class ProjectUpcomingDeadlinesIntegrationTest {
                           7,
                           memberId);
                   courtDateRepository.saveAndFlush(pastCd);
-
-                  // Regulatory deadlines are computed on-the-fly from the customer's FYE and
-                  // the deadline-type registry — they need no seeding. The calculator's
-                  // findLinkedProject() infers the link via project.workType == category AND
-                  // project.customFields.tax_year == period_key. With workType="tax" and
-                  // tax_year=<FYE year>, every in-window "tax"-category deadline for that
-                  // period will surface as linkedProjectId == this matter.
                 }));
   }
 
   @Test
-  void unionsCourtAndRegulatory_orderedByDateAsc_taggedByType() throws Exception {
+  void returnsFutureCourtDatesOnly_taggedCourt() throws Exception {
     var result =
         mockMvc
             .perform(
@@ -159,33 +157,28 @@ class ProjectUpcomingDeadlinesIntegrationTest {
             .andExpect(jsonPath("$").isArray())
             .andReturn();
 
-    // Parse and assert directly. JsonPath length() comparisons via Hamcrest are unreliable
-    // because Spring's helper hands the matcher a JSONArray, not an Integer.
     var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
     java.util.List<java.util.Map<String, Object>> rows =
         mapper.readValue(
             result.getResponse().getContentAsString(),
             new com.fasterxml.jackson.core.type.TypeReference<>() {});
 
-    // 1 future court date + 3 regulatory deadlines linked to this matter. With FYE = end of
-    // next month and periodKey = FYE year: sars_provisional_2 (FYE, ~1-2 months out),
-    // sars_provisional_1 (FYE+6m) and sars_provisional_3 (FYE+7m) all fall inside the 365-day
-    // lookahead; sars_annual_return (FYE+12m) falls just beyond it.
-    org.assertj.core.api.Assertions.assertThat(rows).hasSizeGreaterThanOrEqualTo(3);
-
-    long courtCount = rows.stream().filter(r -> "COURT".equals(r.get("type"))).count();
-    long regulatoryCount = rows.stream().filter(r -> "REGULATORY".equals(r.get("type"))).count();
-    org.assertj.core.api.Assertions.assertThat(courtCount).isGreaterThanOrEqualTo(1);
-    org.assertj.core.api.Assertions.assertThat(regulatoryCount).isGreaterThanOrEqualTo(2);
-
-    // Every row carries non-null type, date, description
+    // Scoped to this matter's own court dates: 2 future rows; the past one is filtered out.
+    org.assertj.core.api.Assertions.assertThat(rows).hasSize(2);
     org.assertj.core.api.Assertions.assertThat(rows)
         .allSatisfy(
             r -> {
-              org.assertj.core.api.Assertions.assertThat(r.get("type")).isNotNull();
+              org.assertj.core.api.Assertions.assertThat(r.get("type")).isEqualTo("COURT");
               org.assertj.core.api.Assertions.assertThat(r.get("date")).isNotNull();
               org.assertj.core.api.Assertions.assertThat(r.get("description")).isNotNull();
             });
+    org.assertj.core.api.Assertions.assertThat(rows)
+        .extracting(r -> r.get("type"))
+        .doesNotContain("REGULATORY");
+    org.assertj.core.api.Assertions.assertThat(rows.get(0).get("description").toString())
+        .contains("Pretoria High Court");
+    org.assertj.core.api.Assertions.assertThat(rows.get(1).get("description").toString())
+        .contains("Johannesburg High Court");
   }
 
   @Test

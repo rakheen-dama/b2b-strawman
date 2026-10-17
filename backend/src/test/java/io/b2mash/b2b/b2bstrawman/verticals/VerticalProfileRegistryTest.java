@@ -28,9 +28,7 @@ class VerticalProfileRegistryTest {
     assertThat(p.name()).isEqualTo("South African Accounting Firm");
     assertThat(p.description()).startsWith("Complete configuration for");
     assertThat(p.currency()).isEqualTo("ZAR");
-    assertThat(p.enabledModules())
-        .containsExactlyInAnyOrder(
-            "regulatory_deadlines", "deadlines", "information_requests", "automation_builder");
+    assertThat(p.enabledModules()).containsExactlyInAnyOrder("deadlines", "information_requests");
     assertThat(p.terminologyNamespace()).isEqualTo("en-ZA-accounting");
     assertThat(p.packs()).containsKey("field");
   }
@@ -84,8 +82,7 @@ class VerticalProfileRegistryTest {
     // enables information_requests for portal request flows. (The GAP-C-04 resource-planning
     // module was removed with capacity in Phase 86 / Epic 599.)
     var profile = registry.getProfile("consulting-za").orElseThrow();
-    assertThat(profile.enabledModules())
-        .containsExactlyInAnyOrder("automation_builder", "information_requests");
+    assertThat(profile.enabledModules()).containsExactlyInAnyOrder("information_requests");
   }
 
   @Test
@@ -98,8 +95,7 @@ class VerticalProfileRegistryTest {
     // modules (trust_accounting, court_calendar etc.) must NOT leak into accounting-za.
     var profile = registry.getProfile("accounting-za").orElseThrow();
     assertThat(profile.enabledModules())
-        .containsExactlyInAnyOrder(
-            "regulatory_deadlines", "deadlines", "information_requests", "automation_builder");
+        .containsExactlyInAnyOrder("deadlines", "information_requests");
   }
 
   @Test

@@ -63,8 +63,7 @@ class ConsultingZaProfileProvisioningTest {
     // GAP-C-07: consulting-za ships with automation_builder (Automations UI) enabled so the
     // Day-45 automations checkpoint works without manual module toggling. GAP-P-01 also enables
     // information_requests. (The resource-planning module was removed in Phase 86 / Epic 599.)
-    assertThat(p.enabledModules())
-        .containsExactlyInAnyOrder("automation_builder", "information_requests");
+    assertThat(p.enabledModules()).containsExactlyInAnyOrder("information_requests");
     assertThat(p.terminologyNamespace()).isEqualTo("en-ZA-consulting");
     assertThat(p.packs()).containsKey("field");
   }
@@ -80,7 +79,7 @@ class ConsultingZaProfileProvisioningTest {
                 tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
                   assertThat(settings.getEnabledModules())
-                      .containsExactlyInAnyOrder("automation_builder", "information_requests");
+                      .containsExactlyInAnyOrder("information_requests");
                 }));
   }
 

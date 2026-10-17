@@ -6,9 +6,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
-import io.b2mash.b2b.b2bstrawman.deadline.DeadlineCalculationService;
-import io.b2mash.b2b.b2bstrawman.deadline.DeadlineCalculationService.CalculatedDeadline;
-import io.b2mash.b2b.b2bstrawman.deadline.DeadlineCalculationService.DeadlineFilters;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -32,8 +29,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 /**
  * Unit tests for {@link ProjectUpcomingDeadlinesService} (GAP-L-58 / E9.3).
  *
- * <p>Asserts the union of {@code court_dates} + regulatory deadlines is correctly merged, ordered
- * by date ASC, tagged with the right type, and that disabled-module / past-date filtering work.
+ * <p>Asserts court dates are ordered by date ASC, tagged {@code COURT}, and that disabled-module /
+ * past-date filtering work. The regulatory deadlines source was removed in Phase 86 (Epic 604A).
  */
 @ExtendWith(MockitoExtension.class)
 class ProjectUpcomingDeadlinesServiceTest {
@@ -43,7 +40,6 @@ class ProjectUpcomingDeadlinesServiceTest {
   @Mock private ProjectRepository projectRepository;
   @Mock private ProjectAccessService projectAccessService;
   @Mock private CourtDateRepository courtDateRepository;
-  @Mock private DeadlineCalculationService deadlineCalculationService;
   @Mock private VerticalModuleGuard moduleGuard;
 
   private ProjectUpcomingDeadlinesService service;
@@ -57,12 +53,7 @@ class ProjectUpcomingDeadlinesServiceTest {
     Clock fixedClock = Clock.fixed(TODAY.atStartOfDay(ZoneOffset.UTC).toInstant(), ZoneOffset.UTC);
     service =
         new ProjectUpcomingDeadlinesService(
-            projectRepository,
-            projectAccessService,
-            courtDateRepository,
-            deadlineCalculationService,
-            moduleGuard,
-            fixedClock);
+            projectRepository, projectAccessService, courtDateRepository, moduleGuard, fixedClock);
     projectId = UUID.randomUUID();
     customerId = UUID.randomUUID();
     project = new Project("Smith v Jones", "Test matter", UUID.randomUUID());
@@ -74,81 +65,35 @@ class ProjectUpcomingDeadlinesServiceTest {
   }
 
   @Test
-  void unionsBothSources_orderedByDateAsc_taggedByType() {
+  void courtDatesOnly_orderedByDateAsc_taggedCourt() {
     when(moduleGuard.isModuleEnabled("court_calendar")).thenReturn(true);
-    when(moduleGuard.isModuleEnabled("regulatory_deadlines")).thenReturn(true);
 
-    // 1 court date in the middle
-    CourtDate cd =
+    // Repository rows deliberately out of order — the service sorts by date ASC itself.
+    CourtDate later =
+        courtDate(LocalDate.of(2026, 7, 25), "Cape Town High Court", null, "POSTPONED");
+    CourtDate earlier =
         courtDate(
             LocalDate.of(2026, 6, 10), "Johannesburg High Court", "Judge Mogoeng", "SCHEDULED");
     when(courtDateRepository.findByProjectIdOrderByScheduledDateAsc(projectId))
-        .thenReturn(List.of(cd));
-
-    // 2 regulatory deadlines — one before, one after the court date.
-    // findLinkedProject is already filtered server-side; we mimic both
-    // linked-to-project and not-linked rows to assert the filter.
-    CalculatedDeadline regBefore =
-        new CalculatedDeadline(
-            customerId,
-            "Smith Corp",
-            "sars_provisional_1",
-            "SARS Provisional Tax 1",
-            "tax",
-            LocalDate.of(2026, 5, 1),
-            "pending",
-            projectId,
-            null);
-    CalculatedDeadline regAfter =
-        new CalculatedDeadline(
-            customerId,
-            "Smith Corp",
-            "sars_vat_return",
-            "SARS VAT Return",
-            "vat",
-            LocalDate.of(2026, 7, 25),
-            "pending",
-            projectId,
-            null);
-    CalculatedDeadline regOtherProject =
-        new CalculatedDeadline(
-            customerId,
-            "Smith Corp",
-            "sars_paye_monthly",
-            "PAYE Monthly",
-            "payroll",
-            LocalDate.of(2026, 5, 15),
-            "pending",
-            UUID.randomUUID(), // different project — must be filtered out
-            null);
-
-    when(deadlineCalculationService.calculateDeadlines(
-            eq(TODAY), any(LocalDate.class), any(DeadlineFilters.class)))
-        .thenReturn(List.of(regBefore, regAfter, regOtherProject));
+        .thenReturn(List.of(later, earlier));
 
     var rows = service.getUpcomingDeadlines(projectId, actor);
 
-    assertThat(rows).hasSize(3);
-    // Ordered ASC: 2026-05-01 (REG), 2026-06-10 (COURT), 2026-07-25 (REG)
-    assertThat(rows.get(0).date()).isEqualTo(LocalDate.of(2026, 5, 1));
-    assertThat(rows.get(0).type()).isEqualTo("REGULATORY");
-    assertThat(rows.get(0).description()).isEqualTo("SARS Provisional Tax 1");
-    assertThat(rows.get(0).status()).isEqualTo("pending");
+    assertThat(rows).hasSize(2);
+    assertThat(rows).extracting(ProjectUpcomingDeadline::type).containsOnly("COURT");
 
-    assertThat(rows.get(1).date()).isEqualTo(LocalDate.of(2026, 6, 10));
-    assertThat(rows.get(1).type()).isEqualTo("COURT");
-    assertThat(rows.get(1).description()).contains("Johannesburg High Court", "Judge Mogoeng");
-    assertThat(rows.get(1).status()).isEqualTo("SCHEDULED");
+    assertThat(rows.get(0).date()).isEqualTo(LocalDate.of(2026, 6, 10));
+    assertThat(rows.get(0).description()).contains("Johannesburg High Court", "Judge Mogoeng");
+    assertThat(rows.get(0).status()).isEqualTo("SCHEDULED");
 
-    assertThat(rows.get(2).date()).isEqualTo(LocalDate.of(2026, 7, 25));
-    assertThat(rows.get(2).type()).isEqualTo("REGULATORY");
-    assertThat(rows.get(2).description()).isEqualTo("SARS VAT Return");
+    assertThat(rows.get(1).date()).isEqualTo(LocalDate.of(2026, 7, 25));
+    assertThat(rows.get(1).description()).isEqualTo("Cape Town High Court");
+    assertThat(rows.get(1).status()).isEqualTo("POSTPONED");
   }
 
   @Test
   void filtersOutPastCourtDates() {
     when(moduleGuard.isModuleEnabled("court_calendar")).thenReturn(true);
-    when(moduleGuard.isModuleEnabled("regulatory_deadlines")).thenReturn(false);
 
     CourtDate past = courtDate(LocalDate.of(2026, 1, 10), "Pretoria High Court", null, "SCHEDULED");
     CourtDate future =
@@ -164,9 +109,8 @@ class ProjectUpcomingDeadlinesServiceTest {
   }
 
   @Test
-  void skipsDisabledModules_emptyResultWhenBothDisabled() {
+  void skipsDisabledModule_emptyResultWhenCourtCalendarDisabled() {
     when(moduleGuard.isModuleEnabled("court_calendar")).thenReturn(false);
-    when(moduleGuard.isModuleEnabled("regulatory_deadlines")).thenReturn(false);
 
     var rows = service.getUpcomingDeadlines(projectId, actor);
 
@@ -176,7 +120,6 @@ class ProjectUpcomingDeadlinesServiceTest {
   @Test
   void courtDateOnTodayIsIncluded() {
     when(moduleGuard.isModuleEnabled("court_calendar")).thenReturn(true);
-    when(moduleGuard.isModuleEnabled("regulatory_deadlines")).thenReturn(false);
 
     CourtDate today = courtDate(TODAY, "Today Court", "Judge Today", "SCHEDULED");
     when(courtDateRepository.findByProjectIdOrderByScheduledDateAsc(projectId))

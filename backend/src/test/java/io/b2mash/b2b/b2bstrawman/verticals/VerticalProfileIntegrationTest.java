@@ -45,7 +45,6 @@ class VerticalProfileIntegrationTest {
   // Separate org IDs per test group to ensure independence
   private static final String LIFECYCLE_ORG_ID = "org_vpi_lifecycle";
   private static final String GUARD_ORG_ID = "org_vpi_guard";
-  private static final String ACCT_ORG_ID = "org_vpi_accounting";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -69,11 +68,9 @@ class VerticalProfileIntegrationTest {
         "VPI Owner",
         "owner");
 
-    // Provision guard tenant with consulting-generic (no modules enabled)
+    // Provision guard tenant with no profile (no modules enabled)
     guardTenantSchema =
-        provisioningService
-            .provisionTenant(GUARD_ORG_ID, "Guard Test Org", "consulting-generic")
-            .schemaName();
+        provisioningService.provisionTenant(GUARD_ORG_ID, "Guard Test Org", null).schemaName();
     TestMemberHelper.syncMemberQuietly(
         mockMvc,
         GUARD_ORG_ID,
@@ -81,12 +78,6 @@ class VerticalProfileIntegrationTest {
         "vpi_guard@test.com",
         "Guard Owner",
         "owner");
-
-    // Provision an accounting-za tenant — its profile declares regulatory_deadlines as
-    // default-enabled, so the firm-side DeadlineController must NOT fail closed.
-    provisioningService.provisionTenant(ACCT_ORG_ID, "Accounting Test Org", "accounting-za");
-    TestMemberHelper.syncMemberQuietly(
-        mockMvc, ACCT_ORG_ID, "user_vpi_acct_owner", "vpi_acct@test.com", "Acct Owner", "owner");
   }
 
   // --- Task 372.1: Profile Switching Lifecycle ---
@@ -148,7 +139,7 @@ class VerticalProfileIntegrationTest {
 
   @Test
   @Order(2)
-  void switchFromLegalZaToConsultingGeneric_clearsVerticalModulesAndTerminology() throws Exception {
+  void switchFromLegalZaToNoProfile_clearsVerticalModulesAndTerminology() throws Exception {
     // First ensure we are on legal-za
     mockMvc
         .perform(
@@ -160,7 +151,7 @@ class VerticalProfileIntegrationTest {
                     {"verticalProfile": "legal-za"}"""))
         .andExpect(status().isOk());
 
-    // Switch to consulting-generic. Per ADR-239, vertical modules from legal-za are dropped and
+    // Clear the profile (null). Per ADR-239, vertical modules from legal-za are dropped and
     // terminology is cleared, but HORIZONTAL modules (information_requests, bulk_billing) survive
     // the profile change — they are profile-independent and manually toggled.
     // GAP-L-61-followup (E9.2): bulk_billing is now part of the legal-za default set, so it
@@ -172,9 +163,9 @@ class VerticalProfileIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"verticalProfile": "consulting-generic"}"""))
+                    {"verticalProfile": null}"""))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.verticalProfile").value("consulting-generic"))
+        .andExpect(jsonPath("$.verticalProfile").value(nullValue()))
         .andExpect(
             jsonPath(
                 "$.enabledModules", containsInAnyOrder("information_requests", "bulk_billing")))
@@ -186,7 +177,7 @@ class VerticalProfileIntegrationTest {
   @Test
   @Order(3)
   void guardDeniesAccessThenAllowsAfterProfileSwitch() throws Exception {
-    // Guard tenant was provisioned with consulting-generic (no modules)
+    // Guard tenant was provisioned with no profile (no modules)
     // Court calendar should be denied (403)
     mockMvc
         .perform(
@@ -212,24 +203,5 @@ class VerticalProfileIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(GUARD_ORG_ID, "user_vpi_guard_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray());
-  }
-
-  // --- Regression: accounting-za must have the firm-side regulatory_deadlines module ---
-
-  @Test
-  @Order(4)
-  void accountingZaTenant_canAccessRegulatoryDeadlines() throws Exception {
-    // A freshly provisioned accounting-za tenant copies enabledModules from the profile JSON, which
-    // now includes regulatory_deadlines (declared default-enabled in VerticalModuleRegistry). The
-    // firm-side DeadlineController guards on requireModule("regulatory_deadlines") — before the fix
-    // it fail-closed with 403 because the profile omitted the slug.
-    mockMvc
-        .perform(
-            get("/api/deadlines")
-                .param("from", "2026-01-01")
-                .param("to", "2026-12-31")
-                .with(TestJwtFactory.ownerJwt(ACCT_ORG_ID, "user_vpi_acct_owner")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$").isArray());
   }
 }

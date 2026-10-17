@@ -42,8 +42,8 @@ class PortalContextControllerIntegrationTest {
 
   private static final String LEGAL_ORG_ID = "org_portal_ctx_legal";
   private static final String LEGAL_ORG_NAME = "Test Law Firm";
-  private static final String ACCT_ORG_ID = "org_portal_ctx_accounting";
-  private static final String ACCT_ORG_NAME = "Test Accounting Firm";
+  private static final String NO_PROFILE_ORG_ID = "org_portal_ctx_no_profile";
+  private static final String NO_PROFILE_ORG_NAME = "Test No-Profile Firm";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private PortalJwtService portalJwtService;
@@ -54,7 +54,7 @@ class PortalContextControllerIntegrationTest {
   @MockitoBean private StorageService storageService;
 
   private UUID legalCustomerId;
-  private UUID acctCustomerId;
+  private UUID noProfileCustomerId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -102,34 +102,38 @@ class PortalContextControllerIntegrationTest {
               orgSettingsRepository.save(settings);
             });
 
-    // --- accounting-za tenant ---
-    provisioningService.provisionTenant(ACCT_ORG_ID, ACCT_ORG_NAME, "accounting-za");
-    UUID acctMemberId =
+    // --- no-profile tenant (legal-za is the only registered profile since Phase 86 / Epic 604;
+    // the control tenant has no profile and no modules, so trust must not leak into it) ---
+    provisioningService.provisionTenant(NO_PROFILE_ORG_ID, NO_PROFILE_ORG_NAME, null);
+    UUID noProfileMemberId =
         UUID.fromString(
             TestMemberHelper.syncMember(
                 mockMvc,
-                ACCT_ORG_ID,
-                "user_ctx_acct_owner",
-                "acct_owner@test.com",
-                "Acct Owner",
+                NO_PROFILE_ORG_ID,
+                "user_ctx_noprof_owner",
+                "noprof_owner@test.com",
+                "NoProfile Owner",
                 "owner"));
-    String acctSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ACCT_ORG_ID).get().getSchemaName();
+    String noProfileSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(NO_PROFILE_ORG_ID).get().getSchemaName();
 
-    ScopedValue.where(RequestScopes.TENANT_ID, acctSchema)
-        .where(RequestScopes.ORG_ID, ACCT_ORG_ID)
+    ScopedValue.where(RequestScopes.TENANT_ID, noProfileSchema)
+        .where(RequestScopes.ORG_ID, NO_PROFILE_ORG_ID)
         .run(
             () -> {
               var customer =
                   customerService.createCustomer(
-                      "Acct Client", "acct-client@test.com", null, null, null, acctMemberId);
-              acctCustomerId = customer.getId();
+                      "NoProfile Client",
+                      "noprof-client@test.com",
+                      null,
+                      null,
+                      null,
+                      noProfileMemberId);
+              noProfileCustomerId = customer.getId();
               // GAP-L-34: auto-provisioner already created the portal contact for this email.
-              // Pin enabledModules to exactly regulatory_deadlines so the assertions below are
-              // deterministic regardless of the accounting-za profile's full module set, while
-              // ensuring trust_accounting is absent so assertion (2) holds.
+              // Pin enabledModules to empty so the assertions below are deterministic.
               var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
-              settings.setEnabledModules(List.of("regulatory_deadlines"));
+              settings.setEnabledModules(List.of());
               orgSettingsRepository.save(settings);
             });
   }
@@ -148,16 +152,16 @@ class PortalContextControllerIntegrationTest {
   }
 
   @Test
-  void accountingZaContact_returnsAccountingProfile_withoutTrust() throws Exception {
-    String token = portalJwtService.issueToken(acctCustomerId, ACCT_ORG_ID);
+  void noProfileContact_returnsNoProfile_withoutTrust() throws Exception {
+    String token = portalJwtService.issueToken(noProfileCustomerId, NO_PROFILE_ORG_ID);
     mockMvc
         .perform(get("/portal/session/context").header("Authorization", "Bearer " + token))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.tenantProfile").value("accounting-za"))
-        .andExpect(jsonPath("$.terminologyKey").value("en-ZA-accounting"))
-        .andExpect(jsonPath("$.enabledModules", hasItem("regulatory_deadlines")))
+        .andExpect(jsonPath("$.tenantProfile").doesNotExist())
+        .andExpect(jsonPath("$.terminologyKey").value(""))
+        .andExpect(jsonPath("$.enabledModules").isEmpty())
         .andExpect(jsonPath("$.enabledModules", not(hasItem("trust_accounting"))))
-        .andExpect(jsonPath("$.orgName").value(ACCT_ORG_NAME));
+        .andExpect(jsonPath("$.orgName").value(NO_PROFILE_ORG_NAME));
   }
 
   @Test

@@ -18,7 +18,8 @@ export const PROMOTED_CUSTOMER_SLUGS: ReadonlySet<string> = new Set([
   "country",
   "tax_number",
   "phone",
-  // accounting-za-customer
+  // originally accounting-za-customer (pack removed in Phase 86; slugs kept in sync with the
+  // backend PromotedFieldSlugs mirror)
   "vat_number",
   "primary_contact_name",
   "primary_contact_email",
@@ -37,8 +38,9 @@ export const PROMOTED_CUSTOMER_SLUGS: ReadonlySet<string> = new Set([
  * PROJECT promoted slugs (Epic 464 / Phase 63).
  *
  * Note: `engagement_type` and `matter_type` both map to the structural
- * `work_type` column depending on the active vertical profile (accounting
- * vs legal). The frontend camelCase field is `workType`.
+ * `work_type` column (`engagement_type` is a legacy slug from the accounting
+ * pack removed in Phase 86, kept to mirror the backend). The frontend camelCase
+ * field is `workType`.
  */
 export const PROMOTED_PROJECT_SLUGS: ReadonlySet<string> = new Set([
   "reference_number",

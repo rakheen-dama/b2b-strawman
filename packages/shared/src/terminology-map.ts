@@ -3,9 +3,9 @@
  * app (`frontend`) and the customer `portal`.
  *
  * Before Wave 2.5 each app shipped its own copy of this map and they had
- * drifted. The reconciliation (see `packages/shared/README` decision table in
- * the PR) established one BASE map plus an explicit, commented set of
- * portal-only overrides — never silent divergence.
+ * drifted; the reconciliation established one BASE map shared by both apps.
+ * Phase 86 (ADR-332) reduced it to the single `legal-za` profile; the
+ * mechanism (`TerminologyProvider`, `useTerminology`, `t()`) stays for Phase 87.
  *
  * The BASE map is the staff-app superset. Keys that only the staff app reads
  * (project placeholders, the audit-tab label) live here harmlessly: the portal
@@ -13,50 +13,6 @@
  * one map to maintain.
  */
 export const TERMINOLOGY_BASE: Record<string, Record<string, string>> = {
-  "consulting-za": {
-    Customer: "Client",
-    Customers: "Clients",
-    customer: "client",
-    customers: "clients",
-    "Time Entry": "Time Log",
-    "Time Entries": "Time Logs",
-    "time entry": "time log",
-    "time entries": "time logs",
-    "Rate Card": "Billing Rates",
-    "Rate Cards": "Billing Rates",
-    "rate card": "billing rates",
-    "rate cards": "billing rates",
-    "Time Tracking": "Time Logs",
-    "Rates & Currency": "Billing Rates",
-    // Staff-app only (project create/edit dialogs). Portal has no such dialogs.
-    "project.namePlaceholder": "e.g. Q4 Strategy Engagement",
-    "project.referencePlaceholder": "e.g. ENG-2026-001",
-  },
-  "accounting-za": {
-    Project: "Engagement",
-    Projects: "Engagements",
-    project: "engagement",
-    projects: "engagements",
-    Customer: "Client",
-    Customers: "Clients",
-    customer: "client",
-    customers: "clients",
-    Proposal: "Engagement Letter",
-    Proposals: "Engagement Letters",
-    proposal: "engagement letter",
-    proposals: "engagement letters",
-    "Rate Card": "Fee Schedule",
-    "Rate Cards": "Fee Schedules",
-    "Active Projects": "Active Engagements",
-    "Project Health": "Engagement Health",
-    "Project Profitability": "Engagement Profitability",
-    "Create Customer": "Create Client",
-    "Activate Customer": "Activate Client",
-    "Offboard Customer": "Offboard Client",
-    // Staff-app only (project create/edit dialogs). Portal has no such dialogs.
-    "project.namePlaceholder": "e.g. FY2026 Audit",
-    "project.referencePlaceholder": "e.g. ENG-2026-001",
-  },
   "legal-za": {
     Project: "Matter",
     Projects: "Matters",
@@ -111,41 +67,16 @@ export const TERMINOLOGY_BASE: Record<string, Record<string, string>> = {
 };
 
 /**
- * Portal-only terminology overrides, layered on top of {@link TERMINOLOGY_BASE}.
- *
- * These are intentional client-vs-staff divergences, NOT drift. The portal
- * sidebar seeds its nav labels from a fixed English lexicon
- * (`PORTAL_NAV_LABELS`) and then runs each label through `t()`. For the
- * `accounting-za` profile the seed label is the literal string "Matters", so
- * the portal needs `Matters → Engagements` to display the right word. The staff
- * app never feeds the literal "Matters" through `t()` (its nav starts from the
- * base term "Projects"), so it must NOT carry this mapping. Behaviour pinned by
- * `portal/components/__tests__/portal-sidebar.test.tsx`
- * ("renders 'Engagements' instead of 'Matters' for accounting-za").
- */
-export const PORTAL_TERMINOLOGY_OVERRIDES: Record<string, Record<string, string>> = {
-  "accounting-za": {
-    Matters: "Engagements",
-    matters: "engagements",
-  },
-};
-
-/**
  * The terminology map as seen by the staff app (`frontend`): the base map,
  * unmodified.
  */
 export const TERMINOLOGY: Record<string, Record<string, string>> = TERMINOLOGY_BASE;
 
 /**
- * The terminology map as seen by the customer `portal`: the base map with the
- * portal-only overrides merged in per profile.
+ * The terminology map as seen by the customer `portal`. Phase 86 (ADR-332): with legal-za the
+ * only profile there are no portal-only overrides left, so the portal reads the same map.
  */
-export const PORTAL_TERMINOLOGY: Record<string, Record<string, string>> = Object.fromEntries(
-  Object.entries(TERMINOLOGY_BASE).map(([profile, terms]) => [
-    profile,
-    { ...terms, ...(PORTAL_TERMINOLOGY_OVERRIDES[profile] ?? {}) },
-  ]),
-);
+export const PORTAL_TERMINOLOGY: Record<string, Record<string, string>> = TERMINOLOGY;
 
 /**
  * Resolve the audit tab label, falling back to "Audit" when no terminology

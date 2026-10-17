@@ -6,7 +6,8 @@
  *
  * Prerequisites:
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
- *   2. API lifecycle seed complete: bash compose/seed/lifecycle-test.sh
+ *   2. Seed data present: bash compose/seed/seed.sh (legal-za; run by e2e-up.sh). The accounting
+ *      compose/seed/lifecycle-test.sh was removed in Phase 86 (Epic 604)
  *
  * Run:
  *   PLAYWRIGHT_BASE_URL=http://localhost:3001 npx playwright test documents/document-generation

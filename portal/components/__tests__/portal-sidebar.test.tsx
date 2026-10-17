@@ -111,7 +111,7 @@ describe("PortalSidebar (desktop)", () => {
   });
 });
 
-describe("PortalSidebar terminology (accounting-za)", () => {
+describe("PortalSidebar terminology (legal-za)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -119,14 +119,16 @@ describe("PortalSidebar terminology (accounting-za)", () => {
     cleanup();
   });
 
-  it("renders 'Engagements' instead of 'Matters' for accounting-za", () => {
+  // Phase 86 (ADR-332): legal-za is the only profile and has no portal-only override, so the
+  // seeded "Matters" label passes through t() unchanged.
+  it("renders 'Matters' for legal-za", () => {
     render(
-      <TerminologyProvider verticalProfile="accounting-za">
+      <TerminologyProvider verticalProfile="legal-za">
         <PortalSidebar />
       </TerminologyProvider>,
     );
-    expect(screen.getByText("Engagements")).toBeInTheDocument();
-    expect(screen.queryByText("Matters")).not.toBeInTheDocument();
+    expect(screen.getByText("Matters")).toBeInTheDocument();
+    expect(screen.queryByText("Engagements")).not.toBeInTheDocument();
   });
 });
 

@@ -13,8 +13,8 @@ interface TerminologyTextProps {
  * Placeholders must match keys in the terminology map (case-sensitive).
  *
  * Example: `<TerminologyText template="No {proposals} yet" />`
- * With accounting-za: "No engagement letters yet"
- * Without profile:    "No proposals yet"
+ * With legal-za:   "No engagement letters yet"
+ * Without profile: "No proposals yet"
  *
  * An article token `{a TermKey}` (or `{an TermKey}`) resolves the term first and
  * then emits the matching indefinite article, so vowel-initial substitutions read

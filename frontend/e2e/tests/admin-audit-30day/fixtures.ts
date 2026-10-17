@@ -78,7 +78,6 @@ export interface Day0SeedResult {
   matterId: string;
   matterName: string;
   trustTransactionId?: string;
-  deadlineId?: string;
 }
 
 /**
@@ -86,18 +85,17 @@ export interface Day0SeedResult {
  * via Keycloak/gateway), create a matter (audit eventType `matter.created` /
  * `project.created`), then optionally seed profile-gated state:
  *   - `[legal-za]`   trust deposit  → `trust_transaction.deposited`
- *   - `[accounting-za]` deadline    → `deadline.created`
+ * (Phase 86: the accounting-za deadline seed went with the deadline/ package.)
  *
  * The login event itself is emitted by the natural `loginAs()` flow; the
  * caller drives that separately. This helper handles the API-side seeds only.
  *
- * Audit eventTypes produced: `matter.created`, optional `trust_transaction.deposited`, and
- * optional `deadline.created`.
+ * Audit eventTypes produced: `matter.created` and optional `trust_transaction.deposited`.
  */
 export async function seedDay0LoginAndMatterCreation(
   opts: SeedOpts & {
     matterName?: string;
-    profile?: "legal-za" | "accounting-za" | "consulting-za";
+    profile?: "legal-za";
   }
 ): Promise<Day0SeedResult> {
   const matterName = opts.matterName ?? "Audit Capstone Matter Day 0";
@@ -129,18 +127,6 @@ export async function seedDay0LoginAndMatterCreation(
       if (trustRes.ok()) {
         const tx = (await trustRes.json()) as { id?: string };
         result.trustTransactionId = tx.id;
-      }
-    }
-
-    if (opts.profile === "accounting-za") {
-      // TODO[510B-OR-PHASE-70]: deadlines API path may differ per vertical profile;
-      // confirm endpoint and request shape during 510B integration.
-      const dlRes = await ctx.post(`${API_BASE}/api/deadlines`, {
-        data: { matterId: matter.id, title: "Day 0 capstone deadline" },
-      });
-      if (dlRes.ok()) {
-        const dl = (await dlRes.json()) as { id?: string };
-        result.deadlineId = dl.id;
       }
     }
 

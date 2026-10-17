@@ -683,7 +683,7 @@
 | 599 | Remove `capacity` (Phase 38) + Resources/Utilization UI | Backend + Frontend (split) | 598 | M | 599A, 599B, 599C | **Done** (PR #1570) |
 | 600 | Remove `schedule` recurring half (Phase 16/30), re-home Time Reminders | Backend + Frontend (split) | 599 | M | 600A, 600B, 600C | **Done** (PR #1572) |
 | 601 | Remove `assistant` (Phases 45/52/70), re-home `provider` — AI consolidation | Backend + Frontend (split) | 600 | L | 601A, 601B, 601C, 601D | **Done** (PR #1573) |
-| 602 | Remove PayFast Platform Subscription Path (Phase 57) | Backend + Frontend (split) | 595 (parallel with 596–601) | M | 602A, 602B, 602C | |
+| 602 | Remove PayFast Platform Subscription Path (Phase 57) | Backend + Frontend (split) | 595 (parallel with 596–601) | M | 602A, 602B, 602C | **Done** (PR #1574) |
 | 603 | Remove Thymeleaf Dev Harness (Phase 7) + `docs/` Site (Phase 59) + docsLink policy | Backend + Ops + Frontend (split) | 595 (parallel with 596–602) | M | 603A, 603B, 603C | |
 | 604 | Single Profile: non-legal profiles/packs/seeders/demo, `deadline/`, automation builder, terminology entries | Backend + Frontend + Portal (split) | 601, 602, 603 | L | 604A, 604B, 604C, 604D, 604E, 604F | |
 | 605 | Migration Squash → tenant V1 / global V1 | Backend + Ops | 596–604 merged, `main` verify clean | L | 605A, 605B, 605C | |

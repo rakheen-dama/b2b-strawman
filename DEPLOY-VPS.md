@@ -9,7 +9,7 @@ All commands are copy-pasteable. Placeholder values are in `ALL_CAPS`.
 
 1. [Provision the VPS](#1-provision-the-vps)
 2. [Harden the Server](#2-harden-the-server)
-3. [DNS — 8 A Records](#3-dns--8-a-records)
+3. [DNS — 7 A Records](#3-dns--7-a-records)
 4. [Place Files and Fill `.env.prod`](#4-place-files-and-fill-envprod)
 5. [Repo Secrets (GitHub)](#5-repo-secrets-github)
 6. [First Boot — Build, then Deploy on the Box](#6-first-boot--build-then-deploy-on-the-box)
@@ -89,11 +89,11 @@ From this point the runbook uses `USER@HOST` to mean your operator account and V
 
 ---
 
-## 3. DNS — 8 A Records
+## 3. DNS — 7 A Records
 
 All records are managed in **AWS Route 53**, hosted zone `heykazi.com`.
 
-Create the following 8 A records pointing to the VPS IP (TTL 300 is fine for a dev env):
+Create the following 7 A records pointing to the VPS IP (TTL 300 is fine for a dev env):
 
 | Hostname | Type | Value |
 |---|---|---|
@@ -104,15 +104,6 @@ Create the following 8 A records pointing to the VPS IP (TTL 300 is fine for a d
 | `api-dev.heykazi.com` | A | VPS_IP |
 | `storage-dev.heykazi.com` | A | VPS_IP |
 | `mail-dev.heykazi.com` | A | VPS_IP |
-| `docs.heykazi.com` | A | VPS_IP |
-
-> **Docs site** is the Nextra documentation, self-hosted on this box (static
-> export served by a `caddy:alpine` container, reverse-proxied at `docs.heykazi.com`).
-> It is **not** on Vercel — point the `docs.heykazi.com` A record at the VPS like
-> the others. The frontend's `NEXT_PUBLIC_DOCS_URL` already defaults to
-> `https://docs.heykazi.com`, so the in-app help links + marketing footer resolve
-> with no frontend rebuild. (Note: `docs` has no `-dev` suffix because the
-> frontend image bakes that exact default; keeping it avoids a frontend rebuild.)
 
 Caddy uses HTTP-01 ACME for TLS. Once these records resolve and ports 80/443 are open, certificates issue automatically on first request. You do not need to do anything extra for TLS — watch Caddy logs during first boot to confirm.
 
@@ -222,7 +213,7 @@ Generate the PAT at: GitHub → Settings → Developer settings → Personal acc
 
 1. Go to **GitHub → Actions → deploy-vps**.
 2. Click **Run workflow** → leave `tag` as `dev` → **Run workflow**.
-3. The workflow builds and pushes all five images (backend, gateway, frontend, portal, docs) to GHCR. It does not touch the box.
+3. The workflow builds and pushes all four images (backend, gateway, frontend, portal) to GHCR. It does not touch the box.
 
 ### Step 3 — Deploy on the box
 
@@ -291,10 +282,6 @@ curl -sI https://storage-dev.heykazi.com | head -1
 
 # Mailpit (expect 401 — Caddy basic auth is active)
 curl -sI https://mail-dev.heykazi.com | head -1
-
-# Docs site (expect 200; title "HeyKazi Documentation")
-curl -sI https://docs.heykazi.com | head -1
-curl -s https://docs.heykazi.com/_pagefind/pagefind.js -o /dev/null -w "search index -> %{http_code}\n"
 ```
 
 ### Browser end-to-end
@@ -614,10 +601,10 @@ email theme is cached in production mode — changing `KC_INVITE_BOUNCE_BASE_URL
 If you change `heykazi.com` (or the `-dev` prefix), update every place the host is
 pinned — these are not all driven by a single variable:
 
-- **DNS** — 8 A records (§3).
-- **`compose/caddy/Caddyfile`** — the 8 vhost blocks (incl. `docs.heykazi.com`).
+- **DNS** — 7 A records (§3).
+- **`compose/caddy/Caddyfile`** — the 7 vhost blocks.
 - **`compose/docker-compose.prod.yml`** — `KC_HOSTNAME`, `JWT_ISSUER_URI`/`JWT_JWK_SET_URI`, `AWS_S3_PRESIGNER_ENDPOINT`, `KEYCLOAK_ISSUER`, `FRONTEND_URL`, `APP_BASE_URL`, `PORTAL_BASE_URL`, `CLERK_ISSUER`/`CLERK_JWKS_URI`, `SERVER_SERVLET_SESSION_COOKIE_DOMAIN`, `KC_INVITE_BOUNCE_BASE_URL`, `KAZI_MCP_RESOURCE_URL`.
-- **`.github/workflows/deploy-vps.yml`** — the frontend `NEXT_PUBLIC_*` build args, incl. `NEXT_PUBLIC_DOCS_URL` if docs moves off `docs.heykazi.com` (then rebuild).
+- **`.github/workflows/deploy-vps.yml`** — the frontend `NEXT_PUBLIC_*` build args (then rebuild).
 - **`compose/keycloak/realm-export.json`** — `gateway-bff` redirect URIs / web origins / post-logout, and `mcp-claude` redirect URIs (re-import or edit in the admin console).
 
 ---
@@ -675,7 +662,7 @@ A deploy key is scoped to this one repo — cleaner than a PAT, and it can't wri
 
 ### (b) GitHub Actions minutes become metered
 
-Public repos get **unlimited** Actions minutes; private repos get a monthly free allotment (**2000 min** on the Free plan; more on Pro/Team). The `deploy-vps` workflow builds 5 images (~6–15 min/run). Occasional deploys stay well under the cap — just don't trigger it in a tight loop. (The box-pull model already keeps re-deploys off CI; only the image build runs there.)
+Public repos get **unlimited** Actions minutes; private repos get a monthly free allotment (**2000 min** on the Free plan; more on Pro/Team). The `deploy-vps` workflow builds 4 images (~6–15 min/run). Occasional deploys stay well under the cap — just don't trigger it in a tight loop. (The box-pull model already keeps re-deploys off CI; only the image build runs there.)
 
 ### (c) GHCR image pull — needs a `read:packages` token
 
@@ -733,4 +720,4 @@ The `DATABASE_URL` and `DATABASE_MIGRATION_URL` env vars embed `user=` and `pass
 
 ---
 
-*Runbook version: 2026-06-21 (§12 split-subdomain troubleshooting — PRs #1467–#1469; self-hosted docs site #1478; box-pull deploy #1479; §13 Going Private). Artifacts: `compose/docker-compose.prod.yml`, `compose/.env.prod.example`, `compose/caddy/Caddyfile`, `compose/scripts/deploy.sh`, `compose/scripts/keycloak-bootstrap.sh`, `docs/Dockerfile`, `.github/workflows/deploy-vps.yml`.*
+*Runbook version: 2026-06-21 (§12 split-subdomain troubleshooting — PRs #1467–#1469; self-hosted docs site #1478; box-pull deploy #1479; §13 Going Private; docs site removed Phase 86 Epic 603). Artifacts: `compose/docker-compose.prod.yml`, `compose/.env.prod.example`, `compose/caddy/Caddyfile`, `compose/scripts/deploy.sh`, `compose/scripts/keycloak-bootstrap.sh`, `.github/workflows/deploy-vps.yml`.*

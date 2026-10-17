@@ -1,29 +1,23 @@
 package io.b2mash.b2b.b2bstrawman.billing;
 
 /**
- * Payment method dimension for subscriptions. Determines which lifecycle rules apply and whether
- * admin intervention is required for state transitions.
+ * Billing arrangement for a tenant subscription (ADR-223, ADR-335). Manual firm-level billing is
+ * the only model — every method is admin-managed through {@code AdminBillingController} / {@code
+ * PlatformBillingController}. Determines which lifecycle rules apply.
  */
 public enum BillingMethod {
-  PAYFAST,
   DEBIT_ORDER,
   PILOT,
   COMPLIMENTARY,
   MANUAL;
 
   /**
-   * Returns true if this billing method requires admin management (not self-service via PayFast).
-   */
-  public boolean isAdminManaged() {
-    return this != PAYFAST;
-  }
-
-  /**
-   * Returns true if this billing method allows trial auto-expiry. Only PAYFAST (self-service) and
-   * MANUAL (default) subscriptions expire automatically when the trial ends.
+   * Returns true if this billing method allows trial auto-expiry. Only MANUAL (the default for new
+   * subscriptions) expires automatically when the trial ends; DEBIT_ORDER, PILOT and COMPLIMENTARY
+   * trials are extended or activated by a platform admin.
    */
   public boolean isTrialAutoExpiring() {
-    return this == PAYFAST || this == MANUAL;
+    return this == MANUAL;
   }
 
   /**

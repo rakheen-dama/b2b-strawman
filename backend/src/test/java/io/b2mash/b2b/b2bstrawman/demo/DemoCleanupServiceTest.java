@@ -108,18 +108,6 @@ class DemoCleanupServiceTest {
   }
 
   @Test
-  void cleanup_rejectsPayfastBillingMethod() {
-    UUID orgId = provisionTestTenant("payfast", BillingMethod.PAYFAST);
-    String orgName = organizationRepository.findById(orgId).orElseThrow().getName();
-
-    assertThrows(
-        ForbiddenException.class, () -> demoCleanupService.cleanup(orgId, orgName, "test-admin"));
-
-    // Verify org is NOT deleted
-    assertTrue(organizationRepository.findById(orgId).isPresent());
-  }
-
-  @Test
   void cleanup_rejectsManualBillingMethod() {
     UUID orgId = provisionTestTenant("manual", BillingMethod.MANUAL);
     String orgName = organizationRepository.findById(orgId).orElseThrow().getName();

@@ -616,7 +616,7 @@ pinned — these are not all driven by a single variable:
 
 - **DNS** — 8 A records (§3).
 - **`compose/caddy/Caddyfile`** — the 8 vhost blocks (incl. `docs.heykazi.com`).
-- **`compose/docker-compose.prod.yml`** — `KC_HOSTNAME`, `JWT_ISSUER_URI`/`JWT_JWK_SET_URI`, `AWS_S3_PRESIGNER_ENDPOINT`, `KEYCLOAK_ISSUER`, `FRONTEND_URL`, `APP_BASE_URL`, `PORTAL_BASE_URL`, `HEYKAZI_BASE_URL`/`HEYKAZI_FRONTEND_URL`, `CLERK_ISSUER`/`CLERK_JWKS_URI`, `SERVER_SERVLET_SESSION_COOKIE_DOMAIN`, `KC_INVITE_BOUNCE_BASE_URL`, `KAZI_MCP_RESOURCE_URL`.
+- **`compose/docker-compose.prod.yml`** — `KC_HOSTNAME`, `JWT_ISSUER_URI`/`JWT_JWK_SET_URI`, `AWS_S3_PRESIGNER_ENDPOINT`, `KEYCLOAK_ISSUER`, `FRONTEND_URL`, `APP_BASE_URL`, `PORTAL_BASE_URL`, `CLERK_ISSUER`/`CLERK_JWKS_URI`, `SERVER_SERVLET_SESSION_COOKIE_DOMAIN`, `KC_INVITE_BOUNCE_BASE_URL`, `KAZI_MCP_RESOURCE_URL`.
 - **`.github/workflows/deploy-vps.yml`** — the frontend `NEXT_PUBLIC_*` build args, incl. `NEXT_PUBLIC_DOCS_URL` if docs moves off `docs.heykazi.com` (then rebuild).
 - **`compose/keycloak/realm-export.json`** — `gateway-bff` redirect URIs / web origins / post-logout, and `mcp-claude` redirect URIs (re-import or edit in the admin console).
 

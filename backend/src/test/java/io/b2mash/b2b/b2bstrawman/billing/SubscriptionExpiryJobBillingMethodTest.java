@@ -66,19 +66,6 @@ class SubscriptionExpiryJobBillingMethodTest {
   }
 
   @Test
-  void trialExpiry_processesPayfastSubscriptions() {
-    var sub = createSubscriptionInTrialing(BillingMethod.PAYFAST);
-    sub.setTrialEndsAt(Instant.now().minus(Duration.ofDays(1)));
-    subscriptionRepository.saveAndFlush(sub);
-
-    expiryJob.processTrialExpiry();
-
-    var updated = subscriptionRepository.findByOrganizationId(organization.getId()).orElseThrow();
-    assertThat(updated.getSubscriptionStatus()).isEqualTo(Subscription.SubscriptionStatus.EXPIRED);
-    assertThat(updated.getGraceEndsAt()).isNotNull();
-  }
-
-  @Test
   void trialExpiry_skipsPilotSubscriptions() {
     var sub = createSubscriptionInTrialing(BillingMethod.PILOT);
     sub.setTrialEndsAt(Instant.now().minus(Duration.ofDays(1)));

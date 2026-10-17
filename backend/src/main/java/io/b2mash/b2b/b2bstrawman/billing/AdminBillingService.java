@@ -127,12 +127,6 @@ public class AdminBillingService {
         throw new InvalidStateException(
             "Invalid billing method", "Unknown billing method: " + request.billingMethod());
       }
-      // Validate: cannot set PAYFAST without existing PayFast token
-      if (newMethod == BillingMethod.PAYFAST && sub.getPayfastToken() == null) {
-        throw new InvalidStateException(
-            "Invalid billing method",
-            "Cannot set billing method to PAYFAST without an existing PayFast token");
-      }
       auditDetails.put("previous_billing_method", sub.getBillingMethod().name());
       auditDetails.put("new_billing_method", newMethod.name());
       sub.setBillingMethod(newMethod);

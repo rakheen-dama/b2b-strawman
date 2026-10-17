@@ -26,7 +26,6 @@ const baseProps = {
   lifecyclePrompt: null,
   unbilledTimeData: null,
   templateReadiness: null,
-  pendingSuggestions: null,
   ficaPanel: null,
   customerName: "Acme Corp",
   lifecycleStatus: null,
@@ -133,18 +132,15 @@ describe("ClientOverviewTab", () => {
     expect(screen.getByText("Everything looks good — 3 linked projects.")).toBeInTheDocument();
   });
 
-  // Test 5: Renders AI suggestion and FICA panels when provided
-  it("renders AI suggestion and FICA panels when provided", () => {
+  // Test 5: Renders FICA panel when provided
+  it("renders FICA panel when provided", () => {
     render(
       <ClientOverviewTab
         {...baseProps}
-        pendingSuggestions={<div data-testid="ai-suggestions">AI Suggestions Content</div>}
         ficaPanel={<div data-testid="fica-panel">FICA Verification Content</div>}
       />
     );
 
-    expect(screen.getByTestId("ai-suggestions")).toBeInTheDocument();
-    expect(screen.getByText("AI Suggestions Content")).toBeInTheDocument();
     expect(screen.getByTestId("fica-panel")).toBeInTheDocument();
     expect(screen.getByText("FICA Verification Content")).toBeInTheDocument();
   });

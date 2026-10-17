@@ -154,7 +154,6 @@ const overviewBaseProps = {
   lifecyclePrompt: null,
   unbilledTimeData: null,
   templateReadiness: null,
-  pendingSuggestions: null,
   ficaPanel: null,
   customerName: "Acme Corporation",
   lifecycleStatus: "ACTIVE" as const,

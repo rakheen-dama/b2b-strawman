@@ -67,7 +67,6 @@ import {
 import { RequestList } from "@/components/information-requests/request-list";
 import { CreateRequestDialog } from "@/components/information-requests/create-request-dialog";
 import { isXeroConnected } from "@/lib/api/integrations";
-import { PendingSuggestionsWidget } from "@/components/assistant/queue/pending-suggestions-widget";
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { checkPrerequisites } from "@/lib/prerequisites";
 import type { PrerequisiteCheck } from "@/components/prerequisite/types";
@@ -635,9 +634,6 @@ export default async function CustomerDetailPage({
                     baseHref: `/org/${slug}/customers/${id}`,
                   }
                 : null
-            }
-            pendingSuggestions={
-              <PendingSuggestionsWidget contextEntityType="customer" contextEntityId={id} />
             }
             ficaPanel={
               caps.capabilities.includes("AI_EXECUTE") &&

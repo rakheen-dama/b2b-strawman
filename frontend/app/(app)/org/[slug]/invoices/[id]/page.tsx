@@ -29,7 +29,6 @@ import { TerminologyText } from "@/components/terminology-text";
 import { XeroStatusChip } from "@/components/invoices/XeroStatusChip";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { PendingSuggestionsWidget } from "@/components/assistant/queue/pending-suggestions-widget";
 import { CollectionsHistoryTable } from "@/components/collections/collections-history-table";
 import { getInvoiceActivities, type CollectionActivityResponse } from "@/lib/api/collections";
 
@@ -202,9 +201,6 @@ export default async function InvoiceDetailPage({
           emptyMessage="No collection activity for this invoice yet."
         />
       </div>
-
-      {/* Pending AI Suggestions */}
-      <PendingSuggestionsWidget contextEntityType="invoice" contextEntityId={id} />
 
       {/* Audit Trail (Epic 507A) — capability-gated client-side */}
       <InvoiceAuditSection invoiceId={id} />

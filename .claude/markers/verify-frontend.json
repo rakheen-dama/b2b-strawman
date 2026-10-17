@@ -1,7 +1,7 @@
 {
-  "commit": "e8a6fd99e",
+  "commit": "93201091f",
   "command": "cd frontend && pnpm run lint && rm -rf .next && pnpm run build && caffeinate -is pnpm test && pnpm run format:check",
   "exit": 0,
-  "ts": "2026-10-17T13:57:45Z",
-  "summary": "Epic 602 / PR #1574 head e8a6fd99e (orchestrator re-run): lint 0 errors (97 pre-existing warnings); build OK (clean .next); vitest 355 files, 2243 passed | 2 skipped; prettier clean. Frontend CI pass."
+  "ts": "2026-10-17T20:52:41Z",
+  "summary": "Epic 603 / PR #1575 head 93201091f (orchestrator re-run): lint 0 errors; build OK (clean .next); vitest 354 files, 2236 passed | 2 skipped; prettier clean. -1 file / -7 tests vs Epic 602 = deleted docs-integration.test.tsx and the EmptyState external-link test. Frontend CI pass."
 }

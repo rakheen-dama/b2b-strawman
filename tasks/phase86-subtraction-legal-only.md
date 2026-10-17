@@ -30,7 +30,7 @@ See the final section "Open Questions / verify-at-build-time" — every `verify`
 | 600 | Remove `schedule` recurring half (Phase 16/30), re-home Time Reminders | Backend + Frontend (split) | 599 | M | 600A, 600B, 600C | **Done** (PR #1572) |
 | 601 | Remove `assistant` (Phases 45/52/70), re-home `provider` — AI consolidation | Backend + Frontend (split) | 600 | L | 601A, 601B, 601C, 601D | **Done** (PR #1573) |
 | 602 | Remove PayFast Platform Subscription Path (Phase 57) | Backend + Frontend (split) | 595 (parallel with 596–601) | M | 602A, 602B, 602C | **Done** (PR #1574) |
-| 603 | Remove Thymeleaf Dev Harness (Phase 7) + `docs/` Site (Phase 59) + docsLink policy | Backend + Ops + Frontend (split) | 595 (parallel with 596–602) | M | 603A, 603B, 603C | Not started |
+| 603 | Remove Thymeleaf Dev Harness (Phase 7) + `docs/` Site (Phase 59) + docsLink policy | Backend + Ops + Frontend (split) | 595 (parallel with 596–602) | M | 603A, 603B, 603C | **Done** (PR #1575) |
 | 604 | Single Profile: non-legal profiles/packs/seeders/demo, `deadline/`, automation builder, terminology entries | Backend + Frontend + Portal (split) | 601, 602, 603 | L | 604A, 604B, 604C, 604D, 604E, 604F | Not started |
 | 605 | Migration Squash → tenant V1 / global V1 | Backend + Ops | 596–604 merged, `main` verify clean | L | 605A, 605B, 605C | Not started |
 | 606 | Documentation Sweep + ADR Supersession + QA Capstone | Docs + E2E/Process | 605 | M | 606A, 606B, 606C | Not started |
@@ -139,9 +139,9 @@ KEPT (never touched by any slice — the compiler and McpReadOnlyRegistryTest gu
 | 1∥a | **602A** | Delete `billing/payfast/**`, ITN controller/service, `SubscriptionPayment(+Repository)`, `SubscribeResponse`, `PaymentResponse`, 2 tests; global `V28__drop_payfast_subscription.sql` (UPDATE PAYFAST→MANUAL first); `BillingController:28-44`, `SubscriptionService`, `Subscription` PayFast columns, `BillingProperties:12-15,24-27`, `BillingConfig`, `SecurityConfig:142-143`, `application.yml:179-193`, `application-local.yml:110-117`, `BillingPropertiesTest`, `BillingControllerIntegrationTest`. | **Done** (PR #1574) |
 | 1∥b | **602B** | `BillingMethod.PAYFAST` + `isTrialAutoExpiring`/`isAdminManaged`, `BillingResponse:35-36,51`, `SubscriptionExpiryJob:85`, `AdminBillingService:130-134`; `SubscriptionLifecycleTest` truth table; `SubscriptionGuardWithoutPayFastTest`; compose `.env.prod.example:48-54`, `docker-compose.prod.yml:135-138`, `DEPLOY-VPS.md` PayFast rows (verify). | **Done** (PR #1574) |
 | 1∥c | **602C** | (Frontend) `components/billing/{subscribe-button,payfast-result-poller,payment-history,method-badge}` (+tests), `subscription-banner` CTA, `settings/billing/page.tsx` + `actions.ts`, `lib/internal-api.ts`, `lib/types/settings.ts`, `lib/subscription-context.tsx`, `lib/billing-utils.ts` (if sole use), marketing integrations-section, `nav-items.ts:389-393`, `layout.tsx:23`. | **Done** (PR #1574) |
-| 1∥d | **603A** | Delete `dev/DevPortalController`, 3 Thymeleaf templates (keep `mock-payment.html`); `CustomerAuthFilter:35-38,132-136`, `SecurityConfig:112` comment, `TenantScopeBindingTest:128`, `backend/CLAUDE.md:155,402-440`. | 596–602 |
-| 1∥e | **603B** | Delete `docs/**`; `pnpm-workspace.yaml:2` + lockfile regen; `deploy-vps.yml:76-82`; `docker-compose.prod.yml:216-229,247`; `caddy/Caddyfile:29-31`; `DEPLOY-VPS.md:107-114,225,296-297,618-620,736`; `frontend/.env.local.example` `NEXT_PUBLIC_DOCS_URL`. | 596–602 |
-| 1∥f | **603C** | (Frontend) delete `lib/docs.ts` + `__tests__/docs-integration.test.tsx`; remove 16 `docsLink` call sites (exact list confirmed: `nav-items.ts:34,363,376-381`, `customers/page.tsx:297`, `invoices/page.tsx:226`, `projects/page.tsx:255`, `reports/page.tsx:49`, `proposals/page.tsx`, `resources/page.tsx`, `help-tip.tsx:35`, `tasks/time-entry-list.tsx:88`, `tasks/task-list-panel.tsx:317`, `information-requests/request-list.tsx:22`, `marketing/nav-bar.tsx:27`, `marketing/footer.tsx:10`, `automations/rule-list.tsx:147`, `documents/documents-panel.tsx:409`, `assistant/empty-state.tsx`); nav test. | 596–602 |
+| 1∥d | **603A** | Delete `dev/DevPortalController`, 3 Thymeleaf templates (keep `mock-payment.html`); `CustomerAuthFilter:35-38,132-136`, `SecurityConfig:112` comment, `TenantScopeBindingTest:128`, `backend/CLAUDE.md:155,402-440`. | 596–602 **Done** (PR #1575) |
+| 1∥e | **603B** | Delete `docs/**`; `pnpm-workspace.yaml:2` + lockfile regen; `deploy-vps.yml:76-82`; `docker-compose.prod.yml:216-229,247`; `caddy/Caddyfile:29-31`; `DEPLOY-VPS.md:107-114,225,296-297,618-620,736`; `frontend/.env.local.example` `NEXT_PUBLIC_DOCS_URL`. | 596–602 **Done** (PR #1575) |
+| 1∥f | **603C** | (Frontend) delete `lib/docs.ts` + `__tests__/docs-integration.test.tsx`; remove 16 `docsLink` call sites (exact list confirmed: `nav-items.ts:34,363,376-381`, `customers/page.tsx:297`, `invoices/page.tsx:226`, `projects/page.tsx:255`, `reports/page.tsx:49`, `proposals/page.tsx`, `resources/page.tsx`, `help-tip.tsx:35`, `tasks/time-entry-list.tsx:88`, `tasks/task-list-panel.tsx:317`, `information-requests/request-list.tsx:22`, `marketing/nav-bar.tsx:27`, `marketing/footer.tsx:10`, `automations/rule-list.tsx:147`, `documents/documents-panel.tsx:409`, `assistant/empty-state.tsx`); nav test. | 596–602 **Done** (PR #1575) |
 
 ### Stage 2 — Single profile (serial)
 
@@ -660,9 +660,9 @@ KEPT (never touched by any slice — the compiler and McpReadOnlyRegistryTest gu
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **603A** | 603A.1–603A.2 | ~5 edits (+4 deletions) | Dev harness removal; `CustomerAuthFilter` + `SecurityConfig` comment + ArchUnit exemption + `backend/CLAUDE.md` harness section. |
-| **603B** | 603B.1–603B.2 | ~8 edits (+76 deletions) | `docs/` removal; workspace/lockfile; CI; compose; Caddy; `DEPLOY-VPS.md`; env example. |
-| **603C** | 603C.1–603C.2 | ~14 one-line edits (+2 deletions) | `docs.ts` + test deleted; 16 `docsLink` sites; Help nav item; `help-tip.tsx` `docsPath` prop. |
+| **603A** | 603A.1–603A.2 | ~5 edits (+4 deletions) | Dev harness removal; `CustomerAuthFilter` + `SecurityConfig` comment + ArchUnit exemption + `backend/CLAUDE.md` harness section. **Done** (PR #1575) |
+| **603B** | 603B.1–603B.2 | ~8 edits (+76 deletions) | `docs/` removal; workspace/lockfile; CI; compose; Caddy; `DEPLOY-VPS.md`; env example. **Done** (PR #1575) |
+| **603C** | 603C.1–603C.2 | ~14 one-line edits (+2 deletions) | `docs.ts` + test deleted; 16 `docsLink` sites; Help nav item; `help-tip.tsx` `docsPath` prop. **Done** (PR #1575) |
 
 ### Tasks
 

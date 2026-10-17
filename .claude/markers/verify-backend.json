@@ -1,7 +1,7 @@
 {
-  "commit": "eac46be8f",
+  "commit": "93201091f",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-17T13:57:45Z",
-  "summary": "Epic 602 / PR #1574 (backend head eac46be8f; later fix e8a6fd99e is frontend-only): 5411 testcases / 0 failures / 0 errors / 26 skipped. -27 vs 5438 Epic 601 baseline (deleted PayFast platform-subscription tests, net of new SubscriptionGuardWithoutPayFastTest). Log /tmp/mvn-602-final.log."
+  "ts": "2026-10-17T20:52:41Z",
+  "summary": "Epic 603 / PR #1575 final head 93201091f (orchestrator run): 5411 testcases / 0 failures / 0 errors / 26 skipped. Delta 0 vs the Epic 602 baseline of 5411 (tests retargeted to mock-payment, none deleted). Backend CI pass on the same SHA. Log /tmp/mvn-603-final.log."
 }

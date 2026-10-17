@@ -331,7 +331,7 @@ export const UTILITY_ITEMS: NavItem[] = [
 export const SETTINGS_ITEMS: SettingsItem[] = [
   {
     title: "Billing",
-    description: "Manage your subscription and view usage",
+    description: "View your billing method and status",
     href: (slug) => `/org/${slug}/settings/billing`,
   },
   {

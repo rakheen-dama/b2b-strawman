@@ -54,10 +54,7 @@ class BillingControllerIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("TRIALING"))
-        .andExpect(jsonPath("$.canSubscribe").value(true))
-        .andExpect(jsonPath("$.canCancel").value(false))
         .andExpect(jsonPath("$.billingMethod").value("MANUAL"))
-        .andExpect(jsonPath("$.adminManaged").value(true))
         .andExpect(jsonPath("$.adminNote").isEmpty());
   }
 
@@ -67,8 +64,8 @@ class BillingControllerIntegrationTest {
   }
 
   @Test
-  void getSubscription_pilotCannotSubscribe() throws Exception {
-    // Set billing method to PILOT — canSubscribe should be false
+  void getSubscription_reflectsPilotBillingMethod() throws Exception {
+    // Set billing method to PILOT — the response reflects the admin-set billing method
     var org = organizationRepository.findByClerkOrgId(ORG_ID).orElseThrow();
     var sub = subscriptionRepository.findByOrganizationId(org.getId()).orElseThrow();
     var originalMethod = sub.getBillingMethod();
@@ -81,55 +78,12 @@ class BillingControllerIntegrationTest {
               get("/api/billing/subscription")
                   .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ctrl_owner")))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.billingMethod").value("PILOT"))
-          .andExpect(jsonPath("$.adminManaged").value(true))
-          .andExpect(jsonPath("$.canSubscribe").value(false));
+          .andExpect(jsonPath("$.billingMethod").value("PILOT"));
     } finally {
       // Restore original billing method
       sub.setBillingMethod(originalMethod);
       subscriptionRepository.saveAndFlush(sub);
     }
-  }
-
-  // --- POST /api/billing/subscribe ---
-
-  @Test
-  void subscribe_withOwner_returns200() throws Exception {
-    mockMvc
-        .perform(
-            post("/api/billing/subscribe").with(TestJwtFactory.ownerJwt(ORG_ID, "user_ctrl_owner")))
-        .andExpect(status().isOk());
-  }
-
-  @Test
-  void subscribe_withMember_returns403() throws Exception {
-    mockMvc
-        .perform(
-            post("/api/billing/subscribe")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_ctrl_member", "member")))
-        .andExpect(status().isForbidden());
-  }
-
-  // --- POST /api/billing/cancel ---
-
-  @Test
-  void cancel_whenTrialing_returns400() throws Exception {
-    // Subscription starts TRIALING — cancel should fail
-    mockMvc
-        .perform(
-            post("/api/billing/cancel").with(TestJwtFactory.ownerJwt(ORG_ID, "user_ctrl_owner")))
-        .andExpect(status().isBadRequest());
-  }
-
-  // --- GET /api/billing/payments ---
-
-  @Test
-  void getPayments_withOwner_returnsEmptyPage() throws Exception {
-    mockMvc
-        .perform(
-            get("/api/billing/payments").with(TestJwtFactory.ownerJwt(ORG_ID, "user_ctrl_owner")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content").isArray());
   }
 
   // --- POST /internal/billing/extend-trial ---

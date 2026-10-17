@@ -226,10 +226,6 @@ public class DemoCleanupService {
       transactionTemplate.executeWithoutResult(
           tx -> {
             // Order matters due to FK constraints: children before parents
-            jdbcTemplate.update(
-                "DELETE FROM subscription_payments WHERE subscription_id IN "
-                    + "(SELECT id FROM subscriptions WHERE organization_id = ?)",
-                orgId);
             jdbcTemplate.update("DELETE FROM subscriptions WHERE organization_id = ?", orgId);
             jdbcTemplate.update(
                 "DELETE FROM org_schema_mapping WHERE external_org_id = ?", externalOrgId);

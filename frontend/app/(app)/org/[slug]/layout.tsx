@@ -89,14 +89,10 @@ export default async function OrgLayout({
     trialEndsAt: null,
     currentPeriodEnd: null,
     graceEndsAt: null,
-    nextBillingAt: null,
     monthlyAmountCents: 0,
     currency: "ZAR",
     limits: { maxMembers: 5, currentMembers: 0 },
-    canSubscribe: false,
-    canCancel: false,
-    billingMethod: "PAYFAST",
-    adminManaged: false,
+    billingMethod: "MANUAL",
     adminNote: null,
   };
 

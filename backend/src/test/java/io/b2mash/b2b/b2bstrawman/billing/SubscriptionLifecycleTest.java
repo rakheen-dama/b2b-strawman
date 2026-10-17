@@ -131,4 +131,21 @@ class SubscriptionLifecycleTest {
     assertThatThrownBy(() -> sub.transitionTo(SubscriptionStatus.TRIALING))
         .isInstanceOf(InvalidStateException.class);
   }
+
+  // --- BillingMethod.isTrialAutoExpiring truth table (Epic 602, ADR-335) ---
+
+  @Test
+  void billingMethod_isTheManualFirmLevelSet() {
+    assertThat(BillingMethod.values())
+        .extracting(Enum::name)
+        .containsExactlyInAnyOrder("DEBIT_ORDER", "PILOT", "COMPLIMENTARY", "MANUAL");
+  }
+
+  @Test
+  void isTrialAutoExpiring_trueOnlyForManual() {
+    assertThat(BillingMethod.MANUAL.isTrialAutoExpiring()).isTrue();
+    assertThat(BillingMethod.DEBIT_ORDER.isTrialAutoExpiring()).isFalse();
+    assertThat(BillingMethod.PILOT.isTrialAutoExpiring()).isFalse();
+    assertThat(BillingMethod.COMPLIMENTARY.isTrialAutoExpiring()).isFalse();
+  }
 }

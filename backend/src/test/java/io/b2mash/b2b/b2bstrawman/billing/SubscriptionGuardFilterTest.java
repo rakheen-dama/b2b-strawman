@@ -72,18 +72,15 @@ class SubscriptionGuardFilterTest {
   @Test
   void trialing_post_passes() throws Exception {
     setSubscriptionStatus(Subscription.SubscriptionStatus.TRIALING);
-    // POST to billing endpoint — should pass (TRIALING allows writes)
+    // POST to a guarded write endpoint — should pass (TRIALING allows writes); the same request is
+    // 403'd in GRACE_PERIOD (gracePeriod_post_blocked), so the pair proves the guard toggles.
     mockMvc
         .perform(
-            post("/api/billing/subscribe")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner")))
-        .andExpect(
-            result -> {
-              int s = result.getResponse().getStatus();
-              // Should NOT be 403 from the guard filter
-              assert s != 403
-                  || !result.getResponse().getContentAsString().contains("subscription_required");
-            });
+            post("/api/projects")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\": \"Test\"}"))
+        .andExpect(status().isCreated());
   }
 
   // --- ACTIVE ---
@@ -93,14 +90,11 @@ class SubscriptionGuardFilterTest {
     setSubscriptionStatus(Subscription.SubscriptionStatus.ACTIVE);
     mockMvc
         .perform(
-            post("/api/billing/subscribe")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner")))
-        .andExpect(
-            result -> {
-              int s = result.getResponse().getStatus();
-              assert s != 403
-                  || !result.getResponse().getContentAsString().contains("subscription_required");
-            });
+            post("/api/projects")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\": \"Test\"}"))
+        .andExpect(status().isCreated());
   }
 
   // --- GRACE_PERIOD ---
@@ -157,10 +151,12 @@ class SubscriptionGuardFilterTest {
   @Test
   void gracePeriod_billingPath_passes() throws Exception {
     setSubscriptionStatus(Subscription.SubscriptionStatus.GRACE_PERIOD);
-    // POST to billing path should pass even in GRACE_PERIOD
+    // POST to the billing path passes the guard even in GRACE_PERIOD (/api/billing/ prefix is
+    // exempt). GET /api/billing/subscription is the only surviving billing route, so the dispatcher
+    // answers 405 — not the guard's 403 subscription_required.
     mockMvc
         .perform(
-            post("/api/billing/subscribe")
+            post("/api/billing/subscription")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner")))
         .andExpect(
             result -> {

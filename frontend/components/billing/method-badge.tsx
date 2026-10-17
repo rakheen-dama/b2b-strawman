@@ -1,13 +1,11 @@
 import { Badge } from "@b2mash/ui/badge";
 
-const methodVariantMap: Record<string, "success" | "neutral" | "pro"> = {
-  PAYFAST: "success",
+const methodVariantMap: Record<string, "neutral" | "pro"> = {
   COMPLIMENTARY: "pro",
   MANUAL: "neutral",
 };
 
 const methodLabelMap: Record<string, string> = {
-  PAYFAST: "PayFast",
   PILOT: "Pilot",
   COMPLIMENTARY: "Complimentary",
   DEBIT_ORDER: "Debit Order",

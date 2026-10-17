@@ -75,8 +75,7 @@ class SubscriptionIntegrationTest {
         .andExpect(jsonPath("$.status").value("TRIALING"))
         .andExpect(jsonPath("$.limits.maxMembers").value(10))
         .andExpect(jsonPath("$.limits.currentMembers").value(1))
-        .andExpect(jsonPath("$.billingMethod").value("MANUAL"))
-        .andExpect(jsonPath("$.adminManaged").value(true));
+        .andExpect(jsonPath("$.billingMethod").value("MANUAL"));
   }
 
   // --- 3. POST /internal/billing/set-plan is accepted (no-op after Tier removal) ---

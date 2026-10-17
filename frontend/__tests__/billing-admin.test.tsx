@@ -81,11 +81,11 @@ describe("StatusBadge", () => {
 describe("MethodBadge", () => {
   afterEach(() => cleanup());
 
-  it("renders PAYFAST with success variant", () => {
-    render(<MethodBadge method="PAYFAST" />);
-    const badge = screen.getByText("PayFast");
+  it("renders DEBIT_ORDER with teal styling", () => {
+    render(<MethodBadge method="DEBIT_ORDER" />);
+    const badge = screen.getByText("Debit Order");
     expect(badge).toBeInTheDocument();
-    expect(badge.getAttribute("data-variant")).toBe("success");
+    expect(badge.className).toContain("bg-teal-100");
   });
 
   it("renders MANUAL with neutral variant", () => {

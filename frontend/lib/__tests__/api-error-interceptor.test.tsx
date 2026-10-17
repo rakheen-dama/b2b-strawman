@@ -24,7 +24,7 @@ describe("API Error Interceptor — subscription 403 detection", () => {
     const error = makeApiError(403, "subscription_required");
     const result = classifyError(error);
     expect(result.category).toBe("subscriptionRequired");
-    expect(result.action).toBe("subscribeBilling");
+    expect(result.action).toBe("contactAdmin");
     expect(result.retryable).toBe(false);
   });
 
@@ -32,7 +32,7 @@ describe("API Error Interceptor — subscription 403 detection", () => {
     const error = makeApiError(403, "subscription_locked");
     const result = classifyError(error);
     expect(result.category).toBe("subscriptionLocked");
-    expect(result.action).toBe("subscribeBilling");
+    expect(result.action).toBe("contactAdmin");
     expect(result.retryable).toBe(false);
   });
 

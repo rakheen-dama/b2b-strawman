@@ -42,7 +42,6 @@ const STATUS_FILTER_OPTIONS = [
 
 const METHOD_FILTER_OPTIONS = [
   { value: ALL_VALUE, label: "All Methods" },
-  { value: "PAYFAST", label: "PayFast" },
   { value: "DEBIT_ORDER", label: "Debit Order" },
   { value: "PILOT", label: "Pilot" },
   { value: "COMPLIMENTARY", label: "Complimentary" },

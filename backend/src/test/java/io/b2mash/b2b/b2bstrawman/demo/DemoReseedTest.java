@@ -191,12 +191,12 @@ class DemoReseedTest {
   }
 
   @Test
-  void reseed_rejectedForPayfastBillingMethod() {
-    // Change billing method to PAYFAST
+  void reseed_rejectedForDebitOrderBillingMethod() {
+    // Change billing method to DEBIT_ORDER
     txTemplate.executeWithoutResult(
         tx -> {
           Subscription sub = subscriptionRepository.findByOrganizationId(orgId).orElseThrow();
-          sub.setBillingMethod(BillingMethod.PAYFAST);
+          sub.setBillingMethod(BillingMethod.DEBIT_ORDER);
           subscriptionRepository.save(sub);
         });
 

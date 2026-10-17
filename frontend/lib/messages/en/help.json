@@ -125,8 +125,8 @@
   },
   "billing": {
     "overview": {
-      "title": "Billing & subscription",
-      "body": "Manage your subscription plan, payment method, and view billing history."
+      "title": "Billing",
+      "body": "View your billing method and subscription status. Billing is managed by your administrator."
     }
   },
   "onboarding": {

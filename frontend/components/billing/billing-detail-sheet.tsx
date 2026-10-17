@@ -36,7 +36,6 @@ const STATUS_OPTIONS = [
 ] as const;
 
 const METHOD_OPTIONS = [
-  { value: "PAYFAST", label: "PayFast" },
   { value: "DEBIT_ORDER", label: "Debit Order" },
   { value: "PILOT", label: "Pilot" },
   { value: "COMPLIMENTARY", label: "Complimentary" },

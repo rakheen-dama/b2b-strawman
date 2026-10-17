@@ -28,36 +28,6 @@ class BillingMethodTest {
   }
 
   @Test
-  void isAdminManaged_trueForDebitOrder() {
-    assertThat(BillingMethod.DEBIT_ORDER.isAdminManaged()).isTrue();
-  }
-
-  @Test
-  void isAdminManaged_trueForPilot() {
-    assertThat(BillingMethod.PILOT.isAdminManaged()).isTrue();
-  }
-
-  @Test
-  void isAdminManaged_trueForComplimentary() {
-    assertThat(BillingMethod.COMPLIMENTARY.isAdminManaged()).isTrue();
-  }
-
-  @Test
-  void isAdminManaged_trueForManual() {
-    assertThat(BillingMethod.MANUAL.isAdminManaged()).isTrue();
-  }
-
-  @Test
-  void isAdminManaged_falseForPayfast() {
-    assertThat(BillingMethod.PAYFAST.isAdminManaged()).isFalse();
-  }
-
-  @Test
-  void isTrialAutoExpiring_trueForPayfast() {
-    assertThat(BillingMethod.PAYFAST.isTrialAutoExpiring()).isTrue();
-  }
-
-  @Test
   void isTrialAutoExpiring_trueForManual() {
     assertThat(BillingMethod.MANUAL.isTrialAutoExpiring()).isTrue();
   }
@@ -85,11 +55,6 @@ class BillingMethodTest {
   @Test
   void isCleanupEligible_trueForComplimentary() {
     assertThat(BillingMethod.COMPLIMENTARY.isCleanupEligible()).isTrue();
-  }
-
-  @Test
-  void isCleanupEligible_falseForPayfast() {
-    assertThat(BillingMethod.PAYFAST.isCleanupEligible()).isFalse();
   }
 
   @Test
@@ -165,21 +130,6 @@ class BillingMethodTest {
 
       var found = subscriptionRepository.findById(saved.getId()).orElseThrow();
       assertThat(found.getAdminNote()).isEqualTo("Complimentary for strategic partner");
-    }
-
-    @Test
-    void billingMethodPersistsCorrectly_payfast() {
-      // Verify PAYFAST billing method and payfast_token persist and round-trip correctly
-      var orgId = createOrganization("bm-test-migration-" + UUID.randomUUID());
-      var sub = new Subscription(orgId);
-      sub.setPayfastToken("tok_test_migration");
-      sub.setBillingMethod(BillingMethod.PAYFAST);
-
-      var saved = subscriptionRepository.saveAndFlush(sub);
-
-      var found = subscriptionRepository.findById(saved.getId()).orElseThrow();
-      assertThat(found.getBillingMethod()).isEqualTo(BillingMethod.PAYFAST);
-      assertThat(found.getPayfastToken()).isEqualTo("tok_test_migration");
     }
   }
 }

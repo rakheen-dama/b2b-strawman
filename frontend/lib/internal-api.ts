@@ -14,38 +14,20 @@ export class InternalApiError extends Error {
   }
 }
 
-// ---- Billing (from BillingController.java — Phase 57 lifecycle model) ----
+// ---- Billing (from BillingController.java — manual firm-level billing, ADR-335) ----
 
-export type BillingMethod = "PAYFAST" | "DEBIT_ORDER" | "PILOT" | "COMPLIMENTARY" | "MANUAL";
+export type BillingMethod = "DEBIT_ORDER" | "PILOT" | "COMPLIMENTARY" | "MANUAL";
 
 export interface BillingResponse {
   status: string;
   trialEndsAt: string | null;
   currentPeriodEnd: string | null;
   graceEndsAt: string | null;
-  nextBillingAt: string | null;
   monthlyAmountCents: number;
   currency: string;
   limits: { maxMembers: number; currentMembers: number };
-  canSubscribe: boolean;
-  canCancel: boolean;
   billingMethod: BillingMethod;
-  adminManaged: boolean;
   adminNote: string | null;
-}
-
-export interface SubscribeResponse {
-  paymentUrl: string;
-  formFields: Record<string, string>;
-}
-
-export interface PaymentResponse {
-  id: string;
-  payfastPaymentId: string;
-  amountCents: number;
-  currency: string;
-  status: string;
-  paymentDate: string;
 }
 
 /**

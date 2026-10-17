@@ -44,7 +44,7 @@ function getBannerConfig(billingResponse: BillingResponse, slug: string): Banner
               href={`/org/${slug}/settings/billing`}
               className="font-medium underline underline-offset-4"
             >
-              Subscribe now
+              contact your administrator
             </Link>
           </>
         ),
@@ -71,7 +71,7 @@ function getBannerConfig(billingResponse: BillingResponse, slug: string): Banner
               href={`/org/${slug}/settings/billing`}
               className="font-medium underline underline-offset-4"
             >
-              Resubscribe
+              View billing
             </Link>
           </>
         ) : (
@@ -81,7 +81,7 @@ function getBannerConfig(billingResponse: BillingResponse, slug: string): Banner
               href={`/org/${slug}/settings/billing`}
               className="font-medium underline underline-offset-4"
             >
-              Resubscribe
+              View billing
             </Link>
           </>
         ),
@@ -90,7 +90,7 @@ function getBannerConfig(billingResponse: BillingResponse, slug: string): Banner
       };
     }
 
-    // PAST_DUE requires payment action — intentionally non-dismissible despite
+    // PAST_DUE requires attention — intentionally non-dismissible despite
     // being "warning" variant (not "destructive") because the account is still
     // write-enabled but needs urgent attention.
     case "PAST_DUE":
@@ -105,7 +105,7 @@ function getBannerConfig(billingResponse: BillingResponse, slug: string): Banner
               href={`/org/${slug}/settings/billing`}
               className="font-medium underline underline-offset-4"
             >
-              update your payment method
+              contact your administrator
             </Link>
           </>
         ),
@@ -127,7 +127,7 @@ function getBannerConfig(billingResponse: BillingResponse, slug: string): Banner
               href={`/org/${slug}/settings/billing`}
               className="font-medium underline underline-offset-4"
             >
-              subscribe to regain full access
+              contact your administrator to restore access
             </Link>
           </>
         ),

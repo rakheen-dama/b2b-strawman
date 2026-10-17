@@ -286,7 +286,11 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
               </Button>
             </span>
           </TooltipTrigger>
-          {!isWriteEnabled && <TooltipContent>Subscribe to enable this action</TooltipContent>}
+          {!isWriteEnabled && (
+            <TooltipContent>
+              Read-only mode &mdash; contact your administrator to restore access
+            </TooltipContent>
+          )}
         </Tooltip>
       </TooltipProvider>
       <DialogContent className="sm:max-w-lg">

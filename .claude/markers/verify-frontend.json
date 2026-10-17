@@ -1,7 +1,7 @@
 {
-  "commit": "3b91b8be3",
-  "command": "cd frontend && pnpm run lint && rm -rf .next && pnpm run build && pnpm test && pnpm run format:check",
+  "commit": "26bdc8054",
+  "command": "cd frontend && pnpm run lint && rm -rf .next && pnpm run build && caffeinate -is pnpm test && pnpm run format:check",
   "exit": 0,
-  "ts": "2026-10-16T23:54:16Z",
-  "summary": "Epic 599 / PR #1570 final head (orchestrator re-run): lint 0 errors (pre-existing warnings only); build OK (clean .next); vitest 376 files, 2360 passed | 2 skipped; prettier clean. -53 tests vs 598 baseline (2413) = deleted capacity/resources tests."
+  "ts": "2026-10-17T09:15:02Z",
+  "summary": "Epic 600 / PR #1572 head (orchestrator re-run): lint 0 errors (pre-existing warnings only); build OK (clean .next); vitest 369 files, 2323 passed | 2 skipped; prettier clean. First vitest pass hit a macOS deep-idle sleep (3 timeouts) and was re-run under caffeinate. Frontend CI pass on rerun (first run: next/font/google resolution flake)."
 }

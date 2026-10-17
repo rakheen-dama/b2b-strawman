@@ -1,7 +1,7 @@
 {
-  "commit": "6ddc4c8bf",
-  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
+  "commit": "26bdc8054",
+  "command": "cd backend && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-16T23:51:10Z",
-  "summary": "Epic 599 / PR #1570 (backend unchanged 6ddc4c8bf..3b91b8be3 final head): 5644 testcases / 0 failures / 0 errors / 26 skipped (729 surefire XML) — 23:28→23:51 UTC (~23 min). -108 vs 5752 Epic 598 baseline = deleted capacity test classes + re-fixtured tests + new DashboardWithoutCapacityTest (12 cases)."
+  "ts": "2026-10-17T08:59:21Z",
+  "summary": "Epic 600 / PR #1572 (head 26bdc8054): 5575 testcases / 0 failures / 0 errors / 26 skipped. -69 vs 5644 Epic 599 baseline = deleted schedule test classes + trimmed fixtures + new NotificationCatalogueWithoutSchedulesTest. Backend CI pass."
 }

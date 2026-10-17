@@ -27,7 +27,7 @@ See the final section "Open Questions / verify-at-build-time" — every `verify`
 | 597 | Remove `proposal` (Phase 32) + Legacy In-App Portal + Portal Proposals | Backend + Frontend + Portal (split) | 596 | L | 597A, 597B, 597C, 597D | **Done** (PR #1566) |
 | 598 | Remove `retainer` (Phase 17) + Portal Retainer | Backend + Frontend + Portal (split) | 597 | L | 598A, 598B, 598C, 598D | **Done** (PR #1569) |
 | 599 | Remove `capacity` (Phase 38) + Resources/Utilization UI | Backend + Frontend (split) | 598 | M | 599A, 599B, 599C | **Done** (PR #1570) |
-| 600 | Remove `schedule` recurring half (Phase 16/30), re-home Time Reminders | Backend + Frontend (split) | 599 | M | 600A, 600B, 600C | Not started |
+| 600 | Remove `schedule` recurring half (Phase 16/30), re-home Time Reminders | Backend + Frontend (split) | 599 | M | 600A, 600B, 600C | **Done** (PR #1572) |
 | 601 | Remove `assistant` (Phases 45/52/70), re-home `provider` — AI consolidation | Backend + Frontend (split) | 600 | L | 601A, 601B, 601C, 601D | Not started |
 | 602 | Remove PayFast Platform Subscription Path (Phase 57) | Backend + Frontend (split) | 595 (parallel with 596–601) | M | 602A, 602B, 602C | Not started |
 | 603 | Remove Thymeleaf Dev Harness (Phase 7) + `docs/` Site (Phase 59) + docsLink policy | Backend + Ops + Frontend (split) | 595 (parallel with 596–602) | M | 603A, 603B, 603C | Not started |
@@ -129,9 +129,9 @@ KEPT (never touched by any slice — the compiler and McpReadOnlyRegistryTest gu
 | 1l | **599A** | Delete `capacity/**`, `CapacitySettings`, `UpdateCapacitySettingsRequest`, report utilization records; tenant `V140__drop_capacity.sql` **with `DELETE FROM org_role_capabilities WHERE capability='RESOURCE_PLANNING'`**; `ReportService`/`ReportController`, `OrgSettings:176-180` + service/controller/DTO, `NotificationEventHandler` listener; snapshot pin −1; null-reload test. | **Done** (PR #1570) |
 | 1m | **599B** | Residue: `VerticalModuleRegistry` `resource_planning` + test 10/3, `Capability.RESOURCE_PLANNING`, 3 notification types, `StandardReportPackSeeder` utilization (if present), `backend/CLAUDE.md:159`; backend half of `DashboardWithoutCapacityTest`. | **Done** (PR #1570) |
 | 1n | **599C** | (Frontend) `resources/**`, `settings/capacity`, `components/capacity/**`, 3 dashboard widgets + metrics-strip grid, `lib/api/capacity.ts`, `lib/actions/utilization.ts`, staffing tab + tab groups, capabilities mirror, nav; e2e `resources/` + fixtures; frontend half of `DashboardWithoutCapacityTest`. | **Done** (PR #1570) |
-| 1o | **600A** | `git mv` `TimeReminderScheduler`/`TimeReminderHandler` (+test) → `timeentry/`; delete `schedule/**` rest, `SchedulePack*`, `schedule-packs/`, 1 template, `V30MigrationTest` schedule half; tenant `V141__drop_schedules.sql`; compile-critical seams (`PeriodCalculator`, `ProjectTemplateService`, 4 projecttemplate test fixtures, `NotificationEventHandler:325-361`, provisioning 2 + test, `PackStatusSettings`); snapshot pin −1. (595B: `TimeEntryRepository` needs no edit — javadoc only.) | 602, 603 |
-| 1p | **600B** | Residue: `NotificationService:175-177,677-745` + `EmailNotificationChannel:214,299-310` (+`POST_CREATE_ACTION_FAILED` if schedule-owned), `ProjectTemplate.postCreateActions` + column (only if no legal reader); `NotificationCatalogueWithoutSchedulesTest`. | 602, 603 |
-| 1q | **600C** | (Frontend) `schedules/**`, `components/schedules/**`, `lib/schedule-constants.ts`, `lib/api/schedules.ts`, nav, e2e `schedules/`. | 602, 603 |
+| 1o | **600A** | `git mv` `TimeReminderScheduler`/`TimeReminderHandler` (+test) → `timeentry/`; delete `schedule/**` rest, `SchedulePack*`, `schedule-packs/`, 1 template, `V30MigrationTest` schedule half; tenant `V141__drop_schedules.sql`; compile-critical seams (`PeriodCalculator`, `ProjectTemplateService`, 4 projecttemplate test fixtures, `NotificationEventHandler:325-361`, provisioning 2 + test, `PackStatusSettings`); snapshot pin −1. (595B: `TimeEntryRepository` needs no edit — javadoc only.) | **Done** (PR #1572) |
+| 1p | **600B** | Residue: `NotificationService:175-177,677-745` + `EmailNotificationChannel:214,299-310` (+`POST_CREATE_ACTION_FAILED` if schedule-owned), `ProjectTemplate.postCreateActions` + column (only if no legal reader); `NotificationCatalogueWithoutSchedulesTest`. | **Done** (PR #1572) |
+| 1q | **600C** | (Frontend) `schedules/**`, `components/schedules/**`, `lib/schedule-constants.ts`, `lib/api/schedules.ts`, nav, e2e `schedules/`. | **Done** (PR #1572) |
 | 1r | **601A** | `git mv assistant/provider → integration/ai/provider` + 3 tests; `IntegrationService:3-4`, `AiSettingsController:3`; `LlmChatProviderRegistryTest:120` recount (2). | 602, 603 |
 | 1s | **601B** | Delete `assistant/**` rest (74 files, 22 tests), `InvokeAiSpecialistActionExecutor`/`Config` + 2 tests, `ai-specialist-*.json`, `assistant/**` resources; tenant `V142__drop_assistant.sql` (+ `INVOKE_AI_SPECIALIST` action rows); automation seams (6), `AutomationSchedulerScheduledTriggerIntegrationTest` re-fixture, `TenantScopeBindingTest:132`, audit 35→29 (+test), `Capability.AI_ASSISTANT_USE`; `AiFoundationWithoutAssistantTest`; `ai-core-verification-keycloak.md` trim. | 602, 603 |
 | 1t | **601C** | (Frontend) shell + libs: `layout.tsx:20-22,134,174-176`, `components/assistant/**`, `lib/api/{assistant-specialists,ai-invocations}.ts`, `lib/actions/ai-invocations.ts`, `lib/constants/ai-queue-strings.ts`, `settings/automations/ai-queue/**`, `nav-items.ts:491-497`, `capabilities.tsx:17,70`, `lib/api/automations.ts` action type, `settings-sidebar.tsx`. | 602, 603 |
@@ -489,9 +489,9 @@ KEPT (never touched by any slice — the compiler and McpReadOnlyRegistryTest gu
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **600A** | 600A.1–600A.5 | ~13 edits incl. 4 test-fixture trims (+ ~25 deletions, 3 moves, 1 new migration) | Re-home time reminders; delete recurring schedules + seeder + pack; V141; compile-critical seams; snapshot −1. |
-| **600B** | 600B.1–600B.3 | ~6 edits (+1 new test) | Notification catalogue residue; `postCreateActions` (conditional); `NotificationCatalogueWithoutSchedulesTest`. |
-| **600C** | 600C.1–600C.2 | ~5 edits (+ ~10 deletions) | Schedules routes/components/constants/API, nav, e2e. |
+| **600A** | 600A.1–600A.5 | ~13 edits incl. 4 test-fixture trims (+ ~25 deletions, 3 moves, 1 new migration) | Re-home time reminders; delete recurring schedules + seeder + pack; V141; compile-critical seams; snapshot −1. **Done** (PR #1572) |
+| **600B** | 600B.1–600B.3 | ~6 edits (+1 new test) | Notification catalogue residue; `postCreateActions` (conditional); `NotificationCatalogueWithoutSchedulesTest`. **Done** (PR #1572) |
+| **600C** | 600C.1–600C.2 | ~5 edits (+ ~10 deletions) | Schedules routes/components/constants/API, nav, e2e. **Done** (PR #1572) |
 
 ### Tasks
 

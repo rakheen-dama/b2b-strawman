@@ -364,9 +364,9 @@ Actor: **Alice** (billing)
 - [ ] **45.19** Enter reference = "EFT-2026-APX-001" → submit
 - [ ] **45.20** Verify fee note status changes to **PAID**
 
-### Resource check
+### Utilization check
 
-- [ ] **45.21** Navigate to **Resources** (`/resources`) → verify allocation data loads
+- [ ] **45.21** Navigate to **Profitability** (`/profitability`) → verify the team utilization table loads
 - [ ] **45.22** Check utilization breakdown for Alice, Bob, Carol
 
 **Day 45 Checkpoints**:
@@ -374,7 +374,7 @@ Actor: **Alice** (billing)
 - [ ] Prescription tracking functional (3-year personal injury)
 - [ ] Court date lifecycle: SCHEDULED → POSTPONED → new SCHEDULED
 - [ ] Payment recorded, fee note status = PAID
-- [ ] Resource utilization data present
+- [ ] Utilization data present on the Profitability page
 - [ ] **Terminology**: Court Calendar labels, reconciliation page headings, and fee note status badges all use legal terms
 
 ---
@@ -473,11 +473,11 @@ Actor: **Alice** (billing)
 - [ ] **75.17** Verify Apex now has 2 matters
 - [ ] **75.18** Log time: Bob 120 min on "Client intake & scope of work"
 
-### Resource utilization
+### Utilization
 
-- [ ] **75.19** Navigate to **Resources** → utilization tab
+- [ ] **75.19** Navigate to **Profitability** → utilization table
 - [ ] **75.20** Verify billable hours breakdown for Alice, Bob, Carol
-- [ ] **75.21** Check capacity data
+- [ ] **75.21** Set the utilization table's From and To dates to the Day 45 and Day 75 dates; verify each utilization % equals billable hours ÷ total hours in that range
 
 **Day 75 Checkpoints**:
 - [ ] Multi-matter per client works (Sipho: 2, Apex: 2, QuickCollect: 3)
@@ -486,8 +486,8 @@ Actor: **Alice** (billing)
 - [ ] Conflict checks detect existing adverse parties correctly
 - [ ] Estate matter progression tracked (2 items completed, L&D in progress)
 - [ ] Information request sent (Mailpit)
-- [ ] Resource utilization shows meaningful data
-- [ ] **Terminology**: Conflict check results, information request emails, and resource pages all use legal terms consistently
+- [ ] Profitability utilization shows meaningful data
+- [ ] **Terminology**: Conflict check results, information request emails, and the Profitability page all use legal terms consistently
 
 ---
 

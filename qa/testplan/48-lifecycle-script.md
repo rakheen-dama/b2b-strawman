@@ -374,16 +374,16 @@ Actor: **Thandi**
 - [ ] **45.11** Create task: "BEE certificate analysis" → assigned to Thandi, priority HIGH
 - [ ] **45.12** Log time: 120 min, "BEE scorecard analysis"
 
-### Resource planning
+### Utilization
 
-- [ ] **45.13** Navigate to **Resources** (`/resources`) → verify allocation grid loads
-- [ ] **45.14** Navigate to **Resources > Utilization** (`/resources/utilization`) → verify utilization data
+- [ ] **45.13** Navigate to **Profitability** (`/profitability`) → verify the team utilization table loads
+- [ ] **45.14** Verify utilization data (billable vs. non-billable hours per member) for the period
 
 **Day 45 Checkpoints**:
 - [ ] Payment recorded, invoice status = PAID
 - [ ] Expense visible on project, marked as billable
 - [ ] Ad-hoc project created with budget tracking
-- [ ] Resource planning page shows meaningful capacity data
+- [ ] Profitability utilization table shows meaningful per-member hours
 
 ---
 

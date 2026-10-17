@@ -96,8 +96,6 @@ frontend/e2e/tests/
 ├── verticals/
 │   ├── profile-switching.spec.ts         # P1 — switch profile, verify effects
 │   └── module-gates.spec.ts              # P1 — legal module pages gated
-├── resources/
-│   └── resource-planning.spec.ts         # P2 — page loads, utilization view
 ├── navigation/
 │   ├── sidebar-navigation.spec.ts        # P1 — all nav items resolve
 │   └── command-palette.spec.ts           # P2 — Cmd+K, search, navigate
@@ -637,15 +635,6 @@ Lower priority but important for full coverage. Run nightly or before releases.
 
 ---
 
-### RES-01: Resource Planning (`resources/resource-planning.spec.ts`)
-
-| # | Test | Actor | Steps | Expected |
-|---|------|-------|-------|----------|
-| 1 | Resources page loads | Alice | Navigate to /resources | Page renders |
-| 2 | Utilization view | Alice | Navigate to /resources/utilization | Utilization data shown |
-
----
-
 ### AUTO-02: Automation Triggers (`automations/automation-triggers.spec.ts`)
 
 | # | Test | Steps | Expected |
@@ -787,8 +776,8 @@ export async function clearMailbox() {
 |----------|--------|-----------|-----|
 | P0 | 12 suites | ~50 | Every PR |
 | P1 | 16 suites | ~90 | Every PR |
-| P2 | 12 suites | ~60 | Nightly |
-| **Total** | **40 suites** | **~200** | |
+| P2 | 11 suites | ~58 | Nightly |
+| **Total** | **39 suites** | **~198** | |
 
 ---
 
@@ -834,6 +823,5 @@ export async function clearMailbox() {
 | Compliance | 0 | none | COMPLY-01 (2 tests) |
 | Billing Runs | 0 | none | BR-01 (2 tests) |
 | Command Palette | 0 | none | CMD-01 (3 tests) |
-| Resources | 1 page load | none | RES-01 (2 tests) |
 | Info Requests | 1 page load | doc-content T4 | IREQ-01 (5 tests) |
 | Schedules | 0 | none | SCHED-01 (2 tests) |

@@ -364,9 +364,9 @@ Actor: **Alice** (billing)
 - [ ] **45.19** Enter reference = "EFT-2026-APX-001" → submit
 - [ ] **45.20** Verify fee note status changes to **PAID**
 
-### Resource check
+### Utilization check
 
-- [ ] **45.21** Navigate to **Resources** (`/resources`) → verify allocation data loads
+- [ ] **45.21** Navigate to **Profitability** (`/profitability`) → verify the team utilization table loads
 - [ ] **45.22** Check utilization breakdown for Alice, Bob, Carol
 
 **Day 45 Checkpoints**:
@@ -475,9 +475,9 @@ Actor: **Alice** (billing)
 
 ### Resource utilization
 
-- [ ] **75.19** Navigate to **Resources** → utilization tab
+- [ ] **75.19** Navigate to **Profitability** → utilization table
 - [ ] **75.20** Verify billable hours breakdown for Alice, Bob, Carol
-- [ ] **75.21** Check capacity data
+- [ ] **75.21** Verify utilization % reflects the hours logged since Day 45
 
 **Day 75 Checkpoints**:
 - [ ] Multi-matter per client works (Sipho: 2, Apex: 2, QuickCollect: 3)

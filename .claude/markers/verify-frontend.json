@@ -1,7 +1,7 @@
 {
-  "commit": "26bdc8054",
+  "commit": "94e04b01f",
   "command": "cd frontend && pnpm run lint && rm -rf .next && pnpm run build && caffeinate -is pnpm test && pnpm run format:check",
   "exit": 0,
-  "ts": "2026-10-17T09:15:02Z",
-  "summary": "Epic 600 / PR #1572 head (orchestrator re-run): lint 0 errors (pre-existing warnings only); build OK (clean .next); vitest 369 files, 2323 passed | 2 skipped; prettier clean. First vitest pass hit a macOS deep-idle sleep (3 timeouts) and was re-run under caffeinate. Frontend CI pass on rerun (first run: next/font/google resolution flake)."
+  "ts": "2026-10-17T10:45:19Z",
+  "summary": "Epic 601 / PR #1573 head (orchestrator re-run): lint 0 errors (97 pre-existing warnings); build OK (clean .next); vitest 358 files, 2270 passed | 2 skipped; prettier clean. Frontend CI pass."
 }

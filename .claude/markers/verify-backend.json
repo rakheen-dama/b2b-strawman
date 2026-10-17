@@ -1,7 +1,7 @@
 {
-  "commit": "26bdc8054",
-  "command": "cd backend && bash scripts/verify.sh -q",
+  "commit": "94e04b01f",
+  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-17T08:59:21Z",
-  "summary": "Epic 600 / PR #1572 (head 26bdc8054): 5575 testcases / 0 failures / 0 errors / 26 skipped. -69 vs 5644 Epic 599 baseline = deleted schedule test classes + trimmed fixtures + new NotificationCatalogueWithoutSchedulesTest. Backend CI pass."
+  "ts": "2026-10-17T10:45:19Z",
+  "summary": "Epic 601 / PR #1573 (head 94e04b01f): 5438 testcases / 0 failures / 0 errors / 26 skipped. -137 vs 5575 Epic 600 baseline (deleted assistant + specialist test classes, net of new AiFoundationWithoutAssistantTest). Log /tmp/mvn-601-final.log."
 }

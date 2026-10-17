@@ -87,7 +87,7 @@ public class PortalSessionContextService {
    * <p>Prefers the persisted {@link OrgSettings#getTerminologyNamespace() terminologyNamespace}
    * (seeded by {@code VerticalProfileRegistry} during provisioning -- e.g. {@code "en-ZA-legal"}).
    * Falls back to composing {@code "en-ZA-<short>"} from the {@code verticalProfile} id (stripping
-   * the {@code -za} country suffix), and returns an empty string for generic / null profiles.
+   * the {@code -za} country suffix), and returns an empty string for null profiles.
    */
   private String resolveTerminologyKey(OrgSettings settings, String tenantProfile) {
     if (settings != null) {
@@ -103,7 +103,7 @@ public class PortalSessionContextService {
         tenantProfile.endsWith("-za")
             ? tenantProfile.substring(0, tenantProfile.length() - 3)
             : tenantProfile;
-    if (shortProfile.equals("consulting-generic") || shortProfile.isBlank()) {
+    if (shortProfile.isBlank()) {
       return "";
     }
     return "en-ZA-" + shortProfile;

@@ -82,7 +82,8 @@ public class OrgProvisioningService {
     try {
       keycloakAdminClient.addMember(orgId, userId);
       keycloakAdminClient.updateMemberRole(orgId, userId, "owner");
-      tenantProvisioningService.provisionTenant(slug, name, null);
+      // legal-za is the only vertical profile (Phase 86 / ADR-332).
+      tenantProvisioningService.provisionTenant(slug, name, "legal-za");
     } catch (Exception e) {
       log.error(
           "Post-creation steps failed for org '{}' (orgId={}), attempting compensation: {}",

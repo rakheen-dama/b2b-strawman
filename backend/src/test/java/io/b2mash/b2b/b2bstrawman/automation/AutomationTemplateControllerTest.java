@@ -115,13 +115,15 @@ class AutomationTemplateControllerTest {
   }
 
   @Test
-  void listTemplates_returns19() throws Exception {
+  void listTemplates_returns10() throws Exception {
+    // Classpath catalogue, not tenant state: common.json (6) + legal-za.json (4). Phase 86 (Epic
+    // 604B) deleted accounting-za.json (4) and consulting-za.json (5): 19 -> 10.
     mockMvc
         .perform(
             get("/api/automation-templates")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tmpl_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(19)))
+        .andExpect(jsonPath("$", hasSize(10)))
         .andExpect(jsonPath("$[0].slug").exists())
         .andExpect(jsonPath("$[0].name").exists())
         .andExpect(jsonPath("$[0].category").exists())

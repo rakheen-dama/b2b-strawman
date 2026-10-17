@@ -25,7 +25,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class VerticalTemplateSelectionTest {
-  private static final String ORG_ID_ZA = "org_vert_tmpl_za";
   private static final String ORG_ID_DEFAULT = "org_vert_tmpl_default";
   private static final String ORG_ID_LEGAL = "org_vert_tmpl_legal";
 
@@ -35,29 +34,13 @@ class VerticalTemplateSelectionTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
-  private String tenantSchemaZa;
   private String tenantSchemaDefault;
   private String tenantSchemaLegal;
-  private UUID memberIdZa;
   private UUID memberIdDefault;
   private UUID memberIdLegal;
 
   @BeforeAll
   void setup() throws Exception {
-    // Org 1: accounting-za vertical profile
-    provisioningService.provisionTenant(ORG_ID_ZA, "Vertical ZA Org", "accounting-za");
-    memberIdZa =
-        UUID.fromString(
-            TestMemberHelper.syncMember(
-                mockMvc,
-                ORG_ID_ZA,
-                "user_vert_za_owner",
-                "vert_za@test.com",
-                "Vert ZA Owner",
-                "owner"));
-    tenantSchemaZa =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_ZA).orElseThrow().getSchemaName();
-
     // Org 2: no vertical profile (default)
     provisioningService.provisionTenant(ORG_ID_DEFAULT, "Vertical Default Org", null);
     memberIdDefault =
@@ -85,23 +68,6 @@ class VerticalTemplateSelectionTest {
                 "owner"));
     tenantSchemaLegal =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_LEGAL).orElseThrow().getSchemaName();
-  }
-
-  @Test
-  void resolvesInvoiceZaForAccountingZaProfile() {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchemaZa)
-        .where(RequestScopes.ORG_ID, ORG_ID_ZA)
-        .where(RequestScopes.MEMBER_ID, memberIdZa)
-        .where(RequestScopes.ORG_ROLE, "owner")
-        .run(
-            () ->
-                transactionTemplate.executeWithoutResult(
-                    tx -> {
-                      var result = generatedDocumentService.resolveDefaultInvoiceTemplate();
-
-                      assertThat(result).isPresent();
-                      assertThat(result.get().getPackTemplateKey()).isEqualTo("invoice-za");
-                    }));
   }
 
   @Test
@@ -137,10 +103,10 @@ class VerticalTemplateSelectionTest {
 
                       // Default org has no "invoice" pack template seeded by common pack,
                       // so this returns empty. If an "invoice" template existed, it would return
-                      // it.
-                      // The key assertion is that it does NOT return "invoice-za".
+                      // it. The key assertion is that a profile-less org never resolves the
+                      // legal-za fee note.
                       if (result.isPresent()) {
-                        assertThat(result.get().getPackTemplateKey()).isNotEqualTo("invoice-za");
+                        assertThat(result.get().getPackTemplateKey()).isNotEqualTo("fee-note-za");
                       }
                       // Either empty or a generic "invoice" template — both are valid fallbacks
                     }));

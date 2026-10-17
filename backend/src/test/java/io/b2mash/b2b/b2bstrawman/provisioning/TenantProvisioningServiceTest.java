@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
 import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
 import io.b2mash.b2b.b2bstrawman.integration.payment.MockPaymentIntegrationSeeder;
@@ -245,7 +246,22 @@ class TenantProvisioningServiceTest {
 
     // Verify that the settings were updated with modules and terminology from registry
     verify(orgSettingsRepository, atLeastOnce()).save(any(OrgSettings.class));
-    verify(verticalProfileRegistry).getProfile("legal-za");
+    // Called once by the unknown-profile check and once by setVerticalProfile.
+    verify(verticalProfileRegistry, atLeastOnce()).getProfile("legal-za");
+  }
+
+  @Test
+  void provisionTenant_withUnknownProfile_throwsBeforeCreatingOrg() {
+    // Phase 86 (Epic 604B, ADR-332): an unknown profile id is rejected with 400, not silently
+    // provisioned without modules.
+    when(mappingRepository.findByClerkOrgId("org_unknown_profile")).thenReturn(Optional.empty());
+    when(verticalProfileRegistry.getProfile("accounting-za")).thenReturn(Optional.empty());
+
+    assertThatThrownBy(
+            () -> service.provisionTenant("org_unknown_profile", "Unknown Org", "accounting-za"))
+        .isInstanceOf(InvalidStateException.class);
+
+    verify(organizationRepository, never()).save(any(Organization.class));
   }
 
   @Test

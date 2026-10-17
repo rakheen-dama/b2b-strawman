@@ -148,12 +148,13 @@ class AccessRequestApprovalServiceTest {
     verify(keycloakProvisioningClient).inviteUser(KC_ORG_ID, "retry@acme.com");
   }
 
+  // legal-za is the only vertical profile (Phase 86 / ADR-332): every industry provisions legal-za.
   @ParameterizedTest(name = "industry {0} -> vertical profile {1}")
   @CsvSource({
-    "Accounting, accounting-za",
+    "Accounting, legal-za",
     "Legal Services, legal-za",
-    "Marketing, consulting-za",
-    "Consulting, consulting-za",
+    "Marketing, legal-za",
+    "Consulting, legal-za",
   })
   void approve_mapsIndustryToVerticalProfile(String industry, String expectedProfile) {
     var request = createPendingRequestWithIndustry("profile@acme.com", "Profile Corp", industry);
@@ -169,17 +170,17 @@ class AccessRequestApprovalServiceTest {
   }
 
   @Test
-  void approve_unmappedIndustry_provisionsWithNullVerticalProfile() {
+  void approve_unmappedIndustry_provisionsWithLegalZaVerticalProfile() {
     var request = createPendingRequestWithIndustry("unmapped@acme.com", "Other Corp", "Other");
 
     when(keycloakProvisioningClient.createOrganization("Other Corp", "other-corp"))
         .thenReturn(KC_ORG_ID);
-    when(tenantProvisioningService.provisionTenant("other-corp", "Other Corp", null, "ZA"))
+    when(tenantProvisioningService.provisionTenant("other-corp", "Other Corp", "legal-za", "ZA"))
         .thenReturn(ProvisioningResult.success("tenant_other"));
 
     approvalService.approve(request.getId(), ADMIN_USER_ID);
 
-    verify(tenantProvisioningService).provisionTenant("other-corp", "Other Corp", null, "ZA");
+    verify(tenantProvisioningService).provisionTenant("other-corp", "Other Corp", "legal-za", "ZA");
   }
 
   @Test

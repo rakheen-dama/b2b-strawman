@@ -115,7 +115,7 @@ public class VerticalModuleRegistry {
             "Customer document-request workflows with portal pickup and acceptance",
             "active",
             ModuleCategory.HORIZONTAL,
-            List.of("legal-za", "accounting-za", "consulting-za"),
+            List.of("legal-za"),
             List.of(new NavItem("/information-requests", "Information Requests", "clients"))));
 
     map.put(

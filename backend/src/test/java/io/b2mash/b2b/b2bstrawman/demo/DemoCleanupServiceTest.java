@@ -51,7 +51,7 @@ class DemoCleanupServiceTest {
 
   private UUID provisionTestTenant(String suffix, BillingMethod billingMethod) {
     String slug = "cleanup-test-" + suffix + "-" + UUID.randomUUID().toString().substring(0, 8);
-    tenantProvisioningService.provisionTenant(slug, "Cleanup Test " + suffix, "generic");
+    tenantProvisioningService.provisionTenant(slug, "Cleanup Test " + suffix, "legal-za");
     UUID orgId = organizationRepository.findByExternalOrgId(slug).orElseThrow().getId();
 
     txTemplate.executeWithoutResult(

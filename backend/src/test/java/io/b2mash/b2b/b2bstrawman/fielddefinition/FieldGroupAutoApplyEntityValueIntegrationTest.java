@@ -23,11 +23,12 @@ import org.springframework.transaction.support.TransactionTemplate;
  * FieldGroupService#resolveAutoApplyGroupIds(EntityType, String, String)} that the customer create
  * path uses.
  *
- * <p>The bug being prevented: an accounting-za tenant has both {@code accounting-za-customer}
- * (unscoped) and {@code accounting-za-customer-trust} (scoped to {@code TRUST}) auto-apply field
- * groups. Before the fix, every customer — regardless of entity type — inherited both groups,
- * causing trust-specific required fields to inflate the completeness denominator for non-trust
- * clients.
+ * <p>The bug being prevented: a tenant with both an unscoped and a {@code TRUST}-scoped auto-apply
+ * customer field group (originally the since-removed accounting-za packs). Before the fix, every
+ * customer — regardless of entity type — inherited both groups, causing trust-specific required
+ * fields to inflate the completeness denominator for non-trust clients. The cases below use
+ * hand-built groups; no remaining field pack declares {@code applicableEntityValues} (Phase 86 /
+ * Epic 604).
  */
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -164,57 +165,6 @@ class FieldGroupAutoApplyEntityValueIntegrationTest {
                   "legacy overload must equal three-arg overload with null workType and entityValue")
               .containsExactlyInAnyOrderElementsOf(explicitNullIds);
         });
-  }
-
-  @Test
-  void seeder_persists_applicableEntityValues_for_trust_pack() {
-    // Provision a fresh accounting-za tenant and verify the trust group has the predicate.
-    String accountingOrgId = "org_fg_aa_ev_acct_test";
-    provisioningService.provisionTenant(accountingOrgId, "Accounting EV Test Org", "accounting-za");
-    String accountingSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(accountingOrgId).orElseThrow().getSchemaName();
-
-    ScopedValue.where(RequestScopes.TENANT_ID, accountingSchema)
-        .where(RequestScopes.ORG_ID, accountingOrgId)
-        .where(RequestScopes.MEMBER_ID, UUID.randomUUID())
-        .where(RequestScopes.ORG_ROLE, "owner")
-        .run(
-            () ->
-                transactionTemplate.executeWithoutResult(
-                    tx -> {
-                      var groups =
-                          fieldGroupRepository.findByEntityTypeAndAutoApplyTrueAndActiveTrue(
-                              EntityType.CUSTOMER);
-                      var trustGroup =
-                          groups.stream()
-                              .filter(g -> "accounting-za-customer-trust".equals(g.getPackId()))
-                              .findFirst()
-                              .orElseThrow(
-                                  () ->
-                                      new AssertionError(
-                                          "accounting-za-customer-trust group not seeded in"
-                                              + " accounting-za tenant"));
-                      assertThat(trustGroup.getApplicableEntityValues())
-                          .as(
-                              "accounting-za-customer-trust pack JSON must persist"
-                                  + " applicableEntityValues=[TRUST] via seeder")
-                          .containsExactly("TRUST");
-
-                      // The main customer details group stays unscoped
-                      var detailsGroup =
-                          groups.stream()
-                              .filter(g -> "accounting-za-customer".equals(g.getPackId()))
-                              .findFirst()
-                              .orElseThrow(
-                                  () ->
-                                      new AssertionError(
-                                          "accounting-za-customer group not seeded"));
-                      assertThat(detailsGroup.getApplicableEntityValues())
-                          .as(
-                              "accounting-za-customer pack must remain unscoped —"
-                                  + " applies to all customers regardless of entity type")
-                          .isNullOrEmpty();
-                    }));
   }
 
   private void runInTenant(Runnable action) {

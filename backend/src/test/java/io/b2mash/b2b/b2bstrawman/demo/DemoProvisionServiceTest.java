@@ -71,7 +71,7 @@ class DemoProvisionServiceTest {
                     """
                     {
                       "organizationName": "Demo Accounting Firm",
-                      "verticalProfile": "accounting-za",
+                      "verticalProfile": "legal-za",
                       "adminEmail": "demo@example.com",
                       "seedDemoData": false
                     }
@@ -79,7 +79,7 @@ class DemoProvisionServiceTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.organizationSlug").value("demo-accounting-firm"))
         .andExpect(jsonPath("$.organizationName").value("Demo Accounting Firm"))
-        .andExpect(jsonPath("$.verticalProfile").value("accounting-za"))
+        .andExpect(jsonPath("$.verticalProfile").value("legal-za"))
         .andExpect(jsonPath("$.tempPassword").isNotEmpty());
 
     verify(keycloakAdminClient)
@@ -138,7 +138,7 @@ class DemoProvisionServiceTest {
                     """
                     {
                       "organizationName": "Existing User Org",
-                      "verticalProfile": "accounting-za",
+                      "verticalProfile": "legal-za",
                       "adminEmail": "existing@example.com",
                       "seedDemoData": false
                     }
@@ -167,7 +167,7 @@ class DemoProvisionServiceTest {
                     """
                     {
                       "organizationName": "No Seed Org",
-                      "verticalProfile": "accounting-za",
+                      "verticalProfile": "legal-za",
                       "adminEmail": "noseed@example.com",
                       "seedDemoData": false
                     }
@@ -219,7 +219,7 @@ class DemoProvisionServiceTest {
                     """
                     {
                       "organizationName": "Audit Org",
-                      "verticalProfile": "accounting-za",
+                      "verticalProfile": "legal-za",
                       "adminEmail": "audit@example.com",
                       "seedDemoData": false
                     }
@@ -260,7 +260,7 @@ class DemoProvisionServiceTest {
                     """
                     {
                       "organizationName": "Forbidden Org",
-                      "verticalProfile": "accounting-za",
+                      "verticalProfile": "legal-za",
                       "adminEmail": "forbidden@example.com",
                       "seedDemoData": false
                     }
@@ -279,7 +279,7 @@ class DemoProvisionServiceTest {
                     """
                     {
                       "organizationName": "Bad Email Org",
-                      "verticalProfile": "accounting-za",
+                      "verticalProfile": "legal-za",
                       "adminEmail": "not-an-email",
                       "seedDemoData": false
                     }

@@ -186,6 +186,14 @@ public class TenantProvisioningService {
       }
     }
 
+    // Unknown vertical profile → 400 before any org row is written (ADR-332: no silent fallback).
+    // A null profile is still allowed (profile-less tenant).
+    if (verticalProfile != null && verticalProfileRegistry.getProfile(verticalProfile).isEmpty()) {
+      throw new InvalidStateException(
+          "Unknown vertical profile",
+          "Vertical profile '%s' is not registered".formatted(verticalProfile));
+    }
+
     // Create or find organization record (default tier is STARTER)
     var org =
         organizationRepository

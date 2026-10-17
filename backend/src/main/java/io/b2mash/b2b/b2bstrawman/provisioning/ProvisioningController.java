@@ -17,6 +17,8 @@ public class ProvisioningController {
 
   private static final Logger log = LoggerFactory.getLogger(ProvisioningController.class);
 
+  static final String DEFAULT_VERTICAL_PROFILE = "legal-za";
+
   private final TenantProvisioningService provisioningService;
 
   public ProvisioningController(TenantProvisioningService provisioningService) {
@@ -28,13 +30,16 @@ public class ProvisioningController {
       @Valid @RequestBody ProvisioningRequest request) {
     log.info("Received provisioning request for org {}", request.clerkOrgId());
 
+    // legal-za is the only vertical profile (Phase 86 / ADR-332): a missing profile defaults to it,
+    // and an unknown id is rejected with 400 by TenantProvisioningService.
+    String verticalProfile =
+        request.verticalProfile() == null || request.verticalProfile().isBlank()
+            ? DEFAULT_VERTICAL_PROFILE
+            : request.verticalProfile();
+
     var result =
         provisioningService.provisionTenant(
-            request.clerkOrgId(),
-            request.orgName(),
-            request.verticalProfile(),
-            null,
-            request.shardId());
+            request.clerkOrgId(), request.orgName(), verticalProfile, null, request.shardId());
 
     if (result.alreadyProvisioned()) {
       return ResponseEntity.status(409)

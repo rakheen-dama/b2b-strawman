@@ -7,7 +7,6 @@
   "currency": "ZAR",
   "packs": {
     "field": ["legal-za-customer", "legal-za-project", "conveyancing-za-project"],
-    "compliance": ["fica-kyc-za"],
     "template": ["legal-za"],
     "clause": ["conveyancing-za-clauses"],
     "request": ["conveyancing-intake-za", "fica-onboarding-pack", "legal-za-liquidation-distribution"]

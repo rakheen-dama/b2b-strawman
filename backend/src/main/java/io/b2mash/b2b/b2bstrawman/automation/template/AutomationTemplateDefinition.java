@@ -12,8 +12,7 @@ import java.util.Map;
  *
  * <p>{@link JsonIgnoreProperties}({@code ignoreUnknown = true}) is required so that pack authors
  * can attach documentation fields (e.g. {@code _comment}) to individual rules to flag known trigger
- * gaps (ADR-244) without breaking the loader. See {@code consulting-za.json} for the canonical use
- * of {@code _comment}.
+ * gaps (ADR-244) without breaking the loader.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record AutomationTemplateDefinition(

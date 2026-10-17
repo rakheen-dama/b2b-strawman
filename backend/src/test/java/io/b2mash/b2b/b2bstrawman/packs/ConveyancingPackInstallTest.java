@@ -42,8 +42,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 class ConveyancingPackInstallTest {
 
   private static final String LEGAL_ORG_ID = "org_cvpk_legal_test";
-  private static final String ACCOUNTING_ORG_ID = "org_cvpk_acct_test";
-  private static final String CONSULTING_ORG_ID = "org_cvpk_cons_test";
+  private static final String NO_PROFILE_ORG_ID = "org_cvpk_noprof_test";
 
   private static final String FIELD_PACK_ID = "conveyancing-za-project";
   private static final String CLAUSE_PACK_ID = "conveyancing-za-clauses";
@@ -99,8 +98,7 @@ class ConveyancingPackInstallTest {
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String legalTenantSchema;
-  private String accountingTenantSchema;
-  private String consultingTenantSchema;
+  private String noProfileTenantSchema;
 
   @BeforeAll
   void setup() {
@@ -108,19 +106,12 @@ class ConveyancingPackInstallTest {
     legalTenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(LEGAL_ORG_ID).orElseThrow().getSchemaName();
 
+    // Control tenant: no profile (legal-za is the only registered profile since Phase 86).
     provisioningService.provisionTenant(
-        ACCOUNTING_ORG_ID, "Conveyancing Accounting Test Org", "accounting-za");
-    accountingTenantSchema =
+        NO_PROFILE_ORG_ID, "Conveyancing No-Profile Test Org", null);
+    noProfileTenantSchema =
         orgSchemaMappingRepository
-            .findByClerkOrgId(ACCOUNTING_ORG_ID)
-            .orElseThrow()
-            .getSchemaName();
-
-    provisioningService.provisionTenant(
-        CONSULTING_ORG_ID, "Conveyancing Consulting Test Org", "consulting-za");
-    consultingTenantSchema =
-        orgSchemaMappingRepository
-            .findByClerkOrgId(CONSULTING_ORG_ID)
+            .findByClerkOrgId(NO_PROFILE_ORG_ID)
             .orElseThrow()
             .getSchemaName();
   }
@@ -247,33 +238,11 @@ class ConveyancingPackInstallTest {
   }
 
   @Test
-  void nonLegalTenantsDoNotReceiveConveyancingContent() {
-    // Accounting-za tenant — should not see conveyancing field pack or clause pack.
+  void nonLegalTenantDoesNotReceiveConveyancingContent() {
+    // No-profile tenant — should not see conveyancing field pack or clause pack.
     runInTenant(
-        accountingTenantSchema,
-        ACCOUNTING_ORG_ID,
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var projectFields =
-                      fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
-                          EntityType.PROJECT);
-                  var conveyancing =
-                      projectFields.stream()
-                          .filter(f -> FIELD_PACK_ID.equals(f.getPackId()))
-                          .toList();
-                  assertThat(conveyancing).isEmpty();
-
-                  assertThat(
-                          clauseRepository.findByPackIdAndSourceAndActiveTrue(
-                              CLAUSE_PACK_ID, ClauseSource.SYSTEM))
-                      .isEmpty();
-                }));
-
-    // Consulting-za tenant — same assertion.
-    runInTenant(
-        consultingTenantSchema,
-        CONSULTING_ORG_ID,
+        noProfileTenantSchema,
+        NO_PROFILE_ORG_ID,
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {

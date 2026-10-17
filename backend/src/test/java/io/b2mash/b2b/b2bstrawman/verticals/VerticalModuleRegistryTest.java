@@ -114,14 +114,13 @@ class VerticalModuleRegistryTest {
   }
 
   @Test
-  void getModule_informationRequestsIsHorizontalEnabledForAllThreeVerticals() {
+  void getModule_informationRequestsIsHorizontalEnabledForLegalZa() {
     var module = registry.getModule("information_requests");
 
     assertThat(module).isPresent();
     assertThat(module.get().name()).isEqualTo("Information Requests");
     assertThat(module.get().category()).isEqualTo(ModuleCategory.HORIZONTAL);
-    assertThat(module.get().defaultEnabledFor())
-        .containsExactlyInAnyOrder("legal-za", "accounting-za", "consulting-za");
+    assertThat(module.get().defaultEnabledFor()).containsExactly("legal-za");
     assertThat(module.get().navItems()).hasSize(1);
     assertThat(module.get().navItems().getFirst().path()).isEqualTo("/information-requests");
     assertThat(module.get().navItems().getFirst().label()).isEqualTo("Information Requests");

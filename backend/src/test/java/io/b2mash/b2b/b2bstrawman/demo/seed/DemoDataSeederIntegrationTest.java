@@ -3,11 +3,13 @@ package io.b2mash.b2b.b2bstrawman.demo.seed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
@@ -43,8 +45,6 @@ import org.springframework.test.context.ActiveProfiles;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DemoDataSeederIntegrationTest {
 
-  private final GenericDemoDataSeeder genericDemoDataSeeder;
-  private final AccountingDemoDataSeeder accountingDemoDataSeeder;
   private final DemoDataSeeder demoDataSeeder;
   private final TenantProvisioningService tenantProvisioningService;
   private final TenantTransactionHelper tenantTransactionHelper;
@@ -65,8 +65,6 @@ class DemoDataSeederIntegrationTest {
 
   @Autowired
   DemoDataSeederIntegrationTest(
-      GenericDemoDataSeeder genericDemoDataSeeder,
-      AccountingDemoDataSeeder accountingDemoDataSeeder,
       DemoDataSeeder demoDataSeeder,
       TenantProvisioningService tenantProvisioningService,
       TenantTransactionHelper tenantTransactionHelper,
@@ -81,8 +79,6 @@ class DemoDataSeederIntegrationTest {
       MemberRepository memberRepository,
       ProjectMemberRepository projectMemberRepository,
       OrgSettingsRepository orgSettingsRepository) {
-    this.genericDemoDataSeeder = genericDemoDataSeeder;
-    this.accountingDemoDataSeeder = accountingDemoDataSeeder;
     this.demoDataSeeder = demoDataSeeder;
     this.tenantProvisioningService = tenantProvisioningService;
     this.tenantTransactionHelper = tenantTransactionHelper;
@@ -102,10 +98,12 @@ class DemoDataSeederIntegrationTest {
   @BeforeAll
   void setUp() {
     String slug = "data-consistency-test-" + UUID.randomUUID().toString().substring(0, 8);
-    tenantProvisioningService.provisionTenant(slug, "Data Consistency Test Org", "generic");
+    tenantProvisioningService.provisionTenant(slug, "Data Consistency Test Org", "legal-za");
     schemaName = mappingRepository.findByExternalOrgId(slug).orElseThrow().getSchemaName();
     orgId = organizationRepository.findByExternalOrgId(slug).orElseThrow().getId();
-    genericDemoDataSeeder.seed(schemaName, orgId);
+    // Seed through the dispatcher — legal-za is the only profile (Phase 86 / Epic 604), so this
+    // routes to LegalDemoDataSeeder.
+    demoDataSeeder.seed(schemaName, orgId, "legal-za");
   }
 
   @Test
@@ -306,37 +304,28 @@ class DemoDataSeederIntegrationTest {
   }
 
   @Test
-  void dispatcher_routesToCorrectSeeder_accounting() {
-    // Provision a separate tenant for accounting profile
-    String slug = "acct-dispatch-test-" + UUID.randomUUID().toString().substring(0, 8);
-    tenantProvisioningService.provisionTenant(
-        slug, "Accounting Dispatch Test Org", "accounting-za");
-    String acctSchema = mappingRepository.findByExternalOrgId(slug).orElseThrow().getSchemaName();
-    UUID acctOrgId = organizationRepository.findByExternalOrgId(slug).orElseThrow().getId();
-
-    // Use the dispatcher to seed — should route to AccountingDemoDataSeeder
-    demoDataSeeder.seed(acctSchema, acctOrgId, "accounting-za");
-
+  void dispatcher_routesLegalZaToLegalSeeder() {
     var customerNames = new AtomicReference<List<String>>();
     tenantTransactionHelper.executeInTenantTransaction(
-        acctSchema,
-        acctOrgId.toString(),
+        schemaName,
+        orgId.toString(),
         t ->
             customerNames.set(
                 customerRepository.findAll().stream().map(Customer::getName).toList()));
-
-    List<String> names = customerNames.get();
-    assertFalse(names.isEmpty(), "Accounting seeder should create customers");
-    boolean hasAccountingCustomer =
-        names.stream()
-            .anyMatch(
-                n ->
-                    n.contains("Van der Merwe")
-                        || n.contains("Karoo Investments")
-                        || n.contains("Berg & Berg"));
     assertTrue(
-        hasAccountingCustomer,
-        "Accounting seeder should create accounting-specific customers, found: " + names);
+        customerNames.get().contains("Dlamini Property Trust"),
+        "Dispatcher should route legal-za to LegalDemoDataSeeder, found: " + customerNames.get());
+  }
+
+  @Test
+  void dispatcher_rejectsUnknownProfile() {
+    // No silent generic fallback: any profile other than legal-za is rejected (ADR-332).
+    for (String profile : java.util.Arrays.asList("accounting-za", "consulting-generic", null)) {
+      assertThrows(
+          InvalidStateException.class,
+          () -> demoDataSeeder.seed(schemaName, orgId, profile),
+          "profile " + profile);
+    }
   }
 
   @Test

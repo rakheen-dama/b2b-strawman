@@ -26,7 +26,7 @@ import tools.jackson.databind.ObjectMapper;
  *   <li><b>Default-enabled modules are actually enabled</b> — every registry module whose {@code
  *       defaultEnabledFor} declares a profile must appear in that profile's {@code enabledModules}.
  *       This catches the inverse defect: the registry declaring intent that the profile JSON never
- *       honours (the {@code regulatory_deadlines} / accounting-za gap that motivated this test).
+ *       honours (the since-removed regulatory deadlines module's gap motivated this test).
  * </ul>
  *
  * <p>The valid-slug set is derived from the live code, never hard-coded, so adding a module to the

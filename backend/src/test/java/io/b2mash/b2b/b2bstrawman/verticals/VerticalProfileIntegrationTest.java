@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -11,7 +12,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
@@ -49,6 +52,7 @@ class VerticalProfileIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private AuditService auditService;
+  @Autowired private OrganizationRepository organizationRepository;
 
   private String lifecycleTenantSchema;
   private String guardTenantSchema;
@@ -203,5 +207,35 @@ class VerticalProfileIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(GUARD_ORG_ID, "user_vpi_guard_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray());
+  }
+
+  // --- Phase 86 (Epic 604, ADR-332): legal-za is the only profile; unknown ids are rejected ---
+
+  @Test
+  @Order(4)
+  void switchToRemovedProfile_returns400() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/vertical-profile")
+                .with(TestJwtFactory.ownerJwt(LIFECYCLE_ORG_ID, "user_vpi_lifecycle_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"verticalProfile": "accounting-za"}"""))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Invalid profile"));
+  }
+
+  @Test
+  @Order(5)
+  void provisioningWithRemovedProfile_isRejectedBeforeAnyOrgRowIsWritten() {
+    assertThatThrownBy(
+            () ->
+                provisioningService.provisionTenant(
+                    "org_vpi_removed_profile", "Removed Profile Org", "accounting-za"))
+        .isInstanceOfSatisfying(
+            InvalidStateException.class,
+            e -> assertThat(e.getBody().getTitle()).isEqualTo("Unknown vertical profile"));
+    assertThat(organizationRepository.findByClerkOrgId("org_vpi_removed_profile")).isEmpty();
   }
 }

@@ -54,29 +54,11 @@ public class Subscription {
   @Column(name = "subscription_status", nullable = false)
   private SubscriptionStatus subscriptionStatus;
 
-  @Column(name = "payfast_token")
-  private String payfastToken;
-
   @Column(name = "trial_ends_at")
   private Instant trialEndsAt;
 
   @Column(name = "grace_ends_at")
   private Instant graceEndsAt;
-
-  @Column(name = "monthly_amount_cents")
-  private Integer monthlyAmountCents;
-
-  @Column(name = "currency", length = 3)
-  private String currency;
-
-  @Column(name = "last_payment_at")
-  private Instant lastPaymentAt;
-
-  @Column(name = "next_billing_at")
-  private Instant nextBillingAt;
-
-  @Column(name = "payfast_payment_id")
-  private String payfastPaymentId;
 
   @Column(name = "current_period_start")
   private Instant currentPeriodStart;
@@ -160,36 +142,12 @@ public class Subscription {
     return subscriptionStatus;
   }
 
-  public String getPayfastToken() {
-    return payfastToken;
-  }
-
   public Instant getTrialEndsAt() {
     return trialEndsAt;
   }
 
   public Instant getGraceEndsAt() {
     return graceEndsAt;
-  }
-
-  public Integer getMonthlyAmountCents() {
-    return monthlyAmountCents;
-  }
-
-  public String getCurrency() {
-    return currency;
-  }
-
-  public Instant getLastPaymentAt() {
-    return lastPaymentAt;
-  }
-
-  public Instant getNextBillingAt() {
-    return nextBillingAt;
-  }
-
-  public String getPayfastPaymentId() {
-    return payfastPaymentId;
   }
 
   public Instant getCurrentPeriodStart() {
@@ -222,36 +180,12 @@ public class Subscription {
 
   // --- Setters for mutable fields ---
 
-  public void setPayfastToken(String payfastToken) {
-    this.payfastToken = payfastToken;
-  }
-
   public void setTrialEndsAt(Instant trialEndsAt) {
     this.trialEndsAt = trialEndsAt;
   }
 
   public void setGraceEndsAt(Instant graceEndsAt) {
     this.graceEndsAt = graceEndsAt;
-  }
-
-  public void setMonthlyAmountCents(Integer monthlyAmountCents) {
-    this.monthlyAmountCents = monthlyAmountCents;
-  }
-
-  public void setCurrency(String currency) {
-    this.currency = currency;
-  }
-
-  public void setLastPaymentAt(Instant lastPaymentAt) {
-    this.lastPaymentAt = lastPaymentAt;
-  }
-
-  public void setNextBillingAt(Instant nextBillingAt) {
-    this.nextBillingAt = nextBillingAt;
-  }
-
-  public void setPayfastPaymentId(String payfastPaymentId) {
-    this.payfastPaymentId = payfastPaymentId;
   }
 
   public void setCurrentPeriodStart(Instant currentPeriodStart) {
@@ -283,19 +217,6 @@ public class Subscription {
     GRACE_PERIOD,
     EXPIRED,
     LOCKED;
-
-    /** Returns true if this status allows initiating a new subscription. */
-    public boolean isSubscribable() {
-      return switch (this) {
-        case TRIALING, EXPIRED, GRACE_PERIOD, SUSPENDED, LOCKED -> true;
-        default -> false;
-      };
-    }
-
-    /** Returns true if this status allows cancellation. */
-    public boolean isCancellable() {
-      return this == ACTIVE;
-    }
 
     /** Returns true if this status allows write operations (creating projects, tasks, etc.). */
     public boolean isWriteEnabled() {

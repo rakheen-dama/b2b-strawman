@@ -158,15 +158,3 @@ kazi:
     timeout-seconds: 10
     max-document-size-bytes: 10485760
     max-total-document-size-bytes: 52428800
-
-heykazi:
-  billing:
-    notify-url: http://localhost:8080/api/webhooks/subscription
-    return-url: http://localhost:3000/settings/billing?result=success
-    cancel-url: http://localhost:3000/settings/billing?result=cancelled
-    payfast:
-      merchant-id: test-merchant-id
-      merchant-key: test-merchant-key
-      passphrase: test-passphrase
-      sandbox: true
-

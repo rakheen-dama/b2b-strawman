@@ -8,7 +8,6 @@ import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 class SubscriptionEntityTest {
 
   @Autowired private SubscriptionRepository subscriptionRepository;
-
-  @Autowired private SubscriptionPaymentRepository subscriptionPaymentRepository;
 
   @Autowired private OrganizationRepository organizationRepository;
 
@@ -48,59 +45,6 @@ class SubscriptionEntityTest {
     assertThat(found.getTrialEndsAt()).isNotNull();
     assertThat(found.getCreatedAt()).isNotNull();
     assertThat(found.getUpdatedAt()).isNotNull();
-  }
-
-  @Test
-  void shouldPersistSubscriptionPaymentAndRetrieve() {
-    var orgId = createOrganization("entity-test-payment-" + UUID.randomUUID());
-    var subscription = subscriptionRepository.saveAndFlush(new Subscription(orgId));
-
-    var payment =
-        new SubscriptionPayment(
-            subscription.getId(),
-            "pf-pay-123",
-            49900,
-            "ZAR",
-            SubscriptionPayment.PaymentStatus.COMPLETE,
-            Instant.now(),
-            null);
-
-    var saved = subscriptionPaymentRepository.saveAndFlush(payment);
-
-    var found = subscriptionPaymentRepository.findById(saved.getId()).orElseThrow();
-    assertThat(found.getSubscriptionId()).isEqualTo(subscription.getId());
-    assertThat(found.getPayfastPaymentId()).isEqualTo("pf-pay-123");
-    assertThat(found.getAmountCents()).isEqualTo(49900);
-    assertThat(found.getCurrency()).isEqualTo("ZAR");
-    assertThat(found.getStatus()).isEqualTo(SubscriptionPayment.PaymentStatus.COMPLETE);
-    assertThat(found.getPaymentDate()).isNotNull();
-    assertThat(found.getCreatedAt()).isNotNull();
-  }
-
-  @Test
-  void shouldRoundTripSubscriptionPaymentRawItnJsonb() {
-    var orgId = createOrganization("entity-test-itn-" + UUID.randomUUID());
-    var subscription = subscriptionRepository.saveAndFlush(new Subscription(orgId));
-
-    var itnData =
-        Map.of("m_payment_id", "12345", "pf_payment_id", "67890", "amount_gross", "499.00");
-    var payment =
-        new SubscriptionPayment(
-            subscription.getId(),
-            "pf-pay-456",
-            49900,
-            "ZAR",
-            SubscriptionPayment.PaymentStatus.COMPLETE,
-            Instant.now(),
-            itnData);
-
-    var saved = subscriptionPaymentRepository.saveAndFlush(payment);
-
-    var found = subscriptionPaymentRepository.findById(saved.getId()).orElseThrow();
-    assertThat(found.getRawItn()).isNotNull();
-    assertThat(found.getRawItn()).containsEntry("m_payment_id", "12345");
-    assertThat(found.getRawItn()).containsEntry("pf_payment_id", "67890");
-    assertThat(found.getRawItn()).containsEntry("amount_gross", "499.00");
   }
 
   @Test
@@ -205,13 +149,7 @@ class SubscriptionEntityTest {
     var saved = subscriptionRepository.saveAndFlush(subscription);
 
     var found = subscriptionRepository.findById(saved.getId()).orElseThrow();
-    assertThat(found.getPayfastToken()).isNull();
     assertThat(found.getGraceEndsAt()).isNull();
-    assertThat(found.getMonthlyAmountCents()).isNull();
-    assertThat(found.getCurrency()).isNull();
-    assertThat(found.getLastPaymentAt()).isNull();
-    assertThat(found.getNextBillingAt()).isNull();
-    assertThat(found.getPayfastPaymentId()).isNull();
     assertThat(found.getCurrentPeriodStart()).isNull();
     assertThat(found.getCurrentPeriodEnd()).isNull();
     assertThat(found.getCancelledAt()).isNull();

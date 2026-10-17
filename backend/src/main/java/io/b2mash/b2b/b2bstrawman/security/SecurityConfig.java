@@ -108,10 +108,11 @@ public class SecurityConfig {
                 auth.requestMatchers("/portal/auth/**")
                     .permitAll()
                     // Note: /portal/** is permitAll at the authorization layer because
-                    // CustomerAuthFilter is the actual gatekeeper for portal requests. The dev
-                    // harness (/portal/dev/**) is profile-gated inside CustomerAuthFilter.
-                    // shouldNotFilter (TD-002) — it is only reachable anonymously in local/dev/
-                    // keycloak; in prod the filter rejects anonymous dev-portal traffic with 401.
+                    // CustomerAuthFilter is the actual gatekeeper for portal requests. The
+                    // dev-only mock-payment checkout (/portal/dev/**, MockPaymentController) is
+                    // profile-gated in CustomerAuthFilter.shouldNotFilter (TD-002) — it is only
+                    // reachable anonymously in local/dev/keycloak; in prod the filter rejects
+                    // anonymous /portal/dev/** traffic with 401.
                     .requestMatchers("/portal/**")
                     .permitAll())
         // No oauth2ResourceServer — portal uses CustomerAuthFilter with portal JWTs

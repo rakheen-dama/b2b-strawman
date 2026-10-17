@@ -37,7 +37,7 @@ class CustomerAuthFilterDevPortalGateTest {
   @Test
   void devPortalPath_isSkipped_underLocalProfile() {
     var filter = filterForProfiles("local");
-    assertThat(shouldNotFilter(filter, "/portal/dev/generate-link")).isTrue();
+    assertThat(shouldNotFilter(filter, "/portal/dev/mock-payment")).isTrue();
   }
 
   @Test
@@ -49,10 +49,11 @@ class CustomerAuthFilterDevPortalGateTest {
 
   @Test
   void devPortalPath_isNotSkipped_underProdProfile() {
-    // The harness does not exist in prod — the skip is withheld so the filter runs and the
+    // The mock-payment checkout does not exist in prod — the skip is withheld so the filter runs
+    // and the
     // missing Bearer token yields 401.
     var filter = filterForProfiles("prod");
-    assertThat(shouldNotFilter(filter, "/portal/dev/generate-link")).isFalse();
+    assertThat(shouldNotFilter(filter, "/portal/dev/mock-payment")).isFalse();
   }
 
   @Test

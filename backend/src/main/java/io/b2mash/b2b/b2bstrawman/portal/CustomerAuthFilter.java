@@ -32,12 +32,11 @@ public class CustomerAuthFilter extends OncePerRequestFilter {
   private static final String BEARER_PREFIX = "Bearer ";
 
   /**
-   * Profiles in which the Thymeleaf dev portal harness ({@code /portal/dev/**}) exists and may be
-   * reached anonymously. Mirrors {@code DevPortalController} ({@code local}, {@code dev}) plus
-   * {@code MockPaymentController} ({@code local}, {@code dev}, {@code keycloak}), whose
-   * mock-payment checkout page is also served under {@code /portal/dev/**}. In any other profile
-   * (notably {@code prod}) the skip is withheld so anonymous dev-portal traffic is rejected by this
-   * filter (401) instead of being silently permitted (TD-002).
+   * Profiles in which the dev-only mock-payment checkout ({@code /portal/dev/**}, served by {@code
+   * MockPaymentController}, {@code @Profile({"local", "dev", "keycloak"})}) exists and may be
+   * reached anonymously. In any other profile (notably {@code prod}) the skip is withheld so
+   * anonymous {@code /portal/dev/**} traffic is rejected by this filter (401) instead of being
+   * silently permitted (TD-002).
    */
   private static final Profiles DEV_PORTAL_PROFILES = Profiles.of("local", "dev", "keycloak");
 
@@ -129,9 +128,10 @@ public class CustomerAuthFilter extends OncePerRequestFilter {
     if (!path.startsWith("/portal/")) {
       return true;
     }
-    // Allow unauthenticated access to /portal/dev/** (dev harness) — only in profiles where the
-    // harness actually exists. In prod the skip is withheld so the request falls through to the
-    // Bearer-token check below and is rejected with 401 (TD-002 defense in depth).
+    // Allow unauthenticated access to /portal/dev/** (dev-only mock-payment checkout) — only in
+    // profiles where MockPaymentController exists. In prod the skip is withheld so the request
+    // falls through to the Bearer-token check below and is rejected with 401 (TD-002 defense in
+    // depth).
     if (path.startsWith("/portal/dev/")) {
       return devPortalEnabled;
     }

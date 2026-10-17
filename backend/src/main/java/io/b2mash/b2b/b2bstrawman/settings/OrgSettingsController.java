@@ -7,7 +7,6 @@ import io.b2mash.b2b.b2bstrawman.settings.dto.DataProtectionSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.SettingsResponse;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateAcceptanceSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateBatchBillingSettingsRequest;
-import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateCapacitySettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateCollectionsSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateComplianceSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateExpenseSettingsRequest;
@@ -145,15 +144,6 @@ public class OrgSettingsController {
       @Valid @RequestBody UpdateExpenseSettingsRequest request, ActorContext actor) {
     return ResponseEntity.ok(
         orgSettingsService.updateExpenseSettings(request.defaultExpenseMarkupPercent(), actor));
-  }
-
-  @PatchMapping("/capacity")
-  @RequiresCapability("TEAM_OVERSIGHT")
-  public ResponseEntity<SettingsResponse> updateCapacitySettings(
-      @Valid @RequestBody UpdateCapacitySettingsRequest request, ActorContext actor) {
-    return ResponseEntity.ok(
-        orgSettingsService.updateDefaultWeeklyCapacityHours(
-            request.defaultWeeklyCapacityHours(), actor));
   }
 
   @PatchMapping("/batch-billing")

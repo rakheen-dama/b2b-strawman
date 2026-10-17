@@ -78,15 +78,14 @@ class VerticalProfileRegistryTest {
   }
 
   @Test
-  void consultingZaProfileEnablesResourcePlanningAndAutomationBuilder() {
-    // GAP-C-04 + GAP-C-07: TeamUtilizationWidget depends on resource_planning and the
-    // Automations UI depends on automation_builder. Both modules ship enabled for consulting-za
-    // so fresh tenants can see utilization and manage automation rules out of the box.
-    // GAP-P-01 also enables information_requests for portal request flows.
+  void consultingZaProfileEnablesAutomationBuilderAndInformationRequests() {
+    // GAP-C-07: the Automations UI depends on automation_builder, which ships enabled for
+    // consulting-za so fresh tenants can manage automation rules out of the box. GAP-P-01 also
+    // enables information_requests for portal request flows. (The GAP-C-04 resource-planning
+    // module was removed with capacity in Phase 86 / Epic 599.)
     var profile = registry.getProfile("consulting-za").orElseThrow();
     assertThat(profile.enabledModules())
-        .containsExactlyInAnyOrder(
-            "resource_planning", "automation_builder", "information_requests");
+        .containsExactlyInAnyOrder("automation_builder", "information_requests");
   }
 
   @Test

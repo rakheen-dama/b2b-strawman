@@ -55,14 +55,12 @@ Billing, invoicing, and financial reporting.
 | Reports | `/org/{slug}/reports` | Custom financial and utilisation reports |
 | Trust Accounting | `/org/{slug}/trust-accounting` | Client trust account management (law firm vertical only) |
 
-### Zone 5: Team & Resources
-Staff and capacity management.
+### Zone 5: Team
+Staff management.
 
 | Page | Path | Description |
 |------|------|-------------|
 | Team | `/org/{slug}/team` | Org members, roles (OWNER, ADMIN, MEMBER), and billing rates |
-| Resources | `/org/{slug}/resources` | Resource allocation across projects |
-| Utilisation | `/org/{slug}/resources/utilization` | Member utilisation rates and capacity planning |
 
 ### Zone 6: Settings
 Configuration and administration.
@@ -179,5 +177,4 @@ Configuration and administration.
 - `CUSTOMER_MANAGEMENT` — create/edit customers, manage lifecycle
 - `INVOICING` — view and manage invoices, run billing
 - `FINANCIAL_VISIBILITY` — view profitability reports, budgets, rate cards
-- `RESOURCE_PLANNING` — manage resource allocations and capacity
 - Owners and Admins have all capabilities. Members have PROJECT_MANAGEMENT only (unless custom roles are configured).

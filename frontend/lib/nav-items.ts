@@ -278,22 +278,6 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Users,
         exact: true,
       },
-      {
-        label: "Resources",
-        href: (slug) => `/org/${slug}/resources`,
-        icon: Users,
-        exact: true,
-        requiredCapability: "RESOURCE_PLANNING",
-        requiredModule: "resource_planning",
-      },
-      {
-        label: "Utilization",
-        href: (slug) => `/org/${slug}/resources/utilization`,
-        icon: TrendingUp,
-        exact: true,
-        requiredCapability: "RESOURCE_PLANNING",
-        requiredModule: "resource_planning",
-      },
     ],
   },
   {
@@ -443,11 +427,6 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
     href: (slug) => `/org/${slug}/settings/batch-billing`,
     adminOnly: true,
     requiredModule: "bulk_billing",
-  },
-  {
-    title: "Capacity",
-    description: "Set default weekly capacity hours for team members",
-    href: (slug) => `/org/${slug}/settings/capacity`,
   },
   {
     title: "Email",

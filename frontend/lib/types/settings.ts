@@ -32,8 +32,6 @@ export interface OrgSettings {
   defaultExpenseMarkupPercent?: number | null;
   // information request defaults
   defaultRequestReminderDays?: number;
-  // capacity defaults
-  defaultWeeklyCapacityHours?: number;
   // batch billing defaults
   billingBatchAsyncThreshold?: number;
   billingEmailRateLimit?: number;

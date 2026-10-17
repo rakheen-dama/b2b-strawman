@@ -11,8 +11,6 @@ const SEGMENT_LABELS: Record<string, string> = {
   projects: "Projects",
   team: "Team",
   settings: "Settings",
-  resources: "Resources",
-  utilization: "Utilization",
   // Settings sub-segments
   billing: "Billing",
   notifications: "Notifications",
@@ -32,7 +30,6 @@ const SEGMENT_LABELS: Record<string, string> = {
   "request-templates": "Request Templates",
   "request-settings": "Request Settings",
   "batch-billing": "Batch Billing",
-  capacity: "Capacity",
   email: "Email",
   automations: "Automations",
   roles: "Roles & Permissions",

@@ -31,19 +31,13 @@ import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
 afterEach(() => cleanup());
 
-describe("Nav items - resource planning gating", () => {
-  it("Resources nav item declares requiredModule: resource_planning", () => {
-    const teamGroup = NAV_GROUPS.find((g) => g.id === "team");
-    const resourcesItem = teamGroup?.items.find((i) => i.label === "Resources");
-    expect(resourcesItem).toBeDefined();
-    expect(resourcesItem?.requiredModule).toBe("resource_planning");
-  });
-
-  it("Utilization nav item exists with requiredModule: resource_planning", () => {
-    const teamGroup = NAV_GROUPS.find((g) => g.id === "team");
-    const utilizationItem = teamGroup?.items.find((i) => i.label === "Utilization");
-    expect(utilizationItem).toBeDefined();
-    expect(utilizationItem?.requiredModule).toBe("resource_planning");
+describe("Nav items - resource planning removed (Epic 599)", () => {
+  it("no nav item or settings entry references the resource_planning module", () => {
+    const navItems = NAV_GROUPS.flatMap((g) => g.items);
+    expect(navItems.find((i) => i.label === "Resources")).toBeUndefined();
+    expect(navItems.find((i) => i.label === "Utilization")).toBeUndefined();
+    expect(navItems.some((i) => i.requiredModule === "resource_planning")).toBe(false);
+    expect(SETTINGS_ITEMS.some((i) => i.title === "Capacity")).toBe(false);
   });
 });
 
@@ -92,43 +86,43 @@ describe("Settings nav groups - features group", () => {
 });
 
 describe("ModuleGate page-level gating", () => {
-  it("hides resource planning content when module disabled", () => {
+  it("hides bulk billing content when module disabled", () => {
     render(
       <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
         <ModuleGate
-          module="resource_planning"
-          fallback={<ModuleDisabledFallback moduleName="Resource Planning" slug="acme" />}
+          module="bulk_billing"
+          fallback={<ModuleDisabledFallback moduleName="Bulk Billing Runs" slug="acme" />}
         >
-          <div>Resource planning content</div>
+          <div>Bulk billing content</div>
         </ModuleGate>
       </OrgProfileProvider>
     );
 
-    expect(screen.queryByText("Resource planning content")).not.toBeInTheDocument();
+    expect(screen.queryByText("Bulk billing content")).not.toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /resource planning is not enabled/i })
+      screen.getByRole("heading", { name: /bulk billing runs is not enabled/i })
     ).toBeInTheDocument();
   });
 
-  it("shows resource planning content when module enabled", () => {
+  it("shows bulk billing content when module enabled", () => {
     render(
       <OrgProfileProvider
         verticalProfile={null}
-        enabledModules={["resource_planning"]}
+        enabledModules={["bulk_billing"]}
         terminologyNamespace={null}
       >
         <ModuleGate
-          module="resource_planning"
-          fallback={<ModuleDisabledFallback moduleName="Resource Planning" slug="acme" />}
+          module="bulk_billing"
+          fallback={<ModuleDisabledFallback moduleName="Bulk Billing Runs" slug="acme" />}
         >
-          <div>Resource planning content</div>
+          <div>Bulk billing content</div>
         </ModuleGate>
       </OrgProfileProvider>
     );
 
-    expect(screen.getByText("Resource planning content")).toBeInTheDocument();
+    expect(screen.getByText("Bulk billing content")).toBeInTheDocument();
     expect(
-      screen.queryByRole("heading", { name: /resource planning is not enabled/i })
+      screen.queryByRole("heading", { name: /bulk billing runs is not enabled/i })
     ).not.toBeInTheDocument();
   });
 

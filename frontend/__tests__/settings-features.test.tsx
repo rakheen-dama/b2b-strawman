@@ -45,9 +45,9 @@ beforeEach(() => {
 
 const mockModules: ModuleStatus[] = [
   {
-    id: "resource_planning",
-    name: "Resource Planning",
-    description: "Team allocation grid and capacity forecasting.",
+    id: "information_requests",
+    name: "Information Requests",
+    description: "Customer document-request workflows with portal pickup and acceptance",
     enabled: false,
   },
   {
@@ -68,10 +68,12 @@ describe("FeaturesSettingsForm", () => {
   it("renders all 3 feature cards with names and descriptions", () => {
     render(<FeaturesSettingsForm initialModules={mockModules} canManage={true} />);
 
-    expect(screen.getByText("Resource Planning")).toBeInTheDocument();
+    expect(screen.getByText("Information Requests")).toBeInTheDocument();
     expect(screen.getByText("Bulk Billing Runs")).toBeInTheDocument();
     expect(screen.getByText("Automation Rule Builder")).toBeInTheDocument();
-    expect(screen.getByText("Team allocation grid and capacity forecasting.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Customer document-request workflows with portal pickup and acceptance")
+    ).toBeInTheDocument();
   });
 
   it("shows Switch controls when canManage is true", () => {
@@ -96,15 +98,15 @@ describe("FeaturesSettingsForm", () => {
       success: true,
       data: {
         modules: mockModules.map((m) =>
-          m.id === "resource_planning" ? { ...m, enabled: true } : m
+          m.id === "information_requests" ? { ...m, enabled: true } : m
         ),
       },
     });
 
     render(<FeaturesSettingsForm initialModules={mockModules} canManage={true} />);
 
-    const resourcePlanningSwitch = screen.getByLabelText("Toggle Resource Planning");
-    await user.click(resourcePlanningSwitch);
+    const informationRequestsSwitch = screen.getByLabelText("Toggle Information Requests");
+    await user.click(informationRequestsSwitch);
 
     await waitFor(() => {
       expect(updateModuleSettings).toHaveBeenCalledTimes(1);
@@ -113,7 +115,7 @@ describe("FeaturesSettingsForm", () => {
     // enabled list. `automation_builder` must NOT be included.
     const callArg = vi.mocked(updateModuleSettings).mock.calls[0][0];
     const sorted = [...callArg].sort();
-    expect(sorted).toEqual(["bulk_billing", "resource_planning"]);
+    expect(sorted).toEqual(["bulk_billing", "information_requests"]);
     expect(sorted).not.toContain("automation_builder");
   });
 
@@ -123,14 +125,14 @@ describe("FeaturesSettingsForm", () => {
       success: true,
       data: {
         modules: mockModules.map((m) =>
-          m.id === "resource_planning" ? { ...m, enabled: true } : m
+          m.id === "information_requests" ? { ...m, enabled: true } : m
         ),
       },
     });
 
     render(<FeaturesSettingsForm initialModules={mockModules} canManage={true} />);
 
-    await user.click(screen.getByLabelText("Toggle Resource Planning"));
+    await user.click(screen.getByLabelText("Toggle Information Requests"));
 
     await waitFor(() => {
       expect(mockRefresh).toHaveBeenCalled();
@@ -146,7 +148,7 @@ describe("FeaturesSettingsForm", () => {
 
     render(<FeaturesSettingsForm initialModules={mockModules} canManage={true} />);
 
-    await user.click(screen.getByLabelText("Toggle Resource Planning"));
+    await user.click(screen.getByLabelText("Toggle Information Requests"));
 
     await waitFor(() => {
       expect(

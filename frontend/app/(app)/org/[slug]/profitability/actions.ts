@@ -39,8 +39,7 @@ export async function getUtilization(
 export async function getOrgProfitability(
   from?: string,
   to?: string,
-  customerId?: string,
-  includeProjections?: boolean
+  customerId?: string
 ): Promise<ActionResult<OrgProfitabilityResponse>> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -52,7 +51,6 @@ export async function getOrgProfitability(
     if (from) params.set("from", from);
     if (to) params.set("to", to);
     if (customerId) params.set("customerId", customerId);
-    if (includeProjections) params.set("includeProjections", "true");
     const qs = params.toString();
     const data = await api.get<OrgProfitabilityResponse>(
       `/api/reports/profitability${qs ? `?${qs}` : ""}`

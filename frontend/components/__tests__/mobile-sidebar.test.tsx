@@ -40,7 +40,6 @@ const ALL_CAPABILITIES = [
   "TEAM_OVERSIGHT",
   "CUSTOMER_MANAGEMENT",
   "AUTOMATIONS",
-  "RESOURCE_PLANNING",
 ];
 
 function renderMobileSidebar(props: { groups?: string[] } = {}) {

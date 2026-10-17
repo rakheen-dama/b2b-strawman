@@ -85,9 +85,9 @@ class OrgSettingsEmbeddableNullReloadTest {
                   + "logo_s3_key = NULL, brand_color = NULL, document_footer_text = NULL, "
                   + "portal_digest_cadence = NULL, "
                   + "digest_last_sent_at = NULL, portal_notification_doc_types = '[]'::jsonb, "
-                  // Expense + Capacity are single-column nullable groups (Wave 3.4) — nulling the
-                  // sole column makes Hibernate materialise a NULL embedded, the genuine NPE risk.
-                  + "default_expense_markup_percent = NULL, default_weekly_capacity_hours = NULL, "
+                  // Expense is a single-column nullable group (Wave 3.4) — nulling the sole
+                  // column makes Hibernate materialise a NULL embedded, the genuine NPE risk.
+                  + "default_expense_markup_percent = NULL, "
                   // Billing has a NOT-NULL-defaulted pair, but default_billing_run_currency is
                   // nullable; null it to exercise the null-safe billing accessor too.
                   + "default_billing_run_currency = NULL, "
@@ -139,13 +139,11 @@ class OrgSettingsEmbeddableNullReloadTest {
                     assertThat(reloaded.getPortal().getEffectivePortalDigestCadence())
                         .isEqualTo(PortalDigestCadence.WEEKLY);
 
-                    // Wave 3.4 single-column nullable groups: nulling the sole column makes the
+                    // Wave 3.4 single-column nullable group: nulling the sole column makes the
                     // embedded materialise as NULL, so the lazy-fallback getter is the only thing
                     // keeping this NPE-safe.
                     assertThat(reloaded.getExpense()).isNotNull();
                     assertThat(reloaded.getExpense().getDefaultExpenseMarkupPercent()).isNull();
-                    assertThat(reloaded.getCapacity()).isNotNull();
-                    assertThat(reloaded.getCapacity().getDefaultWeeklyCapacityHours()).isNull();
 
                     // Wave 3.4 billing group: its NOT-NULL-defaulted columns keep the embedded
                     // non-NULL on reload, but the nullable currency override is null — exercise the

@@ -107,20 +107,6 @@ public class VerticalModuleRegistry {
     // --- Horizontal modules (profile-independent, manually toggled) ---
 
     map.put(
-        "resource_planning",
-        new ModuleDefinition(
-            "resource_planning",
-            "Resource Planning",
-            "Team allocation grid, capacity forecasting, and utilization tracking. Best for firms"
-                + " with 10+ team members managing multiple concurrent projects.",
-            "active",
-            ModuleCategory.HORIZONTAL,
-            List.of(),
-            List.of(
-                new NavItem("/resources", "Resources", "work"),
-                new NavItem("/resources/utilization", "Utilization", "work"))));
-
-    map.put(
         "bulk_billing",
         new ModuleDefinition(
             "bulk_billing",

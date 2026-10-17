@@ -184,12 +184,6 @@ test.describe.serial("Day 45 — Mid-Quarter", () => {
     await page.goto(`${BASE}/invoices`);
     await expect(page.getByText(/paid/i).first()).toBeVisible();
   });
-
-  test("Resources/scheduling page loads", async ({ page }) => {
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/resources`);
-    await expect(page.locator("main")).toBeVisible();
-  });
 });
 
 // ═══════════════════════════════════════════════════════════════════

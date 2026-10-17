@@ -71,9 +71,7 @@ describe("CapabilityProvider", () => {
     function MissingCapChecker() {
       const { hasCapability } = useCapabilities();
       return (
-        <span data-testid="has-resource">
-          {String(hasCapability(CAPABILITIES.RESOURCE_PLANNING))}
-        </span>
+        <span data-testid="has-automations">{String(hasCapability(CAPABILITIES.AUTOMATIONS))}</span>
       );
     }
 
@@ -88,15 +86,15 @@ describe("CapabilityProvider", () => {
       </CapabilityProvider>
     );
 
-    expect(screen.getByTestId("has-resource")).toHaveTextContent("false");
+    expect(screen.getByTestId("has-automations")).toHaveTextContent("false");
   });
 
   it("isAdmin bypasses capability check — hasCapability always true", () => {
     function AdminBypassChecker() {
       const { hasCapability } = useCapabilities();
       return (
-        <span data-testid="admin-has-resource">
-          {String(hasCapability(CAPABILITIES.RESOURCE_PLANNING))}
+        <span data-testid="admin-has-automations">
+          {String(hasCapability(CAPABILITIES.AUTOMATIONS))}
         </span>
       );
     }
@@ -107,15 +105,15 @@ describe("CapabilityProvider", () => {
       </CapabilityProvider>
     );
 
-    expect(screen.getByTestId("admin-has-resource")).toHaveTextContent("true");
+    expect(screen.getByTestId("admin-has-automations")).toHaveTextContent("true");
   });
 
   it("isOwner bypasses capability check — hasCapability always true", () => {
     function OwnerBypassChecker() {
       const { hasCapability } = useCapabilities();
       return (
-        <span data-testid="owner-has-resource">
-          {String(hasCapability(CAPABILITIES.RESOURCE_PLANNING))}
+        <span data-testid="owner-has-automations">
+          {String(hasCapability(CAPABILITIES.AUTOMATIONS))}
         </span>
       );
     }
@@ -126,7 +124,7 @@ describe("CapabilityProvider", () => {
       </CapabilityProvider>
     );
 
-    expect(screen.getByTestId("owner-has-resource")).toHaveTextContent("true");
+    expect(screen.getByTestId("owner-has-automations")).toHaveTextContent("true");
   });
 });
 

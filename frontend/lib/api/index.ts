@@ -24,7 +24,6 @@ export * from "./capabilities";
 export * from "./billing-runs";
 export * from "./information-requests";
 export * from "./automations";
-export * from "./capacity";
 export * from "./email";
 export * from "./integrations";
 export * from "./org-roles";

@@ -71,15 +71,12 @@ import type { ProjectSetupStatus, FicaStatus } from "@/lib/types";
 import type { SetupStep } from "@/components/setup/types";
 import { ArchivedProjectBanner } from "@/components/projects/archived-project-banner";
 import { OverflowActionsMenu } from "@/components/projects/overflow-actions-menu";
-import { ProjectStaffingTab } from "@/components/capacity/project-staffing-tab";
 import { ProjectCourtDatesTab } from "@/components/legal/project-court-dates-tab";
 import { ProjectAdversePartiesTab } from "@/components/legal/project-adverse-parties-tab";
 import { ProjectDisbursementsTab } from "@/components/legal/project-disbursements-tab";
 import { ProjectStatementsTab } from "@/components/legal/project-statements-tab";
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { TerminologyText } from "@/components/terminology-text";
-import { getProjectStaffing, type ProjectStaffingResponse } from "@/lib/api/capacity";
-import { getCurrentMonday, formatDate as formatDateUtil, addWeeks } from "@/lib/date-utils";
 import { createSavedViewAction } from "./view-actions";
 import { PROMOTED_PROJECT_SLUGS, PROMOTED_TASK_SLUGS } from "@/lib/constants/promoted-field-slugs";
 import { ArrowLeft, Receipt } from "lucide-react";
@@ -289,16 +286,6 @@ export default async function ProjectDetailPage({
     budgetStatus = await api.get<BudgetStatusResponse>(`/api/projects/${id}/budget`);
   } catch {
     // Non-fatal: 404 means no budget set, other errors show empty state
-  }
-
-  // Project staffing data for the "Staffing" tab
-  let projectStaffing: ProjectStaffingResponse | null = null;
-  try {
-    const monday = getCurrentMonday();
-    const weekEnd = addWeeks(monday, 4);
-    projectStaffing = await getProjectStaffing(id, formatDateUtil(monday), formatDateUtil(weekEnd));
-  } catch {
-    // Non-fatal: staffing tab will show empty state
   }
 
   // Project profitability for the "Financials" tab (lead/admin/owner)
@@ -656,7 +643,6 @@ export default async function ProjectDetailPage({
             <ProjectCommentsSection projectId={id} orgSlug={slug} />
           ) : undefined
         }
-        staffingPanel={<ProjectStaffingTab staffing={projectStaffing} />}
         courtDatesPanel={<ProjectCourtDatesTab projectId={id} slug={slug} />}
         adversePartiesPanel={<ProjectAdversePartiesTab projectId={id} slug={slug} />}
         disbursementsPanel={

@@ -87,7 +87,7 @@ describe("Sidebar capability gating", () => {
     render(
       <OrgProfileProvider
         verticalProfile={null}
-        enabledModules={["resource_planning", "bulk_billing", "automation_builder"]}
+        enabledModules={["bulk_billing", "automation_builder"]}
         terminologyNamespace={null}
       >
         <TerminologyProvider verticalProfile={null}>
@@ -107,7 +107,6 @@ describe("Sidebar capability gating", () => {
     expect(screen.getByText("Invoices")).toBeInTheDocument();
     expect(screen.getByText("Customers")).toBeInTheDocument();
     expect(screen.getByText("Profitability")).toBeInTheDocument();
-    expect(screen.getByText("Resources")).toBeInTheDocument();
     expect(screen.getByText("Reports")).toBeInTheDocument();
     expect(screen.getByText("Compliance")).toBeInTheDocument();
     expect(screen.getByText("Recurring Schedules")).toBeInTheDocument();

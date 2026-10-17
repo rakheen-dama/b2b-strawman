@@ -51,10 +51,6 @@ const NOTIFICATION_TYPE_LABELS: Record<string, { label: string; category: string
   SCHEDULE_COMPLETED: { label: "Schedule Completed", category: "Scheduling" },
   // Time Tracking
   TIME_REMINDER: { label: "Time Reminders", category: "Time Tracking" },
-  // Resource Planning
-  ALLOCATION_CHANGED: { label: "Allocation Changed", category: "Resource Planning" },
-  MEMBER_OVER_ALLOCATED: { label: "Member Over-Allocated", category: "Resource Planning" },
-  LEAVE_CREATED: { label: "Leave Created", category: "Resource Planning" },
   // Security & Compliance
   ROLE_PERMISSIONS_CHANGED: { label: "Role Permissions Changed", category: "Security" },
   RETENTION_PURGE_WARNING: { label: "Retention Purge Warning", category: "Security" },
@@ -117,7 +113,6 @@ export function NotificationPreferencesForm({
     "Client Requests",
     "Scheduling",
     "Time Tracking",
-    "Resource Planning",
     "Security",
     "System",
     "Other",

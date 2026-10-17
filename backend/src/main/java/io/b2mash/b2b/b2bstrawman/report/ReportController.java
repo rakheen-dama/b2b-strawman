@@ -29,11 +29,9 @@ public class ReportController {
       @PathVariable UUID projectId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-      @RequestParam(required = false, defaultValue = "false") boolean includeProjections,
       ActorContext actor) {
 
-    var response =
-        reportService.getProjectProfitability(projectId, from, to, actor, includeProjections);
+    var response = reportService.getProjectProfitability(projectId, from, to, actor);
     return ResponseEntity.ok(response);
   }
 
@@ -42,11 +40,9 @@ public class ReportController {
       @PathVariable UUID customerId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-      @RequestParam(required = false, defaultValue = "false") boolean includeProjections,
       ActorContext actor) {
 
-    var response =
-        reportService.getCustomerProfitability(customerId, from, to, actor, includeProjections);
+    var response = reportService.getCustomerProfitability(customerId, from, to, actor);
     return ResponseEntity.ok(response);
   }
 
@@ -68,18 +64,13 @@ public class ReportController {
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
       @RequestParam(required = false) UUID customerId,
-      @RequestParam(required = false, defaultValue = "false") boolean includeProjections,
       ActorContext actor) {
 
-    var response =
-        reportService.getOrgProfitability(from, to, customerId, actor, includeProjections);
+    var response = reportService.getOrgProfitability(from, to, customerId, actor);
     return ResponseEntity.ok(response);
   }
 
   // --- DTOs ---
-
-  public record ProjectionData(
-      BigDecimal projectedRevenue, BigDecimal projectedCost, BigDecimal projectedMargin) {}
 
   public record CurrencyBreakdown(
       String currency,
@@ -95,17 +86,11 @@ public class ReportController {
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   public record ProjectProfitabilityResponse(
-      UUID projectId,
-      String projectName,
-      List<CurrencyBreakdown> currencies,
-      ProjectionData projections) {}
+      UUID projectId, String projectName, List<CurrencyBreakdown> currencies) {}
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   public record CustomerProfitabilityResponse(
-      UUID customerId,
-      String customerName,
-      List<CurrencyBreakdown> currencies,
-      ProjectionData projections) {}
+      UUID customerId, String customerName, List<CurrencyBreakdown> currencies) {}
 
   public record MemberValueBreakdown(
       String currency, BigDecimal billableValue, BigDecimal costValue) {}
@@ -134,6 +119,5 @@ public class ReportController {
       BigDecimal marginPercent) {}
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  public record OrgProfitabilityResponse(
-      List<ProjectProfitabilitySummary> projects, ProjectionData projections) {}
+  public record OrgProfitabilityResponse(List<ProjectProfitabilitySummary> projects) {}
 }

@@ -15,7 +15,7 @@ const mockUsePathname = vi.mocked(usePathname);
 
 function renderSidebar(
   props: { slug: string; isAdmin: boolean },
-  enabledModules: string[] = ["automation_builder", "bulk_billing", "resource_planning"]
+  enabledModules: string[] = ["automation_builder", "bulk_billing"]
 ) {
   return render(
     <OrgProfileProvider

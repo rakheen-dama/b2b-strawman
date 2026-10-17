@@ -1,30 +1,4 @@
 /**
- * Returns the Monday of the current week.
- */
-export function getCurrentMonday(): Date {
-  const now = new Date();
-  const day = now.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
-}
-
-/**
- * Formats a Date as an ISO date string (YYYY-MM-DD) using en-CA locale.
- */
-export function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-CA");
-}
-
-/**
- * Returns a new Date offset by a number of weeks.
- */
-export function addWeeks(date: Date, weeks: number): Date {
-  const result = new Date(date);
-  result.setDate(result.getDate() + weeks * 7);
-  return result;
-}
-
-/**
  * Returns the number of whole days between today (UTC midnight) and the given
  * YYYY-MM-DD date string. Negative values are clamped to 0.
  */

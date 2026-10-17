@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 import { Tabs as TabsPrimitive } from "radix-ui";
 import { useOrgProfile } from "@/lib/org-profile";
 import { useTerminology } from "@/lib/terminology";
 import { auditTabLabel } from "@b2mash/shared/terminology-map";
 import { useAuditTabVisible } from "@/components/audit/audit-timeline-tab";
 import { GroupedTabBar } from "@/components/shared/grouped-tab-bar";
-import { TAB_GROUPS, MEMBERS_TAB_REDIRECT } from "@/lib/constants/project-tab-groups";
+import { TAB_GROUPS } from "@/lib/constants/project-tab-groups";
 
 interface ProjectTabsProps {
   detailsPanel: ReactNode;
@@ -28,7 +28,6 @@ interface ProjectTabsProps {
   generatedPanel?: ReactNode;
   requestsPanel?: ReactNode;
   customerCommentsPanel?: ReactNode;
-  staffingPanel?: ReactNode;
   courtDatesPanel?: ReactNode;
   adversePartiesPanel?: ReactNode;
   trustPanel?: ReactNode;
@@ -50,7 +49,6 @@ type TabId =
   | "expenses"
   | "budget"
   | "financials"
-  | "staffing"
   | "activity"
   | "rates"
   | "generated"
@@ -75,7 +73,6 @@ const validTabIds = new Set<string>([
   "expenses",
   "budget",
   "financials",
-  "staffing",
   "activity",
   "rates",
   "generated",
@@ -107,7 +104,6 @@ export function ProjectTabs({
   generatedPanel,
   requestsPanel,
   customerCommentsPanel,
-  staffingPanel,
   courtDatesPanel,
   adversePartiesPanel,
   trustPanel,
@@ -116,21 +112,11 @@ export function ProjectTabs({
   auditPanel,
 }: ProjectTabsProps) {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const tabParam = searchParams.get("tab");
   const urlTab = tabParam && validTabIds.has(tabParam) ? (tabParam as TabId) : null;
   const [userTab, setUserTab] = useState<TabId | null>(null);
   const { isModuleEnabled } = useOrgProfile();
   const { t } = useTerminology();
-
-  // Members backward-compat redirect: ?tab=members → ?tab=staffing (no history entry)
-  useEffect(() => {
-    if (tabParam === "members") {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("tab", MEMBERS_TAB_REDIRECT);
-      router.replace(`?${params.toString()}`);
-    }
-  }, [tabParam, router, searchParams]);
 
   const requestedTab = urlTab ?? userTab;
 
@@ -164,7 +150,6 @@ export function ProjectTabs({
       // Panel-gated tabs (visible only when the panel prop is provided)
       correspondence: !!correspondencePanel,
       generated: !!generatedPanel,
-      staffing: !!staffingPanel,
       // Dedupe: when the legal-specific Disbursements tab is shown AND the
       // generic Expenses tab is present, their labels collide in legal-za
       // (terminology maps "Expenses" → "Disbursements"). Prefer the legal
@@ -208,7 +193,6 @@ export function ProjectTabs({
     t,
     correspondencePanel,
     generatedPanel,
-    staffingPanel,
     expensesPanel,
     ratesPanel,
     financialsPanel,
@@ -288,11 +272,6 @@ export function ProjectTabs({
       {financialsPanel && (
         <TabsPrimitive.Content value="financials" className="pt-6 outline-none">
           {financialsPanel}
-        </TabsPrimitive.Content>
-      )}
-      {staffingPanel && (
-        <TabsPrimitive.Content value="staffing" className="pt-6 outline-none">
-          {staffingPanel}
         </TabsPrimitive.Content>
       )}
       {ratesPanel && (

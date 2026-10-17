@@ -115,7 +115,7 @@ export function SendForAcceptanceDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             Send for Acceptance: {documentName}
-            <HelpTip code="portal.contacts" docsPath="/features/customer-portal" />
+            <HelpTip code="portal.contacts" />
           </DialogTitle>
         </DialogHeader>
 

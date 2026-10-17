@@ -104,10 +104,10 @@ describe("AIVERIFY-011 — AI group capability gating", () => {
 });
 
 describe("UTILITY_ITEMS", () => {
-  it("has exactly 3 items (Notifications, Settings, Help)", () => {
-    expect(UTILITY_ITEMS).toHaveLength(3);
+  it("has exactly 2 items (Notifications, Settings)", () => {
+    expect(UTILITY_ITEMS).toHaveLength(2);
     const labels = UTILITY_ITEMS.map((i) => i.label);
-    expect(labels).toEqual(["Notifications", "Settings", "Help"]);
+    expect(labels).toEqual(["Notifications", "Settings"]);
   });
 
   it("items have valid href functions", () => {
@@ -126,8 +126,8 @@ describe("NAV_ITEMS (backward compat)", () => {
     expect(NAV_ITEMS).toEqual(expected);
   });
 
-  it("total count is 29 (26 group items + 3 utility items)", () => {
-    expect(NAV_ITEMS).toHaveLength(29);
+  it("total count is 28 (26 group items + 2 utility items)", () => {
+    expect(NAV_ITEMS).toHaveLength(28);
   });
 
   it("includes Notifications and Settings from UTILITY_ITEMS", () => {

@@ -107,7 +107,7 @@ export function MobileSidebar({
           </>
         )}
 
-        {/* Utility footer — Notifications + Settings + Help */}
+        {/* Utility footer — Notifications + Settings */}
         <div className="mx-4 border-t border-white/10" />
         <div className="p-2">
           {UTILITY_ITEMS.map((item) => {

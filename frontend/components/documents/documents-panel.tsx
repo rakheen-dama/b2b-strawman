@@ -17,7 +17,6 @@ import {
 import { CommentSectionClient } from "@/components/comments/comment-section-client";
 import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
-import { docsLink } from "@/lib/docs";
 import { Badge } from "@b2mash/ui/badge";
 import {
   Table,
@@ -406,7 +405,6 @@ export function DocumentsPanel({
           icon={FileText}
           title={t("documents.list.heading")}
           description={t("documents.list.description")}
-          secondaryLink={{ label: "Read the guide", href: docsLink("/features/documents") }}
         />
       ) : (
         <div className="rounded-lg border border-slate-200 dark:border-slate-800">

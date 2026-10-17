@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { docsLink } from "@/lib/docs";
 
 const linkGroups = [
   {
@@ -7,7 +6,6 @@ const linkGroups = [
     links: [
       { label: "Features", href: "#features" },
       { label: "Pricing", href: "#pricing" },
-      { label: "Documentation", href: docsLink("") },
     ],
   },
   {

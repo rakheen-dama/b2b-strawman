@@ -30,7 +30,7 @@ export default async function TeamPage({ params }: { params: Promise<{ slug: str
       <div className="flex items-center gap-3">
         <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           Team
-          <HelpTip code="team.overview" docsPath="/admin/team-permissions" />
+          <HelpTip code="team.overview" />
         </h1>
         <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
           {billing.limits.currentMembers} member{billing.limits.currentMembers !== 1 ? "s" : ""}

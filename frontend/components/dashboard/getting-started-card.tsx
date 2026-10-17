@@ -39,7 +39,7 @@ export function GettingStartedCard({ activeProjectCount }: GettingStartedCardPro
         <span className="text-sm font-medium text-teal-900 dark:text-teal-100">
           {t("card.title")}
         </span>
-        <HelpTip code="onboarding.setup" docsPath="/getting-started/quick-setup" />
+        <HelpTip code="onboarding.setup" />
         <span className="text-xs text-teal-700 dark:text-teal-300">
           {t("card.progress", {
             completed: String(completedCount),

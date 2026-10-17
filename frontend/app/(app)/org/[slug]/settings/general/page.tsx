@@ -37,7 +37,7 @@ export default async function GeneralSettingsPage({
         </Link>
         <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           General
-          <HelpTip code="org.general" docsPath="/admin/org-settings" />
+          <HelpTip code="org.general" />
         </h1>
 
         <OrgDocumentsSection slug={slug} documents={documents} isAdmin={false} />
@@ -60,7 +60,7 @@ export default async function GeneralSettingsPage({
       <div>
         <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           General
-          <HelpTip code="org.general" docsPath="/admin/org-settings" />
+          <HelpTip code="org.general" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Manage your organization&apos;s currency, tax configuration, and branding.

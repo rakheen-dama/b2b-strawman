@@ -29,7 +29,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { CAPABILITIES } from "@/lib/capabilities";
-import { docsLink } from "@/lib/docs";
 
 /** Union of all known capability strings */
 type CapabilityName = (typeof CAPABILITIES)[keyof typeof CAPABILITIES];
@@ -315,12 +314,6 @@ export const UTILITY_ITEMS: NavItem[] = [
     label: "Settings",
     href: (slug) => `/org/${slug}/settings/general`,
     icon: Settings,
-  },
-  {
-    label: "Help",
-    href: () => docsLink(""),
-    icon: BookOpen,
-    external: true,
   },
 ];
 

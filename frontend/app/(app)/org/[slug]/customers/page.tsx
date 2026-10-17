@@ -25,7 +25,6 @@ import { EmptyState } from "@/components/empty-state";
 import { TerminologyHeading } from "@/components/terminology-heading";
 import { TerminologyText } from "@/components/terminology-text";
 import { createMessages } from "@/lib/messages";
-import { docsLink } from "@/lib/docs";
 import { PermissionDenied } from "@/components/permission-denied";
 
 const VALID_LIFECYCLE_STATUSES: ReadonlySet<LifecycleStatus> = new Set([
@@ -294,7 +293,6 @@ export default async function CustomersPage({
               />
             }
             action={isAdmin ? <CreateCustomerDialog slug={slug} /> : undefined}
-            secondaryLink={{ label: "Read the guide", href: docsLink("/features/customers") }}
           />
         )
       ) : (

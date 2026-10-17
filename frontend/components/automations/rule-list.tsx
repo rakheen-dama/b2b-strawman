@@ -21,7 +21,6 @@ import {
 import { toast } from "sonner";
 import { RelativeDate } from "@/components/ui/relative-date";
 import { Zap, Plus, LayoutGrid, Trash2 } from "lucide-react";
-import { docsLink } from "@/lib/docs";
 import type { AutomationRuleResponse, TemplateDefinitionResponse } from "@/lib/api/automations";
 
 interface RuleListProps {
@@ -143,14 +142,6 @@ export function RuleList({ slug, rules, templates, canManage }: RuleListProps) {
               </Button>
             </div>
           )}
-          <a
-            href={docsLink("/features/workflow-automations")}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 text-sm text-teal-600 hover:text-teal-700"
-          >
-            Read the guide
-          </a>
         </div>
       ) : (
         <>

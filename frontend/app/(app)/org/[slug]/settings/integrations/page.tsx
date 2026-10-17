@@ -104,7 +104,7 @@ export default async function IntegrationsSettingsPage({
       <div>
         <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           Integrations
-          <HelpTip code="integrations.overview" docsPath="/admin/integrations" />
+          <HelpTip code="integrations.overview" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Connect third-party tools and services to your organization.

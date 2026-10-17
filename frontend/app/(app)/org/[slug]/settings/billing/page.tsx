@@ -73,7 +73,7 @@ export default async function BillingPage({ params }: { params: Promise<{ slug: 
       <div className="flex items-center gap-3">
         <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           Billing
-          <HelpTip code="billing.overview" docsPath="/admin/billing" />
+          <HelpTip code="billing.overview" />
         </h1>
         <Badge variant={statusBadgeVariant(billing.status)}>{statusLabel(billing.status)}</Badge>
         <MethodBadge method={billing.billingMethod} />

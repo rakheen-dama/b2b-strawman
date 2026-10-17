@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.provisioning;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
@@ -83,7 +84,8 @@ public class OrgProvisioningService {
       keycloakAdminClient.addMember(orgId, userId);
       keycloakAdminClient.updateMemberRole(orgId, userId, "owner");
       // legal-za is the only vertical profile (Phase 86 / ADR-332).
-      tenantProvisioningService.provisionTenant(slug, name, "legal-za");
+      tenantProvisioningService.provisionTenant(
+          slug, name, VerticalProfileRegistry.DEFAULT_PROFILE_ID);
     } catch (Exception e) {
       log.error(
           "Post-creation steps failed for org '{}' (orgId={}), attempting compensation: {}",

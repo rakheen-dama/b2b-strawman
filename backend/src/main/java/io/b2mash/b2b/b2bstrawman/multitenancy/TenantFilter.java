@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.security.JwtUtils;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -131,7 +132,8 @@ public class TenantFilter extends OncePerRequestFilter {
     String orgName = orgSlug != null ? orgSlug : orgId;
     try {
       log.info("JIT provisioning tenant for org {}", orgId);
-      svc.provisionTenant(orgId, orgName, null);
+      // legal-za is the only vertical profile (Phase 86 / ADR-332) — never a profile-less tenant.
+      svc.provisionTenant(orgId, orgName, VerticalProfileRegistry.DEFAULT_PROFILE_ID);
       // Provisioning succeeded — retry lookup (bypasses cache)
       TenantMapping mapping = lookupTenant(orgId);
       if (mapping == null) {

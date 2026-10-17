@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -37,6 +39,7 @@ class TenantFilterJitProvisioningTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository mappingRepository;
   @Autowired private TenantFilter tenantFilter;
+  @Autowired private DataSource dataSource;
 
   @BeforeAll
   void setup() {
@@ -56,6 +59,15 @@ class TenantFilterJitProvisioningTest {
     var mapping = mappingRepository.findByClerkOrgId(JIT_ORG_ID);
     assertThat(mapping).isPresent();
     assertThat(mapping.get().getSchemaName()).startsWith("tenant_");
+
+    // legal-za is the only vertical profile (Phase 86 / ADR-332): a JIT tenant gets it too, never a
+    // profile-less tenant.
+    String verticalProfile =
+        new JdbcTemplate(dataSource)
+            .queryForObject(
+                "SELECT vertical_profile FROM " + mapping.get().getSchemaName() + ".org_settings",
+                String.class);
+    assertThat(verticalProfile).isEqualTo("legal-za");
   }
 
   @Test

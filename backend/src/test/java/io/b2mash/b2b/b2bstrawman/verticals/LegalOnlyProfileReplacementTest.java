@@ -1,13 +1,19 @@
 package io.b2mash.b2b.b2bstrawman.verticals;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -15,12 +21,23 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.automation.AutomationRuleRepository;
+import io.b2mash.b2b.b2bstrawman.automation.RuleSource;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtDate;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtDateRepository;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -33,6 +50,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Replacement-path test for Epic 604 (Phase 86 slice 10, ADR-332 / ADR-334): the vertical mechanism
@@ -42,9 +60,12 @@ import org.springframework.test.web.servlet.MockMvc;
  * are plain 404s, that V143/V144 dropped {@code filing_statuses} and {@code
  * org_settings.rate_pack_status}, and that the deleted classes are gone from the classpath.
  *
- * <p>The always-on automation surface (list/toggle/executions with no module, removed builder write
- * endpoints) is covered by {@code AutomationWithoutBuilderModuleTest}; court-only matter deadlines
- * by {@code ProjectUpcomingDeadlinesIntegrationTest}.
+ * <p>On the same legal-za tenant it also proves the surviving automation surface (ADR-334): the
+ * pack-installed rules list and toggle with no {@code automation_builder} module, and the removed
+ * builder write endpoints answer 405/404; and that matter upcoming deadlines are court dates only.
+ * {@code AutomationWithoutBuilderModuleTest} covers the same automation surface on a profile-less
+ * tenant plus the headless engine; {@code ProjectUpcomingDeadlinesIntegrationTest} the deadline
+ * filtering/ordering.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -60,8 +81,14 @@ class LegalOnlyProfileReplacementTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private VerticalProfileRegistry verticalProfileRegistry;
   @Autowired private DataSource dataSource;
+  @Autowired private AutomationRuleRepository ruleRepository;
+  @Autowired private CustomerRepository customerRepository;
+  @Autowired private ProjectRepository projectRepository;
+  @Autowired private CourtDateRepository courtDateRepository;
+  @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
+  private UUID ownerMemberId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -69,7 +96,141 @@ class LegalOnlyProfileReplacementTest {
         provisioningService
             .provisionTenant(ORG_ID, "Legal Only Profile Org", "legal-za")
             .schemaName();
-    TestMemberHelper.syncMember(mockMvc, ORG_ID, OWNER, "lop_owner@test.com", "LOP Owner", "owner");
+    ownerMemberId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, OWNER, "lop_owner@test.com", "LOP Owner", "owner"));
+  }
+
+  @Test
+  void packInstalledAutomationRulesListAndToggleWithoutBuilderModule() throws Exception {
+    var owner = TestJwtFactory.ownerJwt(ORG_ID, OWNER);
+    // Pack-installed (TEMPLATE) rules on this legal-za tenant — no automation_builder module.
+    List<UUID> templateRuleIds =
+        inTenant(
+            () ->
+                transactionTemplate.execute(
+                    tx ->
+                        ruleRepository.findAllByOrderByCreatedAtDesc().stream()
+                            .filter(r -> r.getSource() == RuleSource.TEMPLATE)
+                            .map(r -> r.getId())
+                            .toList()));
+    assertThat(templateRuleIds).as("pack-installed rules on a legal-za tenant").isNotEmpty();
+
+    mockMvc
+        .perform(get("/api/automation-rules").with(owner))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath(
+                "$[*].id",
+                hasItems(templateRuleIds.stream().map(UUID::toString).toArray(String[]::new))));
+
+    UUID ruleId = templateRuleIds.getFirst();
+    boolean originallyEnabled =
+        inTenant(
+            () ->
+                transactionTemplate.execute(
+                    tx -> ruleRepository.findById(ruleId).orElseThrow().isEnabled()));
+    mockMvc
+        .perform(post("/api/automation-rules/{id}/toggle", ruleId).with(owner))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.enabled", is(!originallyEnabled)));
+    // Toggle back so the tenant's pack rules are left as installed.
+    mockMvc
+        .perform(post("/api/automation-rules/{id}/toggle", ruleId).with(owner))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.enabled", is(originallyEnabled)));
+  }
+
+  @Test
+  void removedAutomationBuilderWriteEndpointsAreGone() throws Exception {
+    var owner = TestJwtFactory.ownerJwt(ORG_ID, OWNER);
+    UUID ruleId =
+        inTenant(
+            () ->
+                transactionTemplate.execute(
+                    tx -> ruleRepository.findAllByOrderByCreatedAtDesc().getFirst().getId()));
+    String body =
+        """
+        {"name": "x", "triggerType": "TASK_STATUS_CHANGED", "triggerConfig": {}, "actions": []}
+        """;
+    // A GET mapping survives on these paths, so Spring answers 405 Method Not Allowed.
+    mockMvc
+        .perform(
+            post("/api/automation-rules")
+                .with(owner)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isMethodNotAllowed());
+    mockMvc
+        .perform(
+            put("/api/automation-rules/{id}", ruleId)
+                .with(owner)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isMethodNotAllowed());
+    mockMvc
+        .perform(delete("/api/automation-rules/{id}", ruleId).with(owner))
+        .andExpect(status().isMethodNotAllowed());
+    // No mapping at all on these paths.
+    for (String suffix : List.of("duplicate", "test", "actions")) {
+      mockMvc
+          .perform(
+              post("/api/automation-rules/{id}/" + suffix, ruleId)
+                  .with(owner)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content("{}"))
+          .andExpect(status().isNotFound());
+    }
+    // The rule survives the rejected writes.
+    mockMvc
+        .perform(get("/api/automation-rules/{id}", ruleId).with(owner))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void matterUpcomingDeadlinesAreCourtDatesOnly() throws Exception {
+    UUID projectId =
+        inTenant(
+            () ->
+                transactionTemplate.execute(
+                    tx -> {
+                      var customer =
+                          customerRepository.saveAndFlush(
+                              createActiveCustomer(
+                                  "LOP Client", "lop_client@test.com", ownerMemberId));
+                      var project = new Project("LOP v Other", "Litigation", ownerMemberId);
+                      project.setCustomerId(customer.getId());
+                      project = projectRepository.saveAndFlush(project);
+                      courtDateRepository.saveAndFlush(
+                          new CourtDate(
+                              project.getId(),
+                              customer.getId(),
+                              "HEARING",
+                              LocalDate.now().plusDays(30),
+                              LocalTime.of(10, 0),
+                              "Pretoria High Court",
+                              "2026/LOP/1",
+                              "Judge LOP",
+                              "Motion hearing",
+                              7,
+                              ownerMemberId));
+                      return project.getId();
+                    }));
+
+    mockMvc
+        .perform(
+            get("/api/projects/{id}/upcoming-deadlines", projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(1)))
+        .andExpect(jsonPath("$[*].type", everyItem(is("COURT"))));
+  }
+
+  private <T> T inTenant(Supplier<T> work) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .call(work::get);
   }
 
   @Test

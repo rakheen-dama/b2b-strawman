@@ -315,18 +315,21 @@ public class TenantProvisioningService {
                       });
           settings.setVerticalProfile(verticalProfile);
 
-          var profileOpt = verticalProfileRegistry.getProfile(verticalProfile);
-          if (profileOpt.isPresent()) {
-            var profile = profileOpt.get();
-            settings.setEnabledModules(profile.enabledModules());
-            settings.setTerminologyNamespace(profile.terminologyNamespace());
-            if (profile.currency() != null) {
-              settings.updateCurrency(profile.currency());
-            }
-          } else {
-            log.warn(
-                "Vertical profile '{}' not found in registry, skipping modules/terminology",
-                verticalProfile);
+          // Unknown ids are rejected in provisionTenant before any org row is written, so a miss
+          // here is a programming error — no silent fallback (ADR-332).
+          var profile =
+              verticalProfileRegistry
+                  .getProfile(verticalProfile)
+                  .orElseThrow(
+                      () ->
+                          new InvalidStateException(
+                              "Unknown vertical profile",
+                              "Vertical profile '%s' is not registered"
+                                  .formatted(verticalProfile)));
+          settings.setEnabledModules(profile.enabledModules());
+          settings.setTerminologyNamespace(profile.terminologyNamespace());
+          if (profile.currency() != null) {
+            settings.updateCurrency(profile.currency());
           }
 
           orgSettingsRepository.save(settings);

@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.demo.seed;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,7 @@ public class DemoDataSeeder {
 
     BaseDemoDataSeeder seeder =
         switch (verticalProfile == null ? "" : verticalProfile.toLowerCase()) {
-          case "legal-za" -> legalSeeder;
+          case VerticalProfileRegistry.DEFAULT_PROFILE_ID -> legalSeeder;
           default ->
               throw new InvalidStateException(
                   "Unknown vertical profile",

@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.provisioning;
 
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.net.URI;
@@ -17,8 +18,6 @@ public class ProvisioningController {
 
   private static final Logger log = LoggerFactory.getLogger(ProvisioningController.class);
 
-  static final String DEFAULT_VERTICAL_PROFILE = "legal-za";
-
   private final TenantProvisioningService provisioningService;
 
   public ProvisioningController(TenantProvisioningService provisioningService) {
@@ -34,7 +33,7 @@ public class ProvisioningController {
     // and an unknown id is rejected with 400 by TenantProvisioningService.
     String verticalProfile =
         request.verticalProfile() == null || request.verticalProfile().isBlank()
-            ? DEFAULT_VERTICAL_PROFILE
+            ? VerticalProfileRegistry.DEFAULT_PROFILE_ID
             : request.verticalProfile();
 
     var result =

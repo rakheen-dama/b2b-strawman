@@ -1,7 +1,7 @@
 {
-  "commit": "db05a5df2",
-  "command": "cd backend && bash scripts/verify-preflight.sh && caffeinate -is ./mvnw clean verify -q",
+  "commit": "6ddc4c8bf",
+  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-16T22:38:31Z",
-  "summary": "Epic 598 / PR #1569 (backend unchanged db05a5df2..fd58d8483 final head): 5752 testcases / 0 failures / 0 errors / 26 skipped (surefire+failsafe XML) — 22:13→22:38 UTC (~25 min). -133 vs 5885 baseline = deleted retainer test files/methods + 3 new BillingRunWithoutRetainersIntegrationTest cases. Log carries one benign '[ERROR] Surefire is going to kill self fork JVM ... after System.exit(0)' shutdown notice; exit 0, no BUILD FAILURE."
+  "ts": "2026-10-16T23:51:10Z",
+  "summary": "Epic 599 / PR #1570 (backend unchanged 6ddc4c8bf..3b91b8be3 final head): 5644 testcases / 0 failures / 0 errors / 26 skipped (729 surefire XML) — 23:28→23:51 UTC (~23 min). -108 vs 5752 Epic 598 baseline = deleted capacity test classes + re-fixtured tests + new DashboardWithoutCapacityTest (12 cases)."
 }

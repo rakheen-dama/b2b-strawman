@@ -1,7 +1,7 @@
 {
-  "commit": "fd58d8483",
-  "command": "cd frontend && pnpm install && pnpm run lint && rm -rf .next && pnpm run build && pnpm test && pnpm run format:check",
+  "commit": "3b91b8be3",
+  "command": "cd frontend && pnpm run lint && rm -rf .next && pnpm run build && pnpm test && pnpm run format:check",
   "exit": 0,
-  "ts": "2026-10-16T22:41:25Z",
-  "summary": "Epic 598 / PR #1569 final head (orchestrator re-run): lint 0 errors (pre-existing warnings only); build OK (clean .next); vitest 382 files, 2413 passed | 2 skipped; prettier clean. -40 tests vs 597 baseline = deleted retainer tests."
+  "ts": "2026-10-16T23:54:16Z",
+  "summary": "Epic 599 / PR #1570 final head (orchestrator re-run): lint 0 errors (pre-existing warnings only); build OK (clean .next); vitest 376 files, 2360 passed | 2 skipped; prettier clean. -53 tests vs 598 baseline (2413) = deleted capacity/resources tests."
 }

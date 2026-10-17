@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.retention.RetentionService;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
-import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.dto.CollectionsSettingsResponse;
 import io.b2mash.b2b.b2bstrawman.settings.dto.DataProtectionSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.ModuleSettingsResponse;
@@ -61,7 +60,6 @@ public class OrgSettingsService {
   private final ComplianceTemplatePackSeeder complianceTemplatePackSeeder;
   private final ProjectTemplatePackSeeder projectTemplatePackSeeder;
   private final RatePackSeeder ratePackSeeder;
-  private final SchedulePackSeeder schedulePackSeeder;
   private final VerticalModuleRegistry moduleRegistry;
 
   public OrgSettingsService(
@@ -75,7 +73,6 @@ public class OrgSettingsService {
       ComplianceTemplatePackSeeder complianceTemplatePackSeeder,
       ProjectTemplatePackSeeder projectTemplatePackSeeder,
       RatePackSeeder ratePackSeeder,
-      SchedulePackSeeder schedulePackSeeder,
       VerticalModuleRegistry moduleRegistry) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.organizationRepository = organizationRepository;
@@ -87,7 +84,6 @@ public class OrgSettingsService {
     this.complianceTemplatePackSeeder = complianceTemplatePackSeeder;
     this.projectTemplatePackSeeder = projectTemplatePackSeeder;
     this.ratePackSeeder = ratePackSeeder;
-    this.schedulePackSeeder = schedulePackSeeder;
     this.moduleRegistry = moduleRegistry;
   }
 
@@ -937,8 +933,8 @@ public class OrgSettingsService {
 
   /**
    * Updates the vertical profile, setting enabledModules and terminologyNamespace from registry.
-   * After saving, triggers rate, project template, and schedule pack seeders for the new profile.
-   * Seeding is idempotent — switching to the same profile multiple times is safe.
+   * After saving, triggers rate and project template pack seeders for the new profile. Seeding is
+   * idempotent — switching to the same profile multiple times is safe.
    */
   @Transactional
   public SettingsResponse updateVerticalProfile(String verticalProfile, ActorContext actor) {
@@ -1012,14 +1008,13 @@ public class OrgSettingsService {
                     "enabled_modules", mergedModules))
             .build());
 
-    // Trigger rate and schedule pack seeding for the new profile (idempotent).
+    // Trigger rate and project-template pack seeding for the new profile (idempotent).
     // The seeders use TenantTransactionHelper which joins the current transaction
     // and reads the updated OrgSettings from Hibernate's L1 cache.
     String tenantId = RequestScopes.TENANT_ID.get();
     String orgId = RequestScopes.ORG_ID.get();
     ratePackSeeder.seedPacksForTenant(tenantId, orgId);
     projectTemplatePackSeeder.seedPacksForTenant(tenantId, orgId);
-    schedulePackSeeder.seedPacksForTenant(tenantId, orgId);
 
     return toSettingsResponse(settings);
   }

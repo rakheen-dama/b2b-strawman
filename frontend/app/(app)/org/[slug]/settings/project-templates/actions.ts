@@ -45,12 +45,6 @@ export async function deleteTemplateAction(slug: string, id: string): Promise<Ac
           error: "You do not have permission to delete templates.",
         };
       }
-      if (error.status === 409) {
-        return {
-          success: false,
-          error: "Template has active schedules and cannot be deleted. Deactivate it instead.",
-        };
-      }
       return { success: false, error: error.message };
     }
     return { success: false, error: "An unexpected error occurred." };

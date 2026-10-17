@@ -15,15 +15,10 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.schedule.RecurringSchedule;
-import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleRepository;
-import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
-import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -53,9 +48,6 @@ class ProjectTemplatePrerequisiteTest {
   @Autowired private ProjectTemplateRepository templateRepository;
   @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
   @Autowired private CustomerRepository customerRepository;
-  @Autowired private NotificationRepository notificationRepository;
-  @Autowired private RecurringScheduleService scheduleService;
-  @Autowired private RecurringScheduleRepository scheduleRepository;
 
   private String tenantSchema;
   private UUID ownerMemberId;
@@ -349,117 +341,6 @@ class ProjectTemplatePrerequisiteTest {
         .andExpect(status().isUnprocessableEntity())
         .andExpect(jsonPath("$.title").value("Prerequisites not met"))
         .andExpect(jsonPath("$.violations").isNotEmpty());
-  }
-
-  // --- Task 243.14: Automated creation notification tests ---
-
-  @Test
-  void scheduleExecution_prerequisitesNotMet_createsProjectAndNotifies() throws Exception {
-    final UUID[] ids = createTemplateAndField("sched_notify");
-    UUID templateId = ids[0];
-    UUID fieldId = ids[1];
-
-    // Set required field on template (via API)
-    mockMvc
-        .perform(
-            put("/api/project-templates/" + templateId + "/required-customer-fields")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpq243_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    { "fieldDefinitionIds": ["%s"] }
-                    """
-                        .formatted(fieldId)))
-        .andExpect(status().isOk());
-
-    // Create customer WITHOUT the required field, ACTIVE lifecycle
-    final UUID[] custId = new UUID[1];
-    final UUID[] schedId = new UUID[1];
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, ownerMemberId)
-        .where(RequestScopes.ORG_ROLE, "owner")
-        .run(
-            () ->
-                transactionTemplate.executeWithoutResult(
-                    tx -> {
-                      var c =
-                          TestCustomerFactory.createActiveCustomer(
-                              "Sched Notify Customer",
-                              "sched_notify_" + UUID.randomUUID() + "@test.com",
-                              ownerMemberId);
-                      c = customerRepository.saveAndFlush(c);
-                      custId[0] = c.getId();
-
-                      var schedule =
-                          new RecurringSchedule(
-                              templateId,
-                              c.getId(),
-                              null,
-                              "MONTHLY",
-                              LocalDate.now().minusMonths(1),
-                              null,
-                              0,
-                              null,
-                              ownerMemberId);
-                      schedule.setNextExecutionDate(LocalDate.now().minusDays(1));
-                      schedule = scheduleRepository.saveAndFlush(schedule);
-                      schedId[0] = schedule.getId();
-                    }));
-
-    // Count notifications before
-    final long[] beforeCount = new long[1];
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .run(
-            () ->
-                transactionTemplate.executeWithoutResult(
-                    tx -> {
-                      beforeCount[0] =
-                          notificationRepository.findAll().stream()
-                              .filter(n -> "PREREQUISITE_BLOCKED_ACTIVATION".equals(n.getType()))
-                              .count();
-                    }));
-
-    // Execute the schedule
-    final RecurringSchedule[] schedRef = new RecurringSchedule[1];
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .run(
-            () ->
-                transactionTemplate.executeWithoutResult(
-                    tx -> {
-                      schedRef[0] = scheduleRepository.findById(schedId[0]).orElseThrow();
-                    }));
-
-    boolean[] projectCreated = new boolean[1];
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .run(
-            () -> {
-              try {
-                projectCreated[0] = scheduleService.executeSingleSchedule(schedRef[0]);
-              } catch (Exception e) {
-                throw new RuntimeException(e);
-              }
-            });
-
-    assertThat(projectCreated[0]).isTrue();
-
-    // Verify notification was created
-    final long[] afterCount = new long[1];
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .run(
-            () ->
-                transactionTemplate.executeWithoutResult(
-                    tx -> {
-                      afterCount[0] =
-                          notificationRepository.findAll().stream()
-                              .filter(n -> "PREREQUISITE_BLOCKED_ACTIVATION".equals(n.getType()))
-                              .count();
-                    }));
-    assertThat(afterCount[0]).isGreaterThan(beforeCount[0]);
   }
 
   // --- Helpers ---

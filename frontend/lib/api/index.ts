@@ -28,23 +28,6 @@ export * from "./email";
 export * from "./integrations";
 export * from "./org-roles";
 export * from "./reports";
-export {
-  type ScheduleStatus,
-  type RecurrenceFrequency,
-  type ScheduleResponse,
-  type CreateScheduleRequest,
-  type UpdateScheduleRequest,
-  type ScheduleExecutionResponse,
-  type ListSchedulesParams,
-  getSchedules,
-  getSchedule,
-  createSchedule,
-  updateSchedule,
-  deleteSchedule,
-  pauseSchedule,
-  resumeSchedule,
-  getExecutions,
-} from "./schedules";
 export * from "./setup-status";
 export * from "./templates";
 export * from "./packs";

@@ -95,13 +95,14 @@ class OrgSettingsEmbeddableNullReloadTest {
                   // makes Hibernate materialise a NULL embedded (the genuine NPE risk).
                   + "data_request_deadline_days = NULL, default_request_reminder_days = NULL, "
                   + "dormancy_threshold_days = NULL, "
-                  // Wave 3.5 PackStatus group — all ten jsonb columns are nullable, so nulling them
+                  // Wave 3.5 PackStatus group — all nine jsonb columns are nullable, so nulling
+                  // them
                   // all makes Hibernate materialise a NULL embedded (the genuine NPE risk).
                   + "field_pack_status = NULL, template_pack_status = NULL, "
                   + "compliance_pack_status = NULL, report_pack_status = NULL, "
                   + "clause_pack_status = NULL, request_pack_status = NULL, "
                   + "automation_pack_status = NULL, rate_pack_status = NULL, "
-                  + "schedule_pack_status = NULL, project_template_pack_status = NULL, "
+                  + "project_template_pack_status = NULL, "
                   // Wave 3.5 DataProtection + TimeReminder groups each carry a NOT NULL column
                   // (retention_policy_enabled / time_reminder_enabled), so the embedded never fully
                   // materialises as NULL — but null their remaining columns to exercise the
@@ -178,7 +179,6 @@ class OrgSettingsEmbeddableNullReloadTest {
                     assertThat(reloaded.getPackStatus().getRequestPackStatus()).isNull();
                     assertThat(reloaded.getPackStatus().getAutomationPackStatus()).isNull();
                     assertThat(reloaded.getPackStatus().getRatePackStatus()).isNull();
-                    assertThat(reloaded.getPackStatus().getSchedulePackStatus()).isNull();
                     assertThat(reloaded.getPackStatus().getProjectTemplatePackStatus()).isNull();
                     // is*Applied accessors must tolerate the all-null group (return false, no NPE).
                     assertThat(reloaded.getPackStatus().isAutomationPackApplied("x")).isFalse();

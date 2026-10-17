@@ -57,12 +57,12 @@ public class OrgSettings {
   private BrandingSettings branding = new BrandingSettings();
 
   /**
-   * Pack-application status group (Wave 3.5): the ten JSONB pack-status lists (field / template /
-   * compliance / report / clause / request / automation / rate / schedule / project-template) plus
-   * their idempotency record/remove/is-applied helpers. Persisted inline on {@code org_settings}
-   * via {@code @Embedded} — column names pinned by {@code @AttributeOverride} for zero schema
-   * change. All ten columns are nullable, so an all-null group materialises as a NULL embedded on
-   * reload; initialised non-null + lazy-fallback {@link #getPackStatus()} keeps it NPE-safe.
+   * Pack-application status group (Wave 3.5): the nine JSONB pack-status lists (field / template /
+   * compliance / report / clause / request / automation / rate / project-template) plus their
+   * idempotency record/remove/is-applied helpers. Persisted inline on {@code org_settings} via
+   * {@code @Embedded} — column names pinned by {@code @AttributeOverride} for zero schema change.
+   * All nine columns are nullable, so an all-null group materialises as a NULL embedded on reload;
+   * initialised non-null + lazy-fallback {@link #getPackStatus()} keeps it NPE-safe.
    */
   @Embedded
   @AttributeOverride(
@@ -89,9 +89,6 @@ public class OrgSettings {
   @AttributeOverride(
       name = "ratePackStatus",
       column = @Column(name = "rate_pack_status", columnDefinition = "jsonb"))
-  @AttributeOverride(
-      name = "schedulePackStatus",
-      column = @Column(name = "schedule_pack_status", columnDefinition = "jsonb"))
   @AttributeOverride(
       name = "projectTemplatePackStatus",
       column = @Column(name = "project_template_pack_status", columnDefinition = "jsonb"))

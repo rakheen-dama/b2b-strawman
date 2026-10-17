@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.event.InformationRequestDraftCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
-import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
@@ -41,7 +40,6 @@ import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.TemplateTaskItemResponse;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.TemplateTaskResponse;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.UpdateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.event.TemplateCreatedEvent;
-import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleRepository;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTag;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagRepository;
@@ -80,7 +78,6 @@ public class ProjectTemplateService {
   private final TaskItemRepository taskItemRepository;
   private final ProjectRepository projectRepository;
   private final ProjectMemberRepository projectMemberRepository;
-  private final RecurringScheduleRepository scheduleRepository;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final CustomerRepository customerRepository;
@@ -105,7 +102,6 @@ public class ProjectTemplateService {
       TaskItemRepository taskItemRepository,
       ProjectRepository projectRepository,
       ProjectMemberRepository projectMemberRepository,
-      RecurringScheduleRepository scheduleRepository,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       CustomerRepository customerRepository,
@@ -128,7 +124,6 @@ public class ProjectTemplateService {
     this.taskItemRepository = taskItemRepository;
     this.projectRepository = projectRepository;
     this.projectMemberRepository = projectMemberRepository;
-    this.scheduleRepository = scheduleRepository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.customerRepository = customerRepository;
@@ -281,12 +276,6 @@ public class ProjectTemplateService {
         templateRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("ProjectTemplate", id));
-
-    if (scheduleRepository.existsByTemplateId(id)) {
-      throw new ResourceConflictException(
-          "Template in use",
-          "Template has active recurring schedules. Deactivate or delete them first.");
-    }
 
     String templateName = template.getName();
     templateRepository.deleteById(id);

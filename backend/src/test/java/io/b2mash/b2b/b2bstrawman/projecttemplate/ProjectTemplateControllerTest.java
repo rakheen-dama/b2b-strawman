@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
-import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -11,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
@@ -22,13 +20,10 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.schedule.RecurringSchedule;
-import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,8 +60,6 @@ class ProjectTemplateControllerTest {
   @Autowired private TaskRepository taskRepository;
   @Autowired private ProjectMemberRepository projectMemberRepository;
   @Autowired private ProjectTemplateRepository templateRepository;
-  @Autowired private RecurringScheduleRepository scheduleRepository;
-  @Autowired private CustomerRepository customerRepository;
   @Autowired private OrgRoleService orgRoleService;
   @Autowired private OrgRoleRepository orgRoleRepository;
   @Autowired private MemberRepository memberRepository;
@@ -412,56 +405,6 @@ class ProjectTemplateControllerTest {
             get("/api/project-templates/" + deleteId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tmpl_ctrl_owner")))
         .andExpect(status().isNotFound());
-  }
-
-  @Test
-  @Order(9)
-  void shouldReturn409WhenDeletingTemplateWithActiveSchedule() throws Exception {
-    // Create template + schedule in tenant context
-    final UUID[] templateIdHolder = new UUID[1];
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, ownerMemberId)
-        .where(RequestScopes.ORG_ROLE, "owner")
-        .run(
-            () ->
-                transactionTemplate.executeWithoutResult(
-                    tx -> {
-                      var template =
-                          templateRepository.saveAndFlush(
-                              new ProjectTemplate(
-                                  "Protected Template",
-                                  "{customer}",
-                                  null,
-                                  false,
-                                  "MANUAL",
-                                  null,
-                                  ownerMemberId));
-                      templateIdHolder[0] = template.getId();
-
-                      var customer =
-                          customerRepository.saveAndFlush(
-                              createActiveCustomer(
-                                  "Schedule Cust", "sched_cust@test.com", ownerMemberId));
-
-                      scheduleRepository.saveAndFlush(
-                          new RecurringSchedule(
-                              template.getId(),
-                              customer.getId(),
-                              null,
-                              "MONTHLY",
-                              LocalDate.now(),
-                              null,
-                              0,
-                              null,
-                              ownerMemberId));
-                    }));
-
-    mockMvc
-        .perform(
-            delete("/api/project-templates/" + templateIdHolder[0])
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tmpl_ctrl_owner")))
-        .andExpect(status().isConflict());
   }
 
   // --- Permission Tests ---

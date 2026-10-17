@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
-import io.b2mash.b2b.b2bstrawman.schedule.RecurringSchedule;
 import java.time.LocalDate;
 import org.springframework.stereotype.Component;
 
@@ -35,35 +34,5 @@ public class PeriodCalculator {
 
   public LocalDate calculateNextExecutionDate(LocalDate periodStart, int leadTimeDays) {
     return periodStart.minusDays(leadTimeDays);
-  }
-
-  /**
-   * Recalculates the next execution date when a paused schedule is resumed. Skips past periods so
-   * that only future periods are scheduled. Mutates schedule.nextExecutionDate directly.
-   *
-   * <p>Safety valve: stops after 1000 periods beyond current execution count to prevent infinite
-   * loops on misconfigured schedules.
-   */
-  public void recalculateNextExecutionOnResume(RecurringSchedule schedule) {
-    recalculateNextExecutionOnResume(schedule, LocalDate.now());
-  }
-
-  public void recalculateNextExecutionOnResume(RecurringSchedule schedule, LocalDate today) {
-    int count = schedule.getExecutionCount();
-    while (true) {
-      Period period = calculateNextPeriod(schedule.getStartDate(), schedule.getFrequency(), count);
-      LocalDate executionDate = period.start().minusDays(schedule.getLeadTimeDays());
-      if (executionDate.isAfter(today) || executionDate.isEqual(today)) {
-        schedule.setNextExecutionDate(executionDate);
-        break;
-      }
-      count++;
-      // Safety valve
-      if (count > schedule.getExecutionCount() + 1000) {
-        throw new IllegalStateException(
-            "Could not find future execution date for schedule after 1000 iterations: "
-                + schedule.getId());
-      }
-    }
   }
 }

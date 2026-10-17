@@ -3,10 +3,7 @@ package io.b2mash.b2b.b2bstrawman.projecttemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.b2mash.b2b.b2bstrawman.schedule.RecurringSchedule;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class PeriodCalculatorTest {
@@ -136,65 +133,5 @@ class PeriodCalculatorTest {
     LocalDate periodStart = LocalDate.of(2026, 3, 1);
     assertThat(calculator.calculateNextExecutionDate(periodStart, 5))
         .isEqualTo(LocalDate.of(2026, 2, 24));
-  }
-
-  // ---- recalculateNextExecutionOnResume ----
-
-  private RecurringSchedule makeSchedule(
-      LocalDate startDate, String frequency, int executionCount, int leadTimeDays) {
-    var schedule =
-        new RecurringSchedule(
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            null,
-            frequency,
-            startDate,
-            null,
-            leadTimeDays,
-            null,
-            UUID.randomUUID());
-    // simulate execution count by calling recordExecution() N times
-    for (int i = 0; i < executionCount; i++) {
-      schedule.recordExecution(Instant.now());
-    }
-    return schedule;
-  }
-
-  @Test
-  void resumeWithNoMissedPeriods_setsFutureDate() {
-    LocalDate today = LocalDate.of(2026, 3, 1);
-    LocalDate futureStart = today.plusMonths(2);
-    var schedule = makeSchedule(futureStart, "MONTHLY", 0, 0);
-    calculator.recalculateNextExecutionOnResume(schedule, today);
-    assertThat(schedule.getNextExecutionDate()).isEqualTo(futureStart);
-  }
-
-  @Test
-  void resumeWithMissedPeriods_skipsForward() {
-    LocalDate today = LocalDate.of(2026, 3, 1);
-    LocalDate pastStart = today.minusMonths(6);
-    var schedule = makeSchedule(pastStart, "MONTHLY", 0, 0);
-    calculator.recalculateNextExecutionOnResume(schedule, today);
-    assertThat(schedule.getNextExecutionDate()).isAfterOrEqualTo(today);
-  }
-
-  @Test
-  void resumeWithLeadTime_appliesLeadTime() {
-    LocalDate today = LocalDate.of(2026, 3, 1);
-    LocalDate futureStart = today.plusMonths(2);
-    var schedule = makeSchedule(futureStart, "MONTHLY", 0, 5);
-    calculator.recalculateNextExecutionOnResume(schedule, today);
-    assertThat(schedule.getNextExecutionDate()).isEqualTo(futureStart.minusDays(5));
-  }
-
-  @Test
-  void resumeSafetyValve_throwsAfter1000Iterations() {
-    // Start date so far in the past that 1000 weekly iterations still won't reach today
-    LocalDate today = LocalDate.of(2026, 3, 1);
-    LocalDate distantPast = today.minusYears(100);
-    var schedule = makeSchedule(distantPast, "WEEKLY", 0, 0);
-    assertThatThrownBy(() -> calculator.recalculateNextExecutionOnResume(schedule, today))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("1000 iterations");
   }
 }

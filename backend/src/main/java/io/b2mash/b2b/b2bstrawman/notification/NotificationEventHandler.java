@@ -24,9 +24,6 @@ import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.channel.NotificationDispatcher;
-import io.b2mash.b2b.b2bstrawman.schedule.event.RecurringProjectCreatedEvent;
-import io.b2mash.b2b.b2bstrawman.schedule.event.ScheduleCompletedEvent;
-import io.b2mash.b2b.b2bstrawman.schedule.event.ScheduleSkippedEvent;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -316,60 +313,6 @@ public class NotificationEventHandler {
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for invoice.voided event={}", event.entityId(), e);
-          }
-        });
-  }
-
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-  public void onRecurringProjectCreated(RecurringProjectCreatedEvent event) {
-    RequestScopes.runForTenant(
-        event.tenantId(),
-        event.orgId(),
-        () -> {
-          try {
-            var notifications = notificationService.handleRecurringProjectCreated(event);
-            dispatchAll(notifications);
-          } catch (Exception e) {
-            log.warn(
-                "Failed to create notifications for recurring_project.created schedule={}",
-                event.scheduleId(),
-                e);
-          }
-        });
-  }
-
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-  public void onScheduleSkipped(ScheduleSkippedEvent event) {
-    RequestScopes.runForTenant(
-        event.tenantId(),
-        event.orgId(),
-        () -> {
-          try {
-            var notifications = notificationService.handleScheduleSkipped(event);
-            dispatchAll(notifications);
-          } catch (Exception e) {
-            log.warn(
-                "Failed to create notifications for schedule_execution.skipped schedule={}",
-                event.scheduleId(),
-                e);
-          }
-        });
-  }
-
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-  public void onScheduleCompleted(ScheduleCompletedEvent event) {
-    RequestScopes.runForTenant(
-        event.tenantId(),
-        event.orgId(),
-        () -> {
-          try {
-            var notifications = notificationService.handleScheduleCompleted(event);
-            dispatchAll(notifications);
-          } catch (Exception e) {
-            log.warn(
-                "Failed to create notifications for schedule.completed schedule={}",
-                event.scheduleId(),
-                e);
           }
         });
   }

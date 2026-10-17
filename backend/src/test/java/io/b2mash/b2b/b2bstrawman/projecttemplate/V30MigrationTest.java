@@ -1,25 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
-import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.project.Project;
-import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.schedule.RecurringSchedule;
-import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleRepository;
-import io.b2mash.b2b.b2bstrawman.schedule.ScheduleExecution;
-import io.b2mash.b2b.b2bstrawman.schedule.ScheduleExecutionRepository;
 import io.b2mash.b2b.b2bstrawman.tag.Tag;
 import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -48,10 +38,6 @@ class V30MigrationTest {
   @Autowired private TemplateTaskRepository templateTaskRepository;
   @Autowired private TemplateTagRepository templateTagRepository;
   @Autowired private TagRepository tagRepository;
-  @Autowired private RecurringScheduleRepository recurringScheduleRepository;
-  @Autowired private ScheduleExecutionRepository scheduleExecutionRepository;
-  @Autowired private CustomerRepository customerRepository;
-  @Autowired private ProjectRepository projectRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -160,106 +146,6 @@ class V30MigrationTest {
 
                   var tagIds = templateTagRepository.findTagIdsByTemplateId(template.getId());
                   assertThat(tagIds).containsExactly(tag.getId());
-                }));
-  }
-
-  @Test
-  void saveAndRetrieveRecurringSchedule() {
-    runInTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var template =
-                      new ProjectTemplate(
-                          "Schedule Test Template",
-                          "{customer} - Schedule",
-                          null,
-                          true,
-                          "MANUAL",
-                          null,
-                          memberId);
-                  template = projectTemplateRepository.saveAndFlush(template);
-
-                  var customer =
-                      createActiveCustomer("Schedule Test Customer", "schedule@test.com", memberId);
-                  customer = customerRepository.saveAndFlush(customer);
-
-                  var schedule =
-                      new RecurringSchedule(
-                          template.getId(),
-                          customer.getId(),
-                          null,
-                          "MONTHLY",
-                          LocalDate.of(2026, 3, 1),
-                          null,
-                          5,
-                          memberId,
-                          memberId);
-                  schedule = recurringScheduleRepository.saveAndFlush(schedule);
-
-                  var found = recurringScheduleRepository.findById(schedule.getId()).orElseThrow();
-                  assertThat(found.getTemplateId()).isEqualTo(template.getId());
-                  assertThat(found.getCustomerId()).isEqualTo(customer.getId());
-                  assertThat(found.getFrequency()).isEqualTo("MONTHLY");
-                  assertThat(found.getStatus()).isEqualTo("ACTIVE");
-                  assertThat(found.getExecutionCount()).isZero();
-                  assertThat(found.getLeadTimeDays()).isEqualTo(5);
-                }));
-  }
-
-  @Test
-  void saveAndRetrieveScheduleExecution() {
-    runInTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var template =
-                      new ProjectTemplate(
-                          "Execution Test Template",
-                          "{customer} - Execution",
-                          null,
-                          true,
-                          "MANUAL",
-                          null,
-                          memberId);
-                  template = projectTemplateRepository.saveAndFlush(template);
-
-                  var customer =
-                      createActiveCustomer(
-                          "Execution Test Customer", "execution@test.com", memberId);
-                  customer = customerRepository.saveAndFlush(customer);
-
-                  var schedule =
-                      new RecurringSchedule(
-                          template.getId(),
-                          customer.getId(),
-                          null,
-                          "QUARTERLY",
-                          LocalDate.of(2026, 1, 1),
-                          null,
-                          0,
-                          null,
-                          memberId);
-                  schedule = recurringScheduleRepository.saveAndFlush(schedule);
-
-                  var project = new Project("Generated Project", "Auto-created", memberId);
-                  project = projectRepository.saveAndFlush(project);
-
-                  var execution =
-                      new ScheduleExecution(
-                          schedule.getId(),
-                          project.getId(),
-                          LocalDate.of(2026, 1, 1),
-                          LocalDate.of(2026, 3, 31),
-                          Instant.now());
-                  execution = scheduleExecutionRepository.saveAndFlush(execution);
-
-                  var found = scheduleExecutionRepository.findById(execution.getId()).orElseThrow();
-                  assertThat(found.getScheduleId()).isEqualTo(schedule.getId());
-                  assertThat(found.getProjectId()).isEqualTo(project.getId());
-                  assertThat(found.getPeriodStart()).isEqualTo(LocalDate.of(2026, 1, 1));
-                  assertThat(found.getPeriodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
-                  assertThat(found.getCreatedAt()).isNotNull();
                 }));
   }
 

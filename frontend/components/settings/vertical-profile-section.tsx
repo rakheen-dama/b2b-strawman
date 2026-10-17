@@ -60,11 +60,9 @@ export function VerticalProfileSection({
         setDialogOpen(false);
         // Show seeding feedback toast if available
         if (result.seedingSummary) {
-          const { rateCardsTiersSeeded = 0, scheduleTemplatesSeeded = 0 } = result.seedingSummary;
+          const { rateCardsTiersSeeded = 0 } = result.seedingSummary;
           const parts: string[] = [];
           if (rateCardsTiersSeeded > 0) parts.push(`${rateCardsTiersSeeded} rate card tiers`);
-          if (scheduleTemplatesSeeded > 0)
-            parts.push(`${scheduleTemplatesSeeded} schedule templates (inactive)`);
           if (parts.length > 0) {
             toast.success(`Profile applied — seeded ${parts.join(" and ")}`);
           }

@@ -117,7 +117,6 @@ kazi:
     enabled: false
     poll-interval-ms: 100
     dual-mode:
-      recurring_schedule_execute: true
       dormancy_check: true
       acceptance_expiry: true
       magic_link_cleanup: true

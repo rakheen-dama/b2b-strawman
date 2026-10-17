@@ -1,4 +1,4 @@
-package io.b2mash.b2b.b2bstrawman.schedule;
+package io.b2mash.b2b.b2bstrawman.timeentry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobHandler;

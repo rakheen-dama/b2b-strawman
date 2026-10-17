@@ -3,12 +3,12 @@ package io.b2mash.b2b.b2bstrawman.assistant.specialist;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ChatMessage;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.VisionContentBlock;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.read.ExtractTextFromDocumentTool;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ChatMessage;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.VisionContentBlock;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;

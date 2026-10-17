@@ -1,4 +1,4 @@
-package io.b2mash.b2b.b2bstrawman.assistant.provider;
+package io.b2mash.b2b.b2bstrawman.integration.ai.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

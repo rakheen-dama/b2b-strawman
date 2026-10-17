@@ -1,4 +1,4 @@
-package io.b2mash.b2b.b2bstrawman.assistant.provider;
+package io.b2mash.b2b.b2bstrawman.integration.ai.provider;
 
 /**
  * Result of a tool execution, sent back to the LLM as context for the next turn. The {@code

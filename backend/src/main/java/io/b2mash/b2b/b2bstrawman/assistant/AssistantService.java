@@ -1,11 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.assistant;
 
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ChatMessage;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ChatRequest;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProviderRegistry;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.StreamEvent;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ToolDefinition;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ToolResult;
 import io.b2mash.b2b.b2bstrawman.assistant.specialist.ContextRef;
 import io.b2mash.b2b.b2bstrawman.assistant.specialist.SpecialistRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.specialist.SystemPromptBuilder;
@@ -20,6 +14,12 @@ import io.b2mash.b2b.b2bstrawman.integration.IntegrationGuardService;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationKeys;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegration;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegrationRepository;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ChatMessage;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ChatRequest;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.LlmChatProviderRegistry;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.StreamEvent;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ToolDefinition;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ToolResult;
 import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;

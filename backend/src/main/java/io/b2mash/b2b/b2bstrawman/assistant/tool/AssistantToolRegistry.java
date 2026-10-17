@@ -1,6 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.assistant.tool;
 
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ToolDefinition;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ToolDefinition;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * lookup. Fails fast on duplicate tool names.
  *
  * <p>Follows the same auto-discovery pattern as {@link
- * io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProviderRegistry}.
+ * io.b2mash.b2b.b2bstrawman.integration.ai.provider.LlmChatProviderRegistry}.
  */
 @Component
 public class AssistantToolRegistry {
@@ -58,7 +58,7 @@ public class AssistantToolRegistry {
   /**
    * Returns {@link ToolDefinition} records for tools accessible to a user with the given
    * capabilities. Used to populate the {@code tools} field in a {@link
-   * io.b2mash.b2b.b2bstrawman.assistant.provider.ChatRequest}.
+   * io.b2mash.b2b.b2bstrawman.integration.ai.provider.ChatRequest}.
    */
   public List<ToolDefinition> getToolDefinitions(Set<String> capabilities) {
     return getToolsForUser(capabilities).stream()

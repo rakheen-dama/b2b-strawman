@@ -1,16 +1,16 @@
-package io.b2mash.b2b.b2bstrawman.assistant.provider.anthropic;
+package io.b2mash.b2b.b2bstrawman.integration.ai.provider.anthropic;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ChatMessage;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ChatRequest;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProvider;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ModelInfo;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.StreamEvent;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ToolDefinition;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ToolResult;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.VisionContentBlock;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ChatMessage;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ChatRequest;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.LlmChatProvider;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ModelInfo;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.StreamEvent;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ToolDefinition;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ToolResult;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.VisionContentBlock;
 import jakarta.annotation.PreDestroy;
 import java.io.BufferedReader;
 import java.io.IOException;

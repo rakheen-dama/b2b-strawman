@@ -1,13 +1,13 @@
-package io.b2mash.b2b.b2bstrawman.assistant.provider.anthropic;
+package io.b2mash.b2b.b2bstrawman.integration.ai.provider.anthropic;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ChatMessage;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ChatRequest;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.StreamEvent;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ChatMessage;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ChatRequest;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.StreamEvent;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;

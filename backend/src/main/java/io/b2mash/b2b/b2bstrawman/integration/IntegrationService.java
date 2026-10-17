@@ -1,13 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.integration;
 
-import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProviderRegistry;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ModelInfo;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingProvider;
 import io.b2mash.b2b.b2bstrawman.integration.ai.AiProvider;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.LlmChatProviderRegistry;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ModelInfo;
 import io.b2mash.b2b.b2bstrawman.integration.email.EmailProvider;
 import io.b2mash.b2b.b2bstrawman.integration.kyc.KycVerificationPort;
 import io.b2mash.b2b.b2bstrawman.integration.payment.PaymentGateway;

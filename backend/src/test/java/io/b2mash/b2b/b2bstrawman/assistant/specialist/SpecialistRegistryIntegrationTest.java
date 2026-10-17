@@ -11,13 +11,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ChatRequest;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProvider;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProviderRegistry;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ModelInfo;
-import io.b2mash.b2b.b2bstrawman.assistant.provider.StreamEvent;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationService;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ChatRequest;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.LlmChatProvider;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.LlmChatProviderRegistry;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ModelInfo;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.StreamEvent;
 import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;

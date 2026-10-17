@@ -33,9 +33,9 @@ describe("DemoProvisionForm", () => {
 
     expect(screen.getByLabelText("Organization Name")).toBeInTheDocument();
     expect(screen.getByLabelText("Admin Email")).toBeInTheDocument();
-    expect(screen.getByText("Generic")).toBeInTheDocument();
-    expect(screen.getByText("Accounting")).toBeInTheDocument();
-    expect(screen.getByText("Legal")).toBeInTheDocument();
+    // Phase 86 (ADR-332): single profile — shown read-only, no picker.
+    expect(screen.getByTestId("demo-vertical-profile")).toHaveTextContent("Legal (South Africa)");
+    expect(screen.queryAllByRole("radio")).toHaveLength(0);
     expect(screen.getByText("Seed Demo Data")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Create Demo Tenant" })).toBeInTheDocument();
   });
@@ -46,9 +46,9 @@ describe("DemoProvisionForm", () => {
       success: true,
       data: {
         organizationId: "org-demo-123",
-        organizationSlug: "demo-accounting-firm",
-        organizationName: "Demo Accounting Firm",
-        verticalProfile: "accounting-za",
+        organizationSlug: "demo-law-firm",
+        organizationName: "Demo Law Firm",
+        verticalProfile: "legal-za",
         loginUrl: "https://app.example.com/sign-in",
         demoDataSeeded: true,
         adminNote: "Demo tenant created",
@@ -57,16 +57,15 @@ describe("DemoProvisionForm", () => {
 
     render(<DemoProvisionForm />);
 
-    await user.type(screen.getByLabelText("Organization Name"), "Demo Accounting Firm");
-    await user.click(screen.getByRole("radio", { name: /Accounting/ }));
+    await user.type(screen.getByLabelText("Organization Name"), "Demo Law Firm");
     await user.type(screen.getByLabelText("Admin Email"), "admin@example.com");
 
     await user.click(screen.getByRole("button", { name: "Create Demo Tenant" }));
 
     await waitFor(() => {
       expect(mockProvisionDemo).toHaveBeenCalledWith({
-        organizationName: "Demo Accounting Firm",
-        verticalProfile: "accounting-za",
+        organizationName: "Demo Law Firm",
+        verticalProfile: "legal-za",
         adminEmail: "admin@example.com",
         seedDemoData: true,
       });
@@ -110,7 +109,6 @@ describe("DemoProvisionForm", () => {
     render(<DemoProvisionForm />);
 
     await user.type(screen.getByLabelText("Organization Name"), "Demo Legal Firm");
-    await user.click(screen.getByRole("radio", { name: /Legal/ }));
     await user.type(screen.getByLabelText("Admin Email"), "legal@example.com");
     // Toggle seed data off
     await user.click(screen.getByRole("switch"));
@@ -125,41 +123,5 @@ describe("DemoProvisionForm", () => {
     expect(screen.getByText("https://app.example.com/sign-in")).toBeInTheDocument();
     expect(screen.getByText("No")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Create Another" })).toBeInTheDocument();
-  });
-
-  it("selects vertical profile radio and submits correct value", async () => {
-    const user = userEvent.setup();
-    mockProvisionDemo.mockResolvedValue({
-      success: true,
-      data: {
-        organizationId: "org-demo-789",
-        organizationSlug: "demo-accounting",
-        organizationName: "Accounting Demo",
-        verticalProfile: "accounting-za",
-        loginUrl: "https://app.example.com/sign-in",
-        demoDataSeeded: true,
-        adminNote: "Created",
-      },
-    });
-
-    render(<DemoProvisionForm />);
-
-    // Default is consulting-generic — click Accounting radio
-    const accountingRadio = screen.getByRole("radio", { name: /Accounting/ });
-    await user.click(accountingRadio);
-    expect(accountingRadio).toBeChecked();
-
-    await user.type(screen.getByLabelText("Organization Name"), "Accounting Demo");
-    await user.type(screen.getByLabelText("Admin Email"), "test@example.com");
-
-    await user.click(screen.getByRole("button", { name: "Create Demo Tenant" }));
-
-    await waitFor(() => {
-      expect(mockProvisionDemo).toHaveBeenCalledWith(
-        expect.objectContaining({
-          verticalProfile: "accounting-za",
-        })
-      );
-    });
   });
 });

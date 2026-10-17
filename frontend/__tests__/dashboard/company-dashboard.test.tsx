@@ -10,10 +10,7 @@ import { MyWeekColumn } from "@/components/dashboard/my-week-column";
 import { GettingStartedCard } from "@/components/dashboard/getting-started-card";
 import { OrgProfileProvider } from "@/lib/org-profile";
 
-function withOrgProfile(
-  children: React.ReactNode,
-  enabledModules: string[] = ["automation_builder", "bulk_billing"]
-) {
+function withOrgProfile(children: React.ReactNode, enabledModules: string[] = ["bulk_billing"]) {
   return (
     <OrgProfileProvider
       verticalProfile={null}
@@ -323,7 +320,6 @@ describe("Dashboard Layout Components", () => {
   it("MetricsStrip renders no team-utilization tile with every surviving module enabled (Epic 599)", () => {
     render(
       withOrgProfile(<MetricsStrip kpis={mockKpis} projectHealth={mockProjectHealth} />, [
-        "automation_builder",
         "bulk_billing",
         "information_requests",
         "trust_accounting",
@@ -332,7 +328,6 @@ describe("Dashboard Layout Components", () => {
         "lssa_tariff",
         "disbursements",
         "matter_closure",
-        "regulatory_deadlines",
       ])
     );
     expect(screen.getByTestId("metrics-strip")).toBeInTheDocument();

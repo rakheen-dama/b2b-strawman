@@ -56,21 +56,14 @@ const mockModules: ModuleStatus[] = [
     description: "Batch invoice generation across multiple customers.",
     enabled: true,
   },
-  {
-    id: "automation_builder",
-    name: "Automation Rule Builder",
-    description: "Create custom workflow automations with triggers.",
-    enabled: false,
-  },
 ];
 
 describe("FeaturesSettingsForm", () => {
-  it("renders all 3 feature cards with names and descriptions", () => {
+  it("renders both feature cards with names and descriptions", () => {
     render(<FeaturesSettingsForm initialModules={mockModules} canManage={true} />);
 
     expect(screen.getByText("Information Requests")).toBeInTheDocument();
     expect(screen.getByText("Bulk Billing Runs")).toBeInTheDocument();
-    expect(screen.getByText("Automation Rule Builder")).toBeInTheDocument();
     expect(
       screen.getByText("Customer document-request workflows with portal pickup and acceptance")
     ).toBeInTheDocument();
@@ -80,15 +73,15 @@ describe("FeaturesSettingsForm", () => {
     render(<FeaturesSettingsForm initialModules={mockModules} canManage={true} />);
 
     const switches = screen.getAllByRole("switch");
-    expect(switches).toHaveLength(3);
+    expect(switches).toHaveLength(2);
   });
 
   it("shows read-only state without switches when canManage is false", () => {
     render(<FeaturesSettingsForm initialModules={mockModules} canManage={false} />);
 
     expect(screen.queryAllByRole("switch")).toHaveLength(0);
-    // Two disabled + one enabled labels
-    expect(screen.getAllByText("Disabled")).toHaveLength(2);
+    // One disabled + one enabled label
+    expect(screen.getAllByText("Disabled")).toHaveLength(1);
     expect(screen.getByText("Enabled")).toBeInTheDocument();
   });
 
@@ -111,12 +104,10 @@ describe("FeaturesSettingsForm", () => {
     await waitFor(() => {
       expect(updateModuleSettings).toHaveBeenCalledTimes(1);
     });
-    // Verify exact payload — only the toggled module joins the existing
-    // enabled list. `automation_builder` must NOT be included.
+    // Verify exact payload — only the toggled module joins the existing enabled list.
     const callArg = vi.mocked(updateModuleSettings).mock.calls[0][0];
     const sorted = [...callArg].sort();
     expect(sorted).toEqual(["bulk_billing", "information_requests"]);
-    expect(sorted).not.toContain("automation_builder");
   });
 
   it("calls router.refresh after a successful toggle", async () => {

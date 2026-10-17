@@ -43,17 +43,6 @@ export type ActionExecutionStatus = "PENDING" | "COMPLETED" | "FAILED" | "SKIPPE
 
 export type RuleSource = "MANUAL" | "TEMPLATE";
 
-export type ConditionOperator =
-  | "EQUALS"
-  | "NOT_EQUALS"
-  | "IN"
-  | "NOT_IN"
-  | "GREATER_THAN"
-  | "LESS_THAN"
-  | "CONTAINS"
-  | "IS_NULL"
-  | "IS_NOT_NULL";
-
 export type DelayUnit = "MINUTES" | "HOURS" | "DAYS";
 
 // === Response DTOs ===
@@ -113,53 +102,6 @@ export interface AutomationExecutionResponse {
   actionExecutions: ActionExecutionResponse[];
 }
 
-export interface TemplateDefinitionResponse {
-  slug: string;
-  name: string;
-  description: string;
-  category: string;
-  triggerType: string;
-  triggerConfig: Record<string, unknown>;
-  actionCount: number;
-}
-
-// === Request DTOs ===
-
-export interface ActionRequest {
-  actionType: ActionType;
-  actionConfig: Record<string, unknown>;
-  sortOrder: number;
-  delayDuration?: number | null;
-  delayUnit?: DelayUnit | null;
-}
-
-export interface CreateRuleRequest {
-  name: string;
-  description?: string;
-  triggerType: TriggerType;
-  triggerConfig: Record<string, unknown>;
-  conditions?: Record<string, unknown>[];
-  actions?: ActionRequest[];
-}
-
-export interface UpdateRuleRequest {
-  name: string;
-  description?: string;
-  triggerType: TriggerType;
-  triggerConfig: Record<string, unknown>;
-  conditions?: Record<string, unknown>[];
-  actions?: ActionRequest[];
-}
-
-export interface TestRuleRequest {
-  sampleEventData: Record<string, unknown>;
-}
-
-export interface TestRuleResponse {
-  conditionsMet: boolean;
-  evaluationDetails: string[];
-}
-
 // === Paginated Response ===
 
 export interface PaginatedResponse<T> {
@@ -173,6 +115,8 @@ export interface PaginatedResponse<T> {
 }
 
 // === API Functions ===
+// Phase 86 (ADR-334): the rule editor and its write endpoints are gone; only the always-on
+// list / toggle / execution reads remain.
 
 // -- Rules --
 
@@ -187,45 +131,8 @@ export async function listRules(params?: {
   return api.get<AutomationRuleResponse[]>(`/api/automation-rules${qs ? `?${qs}` : ""}`);
 }
 
-export async function getRule(id: string): Promise<AutomationRuleResponse> {
-  return api.get<AutomationRuleResponse>(`/api/automation-rules/${id}`);
-}
-
-export async function createRule(data: CreateRuleRequest): Promise<AutomationRuleResponse> {
-  return api.post<AutomationRuleResponse>("/api/automation-rules", data);
-}
-
-export async function updateRule(
-  id: string,
-  data: UpdateRuleRequest
-): Promise<AutomationRuleResponse> {
-  return api.put<AutomationRuleResponse>(`/api/automation-rules/${id}`, data);
-}
-
-export async function deleteRule(id: string): Promise<void> {
-  return api.delete<void>(`/api/automation-rules/${id}`);
-}
-
 export async function toggleRule(id: string): Promise<AutomationRuleResponse> {
   return api.post<AutomationRuleResponse>(`/api/automation-rules/${id}/toggle`);
-}
-
-export async function duplicateRule(id: string): Promise<AutomationRuleResponse> {
-  return api.post<AutomationRuleResponse>(`/api/automation-rules/${id}/duplicate`);
-}
-
-export async function testRule(id: string, sampleData: TestRuleRequest): Promise<TestRuleResponse> {
-  return api.post<TestRuleResponse>(`/api/automation-rules/${id}/test`, sampleData);
-}
-
-// -- Templates --
-
-export async function listTemplates(): Promise<TemplateDefinitionResponse[]> {
-  return api.get<TemplateDefinitionResponse[]>("/api/automation-templates");
-}
-
-export async function activateTemplate(slug: string): Promise<AutomationRuleResponse> {
-  return api.post<AutomationRuleResponse>(`/api/automation-templates/${slug}/activate`);
 }
 
 // -- Executions --
@@ -245,49 +152,4 @@ export async function listExecutions(params?: {
   return api.get<PaginatedResponse<AutomationExecutionResponse>>(
     `/api/automation-executions${qs ? `?${qs}` : ""}`
   );
-}
-
-export async function getExecution(id: string): Promise<AutomationExecutionResponse> {
-  return api.get<AutomationExecutionResponse>(`/api/automation-executions/${id}`);
-}
-
-export async function getRuleExecutions(
-  ruleId: string,
-  params?: { page?: number; size?: number }
-): Promise<PaginatedResponse<AutomationExecutionResponse>> {
-  const searchParams = new URLSearchParams();
-  if (params?.page !== undefined) searchParams.set("page", String(params.page));
-  if (params?.size !== undefined) searchParams.set("size", String(params.size));
-  const qs = searchParams.toString();
-  return api.get<PaginatedResponse<AutomationExecutionResponse>>(
-    `/api/automation-rules/${ruleId}/executions${qs ? `?${qs}` : ""}`
-  );
-}
-
-// -- Actions (stubs for future Epic 286+) --
-
-export async function addAction(
-  ruleId: string,
-  data: Record<string, unknown>
-): Promise<AutomationActionResponse> {
-  return api.post<AutomationActionResponse>(`/api/automation-rules/${ruleId}/actions`, data);
-}
-
-export async function updateAction(
-  ruleId: string,
-  actionId: string,
-  data: Record<string, unknown>
-): Promise<AutomationActionResponse> {
-  return api.put<AutomationActionResponse>(
-    `/api/automation-rules/${ruleId}/actions/${actionId}`,
-    data
-  );
-}
-
-export async function deleteAction(ruleId: string, actionId: string): Promise<void> {
-  return api.delete<void>(`/api/automation-rules/${ruleId}/actions/${actionId}`);
-}
-
-export async function reorderActions(ruleId: string, actionIds: string[]): Promise<void> {
-  return api.post<void>(`/api/automation-rules/${ruleId}/actions/reorder`, { actionIds });
 }

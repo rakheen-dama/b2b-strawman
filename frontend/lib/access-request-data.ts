@@ -10,16 +10,8 @@ export const BLOCKED_EMAIL_DOMAINS = [
   "zoho.com",
 ];
 
-export const INDUSTRIES = [
-  "Accounting",
-  "Legal Services",
-  "Consulting",
-  "Engineering",
-  "Architecture",
-  "IT Services",
-  "Marketing",
-  "Other",
-];
+// Phase 86 (ADR-332): Kazi is legal-only — every industry provisions the legal-za profile.
+export const INDUSTRIES = ["Legal Services", "Other"];
 
 export const COUNTRIES = [
   "Afghanistan",

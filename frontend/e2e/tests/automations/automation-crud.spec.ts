@@ -1,7 +1,7 @@
 /**
  * AUTO-01: Automation CRUD — Playwright E2E Tests
  *
- * Tests automation rule management: view rules, create rule,
+ * Tests automation rule management (Phase 86: list + enable/disable only): view rules,
  * disable, enable, view execution history.
  *
  * Prerequisites:
@@ -39,41 +39,6 @@ test.describe("AUTO-01: Automation CRUD", () => {
     // Should show automation rules or an empty state
     const text = await content.textContent();
     expect(text?.length).toBeGreaterThan(0);
-  });
-
-  test("Create custom automation rule", async ({ page }) => {
-    await page.goto(`${base}/settings/automations`);
-    let bodyText = await page.locator("body").textContent();
-
-    if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      await page.goto(`${base}/automations`);
-      bodyText = await page.locator("body").textContent();
-      if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-        test.skip(true, "Automations page not implemented");
-        return;
-      }
-    }
-
-    // Look for create button
-    const createBtn = page.getByRole("button", { name: /new|create|add/i }).first();
-    const btnVisible = await createBtn.isVisible().catch(() => false);
-
-    if (!btnVisible) {
-      test.skip(true, "Create automation rule button not found");
-      return;
-    }
-
-    await createBtn.click();
-    await page.waitForTimeout(1000);
-
-    // Fill form if dialog/page appeared
-    const dialog = page.getByRole("dialog").first();
-    if (await dialog.isVisible().catch(() => false)) {
-      const nameInput = dialog.getByRole("textbox", { name: /name/i }).first();
-      if (await nameInput.isVisible().catch(() => false)) {
-        await nameInput.fill(`Test Rule ${Date.now().toString(36)}`);
-      }
-    }
   });
 
   test("Disable automation rule", async ({ page }) => {

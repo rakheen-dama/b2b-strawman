@@ -9,7 +9,6 @@ import {
   TrendingUp,
   BarChart3,
   Receipt,
-  CalendarClock,
   ShieldCheck,
   Settings,
   Scale,
@@ -131,14 +130,6 @@ export const NAV_GROUPS: NavGroup[] = [
         href: (slug) => `/org/${slug}/compliance`,
         icon: ShieldCheck,
         requiredCapability: "CUSTOMER_MANAGEMENT",
-      },
-      {
-        label: "Deadlines",
-        href: (slug) => `/org/${slug}/deadlines`,
-        icon: CalendarClock,
-        exact: true,
-        requiredCapability: "CUSTOMER_MANAGEMENT",
-        requiredModule: "regulatory_deadlines",
       },
       {
         label: "Conflict Check",
@@ -423,10 +414,9 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
   },
   {
     title: "Automations",
-    description: "Create rules to automate tasks, notifications, and workflows",
+    description: "Enable or disable the automation rules installed with your practice packs",
     href: (slug) => `/org/${slug}/settings/automations`,
     adminOnly: true,
-    requiredModule: "automation_builder",
   },
   {
     title: "Roles & Permissions",

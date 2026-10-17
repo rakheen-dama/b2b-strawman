@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import {
   Table,
@@ -10,49 +10,27 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import { Button } from "@b2mash/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { TriggerTypeBadge } from "@/components/automations/trigger-type-badge";
-import { TemplateGallery } from "@/components/automations/template-gallery";
-import {
-  toggleRuleAction,
-  deleteRuleAction,
-} from "@/app/(app)/org/[slug]/settings/automations/actions";
+import { toggleRuleAction } from "@/app/(app)/org/[slug]/settings/automations/actions";
 import { toast } from "sonner";
 import { RelativeDate } from "@/components/ui/relative-date";
-import { Zap, Plus, LayoutGrid, Trash2 } from "lucide-react";
-import type { AutomationRuleResponse, TemplateDefinitionResponse } from "@/lib/api/automations";
+import { Zap } from "lucide-react";
+import type { AutomationRuleResponse } from "@/lib/api/automations";
 
 interface RuleListProps {
   slug: string;
   rules: AutomationRuleResponse[];
-  templates: TemplateDefinitionResponse[];
   canManage: boolean;
 }
 
-export function RuleList({ slug, rules, templates, canManage }: RuleListProps) {
-  const [galleryOpen, setGalleryOpen] = useState(false);
+/**
+ * Always-on automation rules list (ADR-334): rules are installed by packs and can only be
+ * enabled or disabled here — the rule editor and template gallery were removed in Phase 86.
+ */
+export function RuleList({ slug, rules, canManage }: RuleListProps) {
   const [isPending, startTransition] = useTransition();
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [optimisticToggles, setOptimisticToggles] = useState<Record<string, boolean>>({});
-  const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (confirmDeleteId) {
-      confirmTimerRef.current = setTimeout(() => {
-        setConfirmDeleteId(null);
-      }, 3000);
-    }
-    return () => {
-      if (confirmTimerRef.current) {
-        clearTimeout(confirmTimerRef.current);
-        confirmTimerRef.current = null;
-      }
-    };
-  }, [confirmDeleteId]);
-
-  const activatedSlugs = rules.filter((r) => r.templateSlug).map((r) => r.templateSlug!);
 
   function handleToggle(ruleId: string, currentEnabled: boolean) {
     // Optimistic update
@@ -80,42 +58,8 @@ export function RuleList({ slug, rules, templates, canManage }: RuleListProps) {
     });
   }
 
-  function handleDelete(ruleId: string) {
-    if (confirmDeleteId !== ruleId) {
-      setConfirmDeleteId(ruleId);
-      return;
-    }
-    setDeletingId(ruleId);
-    setConfirmDeleteId(null);
-    startTransition(async () => {
-      const result = await deleteRuleAction(slug, ruleId);
-      setDeletingId(null);
-      if (result.success) {
-        toast.success("Rule deleted successfully");
-      } else {
-        toast.error(result.error ?? "Failed to delete rule");
-      }
-    });
-  }
-
   return (
     <div className="space-y-6">
-      {/* Actions */}
-      {canManage && (
-        <div className="flex items-center justify-end gap-2">
-          <Button size="sm" variant="outline" onClick={() => setGalleryOpen(true)}>
-            <LayoutGrid className="mr-1.5 size-4" />
-            Browse Templates
-          </Button>
-          <Button size="sm" asChild>
-            <Link href={`/org/${slug}/settings/automations/new`}>
-              <Plus className="mr-1.5 size-4" />
-              New Automation
-            </Link>
-          </Button>
-        </div>
-      )}
-
       {/* Rules Table or Empty State */}
       {rules.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -124,24 +68,8 @@ export function RuleList({ slug, rules, templates, canManage }: RuleListProps) {
             No automation rules yet
           </h2>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            {canManage
-              ? "Create your first automation or browse templates to get started."
-              : "No automation rules have been created yet."}
+            Automation rules are installed with your practice packs and will appear here.
           </p>
-          {canManage && (
-            <div className="mt-4 flex gap-2">
-              <Button size="sm" variant="outline" onClick={() => setGalleryOpen(true)}>
-                <LayoutGrid className="mr-1.5 size-4" />
-                Browse Templates
-              </Button>
-              <Button size="sm" asChild>
-                <Link href={`/org/${slug}/settings/automations/new`}>
-                  <Plus className="mr-1.5 size-4" />
-                  New Automation
-                </Link>
-              </Button>
-            </div>
-          )}
         </div>
       ) : (
         <>
@@ -153,23 +81,18 @@ export function RuleList({ slug, rules, templates, canManage }: RuleListProps) {
                 <TableHead>Enabled</TableHead>
                 <TableHead>Last Updated</TableHead>
                 <TableHead>Actions</TableHead>
-                {canManage && <TableHead className="w-10" />}
               </TableRow>
             </TableHeader>
             <TableBody>
               {rules.map((rule) => (
                 <TableRow key={rule.id} data-testid="automation-row">
                   <TableCell>
-                    <Link href={`/org/${slug}/settings/automations/${rule.id}`} className="block">
-                      <p className="font-medium text-slate-950 hover:text-teal-600 dark:text-slate-50 dark:hover:text-teal-400">
-                        {rule.name}
+                    <p className="font-medium text-slate-950 dark:text-slate-50">{rule.name}</p>
+                    {rule.description && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {rule.description}
                       </p>
-                      {rule.description && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {rule.description}
-                        </p>
-                      )}
-                    </Link>
+                    )}
                   </TableCell>
                   <TableCell>
                     <TriggerTypeBadge triggerType={rule.triggerType} />
@@ -195,23 +118,6 @@ export function RuleList({ slug, rules, templates, canManage }: RuleListProps) {
                       {rule.actions.length}
                     </span>
                   </TableCell>
-                  {canManage && (
-                    <TableCell>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="size-8 p-0 text-slate-400 hover:text-red-600 dark:hover:text-red-400"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(rule.id);
-                        }}
-                        disabled={isPending && deletingId === rule.id}
-                        aria-label={`Delete ${rule.name}`}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </TableCell>
-                  )}
                 </TableRow>
               ))}
             </TableBody>
@@ -228,15 +134,6 @@ export function RuleList({ slug, rules, templates, canManage }: RuleListProps) {
           )}
         </>
       )}
-
-      {/* Template Gallery Sheet */}
-      <TemplateGallery
-        slug={slug}
-        templates={templates}
-        activatedSlugs={activatedSlugs}
-        open={galleryOpen}
-        onOpenChange={setGalleryOpen}
-      />
     </div>
   );
 }

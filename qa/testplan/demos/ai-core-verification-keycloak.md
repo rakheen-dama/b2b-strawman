@@ -223,7 +223,7 @@ Run the standard Keycloak onboarding (mirror Day 0 of `legal-za-90day-keycloak.m
 
 **Actor**: Nomsa · Route: audit/activity feed (and/or `GET` audit query API)
 
-- [ ] **12.1** Confirm events exist for the run: `ai.skill.invoked` (each skill), `ai.gate.approved` (V8.2), `ai.gate.rejected` (V8.4), `ai.specialist.failed` (V11.1). <!-- AIVERIFY-013 (authorized 2026-06-15): the live skill/gate path emits `ai.skill.*`/`ai.gate.*`; the older `ai.specialist.invoked/approved/rejected` strings are registered but emitted only by the automation path. Names amended to the canonical emitted events; `ai.specialist.failed` is still the failure event. Audit completeness + actor attribution + filters all verified (V12 PASS). -->
+- [ ] **12.1** Confirm events exist for the run: `ai.skill.invoked` (each skill), `ai.gate.approved` (V8.2), `ai.gate.rejected` (V8.4), `ai.specialist.failed` (V11.1). <!-- AIVERIFY-013 (authorized 2026-06-15): the live skill/gate path emits `ai.skill.*`/`ai.gate.*`; the older `ai.specialist.invoked/approved/rejected` strings are registered but emitted only by the automation path (those registry entries were removed in Phase 86 Epic 601; only `ai.specialist.failed` remains). Names amended to the canonical emitted events; `ai.specialist.failed` is still the failure event. Audit completeness + actor attribution + filters all verified (V12 PASS). -->
 - [ ] **12.2** Approved/rejected events carry the correct **actor** (Nomsa) + notes; invoked events carry the skill/entity
 - [ ] **12.3** Events are filterable by actor and entity
 

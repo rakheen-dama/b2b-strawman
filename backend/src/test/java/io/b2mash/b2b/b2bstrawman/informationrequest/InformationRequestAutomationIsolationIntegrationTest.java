@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.informationrequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -8,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.automation.executor.CreateTaskActionExecutor;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
@@ -22,6 +24,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -29,16 +32,22 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Regression guard for the OBS-505 cross-package cascade: a seeded {@code INVOKE_AI_SPECIALIST}
- * automation on the {@code INFORMATION_REQUEST_COMPLETED} trigger fires synchronously when the last
- * required item of an information request is accepted. In the absence of a configured AI provider
- * (the default for a freshly provisioned tenant) that action's runner throws from an
- * {@code @Transactional} integration guard. Before the fix, that nested rollback-only marking
- * poisoned the triggering {@code acceptItem} transaction, surfacing as {@code
- * UnexpectedRollbackException} so the request never persisted as COMPLETED.
+ * Regression guard for the OBS-505 cross-package cascade: a seeded automation on the {@code
+ * INFORMATION_REQUEST_COMPLETED} trigger fires synchronously when the last required item of an
+ * information request is accepted. If that action throws, a {@code REQUIRED}-propagation action
+ * transaction would mark the participating {@code acceptItem} transaction rollback-only, surfacing
+ * as {@code UnexpectedRollbackException} so the request never persisted as COMPLETED.
+ *
+ * <p>Originally exercised via the seeded {@code INVOKE_AI_SPECIALIST} action (whose runner threw
+ * with no AI provider configured). That action was removed in Phase 86 Epic 601, so the test is
+ * re-fixtured on the surviving common-pack rule {@code request-complete-followup} ({@code
+ * CREATE_TASK} on {@code INFORMATION_REQUEST_COMPLETED}) with the real {@link
+ * CreateTaskActionExecutor} spied to THROW (a soft {@code ActionFailure} would not exercise the
+ * transaction boundary).
  *
  * <p>The invariant under test: a side-effecting automation action that throws must NEVER roll back
  * the business transaction that triggered the domain event. Accepting the final required item must
@@ -52,7 +61,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class InformationRequestAiAutomationIsolationIntegrationTest {
+class InformationRequestAutomationIsolationIntegrationTest {
 
   private static final String ORG_ID = "org_inforeq_ai_isolation_test";
 
@@ -62,6 +71,10 @@ class InformationRequestAiAutomationIsolationIntegrationTest {
   @Autowired private RequestItemRepository requestItemRepository;
   @Autowired private PortalContactRepository portalContactRepository;
 
+  // The real executor, spied so its supportedType() (CREATE_TASK) still registers it in
+  // AutomationActionExecutor's map; only execute(...) is stubbed to throw.
+  @MockitoSpyBean private CreateTaskActionExecutor createTaskActionExecutor;
+
   private String memberIdOwner;
   private String customerId;
   private String portalContactId;
@@ -70,9 +83,9 @@ class InformationRequestAiAutomationIsolationIntegrationTest {
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
-    // Default provisioning seeds the legal-za automation pack, which includes an
-    // INVOKE_AI_SPECIALIST action on the INFORMATION_REQUEST_COMPLETED trigger. No AI provider is
-    // configured, so the action's runner throws when it fires — exactly the OBS-505 cascade.
+    // Default provisioning seeds the common automation pack, which includes a CREATE_TASK action
+    // on the INFORMATION_REQUEST_COMPLETED trigger. The test makes that action throw when it fires
+    // — exactly the OBS-505 cascade.
     provisioningService.provisionTenant(ORG_ID, "InfoReq AI Isolation Test Org", null);
     schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
 
@@ -100,21 +113,25 @@ class InformationRequestAiAutomationIsolationIntegrationTest {
   }
 
   @Test
-  void acceptingFinalItem_whenAiActionThrows_stillCompletesAndRecordsSoftFailure()
+  void acceptingFinalItem_whenAutomationActionThrows_stillCompletesAndRecordsSoftFailure()
       throws Exception {
-    // Sanity check: this tenant actually has an enabled INFORMATION_REQUEST_COMPLETED automation
-    // with an INVOKE_AI_SPECIALIST action — otherwise the test would pass vacuously.
-    Long aiRules =
+    // Sanity check: the seeded common-pack rule `request-complete-followup` (CREATE_TASK on
+    // INFORMATION_REQUEST_COMPLETED) is enabled in this tenant — otherwise the test is vacuous.
+    Long rules =
         jdbcTemplate.queryForObject(
             "SELECT count(*) FROM \"%s\".automation_rules r JOIN \"%s\".automation_actions a"
                     .formatted(schema, schema)
                 + " ON a.rule_id = r.id WHERE r.enabled = true AND r.trigger_type ="
-                + " 'INFORMATION_REQUEST_COMPLETED' AND a.action_type = 'INVOKE_AI_SPECIALIST'",
+                + " 'INFORMATION_REQUEST_COMPLETED' AND a.action_type = 'CREATE_TASK'",
             Long.class);
-    assertThat(aiRules)
-        .as("tenant must have a seeded INVOKE_AI_SPECIALIST rule on INFORMATION_REQUEST_COMPLETED")
+    assertThat(rules)
+        .as("tenant must have an enabled CREATE_TASK rule on INFORMATION_REQUEST_COMPLETED")
         .isNotNull()
         .isGreaterThanOrEqualTo(1L);
+    // Make that action THROW (not soft-fail) so the REQUIRES_NEW isolation is actually exercised.
+    Mockito.doThrow(new IllegalStateException("simulated action failure (OBS-505 guard)"))
+        .when(createTaskActionExecutor)
+        .execute(any(), any(), any());
 
     var jwt = TestJwtFactory.ownerJwt(ORG_ID, "user_iso_owner");
 
@@ -153,8 +170,8 @@ class InformationRequestAiAutomationIsolationIntegrationTest {
 
     long failedExecsBefore = countFailedAutomationExecutions();
 
-    // Accept the last required item. This auto-completes the request and fires the AI automation,
-    // which throws. The request must STILL complete (no UnexpectedRollbackException).
+    // Accept the last required item. This auto-completes the request and fires the automation,
+    // whose action throws. The request must STILL complete (no UnexpectedRollbackException).
     mockMvc
         .perform(
             post("/api/information-requests/%s/items/%s/accept".formatted(requestId, itemId))
@@ -180,7 +197,7 @@ class InformationRequestAiAutomationIsolationIntegrationTest {
     // The automation failure was recorded as a SOFT failure (not a rollback): a FAILED automation
     // execution and an AUTOMATION_ACTION_FAILED notification both persisted in the outer tx.
     assertThat(countFailedAutomationExecutions())
-        .as("AI automation action failure should be recorded as a FAILED execution")
+        .as("automation action failure should be recorded as a FAILED execution")
         .isGreaterThan(failedExecsBefore);
 
     List<Map<String, Object>> failureNotifications =

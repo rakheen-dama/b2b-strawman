@@ -107,8 +107,6 @@ class TenantScopeBindingTest {
    *   <li>{@code ..dev..} package — profile-gated dev test harness ({@code DevPortalController}).
    *   <li>{@code CustomerAuthFilter} — servlet filter; binding from JWT IS the request boundary
    *       (multi-binding CUSTOMER_ID + TENANT_ID + ORG_ID + conditional PORTAL_CONTACT_ID).
-   *   <li>{@code AssistantController} — 5-binding capture-and-rebind to bridge servlet thread →
-   *       virtual thread for SSE LLM streaming. Awaits ADR-204's {@code withCurrentScopes()}.
    *   <li>{@code MockPaymentController} — profile-gated dev payment mock; site at line 182 is also
    *       a cross-tenant invoice search (find-which-owns).
    *   <li>{@code MemberFilter} — servlet filter; binds {@code MEMBER_ID} + {@code ORG_ROLE} from a
@@ -128,8 +126,6 @@ class TenantScopeBindingTest {
           .resideOutsideOfPackage("..dev..")
           .and()
           .doNotHaveFullyQualifiedName("io.b2mash.b2b.b2bstrawman.portal.CustomerAuthFilter")
-          .and()
-          .doNotHaveFullyQualifiedName("io.b2mash.b2b.b2bstrawman.assistant.AssistantController")
           .and()
           .doNotHaveFullyQualifiedName(
               "io.b2mash.b2b.b2bstrawman.integration.payment.MockPaymentController")

@@ -41,8 +41,6 @@ public class AutomationConfigDeserializer {
       case UPDATE_STATUS -> objectMapper.convertValue(raw, UpdateStatusActionConfig.class);
       case CREATE_PROJECT -> objectMapper.convertValue(raw, CreateProjectActionConfig.class);
       case ASSIGN_MEMBER -> objectMapper.convertValue(raw, AssignMemberActionConfig.class);
-      case INVOKE_AI_SPECIALIST ->
-          objectMapper.convertValue(raw, InvokeAiSpecialistActionConfig.class);
     };
   }
 }

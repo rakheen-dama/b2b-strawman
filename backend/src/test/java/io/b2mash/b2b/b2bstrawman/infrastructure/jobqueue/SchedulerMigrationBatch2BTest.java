@@ -63,7 +63,7 @@ class SchedulerMigrationBatch2BTest {
   }
 
   @Test
-  void allSevenBatch2BHandlersRegisteredWithCorrectJobTypes() {
+  void allSixBatch2BHandlersRegisteredWithCorrectJobTypes() {
     Set<String> expectedTypes =
         Set.of(
             "request_reminder_check",
@@ -71,7 +71,6 @@ class SchedulerMigrationBatch2BTest {
             "subscription_grace_expiry",
             "subscription_cancellation_end",
             "court_date_reminder",
-            "ai_invocation_expiry",
             "portal_digest");
 
     assertThat(handlerRegistry.getRegisteredTypes()).containsAll(expectedTypes);
@@ -84,7 +83,7 @@ class SchedulerMigrationBatch2BTest {
   }
 
   @Test
-  void allSeventeenHandlersRegisteredInRegistry() {
+  void allSixteenHandlersRegisteredInRegistry() {
     Set<String> allExpectedTypes =
         Set.of(
             // Batch 1 (5)
@@ -99,17 +98,16 @@ class SchedulerMigrationBatch2BTest {
             "magic_link_cleanup",
             "ai_gate_expiry",
             "field_date_scan",
-            // Batch 2B (7)
+            // Batch 2B (6)
             "request_reminder_check",
             "subscription_trial_expiry",
             "subscription_grace_expiry",
             "subscription_cancellation_end",
             "court_date_reminder",
-            "ai_invocation_expiry",
             "portal_digest");
 
     assertThat(handlerRegistry.getRegisteredTypes()).containsAll(allExpectedTypes);
-    assertThat(handlerRegistry.getRegisteredTypes()).hasSizeGreaterThanOrEqualTo(17);
+    assertThat(handlerRegistry.getRegisteredTypes()).hasSizeGreaterThanOrEqualTo(16);
   }
 
   @Test
@@ -140,8 +138,7 @@ class SchedulerMigrationBatch2BTest {
     var job3 = new JobQueue("subscription_grace_expiry", TENANT_1, ORG_1, "primary", null, 1);
     var job4 = new JobQueue("subscription_cancellation_end", TENANT_1, ORG_1, "primary", null, 1);
     var job5 = new JobQueue("court_date_reminder", TENANT_1, ORG_1, "primary", null, 1);
-    var job6 = new JobQueue("ai_invocation_expiry", TENANT_1, ORG_1, "primary", null, 1);
-    var job7 = new JobQueue("portal_digest", TENANT_1, ORG_1, "primary", null, 1);
+    var job6 = new JobQueue("portal_digest", TENANT_1, ORG_1, "primary", null, 1);
 
     jobQueueRepository.saveAndFlush(job1);
     jobQueueRepository.saveAndFlush(job2);
@@ -149,7 +146,6 @@ class SchedulerMigrationBatch2BTest {
     jobQueueRepository.saveAndFlush(job4);
     jobQueueRepository.saveAndFlush(job5);
     jobQueueRepository.saveAndFlush(job6);
-    jobQueueRepository.saveAndFlush(job7);
 
     worker.start();
 
@@ -164,7 +160,6 @@ class SchedulerMigrationBatch2BTest {
               var j4 = jobQueueRepository.findById(job4.getId()).orElseThrow();
               var j5 = jobQueueRepository.findById(job5.getId()).orElseThrow();
               var j6 = jobQueueRepository.findById(job6.getId()).orElseThrow();
-              var j7 = jobQueueRepository.findById(job7.getId()).orElseThrow();
 
               assertThat(j1.getStatus()).isIn(JobStatus.COMPLETED, JobStatus.DEAD_LETTER);
               assertThat(j2.getStatus()).isIn(JobStatus.COMPLETED, JobStatus.DEAD_LETTER);
@@ -172,7 +167,6 @@ class SchedulerMigrationBatch2BTest {
               assertThat(j4.getStatus()).isIn(JobStatus.COMPLETED, JobStatus.DEAD_LETTER);
               assertThat(j5.getStatus()).isIn(JobStatus.COMPLETED, JobStatus.DEAD_LETTER);
               assertThat(j6.getStatus()).isIn(JobStatus.COMPLETED, JobStatus.DEAD_LETTER);
-              assertThat(j7.getStatus()).isIn(JobStatus.COMPLETED, JobStatus.DEAD_LETTER);
             });
   }
 }

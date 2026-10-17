@@ -67,7 +67,7 @@ public final class AutomationContext {
           buildFieldDateApproaching((FieldDateApproachingEvent) event, context);
       case SCHEDULED -> {
         // SCHEDULED rules carry no triggering DomainEvent, so the event-driven build() path
-        // produces only actor+rule. Per-entity fan-out (e.g. one AI summary per active matter) is
+        // produces only actor+rule. Per-entity fan-out (e.g. one notification per active matter) is
         // handled by buildScheduledProjectContext() below, which the scheduled poll handler invokes
         // once per project. Nothing further to populate here (515C resolved — OBS-505 addendum).
       }
@@ -99,7 +99,8 @@ public final class AutomationContext {
     context.put("rule", ruleMap);
 
     // No live actor on a scheduled run — fall back to the rule creator so the executor can resolve
-    // an actor id (InvokeAiSpecialistActionExecutor reads actor.id then rule.createdBy).
+    // an actor id (executors such as SEND_NOTIFICATION TRIGGER_ACTOR / UPDATE_STATUS read
+    // actor.id).
     var actor = new LinkedHashMap<String, Object>();
     actor.put("id", uuidToString(rule.getCreatedBy()));
     context.put("actor", actor);

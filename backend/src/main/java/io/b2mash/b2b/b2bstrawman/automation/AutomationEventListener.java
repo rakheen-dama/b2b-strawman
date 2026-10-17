@@ -24,10 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
  * invokes the listener on the target bean, bypassing the AOP proxy), so it does NOT create a new
  * transaction. The isolation that actually protects the triggering transaction lives one layer
  * down, in {@link AutomationActionExecutor}, which runs each side-effecting action in its own
- * {@code REQUIRES_NEW} transaction so a throwing action (e.g. an {@code INVOKE_AI_SPECIALIST}
- * action hitting an {@code @Transactional} guard with no AI provider configured) can only mark its
- * own transaction rollback-only — never the business transaction that published the event.
- * (OBS-505)
+ * {@code REQUIRES_NEW} transaction so a throwing action (e.g. an executor whose nested
+ * {@code @Transactional} service throws) can only mark its own transaction rollback-only — never
+ * the business transaction that published the event. (OBS-505)
  */
 @Component
 public class AutomationEventListener {

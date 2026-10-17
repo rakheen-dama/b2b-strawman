@@ -35,9 +35,6 @@ public enum Capability {
   /** Generate a client Statement of Account. */
   GENERATE_STATEMENT_OF_ACCOUNT,
 
-  /** Use the AI assistant (specialist or generalist). */
-  AI_ASSISTANT_USE,
-
   /** Manage AI firm profile and configuration settings. */
   AI_MANAGE,
   /** Execute AI skills and generate AI content. */

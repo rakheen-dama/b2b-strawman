@@ -108,46 +108,21 @@ public class AuditEventTypeRegistry {
             // FINANCIAL — invoice
             new AuditEventTypeMetadata(
                 "invoice.*", "Invoice", AuditSeverity.INFO, AuditEventGroup.FINANCIAL),
-            // AI SPECIALIST — Phase 70
-            new AuditEventTypeMetadata(
-                "ai.specialist.invoked",
-                "AI Specialist Invoked",
-                AuditSeverity.INFO,
-                AuditEventGroup.STANDARD),
-            new AuditEventTypeMetadata(
-                "ai.specialist.approved",
-                "AI Specialist Output Approved",
-                AuditSeverity.NOTICE,
-                AuditEventGroup.COMPLIANCE),
-            new AuditEventTypeMetadata(
-                "ai.specialist.rejected",
-                "AI Specialist Output Rejected",
-                AuditSeverity.NOTICE,
-                AuditEventGroup.COMPLIANCE),
+            // AI SKILL FAILURE — Phase 72 skill pipeline (AiExecutionPersistenceService) still
+            // emits
+            // ai.specialist.failed; the other Phase 70 ai.specialist.* entries were removed in
+            // Phase 86
+            // (Epic 601, D2). Renaming to ai.execution.failed is Phase 87.
             new AuditEventTypeMetadata(
                 "ai.specialist.failed",
                 "AI Specialist Failed",
                 AuditSeverity.WARNING,
                 AuditEventGroup.STANDARD),
-            new AuditEventTypeMetadata(
-                "ai.specialist.auto_applied",
-                "AI Specialist Output Auto-Applied",
-                AuditSeverity.NOTICE,
-                AuditEventGroup.COMPLIANCE),
-            new AuditEventTypeMetadata(
-                "ai.specialist.expired",
-                "AI Specialist Output Expired",
-                AuditSeverity.INFO,
-                AuditEventGroup.STANDARD),
-            new AuditEventTypeMetadata(
-                "ai.specialist.*",
-                "AI Specialist Activity",
-                AuditSeverity.INFO,
-                AuditEventGroup.STANDARD),
             // AI EXECUTION GATES — Phase 81 (Epic 585). Gate creation/approval/rejection is a
             // compliance-relevant audit trail (an authorised member decides whether an AI-proposed
             // action runs). The exact ai.gate.created entry classifies the propose_task gate as
-            // NOTICE/COMPLIANCE, mirroring ai.specialist.approved; the prefix carries the remaining
+            // NOTICE/COMPLIANCE (an authorised member's decision on an AI-proposed action); the
+            // prefix carries the remaining
             // gate lifecycle (approved/rejected/expired) so none fall through to default INFO.
             new AuditEventTypeMetadata(
                 "ai.gate.created",

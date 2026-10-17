@@ -81,9 +81,9 @@ public class CommentService {
   }
 
   /**
-   * Creates a comment with an explicit source (e.g. "AI_ASSISTANT"). Delegates to the same
-   * validation and audit logic as the standard {@link #createComment} but uses the 7-arg Comment
-   * constructor to set the source field.
+   * Creates a comment with an explicit (non-default) source. Delegates to the same validation and
+   * audit logic as the standard {@link #createComment} but uses the 7-arg Comment constructor to
+   * set the source field.
    */
   @Transactional
   public Comment createComment(

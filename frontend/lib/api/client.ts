@@ -205,7 +205,7 @@ export function handleApiError(error: unknown): never {
     if (subscriptionKind === "locked") {
       throw new ApiError(
         403,
-        "Your subscription is inactive. Please subscribe to regain access.",
+        "Your subscription is inactive. Please contact your administrator to restore access.",
         error.detail
       );
     }

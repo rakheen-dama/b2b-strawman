@@ -18,7 +18,7 @@ export interface ClassifiedError {
   category: ErrorCategory;
   messageCode: string;
   retryable: boolean;
-  action?: "retry" | "refresh" | "goBack" | "contactAdmin" | "subscribeBilling";
+  action?: "retry" | "refresh" | "goBack" | "contactAdmin";
 }
 
 // --- classifyError ---
@@ -92,7 +92,7 @@ export function classifyError(error: unknown): ClassifiedError {
         category: "subscriptionRequired",
         messageCode: "api.subscriptionRequired",
         retryable: false,
-        action: "subscribeBilling",
+        action: "contactAdmin",
       };
     }
     if (detailType === "subscription_locked") {
@@ -100,7 +100,7 @@ export function classifyError(error: unknown): ClassifiedError {
         category: "subscriptionLocked",
         messageCode: "api.subscriptionLocked",
         retryable: false,
-        action: "subscribeBilling",
+        action: "contactAdmin",
       };
     }
     return {

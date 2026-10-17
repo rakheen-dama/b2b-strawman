@@ -59,7 +59,10 @@ class RequestTemplateControllerTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Request Template Test Org", null);
+    // legal-za: since Phase 86 (Epic 604B) the only platform request packs are the three legal-za
+    // packs (fica-onboarding-pack, conveyancing-intake-za, legal-za-liquidation-distribution); the
+    // four profile-less accounting packs were deleted, so a null-profile tenant now gets none.
+    provisioningService.provisionTenant(ORG_ID, "Request Template Test Org", "legal-za");
     memberIdOwner =
         UUID.fromString(
             TestMemberHelper.syncMember(
@@ -124,7 +127,7 @@ class RequestTemplateControllerTest {
         .perform(
             get("/api/request-templates").with(TestJwtFactory.ownerJwt(ORG_ID, "user_req_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(4))
+        .andExpect(jsonPath("$.length()").value(3))
         .andExpect(jsonPath("$[0].source").value("PLATFORM"));
   }
 
@@ -265,13 +268,13 @@ class RequestTemplateControllerTest {
   @Test
   @Order(7)
   void shouldFilterByActive() throws Exception {
-    // Only active templates (platform packs + duplicate from test 5)
+    // Only active templates (3 legal-za platform packs + duplicate from test 5)
     mockMvc
         .perform(
             get("/api/request-templates?active=true")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_req_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(5));
+        .andExpect(jsonPath("$.length()").value(4));
 
     // Only inactive templates (the one deactivated in test 6)
     mockMvc

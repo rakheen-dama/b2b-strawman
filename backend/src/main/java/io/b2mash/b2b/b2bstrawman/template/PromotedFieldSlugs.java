@@ -34,7 +34,8 @@ public final class PromotedFieldSlugs {
           "country",
           "tax_number",
           "phone",
-          // accounting-za-customer
+          // originally accounting-za-customer (pack removed in Phase 86; slugs kept in sync with
+          // the frontend mirror lib/constants/promoted-field-slugs.ts)
           "vat_number",
           "primary_contact_name",
           "primary_contact_email",

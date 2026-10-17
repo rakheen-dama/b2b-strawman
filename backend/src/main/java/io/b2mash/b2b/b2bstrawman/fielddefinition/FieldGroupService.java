@@ -373,9 +373,8 @@ public class FieldGroupService {
 
   /**
    * OBS-5004: full variant that filters by both {@code workType} (PROJECT groups) and {@code
-   * customerEntityValue} (CUSTOMER groups). Used at customer-create time so that a group like
-   * accounting-za-customer-trust (scoped to {@code ["TRUST"]}) only auto-applies to TRUST entity
-   * type customers, not PTY_LTD or CC clients.
+   * customerEntityValue} (CUSTOMER groups). Used at customer-create time so that a group scoped to
+   * {@code ["TRUST"]} only auto-applies to TRUST entity type customers, not PTY_LTD or CC clients.
    *
    * <p>Pass {@code null} for {@code customerEntityValue} to omit any group that REQUIRES an entity
    * value (i.e., groups with non-empty {@code applicable_entity_values} can never match a null

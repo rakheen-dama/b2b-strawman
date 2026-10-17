@@ -29,7 +29,6 @@ import io.b2mash.b2b.b2bstrawman.packs.PackInstallService;
 import io.b2mash.b2b.b2bstrawman.packs.PackType;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder;
-import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
@@ -68,7 +67,6 @@ class TenantProvisioningServiceTest {
   @Mock private CompliancePackSeeder compliancePackSeeder;
   @Mock private StandardReportPackSeeder standardReportPackSeeder;
   @Mock private RequestPackSeeder requestPackSeeder;
-  @Mock private RatePackSeeder ratePackSeeder;
   @Mock private ProjectTemplatePackSeeder projectTemplatePackSeeder;
   @Mock private LegalTariffSeeder legalTariffSeeder;
 
@@ -292,7 +290,7 @@ class TenantProvisioningServiceTest {
   }
 
   @Test
-  void provisionTenant_callsRateSeeder() throws SQLException {
+  void provisionTenant_callsMockPaymentSeeder() throws SQLException {
     when(mappingRepository.findByClerkOrgId("org_acct")).thenReturn(Optional.empty());
     when(organizationRepository.findByClerkOrgId("org_acct")).thenReturn(Optional.empty());
 
@@ -311,12 +309,11 @@ class TenantProvisioningServiceTest {
 
     service.provisionTenant("org_acct", "Accounting Org", null);
 
-    verify(ratePackSeeder).seedPacksForTenant(anyString(), eq("org_acct"));
     verify(mockPaymentIntegrationSeeder).seedForTenant(anyString(), eq("org_acct"));
   }
 
   @Test
-  void provisionTenant_withNullProfile_stillCallsRateSeeder() throws SQLException {
+  void provisionTenant_withNullProfile_stillCallsMockPaymentSeeder() throws SQLException {
     when(mappingRepository.findByClerkOrgId("org_no_profile")).thenReturn(Optional.empty());
     when(organizationRepository.findByClerkOrgId("org_no_profile")).thenReturn(Optional.empty());
 
@@ -337,7 +334,6 @@ class TenantProvisioningServiceTest {
 
     // Seeders are called regardless of profile — the seeder's vertical filter logic
     // handles profile mismatch internally (no-op if no matching pack)
-    verify(ratePackSeeder).seedPacksForTenant(anyString(), eq("org_no_profile"));
     verify(mockPaymentIntegrationSeeder).seedForTenant(anyString(), eq("org_no_profile"));
   }
 
@@ -415,7 +411,6 @@ class TenantProvisioningServiceTest {
     // Verify other seeders are still called directly
     verify(fieldPackSeeder).seedPacksForTenant(anyString(), eq("org_pipeline"));
     verify(clausePackSeeder).seedPacksForTenant(anyString(), eq("org_pipeline"));
-    verify(ratePackSeeder).seedPacksForTenant(anyString(), eq("org_pipeline"));
   }
 
   @Test

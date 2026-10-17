@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DeleteTenantDialog } from "@/components/billing/delete-tenant-dialog";
-import { SubscribeButton } from "@/components/billing/subscribe-button";
 import { MethodBadge } from "@/components/billing/method-badge";
 import { Card, CardContent } from "@b2mash/ui/card";
 
@@ -36,8 +35,6 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/app/(app)/org/[slug]/settings/billing/actions", () => ({
-  subscribe: vi.fn(),
-  cancelSubscription: vi.fn(),
   getSubscription: vi.fn(),
 }));
 
@@ -123,25 +120,15 @@ describe("DeleteTenantDialog", () => {
   });
 });
 
-describe("Billing page admin-managed adaptation", () => {
+describe("Billing page managed-account view", () => {
   afterEach(() => cleanup());
 
-  it("shows PayFast UI when adminManaged=false", () => {
-    // We test the SubscribeButton component directly since the billing page
-    // is a server component. SubscribeButton renders when canSubscribe=true.
-    render(<SubscribeButton />);
-
-    expect(screen.getByRole("button", { name: "Subscribe" })).toBeInTheDocument();
-  });
-
-  it("hides PayFast UI when adminManaged=true by not rendering SubscribeButton", () => {
-    // When adminManaged=true, the billing page wraps all PayFast UI
-    // (including SubscribeButton) inside {!billing.adminManaged && ...}.
-    // We verify the MethodBadge renders correctly for admin-managed tenants.
+  it("renders PILOT method badge for admin-managed tenants", () => {
+    // Manual firm-level billing is the only model (ADR-335): every tenant is
+    // admin-managed and the billing page shows the method badge.
     render(<MethodBadge method="PILOT" />);
 
     expect(screen.getByText("Pilot")).toBeInTheDocument();
-    // SubscribeButton is NOT rendered — no Subscribe button in DOM
     expect(screen.queryByRole("button", { name: "Subscribe" })).not.toBeInTheDocument();
   });
 

@@ -8,8 +8,6 @@ import type { BillingResponse } from "@/lib/internal-api";
 interface SubscriptionContextValue {
   status: string;
   isWriteEnabled: boolean;
-  canSubscribe: boolean;
-  canCancel: boolean;
 }
 
 // ---- Context ----
@@ -17,8 +15,6 @@ interface SubscriptionContextValue {
 const SubscriptionContext = createContext<SubscriptionContextValue>({
   status: "ACTIVE",
   isWriteEnabled: true,
-  canSubscribe: false,
-  canCancel: false,
 });
 
 // ---- Status Sets ----
@@ -33,16 +29,14 @@ interface SubscriptionProviderProps {
 }
 
 export function SubscriptionProvider({ billingResponse, children }: SubscriptionProviderProps) {
-  const { status, canSubscribe, canCancel } = billingResponse;
+  const { status } = billingResponse;
 
   const value = useMemo<SubscriptionContextValue>(
     () => ({
       status,
       isWriteEnabled: WRITE_ENABLED_STATUSES.has(status),
-      canSubscribe,
-      canCancel,
     }),
-    [status, canSubscribe, canCancel]
+    [status]
   );
 
   return <SubscriptionContext.Provider value={value}>{children}</SubscriptionContext.Provider>;

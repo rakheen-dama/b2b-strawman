@@ -150,6 +150,12 @@ describe("SETTINGS_ITEMS", () => {
     }
   });
 
+  it("describes Billing as method and status only (manual firm-level billing)", () => {
+    expect(SETTINGS_ITEMS.find((i) => i.title === "Billing")?.description).toBe(
+      "View your billing method and status"
+    );
+  });
+
   it("adminOnly items are flagged correctly", () => {
     const adminItems = SETTINGS_ITEMS.filter((i) => i.adminOnly);
     const adminTitles = adminItems.map((i) => i.title).sort();

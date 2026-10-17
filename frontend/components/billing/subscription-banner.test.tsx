@@ -17,14 +17,10 @@ function makeBillingResponse(
     trialEndsAt: null,
     currentPeriodEnd: null,
     graceEndsAt: null,
-    nextBillingAt: null,
     monthlyAmountCents: 49900,
     currency: "ZAR",
     limits: { maxMembers: 5, currentMembers: 1 },
-    canSubscribe: false,
-    canCancel: false,
-    billingMethod: "PAYFAST",
-    adminManaged: false,
+    billingMethod: "MANUAL",
     adminNote: null,
     ...overrides,
   };
@@ -66,7 +62,9 @@ describe("SubscriptionBanner", () => {
       />
     );
     expect(screen.getByText("Trial ending soon")).toBeInTheDocument();
-    expect(screen.getByText("Subscribe now")).toBeInTheDocument();
+    expect(screen.getByText("contact your administrator")).toBeInTheDocument();
+    // Manual firm-level billing only (ADR-335) — no self-serve subscribe CTA
+    expect(screen.queryByText(/subscribe/i)).not.toBeInTheDocument();
   });
 
   it("shows warning banner for PENDING_CANCELLATION", () => {
@@ -79,14 +77,15 @@ describe("SubscriptionBanner", () => {
       />
     );
     expect(screen.getByText("Subscription ending")).toBeInTheDocument();
-    expect(screen.getByText("Resubscribe")).toBeInTheDocument();
+    expect(screen.getByText("View billing")).toBeInTheDocument();
+    expect(screen.queryByText(/resubscribe/i)).not.toBeInTheDocument();
   });
 
   it("shows warning banner for PAST_DUE and is not dismissible", () => {
     render(<SubscriptionBanner billingResponse={makeBillingResponse("PAST_DUE")} slug={SLUG} />);
     expect(screen.getByText("Payment failed")).toBeInTheDocument();
-    expect(screen.getByText("update your payment method")).toBeInTheDocument();
-    // PAST_DUE requires payment action — must not be dismissible
+    expect(screen.getByText("contact your administrator")).toBeInTheDocument();
+    // PAST_DUE requires attention — must not be dismissible
     expect(screen.queryByRole("button", { name: "Dismiss banner" })).not.toBeInTheDocument();
   });
 
@@ -95,7 +94,7 @@ describe("SubscriptionBanner", () => {
       <SubscriptionBanner billingResponse={makeBillingResponse("GRACE_PERIOD")} slug={SLUG} />
     );
     expect(screen.getByText("Read-only mode")).toBeInTheDocument();
-    expect(screen.getByText("subscribe to regain full access")).toBeInTheDocument();
+    expect(screen.getByText("contact your administrator to restore access")).toBeInTheDocument();
   });
 
   it("shows error banner for EXPIRED", () => {

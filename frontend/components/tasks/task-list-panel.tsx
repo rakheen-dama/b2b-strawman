@@ -6,7 +6,6 @@ import { ClipboardList, Plus } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
-import { docsLink } from "@/lib/docs";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 import { TaskDetailSheet } from "@/components/tasks/task-detail-sheet";
@@ -311,7 +310,6 @@ export function TaskListPanel({
           icon={ClipboardList}
           title="No tasks yet"
           description="Create a task to start tracking work on this project"
-          secondaryLink={{ label: "Read the guide", href: docsLink("/features/tasks") }}
         />
       </div>
     );

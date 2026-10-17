@@ -3,7 +3,6 @@ import { RequestStatusBadge } from "@/components/information-requests/request-st
 import { RequestProgressBar } from "@/components/information-requests/request-progress-bar";
 import { formatDate } from "@/lib/format";
 import { FileText } from "lucide-react";
-import { docsLink } from "@/lib/docs";
 import Link from "next/link";
 
 interface RequestListProps {
@@ -18,14 +17,6 @@ export function RequestList({ requests, slug, showCustomer = true }: RequestList
       <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 py-12 dark:border-slate-700">
         <FileText className="mb-3 size-8 text-slate-400 dark:text-slate-500" />
         <p className="text-sm text-slate-500 dark:text-slate-400">No information requests yet</p>
-        <a
-          href={docsLink("/features/information-requests")}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2 text-sm text-teal-600 hover:text-teal-700"
-        >
-          Read the guide
-        </a>
       </div>
     );
   }

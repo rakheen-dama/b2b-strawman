@@ -81,15 +81,15 @@ class SecurityIntegrationTest {
   }
 
   /**
-   * TD-002: the dev portal harness ({@code /portal/dev/**}) is gated to the {@code local}, {@code
-   * dev}, and {@code keycloak} profiles ({@code DevPortalController} / {@code
-   * MockPaymentController}). Under any other profile — including the {@code test} profile used
-   * here, which stands in for {@code prod} — an anonymous request must be rejected by {@code
-   * CustomerAuthFilter} with 401, not silently permitted. Before the fix this returned 404
-   * ("permitted but no controller bean"), proving anonymous traffic sailed through security.
+   * TD-002: the dev-only mock-payment checkout ({@code /portal/dev/**}, {@code
+   * MockPaymentController}) is gated to the {@code local}, {@code dev}, and {@code keycloak}
+   * profiles. Under any other profile — including the {@code test} profile used here, which stands
+   * in for {@code prod} — an anonymous request must be rejected by {@code CustomerAuthFilter} with
+   * 401, not silently permitted. Before the fix this returned 404 ("permitted but no controller
+   * bean"), proving anonymous traffic sailed through security.
    */
   @Test
   void devPortalPath_inNonDevProfile_returns401() throws Exception {
-    mockMvc.perform(get("/portal/dev/generate-link")).andExpect(status().isUnauthorized());
+    mockMvc.perform(get("/portal/dev/mock-payment")).andExpect(status().isUnauthorized());
   }
 }

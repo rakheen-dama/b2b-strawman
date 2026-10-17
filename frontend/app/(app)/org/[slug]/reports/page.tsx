@@ -6,7 +6,6 @@ import { PermissionDenied } from "@/components/permission-denied";
 import type { ReportListResponse } from "@/lib/api/reports";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
 import { EmptyState } from "@/components/empty-state";
-import { docsLink } from "@/lib/docs";
 
 export default async function ReportsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -46,7 +45,6 @@ export default async function ReportsPage({ params }: { params: Promise<{ slug: 
               ? "There was a problem loading report definitions. Please try again later."
               : "Report definitions will appear here once configured."
           }
-          secondaryLink={{ label: "Read the guide", href: docsLink("/features/reports") }}
         />
       ) : (
         data.categories.map((category) => (

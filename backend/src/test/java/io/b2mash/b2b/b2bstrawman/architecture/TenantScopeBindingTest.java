@@ -104,7 +104,6 @@ class TenantScopeBindingTest {
    * <ul>
    *   <li>{@code ..multitenancy..} package — owns the canonical APIs (RequestScopes,
    *       TenantScopedRunner) and the boundary-binding TenantFilter.
-   *   <li>{@code ..dev..} package — profile-gated dev test harness ({@code DevPortalController}).
    *   <li>{@code CustomerAuthFilter} — servlet filter; binding from JWT IS the request boundary
    *       (multi-binding CUSTOMER_ID + TENANT_ID + ORG_ID + conditional PORTAL_CONTACT_ID).
    *   <li>{@code MockPaymentController} — profile-gated dev payment mock; site at line 182 is also
@@ -122,8 +121,6 @@ class TenantScopeBindingTest {
       noClasses()
           .that()
           .resideOutsideOfPackage("..multitenancy..")
-          .and()
-          .resideOutsideOfPackage("..dev..")
           .and()
           .doNotHaveFullyQualifiedName("io.b2mash.b2b.b2bstrawman.portal.CustomerAuthFilter")
           .and()

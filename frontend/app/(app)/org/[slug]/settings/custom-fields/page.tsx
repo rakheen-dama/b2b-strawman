@@ -31,7 +31,7 @@ export default async function CustomFieldsSettingsPage({
         </Link>
         <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           Custom Fields
-          <HelpTip code="fields.types" docsPath="/features/custom-fields-tags" />
+          <HelpTip code="fields.types" />
         </h1>
         <p className="text-slate-600 dark:text-slate-400">
           You do not have permission to manage custom fields. Only admins and owners can access this
@@ -83,7 +83,7 @@ export default async function CustomFieldsSettingsPage({
       <div>
         <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           Custom Fields
-          <HelpTip code="fields.types" docsPath="/features/custom-fields-tags" />
+          <HelpTip code="fields.types" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           <TerminologyText template="Define custom fields and groups for {projects}, {tasks}, {customers}, and {invoices}." />

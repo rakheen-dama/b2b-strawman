@@ -20,8 +20,6 @@ class LayerDependencyRulesTest {
           .that()
           .haveSimpleNameEndingWith("Controller")
           .and()
-          .doNotHaveSimpleName("DevPortalController")
-          .and()
           .doNotHaveSimpleName("InternalAuditController")
           .and()
           .doNotHaveSimpleName("PaymentWebhookController")

@@ -1,6 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.integration;
 
-import io.b2mash.b2b.b2bstrawman.assistant.provider.ModelInfo;
+import io.b2mash.b2b.b2bstrawman.integration.ai.provider.ModelInfo;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import java.util.List;
 import java.util.Map;

@@ -47,8 +47,7 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
 
   /**
    * Finds all projects in the current tenant schema with the given status. Used by the scheduled
-   * automation fan-out (OBS-505) to enumerate active matters for per-project AI-specialist
-   * summaries.
+   * automation fan-out (OBS-505) to enumerate active matters for project-scoped scheduled rules.
    */
   List<Project> findByStatus(ProjectStatus status);
 

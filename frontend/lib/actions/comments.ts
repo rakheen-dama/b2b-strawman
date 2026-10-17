@@ -15,7 +15,6 @@ export interface Comment {
   visibility: "INTERNAL" | "SHARED";
   source: "INTERNAL" | "PORTAL";
   parentId: string | null;
-  attribution?: string | null;
   createdAt: string;
   updatedAt: string;
 }

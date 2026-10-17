@@ -5,9 +5,6 @@ import userEvent from "@testing-library/user-event";
 import { InvoiceDetailClient } from "@/components/invoices/invoice-detail-client";
 import type { InvoiceResponse } from "@/lib/types";
 
-// Mock specialist launcher (auto-mock from __mocks__/specialist-launcher-button.tsx)
-vi.mock("@/components/assistant/specialist-launcher-button");
-
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),

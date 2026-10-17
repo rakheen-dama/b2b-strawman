@@ -37,8 +37,7 @@ export type ActionType =
   | "SEND_EMAIL"
   | "UPDATE_STATUS"
   | "CREATE_PROJECT"
-  | "ASSIGN_MEMBER"
-  | "INVOKE_AI_SPECIALIST";
+  | "ASSIGN_MEMBER";
 
 export type ActionExecutionStatus = "PENDING" | "COMPLETED" | "FAILED" | "SKIPPED";
 

@@ -6,8 +6,7 @@ logging:
 
 spring:
   main:
-    # Required: AiSpecialistInvocation*IntegrationTest @TestConfiguration classes override
-    # the billingPolishApplier bean by name. Without this flag, Spring refuses the override.
+    # Allows test @TestConfiguration classes to override production beans by name.
     allow-bean-definition-overriding: true
   ai:
     mcp:
@@ -127,7 +126,6 @@ kazi:
       subscription_grace_expiry: true
       subscription_cancellation_end: true
       court_date_reminder: true
-      ai_invocation_expiry: true
       portal_digest: true
   xero:
     client-id: test-xero-client-id

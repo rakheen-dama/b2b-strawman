@@ -38,9 +38,6 @@ interface ClientOverviewTabProps {
     baseHref: string;
   } | null;
 
-  /** Section E: AI suggestions — pre-rendered ReactNode */
-  pendingSuggestions: ReactNode | null;
-
   /** Section F: FICA panel — pre-rendered ReactNode */
   ficaPanel: ReactNode | null;
 
@@ -59,7 +56,6 @@ export function ClientOverviewTab({
   lifecyclePrompt,
   unbilledTimeData,
   templateReadiness,
-  pendingSuggestions,
   ficaPanel,
   customerName,
   lifecycleStatus,
@@ -70,7 +66,6 @@ export function ClientOverviewTab({
     lifecyclePrompt !== null ||
     unbilledTimeData !== null ||
     templateReadiness !== null ||
-    pendingSuggestions !== null ||
     ficaPanel !== null;
 
   if (!hasContent) {
@@ -150,9 +145,6 @@ export function ClientOverviewTab({
           baseHref={templateReadiness.baseHref}
         />
       )}
-
-      {/* Section E: Pending AI Suggestions */}
-      {pendingSuggestions}
 
       {/* Section F: FICA Panel */}
       {ficaPanel}

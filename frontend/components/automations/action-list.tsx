@@ -26,7 +26,6 @@ import {
   FolderPlus,
   UserPlus,
   Clock,
-  Sparkles,
 } from "lucide-react";
 import type { ActionType, DelayUnit, TriggerType } from "@/lib/api/automations";
 
@@ -52,7 +51,6 @@ const ACTION_TYPE_OPTIONS: { value: ActionType; label: string }[] = [
   { value: "UPDATE_STATUS", label: "Update Status" },
   { value: "CREATE_PROJECT", label: "Create Project" },
   { value: "ASSIGN_MEMBER", label: "Assign Member" },
-  { value: "INVOKE_AI_SPECIALIST", label: "Invoke AI Specialist" },
 ];
 
 const ACTION_ICONS: Record<ActionType, typeof ListTodo> = {
@@ -62,7 +60,6 @@ const ACTION_ICONS: Record<ActionType, typeof ListTodo> = {
   UPDATE_STATUS: RefreshCw,
   CREATE_PROJECT: FolderPlus,
   ASSIGN_MEMBER: UserPlus,
-  INVOKE_AI_SPECIALIST: Sparkles,
 };
 
 const ACTION_LABELS: Record<ActionType, string> = {
@@ -72,7 +69,6 @@ const ACTION_LABELS: Record<ActionType, string> = {
   UPDATE_STATUS: "Update Status",
   CREATE_PROJECT: "Create Project",
   ASSIGN_MEMBER: "Assign Member",
-  INVOKE_AI_SPECIALIST: "Invoke AI Specialist",
 };
 
 const DELAY_UNIT_OPTIONS: { value: DelayUnit; label: string }[] = [

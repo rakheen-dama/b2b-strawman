@@ -28,17 +28,17 @@ import org.springframework.transaction.support.TransactionTemplate;
  *
  * <p>Each side-effecting action runs inside its OWN physical transaction ({@code REQUIRES_NEW}, see
  * {@link #actionTransactionTemplate}). This is the load-bearing isolation guarantee for the
- * automation engine: an action that throws — e.g. an {@code INVOKE_AI_SPECIALIST} action whose
- * runner hits an {@code @Transactional} integration guard with no AI provider configured — can only
- * mark its <em>own</em> transaction rollback-only. The business transaction that triggered the
- * domain event (e.g. {@code InformationRequestService.acceptItem} completing a request) is
- * suspended for the action and therefore can never be poisoned into an {@code
- * UnexpectedRollbackException}. Catching the throwable in the executors alone is insufficient: a
- * nested {@code @Transactional} proxy sets the rollback-only flag on whatever transaction is
- * current <em>before</em> the catch runs, so without the {@code REQUIRES_NEW} boundary the
- * triggering transaction would still abort at commit. Recording the failure ({@link
- * ActionExecution} status + {@code AUTOMATION_ACTION_FAILED} notification) happens in the outer
- * automation transaction, which is left clean, so the soft-failure audit trail survives. (OBS-505)
+ * automation engine: an action that throws — whether the executor itself or a nested
+ * {@code @Transactional} service it calls — can only mark its <em>own</em> transaction
+ * rollback-only. The business transaction that triggered the domain event (e.g. {@code
+ * InformationRequestService.acceptItem} completing a request) is suspended for the action and
+ * therefore can never be poisoned into an {@code UnexpectedRollbackException}. Catching the
+ * throwable in the executors alone is insufficient: a nested {@code @Transactional} proxy sets the
+ * rollback-only flag on whatever transaction is current <em>before</em> the catch runs, so without
+ * the {@code REQUIRES_NEW} boundary the triggering transaction would still abort at commit.
+ * Recording the failure ({@link ActionExecution} status + {@code AUTOMATION_ACTION_FAILED}
+ * notification) happens in the outer automation transaction, which is left clean, so the
+ * soft-failure audit trail survives. (OBS-505)
  */
 @Component
 public class AutomationActionExecutor {
@@ -132,9 +132,9 @@ public class AutomationActionExecutor {
               action.getActionType(), action.getActionConfig());
 
       // Run the action in its own REQUIRES_NEW transaction so a throwing/rollback-marking action
-      // (e.g. an INVOKE_AI_SPECIALIST runner hitting a @Transactional guard with no AI provider)
-      // can only roll back ITS OWN work — never the suspended business transaction that triggered
-      // the domain event. See the class javadoc. (OBS-505)
+      // (e.g. an executor whose nested @Transactional service throws) can only roll back ITS OWN
+      // work — never the suspended business transaction that triggered the domain event. See the
+      // class javadoc. (OBS-505)
       ActionResult result = executeInNewTransaction(action, executor, config, context, executionId);
 
       if (result.isSuccess()) {
@@ -174,10 +174,9 @@ public class AutomationActionExecutor {
    * state from the {@code context} payload (the {@code AutomationContext} snapshot captured at
    * trigger time) — it must NOT re-query the triggering entity by id. A re-query from inside the
    * isolated transaction would see the entity's <em>pre-change</em> committed state (the in-flight
-   * change is not yet visible), which is almost never what the action intends. The AI executor
-   * already reads from the context payload. A broader audit of the non-AI executors
-   * (UpdateStatus/AssignMember/etc.) on status-change triggers, to confirm none of them re-query,
-   * is tracked as a follow-up — not part of OBS-505.
+   * change is not yet visible), which is almost never what the action intends. A broader audit of
+   * the executors (UpdateStatus/AssignMember/etc.) on status-change triggers, to confirm none of
+   * them re-query, is tracked as a follow-up — not part of OBS-505.
    */
   private ActionResult executeInNewTransaction(
       AutomationAction action,

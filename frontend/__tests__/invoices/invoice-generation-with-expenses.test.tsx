@@ -5,9 +5,6 @@ import { InvoiceGenerationDialog } from "@/components/invoices/invoice-generatio
 import { InvoiceLineTable } from "@/components/invoices/invoice-line-table";
 import type { UnbilledTimeResponse, InvoiceLineResponse, ExpenseCategory } from "@/lib/types";
 
-// Mock specialist launcher (auto-mock from __mocks__/specialist-launcher-button.tsx)
-vi.mock("@/components/assistant/specialist-launcher-button");
-
 // Dialog-step transitions resolve chained mocked promises through multiple
 // re-renders; loaded CI runners exceed RTL's 1s default (observed: PR #1550 CI).
 const TRANSITION_TIMEOUT = 5000;

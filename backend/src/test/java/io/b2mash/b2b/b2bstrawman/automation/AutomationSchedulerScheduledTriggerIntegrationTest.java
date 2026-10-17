@@ -3,9 +3,6 @@ package io.b2mash.b2b.b2bstrawman.automation;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.assistant.invocation.applier.OutputApplier;
-import io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.InboxSummaryPayload;
-import io.b2mash.b2b.b2bstrawman.assistant.specialist.NonInteractiveSpecialistRunner;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
@@ -19,30 +16,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** Integration tests for the SCHEDULED trigger cron pass in {@link AutomationScheduler}. */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import({
-  TestcontainersConfiguration.class,
-  AutomationSchedulerScheduledTriggerIntegrationTest.FakeInboxApplierConfig.class
-})
+@Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AutomationSchedulerScheduledTriggerIntegrationTest {
@@ -58,7 +47,6 @@ class AutomationSchedulerScheduledTriggerIntegrationTest {
   @Autowired private AutomationExecutionRepository executionRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private NotificationRepository notificationRepository;
-  @MockitoBean private NonInteractiveSpecialistRunner runner;
   @MockitoSpyBean private AutomationEventListener eventListener;
 
   private String tenantSchema;
@@ -80,7 +68,7 @@ class AutomationSchedulerScheduledTriggerIntegrationTest {
         .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, ownerMemberId)
         .where(RequestScopes.ORG_ROLE, "owner")
-        .where(RequestScopes.CAPABILITIES, Set.of("AI_ASSISTANT_USE", "TEAM_OVERSIGHT"))
+        .where(RequestScopes.CAPABILITIES, Set.of("TEAM_OVERSIGHT"))
         .run(body);
   }
 
@@ -214,33 +202,16 @@ class AutomationSchedulerScheduledTriggerIntegrationTest {
   }
 
   /**
-   * OBS-505: a SCHEDULED INVOKE_AI_SPECIALIST rule with a {@code {{project.id}}} contextRef must
-   * fan out one specialist invocation per ACTIVE project (with that project's id), skip non-active
-   * projects, and produce zero AUTOMATION_ACTION_FAILED notifications. Before the fan-out fix the
-   * scheduled path fired once with an entity-less context, so {@code {{project.id}}} never resolved
-   * → ActionFailure → AUTOMATION_ACTION_FAILED.
+   * OBS-505: a SCHEDULED rule whose action carries a {@code {{project.id}}} contextRef must fan out
+   * once per ACTIVE project (with that project's context), skip non-active projects, and produce
+   * zero AUTOMATION_ACTION_FAILED notifications. Before the fan-out fix the scheduled path fired
+   * once with an entity-less context, so {@code {{project.id}}} never resolved → ActionFailure.
+   * Re-fixtured on SEND_NOTIFICATION in Phase 86 Epic 601 (the AI-specialist action it originally
+   * exercised was removed); the fan-out keys off the raw {@code contextRef} in the action config,
+   * not the action type.
    */
   @Test
-  void scheduledTrigger_projectScopedAiSpecialist_fansOutPerActiveProject() {
-    var payload =
-        new InboxSummaryPayload(
-            UUID.randomUUID(),
-            "2026-01-01T00:00:00Z",
-            "2026-01-08T00:00:00Z",
-            "Weekly summary",
-            null);
-    Mockito.when(
-            runner.run(
-                Mockito.anyString(),
-                Mockito.any(),
-                Mockito.any(),
-                Mockito.any(),
-                Mockito.any(),
-                Mockito.any()))
-        .thenReturn(payload);
-    Mockito.when(runner.promptVersion(Mockito.anyString())).thenReturn("v1.0");
-    Mockito.clearInvocations(runner);
-
+  void scheduledTrigger_projectScopedAction_fansOutPerActiveProject() {
     runInTenant(
         () -> {
           // Seed 2 ACTIVE + 1 non-active (COMPLETED) project
@@ -252,67 +223,58 @@ class AutomationSchedulerScheduledTriggerIntegrationTest {
           inactive.complete(ownerMemberId); // -> COMPLETED, not ACTIVE
           inactive = projectRepository.save(inactive);
 
-          // SCHEDULED rule: weekly per-matter AI summary, project-scoped contextRef, ACTIVE filter
+          // SCHEDULED rule: per-matter digest, project-scoped contextRef, ACTIVE filter
           var rule =
               new AutomationRule(
-                  "Weekly matter activity summary",
-                  "Per-matter weekly AI summary",
+                  "Weekly matter digest",
+                  "Per-matter weekly notification",
                   TriggerType.SCHEDULED,
                   Map.of("cronExpression", "* * * * * *"),
                   List.of(
                       Map.of("field", "project.status", "operator", "EQUALS", "value", "ACTIVE")),
-                  RuleSource.TEMPLATE,
-                  "weekly-matter-activity-summary",
+                  RuleSource.CUSTOM,
+                  null,
                   ownerMemberId);
           rule = ruleRepository.save(rule);
           rule.setLastRunAt(Instant.now().minus(2, ChronoUnit.MINUTES));
           rule = ruleRepository.save(rule);
 
-          var action =
+          String title = "Weekly digest " + rule.getId();
+          actionRepository.save(
               new AutomationAction(
                   rule.getId(),
                   0,
-                  ActionType.INVOKE_AI_SPECIALIST,
+                  ActionType.SEND_NOTIFICATION,
                   Map.of(
-                      "specialistId", "inbox-za",
-                      "contextRef", Map.of("entityType", "project", "entityId", "{{project.id}}"),
-                      "initialPrompt", "Summarise the past week.",
-                      "lookback", "P7D",
-                      "mode", "DIRECT",
-                      "timeoutSeconds", 120),
+                      "recipientType",
+                      "TRIGGER_ACTOR",
+                      "title",
+                      title,
+                      "message",
+                      "Activity digest for {{project.name}}",
+                      "contextRef",
+                      Map.of("entityType", "project", "entityId", "{{project.id}}")),
                   null,
-                  null);
-          actionRepository.save(action);
+                  null));
 
           // Fire the cron tick
           scheduler.processScheduledTenant();
 
-          // The specialist runner is invoked once per ACTIVE project (project-scoped fan-out) and
-          // captures each active project's id. Assert on the SPECIFIC ids we seeded, not an exact
-          // global invocation count: this PER_CLASS tenant is never reset, so sibling test methods
-          // accumulate extra ACTIVE projects and SCHEDULED rules that also fan out — an exact
-          // `times(activeProjectCount)` is a moving target (the flake: expected 5, got 13).
-          // Containment is robust to that accumulation while still proving the contract — both
-          // seeded ACTIVE projects fired and the non-active (COMPLETED) project never did.
-          var entityIdCaptor = ArgumentCaptor.forClass(UUID.class);
-          Mockito.verify(runner, Mockito.atLeast(2))
-              .run(
-                  Mockito.eq("inbox-za"),
-                  Mockito.eq("project"),
-                  entityIdCaptor.capture(),
-                  Mockito.any(),
-                  Mockito.any(),
-                  Mockito.any());
-
-          assertThat(entityIdCaptor.getAllValues())
+          // One AUTOMATION notification per ACTIVE project, carrying that project's id. Assert by
+          // containment on THIS rule's notifications (title embeds the rule id), never an exact
+          // global count: this PER_CLASS tenant is never reset and sibling methods accumulate
+          // ACTIVE projects and due SCHEDULED rules (the count-bleed flake: expected 5, got 13).
+          var firedProjectIds =
+              notificationRepository.findAll().stream()
+                  .filter(n -> "AUTOMATION".equals(n.getType()))
+                  .filter(n -> title.equals(n.getTitle()))
+                  .map(n -> n.getReferenceProjectId())
+                  .toList();
+          assertThat(firedProjectIds)
               .contains(active1.getId(), active2.getId())
               .doesNotContain(inactive.getId());
 
-          // This rule's fan-out (runner mocked to succeed) must produce no failure notifications.
-          // Scope to the rule id, not a tenant-wide count — see the helper javadoc (the count-bleed
-          // flake: processScheduledTenant() also fires sibling accumulated rules in this
-          // never-reset
-          // PER_CLASS tenant, so a global count was a moving target — expected 5, got 13).
+          // This rule's fan-out must produce no failure notifications (rule-id scoped).
           assertThat(countAutomationActionFailedNotificationsForRule(rule.getId())).isZero();
         });
   }
@@ -482,27 +444,5 @@ class AutomationSchedulerScheduledTriggerIntegrationTest {
           // Exactly one execution created (fired once, not once-per-project)
           assertThat(execsAfter - execsBefore).isEqualTo(1);
         });
-  }
-
-  @TestConfiguration
-  static class FakeInboxApplierConfig {
-    @Bean("inboxSummaryApplier")
-    FakeInboxApplier fakeInboxApplier() {
-      return new FakeInboxApplier();
-    }
-  }
-
-  static class FakeInboxApplier implements OutputApplier<InboxSummaryPayload> {
-    private final AtomicInteger applyCount = new AtomicInteger();
-
-    @Override
-    public Class<InboxSummaryPayload> payloadType() {
-      return InboxSummaryPayload.class;
-    }
-
-    @Override
-    public void apply(InboxSummaryPayload payload, UUID actorId) {
-      applyCount.incrementAndGet();
-    }
   }
 }

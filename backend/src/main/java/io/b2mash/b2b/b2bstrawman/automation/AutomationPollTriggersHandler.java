@@ -145,7 +145,7 @@ public class AutomationPollTriggersHandler implements JobHandler {
   }
 
   private void fireScheduledRule(AutomationRule rule, Instant now) {
-    // Project-scoped scheduled rules (e.g. weekly per-matter AI summaries) must fan out: one
+    // Project-scoped scheduled rules (e.g. weekly per-matter digests) must fan out: one
     // execution per active project, each with a {{project.*}} context so contextRefs and conditions
     // resolve (OBS-505). Rules with no project-scoped action (e.g. SEND_NOTIFICATION) fire once.
     if (requiresProjectContext(rule)) {
@@ -177,13 +177,12 @@ public class AutomationPollTriggersHandler implements JobHandler {
    * <i>action</i>. If a SCHEDULED rule is classified project-scoped (see {@link
    * #requiresProjectContext}) because <i>any</i> of its actions targets a project contextRef, then
    * <b>all</b> of that rule's actions are re-fired once per active project. A rule that mixes a
-   * project-scoped action (e.g. {@code INVOKE_AI_SPECIALIST}, {@code entityType=project}) with a
-   * non-project action (e.g. {@code SEND_NOTIFICATION}) would therefore fire the non-project action
-   * N times — once per active project — instead of once. No shipped AI-specialist pack template
-   * does this today (each SCHEDULED template carries a single project-scoped action), and {@code
-   * AiSpecialistAutomationPackValidityTest.noShippedScheduledTemplateMixesProjectAndNonProjectActions}
-   * guards against a future template silently introducing the mix — adding one trips CI and forces
-   * a deliberate per-action design decision rather than a silent multi-fire.
+   * project-scoped action (any action whose config carries a {@code contextRef} with {@code
+   * entityType=project} or a {@code {{project.*}}} id) with a non-project action (e.g. a plain
+   * {@code SEND_NOTIFICATION}) would therefore fire the non-project action N times — once per
+   * active project — instead of once. No shipped automation template carries a project-scoped
+   * {@code contextRef} today; introducing one that mixes both kinds needs a deliberate per-action
+   * design decision rather than a silent multi-fire.
    */
   private void fireScheduledRulePerActiveProject(AutomationRule rule, Instant now) {
     List<Project> activeProjects = projectRepository.findByStatus(ProjectStatus.ACTIVE);

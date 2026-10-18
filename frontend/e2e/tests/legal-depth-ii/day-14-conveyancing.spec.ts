@@ -155,7 +155,7 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
   // stale 15s later, even when each item is completed on a freshly loaded page. The row
   // (components/compliance/ChecklistInstanceItemRow.tsx) renders `item.status` from props and
   // relies on `revalidatePath` in completeChecklistItem (customers/[id]/checklist-actions.ts)
-  // to refresh them; that refresh intermittently does not land (seen on the 3rd/4th item in
+  // to refresh them; that refresh intermittently does not land (seen from the 2nd-4th item on in
   // every run). The same stale-after-action pattern was seen on the disbursement detail
   // "Submit for Approval" when acting right after a client-side navigation.
   // Matter creation, OTP generation and acceptance below do not require an ACTIVE client.

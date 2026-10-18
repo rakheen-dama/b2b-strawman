@@ -108,7 +108,13 @@ public class CustomFieldFilterHandler {
 
     if ("contains".equals(op)) {
       String raw = String.valueOf(value);
-      params.put(paramName, canonicalWorkType ? canonicalWorkTypeOperand(raw) : raw);
+      if (canonicalWorkType) {
+        // The canonical form uses "_" for spaces, which ILIKE would treat as a single-character
+        // wildcard — escape it (and \ and %) so the operand matches literally.
+        params.put(paramName, escapeLike(canonicalWorkTypeOperand(raw)));
+        return slug + " ILIKE '%' || :" + paramName + " || '%' ESCAPE '\\'";
+      }
+      params.put(paramName, raw);
       if (isPromoted) {
         return slug + " ILIKE '%' || :" + paramName + " || '%'";
       }
@@ -161,5 +167,9 @@ public class CustomFieldFilterHandler {
   private static String canonicalWorkTypeOperand(String operand) {
     String canonical = WorkTypes.normalize(operand);
     return canonical != null ? canonical : operand;
+  }
+
+  private static String escapeLike(String operand) {
+    return operand.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
   }
 }

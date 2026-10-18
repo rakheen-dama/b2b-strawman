@@ -195,15 +195,30 @@ class CustomFieldFilterHandlerTest {
   @Test
   void projectWorkType_containsOperandIsNormalised() {
     // ILIKE handles case but not the space → underscore step, so "personal inj" must bind as
-    // PERSONAL_INJ to find a stored PERSONAL_INJURY. Substring matching is unchanged.
+    // PERSONAL_INJ to find a stored PERSONAL_INJURY. The canonical "_" is escaped so it matches
+    // literally rather than as an ILIKE single-character wildcard.
     Map<String, Object> params = new HashMap<>();
     String result =
         handler.buildPredicate(
             Map.of("work_type", (Object) Map.of("op", "contains", "value", "personal inj")),
             params,
             "PROJECT");
-    assertThat(result).isEqualTo("work_type ILIKE '%' || :cf_work_type || '%'");
-    assertThat(params).containsEntry("cf_work_type", "PERSONAL_INJ");
+    assertThat(result).isEqualTo("work_type ILIKE '%' || :cf_work_type || '%' ESCAPE '\\'");
+    assertThat(params).containsEntry("cf_work_type", "PERSONAL\\_INJ");
+  }
+
+  @Test
+  void nonWorkTypeContains_keepsRawOperandAndNoEscapeClause() {
+    // Only the canonical PROJECT work_type branch escapes; other contains filters keep their
+    // existing wildcard behaviour.
+    Map<String, Object> params = new HashMap<>();
+    String result =
+        handler.buildPredicate(
+            Map.of("work_type", (Object) Map.of("op", "contains", "value", "a_b%")),
+            params,
+            "CUSTOMER");
+    assertThat(result).isEqualTo("custom_fields ->> 'work_type' ILIKE '%' || :cf_work_type || '%'");
+    assertThat(params).containsEntry("cf_work_type", "a_b%");
   }
 
   @Test

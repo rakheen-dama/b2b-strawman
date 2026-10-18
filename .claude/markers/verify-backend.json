@@ -1,7 +1,7 @@
 {
-  "commit": "a3bc46554",
+  "commit": "ad99f2daa",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-18T04:02:52Z",
-  "summary": "Epic 606 / PR #1578 on a3bc46554 (orchestrator run; product code identical to main 97afbf223): 5294 testcases / 0 failures / 0 errors / 26 skipped, wall 751s. Later commits (c6d530190, 9c9937f9e, 43d703d79) are docs-only (no backend/frontend/portal paths). Log /tmp/mvn-606-final.log."
+  "ts": "2026-10-18T08:23:56Z",
+  "summary": "PR #1580 (template work type, tenant V2) head ad99f2daa (orchestrator run): 5306 testcases / 0 failures / 0 errors / 26 skipped (+12 new), wall 896s. Backend CI pass. e2e: pre-V2 tenant migrated to V2, 6 seeded templates backfilled; instantiate Property Transfer without workType -> CONVEYANCING + conveyancing_za_matter. Log /tmp/mvn-1580-final.log."
 }

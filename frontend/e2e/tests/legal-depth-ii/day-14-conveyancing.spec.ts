@@ -15,333 +15,384 @@
  *   - Verifies acceptance request delivery (Mailpit magic-link)
  *
  * Prerequisites:
- *   1. E2E stack running: bash compose/scripts/e2e-up.sh
- *   2. Legal-za profile active
- *   3. Phase 492 conveyancing template pack seeded (pack.json updated with
- *      `acceptanceEligible: true` on offer-to-purchase + power-of-attorney-transfer)
- *   4. Phase 492 clause pack `conveyancing-za-clauses` seeded
- *   5. Field pack `conveyancing_za_matter` seeded with 10 custom fields
+ *   1. Freshly seeded E2E stack: bash compose/scripts/e2e-up.sh (legal-za profile —
+ *      seeds the Property Transfer template, the `conveyancing_za_matter` field pack and
+ *      the Offer to Purchase document template)
+ *   2. Day 5 has started the depth-II run (names here derive from its run id)
  *
  * Run:
  *   PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-depth-ii
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
+import { waitForEmail } from "../../helpers/mailpit";
 import { captureScreenshot } from "../../helpers/screenshot";
+import {
+  attemptRunId,
+  BASE,
+  createClient,
+  escapeRegExp,
+  openClient,
+  openGroupedTab,
+  openMatter,
+  selectNativeOption,
+  startClientOnboarding,
+} from "../../helpers/legal-depth-ii";
 
-const ORG = "e2e-test-org";
-const BASE = `/org/${ORG}`;
+// Names are scoped to the depth-II run (and to the attempt, so a CI retry of this
+// serial group creates fresh records) — prevents non-deterministic row binding when
+// the e2e stack is reused across runs.
+const clientName = () => `Khumalo Property Holdings ${attemptRunId()}`;
+const clientEmail = () => `khumalo.property.${attemptRunId()}@example.com`;
+const matterName = () => `Khumalo Property Holdings — Erf 1234 Sandton Transfer ${attemptRunId()}`;
+const ficaPack = () => `khumalo-fica-pack-${attemptRunId()}.pdf`;
 
-// Unique matter name per run — prevents non-deterministic row binding when the
-// e2e stack is reused across runs and a previous matter with the same name exists.
-const runId = Date.now();
-const matterName = `Khumalo Property Holdings — Erf 1234 Sandton Transfer ${runId}`;
+/** Labels of the 10 fields in the `conveyancing_za_matter` field group. */
+const CONVEYANCING_FIELDS: Record<string, string> = {
+  conveyancing_type: "Conveyancing Type",
+  property_address: "Property Address",
+  erf_number: "Erf Number",
+  deeds_office: "Deeds Office",
+  lodgement_date: "Lodgement Date",
+  registration_date: "Registration Date",
+  deed_number: "Deed Number",
+  purchase_price: "Purchase Price",
+  transfer_duty: "Transfer Duty",
+  bond_institution: "Bond Institution",
+};
 
-const CONVEYANCING_FIELDS = [
-  "conveyancing_type",
-  "property_address",
-  "erf_number",
-  "deeds_office",
-  "lodgement_date",
-  "registration_date",
-  "deed_number",
-  "purchase_price",
-  "transfer_duty",
-  "bond_institution",
+/** FICA checklist items of the "Legal Individual Client Onboarding" checklist (dependency order). */
+const FICA_ITEMS = [
+  "Proof of Identity",
+  "Proof of Address",
+  "Beneficial Ownership Declaration",
+  "Source of Funds Declaration",
+  "Engagement Letter Signed",
+  "Conflict Check Performed",
+  "Power of Attorney Signed",
+  "FICA Risk Assessment",
+  "Sanctions Screening",
 ];
 
+async function openMatterFieldsTab(page: Page) {
+  await openMatter(page, matterName());
+  await openGroupedTab(page, "details", "fields");
+  const fieldsTab = page.getByTestId("matter-fields-tab");
+  await expect(fieldsTab).toBeVisible();
+  await expect(fieldsTab.getByText("SA Conveyancing — Matter Details").first()).toBeVisible();
+  return fieldsTab;
+}
+
 test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)", () => {
+  // ── 14.2 (part 1): New client Khumalo Property Holdings → ONBOARDING ──
+  test("Alice (Thandi): Create client Khumalo Property Holdings and start FICA onboarding", async ({
+    page,
+  }) => {
+    await loginAs(page, "alice");
+    await createClient(page, {
+      name: clientName(),
+      type: "Individual",
+      email: clientEmail(),
+      idNumber: "7605125009081",
+    });
+
+    // PROSPECT → ONBOARDING (asserted on the lifecycle status badge)
+    await startClientOnboarding(page);
+
+    // Upload the client's certified FICA pack to the client documents
+    await openGroupedTab(page, "work", "documents");
+    await page
+      .getByRole("tabpanel")
+      .getByRole("button", { name: "Upload Document" })
+      .first()
+      .click();
+    const upload = page.getByRole("dialog", { name: "Upload Customer Document" });
+    await upload.locator('input[type="file"]').setInputFiles({
+      name: ficaPack(),
+      mimeType: "application/pdf",
+      buffer: Buffer.from("%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n"),
+    });
+    await expect(upload.getByRole("button", { name: "Dismiss" })).toBeVisible({ timeout: 15_000 });
+    await page.keyboard.press("Escape");
+    await expect(upload).toBeHidden();
+    await expect(
+      page.getByRole("tabpanel").getByRole("row", { name: new RegExp(escapeRegExp(ficaPack())) })
+    ).toContainText("Uploaded", { timeout: 15_000 });
+  });
+
+  // ── 14.2 (part 2): FICA checklist complete → client auto-transitions to ACTIVE ──
+  // FIXME(depth-ii:checklist-stale-after-complete) PRODUCT BUG (reproduced, intermittent):
+  // completing a checklist item persists it but the Onboarding tab can keep rendering it as
+  // "Pending" with "Mark Complete" until the page is reloaded. The row
+  // (components/compliance/ChecklistInstanceItemRow.tsx) renders `item.status` from server
+  // props and relies solely on `revalidatePath` in completeChecklistItem
+  // (customers/[id]/checklist-actions.ts) to refresh them. Instrumented runs on a ready page
+  // (client opened by click-through, tab rendered; 5 runs x 9 items): 6/45 completions stayed
+  // stale for 10s. In every stale case the server action returned 200 — in at least one with
+  // an RSC payload already carrying the item as COMPLETED — but the router never applied it
+  // (no client re-render / `framenavigated`), while every fresh case showed that commit
+  // ~150ms after the action; a reload always showed the item COMPLETED. This is NOT the
+  // disbursement "act right after a client-side navigation" race (see the PR notes): the
+  // disbursement detail renders the action's return value from local state and passed 14/14
+  // click-through runs without any reload.
+  // Matter creation, OTP generation and acceptance below do not require an ACTIVE client.
+  test.fixme("Alice (Thandi): Complete Khumalo's FICA checklist → client becomes ACTIVE", async ({
+    page,
+  }) => {
+    await loginAs(page, "alice");
+    await openClient(page, clientName());
+    await openGroupedTab(page, "compliance", "onboarding");
+    const panel = page.getByRole("tabpanel");
+    await expect(panel).toContainText("Legal Individual Client Onboarding", { timeout: 15_000 });
+    for (const itemName of FICA_ITEMS) {
+      const item = panel
+        .locator("div.rounded-lg.border.p-3")
+        .filter({ has: page.getByText(itemName, { exact: true }) });
+      await item.getByRole("button", { name: "Mark Complete" }).click();
+      if (await item.getByText(/^Requires document:/).isVisible()) {
+        // Link the certified FICA pack uploaded in part 1
+        const documentPicker = item.getByRole("combobox");
+        await documentPicker.click();
+        await page.getByRole("option", { name: ficaPack() }).click();
+        await expect(documentPicker).toContainText(ficaPack());
+        await expect(page.getByRole("listbox")).toBeHidden();
+      }
+      const confirmItem = item.getByRole("button", { name: "Confirm" });
+      await expect(confirmItem).toBeEnabled();
+      await confirmItem.click();
+      await expect(item.getByText("Completed", { exact: true }), itemName).toBeVisible({
+        timeout: 15_000,
+      });
+    }
+    await expect(panel).toContainText("9/9 completed");
+
+    // Completing FICA auto-transitions the client to ACTIVE (address + country are on file)
+    await page.reload();
+    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Active", { timeout: 15_000 });
+    await expect(page.getByRole("button", { name: "Activate Customer" })).toHaveCount(0);
+  });
+
   // ── 14.2-14.3: Create conveyancing matter from Property Transfer template ──
   test("Alice (Thandi): Create matter using Property Transfer template", async ({ page }) => {
     await loginAs(page, "alice");
     await page.goto(`${BASE}/projects`);
-    await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
+    await page.getByRole("button", { name: "New from Template" }).click();
 
-    const newBtn = page.getByRole("button", { name: /New (Project|Matter)/i }).first();
-    if (!(await newBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "New Matter button not found");
-      return;
-    }
+    const dialog = page.getByRole("dialog", { name: /New from Template/ });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("option", { name: /Property Transfer \(Conveyancing\)/ }).click();
+    await dialog.getByRole("button", { name: "Next" }).click();
 
-    await newBtn.click();
-    await page.waitForTimeout(500);
+    await dialog.getByLabel(/Matter name/).fill(matterName());
+    await selectNativeOption(dialog.getByLabel(/^Client/), clientName());
+    // Matters created from the template inherit its work type (#1580)
+    await expect(dialog.getByLabel(/Work Type/)).toHaveValue("CONVEYANCING");
+    await dialog.getByRole("button", { name: "Create Matter" }).click();
 
-    // Template dropdown
-    const templateField = page.getByRole("combobox", { name: /template/i }).first();
-    if (await templateField.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await templateField.click();
-      await page.waitForTimeout(300);
-      const propertyTransferOption = page
-        .getByRole("option", { name: /Property\s*Transfer/i })
-        .first();
-      if (await propertyTransferOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await propertyTransferOption.click();
-      }
-    }
-
-    const nameInput = page.getByRole("textbox", { name: /name|title/i }).first();
-    if (await nameInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await nameInput.fill(matterName);
-    }
-
-    // Creation is a critical flow action — assert visibility and fail fast rather
-    // than silently skipping (the matter MUST be created for downstream tests).
-    const createBtn = page.getByRole("button", { name: /create|save/i }).first();
-    await expect(createBtn, "Create/Save button should be visible").toBeVisible({ timeout: 2000 });
-    await createBtn.click();
-    await page.waitForTimeout(1500);
-
+    await page.waitForURL(/\/projects\/[0-9a-f-]{36}/, { timeout: 15_000 });
+    await expect(page.getByRole("heading", { level: 1, name: matterName() })).toBeVisible();
+    await expect(page.locator("main")).toContainText("CONVEYANCING");
+    await expect(page.locator("main")).toContainText(clientName());
     await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-14-conveyancing-matter-created");
+  });
+
+  // ── Navigation: clicking into a matter renders its content ────────
+  // FIXME(depth-ii:page-transition-blank) PRODUCT BUG (reproduced, intermittent): a
+  // client-side navigation from the Matters list into a matter commits the route
+  // (URL = /projects/<id>, breadcrumb "Matter") but the content area stays blank for 15s+.
+  // Same root-cause family as FIXME(depth-ii:page-transition-remount) (day-05): the org
+  // layout's <PageTransition> (components/page-transition.tsx) — AnimatePresence
+  // mode="wait" around a motion.div keyed by pathname — remounts the page after the
+  // outgoing wrapper fades out, and here the new wrapper is left empty. Playwright traces of
+  // the failures show `<div style="opacity: 1; transform: none;"></div>` as the only child of
+  // `#main-content .max-w-7xl`, after the matter's RSC request returned 200 and with no
+  // console error. Observed 6 times across ~14 suite / Day-14 runs (a few percent of matter
+  // navigations), with the list page fully faded in before the click and with or without
+  // the helpers' DOM tagging. Un-fixme'd, this test failed in 1 of 3 Day-14 runs (click-through
+  // #6: URL committed, breadcrumb "Matter", empty <main>) — it is probabilistic, ~1 in 30
+  // clicks. helpers openMatter deep-links to the matter URL because of this.
+  test.fixme("Alice: Clicking into a matter from the Matters list renders it (10 times)", async ({
+    browser,
+  }) => {
+    test.setTimeout(120_000);
+    for (let i = 1; i <= 10; i++) {
+      // A fresh session per attempt, as each test in the suite has (where it was seen)
+      const context = await browser.newContext();
+      const page = await context.newPage();
+      await loginAs(page, "alice");
+      await page.goto(`${BASE}/projects`);
+      const link = page.getByRole("link", { name: new RegExp(escapeRegExp(matterName())) }).first();
+      await expect(link).toBeVisible({ timeout: 15_000 });
+      await expect(page.locator("#main-content .max-w-7xl > div")).toHaveCSS("opacity", "1");
+      await link.click();
+      await expect(page).toHaveURL(/\/projects\/[0-9a-f-]{36}/, { timeout: 15_000 });
+      await expect(
+        page.getByRole("heading", { level: 1, name: matterName() }),
+        `matter content rendered after click-through #${i}`
+      ).toBeVisible({ timeout: 5_000 });
+      await context.close();
+    }
   });
 
   // ── 14.4: Verify 10 conveyancing custom fields present ────────────
   test("Alice: Verify 10 conveyancing custom fields present on matter detail", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
-    await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
+    const fieldsTab = await openMatterFieldsTab(page);
 
-    const matterLink = page.getByRole("link", { name: matterName }).first();
-    if (!(await matterLink.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "Conveyancing matter not found");
-      return;
-    }
-
-    await matterLink.click();
-    await page.waitForTimeout(1500);
-    await page.waitForLoadState("networkidle");
-
-    // Navigate to the Fields tab (custom fields moved from sidebar to tab)
-    const detailsGroup = page.getByTestId("tab-group-details");
-    if (await detailsGroup.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await detailsGroup.click();
-      await page.waitForTimeout(300);
-      const fieldsItem = page.getByTestId("tab-item-fields");
-      if (await fieldsItem.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await fieldsItem.click();
-        await page.waitForTimeout(500);
+    // 8 fields render unconditionally; registration_date is shown once lodgement_date
+    // is set and deed_number once registration_date is set (visibleWhen rules).
+    const conditional = ["registration_date", "deed_number"];
+    for (const [slug, label] of Object.entries(CONVEYANCING_FIELDS)) {
+      if (conditional.includes(slug)) {
+        await expect(
+          fieldsTab.locator(`#cf-${slug}`),
+          `${slug} hidden until its precursor`
+        ).toHaveCount(0);
+      } else {
+        await expect(fieldsTab.locator(`#cf-${slug}`), slug).toBeVisible();
+        await expect(fieldsTab.locator(`label[for="cf-${slug}"]`)).toContainText(label);
       }
     }
-
-    const mainContent = await page
-      .locator("main")
-      .textContent()
-      .catch(() => "");
-    const fieldMatchCount = CONVEYANCING_FIELDS.filter((slug) => {
-      const humanized = slug.replace(/_/g, "[\\s_-]");
-      const regex = new RegExp(humanized, "i");
-      return regex.test(mainContent || "");
-    }).length;
-
-    // Soft assertion — test intent is to verify all 10 conveyancing custom fields.
-    // Soft-kept because some fields may be conditionally hidden by visibleWhen rules.
-    expect.soft(fieldMatchCount).toBeGreaterThanOrEqual(10);
+    await fieldsTab.locator("#cf-lodgement_date").fill("2026-11-02");
+    await expect(fieldsTab.locator("#cf-registration_date")).toBeVisible();
+    await fieldsTab.locator("#cf-registration_date").fill("2026-12-07");
+    await expect(fieldsTab.locator("#cf-deed_number")).toBeVisible();
+    for (const slug of Object.keys(CONVEYANCING_FIELDS)) {
+      await expect(fieldsTab.locator(`#cf-${slug}`), slug).toBeVisible();
+    }
+    await expect(fieldsTab.locator('label[for="cf-registration_date"]')).toContainText(
+      CONVEYANCING_FIELDS.registration_date
+    );
+    await expect(fieldsTab.locator('label[for="cf-deed_number"]')).toContainText(
+      CONVEYANCING_FIELDS.deed_number
+    );
 
     await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-14-conveyancing-matter-custom-fields");
     await captureScreenshot(page, "conveyancing-matter-detail-custom-fields", { curated: true });
   });
 
-  // ── 14.5: Fill minimum field subset ───────────────────────────────
+  // ── 14.5-14.6: Fill minimum field subset ──────────────────────────
   test("Alice: Fill property_address, erf_number, deeds_office", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
-    await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
+    const fieldsTab = await openMatterFieldsTab(page);
 
-    const matterLink = page.getByRole("link", { name: matterName }).first();
-    if (!(await matterLink.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "Conveyancing matter not found");
-      return;
-    }
+    await fieldsTab.locator("#cf-property_address").fill("12 Rivonia Road, Sandton, 2196");
+    await fieldsTab.locator("#cf-erf_number").fill("1234");
+    await fieldsTab.locator("#cf-deeds_office").selectOption("JOHANNESBURG");
+    await fieldsTab.getByRole("button", { name: "Save Custom Fields" }).click();
+    await expect(fieldsTab.getByText("Saved successfully")).toBeVisible({ timeout: 15_000 });
 
-    await matterLink.click();
-    await page.waitForTimeout(1500);
-
-    // Navigate to the Fields tab (custom fields moved from sidebar to tab)
-    const detailsGroup = page.getByTestId("tab-group-details");
-    if (await detailsGroup.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await detailsGroup.click();
-      await page.waitForTimeout(300);
-      const fieldsItem = page.getByTestId("tab-item-fields");
-      if (await fieldsItem.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await fieldsItem.click();
-        await page.waitForTimeout(500);
-      }
-    }
-
-    // Open custom-fields edit (if there's an Edit button)
-    const editBtn = page.getByRole("button", { name: /edit.*custom|edit.*fields|edit/i }).first();
-    if (await editBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await editBtn.click();
-      await page.waitForTimeout(500);
-    }
-
-    // Fill property address
-    const propAddr = page.getByRole("textbox", { name: /property[_\s]*address/i }).first();
-    if (await propAddr.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await propAddr.fill("12 Rivonia Road, Sandton, 2196");
-    }
-
-    // Erf number
-    const erfNumber = page.getByRole("textbox", { name: /erf[_\s]*number/i }).first();
-    if (await erfNumber.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await erfNumber.fill("1234");
-    }
-
-    // Deeds office — dropdown JOHANNESBURG
-    const deedsOffice = page.getByRole("combobox", { name: /deeds[_\s]*office/i }).first();
-    if (await deedsOffice.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await deedsOffice.click();
-      await page.waitForTimeout(300);
-      const joburgOption = page.getByRole("option", { name: /JOHANNESBURG/i }).first();
-      if (await joburgOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await joburgOption.click();
-      }
-    }
-
-    const saveBtn = page.getByRole("button", { name: /save|update/i }).first();
-    if (await saveBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await saveBtn.click();
-      await page.waitForTimeout(1000);
-    }
+    // 14.6: values persist and re-render after a reload
+    await page.reload();
+    await openGroupedTab(page, "details", "fields");
+    const reloaded = page.getByTestId("matter-fields-tab");
+    await expect(reloaded.locator("#cf-property_address")).toHaveValue(
+      "12 Rivonia Road, Sandton, 2196"
+    );
+    await expect(reloaded.locator("#cf-erf_number")).toHaveValue("1234");
+    await expect(reloaded.locator("#cf-deeds_office")).toHaveValue("JOHANNESBURG");
 
     await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-14-conveyancing-fields-populated");
   });
 
-  // ── 14.7-14.8: Generate Offer to Purchase document ────────────────
-  test("Alice: Generate Offer to Purchase document with conveyancing clauses", async ({ page }) => {
+  // ── 14.7: Generate Offer to Purchase document ─────────────────────
+  test("Alice: Generate Offer to Purchase document and save it to the matter", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
-    await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
+    await openMatter(page, matterName());
 
-    const matterLink = page.getByRole("link", { name: matterName }).first();
-    if (!(await matterLink.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "Conveyancing matter not found");
-      return;
-    }
+    await page.getByRole("button", { name: /Generate Document/ }).click();
+    await page.getByRole("menuitem", { name: "Offer to Purchase" }).click();
 
-    await matterLink.click();
-    await page.waitForTimeout(1500);
+    const dialog = page.getByRole("dialog", { name: /Generate: Offer to Purchase/ });
+    await expect(dialog).toBeVisible({ timeout: 15_000 });
+    const preview = dialog.frameLocator('iframe[title="Document Preview"]').locator("body");
+    // The preview merges the client, matter and the Day 14 conveyancing fields
+    await expect(preview).toContainText("Offer to Purchase", { timeout: 15_000 });
+    await expect(preview).toContainText(`Purchaser: ${clientName()}`);
+    await expect(preview).toContainText("Property Address: 12 Rivonia Road, Sandton, 2196");
+    await expect(preview).toContainText("Erf Number: 1234");
+    await expect(preview).toContainText("Deeds Office: Johannesburg");
 
-    // Open Generate Document dropdown
-    const generateBtn = page
-      .getByRole("button", { name: /generate\s+document|new\s+document/i })
-      .first();
-    if (!(await generateBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
-      test.skip(true, "Generate Document action not found");
-      return;
-    }
-
-    await generateBtn.click();
-    await page.waitForTimeout(500);
-
-    // Select Offer to Purchase
-    const otpOption = page.getByRole("option", { name: /offer\s*to\s*purchase/i }).first();
-    const otpMenuItem = page.getByRole("menuitem", { name: /offer\s*to\s*purchase/i }).first();
-    if (await otpOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await otpOption.click();
-    } else if (await otpMenuItem.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await otpMenuItem.click();
-    } else {
-      test.skip(true, "Offer to Purchase template option not found");
-      return;
-    }
-
-    await page.waitForTimeout(1500);
-
-    // Generate/confirm
-    const confirmGen = page.getByRole("button", { name: /generate|create|confirm/i }).first();
-    if (await confirmGen.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await confirmGen.click();
-      await page.waitForTimeout(2000);
-    }
-
-    await page.waitForLoadState("networkidle");
-
-    // Verify preview renders with clause content (soft check for common
-    // conveyancing clause keywords)
-    const mainText = await page
-      .locator("main")
-      .textContent()
-      .catch(() => "");
-    expect.soft((mainText || "").match(/purchase\s+price|transfer|deeds|warrant/i)).toBeTruthy();
-
+    await dialog.getByRole("button", { name: "Save to Documents" }).click();
+    await expect(dialog.getByText("Document saved successfully")).toBeVisible({ timeout: 15_000 });
     await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-14-otp-document-generated");
+    await dialog.getByRole("button", { name: "Close" }).first().click();
+    await expect(dialog).toBeHidden();
+
+    await openGroupedTab(page, "work", "generated");
+    await expect(page.getByRole("row", { name: /Offer to Purchase/ })).toBeVisible({
+      timeout: 15_000,
+    });
+  });
+
+  // ── 14.8: OTP carries the conveyancing clause pack ────────────────
+  // FIXME(depth-ii:otp-clause-associations) PRODUCT BUG (reproduced): the generated Offer
+  // to Purchase has an empty "Conditions of Sale" section. The OTP template content (template-packs/legal-za/offer-to-purchase.json)
+  // embeds 7 clauseBlock nodes (voetstoots, occupation-date, suspensive-bond,
+  // transfer-duty-liability, fica-compliance, rates-clearance, jurisdiction-za), and those
+  // 10 clauses are seeded in the clause library, but `conveyancing-za-clauses/pack.json` has
+  // `"templateAssociations": []` — GET /api/templates/{otpId}/clauses returns [] — so the
+  // generate dialog offers no clause step and every clauseBlock renders nothing.
+  test.fixme("Alice: Generate Offer to Purchase document with conveyancing clauses", async ({
+    page,
+  }) => {
+    await loginAs(page, "alice");
+    await openMatter(page, matterName());
+    await page.getByRole("button", { name: /Generate Document/ }).click();
+    await page.getByRole("menuitem", { name: "Offer to Purchase" }).click();
+
+    const dialog = page.getByRole("dialog", { name: /Generate: Offer to Purchase/ });
+    await expect(dialog).toBeVisible({ timeout: 15_000 });
+    // Clause step (Step 1 of 2) lists the conveyancing clause pack
+    await expect(dialog).toContainText("Step 1 of 2");
+    await expect(dialog).toContainText("Voetstoots");
+    await dialog.getByRole("button", { name: /Next/ }).click();
+
+    const preview = dialog.frameLocator('iframe[title="Document Preview"]').locator("body");
+    await expect(preview).toContainText("Conditions of Sale", { timeout: 15_000 });
+    await expect(preview).toContainText(/voetstoots/i);
+    await expect(preview).toContainText(/suspensive/i);
+    await expect(preview).toContainText(/transfer duty/i);
+    await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "otp-document-with-clauses", { curated: true });
   });
 
-  // ── 14.9-14.10: Send for Acceptance (Phase 28 flow) ───────────────
+  // ── 14.9-14.11: Send for Acceptance (Phase 28 flow) ───────────────
   test("Alice: Send OTP for Acceptance via Phase 28 flow", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
-    await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
+    await openMatter(page, matterName());
+    await openGroupedTab(page, "work", "generated");
 
-    const matterLink = page.getByRole("link", { name: matterName }).first();
-    if (!(await matterLink.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "Conveyancing matter not found");
-      return;
-    }
+    const otpRow = page.getByRole("row", { name: /Offer to Purchase/ }).first();
+    await expect(otpRow).toBeVisible({ timeout: 15_000 });
+    // Offered because the OTP template is acceptanceEligible and the matter has a client
+    await otpRow.getByTitle("Send for Acceptance").click();
 
-    await matterLink.click();
-    await page.waitForTimeout(1500);
+    const dialog = page.getByRole("dialog", { name: /Send for Acceptance/ });
+    await expect(dialog).toBeVisible();
+    // Recipient = the client's portal contact (auto-provisioned from the client email)
+    await dialog.locator("#recipient").click();
+    await page.getByRole("option", { name: new RegExp(escapeRegExp(clientEmail())) }).click();
+    await dialog.locator("#expiryDays").fill("7");
+    await dialog.getByRole("button", { name: "Send", exact: true }).click();
+    await expect(dialog.getByText("Acceptance request sent.")).toBeVisible({ timeout: 15_000 });
+    await expect(dialog).toBeHidden({ timeout: 15_000 });
 
-    // Navigate to documents tab + find OTP
-    const docsTab = page.getByRole("tab", { name: /documents/i }).first();
-    if (await docsTab.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await docsTab.click();
-      await page.waitForTimeout(500);
-    }
-
-    const otpRow = page.getByRole("link", { name: /offer\s*to\s*purchase/i }).first();
-    if (await otpRow.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await otpRow.click();
-      await page.waitForTimeout(1000);
-    }
-
-    const sendForAcceptance = page
-      .getByRole("button", { name: /send\s+for\s+acceptance/i })
-      .first();
-    if (!(await sendForAcceptance.isVisible({ timeout: 3000 }).catch(() => false))) {
-      // Button only visible because template has acceptanceEligible: true
-      test.skip(
-        true,
-        "Send for Acceptance button not visible — acceptanceEligible flag may be missing"
-      );
-      return;
-    }
-
-    await sendForAcceptance.click();
-    await page.waitForTimeout(500);
-
-    // Fill recipient email + submit
-    const emailInput = page.getByRole("textbox", { name: /email|recipient/i }).first();
-    if (await emailInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await emailInput.fill("khumalo@example.com");
-    }
-
-    // Acceptance submit is a critical flow action — assert visibility and fail
-    // fast rather than silently skipping.
-    const submitBtn = page.getByRole("button", { name: /send|submit|create/i }).first();
-    await expect(submitBtn, "Acceptance submit button should be visible").toBeVisible({
-      timeout: 2000,
-    });
-    await submitBtn.click();
-    await page.waitForTimeout(1500);
-
-    expect
-      .soft(
-        await page
-          .getByText(/pending\s+acceptance|acceptance\s+sent|awaiting/i)
-          .first()
-          .isVisible({ timeout: 5000 })
-          .catch(() => false)
-      )
-      .toBeTruthy();
-
+    await expect(otpRow).toContainText("Awaiting Acceptance", { timeout: 15_000 });
     await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-14-otp-acceptance-request-sent");
     await captureScreenshot(page, "otp-acceptance-request", { curated: true });
+
+    // 14.11: the acceptance request email (with its magic link) reaches the client
+    // (waitForEmail polls for the message whose subject matches, then fetches that message)
+    const message = await waitForEmail(clientEmail(), {
+      subject: "for acceptance: offer-to-purchase",
+    });
+    expect(message.Subject).toMatch(/review .* for acceptance: offer-to-purchase/i);
+    expect(`${message.HTML}\n${message.Text}`).toMatch(/\/accept\/[A-Za-z0-9_-]{16,}/);
   });
 });

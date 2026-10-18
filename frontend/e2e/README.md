@@ -137,6 +137,33 @@ await captureScreenshot(page, "day-05-full-dashboard", { fullPage: true });
 await captureScreenshot(page, "day-05-sidebar", { locator: page.locator("nav") });
 ```
 
+## Legal Depth-II Suite (Phase 67)
+
+`e2e/tests/legal-depth-ii/` (config `e2e/playwright.legal-depth-ii.config.ts`) exercises
+disbursements, conveyancing + OTP acceptance, statements of account and matter closure on
+the legal-za profile.
+
+**Standalone:** it needs only a freshly seeded mock-auth E2E stack (the seed provisions
+`e2e-test-org` on the legal-za profile with the disbursements / trust accounting /
+matter-closure modules enabled). It does **not** depend on the legal-lifecycle suite: every
+client, matter, billing rate, trust account and record it acts on is created through the UI with run-scoped
+names (`Sipho Ndlovu <run>`, `Khumalo Property Holdings <run>`, `Apex Holdings <run>`).
+
+```bash
+bash compose/scripts/e2e-up.sh                       # from the repo root
+# from frontend/
+PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-depth-ii
+```
+
+- Run the four files together, in order (`workers: 1`): Day 5 starts the run (run id in
+  `$TMPDIR/kazi-legal-depth-ii-run.json`) and creates Sipho's client + matter that Day 30-45
+  and Day 85 act on. Days 14 and 75 create their own clients but name them from the run id.
+- Safe to re-run on the same stack (each run uses a new run id; a CI retry of a serial group
+  creates attempt-scoped records).
+- Mailpit: the config defaults `MAILPIT_URL` to the E2E stack's `http://localhost:8026`.
+- Tests prefixed `[setup]` prepare state the scenario assumes; `test.fixme` tests document
+  reproduced product bugs, each tagged `FIXME(depth-ii:<slug>)` in the spec.
+
 ## Notes
 
 - E2E tests (`pnpm test:e2e`) are separate from unit tests (`pnpm test`).

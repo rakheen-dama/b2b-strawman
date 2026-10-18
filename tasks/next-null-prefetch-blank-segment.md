@@ -38,6 +38,7 @@ Only segments with **their own** `loading.tsx` get a separately prefetched parti
 In `InnerLayoutRouter`'s non-deferred branch, a `rsc` that is a thenable is now unwrapped with `use()`. If it resolves to `null`, the component suspends on `unresolvedThenable`. This is the same rule Next already applies to its deferred promises.
 
 - The segment's `loading.tsx` skeleton shows, and the deferred render then fills it in.
+- **How it wakes up.** Suspending on `unresolvedThenable` never resolves by itself. The page recovers only because `InnerLayoutRouter` renders `rsc = useDeferredValue(cacheNode.rsc, resolvedPrefetchRsc)`: React retries the deferred lane with the real `cacheNode.rsc`, and that render replaces the suspended one. This is the same mechanism Next relies on when one of its own deferred RSC promises resolves to `null`. It was **verified empirically** (0/120 matter, 0/80 report detail, 0/80 dashboard on the patched build), **not proven from the React/Next source**. If a future Next or React changes how that deferred re-render is scheduled, the patched branch could show the skeleton indefinitely instead of a blank page. The opt-in probe below would catch that as well.
 - The patch is applied to both the CJS and the ESM build of `layout-router.js`. It covers every route with a `loading.tsx`: org `customers`, `dashboard`, `documents`, `my-work`, `projects`, `projects/[id]`, `reports`, `reports/[reportSlug]`, and the pre-org `/dashboard`.
 - Deleting the `loading.tsx` files would also close the race, but it fixes only the routes you delete them from. It also costs the skeletons; the matter page has a ~20-call backend waterfall. The user chose to ship the patch.
 
@@ -59,5 +60,16 @@ The ship PR re-measured both sides on its own builds. See the PR description for
 1. `pnpm install` fails if `patchedDependencies` names a `next` version that is no longer installed. `frontend/__tests__/next-null-prefetch-patch.test.ts` fails if the marker is missing from either layout-router build.
 2. Check whether upstream fixed it. Look at the new `InnerLayoutRouter`: does its non-deferred branch still assign `resolvedRsc = rsc` without unwrapping a thenable?
 3. If it is not fixed, run `pnpm patch next@<new>`, re-apply the same edit (marker included) to both `dist/client/components/layout-router.js` and `dist/esm/client/components/layout-router.js`, then `pnpm patch-commit <dir>`.
-4. Rebuild the e2e frontend (`bash compose/scripts/e2e-rebuild.sh frontend`). Run the legal-depth-ii `day-14-conveyancing` test "Clicking into a matter (route with a loading skeleton)…" several times, and a ≥120-attempt fresh-session click-through probe. Expect 0 blanks.
-5. If upstream fixed it, remove the patch, its `patchedDependencies` entry, the guard test and the "Patched dependencies" section in `frontend/CLAUDE.md` together.
+4. Rebuild the e2e frontend (`bash compose/scripts/e2e-rebuild.sh frontend`). Then run the opt-in probe `frontend/e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts`, from `frontend/`:
+
+   ```bash
+   NULL_PREFETCH_PROBE=1 ATTEMPTS=120 PLAYWRIGHT_BASE_URL=http://localhost:3001 NODE_OPTIONS="" \
+     pnpm exec playwright test --config e2e/playwright.legal-depth-ii.config.ts null-prefetch-probe
+   ```
+
+   - It runs 120 fresh-session clicks on each measured route: matter, report detail, and dashboard. That takes about 5 minutes on a healthy build.
+   - Each route's test fails on any blank, and prints a `PROBE-SUMMARY … blank=N/120` line. Expect 0 blanks on every route.
+   - Without `NULL_PREFETCH_PROBE` it is skipped, so the normal suites never run it.
+   - The day-14 click-through test (10 attempts) is not enough on its own. At the ~6% unpatched rate it misses a regression about half the time.
+   - The depth-II config has a 10-minute `globalTimeout`. For a larger `ATTEMPTS`, add `--global-timeout=0`.
+5. If upstream fixed it, remove the patch, its `patchedDependencies` entry, the guard test, the probe spec and the "Patched dependencies" section in `frontend/CLAUDE.md` together.

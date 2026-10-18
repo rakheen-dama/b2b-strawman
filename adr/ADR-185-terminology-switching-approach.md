@@ -5,6 +5,8 @@
 **Phase**: 48 (QA Gap Closure)
 **Supersedes**: [ADR-182](ADR-182-terminology-override-mechanism.md) (Terminology Override Mechanism)
 
+**Note**: Phase 86 removed the `accounting-za`, `consulting-za` and `consulting-generic` profiles (archived at `horizontal-platform-final`, [ADR-330](ADR-330-archive-tag-not-fork.md)); the mechanism survives with `legal-za` only ([ADR-332](ADR-332-single-vertical-profile-mechanism-retained.md)).
+
 ## Context
 
 DocTeams is a multi-tenant platform serving different professional services verticals. The QA cycle with the `accounting-za` vertical revealed that platform terminology ("Projects," "Customers," "Proposals," "Rate Cards") does not match the language accounting practitioners use daily ("Engagements," "Clients," "Engagement Letters," "Fee Schedules"). This creates a cognitive translation layer that erodes the perception of the platform as purpose-built for accounting firms.

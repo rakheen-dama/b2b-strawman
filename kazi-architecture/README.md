@@ -1,5 +1,7 @@
 # `kazi-architecture/` — Current-State Architecture & Ubiquitous Language
 
+> **⚠️ Stale since Phase 86 (2026-10).** This folder is a **pre-Phase-86 snapshot** and has not been updated for the subtraction: Kazi is now legal-only (`legal-za`); schedules, retainers, proposals, capacity, the in-app/specialist AI assistants, accounting/consulting profiles and deadlines, PayFast subscriptions, the docs site and CRM were removed and archived at git tag `horizontal-platform-final` (mirror: https://github.com/rakheen-dama/kazi-horizontal-archive). Where this folder disagrees with the code, the code wins. See [`architecture/phase86-subtraction-legal-only.md`](../architecture/phase86-subtraction-legal-only.md) and [ADR-330](../adr/ADR-330-archive-tag-not-fork.md). A full rewrite is a Phase 87 follow-up.
+
 This folder is the **single source of truth** for what Kazi is and how it is built today. It is code-grounded: every architectural claim points at a file, line, identifier, or active ADR. If the doc disagrees with the code, the doc is wrong.
 
 ## Read in this order

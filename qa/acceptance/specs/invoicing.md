@@ -12,7 +12,7 @@ Invoicing is the core billing artefact in Kazi. Each invoice belongs to one cust
 ## Prerequisites
 
 - E2E mock-auth stack running (`bash compose/scripts/e2e-up.sh`) — frontend on `:3001`, backend on `:8081`, mock IDP on `:8090`.
-- API lifecycle seed loaded (`bash compose/seed/lifecycle-test.sh`) — provides `e2e-test-org`, three users, and an ACTIVE customer with prerequisite fields populated.
+- API seed loaded (`bash compose/seed/seed.sh`) (legal-za; the accounting lifecycle-test seed was removed in Phase 86) — provides `e2e-test-org`, three users, and an ACTIVE customer with prerequisite fields populated.
 - Mock JWT for Alice (owner), Bob (admin), Carol (member) — fetched from `${MOCK_IDP_URL}/token` with `orgId=org_e2e_test`, `orgSlug=e2e-test-org`.
 - At least one customer with `lifecycleStatus=ACTIVE` and `status=ACTIVE`. For send-path tests the customer must also have a non-blank `taxNumber` (hard-blocks send otherwise).
 - Org settings must have a non-blank `orgName` (hard-blocks send otherwise).

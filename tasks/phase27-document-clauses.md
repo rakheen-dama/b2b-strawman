@@ -9,7 +9,7 @@ Phase 27 adds a **clause library** to the DocTeams document generation system. C
 - [ADR-105](../adr/ADR-105-clause-snapshot-depth.md) -- Clause Snapshot Depth (metadata only, PDF is the content snapshot)
 - [ADR-106](../adr/ADR-106-template-clause-placeholder-strategy.md) -- Template-Clause Placeholder Strategy (single `${clauses}` variable, append fallback)
 
-**Migration**: V44 tenant -- `clauses` table + `template_clauses` table + `generated_documents.clause_snapshots` JSONB + `org_settings.clause_pack_status` JSONB.
+**Migration**: V44 tenant -- `clauses` table + `template_clauses` table + `generated_documents.clause_snapshots` JSONB + `org_settings.clause_pack_status` JSONB. (pre-squash; now in `V1__baseline.sql`)
 
 **Dependencies on prior phases**: Phase 12 (Document Templates/PDF), Phase 13 (Dedicated Schema), Phase 23 (Template Validation), Phase 6 (Audit).
 

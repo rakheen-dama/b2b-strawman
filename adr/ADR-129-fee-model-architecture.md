@@ -1,6 +1,6 @@
 # ADR-129: Fee Model Architecture — Single vs. Mixed
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-336](ADR-336-engagement-letter-document-plus-acceptance.md)
 
 **Context**:
 

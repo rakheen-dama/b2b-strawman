@@ -4,6 +4,8 @@
 **Date**: 2026-03-12
 **Phase**: Phase 45 — In-App AI Assistant (BYOAK)
 
+**Note**: Partially superseded by [ADR-333](ADR-333-mcp-sole-conversational-ai-surface.md) — the in-app assistant was removed in Phase 86; the thin provider interface survives in `integration/ai/provider`.
+
 ## Context
 
 Phase 45 introduces an in-app AI assistant backed by LLM providers. The first supported provider is Anthropic (Claude), but the architecture must accommodate future providers (OpenAI, Google) without rearchitecting the assistant service or tool layer. The question is how deep the provider abstraction should go: should the interface cover only the capabilities the assistant uses today (chat with tools, streaming, key validation), or should it pre-build abstractions for capabilities like embeddings, vision, function calling variations, and fine-tuning that might be useful in future phases?

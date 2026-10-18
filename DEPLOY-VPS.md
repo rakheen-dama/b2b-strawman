@@ -561,6 +561,8 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml down
 
 Add `--volumes` to wipe all data (destructive — do not do in production).
 
+> **Phase 86 one-time (2026-10-18 migration squash):** an existing Postgres volume holds the pre-squash `flyway_schema_history` (tenant up to V144, global up to V29), which the new `V1__baseline.sql` cannot validate. Before the first deploy of an image built from `d8fb3983c` or later, stop the stack and remove the Postgres data volume once (zero tenants — nothing to lose): `docker compose --env-file .env.prod -f docker-compose.prod.yml down && docker volume rm kazi-prod_postgres_data`. Removing only that volume keeps the Caddy TLS certificates and MinIO data (`down --volumes` would wipe those too). The Keycloak database lives in the same Postgres, so re-run `scripts/keycloak-bootstrap.sh` (§9) after the stack is back up, then recreate the platform-admin user via the Keycloak admin console (§9, "Prerequisite — enable MCP dynamic client registration" — the bootstrap script does not create it). See `backend/db/BASELINE.md` §6.
+
 ### Update `.env.prod` secrets
 
 Edit `/opt/kazi/compose/.env.prod` on the box, then restart affected services:
@@ -720,4 +722,4 @@ The `DATABASE_URL` and `DATABASE_MIGRATION_URL` env vars embed `user=` and `pass
 
 ---
 
-*Runbook version: 2026-06-21 (§12 split-subdomain troubleshooting — PRs #1467–#1469; self-hosted docs site #1478; box-pull deploy #1479; §13 Going Private; docs site removed Phase 86 Epic 603). Artifacts: `compose/docker-compose.prod.yml`, `compose/.env.prod.example`, `compose/caddy/Caddyfile`, `compose/scripts/deploy.sh`, `compose/scripts/keycloak-bootstrap.sh`, `.github/workflows/deploy-vps.yml`.*
+*Runbook version: 2026-10-18 (§12 split-subdomain troubleshooting — PRs #1467–#1469; self-hosted docs site #1478; box-pull deploy #1479; §13 Going Private; docs site removed Phase 86 Epic 603; migration squash Phase 86 Epic 605 (one-time Postgres volume wipe)). Artifacts: `compose/docker-compose.prod.yml`, `compose/.env.prod.example`, `compose/caddy/Caddyfile`, `compose/scripts/deploy.sh`, `compose/scripts/keycloak-bootstrap.sh`, `.github/workflows/deploy-vps.yml`.*

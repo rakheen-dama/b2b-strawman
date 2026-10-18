@@ -4,6 +4,8 @@
 **Date**: 2026-04-02  
 **Phase**: 57
 
+**Note**: Partially superseded by [ADR-335](ADR-335-manual-firm-level-billing-only.md) — PayFast-driven transitions removed in Phase 86; the lifecycle states remain.
+
 ## Context
 
 HeyKazi's billing system was originally built in Phase 2 with a dual-tier model (STARTER/PRO) and a minimal `SubscriptionStatus` enum (`ACTIVE`, `CANCELLED`). The STARTER tier was designed for a shared-schema model that was eliminated in Phase 13 (all tenants now receive dedicated schemas via ADR-064). The "Upgrade to Pro" button is a no-op that flips the `planSlug` field without any payment validation.

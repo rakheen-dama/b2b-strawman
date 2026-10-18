@@ -4,7 +4,7 @@
 
 **ADRs**: [ADR-088](../adr/ADR-088-integration-port-package-structure.md), [ADR-089](../adr/ADR-089-tenant-scoped-adapter-resolution.md), [ADR-090](../adr/ADR-090-secret-storage-strategy.md), [ADR-091](../adr/ADR-091-feature-flag-scope.md)
 
-**Migration**: V36 (org_integrations + org_secrets tables, OrgSettings feature flag columns)
+**Migration**: V36 (org_integrations + org_secrets tables, OrgSettings feature flag columns) (pre-squash; now in `V1__baseline.sql`)
 
 ---
 

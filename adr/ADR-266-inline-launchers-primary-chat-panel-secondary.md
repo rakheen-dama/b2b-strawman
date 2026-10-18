@@ -1,6 +1,6 @@
 # ADR-266: Inline Launchers Are Primary; Chat Panel Is Secondary Generalist Fallback
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-333](ADR-333-mcp-sole-conversational-ai-surface.md)
 
 **Context**:
 

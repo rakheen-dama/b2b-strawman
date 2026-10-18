@@ -1,6 +1,6 @@
 # ADR-202: Consumer Callback vs Reactive Streams for LLM Streaming
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-333](ADR-333-mcp-sole-conversational-ai-surface.md)
 **Date**: 2026-03-21
 **Phase**: 52 (In-App AI Assistant — BYOAK)
 

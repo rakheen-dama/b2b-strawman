@@ -9,7 +9,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 - [ADR-108](../adr/ADR-108-certificate-storage-and-integrity.md) -- Certificate Storage and Integrity (separate S3 object on AcceptanceRequest)
 - [ADR-109](../adr/ADR-109-portal-read-model-sync-granularity.md) -- Portal Read-Model Sync Granularity (hybrid: read-model for lists, live query for acceptance page)
 
-**Migrations**: V45 tenant (`acceptance_requests` table + `org_settings` extension), V11 global (`portal_acceptance_requests` read-model table).
+**Migrations**: V45 tenant (`acceptance_requests` table + `org_settings` extension), V11 global (`portal_acceptance_requests` read-model table). (pre-squash; now in tenant + global `V1__baseline.sql`)
 
 **Dependencies on prior phases**: Phase 12 (Document Templates/PDF), Phase 7 (Customer Portal Backend), Phase 6 (Audit), Phase 6.5 (Notifications), Phase 8 (OrgSettings), Phase 24 (Email Delivery), Phase 22 (Portal Frontend).
 

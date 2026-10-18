@@ -2,6 +2,8 @@
 
 **Status**: Accepted
 
+**Note**: Partially superseded by [ADR-332](ADR-332-single-vertical-profile-mechanism-retained.md) — non-legal demo seeders removed in Phase 86; `legal-za` demo seeding remains.
+
 **Context**:
 
 After a demo tenant is provisioned (schema created, packs seeded), it contains only configuration data — field definitions, document templates, compliance packs, rate structures, report definitions. The dashboards, project lists, time tracking views, invoicing pages, and profitability reports are all empty. An empty product does not demo well: prospects need to see realistic data to evaluate whether the platform fits their workflow.

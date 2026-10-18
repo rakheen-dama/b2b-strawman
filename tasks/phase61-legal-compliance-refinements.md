@@ -14,7 +14,7 @@ Phase 61 closes two compliance gaps identified in the Phase 60 trust accounting 
 - **Phase 21** (BYOAK Integrations): `IntegrationDomain` enum, `@IntegrationAdapter` annotation, `IntegrationRegistry`, `SecretStore`, `OrgIntegration` entity, `IntegrationGuardService`
 - **Phase 6** (Audit): `AuditService`, `AuditEventBuilder`
 
-**Migration note**: V86 tenant migration covers both tracks (investment_basis column + checklist verification columns + interest_allocations audit columns). V85 is the latest existing migration.
+**Migration note**: V86 tenant migration covers both tracks (investment_basis column + checklist verification columns + interest_allocations audit columns). V85 is the latest existing migration. (pre-squash; now in `V1__baseline.sql`)
 
 ---
 

@@ -29,7 +29,6 @@ Each feature area links to a detailed acceptance test spec (created incrementall
 | `auth-rbac` | Role-based capabilities & permission gating | 41, 46 | auth-login | auth | [ ] |
 | `auth-jit-provisioning` | JIT tenant + member provisioning from Keycloak | 36 | auth-login | auth | [ ] |
 | `tenant-provisioning` | Admin-approved org provisioning (access request → approval → creation) | 39 | auth-login | auth | [ ] |
-| `tenant-subscriptions` | Subscription payments (PayFast), billing method, read-only enforcement | 57, 58 | tenant-provisioning | billing-platform | [ ] |
 
 ## Domain 2 — Team & Members
 
@@ -48,7 +47,6 @@ Each feature area links to a detailed acceptance test spec (created incrementall
 | `project-lifecycle` | Status transitions (ACTIVE → ON_HOLD → COMPLETED → ARCHIVED) + guards | 29 | project-crud | project-core | [ ] |
 | `project-budget` | Budget configuration (hours/currency), threshold alerts, status visualization | 8 | project-crud, rate-cards | project-finance | [ ] |
 | `project-templates` | Template CRUD, save-from-project, instantiate-from-template | 16 | project-crud | project-ops | [ ] |
-| `project-schedules` | Recurring schedule CRUD, scheduler execution engine | 16 | project-templates | project-ops | [ ] |
 
 ## Domain 4 — Tasks & Work
 
@@ -66,7 +64,7 @@ Each feature area links to a detailed acceptance test spec (created incrementall
 |----|---------|-------|-------------|----------|--------|
 | `time-entries` | Time entry CRUD, billable/non-billable, rate snapshots | 5, 8 | task-crud, rate-cards | time-billing | [ ] |
 | `time-bulk-entry` | Weekly grid bulk time entry | 48 | time-entries | time-billing | [ ] |
-| `time-reminders` | Reminder scheduler, org settings, member preferences | 30 | time-entries | time-ops | [ ] |
+| `time-reminders` | Reminder scheduler (`timeentry` package since Phase 86), org settings, member preferences | 30 | time-entries | time-ops | [ ] |
 | `expenses` | Expense CRUD, receipt upload, billable flag, project tab | 30 | project-crud | expense | [ ] |
 | `expense-billing` | Expense → invoice line, unbilled expense summary | 30 | expenses, invoicing | expense | [ ] |
 
@@ -87,7 +85,6 @@ Each feature area links to a detailed acceptance test spec (created incrementall
 | `invoice-email` | Invoice delivery via email, payment link inclusion | 24 | invoicing, email-delivery | invoice-delivery | [ ] |
 | `invoice-payments` | Online payment collection (Stripe, PayFast), webhook reconciliation | 25 | invoicing | invoice-payments | [ ] |
 | `billing-runs` | Batch billing: preview, cherry-pick, generate, approve, send | 40 | invoicing, invoice-generation | billing-batch | [ ] |
-| `retainers` | Retainer agreements, consumption tracking, period close, invoice generation | 17 | invoicing, time-entries | retainer | [ ] |
 
 ## Domain 8 — Customers & Client Management
 
@@ -99,14 +96,11 @@ Each feature area links to a detailed acceptance test spec (created incrementall
 | `customer-data-protection` | Data export, anonymization, retention, DSAR requests | 50 | customer-crud | data-protection | [ ] |
 | `information-requests` | Request templates, send to client, portal submission, review, reminders | 34 | customer-crud, portal-core | client-comms | [ ] |
 
-## Domain 9 — Proposals & Engagements
+## Domain 9 — Prerequisites
 
 | ID | Feature | Phase | Dependencies | Grouping | Status |
 |----|---------|-------|-------------|----------|--------|
-| `proposal-crud` | Create, edit, list proposals; pipeline stats | 32 | customer-crud | proposal | [ ] |
-| `proposal-lifecycle` | DRAFT → SENT → ACCEPTED/DECLINED; portal acceptance orchestration | 32 | proposal-crud, portal-core | proposal | [ ] |
-| `proposal-to-project` | Accepted proposal → auto-create project + retainer | 32 | proposal-lifecycle, project-crud | proposal | [ ] |
-| `prerequisites` | Prerequisite definitions, lifecycle transition gates, engagement prerequisites | 33 | proposal-lifecycle, customer-lifecycle | prerequisites | [ ] |
+| `prerequisites` | Prerequisite definitions, lifecycle transition gates (customer activation, invoice generation, document generation, project creation) | 33 | customer-lifecycle | prerequisites | [ ] |
 
 ## Domain 10 — Documents
 
@@ -126,12 +120,10 @@ Each feature area links to a detailed acceptance test spec (created incrementall
 | `portal-auth` | Magic link authentication, token exchange, session | 7, 22 | customer-crud | portal-core | [ ] |
 | `portal-projects` | Project list, detail, tasks, documents view | 22 | portal-auth, project-crud | portal-pages | [ ] |
 | `portal-invoices` | Invoice list, detail, payment flow | 22 | portal-auth, invoicing | portal-pages | [ ] |
-| `portal-proposals` | Proposal view, accept/decline flow | 32 | portal-auth, proposal-lifecycle | portal-pages | [ ] |
 | `portal-requests` | Information request upload + submit | 34 | portal-auth, information-requests | portal-pages | [ ] |
 | `portal-acceptance` | Document acceptance page, pending list | 28 | portal-auth, document-acceptance | portal-pages | [ ] |
 | `portal-trust-ledger` | Trust ledger view (legal-za) | 68 | portal-auth, trust-accounting | portal-vertical | [ ] |
-| `portal-retainer-usage` | Retainer usage view (legal-za, consulting-za) | 68 | portal-auth, retainers | portal-vertical | [ ] |
-| `portal-deadlines` | Deadline visibility (accounting-za, legal-za) | 68 | portal-auth, deadlines-acct | portal-vertical | [ ] |
+| `portal-deadlines` | Deadline visibility (legal-za; portal-visible custom-field dates — court-date/prescription sources dormant) | 68 | portal-auth, custom-fields | portal-vertical | [ ] |
 | `portal-branding` | Org branding display in portal | 22 | portal-auth | portal-pages | [ ] |
 | `portal-data-isolation` | Cross-customer security (contact A cannot see contact B's data) | 22 | portal-auth | portal-security | [ ] |
 
@@ -155,18 +147,11 @@ Each feature area links to a detailed acceptance test spec (created incrementall
 | `reports` | Report definitions, execution framework, timesheet/aging/profitability queries | 19 | time-entries, invoicing | reports | [ ] |
 | `report-export` | CSV/PDF export pipeline, rendering | 19 | reports | reports | [ ] |
 
-## Domain 14 — Resource Planning
-
-| ID | Feature | Phase | Dependencies | Grouping | Status |
-|----|---------|-------|-------------|----------|--------|
-| `resource-allocation` | Allocation grid, capacity service, utilization tracking | 38 | team-members, project-crud | resources | [ ] |
-| `resource-dashboard` | Utilization dashboard, project staffing UI | 38 | resource-allocation | resources | [ ] |
-
 ## Domain 15 — Workflow & Automation
 
 | ID | Feature | Phase | Dependencies | Grouping | Status |
 |----|---------|-------|-------------|----------|--------|
-| `automation-rules` | Rule CRUD, trigger matching, condition evaluation, template gallery | 37 | — | automation | [ ] |
+| `automation-rules` | Installed pack rules list, enable/disable, trigger matching, condition evaluation | 37 | — | automation | [ ] |
 | `automation-actions` | Action executors, variable resolution, delayed actions | 37 | automation-rules | automation | [ ] |
 | `automation-log` | Execution log, dashboard widget | 37 | automation-rules | automation | [ ] |
 
@@ -178,7 +163,7 @@ Each feature area links to a detailed acceptance test spec (created incrementall
 | `tags` | Tag CRUD, entity tagging, filter by tag | 11 | — | extensibility | [ ] |
 | `saved-views` | View definitions, filter/sort persistence, quick-switch | 11 | custom-fields, tags | extensibility | [ ] |
 | `module-gating` | Feature module toggle, progressive disclosure, nav gating | 62 | — | config | [ ] |
-| `packs-catalog` | Pack catalog, install pipeline, profile provisioning | 65 | module-gating | config | [ ] |
+| `packs-catalog` | Pack catalog (legal-za content only), install pipeline, profile provisioning | 65 | module-gating | config | [ ] |
 | `integration-ports` | Integration management API, BYOAK key storage, integration cards | 21 | — | integrations | [ ] |
 
 ## Domain 17 — Settings & Navigation
@@ -200,29 +185,13 @@ Each feature area links to a detailed acceptance test spec (created incrementall
 | `audit-timeline` | Per-entity audit timeline component (customer/project/invoice tabs) | 69 | audit-trail | audit | [ ] |
 | `audit-sensitive` | Sensitive events dashboard widget, matter closure override surface | 69 | audit-view | audit | [ ] |
 
-## Domain 19 — AI Assistants
-
-| ID | Feature | Phase | Dependencies | Grouping | Status |
-|----|---------|-------|-------------|----------|--------|
-| `ai-chat` | In-app AI assistant, chat panel, SSE streaming, tool use | 52 | integration-ports | ai | [ ] |
-| `ai-billing` | Billing specialist assistant, invoice grouping suggestions | 70 | ai-chat, invoicing | ai-specialists | [ ] |
-| `ai-intake` | Intake assistant, vision document parsing, field diff review | 70 | ai-chat, customer-crud | ai-specialists | [ ] |
-
 ## Domain 20 — Platform Admin
 
 | ID | Feature | Phase | Dependencies | Grouping | Status |
 |----|---------|-------|-------------|----------|--------|
 | `admin-panel` | Platform admin panel, access request review, org management | 39 | tenant-provisioning | admin | [ ] |
-| `admin-billing` | Admin billing management, billing method override | 58 | tenant-subscriptions | admin | [ ] |
-| `admin-demo` | Demo tenant provisioning, data seeding, cleanup | 58 | admin-panel | admin | [ ] |
-
-## Domain 21 — Vertical: Accounting (accounting-za)
-
-| ID | Feature | Phase | Dependencies | Grouping | Status |
-|----|---------|-------|-------------|----------|--------|
-| `acct-deadlines` | Deadline type registry, calculation service, calendar page | 51 | project-crud | accounting | [ ] |
-| `acct-filing-status` | Filing status tracking per customer | 51 | customer-crud | accounting | [ ] |
-| `acct-schedule-actions` | Post-schedule actions (engagement kickoff) | 51 | project-schedules | accounting | [ ] |
+| `admin-billing` | Admin billing management, billing method override (manual firm-level billing; no PayFast) | 58 | admin-panel | admin | [ ] |
+| `admin-demo` | Demo tenant provisioning (legal-za only), data seeding, cleanup | 58 | admin-panel | admin | [ ] |
 
 ## Domain 22 — Vertical: Legal (legal-za)
 
@@ -264,7 +233,6 @@ These feature clusters must be tested together — they share state and have tig
 | `task-core` | task-crud, task-lifecycle | Lifecycle depends on task state |
 | `customer-core` | customer-crud, customer-lifecycle | Lifecycle depends on customer state |
 | `time-billing` | time-entries, rate-cards, time-bulk-entry | Rate snapshots bind time to billing |
-| `proposal` | proposal-crud, proposal-lifecycle, proposal-to-project | Pipeline is end-to-end |
 | `doc-templates` | document-templates, document-clauses | Clauses are template children |
 | `doc-generation` | document-generation, document-word | Both use template + variable system |
 | `trust` | All trust-* features | Regulatory domain with strict invariants |
@@ -287,23 +255,18 @@ Priority tiers for which specs to write first:
 ### P1 — Client Experience
 8. `portal-auth` → `portal-data-isolation`
 9. `portal-projects` → `portal-invoices`
-10. `proposal-crud` → `proposal-lifecycle` → `proposal-to-project`
-11. `document-templates` → `document-generation` → `document-acceptance`
-12. `information-requests` → `portal-requests`
-13. `retainers`
+10. `document-templates` → `document-generation` → `document-acceptance`
+11. `information-requests` → `portal-requests`
 
 ### P2 — Operations & Productivity
-14. `billing-runs`
-15. `automation-rules` → `automation-actions`
-16. `resource-allocation`
-17. `my-work` → `calendar-view`
-18. `dashboards` (company, personal, project)
-19. `reports` → `report-export`
+12. `billing-runs`
+13. `automation-rules` → `automation-actions`
+14. `my-work` → `calendar-view`
+15. `dashboards` (company, personal, project)
+16. `reports` → `report-export`
 
 ### P3 — Verticals & Advanced
-20. `trust-accounts` → full trust chain
-21. `legal-court-calendar` → `legal-conflict-check` → `legal-disbursements`
-22. `acct-deadlines` → `acct-filing-status`
-23. `ai-chat` → `ai-billing` → `ai-intake`
-24. `audit-view` → `audit-timeline`
-25. `admin-panel` → `admin-billing` → `admin-demo`
+17. `trust-accounts` → full trust chain
+18. `legal-court-calendar` → `legal-conflict-check` → `legal-disbursements`
+19. `audit-view` → `audit-timeline`
+20. `admin-panel` → `admin-billing` → `admin-demo`

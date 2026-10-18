@@ -2,6 +2,8 @@
 
 **Status**: Accepted
 
+**Note**: Partially superseded by [ADR-335](ADR-335-manual-firm-level-billing-only.md) — the `PAYFAST` billing method was removed in Phase 86; the billing-method dimension remains.
+
 **Context**:
 
 The platform's subscription model (Phase 57) uses `SubscriptionStatus` (TRIALING, ACTIVE, PENDING_CANCELLATION, PAST_DUE, SUSPENDED, GRACE_PERIOD, EXPIRED, LOCKED) to control tenant access. The `SubscriptionGuardFilter` reads this status to determine whether a tenant has read-write, read-only, or no access. This model works well for the PayFast self-service flow where status transitions are driven by payment events.

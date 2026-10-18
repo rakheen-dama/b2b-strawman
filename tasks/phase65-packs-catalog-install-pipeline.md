@@ -18,7 +18,7 @@ Phase 65 introduces Kazi Packs as a first-class product surface: a unified catal
 - **Phase 44** (Settings Layout): Settings sidebar structure and `@RequiresCapability("TEAM_OVERSIGHT")` pattern
 - **Phase 8** (OrgSettings): `OrgSettings` entity with JSONB pack status fields
 
-**Migration note**: V93 is the latest existing tenant migration. This phase uses V94 and V95.
+**Migration note**: V93 is the latest existing tenant migration. This phase uses V94 and V95. (pre-squash; now in `V1__baseline.sql`)
 
 ---
 

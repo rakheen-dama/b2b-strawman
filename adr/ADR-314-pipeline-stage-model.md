@@ -1,6 +1,6 @@
 # ADR-314: Pipeline & Stage Model — Single Configurable Pipeline with Data-Driven Terminals
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-330](ADR-330-archive-tag-not-fork.md) (archived, no replacement)
 
 **Context**:
 

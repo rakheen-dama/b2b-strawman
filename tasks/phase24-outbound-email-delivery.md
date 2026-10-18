@@ -11,7 +11,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 - [ADR-096](../adr/ADR-096-webhook-tenant-identification.md) — Webhook Tenant Identification (tenant schema in SendGrid `unique_args`)
 - [ADR-097](../adr/ADR-097-rate-limiting-implementation.md) — Rate Limiting Implementation (Caffeine cache with sliding-window counters)
 
-**Migration**: V41 tenant — `email_delivery_log` table with 4 indexes and 2 CHECK constraints.
+**Migration**: V41 tenant — `email_delivery_log` table with 4 indexes and 2 CHECK constraints. (pre-squash; now in `V1__baseline.sql`)
 
 **Dependencies on prior phases**: Phase 6 (Audit), Phase 6.5 (Notifications), Phase 7 (Portal), Phase 10 (Invoicing), Phase 12 (Document Templates / Thymeleaf), Phase 21 (Integration Ports).
 

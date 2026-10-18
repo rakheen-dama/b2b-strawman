@@ -1,6 +1,6 @@
 # ADR-268: OCR via Claude Vision over BYOAK; No Separate OCR Vendor
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-333](ADR-333-mcp-sole-conversational-ai-surface.md)
 
 **Context**:
 

@@ -10,7 +10,7 @@ Phase 34 introduces a Client Information Requests system that transforms the cus
 - [ADR-136](../adr/ADR-136-portal-upload-flow.md) -- Portal Upload Flow (presigned S3 URLs)
 - [ADR-137](../adr/ADR-137-project-template-integration-scope.md) -- Project Template Integration Scope (draft-on-creation)
 
-**Migrations**: V54, V55 (tenant schema), V13 (global/portal schema)
+**Migrations**: V54, V55 (tenant schema), V13 (global/portal schema) (pre-squash; now in tenant + global `V1__baseline.sql`)
 
 **Dependencies on prior phases**: Phase 7 (PortalContact, PortalJwtService, PortalEventHandler, PortalReadModelRepository), Phase 12 (TemplatePackSeeder pattern), Phase 16 (ProjectTemplate, ProjectInstantiationService), Phase 22 (Portal frontend app), Phase 24 (EmailNotificationChannel, Thymeleaf email templates), Phase 6 (AuditEventService), Phase 6.5 (NotificationService), Phase 8 (OrgSettings), Phase 9 (Dashboard).
 

@@ -1,6 +1,6 @@
 # ADR-267: Human Approval Is the Default for AI Output; Inbox Comment-Posting Is the Single DIRECT-Mode Exception
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-333](ADR-333-mcp-sole-conversational-ai-surface.md)
 
 **Context**:
 

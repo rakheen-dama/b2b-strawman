@@ -11,7 +11,7 @@ Phase 20 introduces an **auth provider abstraction layer** that decouples the fr
 
 **Dependencies on prior phases**: None. This phase touches only the auth boundary and test infrastructure. All domain entities, services, and API routes are unaffected.
 
-**No database migrations**: This phase introduces no new tenant schema migrations. The next migration will be V36.
+**No database migrations**: This phase introduces no new tenant schema migrations. The next migration will be V36. (pre-squash; series now `V1__baseline.sql`)
 
 ---
 

@@ -18,7 +18,7 @@ Phase 55 is the multi-vertical architecture stress test. It builds three real le
 - Phase 13: Schema-per-tenant isolation -- all new entities are plain `@Entity` with no multitenancy boilerplate
 - Phase 51: `DeadlineTypeRegistry` pattern -- reference for `PrescriptionRuleRegistry` static utility
 
-**Migration note**: The architecture doc specifies V74, but V74 through V82 are already taken. The actual tenant migration for this phase is **V83**. The global migration for pg_trgm is **V16**.
+**Migration note**: The architecture doc specifies V74, but V74 through V82 are already taken. The actual tenant migration for this phase is **V83**. The global migration for pg_trgm is **V16**. (pre-squash; now in tenant + global `V1__baseline.sql`)
 
 ---
 

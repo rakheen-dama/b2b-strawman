@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Multi-tenant B2B SaaS starter (Kazi product, b2mash company) with schema-per-tenant isolation.
+Multi-tenant B2B SaaS (Kazi product, b2mash company) with schema-per-tenant isolation — legal-only (`legal-za` profile) since Phase 86; the horizontal multi-vertical platform is archived at git tag `horizontal-platform-final` (ADR-330).
 Monorepo (pnpm workspace, one root lockfile): `frontend/`, `portal/`, `packages/` (`@b2mash/ui`, `@b2mash/shared`), `backend/`, `compose/`, `infra/`.
 
 ## Quality Gates — NON-NEGOTIABLE
@@ -192,3 +192,5 @@ The E2E stack builds from relative paths, so it picks up the worktree's source c
 - `requirements/multi-tenant-saas-starter-spec.md` — Functional requirements and API specs
 - `requirements/` — Phase requirement prompt files (claude-code-prompt-*.md)
 - `architecture/` — Phase architecture docs (phase*-*.md)
+- `backend/db/BASELINE.md` — Flyway V1 baseline (Phase 86 squash), wipe rules, where the pre-squash history lives
+- `tasks/phase86-subtraction.md` — Phase 86 subtraction record (archive tag, seams, before/after metrics)

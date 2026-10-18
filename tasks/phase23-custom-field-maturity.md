@@ -9,7 +9,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 - [ADR-093](../adr/ADR-093-template-required-fields.md) -- Template Required Field References (soft slug-based refs)
 - [ADR-094](../adr/ADR-094-conditional-field-visibility.md) -- Conditional Visibility Evaluation (frontend + backend, preserve values)
 
-**Migration**: V38 tenant -- `auto_apply` + `depends_on` on `field_groups`, `visibility_condition` on `field_definitions`, `required_context_fields` on `document_templates`, `custom_fields` + `applied_field_groups` on `invoices`, GIN index + partial index.
+**Migration**: V38 tenant -- `auto_apply` + `depends_on` on `field_groups`, `visibility_condition` on `field_definitions`, `required_context_fields` on `document_templates`, `custom_fields` + `applied_field_groups` on `invoices`, GIN index + partial index. (pre-squash; now in `V1__baseline.sql`)
 
 **Dependencies on prior phases**: Phase 8 (Rate Cards), Phase 10 (Invoicing), Phase 11 (Custom Fields), Phase 12 (Document Templates), Phase 15 (Setup Guidance).
 

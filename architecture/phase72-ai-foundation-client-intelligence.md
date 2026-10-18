@@ -6,7 +6,7 @@
 
 > **ADRs**: [ADR-280](../adr/ADR-280-evolve-ai-provider-port-for-skills.md), [ADR-281](../adr/ADR-281-execution-gate-pattern-attorney-liability.md), [ADR-282](../adr/ADR-282-per-invocation-cost-metering-byoak.md), [ADR-283](../adr/ADR-283-prompt-architecture-firm-profile-cache.md), [ADR-284](../adr/ADR-284-document-reading-s3-vision-no-vector-store.md), [ADR-285](../adr/ADR-285-stub-ai-provider-for-ci-testing.md)
 
-> **Migration**: Tenant **V122** — `ai_firm_profiles`, `ai_executions`, `ai_execution_gates` tables plus three new `Capability` enum values seeded into existing roles. V122 follows V121 (Phase 71 Xero integration). All tables are tenant-scoped per [ADR-T001](../adr/ADR-T001-schema-per-tenant-over-row-level-isolation.md). No global migrations.
+> **Migration**: Tenant **V122** — `ai_firm_profiles`, `ai_executions`, `ai_execution_gates` tables plus three new `Capability` enum values seeded into existing roles. V122 follows V121 (Phase 71 Xero integration). All tables are tenant-scoped per [ADR-T001](../adr/ADR-T001-schema-per-tenant-over-row-level-isolation.md). No global migrations. (pre-squash; now in `V1__baseline.sql`)
 
 ---
 

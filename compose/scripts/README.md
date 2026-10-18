@@ -53,6 +53,11 @@ bash compose/scripts/e2e-reseed.sh          # Re-run seed without rebuild
 bash compose/scripts/dev-down.sh --clean && bash compose/scripts/dev-up.sh
 ```
 
+**Required once after the Phase 86 migration squash (2026-10-18):** wipe both stacks (the old Flyway history no longer validates against `V1__baseline.sql`) and run `./mvnw clean` once in `backend/` — see `backend/db/BASELINE.md` §6.
+```bash
+bash compose/scripts/dev-down.sh --clean && bash compose/scripts/e2e-down.sh
+```
+
 **Rebuild backend after code changes (dev):**
 ```bash
 bash compose/scripts/dev-rebuild.sh

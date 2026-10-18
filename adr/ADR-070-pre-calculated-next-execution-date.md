@@ -1,6 +1,6 @@
 # ADR-070: Pre-Calculated next_execution_date
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-330](ADR-330-archive-tag-not-fork.md) (archived, no replacement)
 **Date**: 2026-02-19
 
 **Context**:

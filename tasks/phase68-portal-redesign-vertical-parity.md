@@ -3,7 +3,7 @@
 > Architecture doc: `architecture/phase68-portal-redesign-vertical-parity.md`
 > ADRs: [ADR-252](../adr/ADR-252-portal-slim-left-rail-nav.md), [ADR-253](../adr/ADR-253-portal-surfaces-as-read-model-extensions.md), [ADR-254](../adr/ADR-254-portal-description-sanitisation.md), [ADR-255](../adr/ADR-255-portal-retainer-member-display.md), [ADR-256](../adr/ADR-256-polymorphic-portal-deadline-view.md), [ADR-257](../adr/ADR-257-custom-field-portal-visibility-opt-in.md), [ADR-258](../adr/ADR-258-portal-notification-no-double-send.md)
 > Starting epic: 494 · Last completed: 493 (Phase 67)
-> Migration high-water at phase start: tenant **V104** (`V104__add_disbursement_invoice_line_type.sql`); global portal read-model **V18** (`V18__subscription_billing_method.sql`). Phase 68 tenant migrations start at **V105**; portal (global) read-model migrations start at **V19**.
+> Migration high-water at phase start: tenant **V104** (`V104__add_disbursement_invoice_line_type.sql`); global portal read-model **V18** (`V18__subscription_billing_method.sql`). Phase 68 tenant migrations start at **V105**; portal (global) read-model migrations start at **V19**. (pre-squash; now in tenant + global `V1__baseline.sql`)
 
 Phase 68 replaces the portal's three-entry top nav with a slim left rail that scales to ten entries, surfaces the trust ledger (`legal-za`), retainer hour-bank (`legal-za` + `consulting-za`), and upcoming deadlines (`accounting-za` + `legal-za`) that have been sitting firm-side since Phases 17, 51, 55, 60, and 61, and wires a weekly digest + per-event nudges so clients have a reason to come back between transactional emails.
 

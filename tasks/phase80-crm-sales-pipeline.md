@@ -4,7 +4,7 @@ Phase 80 adds the missing top-of-funnel layer to Kazi's revenue engine: a single
 
 This phase ships as **8 epics (573–580)**, expanded to **12 numbered slices** to honour the 6–10 file / ~800 LOC slice-sizing budget. The 8 architecture capability slices (§11.10) form the epic spine; the foundation slice and the two frontend slices are split where they exceed the budget. No slice mixes backend + frontend scope.
 
-**Migration high-water at phase start**: tenant **V129** (`V129__create_mcp_egress_consents.sql`). Phase 80 ships **two** tenant migrations: **V130** (CRM tables + `proposals.deal_id`) and **V131** (field-group applicable-entity widening for `DEAL`).
+**Migration high-water at phase start**: tenant **V129** (`V129__create_mcp_egress_consents.sql`). Phase 80 ships **two** tenant migrations: **V130** (CRM tables + `proposals.deal_id`) and **V131** (field-group applicable-entity widening for `DEAL`). (pre-squash; now in `V1__baseline.sql`)
 
 ---
 

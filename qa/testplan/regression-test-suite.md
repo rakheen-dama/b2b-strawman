@@ -14,10 +14,10 @@
 | File | Tests | Coverage Type |
 |------|-------|--------------|
 | `smoke.spec.ts` | 3 | Login, project creation, RBAC smoke |
-| `lifecycle.spec.ts` | 21 | Read-only page load assertions on seeded data |
-| `lifecycle-interactive.spec.ts` | 13 | Customer create, status transition, project/task/time CRUD, invoice approval, proposals, RBAC |
-| `lifecycle-portal.spec.ts` | 7 | Portal page loads, API verification |
-| **Total** | **44** | |
+| `lifecycle.spec.ts` *(deleted in Phase 86)* | 21 | Read-only page load assertions on seeded data |
+| `lifecycle-interactive.spec.ts` *(deleted in Phase 86)* | 13 | Customer create, status transition, project/task/time CRUD, invoice approval, proposals, RBAC |
+| `lifecycle-portal.spec.ts` *(deleted in Phase 86, Epic 597)* | 7 | Portal page loads, API verification |
+| **Total** | **3** remaining (44 before Phase 86) | |
 
 ### Critical Gaps
 
@@ -117,7 +117,7 @@ frontend/e2e/tests/
 // Example: createCustomerViaApi(), getInvoiceViaApi(), etc.
 
 // e2e/fixtures/seed.ts — NEW
-// Seed state assertions — verify lifecycle-test.sh data is present
+// Seed state assertions — verify compose/seed/seed.sh data is present (legal-za; the accounting lifecycle-test seed was removed in Phase 86)
 // Provide known IDs for seeded entities
 
 // e2e/page-objects/ — NEW (recommended)
@@ -688,9 +688,9 @@ Lower priority but important for full coverage. Run nightly or before releases.
 
 All tests should run against the **Keycloak dev stack** (frontend 3000 / backend 8080 — see `qa/keycloak-e2e-guide.md`). Two data approaches:
 
-1. **Seeded data** (`compose/seed/lifecycle-test.sh`): Use for read-only assertions and as a base for interactive tests. Known entities: 4 customers (Kgosi, Naledi, Vukani, Moroka), multiple projects, time entries, invoices, proposals, retainers.
+1. **Seeded data** (`compose/seed/seed.sh`) (legal-za; the accounting lifecycle-test seed was removed in Phase 86): Use for read-only assertions and as a base for interactive tests. Known entities (pre-Phase-86 accounting seed; no longer seeded): 4 customers (Kgosi, Naledi, Vukani, Moroka), multiple projects, time entries, invoices, proposals, retainers.
 
-2. **Test-created data**: For CRUD tests, create fresh entities with a `RUN_ID` suffix (as in `lifecycle-interactive.spec.ts`) to avoid collisions. Prefer API-based setup for preconditions (faster, more reliable) and UI-based verification for actual test assertions.
+2. **Test-created data**: For CRUD tests, create fresh entities with a `RUN_ID` suffix (as the former `lifecycle-interactive.spec.ts` did) to avoid collisions. Prefer API-based setup for preconditions (faster, more reliable) and UI-based verification for actual test assertions.
 
 ### Page Object Pattern
 
@@ -786,9 +786,9 @@ export async function clearMailbox() {
 | Existing File | Action |
 |---------------|--------|
 | `smoke.spec.ts` | **Keep as-is** — fast smoke check |
-| `lifecycle.spec.ts` | **Keep as baseline** — refactor into domain-specific suites over time. These 21 read-only tests serve as a quick sanity check and can coexist with the deeper suites. |
-| `lifecycle-interactive.spec.ts` | **Migrate** — move individual test groups into `customers/`, `projects/`, `invoices/`, `proposals/` suites. Deprecate once migration complete. |
-| `lifecycle-portal.spec.ts` | **Migrate** — move into `portal/` suites. Deprecate once migration complete. |
+| `lifecycle.spec.ts` | **Deleted (Phase 86)** |
+| `lifecycle-interactive.spec.ts` | **Deleted (Phase 86)** |
+| `lifecycle-portal.spec.ts` | **Deleted (Phase 86, Epic 597)** |
 
 ---
 

@@ -25,7 +25,7 @@ Two fork-in-the-road decisions from the requirements file were resolved before d
 | Conveyancing | None | Field pack + project template append + 10 clauses + 4 Tiptap templates + intake request pack |
 | RBAC capabilities | `VIEW_LEGAL`, `MANAGE_LEGAL`, `VIEW_TRUST`, `MANAGE_TRUST`, `APPROVE_TRUST_PAYMENT`, existing horizontals | `MANAGE_DISBURSEMENTS`, `APPROVE_DISBURSEMENTS`, `WRITE_OFF_DISBURSEMENTS`, `CLOSE_MATTER`, `OVERRIDE_MATTER_CLOSURE`, `GENERATE_STATEMENT_OF_ACCOUNT` |
 | Retention | Phase 50 `RetentionPolicy` + scheduled job | Matter closure inserts a `RetentionPolicy` row (`retention_start = closure_date`) using existing primitives |
-| Migrations | Tenant high-water V95 | Tenant V96 (legal_disbursements) + V97 (matter closure + invoice_line extension) |
+| Migrations | Tenant high-water V95 | Tenant V96 (legal_disbursements) + V97 (matter closure + invoice_line extension) (pre-squash; now in `V1__baseline.sql`) |
 
 ### Out of scope
 

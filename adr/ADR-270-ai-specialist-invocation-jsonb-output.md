@@ -1,6 +1,6 @@
 # ADR-270: Single `AiSpecialistInvocation` Table with JSONB Output (vs Per-Specialist Tables)
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-333](ADR-333-mcp-sole-conversational-ai-surface.md)
 
 **Context**:
 

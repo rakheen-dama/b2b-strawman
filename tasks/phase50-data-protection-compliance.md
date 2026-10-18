@@ -2,7 +2,7 @@
 
 Phase 50 equips DocTeams tenants with the tooling needed to comply with POPIA (and future jurisdictions) when handling client personal information. It extends existing packages (`datarequest/`, `retention/`, `settings/`, `customer/`) with jurisdiction awareness, richer export coverage, an `ANONYMIZED` lifecycle status, processing activity tracking, and PAIA manual generation via the Phase 12 template engine. New code is minimal: the `ProcessingActivity` entity and CRUD, the `PaiaManualContextBuilder`, a `JurisdictionDefaults` helper, a compliance template pack, and a Data Protection settings tab in the frontend.
 
-The next Flyway tenant migration is **V76**. The next epic number starts at **373**. ADRs 193–196 are already accepted.
+The next Flyway tenant migration is **V76**. The next epic number starts at **373**. ADRs 193–196 are already accepted. (pre-squash; now in `V1__baseline.sql`)
 
 **Architecture doc**: `architecture/phase50-data-protection-compliance.md`
 

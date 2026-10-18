@@ -4,6 +4,8 @@
 **Date**: 2026-04-02  
 **Phase**: 57
 
+**Note**: Partially superseded by [ADR-335](ADR-335-manual-firm-level-billing-only.md) — PayFast-specific parts removed in Phase 86; read-only enforcement (`SubscriptionGuardFilter`) remains.
+
 ## Context
 
 When a tenant's subscription enters a non-paying state (GRACE_PERIOD, SUSPENDED, EXPIRED), the platform must enforce read-only access: tenants can view their data but cannot create, update, or delete anything. When the subscription reaches LOCKED, all access is blocked except the billing page.

@@ -61,7 +61,7 @@ describe("OrgProfileProvider and ModuleGate", () => {
 
     render(
       <OrgProfileProvider
-        verticalProfile="consulting-generic"
+        verticalProfile="legal-za"
         enabledModules={[]}
         terminologyNamespace={null}
       >
@@ -93,7 +93,7 @@ describe("OrgProfileProvider and ModuleGate", () => {
     // Re-render with module disabled
     rerender(
       <OrgProfileProvider
-        verticalProfile="consulting-generic"
+        verticalProfile="legal-za"
         enabledModules={[]}
         terminologyNamespace={null}
       >

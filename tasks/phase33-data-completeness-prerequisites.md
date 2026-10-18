@@ -10,7 +10,7 @@ Phase 33 transforms DocTeams' metadata infrastructure from passive data capture 
 - [ADR-132](../adr/ADR-132-engagement-prerequisite-storage.md) -- Engagement Prerequisite Storage (JSONB array on ProjectTemplate)
 - [ADR-133](../adr/ADR-133-auto-transition-incomplete-fields.md) -- Auto-Transition Behavior When Fields Incomplete (block and notify)
 
-**Migrations**: V53, V54 (tenant schema)
+**Migrations**: V53, V54 (tenant schema) (pre-squash; now in `V1__baseline.sql`)
 
 **Dependencies on prior phases**: Phase 4 (Customer lifecycle), Phase 11/23 (FieldDefinition, field packs, CustomFieldUtils), Phase 15 (CustomerReadinessService, SetupProgressCard), Phase 16 (ProjectTemplate), Phase 10 (InvoiceService), Phase 32 (Proposal acceptance), Phase 12 (Document generation), Phase 6.5 (NotificationService), Phase 6 (AuditService).
 

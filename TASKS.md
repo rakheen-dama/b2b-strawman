@@ -2,6 +2,8 @@
 
 ## Epic Overview
 
+> Migration baseline: see [`backend/db/BASELINE.md`](backend/db/BASELINE.md) — tenant and global Flyway series squashed to `V1__baseline.sql` in Phase 86 (Epic 605); next free `V2`. Pre-squash history: tag `horizontal-platform-final`.
+
 | Epic | Name | Scope | Deps | Effort | Slices   | Status                                                                                                                             |
 |------|------|-------|------|--------|----------|------------------------------------------------------------------------------------------------------------------------------------|
 | **Phase 1 — Core Platform** | | | | | | See [tasks/phase1-core-platform.md](tasks/phase1-core-platform.md)                                                                 |
@@ -135,7 +137,7 @@
 | 112 | Project Detail Page Integration | Frontend | 111 | S | 112A | **Done** (PR #230)                                                                                                                 |
 | 113 | Customer Detail Page Integration | Frontend | 111 | S | 113A | **Done** (PR #231)                                                                                                                 |
 | 114 | Empty State Rollout | Frontend | 111 | S | 114A | **Done** (PR #232)                                                                                                                 |
-| **Phase 16 — Project Templates & Recurring Schedules** | | | | | | See [tasks/phase16-project-templates-recurring-schedules.md](tasks/phase16-project-templates-recurring-schedules.md)               |
+| **Phase 16 — Project Templates & Recurring Schedules** | | | | | | See [tasks/phase16-project-templates-recurring-schedules.md](tasks/phase16-project-templates-recurring-schedules.md) — **Partially removed in Phase 86** (recurring schedules; templates kept) — archived at `horizontal-platform-final` |
 | 115 | Entity Foundation & Utilities | Backend | -- | M | 115A, 115B | **Done** (PRs #235, #236)                                                                                                          |
 | 116 | Template CRUD & Save from Project | Backend | 115 | M | 116A, 116B | **Done** (PRs #237, #238)                                                                                                          |
 | 117 | Template Instantiation | Backend | 116 | S | 117A | **Done** (PR #239)                                                                                                                 |
@@ -143,7 +145,7 @@
 | 119 | Scheduler Execution Engine | Backend | 117, 118 | M | 119A | **Done** (PR #242)                                                                                                                 |
 | 120 | Template Management UI | Frontend | 116, 117 | M | 120A, 120B | **Done** (PRs #243, #244)                                                                                                          |
 | 121 | Schedule Management UI | Frontend | 118, 119 | M | 121A, 121B | **Done** (PRs #245, #246)                                                                                                          |
-| **Phase 17 — Retainer Agreements & Billing** | | | | | | See [tasks/phase17-retainer-agreements-billing.md](tasks/phase17-retainer-agreements-billing.md)                                   |
+| **Phase 17 — Retainer Agreements & Billing** | | | | | | See [tasks/phase17-retainer-agreements-billing.md](tasks/phase17-retainer-agreements-billing.md) — **Removed in Phase 86** — archived at `horizontal-platform-final` |
 | 122 | Entity Foundation & Migration | Backend | -- | M | 122A, 122B | **Done** (PRs #247, #248)                                                                                                          |
 | 123 | Retainer CRUD & Lifecycle | Backend | 122 | M | 123A, 123B | **Done** (PRs #249, #250)                                                                                                          |
 | 124 | Consumption Tracking & Summary | Backend | 123 | M | 124A, 124B | **Done** (PRs #251, #252)                                                                                                          |
@@ -266,7 +268,7 @@
 | 227 | Time Reminder Frontend — Settings & Preferences | Frontend | 226 | S | 227A | **Done** (PR #463)                                                                                                                 |
 | 228 | Calendar View — Backend Endpoint | Backend | -- | M | 228A | **Done** (PR #464)                                                                                                                 |
 | 229 | Calendar View — Frontend Page | Frontend | 228 | M | 229A, 229B | **Done** (PRs #465, #466)                                                                                                          |
-| **Phase 32 — Proposal → Engagement Pipeline** | | | | | | See [tasks/phase32-proposal-engagement-pipeline.md](tasks/phase32-proposal-engagement-pipeline.md)                                 |
+| **Phase 32 — Proposal → Engagement Pipeline** | | | | | | See [tasks/phase32-proposal-engagement-pipeline.md](tasks/phase32-proposal-engagement-pipeline.md) — **Removed in Phase 86** — archived at `horizontal-platform-final` |
 | 230 | Proposal Entity Foundation & Migration | Backend | -- | M | 230A, 230B | **Done** (PRs #467, #468)                                                                                                          |
 | 231 | Proposal CRUD & Lifecycle Backend | Backend | 230 | L | 231A, 231B | **Done** (PRs #469, #470)                                                                                                          |
 | 232 | Send Flow & Portal Read-Model Sync | Backend | 231 | M | 232A, 232B | **Done** (PRs #471, #472)                                                                                                          |
@@ -325,7 +327,7 @@
 | 286 | Frontend: Rule Create/Edit Wizard | Frontend | 285 | L | 286A, 286B | **Done** (PRs #565, #566) |
 | 287 | Frontend: Execution Log & Dashboard Widget | Frontend | 285 | M | 287A | **Done** (PR #567) |
 | 288 | End-to-End Integration Tests & Edge Cases | Backend | 283, 284 | M | 288A | **Done** (PR #568) |
-| **Phase 38 — Resource Planning & Capacity** | | | | | | See [tasks/phase38-resource-planning-capacity.md](tasks/phase38-resource-planning-capacity.md) |
+| **Phase 38 — Resource Planning & Capacity** | | | | | | See [tasks/phase38-resource-planning-capacity.md](tasks/phase38-resource-planning-capacity.md) — **Removed in Phase 86** (utilization report kept) — archived at `horizontal-platform-final` |
 | 289 | Entity Foundation & Migration | Backend | -- | M | 289A, 289B | **Done** (PRs #569, #570) |
 | 290 | Capacity & Allocation Services | Backend | 289 | L | 290A, 290B, 290C | **Done** (PRs #571, #572, #573) |
 | 291 | Utilization Service & Profitability Integration | Backend | 290 | M | 291A, 291B | **Done** (PRs #574, #575) |
@@ -381,7 +383,7 @@
 | 335 | Command Palette (⌘K) | Frontend | 332 | M | 335A, 335B | **Done** (PRs #657, #658) |
 | 336 | Settings Layout Shell & Sidebar | Frontend | -- | M | 336A, 336B | **Done** (PRs #659, #660) |
 | 337 | Settings Hub Redirect & Breadcrumb Update | Frontend | 336 | S | 337A | **Done** (PR #661) |
-| **Phase 45 — In-App AI Assistant (BYOAK)** | | | | | | See [tasks/phase45-in-app-ai-assistant.md](tasks/phase45-in-app-ai-assistant.md) |
+| **Phase 45 — In-App AI Assistant (BYOAK)** | | | | | | See [tasks/phase45-in-app-ai-assistant.md](tasks/phase45-in-app-ai-assistant.md) — **Removed in Phase 86** (provider layer re-homed to `integration/ai/provider`) — archived at `horizontal-platform-final` |
 | 338 | AI Key Management & Settings API | Backend | -- | M | 338A, 338B | |
 | 339 | LLM Provider Abstraction & Claude Adapter | Backend | -- | M | 339A, 339B | |
 | 340 | Tool Framework & Read Tools | Backend | -- | L | 340A, 340B, 340C | |
@@ -399,7 +401,7 @@
 | 351 | Frontend Capabilities-Only Authorization | Frontend | 350A | L | 351A, 351B, 351C | **Done** (PRs #678, #679, #680) |
 | 352 | Mock IDP & E2E Fixture Update | Frontend/E2E | 351 | S | 352A | **Done** (PR #681) |
 | 353 | Cleanup — Remove ROLE_ORG_* & Role Sync | Backend | 351 | S | 353A, 353B | **Done** (PR #682) |
-| **Phase 47 — Vertical QA: Small SA Accounting Firm** | | | | | | See [tasks/phase47-vertical-qa-accounting.md](tasks/phase47-vertical-qa-accounting.md) |
+| **Phase 47 — Vertical QA: Small SA Accounting Firm** | | | | | | See [tasks/phase47-vertical-qa-accounting.md](tasks/phase47-vertical-qa-accounting.md) — **Removed in Phase 86** — archived at `horizontal-platform-final` |
 | 354 | Vertical Profile Infrastructure + Field & Compliance Packs | Backend | -- | M | 354A | **Done** (PR #684) |
 | 355 | Document Template Pack + Clause Pack | Backend | -- | M | 355A | **Done** (PR #683) |
 | 356 | Automation Templates + Request Pack + Profile Manifest | Backend + Frontend | -- | S | 356A | **Done** (PR #685) |
@@ -430,14 +432,14 @@
 | 378 | Processing Activity CRUD + PAIA Manual Generation | Backend | 373 | M | 378A, 378B | **Done** (PRs #776, #777) |
 | 379 | Frontend: Data Protection Settings Tab + DSAR Page | Frontend | 373–378 | L | 379A, 379B, 379C | **Done** (PRs #778, #779, #780) |
 | 380 | Frontend: Customer Data Protection Actions | Frontend | 374, 375, 379 | M | 380A | **Done** (PR #781) |
-| **Phase 51 — Accounting Practice Management Essentials** | | | | | | See [tasks/phase51-accounting-practice-essentials.md](tasks/phase51-accounting-practice-essentials.md) |
+| **Phase 51 — Accounting Practice Management Essentials** | | | | | | See [tasks/phase51-accounting-practice-essentials.md](tasks/phase51-accounting-practice-essentials.md) — **Removed in Phase 86** — archived at `horizontal-platform-final` |
 | 381 | Foundation: V81 Migration, DeadlineTypeRegistry, FilingStatus, Module Registration | Backend | -- | M | 381A, 381B | **Done** (PRs #790, #791) |
 | 382 | Deadline Calculation Service + Controller | Backend | 381 | M | 382A, 382B | **Done** (PRs #792, #793) |
 | 383 | Post-Schedule Actions (Engagement Kickoff) | Backend | 381 | M | 383A, 383B | **Done** (PRs #794, #795) |
 | 384 | Profile Pack Seeders (Rate + Schedule) | Backend | 381 | M | 384A, 384B | **Done** (PRs #796, #797) |
 | 385 | Frontend: Deadline Calendar Page | Frontend | 382 | L | 385A, 385B | **Done** (PRs #798, #799) |
 | 386 | Frontend: Schedule Actions UI + Seeding Feedback + Dashboard Widget | Frontend | 383, 384, 385 | M | 386A, 386B | **Done** (PRs #800, #801) |
-| **Phase 52 — In-App AI Assistant (BYOAK)** | | | | | | See [tasks/phase52-in-app-ai-assistant.md](tasks/phase52-in-app-ai-assistant.md) |
+| **Phase 52 — In-App AI Assistant (BYOAK)** | | | | | | See [tasks/phase52-in-app-ai-assistant.md](tasks/phase52-in-app-ai-assistant.md) — **Removed in Phase 86** (provider layer re-homed to `integration/ai/provider`) — archived at `horizontal-platform-final` |
 | 387 | LLM Provider Abstraction: Interface, Records, Registry, Anthropic Adapter | Backend | -- | M | 387A, 387B | **Done** (PRs #802, #803) |
 | 388 | Tool Framework + Read Tools (Batch 1: Core Entities) | Backend | 387A | M | 388A, 388B | **Done** (PRs #804, #805) |
 | 389 | Read Tools (Batch 2: Financial + Search) + System Guide | Backend | 388A | M | 389A | **Done** (PR #806) |
@@ -473,7 +475,7 @@
 | 416 | CI/CD Pipeline: OIDC, Image Promotion, Terraform Workflow | CI/CD | 412 | L | 416A, 416B, 416C | **Done** (PRs #865, #866, #867) |
 | 417 | Observability: Alarms, SNS, Dashboards, Structured Logging | Infra + Config | 413 | M | 417A, 417B | **Done** (PRs #868, #869) |
 | 418 | DNS, SSL & Production Cutover | Infra | 413, 416, 417 | M | 418A, 418B | **Done** (PRs #870, #871) |
-| **Phase 57 — Tenant Subscription Payments** | | | | | | See [tasks/phase57-tenant-subscription-payments.md](tasks/phase57-tenant-subscription-payments.md) |
+| **Phase 57 — Tenant Subscription Payments** | | | | | | See [tasks/phase57-tenant-subscription-payments.md](tasks/phase57-tenant-subscription-payments.md) — **PayFast parts removed in Phase 86** (subscription lifecycle, guard, expiry kept — ADR-335) — archived at `horizontal-platform-final` |
 | 419 | Data Model & Config Foundation | Backend | -- | M | 419A, 419B | **Done** (PRs #872, #873) |
 | 420 | Subscription Lifecycle Service & Billing API | Backend | 419 | L | 420A, 420B | **Done** (PRs #874, #875) |
 | 421 | PayFast Platform Integration | Backend | 419, 420 | M | 421A, 421B | **Done** (PRs #876, #877) |
@@ -488,7 +490,7 @@
 | 429 | Demo Tenant Provisioning | Backend + Frontend | 427 | L | 429A, 429B | **Done** (PRs #891, #892) |
 | 430 | Demo Data Seeding | Backend | 429 | L | 430A, 430B, 430C | **Done** (PRs #893, #894, #895) |
 | 431 | Demo Tenant Cleanup | Backend + Frontend | 427 | L | 431A, 431B | **Done** (PRs #896, #897) |
-| **Phase 59 — User Help Documentation Site** | | | | | | See [tasks/phase59-user-help-documentation.md](tasks/phase59-user-help-documentation.md) |
+| **Phase 59 — User Help Documentation Site** | | | | | | See [tasks/phase59-user-help-documentation.md](tasks/phase59-user-help-documentation.md) — **Removed in Phase 86** — archived at `horizontal-platform-final` |
 | 432 | Doc Site Scaffold & Home Page | Docs | -- | M | 432A, 432B | **Done** (PRs #898, #899) |
 | 433 | Getting Started & Core Feature Guides | Docs (Content) | 432 | M | 433A, 433B | **Done** (PRs #900, #901) |
 | 434 | Admin & Settings Guides | Docs (Content) | 432 | S | 434A | **Done** (PR #902) |
@@ -543,7 +545,7 @@
 | 477 | PackCatalogController + REST API | Backend | 475 | S | 477A | **Done** (PR #1044) |
 | 478 | Frontend: Settings > Packs Page | Frontend | 477 | M | 478A, 478B | **Done** (PR #1045) |
 | 479 | Integration Tests + E2E | E2E | 477, 478 | S | 479A | **Done** (PR #1046) |
-| **Phase 66 — `consulting-za` Vertical Profile (Pack-Only Agency Content)** | | | | | | See [tasks/phase66-consulting-vertical-profile.md](tasks/phase66-consulting-vertical-profile.md) |
+| **Phase 66 — `consulting-za` Vertical Profile (Pack-Only Agency Content)** | | | | | | See [tasks/phase66-consulting-vertical-profile.md](tasks/phase66-consulting-vertical-profile.md) — **Removed in Phase 86** — archived at `horizontal-platform-final` |
 | 480 | Profile Manifest + Field Packs | Backend | -- | S | 480A | **Done** (PR #1047) |
 | 481 | Rate Pack + Project Template Pack | Backend | 480 | M | 481A, 481B | **Done** (PR #1048) |
 | 482 | Automation Pack + Document Template Pack | Backend | 481 | L | 482A, 482B | **Done** (PR #1049) |
@@ -578,7 +580,7 @@
 | 508 | Matter Closure Override Audit Surface (Backend + Frontend, Scope B′) | Both | 507A | M | 508A, 508B | **Done** (PRs #1282, #1283) |
 | 509 | Sensitive-Events Dashboard Widget | Frontend | 502B, 506B | S | 509A | **Done** (PR #1284) |
 | 510 | Admin-POV 30-Day QA Capstone + Screenshots + Gap Report | E2E/Process | 501–509 | L | 510A, 510B | |
-| **Phase 70 — Specialist AI Assistants** | | | | | | See [tasks/phase70-specialist-ai-assistants.md](tasks/phase70-specialist-ai-assistants.md) |
+| **Phase 70 — Specialist AI Assistants** | | | | | | See [tasks/phase70-specialist-ai-assistants.md](tasks/phase70-specialist-ai-assistants.md) — **Removed in Phase 86** — archived at `horizontal-platform-final` |
 | 511 | Specialist Framework + Inline Launcher Infrastructure | Both | Phase 52, Phase 41/46 | M | 511A, 511B | **Done** (PRs #1290, #1291) |
 | 512 | Billing Assistant (Polish + Grouping) | Both | 511A, 515A | M | 512A, 512B | **Done** (PRs #1294, #1295) |
 | 513 | Intake Assistant + Vision Fallback | Both | 511A, 515A | L | 513A, 513B | **Done** (PRs #1296, #1297) |
@@ -649,7 +651,7 @@
 | 570 | Branded `/signed-out` Page + Logout Redirect Wiring (+ optional PII-log) | Frontend + gateway | 569 | M | 570A, 570B | **Done** (PR #1484) |
 | 571 | Change-Password via `kc_action=UPDATE_PASSWORD` | gateway + Frontend | 572 | M | 571A, 571B | **Done** (PR #1486) |
 | 572 | Keycloak Theme Visible-Brand Rebrand + Page Coverage | theme | -- | M | 572A, 572B | **Done** (PR #1485) |
-| **Phase 80 — CRM / Sales Pipeline** | | | | | | See [tasks/phase80-crm-sales-pipeline.md](tasks/phase80-crm-sales-pipeline.md) |
+| **Phase 80 — CRM / Sales Pipeline** | | | | | | See [tasks/phase80-crm-sales-pipeline.md](tasks/phase80-crm-sales-pipeline.md) — **Removed in Phase 86** — archived at `horizontal-platform-final` |
 | 573 | Migration + Entities + Capability + Stage Seeding | Backend | -- | L | 573A, 573B | **Done** (PR #1487) |
 | 574 | Deal CRUD + Intake + Filtered List | Backend | 573A | L | 574A, 574B | **Done** (574A #1488, 574B #1500) |
 | 575 | DealTransitionService + Customer Nudge + Events/Audit/Activity | Backend | 574A | L | 575A | **Done** (PR #1489) |

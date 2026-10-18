@@ -38,7 +38,7 @@ frontend/
 │   │       └── settings/
 │   │           ├── page.tsx          # Settings hub
 │   │           └── billing/
-│   │               ├── page.tsx      # Billing + plan management
+│   │               ├── page.tsx      # Billing status (manual firm-level billing)
 │   │               └── actions.ts
 │   ├── (mock-auth)/                  # Mock auth pages (E2E only)
 │   ├── api/                          # API routes
@@ -49,7 +49,7 @@ frontend/
 │   ├── projects/                     # Project-specific components
 │   ├── documents/                    # Document-specific components
 │   ├── team/                         # Team management components
-│   ├── billing/                      # Subscription lifecycle, payment history
+│   ├── billing/                      # Subscription banner, platform-admin billing/demo tenant tables
 │   ├── marketing/                    # Landing page section components
 │   ├── desktop-sidebar.tsx           # Dark slate-950 sidebar with Motion indicator
 │   ├── mobile-sidebar.tsx            # Sheet-based mobile sidebar

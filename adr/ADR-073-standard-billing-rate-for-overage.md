@@ -1,6 +1,6 @@
 # ADR-073: Standard Billing Rate for Overage
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-336](ADR-336-engagement-letter-document-plus-acceptance.md)
 **Date**: 2026-02-19
 
 **Context**:

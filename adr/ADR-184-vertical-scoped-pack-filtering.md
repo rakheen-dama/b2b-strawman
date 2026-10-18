@@ -3,6 +3,8 @@
 **Status**: Accepted
 **Date**: 2026-03-15
 
+**Note**: Phase 86 removed the `accounting-za`, `consulting-za` and `consulting-generic` profiles (archived at `horizontal-platform-final`, [ADR-330](ADR-330-archive-tag-not-fork.md)); the mechanism survives with `legal-za` only ([ADR-332](ADR-332-single-vertical-profile-mechanism-retained.md)).
+
 ## Context
 
 The platform's pack seeder system (field packs, compliance packs, template packs, clause packs, automation templates, request packs) applies **all packs on the classpath to every tenant**. This worked when all packs were universal (e.g., `common-customer`, `common-project`). Phase 47 introduces vertical-specific packs (e.g., `accounting-za-customer` for SA accounting firms) that should only be applied to tenants configured for that vertical.

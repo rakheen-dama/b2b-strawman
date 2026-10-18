@@ -1,6 +1,6 @@
 # ADR-174: Tool Execution Model
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-333](ADR-333-mcp-sole-conversational-ai-surface.md)
 **Date**: 2026-03-12
 **Phase**: Phase 45 — In-App AI Assistant (BYOAK)
 

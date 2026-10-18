@@ -4,6 +4,8 @@
 **Date**: 2026-03-21
 **Phase**: 52 (In-App AI Assistant — BYOAK)
 
+**Note**: Partially superseded by [ADR-333](ADR-333-mcp-sole-conversational-ai-surface.md) — the in-app assistant was removed in Phase 86; the decision to store BYOAK AI keys via `SecretStore`/`OrgSecret` is still in force.
+
 ## Context
 
 Phase 52's BYOAK (Bring Your Own API Key) model requires each tenant to store their own Anthropic API key securely. The key is entered via the existing AI integration card on the Settings page, used at runtime by `AssistantService` to authenticate requests to the Anthropic Messages API, and must never be logged or exposed in API responses.

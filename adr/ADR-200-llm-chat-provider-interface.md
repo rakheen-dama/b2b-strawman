@@ -4,6 +4,8 @@
 **Date**: 2026-03-21
 **Phase**: 52 (In-App AI Assistant — BYOAK)
 
+**Note**: Partially superseded by [ADR-333](ADR-333-mcp-sole-conversational-ai-surface.md) — the chat assistant was removed in Phase 86; `LlmChatProvider` survives re-homed in `integration/ai/provider` (Settings → AI model list).
+
 ## Context
 
 Phase 52 introduces a conversational AI assistant that streams multi-turn chat responses with tool use. The platform already has an `AiProvider` interface (Phase 21) in `integration/ai/` that handles one-shot text generation: `generateText()`, `summarize()`, and `suggestCategories()`. The existing `NoOpAiProvider` is registered via `@IntegrationAdapter(domain = AI, slug = "noop")` and resolved through `IntegrationRegistry`.

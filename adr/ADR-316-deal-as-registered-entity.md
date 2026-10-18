@@ -1,6 +1,6 @@
 # ADR-316: Deal as a Registered Field-able / Taggable / Saved-View / Audited Entity
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-330](ADR-330-archive-tag-not-fork.md) (archived, no replacement)
 
 **Context**:
 

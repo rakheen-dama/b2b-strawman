@@ -12,7 +12,7 @@ Phase 32 introduces the **Proposal to Engagement Pipeline** -- the connective ti
 - [ADR-128](../adr/ADR-128-proposal-numbering-strategy.md) -- Proposal Numbering Strategy (sequential counter with fixed `PROP-NNNN` prefix)
 - [ADR-129](../adr/ADR-129-fee-model-architecture.md) -- Fee Model Architecture (single fee model per proposal)
 
-**Migrations**: V51 (tenant schema), V12 (global/portal schema)
+**Migrations**: V51 (tenant schema), V12 (global/portal schema) (pre-squash; now in tenant + global `V1__baseline.sql`)
 
 **Dependencies on prior phases**: Phase 31 (Tiptap JSON/renderer), Phase 28 (AcceptanceRequest pattern, portal read-model sync), Phase 24 (EmailNotificationChannel), Phase 17 (RetainerAgreementService), Phase 16 (ProjectTemplateService), Phase 10 (InvoiceService, InvoiceCounter pattern, InvoiceLineType), Phase 8 (OrgSettings branding, rate cards), Phase 7 (PortalContact, portal auth, read-model), Phase 6.5 (NotificationService), Phase 6 (AuditService), Phase 14 (Customer lifecycle transitions).
 

@@ -6,7 +6,7 @@
 
 > **ADRs**: [ADR-293](#adr-293-job-queue-table-over-in-process-parallelism), [ADR-294](#adr-294-scheduler-as-enqueuer-pattern), [ADR-295](#adr-295-control-plane--shard-plane-database-split), [ADR-296](#adr-296-composite-tenant-identifier-format), [ADR-297](#adr-297-explicit-shard-assignment-over-automatic-placement)
 
-> **Migrations**: Global **V24** -- `job_queue` table + `stale_job_recovery` ShedLock entry. Global **V25** -- `shard_config` table + `ALTER org_schema_mapping ADD shard_id`. No tenant migrations in this phase.
+> **Migrations**: Global **V24** -- `job_queue` table + `stale_job_recovery` ShedLock entry. Global **V25** -- `shard_config` table + `ALTER org_schema_mapping ADD shard_id`. No tenant migrations in this phase. (pre-squash; now in global `V1__baseline.sql`)
 
 ---
 

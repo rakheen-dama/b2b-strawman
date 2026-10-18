@@ -1,7 +1,7 @@
 {
-  "commit": "93201091f",
+  "commit": "3fd80149c",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-17T20:52:41Z",
-  "summary": "Epic 603 / PR #1575 final head 93201091f (orchestrator run): 5411 testcases / 0 failures / 0 errors / 26 skipped. Delta 0 vs the Epic 602 baseline of 5411 (tests retargeted to mock-payment, none deleted). Backend CI pass on the same SHA. Log /tmp/mvn-603-final.log."
+  "ts": "2026-10-18T00:23:20Z",
+  "summary": "Epic 604 / PR #1576 final head 3fd80149c (orchestrator run): 5290 testcases / 0 failures / 0 errors / 26 skipped. Delta -121 vs Epic 603 baseline 5411 = exactly the net test methods removed in the diff (-138 deleted, +17 added). Backend CI pass (29m) on the same SHA. e2e stack rebuilt with wiped volume: e2e-test-org provisions legal-za, tenant at V144, filing_statuses + rate_pack_status gone. Log /tmp/mvn-604-final.log."
 }

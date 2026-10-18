@@ -685,7 +685,7 @@
 | 601 | Remove `assistant` (Phases 45/52/70), re-home `provider` — AI consolidation | Backend + Frontend (split) | 600 | L | 601A, 601B, 601C, 601D | **Done** (PR #1573) |
 | 602 | Remove PayFast Platform Subscription Path (Phase 57) | Backend + Frontend (split) | 595 (parallel with 596–601) | M | 602A, 602B, 602C | **Done** (PR #1574) |
 | 603 | Remove Thymeleaf Dev Harness (Phase 7) + `docs/` Site (Phase 59) + docsLink policy | Backend + Ops + Frontend (split) | 595 (parallel with 596–602) | M | 603A, 603B, 603C | **Done** (PR #1575) |
-| 604 | Single Profile: non-legal profiles/packs/seeders/demo, `deadline/`, automation builder, terminology entries | Backend + Frontend + Portal (split) | 601, 602, 603 | L | 604A, 604B, 604C, 604D, 604E, 604F | |
+| 604 | Single Profile: non-legal profiles/packs/seeders/demo, `deadline/`, automation builder, terminology entries | Backend + Frontend + Portal (split) | 601, 602, 603 | L | 604A, 604B, 604C, 604D, 604E, 604F | **Done** (PR #1576) |
 | 605 | Migration Squash → tenant V1 / global V1 | Backend + Ops | 596–604 merged, `main` verify clean | L | 605A, 605B, 605C | |
 | 606 | Documentation Sweep + ADR Supersession + QA Capstone | Docs + E2E/Process | 605 | M | 606A, 606B, 606C | |
 

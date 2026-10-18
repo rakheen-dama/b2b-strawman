@@ -58,6 +58,13 @@ public class ProjectTemplate {
   @Column(name = "request_template_id")
   private UUID requestTemplateId;
 
+  /**
+   * Work type that matters created from this template inherit when the caller does not supply one
+   * (e.g. the legal-za pack's {@code matterType}). Mirrors {@code projects.work_type}.
+   */
+  @Column(name = "work_type", length = 50)
+  private String workType;
+
   protected ProjectTemplate() {}
 
   public ProjectTemplate(
@@ -157,6 +164,16 @@ public class ProjectTemplate {
 
   public void setRequestTemplateId(UUID requestTemplateId) {
     this.requestTemplateId = requestTemplateId;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getWorkType() {
+    return workType;
+  }
+
+  /** Sets the template's work type; a blank value is stored as {@code null}. */
+  public void setWorkType(String workType) {
+    this.workType = workType == null || workType.isBlank() ? null : workType;
     this.updatedAt = Instant.now();
   }
 }

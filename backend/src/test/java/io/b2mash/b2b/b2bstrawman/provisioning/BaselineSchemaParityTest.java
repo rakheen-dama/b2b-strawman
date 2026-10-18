@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.sql.DataSource;
+import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.MigrationVersion;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -30,27 +33,32 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
- * Phase 86 migration-squash proof (ADR-331, architecture §11.7(e)). Provisions a tenant through the
- * real {@link TenantProvisioningService} path, dumps the tenant schema and the global {@code
+ * Phase 86 migration-squash proof (ADR-331, architecture §11.7(e)) and the permanent proof of
+ * {@code V1__baseline.sql}. Migrates a scratch schema with the tenant Flyway configuration used by
+ * {@link TenantProvisioningService} but {@code .target("1")}, dumps it and the global {@code
  * public}/{@code portal} schemas (tables, columns, constraints, indexes, triggers, functions,
  * extensions, migration-seeded rows) in a normalised, ordinal-free form and compares them
  * byte-for-byte with snapshots committed BEFORE the series was squashed (Epic 605A). The only
  * permitted difference between the old series and {@code V1__baseline.sql} is the number of files.
- * Also asserts one successful {@code flyway_schema_history} row per migration file on the classpath
- * (pre-squash: the full series; post-squash: exactly one row, version 1).
+ *
+ * <p>Pinning the tenant comparison to V1 keeps the snapshots frozen while feature migrations (V2+)
+ * are added: those get their own targeted tests and never re-record these snapshots (see {@code
+ * backend/db/BASELINE.md} §5; the target-1 conversion landed with tenant V2). The scratch schema's
+ * history must be exactly one successful SQL row, version 1. A tenant provisioned through the real
+ * {@link TenantProvisioningService} path must have one successful row per tenant migration file on
+ * the classpath, so V2+ still apply on provisioning.
+ *
+ * <p>The global series still has only V1 and is compared as migrated at startup. The first PR that
+ * adds a schema-changing global V2 must pin the global comparison to V1 the same way.
  *
  * <p>The snapshots pin the shape a tenant gets on an EMPTY database. The pre-squash series was not
  * deterministic across tenants: V7/V8/V10/V16/V27/V29/V127 guarded nine objects with unscoped
  * catalog lookups ({@code pg_constraint WHERE conname = …}, {@code information_schema.columns WHERE
- * table_name = …}), so only the first tenant in a database received them. Pre-squash this test is
- * therefore green only when its tenant is the first one provisioned in the JVM; the squashed
- * baseline has no such guards and gives every tenant the full shape.
+ * table_name = …}), so only the first tenant in a database received them. The squashed baseline has
+ * no such guards and gives every tenant the full shape.
  *
- * <p>The snapshots are the frozen proof of {@code V1__baseline.sql}. Do NOT re-record them for a
- * feature migration: the first PR that adds a schema-changing V2 converts this test to migrate a
- * scratch schema with Flyway {@code .target("1")} (see {@code backend/db/BASELINE.md} §5). {@code
- * BASELINE_SNAPSHOT_RECORD=true} exists only to repair the recorder itself, never to make a
- * migration pass.
+ * <p>Do NOT re-record the snapshots for a feature migration. {@code BASELINE_SNAPSHOT_RECORD=true}
+ * exists only to repair the recorder itself, never to make a migration pass.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -60,6 +68,9 @@ import org.springframework.test.context.ActiveProfiles;
 class BaselineSchemaParityTest {
 
   private static final String ORG_ID = "org_baseline_schema_parity";
+  // Never provisioned or mapped — only names the scratch schema migrated to V1.
+  private static final String SCRATCH_SCHEMA =
+      SchemaNameGenerator.generateSchemaName("org_baseline_schema_parity_v1_scratch");
   private static final String TENANT_TOKEN = "<tenant>";
   // PG16 information_schema synthesises NOT NULL "constraints" named
   // <nspoid>_<reloid>_<attnum>_not_null.
@@ -71,7 +82,7 @@ class BaselineSchemaParityTest {
 
   private final TenantProvisioningService provisioningService;
   private final DataSource migrationDataSource;
-  private String tenantSchema;
+  private String provisionedSchema;
 
   @Autowired
   BaselineSchemaParityTest(
@@ -82,16 +93,39 @@ class BaselineSchemaParityTest {
   }
 
   @BeforeAll
-  void provision() {
-    tenantSchema =
+  void setUp() throws Exception {
+    provisionedSchema =
         provisioningService
             .provisionTenant(ORG_ID, "Baseline Schema Parity Org", null)
             .schemaName();
+    try (Connection c = migrationDataSource.getConnection();
+        Statement s = c.createStatement()) {
+      s.execute("DROP SCHEMA IF EXISTS \"" + SCRATCH_SCHEMA + "\" CASCADE");
+      // Created up front (as provisioning does) so Flyway records no SCHEMA-creation row.
+      s.execute("CREATE SCHEMA \"" + SCRATCH_SCHEMA + "\"");
+    }
+    // Same locations/config as TenantProvisioningService.runTenantMigrations, pinned to V1.
+    Flyway.configure()
+        .dataSource(migrationDataSource)
+        .locations("classpath:db/migration/tenant")
+        .schemas(SCRATCH_SCHEMA)
+        .baselineOnMigrate(false)
+        .target(MigrationVersion.fromVersion("1"))
+        .load()
+        .migrate();
+  }
+
+  @AfterAll
+  void dropScratchSchema() throws Exception {
+    try (Connection c = migrationDataSource.getConnection();
+        Statement s = c.createStatement()) {
+      s.execute("DROP SCHEMA IF EXISTS \"" + SCRATCH_SCHEMA + "\" CASCADE");
+    }
   }
 
   @Test
-  void tenantSchemaMatchesCommittedSnapshot() throws Exception {
-    compare("tenant-baseline.snapshot", dump(new String[] {tenantSchema}, true));
+  void tenantSchemaAtV1MatchesCommittedSnapshot() throws Exception {
+    compare("tenant-baseline.snapshot", dump(new String[] {SCRATCH_SCHEMA}, true));
   }
 
   @Test
@@ -100,8 +134,27 @@ class BaselineSchemaParityTest {
   }
 
   @Test
-  void tenantHistoryHasOneSuccessfulRowPerMigrationFile() throws Exception {
-    assertHistory("\"" + tenantSchema + "\".flyway_schema_history", "tenant");
+  void scratchTenantHistoryIsExactlyBaselineV1() throws Exception {
+    try (Connection c = migrationDataSource.getConnection();
+        Statement s = c.createStatement();
+        ResultSet rs =
+            s.executeQuery(
+                "SELECT count(*), count(*) FILTER (WHERE success),"
+                    + " count(*) FILTER (WHERE type <> 'SQL'), min(version), max(version) FROM \""
+                    + SCRATCH_SCHEMA
+                    + "\".flyway_schema_history")) {
+      rs.next();
+      assertThat(rs.getInt(1)).as("scratch history rows").isEqualTo(1);
+      assertThat(rs.getInt(2)).as("scratch successful rows").isEqualTo(1);
+      assertThat(rs.getInt(3)).as("scratch BASELINE/SCHEMA rows").isZero();
+      assertThat(rs.getString(4)).as("scratch lowest version").isEqualTo("1");
+      assertThat(rs.getString(5)).as("scratch highest version").isEqualTo("1");
+    }
+  }
+
+  @Test
+  void provisionedTenantHistoryHasOneSuccessfulRowPerMigrationFile() throws Exception {
+    assertHistory("\"" + provisionedSchema + "\".flyway_schema_history", "tenant");
   }
 
   @Test
@@ -228,7 +281,7 @@ class BaselineSchemaParityTest {
                 + " AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid = 'pg_proc'::regclass"
                 + " AND d.objid = p.oid AND d.deptype = 'e')");
         if (tenant) {
-          String t = "\"" + tenantSchema + "\".";
+          String t = "\"" + SCRATCH_SCHEMA + "\".";
           section(
               out,
               c,
@@ -325,7 +378,7 @@ class BaselineSchemaParityTest {
 
   private String normalise(String line) {
     String l = line.replace("\r", "").replace("\n", "\\n");
-    return tenantSchema == null ? l : l.replace(tenantSchema, TENANT_TOKEN);
+    return l.replace(SCRATCH_SCHEMA, TENANT_TOKEN);
   }
 
   private void compare(String fileName, String actual) throws Exception {

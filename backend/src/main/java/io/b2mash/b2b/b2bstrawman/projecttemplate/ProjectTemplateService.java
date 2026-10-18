@@ -152,6 +152,7 @@ public class ProjectTemplateService {
             memberId);
     validateRequestTemplateId(request.requestTemplateId());
     template.setRequestTemplateId(request.requestTemplateId());
+    template.setWorkType(request.workType());
     template = templateRepository.save(template);
 
     int taskCount = 0;
@@ -215,6 +216,7 @@ public class ProjectTemplateService {
     template.update(
         request.name(), request.namePattern(), request.description(), request.billableDefault());
     template.setRequestTemplateId(request.requestTemplateId());
+    template.setWorkType(request.workType());
     // saveAndFlush required: downstream deleteByTemplateId uses @Modifying(clearAutomatically=true)
     // which clears the persistence context — without flush, requestTemplateId would be lost
     template = templateRepository.saveAndFlush(template);
@@ -310,6 +312,7 @@ public class ProjectTemplateService {
             "MANUAL",
             null,
             memberId);
+    copy.setWorkType(source.getWorkType());
     copy = templateRepository.save(copy);
 
     var taskIds = tasks.stream().map(TemplateTask::getId).toList();
@@ -381,9 +384,10 @@ public class ProjectTemplateService {
   public ProjectTemplateResponse saveFromProject(
       UUID projectId, SaveFromProjectRequest request, ActorContext actor) {
     // 1. Load project
-    projectRepository
-        .findById(projectId)
-        .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+    var project =
+        projectRepository
+            .findById(projectId)
+            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
 
     // 2. Permission check: admin/owner always allowed; member must be project lead
     requireAdminOwnerOrProjectLead(actor.orgRole(), projectId, actor.memberId());
@@ -398,6 +402,7 @@ public class ProjectTemplateService {
             "FROM_PROJECT",
             projectId,
             actor.memberId());
+    template.setWorkType(project.getWorkType());
     template = templateRepository.save(template);
 
     // 4. Copy selected tasks in taskIds list order
@@ -528,18 +533,24 @@ public class ProjectTemplateService {
     if (request.priority() != null) {
       project.setPriority(request.priority());
     }
-    if (request.workType() != null) {
-      project.setWorkType(request.workType());
+    // An explicit (non-blank) work type from the caller wins; otherwise the matter inherits the
+    // template's work type (e.g. the legal-za pack's matterType).
+    String workType =
+        request.workType() != null && !request.workType().isBlank()
+            ? request.workType()
+            : template.getWorkType();
+    if (workType != null) {
+      project.setWorkType(workType);
     }
     // GAP-S3-04: resolve vertical-profile auto-apply field groups (e.g. the
     // "SA Legal — Matter Details" group for legal-za) so template-created
     // matters surface the same custom-field surface area as projects created
     // via ProjectService.createProject. Mirrors ProjectFieldService.prepareForCreate.
-    // GAP-L-37-regression-2026-04-25: pass request.workType() so work-type-scoped groups
+    // GAP-L-37-regression-2026-04-25: pass the resolved workType so work-type-scoped groups
     // (e.g. conveyancing-za-project) only auto-attach to matters with matching work_type;
     // legal-za-project remains unscoped and still applies to every legal-za matter.
     var autoApplyFieldGroupIds =
-        fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT, request.workType());
+        fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT, workType);
     if (!autoApplyFieldGroupIds.isEmpty()) {
       project.setAppliedFieldGroups(autoApplyFieldGroupIds);
     }
@@ -1081,6 +1092,7 @@ public class ProjectTemplateService {
         tasks,
         tags,
         template.getRequestTemplateId(),
+        template.getWorkType(),
         template.getCreatedAt(),
         template.getUpdatedAt());
   }

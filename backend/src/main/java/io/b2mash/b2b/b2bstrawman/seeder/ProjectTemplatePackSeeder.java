@@ -101,6 +101,9 @@ public class ProjectTemplatePackSeeder extends AbstractPackSeeder<ProjectTemplat
               "SEEDER",
               null, // sourceProjectId — not derived from an existing project
               SEEDER_CREATED_BY);
+      // The pack's matterType becomes the template's work type, which matters created from the
+      // template inherit (drives work-type-scoped auto-apply field groups).
+      template.setWorkType(entry.matterType());
       template = projectTemplateRepository.save(template);
 
       if (entry.tasks() != null) {

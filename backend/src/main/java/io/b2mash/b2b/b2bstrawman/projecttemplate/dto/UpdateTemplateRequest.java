@@ -13,4 +13,5 @@ public record UpdateTemplateRequest(
     boolean billableDefault,
     @Valid List<TemplateTaskRequest> tasks,
     List<UUID> tagIds,
-    UUID requestTemplateId) {}
+    UUID requestTemplateId,
+    @Size(max = 50, message = "workType must be at most 50 characters") String workType) {}

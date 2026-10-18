@@ -46,8 +46,11 @@ import org.springframework.test.context.ActiveProfiles;
  * therefore green only when its tenant is the first one provisioned in the JVM; the squashed
  * baseline has no such guards and gives every tenant the full shape.
  *
- * <p>Re-record ONLY when a new feature migration deliberately changes the schema ({@code
- * BASELINE_SNAPSHOT_RECORD=true}); never to make the squash pass.
+ * <p>The snapshots are the frozen proof of {@code V1__baseline.sql}. Do NOT re-record them for a
+ * feature migration: the first PR that adds a schema-changing V2 converts this test to migrate a
+ * scratch schema with Flyway {@code .target("1")} (see {@code backend/db/BASELINE.md} §5). {@code
+ * BASELINE_SNAPSHOT_RECORD=true} exists only to repair the recorder itself, never to make a
+ * migration pass.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -62,6 +65,7 @@ class BaselineSchemaParityTest {
   // <nspoid>_<reloid>_<attnum>_not_null.
   private static final String NOT_NULL_PSEUDO = "^[0-9]+_[0-9]+_[0-9]+_not_null$";
   private static final Path SNAPSHOT_DIR = Path.of("src/test/resources/schema");
+  // Recorder repair only — never re-record for a feature migration (BASELINE.md §5).
   private static final boolean RECORD =
       "true".equalsIgnoreCase(System.getenv("BASELINE_SNAPSHOT_RECORD"));
 

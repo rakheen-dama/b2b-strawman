@@ -9,7 +9,7 @@ Phase 26 adds structured tax handling to the DocTeams invoicing system. The exis
 - [ADR-102](../adr/ADR-102-tax-inclusive-total-display.md) — Tax-Inclusive Total Display (Xero model for inclusive totals)
 - [ADR-103](../adr/ADR-103-tax-rate-immutability.md) — Tax Rate Immutability (snapshot at creation + auto-refresh on DRAFT)
 
-**Migration**: V43 tenant — `tax_rates` table + `org_settings` columns + `invoice_lines` columns.
+**Migration**: V43 tenant — `tax_rates` table + `org_settings` columns + `invoice_lines` columns. (pre-squash; now in `V1__baseline.sql`)
 
 **Dependencies on prior phases**: Phase 10 (Invoicing), Phase 8 (OrgSettings/Rate Cards), Phase 12 (Document Templates/PDF), Phase 7+22 (Portal), Phase 6 (Audit), Phase 17 (Retainers).
 

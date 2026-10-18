@@ -11,7 +11,7 @@ Phase 37 adds a rule-based automation engine to the DocTeams platform. Firm admi
 - [ADR-148](../adr/ADR-148-jsonb-config-vs-normalized-tables.md) -- JSONB Config vs Normalized Tables (JSONB with sealed class validation)
 - [ADR-149](../adr/ADR-149-execution-logging-granularity.md) -- Execution Logging Granularity (both rule-level + action-level tables)
 
-**Migrations**: V58 (tenant schema)
+**Migrations**: V58 (tenant schema) (pre-squash; now in `V1__baseline.sql`)
 
 **Dependencies on prior phases**: Phase 4 (Customer, Task entities), Phase 5 (TimeEntry), Phase 6 (AuditService), Phase 6.5 (NotificationService, DomainEvent infrastructure), Phase 8 (ProjectBudget, BudgetThresholdEvent), Phase 10 (Invoice), Phase 16 (ProjectTemplate, ProjectInstantiationService), Phase 24 (EmailNotificationChannel), Phase 34 (InformationRequest).
 

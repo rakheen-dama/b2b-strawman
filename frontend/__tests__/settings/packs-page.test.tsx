@@ -119,12 +119,12 @@ describe("PacksPage — Available tab", () => {
     const allPacks: PackCatalogEntry[] = [
       ...CATALOG,
       {
-        packId: "accounting-za",
-        name: "Accounting (ZA) Templates",
-        description: "Tax templates",
+        packId: "other-profile",
+        name: "Other Profile Templates",
+        description: "Templates for another profile",
         version: "1.0",
         type: "DOCUMENT_TEMPLATE",
-        verticalProfile: "accounting-za",
+        verticalProfile: "other-profile",
         itemCount: 5,
         installed: false,
         installedAt: null,
@@ -142,7 +142,7 @@ describe("PacksPage — Available tab", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText("Accounting (ZA) Templates")).toBeInTheDocument();
+      expect(screen.getByText("Other Profile Templates")).toBeInTheDocument();
     });
   });
 

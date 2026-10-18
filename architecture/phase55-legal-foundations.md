@@ -1,6 +1,6 @@
 # Phase 55 — Legal Foundations: Court Calendar, Conflict Check & LSSA Tariff
 
-> Standalone architecture document for Phase 55. ADRs: 209--212. Migration: V74.
+> Standalone architecture document for Phase 55. ADRs: 209--212. Migration: V74. (pre-squash; now in `V1__baseline.sql`)
 
 ---
 

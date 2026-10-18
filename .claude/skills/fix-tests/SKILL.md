@@ -97,9 +97,7 @@ For each failing test, classify it by reading the test file and the component it
 
 ### Category C: Pre-existing / Known
 **Known baselines (E2E mock-auth):**
-- `lifecycle.spec.ts` — depends on lifecycle-test.sh seed data, drifts after QA cycles
-- `lifecycle-interactive.spec.ts` — same (hardcoded UUIDs, seed-dependent names)
-- `lifecycle-portal.spec.ts` — same (portal data from lifecycle seed)
+- None currently. The accounting-seed `lifecycle*.spec.ts` specs were deleted in Phase 86 (Epic 606) with the `lifecycle-test.sh` seed; the e2e stack seeds `legal-za` via `compose/seed/seed.sh`.
 
 **Known baselines (Keycloak):**
 - KC tests depend on onboarding state — if an org was already created in a prior run, re-runs may conflict
@@ -254,7 +252,7 @@ NODE_OPTIONS="" E2E_AUTH_MODE=keycloak PLAYWRIGHT_BASE_URL=http://localhost:3000
 
 2. Confirm:
    - API: 0 FAIL (E2E mode only)
-   - Playwright: 0 new failures (pre-existing lifecycle failures are OK)
+   - Playwright: 0 new failures
    - KC tests: 0 failures (onboarding and invite tests pass)
    - No tests were deleted or blindly skipped
 

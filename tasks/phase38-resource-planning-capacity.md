@@ -10,7 +10,7 @@ Phase 38 adds resource planning and capacity management to the DocTeams platform
 - [ADR-152](../adr/ADR-152-capacity-model-design.md) -- Capacity Model Design (single weeklyHours with effective dates + org default)
 - [ADR-153](../adr/ADR-153-over-allocation-policy.md) -- Over-Allocation Policy (warning with save, domain event)
 
-**Migrations**: V58 (tenant schema) -- Note: Phase 37 also targets V58 but is not yet merged. Whichever merges second uses V59.
+**Migrations**: V58 (tenant schema) -- Note: Phase 37 also targets V58 but is not yet merged. Whichever merges second uses V59. (pre-squash; now in `V1__baseline.sql`)
 
 **Dependencies on prior phases**: Phase 4 (Project, Member entities), Phase 5 (TimeEntry for utilization), Phase 6 (AuditService), Phase 6.5 (NotificationService), Phase 8 (BillingRate, CostRate, ProjectBudget, ProfitabilityReportService, RateResolutionService, OrgSettings).
 

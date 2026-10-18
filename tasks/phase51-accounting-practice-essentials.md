@@ -2,7 +2,7 @@
 
 Phase 51 adds three operational capabilities that close the gap between "configured for accounting" and "works like an accounting practice management tool." The accounting-za vertical profile (Phase 47/49) already has excellent seed data, but the firm still manages regulatory deadlines in spreadsheets, manually kicks off engagement letters after scheduled project creation, and hand-configures rate cards for every new org. This phase delivers: (1) a regulatory deadline calendar with filing status tracking, (2) post-schedule automation for engagement kickoff, and (3) profile-based onboarding seeding for rate cards and schedule templates.
 
-The next Flyway tenant migration is **V81** (V80 is taken by `V80__add_compliance_template_enums.sql`). The next epic number starts at **381**. ADRs 197--199 are already accepted.
+The next Flyway tenant migration is **V81** (V80 is taken by `V80__add_compliance_template_enums.sql`). The next epic number starts at **381**. ADRs 197--199 are already accepted. (pre-squash; now in `V1__baseline.sql`)
 
 **Architecture doc**: `architecture/phase51-accounting-practice-essentials.md`
 

@@ -12,7 +12,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 - [ADR-112](../adr/ADR-112-delete-vs-archive-philosophy.md) -- Delete vs Archive Philosophy (restrict delete, promote archive)
 - [ADR-113](../adr/ADR-113-customer-link-optionality.md) -- Customer Link Optionality (nullable UUID, app-validated)
 
-**Migrations**: V47 tenant (task lifecycle columns + constraints, project lifecycle columns + customer_id + due_date).
+**Migrations**: V47 tenant (task lifecycle columns + constraints, project lifecycle columns + customer_id + due_date). (pre-squash; now in `V1__baseline.sql`)
 
 **Dependencies on prior phases**: Phase 4 (Task entity, Project entity, Customer entity), Phase 5 (TimeEntry linked to tasks/projects), Phase 8 (OrgSettings, ProjectBudget), Phase 10 (Invoice linked to projects/customers), Phase 6 (Audit), Phase 6.5 (Notifications, domain events).
 

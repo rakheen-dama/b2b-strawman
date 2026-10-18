@@ -4,7 +4,7 @@ Phase 81 made the Kazi MCP server able to **write** correspondence (`file_corres
 
 Phase 82 closes that asymmetry with exactly **two MCP read tools** over the existing `correspondence/` bounded context: `list_correspondence(matterId | customerId, page)` returns the existing metadata projection as an `McpPage`; `get_correspondence(id)` returns a single record **with body** + headers via one net-new service method and one new detail DTO. Both are gated by **project view-access** (not the org-wide `MCP_ACCESS` capability — ADR-324), audited (`mcp.tool.invoked`, safe refs only), and tenant-isolated exactly like `get_matter` / `search_documents`. This is a **thin exposure layer**: **no new entity, table, migration, write tool, audit family, LLM, Gmail integration, or frontend.** The consumer `correspondence-digest` skill ships in `../claude-for-legal-sa`, not this repo.
 
-**Migration high-water at phase start**: tenant **V132** (`V132__create_correspondence_tables.sql`). Phase 82 ships **NO migration** — it reads the existing `correspondence` table only. If a `V133` (or any migration) appears in the diff, scope has been left.
+**Migration high-water at phase start**: tenant **V132** (`V132__create_correspondence_tables.sql`). Phase 82 ships **NO migration** — it reads the existing `correspondence` table only. If a `V133` (or any migration) appears in the diff, scope has been left. (pre-squash; series now `V1__baseline.sql`)
 
 ---
 

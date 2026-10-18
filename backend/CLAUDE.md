@@ -156,7 +156,7 @@ public ResponseEntity<byte[]> exportPdf(@PathVariable String slug, @RequestParam
 
 ## OrgSettings Entity (post Wave 3.3 refactor, PRs #1433–#1435)
 
-- `OrgSettings` = entity spine (identity, currency, timestamps, vertical profile, module flags) + 9 `@Embeddable` groups — access via `settings.getBranding()/getPortal()/getTax()/getBilling()/getExpense()/getTimeReminder()/getDataProtection()/getDataRequest()/getPackStatus()`. Group getters lazy-init and never return null.
+- `OrgSettings` = entity spine (identity, currency, timestamps, vertical profile, module flags) + 10 `@Embeddable` groups — access via `settings.getBranding()/getPortal()/getTax()/getBilling()/getCollections()/getExpense()/getTimeReminder()/getDataProtection()/getDataRequest()/getPackStatus()`. Group getters lazy-init and never return null.
 - The `org_settings` table shape is pinned by `OrgSettingsSchemaSnapshotTest` (column name, type, varchar length, numeric precision/scale, nullability). NEVER edit `EXPECTED_SNAPSHOT` to make a failing change pass — a failure means an `@AttributeOverride` drifted; fix the override. Intentional schema changes require an authorized Flyway migration plus a deliberate pin update.
 - `updatedAt` refreshes via the entity's `@PreUpdate` callback on any dirty flush — do not add per-setter timestamp bumps.
 - An all-null embedded group reloads as a NULL reference (Hibernate) — guarded by `OrgSettingsEmbeddableNullReloadTest`; if you add a group whose columns are all nullable, extend that test.
@@ -322,7 +322,7 @@ var customer = TestCustomerFactory.createActiveCustomer("Name", "email@test.com"
 // Specific lifecycle status
 var customer = TestCustomerFactory.createCustomerWithStatus("Name", "email@test.com", memberId, LifecycleStatus.PROSPECT);
 
-// With prerequisite fields (address, tax number) for invoice/proposal flows
+// With prerequisite fields (address, tax number) for invoice flows
 var customer = TestCustomerFactory.createActiveCustomerWithPrerequisiteFields("Name", "email@test.com", memberId);
 ```
 

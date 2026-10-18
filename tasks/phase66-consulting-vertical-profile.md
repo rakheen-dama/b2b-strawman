@@ -4,7 +4,7 @@
 > Architecture doc: `architecture/phase66-consulting-vertical-profile.md`
 > ADRs: [ADR-244](../adr/ADR-244-pack-only-vertical-profiles.md), [ADR-245](../adr/ADR-245-localized-profile-derivatives.md), [ADR-246](../adr/ADR-246-profile-gated-dashboard-widgets.md)
 > Starting epic: 480 · Last completed: 479 (Phase 65)
-> Migration high-water: global V18, tenant V95 — **unchanged** this phase.
+> Migration high-water: global V18, tenant V95 — **unchanged** this phase. (pre-squash; series now `V1__baseline.sql`)
 
 ---
 

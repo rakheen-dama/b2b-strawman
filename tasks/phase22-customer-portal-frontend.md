@@ -10,7 +10,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 - [ADR-078](../adr/ADR-078-portal-read-model-extension.md) -- Portal Read-Model Extension for Invoices and Tasks
 - [ADR-079](../adr/ADR-079-portal-org-identification.md) -- Org Identification Strategy (JWT-derived, no URL org segment)
 
-**Migration**: V8 global -- `portal_invoices`, `portal_invoice_lines`, `portal_tasks` tables in portal schema
+**Migration**: V8 global -- `portal_invoices`, `portal_invoice_lines`, `portal_tasks` tables in portal schema (pre-squash; now in global `V1__baseline.sql`)
 
 **Dependencies on prior phases**: Phase 7 (portal backend prototype -- `PortalContact`, `MagicLinkToken`, portal read-model, `CustomerAuthFilter`, portal JWT, `PortalEventHandler`), Phase 10 (Invoice entity and lifecycle), Phase 5 (Task entity), Phase 8 (OrgSettings branding fields), Phase 12 (GeneratedDocument for invoice PDFs).
 

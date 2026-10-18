@@ -3,7 +3,7 @@
 > Architecture doc: `architecture/phase67-legal-depth-ii.md`
 > ADRs: [ADR-247](../adr/ADR-247-legal-disbursement-sibling-entity.md), [ADR-248](../adr/ADR-248-matter-closure-distinct-state-with-gates.md), [ADR-249](../adr/ADR-249-retention-clock-starts-on-closure.md), [ADR-250](../adr/ADR-250-statement-of-account-template-and-context.md), [ADR-251](../adr/ADR-251-acceptance-eligible-template-manifest-flag.md)
 > Starting epic: 486 · Last completed: 485 (Phase 66)
-> Migration high-water: tenant V95 (in architecture) — but tenant migrations on disk are at **V99**, so the two new migrations will land as the next two free numbers (likely V100 / V101). The architecture refers to them as V96 / V97 by content name; slice builders must rename to next-available V-number at implementation time and preserve the same contents.
+> Migration high-water: tenant V95 (in architecture) — but tenant migrations on disk are at **V99**, so the two new migrations will land as the next two free numbers (likely V100 / V101). The architecture refers to them as V96 / V97 by content name; slice builders must rename to next-available V-number at implementation time and preserve the same contents. (pre-squash; now in `V1__baseline.sql`)
 
 ---
 

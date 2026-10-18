@@ -11,9 +11,9 @@ Phase 30 closes the remaining revenue-capture and daily-work-organisation gaps i
 - [ADR-117](../adr/ADR-117-time-reminder-scheduling.md) — Time Reminder Scheduling Strategy (15-minute polling, UTC interpretation)
 - [ADR-118](../adr/ADR-118-invoice-line-type-discriminator.md) — Invoice Line Type Discriminator (explicit `line_type` column)
 
-**Migrations**: V50 (single combined tenant migration: expenses table, task recurrence columns, invoice_lines extension, org_settings extension).
+**Migrations**: V50 (single combined tenant migration: expenses table, task recurrence columns, invoice_lines extension, org_settings extension). (pre-squash; now in `V1__baseline.sql`)
 
-**Note on migration numbering**: Phase 29 used V47 (based on its architecture doc). Phase 31 used subsequent V48/V49 migrations. The next available is V50 for Phase 30.
+**Note on migration numbering**: Phase 29 used V47 (based on its architecture doc). Phase 31 used subsequent V48/V49 migrations. The next available is V50 for Phase 30. (pre-squash; now in `V1__baseline.sql`)
 
 **Dependencies on prior phases**: Phase 4 (Tasks, Projects), Phase 5 (TimeEntry billing patterns), Phase 6 (AuditService), Phase 6.5 (NotificationService, NotificationPreference), Phase 8 (OrgSettings entity, profitability reports), Phase 10 (Invoice, InvoiceLine), Phase 12 (S3/Document infrastructure for receipts), Phase 29 (Project lifecycle guards, task status transitions, project due dates).
 

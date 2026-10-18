@@ -1,6 +1,6 @@
 # Phase 83 — Collections & Cash Intelligence
 
-> **Standalone phase architecture document** (per-phase file convention; `architecture/ARCHITECTURE.md` holds the core platform sections). Derived from [`requirements/claude-code-prompt-phase83.md`](../requirements/claude-code-prompt-phase83.md) (founder decisions 2026-07-09). ADRs: [ADR-325](../adr/ADR-325-collections-domain-dunning-engine.md) … [ADR-329](../adr/ADR-329-trust-aware-collections-extension-seam.md). Tenant migration: **V133** (latest on main is `V132__create_correspondence_tables.sql` — re-confirm the next free number at build time).
+> **Standalone phase architecture document** (per-phase file convention; `architecture/ARCHITECTURE.md` holds the core platform sections). Derived from [`requirements/claude-code-prompt-phase83.md`](../requirements/claude-code-prompt-phase83.md) (founder decisions 2026-07-09). ADRs: [ADR-325](../adr/ADR-325-collections-domain-dunning-engine.md) … [ADR-329](../adr/ADR-329-trust-aware-collections-extension-seam.md). Tenant migration: **V133** (latest on main is `V132__create_correspondence_tables.sql` — re-confirm the next free number at build time) (pre-squash; now in `V1__baseline.sql`).
 
 ## 1. Overview
 

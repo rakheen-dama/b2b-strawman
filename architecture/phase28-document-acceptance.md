@@ -1,6 +1,6 @@
 > Merge into architecture/ as standalone Phase 28 doc (phases 5+ use separate files).
 > ADRs: 107 (acceptance token strategy), 108 (certificate storage), 109 (portal read-model sync)
-> Migration: V45 (tenant), V11 (global/portal read-model)
+> Migration: V45 (tenant), V11 (global/portal read-model) (pre-squash; now in tenant + global `V1__baseline.sql`)
 
 ## 28. Phase 28 — Document Acceptance (Lightweight E-Signing)
 

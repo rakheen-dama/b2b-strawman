@@ -127,7 +127,6 @@ NODE_OPTIONS="" E2E_AUTH_MODE=keycloak PLAYWRIGHT_BASE_URL=http://localhost:3000
 - Group failures by spec file
 
 **Known baselines:**
-- `lifecycle.spec.ts`, `lifecycle-interactive.spec.ts`, `lifecycle-portal.spec.ts` may have pre-existing failures from seed data drift — these are NOT new regressions
 - `72 skipped` tests are for features not yet built — this is expected
 - In `--kc` mode: standard tests that use mock auth fixture will fail at login — this is expected, not a regression
 
@@ -215,7 +214,7 @@ This is not advice — these rules are mandatory. Loopholes are forbidden. If a 
 **Reporting discipline:**
 - **Never skip failing tests** to make the suite "pass" — fix the test or fix the code
 - **Never modify seed data** to make tests pass — tests should be resilient to seed state
-- **Pre-existing lifecycle test failures** are known — don't count them as new regressions, but DO surface them in the report so they get tracked. See `qa_cycle/known-failures-*.md` for the current baseline.
+- **Pre-existing failures** are known — don't count them as new regressions, but DO surface them in the report so they get tracked. See `qa_cycle/known-failures-*.md` for the current baseline.
 - **Skipped tests** for unbuilt features are expected — don't try to unskip them
 - **PASS means observed end-to-end**. If the regression script's exit code is masked by a `| tail -N` pipe (the post-merge-hook bug), capture the script's stdout summary directly and trust the bordered SUMMARY block, not the apparent exit.
 - If the E2E stack needs a rebuild, do it before running tests (don't run against stale containers)

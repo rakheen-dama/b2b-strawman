@@ -1,6 +1,6 @@
 > Merge into architecture/ as standalone Phase 32 doc (phases 5+ use separate files).
 > ADRs: 124 (proposal storage model), 125 (acceptance orchestration transaction boundary), 126 (milestone invoice creation strategy), 127 (portal proposal rendering), 128 (proposal numbering strategy), 129 (fee model architecture)
-> Migration: V51 (tenant)
+> Migration: V51 (tenant) (pre-squash; now in `V1__baseline.sql`)
 
 # Phase 32 — Proposal → Engagement Pipeline
 

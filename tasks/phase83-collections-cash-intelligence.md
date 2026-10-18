@@ -4,7 +4,7 @@ Phase 83 closes the revenue loop that today ends at `SENT`: nothing in the produ
 
 This phase ships as **7 epics (588–594)**, expanded to **15 numbered slices** to honour the 8–12 file / ~800 LOC slice-sizing budget. The architecture's 7 capability slices (§10) form the epic spine; the Foundation slice splits into schema/registrations vs APIs vs UI, and the Batch-Approval+Frontend slice splits backend vs two frontend surfaces. **No slice mixes backend + frontend scope** (594A is E2E/Process — it drives both stacks but writes no product code).
 
-**Migration high-water at phase start**: tenant **V132** (`V132__create_correspondence_tables.sql`). Phase 83 ships **one** tenant migration: **V133** (`org_settings` +5 columns, `customers.collections_exempt`, `collection_activities` table + indexes). No global migration.
+**Migration high-water at phase start**: tenant **V132** (`V132__create_correspondence_tables.sql`). Phase 83 ships **one** tenant migration: **V133** (`org_settings` +5 columns, `customers.collections_exempt`, `collection_activities` table + indexes). No global migration. (pre-squash; now in `V1__baseline.sql`)
 
 ---
 

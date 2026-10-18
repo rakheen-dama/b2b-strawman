@@ -2,6 +2,8 @@
 
 > **⚠️ Historical document.** This file captures an early-phase view of the architecture and is **superseded by [`kazi-architecture/`](../kazi-architecture/)**, which is the current, code-grounded architectural truth. The product has since been renamed **Kazi** (company **b2mash**); references below to "DocTeams" and to the original Clerk-based auth are retained as historical record and no longer reflect the live system (auth is Keycloak). Read this for background only.
 
+> **Phase 86 (2026-10):** Kazi is legal-only (`legal-za`). The horizontal platform — schedules, retainers, proposals, capacity, the in-app/specialist AI assistants, accounting/consulting profiles and deadlines, PayFast subscriptions, the docs site, CRM — was removed and archived at git tag `horizontal-platform-final` (mirror: https://github.com/rakheen-dama/kazi-horizontal-archive). See [Section 11 — `phase86-subtraction-legal-only.md`](phase86-subtraction-legal-only.md) and [ADR-330](../adr/ADR-330-archive-tag-not-fork.md).
+
 ## 1. Overview
 
 A reusable SaaS starter platform supporting multi-tenant B2B products with schema-per-tenant isolation. The reference implementation is **DocTeams** — a team-based document hub where organizations manage projects and upload documents.

@@ -19,13 +19,13 @@ Generate everything needed to run `/qa-cycle` from a requirements or scenario sp
 
 ## Arguments
 
-- `<requirements-file>` — path to a requirements doc, scenario spec, or vertical profile description (e.g., `requirements/accounting-za-vertical.md` or `tasks/phase47-lifecycle-script.md`)
-- `[vertical-profile]` — optional vertical profile slug (e.g., `accounting-za`, `legal-za`). If omitted, inferred from the requirements file.
+- `<requirements-file>` — path to a requirements doc, scenario spec, or vertical profile description (e.g., `qa/testplan/demos/legal-za-90day-keycloak.md` or `requirements/claude-code-prompt-phaseNN.md`)
+- `[vertical-profile]` — optional vertical profile slug; `legal-za` is the only profile since Phase 86 (ADR-332). Defaults to `legal-za`.
 
 ## Step 0 — Parse Input
 
 Read the requirements file to determine:
-1. **Vertical profile** — which industry/locale pack to test (e.g., `accounting-za`)
+1. **Vertical profile** — which industry/locale pack to test (`legal-za`)
 2. **Firm persona** — size, location, team roles, client types
 3. **Phase number** — for file naming (check `tasks/` for the next available phase number)
 
@@ -57,10 +57,10 @@ The script simulates the first 90 days of a firm using the platform. Structure:
 - **Day 1-3**: First clients onboarded (different entity types)
 - **Day 7**: First week of work (time logging, task management, collaboration)
 - **Day 14**: Compliance review (checklists, document collection)
-- **Day 30**: First billing cycle (invoices, retainer close, payment)
-- **Day 45**: Expansion (new engagement types, expenses, bulk billing)
+- **Day 30**: First billing cycle (fee notes, trust transfer, payment)
+- **Day 45**: Expansion (new matter types, expenses, bulk billing)
 - **Day 60**: Quarterly review (profitability, rate review, reports)
-- **Day 75**: Year-end work (annual engagements, regulatory deadlines)
+- **Day 75**: Year-end work (court dates / prescription, matter closure)
 - **Day 90**: Portfolio review (aged debtors, fork readiness assessment)
 
 ### Rules

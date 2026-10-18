@@ -12,7 +12,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 - [ADR-090](../adr/ADR-090-secret-storage-strategy.md) — Secret Storage Strategy (AES-256-GCM in-database, app-level encryption)
 - [ADR-091](../adr/ADR-091-feature-flag-scope.md) — Feature Flag Scope (boolean columns on OrgSettings, not a generic flag table)
 
-**Migration**: V36 — `org_integrations` table, `org_secrets` table, 3 boolean columns on `org_settings`
+**Migration**: V36 — `org_integrations` table, `org_secrets` table, 3 boolean columns on `org_settings` (pre-squash; now in `V1__baseline.sql`)
 
 **Dependencies on prior phases**: Phase 8 (OrgSettings entity), Phase 10 (PaymentProvider / MockPaymentProvider), Phase 12 (GeneratedDocumentService), Phase 13 (dedicated schema isolation). No breaking changes to existing APIs.
 

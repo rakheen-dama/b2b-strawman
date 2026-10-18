@@ -1,7 +1,7 @@
 # Phase 66 — `consulting-za` Vertical Profile (Pack-Only Agency Content)
 
 > Standalone architecture doc — no changes to `architecture/ARCHITECTURE.md`.
-> No new database migrations (global high-water remains V18, tenant remains V95).
+> No new database migrations (global high-water remains V18, tenant remains V95). (pre-squash; series now `V1__baseline.sql`)
 > No new backend entities, services, or controllers.
 > One new frontend component.
 

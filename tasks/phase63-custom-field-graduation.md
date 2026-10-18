@@ -15,7 +15,7 @@ Phase 63 promotes approximately 21 custom fields across Customer, Project, Task,
 - **Phase 55** (Legal Foundations): `ConflictCheckService` -- reads `registration_number` from JSONB
 - **Phase 12** (Document Templates): `CustomerContextBuilder`, `ProjectContextBuilder`, `InvoiceContextBuilder`, `VariableMetadataRegistry` -- template context updates
 
-**Migration note**: V86 tenant migration is reserved for Phase 61. This phase uses the next available migration number (V87 or later, verify at implementation time). V85 is the latest existing migration in the codebase.
+**Migration note**: V86 tenant migration is reserved for Phase 61. This phase uses the next available migration number (V87 or later, verify at implementation time). V85 is the latest existing migration in the codebase. (pre-squash; now in `V1__baseline.sql`)
 
 ---
 

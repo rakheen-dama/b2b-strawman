@@ -6,7 +6,7 @@
 
 > **ADRs**: [ADR-265](../adr/ADR-265-specialist-as-prompt-tools-launcher-metadata.md), [ADR-266](../adr/ADR-266-inline-launchers-primary-chat-panel-secondary.md), [ADR-267](../adr/ADR-267-human-approval-default-direct-mode-exception.md), [ADR-268](../adr/ADR-268-ocr-via-claude-vision-byoak-no-separate-vendor.md), [ADR-269](../adr/ADR-269-sa-specialisation-in-prompts-not-fine-tuning.md), [ADR-270](../adr/ADR-270-ai-specialist-invocation-jsonb-output.md), [ADR-271](../adr/ADR-271-scheduled-trigger-extension.md)
 
-> **Migration**: Tenant **V120** — `ai_specialist_invocations` table (per-tenant, dedicated-schema-only per [ADR-T001](../adr/ADR-T001-schema-per-tenant-over-row-level-isolation.md)). Plus a small Phase 37 extension: tenant migration adds a `last_run_at` nullable column to the existing `automation_rules` table for `SCHEDULED` triggers (per [ADR-271](../adr/ADR-271-scheduled-trigger-extension.md)). Phase 37's `TriggerType` enum gains one value (`SCHEDULED`); enum values are stored as VARCHAR so no DB-level enum migration is needed. No global migrations.
+> **Migration**: Tenant **V120** — `ai_specialist_invocations` table (per-tenant, dedicated-schema-only per [ADR-T001](../adr/ADR-T001-schema-per-tenant-over-row-level-isolation.md)). Plus a small Phase 37 extension: tenant migration adds a `last_run_at` nullable column to the existing `automation_rules` table for `SCHEDULED` triggers (per [ADR-271](../adr/ADR-271-scheduled-trigger-extension.md)). Phase 37's `TriggerType` enum gains one value (`SCHEDULED`); enum values are stored as VARCHAR so no DB-level enum migration is needed. No global migrations. (pre-squash; now in `V1__baseline.sql`)
 
 ---
 

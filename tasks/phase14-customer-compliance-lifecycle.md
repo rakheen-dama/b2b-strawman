@@ -6,7 +6,7 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 
 **ADRs**: [ADR-060](../adr/ADR-060-lifecycle-status-core-field.md) (lifecycle status as core field), [ADR-061](../adr/ADR-061-checklist-first-class-entities.md) (checklist first-class entities), [ADR-062](../adr/ADR-062-anonymization-over-hard-deletion.md) (anonymization over hard deletion), [ADR-063](../adr/ADR-063-compliance-packs-bundled-seed-data.md) (compliance packs as bundled seed data)
 
-**MIGRATION**: V29 (V28 is the latest from Phase 12). Single migration creates all new tables + ALTERs to Customer and OrgSettings.
+**MIGRATION**: V29 (V28 is the latest from Phase 12). Single migration creates all new tables + ALTERs to Customer and OrgSettings. (pre-squash; now in `V1__baseline.sql`)
 
 ## Epic Overview
 

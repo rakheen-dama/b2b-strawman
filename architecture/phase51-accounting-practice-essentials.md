@@ -1,6 +1,6 @@
 # Phase 51 — Accounting Practice Management Essentials
 
-> Standalone architecture document for Phase 51. ADRs: 197--199. Migration: V80.
+> Standalone architecture document for Phase 51. ADRs: 197--199. Migration: V80. (pre-squash; now in `V1__baseline.sql`)
 
 ---
 

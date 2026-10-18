@@ -22,7 +22,7 @@ Phase 60 replaces the `trust_accounting` module stub (registered in Phase 49) wi
 - Phase 13: Schema-per-tenant isolation -- all new entities are plain `@Entity` with no multitenancy boilerplate
 - Phase 55: Legal vertical patterns -- court calendar, conflict check, tariff entities as reference patterns
 
-**Migration note**: V85 tenant migration creates all 10 trust tables, indexes, constraints, and capability seeding. V84 is the latest existing migration.
+**Migration note**: V85 tenant migration creates all 10 trust tables, indexes, constraints, and capability seeding. V84 is the latest existing migration. (pre-squash; now in `V1__baseline.sql`)
 
 ---
 

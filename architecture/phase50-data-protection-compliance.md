@@ -1,6 +1,6 @@
 # Phase 50 — Data Protection Compliance
 
-> Standalone architecture document for Phase 50. ADRs: 193--196. Migration: V76.
+> Standalone architecture document for Phase 50. ADRs: 193--196. Migration: V76. (pre-squash; now in `V1__baseline.sql`)
 
 ---
 

@@ -26,7 +26,7 @@ The phase also ships the first client-POV 90-day lifecycle QA script — every f
 | Mobile polish | Ad-hoc per page | One-time responsive pass across all portal pages; Playwright visual-regression baselines at `sm`/`md`/`lg` |
 | Firm-side config surface | Custom-field settings UI, OrgSettings UI | `FieldDefinition.portalVisibleDeadline` toggle, `OrgSettings.portalRetainerMemberDisplay`, `OrgSettings.portalDigestCadence` |
 | Client-POV QA script | None | `qa/testplan/demos/portal-client-90day-keycloak.md` — 11 checkpoints across 90 days |
-| Migrations | Portal global high-water V18; tenant high-water V99 | Portal global V19 (`portal_vertical_parity`); tenant V110 (`phase68_firm_side_additions`, number shifted to leave space for Phase 67) |
+| Migrations | Portal global high-water V18; tenant high-water V99 | Portal global V19 (`portal_vertical_parity`); tenant V110 (`phase68_firm_side_additions`, number shifted to leave space for Phase 67) (pre-squash; now in tenant + global `V1__baseline.sql`) |
 
 ### What's out of scope
 

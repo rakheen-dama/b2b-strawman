@@ -9,7 +9,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 - [ADR-099](../adr/ADR-099-webhook-tenant-identification-payments.md) — Webhook Tenant Identification for Payments (tenant schema in PSP metadata)
 - [ADR-100](../adr/ADR-100-payment-link-lifecycle.md) — Payment Link Lifecycle (generate on SENT, manual refresh)
 
-**Migration**: V42 tenant — `payment_events` table + 3 columns on `invoices`. V9 global — payment fields on portal read-model.
+**Migration**: V42 tenant — `payment_events` table + 3 columns on `invoices`. V9 global — payment fields on portal read-model. (pre-squash; now in tenant + global `V1__baseline.sql`)
 
 **Dependencies on prior phases**: Phase 6 (Audit), Phase 6.5 (Notifications), Phase 7 (Portal Backend), Phase 10 (Invoicing), Phase 12 (OrgSettings branding), Phase 21 (Integration Ports), Phase 22 (Portal Frontend), Phase 24 (Email Delivery).
 

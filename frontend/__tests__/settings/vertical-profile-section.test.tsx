@@ -39,12 +39,6 @@ const MOCK_PROFILES = [
     description: "Law firm profile",
     modules: ["trust_accounting"],
   },
-  {
-    id: "consulting-generic",
-    name: "Consulting (Generic)",
-    description: "Generic",
-    modules: [],
-  },
 ];
 
 function mockSWRLoaded() {

@@ -6,7 +6,7 @@ The governing constraint is **BYOC ingestion**: NO Gmail/IMAP/webhook/poll and N
 
 This phase ships as **6 epics (581–586)**, expanded to **11 numbered slices** to honour the 8-12 file / ~800 LOC slice-sizing budget. The architecture's 6 capability slices (§N.10) form the epic spine; the foundation slice and the write-capability slice are split where the migration/entity work and the capability/audit-plumbing work are distinct concerns. **No slice mixes backend + frontend scope.**
 
-**Migration high-water at phase start**: tenant **V129** (`V129__create_mcp_egress_consents.sql`). Phase 81 ships **one** tenant migration: **V130** (`correspondence` table + `documents.correspondence_id` ALTER).
+**Migration high-water at phase start**: tenant **V129** (`V129__create_mcp_egress_consents.sql`). Phase 81 ships **one** tenant migration: **V130** (`correspondence` table + `documents.correspondence_id` ALTER). (pre-squash; now in `V1__baseline.sql`)
 
 ---
 

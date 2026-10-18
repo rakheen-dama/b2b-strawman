@@ -6,7 +6,7 @@
 
 > **ADRs**: [ADR-288](../adr/ADR-288-contract-review-document-as-report.md), [ADR-289](../adr/ADR-289-template-guided-drafting-over-freeform.md), [ADR-290](../adr/ADR-290-on-demand-compliance-audit-over-scheduled.md), [ADR-291](../adr/ADR-291-compliance-findings-persistent-lifecycle.md), [ADR-292](../adr/ADR-292-ai-generated-document-provenance.md)
 
-> **Migration**: Tenant **V127** -- `compliance_audit_reports`, `compliance_audit_findings` tables + `ALTER TABLE documents` to add `source` and `ai_execution_id` provenance columns ([ADR-292](../adr/ADR-292-ai-generated-document-provenance.md)). V127 follows V126 (Phase 73 field group applicable entity values). All tables are tenant-scoped per [ADR-T001](../adr/ADR-T001-schema-per-tenant-over-row-level-isolation.md). No global migrations. Contract review and drafting skills produce `Document` entities via the existing document pipeline -- no new tables required for them beyond the provenance columns.
+> **Migration**: Tenant **V127** -- `compliance_audit_reports`, `compliance_audit_findings` tables + `ALTER TABLE documents` to add `source` and `ai_execution_id` provenance columns ([ADR-292](../adr/ADR-292-ai-generated-document-provenance.md)). V127 follows V126 (Phase 73 field group applicable entity values). All tables are tenant-scoped per [ADR-T001](../adr/ADR-T001-schema-per-tenant-over-row-level-isolation.md). No global migrations. Contract review and drafting skills produce `Document` entities via the existing document pipeline -- no new tables required for them beyond the provenance columns. (pre-squash; now in `V1__baseline.sql`)
 
 ---
 

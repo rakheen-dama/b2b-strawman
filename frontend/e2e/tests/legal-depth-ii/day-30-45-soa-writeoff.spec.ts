@@ -11,11 +11,15 @@
  *
  * Prerequisites:
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
- *   2. Day 5 disbursement lifecycle completed (Sipho's depth-II matter with an
- *      APPROVED, UNBILLED sheriff-fee disbursement and trust deposit/payment)
- *   3. Time on Sipho's matter (for SoA fee content) — the lifecycle Day 7 time
- *      entries target the lifecycle matter, which is not created while lifecycle
- *      Day 1 fails, so this spec logs its own time entry through the UI.
+ *   2. Day 5 completed in this run (Sipho's depth-II client + matter with an APPROVED,
+ *      UNBILLED sheriff-fee disbursement and trust deposit/payment)
+ *   3. A billing rate and time on Sipho's matter (for SoA fee content) — both set up by
+ *      this spec's [setup] steps through the UI.
+ *
+ * Re-run safety: a CI retry re-runs this serial group for the same run id, so the
+ * time-entry description is attempt-scoped, the statement saved here is located by
+ * diffing the statement rows before/after generation (not by list order), and
+ * the first-attempt-only "no statements yet" check is skipped on a retry.
  *
  * Run:
  *   PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-depth-ii
@@ -24,16 +28,25 @@ import { test, expect, type Locator, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { captureScreenshot } from "../../helpers/screenshot";
 import {
+  attemptRunId,
   BASE,
+  clickThrough,
   currentDepthIiRun,
+  escapeRegExp,
   isoDate,
+  openClient,
+  openDisbursementList,
   openMatter,
   openGroupedTab,
+  selectNativeOption,
+  siphoClientName,
   siphoMatterName,
 } from "../../helpers/legal-depth-ii";
 
 const SHERIFF_FEE_DESCRIPTION = "Sheriff fee — service of process";
-const TIME_DESCRIPTION = "Drafted and served letter of demand on the Road Accident Fund";
+/** Attempt-scoped so a retried group's statement is checked against its own time entry. */
+const timeDescription = () =>
+  `Drafted and served letter of demand on the Road Accident Fund (${attemptRunId()})`;
 const WRITE_OFF_REASON =
   "Client dispute — unable to recover from third party, firm absorbing the cost";
 
@@ -66,15 +79,15 @@ async function verifyStatementPreview(dialog: Locator): Promise<RegExp> {
     .locator("body");
   await expect(preview).toContainText("Statement of Account", { timeout: 15_000 });
   await expect(preview).toContainText(siphoMatterName());
-  await expect(preview).toContainText(/Sipho Ndlovu/);
+  await expect(preview).toContainText(siphoClientName());
   // Fees: the 2h letter-of-demand entry, billed at Alice's (non-zero) rate
   await expect(preview).toContainText("Professional Fees");
-  const feeRow = preview.locator("tr", { hasText: TIME_DESCRIPTION });
+  const feeRow = preview.locator("tr", { hasText: timeDescription() });
   await expect(feeRow).toHaveCount(1);
   await expect(feeRow.locator("td")).toHaveText([
     /\d/, // date
     /\S/, // fee earner
-    TIME_DESCRIPTION,
+    timeDescription(),
     "2",
     /^R\s?[1-9][\d\s]*,\d{2}$/, // rate
     /^R\s?[1-9][\d\s]*,\d{2}$/, // amount
@@ -101,26 +114,51 @@ async function verifyStatementPreview(dialog: Locator): Promise<RegExp> {
 }
 
 async function openSheriffFeeDetail(page: Page) {
-  await page.goto(`${BASE}/legal/disbursements`);
+  await openDisbursementList(page, siphoMatterName());
   const row = page
     .locator('[data-testid^="disbursement-row-"]')
     .filter({ hasText: siphoMatterName() })
     .filter({ hasText: SHERIFF_FEE_DESCRIPTION })
     .first();
   await expect(row).toContainText("Approved", { timeout: 15_000 });
-  await row.click();
-  await page.waitForURL(/\/legal\/disbursements\/[0-9a-f-]{36}$/, { timeout: 15_000 });
-  // Full load of the detail URL so the page is hydrated before acting (see Day 5).
-  await page.goto(page.url());
-  await page.waitForLoadState("networkidle");
   const detail = page.getByTestId("disbursement-detail");
-  await expect(detail).toContainText(SHERIFF_FEE_DESCRIPTION, { timeout: 15_000 });
+  // Ready once its detail page has rendered and the page transition settled
+  await clickThrough(page, row, detail.getByText(SHERIFF_FEE_DESCRIPTION, { exact: true }));
   return detail;
 }
 
+/** data-testid of the statement row saved by "Save Statement" (same worker within the group). */
+let savedStatementRowId = "";
+
 test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)", () => {
+  // ── Day 0 prerequisite: a billing rate for Alice on Sipho's client ──
+  // A freshly seeded tenant has no billing rates (legal-lifecycle Day 0 sets org rates), so
+  // time would be billed at R0. A client-level override keeps the setup scoped to this run.
+  test("[setup] Alice (Thandi): Billing rate override for Alice on Sipho's client", async ({
+    page,
+  }) => {
+    await loginAs(page, "alice");
+    await openClient(page, siphoClientName());
+    await openGroupedTab(page, "finance", "rates");
+    const aliceRate = page
+      .getByRole("tabpanel")
+      .getByRole("row")
+      .filter({ hasText: "Alice Owner" });
+    // A retried group keeps the first attempt's override (a second one would overlap it)
+    if (test.info().retry > 0 && (await aliceRate.count()) > 0) return;
+    await page.getByRole("tabpanel").getByRole("button", { name: "Add Override" }).first().click();
+    const dialog = page.getByRole("dialog", { name: "Add Customer Rate Override" });
+    await expect(dialog).toBeVisible();
+    await selectNativeOption(dialog.getByLabel("Member"), "Alice Owner");
+    await dialog.getByLabel("Hourly Rate").fill("2500");
+    await dialog.getByLabel("Effective From").fill(isoDate(-90));
+    await dialog.getByRole("button", { name: "Create Override" }).click();
+    await expect(dialog).toBeHidden({ timeout: 15_000 });
+    await expect(aliceRate).toContainText(/2[\s\u00a0\u202f]?500,00/, { timeout: 15_000 });
+  });
+
   // ── Day 7 prerequisite: fee-earning time on Sipho's matter ────────
-  test("Alice (Thandi): Log 2h on Sipho's matter — letter of demand", async ({ page }) => {
+  test("[setup] Alice (Thandi): Log 2h on Sipho's matter — letter of demand", async ({ page }) => {
     await loginAs(page, "alice");
     await openMatter(page, siphoMatterName());
     await openGroupedTab(page, "work", "tasks");
@@ -134,16 +172,20 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     await dialog.locator("#time-hours").fill("2");
     await dialog.locator("#time-minutes").fill("0");
     await dialog.locator("#time-date").fill(isoDate());
-    await dialog.locator("#time-description").fill(TIME_DESCRIPTION);
+    await dialog.locator("#time-description").fill(timeDescription());
     await expect(dialog.locator("#time-billable")).toBeChecked();
     await dialog.getByRole("button", { name: "Log Time" }).click();
     await expect(dialog).toBeHidden({ timeout: 15_000 });
 
-    // Finance → Time summarises the entry by task and by member
+    // Finance → Time summarises the entry by task and by member (a retried group adds to
+    // the first attempt's 2h; the entry itself is checked line-by-line in the statement)
     await openGroupedTab(page, "finance", "time");
     const timePanel = page.getByRole("tabpanel");
-    await expect(timePanel).toContainText(/Letter of demand\s*2h/, { timeout: 15_000 });
-    await expect(timePanel).toContainText(/Alice Owner\s*2h/);
+    const hours = test.info().retry === 0 ? "2h" : "\\d+h";
+    await expect(timePanel).toContainText(new RegExp(`Letter of demand\\s*${hours}`), {
+      timeout: 15_000,
+    });
+    await expect(timePanel).toContainText(new RegExp(`Alice Owner\\s*${hours}`));
   });
 
   // ── 30.1-30.7: Generate Statement of Account on Sipho's matter ────
@@ -152,12 +194,16 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     const tab = await openStatementsTab(page);
     await expect(tab.getByRole("heading", { name: "Statements of Account" })).toBeVisible();
     await expect(tab.getByTestId("open-generate-statement-btn")).toBeVisible();
-    await expect(tab.getByTestId("statements-empty")).toBeVisible();
-    await page.waitForLoadState("networkidle");
-    await captureScreenshot(page, "day-30-matter-statements-tab");
+    // A retried group finds the first attempt's statement already listed
+    if (test.info().retry === 0) {
+      await expect(tab.getByTestId("statements-empty")).toBeVisible();
+      await page.waitForLoadState("networkidle");
+      await captureScreenshot(page, "day-30-matter-statements-tab");
+    }
   });
 
-  // PRODUCT BUG (reproduced): once the HTML preview renders, the Statement of Account
+  // FIXME(depth-ii:soa-preview-unbounded-scale) PRODUCT BUG (reproduced): once the HTML
+  // preview renders, the Statement of Account
   // dialog's layout never settles. A4PreviewWrapper (components/documents/a4-preview-wrapper.tsx)
   // derives its scale from its own clientWidth via a ResizeObserver; inside the SoA dialog the
   // preview container is not width-constrained, so every scale-up widens the container, which
@@ -184,9 +230,14 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     await captureScreenshot(page, "statement-of-account-preview", { curated: true });
   });
 
-  test("Alice: Save Statement + verify download PDF action", async ({ page }) => {
+  test("Alice: Save Statement — listed on the matter, PDF downloadable from the Documents tab", async ({
+    page,
+  }) => {
     await loginAs(page, "alice");
     const tab = await openStatementsTab(page);
+    const rows = tab.locator('[data-testid^="statement-row-"]');
+    const rowIds = () => rows.evaluateAll((els) => els.map((e) => e.getAttribute("data-testid")!));
+    const before = new Set(await rowIds());
 
     // "Preview & Save" generates the statement, saves it to the matter and renders the preview
     const dialog = await generateStatement(page, tab);
@@ -196,27 +247,34 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
 
-    // The saved statement is listed on the matter with its balances
-    const row = tab.locator('[data-testid^="statement-row-"]').first();
-    await expect(row).toBeVisible({ timeout: 15_000 });
+    // The saved statement is listed on the matter with its balances — located as the one
+    // row that was not there before (independent of the API's list order)
+    await expect
+      .poll(async () => (await rowIds()).filter((id) => !before.has(id)), { timeout: 15_000 })
+      .toHaveLength(1);
+    savedStatementRowId = (await rowIds()).find((id) => !before.has(id))!;
+    const row = tab.getByTestId(savedStatementRowId);
     await expect(row).toContainText(closingBalanceOwing);
-
     await expect(row.locator('[data-testid^="statement-download-"]')).toBeEnabled();
     await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-30-statement-saved-list");
 
-    // The statement PDF is saved to the matter's documents — download it from there.
-    // (The Statements-tab "Download" button proxies the PDF through a Next.js server action
-    // that follows the backend's 302 to the S3 presigned URL; on the e2e docker stack the
-    // presigner endpoint is http://localhost:4567, reachable from the browser but not from
-    // inside the frontend container, so that proxy cannot fetch the file on this stack.
-    // The Documents-tab download hands the presigned URL to the browser instead.)
+    // The statement PDF is also saved to the matter's documents; the Documents-tab download
+    // hands the browser the S3 presigned URL, which the browser fetches.
+    const fileName = new RegExp(
+      `^Download statement-of-account-${escapeRegExp(
+        siphoMatterName()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+      )}`
+    );
     await openGroupedTab(page, "work", "documents");
     const docDownload = page
       .getByRole("tabpanel")
       .getByRole("button", { name: /^Download statement-of-account-.*\.pdf$/ })
       .first();
     await expect(docDownload).toBeVisible({ timeout: 15_000 });
+    await expect(docDownload).toHaveAccessibleName(fileName);
     const [pdf] = await Promise.all([
       page.waitForResponse((r) => /\/statement-of-account-[^/?]*\.pdf\?/.test(r.url())),
       docDownload.click(),
@@ -225,8 +283,33 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     expect(pdf.headers()["content-type"]).toContain("pdf");
   });
 
+  // FIXME(depth-ii:e2e-s3-presigner-unreachable) E2E ENVIRONMENT LIMITATION — not a product
+  // bug. The Statements-tab "Download" button calls downloadGeneratedDocumentAction
+  // (settings/templates/template-generation-actions.ts), a server action that fetches
+  // GET /api/generated-documents/{id}/download with `redirect: "follow"` from inside the
+  // frontend container. The backend answers 302 to the S3 presigned URL, whose host is
+  // AWS_S3_PRESIGNER_ENDPOINT=http://localhost:4567 (compose/docker-compose.e2e.yml) — the
+  // LocalStack port as published to the host, so it is reachable from the browser but not
+  // from inside the frontend container. Reproduced: host → backend gives 302 to
+  // http://localhost:4567/docteams-dev/.../statement-of-account-*.pdf; the same request from
+  // the e2e-frontend container gets the 302 and then `fetch failed ECONNREFUSED` on the
+  // presigned URL, so the action returns "Failed to download document." and no file is
+  // saved. In a real deployment the presigned URL points at S3, reachable from the server.
+  test.fixme("Alice: Statements-tab Download fetches the PDF", async ({ page }) => {
+    await loginAs(page, "alice");
+    const tab = await openStatementsTab(page);
+    const row = tab.getByTestId(savedStatementRowId);
+    await expect(row).toBeVisible({ timeout: 15_000 });
+    const [download] = await Promise.all([
+      page.waitForEvent("download", { timeout: 15_000 }),
+      row.locator('[data-testid^="statement-download-"]').click(),
+    ]);
+    expect(download.suggestedFilename()).toMatch(/\.pdf$/);
+  });
+
   // ── 45.5-45.11: Disbursement write-off ─────────────────────────────
-  // PRODUCT GAP (reproduced): there is no Write Off action anywhere in the UI. The
+  // FIXME(depth-ii:no-write-off-action) PRODUCT BUG (missing UI, reproduced): there is no
+  // Write Off action anywhere in the UI. The
   // disbursement detail page (app/(app)/org/[slug]/legal/disbursements/[id]/detail-client.tsx)
   // renders no actions at all for an APPROVED/UNBILLED disbursement, even for the Owner
   // (WRITE_OFF_DISBURSEMENTS). The backend endpoint POST /api/legal/disbursements/{id}/write-off
@@ -252,7 +335,8 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     await captureScreenshot(page, "day-45-disbursement-written-off");
   });
 
-  // Blocked by the missing write-off action above (no write-off event can be produced).
+  // FIXME(depth-ii:no-write-off-action) PRODUCT BUG — blocked by the missing write-off
+  // action above (no write-off event can be produced).
   test.fixme("Alice: Verify write-off audit event present in audit log", async ({ page }) => {
     await loginAs(page, "alice");
     await page.goto(`${BASE}/settings/audit-log`);
@@ -272,7 +356,8 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     await captureScreenshot(page, "day-45-audit-log-write-off-event");
   });
 
-  // Blocked by the missing write-off action above (nothing is written off to exclude).
+  // FIXME(depth-ii:no-write-off-action) PRODUCT BUG — blocked by the missing write-off
+  // action above (nothing is written off to exclude).
   test.fixme("Alice: Verify written-off disbursement excluded from next invoice draft", async ({
     page,
   }) => {
@@ -280,8 +365,7 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     await page.goto(`${BASE}/invoices`);
     await page.getByRole("button", { name: "New Fee Note" }).click();
     await page
-      .getByRole("option", { name: /^Sipho Ndlovu/ })
-      .first()
+      .getByRole("option", { name: new RegExp(`^${escapeRegExp(siphoClientName())}(\\s|$)`) })
       .click();
     await page.waitForURL(/\/customers\/[0-9a-f-]{36}\?tab=invoices/);
 

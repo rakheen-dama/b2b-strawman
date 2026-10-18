@@ -7,6 +7,11 @@ if (authMode !== "mock") {
   );
 }
 
+// helpers/mailpit.ts reads MAILPIT_URL (default :8025, the dev stack's Mailpit). The E2E
+// mock-auth stack maps its Mailpit to :8026 (compose/docker-compose.e2e.yml), so default
+// to that here; an explicit MAILPIT_URL still wins. Workers inherit the runner's env.
+process.env.MAILPIT_URL ||= "http://localhost:8026";
+
 export default defineConfig({
   testDir: "./tests/legal-depth-ii",
   snapshotPathTemplate: "{testDir}/../../screenshots/legal-depth-ii/{arg}{ext}",

@@ -13,17 +13,14 @@
  * Terminology: always "Disbursement" (never "Expense").
  *
  * Prerequisites:
- *   1. E2E stack running: bash compose/scripts/e2e-up.sh
- *   2. Legal-za profile active on e2e-test-org
- *   3. legal-lifecycle has run (client "Sipho Ndlovu <run>" exists)
- *   4. settings.enabledModules includes "disbursements" (otherwise the list page 404s)
+ *   1. Freshly seeded E2E stack: bash compose/scripts/e2e-up.sh (legal-za profile,
+ *      "disbursements" in enabledModules — both are the seed defaults)
  *
- * Self-sufficiency: the lifecycle Day 1 "Create Litigation matter for Sipho" step
- * currently fails, and lifecycle never creates a trust account, so this spec
- * creates its own litigation matter for Sipho (from the Litigation template) and
- * the trust account / deposit / deeds-office payment it needs — all through the UI.
- * The matter name is shared with the Day 30-45 and Day 85 specs via
- * helpers/legal-depth-ii.ts.
+ * Standalone: this spec starts the depth-II run and creates everything it needs
+ * through the UI — Sipho's client ("Sipho Ndlovu <run>"), his litigation matter (from
+ * the Litigation template), and the trust account / deposit / deeds-office payment.
+ * It does not need the legal-lifecycle suite. The client and matter names are shared
+ * with the Day 30-45 and Day 85 specs via helpers/legal-depth-ii.ts.
  *
  * Run:
  *   PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-depth-ii
@@ -32,7 +29,12 @@ import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { captureScreenshot } from "../../helpers/screenshot";
 import {
+  attemptRunId,
   BASE,
+  clickThrough,
+  createClient,
+  currentDepthIiRun,
+  openDisbursementList,
   escapeRegExp,
   isoDate,
   openMatter,
@@ -41,10 +43,10 @@ import {
   selectNativeOption,
   siphoClientName,
   siphoMatterName,
+  startClientOnboarding,
   startDepthIiRun,
 } from "../../helpers/legal-depth-ii";
 
-const SIPHO_CLIENT = /^Sipho Ndlovu/;
 const SHERIFF_FEE_DESCRIPTION = "Sheriff fee — service of process";
 const DEEDS_FEE_DESCRIPTION = "Deeds office search fee";
 const TRUST_DEPOSIT_AMOUNT = "5000.00";
@@ -52,38 +54,35 @@ const DEEDS_FEE_AMOUNT = "1250.00";
 
 /** Reference of the approved trust payment the deeds-office disbursement links to. */
 function deedsPaymentReference(): string {
-  return `PAY/DEEDS/${siphoMatterName().split(" ").pop()}`;
+  return `PAY/DEEDS/${currentDepthIiRun()}`;
 }
 
-async function openNewDisbursementDialog(page: Page) {
-  await page.goto(`${BASE}/legal/disbursements`);
-  await expect(page.getByTestId("disbursements-list-page")).toBeVisible({ timeout: 15_000 });
+async function openNewDisbursementDialog(page: Page, matterName = siphoMatterName()) {
+  await openDisbursementList(page, matterName);
   await page.getByTestId("create-disbursement-trigger").click();
   const dialog = page.getByTestId("create-disbursement-dialog");
   await expect(dialog).toBeVisible();
   return dialog;
 }
 
-async function openDisbursementDetail(page: Page, description: string) {
-  await page.goto(`${BASE}/legal/disbursements`);
+async function openDisbursementDetail(
+  page: Page,
+  description: string,
+  matterName = siphoMatterName()
+) {
+  await openDisbursementList(page, matterName);
   const row = page
     .locator('[data-testid^="disbursement-row-"]')
-    .filter({ hasText: siphoMatterName() })
+    .filter({ hasText: matterName })
     .filter({ hasText: description })
     .first();
   await expect(row, `disbursement "${description}" should be listed`).toBeVisible({
     timeout: 15_000,
   });
-  await row.click();
-  await page.waitForURL(/\/legal\/disbursements\/[0-9a-f-]{36}$/, { timeout: 15_000 });
-  // Load the detail page by its URL so it is fully hydrated before we act on it:
-  // `networkidle` does not cover client-side transitions, and an action fired while
-  // the row-click transition is still committing gets its result discarded.
-  await page.goto(page.url());
-  await page.waitForLoadState("networkidle");
   const detail = page.getByTestId("disbursement-detail");
-  await expect(detail).toBeVisible({ timeout: 15_000 });
-  await expect(detail).toContainText(description);
+  // Ready once this disbursement's detail page has rendered and the page transition settled
+  await clickThrough(page, row, detail.getByText(description, { exact: true }));
+  await expect(page).toHaveURL(/\/legal\/disbursements\/[0-9a-f-]{36}$/);
   return detail;
 }
 
@@ -95,11 +94,28 @@ async function openTrustTransactions(page: Page) {
 }
 
 test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
-  // ── Day 1 prerequisite: Sipho's litigation matter ─────────────────
-  test("Alice (Thandi): Open Sipho's litigation matter from the Litigation template", async ({
+  // ── Day 1 prerequisite: Sipho's client + litigation matter ────────
+  test("[setup] Alice (Thandi): Create client Sipho Ndlovu and start FICA onboarding", async ({
     page,
   }) => {
-    const matterName = siphoMatterName(startDepthIiRun());
+    // Starts the depth-II run: every client/matter name in the suite derives from this id.
+    const runId = startDepthIiRun();
+    const clientName = `Sipho Ndlovu ${runId}`;
+    await loginAs(page, "alice");
+    await createClient(page, {
+      name: clientName,
+      type: "Individual",
+      email: `sipho.ndlovu.${runId}@example.com`,
+      idNumber: "8501015800087",
+    });
+    await startClientOnboarding(page);
+    recordSiphoClient(clientName);
+  });
+
+  test("[setup] Alice (Thandi): Open Sipho's litigation matter from the Litigation template", async ({
+    page,
+  }) => {
+    const matterName = siphoMatterName();
     await loginAs(page, "alice");
     await page.goto(`${BASE}/projects`);
     await page.getByRole("button", { name: "New from Template" }).click();
@@ -110,13 +126,12 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
     await dialog.getByRole("button", { name: "Next" }).click();
 
     await dialog.getByLabel(/Matter name/).fill(matterName);
-    // Lifecycle Day 1 creates "Sipho Ndlovu <run>"; record the exact client used
-    recordSiphoClient(await selectNativeOption(dialog.getByLabel(/^Client/), SIPHO_CLIENT));
+    await selectNativeOption(dialog.getByLabel(/^Client/), siphoClientName());
     await dialog.getByRole("button", { name: "Create Matter" }).click();
 
     await page.waitForURL(/\/projects\/[0-9a-f-]{36}/, { timeout: 15_000 });
     await expect(page.getByRole("heading", { level: 1, name: matterName })).toBeVisible();
-    await expect(page.locator("main")).toContainText(/Sipho Ndlovu/);
+    await expect(page.locator("main")).toContainText(siphoClientName());
   });
 
   // ── 5.5: Navigate to disbursements list page ──────────────────────
@@ -170,17 +185,18 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
     await expect(detail.getByTestId("disbursement-submit-for-approval-button")).toBeHidden();
     await expect(detail).toContainText("Office Account");
 
-    await page.goto(`${BASE}/legal/disbursements`);
+    await openDisbursementList(page, siphoMatterName());
     await expect(row).toContainText("Pending", { timeout: 15_000 });
     await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-05-disbursement-sheriff-fee-created");
   });
 
   // ── 5.9 prerequisite: approved trust payment on Sipho's matter ────
-  test("Alice + Bob: Fund Sipho's trust ledger and approve a deeds-office trust payment", async ({
+  test("[setup] Alice + Bob: Fund Sipho's trust ledger and approve a deeds-office trust payment", async ({
     page,
   }) => {
-    // Alice (Thandi): make sure the firm has a trust account (lifecycle Day 0 never creates one)
+    // Alice (Thandi): make sure the firm has a trust account (the seed creates none; a
+    // previous depth-II run on the same stack may already have added it)
     await loginAs(page, "alice");
     await page.goto(`${BASE}/trust-accounting`);
     const addAccount = page.getByRole("button", { name: "Add Account" });
@@ -210,12 +226,12 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
     await deposit.getByRole("combobox").nth(1).click();
     await page.getByRole("option", { name: new RegExp(escapeRegExp(siphoMatterName())) }).click();
     await deposit.getByLabel("Amount").fill(TRUST_DEPOSIT_AMOUNT);
-    await deposit.getByLabel("Reference").fill(`DEP/${siphoMatterName().split(" ").pop()}`);
+    await deposit.getByLabel("Reference").fill(`DEP/${currentDepthIiRun()}`);
     await deposit.getByLabel(/Description/).fill("Client deposit — RAF claim disbursements");
     await deposit.getByRole("button", { name: "Record Deposit" }).click();
     await expect(deposit).toBeHidden({ timeout: 15_000 });
     await expect(
-      page.locator("main tbody tr", { hasText: `DEP/${siphoMatterName().split(" ").pop()}` })
+      page.locator("main tbody tr", { hasText: `DEP/${currentDepthIiRun()}` })
     ).toContainText("RECORDED", { timeout: 15_000 });
 
     // Bob: records the R1,250 payment to the Deeds Office from Sipho's trust ledger
@@ -249,8 +265,9 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
   });
 
   // ── 5.9: Bob creates deeds-office TRUST_ACCOUNT disbursement + trust link ──
-  // PRODUCT BUG (reproduced on the e2e stack): the trust-link dialog never lists the
-  // approved trust payment. `fetchApprovedTrustDisbursementPayments`
+  // FIXME(depth-ii:trust-link-payment-type) PRODUCT BUG (reproduced on the e2e stack):
+  // the trust-link dialog never lists the approved trust payment.
+  // `fetchApprovedTrustDisbursementPayments`
   // (app/(app)/org/[slug]/legal/disbursements/actions.ts) keeps only rows with
   // transactionType === "DISBURSEMENT_PAYMENT", but the trust ledger records payments as
   // "PAYMENT" (chk_trust_txn_type has no DISBURSEMENT_PAYMENT value and
@@ -301,8 +318,9 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
   });
 
   // ── 5.10: Approval of the trust-linked disbursement (Thandi/Owner) ─
-  // Blocked by the same trust-link product bug as 5.9: the trust-linked disbursement
-  // cannot be created, so there is nothing for Thandi to approve.
+  // FIXME(depth-ii:trust-link-payment-type) PRODUCT BUG — blocked by the 5.9 trust-link
+  // bug: the trust-linked disbursement cannot be created, so there is nothing for Thandi
+  // to approve.
   test.fixme("Alice (Thandi): Approve trust-linked disbursement", async ({ page }) => {
     await loginAs(page, "alice");
     const detail = await openDisbursementDetail(page, DEEDS_FEE_DESCRIPTION);
@@ -343,6 +361,73 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
     await expect(detail).toContainText("Sheriff return of service received");
   });
 
+  // FIXME(depth-ii:page-transition-remount) PRODUCT BUG (reproduced): an action taken as soon
+  // as a page reached by client-side navigation has rendered is thrown away. The org layout
+  // wraps pages in <PageTransition> (components/page-transition.tsx): AnimatePresence
+  // mode="wait" around a motion.div keyed by pathname. After the router commits, the new page
+  // first renders inside the *outgoing* wrapper while it fades out (100ms) and is then
+  // remounted in a new wrapper, discarding its state. Traced with a MutationObserver on the
+  // disbursement detail (row click → detail visible → Approve): detail rendered at +1381ms,
+  // Approve dialog opened at +1416ms, then at +1529ms the dialog AND the whole detail subtree
+  // were removed and re-added (no network request in between) — the dialog the user opened
+  // vanishes. 10/10 click-through attempts failed this way; 3/3 passed after a full page load
+  // and 8/8 passed once the outgoing wrapper was gone (helpers clickThrough). Earlier spec
+  // versions papered over this with `page.goto(page.url())` reloads. Same component, second
+  // symptom (6 occurrences across ~14 suite / Day-14 runs, trace-captured): a client-side
+  // navigation into a matter commits the route but leaves the new wrapper empty
+  // (`<div style="opacity: 1; transform: none;"></div>`) — a blank content area for 15s+,
+  // with or without test-side DOM tagging. helpers openMatter therefore deep-links to the
+  // matter URL; every other navigation uses the click path.
+  test.fixme("Bob: Approve dialog opened right after navigating to a disbursement stays open", async ({
+    page,
+  }) => {
+    // Own matter, so the disbursement this creates never touches Sipho's statement/closure
+    const reproMatter = `Ndlovu — transition repro ${attemptRunId()}`;
+    await loginAs(page, "alice");
+    await page.goto(`${BASE}/projects`);
+    await page.getByRole("button", { name: "New Matter" }).click();
+    const matterDialog = page.getByRole("dialog", { name: "Create Matter" });
+    await matterDialog.getByLabel("Name", { exact: true }).fill(reproMatter);
+    await selectNativeOption(matterDialog.getByLabel(/^Client/), siphoClientName());
+    await matterDialog.getByLabel(/^Work Type/).fill("LITIGATION");
+    await matterDialog.getByRole("button", { name: "Create Matter" }).click();
+    await expect(matterDialog).toBeHidden({ timeout: 15_000 });
+
+    await loginAs(page, "bob");
+    const dialog = await openNewDisbursementDialog(page, reproMatter);
+    const description = `Sheriff fee — re-service ${attemptRunId()}`;
+    await selectNativeOption(dialog.getByLabel("Matter"), reproMatter);
+    await selectNativeOption(dialog.getByLabel("Client"), siphoClientName());
+    await dialog.getByLabel("Category").selectOption("SHERIFF_FEES");
+    await dialog.getByLabel("Description").fill(description);
+    await dialog.getByTestId("disbursement-amount-input").fill("150.00");
+    await dialog.getByLabel("Incurred Date").fill(isoDate());
+    await dialog.getByLabel("Supplier", { exact: true }).fill("Sheriff Johannesburg North");
+    await dialog.getByRole("button", { name: "Create Disbursement" }).click();
+    await expect(dialog).toBeHidden({ timeout: 15_000 });
+    const submitDetail = await openDisbursementDetail(page, description, reproMatter);
+    await submitDetail.getByTestId("disbursement-submit-for-approval-button").click();
+    await expect(submitDetail.getByText("Pending", { exact: true })).toBeVisible({
+      timeout: 15_000,
+    });
+
+    // Click through from the (fully faded-in) list and act as soon as the detail page is there
+    await openDisbursementList(page, reproMatter);
+    const row = page.locator('[data-testid^="disbursement-row-"]').filter({ hasText: description });
+    await expect(row).toContainText("Pending", { timeout: 15_000 });
+    await expect(page.locator("#main-content .max-w-7xl > div")).toHaveCSS("opacity", "1");
+    await row.click();
+    const detail = page.getByTestId("disbursement-detail");
+    await expect(detail.getByText(description, { exact: true })).toBeVisible({ timeout: 15_000 });
+    await detail.getByTestId("disbursement-approve-button").click();
+    const approve = page.getByTestId("disbursement-approve-dialog");
+    await expect(approve).toBeVisible();
+    await approve.getByTestId("disbursement-approve-notes-input").fill("Approved for billing");
+    await approve.getByTestId("disbursement-confirm-approve-button").click({ timeout: 5_000 });
+    await expect(approve).toBeHidden({ timeout: 15_000 });
+    await expect(detail.getByText("Approved", { exact: true })).toBeVisible();
+  });
+
   // ── 5.12 (part 1): disbursements on Sipho's matter Finance tab ────
   test("Alice: Sipho's matter Finance → Disbursements tab lists the disbursements", async ({
     page,
@@ -379,8 +464,9 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
   });
 
   // ── 5.12 (part 2): "Unbilled Disbursements: R2,000.00" summary ────
-  // PRODUCT GAP (reproduced): the matter Finance → Disbursements tab
-  // (components/legal/project-disbursements-tab.tsx) renders only the disbursement table —
+  // FIXME(depth-ii:matter-unbilled-disbursements-summary) PRODUCT BUG (missing UI,
+  // reproduced): the matter Finance → Disbursements tab (components/legal/
+  // project-disbursements-tab.tsx) renders only the disbursement table —
   // there is no "Unbilled Disbursements" summary on the matter at all. The R2,000.00
   // figure also needs the trust-linked deeds-office disbursement (blocked, see 5.9).
   test.fixme("Alice: Verify Unbilled Disbursements summary on Sipho's matter", async ({ page }) => {

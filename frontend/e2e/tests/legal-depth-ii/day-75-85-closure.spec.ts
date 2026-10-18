@@ -14,17 +14,16 @@
  *                audit event records override_used=true + justification verbatim.
  *
  * Prerequisites:
- *   1. E2E stack running: bash compose/scripts/e2e-up.sh
- *   2. legal-lifecycle has run (client "Apex Holdings <run>" exists)
- *   3. Day 5 + Day 30 + Day 45 flows completed — Sipho's depth-II matter holds an
- *      unresolved trust balance (Day 5 deposit R5,000 − deeds payment R1,250), which
- *      is the failing-gates matter for Day 85
- *   4. matter_closure module enabled in enabledModules
+ *   1. E2E stack running: bash compose/scripts/e2e-up.sh (matter_closure module enabled —
+ *      a seed default for legal-za)
+ *   2. Day 5 + Day 30 + Day 45 flows completed in this run — Sipho's depth-II matter holds
+ *      an unresolved trust balance (Day 5 deposit R5,000 − deeds payment R1,250), which is
+ *      the failing-gates matter for Day 85
  *
- * Self-sufficiency: no lifecycle matter is "clean" (all gates green needs a final
- * bill SENT, no open tasks, no trust balance), so Day 75 prepares one through the UI:
- * a template-free matter for Apex Holdings, one approved counsel-fee disbursement,
- * and a fee note billing it that is approved and sent.
+ * Standalone: no seeded or lifecycle matter is "clean" (all gates green needs a final bill
+ * SENT, no open tasks, no trust balance), so Day 75 prepares one through the UI: a new
+ * run-scoped client "Apex Holdings <run>", a template-free matter for it, one approved
+ * counsel-fee disbursement, and a fee note billing it that is approved and sent.
  *
  * Run:
  *   PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-depth-ii
@@ -33,20 +32,27 @@ import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { captureScreenshot } from "../../helpers/screenshot";
 import {
+  attemptRunId,
   BASE,
+  clickThrough,
+  createClient,
   escapeRegExp,
   isoDate,
+  openClient,
   openClosureDialog,
+  openDisbursementList,
   openGroupedTab,
   openMatter,
   selectNativeOption,
   siphoMatterName,
+  startClientOnboarding,
 } from "../../helpers/legal-depth-ii";
 
-const runId = Date.now().toString(36).slice(-5);
-const APEX_CLIENT = /^Apex Holdings/;
-const cleanMatterName = `Apex Holdings — Shareholders' Agreement Review ${runId}`;
-const COUNSEL_FEE_DESCRIPTION = `Counsel's opinion on shareholders' agreement ${runId}`;
+// Scoped to the depth-II run and the attempt (a CI retry of this group prepares fresh records)
+const apexClient = () => `Apex Holdings ${attemptRunId()}`;
+const cleanMatterName = () => `Apex Holdings — Shareholders' Agreement Review ${attemptRunId()}`;
+const counselFeeDescription = () =>
+  `Counsel's opinion on shareholders' agreement ${attemptRunId()}`;
 const OVERRIDE_JUSTIFICATION =
   "Trust remainder of R12,000 earmarked for final Section 35 payout pending master approval — closing under owner override";
 
@@ -61,22 +67,6 @@ const CLOSURE_GATES = [
   "ALL_INFO_REQUESTS_CLOSED",
   "ALL_ACCEPTANCE_REQUESTS_FINAL",
 ];
-
-/** Exact name of the lifecycle "Apex Holdings <run>" client (recorded by the first test). */
-let apexClient = "";
-
-/** Opens Apex Holdings' client page and returns its exact name. */
-async function openApexClient(page: Page): Promise<string> {
-  await page.goto(`${BASE}/customers`);
-  const name = apexClient ? new RegExp(escapeRegExp(apexClient)) : APEX_CLIENT;
-  const link = page.getByRole("link", { name }).first();
-  await expect(link).toBeVisible({ timeout: 15_000 });
-  await page.goto((await link.getAttribute("href"))!);
-  await page.waitForLoadState("networkidle");
-  const heading = page.getByRole("heading", { level: 1, name });
-  await expect(heading).toBeVisible();
-  return (await heading.textContent())!.trim();
-}
 
 async function openAuditLogFilteredBy(page: Page, eventType: string) {
   await page.goto(`${BASE}/settings/audit-log`);
@@ -96,72 +86,57 @@ async function openAuditLogFilteredBy(page: Page, eventType: string) {
 
 test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
   // ── 75 pre-state: a clean matter (final bill sent, nothing open) ──
-  test("Alice (Thandi): Prepare Apex Holdings — billing address on file, FICA onboarding started", async ({
+  test("[setup] Alice (Thandi): Create client Apex Holdings and start FICA onboarding", async ({
     page,
   }) => {
     await loginAs(page, "alice");
-    apexClient = await openApexClient(page);
-
-    // Fee-note generation requires the client's billing address
-    await page.getByRole("button", { name: "More actions" }).click();
-    await page.getByRole("menuitem", { name: "Edit Client" }).click();
-    const edit = page.getByRole("dialog", { name: /Edit (Client|Customer)/ });
-    await expect(edit).toBeVisible();
-    await edit.locator('input[name="addressLine1"]').fill("1 Sandton Drive");
-    await edit.locator('input[name="city"]').fill("Sandton");
-    await edit.locator('input[name="postalCode"]').fill("2196");
-    await edit.getByLabel(/^Country/).selectOption("ZA");
-    await edit.getByRole("button", { name: "Save Changes" }).click();
-    await expect(edit).toBeHidden({ timeout: 15_000 });
-
-    // New matters cannot be opened for a PROSPECT client. The lifecycle Day 2 onboarding
-    // steps leave Apex as a prospect today, so start its onboarding here when needed.
-    await page.reload();
-    await page.waitForLoadState("networkidle");
-    const startOnboarding = page.getByRole("button", { name: "Start Onboarding" }).first();
-    if (await startOnboarding.isVisible()) {
-      await startOnboarding.click();
-      const confirm = page.getByRole("alertdialog", { name: "Start Onboarding" });
-      await confirm.getByRole("button", { name: "Start Onboarding" }).click();
-      await expect(confirm).toBeHidden({ timeout: 15_000 });
-    }
-    await expect(page.getByRole("button", { name: "Start Onboarding" })).toHaveCount(0, {
-      timeout: 15_000,
+    // Billing address + tax number: fee-note generation and sending require them
+    await createClient(page, {
+      name: apexClient(),
+      type: "Company",
+      email: `apex.holdings.${attemptRunId()}@example.com`,
+      taxNumber: "9012345678",
     });
+    // New matters cannot be opened for a PROSPECT client
+    await startClientOnboarding(page);
   });
 
-  test("Alice (Thandi): Open a clean commercial matter for Apex Holdings", async ({ page }) => {
+  test("[setup] Alice (Thandi): Open a clean commercial matter for Apex Holdings", async ({
+    page,
+  }) => {
     await loginAs(page, "alice");
     await page.goto(`${BASE}/projects`);
     // "New Matter" (not "New from Template"): no template → no open tasks
     await page.getByRole("button", { name: "New Matter" }).click();
     const dialog = page.getByRole("dialog", { name: "Create Matter" });
     await expect(dialog).toBeVisible();
-    await dialog.getByLabel("Name", { exact: true }).fill(cleanMatterName);
+    await dialog.getByLabel("Name", { exact: true }).fill(cleanMatterName());
     await dialog
       .getByLabel(/^Description/)
       .fill("Review of the Apex Holdings shareholders' agreement ahead of the 2026 AGM.");
-    await selectNativeOption(dialog.getByLabel(/^Client/), apexClient);
+    await selectNativeOption(dialog.getByLabel(/^Client/), apexClient());
     await dialog.getByLabel(/^Work Type/).fill("COMMERCIAL");
     await dialog.getByRole("button", { name: "Create Matter" }).click();
     await expect(dialog).toBeHidden({ timeout: 15_000 });
 
-    await openMatter(page, cleanMatterName);
-    await expect(page.locator("main")).toContainText(/Apex Holdings/);
+    await openMatter(page, cleanMatterName());
+    await expect(page.locator("main")).toContainText(apexClient());
     await expect(page.locator("main")).toContainText("COMMERCIAL");
   });
 
-  test("Bob: Record + approve counsel's fee disbursement on the Apex matter", async ({ page }) => {
+  test("[setup] Bob: Record + approve counsel's fee disbursement on the Apex matter", async ({
+    page,
+  }) => {
     await loginAs(page, "bob");
-    await page.goto(`${BASE}/legal/disbursements`);
+    await openDisbursementList(page, cleanMatterName());
     await page.getByTestId("create-disbursement-trigger").click();
     const dialog = page.getByTestId("create-disbursement-dialog");
     await expect(dialog).toBeVisible();
-    await selectNativeOption(dialog.getByLabel("Matter"), cleanMatterName);
-    await selectNativeOption(dialog.getByLabel("Client"), apexClient);
+    await selectNativeOption(dialog.getByLabel("Matter"), cleanMatterName());
+    await selectNativeOption(dialog.getByLabel("Client"), apexClient());
     await dialog.getByLabel("Category").selectOption("COUNSEL_FEES");
     await expect(dialog.getByLabel("VAT Treatment")).toHaveValue("STANDARD_15");
-    await dialog.getByLabel("Description").fill(COUNSEL_FEE_DESCRIPTION);
+    await dialog.getByLabel("Description").fill(counselFeeDescription());
     await dialog.getByTestId("disbursement-amount-input").fill("3500.00");
     await dialog.getByLabel("Incurred Date").fill(isoDate());
     await dialog.getByLabel("Supplier", { exact: true }).fill("Adv. N. Mokoena SC");
@@ -170,13 +145,12 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
 
     const row = page
       .locator('[data-testid^="disbursement-row-"]')
-      .filter({ hasText: COUNSEL_FEE_DESCRIPTION });
+      .filter({ hasText: counselFeeDescription() });
     await expect(row).toContainText("Draft", { timeout: 15_000 });
-    await row.click();
-    await page.waitForURL(/\/legal\/disbursements\/[0-9a-f-]{36}$/);
-    await page.goto(page.url()); // fully hydrated before acting (see Day 5)
+    // Ready once its detail page has rendered and the page transition settled
     const detail = page.getByTestId("disbursement-detail");
-    await expect(detail).toContainText(COUNSEL_FEE_DESCRIPTION, { timeout: 15_000 });
+    await clickThrough(page, row, detail.getByText(counselFeeDescription(), { exact: true }));
+    await expect(page).toHaveURL(/\/legal\/disbursements\/[0-9a-f-]{36}$/);
     await detail.getByTestId("disbursement-submit-for-approval-button").click();
     await expect(detail.getByTestId("disbursement-approval-panel")).toBeVisible({
       timeout: 15_000,
@@ -188,34 +162,50 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
     await expect(detail.getByText("Approved", { exact: true })).toBeVisible();
   });
 
-  test("Alice (Thandi): Bill the Apex matter — fee note drafted, approved and sent", async ({
+  test("[setup] Alice (Thandi): Bill the Apex matter — fee note drafted, approved and sent", async ({
     page,
   }) => {
     await loginAs(page, "alice");
-    await openApexClient(page);
+    await openClient(page, apexClient());
     await openGroupedTab(page, "finance", "invoices");
-    await page.getByRole("tabpanel").getByRole("button", { name: "New Fee Note" }).click();
+    const panel = page.getByRole("tabpanel");
+    const newFeeNote = panel.getByRole("button", { name: "New Fee Note" });
+    await expect(newFeeNote).toBeVisible({ timeout: 15_000 });
+    const feeNoteLinks = () =>
+      panel
+        .locator('a[href*="/invoices/"]')
+        .evaluateAll((els) => els.map((e) => e.getAttribute("href")!));
+    const before = new Set(await feeNoteLinks());
+
+    await newFeeNote.click();
     const generate = page.getByRole("dialog", { name: /Generate Fee Note|Select Unbilled Items/ });
     await expect(generate).toBeVisible({ timeout: 15_000 });
     await generate.getByRole("button", { name: "Fetch Unbilled Time" }).click();
     await expect(generate.getByTestId("disbursement-selection-section")).toContainText(
-      COUNSEL_FEE_DESCRIPTION,
+      counselFeeDescription(),
       { timeout: 15_000 }
     );
     await generate.getByRole("button", { name: "Validate & Create Draft" }).click();
     await generate.getByRole("button", { name: /^Create Draft/ }).click();
     await expect(generate).toBeHidden({ timeout: 15_000 });
 
-    const draftRow = page
-      .getByRole("tabpanel")
-      .getByRole("row")
-      .filter({ hasText: "Draft" })
-      .first();
-    await expect(draftRow).toBeVisible({ timeout: 15_000 });
-    await page.goto((await draftRow.getByRole("link").first().getAttribute("href"))!);
-    await page.waitForLoadState("networkidle");
-    await expect(page.locator("main")).toContainText(COUNSEL_FEE_DESCRIPTION);
-    await expect(page.locator("main")).toContainText(cleanMatterName);
+    // The created fee note is the one link that was not listed before (not "first Draft row")
+    await expect
+      .poll(async () => (await feeNoteLinks()).filter((href) => !before.has(href)), {
+        timeout: 15_000,
+      })
+      .toHaveLength(1);
+    const created = (await feeNoteLinks()).find((href) => !before.has(href))!;
+    expect(created).toMatch(/\/invoices\/[0-9a-f-]{36}$/);
+    const createdRow = panel.getByRole("row").filter({ has: page.locator(`a[href="${created}"]`) });
+    await expect(createdRow).toContainText("Draft");
+    await clickThrough(
+      page,
+      createdRow.locator(`a[href="${created}"]`).first(),
+      page.locator("main").getByText(counselFeeDescription()).first()
+    );
+    await expect(page).toHaveURL(new RegExp(`${escapeRegExp(created)}$`));
+    await expect(page.locator("main")).toContainText(cleanMatterName());
 
     await page.getByRole("button", { name: "Approve" }).click();
     await expect(page.getByRole("button", { name: "Send Fee Note" })).toBeVisible({
@@ -230,7 +220,7 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
   // ── 75.2-75.11: Happy-path closure (all gates green) ──────────────
   test("Alice (Thandi): Open Close Matter dialog on clean matter", async ({ page }) => {
     await loginAs(page, "alice");
-    await openMatter(page, cleanMatterName);
+    await openMatter(page, cleanMatterName());
     await expect(page.getByTestId("close-matter-btn")).toBeVisible();
     const dialog = await openClosureDialog(page);
     await expect(dialog.getByTestId("matter-closure-step-1")).toBeVisible();
@@ -240,7 +230,7 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
 
   test("Alice: Step 1 gate report renders all-green (happy path)", async ({ page }) => {
     await loginAs(page, "alice");
-    await openMatter(page, cleanMatterName);
+    await openMatter(page, cleanMatterName());
     const dialog = await openClosureDialog(page);
 
     const report = dialog.getByTestId("matter-closure-report");
@@ -263,7 +253,7 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
 
   test("Alice: Advance to Step 2 + confirm close with CONCLUDED reason", async ({ page }) => {
     await loginAs(page, "alice");
-    await openMatter(page, cleanMatterName);
+    await openMatter(page, cleanMatterName());
     const dialog = await openClosureDialog(page);
     await dialog.getByTestId("matter-closure-next-btn").click();
 
@@ -288,19 +278,10 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
     await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-75-matter-closed-success");
 
-    // 75.10: closure starts the retention clock (ADR-249). The card can only show the
-    // deletion date when the firm's retention period is stored; this tenant's
-    // legal_matter_retention_years is NULL (the backend RetentionPolicy falls back to 5 years,
-    // the card deliberately shows "not configured" instead of assuming it — see PR notes).
+    // 75.10 (part 1): closure starts the retention clock (ADR-249). The scheduled deletion
+    // date is checked by the 75.10 fixme below.
     const retention = page.getByTestId("retention-card");
     await expect(retention).toContainText(/clock started on/i, { timeout: 15_000 });
-    const retentionState = await retention.getAttribute("data-state");
-    expect(retentionState, "retention clock must have started").toMatch(/^(active|unconfigured)$/);
-    await expect(retention).toContainText(
-      retentionState === "active"
-        ? String(new Date().getFullYear() + 5) // deletion date = closure + 5 years
-        : /retention period isn.t configured yet/
-    );
 
     // 75.9: closure letter generated and attached to the matter
     await openGroupedTab(page, "work", "generated");
@@ -310,8 +291,31 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
     await captureScreenshot(page, "closure-letter-preview", { curated: true });
   });
 
+  // ── 75.10 (part 2): retention card shows the scheduled deletion date ──
+  // FIXME(depth-ii:retention-period-unconfigurable) PRODUCT BUG (reproduced): the closed
+  // matter's retention card renders data-state="unconfigured" ("Your firm's matter-retention
+  // period isn't configured yet") instead of the deletion date (closure + 5 years). On the
+  // freshly provisioned tenant org_settings.legal_matter_retention_years is NULL — the column
+  // DEFAULT 5 (V1__baseline.sql) is bypassed by the entity insert — and nothing can set it:
+  // DataProtectionSettings.setLegalMatterRetentionYears has no callers (no settings endpoint),
+  // and the card's "Configure retention period →" link opens Settings → Data Protection, which
+  // has no retention-years field. Closure itself uses the 5-year fallback
+  // (getEffectiveLegalMatterRetentionYears) while GET /api/projects/{id} reports
+  // retentionEndsOn = null, so the date is never shown.
+  test.fixme("Alice: Closed matter's retention card shows the deletion date (closure + 5 years)", async ({
+    page,
+  }) => {
+    await loginAs(page, "alice");
+    await openMatter(page, cleanMatterName(), { closed: true });
+    const retention = page.getByTestId("retention-card");
+    await expect(retention).toHaveAttribute("data-state", "active", { timeout: 15_000 });
+    await expect(retention).toContainText(/permanently deleted on/);
+    await expect(retention).toContainText(String(new Date().getFullYear() + 5));
+  });
+
   // ── 85.5-85.9: Admin (Bob) — override not available, step 3 ───────
-  // PRODUCT BUG (reproduced): Bob (Admin) is offered the override. The backend correctly
+  // FIXME(depth-ii:admin-offered-closure-override) PRODUCT BUG (reproduced): Bob (Admin) is
+  // offered the override. The backend correctly
   // withholds OVERRIDE_MATTER_CLOSURE from Admin (GET /api/me/capabilities for Bob has no
   // OVERRIDE_MATTER_CLOSURE), but the frontend `hasCapability` (lib/capabilities.tsx) returns
   // true for every capability when isAdmin || isOwner, so MatterClosureDialog's `canOverride`

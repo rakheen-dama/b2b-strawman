@@ -15,34 +15,37 @@
  *   - Verifies acceptance request delivery (Mailpit magic-link)
  *
  * Prerequisites:
- *   1. E2E stack running: bash compose/scripts/e2e-up.sh
- *   2. Legal-za profile active
- *   3. Phase 492 conveyancing template pack seeded (pack.json updated with
- *      `acceptanceEligible: true` on offer-to-purchase + power-of-attorney-transfer)
- *   4. Phase 492 clause pack `conveyancing-za-clauses` seeded
- *   5. Field pack `conveyancing_za_matter` seeded with 10 custom fields
+ *   1. Freshly seeded E2E stack: bash compose/scripts/e2e-up.sh (legal-za profile —
+ *      seeds the Property Transfer template, the `conveyancing_za_matter` field pack and
+ *      the Offer to Purchase document template)
+ *   2. Day 5 has started the depth-II run (names here derive from its run id)
  *
  * Run:
  *   PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-depth-ii
  */
 import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
+import { waitForEmail } from "../../helpers/mailpit";
 import { captureScreenshot } from "../../helpers/screenshot";
 import {
+  attemptRunId,
   BASE,
-  E2E_MAILPIT_URL,
+  createClient,
   escapeRegExp,
+  openClient,
   openGroupedTab,
   openMatter,
   selectNativeOption,
+  startClientOnboarding,
 } from "../../helpers/legal-depth-ii";
 
-// Unique names per run — prevents non-deterministic row binding when the
-// e2e stack is reused across runs and a previous matter with the same name exists.
-const runId = Date.now().toString(36).slice(-5);
-const clientName = `Khumalo Property Holdings ${runId}`;
-const clientEmail = `khumalo.property.${runId}@example.com`;
-const matterName = `Khumalo Property Holdings — Erf 1234 Sandton Transfer ${runId}`;
+// Names are scoped to the depth-II run (and to the attempt, so a CI retry of this
+// serial group creates fresh records) — prevents non-deterministic row binding when
+// the e2e stack is reused across runs.
+const clientName = () => `Khumalo Property Holdings ${attemptRunId()}`;
+const clientEmail = () => `khumalo.property.${attemptRunId()}@example.com`;
+const matterName = () => `Khumalo Property Holdings — Erf 1234 Sandton Transfer ${attemptRunId()}`;
+const ficaPack = () => `khumalo-fica-pack-${attemptRunId()}.pdf`;
 
 /** Labels of the 10 fields in the `conveyancing_za_matter` field group. */
 const CONVEYANCING_FIELDS: Record<string, string> = {
@@ -72,21 +75,12 @@ const FICA_ITEMS = [
 ];
 
 async function openMatterFieldsTab(page: Page) {
-  await openMatter(page, matterName);
+  await openMatter(page, matterName());
   await openGroupedTab(page, "details", "fields");
   const fieldsTab = page.getByTestId("matter-fields-tab");
   await expect(fieldsTab).toBeVisible();
   await expect(fieldsTab.getByText("SA Conveyancing — Matter Details").first()).toBeVisible();
   return fieldsTab;
-}
-
-async function openClient(page: Page) {
-  await page.goto(`${BASE}/customers`);
-  const link = page.getByRole("link", { name: clientName }).first();
-  await expect(link).toBeVisible({ timeout: 15_000 });
-  await page.goto((await link.getAttribute("href"))!);
-  await page.waitForLoadState("networkidle");
-  await expect(page.getByRole("heading", { level: 1, name: clientName })).toBeVisible();
 }
 
 test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)", () => {
@@ -95,35 +89,15 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     page,
   }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/customers`);
-    await page.getByRole("button", { name: "New Client" }).click();
+    await createClient(page, {
+      name: clientName(),
+      type: "Individual",
+      email: clientEmail(),
+      idNumber: "7605125009081",
+    });
 
-    // The dialog title changes from "Create Client" (step 1) to "Additional Information" (step 2)
-    const dialog = page.getByRole("dialog", { name: /^(Create Client|Additional Information)$/ });
-    await expect(dialog).toBeVisible();
-    await dialog.getByLabel("Name", { exact: true }).fill(clientName);
-    await selectNativeOption(dialog.getByLabel("Type", { exact: true }), "Individual");
-    await dialog.getByLabel("Email", { exact: true }).fill(clientEmail);
-    await dialog.locator('input[name="addressLine1"]').fill("12 Rivonia Road");
-    await dialog.locator('input[name="city"]').fill("Sandton");
-    await dialog.locator('input[name="postalCode"]').fill("2196");
-    await dialog.getByLabel(/^Country/).selectOption("ZA");
-    await dialog.getByRole("button", { name: "Next" }).click();
-
-    // Step 2: SA Legal client intake fields
-    await expect(dialog.getByText("Step 2 of 2")).toBeVisible();
-    await dialog.getByLabel(/ID \/ Passport Number/).fill("7605125009081");
-    await dialog.getByRole("button", { name: "Create Client" }).click();
-    await page.waitForURL(/\/customers\/[0-9a-f-]{36}/, { timeout: 15_000 });
-    await page.waitForLoadState("networkidle");
-    await expect(page.getByRole("heading", { level: 1, name: clientName })).toBeVisible();
-
-    // PROSPECT → ONBOARDING
-    await page.getByRole("button", { name: "Start Onboarding" }).first().click();
-    const confirm = page.getByRole("alertdialog", { name: "Start Onboarding" });
-    await confirm.getByRole("button", { name: "Start Onboarding" }).click();
-    await expect(confirm).toBeHidden({ timeout: 15_000 });
-    await expect(page.locator("main")).toContainText("Onboarding");
+    // PROSPECT → ONBOARDING (asserted on the lifecycle status badge)
+    await startClientOnboarding(page);
 
     // Upload the client's certified FICA pack to the client documents
     await openGroupedTab(page, "work", "documents");
@@ -134,7 +108,7 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
       .click();
     const upload = page.getByRole("dialog", { name: "Upload Customer Document" });
     await upload.locator('input[type="file"]').setInputFiles({
-      name: `khumalo-fica-pack-${runId}.pdf`,
+      name: ficaPack(),
       mimeType: "application/pdf",
       buffer: Buffer.from("%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n"),
     });
@@ -142,28 +116,31 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     await page.keyboard.press("Escape");
     await expect(upload).toBeHidden();
     await expect(
-      page
-        .getByRole("tabpanel")
-        .getByRole("row", { name: new RegExp(`khumalo-fica-pack-${runId}`) })
+      page.getByRole("tabpanel").getByRole("row", { name: new RegExp(escapeRegExp(ficaPack())) })
     ).toContainText("Uploaded", { timeout: 15_000 });
   });
 
   // ── 14.2 (part 2): FICA checklist complete → client auto-transitions to ACTIVE ──
-  // PRODUCT BUG (reproduced, intermittent): completing a checklist item persists it
-  // (GET /api/customers/{id}/checklists shows the item COMPLETED with the linked document)
-  // but the Onboarding tab keeps rendering it as "Pending" with "Mark Complete" — still
-  // stale 15s later, even when each item is completed on a freshly loaded page. The row
-  // (components/compliance/ChecklistInstanceItemRow.tsx) renders `item.status` from props and
-  // relies on `revalidatePath` in completeChecklistItem (customers/[id]/checklist-actions.ts)
-  // to refresh them; that refresh intermittently does not land (seen from the 2nd-4th item on in
-  // every run). The same stale-after-action pattern was seen on the disbursement detail
-  // "Submit for Approval" when acting right after a client-side navigation.
+  // FIXME(depth-ii:checklist-stale-after-complete) PRODUCT BUG (reproduced, intermittent):
+  // completing a checklist item persists it but the Onboarding tab can keep rendering it as
+  // "Pending" with "Mark Complete" until the page is reloaded. The row
+  // (components/compliance/ChecklistInstanceItemRow.tsx) renders `item.status` from server
+  // props and relies solely on `revalidatePath` in completeChecklistItem
+  // (customers/[id]/checklist-actions.ts) to refresh them. Instrumented runs on a ready page
+  // (client opened by click-through, tab rendered; 5 runs x 9 items): 6/45 completions stayed
+  // stale for 10s. In every stale case the server action returned 200 — in at least one with
+  // an RSC payload already carrying the item as COMPLETED — but the router never applied it
+  // (no client re-render / `framenavigated`), while every fresh case showed that commit
+  // ~150ms after the action; a reload always showed the item COMPLETED. This is NOT the
+  // disbursement "act right after a client-side navigation" race (see the PR notes): the
+  // disbursement detail renders the action's return value from local state and passed 14/14
+  // click-through runs without any reload.
   // Matter creation, OTP generation and acceptance below do not require an ACTIVE client.
   test.fixme("Alice (Thandi): Complete Khumalo's FICA checklist → client becomes ACTIVE", async ({
     page,
   }) => {
     await loginAs(page, "alice");
-    await openClient(page);
+    await openClient(page, clientName());
     await openGroupedTab(page, "compliance", "onboarding");
     const panel = page.getByRole("tabpanel");
     await expect(panel).toContainText("Legal Individual Client Onboarding", { timeout: 15_000 });
@@ -176,8 +153,8 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
         // Link the certified FICA pack uploaded in part 1
         const documentPicker = item.getByRole("combobox");
         await documentPicker.click();
-        await page.getByRole("option", { name: `khumalo-fica-pack-${runId}.pdf` }).click();
-        await expect(documentPicker).toContainText(`khumalo-fica-pack-${runId}.pdf`);
+        await page.getByRole("option", { name: ficaPack() }).click();
+        await expect(documentPicker).toContainText(ficaPack());
         await expect(page.getByRole("listbox")).toBeHidden();
       }
       const confirmItem = item.getByRole("button", { name: "Confirm" });
@@ -191,9 +168,8 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
 
     // Completing FICA auto-transitions the client to ACTIVE (address + country are on file)
     await page.reload();
+    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Active", { timeout: 15_000 });
     await expect(page.getByRole("button", { name: "Activate Customer" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Start Onboarding" })).toHaveCount(0);
-    await expect(page.locator("main")).not.toContainText(/Onboarding\s*\n\s*Since/);
   });
 
   // ── 14.2-14.3: Create conveyancing matter from Property Transfer template ──
@@ -207,16 +183,16 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     await dialog.getByRole("option", { name: /Property Transfer \(Conveyancing\)/ }).click();
     await dialog.getByRole("button", { name: "Next" }).click();
 
-    await dialog.getByLabel(/Matter name/).fill(matterName);
-    await selectNativeOption(dialog.getByLabel(/^Client/), clientName);
+    await dialog.getByLabel(/Matter name/).fill(matterName());
+    await selectNativeOption(dialog.getByLabel(/^Client/), clientName());
     // Matters created from the template inherit its work type (#1580)
     await expect(dialog.getByLabel(/Work Type/)).toHaveValue("CONVEYANCING");
     await dialog.getByRole("button", { name: "Create Matter" }).click();
 
     await page.waitForURL(/\/projects\/[0-9a-f-]{36}/, { timeout: 15_000 });
-    await expect(page.getByRole("heading", { level: 1, name: matterName })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: matterName() })).toBeVisible();
     await expect(page.locator("main")).toContainText("CONVEYANCING");
-    await expect(page.locator("main")).toContainText(clientName);
+    await expect(page.locator("main")).toContainText(clientName());
     await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-14-conveyancing-matter-created");
   });
@@ -287,7 +263,7 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
   // ── 14.7: Generate Offer to Purchase document ─────────────────────
   test("Alice: Generate Offer to Purchase document and save it to the matter", async ({ page }) => {
     await loginAs(page, "alice");
-    await openMatter(page, matterName);
+    await openMatter(page, matterName());
 
     await page.getByRole("button", { name: /Generate Document/ }).click();
     await page.getByRole("menuitem", { name: "Offer to Purchase" }).click();
@@ -297,7 +273,7 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     const preview = dialog.frameLocator('iframe[title="Document Preview"]').locator("body");
     // The preview merges the client, matter and the Day 14 conveyancing fields
     await expect(preview).toContainText("Offer to Purchase", { timeout: 15_000 });
-    await expect(preview).toContainText(`Purchaser: ${clientName}`);
+    await expect(preview).toContainText(`Purchaser: ${clientName()}`);
     await expect(preview).toContainText("Property Address: 12 Rivonia Road, Sandton, 2196");
     await expect(preview).toContainText("Erf Number: 1234");
     await expect(preview).toContainText("Deeds Office: Johannesburg");
@@ -316,8 +292,8 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
   });
 
   // ── 14.8: OTP carries the conveyancing clause pack ────────────────
-  // PRODUCT BUG (reproduced): the generated Offer to Purchase has an empty "Conditions of
-  // Sale" section. The OTP template content (template-packs/legal-za/offer-to-purchase.json)
+  // FIXME(depth-ii:otp-clause-associations) PRODUCT BUG (reproduced): the generated Offer
+  // to Purchase has an empty "Conditions of Sale" section. The OTP template content (template-packs/legal-za/offer-to-purchase.json)
   // embeds 7 clauseBlock nodes (voetstoots, occupation-date, suspensive-bond,
   // transfer-duty-liability, fica-compliance, rates-clearance, jurisdiction-za), and those
   // 10 clauses are seeded in the clause library, but `conveyancing-za-clauses/pack.json` has
@@ -327,7 +303,7 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     page,
   }) => {
     await loginAs(page, "alice");
-    await openMatter(page, matterName);
+    await openMatter(page, matterName());
     await page.getByRole("button", { name: /Generate Document/ }).click();
     await page.getByRole("menuitem", { name: "Offer to Purchase" }).click();
 
@@ -350,7 +326,7 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
   // ── 14.9-14.11: Send for Acceptance (Phase 28 flow) ───────────────
   test("Alice: Send OTP for Acceptance via Phase 28 flow", async ({ page }) => {
     await loginAs(page, "alice");
-    await openMatter(page, matterName);
+    await openMatter(page, matterName());
     await openGroupedTab(page, "work", "generated");
 
     const otpRow = page.getByRole("row", { name: /Offer to Purchase/ }).first();
@@ -362,7 +338,7 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     await expect(dialog).toBeVisible();
     // Recipient = the client's portal contact (auto-provisioned from the client email)
     await dialog.locator("#recipient").click();
-    await page.getByRole("option", { name: new RegExp(escapeRegExp(clientEmail)) }).click();
+    await page.getByRole("option", { name: new RegExp(escapeRegExp(clientEmail())) }).click();
     await dialog.locator("#expiryDays").fill("7");
     await dialog.getByRole("button", { name: "Send", exact: true }).click();
     await expect(dialog.getByText("Acceptance request sent.")).toBeVisible({ timeout: 15_000 });
@@ -374,25 +350,11 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     await captureScreenshot(page, "otp-acceptance-request", { curated: true });
 
     // 14.11: the acceptance request email (with its magic link) reaches the client
-    await expect
-      .poll(
-        async () => {
-          const res = await fetch(
-            `${E2E_MAILPIT_URL}/api/v1/search?query=${encodeURIComponent(`to:${clientEmail}`)}`
-          );
-          const body = (await res.json()) as { messages: { Subject: string; ID: string }[] };
-          return body.messages.map((m) => m.Subject).join(" | ");
-        },
-        { timeout: 30_000, message: "acceptance email delivered to Mailpit" }
-      )
-      .toMatch(/review .* for acceptance: offer-to-purchase/i);
-    const search = await fetch(
-      `${E2E_MAILPIT_URL}/api/v1/search?query=${encodeURIComponent(`to:${clientEmail}`)}`
-    );
-    const { messages } = (await search.json()) as { messages: { ID: string }[] };
-    const message = await (
-      await fetch(`${E2E_MAILPIT_URL}/api/v1/message/${messages[0].ID}`)
-    ).json();
+    // (waitForEmail polls for the message whose subject matches, then fetches that message)
+    const message = await waitForEmail(clientEmail(), {
+      subject: "for acceptance: offer-to-purchase",
+    });
+    expect(message.Subject).toMatch(/review .* for acceptance: offer-to-purchase/i);
     expect(`${message.HTML}\n${message.Text}`).toMatch(/\/accept\/[A-Za-z0-9_-]{16,}/);
   });
 });

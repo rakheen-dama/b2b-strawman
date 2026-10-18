@@ -533,15 +533,8 @@ public class ProjectTemplateService {
     if (request.priority() != null) {
       project.setPriority(request.priority());
     }
-    // An explicit (non-blank) work type from the caller wins; otherwise the matter inherits the
-    // template's work type (e.g. the legal-za pack's matterType).
-    String workType =
-        request.workType() != null && !request.workType().isBlank()
-            ? request.workType()
-            : template.getWorkType();
-    if (workType != null) {
-      project.setWorkType(workType);
-    }
+    String workType = resolveWorkType(request.workType(), template);
+    project.setWorkType(workType);
     // GAP-S3-04: resolve vertical-profile auto-apply field groups (e.g. the
     // "SA Legal — Matter Details" group for legal-za) so template-created
     // matters surface the same custom-field surface area as projects created
@@ -661,6 +654,17 @@ public class ProjectTemplateService {
   }
 
   /**
+   * The work type a template-created matter gets: an explicit (non-blank) value from the caller
+   * wins, otherwise the template's own work type (e.g. the legal-za pack's {@code matterType}). May
+   * be null, in which case only unscoped auto-apply field groups attach.
+   */
+  private static String resolveWorkType(String requestWorkType, ProjectTemplate template) {
+    return requestWorkType != null && !requestWorkType.isBlank()
+        ? requestWorkType
+        : template.getWorkType();
+  }
+
+  /**
    * Creates a project from a template without requiring member context. Designed for scheduler use.
    * The caller is responsible for audit logging and event publishing.
    *
@@ -696,17 +700,17 @@ public class ProjectTemplateService {
     if (customer != null) {
       project.setCustomerId(customer.getId());
     }
+    // Scheduler-instantiated matters inherit the template's work type (no request override on
+    // this path). It must be set BEFORE auto-apply resolution: a template without a work type
+    // yields null → only unscoped groups attach, so recurring matters never pick up
+    // work-type-scoped groups (conveyancing_za_matter) they don't belong to (GAP-L-37).
+    String workType = resolveWorkType(null, template);
+    project.setWorkType(workType);
     // GAP-S3-04: apply vertical-profile auto-apply field groups so scheduler-
     // instantiated projects pick up custom-field groups the same way
     // instantiateTemplate() does.
-    // GAP-L-37-regression-2026-04-25: scheduler-instantiated projects don't carry a work_type
-    // (templates produce projects; work_type is set per-project on creation in the dialog flow).
-    // Pass null → only unscoped groups auto-attach. Work-type-scoped groups (conveyancing-za-
-    // project) are correctly skipped here, avoiding the legal-za regression where every recurring
-    // matter inherited conveyancing fields. TODO: when ProjectTemplate gains a workType column,
-    // pass template.getWorkType() through instead.
     var autoApplyFieldGroupIds =
-        fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT, null);
+        fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT, workType);
     if (!autoApplyFieldGroupIds.isEmpty()) {
       project.setAppliedFieldGroups(autoApplyFieldGroupIds);
     }

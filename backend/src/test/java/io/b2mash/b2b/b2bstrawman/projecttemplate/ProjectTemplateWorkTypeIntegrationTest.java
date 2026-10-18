@@ -71,15 +71,21 @@ class ProjectTemplateWorkTypeIntegrationTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private FieldGroupRepository fieldGroupRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private ProjectTemplateService projectTemplateService;
+  @Autowired private ProjectTemplateRepository projectTemplateRepository;
 
   private String tenantSchema;
   private String conveyancingTemplateId;
   private String conveyancingGroupId;
+  private UUID ownerMemberId;
 
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Template Work Type Test Org", "legal-za");
-    TestMemberHelper.syncMember(mockMvc, ORG_ID, OWNER, "tmpl_wt_owner@test.com", "Owner", "owner");
+    ownerMemberId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, OWNER, "tmpl_wt_owner@test.com", "Owner", "owner"));
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
@@ -124,6 +130,32 @@ class ProjectTemplateWorkTypeIntegrationTest {
     assertThat((String) JsonPath.read(body, "$.workType")).isEqualTo("CONVEYANCING");
     List<String> groups = JsonPath.read(body, "$.appliedFieldGroups");
     assertThat(groups).contains(conveyancingGroupId);
+  }
+
+  /** Scheduler/recurring path ({@code instantiateFromTemplate}) inherits the same way. */
+  @Test
+  void schedulerPathInstantiateFromTemplateInheritsTemplateWorkTypeAndConveyancingGroup() {
+    var project =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .where(RequestScopes.ORG_ID, ORG_ID)
+            .where(RequestScopes.MEMBER_ID, ownerMemberId)
+            .call(
+                () ->
+                    transactionTemplate.execute(
+                        tx ->
+                            projectTemplateService.instantiateFromTemplate(
+                                projectTemplateRepository
+                                    .findById(UUID.fromString(conveyancingTemplateId))
+                                    .orElseThrow(),
+                                "Transfer of Erf 321 (scheduler)",
+                                /* customer */ null,
+                                /* projectLeadMemberId */ null,
+                                /* actingMemberId */ ownerMemberId,
+                                tenantSchema,
+                                ORG_ID)));
+
+    assertThat(project.getWorkType()).isEqualTo("CONVEYANCING");
+    assertThat(project.getAppliedFieldGroups()).contains(UUID.fromString(conveyancingGroupId));
   }
 
   @Test

@@ -192,6 +192,7 @@ src/main/resources/db/migration/
 - `baselineOnMigrate(false)` everywhere — a non-empty schema without Flyway history fails fast (wipe the volume, never baseline it)
 - Each migration step must be idempotent (`IF NOT EXISTS`, `ON CONFLICT DO NOTHING`); scope catalog guards to `current_schema()` (an unscoped `pg_constraint WHERE conname = …` guard skips the object in every tenant after the first)
 - Name files: `V{number}__{description}.sql` (double underscore)
+- Pack seeders skip packs already applied to a tenant, so a column added to a pack-seeded entity is not backfilled for existing tenants — after take-on, backfill with an `UPDATE` in the migration or an explicit reconcile step (`db/BASELINE.md` §5)
 
 ### HikariCP Settings (production)
 - `maximum-pool-size`: 10 (Neon PgBouncer multiplexes upstream)

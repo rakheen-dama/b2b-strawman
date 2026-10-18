@@ -139,7 +139,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
           )}
         </Tooltip>
       </TooltipProvider>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Create {t("Project")}</DialogTitle>
           <DialogDescription>Add a new {t("project")} to your organization.</DialogDescription>
@@ -262,6 +262,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                 </FormItem>
               )}
             />
+            <WorkTypeSuggestions id="create-project-work-type-suggestions" />
             <FormField
               control={form.control}
               name="workType"
@@ -278,7 +279,6 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                       {...field}
                     />
                   </FormControl>
-                  <WorkTypeSuggestions id="create-project-work-type-suggestions" />
                   <FormMessage />
                 </FormItem>
               )}

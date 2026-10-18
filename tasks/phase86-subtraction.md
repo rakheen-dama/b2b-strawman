@@ -707,7 +707,7 @@ Not walked. Step V1 needs a human to enter a funded Anthropic key through the UI
    - day-30:32: the inline fee-note dialog assumption is wrong. `:159` (Apex fixed fee) is the same flow; it failed in R3 and was not reached in this run.
    - day-45:41: the documented CSV-upload gap. Deciding whether to build the feature or re-scope the spec is a product call.
    - day-90:61: knock-on from day-30.
-   - Also unresolved from R3: day-90:177 profitability (empty data vs strict multi-match). It passed or was not reached in this run; re-check after the day-30 fix.
+   - Also unresolved from R3: day-90:177 profitability (empty data vs strict multi-match). It was skipped in this run (serial block after the day-30 fee-note failure; day-30:159 likewise skipped); re-check after the day-30 fix.
 
 **(b) Needs user authorisation.**
 - QA demo rewording items listed in the PR #1578 body, "Needs user authorisation":

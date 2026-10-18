@@ -1,6 +1,6 @@
 # ADR-269: SA Specialisation in System Prompts, Not via Fine-Tuning
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-333](ADR-333-mcp-sole-conversational-ai-surface.md)
 
 **Context**:
 

@@ -1,6 +1,6 @@
 # ADR-199: Filing Status Lazy Creation
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-330](ADR-330-archive-tag-not-fork.md) (archived, no replacement)
 **Date**: 2026-03-19
 **Phase**: 51 (Accounting Practice Management Essentials)
 

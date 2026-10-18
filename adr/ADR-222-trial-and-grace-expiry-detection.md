@@ -4,6 +4,8 @@
 **Date**: 2026-04-02  
 **Phase**: 57
 
+**Note**: Partially superseded by [ADR-335](ADR-335-manual-firm-level-billing-only.md) — PayFast-driven paths removed in Phase 86; the trial/grace expiry job remains (it now selects `MANUAL` billing-method subscriptions only).
+
 ## Context
 
 The subscription lifecycle includes time-based transitions that happen without user action:

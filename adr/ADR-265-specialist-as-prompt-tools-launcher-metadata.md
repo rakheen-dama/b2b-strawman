@@ -1,6 +1,6 @@
 # ADR-265: Specialist = System Prompt + Tool Subset + Launcher Metadata, Not an Entity
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-333](ADR-333-mcp-sole-conversational-ai-surface.md)
 
 **Context**:
 

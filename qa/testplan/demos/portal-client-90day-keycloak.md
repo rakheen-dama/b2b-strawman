@@ -6,7 +6,7 @@
 **Master doc**: `qa/testplan/demo-readiness-keycloak-master.md`
 **Driver**: `/qa-cycle-kc qa/testplan/demos/portal-client-90day-keycloak.md`
 
-**Supersedes**: none — this is the first client-POV lifecycle, deliberately distinct from the firm-side 90-day spines (`legal-za-90day-keycloak.md`, `accounting-za-90day-keycloak-v2.md`, `consulting-agency-90day-keycloak.md`).
+**Supersedes**: none — this is the first client-POV lifecycle, deliberately distinct from the firm-side 90-day spines (`legal-za-90day-keycloak.md`).
 
 > **Scope note**: This is a **client-POV** lifecycle. Every checkpoint below is performed **on the portal** (`http://localhost:3002`) as a portal contact — **not** a firm user. The firm-side state the client reacts to (matters created, invoices posted, deadlines scheduled, documents generated) is assumed present via the three corresponding firm-side lifecycles, which must have been run first against the same three tenants.
 
@@ -30,8 +30,6 @@
 |---|---|---|---|---|
 | Client — Litigation (individual) | Sipho Dlamini | `sipho.portal@example.com` | `mathebula-partners` (or fixture `e2e-test-org`) | `legal-za` |
 | Client — Deceased Estate (trust) | Moroka Family Trust | `moroka.portal@example.com` | `mathebula-partners` | `legal-za` |
-| Client — SME (small business) | Zola's Bakery (Pty) Ltd | `zola.portal@example.com` | `ledger-collective` | `accounting-za` |
-| Client — Retainer engagement | Thembi Nkosi | `thembi.portal@example.com` | `keystone-consulting` | `consulting-za` |
 | Firm Owner (off-screen, creates state) | Thandi Mathebula / Naledi Phiri / Lindiwe Khumalo | firm-side only | respective tenant | — |
 
 > The script uses **`sipho.portal@example.com`** as the primary "all-profile" narrator unless a checkpoint is explicitly profile-gated. Cross-tenant checkpoints switch to the tenant whose vertical exposes the feature.
@@ -41,15 +39,13 @@
 | Tenant | Firm-side lifecycle already run | Produces |
 |---|---|---|
 | `mathebula-partners` (legal-za) | `legal-za-90day-keycloak.md` Days 0–21 minimum | Matter + info requests + trust deposit |
-| `ledger-collective` (accounting-za) | `accounting-za-90day-keycloak-v2.md` Days 0–60 | Engagement + deadlines + generated financial statement |
-| `keystone-consulting` (consulting-za) | `consulting-agency-90day-keycloak.md` Days 0–30 | Retainer engagement + hour-bank + invoice |
 
 ## Demo wow moments (capture 📸 on clean pass)
 
 1. **Day 0** — Portal home populated with pending info requests for a newly onboarded client (`/home`)
 2. **Day 21** — Trust balance card showing first deposit (`/trust`) `[legal-za only]`
 3. **Day 45** — Pay-invoice success state (`/invoices/[id]` → Pay → receipt)
-4. **Day 60** — Generated document download (`/deadlines` or `/projects` → open doc) `[legal-za SoA / accounting-za financial statement]`
+4. **Day 60** — Generated document download (`/deadlines` or `/projects` → open doc) `[legal-za SoA]`
 5. **Day 90** — Final digest + activity trail of the quarter
 
 ---
@@ -110,14 +106,13 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ---
 
-## Day 7 — First weekly digest, click through to Deadlines  `[accounting-za / legal-za]`
+## Day 7 — First weekly digest, click through to Deadlines  `[legal-za]`
 
-> This checkpoint is **skipped for `consulting-za`** (no deadline feed surfaced in consulting profile). If the narrator persona is `thembi.portal@example.com` (consulting), switch actor to `sipho.portal@example.com` (legal) or `zola.portal@example.com` (accounting) for this day.
 
 **Actor**: Sipho Dlamini OR Zola's Bakery (`zola.portal@example.com`) — portal contact on a legal-za or accounting-za tenant
 
 - [ ] **7.1** Open Mailpit → verify weekly digest email arrived with subject containing "Your weekly update" (or similar). Body includes a link labelled "View deadlines" or similar
-- [ ] **7.2** Click the "Deadlines" link in the digest → lands on portal `/deadlines` `[accounting-za / legal-za]`
+- [ ] **7.2** Click the "Deadlines" link in the digest → lands on portal `/deadlines` `[legal-za]`
 - [ ] **7.3** Verify `/deadlines` renders: list of upcoming deadlines with title, due date, matter/engagement context, urgency indicator
 - [ ] **7.4** Click into one deadline → verify detail view renders with description and any attached document(s)
 - [ ] **7.5** 📸 **Screenshot**: `day-07-deadlines-list.png`
@@ -138,7 +133,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ## Day 21 — Trust deposit nudge, view balance  `[legal-za only]`
 
-**Actor**: Sipho Dlamini (legal-za tenant only; skip for accounting-za and consulting-za)
+**Actor**: Sipho Dlamini (legal-za tenant only)
 
 - [ ] **21.1** Open Mailpit → verify trust-deposit nudge email arrived (subject contains "trust deposit" or "funds received")
 - [ ] **21.2** Click the "View trust balance" link → lands on `/trust`
@@ -176,29 +171,26 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ## Day 60 — Download Statement of Account / financial statement  `[legal-za / accounting-za]`
 
-**Actor**: Sipho (legal-za SoA) OR Zola (accounting-za financial statement)
+**Actor**: Sipho (legal-za SoA)
 
 - [ ] **60.1** Firm-side has generated:
   - `[legal-za]` Statement of Account (Phase 67 Epic 487) for Sipho's matter
-  - `[accounting-za]` financial statement (annual or period) for Zola's Bakery
-- [ ] **60.2** Navigate to `/projects/[matterId]` (legal) OR `/projects/[engagementId]` (accounting) → Documents tab
+- [ ] **60.2** Navigate to `/projects/[matterId]` (legal) → Documents tab
 - [ ] **60.3** Verify the generated document appears in the document list with correct title, date, size
 - [ ] **60.4** Click **Download** → verify PDF downloads successfully and opens without error
 - [ ] **60.5** Open the downloaded PDF → verify it contains:
   - `[legal-za]` Firm letterhead (Mathebula), matter reference, SoA opening balance, line items, closing balance, VAT 15%
-  - `[accounting-za]` Firm letterhead (Ledger Collective), period heading, balance sheet / income statement rows
 - [ ] **60.6** 📸 **Screenshot**: `day-60-document-downloaded.png` — portal document list with download success indicator
 
 **Day 60 checkpoints**
 - [ ] Download byte-size matches firm-side preview byte-size (±5%)
 - [ ] Document title exactly matches firm-side copy (no "Untitled document" leak)
-- [ ] `consulting-za` contact has a different document set (SoW / status report) or an empty Documents tab — either is acceptable; check for no 500s
 
 ---
 
-## Day 75 — Deadline-approaching nudge → mark read → download related doc  `[accounting-za / legal-za]`
+## Day 75 — Deadline-approaching nudge → mark read → download related doc  `[legal-za]`
 
-**Actor**: Zola (accounting-za) OR Sipho (legal-za)
+**Actor**: Sipho (legal-za)
 
 - [ ] **75.1** Open Mailpit → verify deadline-approaching nudge email (subject contains "deadline" or "due in 7 days" or "reminder")
 - [ ] **75.2** Click through → lands on `/deadlines` → the approaching deadline is highlighted / flagged
@@ -211,7 +203,6 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 **Day 75 checkpoints**
 - [ ] Read-state persists across page reload (not just a transient UI state)
 - [ ] Download audit event recorded (firm-side audit log shows the portal contact accessed the doc)
-- [ ] `consulting-za` contact either does not receive this nudge type, or receives a different engagement-level nudge — verify no crash either way
 
 ---
 
@@ -229,7 +220,6 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 **Day 85 checkpoints**
 - [ ] Profile update propagates to backend (firm-side contact record reflects the new display name)
 - [ ] Notification cadence persists across logout/login
-- [ ] No cross-profile leak (legal-za and accounting-za copies match; terminology consistent)
 
 ---
 
@@ -259,7 +249,6 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **E.4** **Profile gating** verified — `/trust` is legal-za only, `/deadlines` is accounting-za + legal-za only; non-eligible profiles show empty state, NOT 500
 - [ ] **E.5** **Auth flow** — every portal interaction authenticated via magic-link → JWT (cookie + localStorage); zero Keycloak-form usage, zero firm-side user bleed-through
 - [ ] **E.6** **Terminology sweep** — zero firm-side vocabulary leaks on portal pages ("matter" / "project" / "engagement" consistent per tenant profile; no "customer" / "client" inversion)
-- [ ] **E.7** **Three-tenant coverage** — every `[all profiles]` checkpoint validated on at least two of the three tenants; every gated checkpoint validated on each applicable tenant
 - [ ] **E.8** **Email linkage** — every email-driven checkpoint (Day 0, Day 7, Day 21, Day 75, Day 90) successfully authenticates the follow-through click without re-login
 - [ ] **E.9** **Payment flow** (Day 45) completes end-to-end with a sandbox PSP credential; receipt downloads cleanly
 - [ ] **E.10** **Visual regression** (once baselines exist in 500B) — diff pixel-ratio ≤ 1% across all 🗎 captured shots at `lg` viewport

@@ -4,6 +4,8 @@
 **Date**: 2026-03-18
 **Phase**: 49 (Vertical Architecture)
 
+**Note**: Phase 86 removed the `accounting-za`, `consulting-za` and `consulting-generic` profiles (archived at `horizontal-platform-final`, [ADR-330](ADR-330-archive-tag-not-fork.md)); the mechanism survives with `legal-za` only ([ADR-332](ADR-332-single-vertical-profile-mechanism-retained.md)).
+
 ## Context
 
 Phase 49 introduces a vertical profile system that formalises the relationship between tenants and industry verticals. A vertical profile is a named configuration bundle that determines which modules a tenant can access, which packs to apply at provisioning, which terminology namespace to use, and what default settings (currency, tax rate) to seed. The phase defines three concrete profiles: IT Consulting (generic), SA Accounting (config-only), and SA Legal (config + module stubs for trust accounting, court calendar, and conflict check).

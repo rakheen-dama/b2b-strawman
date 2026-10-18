@@ -1,6 +1,6 @@
 # ADR-204: Virtual Thread ScopedValue Re-binding for SSE Chat Streams
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-333](ADR-333-mcp-sole-conversational-ai-surface.md)
 **Date**: 2026-03-21
 **Phase**: 52 (In-App AI Assistant — BYOAK)
 

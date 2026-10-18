@@ -1,6 +1,6 @@
 # ADR-126: Milestone Invoice Creation Strategy
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-336](ADR-336-engagement-letter-document-plus-acceptance.md)
 
 **Context**:
 

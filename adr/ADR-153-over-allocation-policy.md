@@ -1,6 +1,6 @@
 # ADR-153: Over-Allocation Policy
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-330](ADR-330-archive-tag-not-fork.md) (archived, no replacement)
 **Date**: 2026-03-06
 **Phase**: 38 (Resource Planning & Capacity)
 

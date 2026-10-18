@@ -1,6 +1,6 @@
 # ADR-318: Pipeline Metrics — Weighted Value, Win Rate & Currency Assumption
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-330](ADR-330-archive-tag-not-fork.md) (archived, no replacement)
 
 **Context**:
 

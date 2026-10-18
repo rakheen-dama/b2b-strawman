@@ -1,6 +1,6 @@
 # ADR-220: Platform vs Tenant PayFast Integration
 
-**Status**: Proposed  
+**Status**: Superseded by [ADR-335](ADR-335-manual-firm-level-billing-only.md) (platform PayFast path removed; tenant invoice pay-now kept)  
 **Date**: 2026-04-02  
 **Phase**: 57
 

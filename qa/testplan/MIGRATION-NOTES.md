@@ -282,3 +282,37 @@ Post-Phase 77, promoted fields are on the **Details tab** (`tab-group-details` �
 | Onboarding | Compliance | onboarding | `tab-group-compliance` → `tab-item-onboarding` |
 | Requests | Compliance | requests | `tab-group-compliance` → `tab-item-requests` |
 | Audit | Activity (standalone) | audit | `tab-group-activity` click |
+
+---
+
+# QA Test Plan Notes: Phase 86 Subtraction (legal-only)
+
+**Applies to**: All QA plans in `qa/testplan/` and `qa/testplan/demos/`
+**Phase**: 86 (Epics 595–606, PRs #1564–#1577); archive tag `horizontal-platform-final`
+**Updated**: 2026-10-18
+
+## Deleted plans
+
+| Plan | Deleted in | Why |
+|---|---|---|
+| `demos/accounting-za-90day-keycloak-v2.md` | Epic 604 (#1576) | `accounting-za` profile, packs and demo seeder removed (ADR-332) |
+| `demos/consulting-agency-90day-keycloak.md` | Epic 604 (#1576) | `consulting-za` profile removed (ADR-332) |
+| `portal-experience-proposal-acceptance.md` | Epic 597 (#1566) | Proposals removed; engagement letters go through document acceptance (ADR-336) |
+
+## Amended plans (deleted-feature steps removed only)
+
+| Plan | Epic (PR) | Removed steps |
+|---|---|---|
+| `demos/legal-za-full-lifecycle-keycloak.md` | 597 (#1566) | Proposal / engagement-letter-as-proposal steps (Day 7, portal proposal acceptance) and the Phase 80 pipeline-enquiry / deal steps |
+| `demos/portal-client-90day-keycloak.md` | 597 (#1566), 598 (#1569), 606 | 597: portal proposals (Day 14); 598: portal retainer usage (Day 30); 606: `accounting-za` / `consulting-za` tenants, rows and profile-specific checkpoints (incl. E.7 three-tenant coverage) |
+| `demos/admin-audit-30day-keycloak.md` | 598 (#1569), 606 | 598: retainer seed (0.5); 606: `accounting-za` deadline seed (0.4), CRM deal events (0.5a), deleted-profile skip notes |
+| `demos/ai-core-verification-keycloak.md` | 601 (#1573) | No steps removed; the AIVERIFY-013 note on 12.1 records that the specialist audit registry entries were removed (only `ai.specialist.failed` remains) |
+| `48-lifecycle-script.md`, `qa-legal-lifecycle-test-plan.md`, `regression-test-suite.md` | 599 follow-up (#1571) | Capacity / resources steps |
+
+Remaining wording in `portal-client-90day-keycloak.md` / `admin-audit-30day-keycloak.md` that still assumes three tenants (e.g. "three corresponding firm-side lifecycles", step 0.8's deal-event row count) is a scenario rewording, not a deleted-feature removal, and is pending user authorisation.
+
+## Selector notes superseded by Phase 86
+
+- Customer detail Finance group: the `retainer` tab (`tab-item-retainer`, rows above) no longer exists (Epic 598).
+- Customer Overview "Pending AI Suggestions" panel no longer exists (specialists removed, Epic 601).
+- No other selector changes; the remaining tables above are current.

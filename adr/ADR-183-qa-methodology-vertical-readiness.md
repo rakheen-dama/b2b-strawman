@@ -3,6 +3,8 @@
 **Status**: Accepted
 **Date**: 2026-03-15
 
+**Note**: Phase 86 removed the `accounting-za`, `consulting-za` and `consulting-generic` profiles (archived at `horizontal-platform-final`, [ADR-330](ADR-330-archive-tag-not-fork.md)); the mechanism survives with `legal-za` only ([ADR-332](ADR-332-single-vertical-profile-mechanism-retained.md)).
+
 ## Context
 
 DocTeams has 46 phases of functionality, each tested in isolation with unit tests, integration tests, and per-slice verification. There is no end-to-end validation that the platform supports a real firm's daily operations. Features that work individually may fail when combined into a real workflow: fields may be wrong for the target vertical, templates may produce unusable output, automation triggers may not match real patterns, and information gates may block at the wrong moments.

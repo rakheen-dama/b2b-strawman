@@ -6,7 +6,7 @@
 **Master doc**: `qa/testplan/demo-readiness-keycloak-master.md`
 **Driver**: `/qa-cycle-kc qa/testplan/demos/admin-audit-30day-keycloak.md`
 
-**Supersedes**: none — this is the first admin-audit capstone for Phase 69. Complements the firm-side 90-day spines (`legal-za-90day-keycloak.md`, `accounting-za-90day-keycloak-v2.md`, `consulting-agency-90day-keycloak.md`) and the portal client lifecycle (`portal-client-90day-keycloak.md`).
+**Supersedes**: none — this is the first admin-audit capstone for Phase 69. Complements the firm-side 90-day spines (`legal-za-90day-keycloak.md`) and the portal client lifecycle (`portal-client-90day-keycloak.md`).
 
 > **Scope note**: This is an **admin-POV** lifecycle. Every checkpoint is performed on the firm-side app (`http://localhost:3000`) by a firm user (Owner/Admin/Member). The script focuses on **what an administrator sees in the audit surfaces** — Audit Log page, presets, expanded rows, dashboard sensitive-events widget, per-entity Audit tabs, PDF/CSV exports, and DSAR pack inclusion. Other 90-day spines provide the underlying business activity; this script narrates and verifies the **observability layer over that activity**.
 
@@ -32,7 +32,6 @@ Most checkpoints are `[all profiles]`. The following are gated:
 | Checkpoint | Gating | Reason |
 |---|---|---|
 | Day 0 trust-deposit seed | `[legal-za]` | Trust accounting only present on legal profile |
-| Day 0 deadline seed | `[accounting-za]` | Engagement deadlines only present on accounting profile |
 | Day 10 trust approval | `[legal-za]` | Trust transactions are legal-only |
 | Day 15 closure override | `[legal-za]` primary, available on all | Matter-closure surface is legal-headlined; override path universal |
 
@@ -76,8 +75,6 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.1** Log in as Alice via Keycloak — confirm landing on `/org/acme-corp/dashboard` without console errors. Login itself should emit an `auth.login.*` audit event.
 - [ ] **0.2** Create a matter via `/org/acme-corp/projects/new` (or POST `/api/projects` from a fixture). Title: `Audit Capstone Matter Day 0`. Confirm matter-creation audit row appears in the backing tenant's `audit_event` table.
 - [ ] **0.3** `[legal-za]` Post a trust deposit against the new matter (`/org/acme-corp/trust-accounting` or POST `/api/trust-transactions`). Amount: ZAR 5 000. Confirm `trust_transaction.deposited` row recorded.
-- [ ] **0.4** `[accounting-za]` Seed an engagement deadline via the deadlines surface for the new matter. Confirm deadline-creation audit row recorded.
-- [ ] **0.5a** `[all profiles]` **Deal events (Phase 80)**: navigate to **Pipeline** → click **New Enquiry** → Customer mode = **Create new prospect**, name `Audit Capstone Prospect Day 0`; Title = `Audit Capstone Deal Day 0` → **Create Enquiry** → drag the card from the first open stage into **Won** → confirm in the "Mark deal as won" dialog. Confirm `deal.created` and `deal.won` rows recorded (entityType `deal`, lowercase — plus the inline prospect's customer-creation event).
 
 ### Phase B: Open Audit Log page for the first time
 
@@ -129,7 +126,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ## Day 10 — Trust transaction approval → Financial approvals preset  `[legal-za]`
 
-**Actor**: Alice (Owner). Skip for `accounting-za` and `consulting-za`.
+**Actor**: Alice (Owner).
 
 - [ ] **10.1** Navigate to `/org/acme-corp/trust-accounting` → confirm the Day 0 trust deposit is visible in pending state.
 - [ ] **10.2** Post a new trust transaction (e.g. transfer or payout) against the Day 0 matter. Submit for approval if the workflow requires a separate approve step.

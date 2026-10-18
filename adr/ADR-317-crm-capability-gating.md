@@ -1,6 +1,6 @@
 # ADR-317: CRM Capability Gating — Default-On Capability Family, Not a Vertical Module
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-330](ADR-330-archive-tag-not-fork.md) (archived, no replacement)
 
 **Context**:
 

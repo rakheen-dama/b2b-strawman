@@ -3,6 +3,8 @@
 **Status**: Accepted
 **Date**: 2026-03-15
 
+**Note**: Phase 86 removed the `accounting-za`, `consulting-za` and `consulting-generic` profiles (archived at `horizontal-platform-final`, [ADR-330](ADR-330-archive-tag-not-fork.md)); the mechanism survives with `legal-za` only ([ADR-332](ADR-332-single-vertical-profile-mechanism-retained.md)).
+
 ## Context
 
 DocTeams is a horizontal B2B SaaS platform with 46 phases of built-in functionality. To serve a specific vertical (e.g., SA accounting firms), the platform needs to be configured with industry-specific data: custom fields for SA company registration numbers and SARS tax references, FICA compliance checklists, engagement letter templates with SAICA-standard clauses, automation rules for tax deadlines, and request templates for year-end information gathering.

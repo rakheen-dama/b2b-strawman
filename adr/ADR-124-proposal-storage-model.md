@@ -1,6 +1,6 @@
 # ADR-124: Proposal Storage Model
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-336](ADR-336-engagement-letter-document-plus-acceptance.md)
 
 **Context**:
 

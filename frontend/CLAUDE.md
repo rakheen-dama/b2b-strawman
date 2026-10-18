@@ -118,7 +118,8 @@ Semantic token mappings (light mode):
 ### Animation
 
 - **`tw-animate-css`** — Tailwind animation utilities (existing)
-- **`motion`** (Framer Motion) — Sidebar active indicator, tab underlines, dialog enter/exit, page transitions. Import from `motion/react`.
+- **`motion`** (Framer Motion) — Sidebar active indicator, tab underlines, dialog enter/exit. Import from `motion/react`.
+- **Page entrance** — `app/(app)/org/[slug]/template.tsx` (CSS `animate-in`, `motion-reduce:animate-none`). Never wrap route `children` in a pathname-keyed `AnimatePresence`: the new page renders into the exiting wrapper and is then remounted, discarding user state.
 
 ## Key Conventions
 

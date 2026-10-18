@@ -128,7 +128,7 @@ export function EditProjectDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{`Edit ${t("Project")}`}</DialogTitle>
           <DialogDescription>{`Update your ${t("project")}'s details.`}</DialogDescription>
@@ -246,6 +246,7 @@ export function EditProjectDialog({
                 </FormItem>
               )}
             />
+            <WorkTypeSuggestions id="edit-project-work-type-suggestions" />
             <FormField
               control={form.control}
               name="workType"
@@ -262,7 +263,6 @@ export function EditProjectDialog({
                       {...field}
                     />
                   </FormControl>
-                  <WorkTypeSuggestions id="edit-project-work-type-suggestions" />
                   <FormMessage />
                 </FormItem>
               )}

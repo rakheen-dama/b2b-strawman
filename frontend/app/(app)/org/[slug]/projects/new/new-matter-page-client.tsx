@@ -236,6 +236,7 @@ export function NewMatterPageClient({
                 </select>
               </div>
 
+              <WorkTypeSuggestions id="new-matter-work-type-suggestions" />
               <div className="space-y-2">
                 <Label htmlFor="workType">
                   Work Type <span className="text-sm font-normal text-slate-500">(optional)</span>
@@ -252,7 +253,6 @@ export function NewMatterPageClient({
                   maxLength={50}
                   aria-describedby={inheritedWorkType ? "workType-inherited" : undefined}
                 />
-                <WorkTypeSuggestions id="new-matter-work-type-suggestions" />
                 {inheritedWorkType && (
                   <p id="workType-inherited" className="text-sm text-slate-500">
                     Inherits {inheritedWorkType} from the template

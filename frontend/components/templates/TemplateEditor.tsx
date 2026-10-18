@@ -356,6 +356,7 @@ export function TemplateEditor({
           />
         </div>
 
+        <WorkTypeSuggestions id="template-work-type-suggestions" />
         <div className="space-y-2">
           <Label htmlFor="template-work-type">
             Work Type <span className="text-sm font-normal text-slate-500">(optional)</span>
@@ -368,7 +369,6 @@ export function TemplateEditor({
             maxLength={50}
             list="template-work-type-suggestions"
           />
-          <WorkTypeSuggestions id="template-work-type-suggestions" />
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Matters created from this template get this work type unless one is entered.
           </p>

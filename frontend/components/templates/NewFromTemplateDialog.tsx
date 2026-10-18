@@ -272,7 +272,7 @@ export function NewFromTemplateDialog({
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>{children}</DialogTrigger>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
               {step === 1
@@ -432,6 +432,7 @@ export function NewFromTemplateDialog({
                 </div>
 
                 {/* Work Type (matter_type / engagement_type) */}
+                <WorkTypeSuggestions id="new-from-template-work-type-suggestions" />
                 <div className="space-y-2">
                   <Label htmlFor="new-proj-worktype">
                     Work Type <span className="text-muted-foreground font-normal">(optional)</span>
@@ -448,7 +449,6 @@ export function NewFromTemplateDialog({
                     list="new-from-template-work-type-suggestions"
                     aria-describedby={inheritedWorkType ? "new-proj-worktype-inherited" : undefined}
                   />
-                  <WorkTypeSuggestions id="new-from-template-work-type-suggestions" />
                   {inheritedWorkType && (
                     <p id="new-proj-worktype-inherited" className="text-muted-foreground text-xs">
                       Inherits {inheritedWorkType} from the template

@@ -1,7 +1,7 @@
 {
-  "commit": "5255edb15",
+  "commit": "0de8ce29e",
   "command": "cd frontend && pnpm run lint && rm -rf .next && pnpm run build && caffeinate -is pnpm test && pnpm run format:check",
   "exit": 0,
-  "ts": "2026-10-18T19:13:08Z",
-  "summary": "PR #1582 (legal-depth-ii specs) head 5255edb15 (orchestrator run): lint 0 errors; build OK; vitest 352 files, 2236 passed | 2 skipped; prettier clean. e2e fresh stack: lifecycle 63/4 (pre-existing), depth-ii 26 passed / 0 failed / 14 fixme; depth-ii standalone on second fresh stack 26/0/14."
+  "ts": "2026-10-18T20:09:00Z",
+  "summary": "PR #1584 (page-transition remount) head 0de8ce29e (orchestrator run): lint 0 errors; build OK; vitest 353 files, 2238 passed | 2 skipped; prettier clean. e2e fresh stack: lifecycle 63/4 (pre-existing), depth-ii 27 passed / 0 failed / 13 fixme; un-parked page-transition-remount test passes."
 }

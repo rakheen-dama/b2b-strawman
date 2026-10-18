@@ -371,6 +371,8 @@ public class ProjectService {
       String referenceNumber,
       ProjectPriority priority,
       String workType) {
+    // Canonical form first so auto-apply resolution and the stored value agree.
+    workType = WorkTypes.normalize(workType);
     // Validate customer link and resolve customer name for naming pattern
     String customerName = null;
     if (customerId != null) {
@@ -576,7 +578,7 @@ public class ProjectService {
             .trackAsString("dueDate", oldDueDate, newDueDate)
             .track("referenceNumber", oldReferenceNumber, referenceNumber)
             .trackAsString("priority", oldPriority, priority)
-            .track("workType", oldWorkType, workType)
+            .track("workType", oldWorkType, WorkTypes.normalize(workType))
             .buildMutable();
     // OBS-8801: project.updated is a project-lifecycle event surfaced in the matter Activity feed
     // (findByProjectId) — both feed queries scope on details->>'project_id', so it is load-bearing.

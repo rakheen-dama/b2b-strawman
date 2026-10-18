@@ -31,6 +31,7 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.project.WorkTypes;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.CreateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.ProjectTemplateResponse;
@@ -659,9 +660,8 @@ public class ProjectTemplateService {
    * be null, in which case only unscoped auto-apply field groups attach.
    */
   private static String resolveWorkType(String requestWorkType, ProjectTemplate template) {
-    return requestWorkType != null && !requestWorkType.isBlank()
-        ? requestWorkType
-        : template.getWorkType();
+    String requested = WorkTypes.normalize(requestWorkType);
+    return requested != null ? requested : template.getWorkType();
   }
 
   /**

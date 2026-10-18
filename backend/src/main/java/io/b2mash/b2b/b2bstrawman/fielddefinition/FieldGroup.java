@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.fielddefinition;
 
+import io.b2mash.b2b.b2bstrawman.project.WorkTypes;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -187,6 +189,10 @@ public class FieldGroup {
     this.updatedAt = Instant.now();
   }
 
+  /**
+   * Stores each entry in canonical work-type form ({@link WorkTypes#normalize}) so it matches the
+   * canonical {@code projects.work_type}; blank entries are dropped.
+   */
   public void setApplicableWorkTypes(List<String> applicableWorkTypes) {
     if (applicableWorkTypes != null
         && !applicableWorkTypes.isEmpty()
@@ -195,7 +201,12 @@ public class FieldGroup {
           "applicableWorkTypes is PROJECT-only; cannot set on entityType=" + entityType);
     }
     this.applicableWorkTypes =
-        applicableWorkTypes == null ? null : List.copyOf(applicableWorkTypes);
+        applicableWorkTypes == null
+            ? null
+            : applicableWorkTypes.stream()
+                .map(WorkTypes::normalize)
+                .filter(Objects::nonNull)
+                .toList();
     this.updatedAt = Instant.now();
   }
 

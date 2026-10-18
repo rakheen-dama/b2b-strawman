@@ -220,8 +220,9 @@ public class Project {
     return workType;
   }
 
+  /** Stores the canonical form ({@link WorkTypes#normalize}); blank clears it. */
   public void setWorkType(String workType) {
-    this.workType = workType;
+    this.workType = WorkTypes.normalize(workType);
     this.updatedAt = Instant.now();
   }
 
@@ -239,7 +240,7 @@ public class Project {
     this.dueDate = dueDate != null ? dueDate : this.dueDate;
     this.referenceNumber = referenceNumber != null ? referenceNumber : this.referenceNumber;
     this.priority = priority != null ? priority : this.priority;
-    this.workType = workType != null ? workType : this.workType;
+    this.workType = workType != null ? WorkTypes.normalize(workType) : this.workType;
     this.updatedAt = Instant.now();
   }
 

@@ -690,6 +690,18 @@
 | 604 | Single Profile: non-legal profiles/packs/seeders/demo, `deadline/`, automation builder, terminology entries | Backend + Frontend + Portal (split) | 601, 602, 603 | L | 604A, 604B, 604C, 604D, 604E, 604F | **Done** (PR #1576) |
 | 605 | Migration Squash → tenant V1 / global V1 | Backend + Ops | 596–604 merged, `main` verify clean | L | 605A, 605B, 605C | **Done** (PR #1577) |
 | 606 | Documentation Sweep + ADR Supersession + QA Capstone | Docs + E2E/Process | 605 | M | 606A, 606B, 606C | **Done** (PR #1578; capstone PARTIAL) |
+| **Phase 87 — Legal-Native Shell: Matter/Client Vocabulary on the Wire, One Diary, Settings Consolidation** | | | | | | See [tasks/phase87-legal-native-shell.md](tasks/phase87-legal-native-shell.md) — architecture `architecture/phase87-legal-native-shell.md` §12, ADR-337..344; no migrations |
+| 607 | Wire Rename Batch 1 — Matters Core + Contract Tests (+ caller edits) | Backend + Frontend + External callers (split) | Phase 86 merged (done) | L | 607A, 607B, 607C, 607D, 607E, 607F | |
+| 608 | Wire Rename Batch 2 — Clients Core (+ caller edits) | Backend + Frontend + External callers (split) | 607 | M | 608A, 608B, 608C, 608D | |
+| 609 | Wire Rename Batches 3–5 — Finance, Legal Verticals, Portal API (+ caller edits) | Backend + Frontend + Portal + External callers (split; may ship as 3 PRs) | 608 | L | 609A, 609B, 609C, 609D, 609E, 609F, 609G | |
+| 610 | Frontend + Portal TS Types, API Modules, Route Segments, Redirects | Frontend + Portal (split) | 609 | L | 610A, 610B, 610C, 610D, 610E, 610F, 610G | |
+| 611 | Terminology Layer Removal + Single-Vocabulary Lint | Frontend + Portal + packages (split) | 610 | L | 611A, 611B, 611C, 611D, 611E, 611F | |
+| 612 | Navigation IA (Six Zones) + Palette `requiredModule` + Unbilled Work Page | Frontend | 611 | M | 612A, 612B, 612C | |
+| 613 | One Diary — `GET /api/diary` + `/diary` Page, Calendars Deleted | Backend + Frontend (split) | 612 | L | 613A, 613B, 613C, 613D | |
+| 614 | Legal-Native Home — Three Dashboard Reads + Widget Matrix | Backend + Frontend (split) | 613 | M | 614A, 614B, 614C | |
+| 615 | Dense Lists (`MatterListRow`/`ClientListRow`), System Views, Tab Groups, Disbursements | Backend + Frontend (split) | 614 | L | 615A, 615B, 615C, 615D, 615E | |
+| 616 | Settings Consolidation — Five Families, 44 → 17 Routes, 43 Redirects | Frontend | 615 | L | 616A, 616B, 616C, 616D, 616E, 616F | |
+| 617 | Portal Vocabulary + Nav, QA Capstone, Screenshots, Closure Report | Portal + QA/Process | 616 | M | 617A, 617B, 617C | |
 
 
 ---

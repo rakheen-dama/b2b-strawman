@@ -1,7 +1,7 @@
 {
-  "commit": "584732266",
-  "command": "cd frontend && pnpm install --frozen-lockfile && pnpm run lint && rm -rf .next && pnpm run build && caffeinate -is pnpm test && pnpm run format:check",
+  "commit": "5255edb15",
+  "command": "cd frontend && pnpm run lint && rm -rf .next && pnpm run build && caffeinate -is pnpm test && pnpm run format:check",
   "exit": 0,
-  "ts": "2026-10-18T10:03:08Z",
-  "summary": "PR #1581 on 584732266 (orchestrator run; later commits a70b39ec6/3b1b8422f are backend-only): lint 0 errors; build OK (clean .next); vitest 352 files, 2236 passed | 2 skipped; prettier clean. Frontend CI pass on 3b1b8422f."
+  "ts": "2026-10-18T19:13:08Z",
+  "summary": "PR #1582 (legal-depth-ii specs) head 5255edb15 (orchestrator run): lint 0 errors; build OK; vitest 352 files, 2236 passed | 2 skipped; prettier clean. e2e fresh stack: lifecycle 63/4 (pre-existing), depth-ii 26 passed / 0 failed / 14 fixme; depth-ii standalone on second fresh stack 26/0/14."
 }

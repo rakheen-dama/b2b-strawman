@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
+import { SUGGESTED_WORK_TYPES } from "@/lib/constants/work-types";
 
 const mockInstantiateTemplate = vi.fn();
 const mockRouterPush = vi.fn();
@@ -138,6 +139,16 @@ describe("NewMatterPageClient work type prefill", () => {
 
     await user.selectOptions(screen.getByLabelText("Template"), "pt-none");
     expect(screen.queryByText(/^Inherits /)).not.toBeInTheDocument();
-    expect(workTypeInput).toHaveAttribute("placeholder", "e.g. Litigation, Conveyancing");
+    expect(workTypeInput).toHaveAttribute("placeholder", "e.g. LITIGATION, CONVEYANCING");
+  });
+
+  it("offers the canonical legal matter types as Work Type suggestions", () => {
+    renderPage();
+
+    const workTypeInput = screen.getByLabelText(/work type/i);
+    const listId = workTypeInput.getAttribute("list");
+    expect(listId).toBeTruthy();
+    const options = document.getElementById(listId!)?.querySelectorAll("option") ?? [];
+    expect(Array.from(options, (o) => o.value)).toEqual([...SUGGESTED_WORK_TYPES]);
   });
 });

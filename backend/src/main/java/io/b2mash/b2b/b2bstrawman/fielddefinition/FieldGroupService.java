@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.CreateFieldGroupRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldGroupResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldGroupRequest;
+import io.b2mash.b2b.b2bstrawman.worktype.WorkTypes;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -383,12 +384,20 @@ public class FieldGroupService {
   public List<UUID> resolveAutoApplyGroupIds(
       EntityType entityType, String workType, String customerEntityValue) {
     var autoGroups = fieldGroupRepository.findByEntityTypeAndAutoApplyTrueAndActiveTrue(entityType);
+    // Compare canonical forms on both sides so a legacy or hand-entered scope ("conveyancing")
+    // still matches the canonical project work type (CONVEYANCING), and vice versa. Writes already
+    // store canonical values (FieldGroup/Project setters + V3 migration); normalising again here is
+    // deliberate defence-in-depth for rows written by raw SQL or older data.
+    var canonicalWorkType = WorkTypes.normalize(workType);
     var filtered = new ArrayList<FieldGroup>();
     for (var group : autoGroups) {
       // Work-type filter (PROJECT groups)
       var requiredWorkTypes = group.getApplicableWorkTypes();
       if (requiredWorkTypes != null && !requiredWorkTypes.isEmpty()) {
-        if (workType == null || !requiredWorkTypes.contains(workType)) {
+        if (canonicalWorkType == null
+            || requiredWorkTypes.stream()
+                .map(WorkTypes::normalize)
+                .noneMatch(canonicalWorkType::equals)) {
           continue; // scoped to a different work_type → skip
         }
       }

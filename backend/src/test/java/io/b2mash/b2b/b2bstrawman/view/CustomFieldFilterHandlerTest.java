@@ -165,12 +165,60 @@ class CustomFieldFilterHandlerTest {
   @Test
   void promotedField_inPredicate_generatesColumnClause() {
     Map<String, Object> params = new HashMap<>();
-    var fields = Map.of("work_type", (Object) Map.of("op", "in", "value", List.of("tax", "audit")));
+    var fields =
+        Map.of("work_type", (Object) Map.of("op", "in", "value", List.of("tax", " Audit ")));
 
     String result = handler.buildPredicate(fields, params, "PROJECT");
 
     assertThat(result).isEqualTo("work_type IN (:cf_work_type)");
-    assertThat(params).containsEntry("cf_work_type", List.of("tax", "audit"));
+    // Promoted PROJECT work_type operands are bound in canonical form (WorkTypes.normalize).
+    assertThat(params).containsEntry("cf_work_type", List.of("TAX", "AUDIT"));
+  }
+
+  @Test
+  void projectWorkType_eqAndNeqOperandsAreNormalised() {
+    Map<String, Object> eqParams = new HashMap<>();
+    handler.buildPredicate(
+        Map.of("work_type", (Object) Map.of("op", "eq", "value", "Personal injury")),
+        eqParams,
+        "PROJECT");
+    assertThat(eqParams).containsEntry("cf_work_type", "PERSONAL_INJURY");
+
+    Map<String, Object> neqParams = new HashMap<>();
+    handler.buildPredicate(
+        Map.of("work_type", (Object) Map.of("op", "neq", "value", " conveyancing")),
+        neqParams,
+        "PROJECT");
+    assertThat(neqParams).containsEntry("cf_work_type", "CONVEYANCING");
+  }
+
+  @Test
+  void projectWorkType_containsOperandIsNormalised() {
+    // ILIKE handles case but not the space → underscore step, so "personal inj" must bind as
+    // PERSONAL_INJ to find a stored PERSONAL_INJURY. The canonical "_" is escaped so it matches
+    // literally rather than as an ILIKE single-character wildcard.
+    Map<String, Object> params = new HashMap<>();
+    String result =
+        handler.buildPredicate(
+            Map.of("work_type", (Object) Map.of("op", "contains", "value", "personal inj")),
+            params,
+            "PROJECT");
+    assertThat(result).isEqualTo("work_type ILIKE '%' || :cf_work_type || '%' ESCAPE '\\'");
+    assertThat(params).containsEntry("cf_work_type", "PERSONAL\\_INJ");
+  }
+
+  @Test
+  void nonWorkTypeContains_keepsRawOperandAndNoEscapeClause() {
+    // Only the canonical PROJECT work_type branch escapes; other contains filters keep their
+    // existing wildcard behaviour.
+    Map<String, Object> params = new HashMap<>();
+    String result =
+        handler.buildPredicate(
+            Map.of("work_type", (Object) Map.of("op", "contains", "value", "a_b%")),
+            params,
+            "CUSTOMER");
+    assertThat(result).isEqualTo("custom_fields ->> 'work_type' ILIKE '%' || :cf_work_type || '%'");
+    assertThat(params).containsEntry("cf_work_type", "a_b%");
   }
 
   @Test

@@ -13,6 +13,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@b2mash/ui/input";
+import { WorkTypeSuggestions } from "@/components/projects/work-type-suggestions";
+import { WORK_TYPE_PLACEHOLDER } from "@/lib/constants/work-types";
 import { Label } from "@b2mash/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { TemplatePicker } from "@/components/templates/TemplatePicker";
@@ -441,10 +443,12 @@ export function NewFromTemplateDialog({
                       setWorkType(e.target.value);
                       setWorkTypeEdited(true);
                     }}
-                    placeholder={inheritedWorkType ?? "e.g. Litigation, Consulting"}
+                    placeholder={inheritedWorkType ?? WORK_TYPE_PLACEHOLDER}
                     maxLength={50}
+                    list="new-from-template-work-type-suggestions"
                     aria-describedby={inheritedWorkType ? "new-proj-worktype-inherited" : undefined}
                   />
+                  <WorkTypeSuggestions id="new-from-template-work-type-suggestions" />
                   {inheritedWorkType && (
                     <p id="new-proj-worktype-inherited" className="text-muted-foreground text-xs">
                       Inherits {inheritedWorkType} from the template

@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
+import io.b2mash.b2b.b2bstrawman.worktype.WorkTypes;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -171,9 +172,12 @@ public class ProjectTemplate {
     return workType;
   }
 
-  /** Sets the template's work type; a blank value is stored as {@code null}. */
+  /**
+   * Sets the template's work type in canonical form ({@link WorkTypes#normalizeForStorage}); a
+   * blank value is stored as {@code null}.
+   */
   public void setWorkType(String workType) {
-    this.workType = workType == null || workType.isBlank() ? null : workType;
+    this.workType = WorkTypes.normalizeForStorage(workType);
     this.updatedAt = Instant.now();
   }
 }

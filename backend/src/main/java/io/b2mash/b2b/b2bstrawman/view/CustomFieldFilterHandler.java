@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.view;
 
+import io.b2mash.b2b.b2bstrawman.worktype.WorkTypes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,9 @@ public class CustomFieldFilterHandler {
   private static final Pattern SAFE_SLUG = Pattern.compile("^[a-zA-Z0-9_-]+$");
 
   private static final Set<String> NUMERIC_OPS = Set.of("gt", "gte", "lt", "lte");
+
+  /** The promoted {@code projects.work_type} slug, stored in canonical {@link WorkTypes} form. */
+  private static final String WORK_TYPE_SLUG = "work_type";
 
   private static final Map<String, String> OP_MAP =
       Map.of(
@@ -95,8 +99,22 @@ public class CustomFieldFilterHandler {
     // reference to a column that does not exist on the target table.
     boolean isPromoted = CustomFieldFilterUtil.isPromotedForEntity(slug, entityType);
 
+    // projects.work_type holds the canonical form (CONVEYANCING), but view operands are whatever
+    // the user typed ("Conveyancing"). Normalise eq/neq/in/contains operands at query time so they
+    // still match; this also covers saved views stored before canonicalisation, so
+    // saved_views.filters needs no data migration. contains keeps ILIKE for substring matching —
+    // normalising it adds the space → underscore step ILIKE can't do ("personal inj").
+    boolean canonicalWorkType = isPromoted && WORK_TYPE_SLUG.equals(slug);
+
     if ("contains".equals(op)) {
-      params.put(paramName, String.valueOf(value));
+      String raw = String.valueOf(value);
+      if (canonicalWorkType) {
+        // The canonical form uses "_" for spaces, which ILIKE would treat as a single-character
+        // wildcard — escape it (and \ and %) so the operand matches literally.
+        params.put(paramName, escapeLike(canonicalWorkTypeOperand(raw)));
+        return slug + " ILIKE '%' || :" + paramName + " || '%' ESCAPE '\\'";
+      }
+      params.put(paramName, raw);
       if (isPromoted) {
         return slug + " ILIKE '%' || :" + paramName + " || '%'";
       }
@@ -105,7 +123,11 @@ public class CustomFieldFilterHandler {
 
     if ("in".equals(op)) {
       if (value instanceof List<?> list) {
-        List<String> stringValues = list.stream().map(Object::toString).toList();
+        List<String> stringValues =
+            list.stream()
+                .map(Object::toString)
+                .map(v -> canonicalWorkType ? canonicalWorkTypeOperand(v) : v)
+                .toList();
         params.put(paramName, stringValues);
         if (isPromoted) {
           return slug + " IN (:" + paramName + ")";
@@ -120,7 +142,12 @@ public class CustomFieldFilterHandler {
       return "";
     }
 
-    params.put(paramName, String.valueOf(value));
+    String operand = String.valueOf(value);
+    params.put(
+        paramName,
+        canonicalWorkType && !NUMERIC_OPS.contains(op)
+            ? canonicalWorkTypeOperand(operand)
+            : operand);
 
     if (isPromoted) {
       if (NUMERIC_OPS.contains(op)) {
@@ -134,5 +161,15 @@ public class CustomFieldFilterHandler {
     }
 
     return "custom_fields ->> '" + slug + "' " + sqlOp + " :" + paramName;
+  }
+
+  /** Canonical form of a work-type operand; a blank operand is kept as-is (it matches nothing). */
+  private static String canonicalWorkTypeOperand(String operand) {
+    String canonical = WorkTypes.normalize(operand);
+    return canonical != null ? canonical : operand;
+  }
+
+  private static String escapeLike(String operand) {
+    return operand.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
   }
 }

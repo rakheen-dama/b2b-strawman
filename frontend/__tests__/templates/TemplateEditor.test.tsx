@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { TemplateEditor } from "@/components/templates/TemplateEditor";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { TagResponse, FieldDefinitionResponse } from "@/lib/types";
+import { SUGGESTED_WORK_TYPES } from "@/lib/constants/work-types";
 
 const mockCreateTemplate = vi.fn();
 const mockUpdateTemplate = vi.fn();
@@ -126,6 +127,16 @@ describe("TemplateEditor", () => {
     expect(
       screen.getByText("No tasks yet. Add a task to define the project structure.")
     ).toBeInTheDocument();
+  });
+
+  it("offers the canonical legal matter types as Work Type suggestions", () => {
+    render(<TemplateEditor slug="acme" availableTags={AVAILABLE_TAGS} />);
+    const workTypeInput = screen.getByLabelText(/work type/i);
+    expect(workTypeInput).toHaveAttribute("placeholder", "e.g. LITIGATION, CONVEYANCING");
+    const listId = workTypeInput.getAttribute("list");
+    expect(listId).toBeTruthy();
+    const options = document.getElementById(listId!)?.querySelectorAll("option") ?? [];
+    expect(Array.from(options, (o) => o.value)).toEqual([...SUGGESTED_WORK_TYPES]);
   });
 
   it("pre-fills form fields when editing existing template", () => {

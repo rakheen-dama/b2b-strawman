@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
+import { WorkTypeSuggestions } from "@/components/projects/work-type-suggestions";
+import { WORK_TYPE_PLACEHOLDER } from "@/lib/constants/work-types";
 import { Label } from "@b2mash/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MatterIntakePanel } from "@/components/ai/matter-intake-panel";
@@ -240,7 +242,8 @@ export function NewMatterPageClient({
                 </Label>
                 <Input
                   id="workType"
-                  placeholder={inheritedWorkType ?? "e.g. Litigation, Conveyancing"}
+                  placeholder={inheritedWorkType ?? WORK_TYPE_PLACEHOLDER}
+                  list="new-matter-work-type-suggestions"
                   value={workType}
                   onChange={(e) => {
                     setWorkType(e.target.value);
@@ -249,6 +252,7 @@ export function NewMatterPageClient({
                   maxLength={50}
                   aria-describedby={inheritedWorkType ? "workType-inherited" : undefined}
                 />
+                <WorkTypeSuggestions id="new-matter-work-type-suggestions" />
                 {inheritedWorkType && (
                   <p id="workType-inherited" className="text-sm text-slate-500">
                     Inherits {inheritedWorkType} from the template

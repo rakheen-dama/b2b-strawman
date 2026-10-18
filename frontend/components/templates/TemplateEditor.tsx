@@ -6,6 +6,8 @@ import { Plus, Trash2, ArrowUp, ArrowDown, X, ChevronDown, ChevronRight } from "
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
+import { WorkTypeSuggestions } from "@/components/projects/work-type-suggestions";
+import { WORK_TYPE_PLACEHOLDER } from "@/lib/constants/work-types";
 import { Label } from "@b2mash/ui/label";
 import {
   Select,
@@ -362,9 +364,11 @@ export function TemplateEditor({
             id="template-work-type"
             value={workType}
             onChange={(e) => setWorkType(e.target.value)}
-            placeholder="e.g. Litigation, Conveyancing"
+            placeholder={WORK_TYPE_PLACEHOLDER}
             maxLength={50}
+            list="template-work-type-suggestions"
           />
+          <WorkTypeSuggestions id="template-work-type-suggestions" />
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Matters created from this template get this work type unless one is entered.
           </p>

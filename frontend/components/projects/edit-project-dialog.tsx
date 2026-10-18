@@ -14,6 +14,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@b2mash/ui/input";
+import { WorkTypeSuggestions } from "@/components/projects/work-type-suggestions";
+import { WORK_TYPE_PLACEHOLDER } from "@/lib/constants/work-types";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
@@ -253,8 +255,14 @@ export function EditProjectDialog({
                     Work Type <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Consulting, Litigation" maxLength={50} {...field} />
+                    <Input
+                      placeholder={WORK_TYPE_PLACEHOLDER}
+                      maxLength={50}
+                      list="edit-project-work-type-suggestions"
+                      {...field}
+                    />
                   </FormControl>
+                  <WorkTypeSuggestions id="edit-project-work-type-suggestions" />
                   <FormMessage />
                 </FormItem>
               )}

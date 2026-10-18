@@ -203,6 +203,77 @@ class ProjectServiceAuditTest {
   }
 
   @Test
+  void updateProjectWithOmittedOrEquivalentWorkTypeRecordsNoWorkTypeDelta() throws Exception {
+    var projectId = createProjectWithWorkType("Work Type Kept", "CONVEYANCING");
+
+    // workType omitted (null = no change), then re-sent in a different but equivalent spelling
+    putProject(projectId, "{\"name\": \"Work Type Kept\", \"description\": \"First\"}");
+    putProject(projectId, "{\"name\": \"Work Type Kept\", \"workType\": \" conveyancing \"}");
+
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .run(
+            () -> {
+              var page =
+                  auditService.findEvents(
+                      new AuditEventFilter(
+                          "project", projectId, null, "project.updated", null, null, null),
+                      PageRequest.of(0, 10));
+
+              assertThat(page.getTotalElements()).isEqualTo(2);
+              assertThat(page.getContent())
+                  .allSatisfy(
+                      event -> assertThat(event.getDetails()).doesNotContainKey("workType"));
+            });
+  }
+
+  @Test
+  void updateProjectWorkTypeRecordsCanonicalDelta() throws Exception {
+    var projectId = createProjectWithWorkType("Work Type Changed", "CONVEYANCING");
+
+    putProject(projectId, "{\"name\": \"Work Type Changed\", \"workType\": \" litigation \"}");
+
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .run(
+            () -> {
+              var page =
+                  auditService.findEvents(
+                      new AuditEventFilter(
+                          "project", projectId, null, "project.updated", null, null, null),
+                      PageRequest.of(0, 10));
+
+              assertThat(page.getTotalElements()).isEqualTo(1);
+              @SuppressWarnings("unchecked")
+              var workTypeChange =
+                  (Map<String, Object>) page.getContent().getFirst().getDetails().get("workType");
+              assertThat(workTypeChange).containsEntry("from", "CONVEYANCING");
+              assertThat(workTypeChange).containsEntry("to", "LITIGATION");
+            });
+  }
+
+  private UUID createProjectWithWorkType(String name, String workType) throws Exception {
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/projects")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"name\": \"%s\", \"workType\": \"%s\"}".formatted(name, workType)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return UUID.fromString(TestEntityHelper.extractIdFromLocation(createResult));
+  }
+
+  private void putProject(UUID projectId, String body) throws Exception {
+    mockMvc
+        .perform(
+            put("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isOk());
+  }
+
+  @Test
   void deleteProjectProducesAuditEvent() throws Exception {
     var createResult =
         mockMvc

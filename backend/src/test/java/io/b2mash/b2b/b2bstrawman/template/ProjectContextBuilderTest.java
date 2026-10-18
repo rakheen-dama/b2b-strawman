@@ -294,15 +294,15 @@ class ProjectContextBuilderTest {
     // Direct structural variables (Epic 460).
     assertThat(projectMap.get("referenceNumber")).isEqualTo("PRJ-0001");
     assertThat(projectMap.get("priority")).isEqualTo("HIGH");
-    assertThat(projectMap.get("workType")).isEqualTo("Litigation");
+    assertThat(projectMap.get("workType")).isEqualTo("LITIGATION");
 
     // Backward-compat aliases. Priority is lowercased to match the pre-Phase-63 pack values.
     @SuppressWarnings("unchecked")
     var customFields = (Map<String, Object>) projectMap.get("customFields");
     assertThat(customFields).containsEntry("reference_number", "PRJ-0001");
     assertThat(customFields).containsEntry("priority", "high");
-    assertThat(customFields).containsEntry("engagement_type", "Litigation");
-    assertThat(customFields).containsEntry("matter_type", "Litigation");
+    assertThat(customFields).containsEntry("engagement_type", "LITIGATION");
+    assertThat(customFields).containsEntry("matter_type", "LITIGATION");
   }
 
   @Test

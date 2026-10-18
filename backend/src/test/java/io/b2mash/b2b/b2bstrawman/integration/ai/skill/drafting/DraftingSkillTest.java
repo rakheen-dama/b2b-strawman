@@ -120,7 +120,7 @@ class DraftingSkillTest {
           assertThat(userPrompt).contains("Engagement Letter Template");
           assertThat(userPrompt).contains("<matter>");
           assertThat(userPrompt).contains("Drafting Test Matter");
-          assertThat(userPrompt).contains("commercial");
+          assertThat(userPrompt).contains("COMMERCIAL");
           assertThat(userPrompt).contains("<customer>");
           assertThat(userPrompt).contains("Themba Consulting (Pty) Ltd");
           assertThat(userPrompt).contains("<clause-library>");

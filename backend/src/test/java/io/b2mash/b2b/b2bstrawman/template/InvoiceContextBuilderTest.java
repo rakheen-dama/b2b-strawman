@@ -113,7 +113,7 @@ class InvoiceContextBuilderTest {
     // Promoted project fields (Epic 462) — advertised by VariableMetadataRegistry for invoices.
     assertThat(projectMap.get("referenceNumber")).isEqualTo("PRJ-001");
     assertThat(projectMap.get("priority")).isEqualTo("high");
-    assertThat(projectMap.get("workType")).isEqualTo("engagement");
+    assertThat(projectMap.get("workType")).isEqualTo("ENGAGEMENT");
   }
 
   @Test

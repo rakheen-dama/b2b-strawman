@@ -102,11 +102,13 @@ class ViewFilterIntegrationTest {
                   // Create projects with custom fields
                   var p1 = new Project("Acme Corp Case", "Active project", memberIdOwner);
                   p1.setCustomFields(Map.of("court", "high_court_gauteng"));
+                  p1.setWorkType("CONVEYANCING");
                   p1 = projectRepository.saveAndFlush(p1);
                   projectActiveId = p1.getId();
 
                   var p2 = new Project("Beta Inc Case", "On hold project", memberIdOwner);
                   p2.setCustomFields(Map.of("court", "magistrate_court"));
+                  p2.setWorkType("LITIGATION");
                   p2 = projectRepository.saveAndFlush(p2);
                   projectOnHoldId = p2.getId();
 
@@ -209,6 +211,69 @@ class ViewFilterIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(2));
+  }
+
+  // Work type is stored canonically (CONVEYANCING); saved views written before that rule, or typed
+  // by hand, hold mixed-case operands. The promoted work_type filter must still match them.
+
+  @Test
+  void projectWorkTypeEqFilterMatchesCanonicalValueRegardlessOfCase() throws Exception {
+    var viewId =
+        createSavedView(
+            "PROJECT",
+            "Work Type Eq",
+            Map.of(
+                "customFields", Map.of("work_type", Map.of("op", "eq", "value", "Conveyancing"))));
+
+    mockMvc
+        .perform(
+            get("/api/projects")
+                .param("view", viewId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].name").value("Acme Corp Case"));
+  }
+
+  @Test
+  void projectWorkTypeInFilterMatchesCanonicalValuesRegardlessOfCase() throws Exception {
+    var viewId =
+        createSavedView(
+            "PROJECT",
+            "Work Type In",
+            Map.of(
+                "customFields",
+                Map.of(
+                    "work_type",
+                    Map.of("op", "in", "value", List.of("conveyancing", " Litigation ")))));
+
+    mockMvc
+        .perform(
+            get("/api/projects")
+                .param("view", viewId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(2));
+  }
+
+  @Test
+  void projectWorkTypeNeqFilterExcludesCanonicalValueRegardlessOfCase() throws Exception {
+    var viewId =
+        createSavedView(
+            "PROJECT",
+            "Work Type Neq",
+            Map.of(
+                "customFields", Map.of("work_type", Map.of("op", "neq", "value", "conveyancing"))));
+
+    // SQL != never matches the NULL work type of Gamma, so only Beta (LITIGATION) remains.
+    mockMvc
+        .perform(
+            get("/api/projects")
+                .param("view", viewId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].name").value("Beta Inc Case"));
   }
 
   @Test

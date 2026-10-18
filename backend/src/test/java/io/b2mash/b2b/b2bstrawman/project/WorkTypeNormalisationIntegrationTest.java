@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.worktype.WorkTypes;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -189,6 +190,21 @@ class WorkTypeNormalisationIntegrationTest {
     String body = postProjectWithWorkType("Fifty chars", fifty);
 
     assertThat((String) JsonPath.read(body, "$.workType")).isEqualTo(WorkTypes.normalize(fifty));
+  }
+
+  @Test
+  void createProjectWhoseWorkTypeOutgrowsFiftyCharactersWhenUpperCasedIsRejectedWith400()
+      throws Exception {
+    // 26 chars passes @Size(max = 50); upper-casing turns each "ß" into "SS" (52 chars), which
+    // must be a 400 validation error, not a varchar(50) failure at the database.
+    String expanding = "ß".repeat(26);
+    mockMvc
+        .perform(
+            post("/api/projects")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\": \"Expanding\", \"workType\": \"%s\"}".formatted(expanding)))
+        .andExpect(status().isBadRequest());
   }
 
   @Test

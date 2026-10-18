@@ -31,7 +31,6 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.project.WorkTypes;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.CreateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.ProjectTemplateResponse;
@@ -49,6 +48,7 @@ import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskItem;
 import io.b2mash.b2b.b2bstrawman.task.TaskItemRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.worktype.WorkTypes;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -660,7 +660,7 @@ public class ProjectTemplateService {
    * be null, in which case only unscoped auto-apply field groups attach.
    */
   private static String resolveWorkType(String requestWorkType, ProjectTemplate template) {
-    String requested = WorkTypes.normalize(requestWorkType);
+    String requested = WorkTypes.normalizeForStorage(requestWorkType);
     return requested != null ? requested : template.getWorkType();
   }
 

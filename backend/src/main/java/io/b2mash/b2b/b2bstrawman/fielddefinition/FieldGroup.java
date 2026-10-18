@@ -1,6 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.fielddefinition;
 
-import io.b2mash.b2b.b2bstrawman.project.WorkTypes;
+import io.b2mash.b2b.b2bstrawman.worktype.WorkTypes;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

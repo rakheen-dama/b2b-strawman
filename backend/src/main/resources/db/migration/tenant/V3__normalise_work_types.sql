@@ -1,9 +1,11 @@
 -- Work type is free text, but work-type-scoped field groups match on it, so the application now
--- stores one canonical form (io.b2mash.b2b.b2bstrawman.project.WorkTypes.normalize): trimmed, each
+-- stores one canonical form (io.b2mash.b2b.b2bstrawman.worktype.WorkTypes.normalize): trimmed, each
 -- whitespace run collapsed to a single '_', upper-cased; blank becomes NULL. Rewrite values stored
 -- before that rule existed with the same rule (trim \s at both ends, \s+ -> '_', upper):
 -- "Conveyancing" -> CONVEYANCING, " personal injury " -> PERSONAL_INJURY. Idempotent: only rows
 -- whose value would change are updated, so a re-run (or an already-canonical tenant) is a no-op.
+-- The Java and SQL rules are equivalent for ASCII input; Unicode whitespace and case mapping may
+-- differ by database locale (the read-side match in FieldGroupService normalises again).
 
 UPDATE projects
 SET work_type = NULLIF(upper(regexp_replace(regexp_replace(work_type, '^\s+|\s+$', '', 'g'), '\s+', '_', 'g')), '')

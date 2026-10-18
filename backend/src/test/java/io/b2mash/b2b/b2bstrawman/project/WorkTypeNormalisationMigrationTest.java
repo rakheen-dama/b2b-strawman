@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
+import io.b2mash.b2b.b2bstrawman.worktype.WorkTypes;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;

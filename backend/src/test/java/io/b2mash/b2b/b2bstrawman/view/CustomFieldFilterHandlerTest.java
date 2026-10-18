@@ -165,12 +165,44 @@ class CustomFieldFilterHandlerTest {
   @Test
   void promotedField_inPredicate_generatesColumnClause() {
     Map<String, Object> params = new HashMap<>();
-    var fields = Map.of("work_type", (Object) Map.of("op", "in", "value", List.of("tax", "audit")));
+    var fields =
+        Map.of("work_type", (Object) Map.of("op", "in", "value", List.of("tax", " Audit ")));
 
     String result = handler.buildPredicate(fields, params, "PROJECT");
 
     assertThat(result).isEqualTo("work_type IN (:cf_work_type)");
-    assertThat(params).containsEntry("cf_work_type", List.of("tax", "audit"));
+    // Promoted PROJECT work_type operands are bound in canonical form (WorkTypes.normalize).
+    assertThat(params).containsEntry("cf_work_type", List.of("TAX", "AUDIT"));
+  }
+
+  @Test
+  void projectWorkType_eqAndNeqOperandsAreNormalised() {
+    Map<String, Object> eqParams = new HashMap<>();
+    handler.buildPredicate(
+        Map.of("work_type", (Object) Map.of("op", "eq", "value", "Personal injury")),
+        eqParams,
+        "PROJECT");
+    assertThat(eqParams).containsEntry("cf_work_type", "PERSONAL_INJURY");
+
+    Map<String, Object> neqParams = new HashMap<>();
+    handler.buildPredicate(
+        Map.of("work_type", (Object) Map.of("op", "neq", "value", " conveyancing")),
+        neqParams,
+        "PROJECT");
+    assertThat(neqParams).containsEntry("cf_work_type", "CONVEYANCING");
+  }
+
+  @Test
+  void projectWorkType_containsOperandIsLeftRaw() {
+    // contains already matches case-insensitively via ILIKE.
+    Map<String, Object> params = new HashMap<>();
+    String result =
+        handler.buildPredicate(
+            Map.of("work_type", (Object) Map.of("op", "contains", "value", "convey")),
+            params,
+            "PROJECT");
+    assertThat(result).isEqualTo("work_type ILIKE '%' || :cf_work_type || '%'");
+    assertThat(params).containsEntry("cf_work_type", "convey");
   }
 
   @Test

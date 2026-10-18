@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.worktype.WorkTypes;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -220,9 +221,9 @@ public class Project {
     return workType;
   }
 
-  /** Stores the canonical form ({@link WorkTypes#normalize}); blank clears it. */
+  /** Stores the canonical form ({@link WorkTypes#normalizeForStorage}); blank clears it. */
   public void setWorkType(String workType) {
-    this.workType = WorkTypes.normalize(workType);
+    this.workType = WorkTypes.normalizeForStorage(workType);
     this.updatedAt = Instant.now();
   }
 
@@ -240,7 +241,7 @@ public class Project {
     this.dueDate = dueDate != null ? dueDate : this.dueDate;
     this.referenceNumber = referenceNumber != null ? referenceNumber : this.referenceNumber;
     this.priority = priority != null ? priority : this.priority;
-    this.workType = workType != null ? WorkTypes.normalize(workType) : this.workType;
+    this.workType = workType != null ? WorkTypes.normalizeForStorage(workType) : this.workType;
     this.updatedAt = Instant.now();
   }
 

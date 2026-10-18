@@ -31,6 +31,7 @@ import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import io.b2mash.b2b.b2bstrawman.view.CustomFieldFilterUtil;
 import io.b2mash.b2b.b2bstrawman.view.ViewFilterHelper;
+import io.b2mash.b2b.b2bstrawman.worktype.WorkTypes;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -372,7 +373,7 @@ public class ProjectService {
       ProjectPriority priority,
       String workType) {
     // Canonical form first so auto-apply resolution and the stored value agree.
-    workType = WorkTypes.normalize(workType);
+    workType = WorkTypes.normalizeForStorage(workType);
     // Validate customer link and resolve customer name for naming pattern
     String customerName = null;
     if (customerId != null) {
@@ -578,7 +579,9 @@ public class ProjectService {
             .trackAsString("dueDate", oldDueDate, newDueDate)
             .track("referenceNumber", oldReferenceNumber, referenceNumber)
             .trackAsString("priority", oldPriority, priority)
-            .track("workType", oldWorkType, WorkTypes.normalize(workType))
+            // Persisted value, not the argument: an omitted workType (null = no change) must not
+            // read as a change to "", and a supplied one is compared in canonical form.
+            .track("workType", oldWorkType, project.getWorkType())
             .buildMutable();
     // OBS-8801: project.updated is a project-lifecycle event surfaced in the matter Activity feed
     // (findByProjectId) — both feed queries scope on details->>'project_id', so it is load-bearing.

@@ -68,27 +68,27 @@ Resurrection (ADR-330, recorded so it is not re-derived): `git fetch --tags orig
 
 | # | Surface | Before (main `37150816e`, 2026-10-16) | Expected (breakdown / §11.1) | Match? | After (606C) |
 |---|---|---|---|---|---|
-| 1 | Backend main `.java` files | **1,628** | 1,628 | yes | |
-| 2 | Backend main lines | **176,320** | 176,320 | yes | |
-| 3 | Backend test `.java` files | **796** | 796 | yes | |
-| 4 | Backend test lines | **227,117** | — | n/a | |
-| 5 | Backend top-level packages (`$B` dirs) | **69** (70 entries − `BackendApplication.java`) | 69 | yes | |
-| 6 | Frontend vitest files (`*.test.ts[x]`) | **404** | 404 | yes | |
-| 7 | Frontend Playwright specs (`*.spec.ts`) | **76** | — | n/a | |
-| 8 | Portal vitest files | **42** | — | n/a | |
-| 9 | Portal Playwright specs | **5** | — | n/a | |
-| 10 | Frontend `.ts/.tsx` files / lines (excl. `node_modules`, `.next`) | **1,584 / 241,793** | — (scout: 1,585 / 241,799) | n/a — see note | |
-| 11 | Portal `.ts/.tsx` files / lines | **117 / 15,205** | — | n/a | |
-| 12 | `packages/` `.ts/.tsx` files / lines (excl. `node_modules`, `dist`) | **12 / 747** | — | n/a | |
-| 13 | Tenant migrations (count / high-water) | **133 / `V135__add_cash_digest_reference_type.sql`** | 133 / V135 | yes | |
-| 14 | Global migrations (count / high-water) | **25 / `V25__create_shard_config.sql`** | 25 / V25 | yes | |
-| 15 | `@Entity` classes (files / annotations) | **121 / 121** | 121 | yes | |
-| 16 | `Capability` constants | **33** (removal targets at `:14` RESOURCE_PLANNING, `:40` AI_ASSISTANT_USE, `:71/:73/:75/:77` VIEW_DEALS/MANAGE_DEALS/CLOSE_DEALS/MANAGE_PIPELINE) | 33 | yes | |
-| 17 | Audit event-type catalogue entries | **41** (test pin `AuditEventTypeRegistryTest:81,121,122`; independent count: 41 `new AuditEventTypeMetadata(` in the `List.of` at `AuditEventTypeRegistry.java:35-229`; the other 2 occurrences are the resolver fallbacks at `:313`, `:342`) | 41 | yes | |
-| 18 | `VerticalModuleRegistry` modules (total / vertical / horizontal) | **12 / 8 / 4** (pins `VerticalModuleRegistryTest:22,192,98`) | 12 / 8 / 4 | yes | |
-| 19 | Frontend `page.tsx` | **126** | 126 | yes | |
-| 20 | Portal `page.tsx` | **22** | 22 | yes | |
-| 21 | Full backend verify wall time (`backend/scripts/verify.sh`) | 1555 s (25 min 55 s) — `backend/scripts/verify.sh -q` on 2026-10-16, 6084 tests run, 2 pre-existing calendar-rolling failures (PR #1563) | — | — | |
+| 1 | Backend main `.java` files | **1,628** | 1,628 | yes | 1,375 |
+| 2 | Backend main lines | **176,320** | 176,320 | yes | 148,468 |
+| 3 | Backend test `.java` files | **796** | 796 | yes | 703 |
+| 4 | Backend test lines | **227,117** | — | n/a | 197,092 |
+| 5 | Backend top-level packages (`$B` dirs) | **69** (70 entries − `BackendApplication.java`) | 69 | yes | 61 |
+| 6 | Frontend vitest files (`*.test.ts[x]`) | **404** | 404 | yes | 348 |
+| 7 | Frontend Playwright specs (`*.spec.ts`) | **76** | — | n/a | 58 |
+| 8 | Portal vitest files | **42** | — | n/a | 38 |
+| 9 | Portal Playwright specs | **5** | — | n/a | 5 |
+| 10 | Frontend `.ts/.tsx` files / lines (excl. `node_modules`, `.next`) | **1,584 / 241,793** | — (scout: 1,585 / 241,799) | n/a — see note | 1,336 / 201,714 (git ls-files) |
+| 11 | Portal `.ts/.tsx` files / lines | **117 / 15,205** | — | n/a | 105 / 13,103 |
+| 12 | `packages/` `.ts/.tsx` files / lines (excl. `node_modules`, `dist`) | **12 / 747** | — | n/a | 12 / 662 |
+| 13 | Tenant migrations (count / high-water) | **133 / `V135__add_cash_digest_reference_type.sql`** | 133 / V135 | yes | 1 / `V1__baseline.sql` |
+| 14 | Global migrations (count / high-water) | **25 / `V25__create_shard_config.sql`** | 25 / V25 | yes | 1 / `V1__baseline.sql` |
+| 15 | `@Entity` classes (files / annotations) | **121 / 121** | 121 | yes | 103 / 103 |
+| 16 | `Capability` constants | **33** (removal targets at `:14` RESOURCE_PLANNING, `:40` AI_ASSISTANT_USE, `:71/:73/:75/:77` VIEW_DEALS/MANAGE_DEALS/CLOSE_DEALS/MANAGE_PIPELINE) | 33 | yes | 27 |
+| 17 | Audit event-type catalogue entries | **41** (test pin `AuditEventTypeRegistryTest:81,121,122`; independent count: 41 `new AuditEventTypeMetadata(` in the `List.of` at `AuditEventTypeRegistry.java:35-229`; the other 2 occurrences are the resolver fallbacks at `:313`, `:342`) | 41 | yes | 29 |
+| 18 | `VerticalModuleRegistry` modules (total / vertical / horizontal) | **12 / 8 / 4** (pins `VerticalModuleRegistryTest:22,192,98`) | 12 / 8 / 4 | yes | 8 / 6 / 2 |
+| 19 | Frontend `page.tsx` | **126** | 126 | yes | 100 |
+| 20 | Portal `page.tsx` | **22** | 22 | yes | 18 |
+| 21 | Full backend verify wall time (`backend/scripts/verify.sh`) | 1555 s (25 min 55 s) — `backend/scripts/verify.sh -q` on 2026-10-16, 6084 tests run, 2 pre-existing calendar-rolling failures (PR #1563) | — | — | 751 s — 5,294 testcases / 0 F / 0 E / 26 skipped (§7.3) |
 
 Note on row 10: the main repo has a generated, git-ignored `frontend/next-env.d.ts` (one file, six lines) that the fresh worktree does not, so it accounts for the whole difference from the scout's count. `git ls-files frontend | grep -cE '\.(ts|tsx)$'` = 1,584 in both trees, so 606C should re-run row 10 in a tree without `next-env.d.ts`, or with `git ls-files`.
 
@@ -584,6 +584,164 @@ Status: **VERIFIED** (observed 2026-10-18; root CLAUDE.md §3).
 - **Dev stack (Keycloak):** volumes `docteams-dev_postgres_data` (48 MB) + `docteams-dev_localstack_data` backed up to the session scratchpad (`dev-volume-backup-pre-phase86-squash/*.tgz`) → `dev-down.sh --clean` → `dev-up.sh` → `keycloak-bootstrap.sh` → `./mvnw clean` (stale old V*.sql in `target/classes` caused "Found more than one migration with version 1") → `svc.sh start all` (all 4 healthy). Smoke: `POST /internal/orgs/provision` legal-za → 201 `tenant_56399d06a773`; global + tenant history `1|1|t`; org_settings legal-za; 10 automation rules; 47 role capabilities; `accounting-za` → 400 with no org row.
 - **Still to do outside this repo:** wipe the VPS dev environment's Postgres volume before deploying an image built from `d8fb3983c` (BASELINE.md §6).
 
-## 7. After (reserved for 606C)
+## 7. After — Phase 86 closure report (606C.2)
 
-Filled by 606C closure report.
+**Date:** 2026-10-18. **Measured on:** `phase86/12-docs-adr-capstone` (PR #1578) at `c6d530190`. The product code there is identical to main `97afbf223`; the 606 diff vs main touches only docs, 3 frontend test mocks and 2 deleted dead e2e specs. Status vocabulary follows root `CLAUDE.md` §3: VERIFIED means the run was observed, and anything not observed is DEFERRED.
+
+### 7.1 Overall status
+
+| Part | Status | Evidence |
+|---|---|---|
+| Subtraction (Epics 596–604) | **VERIFIED** | Each epic merged on a full backend verify plus a frontend/portal verify (markers in each epic's "Done" commit). A final full verify on the 606 head is in §7.3. |
+| Migration squash (Epic 605) | **VERIFIED** | Old-series vs V1 parity proof (empty pg_dump diff), full verify, e2e + dev-stack re-provision smoke. See "Squash record (605C)" above. |
+| Capstone (606C.1): full verifies | **VERIFIED** | §7.3 |
+| Capstone (606C.1): legal Playwright configs | **DEFERRED, not green.** No failure was caused by Phase 86. | §7.4 |
+| Capstone (606C.1): `ai-core-verification-keycloak.md` walk | **DEFERRED, needs the user** | §7.5 |
+| **Phase 86 overall** | **Subtraction + squash VERIFIED; capstone PARTIAL** | Phase 86 is not "ALL_GREEN" until the two DEFERRED items are resolved or the user explicitly accepts them as deferred (T18). |
+
+### 7.2 Before / After
+
+Before = §2 (main `37150816e`, 2026-10-16) and architecture §11.1. After = commands from §2 / `.epic-brief.md` R6, re-run on `c6d530190`. "Predicted" = architecture §11.1 "After Phase 86" or the 606C.2 task row.
+
+| Surface | Before | After (observed) | Predicted | Note |
+|---|---|---|---|---|
+| Backend main `.java` files / lines | 1,628 / 176,320 | **1,375 / 148,468** (−253 / −27,852) | ≈1,330 / ≈146k | **Differs:** 45 more files and ≈2.5k more lines than predicted. The §11.1 figure was explicitly an estimate ("recount at closure"). Kept or re-homed code (time reminders, AI provider, D1–D3 keeps) accounts for the gap. |
+| Backend test `.java` files / lines | 796 / 227,117 | **703 / 197,092** (−93 / −30,025) | — | |
+| Backend tests | 6,084 "Tests run" (Maven summary, 2026-10-16; 2 pre-existing calendar-rolling failures; PR #1563 date-stable fixtures) | **5,294 `<testcase>` / 0 failures / 0 errors / 26 skipped** | — | **Not like-for-like.** Before is the Maven "Tests run" summary; After counts `<testcase>` elements (the Maven `@Nested` aggregate is unreliable). Last like-for-like point: Epic 603 marker = 5,411 testcases (0 F / 0 E / 26 skipped). 603 → 604 = −121 (5,290; net test methods removed in Epic 604's diff); 604 → 605 = +4 (`BaselineSchemaParityTest`) → 5,294. |
+| Full backend verify wall | 1,555 s (25 min 55 s) | **751 s (12 min 31 s)** | — | Commands differ slightly: Before was `verify.sh -q`, After was `./mvnw clean -q && verify.sh -q`. Machine load was not controlled. Treat the halving as indicative, not a benchmark. |
+| Backend top-level packages | 69 | **61** | 61 | matches |
+| `@Entity` classes (files / annotations) | 121 / 121 | **103 / 103** | 103 | matches |
+| Tenant migrations | 133 (high-water `V135`) | **1** (`V1__baseline.sql`) | 1 | matches. Throwaway drops were V136–**V144** (9), not the predicted ≈8 (V136–V143). |
+| Global migrations | 25 (high-water `V25`) | **1** (`V1__baseline.sql`) | 1 | matches. Throwaway drops were V26–**V29** (4), not the predicted ≈3 (V26–V28). |
+| `Capability` constants | 33 | **27** | 27 | matches |
+| Audit event-type catalogue | 41 | **29** (test pin `AuditEventTypeRegistryTest:84,131,132` `hasSize(29)`; 31 `new AuditEventTypeMetadata(` − 2 resolver fallbacks) | 28 (§11.1) / 29 (task row) | **Differs from §11.1:** `ai.specialist.failed` was kept because the AI-skill pipeline still emits it (decision D2). |
+| `VerticalModuleRegistry` modules (total / vertical / horizontal) | 12 / 8 / 4 | **8 / 6 / 2** | 8 / 6 / 2 | matches |
+| Vertical profiles | 4 | **1** (`legal-za.json`) | 1 | matches (the mechanism is retained, ADR-332) |
+| Frontend `page.tsx` routes | 126 | **100** | 100 | matches |
+| Portal `page.tsx` routes | 22 | **18** | 18 | matches |
+| Frontend vitest files / test cases | 404 / not measured | **348 / 2,184 passed + 2 skipped** | — | No Before test-case count was recorded. |
+| Portal vitest files / test cases | 42 / not measured | **38 / 177 passed** | — | No Before test-case count was recorded. Portal last measured at Epic 604 head `3fd80149c` and unchanged since. |
+| Frontend Playwright specs (`*.spec.ts`) | 76 | **58** | — | 60 at `97afbf223`. 606 deleted 2 dead specs (`lifecycle.spec.ts`, `lifecycle-interactive.spec.ts`, T3). |
+| Portal Playwright specs | 5 | **5** | — | unchanged |
+| Frontend `.ts/.tsx` files / lines (`git ls-files`) | 1,584 / 241,793 | **1,336 / 201,714** (−248 / −40,079) | — | `find` gives 1,337 because of the untracked, generated `next-env.d.ts` (see the §2 row-10 note). |
+| Portal `.ts/.tsx` files / lines (`git ls-files`) | 117 / 15,205 | **105 / 13,103** | — | |
+| `packages/` `.ts/.tsx` files / lines | 12 / 747 | **12 / 662** | — | |
+| QA demo scenarios | 7 | **5** | 5 | matches. The 5 are `admin-audit-30day`, `ai-core-verification`, `legal-za-90day`, `legal-za-full-lifecycle`, `portal-client-90day` (all `-keycloak`). |
+| Playwright configs (`frontend/e2e/`) | 4 | **3** (+ `portal/playwright.portal.config.ts`, unchanged) | 3 | matches |
+| Docs site / portals / AI conversational surfaces | `docs/` workspace; 3 portals; 3 AI surfaces | removed; 1 (`portal/`); 1 (MCP) + in-app skills/reviews/gates | same | not re-counted (structural; see Epics 597/601/603) |
+
+### 7.3 Observed verification (606C.1, R5)
+
+- **Backend:** full verify on `a3bc46554`, whose product code is identical to main `97afbf223`. Command: `./mvnw clean -q && bash scripts/verify.sh -q`. Result: **5,294 testcases / 0 failures / 0 errors / 26 skipped**, wall **751 s**, log `/tmp/mvn-606-final.log` (ephemeral). Status: **VERIFIED**. Before-Phase-86 baseline: 6,084 Tests run with 2 pre-existing failures (Epic 595, §2 row 21). Epic 603 marker: 5,411.
+- **Frontend** (`a3bc46554`): `pnpm lint` 0 errors; clean `pnpm build` OK; `pnpm test` 348 files / 2,184 passed / 2 skipped; `pnpm format:check` clean. Status: **VERIFIED**.
+- **Portal:** unchanged since Epic 604 head `3fd80149c`. Lint OK, build OK, vitest 38 files / 177 passed (Epic 604 marker; the portal has no `format:check` script). Status: **VERIFIED** (on the unchanged tree).
+
+### 7.4 Legal Playwright capstone (606C.1, R2): DEFERRED, not green
+
+**Deviation T1:** both configs throw unless `E2E_AUTH_MODE=mock`, so they ran on the **E2E mock-auth stack** (:3001), not the Keycloak dev stack that breakdown 606C.1 / §11.10 slice 12 originally named. The breakdown, the architecture doc and the 605C.1 row were amended in 606.
+
+- **Procedure:** main `97afbf223`; fresh volume (`e2e-down.sh && e2e-up.sh`); `PLAYWRIGHT_BASE_URL=http://localhost:3001`; run with `--update-snapshots=changed`.
+- **Green definition (T17):** screenshot baselines were never committed, so a first-run missing-baseline error is not a product failure. Every other hard and soft assertion was enforced. The generated PNGs were **not** committed.
+
+| Config | Passed | Failed | Skipped | Did not run |
+|---|---|---|---|---|
+| `playwright.legal-lifecycle.config.ts` | 63 | 4 | 6 | 19 |
+| `playwright.legal-depth-ii.config.ts` | 2 | 2 | 11 | 7 |
+
+| Failing test | Cause | Class |
+|---|---|---|
+| lifecycle `day-00-firm-setup.spec.ts:326` (trust settings) | The union locator `:343-345` matches the `<Card data-testid="lpff-rates-section">` div, so `fill` throws "not an <input>". | Pre-existing spec drift. The trust settings page and `components/trust/` are unchanged vs the tag. |
+| lifecycle `day-30-billing.spec.ts:32` (Sipho fee note) | The spec expects an inline create-fee-note dialog. The real `create-invoice-button.tsx` is a customer-picker popover that routes to the customer's invoices tab. | Pre-existing spec/UI drift. The spec is unchanged since `15e007d2e` (2026-04-11). |
+| lifecycle `day-45-recon-prescription.spec.ts:41` (bank recon) | Bank CSV upload is not implemented. The spec's own comment `:74-77` documents this gap. | Pre-existing feature gap, documented in the spec. |
+| lifecycle `day-90-review.spec.ts:61` (fee notes list) | No fee note exists because of the day-30 failure, and the seed creates none. | Knock-on from day-30. |
+| depth-ii `day-05-disbursements.spec.ts:33` | **Root-caused in this session.** `components/breadcrumbs.tsx` renders a link for every path segment, so `/org/<slug>/legal` is RSC-prefetched. That route has no `page.tsx`, both at `horizontal-platform-final` and at HEAD. The prefetch 404s and never completes, so `waitForLoadState("networkidle")` times out. Probe: `GET /org/e2e-test-org/legal?_rsc=…` was still in flight after 8 s on the disbursements page; there was none on `/projects`. | **Pre-existing product bug** (dead breadcrumb link). Phase 86 only removed labels from `breadcrumbs.tsx`. |
+| depth-ii `day-14-conveyancing.spec.ts:99` | The spec expects 10 conveyancing custom fields on a matter created from the Property Transfer template. The matter has `work_type` NULL because the spec never selects a work type, and template instantiation takes `workType` only from the request. See the pre-existing TODO in `ProjectTemplateService`: "when ProjectTemplate gains a workType column". | Pre-existing product gap. The code is unchanged vs the tag. |
+
+- **Phase-86-caused failures: 0.** The pre-squash vs post-squash comparison (605C) showed no green→red. Each failure above is backed by code-diff evidence against `horizontal-platform-final` (`.epic-brief.md` R3 failure table).
+- **Triage (T18, root `CLAUDE.md` §1):** none of these is fixed in Phase 86. All are listed as follow-ups in §7.8(a), one fix per PR, and no scenario or spec edits are made to dispose of them. The status stays **DEFERRED** until those fixes land and both configs are re-run green, or until the user explicitly accepts closure with them deferred.
+- **Logs** (ephemeral): `/tmp/pw-606-lifecycle.log`, `/tmp/pw-606-depthii.log`. **Artefacts** (ephemeral): `/tmp/pw-606-artefacts/`. The tracked `frontend/test-results/` and `documentation/screenshots/` were restored after the runs.
+
+### 7.5 `qa/testplan/demos/ai-core-verification-keycloak.md`: DEFERRED, needs the user
+
+Not walked. Step V1 needs a human to enter a funded Anthropic key through the UI (`SetApiKeyDialog`); no environment-variable path exists. Expected spend is about R10–R30 (the last full run was R23.99). V11.1 overwrites the stored key, so the human must re-enter it afterwards. The Keycloak dev stack was wiped and re-provisioned on the squashed baseline in 605C, where the smoke test was VERIFIED (`tenant_56399d06a773`, history `1|1|t`), so it is ready for the walk. Runbook: `.epic-brief.md` R4.
+
+### 7.6 Archive
+
+- **Archived phases:** the `TASKS.md` rows are annotated, not deleted (606A).
+  - Phase 16: Recurring Schedules part only ("Partially removed").
+  - Phases 17, 32, 38, 45, 47, 51, 52, 59, 66, 70, 80: "Removed in Phase 86".
+  - Phase 57: PayFast parts only ("PayFast parts removed").
+  - Also removed but **not** annotated, per T8 (exactly 13 phases annotated): the Phase 7 Thymeleaf `/portal/dev` harness (Epic 603).
+- **Tag:** `horizontal-platform-final`.
+  - `git rev-parse --short horizontal-platform-final` → `22b528628`. This is the **annotated tag object**, not a commit.
+  - `git rev-parse --short 'horizontal-platform-final^{commit}'` → **`7f47f9629`**. This matches the task row and §1, so there is no mismatch once the tag is peeled.
+- **Mirror:** https://github.com/rakheen-dama/kazi-horizontal-archive (`HEAD` = `7f47f96295192aab1970b22a36231d73d4beada9`, verified 2026-10-15T22:20:34Z, §1). The resurrection procedure is in §1 and ADR-330.
+
+### 7.7 Phase 86 PRs (main)
+
+| PR | Squash commit | Subject |
+|---|---|---|
+| #1564 | `4414f3c67` | Epic 595: archive precondition, baseline metrics, confirmed seam list |
+| #1565 | `632782c81` | Epic 596: remove crm (Phase 80) + Pipeline UI |
+| #1566 | `924b92deb` | Epic 597: remove proposal (Phase 32) + legacy in-app portal + portal proposals |
+| #1567 | `77ab00109` | fix(e2e-seed): boot seed completes (dead plan-sync dropped, activation address added, idempotent customer step) |
+| #1568 | `21173f5b4` | fix(portal): resolve resync assignee names in tenant scope |
+| #1569 | `17c607f83` | Epic 598: remove retainer (Phase 17) + portal retainer |
+| #1570 | `9c3d9ec6a` | Epic 599: remove capacity (Phase 38) + Resources/Utilization UI |
+| #1571 | `3ebb14a8b` | QA plans: remove capacity/resources steps (Epic 599 follow-up) |
+| #1572 | `2768e9ea7` | Epic 600: remove recurring schedules, re-home time reminders |
+| #1573 | `9907ab1a1` | Epic 601: remove assistant (Phases 45/52/70), re-home provider |
+| #1574 | `5517ebebe` | Epic 602: remove PayFast platform subscription path (Phase 57) |
+| #1575 | `f409e4a31` | Epic 603: remove Thymeleaf dev harness + `docs/` site + docsLink policy (Phases 7/59) |
+| #1576 | `ce13cbec5` | Epic 604: single profile, legal-za only (non-legal profiles/packs/seeders/demo, `deadline/`, automation builder, rate packs, terminology) |
+| #1577 | `d8fb3983c` | Epic 605: migration squash → tenant V1 / global V1 |
+| #1578 | (open) | Epic 606: docs sweep + ADR supersession (606A/606B) + this closure report (606C) |
+
+### 7.8 Follow-ups
+
+**(a) Bugs found by the capstone.** None was caused by Phase 86. Each is one fix per PR and needs an orchestrator/user decision on the fix option.
+1. **Dead `/legal` breadcrumb link.** `components/breadcrumbs.tsx` links every segment, including `/org/<slug>/legal`, which has no page. Fix options: render no link for segments without a route, or add a legal index page. This unblocks depth-ii day-05 and its dependent tests.
+2. **Template-created matters don't inherit a work type.** `ProjectTemplateService` takes `workType` from the request only (see its TODO). This is a product gap: conveyancing fields are not applied to Property Transfer template matters (depth-ii day-14:99).
+3. **Lifecycle spec drift (4 tests):**
+   - day-00:326: the locator matches the card div.
+   - day-30:32: the inline fee-note dialog assumption is wrong. `:159` (Apex fixed fee) is the same flow; it failed in R3 and was not reached in this run.
+   - day-45:41: the documented CSV-upload gap. Deciding whether to build the feature or re-scope the spec is a product call.
+   - day-90:61: knock-on from day-30.
+   - Also unresolved from R3: day-90:177 profitability (empty data vs strict multi-match). It passed or was not reached in this run; re-check after the day-30 fix.
+
+**(b) Needs user authorisation.**
+- QA demo rewording items listed in the PR #1578 body, "Needs user authorisation":
+  - `portal-client-90day-keycloak.md`: three-tenant/all-profile wording; the Days 7/75 `/deadlines` prerequisite.
+  - `admin-audit-30day-keycloak.md`: step 0.8 still expects `deal.won`, and its row-count threshold must be re-derived.
+  - `ai-core-verification-keycloak.md:67,77`: "upgrade plan first if gated".
+- The AI-core walk (§7.5).
+- Acceptance or fix of the §7.4 DEFERRED Playwright items (T18).
+
+**(c) Phase 87 list.**
+- ADR-332 deviation: Settings → General still renders the vertical-profile picker / "Apply Profile" (`components/settings/vertical-profile-section.tsx`, `settings/general/page.tsx`) (F-B3).
+- `components/marketing/built-for-africa.tsx` still advertises SARS deadlines, VAT and financial year-end (F-B2).
+- Stale V-number code comments (F-D). The brief estimated ≈79 stale refs (12 main + ≈67 test). The F-D grep re-run on `c6d530190` returns **86** raw hits, which include intentional keeps (`BaselineSchemaParityTest`, the "(originally V…)" provenance comments). Triage with: `grep -rnE '(^|[^A-Za-z0-9_])V[0-9]{1,3}($|[^0-9])' backend/src/main backend/src/test | grep -v V1__baseline`.
+- Dead code (F-E):
+  - `AutomationTemplateController` `POST /api/automation-templates/{slug}/activate` and the list GET: no frontend/portal/gateway caller.
+  - `MemberRateSeedingService`: effectively a no-op (legal-za has no `rateCardDefaults`).
+  - `FieldPackSeeder` `applicableEntityValues` branch: no shipped pack uses it.
+  - `LlmChatProvider.chat(…, Consumer<StreamEvent>)`: has the streaming/tool-use stack in `AnthropicLlmProvider` (≈250 lines) but zero production callers.
+  - `ChecklistInstantiationService` guard: comment names a non-existent pack. The logic is kept; fix the comment.
+  - `BillingRunSelectionService:719-721`: comment reflow.
+  - Single-entry registries: `VerticalProfileRegistry`, `VerticalModuleRegistry` `defaultEnabledFor`, `LlmChatProviderRegistry`; portal `nav-items.ts` `profiles: ["legal-za"]`.
+  - `ProjectTemplateService.instantiateFromTemplate`: dead after Epic 600.
+  - `DeadlinePortalSyncService` FILING_SCHEDULE source + portal `FILING` type.
+- **Bug:** `frontend/components/billing/billing-tenants-table.tsx` `PROFILE_FILTER_OPTIONS` (`GENERIC`/`ACCOUNTING`/`LEGAL`) never matches `legal-za`, and `AdminBillingService` ignores `profileFilter`.
+- Full rewrite of `kazi-architecture/`; it carries a banner only (T7).
+- Untrack `frontend/test-results/` (9 tracked Playwright output files, F-F).
+- `requirements/claude-code-prompt-phase84.md:14`: stale V-numbers. Phase 84 lands as tenant `V2`.
+- e2e specs that pass vacuously (F-C):
+  - Kgosi/Naledi filters: `customer-data-protection.spec.ts`, `custom-fields.spec.ts`.
+  - `portal-data-isolation.spec.ts`: skips without `KGOSI_EMAIL`.
+  - Accounting-flavoured fallback regexes: `document-generation.spec.ts`.
+- `ideate` skill domain lists and `next-phase` skill note.
+- `portal/e2e/screenshots/portal-v2/portal-client-90day/README.md`: three-tenant instructions.
+
+**(d) Ops.**
+- Wipe the VPS dev environment's Postgres volume (`kazi-prod_postgres_data` only, then re-run `keycloak-bootstrap.sh`; see `DEPLOY-VPS.md`) **before** deploying any image built from `d8fb3983c` or later.
+- The pre-squash dev-stack volume backups (`docteams-dev_postgres_data`, `docteams-dev_localstack_data`) are in the 605C session scratchpad, `dev-volume-backup-pre-phase86-squash/*.tgz`. The scratchpad is ephemeral, so copy them somewhere durable if they are wanted.

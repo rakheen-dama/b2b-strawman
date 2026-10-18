@@ -360,4 +360,17 @@ describe("NewFromTemplateDialog work type prefill", () => {
 
     expect(screen.getByLabelText(/work type/i)).toHaveValue("ESTATES");
   });
+  it("shows the inherited template work type when Work Type is left blank", async () => {
+    const user = userEvent.setup();
+    renderDialog();
+    await user.click(screen.getByText("Open work type dialog"));
+    await user.click(screen.getByText("Property Transfer"));
+    await user.click(screen.getByRole("button", { name: "Next" }));
+    expect(screen.queryByText("Inherits CONVEYANCING from the template")).not.toBeInTheDocument();
+
+    const workTypeInput = screen.getByLabelText(/work type/i);
+    await user.clear(workTypeInput);
+    expect(workTypeInput).toHaveAttribute("placeholder", "CONVEYANCING");
+    expect(screen.getByText("Inherits CONVEYANCING from the template")).toBeInTheDocument();
+  });
 });

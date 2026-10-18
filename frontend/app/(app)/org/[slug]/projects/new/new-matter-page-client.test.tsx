@@ -124,4 +124,20 @@ describe("NewMatterPageClient work type prefill", () => {
     await user.selectOptions(screen.getByLabelText("Template"), "pt-est");
     expect(screen.getByLabelText(/work type/i)).toHaveValue("COMMERCIAL");
   });
+  it("shows the inherited template work type when Work Type is left blank", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.selectOptions(screen.getByLabelText("Template"), "pt-conv");
+    expect(screen.queryByText("Inherits CONVEYANCING from the template")).not.toBeInTheDocument();
+
+    const workTypeInput = screen.getByLabelText(/work type/i);
+    await user.clear(workTypeInput);
+    expect(workTypeInput).toHaveAttribute("placeholder", "CONVEYANCING");
+    expect(screen.getByText("Inherits CONVEYANCING from the template")).toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText("Template"), "pt-none");
+    expect(screen.queryByText(/^Inherits /)).not.toBeInTheDocument();
+    expect(workTypeInput).toHaveAttribute("placeholder", "e.g. Litigation, Conveyancing");
+  });
 });

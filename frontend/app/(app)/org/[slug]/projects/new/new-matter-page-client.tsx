@@ -49,6 +49,8 @@ export function NewMatterPageClient({
   const [error, setError] = useState<string | null>(null);
 
   const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
+  // A blank Work Type falls back to the template's on the backend; surface that value.
+  const inheritedWorkType = workType.trim() ? null : (selectedTemplate?.workType ?? null);
 
   function selectTemplate(templateId: string | null) {
     setSelectedTemplateId(templateId);
@@ -238,14 +240,20 @@ export function NewMatterPageClient({
                 </Label>
                 <Input
                   id="workType"
-                  placeholder="e.g. Litigation, Conveyancing"
+                  placeholder={inheritedWorkType ?? "e.g. Litigation, Conveyancing"}
                   value={workType}
                   onChange={(e) => {
                     setWorkType(e.target.value);
                     setWorkTypeEdited(true);
                   }}
                   maxLength={50}
+                  aria-describedby={inheritedWorkType ? "workType-inherited" : undefined}
                 />
+                {inheritedWorkType && (
+                  <p id="workType-inherited" className="text-sm text-slate-500">
+                    Inherits {inheritedWorkType} from the template
+                  </p>
+                )}
               </div>
 
               {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}

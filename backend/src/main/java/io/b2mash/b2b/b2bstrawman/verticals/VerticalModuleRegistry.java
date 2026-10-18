@@ -83,17 +83,6 @@ public class VerticalModuleRegistry {
             List.of(new NavItem("/conflict-check", "Conflict Check", "legal"))));
 
     map.put(
-        "regulatory_deadlines",
-        new ModuleDefinition(
-            "regulatory_deadlines",
-            "Regulatory Deadlines",
-            "Firm-wide calendar of regulatory filing deadlines with status tracking",
-            "active",
-            ModuleCategory.VERTICAL,
-            List.of("accounting-za"),
-            List.of(new NavItem("/deadlines", "Deadlines", "clients"))));
-
-    map.put(
         "lssa_tariff",
         new ModuleDefinition(
             "lssa_tariff",
@@ -119,18 +108,6 @@ public class VerticalModuleRegistry {
             List.of(new NavItem("/invoices/billing-runs", "Billing Runs", "finance"))));
 
     map.put(
-        "automation_builder",
-        new ModuleDefinition(
-            "automation_builder",
-            "Automation Rule Builder",
-            "Create custom workflow automations with triggers, conditions, and actions. Standard"
-                + " automations run automatically — enable this to customize or create new rules.",
-            "active",
-            ModuleCategory.HORIZONTAL,
-            List.of(),
-            List.of(new NavItem("/settings/automations", "Automations", "work"))));
-
-    map.put(
         "information_requests",
         new ModuleDefinition(
             "information_requests",
@@ -138,7 +115,7 @@ public class VerticalModuleRegistry {
             "Customer document-request workflows with portal pickup and acceptance",
             "active",
             ModuleCategory.HORIZONTAL,
-            List.of("legal-za", "accounting-za", "consulting-za"),
+            List.of("legal-za"),
             List.of(new NavItem("/information-requests", "Information Requests", "clients"))));
 
     map.put(

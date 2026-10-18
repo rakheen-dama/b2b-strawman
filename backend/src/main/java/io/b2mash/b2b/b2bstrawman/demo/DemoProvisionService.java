@@ -390,10 +390,10 @@ public class DemoProvisionService {
   }
 
   static String parseVerticalProfile(String adminNote) {
-    if (adminNote == null) return "generic";
+    if (adminNote == null) return VerticalProfileRegistry.DEFAULT_PROFILE_ID;
     // Admin note format: "Demo tenant provisioned by admin <userId>. Profile: <profile>"
     int idx = adminNote.indexOf("Profile: ");
-    if (idx < 0) return "generic";
+    if (idx < 0) return VerticalProfileRegistry.DEFAULT_PROFILE_ID;
     return adminNote.substring(idx + 9).trim().split("[\\s.]")[0].toLowerCase();
   }
 

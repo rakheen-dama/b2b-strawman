@@ -93,7 +93,7 @@ class VerticalProfileControllerTest {
         .perform(get("/api/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$", hasSize(10)))
+        .andExpect(jsonPath("$", hasSize(8)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(false))
@@ -148,21 +148,28 @@ class VerticalProfileControllerTest {
   @Test
   @Order(6)
   void patchVerticalProfile_invalidProfileId_returns400() throws Exception {
-    mockMvc
-        .perform(
-            patch("/api/settings/vertical-profile")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"verticalProfile": "nonexistent-profile-xyz"}"""))
-        .andExpect(status().isBadRequest());
+    // Includes the profile ids deleted in Phase 86 (Epic 604): legal-za is the only one left.
+    for (String profile :
+        java.util.List.of(
+            "nonexistent-profile-xyz", "accounting-za", "consulting-za", "consulting-generic")) {
+      mockMvc
+          .perform(
+              patch("/api/settings/vertical-profile")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      """
+                      {"verticalProfile": "%s"}"""
+                          .formatted(profile)))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.title").value("Invalid profile"));
+    }
   }
 
   @Test
   @Order(7)
   void getModules_reflectsProfileChanges() throws Exception {
-    // Switch to consulting-generic — all modules should be disabled
+    // Clear the profile (null) — all vertical modules should be disabled
     mockMvc
         .perform(
             patch("/api/settings/vertical-profile")
@@ -170,13 +177,13 @@ class VerticalProfileControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"verticalProfile": "consulting-generic"}"""))
+                    {"verticalProfile": null}"""))
         .andExpect(status().isOk());
 
     mockMvc
         .perform(get("/api/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(10)))
+        .andExpect(jsonPath("$", hasSize(8)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(false))
@@ -196,7 +203,7 @@ class VerticalProfileControllerTest {
     mockMvc
         .perform(get("/api/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(10)))
+        .andExpect(jsonPath("$", hasSize(8)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(true))

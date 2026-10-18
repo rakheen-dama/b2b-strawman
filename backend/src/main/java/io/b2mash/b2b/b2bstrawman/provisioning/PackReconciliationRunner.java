@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.packs.PackInstallService;
 import io.b2mash.b2b.b2bstrawman.packs.PackType;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder;
-import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileReconciliationSeeder;
@@ -49,7 +48,6 @@ public class PackReconciliationRunner implements ApplicationRunner {
   private final CompliancePackSeeder compliancePackSeeder;
   private final StandardReportPackSeeder standardReportPackSeeder;
   private final RequestPackSeeder requestPackSeeder;
-  private final RatePackSeeder ratePackSeeder;
   private final ProjectTemplatePackSeeder projectTemplatePackSeeder;
   private final LegalTariffSeeder legalTariffSeeder;
   private final VerticalProfileReconciliationSeeder verticalProfileReconciliationSeeder;
@@ -66,7 +64,6 @@ public class PackReconciliationRunner implements ApplicationRunner {
       CompliancePackSeeder compliancePackSeeder,
       StandardReportPackSeeder standardReportPackSeeder,
       RequestPackSeeder requestPackSeeder,
-      RatePackSeeder ratePackSeeder,
       ProjectTemplatePackSeeder projectTemplatePackSeeder,
       LegalTariffSeeder legalTariffSeeder,
       VerticalProfileReconciliationSeeder verticalProfileReconciliationSeeder,
@@ -81,7 +78,6 @@ public class PackReconciliationRunner implements ApplicationRunner {
     this.compliancePackSeeder = compliancePackSeeder;
     this.standardReportPackSeeder = standardReportPackSeeder;
     this.requestPackSeeder = requestPackSeeder;
-    this.ratePackSeeder = ratePackSeeder;
     this.projectTemplatePackSeeder = projectTemplatePackSeeder;
     this.legalTariffSeeder = legalTariffSeeder;
     this.verticalProfileReconciliationSeeder = verticalProfileReconciliationSeeder;
@@ -137,7 +133,6 @@ public class PackReconciliationRunner implements ApplicationRunner {
     standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
     requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
     installPacksViaPipeline(schemaName, PackType.AUTOMATION_TEMPLATE);
-    ratePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
     projectTemplatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
     legalTariffSeeder.seedForTenant(schemaName, clerkOrgId);
     // GAP-L-44 + GAP-L-27 — merge enabled_modules and reconcile taxDefaults/tax_label from

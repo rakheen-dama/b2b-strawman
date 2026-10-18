@@ -156,16 +156,6 @@ test.describe.serial("Day 45 — Reconciliation & Prescription", () => {
         await captureScreenshot(page, "prescription-tracker-days", { curated: true });
       }
     }
-
-    // Also check dedicated prescription/deadlines page
-    await page.goto(`${BASE}/deadlines`);
-    const deadlinesVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (deadlinesVisible) {
-      await expect(page.locator("body")).not.toContainText("Something went wrong");
-    }
   });
 
   // ── 45.14-45.17: Court date lifecycle ─────────────────────────────

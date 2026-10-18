@@ -2,11 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { listRules, listTemplates } from "@/lib/api/automations";
-import { isModuleEnabledServer } from "@/lib/api/settings";
+import { listRules } from "@/lib/api/automations";
 import { RuleList } from "@/components/automations/rule-list";
-import type { AutomationRuleResponse, TemplateDefinitionResponse } from "@/lib/api/automations";
-import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
+import type { AutomationRuleResponse } from "@/lib/api/automations";
 
 export default async function AutomationsSettingsPage({
   params,
@@ -14,11 +12,6 @@ export default async function AutomationsSettingsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-
-  // Server-side module gate — short-circuit BEFORE invoking backend data fetches.
-  if (!(await isModuleEnabledServer("automation_builder"))) {
-    return <ModuleDisabledFallback moduleName="Automation Rule Builder" slug={slug} />;
-  }
 
   const capData = await fetchMyCapabilities();
 
@@ -29,10 +22,9 @@ export default async function AutomationsSettingsPage({
   const isAdmin = capData.isAdmin || capData.isOwner;
 
   let rules: AutomationRuleResponse[] = [];
-  let templates: TemplateDefinitionResponse[] = [];
 
   try {
-    [rules, templates] = await Promise.all([listRules(), listTemplates()]);
+    rules = await listRules();
   } catch {
     // Non-fatal: show empty state on API failure
   }
@@ -50,7 +42,7 @@ export default async function AutomationsSettingsPage({
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Automations</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Create rules to automate tasks, notifications, and workflows.
+          Enable or disable the automation rules installed with your practice packs.
         </p>
         {isAdmin && (
           <Link
@@ -62,7 +54,7 @@ export default async function AutomationsSettingsPage({
         )}
       </div>
 
-      <RuleList slug={slug} rules={rules} templates={templates} canManage={isAdmin} />
+      <RuleList slug={slug} rules={rules} canManage={isAdmin} />
     </div>
   );
 }

@@ -17,7 +17,6 @@ import io.b2mash.b2b.b2bstrawman.packs.PackInstallService;
 import io.b2mash.b2b.b2bstrawman.packs.PackType;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder;
-import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileReconciliationSeeder;
@@ -76,7 +75,6 @@ public class TenantProvisioningService {
   private final CompliancePackSeeder compliancePackSeeder;
   private final StandardReportPackSeeder standardReportPackSeeder;
   private final RequestPackSeeder requestPackSeeder;
-  private final RatePackSeeder ratePackSeeder;
   private final ProjectTemplatePackSeeder projectTemplatePackSeeder;
   private final LegalTariffSeeder legalTariffSeeder;
   private final VerticalProfileReconciliationSeeder verticalProfileReconciliationSeeder;
@@ -98,7 +96,6 @@ public class TenantProvisioningService {
       CompliancePackSeeder compliancePackSeeder,
       StandardReportPackSeeder standardReportPackSeeder,
       RequestPackSeeder requestPackSeeder,
-      RatePackSeeder ratePackSeeder,
       ProjectTemplatePackSeeder projectTemplatePackSeeder,
       LegalTariffSeeder legalTariffSeeder,
       VerticalProfileReconciliationSeeder verticalProfileReconciliationSeeder,
@@ -118,7 +115,6 @@ public class TenantProvisioningService {
     this.compliancePackSeeder = compliancePackSeeder;
     this.standardReportPackSeeder = standardReportPackSeeder;
     this.requestPackSeeder = requestPackSeeder;
-    this.ratePackSeeder = ratePackSeeder;
     this.projectTemplatePackSeeder = projectTemplatePackSeeder;
     this.legalTariffSeeder = legalTariffSeeder;
     this.verticalProfileReconciliationSeeder = verticalProfileReconciliationSeeder;
@@ -186,6 +182,14 @@ public class TenantProvisioningService {
       }
     }
 
+    // Unknown vertical profile → 400 before any org row is written (ADR-332: no silent fallback).
+    // A null profile is still allowed (profile-less tenant).
+    if (verticalProfile != null && verticalProfileRegistry.getProfile(verticalProfile).isEmpty()) {
+      throw new InvalidStateException(
+          "Unknown vertical profile",
+          "Vertical profile '%s' is not registered".formatted(verticalProfile));
+    }
+
     // Create or find organization record (default tier is STARTER)
     var org =
         organizationRepository
@@ -233,7 +237,6 @@ public class TenantProvisioningService {
             standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
             requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
             installPacksViaPipeline(schemaName, verticalProfile, PackType.AUTOMATION_TEMPLATE);
-            ratePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
             projectTemplatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
             legalTariffSeeder.seedForTenant(schemaName, clerkOrgId);
             // GAP-L-44 + GAP-L-27 — apply profile enabled_modules and taxDefaults to the
@@ -312,18 +315,21 @@ public class TenantProvisioningService {
                       });
           settings.setVerticalProfile(verticalProfile);
 
-          var profileOpt = verticalProfileRegistry.getProfile(verticalProfile);
-          if (profileOpt.isPresent()) {
-            var profile = profileOpt.get();
-            settings.setEnabledModules(profile.enabledModules());
-            settings.setTerminologyNamespace(profile.terminologyNamespace());
-            if (profile.currency() != null) {
-              settings.updateCurrency(profile.currency());
-            }
-          } else {
-            log.warn(
-                "Vertical profile '{}' not found in registry, skipping modules/terminology",
-                verticalProfile);
+          // Unknown ids are rejected in provisionTenant before any org row is written, so a miss
+          // here is a programming error — no silent fallback (ADR-332).
+          var profile =
+              verticalProfileRegistry
+                  .getProfile(verticalProfile)
+                  .orElseThrow(
+                      () ->
+                          new InvalidStateException(
+                              "Unknown vertical profile",
+                              "Vertical profile '%s' is not registered"
+                                  .formatted(verticalProfile)));
+          settings.setEnabledModules(profile.enabledModules());
+          settings.setTerminologyNamespace(profile.terminologyNamespace());
+          if (profile.currency() != null) {
+            settings.updateCurrency(profile.currency());
           }
 
           orgSettingsRepository.save(settings);

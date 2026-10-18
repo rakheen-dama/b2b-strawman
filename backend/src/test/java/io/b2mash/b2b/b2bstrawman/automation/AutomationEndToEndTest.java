@@ -16,11 +16,8 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
-import io.b2mash.b2b.b2bstrawman.testutil.TestModuleHelper;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
@@ -57,7 +54,6 @@ class AutomationEndToEndTest {
   @Autowired private ActionExecutionRepository actionExecutionRepository;
   @Autowired private AutomationActionExecutor automationActionExecutor;
   @Autowired private AutomationScheduler automationScheduler;
-  @Autowired private AutomationRuleService automationRuleService;
   @Autowired private AutomationTemplateService automationTemplateService;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private ProjectRepository projectRepository;
@@ -69,8 +65,6 @@ class AutomationEndToEndTest {
   @Autowired private NotificationRepository notificationRepository;
   @Autowired private ApplicationEventPublisher eventPublisher;
   @Autowired private ConditionEvaluator conditionEvaluator;
-  @Autowired private OrgSettingsService orgSettingsService;
-  @Autowired private OrgSettingsRepository orgSettingsRepository;
 
   private String schemaName;
   private UUID actorMemberId;
@@ -107,9 +101,6 @@ class AutomationEndToEndTest {
 
               var pm = new ProjectMember(projectId, actorMemberId, "LEAD", actorMemberId);
               projectMemberRepository.save(pm);
-
-              TestModuleHelper.enableModulesInTenant(
-                  orgSettingsService, orgSettingsRepository, "automation_builder");
             });
   }
 
@@ -539,67 +530,6 @@ class AutomationEndToEndTest {
   }
 
   // --- 288.8 Rule lifecycle effects on scheduled actions ---
-
-  @Test
-  void ruleLifecycle_deleteRuleCancelsScheduledActions() {
-    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, actorMemberId)
-        .run(
-            () -> {
-              var rule =
-                  createRule("Delete rule test", TriggerType.TASK_STATUS_CHANGED, Map.of(), null);
-              ruleRepository.save(rule);
-
-              var action =
-                  new AutomationAction(
-                      rule.getId(),
-                      0,
-                      ActionType.SEND_NOTIFICATION,
-                      Map.of(
-                          "recipientType", "TRIGGER_ACTOR",
-                          "title", "Test",
-                          "message", "Scheduled"),
-                      null,
-                      null);
-              actionRepository.save(action);
-
-              var execution =
-                  new AutomationExecution(
-                      rule.getId(),
-                      "TaskStatusChangedEvent",
-                      Map.of("eventType", "test"),
-                      true,
-                      ExecutionStatus.TRIGGERED);
-              executionRepository.save(execution);
-
-              var actionExecution =
-                  new ActionExecution(
-                      execution.getId(),
-                      action.getId(),
-                      ActionExecutionStatus.SCHEDULED,
-                      Instant.now().plus(1, ChronoUnit.HOURS));
-              actionExecutionRepository.save(actionExecution);
-              UUID actionExecId = actionExecution.getId();
-              UUID ruleId = rule.getId();
-
-              // Verify the SCHEDULED action exists before deletion
-              assertThat(actionExecutionRepository.findById(actionExecId)).isPresent();
-              assertThat(actionExecutionRepository.findById(actionExecId).get().getStatus())
-                  .isEqualTo(ActionExecutionStatus.SCHEDULED);
-
-              // Delete the rule — cancels scheduled actions, then cascade-deletes
-              // the execution records along with rule and action definitions
-              automationRuleService.deleteRule(ruleId);
-
-              // Verify rule is gone
-              assertThat(ruleRepository.findById(ruleId)).isEmpty();
-
-              // Action execution records are cascade-deleted (rule -> execution ->
-              // action_execution)
-              assertThat(actionExecutionRepository.findById(actionExecId)).isEmpty();
-            });
-  }
 
   @Test
   void ruleLifecycle_disabledRuleScheduledActionsCancelledByScheduler() {

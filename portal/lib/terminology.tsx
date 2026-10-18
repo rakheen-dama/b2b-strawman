@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, useContext, useMemo } from "react";
-// The portal uses the base terminology map WITH portal-only overrides layered
-// on (e.g. `Matters → Engagements` for accounting-za, needed by the sidebar).
+// The portal reads the shared terminology map. Phase 86 (ADR-332): legal-za is
+// the only profile, so there are no portal-only overrides any more.
 import { PORTAL_TERMINOLOGY as TERMINOLOGY } from "@b2mash/shared/terminology-map";
 
 // ---- Context Types ----

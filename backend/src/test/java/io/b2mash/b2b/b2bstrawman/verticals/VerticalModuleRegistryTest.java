@@ -16,20 +16,18 @@ class VerticalModuleRegistryTest {
   }
 
   @Test
-  void getAllModules_returnsTenModulesWithCorrectIds() {
+  void getAllModules_returnsEightModulesWithCorrectIds() {
     var modules = registry.getAllModules();
 
-    assertThat(modules).hasSize(10);
+    assertThat(modules).hasSize(8);
     assertThat(modules)
         .extracting(VerticalModuleRegistry.ModuleDefinition::id)
         .containsExactlyInAnyOrder(
             "trust_accounting",
             "court_calendar",
             "conflict_check",
-            "regulatory_deadlines",
             "lssa_tariff",
             "bulk_billing",
-            "automation_builder",
             "information_requests",
             "disbursements",
             "matter_closure");
@@ -90,13 +88,13 @@ class VerticalModuleRegistryTest {
   }
 
   @Test
-  void getHorizontalModules_returnsThreeHorizontalModules() {
+  void getHorizontalModules_returnsTwoHorizontalModules() {
     var horizontal = registry.getHorizontalModules();
 
-    assertThat(horizontal).hasSize(3);
+    assertThat(horizontal).hasSize(2);
     assertThat(horizontal)
         .extracting(VerticalModuleRegistry.ModuleDefinition::id)
-        .containsExactlyInAnyOrder("bulk_billing", "automation_builder", "information_requests");
+        .containsExactlyInAnyOrder("bulk_billing", "information_requests");
     assertThat(horizontal)
         .allSatisfy(m -> assertThat(m.category()).isEqualTo(ModuleCategory.HORIZONTAL));
   }
@@ -116,14 +114,13 @@ class VerticalModuleRegistryTest {
   }
 
   @Test
-  void getModule_informationRequestsIsHorizontalEnabledForAllThreeVerticals() {
+  void getModule_informationRequestsIsHorizontalEnabledForLegalZa() {
     var module = registry.getModule("information_requests");
 
     assertThat(module).isPresent();
     assertThat(module.get().name()).isEqualTo("Information Requests");
     assertThat(module.get().category()).isEqualTo(ModuleCategory.HORIZONTAL);
-    assertThat(module.get().defaultEnabledFor())
-        .containsExactlyInAnyOrder("legal-za", "accounting-za", "consulting-za");
+    assertThat(module.get().defaultEnabledFor()).containsExactly("legal-za");
     assertThat(module.get().navItems()).hasSize(1);
     assertThat(module.get().navItems().getFirst().path()).isEqualTo("/information-requests");
     assertThat(module.get().navItems().getFirst().label()).isEqualTo("Information Requests");
@@ -131,17 +128,11 @@ class VerticalModuleRegistryTest {
   }
 
   @Test
-  void getModule_automationBuilderIsHorizontalWithCorrectNavItem() {
-    var module = registry.getModule("automation_builder");
-
-    assertThat(module).isPresent();
-    assertThat(module.get().name()).isEqualTo("Automation Rule Builder");
-    assertThat(module.get().category()).isEqualTo(ModuleCategory.HORIZONTAL);
-    assertThat(module.get().defaultEnabledFor()).isEmpty();
-    assertThat(module.get().navItems()).hasSize(1);
-    assertThat(module.get().navItems().getFirst().path()).isEqualTo("/settings/automations");
-    assertThat(module.get().navItems().getFirst().label()).isEqualTo("Automations");
-    assertThat(module.get().navItems().getFirst().zone()).isEqualTo("work");
+  void getModule_removedModulesAreAbsent() {
+    // Phase 86 (Epic 604A): the accounting-only regulatory deadlines module and the automation
+    // rule builder module were removed from the registry (ADR-332 / ADR-334).
+    assertThat(registry.getModule("regulatory_deadlines")).isEmpty();
+    assertThat(registry.getModule("automation_builder")).isEmpty();
   }
 
   @Test
@@ -151,7 +142,6 @@ class VerticalModuleRegistryTest {
             "trust_accounting",
             "court_calendar",
             "conflict_check",
-            "regulatory_deadlines",
             "lssa_tariff",
             "disbursements",
             "matter_closure");
@@ -165,17 +155,16 @@ class VerticalModuleRegistryTest {
   }
 
   @Test
-  void getModulesByCategory_returnsSevenVerticalModules() {
+  void getModulesByCategory_returnsSixVerticalModules() {
     var vertical = registry.getModulesByCategory(ModuleCategory.VERTICAL);
 
-    assertThat(vertical).hasSize(7);
+    assertThat(vertical).hasSize(6);
     assertThat(vertical)
         .extracting(VerticalModuleRegistry.ModuleDefinition::id)
         .containsExactlyInAnyOrder(
             "trust_accounting",
             "court_calendar",
             "conflict_check",
-            "regulatory_deadlines",
             "lssa_tariff",
             "disbursements",
             "matter_closure");

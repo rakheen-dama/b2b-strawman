@@ -1,11 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.automation;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -15,7 +16,6 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
-import io.b2mash.b2b.b2bstrawman.testutil.TestModuleHelper;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
@@ -27,11 +27,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
 
+/**
+ * Controller test for the surviving automation-rule endpoints (ADR-334): {@code GET
+ * /api/automation-rules}, {@code GET /api/automation-rules/{id}}, {@code POST
+ * /api/automation-rules/{id}/toggle} and the execution reads. The rule builder's write endpoints
+ * were removed in Phase 86 (Epic 604A), so fixtures are seeded directly via the repositories (rules
+ * are otherwise installed by packs). The tenant also holds pack-installed rules, so list assertions
+ * check containment of the seeded ids, never an exact count.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
@@ -42,9 +50,12 @@ class AutomationRuleControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
+  @Autowired private AutomationRuleRepository ruleRepository;
+  @Autowired private AutomationActionRepository actionRepository;
   @Autowired private AutomationExecutionRepository executionRepository;
   @Autowired private ActionExecutionRepository actionExecutionRepository;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private JdbcTemplate jdbcTemplate;
   @Autowired private OrgRoleService orgRoleService;
   @Autowired private MemberRepository memberRepository;
@@ -63,7 +74,6 @@ class AutomationRuleControllerTest {
             mockMvc, ORG_ID, "user_auto_owner", "auto_owner@test.com", "Auto Owner", "owner");
     TestMemberHelper.syncMember(
         mockMvc, ORG_ID, "user_auto_member", "auto_member@test.com", "Auto Member", "member");
-    TestModuleHelper.enableModules(mockMvc, ORG_ID, "user_auto_owner", "automation_builder");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
@@ -112,96 +122,81 @@ class AutomationRuleControllerTest {
             });
   }
 
-  @Test
-  void shouldCreateRule() throws Exception {
-    mockMvc
-        .perform(
-            post("/api/automation-rules")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "name": "Test Rule",
-                      "description": "A test automation rule",
-                      "triggerType": "TASK_STATUS_CHANGED",
-                      "triggerConfig": {"from": "IN_PROGRESS", "to": "DONE"},
-                      "conditions": [{"field": "task.status", "operator": "EQUALS", "value": "DONE"}]
-                    }
-                    """))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.id").exists())
-        .andExpect(jsonPath("$.name").value("Test Rule"))
-        .andExpect(jsonPath("$.enabled").value(true))
-        .andExpect(jsonPath("$.source").value("CUSTOM"))
-        .andExpect(jsonPath("$.triggerType").value("TASK_STATUS_CHANGED"));
+  // --- Fixture helpers (rules have no create API; packs install them in production) ---
+
+  private UUID seedRule(String name, TriggerType triggerType, boolean enabled) {
+    UUID[] holder = new UUID[1];
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var rule =
+                          new AutomationRule(
+                              name,
+                              "seeded by AutomationRuleControllerTest",
+                              triggerType,
+                              Map.of(),
+                              null,
+                              RuleSource.CUSTOM,
+                              null,
+                              UUID.fromString(memberIdOwner));
+                      if (!enabled) {
+                        rule.toggle();
+                      }
+                      holder[0] = ruleRepository.save(rule).getId();
+                    }));
+    return holder[0];
+  }
+
+  private void seedAction(UUID ruleId, ActionType actionType, int sortOrder) {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx ->
+                        actionRepository.save(
+                            new AutomationAction(
+                                ruleId,
+                                sortOrder,
+                                actionType,
+                                Map.of("message", "Task done"),
+                                null,
+                                null))));
   }
 
   @Test
   void shouldGetRuleWithActions() throws Exception {
-    // Create rule
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/automation-rules")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "name": "Get Test Rule",
-                          "triggerType": "TASK_STATUS_CHANGED",
-                          "triggerConfig": {}
-                        }
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String ruleId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+    UUID ruleId = seedRule("Get Test Rule", TriggerType.TASK_STATUS_CHANGED, true);
+    seedAction(ruleId, ActionType.SEND_NOTIFICATION, 0);
 
-    // Add action
-    mockMvc
-        .perform(
-            post("/api/automation-rules/" + ruleId + "/actions")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "actionType": "SEND_NOTIFICATION",
-                      "actionConfig": {"message": "Task done"},
-                      "sortOrder": 0
-                    }
-                    """))
-        .andExpect(status().isCreated());
-
-    // Get rule with actions
     mockMvc
         .perform(
             get("/api/automation-rules/" + ruleId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Get Test Rule"))
+        .andExpect(jsonPath("$.source").value("CUSTOM"))
+        .andExpect(jsonPath("$.triggerType").value("TASK_STATUS_CHANGED"))
         .andExpect(jsonPath("$.actions", hasSize(1)))
         .andExpect(jsonPath("$.actions[0].actionType").value("SEND_NOTIFICATION"));
   }
 
   @Test
-  void shouldListRulesFilteredByEnabled() throws Exception {
-    // Create enabled rule
+  void shouldReturn404ForUnknownRule() throws Exception {
     mockMvc
         .perform(
-            post("/api/automation-rules")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "name": "Enabled Filter Rule",
-                      "triggerType": "PROJECT_STATUS_CHANGED",
-                      "triggerConfig": {}
-                    }
-                    """))
-        .andExpect(status().isCreated());
+            get("/api/automation-rules/" + UUID.randomUUID())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void shouldListRulesFilteredByEnabled() throws Exception {
+    UUID enabledId = seedRule("Enabled Filter Rule", TriggerType.PROJECT_STATUS_CHANGED, true);
+    UUID disabledId = seedRule("Disabled Filter Rule", TriggerType.PROJECT_STATUS_CHANGED, false);
 
     mockMvc
         .perform(
@@ -209,123 +204,37 @@ class AutomationRuleControllerTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                 .param("enabled", "true"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$").isArray());
+        .andExpect(jsonPath("$[*].id", hasItem(enabledId.toString())))
+        .andExpect(jsonPath("$[*].id", not(hasItem(disabledId.toString()))));
+
+    mockMvc
+        .perform(
+            get("/api/automation-rules")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
+                .param("enabled", "false"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[*].id", hasItem(disabledId.toString())))
+        .andExpect(jsonPath("$[*].id", not(hasItem(enabledId.toString()))));
   }
 
   @Test
   void shouldListRulesFilteredByTriggerType() throws Exception {
+    UUID taskRuleId = seedRule("Task Trigger Rule", TriggerType.TASK_STATUS_CHANGED, true);
+    UUID projectRuleId = seedRule("Project Trigger Rule", TriggerType.PROJECT_STATUS_CHANGED, true);
+
     mockMvc
         .perform(
             get("/api/automation-rules")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                 .param("triggerType", "TASK_STATUS_CHANGED"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$").isArray());
-  }
-
-  @Test
-  void shouldUpdateRule() throws Exception {
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/automation-rules")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "name": "Update Me",
-                          "triggerType": "TASK_STATUS_CHANGED",
-                          "triggerConfig": {}
-                        }
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String ruleId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
-
-    mockMvc
-        .perform(
-            put("/api/automation-rules/" + ruleId)
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "name": "Updated Name",
-                      "triggerType": "PROJECT_STATUS_CHANGED",
-                      "triggerConfig": {"status": "ACTIVE"}
-                    }
-                    """))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.name").value("Updated Name"))
-        .andExpect(jsonPath("$.triggerType").value("PROJECT_STATUS_CHANGED"));
-  }
-
-  @Test
-  void shouldDeleteRuleWithCascade() throws Exception {
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/automation-rules")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "name": "Delete Me",
-                          "triggerType": "TASK_STATUS_CHANGED",
-                          "triggerConfig": {}
-                        }
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String ruleId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
-
-    // Add action
-    mockMvc
-        .perform(
-            post("/api/automation-rules/" + ruleId + "/actions")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"actionType": "SEND_NOTIFICATION", "actionConfig": {"msg": "test"}, "sortOrder": 0}
-                    """))
-        .andExpect(status().isCreated());
-
-    mockMvc
-        .perform(
-            delete("/api/automation-rules/" + ruleId)
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
-        .andExpect(status().isNoContent());
-
-    // Verify deleted
-    mockMvc
-        .perform(
-            get("/api/automation-rules/" + ruleId)
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
-        .andExpect(status().isNotFound());
+        .andExpect(jsonPath("$[*].id", hasItem(taskRuleId.toString())))
+        .andExpect(jsonPath("$[*].id", not(hasItem(projectRuleId.toString()))));
   }
 
   @Test
   void shouldToggleRuleEnabledState() throws Exception {
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/automation-rules")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "name": "Toggle Me",
-                          "triggerType": "TASK_STATUS_CHANGED",
-                          "triggerConfig": {}
-                        }
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String ruleId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+    UUID ruleId = seedRule("Toggle Me", TriggerType.TASK_STATUS_CHANGED, true);
 
     // Toggle off
     mockMvc
@@ -345,321 +254,8 @@ class AutomationRuleControllerTest {
   }
 
   @Test
-  void shouldDuplicateRule() throws Exception {
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/automation-rules")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "name": "Original Rule",
-                          "triggerType": "TASK_STATUS_CHANGED",
-                          "triggerConfig": {"key": "val"}
-                        }
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String ruleId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
-
-    // Add action to original
-    mockMvc
-        .perform(
-            post("/api/automation-rules/" + ruleId + "/actions")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"actionType": "CREATE_TASK", "actionConfig": {"name": "Auto task"}, "sortOrder": 0}
-                    """))
-        .andExpect(status().isCreated());
-
-    mockMvc
-        .perform(
-            post("/api/automation-rules/" + ruleId + "/duplicate")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.name").value("Original Rule (Copy)"))
-        .andExpect(jsonPath("$.source").value("CUSTOM"))
-        .andExpect(jsonPath("$.actions", hasSize(1)))
-        .andExpect(jsonPath("$.actions[0].actionType").value("CREATE_TASK"));
-  }
-
-  @Test
-  void shouldAddAction() throws Exception {
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/automation-rules")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "Action Rule", "triggerType": "TASK_STATUS_CHANGED", "triggerConfig": {}}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String ruleId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
-
-    mockMvc
-        .perform(
-            post("/api/automation-rules/" + ruleId + "/actions")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "actionType": "SEND_EMAIL",
-                      "actionConfig": {"to": "test@example.com"},
-                      "sortOrder": 0,
-                      "delayDuration": 30,
-                      "delayUnit": "MINUTES"
-                    }
-                    """))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.actionType").value("SEND_EMAIL"))
-        .andExpect(jsonPath("$.delayDuration").value(30))
-        .andExpect(jsonPath("$.delayUnit").value("MINUTES"));
-  }
-
-  @Test
-  void shouldUpdateAction() throws Exception {
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/automation-rules")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "Update Action Rule", "triggerType": "TASK_STATUS_CHANGED", "triggerConfig": {}}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String ruleId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
-
-    var actionResult =
-        mockMvc
-            .perform(
-                post("/api/automation-rules/" + ruleId + "/actions")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"actionType": "SEND_NOTIFICATION", "actionConfig": {"msg": "old"}, "sortOrder": 0}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String actionId = JsonPath.read(actionResult.getResponse().getContentAsString(), "$.id");
-
-    mockMvc
-        .perform(
-            put("/api/automation-rules/" + ruleId + "/actions/" + actionId)
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"actionType": "SEND_EMAIL", "actionConfig": {"msg": "new"}, "sortOrder": 1}
-                    """))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.actionType").value("SEND_EMAIL"))
-        .andExpect(jsonPath("$.sortOrder").value(1));
-  }
-
-  @Test
-  void shouldRemoveAction() throws Exception {
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/automation-rules")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "Remove Action Rule", "triggerType": "TASK_STATUS_CHANGED", "triggerConfig": {}}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String ruleId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
-
-    var actionResult =
-        mockMvc
-            .perform(
-                post("/api/automation-rules/" + ruleId + "/actions")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"actionType": "SEND_NOTIFICATION", "actionConfig": {}, "sortOrder": 0}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String actionId = JsonPath.read(actionResult.getResponse().getContentAsString(), "$.id");
-
-    mockMvc
-        .perform(
-            delete("/api/automation-rules/" + ruleId + "/actions/" + actionId)
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
-        .andExpect(status().isNoContent());
-
-    // Verify action removed
-    mockMvc
-        .perform(
-            get("/api/automation-rules/" + ruleId)
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.actions", hasSize(0)));
-  }
-
-  @Test
-  void shouldReorderActions() throws Exception {
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/automation-rules")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "Reorder Rule", "triggerType": "TASK_STATUS_CHANGED", "triggerConfig": {}}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String ruleId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
-
-    var action1Result =
-        mockMvc
-            .perform(
-                post("/api/automation-rules/" + ruleId + "/actions")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"actionType": "SEND_NOTIFICATION", "actionConfig": {}, "sortOrder": 0}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String action1Id = JsonPath.read(action1Result.getResponse().getContentAsString(), "$.id");
-
-    var action2Result =
-        mockMvc
-            .perform(
-                post("/api/automation-rules/" + ruleId + "/actions")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"actionType": "CREATE_TASK", "actionConfig": {}, "sortOrder": 1}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String action2Id = JsonPath.read(action2Result.getResponse().getContentAsString(), "$.id");
-
-    // Reorder: action2 first, then action1
-    mockMvc
-        .perform(
-            put("/api/automation-rules/" + ruleId + "/actions/reorder")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"actionIds": ["%s", "%s"]}
-                    """
-                        .formatted(action2Id, action1Id)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].id").value(action2Id))
-        .andExpect(jsonPath("$[0].sortOrder").value(0))
-        .andExpect(jsonPath("$[1].id").value(action1Id))
-        .andExpect(jsonPath("$[1].sortOrder").value(1));
-  }
-
-  @Test
-  void shouldTestRuleWithConditionsMet() throws Exception {
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/automation-rules")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "name": "Test Conditions Met",
-                          "triggerType": "TASK_STATUS_CHANGED",
-                          "triggerConfig": {},
-                          "conditions": [{"field": "task.status", "operator": "EQUALS", "value": "DONE"}]
-                        }
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String ruleId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
-
-    mockMvc
-        .perform(
-            post("/api/automation-rules/" + ruleId + "/test")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"sampleEventData": {"task": {"status": "DONE"}}}
-                    """))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.conditionsMet").value(true))
-        .andExpect(jsonPath("$.evaluationDetails").isArray());
-  }
-
-  @Test
-  void shouldTestRuleWithConditionsNotMet() throws Exception {
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/automation-rules")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "name": "Test Conditions Not Met",
-                          "triggerType": "TASK_STATUS_CHANGED",
-                          "triggerConfig": {},
-                          "conditions": [{"field": "task.status", "operator": "EQUALS", "value": "DONE"}]
-                        }
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String ruleId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
-
-    mockMvc
-        .perform(
-            post("/api/automation-rules/" + ruleId + "/test")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"sampleEventData": {"task": {"status": "IN_PROGRESS"}}}
-                    """))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.conditionsMet").value(false));
-  }
-
-  @Test
   void shouldListExecutionsForRule() throws Exception {
-    // Create rule
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/automation-rules")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "Exec List Rule", "triggerType": "TASK_STATUS_CHANGED", "triggerConfig": {}}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String ruleId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+    UUID ruleId = seedRule("Exec List Rule", TriggerType.TASK_STATUS_CHANGED, true);
 
     // Insert an execution directly via ScopedValue
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -667,7 +263,7 @@ class AutomationRuleControllerTest {
             () -> {
               var execution =
                   new AutomationExecution(
-                      UUID.fromString(ruleId),
+                      ruleId,
                       "TASK_STATUS_CHANGED",
                       Map.of("task", Map.of("status", "DONE")),
                       true,
@@ -681,35 +277,21 @@ class AutomationRuleControllerTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
-        .andExpect(jsonPath("$.content[0].ruleId").value(ruleId));
+        .andExpect(jsonPath("$.content[0].ruleId").value(ruleId.toString()));
   }
 
   @Test
   void shouldGetExecutionDetail() throws Exception {
-    // Create rule
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/automation-rules")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "Exec Detail Rule", "triggerType": "TASK_STATUS_CHANGED", "triggerConfig": {}}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String ruleId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+    UUID ruleId = seedRule("Exec Detail Rule", TriggerType.TASK_STATUS_CHANGED, true);
 
     // Insert execution and action execution directly
-    String schema = tenantSchema;
     UUID[] executionIdHolder = new UUID[1];
-    ScopedValue.where(RequestScopes.TENANT_ID, schema)
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .run(
             () -> {
               var execution =
                   new AutomationExecution(
-                      UUID.fromString(ruleId),
+                      ruleId,
                       "TASK_STATUS_CHANGED",
                       Map.of("task", Map.of("status", "DONE")),
                       true,
@@ -735,21 +317,18 @@ class AutomationRuleControllerTest {
   }
 
   @Test
-  void shouldForbidMemberFromCrud() throws Exception {
-    mockMvc
-        .perform(
-            post("/api/automation-rules")
-                .with(TestJwtFactory.memberJwt(ORG_ID, "user_auto_member"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"name": "Forbidden", "triggerType": "TASK_STATUS_CHANGED", "triggerConfig": {}}
-                    """))
-        .andExpect(status().isForbidden());
+  void shouldForbidMemberFromAutomationEndpoints() throws Exception {
+    UUID ruleId = seedRule("Member Forbidden Rule", TriggerType.TASK_STATUS_CHANGED, true);
 
     mockMvc
         .perform(
             get("/api/automation-rules").with(TestJwtFactory.memberJwt(ORG_ID, "user_auto_member")))
+        .andExpect(status().isForbidden());
+
+    mockMvc
+        .perform(
+            post("/api/automation-rules/" + ruleId + "/toggle")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_auto_member")))
         .andExpect(status().isForbidden());
 
     mockMvc
@@ -760,35 +339,13 @@ class AutomationRuleControllerTest {
   }
 
   @Test
-  void shouldCreateAuditEventsOnRuleCrud() throws Exception {
-    // Create rule
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/automation-rules")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "Audit Rule", "triggerType": "TASK_STATUS_CHANGED", "triggerConfig": {}}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String ruleId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+  void shouldCreateAuditEventsOnRuleToggle() throws Exception {
+    UUID ruleId = seedRule("Audit Rule", TriggerType.TASK_STATUS_CHANGED, true);
 
     // Check audit events in the tenant schema — validate schema name to prevent SQL injection
     String safeSchema = sanitizeSchemaName(tenantSchema);
 
-    Integer count =
-        jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM "
-                + safeSchema
-                + ".audit_events WHERE entity_id = ?::uuid AND event_type = 'automation_rule.created'",
-            Integer.class,
-            ruleId);
-    assertTrue(count != null && count > 0, "Expected at least one audit event for rule creation");
-
-    // Toggle to generate enabled/disabled audit events
+    // Toggle off → automation_rule.disabled
     mockMvc
         .perform(
             post("/api/automation-rules/" + ruleId + "/toggle")
@@ -801,57 +358,49 @@ class AutomationRuleControllerTest {
                 + safeSchema
                 + ".audit_events WHERE entity_id = ?::uuid AND event_type = 'automation_rule.disabled'",
             Integer.class,
-            ruleId);
+            ruleId.toString());
     assertTrue(
         disabledCount != null && disabledCount > 0,
         "Expected at least one audit event for rule disable");
 
-    // Delete to generate deletion audit
+    // Toggle on → automation_rule.enabled
     mockMvc
         .perform(
-            delete("/api/automation-rules/" + ruleId)
+            post("/api/automation-rules/" + ruleId + "/toggle")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
-        .andExpect(status().isNoContent());
+        .andExpect(status().isOk());
 
-    Integer deletedCount =
+    Integer enabledCount =
         jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM "
                 + safeSchema
-                + ".audit_events WHERE entity_id = ?::uuid AND event_type = 'automation_rule.deleted'",
+                + ".audit_events WHERE entity_id = ?::uuid AND event_type = 'automation_rule.enabled'",
             Integer.class,
-            ruleId);
+            ruleId.toString());
     assertTrue(
-        deletedCount != null && deletedCount > 0,
-        "Expected at least one audit event for rule deletion");
+        enabledCount != null && enabledCount > 0,
+        "Expected at least one audit event for rule enable");
   }
 
   // --- Capability Tests (added in Epic 315B) ---
 
   @Test
-  void customRoleWithCapability_accessesAutomationEndpoint_returns201() throws Exception {
+  void customRoleWithCapability_accessesAutomationEndpoint_returns200() throws Exception {
+    UUID ruleId = seedRule("Cap Test Rule", TriggerType.TASK_STATUS_CHANGED, true);
     mockMvc
         .perform(
-            post("/api/automation-rules")
-                .with(TestJwtFactory.memberJwt(ORG_ID, "user_auto_315b_custom"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"name": "Cap Test Rule", "triggerType": "TASK_STATUS_CHANGED", "triggerConfig": {}}
-                    """))
-        .andExpect(status().isCreated());
+            post("/api/automation-rules/" + ruleId + "/toggle")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_auto_315b_custom")))
+        .andExpect(status().isOk());
   }
 
   @Test
   void customRoleWithoutCapability_accessesAutomationEndpoint_returns403() throws Exception {
+    UUID ruleId = seedRule("NoCap Rule", TriggerType.TASK_STATUS_CHANGED, true);
     mockMvc
         .perform(
-            post("/api/automation-rules")
-                .with(TestJwtFactory.memberJwt(ORG_ID, "user_auto_315b_nocap"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"name": "NoCap Rule", "triggerType": "TASK_STATUS_CHANGED", "triggerConfig": {}}
-                    """))
+            post("/api/automation-rules/" + ruleId + "/toggle")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_auto_315b_nocap")))
         .andExpect(status().isForbidden());
   }
 

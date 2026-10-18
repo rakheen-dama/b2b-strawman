@@ -6,8 +6,6 @@ import io.b2mash.b2b.b2bstrawman.automation.DelayUnit;
 import io.b2mash.b2b.b2bstrawman.automation.ExecutionStatus;
 import io.b2mash.b2b.b2bstrawman.automation.RuleSource;
 import io.b2mash.b2b.b2bstrawman.automation.TriggerType;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -16,38 +14,6 @@ import java.util.UUID;
 public final class AutomationDtos {
 
   private AutomationDtos() {}
-
-  public record CreateRuleRequest(
-      @NotBlank String name,
-      String description,
-      @NotNull TriggerType triggerType,
-      @NotNull Map<String, Object> triggerConfig,
-      List<Map<String, Object>> conditions,
-      List<CreateActionRequest> actions) {}
-
-  public record UpdateRuleRequest(
-      @NotBlank String name,
-      String description,
-      @NotNull TriggerType triggerType,
-      @NotNull Map<String, Object> triggerConfig,
-      List<Map<String, Object>> conditions,
-      List<CreateActionRequest> actions) {}
-
-  public record CreateActionRequest(
-      @NotNull ActionType actionType,
-      @NotNull Map<String, Object> actionConfig,
-      int sortOrder,
-      Integer delayDuration,
-      DelayUnit delayUnit) {}
-
-  public record UpdateActionRequest(
-      @NotNull ActionType actionType,
-      @NotNull Map<String, Object> actionConfig,
-      int sortOrder,
-      Integer delayDuration,
-      DelayUnit delayUnit) {}
-
-  public record ReorderActionsRequest(@NotNull List<UUID> actionIds) {}
 
   public record AutomationRuleResponse(
       UUID id,
@@ -99,8 +65,4 @@ public final class AutomationDtos {
       Map<String, Object> resultData,
       String errorMessage,
       Instant createdAt) {}
-
-  public record TestRuleRequest(Map<String, Object> sampleEventData) {}
-
-  public record TestRuleResponse(boolean conditionsMet, List<String> evaluationDetails) {}
 }

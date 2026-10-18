@@ -48,7 +48,7 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
     href: "/deadlines",
     labelKey: "portal.nav.deadlines",
     icon: CalendarClock,
-    profiles: ["accounting-za", "legal-za"],
+    profiles: ["legal-za"],
     modules: ["deadlines"],
   },
   {

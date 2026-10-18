@@ -55,16 +55,20 @@ describe("Nav items - bulk billing gating", () => {
   });
 });
 
-describe("Settings nav groups - automation gating", () => {
-  it("Automations item has requiredModule: automation_builder in work group", () => {
+// Phase 86 (ADR-334): the automation_builder module was removed — the automations admin page is
+// always on (admin-only), so neither nav entry carries a module gate.
+describe("Settings nav groups - automations always on", () => {
+  it("Automations item in work group has no requiredModule", () => {
     const workGroup = SETTINGS_NAV_GROUPS.find((g) => g.id === "work");
     const automations = workGroup?.items.find((i) => i.label === "Automations");
-    expect(automations?.requiredModule).toBe("automation_builder");
+    expect(automations).toBeDefined();
+    expect(automations?.requiredModule).toBeUndefined();
   });
 
-  it("Automations entry in SETTINGS_ITEMS has requiredModule: automation_builder", () => {
+  it("Automations entry in SETTINGS_ITEMS has no requiredModule", () => {
     const automations = SETTINGS_ITEMS.find((i) => i.title === "Automations");
-    expect(automations?.requiredModule).toBe("automation_builder");
+    expect(automations).toBeDefined();
+    expect(automations?.requiredModule).toBeUndefined();
   });
 });
 
@@ -126,15 +130,15 @@ describe("ModuleGate page-level gating", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("hides automation widget when module disabled (no fallback)", () => {
+  it("hides gated widget when module disabled (no fallback)", () => {
     render(
       <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
-        <ModuleGate module="automation_builder">
-          <div>Automation runs widget</div>
+        <ModuleGate module="information_requests">
+          <div>Information requests widget</div>
         </ModuleGate>
       </OrgProfileProvider>
     );
 
-    expect(screen.queryByText("Automation runs widget")).not.toBeInTheDocument();
+    expect(screen.queryByText("Information requests widget")).not.toBeInTheDocument();
   });
 });

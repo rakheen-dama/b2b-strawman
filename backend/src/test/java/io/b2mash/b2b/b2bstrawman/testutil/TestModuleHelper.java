@@ -24,8 +24,8 @@ public final class TestModuleHelper {
    * Replaces the set of enabled horizontal modules for the given tenant. Requires an owner/admin
    * member to already exist in the tenant (use {@link TestMemberHelper} first).
    *
-   * <p>Module IDs are strings like {@code "bulk_billing"}, {@code "information_requests"}, {@code
-   * "automation_builder"}. Passing an empty array clears all horizontal modules.
+   * <p>Module IDs are strings like {@code "bulk_billing"} and {@code "information_requests"}.
+   * Passing an empty array clears all horizontal modules.
    */
   public static void enableModules(
       MockMvc mockMvc, String orgId, String ownerSubject, String... moduleIds) throws Exception {

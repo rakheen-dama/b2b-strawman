@@ -36,7 +36,7 @@ STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
   -d "{
     \"clerkOrgId\": \"${ORG_ID}\",
     \"orgName\": \"${ORG_NAME}\",
-    \"verticalProfile\": \"${VERTICAL_PROFILE:-accounting-za}\"
+    \"verticalProfile\": \"${VERTICAL_PROFILE:-legal-za}\"
   }")
 check_status "Provision org" "$STATUS"
 

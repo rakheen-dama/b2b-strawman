@@ -103,13 +103,11 @@ function withTrustEnabled(ui: React.ReactElement) {
   );
 }
 
-function withAccountingProfile(ui: React.ReactElement) {
+// Phase 86 (ADR-332): the accounting-za profile is gone; the "trust off" control is now a
+// legal-za org with trust_accounting disabled.
+function withTrustDisabled(ui: React.ReactElement) {
   return (
-    <OrgProfileProvider
-      verticalProfile="accounting-za"
-      enabledModules={["regulatory_deadlines"]}
-      terminologyNamespace={null}
-    >
+    <OrgProfileProvider verticalProfile="legal-za" enabledModules={[]} terminologyNamespace={null}>
       {ui}
     </OrgProfileProvider>
   );
@@ -118,36 +116,13 @@ function withAccountingProfile(ui: React.ReactElement) {
 // ===== 451.8 — Coexistence Tests =====
 
 describe("Trust coexistence -- nav visibility", () => {
-  it("no trust nav items for accounting-profile org", () => {
+  it("trust nav items visible for legal-profile org with trust_accounting", () => {
     const trustNavItems = NAV_GROUPS.flatMap((g) => g.items).filter(
       (item) => item.requiredModule === TRUST_MODULE
     );
 
     // Sanity: there should be 7 trust nav items in the nav definition
     expect(trustNavItems.length).toBe(7);
-
-    render(
-      withAccountingProfile(
-        <>
-          {trustNavItems.map((item) => (
-            <ModuleGate key={item.label} module={item.requiredModule!}>
-              <span data-testid={`trust-nav-${item.label}`}>{item.label}</span>
-            </ModuleGate>
-          ))}
-        </>
-      )
-    );
-
-    // None of the 7 trust nav items should be visible
-    for (const item of trustNavItems) {
-      expect(screen.queryByTestId(`trust-nav-${item.label}`)).not.toBeInTheDocument();
-    }
-  });
-
-  it("trust nav items visible for legal-profile org with trust_accounting", () => {
-    const trustNavItems = NAV_GROUPS.flatMap((g) => g.items).filter(
-      (item) => item.requiredModule === TRUST_MODULE
-    );
 
     const { unmount } = render(
       withTrustEnabled(
@@ -175,7 +150,7 @@ describe("Trust coexistence -- nav visibility", () => {
     expect(trustSettingsItem).toBeDefined();
 
     render(
-      withAccountingProfile(
+      withTrustDisabled(
         <ModuleGate module={trustSettingsItem!.requiredModule!}>
           <span data-testid="trust-settings-coex">{trustSettingsItem!.title}</span>
         </ModuleGate>

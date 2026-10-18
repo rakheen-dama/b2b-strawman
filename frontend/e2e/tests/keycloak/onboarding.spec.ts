@@ -31,7 +31,7 @@ test.describe.serial("Keycloak Onboarding: Access Request → Approval → Regis
 
     // Select industry
     await page.getByTestId("industry-select").click();
-    await page.getByRole("option", { name: "Accounting" }).click();
+    await page.getByRole("option", { name: "Legal Services" }).click();
 
     // Submit
     await page.getByTestId("submit-request-btn").click();

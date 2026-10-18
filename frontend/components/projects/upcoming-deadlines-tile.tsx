@@ -10,9 +10,9 @@ interface UpcomingDeadlinesTileProps {
 /**
  * Matter-Overview "Upcoming Deadlines" tile (GAP-L-58 / E9.3).
  *
- * Renders the union of court dates + regulatory deadlines returned by
+ * Renders the upcoming court dates returned by
  * GET /api/projects/{id}/upcoming-deadlines as a flat sorted list,
- * with a small slate badge to distinguish COURT vs REGULATORY rows.
+ * each with a small slate "Court" badge.
  */
 export function UpcomingDeadlinesTile({ deadlines }: UpcomingDeadlinesTileProps) {
   return (
@@ -33,7 +33,7 @@ export function UpcomingDeadlinesTile({ deadlines }: UpcomingDeadlinesTileProps)
               >
                 <CalendarDays className="size-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
                 <Badge variant="neutral" className="shrink-0 text-[10px]">
-                  {d.type === "COURT" ? "Court" : "Regulatory"}
+                  Court
                 </Badge>
                 <span className="min-w-0 flex-1 truncate text-sm text-slate-700 dark:text-slate-300">
                   {d.description}

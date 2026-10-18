@@ -6,13 +6,12 @@ import { getPortalJwt, loginAsPortalContact } from "../../helpers/auth";
  *
  * Exercises checkpoints 7–9 from `qa/testplan/demos/portal-client-90day-keycloak.md`:
  *   - Day 45: Client pays first invoice via portal payment flow                    [all profiles]
- *   - Day 60: Client downloads Statement of Account / financial statement          [legal-za / accounting-za]
- *   - Day 75: Deadline-approaching nudge → mark read → download related document   [accounting-za / legal-za]
+ *   - Day 60: Client downloads Statement of Account                               [legal-za]
+ *   - Day 75: Deadline-approaching nudge → mark read → download related document   [legal-za]
  *
  * Prerequisites: same stack contract as day-00-07.spec.ts. Day 45 requires a
  * sandbox-PSP-enabled invoice in "Due" state. Day 60 requires a generated SoA
- * (legal-za) or financial statement (accounting-za) attached to the client's
- * matter/engagement.
+ * attached to the client's matter.
  *
  * Run (full — slice 500B):
  *   PLAYWRIGHT_BASE_URL=http://localhost:3002 \
@@ -125,7 +124,7 @@ test.describe.serial("Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9
   });
 
   // ── Checkpoint 8 — Day 60: download generated document ─────────────────
-  test("Day 60 [legal-za / accounting-za]: Client downloads SoA or financial statement", async ({
+  test("Day 60 [legal-za]: Client downloads SoA or financial statement", async ({
     page,
   }) => {
     await page.goto("/projects");
@@ -178,7 +177,7 @@ test.describe.serial("Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9
   });
 
   // ── Checkpoint 9 — Day 75: deadline nudge → mark read → download ──────
-  test("Day 75 [accounting-za / legal-za]: Client marks deadline nudge read", async ({
+  test("Day 75 [legal-za]: Client marks deadline nudge read", async ({
     page,
   }) => {
     await page.goto("/deadlines");
@@ -189,7 +188,7 @@ test.describe.serial("Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9
     if (!(await main.isVisible({ timeout: 5000 }).catch(() => false))) {
       test.skip(
         true,
-        "/deadlines not rendered — non-accounting-za / non-legal-za tenant",
+        "/deadlines not rendered — deadlines module not enabled for this tenant",
       );
       return;
     }

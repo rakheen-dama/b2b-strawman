@@ -61,10 +61,6 @@ public class PackStatusSettings {
   private List<Map<String, Object>> automationPackStatus;
 
   @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "rate_pack_status", columnDefinition = "jsonb")
-  private List<Map<String, Object>> ratePackStatus;
-
-  @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "project_template_pack_status", columnDefinition = "jsonb")
   private List<Map<String, Object>> projectTemplatePackStatus;
 
@@ -228,35 +224,6 @@ public class PackStatusSettings {
       return false;
     }
     return this.automationPackStatus.stream().anyMatch(entry -> packId.equals(entry.get("packId")));
-  }
-
-  // --- Rate pack ---
-
-  public List<Map<String, Object>> getRatePackStatus() {
-    return ratePackStatus;
-  }
-
-  /** Records a rate pack application. Idempotent -- skips if already applied. */
-  public void recordRatePackApplication(String packId, int version) {
-    if (isRatePackApplied(packId, version)) {
-      return;
-    }
-    if (this.ratePackStatus == null) {
-      this.ratePackStatus = new ArrayList<>();
-    }
-    this.ratePackStatus.add(newEntry(packId, version));
-  }
-
-  /** Returns true if the given rate pack (specific version) has been applied. */
-  public boolean isRatePackApplied(String packId, int version) {
-    if (this.ratePackStatus == null) {
-      return false;
-    }
-    return this.ratePackStatus.stream()
-        .anyMatch(
-            entry ->
-                packId.equals(entry.get("packId"))
-                    && ((Number) entry.get("version")).intValue() == version);
   }
 
   // --- Project template pack ---

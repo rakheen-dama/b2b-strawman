@@ -36,7 +36,6 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
         label: "Automations",
         href: "automations",
         adminOnly: true,
-        requiredModule: "automation_builder",
       },
     ],
   },

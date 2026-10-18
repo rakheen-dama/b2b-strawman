@@ -194,7 +194,7 @@ describe("ProjectsPage", () => {
   });
 });
 
-describe("ProjectsPage terminology (accounting-za)", () => {
+describe("ProjectsPage terminology (legal-za)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -203,29 +203,29 @@ describe("ProjectsPage terminology (accounting-za)", () => {
     cleanup();
   });
 
-  it("renders 'Your Engagements' heading for accounting-za", async () => {
+  it("renders 'Your Matters' heading for legal-za", async () => {
     mockPortalGet.mockResolvedValue([]);
 
     render(
-      <TerminologyProvider verticalProfile="accounting-za">
+      <TerminologyProvider verticalProfile="legal-za">
         <ProjectsPage />
       </TerminologyProvider>,
     );
 
-    expect(screen.getByText("Your Engagements")).toBeInTheDocument();
+    expect(screen.getByText("Your Matters")).toBeInTheDocument();
   });
 
-  it("renders 'No engagements yet' empty state for accounting-za", async () => {
+  it("renders 'No matters yet' empty state for legal-za", async () => {
     mockPortalGet.mockResolvedValue([]);
 
     render(
-      <TerminologyProvider verticalProfile="accounting-za">
+      <TerminologyProvider verticalProfile="legal-za">
         <ProjectsPage />
       </TerminologyProvider>,
     );
 
     await waitFor(() => {
-      expect(screen.getByText("No engagements yet")).toBeInTheDocument();
+      expect(screen.getByText("No matters yet")).toBeInTheDocument();
     });
   });
 });

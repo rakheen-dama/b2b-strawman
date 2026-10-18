@@ -87,7 +87,7 @@ describe("Sidebar capability gating", () => {
     render(
       <OrgProfileProvider
         verticalProfile={null}
-        enabledModules={["bulk_billing", "automation_builder"]}
+        enabledModules={["bulk_billing"]}
         terminologyNamespace={null}
       >
         <TerminologyProvider verticalProfile={null}>

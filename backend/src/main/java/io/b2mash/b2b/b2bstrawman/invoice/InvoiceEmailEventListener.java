@@ -60,8 +60,8 @@ public class InvoiceEmailEventListener {
       }
 
       // 2. Find invoice template and generate PDF.
-      // LZKC-012 — the vertical-profile-aware default: legal-za fee-note-za / accounting-za
-      // invoice-za, i.e. the line-item client document. The entire fallback chain (including the
+      // LZKC-012 — the vertical-profile-aware default: legal-za fee-note-za, i.e. the line-item
+      // client document. The entire fallback chain (including the
       // first-active-INVOICE-template last resort for non-legal-za tenants) lives inside
       // resolveDefaultInvoiceTemplate so that a legal-za tenant whose fee-note template is
       // unavailable resolves EMPTY here — never the generic cover letter, which was the LZKC-012

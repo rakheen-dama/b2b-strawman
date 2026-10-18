@@ -14,10 +14,10 @@ describe("terminology", () => {
     cleanup();
   });
 
-  // 364.4 Test 1
-  it("t('Projects') returns 'Engagements' for accounting-za", () => {
-    const t = makeTFn("accounting-za");
-    expect(t("Projects")).toBe("Engagements");
+  // 364.4 Test 1 (re-pointed at legal-za in Phase 86 — the only profile)
+  it("t('Projects') returns 'Matters' for legal-za", () => {
+    const t = makeTFn("legal-za");
+    expect(t("Projects")).toBe("Matters");
   });
 
   // 364.4 Test 2
@@ -28,27 +28,8 @@ describe("terminology", () => {
 
   // 364.4 Test 3
   it("t('Unknown') returns 'Unknown' as passthrough for unmapped term", () => {
-    const t = makeTFn("accounting-za");
+    const t = makeTFn("legal-za");
     expect(t("Unknown")).toBe("Unknown");
-  });
-
-  // 364.4 Test 4 — all case variants
-  it("all case variants map correctly for accounting-za", () => {
-    const t = makeTFn("accounting-za");
-    expect(t("Project")).toBe("Engagement");
-    expect(t("Projects")).toBe("Engagements");
-    expect(t("project")).toBe("engagement");
-    expect(t("projects")).toBe("engagements");
-    expect(t("Customer")).toBe("Client");
-    expect(t("Customers")).toBe("Clients");
-    expect(t("customer")).toBe("client");
-    expect(t("customers")).toBe("clients");
-    expect(t("Proposal")).toBe("Engagement Letter");
-    expect(t("Proposals")).toBe("Engagement Letters");
-    expect(t("proposal")).toBe("engagement letter");
-    expect(t("proposals")).toBe("engagement letters");
-    expect(t("Rate Card")).toBe("Fee Schedule");
-    expect(t("Rate Cards")).toBe("Fee Schedules");
   });
 
   // 465.2 — legal-za unit tests
@@ -116,46 +97,9 @@ describe("terminology", () => {
     expect(t("Rate Cards")).toBe("Tariff Schedules");
   });
 
-  // 484.3 — consulting-za unit tests
-  it("t('Customer') returns 'Client' for consulting-za", () => {
-    const t = makeTFn("consulting-za");
-    expect(t("Customer")).toBe("Client");
-  });
-
-  it("t('Time Entry') returns 'Time Log' for consulting-za", () => {
-    const t = makeTFn("consulting-za");
-    expect(t("Time Entry")).toBe("Time Log");
-  });
-
-  it("t('Rate Card') returns 'Billing Rates' for consulting-za", () => {
-    const t = makeTFn("consulting-za");
-    expect(t("Rate Card")).toBe("Billing Rates");
-  });
-
-  it("t('Project') passes through for consulting-za (not overridden)", () => {
-    const t = makeTFn("consulting-za");
-    expect(t("Project")).toBe("Project");
-  });
-
-  it("t('Task') passes through for consulting-za (not overridden)", () => {
-    const t = makeTFn("consulting-za");
-    expect(t("Task")).toBe("Task");
-  });
-
-  it("all case variants map correctly for consulting-za", () => {
-    const t = makeTFn("consulting-za");
-    expect(t("Customer")).toBe("Client");
-    expect(t("Customers")).toBe("Clients");
-    expect(t("customer")).toBe("client");
-    expect(t("customers")).toBe("clients");
-    expect(t("Time Entry")).toBe("Time Log");
-    expect(t("Time Entries")).toBe("Time Logs");
-    expect(t("time entry")).toBe("time log");
-    expect(t("time entries")).toBe("time logs");
-    expect(t("Rate Card")).toBe("Billing Rates");
-    expect(t("Rate Cards")).toBe("Billing Rates");
-    expect(t("rate card")).toBe("billing rates");
-    expect(t("rate cards")).toBe("billing rates");
+  // Phase 86 (ADR-332): legal-za is the only profile in the terminology map.
+  it("TERMINOLOGY contains only the legal-za profile", () => {
+    expect(Object.keys(TERMINOLOGY)).toEqual(["legal-za"]);
   });
 
   // 364.5 — Integration test: provider in component tree
@@ -166,11 +110,11 @@ describe("terminology", () => {
     }
 
     render(
-      <TerminologyProvider verticalProfile="accounting-za">
+      <TerminologyProvider verticalProfile="legal-za">
         <TestConsumer />
       </TerminologyProvider>
     );
 
-    expect(screen.getByTestId("result").textContent).toBe("Engagement");
+    expect(screen.getByTestId("result").textContent).toBe("Matter");
   });
 });

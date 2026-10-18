@@ -23,7 +23,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 class LegalTariffSeederIntegrationTest {
 
   private static final String LEGAL_ORG_ID = "org_lts_legal";
-  private static final String ACCOUNTING_ORG_ID = "org_lts_accounting";
+  private static final String NO_PROFILE_ORG_ID = "org_lts_noprofile";
 
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
@@ -32,7 +32,7 @@ class LegalTariffSeederIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String legalSchema;
-  private String accountingSchema;
+  private String noProfileSchema;
 
   @BeforeAll
   void setup() {
@@ -40,10 +40,11 @@ class LegalTariffSeederIntegrationTest {
     legalSchema =
         orgSchemaMappingRepository.findByClerkOrgId(LEGAL_ORG_ID).orElseThrow().getSchemaName();
 
-    provisioningService.provisionTenant(ACCOUNTING_ORG_ID, "Accounting Firm", "accounting-za");
-    accountingSchema =
+    // Control tenant: no profile (legal-za is the only registered profile since Phase 86).
+    provisioningService.provisionTenant(NO_PROFILE_ORG_ID, "No-Profile Firm", null);
+    noProfileSchema =
         orgSchemaMappingRepository
-            .findByClerkOrgId(ACCOUNTING_ORG_ID)
+            .findByClerkOrgId(NO_PROFILE_ORG_ID)
             .orElseThrow()
             .getSchemaName();
   }
@@ -92,10 +93,10 @@ class LegalTariffSeederIntegrationTest {
   }
 
   @Test
-  void accountingTenantDoesNotGetTariffSchedules() {
+  void noProfileTenantDoesNotGetTariffSchedules() {
     runInTenant(
-        accountingSchema,
-        ACCOUNTING_ORG_ID,
+        noProfileSchema,
+        NO_PROFILE_ORG_ID,
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {

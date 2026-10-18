@@ -84,7 +84,8 @@ class LegalDemoDataSeederTest {
   void setUp() {
     // Provision a tenant schema for the test
     String slug = "legal-seeder-test-" + UUID.randomUUID().toString().substring(0, 8);
-    tenantProvisioningService.provisionTenant(slug, "Legal Seeder Test Org", "legal");
+    // No profile: the seeder must work on a tenant without the legal modules enabled.
+    tenantProvisioningService.provisionTenant(slug, "Legal Seeder Test Org", null);
 
     schemaName = mappingRepository.findByExternalOrgId(slug).orElseThrow().getSchemaName();
     orgId = organizationRepository.findByExternalOrgId(slug).orElseThrow().getId();
@@ -188,8 +189,9 @@ class LegalDemoDataSeederTest {
 
   @Test
   void seeder_seedsFicaChecklistForLegalZaTenant() {
-    // The shared @BeforeAll tenant is provisioned "legal" (no legal-za compliance pack), so the
-    // checklist step skips there. Provision a real legal-za tenant — which installs the FICA pack —
+    // The shared @BeforeAll tenant is provisioned with no profile (no legal-za compliance pack), so
+    // the checklist step skips there. Provision a real legal-za tenant — which installs the FICA
+    // pack —
     // and verify the seeder instantiates the trust-onboarding checklist.
     String slug = "legal-za-fica-test-" + UUID.randomUUID().toString().substring(0, 8);
     tenantProvisioningService.provisionTenant(slug, "Legal ZA FICA Test Org", "legal-za");
@@ -244,7 +246,7 @@ class LegalDemoDataSeederTest {
     // Provision a fresh tenant to verify seeding completes without error
     // even when court calendar entity infrastructure is not available
     String slug = "legal-skip-test-" + UUID.randomUUID().toString().substring(0, 8);
-    tenantProvisioningService.provisionTenant(slug, "Legal Skip Test Org", "legal");
+    tenantProvisioningService.provisionTenant(slug, "Legal Skip Test Org", null);
 
     String freshSchema = mappingRepository.findByExternalOrgId(slug).orElseThrow().getSchemaName();
     UUID freshOrgId = organizationRepository.findByExternalOrgId(slug).orElseThrow().getId();

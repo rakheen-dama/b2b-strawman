@@ -21,9 +21,6 @@ export type {
   ProcessingActivityFormData,
 } from "./data-protection";
 
-export { filingStatusSchema } from "./deadline";
-export type { FilingStatusFormData } from "./deadline";
-
 export { demoProvisionSchema } from "./demo-provision";
 export type { DemoProvisionFormData } from "./demo-provision";
 

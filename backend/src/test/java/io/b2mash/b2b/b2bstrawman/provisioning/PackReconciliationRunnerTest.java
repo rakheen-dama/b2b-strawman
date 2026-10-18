@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateRepository;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -33,7 +32,6 @@ class PackReconciliationRunnerTest {
   @Autowired private PackReconciliationRunner reconciliationRunner;
   @Autowired private ChecklistTemplateRepository templateRepository;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
-  @Autowired private BillingRateRepository billingRateRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private PackInstallRepository packInstallRepository;
 
@@ -73,51 +71,6 @@ class PackReconciliationRunnerTest {
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
                   assertThat(settings.getPackStatus().getCompliancePackStatus()).isNotNull();
                   assertThat(settings.getPackStatus().getCompliancePackStatus()).hasSize(3);
-                }));
-  }
-
-  @Test
-  void reconciliationRunnerIdempotentWithRatePacks() {
-    // Provision a tenant with accounting-za profile to trigger rate seeding
-    String acctOrgId = "org_pack_reconciliation_acct_test";
-    provisioningService.provisionTenant(
-        acctOrgId, "Accounting Reconciliation Test Org", "accounting-za");
-    String acctSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(acctOrgId).orElseThrow().getSchemaName();
-
-    // Count seeded rates after initial provisioning
-    long[] initialRateCount = new long[1];
-    runInTenant(
-        acctSchema,
-        acctOrgId,
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  // Count seeded rates (null memberId = org-level seeded rates)
-                  initialRateCount[0] =
-                      billingRateRepository.findAll().stream()
-                          .filter(r -> r.getMemberId() == null)
-                          .count();
-                }));
-
-    // Run reconciliation twice (scoped to this test's tenant — see reconcilePacksForTenant)
-    reconciliationRunner.reconcilePacksForTenant(acctSchema, acctOrgId);
-    reconciliationRunner.reconcilePacksForTenant(acctSchema, acctOrgId);
-
-    // Verify the seeded rate count has not increased
-    runInTenant(
-        acctSchema,
-        acctOrgId,
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  long rateCount =
-                      billingRateRepository.findAll().stream()
-                          .filter(r -> r.getMemberId() == null)
-                          .count();
-                  assertThat(rateCount)
-                      .as("Seeded rate count should not increase after reconciliation")
-                      .isEqualTo(initialRateCount[0]);
                 }));
   }
 

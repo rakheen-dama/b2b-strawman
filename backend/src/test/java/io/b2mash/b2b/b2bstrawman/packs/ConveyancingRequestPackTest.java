@@ -23,8 +23,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 /**
  * Integration tests for the {@code conveyancing-intake-za} request pack (Epic 492B). Asserts the
  * 7-item conveyancing intake questionnaire seeds for a {@code legal-za} tenant via {@code
- * RequestPackSeeder}'s classpath scan and that vertical-profile gating prevents {@code
- * accounting-za} and {@code consulting-za} tenants from receiving it.
+ * RequestPackSeeder}'s classpath scan and that vertical-profile gating prevents a tenant without
+ * the {@code legal-za} profile from receiving it.
  */
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -33,8 +33,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 class ConveyancingRequestPackTest {
 
   private static final String LEGAL_ORG_ID = "org_cvrp_legal_test";
-  private static final String ACCOUNTING_ORG_ID = "org_cvrp_acct_test";
-  private static final String CONSULTING_ORG_ID = "org_cvrp_cons_test";
+  private static final String NO_PROFILE_ORG_ID = "org_cvrp_noprof_test";
 
   private static final String PACK_ID = "conveyancing-intake-za";
 
@@ -55,8 +54,7 @@ class ConveyancingRequestPackTest {
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String legalTenantSchema;
-  private String accountingTenantSchema;
-  private String consultingTenantSchema;
+  private String noProfileTenantSchema;
 
   @BeforeAll
   void setup() {
@@ -65,19 +63,12 @@ class ConveyancingRequestPackTest {
     legalTenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(LEGAL_ORG_ID).orElseThrow().getSchemaName();
 
+    // Control tenant: no profile (legal-za is the only registered profile since Phase 86).
     provisioningService.provisionTenant(
-        ACCOUNTING_ORG_ID, "Conveyancing Request Pack Accounting Test Org", "accounting-za");
-    accountingTenantSchema =
+        NO_PROFILE_ORG_ID, "Conveyancing Request Pack No-Profile Test Org", null);
+    noProfileTenantSchema =
         orgSchemaMappingRepository
-            .findByClerkOrgId(ACCOUNTING_ORG_ID)
-            .orElseThrow()
-            .getSchemaName();
-
-    provisioningService.provisionTenant(
-        CONSULTING_ORG_ID, "Conveyancing Request Pack Consulting Test Org", "consulting-za");
-    consultingTenantSchema =
-        orgSchemaMappingRepository
-            .findByClerkOrgId(CONSULTING_ORG_ID)
+            .findByClerkOrgId(NO_PROFILE_ORG_ID)
             .orElseThrow()
             .getSchemaName();
   }
@@ -125,25 +116,15 @@ class ConveyancingRequestPackTest {
   }
 
   @Test
-  void nonLegalTenantsDoNotReceiveConveyancingIntakeRequestPack() {
+  void nonLegalTenantDoesNotReceiveConveyancingIntakeRequestPack() {
     runInTenant(
-        accountingTenantSchema,
-        ACCOUNTING_ORG_ID,
+        noProfileTenantSchema,
+        NO_PROFILE_ORG_ID,
         () ->
             transactionTemplate.executeWithoutResult(
                 tx ->
                     assertThat(requestTemplateRepository.findByPackId(PACK_ID))
-                        .as("accounting-za tenant must not receive conveyancing-intake-za pack")
-                        .isEmpty()));
-
-    runInTenant(
-        consultingTenantSchema,
-        CONSULTING_ORG_ID,
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx ->
-                    assertThat(requestTemplateRepository.findByPackId(PACK_ID))
-                        .as("consulting-za tenant must not receive conveyancing-intake-za pack")
+                        .as("no-profile tenant must not receive conveyancing-intake-za pack")
                         .isEmpty()));
   }
 

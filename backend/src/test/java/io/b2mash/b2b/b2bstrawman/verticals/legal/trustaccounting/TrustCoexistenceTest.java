@@ -1,17 +1,19 @@
 /*
- * Trust Accounting Coexistence Tests (Epic 451B)
+ * Trust Accounting Coexistence Tests (Epic 451B; re-fixtured Phase 86 / Epic 604)
  *
- * These tests verify trust accounting module isolation between legal and
- * accounting tenants:
+ * These tests verify trust accounting module isolation between a legal tenant and a
+ * non-trust tenant. Since Phase 86 legal-za is the only vertical profile, so the
+ * non-trust tenant is provisioned with no profile and no enabled modules. Kept as a
+ * guard: trust must never leak into a tenant that has not enabled it.
  *
- * 1. ACCOUNTING TENANT ISOLATION: An accounting-za tenant cannot access trust
+ * 1. NON-TRUST TENANT ISOLATION: A tenant without trust_accounting cannot access trust
  *    endpoints — the module guard blocks all trust service calls.
  *
  * 2. LEGAL TENANT ACCESS: A legal-za tenant with trust_accounting enabled can
  *    create and list trust accounts successfully.
  *
  * 3. SCHEMA COEXISTENCE: Trust tables exist in all tenant schemas (via Flyway)
- *    but remain empty for accounting tenants that never use them.
+ *    but remain empty for tenants that never use them.
  *
  * 4. CROSS-TENANT PROTECTION: Enabling trust_accounting on one tenant does not
  *    affect the module guard behavior of another tenant.
@@ -59,7 +61,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TrustCoexistenceTest {
   private static final String LEGAL_ORG_ID = "org_trust_coex_legal";
-  private static final String ACCOUNTING_ORG_ID = "org_trust_coex_acct";
+  private static final String NON_TRUST_ORG_ID = "org_trust_coex_nontrust";
 
   private static final List<String> TRUST_TABLES =
       List.of(
@@ -84,9 +86,9 @@ class TrustCoexistenceTest {
   @Autowired private VerticalModuleGuard moduleGuard;
 
   private String legalSchema;
-  private String accountingSchema;
+  private String nonTrustSchema;
   private UUID legalMemberId;
-  private UUID accountingMemberId;
+  private UUID nonTrustMemberId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -121,38 +123,38 @@ class TrustCoexistenceTest {
                       orgSettingsRepository.save(settings);
                     }));
 
-    // --- Provision accounting tenant ---
-    accountingSchema =
+    // --- Provision non-trust tenant (no profile) ---
+    nonTrustSchema =
         provisioningService
-            .provisionTenant(ACCOUNTING_ORG_ID, "Trust Coex Accounting Firm", "accounting-za")
+            .provisionTenant(NON_TRUST_ORG_ID, "Trust Coex Non-Trust Firm", null)
             .schemaName();
-    accountingMemberId =
+    nonTrustMemberId =
         UUID.fromString(
             TestMemberHelper.syncMember(
                 mockMvc,
-                ACCOUNTING_ORG_ID,
-                "user_trust_coex_acct",
-                "trust_coex_acct@test.com",
-                "Trust Coex Accounting Owner",
+                NON_TRUST_ORG_ID,
+                "user_trust_coex_nontrust",
+                "trust_coex_nontrust@test.com",
+                "Trust Coex Non-Trust Owner",
                 "owner"));
 
-    // Enable accounting modules (no trust_accounting)
-    ScopedValue.where(RequestScopes.TENANT_ID, accountingSchema)
+    // Pin enabled modules to empty (no trust_accounting)
+    ScopedValue.where(RequestScopes.TENANT_ID, nonTrustSchema)
         .run(
             () ->
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var settings = orgSettingsService.getOrCreateForCurrentTenant();
-                      settings.setEnabledModules(List.of("regulatory_deadlines"));
+                      settings.setEnabledModules(List.of());
                       orgSettingsRepository.save(settings);
                     }));
   }
 
-  // ===== Test 1: Accounting tenant cannot access trust endpoints =====
+  // ===== Test 1: Non-trust tenant cannot access trust endpoints =====
 
   @Test
-  void accountingTenantCannotAccessTrustService() {
-    runInAccountingTenant(
+  void nonTrustTenantCannotAccessTrustService() {
+    runInNonTrustTenant(
         () ->
             assertThatThrownBy(() -> trustAccountService.listTrustAccounts())
                 .isInstanceOf(ModuleNotEnabledException.class));
@@ -192,13 +194,13 @@ class TrustCoexistenceTest {
                 }));
   }
 
-  // ===== Test 3: Trust tables exist in both schemas but empty for accounting =====
+  // ===== Test 3: Trust tables exist in both schemas but empty for non-trust tenant =====
 
   @Test
-  void trustTablesExistInBothSchemasButEmptyForAccounting() throws Exception {
+  void trustTablesExistInBothSchemasButEmptyForNonTrustTenant() throws Exception {
     try (Connection conn = dataSource.getConnection()) {
       // Verify all 10 trust tables exist in BOTH schemas
-      for (String schema : List.of(legalSchema, accountingSchema)) {
+      for (String schema : List.of(legalSchema, nonTrustSchema)) {
         for (String tableName : TRUST_TABLES) {
           try (PreparedStatement ps =
               conn.prepareStatement(
@@ -215,48 +217,46 @@ class TrustCoexistenceTest {
         }
       }
 
-      // Verify all trust tables are empty in the accounting schema.
+      // Verify all trust tables are empty in the non-trust schema.
       // NOTE: Schema and table identifiers cannot be parameterized in SQL prepared
       // statements — only values can be bound as parameters. String formatting is
-      // acceptable here because both accountingSchema (from TenantProvisioningService)
+      // acceptable here because both nonTrustSchema (from TenantProvisioningService)
       // and tableName (from TRUST_TABLES constant) are controlled test constants.
       // We use Statement (not PreparedStatement) to make this intent explicit.
       for (String tableName : TRUST_TABLES) {
-        assertThat(accountingSchema)
-            .as("schema name must be safe identifier")
-            .matches("[a-z0-9_]+");
+        assertThat(nonTrustSchema).as("schema name must be safe identifier").matches("[a-z0-9_]+");
         assertThat(tableName).as("table name must be safe identifier").matches("[a-z0-9_]+");
         try (var stmt = conn.createStatement()) {
           ResultSet rs =
               stmt.executeQuery(
-                  "SELECT COUNT(*) FROM \"%s\".\"%s\"".formatted(accountingSchema, tableName));
+                  "SELECT COUNT(*) FROM \"%s\".\"%s\"".formatted(nonTrustSchema, tableName));
           assertThat(rs.next()).isTrue();
           assertThat(rs.getInt(1))
-              .as("Table %s should be empty in accounting schema %s", tableName, accountingSchema)
+              .as("Table %s should be empty in non-trust schema %s", tableName, nonTrustSchema)
               .isEqualTo(0);
         }
       }
     }
   }
 
-  // ===== Test 4: Trust capability on one tenant doesn't affect accounting =====
+  // ===== Test 4: Trust capability on one tenant doesn't affect another =====
 
   @Test
-  void trustCapabilityDoesNotAffectAccountingTenant() {
+  void trustCapabilityDoesNotAffectNonTrustTenant() {
     // Confirm legal tenant has trust_accounting enabled
     runInLegalTenant(() -> assertThat(moduleGuard.isModuleEnabled("trust_accounting")).isTrue());
 
-    // Confirm accounting tenant still rejects trust_accounting
-    runInAccountingTenant(
+    // Confirm non-trust tenant still rejects trust_accounting
+    runInNonTrustTenant(
         () -> assertThat(moduleGuard.isModuleEnabled("trust_accounting")).isFalse());
   }
 
   // ===== Test 5: Module guard prevents cross-module access =====
 
   @Test
-  void moduleGuardPreventsAccessInAccountingAllowsInLegal() {
-    // Accounting tenant: requireModule should throw
-    runInAccountingTenant(
+  void moduleGuardPreventsAccessInNonTrustAllowsInLegal() {
+    // Non-trust tenant: requireModule should throw
+    runInNonTrustTenant(
         () ->
             assertThatThrownBy(() -> moduleGuard.requireModule("trust_accounting"))
                 .isInstanceOf(ModuleNotEnabledException.class));
@@ -278,10 +278,10 @@ class TrustCoexistenceTest {
         .run(action);
   }
 
-  private void runInAccountingTenant(Runnable action) {
-    ScopedValue.where(RequestScopes.TENANT_ID, accountingSchema)
-        .where(RequestScopes.ORG_ID, ACCOUNTING_ORG_ID)
-        .where(RequestScopes.MEMBER_ID, accountingMemberId)
+  private void runInNonTrustTenant(Runnable action) {
+    ScopedValue.where(RequestScopes.TENANT_ID, nonTrustSchema)
+        .where(RequestScopes.ORG_ID, NON_TRUST_ORG_ID)
+        .where(RequestScopes.MEMBER_ID, nonTrustMemberId)
         .where(RequestScopes.ORG_ROLE, "owner")
         .run(action);
   }

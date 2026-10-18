@@ -145,7 +145,7 @@ services:
     container_name: e2e-seed
     restart: "no"
     environment:
-      VERTICAL_PROFILE: ${VERTICAL_PROFILE:-accounting-za}
+      VERTICAL_PROFILE: ${VERTICAL_PROFILE:-legal-za}
     depends_on:
       backend:
         condition: service_healthy

@@ -7,7 +7,7 @@ import { getPortalJwt, loginAsPortalContact } from "../../helpers/auth";
  * Exercises checkpoints 1–3 from `qa/testplan/demos/portal-client-90day-keycloak.md`:
  *   - Day 0: Client receives magic-link, lands on /home, reviews pending info requests [all profiles]
  *   - Day 3: Client uploads requested documents, submits info request              [all profiles]
- *   - Day 7: Client receives weekly digest, clicks through to /deadlines           [accounting-za / legal-za]
+ *   - Day 7: Client receives weekly digest, clicks through to /deadlines           [legal-za]
  *
  * Prerequisites (enforced by firm-side lifecycle pre-runs — see master doc):
  *   1. Portal on :3002 (via `bash compose/scripts/svc.sh start portal`)
@@ -189,7 +189,7 @@ test.describe.serial("Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3)"
   test("Day 7: Client clicks through weekly digest to /deadlines", async ({
     page,
   }) => {
-    // This checkpoint is gated: accounting-za / legal-za only. We navigate
+    // This checkpoint is gated: legal-za only. We navigate
     // directly to /deadlines (the digest click-through target); profile-gated
     // absence is tolerated via empty-state handling.
     await page.goto("/deadlines");
@@ -200,7 +200,7 @@ test.describe.serial("Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3)"
     if (!(await main.isVisible({ timeout: 5000 }).catch(() => false))) {
       test.skip(
         true,
-        "/deadlines not rendered — profile may not expose deadlines (consulting-za) or 404",
+        "/deadlines not rendered — deadlines module not enabled for this tenant or 404",
       );
       return;
     }

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { RuleList } from "@/components/automations/rule-list";
-import type { AutomationRuleResponse, TemplateDefinitionResponse } from "@/lib/api/automations";
+import type { AutomationRuleResponse } from "@/lib/api/automations";
 
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -10,13 +10,9 @@ vi.mock("next/navigation", () => ({
 }));
 
 const mockToggleRule = vi.fn().mockResolvedValue({ success: true });
-const mockDeleteRule = vi.fn().mockResolvedValue({ success: true });
-const mockActivateTemplate = vi.fn().mockResolvedValue({ success: true });
 
 vi.mock("@/app/(app)/org/[slug]/settings/automations/actions", () => ({
   toggleRuleAction: (...args: unknown[]) => mockToggleRule(...args),
-  deleteRuleAction: (...args: unknown[]) => mockDeleteRule(...args),
-  activateTemplateAction: (...args: unknown[]) => mockActivateTemplate(...args),
 }));
 
 vi.mock("sonner", () => ({
@@ -71,27 +67,6 @@ const sampleRules: AutomationRuleResponse[] = [
   },
 ];
 
-const sampleTemplates: TemplateDefinitionResponse[] = [
-  {
-    slug: "task-assign",
-    name: "Auto-Assign Tasks",
-    description: "Automatically assign tasks when status changes",
-    category: "Tasks",
-    triggerType: "TASK_STATUS_CHANGED",
-    triggerConfig: {},
-    actionCount: 1,
-  },
-  {
-    slug: "invoice-notify",
-    name: "Invoice Notification",
-    description: "Send notification when invoice status changes",
-    category: "Billing",
-    triggerType: "INVOICE_STATUS_CHANGED",
-    triggerConfig: {},
-    actionCount: 2,
-  },
-];
-
 describe("RuleList", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -102,65 +77,55 @@ describe("RuleList", () => {
   });
 
   it("renders rules in table", () => {
-    render(
-      <RuleList slug="acme" rules={sampleRules} templates={sampleTemplates} canManage={true} />
-    );
+    render(<RuleList slug="acme" rules={sampleRules} canManage={true} />);
     expect(screen.getByText("Auto-assign tasks")).toBeInTheDocument();
     expect(screen.getByText("Invoice notification")).toBeInTheDocument();
   });
 
   it("shows empty state when no rules", () => {
-    render(<RuleList slug="acme" rules={[]} templates={sampleTemplates} canManage={true} />);
+    render(<RuleList slug="acme" rules={[]} canManage={true} />);
     expect(screen.getByText("No automation rules yet")).toBeInTheDocument();
     expect(
-      screen.getByText("Create your first automation or browse templates to get started.")
+      screen.getByText(
+        "Automation rules are installed with your practice packs and will appear here."
+      )
     ).toBeInTheDocument();
   });
 
-  it("shows non-admin empty state message", () => {
-    render(<RuleList slug="acme" rules={[]} templates={sampleTemplates} canManage={false} />);
-    expect(screen.getByText("No automation rules have been created yet.")).toBeInTheDocument();
-  });
-
   it("renders toggle switches for each rule", () => {
-    render(
-      <RuleList slug="acme" rules={sampleRules} templates={sampleTemplates} canManage={true} />
-    );
+    render(<RuleList slug="acme" rules={sampleRules} canManage={true} />);
     const toggles = screen.getAllByRole("switch");
     expect(toggles).toHaveLength(2);
     expect(toggles[0]).toBeChecked();
     expect(toggles[1]).not.toBeChecked();
   });
 
+  it("calls toggleRuleAction when a switch is flipped", () => {
+    render(<RuleList slug="acme" rules={sampleRules} canManage={true} />);
+    fireEvent.click(screen.getByLabelText("Toggle Auto-assign tasks"));
+    expect(mockToggleRule).toHaveBeenCalledWith("acme", "rule-1");
+  });
+
+  it("disables toggles for non-managers", () => {
+    render(<RuleList slug="acme" rules={sampleRules} canManage={false} />);
+    for (const toggle of screen.getAllByRole("switch")) {
+      expect(toggle).toBeDisabled();
+    }
+  });
+
   it("renders trigger type badges", () => {
-    render(
-      <RuleList slug="acme" rules={sampleRules} templates={sampleTemplates} canManage={true} />
-    );
+    render(<RuleList slug="acme" rules={sampleRules} canManage={true} />);
     expect(screen.getByText("Task Status")).toBeInTheDocument();
     expect(screen.getByText("Invoice Status")).toBeInTheDocument();
   });
 
-  it("renders rule name as a link to rule detail", () => {
-    render(
-      <RuleList slug="acme" rules={sampleRules} templates={sampleTemplates} canManage={true} />
-    );
-    const ruleLink = screen.getByText("Auto-assign tasks").closest("a");
-    expect(ruleLink).toHaveAttribute("href", "/org/acme/settings/automations/rule-1");
-  });
-
-  it("opens template gallery when Browse Templates is clicked", () => {
-    render(
-      <RuleList slug="acme" rules={sampleRules} templates={sampleTemplates} canManage={true} />
-    );
-    fireEvent.click(screen.getByText("Browse Templates"));
-    expect(screen.getByText("Automation Templates")).toBeInTheDocument();
-  });
-
-  it("shows delete confirmation on first click", () => {
-    render(
-      <RuleList slug="acme" rules={sampleRules} templates={sampleTemplates} canManage={true} />
-    );
-    const deleteButtons = screen.getAllByLabelText(/Delete/);
-    expect(deleteButtons.length).toBeGreaterThan(0);
+  // Phase 86 (ADR-334): the rule editor, template gallery and delete were removed — the list is
+  // enable/disable only.
+  it("renders rule names as plain text with no editor, gallery, or delete affordances", () => {
+    render(<RuleList slug="acme" rules={sampleRules} canManage={true} />);
+    expect(screen.getByText("Auto-assign tasks").closest("a")).toBeNull();
+    expect(screen.queryByText("New Automation")).not.toBeInTheDocument();
+    expect(screen.queryByText("Browse Templates")).not.toBeInTheDocument();
+    expect(screen.queryAllByLabelText(/Delete/)).toHaveLength(0);
   });
 });

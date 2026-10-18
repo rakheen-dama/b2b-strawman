@@ -29,9 +29,10 @@ describe("filterNavItems", () => {
     expect(filtered.some((i) => i.id === "trust")).toBe(true);
   });
 
-  it("filters out the trust entry for accounting-za (profile mismatch)", () => {
+  // Phase 86: accounting-za is gone; any non-legal id still exercises the profile filter.
+  it("filters out the trust entry for a non-legal profile (profile mismatch)", () => {
     const filtered = filterNavItems(PORTAL_NAV_ITEMS, {
-      tenantProfile: "accounting-za",
+      tenantProfile: "unknown-profile",
       enabledModules: ["trust_accounting"],
     });
     expect(filtered.some((i) => i.id === "trust")).toBe(false);

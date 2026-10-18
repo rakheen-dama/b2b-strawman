@@ -69,6 +69,9 @@ class OrgSettingsSchemaSnapshotTest {
   // drift.
   // V141 (Phase 86 slice 6 / Epic 600A): schedule_pack_status removed — deliberate, authorised pin
   // update (PackStatusSettings.schedulePackStatus dropped + V141__drop_schedules.sql), not drift.
+  // V144 (Phase 86 slice 10 / Epic 604C): rate_pack_status removed — deliberate, authorised pin
+  // update (PackStatusSettings.ratePackStatus dropped + V144__drop_rate_pack_status.sql), not
+  // drift.
   private static final String EXPECTED_SNAPSHOT =
       """
       acceptance_expiry_days | integer | YES
@@ -110,7 +113,6 @@ class OrgSettingsSchemaSnapshotTest {
       portal_notification_doc_types | jsonb | NO
       project_naming_pattern | character varying(500) | YES
       project_template_pack_status | jsonb | YES
-      rate_pack_status | jsonb | YES
       report_pack_status | jsonb | YES
       request_pack_status | jsonb | YES
       retention_policy_enabled | boolean | NO

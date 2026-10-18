@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -11,7 +12,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
@@ -45,11 +48,11 @@ class VerticalProfileIntegrationTest {
   // Separate org IDs per test group to ensure independence
   private static final String LIFECYCLE_ORG_ID = "org_vpi_lifecycle";
   private static final String GUARD_ORG_ID = "org_vpi_guard";
-  private static final String ACCT_ORG_ID = "org_vpi_accounting";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private AuditService auditService;
+  @Autowired private OrganizationRepository organizationRepository;
 
   private String lifecycleTenantSchema;
   private String guardTenantSchema;
@@ -69,11 +72,9 @@ class VerticalProfileIntegrationTest {
         "VPI Owner",
         "owner");
 
-    // Provision guard tenant with consulting-generic (no modules enabled)
+    // Provision guard tenant with no profile (no modules enabled)
     guardTenantSchema =
-        provisioningService
-            .provisionTenant(GUARD_ORG_ID, "Guard Test Org", "consulting-generic")
-            .schemaName();
+        provisioningService.provisionTenant(GUARD_ORG_ID, "Guard Test Org", null).schemaName();
     TestMemberHelper.syncMemberQuietly(
         mockMvc,
         GUARD_ORG_ID,
@@ -81,12 +82,6 @@ class VerticalProfileIntegrationTest {
         "vpi_guard@test.com",
         "Guard Owner",
         "owner");
-
-    // Provision an accounting-za tenant — its profile declares regulatory_deadlines as
-    // default-enabled, so the firm-side DeadlineController must NOT fail closed.
-    provisioningService.provisionTenant(ACCT_ORG_ID, "Accounting Test Org", "accounting-za");
-    TestMemberHelper.syncMemberQuietly(
-        mockMvc, ACCT_ORG_ID, "user_vpi_acct_owner", "vpi_acct@test.com", "Acct Owner", "owner");
   }
 
   // --- Task 372.1: Profile Switching Lifecycle ---
@@ -148,7 +143,7 @@ class VerticalProfileIntegrationTest {
 
   @Test
   @Order(2)
-  void switchFromLegalZaToConsultingGeneric_clearsVerticalModulesAndTerminology() throws Exception {
+  void switchFromLegalZaToNoProfile_clearsVerticalModulesAndTerminology() throws Exception {
     // First ensure we are on legal-za
     mockMvc
         .perform(
@@ -160,7 +155,7 @@ class VerticalProfileIntegrationTest {
                     {"verticalProfile": "legal-za"}"""))
         .andExpect(status().isOk());
 
-    // Switch to consulting-generic. Per ADR-239, vertical modules from legal-za are dropped and
+    // Clear the profile (null). Per ADR-239, vertical modules from legal-za are dropped and
     // terminology is cleared, but HORIZONTAL modules (information_requests, bulk_billing) survive
     // the profile change — they are profile-independent and manually toggled.
     // GAP-L-61-followup (E9.2): bulk_billing is now part of the legal-za default set, so it
@@ -172,9 +167,9 @@ class VerticalProfileIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"verticalProfile": "consulting-generic"}"""))
+                    {"verticalProfile": null}"""))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.verticalProfile").value("consulting-generic"))
+        .andExpect(jsonPath("$.verticalProfile").value(nullValue()))
         .andExpect(
             jsonPath(
                 "$.enabledModules", containsInAnyOrder("information_requests", "bulk_billing")))
@@ -186,7 +181,7 @@ class VerticalProfileIntegrationTest {
   @Test
   @Order(3)
   void guardDeniesAccessThenAllowsAfterProfileSwitch() throws Exception {
-    // Guard tenant was provisioned with consulting-generic (no modules)
+    // Guard tenant was provisioned with no profile (no modules)
     // Court calendar should be denied (403)
     mockMvc
         .perform(
@@ -214,22 +209,33 @@ class VerticalProfileIntegrationTest {
         .andExpect(jsonPath("$.content").isArray());
   }
 
-  // --- Regression: accounting-za must have the firm-side regulatory_deadlines module ---
+  // --- Phase 86 (Epic 604, ADR-332): legal-za is the only profile; unknown ids are rejected ---
 
   @Test
   @Order(4)
-  void accountingZaTenant_canAccessRegulatoryDeadlines() throws Exception {
-    // A freshly provisioned accounting-za tenant copies enabledModules from the profile JSON, which
-    // now includes regulatory_deadlines (declared default-enabled in VerticalModuleRegistry). The
-    // firm-side DeadlineController guards on requireModule("regulatory_deadlines") — before the fix
-    // it fail-closed with 403 because the profile omitted the slug.
+  void switchToRemovedProfile_returns400() throws Exception {
     mockMvc
         .perform(
-            get("/api/deadlines")
-                .param("from", "2026-01-01")
-                .param("to", "2026-12-31")
-                .with(TestJwtFactory.ownerJwt(ACCT_ORG_ID, "user_vpi_acct_owner")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$").isArray());
+            patch("/api/settings/vertical-profile")
+                .with(TestJwtFactory.ownerJwt(LIFECYCLE_ORG_ID, "user_vpi_lifecycle_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"verticalProfile": "accounting-za"}"""))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Invalid profile"));
+  }
+
+  @Test
+  @Order(5)
+  void provisioningWithRemovedProfile_isRejectedBeforeAnyOrgRowIsWritten() {
+    assertThatThrownBy(
+            () ->
+                provisioningService.provisionTenant(
+                    "org_vpi_removed_profile", "Removed Profile Org", "accounting-za"))
+        .isInstanceOfSatisfying(
+            InvalidStateException.class,
+            e -> assertThat(e.getBody().getTitle()).isEqualTo("Unknown vertical profile"));
+    assertThat(organizationRepository.findByClerkOrgId("org_vpi_removed_profile")).isEmpty();
   }
 }

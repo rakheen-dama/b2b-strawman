@@ -3,11 +3,15 @@ package io.b2mash.b2b.b2bstrawman.verticals;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
 
+/**
+ * Unit tests for {@link VerticalProfileRegistry}. Since Phase 86 (Epic 604, ADR-332) the registry
+ * loads exactly one profile, {@code legal-za}; the accounting-za, consulting-za and
+ * consulting-generic profiles were deleted.
+ */
 class VerticalProfileRegistryTest {
 
   private VerticalProfileRegistry registry;
@@ -18,21 +22,17 @@ class VerticalProfileRegistryTest {
   }
 
   @Test
-  void loadsAccountingZaProfileWithCorrectFields() {
-    var profile = registry.getProfile("accounting-za");
+  void loadsLegalZaProfileWithCorrectFields() {
+    var profile = registry.getProfile("legal-za");
 
     assertThat(profile).isPresent();
-
     var p = profile.get();
-    assertThat(p.profileId()).isEqualTo("accounting-za");
-    assertThat(p.name()).isEqualTo("South African Accounting Firm");
-    assertThat(p.description()).startsWith("Complete configuration for");
+    assertThat(p.profileId()).isEqualTo("legal-za");
+    assertThat(p.name()).isEqualTo("Legal (South Africa)");
     assertThat(p.currency()).isEqualTo("ZAR");
-    assertThat(p.enabledModules())
-        .containsExactlyInAnyOrder(
-            "regulatory_deadlines", "deadlines", "information_requests", "automation_builder");
-    assertThat(p.terminologyNamespace()).isEqualTo("en-ZA-accounting");
+    assertThat(p.terminologyNamespace()).isEqualTo("en-ZA-legal");
     assertThat(p.packs()).containsKey("field");
+    assertThat(p.packs()).doesNotContainKey("compliance");
   }
 
   @Test
@@ -41,18 +41,22 @@ class VerticalProfileRegistryTest {
   }
 
   @Test
-  void existsReturnsTrueForAccountingZa() {
-    assertThat(registry.exists("accounting-za")).isTrue();
+  void existsReturnsTrueForLegalZa() {
+    assertThat(registry.exists("legal-za")).isTrue();
   }
 
   @Test
-  void getAllProfilesReturnsLoadedProfiles() {
-    var profiles = registry.getAllProfiles();
+  void existsReturnsFalseForRemovedProfiles() {
+    assertThat(registry.exists("accounting-za")).isFalse();
+    assertThat(registry.exists("consulting-za")).isFalse();
+    assertThat(registry.exists("consulting-generic")).isFalse();
+  }
 
-    assertThat(profiles).isNotEmpty();
-    assertThat(profiles)
+  @Test
+  void getAllProfilesReturnsOnlyLegalZa() {
+    assertThat(registry.getAllProfiles())
         .extracting(VerticalProfileRegistry.ProfileDefinition::profileId)
-        .contains("accounting-za");
+        .containsExactly("legal-za");
   }
 
   @Test
@@ -75,89 +79,6 @@ class VerticalProfileRegistryTest {
             "deadlines",
             "information_requests",
             "bulk_billing");
-  }
-
-  @Test
-  void consultingZaProfileEnablesAutomationBuilderAndInformationRequests() {
-    // GAP-C-07: the Automations UI depends on automation_builder, which ships enabled for
-    // consulting-za so fresh tenants can manage automation rules out of the box. GAP-P-01 also
-    // enables information_requests for portal request flows. (The GAP-C-04 resource-planning
-    // module was removed with capacity in Phase 86 / Epic 599.)
-    var profile = registry.getProfile("consulting-za").orElseThrow();
-    assertThat(profile.enabledModules())
-        .containsExactlyInAnyOrder("automation_builder", "information_requests");
-  }
-
-  @Test
-  void accountingZaProfileEnablesExpectedModules() {
-    // OBS-4004: automation_builder must be enabled because accounting-za seeds automation
-    // packs (automation-accounting-za) — the UI to manage those rules requires this module.
-    // regulatory_deadlines is the firm-side SARS/CIPC deadline module declared default-enabled for
-    // accounting-za in VerticalModuleRegistry; "deadlines" is the distinct customer-portal deadline
-    // view (Epic 497A) — both are legitimately enabled. Regression guard still holds: legal-only
-    // modules (trust_accounting, court_calendar etc.) must NOT leak into accounting-za.
-    var profile = registry.getProfile("accounting-za").orElseThrow();
-    assertThat(profile.enabledModules())
-        .containsExactlyInAnyOrder(
-            "regulatory_deadlines", "deadlines", "information_requests", "automation_builder");
-  }
-
-  @Test
-  void consultingGenericProfileKeepsEnabledModulesEmpty() {
-    // Regression guard for GAP-C-04/C-07: the fix must stay scoped to consulting-za.
-    var profile = registry.getProfile("consulting-generic").orElseThrow();
-    assertThat(profile.enabledModules()).isEmpty();
-  }
-
-  @Test
-  void consultingZaProfileExposesRateCardDefaults() {
-    var profile = registry.getProfile("consulting-za").orElseThrow();
-    var defaults = profile.rateCardDefaults();
-
-    assertThat(defaults).as("consulting-za must expose rateCardDefaults").isNotNull();
-    assertThat(defaults.currency()).isEqualTo("ZAR");
-
-    assertThat(defaults.billingRates()).hasSize(3);
-    assertThat(defaults.billingRates())
-        .extracting(VerticalProfileRegistry.RoleRate::roleName)
-        .containsExactlyInAnyOrder("Owner", "Admin", "Member");
-    assertThat(defaults.billingRates())
-        .filteredOn(r -> "Owner".equals(r.roleName()))
-        .extracting(VerticalProfileRegistry.RoleRate::hourlyRate)
-        .containsExactly(new BigDecimal("1800"));
-    assertThat(defaults.billingRates())
-        .filteredOn(r -> "Admin".equals(r.roleName()))
-        .extracting(VerticalProfileRegistry.RoleRate::hourlyRate)
-        .containsExactly(new BigDecimal("1200"));
-    assertThat(defaults.billingRates())
-        .filteredOn(r -> "Member".equals(r.roleName()))
-        .extracting(VerticalProfileRegistry.RoleRate::hourlyRate)
-        .containsExactly(new BigDecimal("750"));
-
-    assertThat(defaults.costRates()).hasSize(3);
-    assertThat(defaults.costRates())
-        .filteredOn(r -> "Owner".equals(r.roleName()))
-        .extracting(VerticalProfileRegistry.RoleRate::hourlyRate)
-        .containsExactly(new BigDecimal("850"));
-    assertThat(defaults.costRates())
-        .filteredOn(r -> "Admin".equals(r.roleName()))
-        .extracting(VerticalProfileRegistry.RoleRate::hourlyRate)
-        .containsExactly(new BigDecimal("550"));
-    assertThat(defaults.costRates())
-        .filteredOn(r -> "Member".equals(r.roleName()))
-        .extracting(VerticalProfileRegistry.RoleRate::hourlyRate)
-        .containsExactly(new BigDecimal("375"));
-  }
-
-  @Test
-  void accountingZaProfileExposesRateCardDefaults() {
-    var profile = registry.getProfile("accounting-za").orElseThrow();
-    var defaults = profile.rateCardDefaults();
-
-    assertThat(defaults).isNotNull();
-    assertThat(defaults.currency()).isEqualTo("ZAR");
-    assertThat(defaults.billingRates()).hasSize(3);
-    assertThat(defaults.costRates()).hasSize(3);
   }
 
   @Test

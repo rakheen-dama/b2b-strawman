@@ -26,6 +26,13 @@ public class VerticalProfileRegistry {
   private static final Logger log = LoggerFactory.getLogger(VerticalProfileRegistry.class);
 
   /**
+   * The only vertical profile (Phase 86 / ADR-332). Every provisioning entry point that has no
+   * explicit profile (internal provision endpoint, org creation, access-request approval, demo
+   * provisioning, JIT provisioning) defaults to this id.
+   */
+  public static final String DEFAULT_PROFILE_ID = "legal-za";
+
+  /**
    * Role-keyed rate (e.g. {@code Owner R1800}). The {@code roleName} is matched against an {@link
    * io.b2mash.b2b.b2bstrawman.orgrole.OrgRole} slug case-insensitively.
    */

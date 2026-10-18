@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Users, ClipboardList, Zap } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
-import { ModuleGate } from "@/components/module-gate";
 import type { AggregatedCompletenessResponse } from "@/lib/types";
 import type { InformationRequestSummary } from "@/lib/api/information-requests";
 import type { AutomationSummary } from "@/lib/api/automations";
@@ -49,16 +48,14 @@ export function AdminStatsColumn({
           <span className="text-xs text-slate-500">Pending requests</span>
         </Link>
 
-        <ModuleGate module="automation_builder">
-          <Link
-            href={`/org/${orgSlug}/settings/automations`}
-            className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
-          >
-            <Zap className="size-4 shrink-0 text-slate-400" />
-            <span className="font-mono text-sm font-bold tabular-nums">{automationRuns}</span>
-            <span className="text-xs text-slate-500">Automation runs today</span>
-          </Link>
-        </ModuleGate>
+        <Link
+          href={`/org/${orgSlug}/settings/automations`}
+          className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
+        >
+          <Zap className="size-4 shrink-0 text-slate-400" />
+          <span className="font-mono text-sm font-bold tabular-nums">{automationRuns}</span>
+          <span className="text-xs text-slate-500">Automation runs today</span>
+        </Link>
       </CardContent>
     </Card>
   );

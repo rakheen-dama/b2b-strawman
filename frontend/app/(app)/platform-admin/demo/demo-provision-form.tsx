@@ -18,29 +18,6 @@ import {
 import { demoProvisionSchema, type DemoProvisionFormData } from "@/lib/schemas/demo-provision";
 import { provisionDemo, type DemoProvisionResponse } from "@/app/(app)/platform-admin/demo/actions";
 
-const VERTICAL_OPTIONS = [
-  {
-    value: "consulting-generic" as const,
-    label: "Generic",
-    description: "Marketing agency / consultancy",
-  },
-  {
-    value: "consulting-za" as const,
-    label: "Consulting ZA",
-    description: "South African digital agency / consulting firm",
-  },
-  {
-    value: "accounting-za" as const,
-    label: "Accounting",
-    description: "South African accounting firm",
-  },
-  {
-    value: "legal-za" as const,
-    label: "Legal",
-    description: "South African law firm",
-  },
-];
-
 export function DemoProvisionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +27,7 @@ export function DemoProvisionForm() {
     resolver: zodResolver(demoProvisionSchema),
     defaultValues: {
       organizationName: "",
-      verticalProfile: "consulting-generic",
+      verticalProfile: "legal-za",
       adminEmail: "",
       seedDemoData: true,
     },
@@ -141,46 +118,20 @@ export function DemoProvisionForm() {
             <FormItem>
               <FormLabel>Organization Name</FormLabel>
               <FormControl>
-                <Input placeholder="Demo — Accounting Firm" {...field} />
+                <Input placeholder="Demo — Law Firm" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="verticalProfile"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Vertical Profile</FormLabel>
-              <FormControl>
-                <div className="space-y-2">
-                  {VERTICAL_OPTIONS.map((option) => (
-                    <label
-                      key={option.value}
-                      className="flex cursor-pointer items-center gap-3 rounded-md border border-slate-200 p-3 hover:bg-slate-50"
-                    >
-                      <input
-                        type="radio"
-                        name="verticalProfile"
-                        value={option.value}
-                        checked={field.value === option.value}
-                        onChange={() => field.onChange(option.value)}
-                        className="h-4 w-4 text-teal-600"
-                      />
-                      <div>
-                        <div className="text-sm font-medium">{option.label}</div>
-                        <div className="text-xs text-slate-500">{option.description}</div>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Phase 86 (ADR-332): single vertical profile — shown read-only, still sent in the payload. */}
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Vertical Profile</p>
+          <p className="text-sm text-slate-600" data-testid="demo-vertical-profile">
+            Legal (South Africa)
+          </p>
+        </div>
 
         <FormField
           control={form.control}

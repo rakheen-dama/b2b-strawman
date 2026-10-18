@@ -18,13 +18,11 @@ public class EmailTerminology {
   private static final Map<String, Map<String, String>> MAP =
       Map.of(
           "legal-za",
-              Map.of(
-                  "invoice", "fee note",
-                  "invoices", "fee notes",
-                  "Invoice", "Fee Note",
-                  "Invoices", "Fee Notes"),
-          "accounting-za", Map.of(),
-          "consulting-za", Map.of());
+          Map.of(
+              "invoice", "fee note",
+              "invoices", "fee notes",
+              "Invoice", "Fee Note",
+              "Invoices", "Fee Notes"));
 
   /**
    * Returns the term-overrides map for the given namespace. An empty map (identity translation) is

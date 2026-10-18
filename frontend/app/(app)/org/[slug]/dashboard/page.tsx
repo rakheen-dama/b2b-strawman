@@ -10,7 +10,6 @@ import { TeamWorkloadWidget } from "@/components/dashboard/team-workload-widget"
 import { RecentActivityWidget } from "@/components/dashboard/recent-activity-widget";
 import { AdminStatsColumn } from "@/components/dashboard/admin-stats-column";
 import { MyWeekColumn } from "@/components/dashboard/my-week-column";
-import { DeadlineWidget } from "@/components/dashboard/deadline-widget";
 import { SensitiveEventsWidget } from "@/components/dashboard/sensitive-events-widget";
 import { UpcomingCourtDatesWidget } from "@/components/legal/upcoming-court-dates-widget";
 import { ModuleGate } from "@/components/module-gate";
@@ -172,9 +171,6 @@ export default async function OrgDashboardPage({
       {/* Secondary three-column layout */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <RecentActivityWidget items={activity ?? null} orgSlug={slug} />
-        <ModuleGate module="regulatory_deadlines">
-          <DeadlineWidget orgSlug={slug} />
-        </ModuleGate>
         {isAdmin ? (
           <AdminStatsColumn
             aggregatedCompleteness={aggregatedCompleteness ?? null}

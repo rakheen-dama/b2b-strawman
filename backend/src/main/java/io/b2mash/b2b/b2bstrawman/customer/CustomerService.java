@@ -227,8 +227,8 @@ public class CustomerService {
     customer.setFinancialYearEnd(financialYearEnd);
 
     // Auto-apply field groups before save so audit events capture final state
-    // OBS-5004: pass entity type value so groups like accounting-za-customer-trust
-    // (scoped to TRUST) are only auto-applied to TRUST entity type customers.
+    // OBS-5004: pass entity type value so groups scoped to an entity type (e.g. TRUST) are only
+    // auto-applied to customers of that entity type.
     var autoApplyIds =
         fieldGroupService.resolveAutoApplyGroupIds(EntityType.CUSTOMER, null, entityType);
     if (!autoApplyIds.isEmpty()) {

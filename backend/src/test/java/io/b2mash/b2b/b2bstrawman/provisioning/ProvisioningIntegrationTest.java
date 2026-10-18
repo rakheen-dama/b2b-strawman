@@ -81,11 +81,11 @@ class ProvisioningIntegrationTest {
   }
 
   @Test
-  void shouldSetCurrencyFromVerticalProfileWhenProvisioningWithAccountingZa() throws SQLException {
+  void shouldSetCurrencyFromVerticalProfileWhenProvisioningWithLegalZa() throws SQLException {
     String clerkOrgId = "org_vertical_za_test";
-    String orgName = "SA Accounting Firm";
+    String orgName = "SA Law Firm";
 
-    var result = provisioningService.provisionTenant(clerkOrgId, orgName, "accounting-za");
+    var result = provisioningService.provisionTenant(clerkOrgId, orgName, "legal-za");
 
     assertThat(result.success()).isTrue();
     String currency = getOrgSettingsCurrency(result.schemaName());

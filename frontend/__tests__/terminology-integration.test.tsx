@@ -35,7 +35,7 @@ afterEach(() => {
 // ---- Test 1: Sidebar nav labels ----
 
 describe("364B: terminology in sidebar nav", () => {
-  it("renders Engagements instead of Projects with accounting-za profile", () => {
+  it("renders Matters instead of Projects with legal-za profile", () => {
     mockUsePathname.mockReturnValue("/org/test-org/dashboard");
 
     const deliveryZone: NavGroup = {
@@ -54,14 +54,14 @@ describe("364B: terminology in sidebar nav", () => {
     render(
       <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
         <CapabilityProvider capabilities={[]} role="owner" isAdmin={false} isOwner={true}>
-          <TerminologyProvider verticalProfile="accounting-za">
+          <TerminologyProvider verticalProfile="legal-za">
             <NavZone zone={deliveryZone} slug="test-org" />
           </TerminologyProvider>
         </CapabilityProvider>
       </OrgProfileProvider>
     );
 
-    expect(screen.getByText("Engagements")).toBeInTheDocument();
+    expect(screen.getByText("Matters")).toBeInTheDocument();
     expect(screen.queryByText("Projects")).not.toBeInTheDocument();
   });
 });
@@ -69,16 +69,16 @@ describe("364B: terminology in sidebar nav", () => {
 // ---- Test 2: Breadcrumbs ----
 
 describe("364B: terminology in breadcrumbs", () => {
-  it("renders Engagements instead of Projects in breadcrumb for /projects route", () => {
+  it("renders Matters instead of Projects in breadcrumb for /projects route", () => {
     mockUsePathname.mockReturnValue("/org/test-org/projects");
 
     render(
-      <TerminologyProvider verticalProfile="accounting-za">
+      <TerminologyProvider verticalProfile="legal-za">
         <Breadcrumbs slug="test-org" />
       </TerminologyProvider>
     );
 
-    expect(screen.getByText("Engagements")).toBeInTheDocument();
+    expect(screen.getByText("Matters")).toBeInTheDocument();
     expect(screen.queryByText("Projects")).not.toBeInTheDocument();
   });
 
@@ -86,7 +86,7 @@ describe("364B: terminology in breadcrumbs", () => {
     mockUsePathname.mockReturnValue("/org/test-org/customers");
 
     render(
-      <TerminologyProvider verticalProfile="accounting-za">
+      <TerminologyProvider verticalProfile="legal-za">
         <Breadcrumbs slug="test-org" />
       </TerminologyProvider>
     );
@@ -99,40 +99,40 @@ describe("364B: terminology in breadcrumbs", () => {
 // ---- Test 3: Page heading via TerminologyHeading ----
 
 describe("364B: terminology in page heading component", () => {
-  it("renders Engagements instead of Projects for term=Projects with accounting-za profile", () => {
+  it("renders Matters instead of Projects for term=Projects with legal-za profile", () => {
     render(
-      <TerminologyProvider verticalProfile="accounting-za">
+      <TerminologyProvider verticalProfile="legal-za">
         <h1>
           <TerminologyHeading term="Projects" />
         </h1>
       </TerminologyProvider>
     );
 
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Engagements");
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Matters");
   });
 });
 
 // ---- Test 4: TerminologyHeading with count prop ----
 
 describe("364B: terminology heading with count", () => {
-  it("renders '3 engagements' for count=3 with accounting-za profile", () => {
+  it("renders '3 matters' for count=3 with legal-za profile", () => {
     render(
-      <TerminologyProvider verticalProfile="accounting-za">
+      <TerminologyProvider verticalProfile="legal-za">
         <TerminologyHeading count={3} term="projects" singularTerm="project" />
       </TerminologyProvider>
     );
 
-    expect(screen.getByText("3 engagements")).toBeInTheDocument();
+    expect(screen.getByText("3 matters")).toBeInTheDocument();
   });
 
-  it("renders '1 engagement' for count=1 with accounting-za profile", () => {
+  it("renders '1 matter' for count=1 with legal-za profile", () => {
     render(
-      <TerminologyProvider verticalProfile="accounting-za">
+      <TerminologyProvider verticalProfile="legal-za">
         <TerminologyHeading count={1} term="projects" singularTerm="project" />
       </TerminologyProvider>
     );
 
-    expect(screen.getByText("1 engagement")).toBeInTheDocument();
+    expect(screen.getByText("1 matter")).toBeInTheDocument();
   });
 
   it("renders '3 projects' for count=3 with null profile", () => {
@@ -149,9 +149,9 @@ describe("364B: terminology heading with count", () => {
 // ---- Test 5: TerminologyText with template placeholders ----
 
 describe("364B: terminology text template replacement", () => {
-  it("replaces {proposals} in template with 'engagement letters' for accounting-za", () => {
+  it("replaces {proposals} in template with 'engagement letters' for legal-za", () => {
     render(
-      <TerminologyProvider verticalProfile="accounting-za">
+      <TerminologyProvider verticalProfile="legal-za">
         <TerminologyText template="No {proposals} yet" />
       </TerminologyProvider>
     );
@@ -159,11 +159,11 @@ describe("364B: terminology text template replacement", () => {
     expect(screen.getByText("No engagement letters yet")).toBeInTheDocument();
   });
 
-  it("replaces {a proposal} with an article-adjusted 'an engagement letter' for accounting-za", () => {
+  it("replaces {a proposal} with an article-adjusted 'an engagement letter' for legal-za", () => {
     // LZKC-003: copy that needs an indefinite article uses the {a term} token so the article
     // tracks the substituted noun ("a proposal" -> "an engagement letter").
     render(
-      <TerminologyProvider verticalProfile="accounting-za">
+      <TerminologyProvider verticalProfile="legal-za">
         <TerminologyText template="Create {a proposal} to get started." />
       </TerminologyProvider>
     );
@@ -228,55 +228,6 @@ describe("372B: legal-za terminology overrides", () => {
     );
 
     expect(screen.getByTestId("result").textContent).toBe("Document");
-  });
-});
-
-// ---- 484.4: consulting-za terminology integration tests ----
-
-describe("484: consulting-za terminology overrides", () => {
-  it("t('Customer') returns 'Client' for consulting-za profile", () => {
-    function TestConsumer() {
-      const { t } = useTerminology();
-      return <span data-testid="result">{t("Customer")}</span>;
-    }
-
-    render(
-      <TerminologyProvider verticalProfile="consulting-za">
-        <TestConsumer />
-      </TerminologyProvider>
-    );
-
-    expect(screen.getByTestId("result").textContent).toBe("Client");
-  });
-
-  it("t('Time Entry') returns 'Time Log' for consulting-za profile", () => {
-    function TestConsumer() {
-      const { t } = useTerminology();
-      return <span data-testid="result">{t("Time Entry")}</span>;
-    }
-
-    render(
-      <TerminologyProvider verticalProfile="consulting-za">
-        <TestConsumer />
-      </TerminologyProvider>
-    );
-
-    expect(screen.getByTestId("result").textContent).toBe("Time Log");
-  });
-
-  it("t('Project') passes through for consulting-za (not overridden)", () => {
-    function TestConsumer() {
-      const { t } = useTerminology();
-      return <span data-testid="result">{t("Project")}</span>;
-    }
-
-    render(
-      <TerminologyProvider verticalProfile="consulting-za">
-        <TestConsumer />
-      </TerminologyProvider>
-    );
-
-    expect(screen.getByTestId("result").textContent).toBe("Project");
   });
 });
 

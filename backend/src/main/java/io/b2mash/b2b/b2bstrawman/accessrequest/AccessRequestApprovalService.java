@@ -4,9 +4,9 @@ import io.b2mash.b2b.b2bstrawman.accessrequest.dto.AccessRequestDtos.AccessReque
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,13 +25,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class AccessRequestApprovalService {
 
   private static final Logger log = LoggerFactory.getLogger(AccessRequestApprovalService.class);
-
-  private static final Map<String, String> INDUSTRY_TO_PROFILE =
-      Map.of(
-          "Accounting", "accounting-za",
-          "Legal Services", "legal-za",
-          "Marketing", "consulting-za",
-          "Consulting", "consulting-za");
 
   private static final String DEFAULT_PASSWORD = "password";
 
@@ -104,9 +97,10 @@ public class AccessRequestApprovalService {
       // Step 3: Provision tenant schema (NO outer transaction — seeders manage their own)
       // Use the slug (= Keycloak org alias) as the org identifier for schema mapping,
       // because Keycloak JWTs include the alias in the "organization" claim, not the UUID.
-      String verticalProfile = INDUSTRY_TO_PROFILE.get(request.getIndustry());
+      // legal-za is the only vertical profile (Phase 86 / ADR-332), so every approved request is
+      // provisioned with it regardless of the (free-text) industry the requester chose.
       tenantProvisioningService.provisionTenant(
-          slug, orgName, verticalProfile, request.getCountry());
+          slug, orgName, VerticalProfileRegistry.DEFAULT_PROFILE_ID, request.getCountry());
       log.info("Provisioned tenant schema for org {} (slug={})", kcOrgId, slug);
 
       // Step 4: Invite user via Keycloak and mark as org creator

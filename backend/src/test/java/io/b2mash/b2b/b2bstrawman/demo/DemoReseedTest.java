@@ -9,7 +9,7 @@ import io.b2mash.b2b.b2bstrawman.billing.BillingMethod;
 import io.b2mash.b2b.b2bstrawman.billing.Subscription;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.demo.seed.GenericDemoDataSeeder;
+import io.b2mash.b2b.b2bstrawman.demo.seed.LegalDemoDataSeeder;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -38,7 +38,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 class DemoReseedTest {
 
   private final DemoProvisionService demoProvisionService;
-  private final GenericDemoDataSeeder genericDemoDataSeeder;
+  private final LegalDemoDataSeeder legalDemoDataSeeder;
   private final TenantProvisioningService tenantProvisioningService;
   private final TenantTransactionHelper tenantTransactionHelper;
   private final OrgSchemaMappingRepository mappingRepository;
@@ -57,7 +57,7 @@ class DemoReseedTest {
   @Autowired
   DemoReseedTest(
       DemoProvisionService demoProvisionService,
-      GenericDemoDataSeeder genericDemoDataSeeder,
+      LegalDemoDataSeeder legalDemoDataSeeder,
       TenantProvisioningService tenantProvisioningService,
       TenantTransactionHelper tenantTransactionHelper,
       OrgSchemaMappingRepository mappingRepository,
@@ -70,7 +70,7 @@ class DemoReseedTest {
       OrgRoleRepository orgRoleRepository,
       TransactionTemplate txTemplate) {
     this.demoProvisionService = demoProvisionService;
-    this.genericDemoDataSeeder = genericDemoDataSeeder;
+    this.legalDemoDataSeeder = legalDemoDataSeeder;
     this.tenantProvisioningService = tenantProvisioningService;
     this.tenantTransactionHelper = tenantTransactionHelper;
     this.mappingRepository = mappingRepository;
@@ -87,12 +87,12 @@ class DemoReseedTest {
   @BeforeAll
   void setUp() {
     String slug = "reseed-test-" + UUID.randomUUID().toString().substring(0, 8);
-    tenantProvisioningService.provisionTenant(slug, "Reseed Test Org", "generic");
+    tenantProvisioningService.provisionTenant(slug, "Reseed Test Org", "legal-za");
     schemaName = mappingRepository.findByExternalOrgId(slug).orElseThrow().getSchemaName();
     orgId = organizationRepository.findByExternalOrgId(slug).orElseThrow().getId();
 
     // Seed initial demo data
-    genericDemoDataSeeder.seed(schemaName, orgId);
+    legalDemoDataSeeder.seed(schemaName, orgId);
 
     // Override subscription to ACTIVE/PILOT so reseed is allowed
     txTemplate.executeWithoutResult(
@@ -100,7 +100,7 @@ class DemoReseedTest {
           Subscription sub = subscriptionRepository.findByOrganizationId(orgId).orElseThrow();
           sub.adminTransitionTo(Subscription.SubscriptionStatus.ACTIVE);
           sub.setBillingMethod(BillingMethod.PILOT);
-          sub.setAdminNote("Demo tenant provisioned by admin test-admin. Profile: generic");
+          sub.setAdminNote("Demo tenant provisioned by admin test-admin. Profile: legal-za");
           subscriptionRepository.save(sub);
         });
   }
@@ -131,7 +131,7 @@ class DemoReseedTest {
 
     assertTrue(response.success(), "Reseed should succeed");
     assertEquals(orgId, response.organizationId());
-    assertEquals("generic", response.verticalProfile());
+    assertEquals("legal-za", response.verticalProfile());
 
     // Verify data exists after reseed (re-seeded)
     var customerCountAfter = new AtomicReference<Long>();
@@ -183,8 +183,8 @@ class DemoReseedTest {
 
     assertEquals(5L, customerCount.get(), "Should have 5 customers after reseed");
     assertTrue(
-        projectCount.get() >= 8,
-        "Should have >= 8 projects after reseed, found: " + projectCount.get());
+        projectCount.get() >= 6,
+        "Should have >= 6 projects after reseed, found: " + projectCount.get());
     assertTrue(
         timeEntryCount.get() >= 100,
         "Should have >= 100 time entries after reseed, found: " + timeEntryCount.get());

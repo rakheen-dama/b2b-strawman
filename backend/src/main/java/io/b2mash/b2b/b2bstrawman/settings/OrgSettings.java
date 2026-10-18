@@ -87,9 +87,6 @@ public class OrgSettings {
       name = "automationPackStatus",
       column = @Column(name = "automation_pack_status", columnDefinition = "jsonb"))
   @AttributeOverride(
-      name = "ratePackStatus",
-      column = @Column(name = "rate_pack_status", columnDefinition = "jsonb"))
-  @AttributeOverride(
       name = "projectTemplatePackStatus",
       column = @Column(name = "project_template_pack_status", columnDefinition = "jsonb"))
   private PackStatusSettings packStatus = new PackStatusSettings();

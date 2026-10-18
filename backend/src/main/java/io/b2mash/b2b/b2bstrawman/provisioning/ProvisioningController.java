@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.provisioning;
 
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.net.URI;
@@ -28,13 +29,16 @@ public class ProvisioningController {
       @Valid @RequestBody ProvisioningRequest request) {
     log.info("Received provisioning request for org {}", request.clerkOrgId());
 
+    // legal-za is the only vertical profile (Phase 86 / ADR-332): a missing profile defaults to it,
+    // and an unknown id is rejected with 400 by TenantProvisioningService.
+    String verticalProfile =
+        request.verticalProfile() == null || request.verticalProfile().isBlank()
+            ? VerticalProfileRegistry.DEFAULT_PROFILE_ID
+            : request.verticalProfile();
+
     var result =
         provisioningService.provisionTenant(
-            request.clerkOrgId(),
-            request.orgName(),
-            request.verticalProfile(),
-            null,
-            request.shardId());
+            request.clerkOrgId(), request.orgName(), verticalProfile, null, request.shardId());
 
     if (result.alreadyProvisioned()) {
       return ResponseEntity.status(409)

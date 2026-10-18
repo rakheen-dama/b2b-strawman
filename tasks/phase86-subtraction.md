@@ -566,6 +566,24 @@ Packages with **no** consumer outside §11.3 + breakdown in **main** code: `dev`
 
 ---
 
+## Squash record (605C)
+
+Status: **VERIFIED** (observed 2026-10-18; root CLAUDE.md §3).
+
+- **Squash commit:** `d8fb3983c` (PR #1577, squash of `63502bbbc` 605A + `5e583191b` 605B + `cb30d9f15` review doc fix). Series: tenant V1–V144 (133 + 9 Phase 86 drops) → `tenant/V1__baseline.sql`; global V1–V29 (25 + 4) → `global/V1__baseline.sql`.
+- **Generation:** throwaway `postgres:16-alpine` (16.14) + `flyway/flyway:11.14.1` on a private docker network; pg_dump round-trip old-series vs V1 = empty diff (tenant 6,188 lines; public+portal 908 lines); seeded rows equal (org_roles 3, org_role_capabilities 47, tax_rates 3, accounting_tax_code_mapping 4, request_counters 1, shedlock 1, shard_config 1). Artefacts `/tmp/p86-squash/` (ephemeral).
+- **sha256:** tenant snapshot `e81e6cd9de1e05cb365d5188833565d0c935a5a6a29b6f74c06e281a0f6b3a9b`; global snapshot `faeec9533aa135e7c7de81d372f3a9fce1d2e1a9508f7795382fd42139f91326`; tenant V1 `979b03a8fb07fdfe524fd9cda48eb66c9b4e222f86385a2975a4cf303a409921`; global V1 `9cbac47dabde0a7202563333f01d0d2998fa38a7e4fb175b091d1afd1ec282e5`.
+- **Behaviour change (accepted):** old V7/V8/V10/V16/V27/V29/V127 used unscoped catalog guards, so 9 objects (uq_customers_email, chk_customers_customer_type, uq_customer_projects_customer_project, chk_documents_scope_fks, chk_documents_provenance, uq_portal_contacts_email_customer, uq_magic_link_tokens_hash, chk_brand_color_format, tasks.customer_visible) existed only in the first tenant per database. V1 gives every tenant the first-tenant shape.
+- **Full verify:** `5e583191b` — 5294 testcases / 0 failures / 0 errors / 26 skipped (`/tmp/mvn-605-final.log`; marker `.claude/markers/verify-backend.json`). First attempt env-only failure (EmbeddedPostgres 10s startup timeout under load ~19 with orphaned embedded-PG processes) — orphans killed, re-run clean. Backend CI pass on `5e583191b` and `cb30d9f15`.
+- **E2E stack (605C.1):** wiped + rebuilt from the squash branch; global + tenant `flyway_schema_history` = `1|1|t`; `e2e-test-org` = legal-za.
+- **Playwright (mock-auth e2e stack; both configs refuse non-mock auth):** pre-squash baseline on main `a99b11f50` vs post-squash, same procedure:
+  - legal-lifecycle: 65 passed / 15 failed / 6 skipped / 6 not run — identical before and after, same failing set.
+  - legal-depth-ii: pre 0 / 3 failed / 15 skipped / 4 not run; post 0 / 4 failed / 14 skipped / 4 not run. The only post-only failure (`day-14-conveyancing.spec.ts:55`) was skipped pre-squash; post-squash it created the Property Transfer matter and failed only on a missing first-run screenshot baseline. No green→red → no squash defect.
+  - Pre-existing failures (missing screenshot baselines; depth-ii day-05 disbursements `networkidle` 30s timeout blocking dependent tests; lifecycle locator failures) are unrelated to Phase 86 → 606C capstone.
+  - Logs `/tmp/pw-605-{pre,post}-{lifecycle,depthii}.log`, artefacts `/tmp/pw-605-{pre,post}-artefacts/` (ephemeral). Gotcha: these configs write into tracked `frontend/test-results/` and `documentation/screenshots/` — restore the tree after running.
+- **Dev stack (Keycloak):** volumes `docteams-dev_postgres_data` (48 MB) + `docteams-dev_localstack_data` backed up to the session scratchpad (`dev-volume-backup-pre-phase86-squash/*.tgz`) → `dev-down.sh --clean` → `dev-up.sh` → `keycloak-bootstrap.sh` → `./mvnw clean` (stale old V*.sql in `target/classes` caused "Found more than one migration with version 1") → `svc.sh start all` (all 4 healthy). Smoke: `POST /internal/orgs/provision` legal-za → 201 `tenant_56399d06a773`; global + tenant history `1|1|t`; org_settings legal-za; 10 automation rules; 47 role capabilities; `accounting-za` → 400 with no org row.
+- **Still to do outside this repo:** wipe the VPS dev environment's Postgres volume before deploying an image built from `d8fb3983c` (BASELINE.md §6).
+
 ## 7. After (reserved for 606C)
 
 Filled by 606C closure report.

@@ -1,7 +1,7 @@
 {
-  "commit": "3fd80149c",
-  "command": "cd frontend && pnpm run lint && rm -rf .next && pnpm run build && caffeinate -is pnpm test && pnpm run format:check",
+  "commit": "cb30d9f15",
+  "command": "cd frontend && pnpm install --frozen-lockfile && pnpm run lint && rm -rf .next && pnpm run build && caffeinate -is pnpm test && pnpm run format:check",
   "exit": 0,
-  "ts": "2026-10-18T00:23:20Z",
-  "summary": "Epic 604 / PR #1576 head 3fd80149c (orchestrator re-run): lint 0 errors; build OK (clean .next); vitest 348 files, 2184 passed | 2 skipped; prettier clean. -6 files / -52 tests vs Epic 603 (deleted deadlines, automation editor, non-legal vertical/terminology tests). Frontend CI pass."
+  "ts": "2026-10-18T02:16:38Z",
+  "summary": "Epic 605 / PR #1577 head cb30d9f15 (orchestrator run): lint 0 errors; build OK (clean .next); vitest 348 files, 2184 passed | 2 skipped; prettier clean. Only frontend change is a nav-items.ts comment. Frontend CI pass."
 }

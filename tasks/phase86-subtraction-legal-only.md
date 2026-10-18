@@ -32,7 +32,7 @@ See the final section "Open Questions / verify-at-build-time" — every `verify`
 | 602 | Remove PayFast Platform Subscription Path (Phase 57) | Backend + Frontend (split) | 595 (parallel with 596–601) | M | 602A, 602B, 602C | **Done** (PR #1574) |
 | 603 | Remove Thymeleaf Dev Harness (Phase 7) + `docs/` Site (Phase 59) + docsLink policy | Backend + Ops + Frontend (split) | 595 (parallel with 596–602) | M | 603A, 603B, 603C | **Done** (PR #1575) |
 | 604 | Single Profile: non-legal profiles/packs/seeders/demo, `deadline/`, automation builder, terminology entries | Backend + Frontend + Portal (split) | 601, 602, 603 | L | 604A, 604B, 604C, 604D, 604E, 604F | **Done** (PR #1576) |
-| 605 | Migration Squash → tenant V1 / global V1 | Backend + Ops | 596–604 merged, `main` verify clean | L | 605A, 605B, 605C | Not started |
+| 605 | Migration Squash → tenant V1 / global V1 | Backend + Ops | 596–604 merged, `main` verify clean | L | 605A, 605B, 605C | **Done** (PR #1577) |
 | 606 | Documentation Sweep + ADR Supersession + QA Capstone | Docs + E2E/Process | 605 | M | 606A, 606B, 606C | Not started |
 
 **Slice count: 41** (12 architecture capability slices expanded by layer and by the ≤~12-seam-edits rule). Backend/frontend/portal split preserved per slice.
@@ -158,9 +158,9 @@ KEPT (never touched by any slice — the compiler and McpReadOnlyRegistryTest gu
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 3a | **605A** | Commit `backend/src/test/resources/schema/{tenant,global}-baseline.snapshot` from the post-604 tree; new `provisioning/BaselineSchemaParityTest`; `baselineOnMigrate(false)` at `FlywayConfig.java:18`, `TenantProvisioningService.java:280`, `TenantMigrationRunner.java:100`, `ShardIsolationTest.java:108`, `EndToEndMultiShardTest.java:119`. |
-| 3b | **605B** | Generate `tenant/V1__baseline.sql` + `global/V1__baseline.sql` (§11.7(a) dump-and-clean), `git rm` old series + throwaway drops; parity test green; 8 `*MigrationTest` → `*SchemaTest` renames; `OrgSettingsSchemaSnapshotTest` ordering-only re-pin if needed; 5 stale comments; `backend/db/BASELINE.md`; root `CLAUDE.md` volume-wipe line. |
-| 3c | **605C** | `dev-down.sh --clean && dev-up.sh`, `e2e-down.sh && e2e-up.sh`; re-provision legal-za; `playwright.legal-lifecycle.config.ts` + `playwright.legal-depth-ii.config.ts` observed green on the squashed baseline; artefacts recorded. |
+| 3a | **605A** | Commit `backend/src/test/resources/schema/{tenant,global}-baseline.snapshot` from the post-604 tree; new `provisioning/BaselineSchemaParityTest`; `baselineOnMigrate(false)` at `FlywayConfig.java:18`, `TenantProvisioningService.java:280`, `TenantMigrationRunner.java:100`, `ShardIsolationTest.java:108`, `EndToEndMultiShardTest.java:119`. **Done** (PR #1577) |
+| 3b | **605B** | Generate `tenant/V1__baseline.sql` + `global/V1__baseline.sql` (§11.7(a) dump-and-clean), `git rm` old series + throwaway drops; parity test green; 8 `*MigrationTest` → `*SchemaTest` renames; `OrgSettingsSchemaSnapshotTest` ordering-only re-pin if needed; 5 stale comments; `backend/db/BASELINE.md`; root `CLAUDE.md` volume-wipe line. **Done** (PR #1577) |
+| 3c | **605C** | `dev-down.sh --clean && dev-up.sh`, `e2e-down.sh && e2e-up.sh`; re-provision legal-za; `playwright.legal-lifecycle.config.ts` + `playwright.legal-depth-ii.config.ts` observed green on the squashed baseline; artefacts recorded. **Done** (PR #1577) |
 
 ### Stage 4 — Closure
 
@@ -777,9 +777,9 @@ KEPT (never touched by any slice — the compiler and McpReadOnlyRegistryTest gu
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **605A** | 605A.1–605A.3 | 5 edits (+2 new snapshot files, 1 new test) | Parity snapshots from the post-604 tree; `BaselineSchemaParityTest`; `baselineOnMigrate(false)` × 5. |
-| **605B** | 605B.1–605B.6 | ~16 edits (8 renames, 5 comments, pin, CLAUDE.md, BASELINE.md) (+ ~170 deletions, 2 new baselines) | V1 baselines; old series + drops removed; renames; `BASELINE.md`; wipe note. |
-| **605C** | 605C.1–605C.2 | 0 code edits; artefacts recorded | Volume wipe, re-provision, both legal Playwright configs observed. |
+| **605A** | 605A.1–605A.3 | 5 edits (+2 new snapshot files, 1 new test) | Parity snapshots from the post-604 tree; `BaselineSchemaParityTest`; `baselineOnMigrate(false)` × 5. **Done** (PR #1577) |
+| **605B** | 605B.1–605B.6 | ~16 edits (8 renames, 5 comments, pin, CLAUDE.md, BASELINE.md) (+ ~170 deletions, 2 new baselines) | V1 baselines; old series + drops removed; renames; `BASELINE.md`; wipe note. **Done** (PR #1577) |
+| **605C** | 605C.1–605C.2 | 0 code edits; artefacts recorded | Volume wipe, re-provision, both legal Playwright configs observed. **Done** (PR #1577) |
 
 ### Tasks
 

@@ -1,7 +1,7 @@
 {
-  "commit": "3fd80149c",
+  "commit": "5e583191b",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-18T00:23:20Z",
-  "summary": "Epic 604 / PR #1576 final head 3fd80149c (orchestrator run): 5290 testcases / 0 failures / 0 errors / 26 skipped. Delta -121 vs Epic 603 baseline 5411 = exactly the net test methods removed in the diff (-138 deleted, +17 added). Backend CI pass (29m) on the same SHA. e2e stack rebuilt with wiped volume: e2e-test-org provisions legal-za, tenant at V144, filing_statuses + rate_pack_status gone. Log /tmp/mvn-604-final.log."
+  "ts": "2026-10-18T02:16:38Z",
+  "summary": "Epic 605 / PR #1577 on 5e583191b (orchestrator run): 5294 testcases / 0 failures / 0 errors / 26 skipped (= 5290 + 4 BaselineSchemaParityTest). First attempt failed env-only (EmbeddedPostgres startup timeout under load ~19 with 3 orphaned embedded-PG procs; no named test failures); orphans killed, re-run clean. Final head cb30d9f15 is comment/doc-only on top; Backend CI pass on cb30d9f15. Post-squash e2e: global+tenant history 1|1|t, legal-za; Playwright pre/post identical except one previously-skipped test now failing only on first-run screenshot baseline. Log /tmp/mvn-605-final.log."
 }

@@ -85,3 +85,4 @@ bash compose/scripts/e2e-down.sh           # E2E mock-auth stack
 - **VPS dev environment** (`DEPLOY-VPS.md`): remove the Postgres data volume before deploying an image built from the squash commit.
 - **Staging**: the same applies if staging is ever revived.
 - `spring-boot:test-run` and the test suite use a fresh embedded Postgres per JVM, so there is nothing to do there.
+- Every existing checkout: run `./mvnw clean` in `backend/` once. `svc.sh` / `spring-boot:run` do not clean, and the old compiled `V*.sql` files left in `target/classes/db/migration` make Flyway fail with `Found more than one migration with version 1` (observed in 605C).

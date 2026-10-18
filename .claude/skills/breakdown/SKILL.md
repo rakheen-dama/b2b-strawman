@@ -62,7 +62,7 @@ Reference implementations (study to calibrate slice sizes):
 
 Existing code to understand scope (LIGHTWEIGHT — just list files, don't read contents):
 - `ls backend/src/main/java/io/b2mash/b2b/b2bstrawman/` — package structure only
-- Find the next free migration number per series (tenant and global): `ls backend/src/main/resources/db/migration/{tenant,global}/ | sort -V | tail -3` — since the Phase 86 squash each series starts at `V1__baseline.sql` and new migrations are `V2+` (see `backend/db/BASELINE.md`)
+- Find the next free migration number per series (tenant and global): `for s in tenant global; do echo "$s: $(ls backend/src/main/resources/db/migration/$s/ | sort -V | tail -1)"; done` — since the Phase 86 squash each series starts at `V1__baseline.sql` and new migrations are `V2+` (see `backend/db/BASELINE.md`)
 - `ls frontend/app/(app)/org/[slug]/` — route structure only
 
 ## Task

@@ -100,13 +100,15 @@ public class CustomFieldFilterHandler {
     boolean isPromoted = CustomFieldFilterUtil.isPromotedForEntity(slug, entityType);
 
     // projects.work_type holds the canonical form (CONVEYANCING), but view operands are whatever
-    // the user typed ("Conveyancing"). Normalise eq/neq/in operands at query time so they still
-    // match; this also covers saved views stored before canonicalisation, so saved_views.filters
-    // needs no data migration. contains is left raw — it already matches via ILIKE.
+    // the user typed ("Conveyancing"). Normalise eq/neq/in/contains operands at query time so they
+    // still match; this also covers saved views stored before canonicalisation, so
+    // saved_views.filters needs no data migration. contains keeps ILIKE for substring matching —
+    // normalising it adds the space → underscore step ILIKE can't do ("personal inj").
     boolean canonicalWorkType = isPromoted && WORK_TYPE_SLUG.equals(slug);
 
     if ("contains".equals(op)) {
-      params.put(paramName, String.valueOf(value));
+      String raw = String.valueOf(value);
+      params.put(paramName, canonicalWorkType ? canonicalWorkTypeOperand(raw) : raw);
       if (isPromoted) {
         return slug + " ILIKE '%' || :" + paramName + " || '%'";
       }

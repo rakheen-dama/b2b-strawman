@@ -193,16 +193,17 @@ class CustomFieldFilterHandlerTest {
   }
 
   @Test
-  void projectWorkType_containsOperandIsLeftRaw() {
-    // contains already matches case-insensitively via ILIKE.
+  void projectWorkType_containsOperandIsNormalised() {
+    // ILIKE handles case but not the space → underscore step, so "personal inj" must bind as
+    // PERSONAL_INJ to find a stored PERSONAL_INJURY. Substring matching is unchanged.
     Map<String, Object> params = new HashMap<>();
     String result =
         handler.buildPredicate(
-            Map.of("work_type", (Object) Map.of("op", "contains", "value", "convey")),
+            Map.of("work_type", (Object) Map.of("op", "contains", "value", "personal inj")),
             params,
             "PROJECT");
     assertThat(result).isEqualTo("work_type ILIKE '%' || :cf_work_type || '%'");
-    assertThat(params).containsEntry("cf_work_type", "convey");
+    assertThat(params).containsEntry("cf_work_type", "PERSONAL_INJ");
   }
 
   @Test

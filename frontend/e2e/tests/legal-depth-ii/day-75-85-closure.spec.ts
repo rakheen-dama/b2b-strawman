@@ -147,9 +147,9 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
       .locator('[data-testid^="disbursement-row-"]')
       .filter({ hasText: counselFeeDescription() });
     await expect(row).toContainText("Draft", { timeout: 15_000 });
-    // Ready once its detail page has rendered and the page transition settled
+    // Ready once its detail page has rendered
     const detail = page.getByTestId("disbursement-detail");
-    await clickThrough(page, row, detail.getByText(counselFeeDescription(), { exact: true }));
+    await clickThrough(row, detail.getByText(counselFeeDescription(), { exact: true }));
     await expect(page).toHaveURL(/\/legal\/disbursements\/[0-9a-f-]{36}$/);
     await detail.getByTestId("disbursement-submit-for-approval-button").click();
     await expect(detail.getByTestId("disbursement-approval-panel")).toBeVisible({
@@ -200,7 +200,6 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
     const createdRow = panel.getByRole("row").filter({ has: page.locator(`a[href="${created}"]`) });
     await expect(createdRow).toContainText("Draft");
     await clickThrough(
-      page,
       createdRow.locator(`a[href="${created}"]`).first(),
       page.locator("main").getByText(counselFeeDescription()).first()
     );

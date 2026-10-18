@@ -114,36 +114,15 @@ export async function selectNativeOption(select: Locator, label: string | RegExp
   return (await option.textContent())?.trim() ?? "";
 }
 
-/** The org layout's page-transition wrapper (components/page-transition.tsx) around each page. */
-const PAGE_WRAPPER = "#main-content .max-w-7xl > div";
-
 /**
  * Performs a click that navigates client-side to another page and waits until that page
- * is ready for interaction.
- *
- * The org layout wraps every page in an AnimatePresence (mode="wait") keyed by pathname
- * (components/page-transition.tsx), which shapes both ends of the wait:
- *  - Before clicking, the current page must have faded in — server-rendered pages start
- *    at opacity 0 until hydration runs the enter animation, so a link is "clickable" for
- *    Playwright before a user can see it.
- *  - After the router commits, the destination first renders inside the *outgoing*
- *    wrapper while it fades out (~100ms), then is remounted in a fresh wrapper; anything
- *    done in that window (an opened dialog, typed text, local state) is thrown away — see
- *    FIXME(depth-ii:page-transition-remount) in day-05-disbursements.spec.ts. The page is
- *    ready once its `ready` element is visible AND the outgoing wrapper (tagged before the
- *    click) is gone.
- * Both are what a user perceives as "the page has appeared". No reload, no fixed sleep.
+ * is ready for interaction: its `ready` element is visible. The destination is mounted
+ * once per navigation (the org entrance animation is a CSS-only template), so it can be
+ * acted on as soon as it is visible. No reload, no fixed sleep.
  */
-export async function clickThrough(page: Page, target: Locator, ready: Locator): Promise<void> {
-  const current = page.locator(PAGE_WRAPPER).first();
-  await expect(current).toHaveCSS("opacity", "1", { timeout: 15_000 });
-  await current.evaluate((el) => el.setAttribute("data-e2e-outgoing-page", ""));
+export async function clickThrough(target: Locator, ready: Locator): Promise<void> {
   await target.click();
   await expect(ready).toBeVisible({ timeout: 15_000 });
-  await expect(page.locator(`${PAGE_WRAPPER}[data-e2e-outgoing-page]`)).toHaveCount(0, {
-    timeout: 15_000,
-  });
-  await expect(ready).toBeVisible();
 }
 
 /**
@@ -151,16 +130,13 @@ export async function clickThrough(page: Page, target: Locator, ready: Locator):
  * as a direct (deep-link) navigation rather than a client-side click.
  *
  * Why not click: client-side navigation into a matter intermittently leaves the content
- * area blank — the route commits, but the page-transition wrapper that remounts the page
- * ends up empty (`<div style="opacity: 1; transform: none;"></div>`) and stays that way
- * (6 occurrences across ~14 suite / Day-14 runs, i.e. a few percent of matter
- * navigations; reproduced with and without clickThrough's DOM tagging). It is the second symptom of the PageTransition remount recorded under
- * FIXME(depth-ii:page-transition-remount) in day-05-disbursements.spec.ts. Loading the
- * matter URL directly — what a bookmark or shared link does — involves no transition.
- * This is a TRACKED EXCEPTION: the click path into a matter is exercised (and currently
- * parked) by the FIXME(depth-ii:page-transition-blank) test in day-14-conveyancing.spec.ts;
- * once that bug is fixed, switch this back to clickThrough. Every other navigation in the
- * suite uses the click path (clickThrough).
+ * area blank — the route commits, but the navigation's RSC response is aborted and the
+ * page never renders (a few percent of matter navigations; independent of the page
+ * entrance wrapper). Loading the matter URL directly — what a bookmark or shared link
+ * does — avoids it. This is a TRACKED EXCEPTION: the click path into a matter is exercised
+ * (and currently parked) by the FIXME(depth-ii:page-transition-blank) test in
+ * day-14-conveyancing.spec.ts; once that bug is fixed, switch this back to clickThrough.
+ * Every other navigation in the suite uses the click path (clickThrough).
  */
 export async function openMatter(
   page: Page,
@@ -185,13 +161,13 @@ export async function openMatter(
 
 /**
  * Opens a client from the Clients list by clicking its link and waits until the client
- * page is ready (heading visible, page transition settled).
+ * page is ready (heading visible).
  */
 export async function openClient(page: Page, clientName: string): Promise<void> {
   await page.goto(`${BASE}/customers`);
   const link = page.getByRole("link", { name: clientName, exact: true });
   await expect(link, `client "${clientName}" should be listed`).toBeVisible({ timeout: 15_000 });
-  await clickThrough(page, link, page.getByRole("heading", { level: 1, name: clientName }));
+  await clickThrough(link, page.getByRole("heading", { level: 1, name: clientName }));
   await expect(page).toHaveURL(/\/customers\/[0-9a-f-]{36}/);
 }
 
@@ -250,7 +226,6 @@ export async function createClient(page: Page, client: NewClient): Promise<void>
   }
   // Creating the client navigates to its page
   await clickThrough(
-    page,
     dialog.getByRole("button", { name: "Create Client" }),
     page.getByRole("heading", { level: 1, name: client.name })
   );

@@ -122,8 +122,8 @@ async function openSheriffFeeDetail(page: Page) {
     .first();
   await expect(row).toContainText("Approved", { timeout: 15_000 });
   const detail = page.getByTestId("disbursement-detail");
-  // Ready once its detail page has rendered and the page transition settled
-  await clickThrough(page, row, detail.getByText(SHERIFF_FEE_DESCRIPTION, { exact: true }));
+  // Ready once its detail page has rendered
+  await clickThrough(row, detail.getByText(SHERIFF_FEE_DESCRIPTION, { exact: true }));
   return detail;
 }
 

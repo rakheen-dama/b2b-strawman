@@ -8,7 +8,6 @@ import { MobileSidebar } from "@/components/mobile-sidebar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SubscriptionBanner } from "@/components/billing/subscription-banner";
 import { NotificationBell } from "@/components/notifications/notification-bell";
-import { PageTransition } from "@/components/page-transition";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { AuthHeaderControls } from "@/components/auth-header-controls";
 import { CapabilityProvider } from "@/lib/capabilities";
@@ -150,9 +149,7 @@ export default async function OrgLayout({
                     <SubscriptionProvider billingResponse={billingData}>
                       <SubscriptionBanner billingResponse={billingData} slug={slug} />
                       <div className="mx-auto max-w-7xl px-6 py-6 lg:px-10">
-                        <ErrorBoundary>
-                          <PageTransition>{children}</PageTransition>
-                        </ErrorBoundary>
+                        <ErrorBoundary>{children}</ErrorBoundary>
                       </div>
                     </SubscriptionProvider>
                   </main>

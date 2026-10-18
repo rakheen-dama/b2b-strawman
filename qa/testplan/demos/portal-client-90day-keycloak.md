@@ -1,6 +1,6 @@
 # QA Lifecycle: Portal Client-POV 90-Day (Keycloak Mode)
 
-**Vertical profiles**: `legal-za` / `accounting-za` / `consulting-za` (mixed — one run exercises all three vertical gating branches)
+**Vertical profiles**: `legal-za`
 **Story**: "The client quarter" — a portal contact receives a magic-link invitation, onboards, submits info requests, pays an invoice, downloads a Statement of Account / financial statement, and closes out the quarter on the client-facing portal at `http://localhost:3002`.
 **Stack**: Keycloak dev stack (frontend 3000 / backend 8080 / gateway 8443 / keycloak 8180 / mailpit 8025 / **portal 3002**)
 **Master doc**: `qa/testplan/demo-readiness-keycloak-master.md`
@@ -108,8 +108,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ## Day 7 — First weekly digest, click through to Deadlines  `[legal-za]`
 
-
-**Actor**: Sipho Dlamini OR Zola's Bakery (`zola.portal@example.com`) — portal contact on a legal-za or accounting-za tenant
+**Actor**: Sipho Dlamini — portal contact on a legal-za tenant
 
 - [ ] **7.1** Open Mailpit → verify weekly digest email arrived with subject containing "Your weekly update" (or similar). Body includes a link labelled "View deadlines" or similar
 - [ ] **7.2** Click the "Deadlines" link in the digest → lands on portal `/deadlines` `[legal-za]`
@@ -169,7 +168,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ---
 
-## Day 60 — Download Statement of Account / financial statement  `[legal-za / accounting-za]`
+## Day 60 — Download Statement of Account / financial statement  `[legal-za]`
 
 **Actor**: Sipho (legal-za SoA)
 
@@ -246,7 +245,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **E.1** Every step above is checked across the three exercised profiles (or clearly marked N/A with rationale for profile-gated skips)
 - [ ] **E.2** All 5 📸 wow moments captured without visual regression against the Playwright baselines (once 500B populates them)
 - [ ] **E.3** Zero BLOCKER or HIGH items in gap report (`tasks/phase68-gap-report.md` — produced in slice 500B)
-- [ ] **E.4** **Profile gating** verified — `/trust` is legal-za only, `/deadlines` is accounting-za + legal-za only; non-eligible profiles show empty state, NOT 500
+- [ ] **E.4** **Profile gating** verified — `/trust` is legal-za only, `/deadlines` is legal-za only; non-eligible profiles show empty state, NOT 500
 - [ ] **E.5** **Auth flow** — every portal interaction authenticated via magic-link → JWT (cookie + localStorage); zero Keycloak-form usage, zero firm-side user bleed-through
 - [ ] **E.6** **Terminology sweep** — zero firm-side vocabulary leaks on portal pages ("matter" / "project" / "engagement" consistent per tenant profile; no "customer" / "client" inversion)
 - [ ] **E.8** **Email linkage** — every email-driven checkpoint (Day 0, Day 7, Day 21, Day 75, Day 90) successfully authenticates the follow-through click without re-login

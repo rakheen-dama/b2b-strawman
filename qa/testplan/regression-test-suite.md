@@ -16,8 +16,8 @@
 | `smoke.spec.ts` | 3 | Login, project creation, RBAC smoke |
 | `lifecycle.spec.ts` *(deleted in Phase 86)* | 21 | Read-only page load assertions on seeded data |
 | `lifecycle-interactive.spec.ts` *(deleted in Phase 86)* | 13 | Customer create, status transition, project/task/time CRUD, invoice approval, proposals, RBAC |
-| `lifecycle-portal.spec.ts` *(deleted in Phase 86)* | 7 | Portal page loads, API verification |
-| **Total** | **44** | |
+| `lifecycle-portal.spec.ts` *(deleted in Phase 86, Epic 597)* | 7 | Portal page loads, API verification |
+| **Total** | **3** remaining (44 before Phase 86) | |
 
 ### Critical Gaps
 
@@ -786,9 +786,9 @@ export async function clearMailbox() {
 | Existing File | Action |
 |---------------|--------|
 | `smoke.spec.ts` | **Keep as-is** — fast smoke check |
-| `lifecycle.spec.ts` *(deleted in Phase 86)* | **Keep as baseline** — refactor into domain-specific suites over time. These 21 read-only tests serve as a quick sanity check and can coexist with the deeper suites. |
-| `lifecycle-interactive.spec.ts` *(deleted in Phase 86)* | **Migrate** — move individual test groups into `customers/`, `projects/`, `invoices/`, `proposals/` suites. Deprecate once migration complete. |
-| `lifecycle-portal.spec.ts` *(deleted in Phase 86)* | **Migrate** — move into `portal/` suites. Deprecate once migration complete. |
+| `lifecycle.spec.ts` | **Deleted (Phase 86)** |
+| `lifecycle-interactive.spec.ts` | **Deleted (Phase 86)** |
+| `lifecycle-portal.spec.ts` | **Deleted (Phase 86, Epic 597)** |
 
 ---
 

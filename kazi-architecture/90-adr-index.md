@@ -2,7 +2,7 @@
 
 > **⚠️ Stale since Phase 86 (2026-10).** This folder is a **pre-Phase-86 snapshot** and has not been updated for the subtraction: Kazi is now legal-only (`legal-za`); schedules, retainers, proposals, capacity, the in-app/specialist AI assistants, accounting/consulting profiles and deadlines, PayFast subscriptions, the docs site and CRM were removed and archived at git tag `horizontal-platform-final` (mirror: https://github.com/rakheen-dama/kazi-horizontal-archive). Where this folder disagrees with the code, the code wins. See [`architecture/phase86-subtraction-legal-only.md`](../architecture/phase86-subtraction-legal-only.md) and [ADR-330](../adr/ADR-330-archive-tag-not-fork.md). ADR status lines for the superseded ADRs (070–318 ranges) now carry their Phase 86 supersession in the ADR files themselves — see [§11.11 ADR Index](../architecture/phase86-subtraction-legal-only.md#1111-adr-index). A full rewrite is a Phase 87 follow-up.
 
-**Purpose.** This file is a non-destructive **status overlay** for the 278 ADRs in `adr/`. The ADR files themselves are unmoved and unmodified — this index is the single source of truth for "is this ADR currently in force?". Module pages elsewhere in `kazi-architecture/` should link only to ADRs flagged **Active** below.
+**Purpose.** This file is a non-destructive **status overlay** for the 278 ADRs in `adr/`. The ADR files are unmoved; Phase 86 added status lines in the ADR files themselves, and this overlay predates them. Before Phase 86 this index was the single source of truth for "is this ADR currently in force?"; where it disagrees with an ADR's own status line, the ADR file wins. Module pages elsewhere in `kazi-architecture/` should link only to ADRs flagged **Active** below.
 
 **Last reviewed:** 2026-05-10
 

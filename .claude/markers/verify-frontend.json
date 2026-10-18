@@ -1,7 +1,7 @@
 {
-  "commit": "0de8ce29e",
+  "commit": "03339e6ff",
   "command": "cd frontend && pnpm run lint && rm -rf .next && pnpm run build && caffeinate -is pnpm test && pnpm run format:check",
   "exit": 0,
-  "ts": "2026-10-18T20:09:00Z",
-  "summary": "PR #1584 (page-transition remount) head 0de8ce29e (orchestrator run): lint 0 errors; build OK; vitest 353 files, 2238 passed | 2 skipped; prettier clean. e2e fresh stack: lifecycle 63/4 (pre-existing), depth-ii 27 passed / 0 failed / 13 fixme; un-parked page-transition-remount test passes."
+  "ts": "2026-10-18T21:59:46Z",
+  "summary": "PR #1585 (Next null-prefetch patch) on 03339e6ff (orchestrator run): lint 0 errors; build OK; vitest 2240 passed | 2 skipped; prettier clean. Final head bb3337a71 adds opt-in e2e probe + docs only: lint/prettier re-run clean. e2e fresh stack: lifecycle 63/4 (pre-existing), depth-ii 28/0/12 x2. CI Frontend pass."
 }

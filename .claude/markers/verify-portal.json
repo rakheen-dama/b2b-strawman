@@ -1,7 +1,7 @@
 {
-  "commit": "3fd80149c",
+  "commit": "03339e6ff",
   "command": "cd portal && pnpm run lint && rm -rf .next && pnpm run build && pnpm test",
   "exit": 0,
-  "ts": "2026-10-18T00:23:20Z",
-  "summary": "Epic 604 / PR #1576 head 3fd80149c (orchestrator re-run): lint 0 errors; build OK (clean .next); vitest 38 files, 177 passed. Portal has no format:check script. Portal CI pass."
+  "ts": "2026-10-18T21:59:46Z",
+  "summary": "PR #1585 on 03339e6ff (orchestrator run): portal lint 0 errors; build OK (patched next via shared lockfile); vitest 177 passed. portal/Dockerfile COPY patches verified by builder's local docker build. CI Portal pass."
 }

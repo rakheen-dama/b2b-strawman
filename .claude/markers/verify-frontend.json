@@ -1,7 +1,7 @@
 {
-  "commit": "cb30d9f15",
+  "commit": "a3bc46554",
   "command": "cd frontend && pnpm install --frozen-lockfile && pnpm run lint && rm -rf .next && pnpm run build && caffeinate -is pnpm test && pnpm run format:check",
   "exit": 0,
-  "ts": "2026-10-18T02:16:38Z",
-  "summary": "Epic 605 / PR #1577 head cb30d9f15 (orchestrator run): lint 0 errors; build OK (clean .next); vitest 348 files, 2184 passed | 2 skipped; prettier clean. Only frontend change is a nav-items.ts comment. Frontend CI pass."
+  "ts": "2026-10-18T04:02:52Z",
+  "summary": "Epic 606 / PR #1578 on a3bc46554 (orchestrator run): lint 0 errors; build OK (clean .next); vitest 348 files, 2184 passed | 2 skipped; prettier clean. Frontend changes = 3 test-mock edits + 2 deleted dead e2e specs. Frontend CI pass."
 }

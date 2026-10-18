@@ -33,7 +33,7 @@ See the final section "Open Questions / verify-at-build-time" — every `verify`
 | 603 | Remove Thymeleaf Dev Harness (Phase 7) + `docs/` Site (Phase 59) + docsLink policy | Backend + Ops + Frontend (split) | 595 (parallel with 596–602) | M | 603A, 603B, 603C | **Done** (PR #1575) |
 | 604 | Single Profile: non-legal profiles/packs/seeders/demo, `deadline/`, automation builder, terminology entries | Backend + Frontend + Portal (split) | 601, 602, 603 | L | 604A, 604B, 604C, 604D, 604E, 604F | **Done** (PR #1576) |
 | 605 | Migration Squash → tenant V1 / global V1 | Backend + Ops | 596–604 merged, `main` verify clean | L | 605A, 605B, 605C | **Done** (PR #1577) |
-| 606 | Documentation Sweep + ADR Supersession + QA Capstone | Docs + E2E/Process | 605 | M | 606A, 606B, 606C | Not started |
+| 606 | Documentation Sweep + ADR Supersession + QA Capstone | Docs + E2E/Process | 605 | M | 606A, 606B, 606C | **Done** (PR #1578; 606C capstone PARTIAL — DEFERRED items in closure report) |
 
 **Slice count: 41** (12 architecture capability slices expanded by layer and by the ≤~12-seam-edits rule). Backend/frontend/portal split preserved per slice.
 
@@ -166,9 +166,9 @@ KEPT (never touched by any slice — the compiler and McpReadOnlyRegistryTest gu
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 4a | **606A** | `TASKS.md` (rows for Phases 16/17/32/38/45/47/51/52/57-PayFast/59/66/70/80 annotated; one "see BASELINE.md" line), `architecture/ARCHITECTURE.md` index, root/backend/frontend `CLAUDE.md`, `.claude/skills/init-qa-phase/SKILL.md:22-28`, `DEPLOY-VPS.md`, `compose/scripts/README.md`, phase-doc "Tenant migration" blockquotes. |
-| 4b | **606B** | ADR supersession status lines (ADR-070/071, 072–075, 124–129, 150–153, 173–176, 197–199, 200–204, 219–226 PayFast parts, 227–229, 265–270, 313–318, non-legal parts of 181–185/189); `qa/acceptance/INDEX.md` rows; `qa/testplan/MIGRATION-NOTES.md`. |
-| 4c | **606C** | Capstone: both legal Playwright configs re-run on the **E2E mock-auth stack** (`e2e-down.sh && e2e-up.sh`; `E2E_AUTH_MODE=mock`, `PLAYWRIGHT_BASE_URL=http://localhost:3001` set explicitly — the config default is `:3000`); `ai-core-verification-keycloak.md` re-run on the Keycloak dev stack (amended in 606: configs refuse non-mock auth); closure report in `tasks/phase86-subtraction.md` (before/after metrics, archived-phase list, tag + mirror URLs, full-verify log path, Playwright artefacts, dead-code notes for Phase 87). |
+| 4a | **606A** | `TASKS.md` (rows for Phases 16/17/32/38/45/47/51/52/57-PayFast/59/66/70/80 annotated; one "see BASELINE.md" line), `architecture/ARCHITECTURE.md` index, root/backend/frontend `CLAUDE.md`, `.claude/skills/init-qa-phase/SKILL.md:22-28`, `DEPLOY-VPS.md`, `compose/scripts/README.md`, phase-doc "Tenant migration" blockquotes. **Done** (PR #1578) |
+| 4b | **606B** | ADR supersession status lines (ADR-070/071, 072–075, 124–129, 150–153, 173–176, 197–199, 200–204, 219–226 PayFast parts, 227–229, 265–270, 313–318, non-legal parts of 181–185/189); `qa/acceptance/INDEX.md` rows; `qa/testplan/MIGRATION-NOTES.md`. **Done** (PR #1578) |
+| 4c | **606C** | Capstone: both legal Playwright configs re-run on the **E2E mock-auth stack** (`e2e-down.sh && e2e-up.sh`; `E2E_AUTH_MODE=mock`, `PLAYWRIGHT_BASE_URL=http://localhost:3001` set explicitly — the config default is `:3000`); `ai-core-verification-keycloak.md` re-run on the Keycloak dev stack (amended in 606: configs refuse non-mock auth); closure report in `tasks/phase86-subtraction.md` (before/after metrics, archived-phase list, tag + mirror URLs, full-verify log path, Playwright artefacts, dead-code notes for Phase 87). **PARTIAL** (PR #1578 — closure report done; Playwright capstone + AI walk DEFERRED, see `tasks/phase86-subtraction.md` §7) |
 
 ### Merge-conflict hotspots and the V-number rule
 
@@ -830,9 +830,9 @@ KEPT (never touched by any slice — the compiler and McpReadOnlyRegistryTest gu
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **606A** | 606A.1–606A.3 | ~10 markdown edits | `TASKS.md`, `ARCHITECTURE.md`, 3 `CLAUDE.md`, skills/agents, `DEPLOY-VPS.md`, compose README, phase-doc blockquotes. |
-| **606B** | 606B.1–606B.2 | ~45 one-line ADR status edits + 2 qa files | ADR supersession; `qa/acceptance/INDEX.md`; `MIGRATION-NOTES.md`. |
-| **606C** | 606C.1–606C.2 | 1 markdown (closure) | Capstone runs observed; closure report. |
+| **606A** | 606A.1–606A.3 | ~10 markdown edits | `TASKS.md`, `ARCHITECTURE.md`, 3 `CLAUDE.md`, skills/agents, `DEPLOY-VPS.md`, compose README, phase-doc blockquotes. **Done** (PR #1578) |
+| **606B** | 606B.1–606B.2 | ~45 one-line ADR status edits + 2 qa files | ADR supersession; `qa/acceptance/INDEX.md`; `MIGRATION-NOTES.md`. **Done** (PR #1578) |
+| **606C** | 606C.1–606C.2 | 1 markdown (closure) | Capstone runs observed; closure report. **PARTIAL** (PR #1578 — closure report done; Playwright capstone + AI walk DEFERRED, see `tasks/phase86-subtraction.md` §7) |
 
 ### Tasks
 

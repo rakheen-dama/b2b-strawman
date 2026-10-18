@@ -126,17 +126,8 @@ export async function clickThrough(target: Locator, ready: Locator): Promise<voi
 }
 
 /**
- * Opens a matter from the Matters list: finds its row link, then follows the link's URL
- * as a direct (deep-link) navigation rather than a client-side click.
- *
- * Why not click: client-side navigation into a matter intermittently leaves the content
- * area blank — the route commits, but the navigation's RSC response is aborted and the
- * page never renders (a few percent of matter navigations; independent of the page
- * entrance wrapper). Loading the matter URL directly — what a bookmark or shared link
- * does — avoids it. This is a TRACKED EXCEPTION: the click path into a matter is exercised
- * (and currently parked) by the FIXME(depth-ii:page-transition-blank) test in
- * day-14-conveyancing.spec.ts; once that bug is fixed, switch this back to clickThrough.
- * Every other navigation in the suite uses the click path (clickThrough).
+ * Opens a matter from the Matters list by clicking its row link and waits until the
+ * matter page is ready (heading visible).
  */
 export async function openMatter(
   page: Page,
@@ -151,12 +142,8 @@ export async function openMatter(
   }
   const link = page.getByRole("link", { name: new RegExp(escapeRegExp(matterName)) }).first();
   await expect(link, `matter "${matterName}" should be listed`).toBeVisible({ timeout: 15_000 });
-  const href = await link.getAttribute("href");
-  expect(href).toMatch(/\/projects\/[0-9a-f-]{36}$/);
-  await page.goto(href!);
-  await expect(page.getByRole("heading", { level: 1, name: matterName })).toBeVisible({
-    timeout: 15_000,
-  });
+  await clickThrough(link, page.getByRole("heading", { level: 1, name: matterName }));
+  await expect(page).toHaveURL(/\/projects\/[0-9a-f-]{36}/);
 }
 
 /**

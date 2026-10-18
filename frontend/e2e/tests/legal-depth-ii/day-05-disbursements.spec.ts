@@ -80,8 +80,8 @@ async function openDisbursementDetail(
     timeout: 15_000,
   });
   const detail = page.getByTestId("disbursement-detail");
-  // Ready once this disbursement's detail page has rendered and the page transition settled
-  await clickThrough(page, row, detail.getByText(description, { exact: true }));
+  // Ready once this disbursement's detail page has rendered
+  await clickThrough(row, detail.getByText(description, { exact: true }));
   await expect(page).toHaveURL(/\/legal\/disbursements\/[0-9a-f-]{36}$/);
   return detail;
 }
@@ -361,24 +361,12 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
     await expect(detail).toContainText("Sheriff return of service received");
   });
 
-  // FIXME(depth-ii:page-transition-remount) PRODUCT BUG (reproduced): an action taken as soon
-  // as a page reached by client-side navigation has rendered is thrown away. The org layout
-  // wraps pages in <PageTransition> (components/page-transition.tsx): AnimatePresence
-  // mode="wait" around a motion.div keyed by pathname. After the router commits, the new page
-  // first renders inside the *outgoing* wrapper while it fades out (100ms) and is then
-  // remounted in a new wrapper, discarding its state. Traced with a MutationObserver on the
-  // disbursement detail (row click → detail visible → Approve): detail rendered at +1381ms,
-  // Approve dialog opened at +1416ms, then at +1529ms the dialog AND the whole detail subtree
-  // were removed and re-added (no network request in between) — the dialog the user opened
-  // vanishes. 10/10 click-through attempts failed this way; 3/3 passed after a full page load
-  // and 8/8 passed once the outgoing wrapper was gone (helpers clickThrough). Earlier spec
-  // versions papered over this with `page.goto(page.url())` reloads. Same component, second
-  // symptom (6 occurrences across ~14 suite / Day-14 runs, trace-captured): a client-side
-  // navigation into a matter commits the route but leaves the new wrapper empty
-  // (`<div style="opacity: 1; transform: none;"></div>`) — a blank content area for 15s+,
-  // with or without test-side DOM tagging. helpers openMatter therefore deep-links to the
-  // matter URL; every other navigation uses the click path.
-  test.fixme("Bob: Approve dialog opened right after navigating to a disbursement stays open", async ({
+  // Regression (was FIXME depth-ii:page-transition-remount): an action taken as soon as a
+  // page reached by client-side navigation has rendered must not be thrown away. The org
+  // layout used to wrap pages in a pathname-keyed AnimatePresence, which rendered the new
+  // page into the outgoing wrapper and remounted it ~100ms later, closing the Approve
+  // dialog the user had just opened. Pages now enter via app/(app)/org/[slug]/template.tsx.
+  test("Bob: Approve dialog opened right after navigating to a disbursement stays open", async ({
     page,
   }) => {
     // Own matter, so the disbursement this creates never touches Sipho's statement/closure
@@ -411,11 +399,10 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
       timeout: 15_000,
     });
 
-    // Click through from the (fully faded-in) list and act as soon as the detail page is there
+    // Click through from the list and act as soon as the detail page is there
     await openDisbursementList(page, reproMatter);
     const row = page.locator('[data-testid^="disbursement-row-"]').filter({ hasText: description });
     await expect(row).toContainText("Pending", { timeout: 15_000 });
-    await expect(page.locator("#main-content .max-w-7xl > div")).toHaveCSS("opacity", "1");
     await row.click();
     const detail = page.getByTestId("disbursement-detail");
     await expect(detail.getByText(description, { exact: true })).toBeVisible({ timeout: 15_000 });

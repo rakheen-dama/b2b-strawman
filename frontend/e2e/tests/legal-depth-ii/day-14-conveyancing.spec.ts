@@ -200,18 +200,16 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
   // ── Navigation: clicking into a matter renders its content ────────
   // FIXME(depth-ii:page-transition-blank) PRODUCT BUG (reproduced, intermittent): a
   // client-side navigation from the Matters list into a matter commits the route
-  // (URL = /projects/<id>, breadcrumb "Matter") but the content area stays blank for 15s+.
-  // Same root-cause family as FIXME(depth-ii:page-transition-remount) (day-05): the org
-  // layout's <PageTransition> (components/page-transition.tsx) — AnimatePresence
-  // mode="wait" around a motion.div keyed by pathname — remounts the page after the
-  // outgoing wrapper fades out, and here the new wrapper is left empty. Playwright traces of
-  // the failures show `<div style="opacity: 1; transform: none;"></div>` as the only child of
-  // `#main-content .max-w-7xl`, after the matter's RSC request returned 200 and with no
-  // console error. Observed 6 times across ~14 suite / Day-14 runs (a few percent of matter
-  // navigations), with the list page fully faded in before the click and with or without
-  // the helpers' DOM tagging. Un-fixme'd, this test failed in 1 of 3 Day-14 runs (click-through
-  // #6: URL committed, breadcrumb "Matter", empty <main>) — it is probabilistic, ~1 in 30
-  // clicks. helpers openMatter deep-links to the matter URL because of this.
+  // (URL = /projects/<id>, breadcrumb "Matter") but the content area stays blank for 15s+
+  // and does not recover (empty page wrapper, no console error, no page error).
+  // NOT caused by the old <PageTransition>: it still reproduces after that component was
+  // replaced by app/(app)/org/[slug]/template.tsx (4 of 40 instrumented clicks, wrapper =
+  // the template's div, empty). Every captured failure has the same network signature: the
+  // matter's route prefetch and segment prefetch complete, the navigation's dynamic RSC
+  // request returns 200, the URL commits, and ~150-200ms later — while the matter page's
+  // JS chunks load — that RSC response body is aborted (net::ERR_ABORTED) and never
+  // re-requested. Earlier rate: 1 of 7 suite runs (~1 in 60 clicks). helpers openMatter
+  // deep-links to the matter URL because of this.
   test.fixme("Alice: Clicking into a matter from the Matters list renders it (10 times)", async ({
     browser,
   }) => {
@@ -224,7 +222,6 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
       await page.goto(`${BASE}/projects`);
       const link = page.getByRole("link", { name: new RegExp(escapeRegExp(matterName())) }).first();
       await expect(link).toBeVisible({ timeout: 15_000 });
-      await expect(page.locator("#main-content .max-w-7xl > div")).toHaveCSS("opacity", "1");
       await link.click();
       await expect(page).toHaveURL(/\/projects\/[0-9a-f-]{36}/, { timeout: 15_000 });
       await expect(

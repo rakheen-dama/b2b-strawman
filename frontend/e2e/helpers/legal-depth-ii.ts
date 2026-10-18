@@ -157,7 +157,10 @@ export async function clickThrough(page: Page, target: Locator, ready: Locator):
  * navigations; reproduced with and without clickThrough's DOM tagging). It is the second symptom of the PageTransition remount recorded under
  * FIXME(depth-ii:page-transition-remount) in day-05-disbursements.spec.ts. Loading the
  * matter URL directly — what a bookmark or shared link does — involves no transition.
- * Every other navigation in the suite uses the click path (clickThrough).
+ * This is a TRACKED EXCEPTION: the click path into a matter is exercised (and currently
+ * parked) by the FIXME(depth-ii:page-transition-blank) test in day-14-conveyancing.spec.ts;
+ * once that bug is fixed, switch this back to clickThrough. Every other navigation in the
+ * suite uses the click path (clickThrough).
  */
 export async function openMatter(
   page: Page,

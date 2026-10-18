@@ -197,6 +197,44 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     await captureScreenshot(page, "day-14-conveyancing-matter-created");
   });
 
+  // ── Navigation: clicking into a matter renders its content ────────
+  // FIXME(depth-ii:page-transition-blank) PRODUCT BUG (reproduced, intermittent): a
+  // client-side navigation from the Matters list into a matter commits the route
+  // (URL = /projects/<id>, breadcrumb "Matter") but the content area stays blank for 15s+.
+  // Same root-cause family as FIXME(depth-ii:page-transition-remount) (day-05): the org
+  // layout's <PageTransition> (components/page-transition.tsx) — AnimatePresence
+  // mode="wait" around a motion.div keyed by pathname — remounts the page after the
+  // outgoing wrapper fades out, and here the new wrapper is left empty. Playwright traces of
+  // the failures show `<div style="opacity: 1; transform: none;"></div>` as the only child of
+  // `#main-content .max-w-7xl`, after the matter's RSC request returned 200 and with no
+  // console error. Observed 6 times across ~14 suite / Day-14 runs (a few percent of matter
+  // navigations), with the list page fully faded in before the click and with or without
+  // the helpers' DOM tagging. Un-fixme'd, this test failed in 1 of 3 Day-14 runs (click-through
+  // #6: URL committed, breadcrumb "Matter", empty <main>) — it is probabilistic, ~1 in 30
+  // clicks. helpers openMatter deep-links to the matter URL because of this.
+  test.fixme("Alice: Clicking into a matter from the Matters list renders it (10 times)", async ({
+    browser,
+  }) => {
+    test.setTimeout(120_000);
+    for (let i = 1; i <= 10; i++) {
+      // A fresh session per attempt, as each test in the suite has (where it was seen)
+      const context = await browser.newContext();
+      const page = await context.newPage();
+      await loginAs(page, "alice");
+      await page.goto(`${BASE}/projects`);
+      const link = page.getByRole("link", { name: new RegExp(escapeRegExp(matterName())) }).first();
+      await expect(link).toBeVisible({ timeout: 15_000 });
+      await expect(page.locator("#main-content .max-w-7xl > div")).toHaveCSS("opacity", "1");
+      await link.click();
+      await expect(page).toHaveURL(/\/projects\/[0-9a-f-]{36}/, { timeout: 15_000 });
+      await expect(
+        page.getByRole("heading", { level: 1, name: matterName() }),
+        `matter content rendered after click-through #${i}`
+      ).toBeVisible({ timeout: 5_000 });
+      await context.close();
+    }
+  });
+
   // ── 14.4: Verify 10 conveyancing custom fields present ────────────
   test("Alice: Verify 10 conveyancing custom fields present on matter detail", async ({ page }) => {
     await loginAs(page, "alice");

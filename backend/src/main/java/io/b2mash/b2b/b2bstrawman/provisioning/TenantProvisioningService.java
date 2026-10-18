@@ -270,7 +270,7 @@ public class TenantProvisioningService {
         .dataSource(dataSource)
         .locations("classpath:db/migration/tenant")
         .schemas(schemaName)
-        .baselineOnMigrate(true)
+        .baselineOnMigrate(false)
         .load()
         .migrate();
     log.info("Ran tenant migrations for schema {}", schemaName);

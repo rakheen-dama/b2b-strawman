@@ -1,0 +1,425 @@
+## tables (22)
+portal | portal_acceptance_requests | BASE TABLE
+portal | portal_comments | BASE TABLE
+portal | portal_deadline_view | BASE TABLE
+portal | portal_documents | BASE TABLE
+portal | portal_invoice_lines | BASE TABLE
+portal | portal_invoices | BASE TABLE
+portal | portal_notification_preference | BASE TABLE
+portal | portal_project_summaries | BASE TABLE
+portal | portal_projects | BASE TABLE
+portal | portal_request_items | BASE TABLE
+portal | portal_requests | BASE TABLE
+portal | portal_tasks | BASE TABLE
+portal | portal_trust_balance | BASE TABLE
+portal | portal_trust_transaction | BASE TABLE
+public | access_requests | BASE TABLE
+public | job_queue | BASE TABLE
+public | org_schema_mapping | BASE TABLE
+public | organizations | BASE TABLE
+public | processed_webhooks | BASE TABLE
+public | shard_config | BASE TABLE
+public | shedlock | BASE TABLE
+public | subscriptions | BASE TABLE
+## columns (221)
+portal | portal_acceptance_requests | created_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+portal | portal_acceptance_requests | document_file_name | character varying | varchar | 500 | null | null | null | NO | null
+portal | portal_acceptance_requests | document_title | character varying | varchar | 500 | null | null | null | NO | null
+portal | portal_acceptance_requests | expires_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | null
+portal | portal_acceptance_requests | generated_document_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_acceptance_requests | id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_acceptance_requests | org_logo | character varying | varchar | 500 | null | null | null | YES | null
+portal | portal_acceptance_requests | org_name | character varying | varchar | 255 | null | null | null | NO | null
+portal | portal_acceptance_requests | portal_contact_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_acceptance_requests | request_token | character varying | varchar | 255 | null | null | null | NO | null
+portal | portal_acceptance_requests | sent_at | timestamp with time zone | timestamptz | null | null | null | 6 | YES | null
+portal | portal_acceptance_requests | status | character varying | varchar | 20 | null | null | null | NO | null
+portal | portal_comments | author_name | character varying | varchar | 255 | null | null | null | NO | null
+portal | portal_comments | content | text | text | null | null | null | null | NO | null
+portal | portal_comments | created_at | timestamp without time zone | timestamp | null | null | null | 6 | NO | null
+portal | portal_comments | id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_comments | org_id | character varying | varchar | 255 | null | null | null | NO | null
+portal | portal_comments | portal_project_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_comments | synced_at | timestamp without time zone | timestamp | null | null | null | 6 | NO | now()
+portal | portal_deadline_view | customer_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_deadline_view | deadline_type | character varying | varchar | 20 | null | null | null | NO | null
+portal | portal_deadline_view | description_sanitised | character varying | varchar | 140 | null | null | null | YES | null
+portal | portal_deadline_view | due_date | date | date | null | null | null | 0 | NO | null
+portal | portal_deadline_view | id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_deadline_view | label | character varying | varchar | 160 | null | null | null | NO | null
+portal | portal_deadline_view | last_synced_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+portal | portal_deadline_view | matter_id | uuid | uuid | null | null | null | null | YES | null
+portal | portal_deadline_view | source_entity | character varying | varchar | 30 | null | null | null | NO | null
+portal | portal_deadline_view | status | character varying | varchar | 20 | null | null | null | NO | null
+portal | portal_documents | content_type | character varying | varchar | 100 | null | null | null | YES | null
+portal | portal_documents | customer_id | uuid | uuid | null | null | null | null | YES | null
+portal | portal_documents | id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_documents | org_id | character varying | varchar | 255 | null | null | null | NO | null
+portal | portal_documents | portal_project_id | uuid | uuid | null | null | null | null | YES | null
+portal | portal_documents | s3_key | character varying | varchar | 1000 | null | null | null | NO | null
+portal | portal_documents | scope | character varying | varchar | 20 | null | null | null | NO | null
+portal | portal_documents | size | bigint | int8 | null | 64 | 0 | null | YES | null
+portal | portal_documents | synced_at | timestamp without time zone | timestamp | null | null | null | 6 | NO | now()
+portal | portal_documents | title | character varying | varchar | 500 | null | null | null | NO | null
+portal | portal_documents | uploaded_at | timestamp without time zone | timestamp | null | null | null | 6 | YES | null
+portal | portal_invoice_lines | amount | numeric | numeric | null | 14 | 2 | null | NO | null
+portal | portal_invoice_lines | description | text | text | null | null | null | null | NO | null
+portal | portal_invoice_lines | id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_invoice_lines | portal_invoice_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_invoice_lines | quantity | numeric | numeric | null | 10 | 4 | null | NO | null
+portal | portal_invoice_lines | sort_order | integer | int4 | null | 32 | 0 | null | NO | 0
+portal | portal_invoice_lines | synced_at | timestamp without time zone | timestamp | null | null | null | 6 | NO | now()
+portal | portal_invoice_lines | tax_amount | numeric | numeric | null | 14 | 2 | null | YES | null
+portal | portal_invoice_lines | tax_exempt | boolean | bool | null | null | null | null | NO | false
+portal | portal_invoice_lines | tax_rate_name | character varying | varchar | 100 | null | null | null | YES | null
+portal | portal_invoice_lines | tax_rate_percent | numeric | numeric | null | 5 | 2 | null | YES | null
+portal | portal_invoice_lines | unit_price | numeric | numeric | null | 12 | 2 | null | NO | null
+portal | portal_invoices | currency | character varying | varchar | 3 | null | null | null | NO | null
+portal | portal_invoices | customer_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_invoices | due_date | date | date | null | null | null | 0 | YES | null
+portal | portal_invoices | has_per_line_tax | boolean | bool | null | null | null | null | NO | false
+portal | portal_invoices | id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_invoices | invoice_number | character varying | varchar | 20 | null | null | null | NO | null
+portal | portal_invoices | issue_date | date | date | null | null | null | 0 | YES | null
+portal | portal_invoices | notes | text | text | null | null | null | null | YES | null
+portal | portal_invoices | org_id | character varying | varchar | 255 | null | null | null | NO | null
+portal | portal_invoices | paid_at | timestamp with time zone | timestamptz | null | null | null | 6 | YES | null
+portal | portal_invoices | payment_session_id | character varying | varchar | 255 | null | null | null | YES | null
+portal | portal_invoices | payment_url | character varying | varchar | 1024 | null | null | null | YES | null
+portal | portal_invoices | status | character varying | varchar | 20 | null | null | null | NO | null
+portal | portal_invoices | subtotal | numeric | numeric | null | 14 | 2 | null | NO | 0
+portal | portal_invoices | synced_at | timestamp without time zone | timestamp | null | null | null | 6 | NO | now()
+portal | portal_invoices | tax_amount | numeric | numeric | null | 14 | 2 | null | NO | 0
+portal | portal_invoices | tax_breakdown_json | jsonb | jsonb | null | null | null | null | YES | null
+portal | portal_invoices | tax_inclusive | boolean | bool | null | null | null | null | NO | false
+portal | portal_invoices | tax_label | character varying | varchar | 20 | null | null | null | YES | null
+portal | portal_invoices | tax_registration_label | character varying | varchar | 30 | null | null | null | YES | null
+portal | portal_invoices | tax_registration_number | character varying | varchar | 50 | null | null | null | YES | null
+portal | portal_invoices | total | numeric | numeric | null | 14 | 2 | null | NO | 0
+portal | portal_notification_preference | action_required_enabled | boolean | bool | null | null | null | null | NO | true
+portal | portal_notification_preference | deadline_reminders_enabled | boolean | bool | null | null | null | null | NO | true
+portal | portal_notification_preference | digest_enabled | boolean | bool | null | null | null | null | NO | true
+portal | portal_notification_preference | last_updated_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+portal | portal_notification_preference | portal_contact_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_notification_preference | trust_activity_enabled | boolean | bool | null | null | null | null | NO | true
+portal | portal_project_summaries | billable_hours | numeric | numeric | null | 10 | 2 | null | NO | 0
+portal | portal_project_summaries | customer_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_project_summaries | id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_project_summaries | last_activity_at | timestamp without time zone | timestamp | null | null | null | 6 | YES | null
+portal | portal_project_summaries | org_id | character varying | varchar | 255 | null | null | null | NO | null
+portal | portal_project_summaries | synced_at | timestamp without time zone | timestamp | null | null | null | 6 | NO | now()
+portal | portal_project_summaries | total_hours | numeric | numeric | null | 10 | 2 | null | NO | 0
+portal | portal_projects | comment_count | integer | int4 | null | 32 | 0 | null | NO | 0
+portal | portal_projects | created_at | timestamp without time zone | timestamp | null | null | null | 6 | NO | null
+portal | portal_projects | customer_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_projects | description | text | text | null | null | null | null | YES | null
+portal | portal_projects | document_count | integer | int4 | null | 32 | 0 | null | NO | 0
+portal | portal_projects | id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_projects | name | character varying | varchar | 255 | null | null | null | NO | null
+portal | portal_projects | org_id | character varying | varchar | 255 | null | null | null | NO | null
+portal | portal_projects | status | character varying | varchar | 50 | null | null | null | NO | null
+portal | portal_projects | updated_at | timestamp without time zone | timestamp | null | null | null | 6 | NO | now()
+portal | portal_request_items | description | text | text | null | null | null | null | YES | null
+portal | portal_request_items | document_id | uuid | uuid | null | null | null | null | YES | null
+portal | portal_request_items | file_type_hints | character varying | varchar | 200 | null | null | null | YES | null
+portal | portal_request_items | id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_request_items | name | character varying | varchar | 200 | null | null | null | NO | null
+portal | portal_request_items | rejection_reason | character varying | varchar | 500 | null | null | null | YES | null
+portal | portal_request_items | request_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_request_items | required | boolean | bool | null | null | null | null | NO | true
+portal | portal_request_items | response_type | character varying | varchar | 20 | null | null | null | NO | null
+portal | portal_request_items | sort_order | integer | int4 | null | 32 | 0 | null | NO | 0
+portal | portal_request_items | status | character varying | varchar | 20 | null | null | null | NO | 'PENDING'::character varying
+portal | portal_request_items | synced_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+portal | portal_request_items | text_response | text | text | null | null | null | null | YES | null
+portal | portal_requests | accepted_items | integer | int4 | null | 32 | 0 | null | NO | 0
+portal | portal_requests | completed_at | timestamp with time zone | timestamptz | null | null | null | 6 | YES | null
+portal | portal_requests | customer_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_requests | id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_requests | org_id | character varying | varchar | 255 | null | null | null | NO | null
+portal | portal_requests | portal_contact_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_requests | project_id | uuid | uuid | null | null | null | null | YES | null
+portal | portal_requests | project_name | character varying | varchar | 300 | null | null | null | YES | null
+portal | portal_requests | rejected_items | integer | int4 | null | 32 | 0 | null | NO | 0
+portal | portal_requests | request_number | character varying | varchar | 20 | null | null | null | NO | null
+portal | portal_requests | sent_at | timestamp with time zone | timestamptz | null | null | null | 6 | YES | null
+portal | portal_requests | status | character varying | varchar | 20 | null | null | null | NO | null
+portal | portal_requests | submitted_items | integer | int4 | null | 32 | 0 | null | NO | 0
+portal | portal_requests | synced_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+portal | portal_requests | total_items | integer | int4 | null | 32 | 0 | null | NO | 0
+portal | portal_tasks | assignee_name | character varying | varchar | 255 | null | null | null | YES | null
+portal | portal_tasks | id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_tasks | name | character varying | varchar | 500 | null | null | null | NO | null
+portal | portal_tasks | org_id | character varying | varchar | 255 | null | null | null | NO | null
+portal | portal_tasks | portal_project_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_tasks | sort_order | integer | int4 | null | 32 | 0 | null | NO | 0
+portal | portal_tasks | status | character varying | varchar | 20 | null | null | null | NO | null
+portal | portal_tasks | synced_at | timestamp without time zone | timestamp | null | null | null | 6 | NO | now()
+portal | portal_trust_balance | current_balance | numeric | numeric | null | 15 | 2 | null | NO | 0
+portal | portal_trust_balance | customer_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_trust_balance | last_synced_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+portal | portal_trust_balance | last_transaction_at | timestamp with time zone | timestamptz | null | null | null | 6 | YES | null
+portal | portal_trust_balance | matter_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_trust_transaction | amount | numeric | numeric | null | 15 | 2 | null | NO | null
+portal | portal_trust_transaction | customer_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_trust_transaction | description | character varying | varchar | 140 | null | null | null | YES | null
+portal | portal_trust_transaction | id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_trust_transaction | last_synced_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+portal | portal_trust_transaction | matter_id | uuid | uuid | null | null | null | null | NO | null
+portal | portal_trust_transaction | occurred_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | null
+portal | portal_trust_transaction | reference | character varying | varchar | 100 | null | null | null | YES | null
+portal | portal_trust_transaction | running_balance | numeric | numeric | null | 15 | 2 | null | NO | null
+portal | portal_trust_transaction | transaction_type | character varying | varchar | 20 | null | null | null | NO | null
+public | access_requests | country | character varying | varchar | 100 | null | null | null | NO | null
+public | access_requests | created_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+public | access_requests | email | character varying | varchar | 255 | null | null | null | NO | null
+public | access_requests | full_name | character varying | varchar | 200 | null | null | null | NO | null
+public | access_requests | id | uuid | uuid | null | null | null | null | NO | gen_random_uuid()
+public | access_requests | industry | character varying | varchar | 100 | null | null | null | NO | null
+public | access_requests | keycloak_org_id | character varying | varchar | 255 | null | null | null | YES | null
+public | access_requests | organization_name | character varying | varchar | 200 | null | null | null | NO | null
+public | access_requests | otp_attempts | integer | int4 | null | 32 | 0 | null | NO | 0
+public | access_requests | otp_expires_at | timestamp with time zone | timestamptz | null | null | null | 6 | YES | null
+public | access_requests | otp_hash | character varying | varchar | 255 | null | null | null | YES | null
+public | access_requests | otp_verified_at | timestamp with time zone | timestamptz | null | null | null | 6 | YES | null
+public | access_requests | provisioning_error | text | text | null | null | null | null | YES | null
+public | access_requests | reviewed_at | timestamp with time zone | timestamptz | null | null | null | 6 | YES | null
+public | access_requests | reviewed_by | character varying | varchar | 255 | null | null | null | YES | null
+public | access_requests | status | character varying | varchar | 20 | null | null | null | NO | 'PENDING_VERIFICATION'::character varying
+public | access_requests | updated_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+public | job_queue | claimed_at | timestamp with time zone | timestamptz | null | null | null | 6 | YES | null
+public | job_queue | claimed_by | character varying | varchar | 100 | null | null | null | YES | null
+public | job_queue | completed_at | timestamp with time zone | timestamptz | null | null | null | 6 | YES | null
+public | job_queue | created_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+public | job_queue | error_message | text | text | null | null | null | null | YES | null
+public | job_queue | id | uuid | uuid | null | null | null | null | NO | gen_random_uuid()
+public | job_queue | job_type | character varying | varchar | 100 | null | null | null | NO | null
+public | job_queue | max_retries | integer | int4 | null | 32 | 0 | null | NO | 3
+public | job_queue | next_attempt_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+public | job_queue | org_id | character varying | varchar | 100 | null | null | null | NO | null
+public | job_queue | payload | jsonb | jsonb | null | null | null | null | YES | null
+public | job_queue | priority | integer | int4 | null | 32 | 0 | null | NO | 0
+public | job_queue | retry_count | integer | int4 | null | 32 | 0 | null | NO | 0
+public | job_queue | shard_id | character varying | varchar | 50 | null | null | null | NO | 'primary'::character varying
+public | job_queue | status | character varying | varchar | 20 | null | null | null | NO | 'PENDING'::character varying
+public | job_queue | tenant_id | character varying | varchar | 50 | null | null | null | NO | null
+public | org_schema_mapping | created_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+public | org_schema_mapping | external_org_id | character varying | varchar | 255 | null | null | null | NO | null
+public | org_schema_mapping | id | uuid | uuid | null | null | null | null | NO | gen_random_uuid()
+public | org_schema_mapping | schema_name | character varying | varchar | 255 | null | null | null | NO | null
+public | org_schema_mapping | shard_id | character varying | varchar | 50 | null | null | null | NO | 'primary'::character varying
+public | organizations | created_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+public | organizations | external_org_id | character varying | varchar | 255 | null | null | null | NO | null
+public | organizations | id | uuid | uuid | null | null | null | null | NO | gen_random_uuid()
+public | organizations | name | character varying | varchar | 255 | null | null | null | NO | null
+public | organizations | provisioning_status | character varying | varchar | 50 | null | null | null | NO | 'PENDING'::character varying
+public | organizations | updated_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+public | processed_webhooks | event_type | character varying | varchar | 100 | null | null | null | NO | null
+public | processed_webhooks | id | uuid | uuid | null | null | null | null | NO | gen_random_uuid()
+public | processed_webhooks | processed_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+public | processed_webhooks | svix_id | character varying | varchar | 255 | null | null | null | NO | null
+public | shard_config | active | boolean | bool | null | null | null | null | NO | true
+public | shard_config | created_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+public | shard_config | display_name | character varying | varchar | 100 | null | null | null | NO | null
+public | shard_config | jdbc_url | character varying | varchar | 500 | null | null | null | YES | null
+public | shard_config | pool_size | integer | int4 | null | 32 | 0 | null | NO | 10
+public | shard_config | read_only | boolean | bool | null | null | null | null | NO | false
+public | shard_config | shard_id | character varying | varchar | 50 | null | null | null | NO | null
+public | shard_config | updated_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+public | shard_config | username | character varying | varchar | 100 | null | null | null | YES | null
+public | shedlock | lock_until | timestamp without time zone | timestamp | null | null | null | 6 | NO | null
+public | shedlock | locked_at | timestamp without time zone | timestamp | null | null | null | 6 | NO | null
+public | shedlock | locked_by | character varying | varchar | 255 | null | null | null | NO | null
+public | shedlock | name | character varying | varchar | 64 | null | null | null | NO | null
+public | subscriptions | admin_note | text | text | null | null | null | null | YES | null
+public | subscriptions | billing_method | character varying | varchar | 30 | null | null | null | NO | 'MANUAL'::character varying
+public | subscriptions | cancelled_at | timestamp with time zone | timestamptz | null | null | null | 6 | YES | null
+public | subscriptions | created_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+public | subscriptions | current_period_end | timestamp with time zone | timestamptz | null | null | null | 6 | YES | null
+public | subscriptions | current_period_start | timestamp with time zone | timestamptz | null | null | null | 6 | YES | null
+public | subscriptions | grace_ends_at | timestamp with time zone | timestamptz | null | null | null | 6 | YES | null
+public | subscriptions | id | uuid | uuid | null | null | null | null | NO | gen_random_uuid()
+public | subscriptions | organization_id | uuid | uuid | null | null | null | null | NO | null
+public | subscriptions | subscription_status | character varying | varchar | 30 | null | null | null | NO | null
+public | subscriptions | trial_ends_at | timestamp with time zone | timestamptz | null | null | null | 6 | YES | null
+public | subscriptions | updated_at | timestamp with time zone | timestamptz | null | null | null | 6 | NO | now()
+## table_constraints (35)
+portal | portal_acceptance_requests | portal_acceptance_requests_pkey | PRIMARY KEY | NO | NO
+portal | portal_comments | portal_comments_pkey | PRIMARY KEY | NO | NO
+portal | portal_deadline_view | portal_deadline_view_deadline_type_check | CHECK | NO | NO
+portal | portal_deadline_view | portal_deadline_view_pkey | PRIMARY KEY | NO | NO
+portal | portal_deadline_view | portal_deadline_view_source_entity_check | CHECK | NO | NO
+portal | portal_deadline_view | portal_deadline_view_status_check | CHECK | NO | NO
+portal | portal_documents | portal_documents_pkey | PRIMARY KEY | NO | NO
+portal | portal_invoice_lines | portal_invoice_lines_pkey | PRIMARY KEY | NO | NO
+portal | portal_invoice_lines | portal_invoice_lines_portal_invoice_id_fkey | FOREIGN KEY | NO | NO
+portal | portal_invoices | portal_invoices_pkey | PRIMARY KEY | NO | NO
+portal | portal_notification_preference | portal_notification_preference_pkey | PRIMARY KEY | NO | NO
+portal | portal_project_summaries | portal_project_summaries_pkey | PRIMARY KEY | NO | NO
+portal | portal_projects | portal_projects_pkey | PRIMARY KEY | NO | NO
+portal | portal_request_items | portal_request_items_pkey | PRIMARY KEY | NO | NO
+portal | portal_request_items | portal_request_items_request_id_fkey | FOREIGN KEY | NO | NO
+portal | portal_requests | portal_requests_pkey | PRIMARY KEY | NO | NO
+portal | portal_tasks | portal_tasks_pkey | PRIMARY KEY | NO | NO
+portal | portal_trust_balance | portal_trust_balance_pkey | PRIMARY KEY | NO | NO
+portal | portal_trust_transaction | portal_trust_transaction_pkey | PRIMARY KEY | NO | NO
+public | access_requests | access_requests_pkey | PRIMARY KEY | NO | NO
+public | job_queue | chk_job_queue_non_negative | CHECK | NO | NO
+public | job_queue | chk_job_status | CHECK | NO | NO
+public | job_queue | job_queue_pkey | PRIMARY KEY | NO | NO
+public | org_schema_mapping | fk_org_schema_mapping_shard | FOREIGN KEY | NO | NO
+public | org_schema_mapping | org_schema_mapping_clerk_org_id_key | UNIQUE | NO | NO
+public | org_schema_mapping | org_schema_mapping_pkey | PRIMARY KEY | NO | NO
+public | organizations | organizations_clerk_org_id_key | UNIQUE | NO | NO
+public | organizations | organizations_pkey | PRIMARY KEY | NO | NO
+public | processed_webhooks | processed_webhooks_pkey | PRIMARY KEY | NO | NO
+public | processed_webhooks | processed_webhooks_svix_id_key | UNIQUE | NO | NO
+public | shard_config | shard_config_pkey | PRIMARY KEY | NO | NO
+public | shedlock | shedlock_pkey | PRIMARY KEY | NO | NO
+public | subscriptions | subscriptions_organization_id_fkey | FOREIGN KEY | NO | NO
+public | subscriptions | subscriptions_organization_id_key | UNIQUE | NO | NO
+public | subscriptions | subscriptions_pkey | PRIMARY KEY | NO | NO
+## check_constraints (5)
+portal | portal_deadline_view | portal_deadline_view_deadline_type_check | (((deadline_type)::text = ANY ((ARRAY['FILING'::character varying, 'COURT_DATE'::character varying, 'PRESCRIPTION'::character varying, 'CUSTOM_DATE'::character varying])::text[])))
+portal | portal_deadline_view | portal_deadline_view_source_entity_check | (((source_entity)::text = ANY ((ARRAY['FILING_SCHEDULE'::character varying, 'COURT_DATE'::character varying, 'PRESCRIPTION_TRACKER'::character varying, 'CUSTOM_FIELD_DATE'::character varying])::text[])))
+portal | portal_deadline_view | portal_deadline_view_status_check | (((status)::text = ANY ((ARRAY['UPCOMING'::character varying, 'DUE_SOON'::character varying, 'OVERDUE'::character varying, 'COMPLETED'::character varying, 'CANCELLED'::character varying])::text[])))
+public | job_queue | chk_job_queue_non_negative | (((retry_count >= 0) AND (max_retries >= 0)))
+public | job_queue | chk_job_status | (((status)::text = ANY ((ARRAY['PENDING'::character varying, 'CLAIMED'::character varying, 'COMPLETED'::character varying, 'FAILED'::character varying, 'DEAD_LETTER'::character varying])::text[])))
+## key_column_usage (34)
+portal | portal_acceptance_requests | portal_acceptance_requests_pkey | id | 1 | null
+portal | portal_comments | portal_comments_pkey | id | 1 | null
+portal | portal_deadline_view | portal_deadline_view_pkey | id | 2 | null
+portal | portal_deadline_view | portal_deadline_view_pkey | source_entity | 1 | null
+portal | portal_documents | portal_documents_pkey | id | 1 | null
+portal | portal_invoice_lines | portal_invoice_lines_pkey | id | 1 | null
+portal | portal_invoice_lines | portal_invoice_lines_portal_invoice_id_fkey | portal_invoice_id | 1 | 1
+portal | portal_invoices | portal_invoices_pkey | id | 1 | null
+portal | portal_notification_preference | portal_notification_preference_pkey | portal_contact_id | 1 | null
+portal | portal_project_summaries | portal_project_summaries_pkey | customer_id | 2 | null
+portal | portal_project_summaries | portal_project_summaries_pkey | id | 1 | null
+portal | portal_projects | portal_projects_pkey | customer_id | 2 | null
+portal | portal_projects | portal_projects_pkey | id | 1 | null
+portal | portal_request_items | portal_request_items_pkey | id | 1 | null
+portal | portal_request_items | portal_request_items_request_id_fkey | request_id | 1 | 1
+portal | portal_requests | portal_requests_pkey | id | 1 | null
+portal | portal_tasks | portal_tasks_pkey | id | 1 | null
+portal | portal_trust_balance | portal_trust_balance_pkey | customer_id | 1 | null
+portal | portal_trust_balance | portal_trust_balance_pkey | matter_id | 2 | null
+portal | portal_trust_transaction | portal_trust_transaction_pkey | id | 1 | null
+public | access_requests | access_requests_pkey | id | 1 | null
+public | job_queue | job_queue_pkey | id | 1 | null
+public | org_schema_mapping | fk_org_schema_mapping_shard | shard_id | 1 | 1
+public | org_schema_mapping | org_schema_mapping_clerk_org_id_key | external_org_id | 1 | null
+public | org_schema_mapping | org_schema_mapping_pkey | id | 1 | null
+public | organizations | organizations_clerk_org_id_key | external_org_id | 1 | null
+public | organizations | organizations_pkey | id | 1 | null
+public | processed_webhooks | processed_webhooks_pkey | id | 1 | null
+public | processed_webhooks | processed_webhooks_svix_id_key | svix_id | 1 | null
+public | shard_config | shard_config_pkey | shard_id | 1 | null
+public | shedlock | shedlock_pkey | name | 1 | null
+public | subscriptions | subscriptions_organization_id_fkey | organization_id | 1 | 1
+public | subscriptions | subscriptions_organization_id_key | organization_id | 1 | null
+public | subscriptions | subscriptions_pkey | id | 1 | null
+## constraint_defs (35)
+portal | portal_acceptance_requests | portal_acceptance_requests_pkey | p | PRIMARY KEY (id)
+portal | portal_comments | portal_comments_pkey | p | PRIMARY KEY (id)
+portal | portal_deadline_view | portal_deadline_view_deadline_type_check | c | CHECK (deadline_type::text = ANY (ARRAY['FILING'::character varying, 'COURT_DATE'::character varying, 'PRESCRIPTION'::character varying, 'CUSTOM_DATE'::character varying]::text[]))
+portal | portal_deadline_view | portal_deadline_view_pkey | p | PRIMARY KEY (source_entity, id)
+portal | portal_deadline_view | portal_deadline_view_source_entity_check | c | CHECK (source_entity::text = ANY (ARRAY['FILING_SCHEDULE'::character varying, 'COURT_DATE'::character varying, 'PRESCRIPTION_TRACKER'::character varying, 'CUSTOM_FIELD_DATE'::character varying]::text[]))
+portal | portal_deadline_view | portal_deadline_view_status_check | c | CHECK (status::text = ANY (ARRAY['UPCOMING'::character varying, 'DUE_SOON'::character varying, 'OVERDUE'::character varying, 'COMPLETED'::character varying, 'CANCELLED'::character varying]::text[]))
+portal | portal_documents | portal_documents_pkey | p | PRIMARY KEY (id)
+portal | portal_invoice_lines | portal_invoice_lines_pkey | p | PRIMARY KEY (id)
+portal | portal_invoice_lines | portal_invoice_lines_portal_invoice_id_fkey | f | FOREIGN KEY (portal_invoice_id) REFERENCES portal.portal_invoices(id) ON DELETE CASCADE
+portal | portal_invoices | portal_invoices_pkey | p | PRIMARY KEY (id)
+portal | portal_notification_preference | portal_notification_preference_pkey | p | PRIMARY KEY (portal_contact_id)
+portal | portal_project_summaries | portal_project_summaries_pkey | p | PRIMARY KEY (id, customer_id)
+portal | portal_projects | portal_projects_pkey | p | PRIMARY KEY (id, customer_id)
+portal | portal_request_items | portal_request_items_pkey | p | PRIMARY KEY (id)
+portal | portal_request_items | portal_request_items_request_id_fkey | f | FOREIGN KEY (request_id) REFERENCES portal.portal_requests(id) ON DELETE CASCADE
+portal | portal_requests | portal_requests_pkey | p | PRIMARY KEY (id)
+portal | portal_tasks | portal_tasks_pkey | p | PRIMARY KEY (id)
+portal | portal_trust_balance | portal_trust_balance_pkey | p | PRIMARY KEY (customer_id, matter_id)
+portal | portal_trust_transaction | portal_trust_transaction_pkey | p | PRIMARY KEY (id)
+public | access_requests | access_requests_pkey | p | PRIMARY KEY (id)
+public | job_queue | chk_job_queue_non_negative | c | CHECK (retry_count >= 0 AND max_retries >= 0)
+public | job_queue | chk_job_status | c | CHECK (status::text = ANY (ARRAY['PENDING'::character varying, 'CLAIMED'::character varying, 'COMPLETED'::character varying, 'FAILED'::character varying, 'DEAD_LETTER'::character varying]::text[]))
+public | job_queue | job_queue_pkey | p | PRIMARY KEY (id)
+public | org_schema_mapping | fk_org_schema_mapping_shard | f | FOREIGN KEY (shard_id) REFERENCES public.shard_config(shard_id)
+public | org_schema_mapping | org_schema_mapping_clerk_org_id_key | u | UNIQUE (external_org_id)
+public | org_schema_mapping | org_schema_mapping_pkey | p | PRIMARY KEY (id)
+public | organizations | organizations_clerk_org_id_key | u | UNIQUE (external_org_id)
+public | organizations | organizations_pkey | p | PRIMARY KEY (id)
+public | processed_webhooks | processed_webhooks_pkey | p | PRIMARY KEY (id)
+public | processed_webhooks | processed_webhooks_svix_id_key | u | UNIQUE (svix_id)
+public | shard_config | shard_config_pkey | p | PRIMARY KEY (shard_id)
+public | shedlock | shedlock_pkey | p | PRIMARY KEY (name)
+public | subscriptions | subscriptions_organization_id_fkey | f | FOREIGN KEY (organization_id) REFERENCES public.organizations(id)
+public | subscriptions | subscriptions_organization_id_key | u | UNIQUE (organization_id)
+public | subscriptions | subscriptions_pkey | p | PRIMARY KEY (id)
+## indexes (58)
+portal | portal_acceptance_requests | idx_portal_acceptance_contact_status | CREATE INDEX idx_portal_acceptance_contact_status ON portal.portal_acceptance_requests USING btree (portal_contact_id, status)
+portal | portal_acceptance_requests | idx_portal_acceptance_token | CREATE INDEX idx_portal_acceptance_token ON portal.portal_acceptance_requests USING btree (request_token)
+portal | portal_acceptance_requests | portal_acceptance_requests_pkey | CREATE UNIQUE INDEX portal_acceptance_requests_pkey ON portal.portal_acceptance_requests USING btree (id)
+portal | portal_comments | idx_portal_comments_project | CREATE INDEX idx_portal_comments_project ON portal.portal_comments USING btree (portal_project_id)
+portal | portal_comments | portal_comments_pkey | CREATE UNIQUE INDEX portal_comments_pkey ON portal.portal_comments USING btree (id)
+portal | portal_deadline_view | idx_portal_deadline_customer_due | CREATE INDEX idx_portal_deadline_customer_due ON portal.portal_deadline_view USING btree (customer_id, due_date)
+portal | portal_deadline_view | portal_deadline_view_pkey | CREATE UNIQUE INDEX portal_deadline_view_pkey ON portal.portal_deadline_view USING btree (source_entity, id)
+portal | portal_documents | idx_portal_documents_org_customer | CREATE INDEX idx_portal_documents_org_customer ON portal.portal_documents USING btree (org_id, customer_id)
+portal | portal_documents | idx_portal_documents_project | CREATE INDEX idx_portal_documents_project ON portal.portal_documents USING btree (portal_project_id)
+portal | portal_documents | portal_documents_pkey | CREATE UNIQUE INDEX portal_documents_pkey ON portal.portal_documents USING btree (id)
+portal | portal_invoice_lines | idx_portal_invoice_lines_invoice | CREATE INDEX idx_portal_invoice_lines_invoice ON portal.portal_invoice_lines USING btree (portal_invoice_id)
+portal | portal_invoice_lines | portal_invoice_lines_pkey | CREATE UNIQUE INDEX portal_invoice_lines_pkey ON portal.portal_invoice_lines USING btree (id)
+portal | portal_invoices | idx_portal_invoices_customer_issue_date | CREATE INDEX idx_portal_invoices_customer_issue_date ON portal.portal_invoices USING btree (customer_id, issue_date DESC)
+portal | portal_invoices | idx_portal_invoices_org_customer | CREATE INDEX idx_portal_invoices_org_customer ON portal.portal_invoices USING btree (org_id, customer_id)
+portal | portal_invoices | portal_invoices_pkey | CREATE UNIQUE INDEX portal_invoices_pkey ON portal.portal_invoices USING btree (id)
+portal | portal_notification_preference | portal_notification_preference_pkey | CREATE UNIQUE INDEX portal_notification_preference_pkey ON portal.portal_notification_preference USING btree (portal_contact_id)
+portal | portal_project_summaries | portal_project_summaries_pkey | CREATE UNIQUE INDEX portal_project_summaries_pkey ON portal.portal_project_summaries USING btree (id, customer_id)
+portal | portal_projects | idx_portal_projects_org_customer | CREATE INDEX idx_portal_projects_org_customer ON portal.portal_projects USING btree (org_id, customer_id)
+portal | portal_projects | portal_projects_pkey | CREATE UNIQUE INDEX portal_projects_pkey ON portal.portal_projects USING btree (id, customer_id)
+portal | portal_request_items | idx_portal_request_items_request | CREATE INDEX idx_portal_request_items_request ON portal.portal_request_items USING btree (request_id)
+portal | portal_request_items | portal_request_items_pkey | CREATE UNIQUE INDEX portal_request_items_pkey ON portal.portal_request_items USING btree (id)
+portal | portal_requests | idx_portal_requests_contact | CREATE INDEX idx_portal_requests_contact ON portal.portal_requests USING btree (portal_contact_id)
+portal | portal_requests | idx_portal_requests_customer | CREATE INDEX idx_portal_requests_customer ON portal.portal_requests USING btree (customer_id, org_id)
+portal | portal_requests | idx_portal_requests_status | CREATE INDEX idx_portal_requests_status ON portal.portal_requests USING btree (status)
+portal | portal_requests | portal_requests_pkey | CREATE UNIQUE INDEX portal_requests_pkey ON portal.portal_requests USING btree (id)
+portal | portal_tasks | idx_portal_tasks_org | CREATE INDEX idx_portal_tasks_org ON portal.portal_tasks USING btree (org_id)
+portal | portal_tasks | idx_portal_tasks_project | CREATE INDEX idx_portal_tasks_project ON portal.portal_tasks USING btree (portal_project_id)
+portal | portal_tasks | portal_tasks_pkey | CREATE UNIQUE INDEX portal_tasks_pkey ON portal.portal_tasks USING btree (id)
+portal | portal_trust_balance | portal_trust_balance_pkey | CREATE UNIQUE INDEX portal_trust_balance_pkey ON portal.portal_trust_balance USING btree (customer_id, matter_id)
+portal | portal_trust_transaction | idx_portal_trust_txn_customer_matter_occurred | CREATE INDEX idx_portal_trust_txn_customer_matter_occurred ON portal.portal_trust_transaction USING btree (customer_id, matter_id, occurred_at DESC)
+portal | portal_trust_transaction | portal_trust_transaction_pkey | CREATE UNIQUE INDEX portal_trust_transaction_pkey ON portal.portal_trust_transaction USING btree (id)
+public | access_requests | access_requests_pkey | CREATE UNIQUE INDEX access_requests_pkey ON public.access_requests USING btree (id)
+public | access_requests | idx_access_requests_email | CREATE INDEX idx_access_requests_email ON public.access_requests USING btree (email)
+public | access_requests | idx_access_requests_email_pending | CREATE UNIQUE INDEX idx_access_requests_email_pending ON public.access_requests USING btree (email) WHERE ((status)::text = ANY ((ARRAY['PENDING_VERIFICATION'::character varying, 'PENDING'::character varying])::text[]))
+public | access_requests | idx_access_requests_status | CREATE INDEX idx_access_requests_status ON public.access_requests USING btree (status)
+public | job_queue | idx_job_queue_claimable | CREATE INDEX idx_job_queue_claimable ON public.job_queue USING btree (priority DESC, next_attempt_at) WHERE ((status)::text = 'PENDING'::text)
+public | job_queue | idx_job_queue_dedup | CREATE UNIQUE INDEX idx_job_queue_dedup ON public.job_queue USING btree (job_type, tenant_id) WHERE ((status)::text = ANY ((ARRAY['PENDING'::character varying, 'CLAIMED'::character varying])::text[]))
+public | job_queue | idx_job_queue_stale_claims | CREATE INDEX idx_job_queue_stale_claims ON public.job_queue USING btree (claimed_at) WHERE ((status)::text = 'CLAIMED'::text)
+public | job_queue | idx_job_queue_status_type | CREATE INDEX idx_job_queue_status_type ON public.job_queue USING btree (job_type, status, created_at)
+public | job_queue | job_queue_pkey | CREATE UNIQUE INDEX job_queue_pkey ON public.job_queue USING btree (id)
+public | org_schema_mapping | idx_org_schema_mapping_external_org_id | CREATE INDEX idx_org_schema_mapping_external_org_id ON public.org_schema_mapping USING btree (external_org_id)
+public | org_schema_mapping | idx_org_schema_mapping_shard | CREATE INDEX idx_org_schema_mapping_shard ON public.org_schema_mapping USING btree (shard_id)
+public | org_schema_mapping | org_schema_mapping_clerk_org_id_key | CREATE UNIQUE INDEX org_schema_mapping_clerk_org_id_key ON public.org_schema_mapping USING btree (external_org_id)
+public | org_schema_mapping | org_schema_mapping_pkey | CREATE UNIQUE INDEX org_schema_mapping_pkey ON public.org_schema_mapping USING btree (id)
+public | organizations | idx_organizations_external_org_id | CREATE INDEX idx_organizations_external_org_id ON public.organizations USING btree (external_org_id)
+public | organizations | idx_organizations_provisioning_status | CREATE INDEX idx_organizations_provisioning_status ON public.organizations USING btree (provisioning_status)
+public | organizations | organizations_clerk_org_id_key | CREATE UNIQUE INDEX organizations_clerk_org_id_key ON public.organizations USING btree (external_org_id)
+public | organizations | organizations_pkey | CREATE UNIQUE INDEX organizations_pkey ON public.organizations USING btree (id)
+public | processed_webhooks | idx_processed_webhooks_svix_id | CREATE INDEX idx_processed_webhooks_svix_id ON public.processed_webhooks USING btree (svix_id)
+public | processed_webhooks | processed_webhooks_pkey | CREATE UNIQUE INDEX processed_webhooks_pkey ON public.processed_webhooks USING btree (id)
+public | processed_webhooks | processed_webhooks_svix_id_key | CREATE UNIQUE INDEX processed_webhooks_svix_id_key ON public.processed_webhooks USING btree (svix_id)
+public | shard_config | shard_config_pkey | CREATE UNIQUE INDEX shard_config_pkey ON public.shard_config USING btree (shard_id)
+public | shedlock | shedlock_pkey | CREATE UNIQUE INDEX shedlock_pkey ON public.shedlock USING btree (name)
+public | subscriptions | idx_subscriptions_billing_method | CREATE INDEX idx_subscriptions_billing_method ON public.subscriptions USING btree (billing_method)
+public | subscriptions | idx_subscriptions_organization_id | CREATE INDEX idx_subscriptions_organization_id ON public.subscriptions USING btree (organization_id)
+public | subscriptions | idx_subscriptions_status | CREATE INDEX idx_subscriptions_status ON public.subscriptions USING btree (subscription_status)
+public | subscriptions | subscriptions_organization_id_key | CREATE UNIQUE INDEX subscriptions_organization_id_key ON public.subscriptions USING btree (organization_id)
+public | subscriptions | subscriptions_pkey | CREATE UNIQUE INDEX subscriptions_pkey ON public.subscriptions USING btree (id)
+## triggers (0)
+## functions (0)
+## extensions (1)
+pg_trgm | public
+## seed:shard_config (1)
+primary | Primary Database
+## seed:shedlock (1)
+stale_job_recovery

@@ -1,7 +1,7 @@
 {
-  "commit": "ad99f2daa",
+  "commit": "3b1b8422f",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-18T08:23:56Z",
-  "summary": "PR #1580 (template work type, tenant V2) head ad99f2daa (orchestrator run): 5306 testcases / 0 failures / 0 errors / 26 skipped (+12 new), wall 896s. Backend CI pass. e2e: pre-V2 tenant migrated to V2, 6 seeded templates backfilled; instantiate Property Transfer without workType -> CONVEYANCING + conveyancing_za_matter. Log /tmp/mvn-1580-final.log."
+  "ts": "2026-10-18T10:03:08Z",
+  "summary": "PR #1581 (work type normalisation, tenant V3) final head 3b1b8422f (orchestrator run): 5339 testcases / 0 failures / 0 errors / 26 skipped, wall 902s. Backend CI pass. e2e: V3 normalised existing rows; 'Conveyancing' create/instantiate -> CONVEYANCING + conveyancing_za_matter; 60-char -> 400. Log /tmp/mvn-1581-final.log."
 }

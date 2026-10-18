@@ -143,10 +143,7 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
       .fill("Review of the Apex Holdings shareholders' agreement ahead of the 2026 AGM.");
     await selectNativeOption(dialog.getByLabel(/^Client/), apexClient);
     await dialog.getByLabel(/^Work Type/).fill("COMMERCIAL");
-    // Submit from the keyboard: at the suite's 1280×720 viewport this dialog is taller than
-    // the viewport and does not scroll, so the "Create Matter" button sits below the fold
-    // (product bug reported in the PR — it is what fails the lifecycle matter-creation steps).
-    await dialog.getByLabel("Name", { exact: true }).press("Enter");
+    await dialog.getByRole("button", { name: "Create Matter" }).click();
     await expect(dialog).toBeHidden({ timeout: 15_000 });
 
     await openMatter(page, cleanMatterName);

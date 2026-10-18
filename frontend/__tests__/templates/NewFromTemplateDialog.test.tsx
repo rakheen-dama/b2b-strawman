@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { NewFromTemplateDialog } from "@/components/templates/NewFromTemplateDialog";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { OrgMember, Customer } from "@/lib/types";
+import { SUGGESTED_WORK_TYPES } from "@/lib/constants/work-types";
 
 const mockInstantiateTemplate = vi.fn();
 const mockCheckEngagement = vi.fn();
@@ -372,5 +373,19 @@ describe("NewFromTemplateDialog work type prefill", () => {
     await user.clear(workTypeInput);
     expect(workTypeInput).toHaveAttribute("placeholder", "CONVEYANCING");
     expect(screen.getByText("Inherits CONVEYANCING from the template")).toBeInTheDocument();
+  });
+
+  it("offers the canonical legal matter types as Work Type suggestions", async () => {
+    const user = userEvent.setup();
+    renderDialog();
+    await user.click(screen.getByText("Open work type dialog"));
+    await user.click(screen.getByText("Property Transfer"));
+    await user.click(screen.getByRole("button", { name: "Next" }));
+
+    const workTypeInput = screen.getByLabelText(/work type/i);
+    const listId = workTypeInput.getAttribute("list");
+    expect(listId).toBeTruthy();
+    const options = document.getElementById(listId!)?.querySelectorAll("option") ?? [];
+    expect(Array.from(options, (o) => o.value)).toEqual([...SUGGESTED_WORK_TYPES]);
   });
 });

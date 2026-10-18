@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 import { TerminologyProvider } from "@/lib/terminology";
 import { OrgProfileProvider } from "@/lib/org-profile";
+import { SUGGESTED_WORK_TYPES } from "@/lib/constants/work-types";
 
 const mockCreateProject = vi.fn();
 const mockFetchActiveCustomers = vi.fn();
@@ -66,6 +67,20 @@ describe("CreateProjectDialog promoted fields (Epic 464)", () => {
 
     const input = await screen.findByLabelText(/work type/i);
     expect(input).toBeInTheDocument();
+  });
+
+  it("offers the canonical legal matter types as work type suggestions", async () => {
+    const user = userEvent.setup();
+    renderDialog();
+
+    await user.click(screen.getByText(/new project/i));
+
+    const input = await screen.findByLabelText(/work type/i);
+    expect(input).toHaveAttribute("placeholder", "e.g. LITIGATION, CONVEYANCING");
+    const listId = input.getAttribute("list");
+    expect(listId).toBeTruthy();
+    const options = document.getElementById(listId!)?.querySelectorAll("option") ?? [];
+    expect(Array.from(options, (o) => o.value)).toEqual([...SUGGESTED_WORK_TYPES]);
   });
 
   it("submits form with promoted fields in the FormData payload", async () => {

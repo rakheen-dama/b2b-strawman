@@ -9,8 +9,9 @@
  * or a patch change must be re-verified with this probe.
  *
  * Each attempt: fresh browser context -> login -> open the list -> click the target link
- * as soon as it is visible -> the destination's `#main-content h1` must be visible within
- * 15 s. Any blank (or failed attempt) fails that route's test.
+ * as soon as it is visible -> a marker only the destination renders (e.g. the matter's
+ * `matter-name`) must be visible within 15 s, so the source page's heading can't count as
+ * success. Any blank (or failed attempt) fails that route's test.
  *
  * Skipped unless NULL_PREFETCH_PROBE is set, so it never runs in the normal suites.
  *
@@ -30,6 +31,8 @@ interface ProbeRoute {
   start: string;
   link: (page: Page) => Locator;
   url: RegExp;
+  /** Rendered only by the destination, so the source page's h1 can't count as success. */
+  marker: (page: Page) => Locator;
 }
 
 // The routes measured for the root-cause note: each destination has its own loading.tsx.
@@ -39,12 +42,15 @@ const ROUTES: ProbeRoute[] = [
     start: `${ORG}/projects`,
     link: (p) => p.locator(`#main-content a[href^="${ORG}/projects/"]`).first(),
     url: /\/projects\/[0-9a-f-]{36}$/,
+    marker: (p) => p.locator('#main-content [data-testid="matter-name"]'),
   },
   {
     name: "Reports -> report detail (reports/[reportSlug])",
     start: `${ORG}/reports`,
     link: (p) => p.locator(`#main-content a[href^="${ORG}/reports/"]`).first(),
     url: /\/reports\/[a-z-]+$/,
+    // The list page's h1 is "Reports"; the detail page's h1 is the report's name.
+    marker: (p) => p.locator("#main-content h1", { hasNotText: /^\s*Reports\s*$/ }),
   },
   {
     name: "Sidebar /projects -> /dashboard",
@@ -52,6 +58,7 @@ const ROUTES: ProbeRoute[] = [
     link: (p) =>
       p.locator(`aside a[href="${ORG}/dashboard"], nav a[href="${ORG}/dashboard"]`).first(),
     url: /\/dashboard$/,
+    marker: (p) => p.locator("#main-content h1", { hasText: /^\s*Dashboard\s*$/ }),
   },
 ];
 
@@ -59,7 +66,7 @@ test.describe("Next null-prefetch blank-segment probe (opt-in)", () => {
   test.skip(!process.env.NULL_PREFETCH_PROBE, "opt-in: NULL_PREFETCH_PROBE=1");
 
   for (const route of ROUTES) {
-    test(`${route.name}: ${ATTEMPTS} fresh-session clicks render the heading`, async ({
+    test(`${route.name}: ${ATTEMPTS} fresh-session clicks render the destination`, async ({
       browser,
     }) => {
       // ~1 s per healthy attempt; a blank costs the full heading timeout.
@@ -79,8 +86,8 @@ test.describe("Next null-prefetch blank-segment probe (opt-in)", () => {
           await expect(link).toBeVisible({ timeout: 15_000 });
           await link.click();
           await expect(page).toHaveURL(route.url, { timeout: 15_000 });
-          const rendered = await page
-            .locator("#main-content h1")
+          const rendered = await route
+            .marker(page)
             .first()
             .waitFor({ state: "visible", timeout: HEADING_TIMEOUT_MS })
             .then(

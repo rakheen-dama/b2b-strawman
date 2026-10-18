@@ -22,7 +22,7 @@ public class OrgSettings {
 
   /**
    * Canonical default for {@link PortalSettings#getPortalNotificationDocTypes()}. Must stay in sync
-   * with the JSONB literal in Flyway tenant migration V117 — {@link PortalSettings#withDefaults()}
+   * with the JSONB default literal in the tenant baseline — {@link PortalSettings#withDefaults()}
    * seeds this so newly provisioned tenants persist the canonical list rather than an empty array
    * (OBS-2107 follow-up).
    */
@@ -181,10 +181,10 @@ public class OrgSettings {
   /**
    * Collections / dunning policy group (Phase 83): master enable switch + the four days-overdue
    * thresholds (stage 1-3 reminders, escalation flag). Persisted inline on {@code org_settings} via
-   * {@code @Embedded} — column names pinned by {@code @AttributeOverride} (V133; deliberate
-   * OrgSettingsSchemaSnapshotTest pin update). Initialised non-null so a fresh entity and an
-   * all-null DB row never NPE on {@link #getCollections()}. ({@code collections_enabled} is NOT
-   * NULL, so the group never fully materialises as NULL on reload — but the null-safe getter is
+   * {@code @Embedded} — column names pinned by {@code @AttributeOverride} (tenant baseline;
+   * deliberate OrgSettingsSchemaSnapshotTest pin update). Initialised non-null so a fresh entity
+   * and an all-null DB row never NPE on {@link #getCollections()}. ({@code collections_enabled} is
+   * NOT NULL, so the group never fully materialises as NULL on reload — but the null-safe getter is
    * kept for symmetry.)
    */
   @Embedded

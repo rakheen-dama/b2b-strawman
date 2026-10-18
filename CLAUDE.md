@@ -107,6 +107,9 @@ pnpm install && pnpm dev      # Port 3000
 bash compose/scripts/dev-down.sh          # Preserve data
 bash compose/scripts/dev-down.sh --clean  # Wipe volumes
 
+# After the Phase 86 squash (2026-10-18, Epic 605) wipe volumes once: dev-down.sh --clean and e2e-down.sh (old Flyway history no longer validates)
+bash compose/scripts/dev-down.sh --clean && bash compose/scripts/e2e-down.sh
+
 # Rebuild a specific service
 bash compose/scripts/dev-rebuild.sh backend
 ```

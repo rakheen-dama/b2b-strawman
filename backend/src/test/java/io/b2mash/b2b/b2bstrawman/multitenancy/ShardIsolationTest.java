@@ -105,7 +105,7 @@ class ShardIsolationTest {
           .dataSource(shard2Ds)
           .locations("classpath:db/migration/tenant")
           .schemas(SHARD2_SCHEMA)
-          .baselineOnMigrate(true)
+          .baselineOnMigrate(false)
           .load()
           .migrate();
       mappingRepository.saveAndFlush(new OrgSchemaMapping(SHARD2_ORG_ID, SHARD2_SCHEMA, SHARD2_ID));

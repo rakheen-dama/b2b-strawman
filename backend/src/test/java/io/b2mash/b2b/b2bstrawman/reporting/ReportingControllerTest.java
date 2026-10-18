@@ -440,8 +440,8 @@ class ReportingControllerTest {
 
   // --- FINANCIAL_VISIBILITY capability enforcement (B-09) ---
   //
-  // The "member" system role is seeded with an empty capability set (see tenant migration
-  // V67__create_org_role_tables.sql), so it lacks FINANCIAL_VISIBILITY. Every endpoint on this
+  // The "member" system role is seeded with an empty capability set (seeded by the tenant
+  // baseline, V1__baseline.sql), so it lacks FINANCIAL_VISIBILITY. Every endpoint on this
   // controller exposes financial data and MUST deny a plain member with 403 (the established
   // denial status from CapabilityAuthorizationService's AccessDeniedException — see
   // report/ReportCapabilityTest).

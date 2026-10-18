@@ -18,8 +18,9 @@ import org.hibernate.type.SqlTypes;
  * <p>Persisted inline on the {@code org_settings} table via {@code @Embedded} +
  * {@code @AttributeOverride} on {@link OrgSettings}. Column names, types, and nullability are
  * UNCHANGED from when these fields lived directly on the entity (zero schema change — see {@code
- * OrgSettingsSchemaSnapshotTest}). Note {@code portal_notification_doc_types} is NOT NULL (V117
- * JSONB DEFAULT); the constructor seeds the canonical default so fresh entities persist it.
+ * OrgSettingsSchemaSnapshotTest}). Note {@code portal_notification_doc_types} is NOT NULL (JSONB
+ * DEFAULT in the tenant baseline, {@code V1__baseline.sql}); the constructor seeds the canonical
+ * default so fresh entities persist it.
  *
  * <p>Field-level setters and the digest domain mutators ({@link #markDigestSent}/{@link
  * #clearDigestLastSent}) cannot reach the owning entity's timestamp; {@code OrgSettings.updatedAt}
@@ -51,10 +52,10 @@ public class PortalSettings {
    * Per-tenant allowlist (GAP-L-72, slice 23) of generated-document template names whose {@code
    * DocumentGeneratedEvent} should trigger an immediate portal-contact email via {@code
    * PortalDocumentNotificationHandler}. Mirrors the JSONB-list shape of {@code
-   * OrgSettings.enabledModules}. Default (set by Flyway V117) is {@code ["matter-closure-letter",
-   * "statement-of-account"]}: the two portal-visible artefacts that warrant a per-event email on
-   * top of the weekly digest. An empty list disables per-event sends without affecting the weekly
-   * digest.
+   * OrgSettings.enabledModules}. Default (set by the tenant baseline) is {@code
+   * ["matter-closure-letter", "statement-of-account"]}: the two portal-visible artefacts that
+   * warrant a per-event email on top of the weekly digest. An empty list disables per-event sends
+   * without affecting the weekly digest.
    */
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "portal_notification_doc_types", columnDefinition = "jsonb")
@@ -110,8 +111,8 @@ public class PortalSettings {
   /**
    * Returns an immutable view of the portal-notification document-type allowlist (GAP-L-72). The
    * default JSONB seed ({@code ["matter-closure-letter", "statement-of-account"]}) is applied at
-   * the database layer via Flyway V117 — Java-side defaulting only kicks in when the column is
-   * absent (i.e. on a fresh entity not yet flushed from the DB).
+   * the database layer by the tenant baseline ({@code V1__baseline.sql}) — Java-side defaulting
+   * only kicks in when the column is absent (i.e. on a fresh entity not yet flushed from the DB).
    */
   public List<String> getPortalNotificationDocTypes() {
     return portalNotificationDocTypes != null ? List.copyOf(portalNotificationDocTypes) : List.of();

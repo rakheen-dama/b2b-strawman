@@ -11,15 +11,14 @@ import jakarta.persistence.Embeddable;
  * (589A) and the settings API (588B).
  *
  * <p>Persisted inline on the {@code org_settings} table via {@code @Embedded} +
- * {@code @AttributeOverride} on {@link OrgSettings} (added by Flyway tenant migration V133 — this
- * is a deliberate {@code OrgSettingsSchemaSnapshotTest} pin update, not a zero-schema-change
- * refactor). {@code collections_enabled} is NOT NULL, so it is modelled as a primitive {@code
- * boolean} (defaults to {@code false}) and the embedded group never fully materialises as NULL on
- * reload — therefore no new {@code OrgSettingsEmbeddableNullReloadTest} case is needed. The four
- * threshold columns are nullable; their default policy (7/21/45/60) is reproduced via field
- * initialisers so a fresh embeddable persists sensible non-null thresholds, while an existing DB
- * row reloads whatever is stored (Hibernate overwrites the initialisers on load, so persisted NULLs
- * stay NULL).
+ * {@code @AttributeOverride} on {@link OrgSettings} (columns in the tenant baseline; originally a
+ * deliberate {@code OrgSettingsSchemaSnapshotTest} pin update, not a zero-schema-change refactor).
+ * {@code collections_enabled} is NOT NULL, so it is modelled as a primitive {@code boolean}
+ * (defaults to {@code false}) and the embedded group never fully materialises as NULL on reload —
+ * therefore no new {@code OrgSettingsEmbeddableNullReloadTest} case is needed. The four threshold
+ * columns are nullable; their default policy (7/21/45/60) is reproduced via field initialisers so a
+ * fresh embeddable persists sensible non-null thresholds, while an existing DB row reloads whatever
+ * is stored (Hibernate overwrites the initialisers on load, so persisted NULLs stay NULL).
  *
  * <p>Field-level setters here intentionally do NOT bump {@code OrgSettings.updatedAt}; the
  * embeddable has no reference to the owning entity's timestamp. Hibernate dirty-checks the embedded

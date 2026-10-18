@@ -72,6 +72,8 @@ class OrgSettingsSchemaSnapshotTest {
   // V144 (Phase 86 slice 10 / Epic 604C): rate_pack_status removed — deliberate, authorised pin
   // update (PackStatusSettings.ratePackStatus dropped + V144__drop_rate_pack_status.sql), not
   // drift.
+  // Phase 86 squash (Epic 605B): series collapsed into tenant V1__baseline.sql; files above are
+  // archived at tag horizontal-platform-final. Pin unchanged.
   private static final String EXPECTED_SNAPSHOT =
       """
       acceptance_expiry_days | integer | YES

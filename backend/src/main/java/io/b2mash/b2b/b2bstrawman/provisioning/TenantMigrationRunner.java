@@ -97,7 +97,7 @@ public class TenantMigrationRunner implements ApplicationRunner {
             .dataSource(dataSource)
             .locations("classpath:db/migration/tenant")
             .schemas(schemaName)
-            .baselineOnMigrate(true)
+            .baselineOnMigrate(false)
             .load()
             .migrate();
     log.info("Migrated schema {} — {} migrations applied", schemaName, result.migrationsExecuted);

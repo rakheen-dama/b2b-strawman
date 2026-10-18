@@ -269,7 +269,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "AI",
     defaultExpanded: false,
     items: [
-      // Members with AI_EXECUTE (the role grant in V122__ai_foundation.sql) need an
+      // Members with AI_EXECUTE (the role grant in the tenant baseline) need an
       // AI entry point. The matter-intake page is the member-appropriate AI surface.
       {
         label: "AI Intake",

@@ -717,9 +717,9 @@ public class BillingRunSelectionService {
     // gating in discoverCustomers() so the same set of disbursements that contributes to the
     // step-2 unbilled total surfaces in step 3 (UNBILLED + APPROVED + within period). Gated on
     // includeExpenses (the wizard's existing toggle for non-time chargeables) so a time-only run
-    // skips disbursements as well. The query is harmless (returns empty) for non-legal tenants
-    // because the legal_disbursements table only exists in tenant schemas with the legal vertical
-    // module enabled (Flyway V100 in the legal-vertical migration set).
+    // skips disbursements as well. The query is harmless (returns empty) when no disbursements
+    // exist;
+    // legal_disbursements is part of the tenant baseline.
     if (includeExpenses) {
       String disbursementSql =
           """

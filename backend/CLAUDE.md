@@ -182,12 +182,15 @@ Schema-per-tenant isolation within a single Postgres database. Every tenant — 
 ### Flyway Layout
 ```
 src/main/resources/db/migration/
-├── global/     # V1__*.sql — runs once against public schema at startup
-└── tenant/     # V1__*.sql — runs per tenant schema at provisioning + startup
+├── global/     # V1__baseline.sql (public + portal + pg_trgm) — runs once against public at startup
+└── tenant/     # V1__baseline.sql — runs per tenant schema at provisioning + startup
 ```
 
+- Both `V1__baseline.sql` files are the Phase 86 squash (Epic 605) and are **immutable** — never edit them, never squash again. See `backend/db/BASELINE.md`. The pre-squash history is at git tag `horizontal-platform-final`.
+- New schema changes are `V2+` feature migrations (next free number per series)
 - Global migrations run first, then all tenant schemas are migrated
-- Each migration step must be idempotent (`IF NOT EXISTS`, `ON CONFLICT DO NOTHING`)
+- `baselineOnMigrate(false)` everywhere — a non-empty schema without Flyway history fails fast (wipe the volume, never baseline it)
+- Each migration step must be idempotent (`IF NOT EXISTS`, `ON CONFLICT DO NOTHING`); scope catalog guards to `current_schema()` (an unscoped `pg_constraint WHERE conname = …` guard skips the object in every tenant after the first)
 - Name files: `V{number}__{description}.sql` (double underscore)
 
 ### HikariCP Settings (production)

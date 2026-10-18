@@ -97,9 +97,10 @@ class EndToEndMultiShardTest {
     // Refresh the ShardRegistry so it picks up shard2's DataSource
     shardRegistry.refresh();
 
-    // Create pg_trgm extension on the secondary Postgres — required by tenant Flyway migrations
-    // (V83__create_legal_foundation_tables.sql uses gin_trgm_ops). The primary DB has this from
-    // global migration V16, but the secondary embedded Postgres starts empty.
+    // Create pg_trgm extension on the secondary Postgres — required by the tenant baseline
+    // (gin_trgm_ops indexes). The primary DB gets it from global V1__baseline.sql, but the
+    // secondary
+    // embedded Postgres starts empty.
     DataSource shard2Ds = shardRegistry.getDataSource(SHARD2_ID);
     try (Connection conn = shard2Ds.getConnection();
         Statement stmt = conn.createStatement()) {

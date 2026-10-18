@@ -58,6 +58,32 @@ function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
 
+/**
+ * Intermediate prefixes (relative to /org/[slug]/) that have child routes but no
+ * page.tsx of their own, in route-pattern form ([id] = dynamic segment). Linking
+ * them would 404 (and Next would prefetch the 404). Kept in sync with the
+ * filesystem by components/__tests__/breadcrumbs-routes.test.ts.
+ */
+export const NON_ROUTABLE_PREFIXES: readonly string[] = [
+  "ai",
+  "information-requests",
+  "legal",
+  "settings/templates/[id]",
+];
+
+function matchesRoutePattern(segments: string[], pattern: string): boolean {
+  const parts = pattern.split("/");
+  return (
+    parts.length === segments.length &&
+    parts.every((part, i) => part.startsWith("[") || part === segments[i])
+  );
+}
+
+/** Whether the crumb for this prefix should link (i.e. a page exists there). */
+export function isLinkableBreadcrumbPrefix(segments: string[]): boolean {
+  return !NON_ROUTABLE_PREFIXES.some((pattern) => matchesRoutePattern(segments, pattern));
+}
+
 interface BreadcrumbsProps {
   slug: string;
   orgName?: string | null;
@@ -98,13 +124,16 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
         const label = prefixMatch ? `${t(prefixMatch[1])} ${prefixMatch[2]}` : t(rawLabel);
 
         // Build the href for intermediate segments
-        const href = `/org/${slug}/${segments.slice(0, index + 1).join("/")}`;
+        const prefixSegments = segments.slice(0, index + 1);
+        const href = `/org/${slug}/${prefixSegments.join("/")}`;
 
         return (
           <span key={href} className="flex items-center gap-1">
             <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
             {isLast ? (
               <span className="font-medium text-slate-900 dark:text-white">{label}</span>
+            ) : !isLinkableBreadcrumbPrefix(prefixSegments) ? (
+              <span className="text-slate-500 dark:text-slate-400">{label}</span>
             ) : (
               <Link
                 href={href}

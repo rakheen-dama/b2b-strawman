@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  next@16.2.6:
+    hash: 0f9eaac5725257a07b20ed927ea8660f53b6551f6f121a57cd40842ec7cfbcd0
+    path: patches/next@16.2.6.patch
+
 importers:
 
   .: {}
@@ -75,7 +80,7 @@ importers:
         version: 12.38.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@babel/core@7.29.7)(@playwright/test@1.59.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        version: 16.2.6(patch_hash=0f9eaac5725257a07b20ed927ea8660f53b6551f6f121a57cd40842ec7cfbcd0)(@babel/core@7.29.7)(@playwright/test@1.59.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       radix-ui:
         specifier: ^1.4.3
         version: 1.4.3(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -220,7 +225,7 @@ importers:
         version: 0.563.0(react@19.2.3)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@babel/core@7.29.7)(@playwright/test@1.59.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        version: 16.2.6(patch_hash=0f9eaac5725257a07b20ed927ea8660f53b6551f6f121a57cd40842ec7cfbcd0)(@babel/core@7.29.7)(@playwright/test@1.59.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       radix-ui:
         specifier: ^1.4.3
         version: 1.4.3(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -8200,7 +8205,7 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
-  next@16.2.6(@babel/core@7.29.7)(@playwright/test@1.59.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
+  next@16.2.6(patch_hash=0f9eaac5725257a07b20ed927ea8660f53b6551f6f121a57cd40842ec7cfbcd0)(@babel/core@7.29.7)(@playwright/test@1.59.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
     dependencies:
       '@next/env': 16.2.6
       '@swc/helpers': 0.5.15

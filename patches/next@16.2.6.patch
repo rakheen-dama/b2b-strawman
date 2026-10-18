@@ -1,0 +1,60 @@
+diff --git a/dist/client/components/layout-router.js b/dist/client/components/layout-router.js
+index 06b68cc92862992b485d8f3edf0a937e0af2847a..97b4f6cfb6736dc9698d56b85bb69c7976ae2027 100644
+--- a/dist/client/components/layout-router.js
++++ b/dist/client/components/layout-router.js
+@@ -337,7 +337,24 @@ function ScrollAndMaybeFocusHandler({ children, cacheNode }) {
+         if (rsc === null) {
+             (0, _react.use)(_unresolvedthenable.unresolvedThenable);
+         }
+-        resolvedRsc = rsc;
++        // KAZI-PATCH(next-null-prefetch): when navigating into a segment that has its
++        // own loading.tsx while that segment's prefetch is still in flight, the router
++        // (router-reducer/ppr-navigations.js, EntryStatus.Pending branch) hands us the
++        // in-flight prefetch as a *plain* promise (not a deferred RSC) that can resolve
++        // to `null`. Rendering it directly commits an EMPTY segment instead of the
++        // loading.tsx skeleton, and the real content then depends on a background
++        // re-render that sometimes never happens (page stays blank). Apply the same
++        // "null means missing data -> suspend" rule Next uses for deferred RSC above.
++        // Root cause + upgrade check: tasks/next-null-prefetch-blank-segment.md
++        if (rsc !== null && typeof rsc === 'object' && typeof rsc.then === 'function') {
++            const unwrappedPrefetchRsc = (0, _react.use)(rsc);
++            if (unwrappedPrefetchRsc === null) {
++                (0, _react.use)(_unresolvedthenable.unresolvedThenable);
++            }
++            resolvedRsc = unwrappedPrefetchRsc;
++        } else {
++            resolvedRsc = rsc;
++        }
+     }
+     // In dev, we create a NavigationPromisesContext containing the instrumented promises that provide
+     // `useSelectedLayoutSegment` and `useSelectedLayoutSegments`.
+diff --git a/dist/esm/client/components/layout-router.js b/dist/esm/client/components/layout-router.js
+index 25e44ba48e03b6ae3eb6de3ddacfdcc8f43f185d..5f62428927c01644d9369430b0cf5710ad399ace 100644
+--- a/dist/esm/client/components/layout-router.js
++++ b/dist/esm/client/components/layout-router.js
+@@ -310,7 +310,24 @@ function ScrollAndMaybeFocusHandler({ children, cacheNode }) {
+         if (rsc === null) {
+             use(unresolvedThenable);
+         }
+-        resolvedRsc = rsc;
++        // KAZI-PATCH(next-null-prefetch): when navigating into a segment that has its
++        // own loading.tsx while that segment's prefetch is still in flight, the router
++        // (router-reducer/ppr-navigations.js, EntryStatus.Pending branch) hands us the
++        // in-flight prefetch as a *plain* promise (not a deferred RSC) that can resolve
++        // to `null`. Rendering it directly commits an EMPTY segment instead of the
++        // loading.tsx skeleton, and the real content then depends on a background
++        // re-render that sometimes never happens (page stays blank). Apply the same
++        // "null means missing data -> suspend" rule Next uses for deferred RSC above.
++        // Root cause + upgrade check: tasks/next-null-prefetch-blank-segment.md
++        if (rsc !== null && typeof rsc === 'object' && typeof rsc.then === 'function') {
++            const unwrappedPrefetchRsc = use(rsc);
++            if (unwrappedPrefetchRsc === null) {
++                use(unresolvedThenable);
++            }
++            resolvedRsc = unwrappedPrefetchRsc;
++        } else {
++            resolvedRsc = rsc;
++        }
+     }
+     // In dev, we create a NavigationPromisesContext containing the instrumented promises that provide
+     // `useSelectedLayoutSegment` and `useSelectedLayoutSegments`.

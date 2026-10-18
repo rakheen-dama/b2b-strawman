@@ -18,5 +18,6 @@ public record ProjectTemplateResponse(
     List<TemplateTaskResponse> tasks,
     List<TagResponse> tags,
     UUID requestTemplateId,
+    String workType,
     Instant createdAt,
     Instant updatedAt) {}

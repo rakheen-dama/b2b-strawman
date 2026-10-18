@@ -93,6 +93,8 @@ export function NewFromTemplateDialog({
   const [referenceNumber, setReferenceNumber] = useState("");
   const [priority, setPriority] = useState<ProjectPriority | "">("");
   const [workType, setWorkType] = useState("");
+  // Once the user edits Work Type, picking a template no longer overwrites it.
+  const [workTypeEdited, setWorkTypeEdited] = useState(false);
 
   // Auto-open on mount when the `?new=1` query param redirect lands us here
   // (GAP-S3-05). We only run this once; the effect intentionally ignores
@@ -113,6 +115,8 @@ export function NewFromTemplateDialog({
   if (templates.length === 0) return null;
 
   const selectedTemplate = templates.find((t) => t.id === selectedTemplateId) ?? null;
+  // A blank Work Type falls back to the template's on the backend; surface that value.
+  const inheritedWorkType = workType.trim() ? null : (selectedTemplate?.workType ?? null);
 
   const selectedCustomerName = customers.find((c) => c.id === customerId)?.name;
 
@@ -139,6 +143,7 @@ export function NewFromTemplateDialog({
       setReferenceNumber("");
       setPriority("");
       setWorkType("");
+      setWorkTypeEdited(false);
       setError(null);
       setFieldErrors({});
     }
@@ -159,6 +164,9 @@ export function NewFromTemplateDialog({
     );
     setProjectName(resolvedName);
     setDescription(selectedTemplate.description ?? "");
+    if (!workTypeEdited) {
+      setWorkType(selectedTemplate.workType ?? "");
+    }
     setError(null);
     setStep(2);
   }
@@ -429,10 +437,19 @@ export function NewFromTemplateDialog({
                   <Input
                     id="new-proj-worktype"
                     value={workType}
-                    onChange={(e) => setWorkType(e.target.value)}
-                    placeholder="e.g. Litigation, Consulting"
+                    onChange={(e) => {
+                      setWorkType(e.target.value);
+                      setWorkTypeEdited(true);
+                    }}
+                    placeholder={inheritedWorkType ?? "e.g. Litigation, Consulting"}
                     maxLength={50}
+                    aria-describedby={inheritedWorkType ? "new-proj-worktype-inherited" : undefined}
                   />
+                  {inheritedWorkType && (
+                    <p id="new-proj-worktype-inherited" className="text-muted-foreground text-xs">
+                      Inherits {inheritedWorkType} from the template
+                    </p>
+                  )}
                   {fieldErrors.workType && (
                     <p className="text-destructive mt-1 text-xs">{fieldErrors.workType}</p>
                   )}

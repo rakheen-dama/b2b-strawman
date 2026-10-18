@@ -140,6 +140,10 @@ public abstract class AbstractPackSeeder<D> {
         continue;
       }
 
+      // Installed packs are never re-applied (only reconcileExistingPack runs, a no-op by
+      // default): a column added to a pack-seeded entity is NOT backfilled here for existing
+      // tenants — that needs a V-migration UPDATE (e.g. tenant V2) or an explicit reconcile step
+      // (see db/BASELINE.md §5).
       if (isPackAlreadyApplied(settings, packId)) {
         log.info(
             "{} pack {} already applied for tenant {}, reconciling settings",

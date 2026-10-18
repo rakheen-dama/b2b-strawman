@@ -152,6 +152,7 @@ public class ProjectTemplateService {
             memberId);
     validateRequestTemplateId(request.requestTemplateId());
     template.setRequestTemplateId(request.requestTemplateId());
+    template.setWorkType(request.workType());
     template = templateRepository.save(template);
 
     int taskCount = 0;
@@ -215,6 +216,7 @@ public class ProjectTemplateService {
     template.update(
         request.name(), request.namePattern(), request.description(), request.billableDefault());
     template.setRequestTemplateId(request.requestTemplateId());
+    template.setWorkType(request.workType());
     // saveAndFlush required: downstream deleteByTemplateId uses @Modifying(clearAutomatically=true)
     // which clears the persistence context — without flush, requestTemplateId would be lost
     template = templateRepository.saveAndFlush(template);
@@ -310,6 +312,7 @@ public class ProjectTemplateService {
             "MANUAL",
             null,
             memberId);
+    copy.setWorkType(source.getWorkType());
     copy = templateRepository.save(copy);
 
     var taskIds = tasks.stream().map(TemplateTask::getId).toList();
@@ -381,9 +384,10 @@ public class ProjectTemplateService {
   public ProjectTemplateResponse saveFromProject(
       UUID projectId, SaveFromProjectRequest request, ActorContext actor) {
     // 1. Load project
-    projectRepository
-        .findById(projectId)
-        .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+    var project =
+        projectRepository
+            .findById(projectId)
+            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
 
     // 2. Permission check: admin/owner always allowed; member must be project lead
     requireAdminOwnerOrProjectLead(actor.orgRole(), projectId, actor.memberId());
@@ -398,6 +402,7 @@ public class ProjectTemplateService {
             "FROM_PROJECT",
             projectId,
             actor.memberId());
+    template.setWorkType(project.getWorkType());
     template = templateRepository.save(template);
 
     // 4. Copy selected tasks in taskIds list order
@@ -528,18 +533,17 @@ public class ProjectTemplateService {
     if (request.priority() != null) {
       project.setPriority(request.priority());
     }
-    if (request.workType() != null) {
-      project.setWorkType(request.workType());
-    }
+    String workType = resolveWorkType(request.workType(), template);
+    project.setWorkType(workType);
     // GAP-S3-04: resolve vertical-profile auto-apply field groups (e.g. the
     // "SA Legal — Matter Details" group for legal-za) so template-created
     // matters surface the same custom-field surface area as projects created
     // via ProjectService.createProject. Mirrors ProjectFieldService.prepareForCreate.
-    // GAP-L-37-regression-2026-04-25: pass request.workType() so work-type-scoped groups
+    // GAP-L-37-regression-2026-04-25: pass the resolved workType so work-type-scoped groups
     // (e.g. conveyancing-za-project) only auto-attach to matters with matching work_type;
     // legal-za-project remains unscoped and still applies to every legal-za matter.
     var autoApplyFieldGroupIds =
-        fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT, request.workType());
+        fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT, workType);
     if (!autoApplyFieldGroupIds.isEmpty()) {
       project.setAppliedFieldGroups(autoApplyFieldGroupIds);
     }
@@ -650,6 +654,17 @@ public class ProjectTemplateService {
   }
 
   /**
+   * The work type a template-created matter gets: an explicit (non-blank) value from the caller
+   * wins, otherwise the template's own work type (e.g. the legal-za pack's {@code matterType}). May
+   * be null, in which case only unscoped auto-apply field groups attach.
+   */
+  private static String resolveWorkType(String requestWorkType, ProjectTemplate template) {
+    return requestWorkType != null && !requestWorkType.isBlank()
+        ? requestWorkType
+        : template.getWorkType();
+  }
+
+  /**
    * Creates a project from a template without requiring member context. Designed for scheduler use.
    * The caller is responsible for audit logging and event publishing.
    *
@@ -685,17 +700,17 @@ public class ProjectTemplateService {
     if (customer != null) {
       project.setCustomerId(customer.getId());
     }
+    // Scheduler-instantiated matters inherit the template's work type (no request override on
+    // this path). It must be set BEFORE auto-apply resolution: a template without a work type
+    // yields null → only unscoped groups attach, so recurring matters never pick up
+    // work-type-scoped groups (conveyancing_za_matter) they don't belong to (GAP-L-37).
+    String workType = resolveWorkType(null, template);
+    project.setWorkType(workType);
     // GAP-S3-04: apply vertical-profile auto-apply field groups so scheduler-
     // instantiated projects pick up custom-field groups the same way
     // instantiateTemplate() does.
-    // GAP-L-37-regression-2026-04-25: scheduler-instantiated projects don't carry a work_type
-    // (templates produce projects; work_type is set per-project on creation in the dialog flow).
-    // Pass null → only unscoped groups auto-attach. Work-type-scoped groups (conveyancing-za-
-    // project) are correctly skipped here, avoiding the legal-za regression where every recurring
-    // matter inherited conveyancing fields. TODO: when ProjectTemplate gains a workType column,
-    // pass template.getWorkType() through instead.
     var autoApplyFieldGroupIds =
-        fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT, null);
+        fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT, workType);
     if (!autoApplyFieldGroupIds.isEmpty()) {
       project.setAppliedFieldGroups(autoApplyFieldGroupIds);
     }
@@ -1081,6 +1096,7 @@ public class ProjectTemplateService {
         tasks,
         tags,
         template.getRequestTemplateId(),
+        template.getWorkType(),
         template.getCreatedAt(),
         template.getUpdatedAt());
   }

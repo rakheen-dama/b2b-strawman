@@ -282,3 +282,95 @@ describe("NewFromTemplateDialog", () => {
     expect(mockCheckEngagement).not.toHaveBeenCalled();
   });
 });
+
+describe("NewFromTemplateDialog work type prefill", () => {
+  const WORK_TYPE_TEMPLATES: ProjectTemplateResponse[] = [
+    { ...TEMPLATES[0], id: "pt-conv", name: "Property Transfer", workType: "CONVEYANCING" },
+    { ...TEMPLATES[0], id: "pt-est", name: "Deceased Estate", workType: "ESTATES" },
+  ];
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  function renderDialog() {
+    render(
+      <NewFromTemplateDialog
+        slug="acme"
+        templates={WORK_TYPE_TEMPLATES}
+        orgMembers={MEMBERS}
+        customers={CUSTOMERS}
+      >
+        <button>Open work type dialog</button>
+      </NewFromTemplateDialog>
+    );
+  }
+
+  it("prefills Work Type from the selected template and submits it", async () => {
+    mockInstantiateTemplate.mockResolvedValue({ success: true, projectId: "proj-new" });
+    const user = userEvent.setup();
+    renderDialog();
+    await user.click(screen.getByText("Open work type dialog"));
+    await user.click(screen.getByText("Property Transfer"));
+    await user.click(screen.getByRole("button", { name: "Next" }));
+
+    expect(screen.getByLabelText(/work type/i)).toHaveValue("CONVEYANCING");
+
+    await user.click(screen.getByRole("button", { name: "Create Project" }));
+    await waitFor(() => {
+      expect(mockInstantiateTemplate).toHaveBeenCalledWith(
+        "acme",
+        "pt-conv",
+        expect.objectContaining({ workType: "CONVEYANCING" })
+      );
+    });
+  });
+
+  it("does not overwrite a Work Type the user typed when the template changes", async () => {
+    const user = userEvent.setup();
+    renderDialog();
+    await user.click(screen.getByText("Open work type dialog"));
+    await user.click(screen.getByText("Property Transfer"));
+    await user.click(screen.getByRole("button", { name: "Next" }));
+
+    const workTypeInput = screen.getByLabelText(/work type/i);
+    await user.clear(workTypeInput);
+    await user.type(workTypeInput, "LITIGATION");
+
+    await user.click(screen.getByRole("button", { name: "Back" }));
+    await user.click(screen.getByText("Deceased Estate"));
+    await user.click(screen.getByRole("button", { name: "Next" }));
+
+    expect(screen.getByLabelText(/work type/i)).toHaveValue("LITIGATION");
+  });
+
+  it("follows the template while the user has not edited Work Type", async () => {
+    const user = userEvent.setup();
+    renderDialog();
+    await user.click(screen.getByText("Open work type dialog"));
+    await user.click(screen.getByText("Property Transfer"));
+    await user.click(screen.getByRole("button", { name: "Next" }));
+    await user.click(screen.getByRole("button", { name: "Back" }));
+    await user.click(screen.getByText("Deceased Estate"));
+    await user.click(screen.getByRole("button", { name: "Next" }));
+
+    expect(screen.getByLabelText(/work type/i)).toHaveValue("ESTATES");
+  });
+  it("shows the inherited template work type when Work Type is left blank", async () => {
+    const user = userEvent.setup();
+    renderDialog();
+    await user.click(screen.getByText("Open work type dialog"));
+    await user.click(screen.getByText("Property Transfer"));
+    await user.click(screen.getByRole("button", { name: "Next" }));
+    expect(screen.queryByText("Inherits CONVEYANCING from the template")).not.toBeInTheDocument();
+
+    const workTypeInput = screen.getByLabelText(/work type/i);
+    await user.clear(workTypeInput);
+    expect(workTypeInput).toHaveAttribute("placeholder", "CONVEYANCING");
+    expect(screen.getByText("Inherits CONVEYANCING from the template")).toBeInTheDocument();
+  });
+});

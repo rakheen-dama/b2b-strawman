@@ -221,6 +221,33 @@ class LegalProjectTemplatePackTest {
                 }));
   }
 
+  @Test
+  void eachTemplateCarriesItsPackMatterTypeAsWorkType() {
+    // The pack's matterType is persisted as the template's work type so that matters created
+    // from the template inherit it (and work-type-scoped field groups auto-apply).
+    java.util.Map<String, String> expectedWorkTypes =
+        java.util.Map.of(
+            "Litigation (Road Accident Fund -- RAF)", "LITIGATION",
+            "Litigation (Personal Injury / General)", "LITIGATION",
+            "Deceased Estate Administration", "ESTATES",
+            "Collections (Debt Recovery)", "COLLECTIONS",
+            "Commercial (Corporate & Contract)", "COMMERCIAL",
+            "Property Transfer (Conveyancing)", "CONVEYANCING");
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var actual =
+                      projectTemplateRepository.findAllByOrderByNameAsc().stream()
+                          .filter(t -> "SEEDER".equals(t.getSource()))
+                          .collect(
+                              java.util.stream.Collectors.toMap(
+                                  ProjectTemplate::getName, ProjectTemplate::getWorkType));
+                  assertThat(actual).containsExactlyInAnyOrderEntriesOf(expectedWorkTypes);
+                }));
+  }
+
   private void runInTenant(Runnable action) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)

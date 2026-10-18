@@ -87,6 +87,7 @@ export function TemplateEditor({
   const [description, setDescription] = useState(template?.description ?? "");
   const [billableDefault, setBillableDefault] = useState(template?.billableDefault ?? false);
   const [requestTemplateId, setRequestTemplateId] = useState(template?.requestTemplateId ?? "");
+  const [workType, setWorkType] = useState(template?.workType ?? "");
   const [tasks, setTasks] = useState<TaskRow[]>(() => {
     if (template?.tasks && template.tasks.length > 0) {
       let counter = 0;
@@ -264,6 +265,7 @@ export function TemplateEditor({
       })),
       tagIds: selectedTagIds,
       requestTemplateId: requestTemplateId || null,
+      workType: workType.trim() || null,
     };
 
     try {
@@ -350,6 +352,22 @@ export function TemplateEditor({
             placeholder="Optional description"
             rows={2}
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="template-work-type">
+            Work Type <span className="text-sm font-normal text-slate-500">(optional)</span>
+          </Label>
+          <Input
+            id="template-work-type"
+            value={workType}
+            onChange={(e) => setWorkType(e.target.value)}
+            placeholder="e.g. Litigation, Conveyancing"
+            maxLength={50}
+          />
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Matters created from this template get this work type unless one is entered.
+          </p>
         </div>
 
         <div className="flex items-center gap-2">

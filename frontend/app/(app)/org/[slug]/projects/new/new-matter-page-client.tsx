@@ -42,14 +42,26 @@ export function NewMatterPageClient({
   const [referenceNumber, setReferenceNumber] = useState("");
   const [priority, setPriority] = useState("");
   const [workType, setWorkType] = useState("");
+  // Once the user edits Work Type, choosing a template no longer overwrites it.
+  const [workTypeEdited, setWorkTypeEdited] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
+  // A blank Work Type falls back to the template's on the backend; surface that value.
+  const inheritedWorkType = workType.trim() ? null : (selectedTemplate?.workType ?? null);
+
+  function selectTemplate(templateId: string | null) {
+    setSelectedTemplateId(templateId);
+    if (!workTypeEdited) {
+      const template = templates.find((t) => t.id === templateId);
+      setWorkType(template?.workType ?? "");
+    }
+  }
 
   function handleTemplateSelected(templateId: string) {
-    setSelectedTemplateId(templateId);
+    selectTemplate(templateId);
     const template = templates.find((t) => t.id === templateId);
     if (template) {
       toast.success(`Template "${template.name}" applied`);
@@ -161,7 +173,7 @@ export function NewMatterPageClient({
                 <select
                   id="templateId"
                   value={selectedTemplateId ?? ""}
-                  onChange={(e) => setSelectedTemplateId(e.target.value || null)}
+                  onChange={(e) => selectTemplate(e.target.value || null)}
                   className={nativeSelectClassName}
                 >
                   <option value="">-- Select a template --</option>
@@ -228,11 +240,20 @@ export function NewMatterPageClient({
                 </Label>
                 <Input
                   id="workType"
-                  placeholder="e.g. Litigation, Conveyancing"
+                  placeholder={inheritedWorkType ?? "e.g. Litigation, Conveyancing"}
                   value={workType}
-                  onChange={(e) => setWorkType(e.target.value)}
+                  onChange={(e) => {
+                    setWorkType(e.target.value);
+                    setWorkTypeEdited(true);
+                  }}
                   maxLength={50}
+                  aria-describedby={inheritedWorkType ? "workType-inherited" : undefined}
                 />
+                {inheritedWorkType && (
+                  <p id="workType-inherited" className="text-sm text-slate-500">
+                    Inherits {inheritedWorkType} from the template
+                  </p>
+                )}
               </div>
 
               {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}

@@ -10,6 +10,9 @@ RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
 
 # Workspace manifests + root lockfile drive a deterministic, frozen install.
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+# Vendor patches (pnpm-workspace.yaml `patchedDependencies`) are applied during
+# install; the frozen install fails if a referenced patch file is missing.
+COPY patches/ ./patches/
 COPY frontend/package.json ./frontend/
 # Workspace dependencies (@b2mash/ui, @b2mash/shared) — their manifests are part
 # of the install graph, so the frozen install can resolve the workspace links.

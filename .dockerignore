@@ -6,6 +6,7 @@
 !pnpm-workspace.yaml
 !package.json
 !pnpm-lock.yaml
+!patches
 !tsconfig.base.json
 !frontend
 !portal

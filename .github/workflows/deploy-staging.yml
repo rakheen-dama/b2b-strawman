@@ -46,6 +46,7 @@ jobs:
               - 'packages/**'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
+              - 'patches/**'
               - 'package.json'
             backend:
               - 'backend/**'
@@ -56,6 +57,7 @@ jobs:
               - 'packages/**'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
+              - 'patches/**'
               - 'package.json'
             keycloak:
               - 'compose/keycloak/**'

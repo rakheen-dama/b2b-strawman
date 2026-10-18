@@ -314,6 +314,14 @@ Shadcn components use the bundled `radix-ui` package (not `@radix-ui/react-*`):
 import { Slot } from "radix-ui";
 ```
 
+### Patched dependencies
+
+`next` carries a pnpm patch (`patches/next@<version>.patch`, wired via `patchedDependencies` in the root `pnpm-workspace.yaml`; applies to frontend and portal). It fixes a Next 16 router race: navigating into a segment that has its own `loading.tsx` while that segment's prefetch is still in flight committed an empty segment, and the page sometimes stayed blank (matter detail, report detail, dashboard). The patched code in `next/dist/{,esm/}client/components/layout-router.js` carries a `KAZI-PATCH(next-null-prefetch)` comment. Details: `tasks/next-null-prefetch-blank-segment.md`.
+
+- **Keep the `loading.tsx` files** — the patch is what makes them safe.
+- **On a Next upgrade**: `pnpm install` fails if no installed version matches the patch key, and `__tests__/next-null-prefetch-patch.test.ts` fails if the marker is missing. First check whether upstream fixed the race (the `InnerLayoutRouter` non-deferred branch still does `resolvedRsc = rsc` without unwrapping a thenable). If it did not, re-create the patch for the new version (`pnpm patch next@<new>` → re-apply the same edit to both layout-router files → `pnpm patch-commit <dir>`). Then rebuild the e2e frontend (`bash compose/scripts/e2e-rebuild.sh frontend`) and run the opt-in probe from `frontend/`: `NULL_PREFETCH_PROBE=1 ATTEMPTS=120 PLAYWRIGHT_BASE_URL=http://localhost:3001 NODE_OPTIONS="" pnpm exec playwright test --config e2e/playwright.legal-depth-ii.config.ts null-prefetch-probe`. It makes 120 fresh-session clicks on each of matter, report detail and dashboard, takes about 5 minutes, and must report 0 blanks. It is skipped unless `NULL_PREFETCH_PROBE` is set. The 10-attempt `day-14-conveyancing` "Clicking into a matter" test alone misses a regression about half the time. If upstream fixed it, remove the patch, the guard test, the probe spec and this section together.
+- Root-context Dockerfiles (`frontend/Dockerfile`, `portal/Dockerfile`) copy `patches/` before `pnpm install --frozen-lockfile`, and `.dockerignore` allows it. Keep that if you add another workspace image.
+
 ## Authentication
 
 Auth is provider-agnostic via the `lib/auth/` abstraction layer. The active provider is selected by `NEXT_PUBLIC_AUTH_MODE`:

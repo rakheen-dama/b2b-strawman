@@ -197,20 +197,14 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     await captureScreenshot(page, "day-14-conveyancing-matter-created");
   });
 
-  // ── Navigation: clicking into a matter renders its content ────────
-  // FIXME(depth-ii:page-transition-blank) PRODUCT BUG (reproduced, intermittent): a
-  // client-side navigation from the Matters list into a matter commits the route
-  // (URL = /projects/<id>, breadcrumb "Matter") but the content area stays blank for 15s+
-  // and does not recover (empty page wrapper, no console error, no page error).
-  // NOT caused by the old <PageTransition>: it still reproduces after that component was
-  // replaced by app/(app)/org/[slug]/template.tsx (4 of 40 instrumented clicks, wrapper =
-  // the template's div, empty). Every captured failure has the same network signature: the
-  // matter's route prefetch and segment prefetch complete, the navigation's dynamic RSC
-  // request returns 200, the URL commits, and ~150-200ms later — while the matter page's
-  // JS chunks load — that RSC response body is aborted (net::ERR_ABORTED) and never
-  // re-requested. Earlier rate: 1 of 7 suite runs (~1 in 60 clicks). helpers openMatter
-  // deep-links to the matter URL because of this.
-  test.fixme("Alice: Clicking into a matter from the Matters list renders it (10 times)", async ({
+  // ── Navigation: clicking into a matter (a segment with its own loading skeleton) ──
+  // The matter route has its own loading.tsx. A click made as soon as the Matters list
+  // is visible lands while the matter segment's prefetch is still in flight; Next 16's
+  // router then used to commit an EMPTY segment (no skeleton, no content) that
+  // intermittently never filled in. Fixed by the pnpm patch to next (KAZI-PATCH
+  // next-null-prefetch, tasks/next-null-prefetch-blank-segment.md). Each attempt uses a
+  // fresh session and clicks immediately, which is what made the race reproducible.
+  test("Alice: Clicking into a matter (route with a loading skeleton) renders its content (10 fresh sessions)", async ({
     browser,
   }) => {
     test.setTimeout(120_000);

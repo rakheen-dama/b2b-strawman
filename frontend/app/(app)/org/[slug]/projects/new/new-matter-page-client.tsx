@@ -42,14 +42,24 @@ export function NewMatterPageClient({
   const [referenceNumber, setReferenceNumber] = useState("");
   const [priority, setPriority] = useState("");
   const [workType, setWorkType] = useState("");
+  // Once the user edits Work Type, choosing a template no longer overwrites it.
+  const [workTypeEdited, setWorkTypeEdited] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
 
-  function handleTemplateSelected(templateId: string) {
+  function selectTemplate(templateId: string | null) {
     setSelectedTemplateId(templateId);
+    if (!workTypeEdited) {
+      const template = templates.find((t) => t.id === templateId);
+      setWorkType(template?.workType ?? "");
+    }
+  }
+
+  function handleTemplateSelected(templateId: string) {
+    selectTemplate(templateId);
     const template = templates.find((t) => t.id === templateId);
     if (template) {
       toast.success(`Template "${template.name}" applied`);
@@ -161,7 +171,7 @@ export function NewMatterPageClient({
                 <select
                   id="templateId"
                   value={selectedTemplateId ?? ""}
-                  onChange={(e) => setSelectedTemplateId(e.target.value || null)}
+                  onChange={(e) => selectTemplate(e.target.value || null)}
                   className={nativeSelectClassName}
                 >
                   <option value="">-- Select a template --</option>
@@ -230,7 +240,10 @@ export function NewMatterPageClient({
                   id="workType"
                   placeholder="e.g. Litigation, Conveyancing"
                   value={workType}
-                  onChange={(e) => setWorkType(e.target.value)}
+                  onChange={(e) => {
+                    setWorkType(e.target.value);
+                    setWorkTypeEdited(true);
+                  }}
                   maxLength={50}
                 />
               </div>

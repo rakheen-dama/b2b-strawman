@@ -44,6 +44,8 @@ export interface ProjectTemplateResponse {
   tags: ProjectTemplateTagResponse[];
   requiredCustomerFieldIds?: string[];
   requestTemplateId?: string | null;
+  /** Work type matters created from this template inherit when none is supplied. */
+  workType?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -73,6 +75,7 @@ export interface CreateProjectTemplateRequest {
   tasks: TemplateTaskRequest[];
   tagIds: string[];
   requestTemplateId?: string | null;
+  workType?: string | null;
 }
 
 export interface UpdateProjectTemplateRequest {
@@ -83,6 +86,7 @@ export interface UpdateProjectTemplateRequest {
   tasks: TemplateTaskRequest[];
   tagIds: string[];
   requestTemplateId?: string | null;
+  workType?: string | null;
 }
 
 export interface SaveFromProjectRequest {

@@ -81,7 +81,7 @@ const mockProject: Project = {
   name: "Test Matter Alpha",
   description: "A test project",
   status: "ACTIVE",
-  customerId: "cust-1",
+  clientId: "cust-1",
   dueDate: "2099-12-31",
   referenceNumber: "REF-001",
   priority: "HIGH",
@@ -97,7 +97,7 @@ const mockProject: Project = {
   closedAt: null,
   retentionClockStartedAt: null,
   retentionEndsOn: null,
-  projectRole: "lead",
+  matterRole: "lead",
   customFields: {},
   appliedFieldGroups: [],
 };

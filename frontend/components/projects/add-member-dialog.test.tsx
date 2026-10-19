@@ -32,7 +32,7 @@ const existingMembers: ProjectMember[] = [
     name: "Alice",
     email: "alice@example.com",
     avatarUrl: null,
-    projectRole: "lead",
+    matterRole: "lead",
     createdAt: "2024-01-01T00:00:00Z",
   },
 ];

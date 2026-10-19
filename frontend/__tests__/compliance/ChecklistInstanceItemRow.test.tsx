@@ -175,7 +175,7 @@ describe("ChecklistInstanceItemRow", () => {
     const mockDocs: Document[] = [
       {
         id: "doc-1",
-        projectId: null,
+        matterId: null,
         fileName: "passport-scan.pdf",
         contentType: "application/pdf",
         size: 12345,
@@ -189,7 +189,7 @@ describe("ChecklistInstanceItemRow", () => {
       },
       {
         id: "doc-2",
-        projectId: null,
+        matterId: null,
         fileName: "pending-file.pdf",
         contentType: "application/pdf",
         size: 999,
@@ -232,7 +232,7 @@ describe("ChecklistInstanceItemRow", () => {
     const pendingDocs: Document[] = [
       {
         id: "doc-pending",
-        projectId: null,
+        matterId: null,
         fileName: "pending-file.pdf",
         contentType: "application/pdf",
         size: 999,

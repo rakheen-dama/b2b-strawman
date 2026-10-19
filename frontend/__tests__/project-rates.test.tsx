@@ -22,7 +22,7 @@ function makeMembers(): ProjectMember[] {
       name: "Alice Johnson",
       email: "alice@example.com",
       avatarUrl: null,
-      projectRole: "lead",
+      matterRole: "lead",
       createdAt: "2025-01-01T00:00:00Z",
     },
     {
@@ -31,7 +31,7 @@ function makeMembers(): ProjectMember[] {
       name: "Bob Smith",
       email: "bob@example.com",
       avatarUrl: null,
-      projectRole: "member",
+      matterRole: "member",
       createdAt: "2025-01-01T00:00:00Z",
     },
   ];

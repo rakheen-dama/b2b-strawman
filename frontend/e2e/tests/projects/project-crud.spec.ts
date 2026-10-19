@@ -128,7 +128,8 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
     // Create via API — more reliable than UI creation for internal projects
     const token = await getToken("alice");
     const { status } = await apiPost(
-      "/api/projects",
+      // Phase 87 S1 (ADR-337): API path
+      "/api/matters",
       {
         name: PROJECT_WITHOUT_CUSTOMER,
         description: "E2E internal project — no customer",
@@ -182,7 +183,8 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
   test("4. Project detail tabs load", async ({ page }) => {
     // Find the project by name via API to get the ID
     const token = await getToken("alice");
-    const projects = (await apiGet("/api/projects", token)) as Array<{ id: string; name: string }>;
+    // Phase 87 S1 (ADR-337): API path
+    const projects = (await apiGet("/api/matters", token)) as Array<{ id: string; name: string }>;
     const project = projects.find(
       (p) => p.name === EDITED_NAME || p.name === PROJECT_WITH_CUSTOMER
     );
@@ -213,7 +215,8 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
   test("5. Archive project (Complete then Archive)", async ({ page }) => {
     // First, get the project ID via API for the archive step
     const token = await getToken("alice");
-    const projects = (await apiGet("/api/projects?status=ALL", token)) as Array<{
+    // Phase 87 S1 (ADR-337): API path
+    const projects = (await apiGet("/api/matters?status=ALL", token)) as Array<{
       id: string;
       name: string;
     }>;
@@ -227,10 +230,12 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
     projectId = project.id;
 
     // Complete the project first (required before archive)
-    await apiPatch(`/api/projects/${projectId}/complete`, token, { acknowledgeUnbilledTime: true });
+    // Phase 87 S1 (ADR-337): API path
+    await apiPatch(`/api/matters/${projectId}/complete`, token, { acknowledgeUnbilledTime: true });
 
     // Then archive
-    await apiPatch(`/api/projects/${projectId}/archive`, token);
+    // Phase 87 S1 (ADR-337): API path
+    await apiPatch(`/api/matters/${projectId}/archive`, token);
 
     // Verify in UI
     await loginAs(page, "alice");
@@ -248,7 +253,8 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
     // Attempt to create a task on the archived project via API
     const token = await getToken("alice");
     const { status } = await apiPost(
-      `/api/projects/${projectId}/tasks`,
+      // Phase 87 S1 (ADR-337): API path
+      `/api/matters/${projectId}/tasks`,
       {
         title: `Blocked Task ${RUN_ID}`,
       },
@@ -266,7 +272,8 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
 
     // Try to create a task on the archived project — should fail
     const { status } = await apiPost(
-      `/api/projects/${projectId}/tasks`,
+      // Phase 87 S1 (ADR-337): API path
+      `/api/matters/${projectId}/tasks`,
       {
         title: `Time Block Test ${RUN_ID}`,
       },

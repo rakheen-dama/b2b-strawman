@@ -42,7 +42,7 @@ function makeProject(overrides: Partial<Project> = {}): Project {
     name: "Test Project",
     description: "A test project",
     status: "ACTIVE",
-    customerId: null,
+    clientId: null,
     dueDate: null,
     createdBy: "user-1",
     createdByName: "Alice",
@@ -52,7 +52,7 @@ function makeProject(overrides: Partial<Project> = {}): Project {
     completedBy: null,
     completedByName: null,
     archivedAt: null,
-    projectRole: null,
+    matterRole: null,
     ...overrides,
   };
 }

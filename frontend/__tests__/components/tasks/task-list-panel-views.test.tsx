@@ -53,7 +53,7 @@ vi.mock("next/navigation", () => ({
 function makeTask(overrides: Partial<Task> = {}): Task {
   return {
     id: "t1",
-    projectId: "p1",
+    matterId: "p1",
     title: "Fix login bug",
     description: null,
     status: "OPEN",

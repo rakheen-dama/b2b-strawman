@@ -90,7 +90,8 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
   test.beforeAll(async () => {
     const token = await getToken("alice");
     const { data } = await apiPost(
-      "/api/projects",
+      // Phase 87 S1 (ADR-337): API path
+      "/api/matters",
       {
         name: PROJECT_NAME,
         description: "Project for task E2E tests",
@@ -104,7 +105,8 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
     const carol = members.find((m) => m.name?.includes("Carol"));
     if (carol) {
       await apiPost(
-        `/api/projects/${projectId}/members`,
+        // Phase 87 S1 (ADR-337): API path
+        `/api/matters/${projectId}/members`,
         {
           memberId: carol.id,
           projectRole: "contributor",
@@ -144,7 +146,8 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
 
     // Get the task ID via API for subsequent tests
     const token = await getToken("alice");
-    const tasks = (await apiGet(`/api/projects/${projectId}/tasks`, token)) as Array<{
+    // Phase 87 S1 (ADR-337): API path
+    const tasks = (await apiGet(`/api/matters/${projectId}/tasks`, token)) as Array<{
       id: string;
       title: string;
     }>;
@@ -267,7 +270,8 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
 
     // Create a fresh task to assign (cancelled task cannot be edited)
     const { data: newTask } = await apiPost(
-      `/api/projects/${projectId}/tasks`,
+      // Phase 87 S1 (ADR-337): API path
+      `/api/matters/${projectId}/tasks`,
       {
         title: `Assignable Task ${RUN_ID}`,
       },

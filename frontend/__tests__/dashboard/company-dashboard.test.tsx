@@ -103,7 +103,7 @@ vi.mock("@/lib/terminology", () => ({
 }));
 
 const mockKpis: KpiResponse = {
-  activeProjectCount: 12,
+  activeMatterCount: 12,
   totalHoursLogged: 847.5,
   billablePercent: 72.3,
   overdueTaskCount: 8,
@@ -114,7 +114,7 @@ const mockKpis: KpiResponse = {
     { period: "2025-W03", value: 138.0 },
   ],
   previousPeriod: {
-    activeProjectCount: 11,
+    activeMatterCount: 11,
     totalHoursLogged: 792.0,
     billablePercent: 68.5,
     overdueTaskCount: 5,
@@ -124,9 +124,9 @@ const mockKpis: KpiResponse = {
 
 const mockProjectHealth: ProjectHealth[] = [
   {
-    projectId: "p1",
-    projectName: "Website Redesign",
-    customerName: "Acme Corp",
+    matterId: "p1",
+    matterName: "Website Redesign",
+    clientName: "Acme Corp",
     healthStatus: "HEALTHY",
     healthReasons: [],
     tasksDone: 8,
@@ -144,9 +144,9 @@ const mockWorkloadData: TeamWorkloadEntry[] = [
     totalHours: 42.5,
     billableHours: 35.0,
     projects: [
-      { projectId: "p1", projectName: "Website Redesign", hours: 20.0 },
-      { projectId: "p2", projectName: "Mobile App", hours: 12.5 },
-      { projectId: "p3", projectName: "API Migration", hours: 10.0 },
+      { matterId: "p1", matterName: "Website Redesign", hours: 20.0 },
+      { matterId: "p2", matterName: "Mobile App", hours: 12.5 },
+      { matterId: "p3", matterName: "API Migration", hours: 10.0 },
     ],
   },
   {
@@ -155,8 +155,8 @@ const mockWorkloadData: TeamWorkloadEntry[] = [
     totalHours: 38.0,
     billableHours: 30.0,
     projects: [
-      { projectId: "p1", projectName: "Website Redesign", hours: 25.0 },
-      { projectId: "p3", projectName: "API Migration", hours: 13.0 },
+      { matterId: "p1", matterName: "Website Redesign", hours: 25.0 },
+      { matterId: "p3", matterName: "API Migration", hours: 13.0 },
     ],
   },
 ];
@@ -167,8 +167,8 @@ const mockActivityItems: CrossProjectActivityItem[] = [
     eventType: "task.created",
     description: "Alice created task 'Fix login bug'",
     actorName: "Alice Johnson",
-    projectId: "p1",
-    projectName: "Website Redesign",
+    matterId: "p1",
+    matterName: "Website Redesign",
     occurredAt: new Date(Date.now() - 3600 * 1000).toISOString(),
   },
   {
@@ -176,8 +176,8 @@ const mockActivityItems: CrossProjectActivityItem[] = [
     eventType: "comment.added",
     description: "Bob commented on 'API spec review'",
     actorName: "Bob Smith",
-    projectId: "p2",
-    projectName: "Mobile App",
+    matterId: "p2",
+    matterName: "Mobile App",
     occurredAt: new Date(Date.now() - 7200 * 1000).toISOString(),
   },
   {
@@ -185,8 +185,8 @@ const mockActivityItems: CrossProjectActivityItem[] = [
     eventType: "time_entry.created",
     description: "Carol logged 2h on 'Dashboard feature'",
     actorName: "Carol Davis",
-    projectId: "p3",
-    projectName: "API Migration",
+    matterId: "p3",
+    matterName: "API Migration",
     occurredAt: new Date(Date.now() - 86400 * 1000).toISOString(),
   },
 ];

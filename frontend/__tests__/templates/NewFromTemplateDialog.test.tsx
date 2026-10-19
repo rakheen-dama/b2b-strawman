@@ -45,7 +45,7 @@ const TEMPLATES: ProjectTemplateResponse[] = [
     description: "Monthly bookkeeping template",
     billableDefault: true,
     source: "MANUAL",
-    sourceProjectId: null,
+    sourceMatterId: null,
     active: true,
     taskCount: 3,
     tagCount: 0,

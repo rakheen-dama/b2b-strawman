@@ -168,7 +168,7 @@ describe("Task Recurrence", () => {
   it("shows recurring badge for recurring tasks in the task list", async () => {
     const recurringTask: Task = {
       id: "task-1",
-      projectId: "proj-1",
+      matterId: "proj-1",
       title: "Recurring Report",
       description: null,
       status: "OPEN",

@@ -43,8 +43,8 @@ function withProfile(profile: string | null, ui: React.ReactElement) {
 function task(overrides: Partial<MyWorkTaskItem> = {}): MyWorkTaskItem {
   return {
     id: "t-1",
-    projectId: "p-1",
-    projectName: "Alpha",
+    matterId: "p-1",
+    matterName: "Alpha",
     title: "Draft the thing",
     status: "OPEN",
     priority: "HIGH",

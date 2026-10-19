@@ -91,7 +91,8 @@ test.describe.serial("PROJ-03: Time Entries", () => {
 
     // Create project
     const { data: project } = await apiPost(
-      "/api/projects",
+      // Phase 87 S1 (ADR-337): API path
+      "/api/matters",
       {
         name: PROJECT_NAME,
         description: "Project for time entry E2E tests",
@@ -105,7 +106,8 @@ test.describe.serial("PROJ-03: Time Entries", () => {
     const carol = members.find((m) => m.name?.includes("Carol"));
     if (carol) {
       await apiPost(
-        `/api/projects/${projectId}/members`,
+        // Phase 87 S1 (ADR-337): API path
+        `/api/matters/${projectId}/members`,
         {
           memberId: carol.id,
           projectRole: "contributor",
@@ -116,7 +118,8 @@ test.describe.serial("PROJ-03: Time Entries", () => {
 
     // Create task
     const { data: task } = await apiPost(
-      `/api/projects/${projectId}/tasks`,
+      // Phase 87 S1 (ADR-337): API path
+      `/api/matters/${projectId}/tasks`,
       {
         title: TASK_TITLE,
       },

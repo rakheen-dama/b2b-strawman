@@ -15,7 +15,7 @@ function makeComment(overrides: Partial<Comment> = {}): Comment {
     id: "c1",
     entityType: "TASK",
     entityId: "t1",
-    projectId: "p1",
+    matterId: "p1",
     authorMemberId: "m1",
     authorName: "Alice Johnson",
     authorAvatarUrl: null,

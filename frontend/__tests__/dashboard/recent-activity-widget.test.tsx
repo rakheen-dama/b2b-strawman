@@ -51,8 +51,8 @@ describe("RecentActivityWidget", () => {
         eventType: "task.created",
         description: "Created task: Fix login bug",
         actorName: "Alice Smith",
-        projectId: "proj-1",
-        projectName: "Website Redesign",
+        matterId: "proj-1",
+        matterName: "Website Redesign",
         occurredAt: new Date().toISOString(),
       },
     ];
@@ -74,8 +74,8 @@ describe("RecentActivityWidget", () => {
         eventType: "comment.created",
         description: "Added a comment on task: Review design",
         actorName: null as unknown as string, // simulate null from backend
-        projectId: "proj-1",
-        projectName: "Website Redesign",
+        matterId: "proj-1",
+        matterName: "Website Redesign",
         occurredAt: new Date().toISOString(),
       },
     ];
@@ -93,8 +93,8 @@ describe("RecentActivityWidget", () => {
         eventType: "task.updated",
         description: "Updated task status",
         actorName: undefined as unknown as string, // simulate undefined
-        projectId: "proj-2",
-        projectName: "Mobile App",
+        matterId: "proj-2",
+        matterName: "Mobile App",
         occurredAt: new Date().toISOString(),
       },
     ];
@@ -110,8 +110,8 @@ describe("RecentActivityWidget", () => {
         eventType: "document.created",
         description: "Uploaded a document",
         actorName: "",
-        projectId: "proj-1",
-        projectName: "Website Redesign",
+        matterId: "proj-1",
+        matterName: "Website Redesign",
         occurredAt: new Date().toISOString(),
       },
     ];
@@ -127,8 +127,8 @@ describe("RecentActivityWidget", () => {
         eventType: "task.created",
         description: "Test activity",
         actorName: "Test User",
-        projectId: "proj-1",
-        projectName: "Test Project",
+        matterId: "proj-1",
+        matterName: "Test Project",
         occurredAt: new Date().toISOString(),
       },
     ];

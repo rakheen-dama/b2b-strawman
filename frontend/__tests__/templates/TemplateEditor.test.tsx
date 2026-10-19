@@ -33,7 +33,7 @@ const SAMPLE_TEMPLATE: ProjectTemplateResponse = {
   description: "Standard monthly accounting workflow",
   billableDefault: true,
   source: "MANUAL",
-  sourceProjectId: null,
+  sourceMatterId: null,
   active: true,
   taskCount: 1,
   tagCount: 0,

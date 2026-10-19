@@ -21,7 +21,7 @@ const mockAllProjects: Project[] = [
     createdBy: "m1",
     createdAt: "2024-01-01T00:00:00Z",
     updatedAt: "2024-01-01T00:00:00Z",
-    projectRole: null,
+    matterRole: null,
   },
   {
     id: "p2",
@@ -30,7 +30,7 @@ const mockAllProjects: Project[] = [
     createdBy: "m1",
     createdAt: "2024-02-01T00:00:00Z",
     updatedAt: "2024-02-01T00:00:00Z",
-    projectRole: null,
+    matterRole: null,
   },
   {
     id: "p3",
@@ -39,7 +39,7 @@ const mockAllProjects: Project[] = [
     createdBy: "m1",
     createdAt: "2024-03-01T00:00:00Z",
     updatedAt: "2024-03-01T00:00:00Z",
-    projectRole: null,
+    matterRole: null,
   },
 ];
 

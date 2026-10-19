@@ -1,4 +1,503 @@
 {
+  "outputRecords" : {
+    "dto.AttachDocumentConfirmResponse" : [ {
+      "name" : "documentId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "correspondenceId",
+      "type" : "java.util.UUID"
+    } ],
+    "dto.AttachDocumentInitResponse" : [ {
+      "name" : "documentId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "presignedUrl",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "expiresInSeconds",
+      "type" : "long"
+    } ],
+    "dto.FileCorrespondenceToolResponse" : [ {
+      "name" : "correspondenceId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "idempotent",
+      "type" : "boolean"
+    } ],
+    "dto.McpActivityItem" : [ {
+      "name" : "occurredAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "entityType",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "entityId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "entityName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "action",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "message",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "actor",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpAuditEventItem" : [ {
+      "name" : "occurredAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "eventType",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "actor",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "entityType",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "entityId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "summary",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpClientDto" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "type",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "lifecycleStatus",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "contacts",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.mcp.dto.McpClientDto$Contact>"
+    }, {
+      "name" : "linkedMatters",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.mcp.dto.McpClientDto$LinkedMatter>"
+    } ],
+    "dto.McpClientDto$Contact" : [ {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "email",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "phone",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpClientDto$LinkedMatter" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "createdAt",
+      "type" : "java.time.Instant"
+    } ],
+    "dto.McpClientListItem" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "type",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "lifecycleStatus",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpComplianceGapDto" : [ {
+      "name" : "customerId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "ficaStatus",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "items",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.mcp.dto.McpComplianceGapDto$Item>"
+    }, {
+      "name" : "truncated",
+      "type" : "boolean"
+    } ],
+    "dto.McpComplianceGapDto$Item" : [ {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "required",
+      "type" : "boolean"
+    } ],
+    "dto.McpCorrespondenceDto" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "customerId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "projectId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "direction",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "subject",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "bodyText",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "bodyHtml",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "fromAddress",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "toAddresses",
+      "type" : "java.util.List<java.lang.String>"
+    }, {
+      "name" : "ccAddresses",
+      "type" : "java.util.List<java.lang.String>"
+    }, {
+      "name" : "sentAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "receivedAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "threadKey",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "messageId",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "attachmentCount",
+      "type" : "long"
+    }, {
+      "name" : "filedAt",
+      "type" : "java.time.Instant"
+    } ],
+    "dto.McpCorrespondenceListItem" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "subject",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "fromAddress",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "receivedAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "attachmentCount",
+      "type" : "long"
+    }, {
+      "name" : "direction",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpDocumentDto" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "scope",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "contentType",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "sizeBytes",
+      "type" : "long"
+    }, {
+      "name" : "projectId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "customerId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "createdAt",
+      "type" : "java.time.Instant"
+    } ],
+    "dto.McpDownloadUrl" : [ {
+      "name" : "url",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "expiresInSeconds",
+      "type" : "long"
+    } ],
+    "dto.McpError" : [ {
+      "name" : "error",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "message",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpFirmProfileDto" : [ {
+      "name" : "practiceAreas",
+      "type" : "java.util.List<java.lang.String>"
+    }, {
+      "name" : "jurisdiction",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "riskCalibration",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "houseStyleNotes",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "feeEstimationNotes",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpInvoiceDto" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "customerId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "customerName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "invoiceNumber",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "currency",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "issueDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "dueDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "subtotalMinor",
+      "type" : "long"
+    }, {
+      "name" : "taxMinor",
+      "type" : "long"
+    }, {
+      "name" : "totalMinor",
+      "type" : "long"
+    }, {
+      "name" : "lines",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.mcp.dto.McpInvoiceDto$Line>"
+    }, {
+      "name" : "payments",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.mcp.dto.McpInvoiceDto$Payment>"
+    }, {
+      "name" : "truncated",
+      "type" : "boolean"
+    } ],
+    "dto.McpInvoiceDto$Line" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "projectId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "projectName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "lineType",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "description",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "amountMinor",
+      "type" : "long"
+    } ],
+    "dto.McpInvoiceDto$Payment" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "amountMinor",
+      "type" : "long"
+    }, {
+      "name" : "currency",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "reference",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpMatterDto" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "description",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "priority",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "workType",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "referenceNumber",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "customerId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "dueDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "createdAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "updatedAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "projectRole",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpMatterListItem" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "customerId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "dueDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "createdAt",
+      "type" : "java.time.Instant"
+    } ],
+    "dto.McpPage" : [ {
+      "name" : "items",
+      "type" : "java.util.List<T>"
+    }, {
+      "name" : "page",
+      "type" : "int"
+    }, {
+      "name" : "size",
+      "type" : "int"
+    }, {
+      "name" : "total",
+      "type" : "long"
+    }, {
+      "name" : "truncated",
+      "type" : "boolean"
+    } ],
+    "dto.McpTrustBalanceDto" : [ {
+      "name" : "trustAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "customerId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "balanceMinor",
+      "type" : "long"
+    }, {
+      "name" : "currency",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpTrustTransactionItem" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "date",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "type",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "amountMinor",
+      "type" : "long"
+    }, {
+      "name" : "currency",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "reference",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpUnbilledSummaryItem" : [ {
+      "name" : "customerId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "customerName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "amountMinor",
+      "type" : "long"
+    }, {
+      "name" : "currency",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpUnbilledSummaryItem$McpUnbilledMatterSummary" : [ {
+      "name" : "projectId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "totalAmountMinor",
+      "type" : "long"
+    }, {
+      "name" : "currency",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "entryCount",
+      "type" : "int"
+    } ],
+    "dto.ProposeTaskToolResponse" : [ {
+      "name" : "gateId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "duplicate",
+      "type" : "boolean"
+    }, {
+      "name" : "message",
+      "type" : "java.lang.String"
+    } ],
+    "dto.ResolveMatterResponse" : [ {
+      "name" : "customer",
+      "type" : "io.b2mash.b2b.b2bstrawman.mcp.dto.McpClientDto"
+    }, {
+      "name" : "matters",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.mcp.dto.McpMatterDto>"
+    } ]
+  },
   "resourceTemplates" : [ {
     "description" : "A single client (customer) by id, with contacts and linked matters. Org-wide read.",
     "mimeType" : "application/json",

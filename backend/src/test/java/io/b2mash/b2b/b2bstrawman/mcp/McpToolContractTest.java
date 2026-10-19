@@ -10,27 +10,34 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.lang.reflect.RecordComponent;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.util.ClassUtils;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializationFeature;
@@ -39,9 +46,16 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * ADR-343 MCP contract pin: snapshots {@code tools/list} (name, description, inputSchema) plus
  * {@code resources/list} and {@code resources/templates/list} exactly as served to the
- * kazi-legal-za plugin, and compares them byte-for-byte to {@code
- * src/test/resources/mcp/tool-contract.json}. The Phase 87 matter/client wire rename (ADR-337)
- * explicitly excludes {@code mcp/}; this test proves it.
+ * kazi-legal-za plugin, PLUS the structural shape of every MCP output record in {@code mcp/dto}
+ * (record components — name and generic type — in declaration order), and compares them
+ * byte-for-byte to {@code src/test/resources/mcp/tool-contract.json}. The Phase 87 matter/client
+ * wire rename (ADR-337) explicitly excludes {@code mcp/} — {@code WireVocabularyContractTest} skips
+ * {@code .mcp.} — so this test proves it for both inputs and outputs: a rename of e.g. {@code
+ * McpMatterDto.customerId} is a contract diff here.
+ *
+ * <p>Output shapes are pinned by reflection (tools return {@code Object}, so {@code tools/list}
+ * carries no output schema); Jackson serialises a record by its component names, so the component
+ * list is the JSON key set the plugin reads.
  *
  * <p>The two {@code {id}} resources are URI templates, so the server advertises them via {@code
  * resources/templates/list} (not {@code resources/list}) — both lists are snapshotted.
@@ -99,6 +113,11 @@ class McpToolContractTest {
           "propose_task",
           "resolve_matter_by_email",
           "search_documents");
+
+  /** Package tree of the records MCP tools/resources return (ADR-343: "stay as shipped"). */
+  private static final String OUTPUT_DTO_PACKAGE = "io.b2mash.b2b.b2bstrawman.mcp.dto";
+
+  private static final String MCP_PACKAGE_PREFIX = "io.b2mash.b2b.b2bstrawman.mcp.";
 
   private static final Path SNAPSHOT = Path.of("src/test/resources/mcp/tool-contract.json");
   private static final Path ACTUAL = Path.of("target/mcp/tool-contract.actual.json");
@@ -174,6 +193,7 @@ class McpToolContractTest {
     contract.put("tools", tools);
     contract.put("resources", resources);
     contract.put("resourceTemplates", templates);
+    contract.put("outputRecords", outputRecordShapes());
     String actual = normalise(CANONICAL.writeValueAsString(contract));
 
     if (Boolean.getBoolean("mcp.contract.update")) {
@@ -195,7 +215,8 @@ class McpToolContractTest {
       Files.writeString(ACTUAL, actual, StandardCharsets.UTF_8);
       fail(
           String.format(
-              "ADR-343: the served MCP contract changed. The kazi-legal-za plugin depends on it.%n"
+              "ADR-343: the MCP contract (served tools/resources or mcp/dto output record shapes)"
+                  + " changed. The kazi-legal-za plugin depends on it.%n"
                   + "Inspect: diff -u %s %s%n"
                   + "If the change is intended, rerun with -Dmcp.contract.update=true and cite an"
                   + " ADR in the PR.%n%s",
@@ -204,6 +225,37 @@ class McpToolContractTest {
   }
 
   // ---- helpers ------------------------------------------------------------------
+
+  /**
+   * {@code "dto.McpMatterDto" -> [{name, type}, ...]} for every main-code record under {@link
+   * #OUTPUT_DTO_PACKAGE} (nested records included, keyed by binary name), sorted by key; components
+   * in declaration order.
+   */
+  private Map<String, List<Map<String, String>>> outputRecordShapes() {
+    var scanner = new ClassPathScanningCandidateComponentProvider(false);
+    scanner.addIncludeFilter(new AssignableTypeFilter(Record.class));
+    Map<String, List<Map<String, String>>> shapes = new TreeMap<>();
+    for (BeanDefinition bd : scanner.findCandidateComponents(OUTPUT_DTO_PACKAGE)) {
+      Class<?> c = ClassUtils.resolveClassName(bd.getBeanClassName(), getClass().getClassLoader());
+      CodeSource cs = c.getProtectionDomain().getCodeSource();
+      if (cs != null && cs.getLocation().getPath().contains("/test-classes/")) {
+        continue;
+      }
+      List<Map<String, String>> components = new ArrayList<>();
+      for (RecordComponent rc : c.getRecordComponents()) {
+        Map<String, String> m = new LinkedHashMap<>();
+        m.put("name", rc.getName());
+        m.put("type", rc.getGenericType().getTypeName());
+        components.add(m);
+      }
+      shapes.put(c.getName().substring(MCP_PACKAGE_PREFIX.length()), components);
+    }
+    assertThat(shapes)
+        .as("ADR-343: the output-record scan must see the %s records", OUTPUT_DTO_PACKAGE)
+        .isNotEmpty()
+        .containsKey("dto.McpMatterDto");
+    return shapes;
+  }
 
   private List<Object> sortedNodes(JsonNode array, String key) {
     List<JsonNode> nodes = new ArrayList<>();

@@ -90,15 +90,28 @@ class WireVocabularyContractTest {
    * Controller$}), but which ARE serialised to the frontend and are scheduled for the Batch 1
    * rename. Internal records ({@code ProjectHealthInput}, {@code ProjectHealthResult}, {@code
    * ProjectMemberInfo}, {@code ProjectAccess}) are deliberately NOT listed.
+   *
+   * <p>Each entry is an ALIAS GROUP {legacy FQCN, post-rename FQCN} (same package; target names
+   * from architecture §12.3 / tasks 607B), so 607B/607C can rename these records WITHOUT editing
+   * this test: a record is a wire record if its FQCN is in ANY group (the renamed class is still
+   * scanned — no false pass), and the existence check only requires AT LEAST ONE name per group to
+   * be found (a deletion/move out of the package is still caught; a rename is not). Records whose
+   * name does not change are single-element groups.
    */
-  static final Set<String> ADDITIONAL_WIRE_RECORDS =
-      Set.of(
-          BASE + ".setupstatus.ProjectSetupStatus",
-          BASE + ".setupstatus.ProjectUnbilledBreakdown",
-          BASE + ".calendar.CalendarService$CalendarItemDto",
-          BASE + ".project.ProjectUpcomingDeadline",
-          BASE + ".project.ProjectWithRole",
-          BASE + ".budget.BudgetStatus");
+  static final List<Set<String>> ADDITIONAL_WIRE_RECORDS =
+      List.of(
+          Set.of(BASE + ".setupstatus.ProjectSetupStatus", BASE + ".setupstatus.MatterSetupStatus"),
+          Set.of(
+              BASE + ".setupstatus.ProjectUnbilledBreakdown",
+              BASE + ".setupstatus.MatterUnbilledBreakdown"),
+          Set.of(BASE + ".calendar.CalendarService$CalendarItemDto"),
+          Set.of(
+              BASE + ".project.ProjectUpcomingDeadline", BASE + ".project.MatterUpcomingDeadline"),
+          Set.of(BASE + ".project.ProjectWithRole", BASE + ".project.MatterWithRole"),
+          Set.of(BASE + ".budget.BudgetStatus"));
+
+  private static final Set<String> ADDITIONAL_WIRE_RECORD_NAMES =
+      ADDITIONAL_WIRE_RECORDS.stream().flatMap(Set::stream).collect(Collectors.toUnmodifiableSet());
 
   /** Under the renamed roots the id variable must be {@code {matterId}}/{@code {clientId}}. */
   private static final Pattern BARE_ID_UNDER_RENAMED_ROOT =
@@ -148,11 +161,13 @@ class WireVocabularyContractTest {
   @Test
   void noNewLegacyNounOnScopedRoutes() throws IOException {
     SortedMap<String, String> offenders = new TreeMap<>(); // offender -> handler (worklist output)
+    int scopedRoutes = 0;
     for (Map.Entry<RequestMappingInfo, HandlerMethod> e : mapping.getHandlerMethods().entrySet()) {
       Class<?> beanType = e.getValue().getBeanType();
       if (!inScope(beanType.getPackageName())) {
         continue;
       }
+      scopedRoutes++;
       String methods = methodsOf(e.getKey());
       for (String pattern : e.getKey().getPatternValues()) {
         if (isLegacyRoute(pattern)) {
@@ -162,6 +177,12 @@ class WireVocabularyContractTest {
         }
       }
     }
+    assertThat(SCOPED_PACKAGES).isNotEmpty();
+    assertThat(scopedRoutes)
+        .as(
+            "the route scan must see handler methods in %s (guard against a moved package)",
+            SCOPED_PACKAGES)
+        .isPositive();
     ratchet(ROUTE, offenders);
   }
 
@@ -179,7 +200,7 @@ class WireVocabularyContractTest {
         if (isTestClass(c) || !isWireRecord(c)) {
           continue;
         }
-        if (ADDITIONAL_WIRE_RECORDS.contains(c.getName())) {
+        if (ADDITIONAL_WIRE_RECORD_NAMES.contains(c.getName())) {
           seenAdditional.add(c.getName());
         }
         scanned++;
@@ -199,10 +220,18 @@ class WireVocabularyContractTest {
             "the DTO scan must see wire records in %s (guard against a moved package)",
             SCOPED_PACKAGES)
         .isPositive();
-    // A renamed/moved explicitly-listed record must be re-pointed here, not silently dropped.
-    assertThat(seenAdditional)
-        .as("every ADDITIONAL_WIRE_RECORDS entry must still exist (update the set when renaming)")
-        .containsExactlyInAnyOrderElementsOf(ADDITIONAL_WIRE_RECORDS);
+    // Every alias group must resolve to at least one scanned record: a rename to the listed
+    // post-rename name passes; a deletion, a move out of scope, or a rename to an UNLISTED name
+    // fails (re-point the group rather than silently dropping the record from the scan).
+    List<Set<String>> missingGroups =
+        ADDITIONAL_WIRE_RECORDS.stream()
+            .filter(group -> group.stream().noneMatch(seenAdditional::contains))
+            .toList();
+    assertThat(missingGroups)
+        .as(
+            "every ADDITIONAL_WIRE_RECORDS alias group must match a scanned record (legacy or"
+                + " post-rename name) — re-point the group if the record moved/was renamed")
+        .isEmpty();
     ratchet(DTO, offenders);
   }
 
@@ -243,7 +272,7 @@ class WireVocabularyContractTest {
   static boolean isWireRecord(Class<?> c) {
     String n = c.getName();
     String simple = c.getSimpleName();
-    if (ADDITIONAL_WIRE_RECORDS.contains(n)) {
+    if (ADDITIONAL_WIRE_RECORD_NAMES.contains(n)) {
       return true;
     }
     if (n.contains(".mcp.")

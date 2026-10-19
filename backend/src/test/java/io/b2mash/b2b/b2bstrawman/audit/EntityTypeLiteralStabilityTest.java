@@ -24,9 +24,14 @@ import org.junit.jupiter.api.Test;
  *
  * <p>Plain JUnit source scan (no Spring context), mirroring {@code CollectionsCoreBoundaryTest}:
  * reads {@code src/main/java} as text. The literals are pinned where they actually live (the call
- * sites marked {@code // ADR-342: storage key, do not rename}); {@code EntityTagService} and {@code
- * ViewFilterHelper} are generic (callers pass the key) and {@code fielddefinition/} persists the
- * {@link EntityType} enum name, so those are covered by negative pins and the enum check. There is
+ * sites marked {@code // ADR-342: storage key, do not rename}). {@code EntityTagService} ({@code
+ * tag/}) and {@code ViewFilterHelper} ({@code view/}) contain NO {@code "PROJECT"}/{@code
+ * "CUSTOMER"} literal at all — they are generic and the caller passes the key — so they are covered
+ * ONLY by the negative "no {@code "MATTER"}/{@code "CLIENT"}" sweep over {@code tag/} and {@code
+ * view/}; the positive pins for the keys they receive live at the caller sites ({@code
+ * ProjectController}, {@code ProjectService}, {@code CustomerController}, {@code
+ * ProjectTemplateService}, the context builders). {@code fielddefinition/} persists the {@link
+ * EntityType} enum name, so it is covered by the enum check plus the same negative sweep. There is
  * deliberately NO global {@code "MATTER"} ban — {@code MatterClosureService} legitimately uses it
  * as a retention record type. A deliberate future rename must supersede ADR-342, ship the data
  * migration, and update this test consciously.

@@ -17,3 +17,16 @@
 - Incident: first frontend build hit stale-.next Turbopack next/font/google error; clean rebuild green → lessons.md.
 - Follow-ups (non-blocking): 596C.4 proof is module-graph not render; notifications rows of type DEAL_WON not cleaned by V136 (candidate for 605 squash or a later slice).
 - Next: /epic_v2 597 (remove proposal + legacy portal + portal proposals; tenant V137, global V26).
+
+# QA scenario coherence after Phase 86 (pre-87 docs PR) — spec `tasks/qa-scenario-amendments-post86.md`
+
+- [x] Audit copied into repo: `qa/testplan/legal-testplan-audit-2026-10-19.md`
+- [x] Founder decisions recorded (D1–D5) + ideation log `.claude/ideas/qa-demo-plans-post86-ideation-2026-10-19.md`
+- [x] Flows verified against code: Start Onboarding / Mark Complete + Confirm + document picker / Activate Customer; Send for Acceptance → `/accept/<token>` "I Accept"; real portal routes + `/portal/*` endpoints; RAF + estate template task names; billing run selects ACTIVE only
+- [x] Worktree + branch `qa/scenario-coherence-post86`
+- [x] Apply §3 hunks to `legal-za-90day-keycloak.md` (A deletions, A-trim, B-86, B-pre, new 4.3a–c; C and D untouched)
+- [x] Apply §4 hunks to `legal-za-full-lifecycle-keycloak.md` (5.7, Day 7/8, 10.1a–d, 15.x retarget, R70k, 60.11a, 21.5, names)
+- [x] MIGRATION-NOTES: 90-day row + "Post-86 coherence amendments" + "Known-stale for Phase 87" lists
+- [x] Master doc → legal-only scripts table
+- [x] §2.5 verification: grep → only removal annotations remain; wow counts 7/7; §6 chains re-read. Days 0–4 Keycloak smoke **DEFERRED** (dev stack down at build time; `svc.sh status` all stopped)
+- [ ] PR with per-hunk class table; CodeRabbit + reviewer re-read of §6; merge via gate (raise, never bypass)

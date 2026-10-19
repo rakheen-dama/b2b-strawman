@@ -2,7 +2,7 @@
 
 **Vertical profile**: `legal-za`
 **Story**: "Mathebula & Partners" — Johannesburg litigation firm
-**Stack**: Keycloak dev stack (frontend 3000 / backend 8080 / gateway 8443 / keycloak 8180 / mailpit 8025)
+**Stack**: Keycloak dev stack (frontend 3000 / backend 8080 / gateway 8443 / keycloak 8180 / mailpit 8025 / **portal 3002** — needed by 4.3b, 14.12 and 68.1)
 **Master doc**: `qa/testplan/demo-readiness-keycloak-master.md`
 **Driver**: `/qa-cycle-kc qa/testplan/demos/legal-za-90day-keycloak.md`
 
@@ -30,7 +30,7 @@
 ## Demo wow moments (capture 📸 on clean pass)
 
 1. **Day 0** — Firm dashboard with legal nav (Matters, Trust Accounting, Court Calendar, Conflict Check) + Mathebula brand colour applied
-2. **Day 1** — Pipeline board with the legal-za stage pack (Enquiry → Conflict check → Engagement), a deal dragged into Won, and the client auto-nudged PROSPECT → ONBOARDING (Phase 80 win-loop)
+2. **Day 4** — Engagement letter generated from the matter, sent for acceptance, and accepted by Sipho on the client portal (ADR-336 mandate flow) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.1: replaces the deleted Pipeline wow moment, Epic 596 #1565)
 3. **Day 2** — Conflict check "CLEAR" result with the SA legal green confirmation state
 4. **Day 5** — Matter detail page for a RAF claim, with promoted fields (matter_type, court_name, case_number) rendered inline + vertical terminology ("Matter" not "Project")
 5. **Day 33** — Profitability page with three active matters, ZAR revenue vs cost, margin ribbon
@@ -153,8 +153,8 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 ### Phase G: Custom fields (field promotion check)
 
 - [ ] **0.46** Navigate to **Settings > Custom Fields**
-- [ ] **0.47** Verify `legal-za-customer` field group is present with fields including: `client_type`, `id_passport_number`, `physical_address`, `registration_number`, `beneficial_owners`
-- [ ] **0.48** Verify `legal-za-project` (matter) field group is present with fields including: `matter_type`, `case_number`, `court_name`, `opposing_party`
+- [ ] **0.47** Verify `legal-za-customer` field group is present with exactly: `id_passport_number`, `postal_address`, `preferred_correspondence`, `referred_by` (client type, physical address and registration number are native client fields, not pack fields) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: field list re-derived from field-packs/legal-za-customer.json)
+- [ ] **0.48** Verify `legal-za-project` (matter) field group is present with: `case_number`, `court_name`, `opposing_party`, `opposing_attorney`, `advocate_name`, `date_of_instruction`, `estimated_value` (matter type is the native **Work Type**, not a pack field) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: field list re-derived from field-packs/legal-za-project.json)
 - [ ] **0.49** **Field promotion checkpoint (customer)**: on a blank **New Client** dialog (open but don't submit), verify these promoted slugs render as native first-class inputs INLINE (not inside a generic "Other Fields" section): `client_type`, `physical_address`, `registration_number`, `tax_number`, `phone`, `primary_contact_name`, `primary_contact_email`
 - [ ] **0.50** **Field promotion checkpoint (customer negative)**: verify these promoted slugs do NOT appear again inside the CustomFieldSection on the **Fields** tab (`tab-group-details` → `tab-item-fields`): same list as 0.49
 - [ ] **0.51** **Field promotion checkpoint (matter)**: on a blank **New Matter** dialog, verify `matter_type` renders as a native inline form input (promoted project slug)
@@ -167,18 +167,14 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.55** Navigate to **Settings > Automations**
 - [ ] **0.56** Verify legal-za automation rules are listed (may be zero — legal profile has no automation pack today; if the list is empty, confirm no JS errors in console)
 
-### Phase H2: Pipeline stage pack (Phase 80)
+### Phase H2 — removed (Phase 86)
 
-- [ ] **0.56a** Navigate to **Settings > Pipeline** (`/org/{slug}/settings/pipeline`) → page renders with heading **Pipeline** and subtitle "Configure pipeline stages, ordering, and probabilities."
-- [ ] **0.56b** Verify the `deal-pipeline-legal-za` stage pack is seeded in order: **Enquiry (10%)**, **Conflict check (30%)**, **Engagement (60%)**, **Won (100%)**, **Lost (0%)** — stage types OPEN/OPEN/OPEN/WON/LOST
-- [ ] **0.56c** Verify the **New Stage** button renders (Owner holds `MANAGE_PIPELINE`)
-- [ ] **0.56d** Verify sidebar shows a **Pipeline** nav item in the Clients group. Note: "Pipeline"/"Deals" are NOT terminology-mapped in any vertical — the label is literally "Pipeline" even under legal-za
-- [ ] **0.56e** Navigate to **Pipeline** (`/org/{slug}/pipeline`) → board renders the three open stage columns plus collapsed **Won**/**Lost** columns; empty columns show "No deals"; header shows **Open weighted value** and **Win rate** summary stats
+> Phase H2 (Pipeline stage pack, steps 0.56a–0.56e) removed — Epic 596 (#1565), ADR-336.
 
 ### Phase I: Progressive disclosure check
 
-- [ ] **0.57** Navigate to **Settings > Modules**
-- [ ] **0.58** Verify **all four legal modules are enabled**: `court_calendar`, `conflict_check`, `lssa_tariff`, `trust_accounting`
+- [ ] **0.57** Navigate to **Settings > Features**
+- [ ] **0.58** Verify the page lists only the horizontal toggles (Bulk billing, Information requests). The legal modules `court_calendar`, `conflict_check`, `lssa_tariff`, `trust_accounting` are fixed by the `legal-za` profile and are not toggles here — confirm them via 0.59 (sidebar) and `GET /api/modules` (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: legal modules are profile-fixed, Settings > Features lists horizontal modules only)
 - [ ] **0.59** **Sidebar check**: verify sidebar nav shows items for: Trust Accounting, Court Calendar, Conflict Check, Tariffs
 - [ ] **0.60** **Cross-vertical leak check**: verify sidebar does NOT show any items like "Engagements", "Year-End Packs", "Campaigns", or other non-legal vertical terminology
 
@@ -193,7 +189,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **0.65** Navigate to **Settings > Billing**
 - [ ] **0.66** **Tier removal checkpoint**: page shows **flat subscription model** — no Starter/Pro/Business tier picker, no "Upgrade" button, no plan-gated CTA
-- [ ] **0.67** Verify page shows: subscription status badge (TRIALING or ACTIVE), member count, monthly amount, and (if applicable) PayFast self-service UI or admin-managed notice
+- [ ] **0.67** Verify page shows the subscription status badge (TRIALING or ACTIVE) and the "Managed Account" card; no member count, monthly amount, tier or PayFast self-service UI (tenant subscription billing removed — Epic 602 #1574)
 - [ ] **0.68** 📸 **Screenshot**: Settings > Billing showing flat subscription UI with no tier selector
 
 **Day 0 complete checkpoints**
@@ -203,7 +199,6 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] `legal-za-customer`, `legal-za-project` field packs loaded
 - [ ] **Field promotion verified**: 7+ customer slugs inline, `matter_type` inline on matter dialog, no duplicates in CustomFieldSection
 - [ ] 4 matter templates present from `legal-za` pack
-- [ ] **Pipeline stage pack verified**: `deal-pipeline-legal-za` seeded (Enquiry/Conflict check/Engagement/Won/Lost), Settings > Pipeline + board render (Phase 80)
 - [ ] **Progressive disclosure verified**: all 4 legal modules enabled + visible in sidebar; no foreign vertical terms
 - [ ] Trust account created
 - [ ] **Tier removal verified**: billing page flat, no upgrade UI
@@ -228,35 +223,19 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **1.10** Click into client detail → verify lifecycle badge shows **PROSPECT** in the header card (`data-testid="client-header-card"`)
 - [ ] **1.11** Navigate to **Details** tab group → **Details** sub-tab (`tab-group-details` → `tab-item-details`). Verify promoted fields render on the Details tab, NOT in the CustomFieldSection on the Fields tab
 
-### Day 1 (cont.) — Pipeline: enquiry → engagement won (Phase 80)
+### Day 1 (cont.) — removed (Phase 86)
 
-**Actor**: Bob Ndlovu (still logged in)
-
-> **Phase 80 navigation notes**: deal cards on the board and list-view rows are NOT links (deferred in 580A) — reach a deal's detail page via the client's **Work > Deals** tab or direct URL `/org/{slug}/pipeline/{dealId}`. Win/Lose transitions happen ONLY by dragging a card into the Won/Lost column on the board (the detail page is read-only, no mark-won button). The transition endpoint is gated by `MANAGE_DEALS` (the `CLOSE_DEALS` capability exists but is not wired to any endpoint).
-
-- [ ] **1.12** Navigate to **Pipeline** (sidebar, Clients group) → board renders with the legal-za columns: **Enquiry**, **Conflict check**, **Engagement** open; **Won**/**Lost** collapsed
-- [ ] **1.13** Click **New Enquiry** → dialog titled "New Enquiry" opens. Customer mode = **Pick existing customer** → select **Sipho Dlamini**; Title = "Dlamini — civil litigation enquiry"; Value = **R150,000**; Source = "Referral"; leave stage at default (first open stage)
-- [ ] **1.14** Click **Create Enquiry** → card appears in the **Enquiry** column showing client name, title, value and **10%** probability; column count pill = 1
-- [ ] **1.15** Open Sipho's client detail → **Work** tab group → **Deals** sub-tab → panel (`data-testid="customer-deals-tab"`) shows one row: deal number **DEAL-0001**, status badge **Open** (`data-testid="customer-deal-status-badge"`)
-- [ ] **1.16** Click the deal row → deal detail at `/org/{slug}/pipeline/{id}` → status badge (`data-testid="deal-status-badge"`) = **Open**; Overview panel (`data-testid="deal-overview"`) shows Stage = Enquiry, Probability = 10%; customer link card (`data-testid="deal-customer-link"`) navigates back to Sipho
-- [ ] **1.17** Back on the Pipeline board: drag the card **Enquiry → Conflict check** (the conflict check from 1.3 just cleared) → card moves, effective probability now 30%
-- [ ] **1.18** Drag the card **Conflict check → Engagement** → card moves, probability 60%
-- [ ] **1.19** Drag the card into **Won** → "Mark deal as won" dialog opens → click **Mark as Won** → card lands in the collapsed Won column
-- [ ] **1.20** **Win-loop checkpoint (Phase 80)**: open Sipho's client detail → lifecycle badge in the header card (`data-testid="client-header-card"`) now shows **ONBOARDING** — auto-nudged from PROSPECT by the deal win, with NO manual "Start Onboarding" click
-- [ ] **1.21** Mailpit → **"You won a deal"** notification email to the deal owner (Bob); in-app notification bell shows the DEAL_WON notification
-- [ ] **1.22** Navigate to **Dashboard** (as Bob, Admin) → **Sales Pipeline** widget (`data-testid="pipeline-summary-widget"`) renders with "Open weighted value" and "Win rate" reflecting the won deal, plus a "View pipeline →" link
-- [ ] **1.23** Audit spot-check: the audit surface for the deal (deal detail → Activity tab, or Settings > Audit Log) shows `deal.created`, two `deal.stage_changed`, and `deal.won` events (entityType `deal`)
-- [ ] **1.24** 📸 **Screenshot**: Pipeline board with legal-za stage columns and the won deal
+> The Phase 80 pipeline (enquiry → engagement won, DEAL-0001, win-loop nudge; steps 1.12–1.24 and the Phase 80 navigation note) was removed — Epic 596 (#1565), ADR-336. Sipho stays **PROSPECT** until Day 2.
 
 ### Day 2 — FICA/KYC onboarding
 
-- [ ] **2.1** On Sipho's client detail page, verify the lifecycle badge **already shows ONBOARDING** — auto-nudged by the Day 1 deal win (Phase 80 win-loop replaces the manual "Start Onboarding" click for won prospects); the header card's primary action no longer offers "Start Onboarding"
-- [ ] **2.2** Navigate to **Compliance** tab group → **Onboarding** sub-tab (`tab-group-compliance` → `tab-item-onboarding`) → verify FICA checklist is auto-instantiated (from `fica-kyc-za` pack)
-- [ ] **2.3** Verify checklist contains at minimum: "Certified ID Copy", "Proof of Address" (utility bill), "Source of Funds"
-- [ ] **2.4** Mark "Certified ID Copy" ✓ → add note "Verified against home affairs ID"
-- [ ] **2.5** Mark "Proof of Address" ✓ → upload a test PDF (any small PDF)
-- [ ] **2.6** Mark "Source of Funds" ✓ → add note "Employment income, verified via payslip"
-- [ ] **2.7** Verify checklist shows 100% complete → customer auto-transitions to **ACTIVE**
+- [ ] **2.1** On Sipho's client detail (header card, `data-testid="client-header-card"`), the lifecycle badge (`data-testid="lifecycle-badge"`) reads **PROSPECT**. Click the header's primary action **Start Onboarding** → confirm **Start Onboarding** in the alert dialog → badge reads **ONBOARDING** and the onboarding checklist is instantiated (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.3: the deleted Day 1 deal-win was the only PROSPECT→ONBOARDING step)
+- [ ] **2.2** Navigate to **Compliance** tab group → **Onboarding** sub-tab (`tab-group-compliance` → `tab-item-onboarding`) → verify the **Legal Individual Client Onboarding** checklist is auto-instantiated (pack `legal-za-individual-onboarding`)
+- [ ] **2.3** Verify the checklist shows **9 items, 8 required**: Proof of Identity, Proof of Address, Beneficial Ownership Declaration, Source of Funds Declaration, Engagement Letter Signed, Conflict Check Performed, Power of Attorney Signed (optional), FICA Risk Assessment, Sanctions Screening. Five of them show "Requires document: …" (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: items re-derived from compliance-packs/legal-za-individual-onboarding/pack.json)
+- [ ] **2.4** Precondition for the document items: on the client's **Work** group → **Documents** sub-tab click **Upload Document** → upload one small PDF named "Sipho Dlamini — certified FICA pack.pdf" → row shows Uploaded
+- [ ] **2.5** Back on Compliance → Onboarding: for each of the 9 items in order click **Mark Complete**; where the row shows "Requires document", pick "Sipho Dlamini — certified FICA pack.pdf" in the document combobox; click **Confirm** → item reads **Completed**. Complete "Engagement Letter Signed" before "Power of Attorney Signed" (dependency). If a completed item still renders Pending, reload — `FIXME(depth-ii:checklist-stale-after-complete)`, intermittent
+- [ ] **2.6** Progress reads **9/9 completed**; checklist instance status COMPLETED
+- [ ] **2.7** Header card primary action now reads **Activate Customer** → click → confirm → lifecycle badge **ACTIVE** (there is no automatic ONBOARDING→ACTIVE transition on checklist completion; `CustomerLifecycleService.checkOnboardingGuard` only blocks activation while a checklist is incomplete)
 - [ ] **2.8** Verify ACTIVE badge appears on client detail header card (`data-testid="client-header-card"`)
 - [ ] **2.9** Navigate to audit log for this client → verify FICA completion events are recorded
 
@@ -264,23 +243,26 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **3.1** On Sipho's client detail, click **New Matter**
 - [ ] **3.2** Select template: **Litigation (Personal Injury / General)**
-- [ ] **3.3** Fill: Matter Name = "Sipho Dlamini v. Standard Bank (civil)", `matter_type` = **Litigation**, `case_number` = "JHB/CIV/2026/001", `court_name` = "Gauteng High Court, Johannesburg"
+- [ ] **3.3** Fill: Matter Name = "Sipho Dlamini v. Standard Bank (civil)", Work Type = **LITIGATION** (inherited from the template; #1580/#1581 normalise to upper-case), `case_number` = "JHB/CIV/2026/001", `court_name` = "Gauteng High Court, Johannesburg"
 - [ ] **3.4** Save → matter created from template with pre-populated task list
 - [ ] **3.5** Verify matter appears under Sipho's matter list
 - [ ] **3.6** Navigate to matter detail → verify task list is pre-populated from template (expect 5+ tasks)
 - [ ] **3.7** Assign first task to Bob, second task to Carol
 - [ ] **3.8** Verify terminology: page heading says "Matter" (not "Project"), breadcrumb shows Clients > Sipho Dlamini > Matter > ...
 - [ ] **3.9** **Correspondence tab (Phase 81)**: on the matter detail, open **Work** tab group → **Correspondence** sub-tab (`tab-group-work` → `tab-item-correspondence`) → read-only list renders its empty state: "No correspondence yet" with the description that email is filed via the firm's own Claude using the Kazi MCP tools (there is no in-app compose/write path — `file_correspondence` is MCP-only)
-- [ ] **3.10** Verify the Work group dropdown lists **five** sub-tabs: Tasks, Documents, Correspondence, Generated Docs, Staffing
+- [ ] **3.10** Verify the Work group dropdown lists **four** sub-tabs: Tasks, Documents, Correspondence, Generated Docs (Staffing removed — Epic 599 #1570)
 
 ### Day 4 — Engagement letter & first time entry
 
 - [ ] **4.1** Generate engagement letter from matter detail (Document Templates → Engagement Letter)
 - [ ] **4.2** Preview PDF → verify Mathebula letterhead + brand colour applied + client details filled from context
 - [ ] **4.3** Save generated document → verify it appears under matter's Documents tab
+- [ ] **4.3a** On the saved engagement letter (**Work** → **Generated Docs**) click **Send for Acceptance** → Recipient = Sipho Dlamini (portal contact), Expiry (days) = 7 → **Send** → acceptance status badge on the document reads **Pending** (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.5: ADR-336 replaces the deleted proposal flow with document + acceptance)
+- [ ] **4.3b** Mailpit → email to Sipho's address with subject `Mathebula & Partners -- Please review engagement letter for acceptance: <file name>` → open the link in an incognito context → public page http://localhost:3002/accept/<token> renders the PDF preview → type the full name "Sipho Dlamini" → click **I Accept** → accepted state with timestamp renders
+- [ ] **4.3c** Mailpit → `Confirmed: You have accepted <file name>`; firm-side the document's acceptance badge reads **Accepted**; 📸 `day-04-engagement-letter-accepted.png`
 - [ ] **4.4** Log first time entry: Bob, 1.5 hours, "Drafting particulars of claim", billable = yes
 - [ ] **4.5** Verify time entry snapshots Bob's billing rate (R1,200/hr → R1,800 value)
-- [ ] **4.6** Verify activity feed shows: matter created, engagement letter generated, time entry logged
+- [ ] **4.6** Verify activity feed shows: matter created, engagement letter generated, engagement letter sent for acceptance, engagement letter accepted (actor Sipho, source PORTAL), time entry logged
 
 ### Day 5 — 📸 Matter detail wow moment
 
@@ -323,25 +305,25 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **8.1** Conflict check for "Moroka Family Trust" and "Peter Moroka" (deceased) → both CLEAR
 - [ ] **8.2** Create new client: Name = **Moroka Family Trust**, `client_type` = **TRUST**, `registration_number` = "IT000456/2018"
-- [ ] **8.3** Add beneficial owners custom field: 3 owners (Grace Moroka, James Moroka, Ruth Moroka)
-- [ ] **8.4** Transition to ONBOARDING
-- [ ] **8.5** Complete FICA checklist with TRUST variant items (trust deed, letter of authority, beneficial owner verification)
-- [ ] **8.6** Verify customer transitions to ACTIVE
+- [ ] **8.3** Beneficial owners are recorded via the Trust checklist item **Beneficial Ownership Declaration** (8.5), not a custom field — note the three names (Grace Moroka, James Moroka, Ruth Moroka) in that item's completion note (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: beneficial_owners is not a pack field; the trust pack carries the declaration item)
+- [ ] **8.4** Header card → **Start Onboarding** → confirm → badge **ONBOARDING** (as 2.1)
+- [ ] **8.5** Complete the **Legal Trust Client Onboarding** checklist (pack `legal-za-trust-onboarding`, 12 items, 11 required: Trust Deed, Letters of Authority, Trustee 1 ID, Trustee 2 ID (optional), Proof of Trust Banking, SARS Trust Tax Number, Beneficial Ownership Declaration, Source of Funds Declaration, Engagement Letter Signed, Conflict Check Performed, FICA Risk Assessment, Sanctions Screening) — upload one client PDF first and link it where "Requires document" shows, as on Day 2 (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: items re-derived from compliance-packs/legal-za-trust-onboarding/pack.json)
+- [ ] **8.6** Header card → **Activate Customer** → badge **ACTIVE**
 
 ### Day 9 — Deceased estate matter
 
 - [ ] **9.1** Create matter from template: **Deceased Estate Administration**
 - [ ] **9.2** Matter name: "Estate Late Peter Moroka"
-- [ ] **9.3** `matter_type` = **Estates**
-- [ ] **9.4** Verify template-instantiated tasks include: "L&D documents", "Master of High Court appointment", "Inventory", "Liquidation & Distribution Account", "Advertisement — Section 29"
-- [ ] **9.5** Assign first 3 tasks to Thandi, last 2 to Bob
+- [ ] **9.3** Work Type = **ESTATES** (inherited from the template)
+- [ ] **9.4** Verify the 9 template-instantiated tasks: "Obtain death certificate & will", "Report estate to Master of High Court", "Obtain Letters of Executorship", "Advertise for creditors (Gazette + local newspaper)", "Inventory of assets & liabilities", "Open estate bank account", "Prepare Liquidation & Distribution account", "Lodge L&D account with Master", "Distribute estate & file final account" (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: task names re-derived from project-template-packs/legal-za.json)
+- [ ] **9.5** Assign the first 4 tasks to Thandi, the remaining 5 to Bob
 
 ### Days 10–14 — Estate admin work
 
 - [ ] **10.1** Thandi logs 3.0 hours: "Initial consultation with heirs + document gathering"
 - [ ] **10.2** Thandi uploads trust deed PDF to matter documents
 - [ ] **11.1** Bob logs 1.5 hours: "Master of High Court filing preparation"
-- [ ] **12.1** Thandi marks "L&D documents" task as DONE
+- [ ] **12.1** Thandi marks "Obtain death certificate & will" task as DONE
 - [ ] **12.2** Thandi creates an entry in trust accounting: deposit R50,000 for estate admin, source = "Moroka Trust operating account", reference = "Initial fund for estate admin"
 - [ ] **12.3** Verify trust account balance updates to R50,000
 - [ ] **13.1** Carol logs 1.0 hour: "Drafting Section 29 advertisement notice"
@@ -351,8 +333,8 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Thandi (Owner — senior partner handles property work)
 
-- [ ] **14.2** As Thandi: create a new client **"Khumalo Property Holdings"** (type INDIVIDUAL), complete FICA checklist → ACTIVE
-- [ ] **14.3** Create a new matter using the **Property Transfer** template (`matter_type = CONVEYANCING`) → matter title "Khumalo Property Holdings — Erf 1234 Sandton Transfer"
+- [ ] **14.2** As Thandi: create a new client **"Khumalo Property Holdings"** (type INDIVIDUAL) → **Start Onboarding** → complete the 9-item individual checklist (as Day 2, one uploaded client PDF linked where required) → **Activate Customer** → ACTIVE
+- [ ] **14.3** Create a new matter using the **Property Transfer** template (Work Type **CONVEYANCING** inherited from the template, #1580) → matter title "Khumalo Property Holdings — Erf 1234 Sandton Transfer"
 - [ ] **14.4** On matter detail, navigate to **Details > Fields** tab, verify the **10 conveyancing custom fields** (from field pack `conveyancing_za_matter`) are all present (even if empty): `conveyancing_type`, `property_address`, `erf_number`, `deeds_office`, `lodgement_date`, `registration_date`, `deed_number`, `purchase_price`, `transfer_duty`, `bond_institution`
 - [ ] **14.5** On the Fields tab, fill the minimum Day 14 set: `property_address = "12 Rivonia Road, Sandton, 2196"`, `erf_number = "1234"`, `deeds_office = JOHANNESBURG` → save
 - [ ] **14.6** Verify promoted / inline fields re-render with new values
@@ -388,8 +370,8 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **22.1** Conflict check "Lerato Mthembu" → CLEAR
 - [ ] **22.2** Create individual client, standard fields + promoted (client_type = INDIVIDUAL, physical_address, id_passport_number)
-- [ ] **22.3** Complete FICA onboarding → client ACTIVE
-- [ ] **22.4** Create matter from Litigation template, matter_type = **Road Accident Fund**, case_number = "RAF/2026/0042"
+- [ ] **22.3** **Start Onboarding** → complete the 9-item individual checklist (as Day 2) → **Activate Customer** → client ACTIVE
+- [ ] **22.4** Create matter from template **Litigation (Road Accident Fund -- RAF)** → Work Type **LITIGATION** (the RAF template carries LITIGATION; "Road Accident Fund" is the template, not a work type), case_number = "RAF/2026/0042" (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: expected value changed by #1580/#1581)
 - [ ] **22.5** Matter title: "Lerato Mthembu — RAF Claim (MVA 2025-11-03)"
 
 ### Day 23 — Adverse party registry & court calendar
@@ -494,7 +476,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **61.1** Create a 4th client (individual, collections matter from template) — compressed onboarding (happy path only)
 - [ ] **62.1** Log 4 time entries across the team on the 4th matter
 - [ ] **65.1** Generate fee note → approve → send
-- [ ] **68.1** **Portal**: generate magic link for Sipho → verify link emails via Mailpit → open link in incognito → portal loads with Sipho's matters, fee notes, and documents visible
+- [ ] **68.1** **Portal**: Sipho's portal contact was auto-created when the client was created (`PortalContactAutoProvisioner`). In an incognito context open http://localhost:3002/login → enter Sipho's email → request the login link → Mailpit → open the link (lands on `/auth/exchange?token=…`) → portal `/home` loads with Sipho's matters, fee notes and documents visible (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.3: firm-side magic-link generator and the in-app /portal copy removed, Epic 597 #1566)
 - [ ] **68.2** On the portal, verify Sipho can view (but not edit) matter status + fee notes
 - [ ] **70.1** Back in the app, Carol logs additional time on Moroka estate
 - [ ] **72.1** Thandi adds a trust accounting entry: withdrawal from Moroka trust account for R12,000 (disbursement to third party)
@@ -528,7 +510,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **80.2** Verify cross-matter/cross-client dashboard loads with 90 days of data
 - [ ] **80.3** Verify utilization metrics (billable % per team member) render
 - [ ] **80.4** Export a report to CSV → verify file downloads with expected columns
-- [ ] **80.5** Navigate to **My Work** (as Bob) → verify Bob's assigned tasks, time summary, and upcoming court events render
+- [ ] **80.5** Navigate to **My Work** (as Bob) → verify Bob's assigned tasks and time summary render (My Work's upcoming list is tasks; court dates live on Court Calendar)
 
 ### Day 85 — Audit log sweep
 
@@ -575,7 +557,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **90.4** **Tier removal sweep**: navigate to Settings > Billing → confirm still flat, no tier UI
 - [ ] **90.5** **Console errors**: open browser devtools → navigate through every top-level nav item → confirm zero JS errors in console
 - [ ] **90.6** **Mailpit sweep**: verify no bounced/failed emails
-- [ ] **90.7** **Pipeline RBAC negative (Phase 80)**: in a fresh browser context as Carol (Member), verify the sidebar shows **no Pipeline nav item** (the Member system role holds no `VIEW_DEALS` by default); as Thandi or Bob the board still renders with DEAL-0001 in the Won column
+- [ ] **90.7** Removed — Epic 596 (#1565), ADR-336 (Pipeline RBAC negative).
 
 ---
 

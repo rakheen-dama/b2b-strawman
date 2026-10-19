@@ -1,24 +1,28 @@
 # Demo Readiness — QA Cycle Master (Keycloak Mode)
 
-**Date**: 2026-04-12
-**Stack**: Keycloak dev stack (frontend 3000 / backend 8080 / gateway 8443 / keycloak 8180 / mailpit 8025)
+**Date**: 2026-10-19 (originally 2026-04-12; legal-only since Phase 86 — ADR-330/332, Epic 604 #1576)
+**Stack**: Keycloak dev stack (frontend 3000 / backend 8080 / gateway 8443 / keycloak 8180 / mailpit 8025 / portal 3002)
 **Driver**: `/qa-cycle-kc` skill — runs each lifecycle script autonomously, dispatching dev/product/QA subagents to fix gaps as they surface.
 
 ## Purpose
 
-Drive all three vertical profiles to **demo-ready state** — a prospect can walk in cold, the founder/SE opens the Keycloak dev stack, and a 90-day lifecycle story plays out without bugs, terminology leaks, or missing vertical pack artifacts.
+Drive the one remaining vertical, `legal-za`, to **demo-ready state** — a prospect can walk in cold, the founder/SE opens the Keycloak dev stack, and a 90-day law-firm lifecycle story plays out without bugs, terminology leaks, or missing vertical pack artifacts. (Kazi has been legal-only since Phase 86; the accounting and agency scripts were deleted with their profiles in Epic 604 #1576 — archived at git tag `horizontal-platform-final`.)
 
-Each vertical has **one lifecycle script** under `qa/testplan/demos/`. The script serves two purposes:
+The legal lifecycle scripts live under `qa/testplan/demos/`. Each script serves two purposes:
 1. **Bug-hunting** — every surface, every modal, every vertical pack artifact is exercised with a checkbox
 2. **Demo rails** — once the script runs clean, the SE can cherry-pick 5–6 "wow moment" steps for a live walkthrough
 
 ## Scripts covered by this master
 
-| Vertical | Profile | Story / Firm | Script |
+| Script | POV | Story / Firm | Role |
 |---|---|---|---|
-| Legal | `legal-za` | Mathebula & Partners (Johannesburg litigation firm) | `demos/legal-za-90day-keycloak.md` |
-| Accounting | `accounting-za` | Thornton & Associates (Johannesburg accounting firm) | `demos/accounting-za-90day-keycloak-v2.md` |
-| Agency | `consulting-generic` | Zolani Creative (digital/marketing agency) | `demos/consulting-agency-90day-keycloak.md` |
+| `demos/legal-za-full-lifecycle-keycloak.md` | Firm + portal interleaved | Mathebula & Partners — one RAF matter for Sipho Dlamini, Moroka Family Trust as isolation target | **QA-cycle driver** (`/qa-cycle-kc`); verified lineage 2026-07-12 (LZKC) |
+| `demos/legal-za-90day-keycloak.md` | Firm only | Mathebula & Partners — three clients (litigation, deceased estate, RAF, plus conveyancing on Day 14) | **Phase 87 capstone walk** (Epic 617C, ADR-344 §5); breadth: budget, profitability, disbursements, write-off, closure override, audit sweep |
+| `demos/portal-client-90day-keycloak.md` | Portal only | Sipho / Moroka on the client portal | Portal gating; assumes firm-side state from the plans above |
+| `demos/admin-audit-30day-keycloak.md` | Admin | Audit-log surfaces over 30 days | Observability layer |
+| `demos/ai-core-verification-keycloak.md` | Firm | Verifain Attorneys switching AI on | **DEFERRED** until a human enters a funded Anthropic key (V1) |
+
+Amendment rules: CLAUDE.md §6 (scenario edits are product decisions), ADR-344 (Phase 87 URL/label/nav amendments in the same PR as the IA change), `tasks/qa-scenario-amendments-post86.md` (the 2026-10-19 behaviour-coherence pass). `qa/testplan/MIGRATION-NOTES.md` lists what was removed and what is known-stale.
 
 The old mock-auth legal plan (`qa-legal-lifecycle-test-plan.md`, port 3001) and the first accounting Keycloak plan (`48-lifecycle-script.md`) are retained for historical reference but are **not** the source of truth for demo readiness going forward.
 
@@ -82,7 +86,7 @@ These have bitten recent QA cycles — agents should check for them proactively:
 - **Stale test fixtures**: new promoted slugs added without updating the corresponding customer/project/invoice factory fixtures
 - **Module gate changes breaking E2E selectors**: sidebar filtering changes break Playwright tests that hard-code nav item locators
 - **Spring context cache poisoning**: integration tests pass in isolation but fail when run in suite order; check `@DirtiesContext` usage and `TestChecklistHelper` cleanup
-- **Vertical profile loader race on startup**: first test that boots a fresh context fails because `consulting-generic` profile hasn't finished loading
+- **Vertical profile loader race on startup**: first test that boots a fresh context fails because the `legal-za` profile hasn't finished loading
 - **Orphan Testcontainers**: `~/.testcontainers.properties` caching stale docker host — clean up before re-running
 
 ### Relationship to cycle exit criteria
@@ -91,17 +95,18 @@ The test suite gate is enforced **per fix PR**, not only at cycle end. But the f
 
 - [ ] Last fix PR in the cycle has all four suites green
 - [ ] Running the full suites against `main` (after all cycle fixes merged) is still green
-- [ ] If the cycle changed any shared code (vertical profile loader, `NavZone`, promoted slug list, billing page), run the other two vertical plans' smoke-test sections to catch cross-vertical regressions before declaring the primary vertical demo-ready
+- [ ] If the cycle changed any shared code (vertical profile loader, `NavZone`, promoted slug list, billing page), run the other legal plans' smoke sections (90-day Day 0, portal Day 0, admin-audit Day 0) and both legal Playwright configs on the :3001 mock stack before declaring demo-ready
 
 ## Order of operations (sequential, not parallel)
 
-Run the three verticals **in order**, merging fixes between runs so cascading improvements land in the next pass:
+Run the legal plans **in order**, merging fixes between runs so cascading improvements land in the next pass:
 
-1. **Legal first** — largest existing footprint, most complex vertical packs (4 modules, full FICA flow, trust accounting, court calendar). Highest bug-surface density. Cycle until clean.
-2. **Accounting second** — similar onboarding/compliance shape to legal, so fixes for shared surfaces (request flow, Keycloak invites, field promotion, custom field rendering) cascade. Refresh from `48-lifecycle-script.md` with no-tier + progressive disclosure additions.
-3. **Agency last** — uses `consulting-generic`, the thinnest profile. Bugs surfaced here are most likely to be genuinely agency-specific (missing primitives, not cross-cutting). Any gaps that cannot be fixed in-cycle get logged to the **agency gap list** in `.claude/ideas/demo-readiness-qa-cycle-2026-04-12.md` for future phase planning.
+1. **Full lifecycle first** — the QA-cycle driver: firm + portal interleaved, isolation gate, PayFast, closure → Statement of Account. Cycle until clean.
+2. **90-day second** — firm-only breadth the full lifecycle lacks (three clients, estate and conveyancing templates, budget, profitability, disbursement trust-link, write-off, closure override, 90-day audit sweep). This is also the Epic 617C capstone walk.
+3. **Portal, then admin-audit** — both read state the first two produce; run them against the same tenant.
+4. **AI-core** — only when a human has entered a funded Anthropic key; never inferred PASS.
 
-Between each vertical: **merge fixes to main**, redeploy the Keycloak stack from a clean baseline, then start the next vertical.
+Between plans: **merge fixes to main**, redeploy the Keycloak stack from a clean baseline, then start the next plan.
 
 ## Shared prep & reset (run before every vertical cycle)
 
@@ -153,7 +158,7 @@ qa/gap-reports/demo-readiness-{YYYY-MM-DD}/{vertical}.md
 ```
 
 Each gap report entry has:
-- **ID** (e.g. `LEGAL-01`, `ACCT-12`, `AGENCY-03`)
+- **ID** (e.g. `LZKC-036` — continue the LZKC sequence from `qa_cycle/status.md`)
 - **Severity** — `BLOCKER`, `HIGH`, `MEDIUM`, `LOW`
 - **Script step** that surfaced it (e.g. "Step 1.14 — FICA checklist missing 'Proof of Address' item")
 - **Observed** vs **Expected** behaviour
@@ -172,9 +177,10 @@ Severity rules:
 Drive each vertical via the `/qa-cycle-kc` skill:
 
 ```
+/qa-cycle-kc qa/testplan/demos/legal-za-full-lifecycle-keycloak.md
 /qa-cycle-kc qa/testplan/demos/legal-za-90day-keycloak.md
-/qa-cycle-kc qa/testplan/demos/accounting-za-90day-keycloak-v2.md
-/qa-cycle-kc qa/testplan/demos/consulting-agency-90day-keycloak.md
+/qa-cycle-kc qa/testplan/demos/portal-client-90day-keycloak.md
+/qa-cycle-kc qa/testplan/demos/admin-audit-30day-keycloak.md
 ```
 
 The skill:
@@ -184,7 +190,7 @@ The skill:
 4. On success of all steps, runs exit-criteria checkpoints and writes the gap report
 5. Stops when the script runs clean on a single pass
 
-Between verticals, merge the accumulated fixes to `main`, redeploy, and drop the previous vertical's tenant schema before starting the next.
+Between plans, merge the accumulated fixes to `main`, redeploy, and reset the tenant per each plan's Session 0 before starting the next.
 
 ## Recent-change checkpoint reference
 
@@ -192,7 +198,7 @@ Every lifecycle script enforces these three checkpoints explicitly. Quick refere
 
 ### Tier removal
 - **Where**: `Settings > Billing` (all verticals), any nav item or modal
-- **Pass**: Page shows flat subscription states (`TRIALING`, `ACTIVE`, `PAST_DUE`, `PENDING_CANCELLATION`, `GRACE_PERIOD`, `LOCKED`, `SUSPENDED`, `EXPIRED`), member count + amount, PayFast self-service flows (for non-admin-managed tenants), payment history. **No Starter/Pro tier, no upgrade button, no plan-gated CTA.**
+- **Pass**: Page shows the flat subscription status badge (`TRIALING`, `ACTIVE`, `PAST_DUE`, `PENDING_CANCELLATION`, `GRACE_PERIOD`, `LOCKED`, `SUSPENDED`, `EXPIRED`) and the "Managed Account" card. **No Starter/Pro tier, no upgrade button, no plan-gated CTA, and — since Epic 602 (#1574) — no member count, monthly amount or PayFast self-service UI.**
 - **Fail**: Any "Upgrade to Pro", "Starter plan", plan picker, or member-limit-enforced gate anywhere in the product.
 
 ### Field promotion
@@ -202,9 +208,7 @@ Every lifecycle script enforces these three checkpoints explicitly. Quick refere
 
 ### Progressive disclosure
 - **Where**: Sidebar nav, breadcrumbs, settings pages, direct-URL navigation
-- **Pass (legal-za)**: Sidebar shows Trust Accounting, Court Calendar, Conflict Check, Tariffs nav items. All four modules enabled in `Settings > Modules`.
-- **Pass (accounting-za)**: Sidebar does **not** show Trust Accounting, Court Calendar, Conflict Check, or Tariffs. `Settings > Modules` either hides them entirely or shows them as greyed-out (not toggleable for this vertical).
-- **Pass (consulting-generic)**: Same as accounting — none of the legal-specific modules visible. Also no accounting-za automation rules showing up in `Settings > Automations`.
+- **Pass (legal-za)**: Sidebar shows Trust Accounting, Court Calendar, Conflict Check, Tariffs nav items (Phase 87 re-shells these into the six zones — ADR-339). The four legal modules are fixed by the profile; `Settings > Features` lists only the horizontal toggles (Bulk billing, Information requests). `GET /api/modules` returns the legal set.
 - **Fail**: Any cross-vertical nav item visible, or direct URL to a disabled module page loading successfully instead of 404/redirect.
 
 ## Follow-ups surfaced by this cycle (non-blocking)
@@ -218,9 +222,9 @@ These are infrastructure/tooling gaps that don't block the cycle but should be c
 ---
 
 **Next steps after writing**:
-1. `/qa-cycle-kc qa/testplan/demos/legal-za-90day-keycloak.md`
+1. `/qa-cycle-kc qa/testplan/demos/legal-za-full-lifecycle-keycloak.md`
 2. Merge fixes → re-baseline
-3. `/qa-cycle-kc qa/testplan/demos/accounting-za-90day-keycloak-v2.md`
+3. `/qa-cycle-kc qa/testplan/demos/legal-za-90day-keycloak.md` (also the Epic 617C capstone walk once Phase 87 lands)
 4. Merge fixes → re-baseline
-5. `/qa-cycle-kc qa/testplan/demos/consulting-agency-90day-keycloak.md`
-6. Consolidate the agency gap list into a future vertical-phase ideation pass
+5. Portal and admin-audit plans against the same tenant
+6. AI-core walk when a funded key is available

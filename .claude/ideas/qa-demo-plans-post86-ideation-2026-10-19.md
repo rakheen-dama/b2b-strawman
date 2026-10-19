@@ -28,8 +28,10 @@ Unchanged: SA small-to-medium law firms (legal-za). Mathebula & Partners / Sipho
 ## Key design preferences (founder)
 - Scenario amendments are product decisions: every hunk classified (A / A-trim / B-86 / B-pre / new / C / D)
   and annotated in the LZKC-029 style; the spec file is the §6 authorisation record.
-- Explicit over implicit: activation is scripted as **Activate Customer**, not assumed automatic
-  (no auto-activation exists in `compliance/`; the depth-ii fixme that claims it is unverified).
+- Script what the product does, verified: completing the last required checklist item auto-activates the
+  client (`checklist/ChecklistInstanceService.checkLifecycleAdvance`) when address line 1 / city / country
+  (+ tax number for TRUST/COMPANY) are on file; **Activate Customer** is only the prerequisite-blocked
+  fallback. (First draft said the opposite after searching only `compliance/` — caught by the reviewer.)
 - Realism bounded by step order: Day 2 completes the whole checklist with one uploaded "FICA pack" PDF
   rather than reordering to "letter first, activate later"; the picker-can't-link-GeneratedDocument gap is
   recorded as a product observation, not worked around in the script.
@@ -40,8 +42,8 @@ Pre-87 docs PR (`tasks/qa-scenario-amendments-post86.md`) → Phase 87 (607–61
 full-lifecycle plan.
 
 ## Domain notes
-- `legal-za-individual-onboarding` = 9 items / 8 required, five require a linked client document;
-  trust pack = 12 / 11. Checklist completion gates activation but does not perform it.
+- `legal-za-individual-onboarding` = 9 items / 8 required, six require a linked client document;
+  trust pack = 12 / 11. Completing all required items triggers the ACTIVE transition (prerequisite-gated).
 - Portal routes today: `/projects/[id]`, `/requests/[id]`, `/trust/[matterId]`, `/invoices/[id]`,
   `/deadlines`, public `/accept/[token]`, `/auth/exchange`. Portal API: `/portal/projects/{id}/summary`,
   `/portal/requests/{id}`, `/portal/trust/matters/{id}/transactions|statement-documents`, `/portal/trust/summary`.

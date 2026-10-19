@@ -1,6 +1,6 @@
 # QA scenario amendments after Phase 86 — behaviour-coherence PR (pre-Phase 87)
 
-**Status**: SPEC — authorised 2026-10-19, not yet built
+**Status**: BUILT — PR #1586 (2026-10-19); §8 records the reviewer corrections applied before merge
 **Decided by**: founder, `/ideate` session 2026-10-19 (log: `.claude/ideas/qa-demo-plans-post86-ideation-2026-10-19.md`)
 **Input**: `qa/testplan/legal-testplan-audit-2026-10-19.md` (read-only audit of both legal plans against `main` @ `4cfa0917e`)
 **Governs**: `qa/testplan/demos/legal-za-90day-keycloak.md`, `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md`, `qa/testplan/MIGRATION-NOTES.md`, `qa/testplan/demo-readiness-keycloak-master.md`
@@ -76,11 +76,11 @@ Pure deletions of removed-feature steps carry: `Removed — Epic 596 (#1565), AD
 | 0.48 | Field list → `case_number, court_name, opposing_party, opposing_attorney, advocate_name, date_of_instruction, estimated_value`; drop `matter_type` (matter type is the native **Work Type**). |
 | 0.57–0.58 | → `0.57 Navigate to **Settings > Features**` / `0.58 Verify the page lists only the horizontal toggles (Bulk billing, Information requests). The legal modules court_calendar, conflict_check, lssa_tariff, trust_accounting are fixed by the legal-za profile and are not toggles here — confirm them via 0.59 (sidebar) and GET /api/modules.` |
 | 2.2 | Pack → `**Legal Individual Client Onboarding** (pack legal-za-individual-onboarding)`; tab path unchanged (Compliance group → Onboarding sub-tab). |
-| 2.3 | → `Verify the checklist shows **9 items, 8 required**: Proof of Identity, Proof of Address, Beneficial Ownership Declaration, Source of Funds Declaration, Engagement Letter Signed, Conflict Check Performed, Power of Attorney Signed (optional), FICA Risk Assessment, Sanctions Screening. Five of them show "Requires document: …".` |
+| 2.3 | → `Verify the checklist shows **9 items, 8 required**: Proof of Identity, Proof of Address, Beneficial Ownership Declaration, Source of Funds Declaration, Engagement Letter Signed, Conflict Check Performed, Power of Attorney Signed (optional), FICA Risk Assessment, Sanctions Screening. Six of them show "Requires document: …".` |
 | 2.4 | → `Precondition for document items: on the client's **Work** group → **Documents** sub-tab click **Upload Document** → upload one small PDF named "Sipho Dlamini — certified FICA pack.pdf" → row shows Uploaded.` |
 | 2.5 | → `Back on Compliance → Onboarding: for each of the 9 items in order click **Mark Complete**; where the row shows "Requires document", pick "Sipho Dlamini — certified FICA pack.pdf" in the document combobox; click **Confirm** → item reads **Completed**. (Power of Attorney Signed depends on Engagement Letter Signed — complete that first. If a completed item still renders Pending, reload — FIXME(depth-ii:checklist-stale-after-complete), intermittent.)` |
 | 2.6 | → `Progress bar reads **9/9 completed**; checklist instance status COMPLETED.` |
-| 2.7 | → `Header card primary action now reads **Activate Customer** → click → confirm → lifecycle badge **ACTIVE**. (There is no automatic ONBOARDING→ACTIVE transition on checklist completion; CustomerLifecycleService.checkOnboardingGuard only blocks activation while a checklist is incomplete.)` |
+| 2.7 | ~~explicit Activate Customer~~ **Corrected in §8 H1**: the client auto-transitions to ACTIVE on the last required Confirm (`checklist/ChecklistInstanceService.checkLifecycleAdvance`) when the activation prerequisites are on file; Activate Customer is only the fallback after a `PREREQUISITE_BLOCKED_ACTIVATION` notification. |
 | 2.8–2.9 | Unchanged. |
 | 3.3 | `matter_type = Litigation` → `Work Type = **LITIGATION** (inherited from the template; #1580/#1581 normalise to upper-case)`. |
 | 8.3 | → `Beneficial owners are recorded via the Trust checklist item **Beneficial Ownership Declaration** (8.5), not a custom field — note the three names (Grace, James, Ruth Moroka) in that item's completion note.` |
@@ -99,7 +99,7 @@ Pure deletions of removed-feature steps carry: `Removed — Epic 596 (#1565), AD
 Insert after 4.3:
 
 ```
-- [ ] **4.3a** On the saved engagement letter (Work → Generated Docs) click **Send for Acceptance** → Recipient = Sipho Dlamini (portal contact), Expiry (days) = 7 → **Send** → acceptance status badge on the document reads **Pending** (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.5: ADR-336 replaces the deleted proposal flow with document + acceptance)
+- [ ] **4.3a** On the saved engagement letter (Work → Generated Docs) click **Send for Acceptance** → Recipient = Sipho Dlamini (portal contact), Expiry (days) = 7 → **Send** → acceptance status badge on the document reads **Awaiting Acceptance** (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.5: ADR-336 replaces the deleted proposal flow with document + acceptance)
 - [ ] **4.3b** Mailpit → email to sipho's address with subject `Mathebula & Partners -- Please review engagement letter for acceptance: <file name>` → open the link in an incognito context → public page http://localhost:3002/accept/<token> renders the PDF preview → type the full name "Sipho Dlamini" → click **I Accept** → accepted state with timestamp renders
 - [ ] **4.3c** Mailpit → `Confirmed: You have accepted <file name>`; firm-side the document's acceptance badge reads **Accepted**; 📸 `day-04-engagement-letter-accepted.png`
 ```
@@ -171,13 +171,13 @@ Replace the `## Day 7 / Day 8 — removed (Phase 86)` block with two sections (k
 
 - [ ] **7.1** On matter RAF-2026-001 → **Generate Document** dropdown → **Engagement Letter — Litigation** → preview renders with Mathebula letterhead, brand colour and Sipho's details → **Save**
 - [ ] **7.2** **Work** group → **Generated Docs** sub-tab lists the engagement letter with today's date
-- [ ] **7.3** On that row click **Send for Acceptance** → Recipient = Sipho Dlamini (sipho.portal@example.com), Expiry (days) = 7 → **Send** → acceptance badge **Pending**
+- [ ] **7.3** On that row click **Send for Acceptance** → Recipient = Sipho Dlamini (sipho.portal@example.com), Expiry (days) = 7 → **Send** → acceptance badge **Awaiting Acceptance**
 - [ ] **7.4** Mailpit → email to sipho.portal@example.com, subject `Mathebula & Partners -- Please review engagement letter for acceptance: <file name>`, body link to http://localhost:3002/accept/<token>
 - [ ] **7.5** Activity feed shows "engagement letter generated" and "acceptance requested"
 
 **Day 7 checkpoints**
 - [ ] Engagement letter generated from the legal-za template pack and saved to the matter
-- [ ] Acceptance request sent; Pending badge; email in Mailpit
+- [ ] Acceptance request sent; Awaiting Acceptance badge; email in Mailpit
 
 ---
 
@@ -203,7 +203,7 @@ Day 10 Phase A, new steps before 10.2:
 ```
 - [ ] **10.1a** Sipho's client detail → **Work** group → **Documents** sub-tab → **Upload Document** → upload one small PDF named "Sipho Dlamini — certified FICA pack.pdf" (the checklist document picker lists client documents; if the Day 4 portal uploads already appear in the picker, link those instead and say so in the run log)
 - [ ] **10.1b** **Compliance** group → **Onboarding** sub-tab → for each of the 9 items in order: **Mark Complete** → where "Requires document" shows, pick the PDF from 10.1a → **Confirm** → **Completed**. Complete "Engagement Letter Signed" before "Power of Attorney Signed" (dependency). Progress reads **9/9 completed**. (Intermittent stale row → reload; FIXME(depth-ii:checklist-stale-after-complete))
-- [ ] **10.1c** Header card primary action **Activate Customer** → confirm → lifecycle badge **ACTIVE**
+- [ ] **10.1c** (as built, after §8 H1) auto-transition to **ACTIVE** on the last required Confirm; **Activate Customer** only as the prerequisite-blocked fallback
 - [ ] **10.1d** **Work** → **Generated Docs**: engagement letter acceptance badge reads **Accepted** (from Day 8)
 ```
 
@@ -244,6 +244,27 @@ Wow list: add `7. **Day 8** — Sipho accepts the engagement letter on the publi
 ## 7. Follow-ups surfaced (not in this PR)
 
 - **Product observation**: the onboarding checklist's document picker lists client-uploaded documents only; an accepted engagement letter (GeneratedDocument + acceptance) cannot satisfy "Engagement Letter Signed" directly. Worth a Phase 84/take-on decision, not a scenario edit.
-- **Spec claim unverified**: `legal-depth-ii/day-14-conveyancing.spec.ts:168-172` (a `test.fixme`) asserts the client auto-activates on 9/9 completion. No such transition exists in `compliance/` (`checkOnboardingGuard` only blocks). When that fixme is lifted, the assertion must become an explicit Activate.
+- ~~Spec claim unverified: the depth-ii fixme asserts auto-activation; no such transition exists~~ **Withdrawn (§8 H1)**: the transition exists in `checklist/ChecklistInstanceService.checkLifecycleAdvance`; the fixme's assertion is right.
 - The nine `FIXME(depth-ii:…)` product bugs, `trust-link-payment-type` first (trust-account disbursements impossible in the UI). One fix per PR; the C steps above go green on their own.
 - 617C.1 walks the 90-day plan on the Keycloak stack. After this PR it is coherent Days 0–4 on paper; its first observed Days 0–4 run is still owed (optional smoke in §2.5 pays it early).
+
+---
+
+## 8. Reviewer corrections applied before merge (PR #1586, feature-dev:code-reviewer pass, 2026-10-19)
+
+The independent review re-verified every hunk and found the following; each was confirmed against the code and corrected in the same PR.
+
+| # | Finding | Evidence | Correction |
+|---|---|---|---|
+| **H1** | §3.4 2.7 / §4.4 10.1c (and 8.6, 14.2, 22.3) claimed there is no automatic ONBOARDING→ACTIVE transition. False: it lives one package over. | `checklist/ChecklistInstanceService.java:449-480` completes the instance when all required items are COMPLETED/SKIPPED and calls `checkLifecycleAdvance` (`:522-553`), which transitions to ACTIVE when `LIFECYCLE_ACTIVATION` prerequisites pass, else raises `PREREQUISITE_BLOCKED_ACTIVATION`; header action for ACTIVE reads **Edit** (`client-header-card.tsx:39-41`). | 2.7, 10.1c, 8.6, 14.2, 22.3 now script the auto-transition, with **Activate Customer** only as the blocked fallback. §7 bullet withdrawn. |
+| **M1** | Badge after **Send** is not "Pending". | `AcceptanceService.java:231` `markSent()`; `AcceptanceStatusBadge.tsx` SENT → "Awaiting Acceptance". | 90-day 4.3a; full-lifecycle 7.3 + Day 7 checkpoint → **Awaiting Acceptance**. |
+| **M2** | Activation prerequisites missing from the client-creation steps that now feed activation. | `StructuralPrerequisiteCheck.java:65-70`: `address_line1`, `city`, `country` for all; `tax_number` for COMPANY/TRUST (INDIVIDUAL exempt, `:105-111`). Dialog has separate Address Line 1 / City / Country / Tax Number inputs. | 90-day 1.8, 8.2 (+ Tax Number), 14.2, 22.2; full-lifecycle 2.3 now give explicit Address Line 1 / City / Country (= **ZA**). Boundary rule: a missing precondition is a behaviour hunk → this PR. |
+| **M3** | "Five" document-bearing items; the pack has six (Power of Attorney Signed also requires one). | `legal-za-individual-onboarding/pack.json` — six `requiresDocument: true`. | 90-day 2.3, full-lifecycle 5.7 → six. |
+| **M4** | Master doc edited beyond §5 ("everything else unchanged"). | Tier-removal Pass text (Epic 602 #1574) and Progressive-disclosure Pass lines (accounting/consulting rows, Settings > Features). | **Recorded here as authorised**: both are deleted-feature consequences (same class as A-trim) and were left in. |
+| L1 | Phase H2 and 90.7 keep a one-line "Removed —" stub rather than vanishing. | — | Kept: the stub preserves step-id continuity and the §2.5 grep allows removal annotations. |
+| L2 | Day 10 sub-heading renamed "Phase A: Client activation + matter lifecycle". | — | Recorded here; trivial. |
+| L3 | 21.5 uses the short RAF task name. | `legal-za.json:22` has the suffix "(within 3-year prescription)". | Kept: 60.7 already uses the short form; both are unambiguous. |
+| L4 | MIGRATION-NOTES Work-group rows still list `staffing`. | Epic 599 #1570. | Added to "Selector notes superseded by Phase 86". |
+| L5 | 90-day stack line cites 14.12 as well as 4.3b/68.1. | Accurate. | Kept. |
+
+**Lesson** (also in `tasks/lessons.md`): when asserting a behaviour does *not* exist, grep the whole backend, not the package the feature is named after — the activation hook sits in `checklist/`, not `compliance/`.

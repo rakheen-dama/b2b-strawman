@@ -334,4 +334,5 @@ Sweep list for 617B.1 (each still completes as written):
 
 - Customer detail Finance group: the `retainer` tab (`tab-item-retainer`, rows above) no longer exists (Epic 598).
 - Customer Overview "Pending AI Suggestions" panel no longer exists (specialists removed, Epic 601).
+- Matter detail Work group: the `staffing` tab (`tab-item-staffing`) no longer exists (Epic 599 #1570); the Work-group rows above that still list it are stale on that one item.
 - No other selector changes; the remaining tables above are current.

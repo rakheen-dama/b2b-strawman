@@ -237,7 +237,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
   - Email: **sipho.portal@example.com** (this email seeds the portal contact later)
   - ID Number: **8501015800088** (valid SA format)
   - Phone: **+27 82 555 0101**
-  - Address: **12 Loveday St, Johannesburg, 2001**
+  - Address Line 1: **12 Loveday St**; City: **Johannesburg**; Postal Code: **2001**; Country: **ZA** (Address Line 1, City and Country are activation prerequisites — `StructuralPrerequisiteCheck`; INDIVIDUAL clients need no tax number) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §8 M2)
 - [ ] **2.4** Submit → client created, redirected to client detail
 - [ ] **2.5** On client detail → click **Run Conflict Check** → search runs against existing matters + adverse party registry
 - [ ] **2.6** Result = **CLEAR** (no pre-existing records) — green confirmation state renders
@@ -334,7 +334,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **5.4** Click **Accept** on each item in turn (per-item Accept replaces a separate envelope-level "Mark as Reviewed" — refines OBS-403 lifecycle understanding). Counter advances 0/3 → 1/3 → 2/3 → 3/3 accepted; on the third Accept, envelope status auto-transitions `In Progress → Completed` with a "Completed on …" stamp.
 - [ ] **5.5** Verify matter Overview shows FICA status — Activity feed renders the full audit trail (`REQ-0001 completed — all items accepted`, three accept events, three submit events). The matter Overview tab also renders a **FICA Status Card** (`<FicaStatusCard>`); confirm its "View request" link emits the canonical `/org/{slug}/information-requests/{requestId}` route — NOT `/requests/{id}` (OBS-501 verification).
 - [ ] **5.6** Mailpit → notification emails to Sipho during firm review: 3× per-item-accepted (`Item accepted — {name} (Mathebula & Partners)`) + 1× envelope-completed (`Request REQ-0001 completed (Mathebula & Partners)`).
-- [ ] **5.7** On Sipho's client detail the lifecycle badge (`data-testid="lifecycle-badge"`) reads **PROSPECT**. Click the header card's **Start Onboarding** → confirm in the alert dialog → badge **ONBOARDING**; **Compliance** group → **Onboarding** sub-tab shows **Legal Individual Client Onboarding**, 0/9 completed (9 items, 8 required; five show "Requires document") (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.2: the deleted Day 10 deal-win was the only scripted PROSPECT→ONBOARDING step)
+- [ ] **5.7** On Sipho's client detail the lifecycle badge (`data-testid="lifecycle-badge"`) reads **PROSPECT**. Click the header card's **Start Onboarding** → confirm in the alert dialog → badge **ONBOARDING**; **Compliance** group → **Onboarding** sub-tab shows **Legal Individual Client Onboarding**, 0/9 completed (9 items, 8 required; six show "Requires document") (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.2: the deleted Day 10 deal-win was the only scripted PROSPECT→ONBOARDING step)
 
 **Day 5 checkpoints**
 - [ ] Three uploaded documents retrievable firm-side
@@ -356,13 +356,13 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **7.1** On matter RAF-2026-001 → **Generate Document** dropdown → **Engagement Letter — Litigation** → preview renders with Mathebula letterhead, brand colour and Sipho's details → **Save**
 - [ ] **7.2** **Work** group → **Generated Docs** sub-tab lists the engagement letter with today's date
-- [ ] **7.3** On that row click **Send for Acceptance** → Recipient = Sipho Dlamini (`sipho.portal@example.com`), Expiry (days) = 7 → **Send** → acceptance badge **Pending**
+- [ ] **7.3** On that row click **Send for Acceptance** → Recipient = Sipho Dlamini (`sipho.portal@example.com`), Expiry (days) = 7 → **Send** → acceptance badge **Awaiting Acceptance** (status SENT; **Viewed** once opened)
 - [ ] **7.4** Mailpit → email to `sipho.portal@example.com`, subject `Mathebula & Partners -- Please review engagement letter for acceptance: <file name>`, body link to `http://localhost:3002/accept/<token>`
 - [ ] **7.5** Matter activity feed shows "engagement letter generated" and "acceptance requested"
 
 **Day 7 checkpoints**
 - [ ] Engagement letter generated from the legal-za template pack and saved to the matter
-- [ ] Acceptance request sent; Pending badge; email in Mailpit
+- [ ] Acceptance request sent; Awaiting Acceptance badge; email in Mailpit
 
 ---
 
@@ -394,7 +394,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **10.1a** Sipho's client detail → **Work** group → **Documents** sub-tab → **Upload Document** → upload one small PDF named "Sipho Dlamini — certified FICA pack.pdf" (the checklist document picker lists client documents; if the Day 4 portal uploads already appear in the picker, link those instead and say so in the run log) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.2: Sipho must be ACTIVE for the Day 28 billing run; ONBOARDING→ACTIVE needs a complete checklist)
 - [ ] **10.1b** **Compliance** group → **Onboarding** sub-tab → for each of the 9 items in order: **Mark Complete** → where "Requires document" shows, pick the PDF from 10.1a → **Confirm** → **Completed**. Complete "Engagement Letter Signed" before "Power of Attorney Signed" (dependency). Progress reads **9/9 completed**. If a completed item still renders Pending, reload — `FIXME(depth-ii:checklist-stale-after-complete)`, intermittent
-- [ ] **10.1c** Header card primary action **Activate Customer** → confirm → lifecycle badge **ACTIVE** (there is no automatic ONBOARDING→ACTIVE transition on checklist completion; `CustomerLifecycleService.checkOnboardingGuard` only blocks activation while a checklist is incomplete)
+- [ ] **10.1c** When the last required item is confirmed the checklist instance completes and the client **auto-transitions to ACTIVE** (`checklist/ChecklistInstanceService.checkLifecycleAdvance`, provided the activation prerequisites Address Line 1 / City / Country (from 2.3) are on file — `StructuralPrerequisiteCheck.LIFECYCLE_ACTIVATION_FIELDS`) → lifecycle badge **ACTIVE**; the header primary action now reads **Edit**. If the badge still reads ONBOARDING, a `PREREQUISITE_BLOCKED_ACTIVATION` notification was raised — fill the missing field on the client, then the header action reads **Activate Customer** → click → ACTIVE
 - [ ] **10.1d** **Work** → **Generated Docs**: the engagement letter's acceptance badge reads **Accepted** (from Day 8)
 - [ ] **10.2** Matter lifecycle: verify matter has auto-transitioned to **ACTIVE** (Phase 29 lifecycle), or transition manually per current UX
 

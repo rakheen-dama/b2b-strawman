@@ -218,7 +218,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **1.5** Navigate to **Clients** list
 - [ ] **1.6** Click **New Client**
 - [ ] **1.7** Fill standard fields: Name = **Sipho Dlamini**, Email = `sipho.dlamini@email.co.za`, Phone = **+27-82-555-0101**
-- [ ] **1.8** Fill promoted fields (verify inline rendering): `client_type` = **INDIVIDUAL**, `physical_address` = "42 Commissioner St, Johannesburg, 2001", `id_passport_number` = "8501015800083"
+- [ ] **1.8** Fill promoted fields (verify inline rendering): `client_type` = **INDIVIDUAL**, Address Line 1 = "42 Commissioner St", City = "Johannesburg", Postal Code = "2001", Country = **ZA**, `id_passport_number` = "8501015800083" (Address Line 1, City and Country are activation prerequisites — `StructuralPrerequisiteCheck`; INDIVIDUAL clients need no tax number)
 - [ ] **1.9** Save → verify client appears in list with status **PROSPECT**
 - [ ] **1.10** Click into client detail → verify lifecycle badge shows **PROSPECT** in the header card (`data-testid="client-header-card"`)
 - [ ] **1.11** Navigate to **Details** tab group → **Details** sub-tab (`tab-group-details` → `tab-item-details`). Verify promoted fields render on the Details tab, NOT in the CustomFieldSection on the Fields tab
@@ -231,11 +231,11 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **2.1** On Sipho's client detail (header card, `data-testid="client-header-card"`), the lifecycle badge (`data-testid="lifecycle-badge"`) reads **PROSPECT**. Click the header's primary action **Start Onboarding** → confirm **Start Onboarding** in the alert dialog → badge reads **ONBOARDING** and the onboarding checklist is instantiated (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.3: the deleted Day 1 deal-win was the only PROSPECT→ONBOARDING step)
 - [ ] **2.2** Navigate to **Compliance** tab group → **Onboarding** sub-tab (`tab-group-compliance` → `tab-item-onboarding`) → verify the **Legal Individual Client Onboarding** checklist is auto-instantiated (pack `legal-za-individual-onboarding`)
-- [ ] **2.3** Verify the checklist shows **9 items, 8 required**: Proof of Identity, Proof of Address, Beneficial Ownership Declaration, Source of Funds Declaration, Engagement Letter Signed, Conflict Check Performed, Power of Attorney Signed (optional), FICA Risk Assessment, Sanctions Screening. Five of them show "Requires document: …" (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: items re-derived from compliance-packs/legal-za-individual-onboarding/pack.json)
+- [ ] **2.3** Verify the checklist shows **9 items, 8 required**: Proof of Identity, Proof of Address, Beneficial Ownership Declaration, Source of Funds Declaration, Engagement Letter Signed, Conflict Check Performed, Power of Attorney Signed (optional), FICA Risk Assessment, Sanctions Screening. Six of them show "Requires document: …" (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: items re-derived from compliance-packs/legal-za-individual-onboarding/pack.json)
 - [ ] **2.4** Precondition for the document items: on the client's **Work** group → **Documents** sub-tab click **Upload Document** → upload one small PDF named "Sipho Dlamini — certified FICA pack.pdf" → row shows Uploaded
 - [ ] **2.5** Back on Compliance → Onboarding: for each of the 9 items in order click **Mark Complete**; where the row shows "Requires document", pick "Sipho Dlamini — certified FICA pack.pdf" in the document combobox; click **Confirm** → item reads **Completed**. Complete "Engagement Letter Signed" before "Power of Attorney Signed" (dependency). If a completed item still renders Pending, reload — `FIXME(depth-ii:checklist-stale-after-complete)`, intermittent
 - [ ] **2.6** Progress reads **9/9 completed**; checklist instance status COMPLETED
-- [ ] **2.7** Header card primary action now reads **Activate Customer** → click → confirm → lifecycle badge **ACTIVE** (there is no automatic ONBOARDING→ACTIVE transition on checklist completion; `CustomerLifecycleService.checkOnboardingGuard` only blocks activation while a checklist is incomplete)
+- [ ] **2.7** When the last required item is confirmed the checklist instance completes and the client **auto-transitions to ACTIVE** (`checklist/ChecklistInstanceService.checkLifecycleAdvance`, provided the activation prerequisites Address Line 1 / City / Country (from 1.8) are on file — `StructuralPrerequisiteCheck.LIFECYCLE_ACTIVATION_FIELDS`) → lifecycle badge **ACTIVE**; the header primary action now reads **Edit**. If the badge still reads ONBOARDING, a `PREREQUISITE_BLOCKED_ACTIVATION` notification was raised — fill the missing field on the client, then the header action reads **Activate Customer** → click → ACTIVE
 - [ ] **2.8** Verify ACTIVE badge appears on client detail header card (`data-testid="client-header-card"`)
 - [ ] **2.9** Navigate to audit log for this client → verify FICA completion events are recorded
 
@@ -257,7 +257,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **4.1** Generate engagement letter from matter detail (Document Templates → Engagement Letter)
 - [ ] **4.2** Preview PDF → verify Mathebula letterhead + brand colour applied + client details filled from context
 - [ ] **4.3** Save generated document → verify it appears under matter's Documents tab
-- [ ] **4.3a** On the saved engagement letter (**Work** → **Generated Docs**) click **Send for Acceptance** → Recipient = Sipho Dlamini (portal contact), Expiry (days) = 7 → **Send** → acceptance status badge on the document reads **Pending** (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.5: ADR-336 replaces the deleted proposal flow with document + acceptance)
+- [ ] **4.3a** On the saved engagement letter (**Work** → **Generated Docs**) click **Send for Acceptance** → Recipient = Sipho Dlamini (portal contact), Expiry (days) = 7 → **Send** → acceptance status badge on the document reads **Awaiting Acceptance** (status SENT; becomes **Viewed** once the link is opened) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.5: ADR-336 replaces the deleted proposal flow with document + acceptance)
 - [ ] **4.3b** Mailpit → email to Sipho's address with subject `Mathebula & Partners -- Please review engagement letter for acceptance: <file name>` → open the link in an incognito context → public page http://localhost:3002/accept/<token> renders the PDF preview → type the full name "Sipho Dlamini" → click **I Accept** → accepted state with timestamp renders
 - [ ] **4.3c** Mailpit → `Confirmed: You have accepted <file name>`; firm-side the document's acceptance badge reads **Accepted**; 📸 `day-04-engagement-letter-accepted.png`
 - [ ] **4.4** Log first time entry: Bob, 1.5 hours, "Drafting particulars of claim", billable = yes
@@ -304,11 +304,11 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 **Actor**: Thandi (Owner — senior partner handles estate work)
 
 - [ ] **8.1** Conflict check for "Moroka Family Trust" and "Peter Moroka" (deceased) → both CLEAR
-- [ ] **8.2** Create new client: Name = **Moroka Family Trust**, `client_type` = **TRUST**, `registration_number` = "IT000456/2018"
+- [ ] **8.2** Create new client: Name = **Moroka Family Trust**, `client_type` = **TRUST**, `registration_number` = "IT000456/2018", Tax Number = "9123456789", Address Line 1 = "8 Rissik St", City = "Johannesburg", Country = **ZA** (activation prerequisites — TRUST and COMPANY clients also need the tax number)
 - [ ] **8.3** Beneficial owners are recorded via the Trust checklist item **Beneficial Ownership Declaration** (8.5), not a custom field — note the three names (Grace Moroka, James Moroka, Ruth Moroka) in that item's completion note (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: beneficial_owners is not a pack field; the trust pack carries the declaration item)
 - [ ] **8.4** Header card → **Start Onboarding** → confirm → badge **ONBOARDING** (as 2.1)
 - [ ] **8.5** Complete the **Legal Trust Client Onboarding** checklist (pack `legal-za-trust-onboarding`, 12 items, 11 required: Trust Deed, Letters of Authority, Trustee 1 ID, Trustee 2 ID (optional), Proof of Trust Banking, SARS Trust Tax Number, Beneficial Ownership Declaration, Source of Funds Declaration, Engagement Letter Signed, Conflict Check Performed, FICA Risk Assessment, Sanctions Screening) — upload one client PDF first and link it where "Requires document" shows, as on Day 2 (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: items re-derived from compliance-packs/legal-za-trust-onboarding/pack.json)
-- [ ] **8.6** Header card → **Activate Customer** → badge **ACTIVE**
+- [ ] **8.6** On the last required item's Confirm the client auto-transitions to **ACTIVE** (prerequisites from 8.2); header action reads **Edit**. If still ONBOARDING, fix the missing field and click **Activate Customer**
 
 ### Day 9 — Deceased estate matter
 
@@ -333,7 +333,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Thandi (Owner — senior partner handles property work)
 
-- [ ] **14.2** As Thandi: create a new client **"Khumalo Property Holdings"** (type INDIVIDUAL) → **Start Onboarding** → complete the 9-item individual checklist (as Day 2, one uploaded client PDF linked where required) → **Activate Customer** → ACTIVE
+- [ ] **14.2** As Thandi: create a new client **"Khumalo Property Holdings"** (type INDIVIDUAL; Address Line 1 = "12 Rivonia Road", City = "Sandton", Country = **ZA**) → **Start Onboarding** → complete the 9-item individual checklist (as Day 2, one uploaded client PDF linked where required) → auto-transitions to ACTIVE on the last required Confirm (else **Activate Customer**)
 - [ ] **14.3** Create a new matter using the **Property Transfer** template (Work Type **CONVEYANCING** inherited from the template, #1580) → matter title "Khumalo Property Holdings — Erf 1234 Sandton Transfer"
 - [ ] **14.4** On matter detail, navigate to **Details > Fields** tab, verify the **10 conveyancing custom fields** (from field pack `conveyancing_za_matter`) are all present (even if empty): `conveyancing_type`, `property_address`, `erf_number`, `deeds_office`, `lodgement_date`, `registration_date`, `deed_number`, `purchase_price`, `transfer_duty`, `bond_institution`
 - [ ] **14.5** On the Fields tab, fill the minimum Day 14 set: `property_address = "12 Rivonia Road, Sandton, 2196"`, `erf_number = "1234"`, `deeds_office = JOHANNESBURG` → save
@@ -369,8 +369,8 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 **Actor**: Bob (Admin)
 
 - [ ] **22.1** Conflict check "Lerato Mthembu" → CLEAR
-- [ ] **22.2** Create individual client, standard fields + promoted (client_type = INDIVIDUAL, physical_address, id_passport_number)
-- [ ] **22.3** **Start Onboarding** → complete the 9-item individual checklist (as Day 2) → **Activate Customer** → client ACTIVE
+- [ ] **22.2** Create individual client, standard fields + promoted (client_type = INDIVIDUAL, id_passport_number); fill Address Line 1 = "3 Church Square", City = "Pretoria", Country = **ZA** (activation prerequisites)
+- [ ] **22.3** **Start Onboarding** → complete the 9-item individual checklist (as Day 2) → auto-transitions to ACTIVE on the last required Confirm (else **Activate Customer**) → client ACTIVE
 - [ ] **22.4** Create matter from template **Litigation (Road Accident Fund -- RAF)** → Work Type **LITIGATION** (the RAF template carries LITIGATION; "Road Accident Fund" is the template, not a work type), case_number = "RAF/2026/0042" (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: expected value changed by #1580/#1581)
 - [ ] **22.5** Matter title: "Lerato Mthembu — RAF Claim (MVA 2025-11-03)"
 

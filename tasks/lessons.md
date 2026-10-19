@@ -217,3 +217,8 @@
 - `verify.sh` does `exec caffeinate -is ./mvnw verify "$@"`, so `verify.sh clean -q` executes goals in order `verify clean`: the suite runs, then `clean` deletes `target/surefire-reports` — a failure would leave nothing to triage. Caught during Epic 597 only because the process list showed `verify clean -q`.
 - Killing a `nohup bash -c '…; echo EXIT > marker'` wrapper with `pkill -f` on a pattern does NOT reliably kill the exec'd Maven/Surefire JVMs — two verifies ended up sharing one `target/`. After any abort: `ps -p <pids>` to confirm death, then `kill -9` by PID before relaunching.
 - **How to apply:** for a clean full verify run `bash scripts/verify-preflight.sh` then `caffeinate -is ./mvnw clean verify -q` (goal order explicit), or call `verify.sh` with no positional goals.
+
+## 2026-10-19 — "No such behaviour exists" needs a whole-codebase grep (PR #1586)
+- **What happened**: the QA-scenario spec asserted "there is no automatic ONBOARDING→ACTIVE transition on checklist completion" after grepping only `compliance/` (where the lifecycle service lives). The hook is in `checklist/ChecklistInstanceService.checkLifecycleAdvance`. Five scenario steps were written against the false claim; the reviewer caught it.
+- **Rule**: a negative claim about product behaviour ("X never happens") must be backed by a repo-wide search for the transition/target (`grep -rn '"ACTIVE"\|LifecycleStatus.ACTIVE' backend/src/main/java`), not a search in the package the feature is named after. Positive claims can be local; negatives cannot.
+- **Also**: when a `test.fixme` asserts a behaviour, treat it as a hypothesis worth checking in code, not as unverified — here it was right.

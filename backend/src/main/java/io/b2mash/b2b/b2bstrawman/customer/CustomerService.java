@@ -251,6 +251,7 @@ public class CustomerService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("customer.created")
+            // ADR-342: storage key, do not rename
             .entityType("customer")
             .entityId(customer.getId())
             .details(Map.of("name", customer.getName(), "email", customer.getEmail()))
@@ -414,6 +415,7 @@ public class CustomerService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("customer.updated")
+            // ADR-342: storage key, do not rename
             .entityType("customer")
             .entityId(saved.getId())
             .details(details)
@@ -519,6 +521,7 @@ public class CustomerService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("customer.archived")
+            // ADR-342: storage key, do not rename
             .entityType("customer")
             .entityId(saved.getId())
             .details(Map.of("lifecycleStatus", saved.getLifecycleStatus().name()))
@@ -554,6 +557,7 @@ public class CustomerService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("customer.unarchived")
+            // ADR-342: storage key, do not rename
             .entityType("customer")
             .entityId(saved.getId())
             .details(Map.of("lifecycleStatus", saved.getLifecycleStatus().name()))

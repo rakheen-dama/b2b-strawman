@@ -87,6 +87,7 @@ public class CustomerProjectService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("customer.linked")
+            // ADR-342: storage key, do not rename
             .entityType("customer")
             .entityId(customerId)
             .details(Map.of("project_id", projectId.toString()))
@@ -130,6 +131,7 @@ public class CustomerProjectService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("customer.unlinked")
+            // ADR-342: storage key, do not rename
             .entityType("customer")
             .entityId(customerId)
             .details(Map.of("project_id", projectId.toString()))

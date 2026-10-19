@@ -287,6 +287,7 @@ public class DataAnonymizationService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("data.subject.anonymized")
+            // ADR-342: storage key, do not rename
             .entityType("customer")
             .entityId(customerId)
             .details(

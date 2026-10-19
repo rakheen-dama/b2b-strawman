@@ -211,6 +211,7 @@ public class DataExportService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("data.subject.export.generated")
+            // ADR-342: storage key, do not rename
             .entityType("customer")
             .entityId(customerId)
             .details(
@@ -435,6 +436,7 @@ public class DataExportService {
     // Audit events referencing the customer entity
     var auditPage =
         auditEventRepository.findByFilter(
+            // ADR-342: storage key, do not rename
             "customer", customerId, null, null, null, null, PageRequest.of(0, 10_000));
     data.put(
         "auditEvents",

@@ -324,6 +324,7 @@ public class DatabaseAuditService implements AuditService {
             .toList();
 
     String[] childTypes = {
+      // ADR-342: storage key, do not rename
       "project",
       "invoice",
       "information_request",

@@ -1,0 +1,1071 @@
+{
+  "outputRecords" : {
+    "dto.AttachDocumentConfirmResponse" : [ {
+      "name" : "documentId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "correspondenceId",
+      "type" : "java.util.UUID"
+    } ],
+    "dto.AttachDocumentInitResponse" : [ {
+      "name" : "documentId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "presignedUrl",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "expiresInSeconds",
+      "type" : "long"
+    } ],
+    "dto.FileCorrespondenceToolResponse" : [ {
+      "name" : "correspondenceId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "idempotent",
+      "type" : "boolean"
+    } ],
+    "dto.McpActivityItem" : [ {
+      "name" : "occurredAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "entityType",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "entityId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "entityName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "action",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "message",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "actor",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpAuditEventItem" : [ {
+      "name" : "occurredAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "eventType",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "actor",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "entityType",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "entityId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "summary",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpClientDto" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "type",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "lifecycleStatus",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "contacts",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.mcp.dto.McpClientDto$Contact>"
+    }, {
+      "name" : "linkedMatters",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.mcp.dto.McpClientDto$LinkedMatter>"
+    } ],
+    "dto.McpClientDto$Contact" : [ {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "email",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "phone",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpClientDto$LinkedMatter" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "createdAt",
+      "type" : "java.time.Instant"
+    } ],
+    "dto.McpClientListItem" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "type",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "lifecycleStatus",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpComplianceGapDto" : [ {
+      "name" : "customerId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "ficaStatus",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "items",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.mcp.dto.McpComplianceGapDto$Item>"
+    }, {
+      "name" : "truncated",
+      "type" : "boolean"
+    } ],
+    "dto.McpComplianceGapDto$Item" : [ {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "required",
+      "type" : "boolean"
+    } ],
+    "dto.McpCorrespondenceDto" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "customerId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "projectId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "direction",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "subject",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "bodyText",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "bodyHtml",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "fromAddress",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "toAddresses",
+      "type" : "java.util.List<java.lang.String>"
+    }, {
+      "name" : "ccAddresses",
+      "type" : "java.util.List<java.lang.String>"
+    }, {
+      "name" : "sentAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "receivedAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "threadKey",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "messageId",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "attachmentCount",
+      "type" : "long"
+    }, {
+      "name" : "filedAt",
+      "type" : "java.time.Instant"
+    } ],
+    "dto.McpCorrespondenceListItem" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "subject",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "fromAddress",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "receivedAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "attachmentCount",
+      "type" : "long"
+    }, {
+      "name" : "direction",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpDocumentDto" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "scope",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "contentType",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "sizeBytes",
+      "type" : "long"
+    }, {
+      "name" : "projectId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "customerId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "createdAt",
+      "type" : "java.time.Instant"
+    } ],
+    "dto.McpDownloadUrl" : [ {
+      "name" : "url",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "expiresInSeconds",
+      "type" : "long"
+    } ],
+    "dto.McpError" : [ {
+      "name" : "error",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "message",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpFirmProfileDto" : [ {
+      "name" : "practiceAreas",
+      "type" : "java.util.List<java.lang.String>"
+    }, {
+      "name" : "jurisdiction",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "riskCalibration",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "houseStyleNotes",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "feeEstimationNotes",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpInvoiceDto" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "customerId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "customerName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "invoiceNumber",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "currency",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "issueDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "dueDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "subtotalMinor",
+      "type" : "long"
+    }, {
+      "name" : "taxMinor",
+      "type" : "long"
+    }, {
+      "name" : "totalMinor",
+      "type" : "long"
+    }, {
+      "name" : "lines",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.mcp.dto.McpInvoiceDto$Line>"
+    }, {
+      "name" : "payments",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.mcp.dto.McpInvoiceDto$Payment>"
+    }, {
+      "name" : "truncated",
+      "type" : "boolean"
+    } ],
+    "dto.McpInvoiceDto$Line" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "projectId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "projectName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "lineType",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "description",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "amountMinor",
+      "type" : "long"
+    } ],
+    "dto.McpInvoiceDto$Payment" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "amountMinor",
+      "type" : "long"
+    }, {
+      "name" : "currency",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "reference",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpMatterDto" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "description",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "priority",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "workType",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "referenceNumber",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "customerId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "dueDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "createdAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "updatedAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "projectRole",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpMatterListItem" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "customerId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "dueDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "createdAt",
+      "type" : "java.time.Instant"
+    } ],
+    "dto.McpPage" : [ {
+      "name" : "items",
+      "type" : "java.util.List<T>"
+    }, {
+      "name" : "page",
+      "type" : "int"
+    }, {
+      "name" : "size",
+      "type" : "int"
+    }, {
+      "name" : "total",
+      "type" : "long"
+    }, {
+      "name" : "truncated",
+      "type" : "boolean"
+    } ],
+    "dto.McpTrustBalanceDto" : [ {
+      "name" : "trustAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "customerId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "balanceMinor",
+      "type" : "long"
+    }, {
+      "name" : "currency",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpTrustTransactionItem" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "date",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "type",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "amountMinor",
+      "type" : "long"
+    }, {
+      "name" : "currency",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "reference",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpUnbilledSummaryItem" : [ {
+      "name" : "customerId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "customerName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "amountMinor",
+      "type" : "long"
+    }, {
+      "name" : "currency",
+      "type" : "java.lang.String"
+    } ],
+    "dto.McpUnbilledSummaryItem$McpUnbilledMatterSummary" : [ {
+      "name" : "projectId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "totalAmountMinor",
+      "type" : "long"
+    }, {
+      "name" : "currency",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "entryCount",
+      "type" : "int"
+    } ],
+    "dto.ProposeTaskToolResponse" : [ {
+      "name" : "gateId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "duplicate",
+      "type" : "boolean"
+    }, {
+      "name" : "message",
+      "type" : "java.lang.String"
+    } ],
+    "dto.ResolveMatterResponse" : [ {
+      "name" : "customer",
+      "type" : "io.b2mash.b2b.b2bstrawman.mcp.dto.McpClientDto"
+    }, {
+      "name" : "matters",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.mcp.dto.McpMatterDto>"
+    } ]
+  },
+  "resourceTemplates" : [ {
+    "description" : "A single client (customer) by id, with contacts and linked matters. Org-wide read.",
+    "mimeType" : "application/json",
+    "name" : "client",
+    "uriTemplate" : "kazi://client/{id}"
+  }, {
+    "description" : "A single matter (project) by id, with your role on it. Project-access gated.",
+    "mimeType" : "application/json",
+    "name" : "matter",
+    "uriTemplate" : "kazi://matter/{id}"
+  } ],
+  "resources" : [ {
+    "description" : "The firm's AI grounding profile: practice areas, jurisdiction, risk calibration, and house-style / fee-estimation notes. Requires the AI_MANAGE capability.",
+    "mimeType" : "application/json",
+    "name" : "firm-profile",
+    "uri" : "kazi://firm-profile"
+  } ],
+  "tools" : [ {
+    "description" : "Attach a document to an inbound correspondence using a two-phase presigned upload. Call with phase=INITIATE (correspondenceId + fileName) to get a presigned PUT URL and a documentId, PUT the bytes to that URL, then call again with phase=CONFIRM (documentId + correspondenceId) to finalise. The document is stamped with the correspondence link and source=EMAIL_INGEST. CONFIRM is idempotent on documentId. Requires the MCP_WRITE capability.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "contentType" : {
+          "description" : "MIME content type (INITIATE only).",
+          "type" : "string"
+        },
+        "correspondenceId" : {
+          "description" : "Correspondence id to attach the document to.",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "documentId" : {
+          "description" : "Document id to confirm (CONFIRM only).",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "fileName" : {
+          "description" : "File name (INITIATE only).",
+          "type" : "string"
+        },
+        "phase" : {
+          "description" : "Upload phase: INITIATE or CONFIRM.",
+          "type" : "string"
+        },
+        "size" : {
+          "description" : "File size in bytes (INITIATE only).",
+          "format" : "int64",
+          "type" : "integer"
+        }
+      },
+      "required" : [ "phase", "correspondenceId" ],
+      "type" : "object"
+    },
+    "name" : "attach_document"
+  }, {
+    "description" : "File an inbound email into a matter and/or client. Provide at least one of matterId or customerId. Idempotent on messageId — re-filing the same messageId is a no-op that returns the existing correspondence id. Requires the MCP_WRITE capability.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "bodyHtml" : {
+          "description" : "HTML body of the email.",
+          "type" : "string"
+        },
+        "bodyText" : {
+          "description" : "Plain-text body of the email.",
+          "type" : "string"
+        },
+        "ccAddresses" : {
+          "description" : "Carbon-copy (Cc) addresses.",
+          "items" : {
+            "type" : "string"
+          },
+          "type" : "array"
+        },
+        "customerId" : {
+          "description" : "Client (customer) id to file the email against.",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "fromAddress" : {
+          "description" : "Sender email address.",
+          "type" : "string"
+        },
+        "matterId" : {
+          "description" : "Matter (project) id to file the email into.",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "messageId" : {
+          "description" : "Stable RFC-822 Message-ID or externalId — the idempotency key.",
+          "type" : "string"
+        },
+        "receivedAt" : {
+          "description" : "When the email was received (ISO-8601 instant).",
+          "format" : "date-time",
+          "type" : "string"
+        },
+        "sentAt" : {
+          "description" : "When the email was sent (ISO-8601 instant).",
+          "format" : "date-time",
+          "type" : "string"
+        },
+        "source" : {
+          "description" : "Source system label (defaults to MCP).",
+          "type" : "string"
+        },
+        "subject" : {
+          "description" : "Email subject line.",
+          "type" : "string"
+        },
+        "threadKey" : {
+          "description" : "Provider thread key to group the conversation.",
+          "type" : "string"
+        },
+        "toAddresses" : {
+          "description" : "Recipient (To) addresses.",
+          "items" : {
+            "type" : "string"
+          },
+          "type" : "array"
+        }
+      },
+      "required" : [ "messageId" ],
+      "type" : "object"
+    },
+    "name" : "file_correspondence"
+  }, {
+    "description" : "List the firm's audit events, newest first. Optionally filter by eventType (prefix match, e.g. 'invoice.') and/or clientId (matches events on the client record itself). Paginated — page size capped at 200. Requires the TEAM_OVERSIGHT capability.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "customerId" : {
+          "description" : "Filter to events on this client (customer) record.",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "eventType" : {
+          "description" : "Filter by event type, prefix match (e.g. 'invoice.').",
+          "type" : "string"
+        },
+        "page" : {
+          "description" : "Zero-based page index (default 0).",
+          "format" : "int32",
+          "type" : "integer"
+        },
+        "size" : {
+          "description" : "Page size, capped at 200 (default 50).",
+          "format" : "int32",
+          "type" : "integer"
+        }
+      },
+      "required" : [ ],
+      "type" : "object"
+    },
+    "name" : "get_audit_events"
+  }, {
+    "description" : "Fetch one client (customer) by id, including its contact details and the matters linked to it. Returns a non-leaking not-found error if the client does not exist.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "id" : {
+          "description" : "Client (customer) id.",
+          "format" : "uuid",
+          "type" : "string"
+        }
+      },
+      "required" : [ "id" ],
+      "type" : "object"
+    },
+    "name" : "get_client"
+  }, {
+    "description" : "Fetch one filed correspondence (email) by id, INCLUDING its body (bodyText/bodyHtml) and headers (to/cc/from, subject, messageId, threadKey). Returns a non-leaking not-found error if it does not exist OR you cannot access it.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "id" : {
+          "description" : "Correspondence id.",
+          "format" : "uuid",
+          "type" : "string"
+        }
+      },
+      "required" : [ "id" ],
+      "type" : "object"
+    },
+    "name" : "get_correspondence"
+  }, {
+    "description" : "Return a short-lived presigned download URL (plus its expiry in seconds) for one document. Never returns the document bytes. Returns a non-leaking not-found error if the document does not exist or you cannot access it.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "documentId" : {
+          "description" : "Document id.",
+          "format" : "uuid",
+          "type" : "string"
+        }
+      },
+      "required" : [ "documentId" ],
+      "type" : "object"
+    },
+    "name" : "get_document_url"
+  }, {
+    "description" : "Fetch one invoice by id, including its line items and payment events. Line items and payments are capped at 50 each; the 'truncated' flag is set when either was clipped. Money is returned as minor units plus a currency code. Returns a non-leaking not-found error if the invoice does not exist. Requires the INVOICING capability.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "invoiceId" : {
+          "description" : "Invoice id.",
+          "format" : "uuid",
+          "type" : "string"
+        }
+      },
+      "required" : [ "invoiceId" ],
+      "type" : "object"
+    },
+    "name" : "get_invoice"
+  }, {
+    "description" : "Fetch one matter (project) by id, including your role on it. Returns a non-leaking not-found error if the matter does not exist OR you cannot access it.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "id" : {
+          "description" : "Matter (project) id.",
+          "format" : "uuid",
+          "type" : "string"
+        }
+      },
+      "required" : [ "id" ],
+      "type" : "object"
+    },
+    "name" : "get_matter"
+  }, {
+    "description" : "List the activity timeline for one matter (project), newest first. Project-access is enforced — a non-member receives a non-leaking not-found error. Paginated — page size capped at 50.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "page" : {
+          "description" : "Zero-based page index (default 0).",
+          "format" : "int32",
+          "type" : "integer"
+        },
+        "projectId" : {
+          "description" : "Matter (project) id.",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "size" : {
+          "description" : "Page size, capped at 50 (default 50).",
+          "format" : "int32",
+          "type" : "integer"
+        }
+      },
+      "required" : [ "projectId" ],
+      "type" : "object"
+    },
+    "name" : "get_matter_activity"
+  }, {
+    "description" : "Get a trust balance for a trust account. If a clientId is supplied, returns that client's ledger-card balance on the account; otherwise returns the account's total trust balance. Money is returned as minor units (e.g. cents) plus a currency code. Requires the VIEW_TRUST capability and the trust-accounting module — a firm without trust accounting receives a clean module_disabled error.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "customerId" : {
+          "description" : "Client (customer) id — omit for the account total.",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "trustAccountId" : {
+          "description" : "Trust account id.",
+          "format" : "uuid",
+          "type" : "string"
+        }
+      },
+      "required" : [ "trustAccountId" ],
+      "type" : "object"
+    },
+    "name" : "get_trust_balance"
+  }, {
+    "description" : "Summarise unbilled work. Without a matterId, returns a firm-wide list of up to the first 50 clients with unbilled work (optionally bounded by periodFrom/periodTo and currency); if `truncated` is true, narrow the result using the period/currency filters. With a matterId, returns a single per-matter unbilled summary. Money is returned as minor units plus a currency code. Requires the INVOICING capability.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "currency" : {
+          "description" : "Currency code filter (3-letter).",
+          "type" : "string"
+        },
+        "periodFrom" : {
+          "description" : "Period start (inclusive), ISO date.",
+          "format" : "date",
+          "type" : "string"
+        },
+        "periodTo" : {
+          "description" : "Period end (exclusive), ISO date.",
+          "format" : "date",
+          "type" : "string"
+        },
+        "projectId" : {
+          "description" : "Matter (project) id — switches to the per-matter summary.",
+          "format" : "uuid",
+          "type" : "string"
+        }
+      },
+      "required" : [ ],
+      "type" : "object"
+    },
+    "name" : "get_unbilled_time"
+  }, {
+    "description" : "Health probe — returns 'ok'. Proves the read-only tool surface is wired.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : { },
+      "required" : [ ],
+      "type" : "object"
+    },
+    "name" : "kazi_ping"
+  }, {
+    "description" : "List the firm's clients (customers), org-wide. Optionally filter by lifecycleStatus (PROSPECT, ONBOARDING, ACTIVE, DORMANT, OFFBOARDING, OFFBOARDED). Paginated — page size is capped at 50.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "lifecycleStatus" : {
+          "description" : "Filter by lifecycle status short enum name, e.g. ACTIVE.",
+          "type" : "string"
+        },
+        "page" : {
+          "description" : "Zero-based page index (default 0).",
+          "format" : "int32",
+          "type" : "integer"
+        },
+        "size" : {
+          "description" : "Page size, capped at 50 (default 50).",
+          "format" : "int32",
+          "type" : "integer"
+        }
+      },
+      "required" : [ ],
+      "type" : "object"
+    },
+    "name" : "list_clients"
+  }, {
+    "description" : "Summarise a client's compliance posture: FICA verification status plus their open checklist items (name, status, required). The item list is capped at 50; the 'truncated' flag is set when clipped. Returns a non-leaking not-found error if the client does not exist. Requires the CUSTOMER_MANAGEMENT capability.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "customerId" : {
+          "description" : "Client (customer) id.",
+          "format" : "uuid",
+          "type" : "string"
+        }
+      },
+      "required" : [ "customerId" ],
+      "type" : "object"
+    },
+    "name" : "list_compliance_gaps"
+  }, {
+    "description" : "List filed correspondence (emails) for ONE matter (matterId) OR ONE client (customerId) — provide exactly one. Returns metadata rows (subject, from, receivedAt, attachmentCount, direction) newest-first; use get_correspondence(id) for the body. Paginated — page size is capped at 50. Returns a non-leaking not-found if the matter/client does not exist OR you cannot access it.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "customerId" : {
+          "description" : "List correspondence for this client (customer) id.",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "matterId" : {
+          "description" : "List correspondence for this matter (project) id.",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "page" : {
+          "description" : "Zero-based page index (default 0).",
+          "format" : "int32",
+          "type" : "integer"
+        },
+        "size" : {
+          "description" : "Page size, capped at 50 (default 50).",
+          "format" : "int32",
+          "type" : "integer"
+        }
+      },
+      "required" : [ ],
+      "type" : "object"
+    },
+    "name" : "list_correspondence"
+  }, {
+    "description" : "List the firm's invoices, optionally filtered by clientId, status (DRAFT, APPROVED, SENT, PAID, VOID) and/or matterId. Money is returned as minor units plus a currency code. Paginated — page size capped at 50. Requires the INVOICING capability.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "customerId" : {
+          "description" : "Filter by client (customer) id.",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "page" : {
+          "description" : "Zero-based page index (default 0).",
+          "format" : "int32",
+          "type" : "integer"
+        },
+        "projectId" : {
+          "description" : "Filter by matter (project) id.",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "size" : {
+          "description" : "Page size, capped at 50 (default 50).",
+          "format" : "int32",
+          "type" : "integer"
+        },
+        "status" : {
+          "description" : "Filter by status: DRAFT, APPROVED, SENT, PAID, VOID.",
+          "type" : "string"
+        }
+      },
+      "required" : [ ],
+      "type" : "object"
+    },
+    "name" : "list_invoices"
+  }, {
+    "description" : "List the firm's matters (projects) visible to you. Members see only assigned matters; owners/admins see all. Optionally filter by status (e.g. ACTIVE) or customerId. Paginated — page size is capped at 50.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "customerId" : {
+          "description" : "Filter to matters linked to this client id.",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "page" : {
+          "description" : "Zero-based page index (default 0).",
+          "format" : "int32",
+          "type" : "integer"
+        },
+        "size" : {
+          "description" : "Page size, capped at 50 (default 50).",
+          "format" : "int32",
+          "type" : "integer"
+        },
+        "status" : {
+          "description" : "Filter by short status enum, e.g. ACTIVE.",
+          "type" : "string"
+        }
+      },
+      "required" : [ ],
+      "type" : "object"
+    },
+    "name" : "list_matters"
+  }, {
+    "description" : "List a client's trust transactions on a trust account, newest first. Money is returned as minor units plus a currency code. Paginated — page size capped at 50. Requires the VIEW_TRUST capability and the trust-accounting module.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "customerId" : {
+          "description" : "Client (customer) id.",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "page" : {
+          "description" : "Zero-based page index (default 0).",
+          "format" : "int32",
+          "type" : "integer"
+        },
+        "size" : {
+          "description" : "Page size, capped at 50 (default 50).",
+          "format" : "int32",
+          "type" : "integer"
+        },
+        "trustAccountId" : {
+          "description" : "Trust account id.",
+          "format" : "uuid",
+          "type" : "string"
+        }
+      },
+      "required" : [ "customerId", "trustAccountId" ],
+      "type" : "object"
+    },
+    "name" : "list_trust_transactions"
+  }, {
+    "description" : "Propose a task/deadline from a filed email. Creates a PENDING approval gate only — it NEVER creates the task directly; an authorised member must approve it in Kazi (AI_REVIEW) before the task is created. Idempotent per open gate: a second proposal for the same correspondence returns the existing gate. Requires the MCP_WRITE capability.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "assigneeId" : {
+          "description" : "Assignee member id.",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "correspondenceId" : {
+          "description" : "Correspondence id the task is proposed from.",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "description" : {
+          "description" : "Task description.",
+          "type" : "string"
+        },
+        "dueDate" : {
+          "description" : "Due date (ISO yyyy-MM-dd).",
+          "format" : "date",
+          "type" : "string"
+        },
+        "projectId" : {
+          "description" : "Matter (project) id the task belongs to.",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "title" : {
+          "description" : "Task title.",
+          "type" : "string"
+        }
+      },
+      "required" : [ "projectId", "correspondenceId", "title" ],
+      "type" : "object"
+    },
+    "name" : "propose_task"
+  }, {
+    "description" : "Resolve an inbound correspondence email to the firm's client (customer) and ALL of that client's matters. Pass the sender email; returns {customer, matters[]} so you can pick the right matter before filing. Returns {customer:null, matters:[]} when no client matches. subjectHint/reference are optional hints for YOUR disambiguation only — Kazi does no server-side fuzzy matching.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "email" : {
+          "description" : "Sender email address to resolve to a client.",
+          "type" : "string"
+        },
+        "reference" : {
+          "description" : "Optional reference/matter number, a hint for your own disambiguation only.",
+          "type" : "string"
+        },
+        "subjectHint" : {
+          "description" : "Optional email subject, a hint for your own disambiguation only.",
+          "type" : "string"
+        }
+      },
+      "required" : [ "email" ],
+      "type" : "object"
+    },
+    "name" : "resolve_matter_by_email"
+  }, {
+    "description" : "List document metadata (never the bytes). Provide projectId to search one matter (project-access enforced), or scope=ORG / scope=CUSTOMER for org-wide search (customerId is required when scope=CUSTOMER). Paginated — page size capped at 50.",
+    "inputSchema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+        "customerId" : {
+          "description" : "Required when scope=CUSTOMER.",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "page" : {
+          "description" : "Zero-based page index (default 0).",
+          "format" : "int32",
+          "type" : "integer"
+        },
+        "projectId" : {
+          "description" : "Search documents within this matter (project).",
+          "format" : "uuid",
+          "type" : "string"
+        },
+        "scope" : {
+          "description" : "Org-wide scope: ORG or CUSTOMER. Ignored when projectId is given.",
+          "type" : "string"
+        },
+        "size" : {
+          "description" : "Page size, capped at 50 (default 50).",
+          "format" : "int32",
+          "type" : "integer"
+        }
+      },
+      "required" : [ ],
+      "type" : "object"
+    },
+    "name" : "search_documents"
+  } ]
+}

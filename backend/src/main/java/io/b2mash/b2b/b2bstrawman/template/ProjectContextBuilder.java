@@ -174,6 +174,7 @@ public class ProjectContextBuilder implements TemplateContextBuilder {
             () -> context.put("budget", null));
 
     // tags[]
+    // ADR-342: storage key, do not rename
     context.put("tags", contextHelper.buildTagsList("PROJECT", entityId));
 
     // generatedAt, generatedBy

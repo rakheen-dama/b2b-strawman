@@ -65,7 +65,9 @@ public final class CustomFieldFilterUtil {
    */
   public static final Map<String, Set<String>> PROMOTED_BY_ENTITY =
       Map.of(
+          // ADR-342: storage key, do not rename
           "CUSTOMER", CUSTOMER_PROMOTED_SLUGS,
+          // ADR-342: storage key, do not rename
           "PROJECT", PROJECT_PROMOTED_SLUGS,
           "TASK", TASK_PROMOTED_SLUGS,
           "INVOICE", INVOICE_PROMOTED_SLUGS);

@@ -2,7 +2,7 @@
 
 ## Epic Overview
 
-> Migration baseline: see [`backend/db/BASELINE.md`](backend/db/BASELINE.md) — tenant and global Flyway series squashed to `V1__baseline.sql` in Phase 86 (Epic 605); next free `V2`. Pre-squash history: tag `horizontal-platform-final`.
+> Migration baseline: see [`backend/db/BASELINE.md`](backend/db/BASELINE.md) — tenant and global Flyway series squashed to `V1__baseline.sql` in Phase 86 (Epic 605); post-squash tenant migrations `V2`–`V3` have landed; next free tenant **V4**, global **V2**. Pre-squash history: tag `horizontal-platform-final`.
 
 | Epic | Name | Scope | Deps | Effort | Slices   | Status                                                                                                                             |
 |------|------|-------|------|--------|----------|------------------------------------------------------------------------------------------------------------------------------------|

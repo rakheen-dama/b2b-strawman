@@ -553,7 +553,7 @@
     },
     "name" : "attach_document"
   }, {
-    "description" : "File an inbound email into a matter and/or client. Provide at least one of matterId or customerId. Idempotent on messageId â re-filing the same messageId is a no-op that returns the existing correspondence id. Requires the MCP_WRITE capability.",
+    "description" : "File an inbound email into a matter and/or client. Provide at least one of matterId or customerId. Idempotent on messageId — re-filing the same messageId is a no-op that returns the existing correspondence id. Requires the MCP_WRITE capability.",
     "inputSchema" : {
       "$schema" : "https://json-schema.org/draft/2020-12/schema",
       "properties" : {
@@ -587,7 +587,7 @@
           "type" : "string"
         },
         "messageId" : {
-          "description" : "Stable RFC-822 Message-ID or externalId â the idempotency key.",
+          "description" : "Stable RFC-822 Message-ID or externalId — the idempotency key.",
           "type" : "string"
         },
         "receivedAt" : {
@@ -625,7 +625,7 @@
     },
     "name" : "file_correspondence"
   }, {
-    "description" : "List the firm's audit events, newest first. Optionally filter by eventType (prefix match, e.g. 'invoice.') and/or clientId (matches events on the client record itself). Paginated â page size capped at 200. Requires the TEAM_OVERSIGHT capability.",
+    "description" : "List the firm's audit events, newest first. Optionally filter by eventType (prefix match, e.g. 'invoice.') and/or clientId (matches events on the client record itself). Paginated — page size capped at 200. Requires the TEAM_OVERSIGHT capability.",
     "inputSchema" : {
       "$schema" : "https://json-schema.org/draft/2020-12/schema",
       "properties" : {
@@ -729,7 +729,7 @@
     },
     "name" : "get_matter"
   }, {
-    "description" : "List the activity timeline for one matter (project), newest first. Project-access is enforced â a non-member receives a non-leaking not-found error. Paginated â page size capped at 50.",
+    "description" : "List the activity timeline for one matter (project), newest first. Project-access is enforced — a non-member receives a non-leaking not-found error. Paginated — page size capped at 50.",
     "inputSchema" : {
       "$schema" : "https://json-schema.org/draft/2020-12/schema",
       "properties" : {
@@ -754,12 +754,12 @@
     },
     "name" : "get_matter_activity"
   }, {
-    "description" : "Get a trust balance for a trust account. If a clientId is supplied, returns that client's ledger-card balance on the account; otherwise returns the account's total trust balance. Money is returned as minor units (e.g. cents) plus a currency code. Requires the VIEW_TRUST capability and the trust-accounting module â a firm without trust accounting receives a clean module_disabled error.",
+    "description" : "Get a trust balance for a trust account. If a clientId is supplied, returns that client's ledger-card balance on the account; otherwise returns the account's total trust balance. Money is returned as minor units (e.g. cents) plus a currency code. Requires the VIEW_TRUST capability and the trust-accounting module — a firm without trust accounting receives a clean module_disabled error.",
     "inputSchema" : {
       "$schema" : "https://json-schema.org/draft/2020-12/schema",
       "properties" : {
         "customerId" : {
-          "description" : "Client (customer) id â omit for the account total.",
+          "description" : "Client (customer) id — omit for the account total.",
           "format" : "uuid",
           "type" : "string"
         },
@@ -793,7 +793,7 @@
           "type" : "string"
         },
         "projectId" : {
-          "description" : "Matter (project) id â switches to the per-matter summary.",
+          "description" : "Matter (project) id — switches to the per-matter summary.",
           "format" : "uuid",
           "type" : "string"
         }
@@ -803,7 +803,7 @@
     },
     "name" : "get_unbilled_time"
   }, {
-    "description" : "Health probe â returns 'ok'. Proves the read-only tool surface is wired.",
+    "description" : "Health probe — returns 'ok'. Proves the read-only tool surface is wired.",
     "inputSchema" : {
       "$schema" : "https://json-schema.org/draft/2020-12/schema",
       "properties" : { },
@@ -812,7 +812,7 @@
     },
     "name" : "kazi_ping"
   }, {
-    "description" : "List the firm's clients (customers), org-wide. Optionally filter by lifecycleStatus (PROSPECT, ONBOARDING, ACTIVE, DORMANT, OFFBOARDING, OFFBOARDED). Paginated â page size is capped at 50.",
+    "description" : "List the firm's clients (customers), org-wide. Optionally filter by lifecycleStatus (PROSPECT, ONBOARDING, ACTIVE, DORMANT, OFFBOARDING, OFFBOARDED). Paginated — page size is capped at 50.",
     "inputSchema" : {
       "$schema" : "https://json-schema.org/draft/2020-12/schema",
       "properties" : {
@@ -851,7 +851,7 @@
     },
     "name" : "list_compliance_gaps"
   }, {
-    "description" : "List filed correspondence (emails) for ONE matter (matterId) OR ONE client (customerId) â provide exactly one. Returns metadata rows (subject, from, receivedAt, attachmentCount, direction) newest-first; use get_correspondence(id) for the body. Paginated â page size is capped at 50. Returns a non-leaking not-found if the matter/client does not exist OR you cannot access it.",
+    "description" : "List filed correspondence (emails) for ONE matter (matterId) OR ONE client (customerId) — provide exactly one. Returns metadata rows (subject, from, receivedAt, attachmentCount, direction) newest-first; use get_correspondence(id) for the body. Paginated — page size is capped at 50. Returns a non-leaking not-found if the matter/client does not exist OR you cannot access it.",
     "inputSchema" : {
       "$schema" : "https://json-schema.org/draft/2020-12/schema",
       "properties" : {
@@ -881,7 +881,7 @@
     },
     "name" : "list_correspondence"
   }, {
-    "description" : "List the firm's invoices, optionally filtered by clientId, status (DRAFT, APPROVED, SENT, PAID, VOID) and/or matterId. Money is returned as minor units plus a currency code. Paginated â page size capped at 50. Requires the INVOICING capability.",
+    "description" : "List the firm's invoices, optionally filtered by clientId, status (DRAFT, APPROVED, SENT, PAID, VOID) and/or matterId. Money is returned as minor units plus a currency code. Paginated — page size capped at 50. Requires the INVOICING capability.",
     "inputSchema" : {
       "$schema" : "https://json-schema.org/draft/2020-12/schema",
       "properties" : {
@@ -915,7 +915,7 @@
     },
     "name" : "list_invoices"
   }, {
-    "description" : "List the firm's matters (projects) visible to you. Members see only assigned matters; owners/admins see all. Optionally filter by status (e.g. ACTIVE) or customerId. Paginated â page size is capped at 50.",
+    "description" : "List the firm's matters (projects) visible to you. Members see only assigned matters; owners/admins see all. Optionally filter by status (e.g. ACTIVE) or customerId. Paginated — page size is capped at 50.",
     "inputSchema" : {
       "$schema" : "https://json-schema.org/draft/2020-12/schema",
       "properties" : {
@@ -944,7 +944,7 @@
     },
     "name" : "list_matters"
   }, {
-    "description" : "List a client's trust transactions on a trust account, newest first. Money is returned as minor units plus a currency code. Paginated â page size capped at 50. Requires the VIEW_TRUST capability and the trust-accounting module.",
+    "description" : "List a client's trust transactions on a trust account, newest first. Money is returned as minor units plus a currency code. Paginated — page size capped at 50. Requires the VIEW_TRUST capability and the trust-accounting module.",
     "inputSchema" : {
       "$schema" : "https://json-schema.org/draft/2020-12/schema",
       "properties" : {
@@ -974,7 +974,7 @@
     },
     "name" : "list_trust_transactions"
   }, {
-    "description" : "Propose a task/deadline from a filed email. Creates a PENDING approval gate only â it NEVER creates the task directly; an authorised member must approve it in Kazi (AI_REVIEW) before the task is created. Idempotent per open gate: a second proposal for the same correspondence returns the existing gate. Requires the MCP_WRITE capability.",
+    "description" : "Propose a task/deadline from a filed email. Creates a PENDING approval gate only — it NEVER creates the task directly; an authorised member must approve it in Kazi (AI_REVIEW) before the task is created. Idempotent per open gate: a second proposal for the same correspondence returns the existing gate. Requires the MCP_WRITE capability.",
     "inputSchema" : {
       "$schema" : "https://json-schema.org/draft/2020-12/schema",
       "properties" : {
@@ -1012,7 +1012,7 @@
     },
     "name" : "propose_task"
   }, {
-    "description" : "Resolve an inbound correspondence email to the firm's client (customer) and ALL of that client's matters. Pass the sender email; returns {customer, matters[]} so you can pick the right matter before filing. Returns {customer:null, matters:[]} when no client matches. subjectHint/reference are optional hints for YOUR disambiguation only â Kazi does no server-side fuzzy matching.",
+    "description" : "Resolve an inbound correspondence email to the firm's client (customer) and ALL of that client's matters. Pass the sender email; returns {customer, matters[]} so you can pick the right matter before filing. Returns {customer:null, matters:[]} when no client matches. subjectHint/reference are optional hints for YOUR disambiguation only — Kazi does no server-side fuzzy matching.",
     "inputSchema" : {
       "$schema" : "https://json-schema.org/draft/2020-12/schema",
       "properties" : {
@@ -1034,7 +1034,7 @@
     },
     "name" : "resolve_matter_by_email"
   }, {
-    "description" : "List document metadata (never the bytes). Provide projectId to search one matter (project-access enforced), or scope=ORG / scope=CUSTOMER for org-wide search (customerId is required when scope=CUSTOMER). Paginated â page size capped at 50.",
+    "description" : "List document metadata (never the bytes). Provide projectId to search one matter (project-access enforced), or scope=ORG / scope=CUSTOMER for org-wide search (customerId is required when scope=CUSTOMER). Paginated — page size capped at 50.",
     "inputSchema" : {
       "$schema" : "https://json-schema.org/draft/2020-12/schema",
       "properties" : {

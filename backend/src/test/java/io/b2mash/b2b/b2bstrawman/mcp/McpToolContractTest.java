@@ -298,7 +298,9 @@ class McpToolContractTest {
 
   private JsonNode rpcResult(String body, JwtRequestPostProcessor jwt, String session)
       throws Exception {
-    JsonNode rpc = parseRpc(mcpCall(body, jwt, session).getResponse().getContentAsString());
+    JsonNode rpc =
+        parseRpc(
+            mcpCall(body, jwt, session).getResponse().getContentAsString(StandardCharsets.UTF_8));
     assertThat(rpc.has("error")).as("JSON-RPC error for %s: %s", body, rpc.path("error")).isFalse();
     return rpc.path("result");
   }

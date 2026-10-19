@@ -117,21 +117,16 @@ class WireVocabularyContractTest {
   private static final Pattern BARE_ID_UNDER_RENAMED_ROOT =
       Pattern.compile("/api/(matters|clients)/\\{id\\}");
 
-  static final Set<String> FORBIDDEN_COMPONENTS =
-      Set.of(
-          "projectId",
-          "projectIds",
-          "projectName",
-          "projectRole",
-          "customerId",
-          "customerIds",
-          "customerName",
-          "customerEmail",
-          "customerAddress",
-          "customerType",
-          "activeProjectCount",
-          "projectBreakdown",
-          "byProject");
+  /**
+   * True when {@code name} contains the legacy noun {@code project}/{@code customer} anywhere,
+   * case-insensitively — applied to route segments, wire-record names and record components alike
+   * (so {@code CrossProjectSummary}, {@code projectCode}, {@code byCustomer} all offend, not just a
+   * fixed list of known names or a {@code Project}/{@code Customer} prefix).
+   */
+  static boolean containsLegacyNoun(String name) {
+    String s = name.toLowerCase(Locale.ROOT);
+    return s.contains("project") || s.contains("customer");
+  }
 
   private static final Path BASELINE =
       Path.of("src/test/resources/wire/batch1-known-offenders.txt");
@@ -204,12 +199,11 @@ class WireVocabularyContractTest {
           seenAdditional.add(c.getName());
         }
         scanned++;
-        String simple = c.getSimpleName();
-        if (simple.startsWith("Project") || simple.startsWith("Customer")) {
+        if (containsLegacyNoun(c.getSimpleName())) {
           offenders.put(DTO + c.getName(), "record name");
         }
         for (var rc : c.getRecordComponents()) {
-          if (FORBIDDEN_COMPONENTS.contains(rc.getName())) {
+          if (containsLegacyNoun(rc.getName())) {
             offenders.put(DTO + c.getName() + "#" + rc.getName(), "record component");
           }
         }
@@ -260,8 +254,7 @@ class WireVocabularyContractTest {
    */
   static boolean isLegacyRoute(String pattern) {
     for (String segment : pattern.split("/")) {
-      String s = segment.toLowerCase(Locale.ROOT);
-      if (s.contains("project") || s.contains("customer")) {
+      if (containsLegacyNoun(segment)) {
         return true;
       }
     }

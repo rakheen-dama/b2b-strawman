@@ -67,7 +67,7 @@ Flyway checksums would reject an edited baseline on every existing schema.
 
 ## 5. How to add a migration
 
-- Add the next free version — tenant **V4**, global **V2** as of Phase 87 (confirm with `ls src/main/resources/db/migration/{tenant,global} | sort -V | tail -1`) — as `V<n>__<description>.sql` to `src/main/resources/db/migration/tenant/` or `global/`. Double underscore.
+- Add the next free version — tenant **V4**, global **V2** as of Phase 87 (confirm with `for s in tenant global; do ls src/main/resources/db/migration/$s/V*.sql | sort -V | tail -1; done` from `backend/`) — as `V<n>__<description>.sql` to `src/main/resources/db/migration/tenant/` or `global/`. Double underscore.
 - Make it idempotent (`IF NOT EXISTS`, `ON CONFLICT DO NOTHING`). Scope every catalog guard to the current schema (`… AND n.nspname = current_schema()`, `table_schema = current_schema()`). An unscoped guard silently skips the object in every tenant after the first (see §1).
 - `baselineOnMigrate(false)` stays everywhere: in `FlywayConfig`, `TenantProvisioningService`, `TenantMigrationRunner` and the two shard tests. A non-empty schema without history must fail fast, not be baselined.
 - `BaselineSchemaParityTest` is the permanent proof of the V1 file. Feature migrations do not re-record its snapshots. Done for the tenant series with tenant `V2__add_project_template_work_type.sql`: the test migrates a scratch schema with the tenant Flyway config plus `.target(MigrationVersion.fromVersion("1"))`, compares it with the frozen `tenant-baseline.snapshot` and asserts that the scratch history is exactly one row, version 1. It also asserts that a really provisioned tenant has one successful history row per tenant migration file. New migrations get their own targeted tests.

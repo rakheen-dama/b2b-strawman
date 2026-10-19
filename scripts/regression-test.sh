@@ -219,9 +219,7 @@ if should_run "customer_lifecycle"; then
   cust_status=$(echo "$cust_resp" | jq -r '.lifecycleStatus')
   assert_eq "Defaults to PROSPECT" "PROSPECT" "$cust_status"
 
-  # PROSPECT cannot create project (lifecycle guard)
-  api_post "/api/matters" "{\"name\":\"Should-Fail-${RUN_ID}\"}" "$ALICE" > /dev/null
-  # Need to link customer — create project with clientId
+  # PROSPECT cannot create project (lifecycle guard) — matter linked via clientId
   proj_fail=$(api_post "/api/matters" "{\"name\":\"Should-Fail-${RUN_ID}\",\"clientId\":\"${CUST_ID}\"}" "$ALICE")
   _pf_status=$(last_status)
   case "$_pf_status" in

@@ -34,6 +34,9 @@
 # upstream. See CLAUDE.md §10.
 
 set -euo pipefail
+# The script is written for bash 3.2+ (macOS /bin/bash). Keep it free of 4.x-only syntax
+# (`${var,,}`, associative arrays, `|&`): a parse/expansion error here exits non-zero and
+# Claude Code treats a hook error as non-blocking — i.e. the merge would be ALLOWED.
 
 # Claude Code pipes the tool-call payload on stdin and passes NO positional args
 # (.claude/settings.json). The previous "$1" guard therefore exited before reading
@@ -98,6 +101,20 @@ if [[ ! "$COMMAND" =~ $STRICT_SHAPE ]]; then
   deny "only a single plain merge is allowed: gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch] --match-head-commit <full 40-char sha>. Compound commands, --admin, --repo/-R, --auto and free-text flags are refused (CLAUDE.md §10). Got: $COMMAND"
 fi
 PR_NUM="${BASH_REMATCH[1]}"
+# Every flag at most once. gh takes the LAST occurrence of a repeated flag while the regex
+# below captures the FIRST, so `--match-head-commit <checked> --match-head-commit <other>`
+# would be a parser differential. Count with grep -o (portable), deny on any repeat.
+for flag in --squash --merge --rebase --delete-branch -d --match-head-commit; do
+  n="$({ printf '%s' "$COMMAND" | grep -oE -- "(^|[[:space:]])${flag}([[:space:]]|$)" || true; } | wc -l | tr -d ' ')"
+  if (( n > 1 )); then
+    deny "flag ${flag} appears ${n} times; each flag may appear once (parser differential between this gate and gh)."
+  fi
+done
+# And exactly one merge strategy, matching gh's own requirement.
+strat="$({ printf '%s' "$COMMAND" | grep -oE -- '(^|[[:space:]])(--squash|--merge|--rebase)([[:space:]]|$)' || true; } | wc -l | tr -d ' ')"
+if (( strat != 1 )); then
+  deny "exactly one merge strategy flag (--squash | --merge | --rebase) is required; found ${strat}."
+fi
 WANT_HEAD=""
 if [[ "$COMMAND" =~ --match-head-commit[[:space:]]+([0-9a-fA-F]{40}) ]]; then
   WANT_HEAD="${BASH_REMATCH[1]}"
@@ -124,7 +141,9 @@ fi
 if [[ -z "$WANT_HEAD" ]]; then
   deny "--match-head-commit is required so the merge is pinned to the head this gate checked. Re-run: gh pr merge $PR_NUM --squash --delete-branch --match-head-commit $PR_HEAD_SHA"
 fi
-if [[ "${PR_HEAD_SHA,,}" != "${WANT_HEAD,,}" ]]; then
+# Portable case-fold (macOS /bin/bash is 3.2: `${var,,}` is a bad substitution there and
+# would abort the script → non-zero exit → Claude Code treats it as a hook error → fail-OPEN).
+if [[ "$(printf '%s' "$PR_HEAD_SHA" | tr 'A-F' 'a-f')" != "$(printf '%s' "$WANT_HEAD" | tr 'A-F' 'a-f')" ]]; then
   deny "--match-head-commit $WANT_HEAD is not the current PR head ($PR_HEAD_SHA) — the branch moved after you checked it. Re-verify, then re-run with the current SHA."
 fi
 

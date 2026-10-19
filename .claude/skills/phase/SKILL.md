@@ -371,11 +371,16 @@ If the review finds critical issues, dispatch another `general-purpose` agent wi
 
 After review passes AND the merge-gate hook clears, merge using this exact sequence:
 
-The merge-gate hook will block `gh pr merge` if the verify marker for any touched area (backend / frontend / portal) is missing or stale (>24h) or `exit != 0`. If the hook blocks you, that means the builder skipped the marker step or the verify failed — do NOT bypass with `--admin` or by editing the hook out of `settings.json`. Re-dispatch the builder to run the verify and write the marker, then retry.
+The merge-gate hook will block `gh pr merge` if:
+- The command is not a single plain `gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch] --match-head-commit <full-sha>` — compound commands, `--admin`, `--repo`, `--auto` and free-text flags are refused; the pin must equal the current PR head.
+- Any reported GitHub check is not `pass` or `skipping`, or the check list is empty or unreadable (CodeRabbit registers as a check, so wait for it too).
+- The PR body lacks the review audit trail: two `## Verdict: APPROVE` markers and a `## CodeRabbit: REVIEWED` or `## CodeRabbit: DEFERRED` line — required for EVERY PR, documentation-only included.
+- The verify marker for any touched area (backend / frontend / portal; `packages/` → frontend + portal) is missing, stale (>24h), has `exit != 0`, or is not from an ancestor of the PR head.
+Documentation-only PRs need no area verify marker but still need green CI and the audit trail; there is no automatic allow.
 
 ```bash
 # Merge PR
-gh pr merge {PR_NUMBER} --squash --delete-branch
+gh pr merge {PR_NUMBER} --squash --delete-branch --match-head-commit "$(gh pr view {PR_NUMBER} --json headRefOid -q .headRefOid)"
 
 # Clean up worktree
 cd /Users/rakheendama/Projects/2026/b2b-strawman

@@ -27,7 +27,8 @@
 # `Bash(gh pr merge:*)` be allow-listed in .claude/settings.json without a
 # human review step. Very large PRs (gh pr diff fails past ~300 files) are
 # denied and fall to a human merge. The command itself must be a single plain
-# `gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch] [--match-head-commit <sha>]`.
+# `gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch] --match-head-commit <full-sha>`
+# (the pin is mandatory: it must equal the head the gate checked).
 #
 # This is enforcement, not advice. Do not bypass without raising the gate
 # upstream. See CLAUDE.md §10.
@@ -84,7 +85,7 @@ if [[ ! "$COMMAND" =~ gh[[:space:]]+pr[[:space:]]+merge ]]; then
 fi
 
 # Exactly one plain invocation is accepted:
-#   gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch|-d] [--match-head-commit <sha>]
+#   gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch|-d] --match-head-commit <full-sha>
 # Anything else — compound commands, `--admin` (CLAUDE.md §10), `--repo`/`-R` (would gate
 # this repo's PR N but merge another repo's), `--auto` (merges later, after this check),
 # `--body`/`--subject`, quoting, a second `gh pr merge` — is denied with the accepted shape.
@@ -92,13 +93,13 @@ fi
 if [[ "$COMMAND" == *$'\n'* || "$COMMAND" == *$'\r'* || "$COMMAND" == *$'\t'* ]]; then
   deny "multi-line or tab-containing merge commands are refused; use a single line: gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch]"
 fi
-STRICT_SHAPE='^[[:space:]]*gh[[:space:]]+pr[[:space:]]+merge[[:space:]]+([0-9]+)([[:space:]]+(--squash|--merge|--rebase|--delete-branch|-d|--match-head-commit[[:space:]]+[0-9a-fA-F]{7,40}))*[[:space:]]*$'
+STRICT_SHAPE='^[[:space:]]*gh[[:space:]]+pr[[:space:]]+merge[[:space:]]+([0-9]+)([[:space:]]+(--squash|--merge|--rebase|--delete-branch|-d|--match-head-commit[[:space:]]+[0-9a-fA-F]{40}))*[[:space:]]*$'
 if [[ ! "$COMMAND" =~ $STRICT_SHAPE ]]; then
-  deny "only a single plain merge is allowed: gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch] [--match-head-commit <sha>]. Compound commands, --admin, --repo/-R, --auto and free-text flags are refused (CLAUDE.md §10). Got: $COMMAND"
+  deny "only a single plain merge is allowed: gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch] --match-head-commit <full 40-char sha>. Compound commands, --admin, --repo/-R, --auto and free-text flags are refused (CLAUDE.md §10). Got: $COMMAND"
 fi
 PR_NUM="${BASH_REMATCH[1]}"
 WANT_HEAD=""
-if [[ "$COMMAND" =~ --match-head-commit[[:space:]]+([0-9a-fA-F]{7,40}) ]]; then
+if [[ "$COMMAND" =~ --match-head-commit[[:space:]]+([0-9a-fA-F]{40}) ]]; then
   WANT_HEAD="${BASH_REMATCH[1]}"
 fi
 
@@ -116,10 +117,15 @@ if [[ -z "$PR_HEAD_SHA" ]]; then
   deny "could not resolve the head SHA of PR $PR_NUM; refusing (marker ancestry cannot be checked)."
 fi
 # Resolved here, right after the head branch, so every later check can use it.
-# Optional pin: if the caller passed --match-head-commit, it must be the head we gated.
-# (gh itself also refuses the merge if the head moved; this makes the gate's view explicit.)
-if [[ -n "$WANT_HEAD" && "$PR_HEAD_SHA" != "$WANT_HEAD"* ]]; then
-  deny "--match-head-commit $WANT_HEAD does not match the PR head this gate checked ($PR_HEAD_SHA)."
+# Mandatory pin (CodeRabbit, PR #1587): the merge must name the exact head this gate checked,
+# so a push between the check and the merge cannot land unvalidated commits — gh refuses
+# the merge server-side if the head moved. Full 40-char SHA, because that is what the
+# GitHub merge API compares.
+if [[ -z "$WANT_HEAD" ]]; then
+  deny "--match-head-commit is required so the merge is pinned to the head this gate checked. Re-run: gh pr merge $PR_NUM --squash --delete-branch --match-head-commit $PR_HEAD_SHA"
+fi
+if [[ "${PR_HEAD_SHA,,}" != "${WANT_HEAD,,}" ]]; then
+  deny "--match-head-commit $WANT_HEAD is not the current PR head ($PR_HEAD_SHA) — the branch moved after you checked it. Re-verify, then re-run with the current SHA."
 fi
 
 # Phase 86 (subtraction) precondition: the horizontal platform must be archived
@@ -255,7 +261,7 @@ if (( ${#missing[@]} > 0 || ${#stale[@]} > 0 || ${#review_missing[@]} > 0 )); th
     reason="${reason}Missing review audit trail in PR body: ${review_missing[*]}. Run epic_v2 Step 4.5 (gh pr edit --body-file ...) to append the audit trail before merging. "
   fi
   reason="${reason}See CLAUDE.md §1-2 and .claude/skills/epic_v2/SKILL.md Step 4.5."
-  deny "${reason#pre-pr-merge-gate }"
+  deny "$reason"
 fi
 
 # All gates green.

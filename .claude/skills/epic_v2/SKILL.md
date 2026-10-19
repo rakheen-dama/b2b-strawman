@@ -718,7 +718,7 @@ cd /Users/rakheendama/Projects/2026/b2b-strawman
 git worktree remove ../worktree-epic-<N> --force
 
 # 2. Merge the PR (run from the main repo, not the worktree)
-gh pr merge {PR_NUMBER} --squash --delete-branch
+gh pr merge {PR_NUMBER} --squash --delete-branch --match-head-commit "$(gh pr view {PR_NUMBER} --json headRefOid -q .headRefOid)"
 
 # 3. If the remote/local branch wasn't auto-deleted (e.g. the post-merge checkout errored),
 #    clean it up explicitly:

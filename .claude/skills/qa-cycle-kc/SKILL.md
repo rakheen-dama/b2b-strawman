@@ -474,13 +474,15 @@ Do NOT merge an agent-authored PR without an independent review pass.
 
 ### 8. Merge (gated by `.claude/hooks/pre-pr-merge-gate.sh`)
 The merge-gate hook will block `gh pr merge` if:
-- The verify marker for any touched area (backend / frontend / portal) is missing or stale (>24h) or `exit != 0`.
-- The PR is not documentation-only.
-
+- The command is not a single plain `gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch] --match-head-commit <full-sha>` — compound commands, `--admin`, `--repo`, `--auto` and free-text flags are refused; the pin must equal the current PR head.
+- Any reported GitHub check is not `pass` or `skipping`, or the check list is empty or unreadable (CodeRabbit registers as a check, so wait for it too).
+- The PR body lacks the review audit trail: two `## Verdict: APPROVE` markers and a `## CodeRabbit: REVIEWED` or `## CodeRabbit: DEFERRED` line — required for EVERY PR, documentation-only included.
+- The verify marker for any touched area (backend / frontend / portal; `packages/` → frontend + portal) is missing, stale (>24h), has `exit != 0`, or is not from an ancestor of the PR head.
+Documentation-only PRs need no area verify marker but still need green CI and the audit trail; there is no automatic allow.
 If the hook blocks you, that means a marker is missing — fix the verify, write the marker, retry. Do NOT bypass with `--admin` or by editing the hook.
 
 ```
-gh pr merge {PR_NUMBER} --squash --delete-branch
+gh pr merge {PR_NUMBER} --squash --delete-branch --match-head-commit "$(gh pr view {PR_NUMBER} --json headRefOid -q .headRefOid)"
 git checkout {BRANCH} && git pull origin {BRANCH}
 ```
 

@@ -30,14 +30,14 @@ export default async function ProjectExpensesPage({
 
   let members: ProjectMember[] = [];
   try {
-    members = await api.get<ProjectMember[]>(`/api/projects/${id}/members`);
+    members = await api.get<ProjectMember[]>(`/api/matters/${id}/members`);
   } catch {
     // Non-fatal
   }
 
   let tasks: Task[] = [];
   try {
-    tasks = await api.get<Task[]>(`/api/projects/${id}/tasks`);
+    tasks = await api.get<Task[]>(`/api/matters/${id}/tasks`);
   } catch {
     // Non-fatal
   }

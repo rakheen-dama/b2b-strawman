@@ -65,7 +65,7 @@ vi.mock("next/navigation", () => ({
 function makeTask(overrides: Partial<Task> = {}): Task {
   return {
     id: "t1",
-    projectId: "p1",
+    matterId: "p1",
     title: "Fix login bug",
     description: null,
     status: "OPEN",
@@ -117,7 +117,7 @@ describe("TaskListPanel", () => {
     mockSearchParams = new URLSearchParams("tab=tasks");
     mockFetchTasks.mockResolvedValue([openUnassigned, inProgressOwn, doneTask]);
     mockFetchTask.mockResolvedValue(
-      makeTask({ id: "t1", projectId: "p1", title: "Open unassigned task" })
+      makeTask({ id: "t1", matterId: "p1", title: "Open unassigned task" })
     );
     mockFetchTimeEntries.mockResolvedValue([]);
   });

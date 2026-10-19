@@ -20,8 +20,8 @@ vi.mock("next/navigation", () => ({
 function makeTask(overrides: Partial<MyWorkTaskItem> = {}): MyWorkTaskItem {
   return {
     id: "t1",
-    projectId: "p1",
-    projectName: "Project Alpha",
+    matterId: "p1",
+    matterName: "Project Alpha",
     title: "Implement feature X",
     status: "OPEN",
     priority: "MEDIUM",
@@ -38,8 +38,8 @@ describe("AssignedTaskList", () => {
 
   it("renders tasks with project names, titles, and count badge", () => {
     const tasks = [
-      makeTask({ id: "t1", projectName: "Project Alpha", title: "Task One" }),
-      makeTask({ id: "t2", projectName: "Project Beta", title: "Task Two" }),
+      makeTask({ id: "t1", matterName: "Project Alpha", title: "Task One" }),
+      makeTask({ id: "t2", matterName: "Project Beta", title: "Task Two" }),
     ];
 
     render(<AssignedTaskList tasks={tasks} slug="acme" />);

@@ -1,6 +1,6 @@
 "use server";
 
-import { api, ApiError, setEntityFieldGroups } from "@/lib/api";
+import { api, ApiError, entityApiPrefix, setEntityFieldGroups } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type {
   CreateFieldDefinitionRequest,
@@ -197,16 +197,17 @@ export async function updateEntityCustomFieldsAction(
   customFields: Record<string, unknown>
 ): Promise<ActionResult> {
   const prefix = entityType.toLowerCase() + "s";
+  const apiPrefix = entityApiPrefix(entityType);
   try {
     if (entityType === "INVOICE") {
       // Invoices have a dedicated custom-fields endpoint; PUT /api/invoices/{id}
       // only accepts UpdateInvoiceRequest (4 fields) and would reject the full entity.
-      await api.put(`/api/${prefix}/${entityId}/custom-fields`, { customFields });
+      await api.put(`/api/${apiPrefix}/${entityId}/custom-fields`, { customFields });
     } else {
       // For other entity types: fetch the current entity first so we can send a
       // full PUT body. The backend PUT endpoints require all required fields (e.g. name).
-      const current = await api.get<Record<string, unknown>>(`/api/${prefix}/${entityId}`);
-      await api.put(`/api/${prefix}/${entityId}`, { ...current, customFields });
+      const current = await api.get<Record<string, unknown>>(`/api/${apiPrefix}/${entityId}`);
+      await api.put(`/api/${apiPrefix}/${entityId}`, { ...current, customFields });
     }
   } catch (error) {
     if (error instanceof ApiError) {

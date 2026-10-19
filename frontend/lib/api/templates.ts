@@ -36,7 +36,7 @@ export interface ProjectTemplateResponse {
   description: string | null;
   billableDefault: boolean;
   source: "MANUAL" | "FROM_PROJECT";
-  sourceProjectId: string | null;
+  sourceMatterId: string | null;
   active: boolean;
   taskCount: number;
   tagCount: number;
@@ -100,8 +100,8 @@ export interface SaveFromProjectRequest {
 
 export interface InstantiateTemplateRequest {
   name?: string;
-  customerId?: string;
-  projectLeadMemberId?: string;
+  clientId?: string;
+  matterLeadMemberId?: string;
   description?: string;
   referenceNumber?: string;
   priority?: string;
@@ -111,42 +111,39 @@ export interface InstantiateTemplateRequest {
 // ---- API Functions ----
 
 export async function getProjectTemplates(): Promise<ProjectTemplateResponse[]> {
-  return api.get<ProjectTemplateResponse[]>("/api/project-templates");
+  return api.get<ProjectTemplateResponse[]>("/api/matter-templates");
 }
 
 export async function getProjectTemplate(id: string): Promise<ProjectTemplateResponse> {
-  return api.get<ProjectTemplateResponse>(`/api/project-templates/${id}`);
+  return api.get<ProjectTemplateResponse>(`/api/matter-templates/${id}`);
 }
 
 export async function createProjectTemplate(
   data: CreateProjectTemplateRequest
 ): Promise<ProjectTemplateResponse> {
-  return api.post<ProjectTemplateResponse>("/api/project-templates", data);
+  return api.post<ProjectTemplateResponse>("/api/matter-templates", data);
 }
 
 export async function updateProjectTemplate(
   id: string,
   data: UpdateProjectTemplateRequest
 ): Promise<ProjectTemplateResponse> {
-  return api.put<ProjectTemplateResponse>(`/api/project-templates/${id}`, data);
+  return api.put<ProjectTemplateResponse>(`/api/matter-templates/${id}`, data);
 }
 
 export async function deleteProjectTemplate(id: string): Promise<void> {
-  return api.delete<void>(`/api/project-templates/${id}`);
+  return api.delete<void>(`/api/matter-templates/${id}`);
 }
 
 export async function duplicateProjectTemplate(id: string): Promise<ProjectTemplateResponse> {
-  return api.post<ProjectTemplateResponse>(`/api/project-templates/${id}/duplicate`);
+  return api.post<ProjectTemplateResponse>(`/api/matter-templates/${id}/duplicate`);
 }
 
 export async function saveProjectFromTemplate(
   projectId: string,
   data: SaveFromProjectRequest
 ): Promise<ProjectTemplateResponse> {
-  return api.post<ProjectTemplateResponse>(
-    `/api/project-templates/from-project/${projectId}`,
-    data
-  );
+  return api.post<ProjectTemplateResponse>(`/api/matter-templates/from-matter/${projectId}`, data);
 }
 
 export interface InstantiateTemplateResponse {
@@ -159,7 +156,7 @@ export async function instantiateProjectTemplate(
   data: InstantiateTemplateRequest
 ): Promise<InstantiateTemplateResponse> {
   return api.post<InstantiateTemplateResponse>(
-    `/api/project-templates/${templateId}/instantiate`,
+    `/api/matter-templates/${templateId}/instantiate`,
     data
   );
 }
@@ -168,7 +165,7 @@ export async function updateTemplateRequiredCustomerFields(
   id: string,
   fieldDefinitionIds: string[]
 ): Promise<void> {
-  return api.put<void>(`/api/project-templates/${id}/required-customer-fields`, {
+  return api.put<void>(`/api/matter-templates/${id}/required-client-fields`, {
     fieldDefinitionIds,
   });
 }

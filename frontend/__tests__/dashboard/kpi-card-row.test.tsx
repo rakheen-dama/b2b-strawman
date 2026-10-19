@@ -22,7 +22,7 @@ vi.mock("next/link", () => ({
 }));
 
 const mockKpis: KpiResponse = {
-  activeProjectCount: 12,
+  activeMatterCount: 12,
   totalHoursLogged: 847.5,
   billablePercent: 72.3,
   overdueTaskCount: 8,
@@ -33,7 +33,7 @@ const mockKpis: KpiResponse = {
     { period: "2025-W03", value: 138.0 },
   ],
   previousPeriod: {
-    activeProjectCount: 11,
+    activeMatterCount: 11,
     totalHoursLogged: 792.0,
     billablePercent: 68.5,
     overdueTaskCount: 5,

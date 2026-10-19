@@ -181,7 +181,7 @@ export function CalendarMonthView({
                             className={cn(
                               "size-2 rounded-full",
                               urgency.dot ||
-                                (item.itemType === "PROJECT"
+                                (item.itemType === "MATTER"
                                   ? "bg-teal-500"
                                   : "bg-slate-400 dark:bg-slate-500")
                             )}
@@ -233,7 +233,7 @@ export function CalendarMonthView({
                             </Badge>
                           </div>
                           <p className="mt-0.5 truncate text-xs text-slate-500">
-                            {item.projectName}
+                            {item.matterName}
                           </p>
                         </div>
                       </Link>

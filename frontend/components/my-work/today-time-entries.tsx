@@ -49,7 +49,7 @@ export function TodayTimeEntries({ entries }: TodayTimeEntriesProps) {
                   {entry.taskTitle}
                 </p>
                 <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
-                  {entry.projectName}
+                  {entry.matterName}
                   {entry.description && ` \u2014 ${entry.description}`}
                 </p>
               </div>

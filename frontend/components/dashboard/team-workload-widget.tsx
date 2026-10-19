@@ -53,7 +53,7 @@ function aggregateProjectHours(
   const projectMap: Record<string, number> = {};
   for (const entry of entries) {
     for (const project of entry.projects) {
-      projectMap[project.projectName] = (projectMap[project.projectName] ?? 0) + project.hours;
+      projectMap[project.matterName] = (projectMap[project.matterName] ?? 0) + project.hours;
     }
   }
 

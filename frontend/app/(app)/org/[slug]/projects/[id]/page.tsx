@@ -93,13 +93,13 @@ export default async function ProjectDetailPage({
 
   let project: Project;
   try {
-    project = await api.get<Project>(`/api/projects/${id}`);
+    project = await api.get<Project>(`/api/matters/${id}`);
   } catch (error) {
     handleApiError(error);
   }
 
-  const canEdit = isAdmin || project.projectRole === "lead";
-  const isCurrentLead = project.projectRole === "lead";
+  const canEdit = isAdmin || project.matterRole === "lead";
+  const isCurrentLead = project.matterRole === "lead";
   const canManage = isAdmin || isCurrentLead;
   // TODO(epic-535): re-add roleBadge to MatterSidebar (projectRole omitted in 532B)
 
@@ -116,7 +116,7 @@ export default async function ProjectDetailPage({
     ? [
         {
           label: "Customer assigned",
-          complete: setupStatus.customerAssigned,
+          complete: setupStatus.clientAssigned,
           actionHref: `?tab=customers`,
         },
         {
@@ -166,7 +166,7 @@ export default async function ProjectDetailPage({
 
   let documents: Document[] = [];
   try {
-    documents = await api.get<Document[]>(`/api/projects/${id}/documents`);
+    documents = await api.get<Document[]>(`/api/matters/${id}/documents`);
   } catch {
     // Non-fatal: show empty documents list if fetch fails
   }
@@ -180,14 +180,14 @@ export default async function ProjectDetailPage({
 
   let members: ProjectMember[] = [];
   try {
-    members = await api.get<ProjectMember[]>(`/api/projects/${id}/members`);
+    members = await api.get<ProjectMember[]>(`/api/matters/${id}/members`);
   } catch {
     // Non-fatal: show empty members list if fetch fails
   }
 
   let tasks: Task[] = [];
   try {
-    tasks = await api.get<Task[]>(`/api/projects/${id}/tasks`);
+    tasks = await api.get<Task[]>(`/api/matters/${id}/tasks`);
   } catch {
     // Non-fatal: show empty tasks list if fetch fails
   }
@@ -280,7 +280,7 @@ export default async function ProjectDetailPage({
   // Budget status for the "Budget" tab
   let budgetStatus: BudgetStatusResponse | null = null;
   try {
-    budgetStatus = await api.get<BudgetStatusResponse>(`/api/projects/${id}/budget`);
+    budgetStatus = await api.get<BudgetStatusResponse>(`/api/matters/${id}/budget`);
   } catch {
     // Non-fatal: 404 means no budget set, other errors show empty state
   }
@@ -385,7 +385,7 @@ export default async function ProjectDetailPage({
   let allTags: TagResponse[] = [];
   try {
     const [entityTags, orgTags] = await Promise.all([
-      api.get<TagResponse[]>(`/api/projects/${id}/tags`),
+      api.get<TagResponse[]>(`/api/matters/${id}/tags`),
       getTags(),
     ]);
     projectTags = entityTags;

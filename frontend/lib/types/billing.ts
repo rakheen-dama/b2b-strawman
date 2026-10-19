@@ -77,7 +77,7 @@ export interface UpdateCostRateRequest {
 export type BudgetStatus = "ON_TRACK" | "AT_RISK" | "OVER_BUDGET";
 
 export interface BudgetStatusResponse {
-  projectId: string;
+  matterId: string;
   budgetHours: number | null;
   budgetAmount: number | null;
   budgetCurrency: string | null;

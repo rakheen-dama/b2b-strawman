@@ -159,12 +159,12 @@ function TaskGroupTable({ tasks, slug, isOverdue, onTaskClick }: TaskGroupTableP
                   if (onTaskClick) {
                     onTaskClick(task.id);
                   } else {
-                    router.push(`/org/${slug}/projects/${task.projectId}`);
+                    router.push(`/org/${slug}/projects/${task.matterId}`);
                   }
                 }}
               >
                 <TableCell>
-                  <Badge variant="member">{task.projectName}</Badge>
+                  <Badge variant="member">{task.matterName}</Badge>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">

@@ -36,8 +36,8 @@ function daysFromNow(days: number): string {
 
 function makeTask(overrides: Partial<MyWorkTaskItem> & { id: string }): MyWorkTaskItem {
   return {
-    projectId: "p1",
-    projectName: "Test Project",
+    matterId: "p1",
+    matterName: "Test Project",
     title: `Task ${overrides.id}`,
     status: "IN_PROGRESS",
     priority: "MEDIUM",
@@ -80,8 +80,8 @@ describe("TodaysAgenda", () => {
         id: "e1",
         taskId: "t1",
         taskTitle: "Task 1",
-        projectId: "p1",
-        projectName: "Project 1",
+        matterId: "p1",
+        matterName: "Project 1",
         date: today(),
         durationMinutes: 135, // 2h 15m
         billable: true,
@@ -108,7 +108,7 @@ describe("TodaysAgenda", () => {
       {
         taskId: "t1",
         taskName: "Ship feature",
-        projectName: "Alpha Project",
+        matterName: "Alpha Project",
         dueDate: daysFromNow(5),
       },
     ];

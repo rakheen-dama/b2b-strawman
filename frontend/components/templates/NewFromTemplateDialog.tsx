@@ -188,8 +188,8 @@ export function NewFromTemplateDialog({
     try {
       const result = await instantiateTemplateAction(slug, selectedTemplateId, {
         name: projectName.trim() || undefined,
-        customerId: customerId || undefined,
-        projectLeadMemberId: projectLeadMemberId || undefined,
+        clientId: customerId || undefined,
+        matterLeadMemberId: projectLeadMemberId || undefined,
         description: description.trim() || undefined,
         referenceNumber: referenceNumber.trim() || undefined,
         priority: priority || undefined,

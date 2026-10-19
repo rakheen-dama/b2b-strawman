@@ -59,7 +59,7 @@ export function TodaysAgenda({
                 <div key={task.id} className="flex h-9 items-center gap-2 text-sm">
                   <span className="flex-1 truncate font-medium text-slate-900">{task.title}</span>
                   <Badge variant="member" className="shrink-0 text-[10px]">
-                    {task.projectName}
+                    {task.matterName}
                   </Badge>
                   {task.totalTimeMinutes > 0 && (
                     <span className="shrink-0 font-mono text-xs text-slate-500 tabular-nums">
@@ -105,7 +105,7 @@ export function TodaysAgenda({
           ) : (
             <div>
               <p className="truncate text-sm font-medium text-slate-900">{nextDeadline.taskName}</p>
-              <p className="truncate text-xs text-slate-500">{nextDeadline.projectName}</p>
+              <p className="truncate text-xs text-slate-500">{nextDeadline.matterName}</p>
               {(() => {
                 const days = getDaysRemaining(nextDeadline.dueDate);
                 const colorClass =

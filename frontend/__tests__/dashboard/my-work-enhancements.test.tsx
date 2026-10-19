@@ -32,7 +32,7 @@ vi.mock("next/link", () => ({
 vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-actions", () => ({
   fetchTask: vi.fn().mockResolvedValue({
     id: "task-1",
-    projectId: "proj-1",
+    matterId: "proj-1",
     title: "Test Task",
     status: "IN_PROGRESS",
     priority: "MEDIUM",
@@ -56,8 +56,8 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-entry-actions", () => ({
 
 function makeTask(overrides: Partial<MyWorkTaskItem> & { id: string }): MyWorkTaskItem {
   return {
-    projectId: "proj-1",
-    projectName: "Test Project",
+    matterId: "proj-1",
+    matterName: "Test Project",
     title: `Task ${overrides.id}`,
     status: "IN_PROGRESS",
     priority: "MEDIUM",

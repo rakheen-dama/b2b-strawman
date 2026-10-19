@@ -60,7 +60,7 @@ export function MetricsStrip({ kpis, projectHealth }: MetricsStripProps) {
         </p>
         <div className="mt-1 flex items-center justify-between">
           <span className="font-mono text-xl font-bold tabular-nums">
-            {kpis?.activeProjectCount ?? 0}
+            {kpis?.activeMatterCount ?? 0}
           </span>
           <Sparkline
             data={trendValues}

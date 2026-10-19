@@ -11,7 +11,7 @@ interface UpcomingDeadlinesTileProps {
  * Matter-Overview "Upcoming Deadlines" tile (GAP-L-58 / E9.3).
  *
  * Renders the upcoming court dates returned by
- * GET /api/projects/{id}/upcoming-deadlines as a flat sorted list,
+ * GET /api/matters/{id}/upcoming-deadlines as a flat sorted list,
  * each with a small slate "Court" badge.
  */
 export function UpcomingDeadlinesTile({ deadlines }: UpcomingDeadlinesTileProps) {

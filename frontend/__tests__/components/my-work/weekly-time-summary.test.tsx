@@ -20,17 +20,17 @@ const populatedSummary: MyWorkTimeSummary = {
   billableMinutes: 480,
   nonBillableMinutes: 120,
   totalMinutes: 600,
-  byProject: [
+  byMatter: [
     {
-      projectId: "p1",
-      projectName: "Project Alpha",
+      matterId: "p1",
+      matterName: "Project Alpha",
       billableMinutes: 300,
       nonBillableMinutes: 60,
       totalMinutes: 360,
     },
     {
-      projectId: "p2",
-      projectName: "Project Beta",
+      matterId: "p2",
+      matterName: "Project Beta",
       billableMinutes: 180,
       nonBillableMinutes: 60,
       totalMinutes: 240,
@@ -45,7 +45,7 @@ const emptySummary: MyWorkTimeSummary = {
   billableMinutes: 0,
   nonBillableMinutes: 0,
   totalMinutes: 0,
-  byProject: [],
+  byMatter: [],
 };
 
 describe("WeeklyTimeSummary", () => {

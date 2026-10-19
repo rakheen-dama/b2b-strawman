@@ -44,7 +44,7 @@ export async function createProject(slug: string, formData: FormData): Promise<A
   const body: CreateProjectRequest = {
     name,
     description,
-    customerId,
+    clientId: customerId,
     dueDate,
     referenceNumber,
     priority,
@@ -52,7 +52,7 @@ export async function createProject(slug: string, formData: FormData): Promise<A
   };
 
   try {
-    await api.post<Project>("/api/projects", body);
+    await api.post<Project>("/api/matters", body);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -101,7 +101,7 @@ export async function updateProject(
   const body: UpdateProjectRequest = {
     name,
     description,
-    customerId,
+    clientId: customerId,
     dueDate,
     referenceNumber,
     priority,
@@ -109,7 +109,7 @@ export async function updateProject(
   };
 
   try {
-    await api.put<Project>(`/api/projects/${id}`, body);
+    await api.put<Project>(`/api/matters/${id}`, body);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -132,7 +132,7 @@ export async function deleteProject(slug: string, id: string): Promise<ActionRes
   }
 
   try {
-    await api.delete(`/api/projects/${id}`);
+    await api.delete(`/api/matters/${id}`);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -159,7 +159,7 @@ export async function completeProject(
 
   try {
     const body = acknowledgeUnbilledTime ? { acknowledgeUnbilledTime } : undefined;
-    await api.patch<Project>(`/api/projects/${projectId}/complete`, body);
+    await api.patch<Project>(`/api/matters/${projectId}/complete`, body);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -182,7 +182,7 @@ export async function archiveProject(slug: string, projectId: string): Promise<A
   }
 
   try {
-    await api.patch<Project>(`/api/projects/${projectId}/archive`);
+    await api.patch<Project>(`/api/matters/${projectId}/archive`);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -205,7 +205,7 @@ export async function reopenProject(slug: string, projectId: string): Promise<Ac
   }
 
   try {
-    await api.patch<Project>(`/api/projects/${projectId}/reopen`);
+    await api.patch<Project>(`/api/matters/${projectId}/reopen`);
   } catch (error) {
     const message =
       error instanceof ApiError

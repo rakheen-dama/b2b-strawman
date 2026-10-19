@@ -28,7 +28,7 @@ export async function fetchTasks(
   if (filters?.recurring) params.set("recurring", "true");
 
   const query = params.toString();
-  const url = `/api/projects/${projectId}/tasks${query ? `?${query}` : ""}`;
+  const url = `/api/matters/${projectId}/tasks${query ? `?${query}` : ""}`;
 
   return api.get<Task[]>(url);
 }
@@ -75,7 +75,7 @@ export async function createTask(
   };
 
   try {
-    await api.post<Task>(`/api/projects/${projectId}/tasks`, body);
+    await api.post<Task>(`/api/matters/${projectId}/tasks`, body);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };

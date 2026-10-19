@@ -111,7 +111,7 @@ export function CalendarListView({ items, overdueItems, slug }: CalendarListView
                     {item.name}
                   </p>
                   <p className="truncate text-xs text-red-600/70 dark:text-red-400/70">
-                    {item.projectName}
+                    {item.matterName}
                   </p>
                 </div>
                 <span className="shrink-0 font-mono text-xs text-red-600 tabular-nums dark:text-red-400">
@@ -163,7 +163,7 @@ export function CalendarListView({ items, overdueItems, slug }: CalendarListView
                     <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                       {item.name}
                     </p>
-                    <p className="truncate text-xs text-slate-500">{item.projectName}</p>
+                    <p className="truncate text-xs text-slate-500">{item.matterName}</p>
                   </div>
 
                   {/* Due date */}

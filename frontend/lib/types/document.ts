@@ -8,7 +8,7 @@ export type DocumentVisibility = "INTERNAL" | "SHARED" | "PORTAL";
 
 export interface Document {
   id: string;
-  projectId: string | null;
+  matterId: string | null;
   fileName: string;
   contentType: string;
   size: number;

@@ -133,7 +133,7 @@ export async function fetchProjectAdverseParties(projectId: string): Promise<Adv
 
 export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
   const result =
-    await api.get<PaginatedResponse<{ id: string; name: string }>>("/api/projects?size=200");
+    await api.get<PaginatedResponse<{ id: string; name: string }>>("/api/matters?size=200");
   return result.content;
 }
 

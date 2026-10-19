@@ -40,7 +40,7 @@ export async function initiateUpload(
 
   try {
     const result = await api.post<UploadInitResponse>(
-      `/api/projects/${projectId}/documents/upload-init`,
+      `/api/matters/${projectId}/documents/upload-init`,
       body
     );
     return {

@@ -161,9 +161,9 @@ export function ProjectMembersPanel({
               const displayRole =
                 member.orgRole === "admin" || member.orgRole === "owner"
                   ? member.orgRole
-                  : member.projectRole;
+                  : member.matterRole;
               const badge = ROLE_BADGE[displayRole] ?? DEFAULT_BADGE;
-              const isLead = member.projectRole === "lead";
+              const isLead = member.matterRole === "lead";
               const isRemoving = removingMemberId === member.memberId;
 
               return (

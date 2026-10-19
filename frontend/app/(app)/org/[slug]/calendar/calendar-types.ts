@@ -1,13 +1,13 @@
 export interface CalendarItem {
   id: string;
   name: string;
-  itemType: "TASK" | "PROJECT";
+  itemType: "TASK" | "MATTER";
   dueDate: string;
   status: string;
   priority: string | null;
   assigneeId: string | null;
-  projectId: string;
-  projectName: string;
+  matterId: string;
+  matterName: string;
 }
 
 export interface CalendarResponse {
@@ -17,7 +17,7 @@ export interface CalendarResponse {
 
 export interface CalendarFilters {
   projectId?: string;
-  type?: "TASK" | "PROJECT";
+  type?: "TASK" | "MATTER";
   assigneeId?: string;
   overdue?: boolean;
 }
@@ -55,9 +55,9 @@ export function formatDate(d: Date): string {
  */
 export function getItemLink(item: CalendarItem, slug: string): string {
   if (item.itemType === "TASK") {
-    return `/org/${slug}/projects/${item.projectId}?taskId=${item.id}`;
+    return `/org/${slug}/projects/${item.matterId}?taskId=${item.id}`;
   }
-  return `/org/${slug}/projects/${item.projectId}`;
+  return `/org/${slug}/projects/${item.matterId}`;
 }
 
 function parseDueDateToDate(dateStr: string): Date {

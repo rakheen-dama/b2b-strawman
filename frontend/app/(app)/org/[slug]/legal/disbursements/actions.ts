@@ -302,7 +302,7 @@ export async function fetchUnbilledDisbursementsAction(
 export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
   const result = await api.get<
     { id: string; name: string }[] | PaginatedResponse<{ id: string; name: string }>
-  >("/api/projects?size=200");
+  >("/api/matters?size=200");
   return Array.isArray(result) ? result : (result.content ?? []);
 }
 

@@ -87,7 +87,7 @@ export function NewMatterPageClient({
     try {
       const result = await instantiateTemplateAction(slug, selectedTemplateId, {
         name: name.trim(),
-        customerId: customerId || undefined,
+        clientId: customerId || undefined,
         description: description.trim() || undefined,
         referenceNumber: referenceNumber.trim() || undefined,
         priority: priority || undefined,

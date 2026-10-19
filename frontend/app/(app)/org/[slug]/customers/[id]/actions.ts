@@ -55,7 +55,7 @@ export async function setCollectionsExemptionAction(
 }
 
 export async function fetchProjects(): Promise<Project[]> {
-  return api.get<Project[]>("/api/projects");
+  return api.get<Project[]>("/api/matters");
 }
 
 export async function linkProject(

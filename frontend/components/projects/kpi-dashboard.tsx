@@ -131,7 +131,7 @@ export async function KPIDashboard({
     await Promise.allSettled([
       fetchProjectHealthDetail(projectId),
       fetchProjectMemberHours(projectId, from, to),
-      api.get<BudgetStatusResponse>(`/api/projects/${projectId}/budget`).catch(() => null),
+      api.get<BudgetStatusResponse>(`/api/matters/${projectId}/budget`).catch(() => null),
       fetchProjectUpcomingDeadlines(projectId),
     ]);
 

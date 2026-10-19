@@ -222,7 +222,7 @@ export async function fetchVariableMetadataAction(
 // ---- Entity Picker Actions ----
 
 export async function fetchProjectsForPicker(): Promise<Project[]> {
-  return api.get<Project[]>("/api/projects");
+  return api.get<Project[]>("/api/matters");
 }
 
 export async function fetchCustomersForPicker(): Promise<Customer[]> {

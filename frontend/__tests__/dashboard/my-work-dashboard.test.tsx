@@ -57,16 +57,16 @@ const mockDashboardData: PersonalDashboardResponse = {
     billableHours: 30.0,
     billablePercent: 77.9,
   },
-  projectBreakdown: [
+  matterBreakdown: [
     {
-      projectId: "p1",
-      projectName: "Website Redesign",
+      matterId: "p1",
+      matterName: "Website Redesign",
       hours: 20.0,
       percent: 51.9,
     },
     {
-      projectId: "p2",
-      projectName: "Mobile App",
+      matterId: "p2",
+      matterName: "Mobile App",
       hours: 12.5,
       percent: 32.5,
     },
@@ -91,8 +91,8 @@ function daysFromNow(days: number): string {
 
 function makeTask(overrides: Partial<MyWorkTaskItem> & { id: string }): MyWorkTaskItem {
   return {
-    projectId: "p1",
-    projectName: "Test Project",
+    matterId: "p1",
+    matterName: "Test Project",
     title: `Task ${overrides.id}`,
     status: "IN_PROGRESS",
     priority: "MEDIUM",
@@ -108,7 +108,7 @@ describe("TimeBreakdown on My Work page", () => {
   });
 
   it("renders time breakdown chart with project data", () => {
-    render(<TimeBreakdown data={mockDashboardData.projectBreakdown} />);
+    render(<TimeBreakdown data={mockDashboardData.matterBreakdown} />);
     expect(screen.getByText("Time Breakdown")).toBeInTheDocument();
     expect(screen.getByText("Website Redesign")).toBeInTheDocument();
     expect(screen.getByText("Mobile App")).toBeInTheDocument();

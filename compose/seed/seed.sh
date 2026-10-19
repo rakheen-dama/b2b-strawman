@@ -217,13 +217,13 @@ fi
 echo ""
 echo "==> Step 7: Create project"
 STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-  -X POST "${BACKEND_URL}/api/projects" \
+  -X POST "${BACKEND_URL}/api/matters" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ${ALICE_JWT}" \
   -d "{
     \"name\": \"Website Redesign\",
     \"description\": \"E2E seed project for testing\",
-    \"customerId\": \"${CUSTOMER_ID}\"
+    \"clientId\": \"${CUSTOMER_ID}\"
   }")
 check_status "Create project" "$STATUS"
 

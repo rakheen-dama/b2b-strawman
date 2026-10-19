@@ -222,3 +222,11 @@
 - **What happened**: the QA-scenario spec asserted "there is no automatic ONBOARDING→ACTIVE transition on checklist completion" after grepping only `compliance/` (where the lifecycle service lives). The hook is in `checklist/ChecklistInstanceService.checkLifecycleAdvance`. Five scenario steps were written against the false claim; the reviewer caught it.
 - **Rule**: a negative claim about product behaviour ("X never happens") must be backed by a repo-wide search for the transition/target (`grep -rn '"ACTIVE"\|LifecycleStatus.ACTIVE' backend/src/main/java`), not a search in the package the feature is named after. Positive claims can be local; negatives cannot.
 - **Also**: when a `test.fixme` asserts a behaviour, treat it as a hypothesis worth checking in code, not as unverified — here it was right.
+
+## 2026-10-19 — Hook hardening lessons (PR #1587)
+- **Test hooks under `/bin/bash` (3.2) explicitly.** `bash foo.sh` resolved to homebrew bash 5; `${var,,}` passed every test and would have been a bad substitution → non-zero exit → fail-OPEN under the real interpreter. Run the matrix under both.
+- **The harness shell is zsh.** An inline `[[ =~ ]]`/`BASH_REMATCH` unit test run directly in a Bash tool call gave wrong counts (zsh doesn't populate BASH_REMATCH). Put shell unit tests in a file and run them with the target interpreter.
+- **`grep -o` consumes separators**: `(^|[[:space:]])--flag([[:space:]]|$)` undercounts adjacent repeats (`--squash --merge` → 1). Count tokens by word-splitting an already-validated string instead.
+- **Match the full payload, not a truncated extraction.** `grep -oE '"command"\s*:\s*"[^"]*"'` stopped at the first escaped quote, so `echo "x" && gh pr merge …` was never gated. Use `jq -r .tool_input.command` and cross-check the raw payload.
+- **An allow rule changes the threat model of every silent-allow path.** Before `Bash(gh pr merge:*)`, a hook that exited 0 without a decision fell back to the user prompt; after it, that path is an unreviewed merge. Audit every `exit 0` when adding an allow rule.
+- **Print expectations next to results.** The two-strategies bypass was visible in my own matrix output (no deny line before the label) and I missed it until a reviewer pointed at it. `[ALLOW]/[DENY] expect X` labels made the next run self-checking.

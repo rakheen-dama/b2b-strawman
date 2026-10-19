@@ -29,4 +29,15 @@
 - [x] MIGRATION-NOTES: 90-day row + "Post-86 coherence amendments" + "Known-stale for Phase 87" lists
 - [x] Master doc → legal-only scripts table
 - [x] §2.5 verification: grep → only removal annotations remain; wow counts 7/7; §6 chains re-read. Days 0–4 Keycloak smoke **DEFERRED** (dev stack down at build time; `svc.sh status` all stopped)
-- [ ] PR with per-hunk class table; CodeRabbit + reviewer re-read of §6; merge via gate (raise, never bypass)
+- [x] PR #1586: per-hunk class table; two code-reviewer passes (REQUEST_CHANGES → fixes → APPROVE ×2) + CodeRabbit 10 comments addressed (spec §8–§8.2)
+- [x] Founder acknowledged M2 / M4 / 80.5-revert and merged 2026-10-19 → `eb0100614`; worktree + branch removed
+- [ ] Follow-ups: first observed Days 0–4 run of the amended 90-day plan (next QA cycle / Epic 617C); 617B.1 text "12 stale Pipeline refs" → "verify zero"; depth-ii fixme auto-activation assertion is right (lift when stable)
+
+# Merge gate: agents may merge on agent reviews + CI green — DONE 2026-10-19 (PR #1587)
+
+- [x] `.claude/settings.json`: `Bash(gh pr merge:*)` allow (founder) + hook timeout 60s
+- [x] Hook: CI green on every PR (`gh pr checks` buckets pass/skipping; empty → deny); single plain `gh pr merge <N> [strategy] [--delete-branch] --match-head-commit <full-sha>` (compound / --admin / --repo / --auto / $(…) refused); review trail for EVERY PR with verdicts bound to the head (`## Verdict: APPROVE @<sha>`); layer markers (packages/ → fe+portal); fail-closed (deny() via jq, ERR trap before stdin, empty diff/head → deny); bash 3.2 safe
+- [x] Docs: markers README, skills epic/epic_v2/phase/qa-cycle/qa-cycle-kc (two-step merge, Step 7 produces the trail), template-epic cross-repo note
+- [x] Reviews: 2× feature-dev:code-reviewer (9 fix rounds, final `APPROVE @3263245` each) + CodeRabbit (2 heads, all addressed); matrix observed under /bin/bash 3.2 and bash 5
+- [x] Merged via the gate itself with the pinned two-step command
+- [ ] Residual (accepted): trail is self-attested; identical bound lines count twice. Follow-up idea: require distinct reviewer headings.

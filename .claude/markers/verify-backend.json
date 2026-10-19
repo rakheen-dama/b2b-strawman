@@ -1,7 +1,7 @@
 {
-  "commit": "b559c744aea6444ca78decaf0882beb18b81f4a2",
+  "commit": "e95115c6844501982c15df73f034f09c79d597ae",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-19T20:45:00Z",
-  "summary": "PR #1588 (Epic 607A: wire-vocabulary ratchet, MCP tool+output-DTO contract, ADR-342 literal pins; test/comment/docs only) final head b559c744a (orchestrator run): 5345 testcases / 0 failures / 0 errors / 26 skipped (baseline 5339 + 6 new). Log /tmp/mvn-607A-final.log."
+  "ts": "2026-10-19T23:37:22+02:00",
+  "summary": "PR #1589 (Epic 607B: project/member/projecttemplate/setupstatus wire rename to matter vocabulary) final head e95115c68 (orchestrator run): 5345 testcases / 0 failures / 0 errors / 26 skipped (unchanged vs 607A baseline 5345 — rename only, no new tests). Ratchet baseline 109 -> 55. Log /tmp/mvn-607B-final.log."
 }

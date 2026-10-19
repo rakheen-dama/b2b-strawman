@@ -101,10 +101,12 @@ public class CustomerController {
     if (view != null) {
       List<Customer> filtered =
           viewFilterHelper.applyViewFilter(
+              // ADR-342: storage key, do not rename
               view, "CUSTOMER", "customers", Customer.class, null, null);
 
       if (filtered != null) {
         var customerIds = filtered.stream().map(Customer::getId).toList();
+        // ADR-342: storage key, do not rename
         var tagsByEntityId = entityTagService.getEntityTagsBatch("CUSTOMER", customerIds);
         var memberNames = customerService.resolveCustomerMemberNames(filtered);
 
@@ -127,6 +129,7 @@ public class CustomerController {
 
     // Batch-load tags for all customers (2 queries instead of 2N)
     var customerIds = customerEntities.stream().map(Customer::getId).toList();
+    // ADR-342: storage key, do not rename
     var tagsByEntityId = entityTagService.getEntityTagsBatch("CUSTOMER", customerIds);
     var memberNames = customerService.resolveCustomerMemberNames(customerEntities);
 
@@ -184,6 +187,7 @@ public class CustomerController {
   @GetMapping("/{id}")
   public ResponseEntity<CustomerResponse> getCustomer(@PathVariable UUID id) {
     var customer = customerService.getCustomer(id);
+    // ADR-342: storage key, do not rename
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
     var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
     return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));
@@ -250,6 +254,7 @@ public class CustomerController {
             request.contactPhone(),
             request.entityType(),
             request.financialYearEnd());
+    // ADR-342: storage key, do not rename
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
     var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
     return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));
@@ -259,6 +264,7 @@ public class CustomerController {
   @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<CustomerResponse> archiveCustomer(@PathVariable UUID id) {
     var customer = customerService.archiveCustomer(id);
+    // ADR-342: storage key, do not rename
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
     var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
     return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));
@@ -268,6 +274,7 @@ public class CustomerController {
   @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<CustomerResponse> unarchiveCustomer(@PathVariable UUID id) {
     var customer = customerService.unarchiveCustomer(id);
+    // ADR-342: storage key, do not rename
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
     var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
     return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));
@@ -356,6 +363,7 @@ public class CustomerController {
       @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request) {
     // Verify customer exists
     customerService.getCustomer(id);
+    // ADR-342: storage key, do not rename
     var tags = entityTagService.setEntityTags("CUSTOMER", id, request.tagIds());
     return ResponseEntity.ok(tags);
   }
@@ -364,6 +372,7 @@ public class CustomerController {
   public ResponseEntity<List<TagResponse>> getCustomerTags(@PathVariable UUID id) {
     // Verify customer exists
     customerService.getCustomer(id);
+    // ADR-342: storage key, do not rename
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
     return ResponseEntity.ok(tags);
   }

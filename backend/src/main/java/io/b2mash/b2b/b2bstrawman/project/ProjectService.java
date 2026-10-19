@@ -187,6 +187,7 @@ public class ProjectService {
 
       List<Project> filtered =
           viewFilterHelper.applyViewFilter(
+              // ADR-342: storage key, do not rename
               view, "PROJECT", "projects", Project.class, accessibleIds, Project::getId);
 
       if (filtered != null) {
@@ -195,6 +196,7 @@ public class ProjectService {
           filtered = filtered.stream().filter(p -> customerId.equals(p.getCustomerId())).toList();
         }
         var projectIds = filtered.stream().map(Project::getId).toList();
+        // ADR-342: storage key, do not rename
         var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", projectIds);
         var memberNames = resolveProjectMemberNames(filtered);
 
@@ -240,6 +242,7 @@ public class ProjectService {
 
     // Batch-load tags for all projects (2 queries instead of 2N)
     var projectIds = projectsWithRoles.stream().map(pwr -> pwr.project().getId()).toList();
+    // ADR-342: storage key, do not rename
     var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", projectIds);
     var allProjects = projectsWithRoles.stream().map(ProjectWithRole::project).toList();
     var memberNames = resolveProjectMemberNames(allProjects);
@@ -440,6 +443,7 @@ public class ProjectService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("project.created")
+            // ADR-342: storage key, do not rename
             .entityType("project")
             .entityId(project.getId())
             .details(auditDetails)
@@ -590,6 +594,7 @@ public class ProjectService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("project.updated")
+            // ADR-342: storage key, do not rename
             .entityType("project")
             .entityId(project.getId())
             .details(details)
@@ -638,6 +643,7 @@ public class ProjectService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("project.deleted")
+            // ADR-342: storage key, do not rename
             .entityType("project")
             .entityId(project.getId())
             // OBS-8801: include project_id so the matter Activity feed (findByProjectId, which
@@ -701,6 +707,7 @@ public class ProjectService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("project.completed")
+            // ADR-342: storage key, do not rename
             .entityType("project")
             .entityId(project.getId())
             .details(auditDetails)
@@ -747,6 +754,7 @@ public class ProjectService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("project.archived")
+            // ADR-342: storage key, do not rename
             .entityType("project")
             .entityId(project.getId())
             // OBS-8801: include project_id so the matter Activity feed (findByProjectId, scoping on
@@ -798,6 +806,7 @@ public class ProjectService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("project.reopened")
+            // ADR-342: storage key, do not rename
             .entityType("project")
             .entityId(project.getId())
             // OBS-8801: include project_id so the matter Activity feed (findByProjectId, scoping on

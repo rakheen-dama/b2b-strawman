@@ -72,6 +72,7 @@ public class ProjectController {
   @GetMapping("/{id}")
   public ResponseEntity<ProjectResponse> getProject(@PathVariable UUID id, ActorContext actor) {
     var pwr = projectService.getProject(id, actor);
+    // ADR-342: storage key, do not rename
     var tags = entityTagService.getEntityTags("PROJECT", id);
     var memberNames = projectService.resolveProjectMemberNames(List.of(pwr.project()));
     LocalDate retentionEndsOn = projectService.computeRetentionEndsOn(pwr.project());
@@ -117,6 +118,7 @@ public class ProjectController {
             request.referenceNumber(),
             request.priority(),
             request.workType());
+    // ADR-342: storage key, do not rename
     var tags = entityTagService.getEntityTags("PROJECT", id);
     var memberNames = projectService.resolveProjectMemberNames(List.of(pwr.project()));
     return ResponseEntity.ok(
@@ -138,6 +140,7 @@ public class ProjectController {
     boolean ack = request != null && Boolean.TRUE.equals(request.acknowledgeUnbilledTime());
     var project = projectService.completeProject(id, ack, actor);
     var memberNames = projectService.resolveProjectMemberNames(List.of(project));
+    // ADR-342: storage key, do not rename
     var tags = entityTagService.getEntityTags("PROJECT", id);
     return ResponseEntity.ok(ProjectResponse.from(project, null, tags, memberNames));
   }
@@ -147,6 +150,7 @@ public class ProjectController {
   public ResponseEntity<ProjectResponse> archiveProject(@PathVariable UUID id, ActorContext actor) {
     var project = projectService.archiveProject(id, actor);
     var memberNames = projectService.resolveProjectMemberNames(List.of(project));
+    // ADR-342: storage key, do not rename
     var tags = entityTagService.getEntityTags("PROJECT", id);
     return ResponseEntity.ok(ProjectResponse.from(project, null, tags, memberNames));
   }
@@ -156,6 +160,7 @@ public class ProjectController {
   public ResponseEntity<ProjectResponse> reopenProject(@PathVariable UUID id, ActorContext actor) {
     var project = projectService.reopenProject(id, actor);
     var memberNames = projectService.resolveProjectMemberNames(List.of(project));
+    // ADR-342: storage key, do not rename
     var tags = entityTagService.getEntityTags("PROJECT", id);
     return ResponseEntity.ok(ProjectResponse.from(project, null, tags, memberNames));
   }
@@ -175,6 +180,7 @@ public class ProjectController {
       @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request, ActorContext actor) {
     // Verify project access
     projectService.getProject(id, actor);
+    // ADR-342: storage key, do not rename
     var tags = entityTagService.setEntityTags("PROJECT", id, request.tagIds());
     return ResponseEntity.ok(tags);
   }
@@ -184,6 +190,7 @@ public class ProjectController {
       @PathVariable UUID id, ActorContext actor) {
     // Verify project access
     projectService.getProject(id, actor);
+    // ADR-342: storage key, do not rename
     var tags = entityTagService.getEntityTags("PROJECT", id);
     return ResponseEntity.ok(tags);
   }

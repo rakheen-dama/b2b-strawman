@@ -267,6 +267,7 @@ public class MatterClosureService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("matter_closure.closed")
+            // ADR-342: storage key, do not rename
             .entityType("project")
             .entityId(projectId)
             .details(
@@ -510,6 +511,7 @@ public class MatterClosureService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("matter_closure.reopened")
+            // ADR-342: storage key, do not rename
             .entityType("project")
             .entityId(projectId)
             .details(

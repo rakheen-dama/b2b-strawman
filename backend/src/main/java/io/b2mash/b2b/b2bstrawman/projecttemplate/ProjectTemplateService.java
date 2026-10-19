@@ -611,6 +611,7 @@ public class ProjectTemplateService {
     // 9. Apply tags
     var tagIds = templateTagRepository.findTagIdsByTemplateId(templateId);
     for (UUID tagId : tagIds) {
+      // ADR-342: storage key, do not rename
       entityTagRepository.save(new EntityTag(tagId, "PROJECT", project.getId()));
     }
 
@@ -624,6 +625,7 @@ public class ProjectTemplateService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("project.created_from_template")
+            // ADR-342: storage key, do not rename
             .entityType("project")
             .entityId(project.getId())
             // OBS-8801: include project_id so the matter Activity feed (findByProjectId, scoping on
@@ -782,6 +784,7 @@ public class ProjectTemplateService {
     // 5. Apply tags
     var tagIds = templateTagRepository.findTagIdsByTemplateId(template.getId());
     for (UUID tagId : tagIds) {
+      // ADR-342: storage key, do not rename
       entityTagRepository.save(new EntityTag(tagId, "PROJECT", project.getId()));
     }
 
@@ -795,6 +798,7 @@ public class ProjectTemplateService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("project.created_from_template")
+            // ADR-342: storage key, do not rename
             .entityType("project")
             .entityId(project.getId())
             // OBS-8801: include project_id so the matter Activity feed (findByProjectId, scoping on

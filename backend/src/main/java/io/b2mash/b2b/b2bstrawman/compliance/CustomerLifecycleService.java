@@ -161,6 +161,7 @@ public class CustomerLifecycleService {
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("customer.lifecycle.transitioned")
+            // ADR-342: storage key, do not rename
             .entityType("customer")
             .entityId(customerId)
             .details(
@@ -276,6 +277,7 @@ public class CustomerLifecycleService {
                   auditService.log(
                       AuditEventBuilder.builder()
                           .eventType("customer.lifecycle.auto_dormancy")
+                          // ADR-342: storage key, do not rename
                           .entityType("customer")
                           .entityId(customer.getId())
                           .details(
@@ -334,6 +336,7 @@ public class CustomerLifecycleService {
   @Transactional(readOnly = true)
   public List<AuditEvent> getLifecycleHistory(UUID customerId) {
     var filter =
+        // ADR-342: storage key, do not rename
         new AuditEventFilter("customer", customerId, null, "customer.lifecycle.", null, null, null);
     var page = auditService.findEvents(filter, PageRequest.of(0, 100));
     return page.getContent();

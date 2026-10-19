@@ -152,6 +152,7 @@ public class CustomerContextBuilder implements TemplateContextBuilder {
     context.put("org", contextHelper.buildOrgContext());
 
     // tags[]
+    // ADR-342: storage key, do not rename
     context.put("tags", contextHelper.buildTagsList("CUSTOMER", entityId));
 
     // generatedAt, generatedBy

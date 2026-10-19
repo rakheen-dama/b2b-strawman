@@ -718,7 +718,11 @@ cd /Users/rakheendama/Projects/2026/b2b-strawman
 git worktree remove ../worktree-epic-<N> --force
 
 # 2. Merge the PR (run from the main repo, not the worktree)
-gh pr merge {PR_NUMBER} --squash --delete-branch --match-head-commit "$(gh pr view {PR_NUMBER} --json headRefOid -q .headRefOid)"
+# Step 1 — read the current head SHA (the gate pins the merge to it):
+gh pr view {PR_NUMBER} --json headRefOid -q .headRefOid
+# Step 2 — merge with that literal 40-char SHA. The hook inspects the command TEXT before the
+# shell expands it, so a "$(…)" substitution is refused: paste the SHA, do not substitute it.
+gh pr merge {PR_NUMBER} --squash --delete-branch --match-head-commit <sha-from-step-1>
 
 # 3. If the remote/local branch wasn't auto-deleted (e.g. the post-merge checkout errored),
 #    clean it up explicitly:

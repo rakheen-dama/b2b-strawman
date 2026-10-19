@@ -482,7 +482,11 @@ Documentation-only PRs need no area verify marker but still need green CI and th
 If the hook blocks you, that means a marker is missing — fix the verify, write the marker, retry. Do NOT bypass with `--admin` or by editing the hook.
 
 ```
-gh pr merge {PR_NUMBER} --squash --delete-branch --match-head-commit "$(gh pr view {PR_NUMBER} --json headRefOid -q .headRefOid)"
+# Step 1 — read the current head SHA (the gate pins the merge to it):
+gh pr view {PR_NUMBER} --json headRefOid -q .headRefOid
+# Step 2 — merge with that literal 40-char SHA. The hook inspects the command TEXT before the
+# shell expands it, so a "$(…)" substitution is refused: paste the SHA, do not substitute it.
+gh pr merge {PR_NUMBER} --squash --delete-branch --match-head-commit <sha-from-step-1>
 git checkout {BRANCH} && git pull origin {BRANCH}
 ```
 

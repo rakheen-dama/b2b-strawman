@@ -14,7 +14,7 @@ The pre-merge hook (`.claude/hooks/pre-pr-merge-gate.sh`) blocks `gh pr merge` a
 
 A PR touching multiple areas requires all matching markers.
 
-A PR touching ONLY `qa_cycle/`, `qa/testplan/`, `architecture/`, `.claude/`, `tasks/`, `requirements/` is documentation-only and needs no area verify marker. The merge gate still requires green GitHub checks, the review audit trail in the PR body (two `## Verdict: APPROVE` + a `## CodeRabbit:` line) and a single plain `gh pr merge <N> … --match-head-commit <full-sha>` command — there is no automatic allow.
+A PR touching ONLY `qa_cycle/`, `qa/testplan/`, `architecture/`, `.claude/`, `tasks/`, `requirements/` is documentation-only and needs no area verify marker. The merge gate still requires green GitHub checks, the review audit trail in the PR body (two `## Verdict: APPROVE` + a `## CodeRabbit:` line) and a single plain `gh pr merge <N> … --match-head-commit <full-sha>` command with a literal SHA (no `$(…)` substitution — the hook reads the command text) — there is no automatic allow.
 
 ## Marker format
 

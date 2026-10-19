@@ -5,6 +5,7 @@
 **Stack**: Keycloak dev stack (frontend 3000 / backend 8080 / gateway 8443 / keycloak 8180 / mailpit 8025 / **portal 3002** — needed by 4.3b, 14.12 and 68.1)
 **Master doc**: `qa/testplan/demo-readiness-keycloak-master.md`
 **Driver**: `/qa-cycle-kc qa/testplan/demos/legal-za-90day-keycloak.md`
+**Portal touchpoints** (4.3b, 14.12, 68.1): firm-led plan; for those three steps follow the context-swap protocol in `legal-za-full-lifecycle-keycloak.md` → "Driver compatibility" (fresh incognito context on :3002, `PORTAL_ORG_SLUG=mathebula-partners`, close it before resuming firm steps).
 
 **Supersedes**: `qa/testplan/qa-legal-lifecycle-test-plan.md` (mock-auth port 3001 version) and `qa/testplan/legal-onboarding-keycloak.md` (onboarding-only, Keycloak). Both retained for historical reference only.
 
@@ -174,7 +175,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 ### Phase I: Progressive disclosure check
 
 - [ ] **0.57** Navigate to **Settings > Features**
-- [ ] **0.58** Verify the page lists only the horizontal toggles (Bulk billing, Information requests). The legal modules `court_calendar`, `conflict_check`, `lssa_tariff`, `trust_accounting` are fixed by the `legal-za` profile and are not toggles here — confirm them via 0.59 (sidebar) and `GET /api/modules` (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: legal modules are profile-fixed, Settings > Features lists horizontal modules only)
+- [ ] **0.58** Verify the page lists only the horizontal toggles (Bulk billing, Information requests). The legal modules `court_calendar`, `conflict_check`, `lssa_tariff`, `trust_accounting` are fixed by the `legal-za` profile and are not toggles here — confirm them via 0.59 (sidebar) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: legal modules are profile-fixed, Settings > Features lists horizontal modules only)
 - [ ] **0.59** **Sidebar check**: verify sidebar nav shows items for: Trust Accounting, Court Calendar, Conflict Check, Tariffs
 - [ ] **0.60** **Cross-vertical leak check**: verify sidebar does NOT show any items like "Engagements", "Year-End Packs", "Campaigns", or other non-legal vertical terminology
 
@@ -259,7 +260,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **4.3** Save generated document → verify it appears under matter's Documents tab
 - [ ] **4.3a** On the saved engagement letter (**Work** → **Generated Docs**) click **Send for Acceptance** → Recipient = Sipho Dlamini (portal contact), Expiry (days) = 7 → **Send** → acceptance status badge on the document reads **Awaiting Acceptance** (status SENT; becomes **Viewed** once the link is opened) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.5: ADR-336 replaces the deleted proposal flow with document + acceptance)
 - [ ] **4.3b** Mailpit → email to Sipho's address with subject `Mathebula & Partners -- Please review engagement letter for acceptance: <file name>` → open the link in an incognito context → public page http://localhost:3002/accept/<token> renders the PDF preview → type the full name "Sipho Dlamini" → click **I Accept** → accepted state with timestamp renders
-- [ ] **4.3c** Mailpit → `Confirmed: You have accepted <file name>`; firm-side the document's acceptance badge reads **Accepted**; 📸 `day-04-engagement-letter-accepted.png`
+- [ ] **4.3c** Mailpit → `Confirmed: You have accepted <file name>`; close the incognito context and return to the firm context (Bob, :3000) → the document's acceptance badge reads **Accepted**; 📸 `day-04-engagement-letter-accepted.png`
 - [ ] **4.4** Log first time entry: Bob, 1.5 hours, "Drafting particulars of claim", billable = yes
 - [ ] **4.5** Verify time entry snapshots Bob's billing rate (R1,200/hr → R1,800 value)
 - [ ] **4.6** Verify activity feed shows: matter created, engagement letter generated, engagement letter sent for acceptance, engagement letter accepted (actor Sipho, source PORTAL), time entry logged
@@ -307,7 +308,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **8.2** Create new client: Name = **Moroka Family Trust**, `client_type` = **TRUST**, `registration_number` = "IT000456/2018", Tax Number = "9123456789", Address Line 1 = "8 Rissik St", City = "Johannesburg", Country = **ZA** (activation prerequisites — TRUST and COMPANY clients also need the tax number)
 - [ ] **8.3** Beneficial owners are recorded via the Trust checklist item **Beneficial Ownership Declaration** (8.5), not a custom field — note the three names (Grace Moroka, James Moroka, Ruth Moroka) in that item's completion note (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: beneficial_owners is not a pack field; the trust pack carries the declaration item)
 - [ ] **8.4** Header card → **Start Onboarding** → confirm → badge **ONBOARDING** (as 2.1)
-- [ ] **8.5** Complete the **Legal Trust Client Onboarding** checklist (pack `legal-za-trust-onboarding`, 12 items, 11 required: Trust Deed, Letters of Authority, Trustee 1 ID, Trustee 2 ID (optional), Proof of Trust Banking, SARS Trust Tax Number, Beneficial Ownership Declaration, Source of Funds Declaration, Engagement Letter Signed, Conflict Check Performed, FICA Risk Assessment, Sanctions Screening) — upload one client PDF first and link it where "Requires document" shows, as on Day 2 (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: items re-derived from compliance-packs/legal-za-trust-onboarding/pack.json)
+- [ ] **8.5** Complete the **Legal Trust Client Onboarding** checklist (pack `legal-za-trust-onboarding`, 12 items, 11 required: Trust Deed, Letters of Authority, Trustee 1 ID, Trustee 2 ID (optional), Proof of Trust Banking, SARS Trust Tax Number, Beneficial Ownership Declaration, Source of Funds Declaration, Engagement Letter Signed, Conflict Check Performed, FICA Risk Assessment, Sanctions Screening) — upload one client PDF first and link it where "Requires document" shows, as on Day 2; put the three names from 8.3 in the Beneficial Ownership Declaration item's Notes field (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: items re-derived from compliance-packs/legal-za-trust-onboarding/pack.json)
 - [ ] **8.6** On the last required item's Confirm the client auto-transitions to **ACTIVE** (prerequisites from 8.2); header action reads **Edit**. If still ONBOARDING, fix the missing field and click **Activate Customer**
 
 ### Day 9 — Deceased estate matter
@@ -510,7 +511,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **80.2** Verify cross-matter/cross-client dashboard loads with 90 days of data
 - [ ] **80.3** Verify utilization metrics (billable % per team member) render
 - [ ] **80.4** Export a report to CSV → verify file downloads with expected columns
-- [ ] **80.5** Navigate to **My Work** (as Bob) → verify Bob's assigned tasks and time summary render (My Work's upcoming list is tasks; court dates live on Court Calendar)
+- [ ] **80.5** Navigate to **My Work** (as Bob) → verify Bob's assigned tasks, time summary, and upcoming court events render
 
 ### Day 85 — Audit log sweep
 

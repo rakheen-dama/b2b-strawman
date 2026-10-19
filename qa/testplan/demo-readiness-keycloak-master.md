@@ -17,7 +17,7 @@ The legal lifecycle scripts live under `qa/testplan/demos/`. Each script serves 
 | Script | POV | Story / Firm | Role |
 |---|---|---|---|
 | `demos/legal-za-full-lifecycle-keycloak.md` | Firm + portal interleaved | Mathebula & Partners — one RAF matter for Sipho Dlamini, Moroka Family Trust as isolation target | **QA-cycle driver** (`/qa-cycle-kc`); verified lineage 2026-07-12 (LZKC) |
-| `demos/legal-za-90day-keycloak.md` | Firm only | Mathebula & Partners — three clients (litigation, deceased estate, RAF, plus conveyancing on Day 14) | **Phase 87 capstone walk** (Epic 617C, ADR-344 §5); breadth: budget, profitability, disbursements, write-off, closure override, audit sweep |
+| `demos/legal-za-90day-keycloak.md` | Firm-led, three portal touchpoints (4.3b, 14.12, 68.1) | Mathebula & Partners — four clients (litigation, deceased estate, conveyancing on Day 14, RAF) | **Phase 87 capstone walk** (Epic 617C, ADR-344 §5); breadth: budget, profitability, disbursements, write-off, closure override, audit sweep |
 | `demos/portal-client-90day-keycloak.md` | Portal only | Sipho / Moroka on the client portal | Portal gating; assumes firm-side state from the plans above |
 | `demos/admin-audit-30day-keycloak.md` | Admin | Audit-log surfaces over 30 days | Observability layer |
 | `demos/ai-core-verification-keycloak.md` | Firm | Verifain Attorneys switching AI on | **DEFERRED** until a human enters a funded Anthropic key (V1) |
@@ -102,8 +102,8 @@ The test suite gate is enforced **per fix PR**, not only at cycle end. But the f
 Run the legal plans **in order**, merging fixes between runs so cascading improvements land in the next pass:
 
 1. **Full lifecycle first** — the QA-cycle driver: firm + portal interleaved, isolation gate, PayFast, closure → Statement of Account. Cycle until clean.
-2. **90-day second** — firm-only breadth the full lifecycle lacks (three clients, estate and conveyancing templates, budget, profitability, disbursement trust-link, write-off, closure override, 90-day audit sweep). This is also the Epic 617C capstone walk.
-3. **Portal, then admin-audit** — both read state the first two produce; run them against the same tenant.
+2. **90-day second** — firm-led breadth the full lifecycle lacks (three clients, estate and conveyancing templates, budget, profitability, disbursement trust-link, write-off, closure override, 90-day audit sweep). This is also the Epic 617C capstone walk.
+3. **Portal, then admin-audit** — both read firm-side state, so run them on the tenant the preceding plan built, before that tenant is reset.
 4. **AI-core** — only when a human has entered a funded Anthropic key; never inferred PASS.
 
 Between plans: **merge fixes to main**, redeploy the Keycloak stack from a clean baseline, then start the next plan.

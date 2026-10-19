@@ -92,7 +92,7 @@ Pure deletions of removed-feature steps carry: `Removed — Epic 596 (#1565), AD
 | 14.3 | `matter_type = CONVEYANCING` → `Work Type **CONVEYANCING** inherited from the template (#1580)`. |
 | 22.3 | Same rewrite as 14.2. |
 | 22.4 | → `Create matter from template **Litigation (Road Accident Fund -- RAF)** → Work Type **LITIGATION** (the RAF template carries LITIGATION; "Road Accident Fund" is the template, not a work type), case_number = "RAF/2026/0042"`. |
-| 80.5 | Drop `and upcoming court events` (My Work's upcoming list is tasks; court dates are on Court Calendar). |
+| 80.5 | ~~Drop `and upcoming court events`~~ **Reverted (§8 second review, item 2)**: whether My Work should show court events is a product decision (Phase 87 slice 613 folds court events into the Diary), not a drift fix. Step left as originally written; needs an explicit founder call. |
 
 ### 3.5 New steps (class new — D2)
 
@@ -268,3 +268,17 @@ The independent review re-verified every hunk and found the following; each was 
 | L5 | 90-day stack line cites 14.12 as well as 4.3b/68.1. | Accurate. | Kept. |
 
 **Lesson** (also in `tasks/lessons.md`): when asserting a behaviour does *not* exist, grep the whole backend, not the package the feature is named after — the activation hook sits in `checklist/`, not `compliance/`.
+
+### 8.1 Second review (authorisation-scope pass) — corrections applied
+
+| # | Finding | Evidence | Correction |
+|---|---|---|---|
+| **High-1** | 15.12's reason was false: the portal has document endpoints and 15.17 only probed trust statements, so Moroka's death certificate was no longer probed. | `portal/PortalDocumentController.java:31,46,57` (`/portal/projects/{id}/documents`, `/portal/documents`, `/portal/documents/{id}/presign-download`). My endpoint list came from `customerbackend/controller/` only; the `portal/` package has eight more controllers. | 15.12 reworded (UI-level only); 15.17 → presign-download probe; new 15.17a → matter documents + trust statement documents; Day 15 checkpoint count 4+ → 5+. |
+| Med-2 | Day 8 is token-authenticated on a public page, yet E.8 counted it as a magic-link login and 75.5 expected it in the portal activity trail. | `PortalActivityEventTypes.PORTAL_VISIBLE_FIRM_EVENT_TYPES` has no acceptance event. | E.8 and 75.5 drop Day 8 with the reason stated. |
+| Med-3 | Driver gaps: 4.3c never returned to the firm context; 90-day had no portal context-swap/org-slug note; 8.5 did not carry the 8.3 names; 10.1a had an undefined branch; Day 8 lacked the `curl :3002` liveness check. | — | All five fixed in the text. |
+| Med-4 | 0.58 offered `GET /api/modules`, a REST call the 617C.1 capstone forbids (Playwright MCP only, Mailpit the sole REST exception). | `tasks/phase87-legal-native-shell.md:823` | REST alternative dropped; sidebar check (0.59) is the oracle. |
+| Med-5 | Master row said "Firm only" / "three clients"; Order-of-operations line 3 contradicted the reset rule. | — | "Firm-led, three portal touchpoints" / "four clients"; line 3 reworded. |
+| Med (80.5) | Dropping "upcoming court events" re-classified a possible gap as a scenario mismatch without file:line proof of intent (CLAUDE.md §6). | `DashboardService.java:501-510` shows what the code does, not what was intended; Phase 87 slice 613 moves court events to the Diary. | **Reverted** to the original text. Listed in the PR body as needing a founder decision. |
+| Med (M2/M4) | §8 is agent-authored; an agent cannot grant itself §6 authorisation for the M2 precondition hunks or the M4 master-doc hunks. | — | Both listed in the PR body under "needs founder acknowledgement"; M2 is defensible under the §1 boundary rule, M4 is reversible. |
+| Low | `tasks/phase87-legal-native-shell.md:821` (617B.1) still says "the 12 stale Pipeline refs"; none remain after this PR (21 removed). | — | Not edited here (scope §7); follow-up: 617B.1 becomes "verify zero Pipeline refs". |
+| Low | 90-day Day 2 completes "Engagement Letter Signed" before the Day 4 letter exists; wow #7 appended out of chronological order. | — | Left as is (step order preserved; §7 product observation stands). |

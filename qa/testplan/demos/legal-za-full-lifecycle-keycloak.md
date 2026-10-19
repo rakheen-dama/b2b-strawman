@@ -368,7 +368,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ## Day 8 — Sipho accepts the engagement letter  `[PORTAL]`
 
-**Context swap** — firm → portal (fresh incognito context, port 3002). The acceptance route is public (token-authenticated), so no portal login is required.
+**Context swap** — firm → portal per the context-swap protocol (close the firm context; `curl -sS -o /dev/null -w '%{http_code}' http://localhost:3002/login` → 200; fresh incognito context on port 3002). The acceptance route is public (token-authenticated), so no portal login is required.
 
 **Actor**: Sipho Dlamini
 
@@ -392,7 +392,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Phase A: Client activation + matter lifecycle
 
-- [ ] **10.1a** Sipho's client detail → **Work** group → **Documents** sub-tab → **Upload Document** → upload one small PDF named "Sipho Dlamini — certified FICA pack.pdf" (the checklist document picker lists client documents; if the Day 4 portal uploads already appear in the picker, link those instead and say so in the run log) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.2: Sipho must be ACTIVE for the Day 28 billing run; ONBOARDING→ACTIVE needs a complete checklist)
+- [ ] **10.1a** Sipho's client detail → **Work** group → **Documents** sub-tab → **Upload Document** → upload one small PDF named "Sipho Dlamini — certified FICA pack.pdf" (the checklist document picker lists client-level documents; always upload this file even if the Day 4 portal uploads appear in the picker, so the run is reproducible) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.2: Sipho must be ACTIVE for the Day 28 billing run; ONBOARDING→ACTIVE needs a complete checklist)
 - [ ] **10.1b** **Compliance** group → **Onboarding** sub-tab → for each of the 9 items in order: **Mark Complete** → where "Requires document" shows, pick the PDF from 10.1a → **Confirm** → **Completed**. Complete "Engagement Letter Signed" before "Power of Attorney Signed" (dependency). Progress reads **9/9 completed**. If a completed item still renders Pending, reload — `FIXME(depth-ii:checklist-stale-after-complete)`, intermittent
 - [ ] **10.1c** When the last required item is confirmed the checklist instance completes and the client **auto-transitions to ACTIVE** (`checklist/ChecklistInstanceService.checkLifecycleAdvance`, provided the activation prerequisites Address Line 1 / City / Country (from 2.3) are on file — `StructuralPrerequisiteCheck.LIFECYCLE_ACTIVATION_FIELDS`) → lifecycle badge **ACTIVE**; the header primary action now reads **Edit**. If the badge still reads ONBOARDING, a `PREREQUISITE_BLOCKED_ACTIVATION` notification was raised — fill the missing field on the client, then the header action reads **Activate Customer** → click → ACTIVE
 - [ ] **10.1d** **Work** → **Generated Docs**: the engagement letter's acceptance badge reads **Accepted** (from Day 8)
@@ -520,7 +520,7 @@ Using the Moroka entity IDs captured Day 14, attempt direct URL navigation while
 - [ ] **15.9** Navigate directly to `/projects/[morokaMatterId]` → expect **404** or **403** or redirect to `/home` with an error toast. **MUST NOT** render Moroka matter detail.
 - [ ] **15.10** Navigate directly to `/requests/[morokaInfoRequestId]` → expect **404** / **403** / redirect. **MUST NOT** show "Liquidation and Distribution Account Pack"
 - [ ] **15.11** Navigate directly to `/trust/[morokaMatterId]` → expect **404** / **403** / redirect. **MUST NOT** render Moroka's R 25,000 deposit or any EST-2026-002 movement
-- [ ] **15.12** Removed — the portal has no per-document or per-transaction route; 15.11 and 15.16 cover the trust leak, 15.17 the document leak.
+- [ ] **15.12** Removed at the UI level — the portal has no per-document or per-transaction page (routes: `/projects/[id]`, `/requests/[id]`, `/trust/[matterId]`, `/invoices/[id]`). The document leak is probed at the API level in 15.17 and 15.17a.
 - [ ] **15.13** 📸 **Screenshot**: `day-15-portal-denial.png` — denial page or redirect state from one of the probes
 
 ### Phase C: API-level probe (hard negative — backend must enforce, not just frontend)
@@ -530,7 +530,8 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **15.14** `curl -sS http://localhost:8080/portal/projects/[morokaMatterId]/summary -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** or **404**. MUST NOT return 200 with Moroka data.
 - [ ] **15.15** `curl -sS http://localhost:8080/portal/requests/[morokaInfoRequestId] -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404**
 - [ ] **15.16** `curl -sS http://localhost:8080/portal/trust/matters/[morokaMatterId]/transactions -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404**
-- [ ] **15.17** `curl -sS http://localhost:8080/portal/trust/matters/[morokaMatterId]/statement-documents -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404** or an empty list; bytes MUST NOT be Moroka's document content
+- [ ] **15.17** `curl -sS http://localhost:8080/portal/documents/[morokaDocumentId]/presign-download -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404**; MUST NOT return a presigned URL for Moroka's death certificate (`portal/PortalDocumentController.java:57`)
+- [ ] **15.17a** `curl -sS http://localhost:8080/portal/projects/[morokaMatterId]/documents -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404** (`PortalDocumentController.java:31`); and `curl -sS http://localhost:8080/portal/trust/matters/[morokaMatterId]/statement-documents …` → **403** / **404** or empty
 - [ ] **15.18** `curl -sS http://localhost:8080/portal/trust/summary -H "Authorization: Bearer $SIPHO_JWT" | jq '.'` and `curl -sS http://localhost:8080/portal/requests -H "Authorization: Bearer $SIPHO_JWT" | jq '.'` → only Sipho's entities; balance R 50,000 (not R 75,000); no Moroka ids in any list field
 
 ### Phase D: Activity trail + digest leak probe
@@ -541,7 +542,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 **Day 15 checkpoints (BLOCKER severity — any failure here is a HIGH/BLOCKER gap)**
 - [ ] List views on `/home`, `/projects`, `/trust`, `/invoices`, `/deadlines` show ONLY Sipho's data
 - [ ] Direct-URL probes to 4+ Moroka entity IDs denied at the frontend (no matter data renders)
-- [ ] API-level probes to 4+ Moroka endpoints denied at backend (403/404, never 200)
+- [ ] API-level probes to 5+ Moroka endpoints denied at backend (403/404, never 200) — matter summary, request, trust transactions, document presign, matter documents
 - [ ] Trust balance card shows R 50,000 (Sipho's only) — not R 75,000 (aggregate leak)
 - [ ] Activity trail / digest have zero Moroka references
 
@@ -875,7 +876,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **75.2** Digest body mentions events from the matter: fee note paid, SoA downloaded, matter closed. All references use client-facing copy.
 - [ ] **75.3** Crucially: digest MUST NOT reference Moroka / EST-2026-002 / any other client
 - [ ] **75.4** Click a "View activity" link in the digest → lands on portal home or activity view
-- [ ] **75.5** Activity trail renders events from Days 4, 8, 11, 15, 30, 46, 61 — all are Sipho's. Zero Moroka references.
+- [ ] **75.5** Activity trail renders events from Days 4, 11, 15, 30, 46, 61 — all are Sipho's. Zero Moroka references. (Day 8's acceptance is not a portal-activity event — `PortalActivityEventTypes.PORTAL_VISIBLE_FIRM_EVENT_TYPES` — so it is not expected here.)
 - [ ] **75.6** **Passive isolation spot-check** (61 days after Day 14 onboarding of Moroka):
   - `/home` — no Moroka entries
   - `/trust` — balance shows R 0.00 against RAF-2026-001 (trust fully paid out Day 60); NOT R 25,000 Moroka leak
@@ -960,7 +961,7 @@ This is the closing-demo wow moment: show the firm's 90-day activity feed on the
 - [ ] **E.5** **Field promotion** verified on Client, Matter, Task, Fee Note create dialogs — no duplication in CustomFieldSection
 - [ ] **E.6** **Progressive disclosure** — all 4 legal modules present, no cross-vertical leaks in sidebar, breadcrumbs, settings
 - [ ] **E.7** **Keycloak flow** end-to-end — from `/request-access` → approval → owner register → team invites → logged-in firm dashboard, zero mock IDP usage
-- [ ] **E.8** **Portal magic-link flow** end-to-end — Sipho authenticated via magic-link on Days 4, 8, 11, 15, 30, 46, 61, 75, 88, 90; zero Keycloak-form usage on portal side
+- [ ] **E.8** **Portal magic-link flow** end-to-end — Sipho authenticated via magic-link on Days 4, 11, 15, 30, 46, 61, 75, 88, 90 (Day 8 is token-authenticated on the public `/accept/<token>` page, no portal session); zero Keycloak-form usage on portal side
 - [ ] **E.9** **Terminology sweep** passed — zero "Project/Customer/Invoice" leaks firm-side; portal terminology consistent within itself
 - [ ] **E.10** **Isolation — BLOCKER-severity gate** — Day 15 and Day 90 isolation probes both pass at list, URL, and API levels. No Moroka data leak anywhere on portal throughout 90 days.
 - [ ] **E.11** **Trust accounting reconciliation** — firm-side Section 86 ledger + matter Trust tab + portal `/trust` all reconcile to identical balances at Days 11, 46, 61

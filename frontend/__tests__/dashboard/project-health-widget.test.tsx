@@ -13,9 +13,9 @@ vi.mock("next/navigation", () => ({
 
 const mockProjects: ProjectHealth[] = [
   {
-    projectId: "proj-1",
-    projectName: "Website Redesign",
-    customerName: "Acme Corp",
+    matterId: "proj-1",
+    matterName: "Website Redesign",
+    clientName: "Acme Corp",
     healthStatus: "AT_RISK",
     healthReasons: ["Budget 85% consumed", "6 overdue tasks"],
     tasksDone: 20,
@@ -25,9 +25,9 @@ const mockProjects: ProjectHealth[] = [
     hoursLogged: 170.0,
   },
   {
-    projectId: "proj-2",
-    projectName: "Mobile App",
-    customerName: null,
+    matterId: "proj-2",
+    matterName: "Mobile App",
+    clientName: null,
     healthStatus: "HEALTHY",
     healthReasons: [],
     tasksDone: 15,
@@ -37,9 +37,9 @@ const mockProjects: ProjectHealth[] = [
     hoursLogged: 95.5,
   },
   {
-    projectId: "proj-3",
-    projectName: "API Migration",
-    customerName: "Beta Inc",
+    matterId: "proj-3",
+    matterName: "API Migration",
+    clientName: "Beta Inc",
     healthStatus: "CRITICAL",
     healthReasons: ["3 weeks overdue"],
     tasksDone: 5,
@@ -143,9 +143,9 @@ describe("ProjectHealthWidget", () => {
   it("shows empty filter message when no projects match filter", () => {
     const healthyOnly: ProjectHealth[] = [
       {
-        projectId: "proj-1",
-        projectName: "Good Project",
-        customerName: null,
+        matterId: "proj-1",
+        matterName: "Good Project",
+        clientName: null,
         healthStatus: "HEALTHY",
         healthReasons: [],
         tasksDone: 10,

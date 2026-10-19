@@ -36,7 +36,5 @@ export async function fetchProjectActivity(
   params.set("size", String(size ?? 20));
 
   const query = params.toString();
-  return api.get<ActivityResponse>(
-    `/api/projects/${projectId}/activity${query ? `?${query}` : ""}`
-  );
+  return api.get<ActivityResponse>(`/api/matters/${projectId}/activity${query ? `?${query}` : ""}`);
 }

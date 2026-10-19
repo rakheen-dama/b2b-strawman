@@ -44,7 +44,7 @@ export function CalendarPageClient({
 
   // Filter state
   const [projectId, setProjectId] = useState<string | undefined>(undefined);
-  const [type, setType] = useState<"TASK" | "PROJECT" | undefined>(undefined);
+  const [type, setType] = useState<"TASK" | "MATTER" | undefined>(undefined);
   const [assigneeId, setAssigneeId] = useState<string | undefined>(undefined);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
   const [members, setMembers] = useState<{ id: string; name: string }[]>([]);
@@ -56,7 +56,7 @@ export function CalendarPageClient({
   }, []);
 
   const refetch = useCallback(
-    (newProjectId?: string, newType?: "TASK" | "PROJECT", newAssigneeId?: string) => {
+    (newProjectId?: string, newType?: "TASK" | "MATTER", newAssigneeId?: string) => {
       const firstDay = new Date(year, month - 1, 1);
       const lastDay = new Date(year, month, 0);
       const from = formatDate(firstDay);
@@ -133,7 +133,7 @@ export function CalendarPageClient({
 
         {/* Type toggle chips */}
         <div className="flex items-center gap-1">
-          {(["ALL", "TASK", "PROJECT"] as const).map((t) => {
+          {(["ALL", "TASK", "MATTER"] as const).map((t) => {
             const isActive = (t === "ALL" && !type) || (t !== "ALL" && type === t);
             return (
               <button
@@ -141,7 +141,7 @@ export function CalendarPageClient({
                 type="button"
                 aria-pressed={isActive}
                 onClick={() => {
-                  const newType = t === "ALL" ? undefined : (t as "TASK" | "PROJECT");
+                  const newType = t === "ALL" ? undefined : (t as "TASK" | "MATTER");
                   setType(newType);
                   refetch(projectId, newType, assigneeId);
                 }}

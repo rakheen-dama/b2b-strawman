@@ -116,7 +116,7 @@ export function TaskDetailSheet({
     fetchTask(taskId)
       .then((data) => {
         if (cancelled) return;
-        if (projectId !== null && data.projectId !== projectId) {
+        if (projectId !== null && data.matterId !== projectId) {
           dispatch({ type: "TASK_ERROR", error: "Task not found." });
           return;
         }
@@ -139,7 +139,7 @@ export function TaskDetailSheet({
     };
   }, [taskId, projectId]);
 
-  const effectiveProjectId = projectId ?? task?.projectId ?? "";
+  const effectiveProjectId = projectId ?? task?.matterId ?? "";
 
   function handleAssigneeChange(newAssigneeId: string | null) {
     if (!task) return;

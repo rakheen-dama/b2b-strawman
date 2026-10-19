@@ -10,7 +10,7 @@ interface ActionResult {
 }
 
 export async function fetchProjectMembers(projectId: string): Promise<ProjectMember[]> {
-  return api.get<ProjectMember[]>(`/api/projects/${projectId}/members`);
+  return api.get<ProjectMember[]>(`/api/matters/${projectId}/members`);
 }
 
 export async function fetchOrgMembers(): Promise<OrgMember[]> {
@@ -23,7 +23,7 @@ export async function addProjectMember(
   memberId: string
 ): Promise<ActionResult> {
   try {
-    await api.post(`/api/projects/${projectId}/members`, { memberId });
+    await api.post(`/api/matters/${projectId}/members`, { memberId });
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -42,7 +42,7 @@ export async function removeProjectMember(
   memberId: string
 ): Promise<ActionResult> {
   try {
-    await api.delete(`/api/projects/${projectId}/members/${memberId}`);
+    await api.delete(`/api/matters/${projectId}/members/${memberId}`);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -61,7 +61,7 @@ export async function transferLead(
   memberId: string
 ): Promise<ActionResult> {
   try {
-    await api.put(`/api/projects/${projectId}/members/${memberId}/role`, { role: "lead" });
+    await api.put(`/api/matters/${projectId}/members/${memberId}/role`, { role: "lead" });
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };

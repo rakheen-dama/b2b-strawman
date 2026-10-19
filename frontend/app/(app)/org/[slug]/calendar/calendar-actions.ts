@@ -21,7 +21,7 @@ export async function getCalendarItems(
 }
 
 export async function getCalendarProjects(): Promise<{ id: string; name: string }[]> {
-  const projects = await api.get<Project[]>("/api/projects");
+  const projects = await api.get<Project[]>("/api/matters");
   return projects.map((p) => ({ id: p.id, name: p.name }));
 }
 

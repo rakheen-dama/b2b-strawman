@@ -51,8 +51,8 @@ export default async function TimesheetPage({
   // Build GridTaskRow[] from assigned tasks
   const assignedTasks: GridTaskRow[] = tasksData.assigned.map((t) => ({
     id: t.id,
-    projectId: t.projectId,
-    projectName: t.projectName,
+    projectId: t.matterId,
+    projectName: t.matterName,
     title: t.title,
   }));
 

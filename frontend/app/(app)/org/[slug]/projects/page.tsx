@@ -88,7 +88,7 @@ export default async function ProjectsPage({
   if (currentViewId) queryParts.push(`view=${currentViewId}`);
   if (statusParam) queryParts.push(`status=${statusParam}`);
   const projectsEndpoint =
-    queryParts.length > 0 ? `/api/projects?${queryParts.join("&")}` : "/api/projects";
+    queryParts.length > 0 ? `/api/matters?${queryParts.join("&")}` : "/api/matters";
 
   let projects: Project[] = [];
   try {
@@ -141,7 +141,7 @@ export default async function ProjectsPage({
   const budgetStatuses = new Map<string, LightweightBudgetStatus>();
   if (isAdmin && projects.length > 0) {
     const results = await Promise.allSettled(
-      projects.map((p) => api.get<LightweightBudgetStatus>(`/api/projects/${p.id}/budget/status`))
+      projects.map((p) => api.get<LightweightBudgetStatus>(`/api/matters/${p.id}/budget/status`))
     );
     results.forEach((result, i) => {
       if (result.status === "fulfilled" && result.value) {
@@ -220,7 +220,7 @@ export default async function ProjectsPage({
       ) : (
         <div className="grid auto-rows-fr grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => {
-            const roleBadge = project.projectRole ? ROLE_BADGE[project.projectRole] : null;
+            const roleBadge = project.matterRole ? ROLE_BADGE[project.matterRole] : null;
             const budgetStatus = budgetStatuses.get(project.id);
             return (
               <Link

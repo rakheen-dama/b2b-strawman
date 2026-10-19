@@ -190,7 +190,7 @@ export async function interruptPrescription(
 // ── Projects (for dialogs) ─────────────────────────────────────────
 
 export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
-  const result = await api.get<{ id: string; name: string }[]>("/api/projects?size=200");
+  const result = await api.get<{ id: string; name: string }[]>("/api/matters?size=200");
   return result ?? [];
 }
 

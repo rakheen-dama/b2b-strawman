@@ -34,6 +34,6 @@ export async function checkEngagementPrerequisites(
   customerId: string
 ): Promise<PrerequisiteCheck> {
   return api.get<PrerequisiteCheck>(
-    `/api/project-templates/${templateId}/prerequisite-check?customerId=${encodeURIComponent(customerId)}`
+    `/api/matter-templates/${templateId}/prerequisite-check?customerId=${encodeURIComponent(customerId)}`
   );
 }

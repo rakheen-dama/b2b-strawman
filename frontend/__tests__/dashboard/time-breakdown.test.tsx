@@ -27,20 +27,20 @@ vi.mock("recharts", () => ({
 
 const mockBreakdown: PersonalProjectBreakdown[] = [
   {
-    projectId: "p1",
-    projectName: "Website Redesign",
+    matterId: "p1",
+    matterName: "Website Redesign",
     hours: 20.0,
     percent: 51.9,
   },
   {
-    projectId: "p2",
-    projectName: "Mobile App",
+    matterId: "p2",
+    matterName: "Mobile App",
     hours: 12.5,
     percent: 32.5,
   },
   {
-    projectId: "p3",
-    projectName: "API Migration",
+    matterId: "p3",
+    matterName: "API Migration",
     hours: 6.0,
     percent: 15.6,
   },

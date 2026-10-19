@@ -10,7 +10,7 @@ import type {
 } from "@/lib/types";
 
 export async function fetchProjectSetupStatus(projectId: string): Promise<ProjectSetupStatus> {
-  return api.get<ProjectSetupStatus>(`/api/projects/${projectId}/setup-status`);
+  return api.get<ProjectSetupStatus>(`/api/matters/${projectId}/setup-status`);
 }
 
 export async function fetchCustomerReadiness(customerId: string): Promise<CustomerReadiness> {
@@ -18,7 +18,7 @@ export async function fetchCustomerReadiness(customerId: string): Promise<Custom
 }
 
 export async function fetchProjectUnbilledSummary(projectId: string): Promise<UnbilledTimeSummary> {
-  return api.get<UnbilledTimeSummary>(`/api/projects/${projectId}/unbilled-summary`);
+  return api.get<UnbilledTimeSummary>(`/api/matters/${projectId}/unbilled-summary`);
 }
 
 export async function fetchCustomerUnbilledSummary(

@@ -51,17 +51,14 @@ export function KpiCardRow({ kpis, isAdmin, orgSlug }: KpiCardRowProps) {
   const prev = kpis.previousPeriod;
   const trendValues = kpis.trend.map((t) => t.value);
 
-  const activeProjectsChange = computeChangePercent(
-    kpis.activeProjectCount,
-    prev.activeProjectCount
-  );
+  const activeProjectsChange = computeChangePercent(kpis.activeMatterCount, prev.activeMatterCount);
   const hoursChange = computeChangePercent(kpis.totalHoursLogged, prev.totalHoursLogged);
   const overdueChange = computeChangePercent(kpis.overdueTaskCount, prev.overdueTaskCount);
 
   const cards = [
     {
       label: t("Active Projects"),
-      value: kpis.activeProjectCount,
+      value: kpis.activeMatterCount,
       changePercent: activeProjectsChange,
       changeDirection: changeDirection(activeProjectsChange),
       trend: trendValues,

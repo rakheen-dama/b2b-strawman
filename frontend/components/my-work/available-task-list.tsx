@@ -105,12 +105,12 @@ export function AvailableTaskList({ tasks, slug, onTaskClick }: AvailableTaskLis
                           if (onTaskClick) {
                             onTaskClick(task.id);
                           } else {
-                            router.push(`/org/${slug}/projects/${task.projectId}`);
+                            router.push(`/org/${slug}/projects/${task.matterId}`);
                           }
                         }}
                       >
                         <TableCell>
-                          <Badge variant="member">{task.projectName}</Badge>
+                          <Badge variant="member">{task.matterName}</Badge>
                         </TableCell>
                         <TableCell>
                           <p className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">

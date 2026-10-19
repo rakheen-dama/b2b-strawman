@@ -12,7 +12,7 @@ export interface Project {
   name: string;
   description: string | null;
   status: ProjectStatus;
-  customerId: string | null;
+  clientId: string | null;
   dueDate: string | null;
   referenceNumber: string | null;
   priority: ProjectPriority | null;
@@ -38,7 +38,7 @@ export interface Project {
    * configured.
    */
   retentionEndsOn: string | null;
-  projectRole: ProjectRole | null;
+  matterRole: ProjectRole | null;
   customFields?: Record<string, unknown>;
   appliedFieldGroups?: string[];
   tags?: TagResponse[];
@@ -47,7 +47,7 @@ export interface Project {
 export interface CreateProjectRequest {
   name: string;
   description?: string;
-  customerId?: string;
+  clientId?: string;
   dueDate?: string;
   referenceNumber?: string;
   priority?: ProjectPriority;
@@ -57,7 +57,7 @@ export interface CreateProjectRequest {
 export interface UpdateProjectRequest {
   name: string;
   description?: string;
-  customerId?: string | null;
+  clientId?: string | null;
   dueDate?: string | null;
   referenceNumber?: string | null;
   priority?: ProjectPriority | null;
@@ -94,8 +94,8 @@ export interface TaskTimeSummary {
 
 export interface MyWorkTaskItem {
   id: string;
-  projectId: string;
-  projectName: string;
+  matterId: string;
+  matterName: string;
   title: string;
   status: string;
   priority: string;
@@ -112,8 +112,8 @@ export interface MyWorkTimeEntryItem {
   id: string;
   taskId: string;
   taskTitle: string;
-  projectId: string;
-  projectName: string;
+  matterId: string;
+  matterName: string;
   date: string;
   durationMinutes: number;
   billable: boolean;
@@ -121,8 +121,8 @@ export interface MyWorkTimeEntryItem {
 }
 
 export interface MyWorkProjectSummary {
-  projectId: string;
-  projectName: string;
+  matterId: string;
+  matterName: string;
   billableMinutes: number;
   nonBillableMinutes: number;
   totalMinutes: number;
@@ -135,7 +135,7 @@ export interface MyWorkTimeSummary {
   billableMinutes: number;
   nonBillableMinutes: number;
   totalMinutes: number;
-  byProject: MyWorkProjectSummary[];
+  byMatter: MyWorkProjectSummary[];
 }
 
 // ---- Setup Status ----
@@ -160,8 +160,8 @@ export interface ChecklistProgress {
 }
 
 export interface ProjectSetupStatus {
-  projectId: string;
-  customerAssigned: boolean;
+  matterId: string;
+  clientAssigned: boolean;
   rateCardConfigured: boolean;
   budgetConfigured: boolean;
   teamAssigned: boolean;
@@ -180,8 +180,8 @@ export interface CustomerReadiness {
 }
 
 export interface ProjectUnbilledBreakdown {
-  projectId: string;
-  projectName: string;
+  matterId: string;
+  matterName: string;
   hours: number;
   amount: number;
   entryCount: number;
@@ -192,7 +192,7 @@ export interface UnbilledTimeSummary {
   totalAmount: number;
   currency: string;
   entryCount: number;
-  byProject: ProjectUnbilledBreakdown[] | null;
+  byMatter: ProjectUnbilledBreakdown[] | null;
 }
 
 export interface TemplateReadiness {

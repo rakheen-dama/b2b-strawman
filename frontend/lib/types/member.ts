@@ -18,7 +18,7 @@ export interface ProjectMember {
   name: string;
   email: string;
   avatarUrl: string | null;
-  projectRole: ProjectRole;
+  matterRole: ProjectRole;
   orgRole: string;
   createdAt: string;
 }

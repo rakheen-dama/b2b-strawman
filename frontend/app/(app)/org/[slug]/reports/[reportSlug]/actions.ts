@@ -75,7 +75,7 @@ export async function fetchEntityOptionsAction(
   try {
     const type = entityType.toLowerCase();
     if (type === "project") {
-      const projects = await api.get<Project[]>("/api/projects");
+      const projects = await api.get<Project[]>("/api/matters");
       return {
         data: projects.map((p) => ({ id: p.id, label: p.name })),
       };

@@ -310,8 +310,8 @@ export function WeeklyTimeGrid({
             // Build from entry data
             newTaskRows.push({
               id: entry.taskId,
-              projectId: entry.projectId,
-              projectName: entry.projectName,
+              projectId: entry.matterId,
+              projectName: entry.matterName,
               title: entry.taskTitle,
             });
           }
@@ -386,8 +386,8 @@ export function WeeklyTimeGrid({
       id: "",
       taskId: row.taskId,
       taskTitle: row.task.title,
-      projectId: row.task.projectId,
-      projectName: row.task.projectName,
+      matterId: row.task.projectId,
+      matterName: row.task.projectName,
       date: row.date,
       durationMinutes: Math.round(row.hours * 60),
       billable: row.billable,

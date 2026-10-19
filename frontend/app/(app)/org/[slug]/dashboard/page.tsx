@@ -140,7 +140,7 @@ export default async function OrgDashboardPage({
           persisted `kazi.returnTo` is consumed + forwarded here (569A.3). */}
       <ReturnToHandler />
 
-      <GettingStartedCard activeProjectCount={kpis?.activeProjectCount} />
+      <GettingStartedCard activeProjectCount={kpis?.activeMatterCount} />
 
       <DashboardHeader from={from} to={to} />
 

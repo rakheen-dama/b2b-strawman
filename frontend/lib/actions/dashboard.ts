@@ -26,7 +26,7 @@ export async function fetchDashboardKpis(from: string, to: string): Promise<KpiR
 
 export async function fetchProjectHealth(): Promise<ProjectHealth[] | null> {
   try {
-    return await api.get<ProjectHealth[]>("/api/dashboard/project-health");
+    return await api.get<ProjectHealth[]>("/api/dashboard/matter-health");
   } catch {
     return null;
   }
@@ -113,7 +113,7 @@ export async function fetchProjectHealthDetail(
   projectId: string
 ): Promise<ProjectHealthDetail | null> {
   try {
-    return await api.get<ProjectHealthDetail>(`/api/projects/${projectId}/health`);
+    return await api.get<ProjectHealthDetail>(`/api/matters/${projectId}/health`);
   } catch {
     return null;
   }
@@ -123,7 +123,7 @@ export async function fetchProjectTaskSummary(
   projectId: string
 ): Promise<TaskSummaryResponse | null> {
   try {
-    return await api.get<TaskSummaryResponse>(`/api/projects/${projectId}/task-summary`);
+    return await api.get<TaskSummaryResponse>(`/api/matters/${projectId}/task-summary`);
   } catch {
     return null;
   }
@@ -136,7 +136,7 @@ export async function fetchProjectMemberHours(
 ): Promise<MemberHoursEntry[] | null> {
   try {
     return await api.get<MemberHoursEntry[]>(
-      `/api/projects/${projectId}/member-hours?from=${from}&to=${to}`
+      `/api/matters/${projectId}/member-hours?from=${from}&to=${to}`
     );
   } catch {
     return null;
@@ -159,9 +159,7 @@ export async function fetchProjectUpcomingDeadlines(
   projectId: string
 ): Promise<ProjectUpcomingDeadline[] | null> {
   try {
-    return await api.get<ProjectUpcomingDeadline[]>(
-      `/api/projects/${projectId}/upcoming-deadlines`
-    );
+    return await api.get<ProjectUpcomingDeadline[]>(`/api/matters/${projectId}/upcoming-deadlines`);
   } catch {
     return null;
   }

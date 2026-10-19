@@ -7,7 +7,7 @@ export interface Comment {
   id: string;
   entityType: string;
   entityId: string;
-  projectId: string;
+  matterId: string;
   authorMemberId: string;
   authorName: string | null;
   authorAvatarUrl: string | null;
@@ -30,12 +30,12 @@ export async function fetchComments(
   entityId: string
 ): Promise<Comment[]> {
   return api.get<Comment[]>(
-    `/api/projects/${projectId}/comments?entityType=${encodeURIComponent(entityType)}&entityId=${encodeURIComponent(entityId)}`
+    `/api/matters/${projectId}/comments?entityType=${encodeURIComponent(entityType)}&entityId=${encodeURIComponent(entityId)}`
   );
 }
 
 export async function fetchProjectComments(projectId: string): Promise<Comment[]> {
-  return api.get<Comment[]>(`/api/projects/${projectId}/comments?entityType=PROJECT&size=50`);
+  return api.get<Comment[]>(`/api/matters/${projectId}/comments?entityType=PROJECT&size=50`);
 }
 
 export async function createProjectComment(
@@ -48,7 +48,7 @@ export async function createProjectComment(
   }
 
   try {
-    await api.post(`/api/projects/${projectId}/comments`, {
+    await api.post(`/api/matters/${projectId}/comments`, {
       entityType: "PROJECT",
       entityId: projectId,
       body: body.trim(),
@@ -79,7 +79,7 @@ export async function createComment(
   }
 
   try {
-    await api.post(`/api/projects/${projectId}/comments`, {
+    await api.post(`/api/matters/${projectId}/comments`, {
       entityType,
       entityId,
       body: body.trim(),
@@ -109,7 +109,7 @@ export async function updateComment(
   }
 
   try {
-    await api.put(`/api/projects/${projectId}/comments/${commentId}`, {
+    await api.put(`/api/matters/${projectId}/comments/${commentId}`, {
       body: body.trim(),
       ...(visibility ? { visibility } : {}),
     });
@@ -137,7 +137,7 @@ export async function deleteComment(
   commentId: string
 ): Promise<ActionResult> {
   try {
-    await api.delete(`/api/projects/${projectId}/comments/${commentId}`);
+    await api.delete(`/api/matters/${projectId}/comments/${commentId}`);
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {

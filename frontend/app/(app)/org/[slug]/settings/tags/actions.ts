@@ -1,6 +1,6 @@
 "use server";
 
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, entityApiPrefix } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type { CreateTagRequest, UpdateTagRequest, EntityType, TagResponse } from "@/lib/types";
 
@@ -103,7 +103,7 @@ export async function setEntityTagsAction(
 ): Promise<ActionResult> {
   const prefix = entityType.toLowerCase() + "s";
   try {
-    await api.post(`/api/${prefix}/${entityId}/tags`, { tagIds });
+    await api.post(`/api/${entityApiPrefix(entityType)}/${entityId}/tags`, { tagIds });
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {

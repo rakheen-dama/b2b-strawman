@@ -9,6 +9,16 @@ import type {
   SetEntityTagsRequest,
 } from "@/lib/types";
 
+/**
+ * Backend collection segment for an entity's tag / field-group / custom-field endpoints.
+ * Phase 87 S1 (ADR-337): matters are served at `/api/matters/**`; the `EntityType` literal
+ * itself stays `"PROJECT"` because it is a storage key (ADR-342). Route segments
+ * (`/org/{slug}/projects/...`) are NOT derived from this — they move in 610D.
+ */
+export function entityApiPrefix(entityType: EntityType): string {
+  return entityType === "PROJECT" ? "matters" : entityType.toLowerCase() + "s";
+}
+
 // ---- Tags ----
 
 export async function getTags(): Promise<TagResponse[]> {
@@ -35,7 +45,7 @@ export async function getEntityTags(
   entityType: EntityType,
   entityId: string
 ): Promise<TagResponse[]> {
-  const prefix = entityType.toLowerCase() + "s";
+  const prefix = entityApiPrefix(entityType);
   return api.get<TagResponse[]>(`/api/${prefix}/${entityId}/tags`);
 }
 
@@ -44,6 +54,6 @@ export async function setEntityTags(
   entityId: string,
   req: SetEntityTagsRequest
 ): Promise<TagResponse[]> {
-  const prefix = entityType.toLowerCase() + "s";
+  const prefix = entityApiPrefix(entityType);
   return api.post<TagResponse[]>(`/api/${prefix}/${entityId}/tags`, req);
 }

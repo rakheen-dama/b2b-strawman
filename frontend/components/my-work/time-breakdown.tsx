@@ -55,8 +55,8 @@ export function TimeBreakdown({ data }: TimeBreakdownProps) {
     const otherHours = rest.reduce((sum, p) => sum + p.hours, 0);
     const otherPercent = rest.reduce((sum, p) => sum + p.percent, 0);
     items.push({
-      projectId: "other",
-      projectName: "Other",
+      matterId: "other",
+      matterName: "Other",
       hours: otherHours,
       percent: otherPercent,
     });
@@ -64,7 +64,7 @@ export function TimeBreakdown({ data }: TimeBreakdownProps) {
 
   // Transform to DonutChart data format
   const chartData = items.map((item, idx) => ({
-    name: item.projectName,
+    name: item.matterName,
     value: item.hours,
     color: PROJECT_COLORS[idx % PROJECT_COLORS.length],
   }));
@@ -85,7 +85,7 @@ export function TimeBreakdown({ data }: TimeBreakdownProps) {
         </div>
         <div className="mt-2 space-y-1">
           {items.map((item, idx) => (
-            <div key={item.projectId} className="flex items-center justify-between text-sm">
+            <div key={item.matterId} className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
                 <span
                   className="inline-block size-2.5 rounded-full"
@@ -93,7 +93,7 @@ export function TimeBreakdown({ data }: TimeBreakdownProps) {
                     backgroundColor: PROJECT_COLORS[idx % PROJECT_COLORS.length],
                   }}
                 />
-                <span className="text-slate-700 dark:text-slate-300">{item.projectName}</span>
+                <span className="text-slate-700 dark:text-slate-300">{item.matterName}</span>
               </div>
               <span className="text-slate-600 dark:text-slate-400">
                 {item.hours.toFixed(1)}h ({Math.round(item.percent)}%)

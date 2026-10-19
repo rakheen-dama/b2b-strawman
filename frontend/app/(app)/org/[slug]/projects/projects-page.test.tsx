@@ -130,7 +130,7 @@ const makeProject = (overrides: Partial<Project> = {}): Project => ({
   name: "Test Project",
   description: "A test project",
   status: "ACTIVE",
-  customerId: null,
+  clientId: null,
   dueDate: null,
   createdBy: "user-1",
   createdByName: null,
@@ -140,7 +140,7 @@ const makeProject = (overrides: Partial<Project> = {}): Project => ({
   completedBy: null,
   completedByName: null,
   archivedAt: null,
-  projectRole: null,
+  matterRole: null,
   ...overrides,
 });
 
@@ -202,14 +202,14 @@ describe("ProjectsPage", () => {
   });
 
   describe("role badges on project cards", () => {
-    it("shows Lead badge when projectRole is lead", async () => {
+    it("shows Lead badge when matterRole is lead", async () => {
       mockAuth.mockResolvedValue({
         orgId: "org_1",
         orgSlug: "acme",
         userId: "user_1",
         orgRole: "org:member",
       });
-      mockApiGet.mockResolvedValue([makeProject({ projectRole: "lead" })]);
+      mockApiGet.mockResolvedValue([makeProject({ matterRole: "lead" })]);
 
       const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
@@ -217,14 +217,14 @@ describe("ProjectsPage", () => {
       expect(screen.getByText("Lead")).toBeInTheDocument();
     });
 
-    it("shows Member badge when projectRole is member", async () => {
+    it("shows Member badge when matterRole is member", async () => {
       mockAuth.mockResolvedValue({
         orgId: "org_1",
         orgSlug: "acme",
         userId: "user_1",
         orgRole: "org:member",
       });
-      mockApiGet.mockResolvedValue([makeProject({ projectRole: "member" })]);
+      mockApiGet.mockResolvedValue([makeProject({ matterRole: "member" })]);
 
       const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
@@ -232,14 +232,14 @@ describe("ProjectsPage", () => {
       expect(screen.getByText("Member")).toBeInTheDocument();
     });
 
-    it("shows no role badge when projectRole is null", async () => {
+    it("shows no role badge when matterRole is null", async () => {
       mockAuth.mockResolvedValue({
         orgId: "org_1",
         orgSlug: "acme",
         userId: "user_1",
         orgRole: "org:admin",
       });
-      mockApiGet.mockResolvedValue([makeProject({ projectRole: null })]);
+      mockApiGet.mockResolvedValue([makeProject({ matterRole: null })]);
 
       const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);

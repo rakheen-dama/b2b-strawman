@@ -95,7 +95,7 @@ export function ProjectHealthWidget({ projects, orgSlug }: ProjectHealthWidgetPr
         cmp = (b.budgetConsumedPercent ?? 0) - (a.budgetConsumedPercent ?? 0);
         break;
       case "name":
-        cmp = a.projectName.localeCompare(b.projectName);
+        cmp = a.matterName.localeCompare(b.matterName);
         break;
     }
     return sortDirection === "desc" ? -cmp : cmp;
@@ -182,16 +182,16 @@ export function ProjectHealthWidget({ projects, orgSlug }: ProjectHealthWidgetPr
           <div className="space-y-0">
             {visibleProjects.map((project) => (
               <button
-                key={project.projectId}
+                key={project.matterId}
                 type="button"
-                onClick={() => router.push(`/org/${orgSlug}/projects/${project.projectId}`)}
+                onClick={() => router.push(`/org/${orgSlug}/projects/${project.matterId}`)}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
               >
                 {/* Name + Customer stacked */}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{project.projectName}</p>
-                  {project.customerName && (
-                    <p className="truncate text-[11px] text-slate-500">{project.customerName}</p>
+                  <p className="truncate text-sm font-medium">{project.matterName}</p>
+                  {project.clientName && (
+                    <p className="truncate text-[11px] text-slate-500">{project.clientName}</p>
                   )}
                 </div>
                 {/* Health Badge */}

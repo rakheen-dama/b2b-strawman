@@ -8,7 +8,7 @@ export type TaskPriority = "LOW" | "MEDIUM" | "HIGH";
 
 export interface Task {
   id: string;
-  projectId: string;
+  matterId: string;
   title: string;
   description: string | null;
   status: TaskStatus;

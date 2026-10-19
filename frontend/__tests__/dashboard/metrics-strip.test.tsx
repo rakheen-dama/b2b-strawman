@@ -19,7 +19,7 @@ vi.mock("recharts", () => ({
 }));
 
 const mockKpis: KpiResponse = {
-  activeProjectCount: 12,
+  activeMatterCount: 12,
   totalHoursLogged: 847.5,
   billablePercent: 72.3,
   overdueTaskCount: 8,
@@ -30,7 +30,7 @@ const mockKpis: KpiResponse = {
     { period: "2025-W03", value: 138.0 },
   ],
   previousPeriod: {
-    activeProjectCount: 11,
+    activeMatterCount: 11,
     totalHoursLogged: 792.0,
     billablePercent: 68.5,
     overdueTaskCount: 5,
@@ -40,9 +40,9 @@ const mockKpis: KpiResponse = {
 
 const mockProjectHealth: ProjectHealth[] = [
   {
-    projectId: "p1",
-    projectName: "Website Redesign",
-    customerName: "Acme Corp",
+    matterId: "p1",
+    matterName: "Website Redesign",
+    clientName: "Acme Corp",
     healthStatus: "HEALTHY",
     healthReasons: [],
     tasksDone: 8,
@@ -52,9 +52,9 @@ const mockProjectHealth: ProjectHealth[] = [
     hoursLogged: 120,
   },
   {
-    projectId: "p2",
-    projectName: "Mobile App",
-    customerName: "Beta Inc",
+    matterId: "p2",
+    matterName: "Mobile App",
+    clientName: "Beta Inc",
     healthStatus: "AT_RISK",
     healthReasons: ["Behind schedule"],
     tasksDone: 3,
@@ -64,9 +64,9 @@ const mockProjectHealth: ProjectHealth[] = [
     hoursLogged: 200,
   },
   {
-    projectId: "p3",
-    projectName: "API Migration",
-    customerName: null,
+    matterId: "p3",
+    matterName: "API Migration",
+    clientName: null,
     healthStatus: "CRITICAL",
     healthReasons: ["Over budget"],
     tasksDone: 1,

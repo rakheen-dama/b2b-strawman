@@ -268,7 +268,7 @@ export default async function MyWorkPage({
 
         {/* Right: Time/Activity (col-span-2) */}
         <div className="space-y-4 lg:col-span-2">
-          <TimeBreakdown data={personalDashboard?.projectBreakdown ?? null} />
+          <TimeBreakdown data={personalDashboard?.matterBreakdown ?? null} />
           <TodayTimeEntries entries={todayEntries} />
         </div>
       </div>

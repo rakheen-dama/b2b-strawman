@@ -1,6 +1,7 @@
 import "server-only";
 
 import { api } from "./client";
+import { entityApiPrefix } from "./tags";
 import type {
   EntityType,
   FieldDefinitionResponse,
@@ -75,7 +76,7 @@ export async function setEntityFieldGroups(
   entityId: string,
   appliedFieldGroups: string[]
 ): Promise<FieldDefinitionResponse[]> {
-  const prefix = entityType.toLowerCase() + "s";
+  const prefix = entityApiPrefix(entityType);
   return api.put<FieldDefinitionResponse[]>(`/api/${prefix}/${entityId}/field-groups`, {
     appliedFieldGroups,
   });

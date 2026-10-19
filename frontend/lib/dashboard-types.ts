@@ -6,7 +6,7 @@ export interface TrendPoint {
 }
 
 export interface KpiValues {
-  activeProjectCount: number;
+  activeMatterCount: number;
   totalHoursLogged: number;
   billablePercent: number | null;
   overdueTaskCount: number;
@@ -19,9 +19,9 @@ export interface KpiResponse extends KpiValues {
 }
 
 export interface ProjectHealth {
-  projectId: string;
-  projectName: string;
-  customerName: string | null;
+  matterId: string;
+  matterName: string;
+  clientName: string | null;
   healthStatus: "HEALTHY" | "AT_RISK" | "CRITICAL" | "UNKNOWN";
   healthReasons: string[];
   tasksDone: number;
@@ -32,8 +32,8 @@ export interface ProjectHealth {
 }
 
 export interface ProjectWorkloadEntry {
-  projectId: string;
-  projectName: string;
+  matterId: string;
+  matterName: string;
   hours: number;
 }
 
@@ -50,8 +50,8 @@ export interface CrossProjectActivityItem {
   eventType: string;
   description: string;
   actorName: string;
-  projectId: string;
-  projectName: string;
+  matterId: string;
+  matterName: string;
   occurredAt: string;
 }
 
@@ -62,8 +62,8 @@ export interface PersonalUtilization {
 }
 
 export interface PersonalProjectBreakdown {
-  projectId: string;
-  projectName: string;
+  matterId: string;
+  matterName: string;
   hours: number;
   percent: number;
 }
@@ -71,19 +71,19 @@ export interface PersonalProjectBreakdown {
 export interface PersonalDeadline {
   taskId: string;
   taskName: string;
-  projectName: string;
+  matterName: string;
   dueDate: string;
 }
 
 export interface PersonalDashboardResponse {
   utilization: PersonalUtilization;
-  projectBreakdown: PersonalProjectBreakdown[];
+  matterBreakdown: PersonalProjectBreakdown[];
   overdueTaskCount: number;
   upcomingDeadlines: PersonalDeadline[];
   trend: TrendPoint[];
 }
 
-// Project health detail (from GET /api/projects/{id}/health)
+// Project health detail (from GET /api/matters/{id}/health)
 export interface ProjectHealthDetail {
   healthStatus: "HEALTHY" | "AT_RISK" | "CRITICAL" | "UNKNOWN";
   healthReasons: string[];
@@ -102,7 +102,7 @@ export interface ProjectHealthMetrics {
   daysSinceLastActivity: number;
 }
 
-// Task summary (from GET /api/projects/{id}/task-summary)
+// Task summary (from GET /api/matters/{id}/task-summary)
 export interface TaskSummaryResponse {
   todo: number;
   inProgress: number;
@@ -112,7 +112,7 @@ export interface TaskSummaryResponse {
   overdueCount: number;
 }
 
-// Member hours (from GET /api/projects/{id}/member-hours)
+// Member hours (from GET /api/matters/{id}/member-hours)
 export interface MemberHoursEntry {
   memberId: string;
   memberName: string;

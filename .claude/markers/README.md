@@ -1,6 +1,6 @@
 # Verify Markers — Quality Gate Contract
 
-Per `CLAUDE.md` §1 and §10, every PR landing on `main` must have a recent successful full-suite verify.
+Per `CLAUDE.md` §1 and §10, every PR landing on `main` must have a recent successful full-suite verify for each code area it touches (backend / frontend / portal; `packages/` counts as frontend + portal). Documentation-only PRs need no area marker — see the exception below — but every PR still needs green CI and the review audit trail.
 
 The pre-merge hook (`.claude/hooks/pre-pr-merge-gate.sh`) blocks `gh pr merge` against `main` unless the appropriate marker file in this directory shows a clean, recent run.
 
@@ -14,7 +14,7 @@ The pre-merge hook (`.claude/hooks/pre-pr-merge-gate.sh`) blocks `gh pr merge` a
 
 A PR touching multiple areas requires all matching markers.
 
-A PR touching ONLY `qa_cycle/`, `qa/testplan/`, `architecture/`, `.claude/`, `tasks/`, `requirements/` is documentation-only and needs no area verify marker. The merge gate still requires green GitHub checks, the review audit trail in the PR body (two `## Verdict: APPROVE` + a `## CodeRabbit:` line) and a single plain `gh pr merge <N> … --match-head-commit <full-sha>` command with a literal SHA (no `$(…)` substitution — the hook reads the command text) — there is no automatic allow.
+A PR touching ONLY `qa_cycle/`, `qa/testplan/`, `architecture/`, `.claude/`, `tasks/`, `requirements/` is documentation-only and needs no area verify marker. The merge gate still requires green GitHub checks, the review audit trail in the PR body (two `## Verdict: APPROVE @<sha>` lines bound to the current head + a `## CodeRabbit:` line) and a single plain `gh pr merge <N> … --match-head-commit <full-sha>` command with a literal SHA (no `$(…)` substitution — the hook reads the command text) — there is no automatic allow.
 
 ## Marker format
 

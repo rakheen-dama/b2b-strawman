@@ -609,9 +609,9 @@ after the superpowers fixer has already been dispatched.
 The merge-gate hook (`.claude/hooks/pre-pr-merge-gate.sh`) inspects the PR body for proof that
 reviews actually ran. **Without this step, merge will be rejected.** Append a `## Code Review Audit Trail`
 section to the PR body containing:
-- Agent A (bug/quality) **final** verdict block (after fix cycles) — must contain `## Verdict: APPROVE`
-  OR a `## Verdict: REQUEST_CHANGES` paired with an explicit "all Critical/High resolved" line.
+- Agent A (bug/quality) **final** verdict block (after fix cycles) — must contain a verdict line **bound to the commit the reviewer read**: `## Verdict: APPROVE @<sha>` where `<sha>` is ≥7 hex chars of the PR head at review time. If the reviewer wrote a bare `## Verdict: APPROVE`, append ` @<sha>` yourself with the SHA you gave the reviewer. A `REQUEST_CHANGES` must be followed by a fresh review of the fixed commit and a new bound APPROVE — "Critical/High resolved" prose no longer satisfies the gate.
 - Agent B (architecture) **final** verdict block — same rule.
+- **Any push after the reviews invalidates them**: the hook compares the verdict SHA to the current head. Re-review the new head (a focused re-verification message to the same reviewer is enough) and re-record.
 - The CodeRabbit status line from Step 4.2b (`## CodeRabbit: REVIEWED ...` or `## CodeRabbit: DEFERRED ...`).
 
 ```bash
@@ -623,10 +623,10 @@ cat > /tmp/pr-{PR_NUMBER}-audit.md <<'EOF'
 ## Code Review Audit Trail
 
 ### Superpowers — Bug/Quality (Agent A)
-{Paste Agent A's FINAL verdict block verbatim — including the `## Verdict: APPROVE` line and the findings sections.}
+{Paste Agent A's FINAL verdict block verbatim, with the verdict line bound: `## Verdict: APPROVE @<head-sha-reviewed>`.}
 
 ### Superpowers — Architecture (Agent B)
-{Paste Agent B's FINAL verdict block verbatim.}
+{Paste Agent B's FINAL verdict block verbatim, verdict line bound the same way.}
 
 ### CodeRabbit
 {The status line from Step 4.2b — one of:
@@ -646,7 +646,7 @@ gh pr edit {PR_NUMBER} --body-file /tmp/pr-{PR_NUMBER}-body.md
 ```
 
 The hook checks the PR body for ALL THREE markers before allowing merge:
-- Two occurrences of `## Verdict: APPROVE` (one per superpowers reviewer)
+- Two `## Verdict: APPROVE @<sha>` lines whose `<sha>` is a prefix of the CURRENT PR head (one per reviewer)
 - One `## CodeRabbit: REVIEWED` OR `## CodeRabbit: DEFERRED` line
 
 If any marker is missing or malformed, the merge will be denied with a clear reason. Fix the
@@ -692,7 +692,7 @@ Merge immediately if ALL of the following are true (after fix cycles):
   is fine only while a non-required check is still pending — confirm Backend itself is `pass`)
 - **Step 4.5 audit trail has been written to the PR body** — the merge-gate hook will reject
   the merge otherwise. Verify with: `gh pr view {n} --json body --jq .body | grep -c "## Verdict: APPROVE"`
-  must return 2 (or matching "all Critical/High resolved" line), and `grep -E "## CodeRabbit: (REVIEWED|DEFERRED)"` must match once.
+  must return 2 and both lines must carry `@<sha>` matching `gh pr view {n} --json headRefOid -q .headRefOid`; `grep -E "## CodeRabbit: (REVIEWED|DEFERRED)"` must match once.
 
 CodeRabbit findings, if any, were addressed in Step 4.4b. CodeRabbit runs in background during
 the full review cycle (typically 10–40+ min of wall-clock). DEFERRED is only used if CodeRabbit

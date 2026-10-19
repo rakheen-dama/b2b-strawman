@@ -21,7 +21,8 @@
 # checks green: `gh pr checks` buckets must all be `pass` or `skipping`
 # (path-filtered jobs). `pending`, `fail` and `cancel` deny the merge, and so does
 # an empty/unreadable check list (fail-closed). The review audit trail (two
-# `## Verdict: APPROVE` markers + a `## CodeRabbit:` line in the PR body) is
+# `## Verdict: APPROVE @<head-sha>` markers bound to the merged commit + a
+# `## CodeRabbit:` line in the PR body) is
 # required for EVERY PR — there is no documentation-only exemption — and verify
 # markers are required per touched layer. Together this is what lets
 # `Bash(gh pr merge:*)` be allow-listed in .claude/settings.json without a
@@ -262,12 +263,24 @@ if $needs_portal;  then check_marker "portal"; fi
 review_missing=()
 PR_BODY="$(gh pr view "$PR_NUM" --json body --jq .body 2>/dev/null || echo "")"
 
-# Two `## Verdict: APPROVE` lines required (one per superpowers reviewer).
-# Alternative: `## Verdict: REQUEST_CHANGES` + a "Critical/High resolved" line is also valid.
-verdict_count="$(printf '%s' "$PR_BODY" | grep -cE '^## Verdict: APPROVE$' || true)"
-resolved_count="$(printf '%s' "$PR_BODY" | grep -cE 'Critical.*High.*(resolved|fixed|addressed)' || true)"
-if (( verdict_count + resolved_count < 2 )); then
-  review_missing+=("two superpowers '## Verdict: APPROVE' markers (or 'Critical/High resolved' equivalents) — found verdict_count=$verdict_count resolved_count=$resolved_count")
+# Two reviewer verdicts, each BOUND to the commit it reviewed (CodeRabbit, PR #1587): a
+# verdict line is `## Verdict: APPROVE @<sha>` where <sha> (7–40 hex) is a prefix of the
+# current PR head. An approval of an earlier commit does not carry over to a later push —
+# re-review, then re-record. The old unbound `## Verdict: APPROVE` and the
+# "Critical/High resolved" alternative no longer count.
+head_lc="$(printf '%s' "$PR_HEAD_SHA" | tr 'A-F' 'a-f')"
+verdict_count=0; unbound_count=0; stale_verdicts=""
+while IFS= read -r line; do
+  [[ -z "$line" ]] && continue
+  if [[ "$line" =~ ^##[[:space:]]Verdict:[[:space:]]APPROVE[[:space:]]@([0-9a-fA-F]{7,40})[[:space:]]*$ ]]; then
+    v="$(printf '%s' "${BASH_REMATCH[1]}" | tr 'A-F' 'a-f')"
+    if [[ "$head_lc" == "$v"* ]]; then verdict_count=$((verdict_count+1)); else stale_verdicts="$stale_verdicts ${v:0:7}"; fi
+  elif [[ "$line" =~ ^##[[:space:]]Verdict:[[:space:]]APPROVE ]]; then
+    unbound_count=$((unbound_count+1))
+  fi
+done <<< "$PR_BODY"
+if (( verdict_count < 2 )); then
+  review_missing+=("two reviewer verdicts bound to the current head are required: lines of the form '## Verdict: APPROVE @${PR_HEAD_SHA:0:12}' (7–40 hex chars of the head $PR_HEAD_SHA). Found bound=$verdict_count, unbound=$unbound_count, for-other-commits=[${stale_verdicts# }]. A push after a review invalidates that review — re-review the new head and re-record.")
 fi
 
 # CodeRabbit marker — either REVIEWED or DEFERRED, written by Step 4.5 of epic_v2.

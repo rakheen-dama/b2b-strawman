@@ -374,7 +374,7 @@ After review passes AND the merge-gate hook clears, merge using this exact seque
 The merge-gate hook will block `gh pr merge` if:
 - The command is not a single plain `gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch] --match-head-commit <full-sha>` — compound commands, `--admin`, `--repo`, `--auto` and free-text flags are refused; the pin must equal the current PR head.
 - Any reported GitHub check is not `pass` or `skipping`, or the check list is empty or unreadable (CodeRabbit registers as a check, so wait for it too).
-- The PR body lacks the review audit trail: two `## Verdict: APPROVE` markers and a `## CodeRabbit: REVIEWED` or `## CodeRabbit: DEFERRED` line — required for EVERY PR, documentation-only included.
+- The PR body lacks the review audit trail: two `## Verdict: APPROVE @<sha>` lines whose `<sha>` (≥7 hex) is a prefix of the CURRENT PR head, plus a `## CodeRabbit: REVIEWED` or `## CodeRabbit: DEFERRED` line — required for EVERY PR, documentation-only included. A push after the reviews invalidates them; re-review and re-record.
 - The verify marker for any touched area (backend / frontend / portal; `packages/` → frontend + portal) is missing, stale (>24h), has `exit != 0`, or is not from an ancestor of the PR head.
 Documentation-only PRs need no area verify marker but still need green CI and the audit trail; there is no automatic allow.
 

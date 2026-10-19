@@ -101,19 +101,26 @@ if [[ ! "$COMMAND" =~ $STRICT_SHAPE ]]; then
   deny "only a single plain merge is allowed: gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch] --match-head-commit <full 40-char sha>. Compound commands, --admin, --repo/-R, --auto and free-text flags are refused (CLAUDE.md §10). Got: $COMMAND"
 fi
 PR_NUM="${BASH_REMATCH[1]}"
-# Every flag at most once. gh takes the LAST occurrence of a repeated flag while the regex
-# below captures the FIRST, so `--match-head-commit <checked> --match-head-commit <other>`
-# would be a parser differential. Count with grep -o (portable), deny on any repeat.
-for flag in --squash --merge --rebase --delete-branch -d --match-head-commit; do
-  n="$({ printf '%s' "$COMMAND" | grep -oE -- "(^|[[:space:]])${flag}([[:space:]]|$)" || true; } | wc -l | tr -d ' ')"
-  if (( n > 1 )); then
-    deny "flag ${flag} appears ${n} times; each flag may appear once (parser differential between this gate and gh)."
-  fi
+# Every flag at most once, and exactly one merge strategy (gh's own rule). gh honours the
+# LAST occurrence of a repeated flag while the regex above captured the FIRST, so a repeated
+# `--match-head-commit` would be a parser differential. The command has already matched
+# STRICT_SHAPE, so it contains only [A-Za-z0-9 -] and word-splitting it is safe.
+# (A grep -o approach undercounted adjacent repeats because the match consumed the separator.)
+n_squash=0; n_merge=0; n_rebase=0; n_del=0; n_pin=0
+for w in $COMMAND; do
+  case "$w" in
+    --squash) n_squash=$((n_squash+1));;
+    --merge) n_merge=$((n_merge+1));;
+    --rebase) n_rebase=$((n_rebase+1));;
+    --delete-branch|-d) n_del=$((n_del+1));;
+    --match-head-commit) n_pin=$((n_pin+1));;
+  esac
 done
-# And exactly one merge strategy, matching gh's own requirement.
-strat="$({ printf '%s' "$COMMAND" | grep -oE -- '(^|[[:space:]])(--squash|--merge|--rebase)([[:space:]]|$)' || true; } | wc -l | tr -d ' ')"
-if (( strat != 1 )); then
-  deny "exactly one merge strategy flag (--squash | --merge | --rebase) is required; found ${strat}."
+if (( n_squash > 1 || n_merge > 1 || n_rebase > 1 || n_del > 1 || n_pin > 1 )); then
+  deny "a flag is repeated (squash=$n_squash merge=$n_merge rebase=$n_rebase delete-branch=$n_del match-head-commit=$n_pin); each flag may appear once (parser differential between this gate and gh)."
+fi
+if (( n_squash + n_merge + n_rebase != 1 )); then
+  deny "exactly one merge strategy flag (--squash | --merge | --rebase) is required; found $((n_squash + n_merge + n_rebase))."
 fi
 WANT_HEAD=""
 if [[ "$COMMAND" =~ --match-head-commit[[:space:]]+([0-9a-fA-F]{40}) ]]; then

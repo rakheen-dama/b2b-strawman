@@ -32,7 +32,7 @@ The story is deliberately realistic for an SA general-practice litigation firm: 
 >
 > **Group → Sub-tab mapping:**
 > - Details: details, fields
-> - Work: tasks, documents, correspondence, generated, staffing (correspondence added by Phase 81)
+> - Work: tasks, documents, correspondence, generated (correspondence added by Phase 81; staffing removed — Epic 599 #1570)
 > - Finance: time, expenses, disbursements, budget, rates, financials, statements, trust
 > - Client: customers, requests, customer-comments, adverse-parties
 > - Activity: activity, audit
@@ -109,6 +109,7 @@ When transitioning from `[FIRM]` to `[PORTAL]` or back:
 4. **Day 30** — PayFast sandbox success + receipt on `/invoices/[id]` `[PORTAL]`
 5. **Day 61** — Statement of Account PDF downloaded from `/projects/[matterId]` Documents tab `[PORTAL]`
 6. **Day 88** — Matter activity feed (firm-side) alongside client's 90-day activity trail (portal-side) — side-by-side capture
+7. **Day 8** — Sipho accepts the engagement letter on the public `/accept/[token]` page — the ADR-336 mandate flow; the firm-side badge flips to Accepted `[PORTAL]` (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.4: ADR-336 replacement for the deleted proposal Day 7/8)
 
 ---
 
@@ -236,7 +237,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
   - Email: **sipho.portal@example.com** (this email seeds the portal contact later)
   - ID Number: **8501015800088** (valid SA format)
   - Phone: **+27 82 555 0101**
-  - Address: **12 Loveday St, Johannesburg, 2001**
+  - Address Line 1: **12 Loveday St**; City: **Johannesburg**; Postal Code: **2001**; Country: **ZA** (Address Line 1, City and Country are activation prerequisites — `StructuralPrerequisiteCheck`; INDIVIDUAL clients need no tax number) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §8 M2)
 - [ ] **2.4** Submit → client created, redirected to client detail
 - [ ] **2.5** On client detail → click **Run Conflict Check** → search runs against existing matters + adverse party registry
 - [ ] **2.6** Result = **CLEAR** (no pre-existing records) — green confirmation state renders
@@ -261,12 +262,12 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **3.3** Fill:
   - Matter reference: **RAF-2026-001**
   - Matter title: **Dlamini v Road Accident Fund**
-  - Matter type: **Litigation — Road Accident Fund** (from template)
+  - Template: **Litigation (Road Accident Fund -- RAF)** → Work Type shows **LITIGATION** (inherited from the template; #1580/#1581 normalise to upper-case)
   - Court: **Gauteng Division, Pretoria**
   - Case number: (blank at intake; populated later)
   - Primary attorney: Bob Ndlovu
 - [ ] **3.4** Submit → matter created, redirected to matter detail
-- [ ] **3.5** Verify matter detail page shows the header card (`data-testid="matter-header-card"`) with name, status, work type, client, and the grouped tab bar (`data-testid="grouped-tab-bar"`) with 7 groups: **Details** (Details, Fields), **Overview** (standalone), **Work** (Tasks, Documents, Correspondence, Generated Docs, Staffing — Correspondence added by Phase 81), **Finance** (Time, Expenses, Disbursements, Budget/Fee Estimate, Rates, Financials, Statements, Trust), **Client** (Customers/Clients, Requests/Info Requests, Client Comments, Adverse Parties), **Schedule** (standalone — Court Dates), **Activity** (Activity sub-tab; Audit sub-tab if Team Oversight module enabled). Note: the old flat "Members" tab is replaced by Work > Staffing (`?tab=staffing`). The old "Fee Estimate" tab (legal-za term for budget) is now Finance > Budget (`?tab=budget`). Per OBS-302: no per-matter "Audit" tab in the flat list; matter audit history is in Activity group → Activity sub-tab or (if TEAM_OVERSIGHT enabled) Activity group → Audit sub-tab.
+- [ ] **3.5** Verify matter detail page shows the header card (`data-testid="matter-header-card"`) with name, status, work type, client, and the grouped tab bar (`data-testid="grouped-tab-bar"`) with 7 groups: **Details** (Details, Fields), **Overview** (standalone), **Work** (Tasks, Documents, Correspondence, Generated Docs — Correspondence added by Phase 81; Staffing removed — Epic 599 #1570), **Finance** (Time, Expenses, Disbursements, Budget/Fee Estimate, Rates, Financials, Statements, Trust), **Client** (Customers/Clients, Requests/Info Requests, Client Comments, Adverse Parties), **Schedule** (standalone — Court Dates), **Activity** (Activity sub-tab; Audit sub-tab if Team Oversight module enabled). The old "Fee Estimate" tab (legal-za term for budget) is now Finance > Budget (`?tab=budget`). Per OBS-302: no per-matter "Audit" tab in the flat list; matter audit history is in Activity group → Activity sub-tab or (if TEAM_OVERSIGHT enabled) Activity group → Audit sub-tab.
 - [ ] **3.6** Promoted fields (matter_type, court_name, case_number) render inline on Overview tab — **NOT** duplicated in the Fields tab
 - [ ] **3.6a** **Correspondence tab (Phase 81)**: open **Work** group (`tab-group-work`) → **Correspondence** sub-tab (`tab-item-correspondence`) → read-only list renders its empty state "No correspondence yet" with the description that email is filed via the firm's own Claude using the Kazi MCP tools (no in-app compose path — `file_correspondence` is MCP-only)
 - [ ] **3.7** Navigate to matter detail → click **Client** group tab (`data-testid="tab-group-client"`) → click **Requests** sub-tab (`data-testid="tab-item-requests"`) → click **+ New Info Request**
@@ -333,20 +334,53 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **5.4** Click **Accept** on each item in turn (per-item Accept replaces a separate envelope-level "Mark as Reviewed" — refines OBS-403 lifecycle understanding). Counter advances 0/3 → 1/3 → 2/3 → 3/3 accepted; on the third Accept, envelope status auto-transitions `In Progress → Completed` with a "Completed on …" stamp.
 - [ ] **5.5** Verify matter Overview shows FICA status — Activity feed renders the full audit trail (`REQ-0001 completed — all items accepted`, three accept events, three submit events). The matter Overview tab also renders a **FICA Status Card** (`<FicaStatusCard>`); confirm its "View request" link emits the canonical `/org/{slug}/information-requests/{requestId}` route — NOT `/requests/{id}` (OBS-501 verification).
 - [ ] **5.6** Mailpit → notification emails to Sipho during firm review: 3× per-item-accepted (`Item accepted — {name} (Mathebula & Partners)`) + 1× envelope-completed (`Request REQ-0001 completed (Mathebula & Partners)`).
+- [ ] **5.7** On Sipho's client detail the lifecycle badge (`data-testid="lifecycle-badge"`) reads **PROSPECT**. Click the header card's **Start Onboarding** → confirm in the alert dialog → badge **ONBOARDING**; **Compliance** group → **Onboarding** sub-tab shows **Legal Individual Client Onboarding**, 0/9 completed (9 items, 8 required; six show "Requires document") (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.2: the deleted Day 10 deal-win was the only scripted PROSPECT→ONBOARDING step)
 
 **Day 5 checkpoints**
 - [ ] Three uploaded documents retrievable firm-side
+- [ ] Sipho ONBOARDING with the individual checklist instantiated
 - [ ] Info request lifecycle: `Sent → IN_PROGRESS → Completed` (envelope closes when the last per-item Accept lands; no separate "Mark as Reviewed" button)
 - [ ] Matter FICA / KYC status indicator updated; FICA card "View request" link routes to `/information-requests/{id}` (OBS-501 fix verification)
 - [ ] Portal-side post-completion spot-check (still authenticated as Sipho on `:3002`): `/requests` row for REQ-0001 shows status badge **COMPLETED** AND counter **`3/3 accepted`** (NOT `0/3 submitted` — OBS-502 fix verification); detail page header reads `3/3 accepted • status COMPLETED`
 
 ---
 
-## Day 7 / Day 8 — removed (Phase 86)
+## Day 7 — Firm issues the engagement letter for acceptance  `[FIRM]`
 
 > The Phase 32 proposal pipeline (firm-side proposal drafting/sending on Day 7, the deal-linked
 > proposal on Day 7 (cont.), and the portal proposal review/accept on Day 8) was removed in
-> Phase 86 (Epic 597, ADR-336). Steps 7.x and 8.x are intentionally absent.
+> Phase 86 (Epic 597, ADR-336). This Day 7/8 pair is the ADR-336 replacement — a generated
+> engagement letter plus the Phase 28 acceptance flow. (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.4: ADR-336 replacement for the deleted proposal flow)
+
+**Actor**: Bob Ndlovu (login as Bob, port 3000)
+
+- [ ] **7.1** On matter RAF-2026-001 → **Generate Document** dropdown → **Engagement Letter — Litigation** → preview renders with Mathebula letterhead, brand colour and Sipho's details → **Save**
+- [ ] **7.2** **Work** group → **Generated Docs** sub-tab lists the engagement letter with today's date
+- [ ] **7.3** On that row click **Send for Acceptance** → Recipient = Sipho Dlamini (`sipho.portal@example.com`), Expiry (days) = 7 → **Send** → acceptance badge **Awaiting Acceptance** (status SENT; **Viewed** once opened)
+- [ ] **7.4** Mailpit → email to `sipho.portal@example.com`, subject `Mathebula & Partners -- Please review engagement letter for acceptance: <file name>`, body link to `http://localhost:3002/accept/<token>`
+- [ ] **7.5** Matter activity feed shows "engagement letter generated" and "acceptance requested"
+
+**Day 7 checkpoints**
+- [ ] Engagement letter generated from the legal-za template pack and saved to the matter
+- [ ] Acceptance request sent; Awaiting Acceptance badge; email in Mailpit
+
+---
+
+## Day 8 — Sipho accepts the engagement letter  `[PORTAL]`
+
+**Context swap** — firm → portal per the context-swap protocol (close the firm context; `curl -sS -o /dev/null -w '%{http_code}' http://localhost:3002/login` → 200; fresh incognito context on port 3002). The acceptance route is public (token-authenticated), so no portal login is required.
+
+**Actor**: Sipho Dlamini
+
+- [ ] **8.1** Open the link from 7.4 → `/accept/<token>` renders the firm name, the letter's PDF preview and an acceptance panel
+- [ ] **8.2** Type full name "Sipho Dlamini" → click **I Accept** → page shows the accepted state with acceptor name and timestamp
+- [ ] **8.3** Mailpit → `Confirmed: You have accepted <file name>` to Sipho
+- [ ] **8.4** Re-open the same link → still shows the accepted state; no second Accept offered
+- [ ] **8.5** 📸 **Screenshot**: `day-08-portal-engagement-letter-accepted.png`
+
+**Day 8 checkpoints**
+- [ ] Acceptance recorded with actor = portal contact (firm-side audit shows source PORTAL, not SYSTEM — LZKC-025 class)
+- [ ] Firm-side acceptance badge on the generated document reads **Accepted** (verified at 10.1d)
 
 ---
 
@@ -356,8 +390,12 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Thandi Mathebula
 
-### Phase A: Matter lifecycle
+### Phase A: Client activation + matter lifecycle
 
+- [ ] **10.1a** Sipho's client detail → **Work** group → **Documents** sub-tab → **Upload Document** → upload one small PDF named "Sipho Dlamini — certified FICA pack.pdf" (the checklist document picker lists client-level documents; always upload this file even if the Day 4 portal uploads appear in the picker, so the run is reproducible) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.2: Sipho must be ACTIVE for the Day 28 billing run; ONBOARDING→ACTIVE needs a complete checklist)
+- [ ] **10.1b** **Compliance** group → **Onboarding** sub-tab → for each of the 9 items in order: **Mark Complete** → where "Requires document" shows, pick the PDF from 10.1a → **Confirm** → **Completed**. Complete "Engagement Letter Signed" before "Power of Attorney Signed" (dependency). Progress reads **9/9 completed**. If a completed item still renders Pending, reload — `FIXME(depth-ii:checklist-stale-after-complete)`, intermittent
+- [ ] **10.1c** When the last required item is confirmed the checklist instance completes and the client **auto-transitions to ACTIVE** (`checklist/ChecklistInstanceService.checkLifecycleAdvance`, provided the activation prerequisites Address Line 1 / City / Country (from 2.3) are on file — `StructuralPrerequisiteCheck.LIFECYCLE_ACTIVATION_FIELDS`) → lifecycle badge **ACTIVE**; the header primary action now reads **Edit**. If the badge still reads ONBOARDING, a `PREREQUISITE_BLOCKED_ACTIVATION` notification was raised — fill the missing field on the client and save; the save re-runs the check (`CustomerService.java:434` → `recheckLifecycleAdvance`) and usually flips the badge to ACTIVE by itself. Only if it still reads ONBOARDING after the save, click **Activate Customer** → ACTIVE
+- [ ] **10.1d** **Work** → **Generated Docs**: the engagement letter's acceptance badge reads **Accepted** (from Day 8)
 - [ ] **10.2** Matter lifecycle: verify matter has auto-transitioned to **ACTIVE** (Phase 29 lifecycle), or transition manually per current UX
 
 ### Phase B: Trust deposit — bank statement import + deposit recording
@@ -377,6 +415,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **10.9** 📸 Optional: `day-10-firm-trust-deposit-recorded.png`
 
 **Day 10 checkpoints**
+- [ ] Sipho **ACTIVE** (required by the Day 28 billing run: `BillingRunSelectionService` selects `lifecycle_status = 'ACTIVE'` only)
 - [ ] Trust deposit posts against the correct client ledger card (Section 86 compliance)
 - [ ] Client ledger + matter trust tab + account balance all reconcile to R 50,000.00
 
@@ -431,13 +470,13 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **14.6** Fill:
   - Matter reference: **EST-2026-002**
   - Matter title: **Estate Late Peter Moroka**
-  - Matter type: **Estates — Deceased**
+  - Template: **Deceased Estate Administration** → Work Type **ESTATES**
   - Master's Office: Johannesburg
 - [ ] **14.7** Submit → matter created
 
 ### Phase C: Seed data on Moroka matter (to make isolation check meaningful)
 
-- [ ] **14.8** Send an info request on Moroka matter: template **Liquidation and Distribution Account docs** → addressee = `moroka.portal@example.com`, due Day 30 → Send
+- [ ] **14.8** Send an info request on Moroka matter: request pack **Liquidation and Distribution Account Pack** (`legal-za-liquidation-distribution`) → addressee = `moroka.portal@example.com`, due Day 30 → Send
 - [ ] **14.9** Upload one internal document to Moroka matter → click **Work** group tab → click **Documents** sub-tab (e.g., "Death certificate — Moroka.pdf" — use any test PDF)
 - [ ] **14.10** Record a trust deposit of R 25,000 against Moroka Trust / EST-2026-002 (either via bank import or manual)
 - [ ] **14.11** Note the Moroka matter ID, client ID, info-request ID, document ID, and trust-transaction ID — record these in the `isolation-probe-ids.txt` scratch file (or note in gap-report appendix). The Day 15 portal probes will target these IDs to prove Sipho cannot reach them.
@@ -474,23 +513,26 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Phase B: Direct-URL probe (hard negative — Moroka IDs used)
 
+> Routes and endpoints below are today's (`/projects`, `/portal/projects`); Phase 87 renames them to `/matters` (609F, 617A) under ADR-344. Retargeted to routes that exist — the previous `/info-requests`, `/documents`, `/trust/transactions` and `/portal/api/*` probes 404'd vacuously. (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.3: vacuous isolation probes under a BLOCKER gate)
+
 Using the Moroka entity IDs captured Day 14, attempt direct URL navigation while logged in as Sipho:
 
 - [ ] **15.9** Navigate directly to `/projects/[morokaMatterId]` → expect **404** or **403** or redirect to `/home` with an error toast. **MUST NOT** render Moroka matter detail.
-- [ ] **15.10** Navigate directly to `/info-requests/[morokaInfoRequestId]` → expect **404** / **403** / redirect. **MUST NOT** show "Liquidation and Distribution Account docs"
-- [ ] **15.11** Navigate directly to `/documents/[morokaDocumentId]` → expect **404** / **403** / denial. **MUST NOT** return Moroka's death-certificate PDF
-- [ ] **15.12** Navigate directly to `/trust/transactions/[morokaTrustTxId]` (if portal exposes this URL shape) → expect **404** / **403**. **MUST NOT** render Moroka's R 25,000 deposit
+- [ ] **15.10** Navigate directly to `/requests/[morokaInfoRequestId]` → expect **404** / **403** / redirect. **MUST NOT** show "Liquidation and Distribution Account Pack"
+- [ ] **15.11** Navigate directly to `/trust/[morokaMatterId]` → expect **404** / **403** / redirect. **MUST NOT** render Moroka's R 25,000 deposit or any EST-2026-002 movement
+- [ ] **15.12** Removed at the UI level — the portal has no per-document or per-transaction page (routes: `/projects/[id]`, `/requests/[id]`, `/trust/[matterId]`, `/invoices/[id]`). The document leak is probed at the API level in 15.17 and 15.17a.
 - [ ] **15.13** 📸 **Screenshot**: `day-15-portal-denial.png` — denial page or redirect state from one of the probes
 
 ### Phase C: API-level probe (hard negative — backend must enforce, not just frontend)
 
 Using Sipho's portal JWT (capture from browser devtools → Application → cookies / localStorage → look for `portal_jwt` or similar):
 
-- [ ] **15.14** `curl -sS http://localhost:8080/portal/api/matters/[morokaMatterId] -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** or **404**. MUST NOT return 200 with Moroka data.
-- [ ] **15.15** `curl -sS http://localhost:8080/portal/api/info-requests/[morokaInfoRequestId] -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404**
-- [ ] **15.16** `curl -sS http://localhost:8080/portal/api/trust/transactions/[morokaTrustTxId] -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404**
-- [ ] **15.17** `curl -sS http://localhost:8080/portal/api/documents/[morokaDocumentId] -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404**; if 200 is returned, confirm response body is empty / error — bytes MUST NOT be Moroka's document content
-- [ ] **15.18** `curl -sS http://localhost:8080/portal/api/home -H "Authorization: Bearer $SIPHO_JWT" | jq '.'` → expect response containing ONLY Sipho's entities; no Moroka ids in any list field (infoRequests, deadlines, invoices, projects)
+- [ ] **15.14** `curl -sS -w '\nHTTP %{http_code}\n' http://localhost:8080/portal/projects/[morokaMatterId]/summary -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** or **404**. MUST NOT return 200 with Moroka data.
+- [ ] **15.15** `curl -sS -w '\nHTTP %{http_code}\n' http://localhost:8080/portal/requests/[morokaInfoRequestId] -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404**
+- [ ] **15.16** `curl -sS -w '\nHTTP %{http_code}\n' http://localhost:8080/portal/trust/matters/[morokaMatterId]/transactions -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404**
+- [ ] **15.17** `curl -sS -w '\nHTTP %{http_code}\n' http://localhost:8080/portal/documents/[morokaDocumentId]/presign-download -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404**; MUST NOT return a presigned URL for Moroka's death certificate (`portal/PortalDocumentController.java:57`)
+- [ ] **15.17a** `curl -sS -w '\nHTTP %{http_code}\n' http://localhost:8080/portal/projects/[morokaMatterId]/documents -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404** (`PortalDocumentController.java:31`); and `curl -sS -w '\nHTTP %{http_code}\n' http://localhost:8080/portal/trust/matters/[morokaMatterId]/statement-documents -H "Authorization: Bearer $SIPHO_JWT"` → **403** / **404** or empty (the `-w` suffix prints the status after each body so a 200-with-empty-body cannot be mistaken for a denial)
+- [ ] **15.18** `curl -sS http://localhost:8080/portal/trust/summary -H "Authorization: Bearer $SIPHO_JWT" | jq '.'` and `curl -sS http://localhost:8080/portal/requests -H "Authorization: Bearer $SIPHO_JWT" | jq '.'` → only Sipho's entities; balance R 50,000 (not R 75,000); no Moroka ids in any list field
 
 ### Phase D: Activity trail + digest leak probe
 
@@ -499,8 +541,8 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 **Day 15 checkpoints (BLOCKER severity — any failure here is a HIGH/BLOCKER gap)**
 - [ ] List views on `/home`, `/projects`, `/trust`, `/invoices`, `/deadlines` show ONLY Sipho's data
-- [ ] Direct-URL probes to 4+ Moroka entity IDs denied at the frontend (no matter data renders)
-- [ ] API-level probes to 4+ Moroka endpoints denied at backend (403/404, never 200)
+- [ ] Direct-URL probes to the three Moroka entities the portal has pages for (matter 15.9, request 15.10, trust 15.11) denied at the frontend (no Moroka data renders)
+- [ ] API-level probes to 5+ Moroka endpoints denied at backend (403/404, never 200) — matter summary, request, trust transactions, document presign, matter documents
 - [ ] Trust balance card shows R 50,000 (Sipho's only) — not R 75,000 (aggregate leak)
 - [ ] Activity trail / digest have zero Moroka references
 
@@ -541,9 +583,9 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
       tab Time column / matter Time tab summary). If a member-rate snapshot
       was captured, `billable_value` will be populated; if not, entry is
       saved at `R 0` and the warning banner served its purpose.
-- [ ] **21.5** Pick a second RAF task (e.g. "Draft particulars of claim")
-      → log `Duration = 1h 30m`, `Description = "Drafted particulars of
-      claim incl. quantum schedule"`. Same dialog; same path.
+- [ ] **21.5** Pick a second RAF task — "File RAF1 claim form + supporting documents"
+      (the template task Day 60.7 later expects to carry 1h30m) → log `Duration = 1h 30m`,
+      `Description = "Completed RAF1 form and collated supporting documents"`. Same dialog; same path. (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.3: "Draft particulars of claim" is not in the RAF template)
 
 > **Out-of-scope on Day 21 Phase A (covered separately, future phase)**:
 > - LSSA tariff activity selection in the time-entry dialog (dependent
@@ -590,7 +632,8 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 > 30 verified PASS in cycle 16. The Edit-button render gap was filed as
 > separate cosmetic OBS-2103 (SPEC_READY, cycle 17) — it does not block
 > activation since the Change Status → Activate dropdown is the canonical
-> path.
+> path. Sipho's activation is now scripted at 10.1a–10.1d (Post-86 coherence
+> amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.2).
 
 > **Scenario amendment (OBS-2101, WONT_FIX feature-gap — cascade from
 > Day 21 Phase A)**: Time entries from Day 21 are NOT tariff-bound (the
@@ -683,13 +726,13 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 - [ ] **45.1** On matter RAF-2026-001 → **+ New Info Request** → free-form: title "Supporting medical evidence", 2 items (hospital discharge summary, orthopaedic report), due Day 52 → Send
 - [ ] **45.2** Mailpit → verify second magic-link email sent to Sipho
-- [ ] **45.3** Navigate to Trust Accounting → Mathebula Trust — Main → record / import a second deposit of **R 20,000** against Sipho / RAF-2026-001 (describe as "Top-up per engagement letter")
-- [ ] **45.4** Approve (if dual-approval) → client ledger now shows trust balance **R 71,000** (R 50,000 Day 10 + R 1,000 Day 14 OBS-1101 verify deposit + R 20,000 Day 45 top-up). NOTE (cycle 18 amend 2026-04-30): scenario originally said R 70,000 — actual R 71,000 reflects Day 14 cycle-15 R 1,000 OBS-1101 verify carry-over deposit.
-- [ ] **45.5** Matter Finance > Trust sub-tab shows balance **R 71,000** (navigate: Finance group → Trust sub-tab) (minus any fee-transfer-out if applied — in this script, none yet)
+- [ ] **45.3** Navigate to Trust Accounting → Mathebula Trust — Main → record / import a second deposit of **R 20,000** against Sipho / RAF-2026-001 (describe as "Top-up per engagement letter (accepted Day 8)")
+- [ ] **45.4** Approve (if dual-approval) → client ledger now shows trust balance **R 70,000** (R 50,000 Day 10 + R 20,000 Day 45 top-up) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.3: the cycle-18 R 71,000 recorded a prior-cycle verification deposit, not scripted behaviour; a fresh run reaches R 70,000)
+- [ ] **45.5** Matter Finance > Trust sub-tab shows balance **R 70,000** (navigate: Finance group → Trust sub-tab) (minus any fee-transfer-out if applied — in this script, none yet)
 
 **Day 45 checkpoints**
 - [ ] Second info request dispatched
-- [ ] Trust balance reconciles to R 71,000 on client ledger and matter trust tab (amended cycle 18 from R 70,000 to capture Day 14 R 1,000 carry-over)
+- [ ] Trust balance reconciles to R 70,000 on client ledger and matter trust tab
 
 ---
 
@@ -702,8 +745,8 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **46.1** Login via magic-link for second info request
 - [ ] **46.2** `/home` → "Supporting medical evidence" shows as pending → click into it
 - [ ] **46.3** Upload 2 test PDFs (discharge summary, orthopaedic report) → submit → state → **Submitted**
-- [ ] **46.4** Navigate to `/trust` → balance now shows **R 71,000** (R 50,000 Day 10 + R 1,000 Day 14 carry-over + R 20,000 Day 45). Note: scenario originally said R 70,000; cycle-15 OBS-1101 Mailpit-formatting verify added a R 1,000 third deposit, amended in cycle 18 / 19.
-- [ ] **46.5** Transaction list shows three deposits: Day 10 R 50,000 + Day 14 R 1,000 + Day 45 R 20,000, ordered descending by running-balance (newest first), all dates correct (2026-04-30 in this single-day E2E run), amounts correct
+- [ ] **46.4** Navigate to `/trust` → balance now shows **R 70,000** (R 50,000 Day 10 + R 20,000 Day 45)
+- [ ] **46.5** Transaction list shows two deposits: Day 10 R 50,000 + Day 45 R 20,000, ordered descending by running-balance (newest first), all dates correct (2026-04-30 in this single-day E2E run), amounts correct
 - [ ] **46.6** **Passive isolation spot-check** — trust list still shows only Sipho's matter; no Moroka deposit (R 25,000) merged in anywhere
 - [ ] **46.7** `/home` → "Pending info requests" no longer shows the medical evidence request
 - [ ] **46.8** 📸 Optional: `day-46-portal-trust-two-deposits.png`
@@ -754,6 +797,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 **A4: Approve trust payment (clear Trust Balance gate — Section 86 dual-approval)**
 
+- [ ] **60.11a** **Actor swap → Thandi.** Navigate to Trust Accounting → Sipho Dlamini / RAF-2026-001 → **Record Payment**: amount **R 70,000**, payee Sipho Dlamini, description "Settlement proceeds paid out to client" → submit → note the generated payment reference (PAY/2026/001 on a fresh tenant) → status **AWAITING_APPROVAL** (exceeds the R 50,000 threshold from 1.5). **Actor swap → Bob** for 60.12 (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.3: no step created the payment that 60.12 approves)
 - [ ] **60.12** Navigate to Trust Accounting → locate trust payment PAY/2026/001 (R 70,000) recorded by Thandi, status AWAITING_APPROVAL
 - [ ] **60.13** Bob gives the **first** approval (Bob is not the recorder). Verify the LZKC-016 first-approval feedback: toast "Approval recorded — 1 of 2 approvals…", the row shows a **"1 of 2 approvals"** badge, and Bob's Approve button becomes disabled **"Approved by you"** (R 70 000 exceeds the R 50 000 threshold set in 1.5, so TWO approvers are required)
 - [ ] **60.13b** Context/actor switch → a **second, different member** (Thandi — the recorder may act as an approver, but the same member cannot approve twice) gives the second approval
@@ -832,7 +876,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **75.2** Digest body mentions events from the matter: fee note paid, SoA downloaded, matter closed. All references use client-facing copy.
 - [ ] **75.3** Crucially: digest MUST NOT reference Moroka / EST-2026-002 / any other client
 - [ ] **75.4** Click a "View activity" link in the digest → lands on portal home or activity view
-- [ ] **75.5** Activity trail renders events from Days 4, 8, 11, 15, 30, 46, 61 — all are Sipho's. Zero Moroka references.
+- [ ] **75.5** Activity trail renders events from Days 4, 11, 15, 30, 46, 61 — all are Sipho's. Zero Moroka references. (Day 8's acceptance is not a portal-activity event — `PortalActivityEventTypes.PORTAL_VISIBLE_FIRM_EVENT_TYPES` — so it is not expected here.)
 - [ ] **75.6** **Passive isolation spot-check** (61 days after Day 14 onboarding of Moroka):
   - `/home` — no Moroka entries
   - `/trust` — balance shows R 0.00 against RAF-2026-001 (trust fully paid out Day 60); NOT R 25,000 Moroka leak
@@ -917,7 +961,7 @@ This is the closing-demo wow moment: show the firm's 90-day activity feed on the
 - [ ] **E.5** **Field promotion** verified on Client, Matter, Task, Fee Note create dialogs — no duplication in CustomFieldSection
 - [ ] **E.6** **Progressive disclosure** — all 4 legal modules present, no cross-vertical leaks in sidebar, breadcrumbs, settings
 - [ ] **E.7** **Keycloak flow** end-to-end — from `/request-access` → approval → owner register → team invites → logged-in firm dashboard, zero mock IDP usage
-- [ ] **E.8** **Portal magic-link flow** end-to-end — Sipho authenticated via magic-link on Days 4, 8, 11, 15, 30, 46, 61, 75, 88, 90; zero Keycloak-form usage on portal side
+- [ ] **E.8** **Portal magic-link flow** end-to-end — Sipho authenticated via magic-link on Days 4, 11, 15, 30, 46, 61, 75, 88, 90 (Day 8 is token-authenticated on the public `/accept/<token>` page, no portal session); zero Keycloak-form usage on portal side
 - [ ] **E.9** **Terminology sweep** passed — zero "Project/Customer/Invoice" leaks firm-side; portal terminology consistent within itself
 - [ ] **E.10** **Isolation — BLOCKER-severity gate** — Day 15 and Day 90 isolation probes both pass at list, URL, and API levels. No Moroka data leak anywhere on portal throughout 90 days.
 - [ ] **E.11** **Trust accounting reconciliation** — firm-side Section 86 ledger + matter Trust tab + portal `/trust` all reconcile to identical balances at Days 11, 46, 61

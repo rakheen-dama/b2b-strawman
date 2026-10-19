@@ -289,7 +289,7 @@ Post-Phase 77, promoted fields are on the **Details tab** (`tab-group-details` �
 
 **Applies to**: All QA plans in `qa/testplan/` and `qa/testplan/demos/`
 **Phase**: 86 (Epics 595–606, PRs #1564–#1577); archive tag `horizontal-platform-final`
-**Updated**: 2026-10-18
+**Updated**: 2026-10-19
 
 ## Deleted plans
 
@@ -304,6 +304,8 @@ Post-Phase 77, promoted fields are on the **Details tab** (`tab-group-details` �
 | Plan | Epic (PR) | Removed steps |
 |---|---|---|
 | `demos/legal-za-full-lifecycle-keycloak.md` | 597 (#1566) | Proposal / engagement-letter-as-proposal steps (Day 7, portal proposal acceptance) and the Phase 80 pipeline-enquiry / deal steps |
+| `demos/legal-za-90day-keycloak.md` | post-86 coherence PR (2026-10-19; missed by the Phase 86 sweep) | Pipeline wow #2 (replaced by the Day 4 engagement-letter moment), Phase H2 0.56a–0.56e, Day-0 Pipeline checkpoint, Day 1 (cont.) 1.12–1.24 + navigation note, 90.7; fragments: 0.67 (member count / amount / PayFast), 3.10 (Staffing) |
+| `demos/legal-za-full-lifecycle-keycloak.md` | post-86 coherence PR (2026-10-19) | Fragments only: selector ref + 3.5 (Staffing) |
 | `demos/portal-client-90day-keycloak.md` | 597 (#1566), 598 (#1569), 606 | 597: portal proposals (Day 14); 598: portal retainer usage (Day 30); 606: `accounting-za` / `consulting-za` tenants, rows and profile-specific checkpoints (incl. E.7 three-tenant coverage) |
 | `demos/admin-audit-30day-keycloak.md` | 598 (#1569), 606 | 598: retainer seed (0.5); 606: `accounting-za` deadline seed (0.4), CRM deal events (0.5a), deleted-profile skip notes |
 | `demos/ai-core-verification-keycloak.md` | 601 (#1573) | No steps removed; the AIVERIFY-013 note on 12.1 records that the specialist audit registry entries were removed (only `ai.specialist.failed` remains) |
@@ -311,8 +313,26 @@ Post-Phase 77, promoted fields are on the **Details tab** (`tab-group-details` �
 
 Remaining wording in `portal-client-90day-keycloak.md` / `admin-audit-30day-keycloak.md` that still assumes three tenants (e.g. "three corresponding firm-side lifecycles", step 0.8's deal-event row count) is a scenario rewording, not a deleted-feature removal, and is pending user authorisation.
 
+## Post-86 coherence amendments (user-authorised 2026-10-19)
+
+Spec and per-hunk authorisation record: `tasks/qa-scenario-amendments-post86.md`; evidence: `qa/testplan/legal-testplan-audit-2026-10-19.md`. Rule: what a step **does** was fixed here; what things are **called** is left to the Phase 87 IA PRs (ADR-344). Each amended step carries an inline `(Post-86 coherence amendment … §n)` annotation.
+
+| Plan | Steps changed | What |
+|---|---|---|
+| `demos/legal-za-90day-keycloak.md` | stack line; 2.1; 2.2–2.7; 0.47, 0.48, 0.57–0.58; 3.3, 9.3, 14.3, 22.4 (Work Type values); 8.3–8.6; 9.4, 9.5, 12.1; 14.2, 22.3; 68.1; 80.5; **new 4.3a–4.3c**, 4.6 | Start Onboarding replaces the deleted deal-win nudge; real checklist packs/items (9/8 individual, 12/11 trust) with explicit **Activate Customer**; field lists and estate task names re-derived from the packs; portal login path replaces the deleted firm-side magic-link generator; engagement letter → Send for Acceptance → portal `/accept/<token>` (ADR-336) |
+| `demos/legal-za-full-lifecycle-keycloak.md` | wow #7; 3.3, 14.6, 14.8; **new 5.7**; **new Day 7 (7.1–7.5) + Day 8 (8.1–8.5)**; **new 10.1a–10.1d**; Day 28 note; 15.10–15.12, 15.14–15.18 (+ Phase B note); 21.5; 45.3–45.5, Day 45 checkpoint, 46.4–46.5 (R 71,000 → R 70,000); **new 60.11a** | Sipho's activation scripted before the Day 28 billing run (selects ACTIVE only); ADR-336 engagement-letter pair restores Day 7/8; isolation probes retargeted to real portal routes/endpoints (previously 404'd vacuously under a BLOCKER gate); prior-cycle R 1,000 artefact removed; the PAY/2026/001 payment is now recorded before it is approved |
+
+Untouched on purpose: steps blocked by a tracked product bug (`FIXME(depth-ii:…)` — 90-day 5.9–5.14, 14.8, 30.x, 45.5–45.11, 75.10, 85.7–85.8; full-lifecycle 60.23, 85.3) stay red until their own one-fix PRs.
+
+### Known-stale wording left for Phase 87 (ADR-344 — URL / label / nav / selector only)
+
+Sweep list for 617B.1 (each still completes as written):
+- 90-day: 0.17 (profile curl → approval card), 0.26 (Team is top-level), 0.51 (`matter_type` → Work Type wording), 0.53–0.54 (Settings > Project/Matter Templates, 6 templates), 0.56 (4 automation toggles, no builder), 3.8 (path-based breadcrumb), 5.2 (`matter_type` wording), 5.5 (`/legal/disbursements` direct URL, no nav item), 14.9 (drop the `acceptanceEligible` causal claim), 23.1 (adverse party type "Other"), 32.1 (tariff lines live on fee-note drafts), 36.1 (no matter Billing tab), 38.1 (Approve, then Send), 75.2 (`header-lifecycle-actions`), 80.3 (utilization is on Profitability), 85.2/85.3/85.17 (filters by actor ID / entity type).
+- full-lifecycle: 0.16 (profile curl), 0.H (`/api/packs/installed` + `/api/modules`), 1.3 (LSSA tariff seed, not a rate pack), 2.3 (single Name field), 4.2 (`/auth/exchange?token=`), 28.1 ("Billing Runs" → 87 "Fee runs"), 60.1/60.6 (Requests under the Client group), 60.16 (`header-lifecycle-actions`), 85.4 (filter wording), B.1–B.4 (matter-sidebar baselines → retire in 617C.3).
+
 ## Selector notes superseded by Phase 86
 
 - Customer detail Finance group: the `retainer` tab (`tab-item-retainer`, rows above) no longer exists (Epic 598).
 - Customer Overview "Pending AI Suggestions" panel no longer exists (specialists removed, Epic 601).
+- Matter detail Work group: the `staffing` tab (`tab-item-staffing`) no longer exists (Epic 599 #1570); the Work-group rows above that still list it are stale on that one item.
 - No other selector changes; the remaining tables above are current.

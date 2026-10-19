@@ -297,7 +297,7 @@ class TaskLifecycleIntegrationTest {
     // Filter for OPEN,IN_PROGRESS — should return task1 and task2 (not task3)
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/tasks")
+            get("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                 .param("status", "OPEN,IN_PROGRESS"))
         .andExpect(status().isOk())
@@ -326,7 +326,7 @@ class TaskLifecycleIntegrationTest {
     // Default (no status param) should exclude DONE tasks
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/tasks")
+            get("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.id == '%s')]", taskIdOpen).exists())
@@ -371,7 +371,7 @@ class TaskLifecycleIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

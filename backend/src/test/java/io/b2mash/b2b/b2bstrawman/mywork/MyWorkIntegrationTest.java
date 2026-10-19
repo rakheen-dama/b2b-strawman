@@ -250,7 +250,7 @@ class MyWorkIntegrationTest {
         .andExpect(jsonPath("$.assigned").isArray())
         .andExpect(jsonPath("$.assigned", hasSize(2)))
         .andExpect(jsonPath("$.assigned[*].title").isArray())
-        .andExpect(jsonPath("$.assigned[*].projectName").isArray())
+        .andExpect(jsonPath("$.assigned[*].matterName").isArray())
         .andExpect(jsonPath("$.unassigned").isArray())
         .andExpect(jsonPath("$.unassigned", hasSize(0)));
   }
@@ -299,9 +299,9 @@ class MyWorkIntegrationTest {
                 .param("projectId", projectAId))
         .andExpect(status().isOk())
         .andExpect(
-            jsonPath("$.assigned[*].projectId", everyItem(org.hamcrest.Matchers.is(projectAId))))
+            jsonPath("$.assigned[*].matterId", everyItem(org.hamcrest.Matchers.is(projectAId))))
         .andExpect(
-            jsonPath("$.unassigned[*].projectId", everyItem(org.hamcrest.Matchers.is(projectAId))));
+            jsonPath("$.unassigned[*].matterId", everyItem(org.hamcrest.Matchers.is(projectAId))));
   }
 
   @Test
@@ -349,7 +349,7 @@ class MyWorkIntegrationTest {
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$", hasSize(4)))
         .andExpect(jsonPath("$[0].taskTitle").exists())
-        .andExpect(jsonPath("$[0].projectName").exists());
+        .andExpect(jsonPath("$[0].matterName").exists());
   }
 
   @Test
@@ -393,10 +393,10 @@ class MyWorkIntegrationTest {
                 .param("from", "2026-02-10")
                 .param("to", "2026-02-12"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.byProject").isArray())
-        .andExpect(jsonPath("$.byProject", hasSize(2)))
-        .andExpect(jsonPath("$.byProject[*].projectName").isArray())
-        .andExpect(jsonPath("$.byProject[*].projectId").isArray());
+        .andExpect(jsonPath("$.byMatter").isArray())
+        .andExpect(jsonPath("$.byMatter", hasSize(2)))
+        .andExpect(jsonPath("$.byMatter[*].matterName").isArray())
+        .andExpect(jsonPath("$.byMatter[*].matterId").isArray());
   }
 
   @Test
@@ -465,7 +465,7 @@ class MyWorkIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

@@ -84,7 +84,7 @@ class EventPublicationTest {
     var taskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -133,7 +133,7 @@ class EventPublicationTest {
     var taskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -175,7 +175,7 @@ class EventPublicationTest {
     var taskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -236,7 +236,7 @@ class EventPublicationTest {
     var docInitResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

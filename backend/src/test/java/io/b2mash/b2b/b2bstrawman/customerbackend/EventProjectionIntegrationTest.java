@@ -235,7 +235,7 @@ class EventProjectionIntegrationTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

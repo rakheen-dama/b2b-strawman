@@ -152,7 +152,7 @@ public class MyWorkService {
         byProject.stream()
             .map(
                 p ->
-                    new MyWorkController.MyWorkProjectSummary(
+                    new MyWorkController.MyWorkMatterSummary(
                         p.getProjectId(),
                         p.getProjectName(),
                         p.getBillableMinutes(),

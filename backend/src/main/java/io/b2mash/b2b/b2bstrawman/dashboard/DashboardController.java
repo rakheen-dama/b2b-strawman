@@ -1,11 +1,11 @@
 package io.b2mash.b2b.b2bstrawman.dashboard;
 
-import io.b2mash.b2b.b2bstrawman.dashboard.dto.CrossProjectActivityItem;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.CrossMatterActivityItem;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiResponse;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.MatterHealth;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.MatterHealthDetail;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.MemberHoursEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.PersonalDashboard;
-import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealth;
-import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealthDetail;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TaskSummary;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TeamWorkloadEntry;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -36,36 +36,36 @@ public class DashboardController {
    * Returns the health status for a project, including health reasons and underlying metrics.
    * Requires view access to the project.
    */
-  @GetMapping("/api/projects/{projectId}/health")
-  public ResponseEntity<ProjectHealthDetail> getProjectHealth(
-      @PathVariable UUID projectId, ActorContext actor) {
+  @GetMapping("/api/matters/{matterId}/health")
+  public ResponseEntity<MatterHealthDetail> getProjectHealth(
+      @PathVariable UUID matterId, ActorContext actor) {
     return ResponseEntity.ok(
-        dashboardService.getProjectHealth(projectId, RequestScopes.TENANT_ID.get(), actor));
+        dashboardService.getProjectHealth(matterId, RequestScopes.TENANT_ID.get(), actor));
   }
 
   /**
    * Returns task counts broken down by status for a project. Requires view access to the project.
    */
-  @GetMapping("/api/projects/{projectId}/task-summary")
+  @GetMapping("/api/matters/{matterId}/task-summary")
   public ResponseEntity<TaskSummary> getTaskSummary(
-      @PathVariable UUID projectId, ActorContext actor) {
+      @PathVariable UUID matterId, ActorContext actor) {
     return ResponseEntity.ok(
-        dashboardService.getTaskSummary(projectId, RequestScopes.TENANT_ID.get(), actor));
+        dashboardService.getTaskSummary(matterId, RequestScopes.TENANT_ID.get(), actor));
   }
 
   /**
    * Returns per-member hour breakdown for a project within a date range. Requires view access to
    * the project. Both date parameters are required.
    */
-  @GetMapping("/api/projects/{projectId}/member-hours")
+  @GetMapping("/api/matters/{matterId}/member-hours")
   public ResponseEntity<List<MemberHoursEntry>> getProjectMemberHours(
-      @PathVariable UUID projectId,
+      @PathVariable UUID matterId,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
       ActorContext actor) {
     return ResponseEntity.ok(
         dashboardService.getProjectMemberHours(
-            projectId, RequestScopes.TENANT_ID.get(), from, to, actor));
+            matterId, RequestScopes.TENANT_ID.get(), from, to, actor));
   }
 
   // --- Org-level endpoints ---
@@ -87,8 +87,8 @@ public class DashboardController {
    * Returns the project health list for accessible projects. Sorted by severity (CRITICAL first),
    * then by completion percent ascending.
    */
-  @GetMapping("/api/dashboard/project-health")
-  public ResponseEntity<List<ProjectHealth>> getProjectHealthList(ActorContext actor) {
+  @GetMapping("/api/dashboard/matter-health")
+  public ResponseEntity<List<MatterHealth>> getProjectHealthList(ActorContext actor) {
     return ResponseEntity.ok(
         dashboardService.getProjectHealthList(RequestScopes.TENANT_ID.get(), actor));
   }
@@ -111,7 +111,7 @@ public class DashboardController {
    * only events from projects they belong to. Limit is optional (default 10, clamped to 1-50).
    */
   @GetMapping("/api/dashboard/activity")
-  public ResponseEntity<List<CrossProjectActivityItem>> getCrossProjectActivity(
+  public ResponseEntity<List<CrossMatterActivityItem>> getCrossProjectActivity(
       @RequestParam(defaultValue = "10") int limit, ActorContext actor) {
     return ResponseEntity.ok(
         dashboardService.getCrossProjectActivity(RequestScopes.TENANT_ID.get(), actor, limit));

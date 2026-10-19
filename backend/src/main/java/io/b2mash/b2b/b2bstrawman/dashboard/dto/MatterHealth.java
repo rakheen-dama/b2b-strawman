@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Summary item for the company-level project health list. Includes project identity, health status,
+ * Summary item for the company-level matter health list. Includes matter identity, health status,
  * task progress, and time metrics.
  */
-public record ProjectHealth(
-    UUID projectId,
-    String projectName,
-    String customerName,
+public record MatterHealth(
+    UUID matterId,
+    String matterName,
+    String clientName,
     HealthStatus healthStatus,
     List<String> healthReasons,
     int tasksDone,

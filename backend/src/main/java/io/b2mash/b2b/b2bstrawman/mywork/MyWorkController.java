@@ -70,8 +70,8 @@ public class MyWorkController {
 
   public record MyWorkTaskItem(
       UUID id,
-      UUID projectId,
-      String projectName,
+      UUID matterId,
+      String matterName,
       String title,
       String status,
       String priority,
@@ -96,8 +96,8 @@ public class MyWorkController {
       UUID id,
       UUID taskId,
       String taskTitle,
-      UUID projectId,
-      String projectName,
+      UUID matterId,
+      String matterName,
       LocalDate date,
       int durationMinutes,
       boolean billable,
@@ -110,11 +110,11 @@ public class MyWorkController {
       long billableMinutes,
       long nonBillableMinutes,
       long totalMinutes,
-      List<MyWorkProjectSummary> byProject) {}
+      List<MyWorkMatterSummary> byMatter) {}
 
-  public record MyWorkProjectSummary(
-      UUID projectId,
-      String projectName,
+  public record MyWorkMatterSummary(
+      UUID matterId,
+      String matterName,
       long billableMinutes,
       long nonBillableMinutes,
       long totalMinutes) {}

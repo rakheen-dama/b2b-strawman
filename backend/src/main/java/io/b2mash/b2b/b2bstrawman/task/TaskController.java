@@ -46,15 +46,15 @@ public class TaskController {
     this.viewFilterHelper = viewFilterHelper;
   }
 
-  @PostMapping("/api/projects/{projectId}/tasks")
+  @PostMapping("/api/matters/{matterId}/tasks")
   public ResponseEntity<TaskResponse> createTask(
-      @PathVariable UUID projectId,
+      @PathVariable UUID matterId,
       @Valid @RequestBody CreateTaskRequest request,
       ActorContext actor) {
 
     var task =
         taskService.createTask(
-            projectId,
+            matterId,
             request.title(),
             request.description(),
             request.priority(),
@@ -73,9 +73,9 @@ public class TaskController {
         .body(TaskResponse.from(task, names, List.of()));
   }
 
-  @GetMapping("/api/projects/{projectId}/tasks")
+  @GetMapping("/api/matters/{matterId}/tasks")
   public ResponseEntity<List<TaskResponse>> listTasks(
-      @PathVariable UUID projectId,
+      @PathVariable UUID matterId,
       @RequestParam(required = false) UUID view,
       @RequestParam(required = false) String status,
       @RequestParam(required = false) UUID assigneeId,
@@ -88,7 +88,7 @@ public class TaskController {
     // --- View-based filtering (server-side SQL) ---
     if (view != null) {
       List<Task> filtered =
-          viewFilterHelper.applyViewFilterForProject(view, "TASK", "tasks", Task.class, projectId);
+          viewFilterHelper.applyViewFilterForProject(view, "TASK", "tasks", Task.class, matterId);
 
       if (filtered != null) {
         // Post-filter for recurring tasks when view-based path is used
@@ -113,7 +113,7 @@ public class TaskController {
     // --- Fallback: existing in-memory filtering ---
     var taskEntities =
         taskService.listTasks(
-            projectId, actor, status, assigneeId, priority, assigneeFilter, recurring);
+            matterId, actor, status, assigneeId, priority, assigneeFilter, recurring);
     var names = taskService.resolveTaskMemberNames(taskEntities);
 
     // Batch-load tags for all tasks (2 queries instead of 2N)

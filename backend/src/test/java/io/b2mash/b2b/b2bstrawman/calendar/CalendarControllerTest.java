@@ -229,7 +229,7 @@ class CalendarControllerTest {
         .andExpect(jsonPath("$.items[0].name").value("Task Alpha"))
         .andExpect(jsonPath("$.items[0].itemType").value("TASK"))
         .andExpect(jsonPath("$.items[1].name").value("Project Alpha"))
-        .andExpect(jsonPath("$.items[1].itemType").value("PROJECT"));
+        .andExpect(jsonPath("$.items[1].itemType").value("MATTER"));
   }
 
   @Test
@@ -254,13 +254,13 @@ class CalendarControllerTest {
             get("/api/calendar")
                 .param("from", LocalDate.now().minusDays(1).toString())
                 .param("to", LocalDate.now().plusDays(30).toString())
-                .param("type", "PROJECT")
+                .param("type", "MATTER")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cal_admin")))
         .andExpect(status().isOk())
         // Should see only Project Alpha and Project Beta
         .andExpect(jsonPath("$.items", hasSize(2)))
-        .andExpect(jsonPath("$.items[0].itemType").value("PROJECT"))
-        .andExpect(jsonPath("$.items[1].itemType").value("PROJECT"));
+        .andExpect(jsonPath("$.items[0].itemType").value("MATTER"))
+        .andExpect(jsonPath("$.items[1].itemType").value("MATTER"));
   }
 
   @Test

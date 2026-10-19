@@ -97,7 +97,7 @@ public final class TestEntityHelper {
     var result =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

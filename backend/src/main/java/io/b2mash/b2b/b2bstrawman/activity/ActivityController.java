@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** REST controller for the project activity feed. */
+/** REST controller for the matter activity feed. */
 @RestController
-@RequestMapping("/api/projects/{projectId}/activity")
+@RequestMapping("/api/matters/{matterId}/activity")
 public class ActivityController {
 
   private final ActivityService activityService;
@@ -24,9 +24,9 @@ public class ActivityController {
   }
 
   /**
-   * Returns a paginated activity feed for the given project.
+   * Returns a paginated activity feed for the given matter.
    *
-   * @param projectId the project ID
+   * @param matterId the matter ID
    * @param page zero-based page number (default 0)
    * @param size page size (default 20, max 50)
    * @param entityType optional filter by entity type (TASK, DOCUMENT, COMMENT, PROJECT_MEMBER,
@@ -36,7 +36,7 @@ public class ActivityController {
    */
   @GetMapping
   public ResponseEntity<Page<ActivityItem>> getProjectActivity(
-      @PathVariable UUID projectId,
+      @PathVariable UUID matterId,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size,
       @RequestParam(required = false) String entityType,
@@ -44,8 +44,7 @@ public class ActivityController {
       ActorContext actor) {
 
     var pageable = PageRequest.of(page, Math.min(size, 50));
-    var activity =
-        activityService.getProjectActivity(projectId, entityType, since, pageable, actor);
+    var activity = activityService.getProjectActivity(matterId, entityType, since, pageable, actor);
 
     return ResponseEntity.ok(activity);
   }

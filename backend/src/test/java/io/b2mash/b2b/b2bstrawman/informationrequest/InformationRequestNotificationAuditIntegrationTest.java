@@ -346,7 +346,7 @@ class InformationRequestNotificationAuditIntegrationTest {
   void activityFeedReturnsRequestEventsForProject() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/%s/activity".formatted(projectId))
+            get("/api/matters/%s/activity".formatted(projectId))
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_notif_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
@@ -359,7 +359,7 @@ class InformationRequestNotificationAuditIntegrationTest {
     var result =
         mockMvc
             .perform(
-                get("/api/projects/%s/activity".formatted(projectId))
+                get("/api/matters/%s/activity".formatted(projectId))
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_notif_owner")))
             .andExpect(status().isOk())
             .andReturn();

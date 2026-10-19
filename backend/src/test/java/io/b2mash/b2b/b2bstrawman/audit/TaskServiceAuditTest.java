@@ -80,7 +80,7 @@ class TaskServiceAuditTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ta_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -118,7 +118,7 @@ class TaskServiceAuditTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ta_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -171,7 +171,7 @@ class TaskServiceAuditTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ta_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -220,7 +220,7 @@ class TaskServiceAuditTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ta_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -258,7 +258,7 @@ class TaskServiceAuditTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ta_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -297,7 +297,7 @@ class TaskServiceAuditTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ta_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -341,7 +341,7 @@ class TaskServiceAuditTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ta_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

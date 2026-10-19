@@ -398,7 +398,7 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tasks")
+            post("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -458,9 +458,9 @@ class ProjectLifecycleIntegrationTest {
   /**
    * OBS-8801 — the full {@code project.*} lifecycle family must carry {@code details.project_id} so
    * the matter Activity feed surfaces them. The feed query ({@code
-   * AuditEventRepository.findByProjectId}, exposed via {@code GET /api/projects/{id}/activity})
-   * scopes strictly on {@code details->>'project_id'}; any emit site that omits the id silently
-   * drops out of the feed.
+   * AuditEventRepository.findByProjectId}, exposed via {@code GET
+   * /api/matters/{matterId}/activity}) scopes strictly on {@code details->>'project_id'}; any emit
+   * site that omits the id silently drops out of the feed.
    *
    * <p>This drives one project through created → updated → completed → reopened → archived →
    * reopened and a second project through created → deleted, then asserts every emitted {@code
@@ -513,7 +513,7 @@ class ProjectLifecycleIntegrationTest {
     var feedA =
         mockMvc
             .perform(
-                get("/api/projects/" + projectA + "/activity")
+                get("/api/matters/" + projectA + "/activity")
                     .param("size", "50")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
             .andExpect(status().isOk())
@@ -594,7 +594,7 @@ class ProjectLifecycleIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

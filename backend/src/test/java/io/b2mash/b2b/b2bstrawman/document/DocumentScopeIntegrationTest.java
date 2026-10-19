@@ -403,7 +403,7 @@ class DocumentScopeIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("UPLOADED"))
         .andExpect(jsonPath("$.scope").value("ORG"))
-        .andExpect(jsonPath("$.projectId").isEmpty());
+        .andExpect(jsonPath("$.matterId").isEmpty());
   }
 
   @Test

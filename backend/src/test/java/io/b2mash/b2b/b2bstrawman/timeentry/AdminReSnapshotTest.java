@@ -117,7 +117,7 @@ class AdminReSnapshotTest {
     var taskResult1 =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId1 + "/tasks")
+                post("/api/matters/" + projectId1 + "/tasks")
                     .with(ownerJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -131,7 +131,7 @@ class AdminReSnapshotTest {
     var taskResult2 =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId2 + "/tasks")
+                post("/api/matters/" + projectId2 + "/tasks")
                     .with(ownerJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

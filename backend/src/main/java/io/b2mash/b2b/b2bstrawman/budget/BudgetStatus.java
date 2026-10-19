@@ -9,7 +9,7 @@ import java.util.UUID;
  * entries. Status is derived from percentage consumed vs the alert threshold.
  */
 public record BudgetStatus(
-    UUID projectId,
+    UUID matterId,
     BigDecimal budgetHours,
     BigDecimal budgetAmount,
     String budgetCurrency,

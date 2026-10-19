@@ -290,13 +290,13 @@ class DashboardPersonalIntegrationTest {
                 .param("to", today.toString())
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_pdash_member1")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.projectBreakdown").isArray())
-        .andExpect(jsonPath("$.projectBreakdown", hasSize(2)))
-        .andExpect(jsonPath("$.projectBreakdown[0].projectName").value("Personal Project Alpha"))
-        .andExpect(jsonPath("$.projectBreakdown[0].hours").value(closeTo(3.0, 0.01)))
-        .andExpect(jsonPath("$.projectBreakdown[0].percent").isNumber())
-        .andExpect(jsonPath("$.projectBreakdown[1].projectName").value("Personal Project Beta"))
-        .andExpect(jsonPath("$.projectBreakdown[1].hours").value(closeTo(1.5, 0.01)));
+        .andExpect(jsonPath("$.matterBreakdown").isArray())
+        .andExpect(jsonPath("$.matterBreakdown", hasSize(2)))
+        .andExpect(jsonPath("$.matterBreakdown[0].matterName").value("Personal Project Alpha"))
+        .andExpect(jsonPath("$.matterBreakdown[0].hours").value(closeTo(3.0, 0.01)))
+        .andExpect(jsonPath("$.matterBreakdown[0].percent").isNumber())
+        .andExpect(jsonPath("$.matterBreakdown[1].matterName").value("Personal Project Beta"))
+        .andExpect(jsonPath("$.matterBreakdown[1].hours").value(closeTo(1.5, 0.01)));
   }
 
   @Test
@@ -325,10 +325,10 @@ class DashboardPersonalIntegrationTest {
         .andExpect(jsonPath("$.upcomingDeadlines").isArray())
         .andExpect(jsonPath("$.upcomingDeadlines", hasSize(2)))
         .andExpect(jsonPath("$.upcomingDeadlines[0].taskName").value("Task A3 Upcoming"))
-        .andExpect(jsonPath("$.upcomingDeadlines[0].projectName").value("Personal Project Alpha"))
+        .andExpect(jsonPath("$.upcomingDeadlines[0].matterName").value("Personal Project Alpha"))
         .andExpect(jsonPath("$.upcomingDeadlines[0].dueDate").isString())
         .andExpect(jsonPath("$.upcomingDeadlines[1].taskName").value("Task B1"))
-        .andExpect(jsonPath("$.upcomingDeadlines[1].projectName").value("Personal Project Beta"));
+        .andExpect(jsonPath("$.upcomingDeadlines[1].matterName").value("Personal Project Beta"));
   }
 
   @Test
@@ -354,7 +354,7 @@ class DashboardPersonalIntegrationTest {
     // non-billable)
     mockMvc
         .perform(
-            get("/api/projects/" + projectAId + "/member-hours")
+            get("/api/matters/" + projectAId + "/member-hours")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pdash_admin")))
@@ -375,7 +375,7 @@ class DashboardPersonalIntegrationTest {
     // nonMember is not on project A, should get 404 (security-by-obscurity)
     mockMvc
         .perform(
-            get("/api/projects/" + projectAId + "/member-hours")
+            get("/api/matters/" + projectAId + "/member-hours")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_pdash_nonmember")))
@@ -388,7 +388,7 @@ class DashboardPersonalIntegrationTest {
   void memberHoursRejectInvertedDateRangeWithProblemDetail() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/" + projectAId + "/member-hours")
+            get("/api/matters/" + projectAId + "/member-hours")
                 .param("from", today.toString())
                 .param("to", thirtyDaysAgo.toString())
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pdash_admin")))

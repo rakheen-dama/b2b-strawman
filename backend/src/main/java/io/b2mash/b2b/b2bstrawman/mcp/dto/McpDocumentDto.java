@@ -29,7 +29,7 @@ public record McpDocumentDto(
         doc.scope(),
         doc.contentType(),
         doc.size(),
-        doc.projectId(),
+        doc.matterId(),
         doc.customerId(),
         doc.createdAt());
   }

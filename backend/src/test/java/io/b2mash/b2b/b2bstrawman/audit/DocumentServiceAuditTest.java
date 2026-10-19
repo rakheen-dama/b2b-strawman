@@ -75,7 +75,7 @@ class DocumentServiceAuditTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_doc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -115,7 +115,7 @@ class DocumentServiceAuditTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_doc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -158,7 +158,7 @@ class DocumentServiceAuditTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_doc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -201,7 +201,7 @@ class DocumentServiceAuditTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_doc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -252,7 +252,7 @@ class DocumentServiceAuditTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_doc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

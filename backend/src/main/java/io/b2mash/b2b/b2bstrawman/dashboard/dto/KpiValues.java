@@ -5,7 +5,7 @@ package io.b2mash.b2b.b2bstrawman.dashboard.dto;
  * fields in {@link KpiResponse}.
  */
 public record KpiValues(
-    int activeProjectCount,
+    int activeMatterCount,
     double totalHoursLogged,
     Double billablePercent,
     int overdueTaskCount,

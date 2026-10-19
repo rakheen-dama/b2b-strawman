@@ -5,4 +5,4 @@ import java.util.UUID;
 
 /** Upcoming task deadline for the personal dashboard. */
 public record UpcomingDeadline(
-    UUID taskId, String taskName, String projectName, LocalDate dueDate) {}
+    UUID taskId, String taskName, String matterName, LocalDate dueDate) {}

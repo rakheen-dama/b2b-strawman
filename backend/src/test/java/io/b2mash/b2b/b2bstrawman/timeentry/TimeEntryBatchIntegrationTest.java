@@ -66,7 +66,7 @@ class TimeEntryBatchIntegrationTest {
     var taskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(ownerJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -211,7 +211,7 @@ class TimeEntryBatchIntegrationTest {
   void shouldFireBudgetThresholdEventWhenThresholdCrossed() throws Exception {
     mockMvc
         .perform(
-            put("/api/projects/" + projectId + "/budget")
+            put("/api/matters/" + projectId + "/budget")
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

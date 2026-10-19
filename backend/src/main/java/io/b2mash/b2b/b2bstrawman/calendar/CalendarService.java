@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CalendarService {
 
-  private static final Set<String> VALID_TYPES = Set.of("TASK", "PROJECT");
+  private static final Set<String> VALID_TYPES = Set.of("TASK", "MATTER");
 
   private final EntityManager entityManager;
 
@@ -39,8 +39,8 @@ public class CalendarService {
       String status,
       String priority,
       UUID assigneeId,
-      UUID projectId,
-      String projectName) {}
+      UUID matterId,
+      String matterName) {}
 
   public record CalendarResponse(List<CalendarItemDto> items, int overdueCount) {}
 
@@ -69,7 +69,7 @@ public class CalendarService {
     }
 
     // Query projects in date range
-    if (filterType == null || "PROJECT".equals(filterType)) {
+    if (filterType == null || "MATTER".equals(filterType)) {
       List<Project> projects = queryProjects(from, to, actor.memberId(), isAdminOrOwner);
       items.addAll(toProjectDtos(projects));
     }
@@ -82,7 +82,7 @@ public class CalendarService {
         overdueItems.addAll(toTaskDtos(overdueTasks));
       }
 
-      if (filterType == null || "PROJECT".equals(filterType)) {
+      if (filterType == null || "MATTER".equals(filterType)) {
         List<Project> overdueProjects =
             queryOverdueProjects(from, actor.memberId(), isAdminOrOwner);
         overdueItems.addAll(toProjectDtos(overdueProjects));
@@ -94,7 +94,7 @@ public class CalendarService {
     // Apply optional filters (projectId, assigneeId)
     var filtered =
         items.stream()
-            .filter(item -> filterProjectId == null || filterProjectId.equals(item.projectId()))
+            .filter(item -> filterProjectId == null || filterProjectId.equals(item.matterId()))
             .filter(item -> filterAssigneeId == null || filterAssigneeId.equals(item.assigneeId()))
             .sorted(Comparator.comparing(CalendarItemDto::dueDate))
             .toList();
@@ -106,7 +106,7 @@ public class CalendarService {
           (int)
               overdueItems.stream()
                   .filter(
-                      item -> filterProjectId == null || filterProjectId.equals(item.projectId()))
+                      item -> filterProjectId == null || filterProjectId.equals(item.matterId()))
                   .filter(
                       item ->
                           filterAssigneeId == null || filterAssigneeId.equals(item.assigneeId()))
@@ -301,7 +301,7 @@ public class CalendarService {
                 new CalendarItemDto(
                     p.getId(),
                     p.getName(),
-                    "PROJECT",
+                    "MATTER",
                     p.getDueDate(),
                     p.getStatus().name(),
                     null,

@@ -989,7 +989,7 @@ class ProjectTemplateControllerTest {
     var tasksResult =
         mockMvc
             .perform(
-                get("/api/projects/" + projectIdStr + "/tasks")
+                get("/api/matters/" + projectIdStr + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tmpl_ctrl_owner")))
             .andExpect(status().isOk())
             .andReturn();

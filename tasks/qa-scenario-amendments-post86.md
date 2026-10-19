@@ -124,7 +124,7 @@ Insert after 4.3:
 |---|---|
 | Selector ref L35 | Drop `, staffing`. |
 | 3.5 | Drop `Staffing` from the Work group list and the sentence `Note: the old flat "Members" tab is replaced by Work > Staffing (?tab=staffing).` (Epic 599 #1570). |
-| 75.5, E.8 | **Keep** `8` — Day 8 exists again (§4.4). No change. |
+| 75.5, E.8 | ~~Keep `8`~~ **Superseded by §8.1 Med-2**: Day 8 is a public token page, not a portal login, and acceptance is not a portal-activity event — both lines drop Day 8 with the reason. |
 | E.2 | **Keep** `7` — a seventh wow moment is added (§4.4). No change. |
 
 ### 4.2 Phase 86 consequences (class B-86)

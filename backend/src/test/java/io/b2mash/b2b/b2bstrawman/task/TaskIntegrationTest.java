@@ -108,7 +108,7 @@ class TaskIntegrationTest {
   void shouldCreateTask() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tasks")
+            post("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -129,7 +129,7 @@ class TaskIntegrationTest {
         .andExpect(jsonPath("$.type").value("Feature"))
         .andExpect(jsonPath("$.dueDate").value("2026-03-15"))
         .andExpect(jsonPath("$.version").value(0))
-        .andExpect(jsonPath("$.projectId").value(projectId))
+        .andExpect(jsonPath("$.matterId").value(projectId))
         .andExpect(jsonPath("$.id").exists())
         .andExpect(jsonPath("$.createdAt").exists())
         .andExpect(jsonPath("$.updatedAt").exists());
@@ -139,7 +139,7 @@ class TaskIntegrationTest {
   void shouldCreateTaskWithMinimalFields() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tasks")
+            post("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -160,7 +160,7 @@ class TaskIntegrationTest {
     // Create a task first
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tasks")
+            post("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -171,7 +171,7 @@ class TaskIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/tasks")
+            get("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
@@ -183,7 +183,7 @@ class TaskIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -208,7 +208,7 @@ class TaskIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -250,7 +250,7 @@ class TaskIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -280,7 +280,7 @@ class TaskIntegrationTest {
   void projectMemberCanCreateTask() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tasks")
+            post("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_task_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -295,7 +295,7 @@ class TaskIntegrationTest {
     // user_task_tenant_b is in a different org and not a member of this project
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/tasks")
+            get("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_B_ID, "user_task_tenant_b")))
         .andExpect(status().isNotFound());
   }
@@ -306,7 +306,7 @@ class TaskIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.memberJwt(ORG_ID, "user_task_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -332,7 +332,7 @@ class TaskIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.memberJwt(ORG_ID, "user_task_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -358,7 +358,7 @@ class TaskIntegrationTest {
     // Create an OPEN task
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tasks")
+            post("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -370,7 +370,7 @@ class TaskIntegrationTest {
     // Filter by OPEN status — should include our task
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/tasks")
+            get("/api/matters/" + projectId + "/tasks")
                 .param("status", "OPEN")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_owner")))
         .andExpect(status().isOk())
@@ -385,7 +385,7 @@ class TaskIntegrationTest {
   void shouldFilterTasksByPriority() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tasks")
+            post("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -396,7 +396,7 @@ class TaskIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/tasks")
+            get("/api/matters/" + projectId + "/tasks")
                 .param("priority", "HIGH")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_owner")))
         .andExpect(status().isOk())
@@ -413,7 +413,7 @@ class TaskIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -447,7 +447,7 @@ class TaskIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -478,7 +478,7 @@ class TaskIntegrationTest {
   void shouldReject400WhenTitleIsMissing() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tasks")
+            post("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

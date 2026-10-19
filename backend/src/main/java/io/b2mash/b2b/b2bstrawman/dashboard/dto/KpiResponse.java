@@ -8,7 +8,7 @@ import java.util.List;
  * members.
  */
 public record KpiResponse(
-    int activeProjectCount,
+    int activeMatterCount,
     double totalHoursLogged,
     Double billablePercent,
     int overdueTaskCount,
@@ -19,6 +19,6 @@ public record KpiResponse(
   /** Returns a copy with financial fields (billablePercent, averageMarginPercent) set to null. */
   public KpiResponse withFinancialsRedacted() {
     return new KpiResponse(
-        activeProjectCount, totalHoursLogged, null, overdueTaskCount, null, trend, previousPeriod);
+        activeMatterCount, totalHoursLogged, null, overdueTaskCount, null, trend, previousPeriod);
   }
 }

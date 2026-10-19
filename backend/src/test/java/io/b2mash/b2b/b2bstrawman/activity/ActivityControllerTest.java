@@ -151,7 +151,7 @@ class ActivityControllerTest extends AbstractIntegrationTest {
   void getActivityReturnsPaginatedItemsWithCorrectShape() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/activity")
+            get("/api/matters/" + projectId + "/activity")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
@@ -174,7 +174,7 @@ class ActivityControllerTest extends AbstractIntegrationTest {
   void filterByEntityTypeReturnsOnlyMatchingEvents() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/activity")
+            get("/api/matters/" + projectId + "/activity")
                 .param("entityType", "TASK")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner")))
         .andExpect(status().isOk())
@@ -190,7 +190,7 @@ class ActivityControllerTest extends AbstractIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/activity")
+            get("/api/matters/" + projectId + "/activity")
                 .param("since", futureTimestamp)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner")))
         .andExpect(status().isOk())
@@ -219,7 +219,7 @@ class ActivityControllerTest extends AbstractIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + freshProjectId + "/activity")
+            get("/api/matters/" + freshProjectId + "/activity")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
@@ -247,7 +247,7 @@ class ActivityControllerTest extends AbstractIntegrationTest {
                         .claim("o", Map.of("id", otherOrgId, "rol", "member")));
 
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/activity").with(otherJwt))
+        .perform(get("/api/matters/" + projectId + "/activity").with(otherJwt))
         .andExpect(status().isNotFound());
   }
 
@@ -255,7 +255,7 @@ class ActivityControllerTest extends AbstractIntegrationTest {
   void responseFormatContainsActorNameAndMessage() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/activity")
+            get("/api/matters/" + projectId + "/activity")
                 .param("entityType", "DOCUMENT")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner")))
         .andExpect(status().isOk())

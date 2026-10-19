@@ -199,7 +199,7 @@ class ProjectBudgetIntegrationTest extends AbstractIntegrationTest {
                     "Hours only budget",
                     new ActorContext(memberIdOwner, "owner")));
 
-    assertThat(status.projectId()).isEqualTo(projectId);
+    assertThat(status.matterId()).isEqualTo(projectId);
     assertThat(status.budgetHours()).isEqualByComparingTo(new BigDecimal("100.00"));
     assertThat(status.budgetAmount()).isNull();
     assertThat(status.hoursConsumed()).isEqualByComparingTo(new BigDecimal("3.5"));
@@ -430,7 +430,7 @@ class ProjectBudgetIntegrationTest extends AbstractIntegrationTest {
     // Ensure budget exists in tenant A via HTTP
     mockMvc
         .perform(
-            put("/api/projects/" + projectId + "/budget")
+            put("/api/matters/" + projectId + "/budget")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_budget_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -445,7 +445,7 @@ class ProjectBudgetIntegrationTest extends AbstractIntegrationTest {
     // Tenant B queries tenant A's project budget via HTTP — should get 404
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/budget")
+            get("/api/matters/" + projectId + "/budget")
                 .with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_budget_owner_b")))
         .andExpect(status().isNotFound());
   }
@@ -456,7 +456,7 @@ class ProjectBudgetIntegrationTest extends AbstractIntegrationTest {
     // Tenant B queries tenant A's project budget status endpoint — should get 404
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/budget/status")
+            get("/api/matters/" + projectId + "/budget/status")
                 .with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_budget_owner_b")))
         .andExpect(status().isNotFound());
   }
@@ -468,7 +468,7 @@ class ProjectBudgetIntegrationTest extends AbstractIntegrationTest {
   void httpPut_budget_upsertReturns200() throws Exception {
     mockMvc
         .perform(
-            put("/api/projects/" + projectId + "/budget")
+            put("/api/matters/" + projectId + "/budget")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_budget_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -496,10 +496,10 @@ class ProjectBudgetIntegrationTest extends AbstractIntegrationTest {
   void httpGet_budget_returns200WithStatus() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/budget")
+            get("/api/matters/" + projectId + "/budget")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_budget_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.projectId").value(projectId.toString()))
+        .andExpect(jsonPath("$.matterId").value(projectId.toString()))
         .andExpect(jsonPath("$.budgetHours").value(200.00))
         .andExpect(jsonPath("$.hoursConsumed").isNumber())
         .andExpect(jsonPath("$.overallStatus").isString());
@@ -510,14 +510,14 @@ class ProjectBudgetIntegrationTest extends AbstractIntegrationTest {
   void httpDelete_budget_returns204() throws Exception {
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId + "/budget")
+            delete("/api/matters/" + projectId + "/budget")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_budget_owner")))
         .andExpect(status().isNoContent());
 
     // Verify it was deleted — GET should now return 404
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/budget")
+            get("/api/matters/" + projectId + "/budget")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_budget_owner")))
         .andExpect(status().isNotFound());
   }
@@ -526,7 +526,7 @@ class ProjectBudgetIntegrationTest extends AbstractIntegrationTest {
   @Order(16)
   void httpGet_budget_withoutAuth_returns401() throws Exception {
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/budget"))
+        .perform(get("/api/matters/" + projectId + "/budget"))
         .andExpect(status().isUnauthorized());
   }
 
@@ -535,7 +535,7 @@ class ProjectBudgetIntegrationTest extends AbstractIntegrationTest {
   void httpPut_budget_withInvalidBody_returns400() throws Exception {
     mockMvc
         .perform(
-            put("/api/projects/" + projectId + "/budget")
+            put("/api/matters/" + projectId + "/budget")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_budget_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -554,7 +554,7 @@ class ProjectBudgetIntegrationTest extends AbstractIntegrationTest {
   void httpPut_budget_memberWithoutCapability_returns403() throws Exception {
     mockMvc
         .perform(
-            put("/api/projects/" + projectId + "/budget")
+            put("/api/matters/" + projectId + "/budget")
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_budget_member", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -573,7 +573,7 @@ class ProjectBudgetIntegrationTest extends AbstractIntegrationTest {
     // Ensure a budget exists first
     mockMvc
         .perform(
-            put("/api/projects/" + projectId + "/budget")
+            put("/api/matters/" + projectId + "/budget")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_budget_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -588,7 +588,7 @@ class ProjectBudgetIntegrationTest extends AbstractIntegrationTest {
     // Member without FINANCIAL_VISIBILITY cannot delete
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId + "/budget")
+            delete("/api/matters/" + projectId + "/budget")
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_budget_member", "member")))
         .andExpect(status().isForbidden());
   }

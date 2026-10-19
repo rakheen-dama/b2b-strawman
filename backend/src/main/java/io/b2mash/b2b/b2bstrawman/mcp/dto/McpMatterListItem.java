@@ -5,10 +5,10 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * Compact {@code list_matters} row (§11.4). Projected from the firm-side {@code ProjectResponse}.
+ * Compact {@code list_matters} row (§11.4). Projected from the firm-side {@code MatterResponse}.
  *
  * <p>DRIFT note (vs §11.4): the spec sketches {@code customerName}/{@code startDate}, but {@code
- * Project}/{@code ProjectResponse} expose neither — only {@code customerId} (no name) and {@code
+ * Project}/{@code MatterResponse} expose neither — only {@code customerId} (no name) and {@code
  * createdAt}/{@code dueDate} (no startDate). We deliberately carry {@code customerId} (resolving
  * names would re-introduce the per-row enrichment we are avoiding for token-efficiency) and use
  * {@code createdAt} as the "started"-ish timestamp. {@code status} is the short enum name.

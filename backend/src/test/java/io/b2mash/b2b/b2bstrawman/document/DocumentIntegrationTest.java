@@ -89,7 +89,7 @@ class DocumentIntegrationTest {
   void shouldInitiateUploadAndReturnPresignedUrl() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/documents/upload-init")
+            post("/api/matters/" + projectId + "/documents/upload-init")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -107,7 +107,7 @@ class DocumentIntegrationTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -133,7 +133,7 @@ class DocumentIntegrationTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -169,7 +169,7 @@ class DocumentIntegrationTest {
     // Upload two documents
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/documents/upload-init")
+            post("/api/matters/" + projectId + "/documents/upload-init")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -180,7 +180,7 @@ class DocumentIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/documents/upload-init")
+            post("/api/matters/" + projectId + "/documents/upload-init")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -191,7 +191,7 @@ class DocumentIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/documents")
+            get("/api/matters/" + projectId + "/documents")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
@@ -202,7 +202,7 @@ class DocumentIntegrationTest {
   void shouldReturn404WhenListingDocumentsForNonexistentProject() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/00000000-0000-0000-0000-000000000000/documents")
+            get("/api/matters/00000000-0000-0000-0000-000000000000/documents")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_member")))
         .andExpect(status().isNotFound());
   }
@@ -214,7 +214,7 @@ class DocumentIntegrationTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -248,7 +248,7 @@ class DocumentIntegrationTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -282,12 +282,12 @@ class DocumentIntegrationTest {
   @Test
   void unauthenticatedUserCannotAccessDocumentEndpoints() throws Exception {
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/documents"))
+        .perform(get("/api/matters/" + projectId + "/documents"))
         .andExpect(status().isUnauthorized());
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/documents/upload-init")
+            post("/api/matters/" + projectId + "/documents/upload-init")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -301,7 +301,7 @@ class DocumentIntegrationTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -331,7 +331,7 @@ class DocumentIntegrationTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -364,7 +364,7 @@ class DocumentIntegrationTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -387,7 +387,7 @@ class DocumentIntegrationTest {
     // (tenant B can't even see tenant A's project — returns 404)
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/documents")
+            get("/api/matters/" + projectId + "/documents")
                 .with(TestJwtFactory.memberJwt(ORG_B_ID, "user_tenant_b")))
         .andExpect(status().isNotFound());
 
@@ -411,7 +411,7 @@ class DocumentIntegrationTest {
     // Tenant A tries to upload to tenant B's project
     mockMvc
         .perform(
-            post("/api/projects/" + projectBId + "/documents/upload-init")
+            post("/api/matters/" + projectBId + "/documents/upload-init")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -428,7 +428,7 @@ class DocumentIntegrationTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -459,7 +459,7 @@ class DocumentIntegrationTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -500,7 +500,7 @@ class DocumentIntegrationTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -526,7 +526,7 @@ class DocumentIntegrationTest {
   void shouldReject400WhenFileNameIsBlank() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/documents/upload-init")
+            post("/api/matters/" + projectId + "/documents/upload-init")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -540,7 +540,7 @@ class DocumentIntegrationTest {
   void shouldReject400WhenContentTypeIsBlank() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/documents/upload-init")
+            post("/api/matters/" + projectId + "/documents/upload-init")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -554,7 +554,7 @@ class DocumentIntegrationTest {
   void shouldReject400WhenSizeIsZero() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/documents/upload-init")
+            post("/api/matters/" + projectId + "/documents/upload-init")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -579,7 +579,7 @@ class DocumentIntegrationTest {
   void nonMemberCannotInitiateUpload() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/documents/upload-init")
+            post("/api/matters/" + projectId + "/documents/upload-init")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_nonmember"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -593,7 +593,7 @@ class DocumentIntegrationTest {
   void nonMemberCannotListDocuments() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/documents")
+            get("/api/matters/" + projectId + "/documents")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_nonmember")))
         .andExpect(status().isNotFound());
   }
@@ -604,7 +604,7 @@ class DocumentIntegrationTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -644,7 +644,7 @@ class DocumentIntegrationTest {
     // Upload a PROJECT-scoped document via the standard project upload-init
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/documents/upload-init")
+            post("/api/matters/" + projectId + "/documents/upload-init")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -656,7 +656,7 @@ class DocumentIntegrationTest {
     // Listing documents for the project should return documents with scope=PROJECT
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/documents")
+            get("/api/matters/" + projectId + "/documents")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
@@ -669,7 +669,7 @@ class DocumentIntegrationTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -690,7 +690,7 @@ class DocumentIntegrationTest {
         .andExpect(jsonPath("$.customerId").isEmpty())
         .andExpect(jsonPath("$.visibility").value("INTERNAL"))
         .andExpect(jsonPath("$.status").value("UPLOADED"))
-        .andExpect(jsonPath("$.projectId").value(projectId));
+        .andExpect(jsonPath("$.matterId").value(projectId));
   }
 
   @Test
@@ -698,7 +698,7 @@ class DocumentIntegrationTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

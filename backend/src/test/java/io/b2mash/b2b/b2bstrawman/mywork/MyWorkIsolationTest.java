@@ -194,8 +194,8 @@ class MyWorkIsolationTest {
                 .param("to", "2026-02-28"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalMinutes").value(120))
-        .andExpect(jsonPath("$.byProject", hasSize(1)))
-        .andExpect(jsonPath("$.byProject[0].projectName").value("Pro B Project"));
+        .andExpect(jsonPath("$.byMatter", hasSize(1)))
+        .andExpect(jsonPath("$.byMatter[0].matterName").value("Pro B Project"));
   }
 
   @Test
@@ -220,8 +220,8 @@ class MyWorkIsolationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalMinutes").value(90))
         .andExpect(jsonPath("$.billableMinutes").value(90))
-        .andExpect(jsonPath("$.byProject", hasSize(1)))
-        .andExpect(jsonPath("$.byProject[0].projectName").value("Starter A Project"));
+        .andExpect(jsonPath("$.byMatter", hasSize(1)))
+        .andExpect(jsonPath("$.byMatter[0].matterName").value("Starter A Project"));
 
     // Starter B sees only their own time summary
     mockMvc
@@ -233,8 +233,8 @@ class MyWorkIsolationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalMinutes").value(45))
         .andExpect(jsonPath("$.nonBillableMinutes").value(45))
-        .andExpect(jsonPath("$.byProject", hasSize(1)))
-        .andExpect(jsonPath("$.byProject[0].projectName").value("Starter B Project"));
+        .andExpect(jsonPath("$.byMatter", hasSize(1)))
+        .andExpect(jsonPath("$.byMatter[0].matterName").value("Starter B Project"));
   }
 
   // --- Helpers ---
@@ -263,7 +263,7 @@ class MyWorkIsolationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

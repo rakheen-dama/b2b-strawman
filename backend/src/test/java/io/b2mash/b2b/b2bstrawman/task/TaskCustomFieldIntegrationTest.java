@@ -65,7 +65,7 @@ class TaskCustomFieldIntegrationTest {
   void shouldCreateTaskWithCustomFields() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tasks")
+            post("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tcf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -90,7 +90,7 @@ class TaskCustomFieldIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tcf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -127,7 +127,7 @@ class TaskCustomFieldIntegrationTest {
   void shouldReturn400ForInvalidTaskCustomField() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tasks")
+            post("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tcf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -147,7 +147,7 @@ class TaskCustomFieldIntegrationTest {
     // Create task with specific custom field value
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tasks")
+            post("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tcf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -164,7 +164,7 @@ class TaskCustomFieldIntegrationTest {
     // Filter by custom field
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/tasks")
+            get("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tcf_owner"))
                 .param("customField[due_reminder]", "false"))
         .andExpect(status().isOk())
@@ -197,7 +197,7 @@ class TaskCustomFieldIntegrationTest {
     var taskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tcf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

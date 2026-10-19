@@ -8,16 +8,16 @@ import io.b2mash.b2b.b2bstrawman.budget.ProjectBudget;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudgetRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.dashboard.dto.CrossProjectActivityItem;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.CrossMatterActivityItem;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiValues;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.MatterBreakdownEntry;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.MatterHealth;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.MatterHealthDetail;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.MatterHealthMetrics;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.MatterHoursEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.MemberHoursEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.PersonalDashboard;
-import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectBreakdownEntry;
-import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealth;
-import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealthDetail;
-import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealthMetrics;
-import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHoursEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TaskSummary;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TeamWorkloadEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrendPoint;
@@ -115,16 +115,16 @@ public class DashboardService {
    */
   @SuppressWarnings("unchecked")
   @Transactional(readOnly = true)
-  public ProjectHealthDetail getProjectHealth(UUID projectId, String tenantId, ActorContext actor) {
+  public MatterHealthDetail getProjectHealth(UUID projectId, String tenantId, ActorContext actor) {
     projectAccessService.requireViewAccess(projectId, actor);
 
     String key = tenantId + ":project:" + projectId + ":health";
-    ProjectHealthDetail cached = (ProjectHealthDetail) projectCache.getIfPresent(key);
+    MatterHealthDetail cached = (MatterHealthDetail) projectCache.getIfPresent(key);
     if (cached != null) {
       return cached;
     }
 
-    ProjectHealthDetail result = computeProjectHealth(projectId);
+    MatterHealthDetail result = computeProjectHealth(projectId);
     projectCache.put(key, result);
     return result;
   }
@@ -183,7 +183,7 @@ public class DashboardService {
 
       full =
           new KpiResponse(
-              currentValues.activeProjectCount(),
+              currentValues.activeMatterCount(),
               currentValues.totalHoursLogged(),
               currentValues.billablePercent(),
               currentValues.overdueTaskCount(),
@@ -208,14 +208,14 @@ public class DashboardService {
    */
   @SuppressWarnings("unchecked")
   @Transactional(readOnly = true)
-  public List<ProjectHealth> getProjectHealthList(String tenantId, ActorContext actor) {
+  public List<MatterHealth> getProjectHealthList(String tenantId, ActorContext actor) {
     String key = tenantId + ":project-health:" + actor.orgRole();
-    List<ProjectHealth> cached = (List<ProjectHealth>) orgCache.getIfPresent(key);
+    List<MatterHealth> cached = (List<MatterHealth>) orgCache.getIfPresent(key);
     if (cached != null) {
       return cached;
     }
 
-    List<ProjectHealth> result = computeProjectHealthList(actor);
+    List<MatterHealth> result = computeProjectHealthList(actor);
     orgCache.put(key, result);
     return result;
   }
@@ -266,20 +266,20 @@ public class DashboardService {
    */
   @SuppressWarnings("unchecked")
   @Transactional(readOnly = true)
-  public List<CrossProjectActivityItem> getCrossProjectActivity(
+  public List<CrossMatterActivityItem> getCrossProjectActivity(
       String tenantId, ActorContext actor, int limit) {
     int clampedLimit = Math.max(MIN_ACTIVITY_LIMIT, Math.min(MAX_ACTIVITY_LIMIT, limit));
 
     String cacheKey =
         tenantId + ":activity:" + actor.memberId() + ":" + actor.orgRole() + ":" + clampedLimit;
 
-    List<CrossProjectActivityItem> cached =
-        (List<CrossProjectActivityItem>) orgCache.getIfPresent(cacheKey);
+    List<CrossMatterActivityItem> cached =
+        (List<CrossMatterActivityItem>) orgCache.getIfPresent(cacheKey);
     if (cached != null) {
       return cached;
     }
 
-    List<CrossProjectActivityItem> result = computeCrossProjectActivity(actor, clampedLimit);
+    List<CrossMatterActivityItem> result = computeCrossProjectActivity(actor, clampedLimit);
     orgCache.put(cacheKey, result);
     return result;
   }
@@ -349,7 +349,7 @@ public class DashboardService {
 
   // --- Private: project-scoped computation ---
 
-  private ProjectHealthDetail computeProjectHealth(UUID projectId) {
+  private MatterHealthDetail computeProjectHealth(UUID projectId) {
     LocalDate today = LocalDate.now();
 
     // Task counts
@@ -401,7 +401,7 @@ public class DashboardService {
     ProjectHealthResult healthResult = ProjectHealthCalculator.calculate(input);
 
     var metrics =
-        new ProjectHealthMetrics(
+        new MatterHealthMetrics(
             (int) doneTasks,
             (int) inProgressTasks,
             (int) todoTasks,
@@ -412,7 +412,7 @@ public class DashboardService {
             hoursThisPeriod,
             daysSinceLastActivity);
 
-    return new ProjectHealthDetail(healthResult.status(), healthResult.reasons(), metrics);
+    return new MatterHealthDetail(healthResult.status(), healthResult.reasons(), metrics);
   }
 
   private TaskSummary computeTaskSummary(UUID projectId) {
@@ -463,7 +463,7 @@ public class DashboardService {
         timeEntryRepository.memberTimeSummaryByProject(memberId, from, to);
     long totalMinutesAll =
         byProject.stream().mapToLong(MyWorkProjectTimeSummaryProjection::getTotalMinutes).sum();
-    List<ProjectBreakdownEntry> projectBreakdown = new ArrayList<>();
+    List<MatterBreakdownEntry> projectBreakdown = new ArrayList<>();
     long otherMinutes = 0;
     for (int i = 0; i < byProject.size(); i++) {
       var row = byProject.get(i);
@@ -472,7 +472,7 @@ public class DashboardService {
         double percent =
             totalMinutesAll > 0 ? (double) row.getTotalMinutes() / totalMinutesAll * 100 : 0;
         projectBreakdown.add(
-            new ProjectBreakdownEntry(row.getProjectId(), row.getProjectName(), hours, percent));
+            new MatterBreakdownEntry(row.getProjectId(), row.getProjectName(), hours, percent));
       } else {
         otherMinutes += row.getTotalMinutes();
       }
@@ -480,7 +480,7 @@ public class DashboardService {
     if (otherMinutes > 0) {
       double otherHours = otherMinutes / 60.0;
       double otherPercent = totalMinutesAll > 0 ? (double) otherMinutes / totalMinutesAll * 100 : 0;
-      projectBreakdown.add(new ProjectBreakdownEntry(null, "Other", otherHours, otherPercent));
+      projectBreakdown.add(new MatterBreakdownEntry(null, "Other", otherHours, otherPercent));
     }
 
     // 3. Overdue task count
@@ -604,7 +604,7 @@ public class DashboardService {
     return computeKpiValues(prevFrom, prevTo);
   }
 
-  private List<ProjectHealth> computeProjectHealthList(ActorContext actor) {
+  private List<MatterHealth> computeProjectHealthList(ActorContext actor) {
     // Get accessible projects based on role
     List<MatterWithRole> projectsWithRoles;
     if (isAdminOrOwner(actor.orgRole())) {
@@ -667,7 +667,7 @@ public class DashboardService {
               // Look up customer name
               String customerName = lookupCustomerName(projectId);
 
-              return new ProjectHealth(
+              return new MatterHealth(
                   projectId,
                   project.getName(),
                   customerName,
@@ -680,9 +680,9 @@ public class DashboardService {
                   hoursLogged);
             })
         .sorted(
-            Comparator.comparingInt((ProjectHealth ph) -> ph.healthStatus().severity())
+            Comparator.comparingInt((MatterHealth ph) -> ph.healthStatus().severity())
                 .reversed()
-                .thenComparingDouble(ProjectHealth::completionPercent))
+                .thenComparingDouble(MatterHealth::completionPercent))
         .toList();
   }
 
@@ -719,20 +719,20 @@ public class DashboardService {
       // Sort projects by hours DESC, cap at 5, aggregate rest as "Other"
       memberRows.sort(Comparator.comparingLong(TeamWorkloadProjection::getTotalMinutes).reversed());
 
-      List<ProjectHoursEntry> projects = new ArrayList<>();
+      List<MatterHoursEntry> projects = new ArrayList<>();
       long otherMinutes = 0;
       for (int i = 0; i < memberRows.size(); i++) {
         var row = memberRows.get(i);
         if (i < 5) {
           projects.add(
-              new ProjectHoursEntry(
+              new MatterHoursEntry(
                   row.getProjectId(), row.getProjectName(), row.getTotalMinutes() / 60.0));
         } else {
           otherMinutes += row.getTotalMinutes();
         }
       }
       if (otherMinutes > 0) {
-        projects.add(new ProjectHoursEntry(null, "Other", otherMinutes / 60.0));
+        projects.add(new MatterHoursEntry(null, "Other", otherMinutes / 60.0));
       }
 
       entries.add(
@@ -743,8 +743,7 @@ public class DashboardService {
     return entries;
   }
 
-  private List<CrossProjectActivityItem> computeCrossProjectActivity(
-      ActorContext actor, int limit) {
+  private List<CrossMatterActivityItem> computeCrossProjectActivity(ActorContext actor, int limit) {
     List<CrossProjectActivityProjection> rows;
     if (isAdminOrOwner(actor.orgRole())) {
       rows = auditEventRepository.findCrossProjectActivity(limit);
@@ -755,7 +754,7 @@ public class DashboardService {
     return rows.stream()
         .map(
             row ->
-                new CrossProjectActivityItem(
+                new CrossMatterActivityItem(
                     row.getEventId(),
                     row.getEventType(),
                     buildActivityDescription(row.getEventType(), row.getActorName()),

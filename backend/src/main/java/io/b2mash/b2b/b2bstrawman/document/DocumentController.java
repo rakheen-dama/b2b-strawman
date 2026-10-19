@@ -31,14 +31,14 @@ public class DocumentController {
 
   // --- PROJECT-scoped upload-init (existing) ---
 
-  @PostMapping("/api/projects/{projectId}/documents/upload-init")
+  @PostMapping("/api/matters/{matterId}/documents/upload-init")
   public ResponseEntity<UploadInitResponse> initiateUpload(
-      @PathVariable UUID projectId,
+      @PathVariable UUID matterId,
       @Valid @RequestBody UploadInitRequest request,
       ActorContext actor) {
     var result =
         documentService.initiateUpload(
-            projectId, request.fileName(), request.contentType(), request.size(), actor);
+            matterId, request.fileName(), request.contentType(), request.size(), actor);
     return ResponseEntity.status(201).body(UploadInitResponse.from(result));
   }
 
@@ -88,10 +88,10 @@ public class DocumentController {
     return ResponseEntity.noContent().build();
   }
 
-  @GetMapping("/api/projects/{projectId}/documents")
+  @GetMapping("/api/matters/{matterId}/documents")
   public ResponseEntity<List<DocumentResponse>> listDocuments(
-      @PathVariable UUID projectId, ActorContext actor) {
-    return ResponseEntity.ok(documentService.listDocumentResponses(projectId, actor));
+      @PathVariable UUID matterId, ActorContext actor) {
+    return ResponseEntity.ok(documentService.listDocumentResponses(matterId, actor));
   }
 
   @GetMapping("/api/documents/{documentId}/presign-download")
@@ -136,7 +136,7 @@ public class DocumentController {
 
   public record DocumentResponse(
       UUID id,
-      UUID projectId,
+      UUID matterId,
       String fileName,
       String contentType,
       long size,

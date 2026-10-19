@@ -72,7 +72,7 @@ class TimeEntryServiceAuditTest {
     var taskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_te_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

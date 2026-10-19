@@ -164,7 +164,7 @@ class PortalEventPublicationTest {
     var docInitResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -202,7 +202,7 @@ class PortalEventPublicationTest {
     var docInitResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -248,7 +248,7 @@ class PortalEventPublicationTest {
     var docInitResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/documents/upload-init")
+                post("/api/matters/" + projectId + "/documents/upload-init")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

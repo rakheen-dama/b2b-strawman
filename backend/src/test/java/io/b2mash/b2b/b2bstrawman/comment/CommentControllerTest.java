@@ -75,7 +75,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     var taskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -91,7 +91,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
   void postCreatesCommentAndReturns201WithCorrectShape() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/comments")
+            post("/api/matters/" + projectId + "/comments")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -107,7 +107,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.id").exists())
         .andExpect(jsonPath("$.entityType").value("TASK"))
         .andExpect(jsonPath("$.entityId").value(taskId))
-        .andExpect(jsonPath("$.projectId").value(projectId))
+        .andExpect(jsonPath("$.matterId").value(projectId))
         .andExpect(jsonPath("$.authorMemberId").value(memberIdMember))
         .andExpect(jsonPath("$.authorName").value("CC Member"))
         .andExpect(jsonPath("$.body").value("Controller test comment"))
@@ -126,7 +126,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/comments")
+            get("/api/matters/" + projectId + "/comments")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                 .param("entityType", "TASK")
                 .param("entityId", taskId))
@@ -145,7 +145,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     // Request page 0 with size 2
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/comments")
+            get("/api/matters/" + projectId + "/comments")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                 .param("entityType", "TASK")
                 .param("entityId", taskId)
@@ -163,7 +163,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + projectId + "/comments/" + commentId)
+            put("/api/matters/" + projectId + "/comments/" + commentId)
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -184,7 +184,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     // Try to update as member2 (not author, not admin/owner)
     mockMvc
         .perform(
-            put("/api/projects/" + projectId + "/comments/" + commentId)
+            put("/api/matters/" + projectId + "/comments/" + commentId)
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member2"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -202,7 +202,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
 
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId + "/comments/" + commentId)
+            delete("/api/matters/" + projectId + "/comments/" + commentId)
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member")))
         .andExpect(status().isNoContent());
   }
@@ -217,7 +217,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     // member2 is not the author and not admin/owner
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId + "/comments/" + commentId)
+            delete("/api/matters/" + projectId + "/comments/" + commentId)
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member2")))
         .andExpect(status().isForbidden());
   }
@@ -243,7 +243,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     var archiveTaskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + archiveProjectId + "/tasks")
+                post("/api/matters/" + archiveProjectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -264,7 +264,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     // Attempt to create a comment on the archived project — should be rejected
     mockMvc
         .perform(
-            post("/api/projects/" + archiveProjectId + "/comments")
+            post("/api/matters/" + archiveProjectId + "/comments")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -305,7 +305,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     var archiveTaskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + archiveProjectId + "/tasks")
+                post("/api/matters/" + archiveProjectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -320,7 +320,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     var archiveCommentResult =
         mockMvc
             .perform(
-                post("/api/projects/" + archiveProjectId + "/comments")
+                post("/api/matters/" + archiveProjectId + "/comments")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -347,7 +347,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     // Attempt to update the comment on the archived project — should be rejected
     mockMvc
         .perform(
-            put("/api/projects/" + archiveProjectId + "/comments/" + archiveCommentId)
+            put("/api/matters/" + archiveProjectId + "/comments/" + archiveCommentId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -362,7 +362,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     // Member-role users must be able to post PROJECT-level (Client Comments) which are SHARED
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/comments")
+            post("/api/matters/" + projectId + "/comments")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -386,7 +386,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     // SHARED visibility on TASK comments still requires canEdit
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/comments")
+            post("/api/matters/" + projectId + "/comments")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -409,7 +409,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     // Post as member
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/comments")
+            post("/api/matters/" + projectId + "/comments")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -427,7 +427,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     // List as different user — member's comment must be present
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/comments")
+            get("/api/matters/" + projectId + "/comments")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cc_admin"))
                 .param("entityType", "PROJECT"))
         .andExpect(status().isOk())
@@ -442,7 +442,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/comments")
+                post("/api/matters/" + projectId + "/comments")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

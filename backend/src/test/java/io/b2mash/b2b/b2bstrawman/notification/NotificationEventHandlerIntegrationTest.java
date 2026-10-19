@@ -104,7 +104,7 @@ class NotificationEventHandlerIntegrationTest {
     var taskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -142,7 +142,7 @@ class NotificationEventHandlerIntegrationTest {
     var taskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -199,7 +199,7 @@ class NotificationEventHandlerIntegrationTest {
     var taskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -244,7 +244,7 @@ class NotificationEventHandlerIntegrationTest {
     var taskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -273,7 +273,7 @@ class NotificationEventHandlerIntegrationTest {
     var taskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -307,7 +307,7 @@ class NotificationEventHandlerIntegrationTest {
     var taskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

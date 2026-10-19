@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/projects/{projectId}/comments")
+@RequestMapping("/api/matters/{matterId}/comments")
 public class CommentController {
 
   private final CommentService commentService;
@@ -34,13 +34,13 @@ public class CommentController {
 
   @PostMapping
   public ResponseEntity<CommentResponse> createComment(
-      @PathVariable UUID projectId,
+      @PathVariable UUID matterId,
       @Valid @RequestBody CreateCommentRequest request,
       ActorContext actor) {
 
     var comment =
         commentService.createComment(
-            projectId,
+            matterId,
             request.entityType(),
             request.entityId(),
             request.body(),
@@ -49,13 +49,13 @@ public class CommentController {
 
     var authors = commentService.resolveAuthors(List.of(comment));
     return ResponseEntity.created(
-            URI.create("/api/projects/" + projectId + "/comments/" + comment.getId()))
+            URI.create("/api/matters/" + matterId + "/comments/" + comment.getId()))
         .body(CommentResponse.from(comment, authors));
   }
 
   @GetMapping
   public ResponseEntity<List<CommentResponse>> listComments(
-      @PathVariable UUID projectId,
+      @PathVariable UUID matterId,
       @RequestParam String entityType,
       @RequestParam(required = false) UUID entityId,
       @RequestParam(defaultValue = "0") int page,
@@ -64,7 +64,7 @@ public class CommentController {
 
     var commentPage =
         commentService.listComments(
-            projectId, entityType, entityId, PageRequest.of(page, size), actor);
+            matterId, entityType, entityId, PageRequest.of(page, size), actor);
 
     var comments = commentPage.getContent();
     var authors = commentService.resolveAuthors(comments);
@@ -75,14 +75,14 @@ public class CommentController {
 
   @PutMapping("/{commentId}")
   public ResponseEntity<CommentResponse> updateComment(
-      @PathVariable UUID projectId,
+      @PathVariable UUID matterId,
       @PathVariable UUID commentId,
       @Valid @RequestBody UpdateCommentRequest request,
       ActorContext actor) {
 
     var comment =
         commentService.updateComment(
-            projectId, commentId, request.body(), request.visibility(), actor);
+            matterId, commentId, request.body(), request.visibility(), actor);
 
     var authors = commentService.resolveAuthors(List.of(comment));
     return ResponseEntity.ok(CommentResponse.from(comment, authors));
@@ -90,9 +90,9 @@ public class CommentController {
 
   @DeleteMapping("/{commentId}")
   public ResponseEntity<Void> deleteComment(
-      @PathVariable UUID projectId, @PathVariable UUID commentId, ActorContext actor) {
+      @PathVariable UUID matterId, @PathVariable UUID commentId, ActorContext actor) {
 
-    commentService.deleteComment(projectId, commentId, actor);
+    commentService.deleteComment(matterId, commentId, actor);
     return ResponseEntity.noContent().build();
   }
 
@@ -116,7 +116,7 @@ public class CommentController {
       UUID id,
       String entityType,
       UUID entityId,
-      UUID projectId,
+      UUID matterId,
       UUID authorMemberId,
       String authorName,
       String authorAvatarUrl,

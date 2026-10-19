@@ -81,7 +81,7 @@ class DashboardWithoutCapacityTest {
                 .param("to", today.toString())
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.activeProjectCount").isNumber())
+        .andExpect(jsonPath("$.activeMatterCount").isNumber())
         .andExpect(jsonPath("$.capacity").doesNotExist())
         .andExpect(jsonPath("$.teamUtilization").doesNotExist());
   }
@@ -104,7 +104,7 @@ class DashboardWithoutCapacityTest {
   @Test
   void projectHealthListStillServed() throws Exception {
     mockMvc
-        .perform(get("/api/dashboard/project-health").with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+        .perform(get("/api/dashboard/matter-health").with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
   }

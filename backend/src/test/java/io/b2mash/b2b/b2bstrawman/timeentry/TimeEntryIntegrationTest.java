@@ -142,7 +142,7 @@ class TimeEntryIntegrationTest {
     var taskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(ownerJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -171,7 +171,7 @@ class TimeEntryIntegrationTest {
     var taskBResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectBId + "/tasks")
+                post("/api/matters/" + projectBId + "/tasks")
                     .with(tenantBOwnerJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -360,7 +360,7 @@ class TimeEntryIntegrationTest {
     var newTaskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(ownerJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -647,7 +647,7 @@ class TimeEntryIntegrationTest {
     var isolatedTaskResult =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(ownerJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

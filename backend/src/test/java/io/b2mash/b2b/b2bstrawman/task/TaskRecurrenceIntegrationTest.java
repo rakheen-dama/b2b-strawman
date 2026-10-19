@@ -262,7 +262,7 @@ class TaskRecurrenceIntegrationTest {
   void shouldRejectInvalidRecurrenceRuleOnCreate() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tasks")
+            post("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -375,7 +375,7 @@ class TaskRecurrenceIntegrationTest {
     // Filter with recurring=true
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/tasks")
+            get("/api/matters/" + projectId + "/tasks")
                 .param("recurring", "true")
                 .param("status", "OPEN")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner")))
@@ -396,7 +396,7 @@ class TaskRecurrenceIntegrationTest {
     // Filter with recurring=true AND assigneeFilter=unassigned
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/tasks")
+            get("/api/matters/" + projectId + "/tasks")
                 .param("recurring", "true")
                 .param("assigneeFilter", "unassigned")
                 .param("status", "OPEN")
@@ -416,7 +416,7 @@ class TaskRecurrenceIntegrationTest {
     // List without recurring filter — should include recurring tasks
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/tasks")
+            get("/api/matters/" + projectId + "/tasks")
                 .param("status", "OPEN")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner")))
         .andExpect(status().isOk())
@@ -430,7 +430,7 @@ class TaskRecurrenceIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -453,7 +453,7 @@ class TaskRecurrenceIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

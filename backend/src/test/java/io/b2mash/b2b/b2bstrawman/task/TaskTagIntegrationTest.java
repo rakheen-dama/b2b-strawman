@@ -118,7 +118,7 @@ class TaskTagIntegrationTest {
     // Filter by tag slug
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/tasks")
+            get("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tt_owner"))
                 .param("tags", "task_urgent"))
         .andExpect(status().isOk())
@@ -128,7 +128,7 @@ class TaskTagIntegrationTest {
     // Filter by both tag slugs (AND logic)
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/tasks")
+            get("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tt_owner"))
                 .param("tags", "task_urgent,task_review"))
         .andExpect(status().isOk())
@@ -158,7 +158,7 @@ class TaskTagIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/tasks")
+                post("/api/matters/" + projectId + "/tasks")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tt_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

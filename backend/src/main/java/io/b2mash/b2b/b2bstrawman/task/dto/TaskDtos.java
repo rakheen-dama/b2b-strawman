@@ -72,7 +72,7 @@ public final class TaskDtos {
 
   public record TaskResponse(
       UUID id,
-      UUID projectId,
+      UUID matterId,
       String title,
       String description,
       String status,

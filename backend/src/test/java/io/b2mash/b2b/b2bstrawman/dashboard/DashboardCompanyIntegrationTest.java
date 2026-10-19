@@ -270,7 +270,7 @@ class DashboardCompanyIntegrationTest {
                 .param("to", today.toString())
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.activeProjectCount").value(greaterThanOrEqualTo(3)));
+        .andExpect(jsonPath("$.activeMatterCount").value(greaterThanOrEqualTo(3)));
   }
 
   @Test
@@ -332,7 +332,7 @@ class DashboardCompanyIntegrationTest {
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.previousPeriod").isNotEmpty())
-        .andExpect(jsonPath("$.previousPeriod.activeProjectCount").isNumber());
+        .andExpect(jsonPath("$.previousPeriod.activeMatterCount").isNumber());
   }
 
   // --- Project Health List Tests ---
@@ -341,12 +341,12 @@ class DashboardCompanyIntegrationTest {
   void projectHealthListSortedBySeverity() throws Exception {
     mockMvc
         .perform(
-            get("/api/dashboard/project-health")
+            get("/api/dashboard/matter-health")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(3))))
-        .andExpect(jsonPath("$[0].projectId").isString())
+        .andExpect(jsonPath("$[0].matterId").isString())
         .andExpect(jsonPath("$[0].healthStatus").isString());
   }
 
@@ -356,7 +356,7 @@ class DashboardCompanyIntegrationTest {
     var adminResult =
         mockMvc
             .perform(
-                get("/api/dashboard/project-health")
+                get("/api/dashboard/matter-health")
                     .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
             .andExpect(status().isOk())
             .andReturn();
@@ -366,7 +366,7 @@ class DashboardCompanyIntegrationTest {
     var memberResult =
         mockMvc
             .perform(
-                get("/api/dashboard/project-health")
+                get("/api/dashboard/matter-health")
                     .with(TestJwtFactory.memberJwt(ORG_ID, "user_cdash_member1")))
             .andExpect(status().isOk())
             .andReturn();

@@ -9,58 +9,7 @@
 # Never add a line by hand to make the build green — rename the route/record instead.
 # Regenerate: ./mvnw test -Dtest=WireVocabularyContractTest -Dwire.contract.update=true
 # Format: "ROUTE <METHODS> <pattern>" | "DTO <class>" | "DTO <class>#<component>"
-DTO io.b2mash.b2b.b2bstrawman.budget.BudgetStatus#projectId
-DTO io.b2mash.b2b.b2bstrawman.budget.ProjectBudgetController$BudgetStatusResponse#projectId
-DTO io.b2mash.b2b.b2bstrawman.calendar.CalendarService$CalendarItemDto#projectId
-DTO io.b2mash.b2b.b2bstrawman.calendar.CalendarService$CalendarItemDto#projectName
-DTO io.b2mash.b2b.b2bstrawman.comment.CommentController$CommentResponse#projectId
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.CrossProjectActivityItem
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.CrossProjectActivityItem#projectId
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.CrossProjectActivityItem#projectName
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiResponse#activeProjectCount
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiValues#activeProjectCount
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.PersonalDashboard#projectBreakdown
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectBreakdownEntry
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectBreakdownEntry#projectId
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectBreakdownEntry#projectName
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealth
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealth#customerName
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealth#projectId
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealth#projectName
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealthDetail
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealthMetrics
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHoursEntry
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHoursEntry#projectId
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHoursEntry#projectName
 DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.TeamWorkloadEntry#projects
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.UpcomingDeadline#projectName
 DTO io.b2mash.b2b.b2bstrawman.document.DocumentController$DocumentResponse#customerId
-DTO io.b2mash.b2b.b2bstrawman.document.DocumentController$DocumentResponse#projectId
-DTO io.b2mash.b2b.b2bstrawman.mywork.MyWorkController$MyWorkProjectSummary
-DTO io.b2mash.b2b.b2bstrawman.mywork.MyWorkController$MyWorkProjectSummary#projectId
-DTO io.b2mash.b2b.b2bstrawman.mywork.MyWorkController$MyWorkProjectSummary#projectName
-DTO io.b2mash.b2b.b2bstrawman.mywork.MyWorkController$MyWorkTaskItem#projectId
-DTO io.b2mash.b2b.b2bstrawman.mywork.MyWorkController$MyWorkTaskItem#projectName
-DTO io.b2mash.b2b.b2bstrawman.mywork.MyWorkController$MyWorkTimeEntryItem#projectId
-DTO io.b2mash.b2b.b2bstrawman.mywork.MyWorkController$MyWorkTimeEntryItem#projectName
-DTO io.b2mash.b2b.b2bstrawman.mywork.MyWorkController$MyWorkTimeSummaryResponse#byProject
 DTO io.b2mash.b2b.b2bstrawman.setupstatus.MissingFieldSummary#customerCount
-DTO io.b2mash.b2b.b2bstrawman.task.dto.TaskDtos$TaskResponse#projectId
-ROUTE DELETE /api/projects/{projectId}/budget
-ROUTE DELETE /api/projects/{projectId}/comments/{commentId}
-ROUTE GET /api/dashboard/project-health
-ROUTE GET /api/projects/{projectId}/activity
-ROUTE GET /api/projects/{projectId}/budget
-ROUTE GET /api/projects/{projectId}/budget/status
-ROUTE GET /api/projects/{projectId}/comments
-ROUTE GET /api/projects/{projectId}/documents
-ROUTE GET /api/projects/{projectId}/health
-ROUTE GET /api/projects/{projectId}/member-hours
-ROUTE GET /api/projects/{projectId}/task-summary
-ROUTE GET /api/projects/{projectId}/tasks
 ROUTE POST /api/customers/{customerId}/documents/upload-init
-ROUTE POST /api/projects/{projectId}/comments
-ROUTE POST /api/projects/{projectId}/documents/upload-init
-ROUTE POST /api/projects/{projectId}/tasks
-ROUTE PUT /api/projects/{projectId}/budget
-ROUTE PUT /api/projects/{projectId}/comments/{commentId}

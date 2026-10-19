@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/projects/{projectId}/budget")
+@RequestMapping("/api/matters/{matterId}/budget")
 public class ProjectBudgetController {
 
   private final ProjectBudgetService projectBudgetService;
@@ -30,27 +30,27 @@ public class ProjectBudgetController {
 
   @GetMapping
   public ResponseEntity<BudgetStatusResponse> getBudget(
-      @PathVariable UUID projectId, ActorContext actor) {
-    var status = projectBudgetService.getBudgetWithStatus(projectId, actor);
+      @PathVariable UUID matterId, ActorContext actor) {
+    var status = projectBudgetService.getBudgetWithStatus(matterId, actor);
     return ResponseEntity.ok(BudgetStatusResponse.from(status));
   }
 
   @GetMapping("/status")
   public ResponseEntity<LightweightStatusResponse> getBudgetStatus(
-      @PathVariable UUID projectId, ActorContext actor) {
-    var status = projectBudgetService.getBudgetStatusOnly(projectId, actor);
+      @PathVariable UUID matterId, ActorContext actor) {
+    var status = projectBudgetService.getBudgetStatusOnly(matterId, actor);
     return ResponseEntity.ok(LightweightStatusResponse.from(status));
   }
 
   @PutMapping
   @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<BudgetStatusResponse> upsertBudget(
-      @PathVariable UUID projectId,
+      @PathVariable UUID matterId,
       @Valid @RequestBody UpsertBudgetRequest request,
       ActorContext actor) {
     var status =
         projectBudgetService.upsertBudget(
-            projectId,
+            matterId,
             request.budgetHours(),
             request.budgetAmount(),
             request.budgetCurrency(),
@@ -62,8 +62,8 @@ public class ProjectBudgetController {
 
   @DeleteMapping
   @RequiresCapability("FINANCIAL_VISIBILITY")
-  public ResponseEntity<Void> deleteBudget(@PathVariable UUID projectId, ActorContext actor) {
-    projectBudgetService.deleteBudget(projectId, actor);
+  public ResponseEntity<Void> deleteBudget(@PathVariable UUID matterId, ActorContext actor) {
+    projectBudgetService.deleteBudget(matterId, actor);
     return ResponseEntity.noContent().build();
   }
 
@@ -80,7 +80,7 @@ public class ProjectBudgetController {
       String notes) {}
 
   public record BudgetStatusResponse(
-      UUID projectId,
+      UUID matterId,
       BigDecimal budgetHours,
       BigDecimal budgetAmount,
       String budgetCurrency,
@@ -98,7 +98,7 @@ public class ProjectBudgetController {
 
     public static BudgetStatusResponse from(BudgetStatus s) {
       return new BudgetStatusResponse(
-          s.projectId(),
+          s.matterId(),
           s.budgetHours(),
           s.budgetAmount(),
           s.budgetCurrency(),

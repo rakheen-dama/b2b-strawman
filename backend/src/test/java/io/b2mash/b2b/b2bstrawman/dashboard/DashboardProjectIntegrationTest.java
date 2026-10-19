@@ -352,7 +352,7 @@ class DashboardProjectIntegrationTest {
   void healthReturnsHealthyForProjectWithAllTasksDone() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/{projectId}/health", projectAllDone)
+            get("/api/matters/{matterId}/health", projectAllDone)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dash_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.healthStatus").value("HEALTHY"))
@@ -365,7 +365,7 @@ class DashboardProjectIntegrationTest {
   void healthReturnsAtRiskOrCriticalWithOverdueTasks() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/{projectId}/health", projectOverdue)
+            get("/api/matters/{matterId}/health", projectOverdue)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dash_owner")))
         .andExpect(status().isOk())
         .andExpect(
@@ -380,7 +380,7 @@ class DashboardProjectIntegrationTest {
   void healthReturnsUnknownForProjectWithNoTasks() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/{projectId}/health", projectNoTasks)
+            get("/api/matters/{matterId}/health", projectNoTasks)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dash_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.healthStatus").value("UNKNOWN"))
@@ -392,7 +392,7 @@ class DashboardProjectIntegrationTest {
   void healthIncludesReasonsArray() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/{projectId}/health", projectOverdue)
+            get("/api/matters/{matterId}/health", projectOverdue)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dash_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.healthReasons").isArray())
@@ -405,7 +405,7 @@ class DashboardProjectIntegrationTest {
   void taskSummaryReturnsCorrectCountsByStatus() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/{projectId}/task-summary", projectWithTasks)
+            get("/api/matters/{matterId}/task-summary", projectWithTasks)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dash_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.todo").value(3)) // 2 OPEN + 1 overdue (still OPEN)
@@ -419,7 +419,7 @@ class DashboardProjectIntegrationTest {
   void taskSummaryIncludesOverdueCount() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/{projectId}/task-summary", projectWithTasks)
+            get("/api/matters/{matterId}/task-summary", projectWithTasks)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dash_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.overdueCount").value(1));
@@ -432,7 +432,7 @@ class DashboardProjectIntegrationTest {
     // nonMember is not a project member on any of the projects
     mockMvc
         .perform(
-            get("/api/projects/{projectId}/health", projectWithTasks)
+            get("/api/matters/{matterId}/health", projectWithTasks)
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_dash_nonmember")))
         .andExpect(status().isNotFound());
   }
@@ -442,7 +442,7 @@ class DashboardProjectIntegrationTest {
     // Admin can access any project even without explicit membership
     mockMvc
         .perform(
-            get("/api/projects/{projectId}/health", projectWithTasks)
+            get("/api/matters/{matterId}/health", projectWithTasks)
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_dash_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.healthStatus").exists());

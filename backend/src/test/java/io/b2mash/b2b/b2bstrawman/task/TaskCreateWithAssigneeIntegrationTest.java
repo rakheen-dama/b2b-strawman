@@ -89,7 +89,7 @@ class TaskCreateWithAssigneeIntegrationTest {
   void shouldCreateTaskWithAssigneeAsAdmin() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tasks")
+            post("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_assignee_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -111,7 +111,7 @@ class TaskCreateWithAssigneeIntegrationTest {
   void shouldIgnoreAssigneeIdForRegularMember() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tasks")
+            post("/api/matters/" + projectId + "/tasks")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_assignee_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

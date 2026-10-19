@@ -55,14 +55,14 @@ class DashboardWithoutPipelineTest {
                 .param("to", today.toString())
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.activeProjectCount").isNumber())
+        .andExpect(jsonPath("$.activeMatterCount").isNumber())
         .andExpect(jsonPath("$.pipeline").doesNotExist());
   }
 
   @Test
   void projectHealthListStillServed() throws Exception {
     mockMvc
-        .perform(get("/api/dashboard/project-health").with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+        .perform(get("/api/dashboard/matter-health").with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
   }

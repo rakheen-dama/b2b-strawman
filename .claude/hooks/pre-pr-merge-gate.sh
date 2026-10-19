@@ -25,7 +25,8 @@
 # required for EVERY PR — there is no documentation-only exemption — and verify
 # markers are required per touched layer. Together this is what lets
 # `Bash(gh pr merge:*)` be allow-listed in .claude/settings.json without a
-# human review step. The command itself must be a single plain
+# human review step. Very large PRs (gh pr diff fails past ~300 files) are
+# denied and fall to a human merge. The command itself must be a single plain
 # `gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch] [--match-head-commit <sha>]`.
 #
 # This is enforcement, not advice. Do not bypass without raising the gate
@@ -41,7 +42,6 @@ if [[ -t 0 ]]; then
   exit 0
 fi
 
-# Read the tool-call payload from stdin (Claude Code hook contract).
 # Emit a deny decision as valid JSON (jq escapes everything; printf fallback if jq
 # is missing) and exit 0. Every refusal in this file goes through here.
 deny() {
@@ -57,6 +57,7 @@ deny() {
 # Fail closed: any unexpected error (set -e) becomes a deny, never a silent allow.
 trap 'deny "hook error at line $LINENO (command: $BASH_COMMAND). Merge denied fail-closed; fix the hook, do not bypass."' ERR
 
+# Read the tool-call payload from stdin (Claude Code hook contract).
 PAYLOAD="$(cat)"
 # Extract the FULL, unescaped command with jq (the old grep/sed stopped at the first
 # escaped quote, so `echo "x" && gh pr merge …` was read as `echo \` and never gated).
@@ -111,7 +112,10 @@ if [[ -z "$HEAD_BRANCH" ]]; then
   deny "gh pr view $PR_NUM failed (offline, unauthenticated, or no such PR). Cannot determine head branch."
 fi
 PR_HEAD_SHA="$(gh pr view "$PR_NUM" --json headRefOid -q .headRefOid 2>/dev/null || true)"
-# Resolved here, before the docs-only early allow, so the pin applies to every PR.
+if [[ -z "$PR_HEAD_SHA" ]]; then
+  deny "could not resolve the head SHA of PR $PR_NUM; refusing (marker ancestry cannot be checked)."
+fi
+# Resolved here, right after the head branch, so every later check can use it.
 # Optional pin: if the caller passed --match-head-commit, it must be the head we gated.
 # (gh itself also refuses the merge if the head moved; this makes the gate's view explicit.)
 if [[ -n "$WANT_HEAD" && "$PR_HEAD_SHA" != "$WANT_HEAD"* ]]; then
@@ -120,7 +124,7 @@ fi
 
 # Phase 86 (subtraction) precondition: the horizontal platform must be archived
 # before any deletion PR lands. Scoped to phase86/* branches (CLAUDE.md §10).
-# Runs before the docs-only early allow below so docs-only phase86 PRs are checked too.
+# Applies to every phase86 PR, documentation-only included.
 # Fail-closed: if `git ls-remote` fails (e.g. no network) the pipeline fails and the merge is denied.
 if [[ "$HEAD_BRANCH" == phase86/* || "$HEAD_BRANCH" == epic/86-* ]]; then
   if ! git -C "$REPO_ROOT" ls-remote --tags origin refs/tags/horizontal-platform-final | grep -q horizontal-platform-final; then
@@ -128,8 +132,7 @@ if [[ "$HEAD_BRANCH" == phase86/* || "$HEAD_BRANCH" == epic/86-* ]]; then
   fi
 fi
 
-# CI condition: all GitHub checks must be pass or skipping. Runs before the
-# docs-only early allow so documentation PRs are gated on CI too.
+# CI condition: all GitHub checks must be pass or skipping, for every PR.
 # `gh pr checks` exits non-zero when anything is pending/failing but still prints
 # the JSON, hence `|| true`; an empty result (CI not started / API failure) denies.
 CHECKS_JSON="$(gh pr checks "$PR_NUM" --json name,bucket 2>/dev/null || true)"
@@ -142,8 +145,8 @@ if [[ -n "$ci_not_green" ]]; then
 fi
 
 CHANGED_FILES="$(gh pr diff "$PR_NUM" --name-only 2>/dev/null || true)"
-# Fail-closed: an empty file list (API error, rate limit, oversized diff) must not be
-# mistaken for a documentation-only PR.
+# Fail-closed: an empty file list (API error, rate limit, or a diff over GitHub's ~300-file
+# limit) denies. Consequence: very large PRs cannot be agent-merged and fall to a human.
 if [[ -z "$CHANGED_FILES" ]]; then
   deny "gh pr diff --name-only returned nothing for PR $PR_NUM; cannot classify the change. Retry, or check gh auth / rate limits."
 fi
@@ -213,7 +216,7 @@ check_marker() {
   fi
 }
 
-# (PR_HEAD_SHA was resolved above, before the docs-only allow.)
+# (PR_HEAD_SHA was resolved above, right after HEAD_BRANCH.)
 
 if $needs_backend; then check_marker "backend"; fi
 if $needs_frontend; then check_marker "frontend"; fi
@@ -241,7 +244,7 @@ if ! printf '%s' "$PR_BODY" | grep -qE '^## CodeRabbit: (REVIEWED|DEFERRED)'; th
 fi
 
 if (( ${#missing[@]} > 0 || ${#stale[@]} > 0 || ${#review_missing[@]} > 0 )); then
-  reason="pre-pr-merge-gate (CLAUDE.md §10): merge blocked. "
+  reason="(CLAUDE.md §10) merge blocked. "
   if (( ${#missing[@]} > 0 )); then
     reason="${reason}Missing markers: ${missing[*]}. "
   fi
@@ -252,7 +255,7 @@ if (( ${#missing[@]} > 0 || ${#stale[@]} > 0 || ${#review_missing[@]} > 0 )); th
     reason="${reason}Missing review audit trail in PR body: ${review_missing[*]}. Run epic_v2 Step 4.5 (gh pr edit --body-file ...) to append the audit trail before merging. "
   fi
   reason="${reason}See CLAUDE.md §1-2 and .claude/skills/epic_v2/SKILL.md Step 4.5."
-  deny "${reason#pre-pr-merge-gate: }"
+  deny "${reason#pre-pr-merge-gate }"
 fi
 
 # All gates green.

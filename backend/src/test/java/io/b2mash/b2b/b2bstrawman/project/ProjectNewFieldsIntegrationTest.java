@@ -43,7 +43,7 @@ class ProjectNewFieldsIntegrationTest {
   void createProjectWithAllNewFieldsReturns201() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pnf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -91,7 +91,7 @@ class ProjectNewFieldsIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pnf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -107,7 +107,7 @@ class ProjectNewFieldsIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pnf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -126,7 +126,7 @@ class ProjectNewFieldsIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pnf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -145,7 +145,7 @@ class ProjectNewFieldsIntegrationTest {
     // Update only name — new fields should be retained
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pnf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

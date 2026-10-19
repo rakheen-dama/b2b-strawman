@@ -77,12 +77,12 @@ class InformationRequestNotificationAuditIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_notif_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"name": "Audit Test Project", "customerId": "%s"}
+                        {"name": "Audit Test Project", "clientId": "%s"}
                         """
                             .formatted(customerId)))
             .andExpect(status().isCreated())

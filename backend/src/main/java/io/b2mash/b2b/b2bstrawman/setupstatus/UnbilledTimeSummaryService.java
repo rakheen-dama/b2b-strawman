@@ -123,7 +123,7 @@ public class UnbilledTimeSummaryService {
       return new UnbilledTimeSummary(BigDecimal.ZERO, BigDecimal.ZERO, currency, 0, null);
     }
 
-    List<ProjectUnbilledBreakdown> byProject = new ArrayList<>();
+    List<MatterUnbilledBreakdown> byMatter = new ArrayList<>();
     BigDecimal totalMinutesRaw = BigDecimal.ZERO;
     BigDecimal totalAmountRaw = BigDecimal.ZERO;
     int totalEntryCount = 0;
@@ -138,8 +138,8 @@ public class UnbilledTimeSummaryService {
       BigDecimal hours = minutes.divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
       BigDecimal scaledAmount = amount.setScale(2, RoundingMode.HALF_UP);
 
-      byProject.add(
-          new ProjectUnbilledBreakdown(projectId, projectName, hours, scaledAmount, entryCount));
+      byMatter.add(
+          new MatterUnbilledBreakdown(projectId, projectName, hours, scaledAmount, entryCount));
       totalMinutesRaw = totalMinutesRaw.add(minutes);
       totalAmountRaw = totalAmountRaw.add(amount);
       totalEntryCount += entryCount;
@@ -149,7 +149,7 @@ public class UnbilledTimeSummaryService {
     BigDecimal totalAmount = totalAmountRaw.setScale(2, RoundingMode.HALF_UP);
 
     return new UnbilledTimeSummary(
-        totalHours, totalAmount, currency, totalEntryCount, List.copyOf(byProject));
+        totalHours, totalAmount, currency, totalEntryCount, List.copyOf(byMatter));
   }
 
   private String resolveCurrency() {

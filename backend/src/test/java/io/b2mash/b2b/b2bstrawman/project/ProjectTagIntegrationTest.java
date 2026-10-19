@@ -61,7 +61,7 @@ class ProjectTagIntegrationTest {
   void shouldSetTagsOnProject() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tags")
+            post("/api/matters/" + projectId + "/tags")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pt_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -78,7 +78,7 @@ class ProjectTagIntegrationTest {
     // Set tags first
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tags")
+            post("/api/matters/" + projectId + "/tags")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pt_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -91,7 +91,7 @@ class ProjectTagIntegrationTest {
     // Get tags
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/tags")
+            get("/api/matters/" + projectId + "/tags")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pt_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].name").value("Proj Urgent"));
@@ -105,7 +105,7 @@ class ProjectTagIntegrationTest {
     // Tag only the first project with both tags
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/tags")
+            post("/api/matters/" + projectId + "/tags")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pt_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -118,7 +118,7 @@ class ProjectTagIntegrationTest {
     // Filter by single tag slug
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pt_owner"))
                 .param("tags", "proj_urgent"))
         .andExpect(status().isOk())
@@ -128,7 +128,7 @@ class ProjectTagIntegrationTest {
     // Filter by both tag slugs (AND logic)
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pt_owner"))
                 .param("tags", "proj_urgent,proj_vip"))
         .andExpect(status().isOk())
@@ -141,7 +141,7 @@ class ProjectTagIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pt_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

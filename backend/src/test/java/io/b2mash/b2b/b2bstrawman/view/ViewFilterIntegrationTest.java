@@ -186,7 +186,7 @@ class ViewFilterIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .param("view", viewId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
@@ -206,7 +206,7 @@ class ViewFilterIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .param("view", viewId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
@@ -227,7 +227,7 @@ class ViewFilterIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .param("view", viewId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
@@ -249,7 +249,7 @@ class ViewFilterIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .param("view", viewId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
@@ -268,7 +268,7 @@ class ViewFilterIntegrationTest {
     // SQL != never matches the NULL work type of Gamma, so only Beta (LITIGATION) remains.
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .param("view", viewId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
@@ -300,7 +300,7 @@ class ViewFilterIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .param("view", viewId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
@@ -316,7 +316,7 @@ class ViewFilterIntegrationTest {
     // Empty filters → whereClause is empty → falls through to existing logic
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .param("view", viewId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
@@ -329,7 +329,7 @@ class ViewFilterIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .param("view", nonExistentId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isNotFound());
@@ -412,7 +412,7 @@ class ViewFilterIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .param("view", viewId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())

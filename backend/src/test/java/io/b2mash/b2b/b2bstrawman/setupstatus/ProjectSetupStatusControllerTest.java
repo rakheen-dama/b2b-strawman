@@ -111,11 +111,11 @@ class ProjectSetupStatusControllerTest {
   void getSetupStatus_returns200_withExpectedShape() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/setup-status")
+            get("/api/matters/" + projectId + "/setup-status")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_setupstatus_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.projectId").value(projectId.toString()))
-        .andExpect(jsonPath("$.customerAssigned").isBoolean())
+        .andExpect(jsonPath("$.matterId").value(projectId.toString()))
+        .andExpect(jsonPath("$.clientAssigned").isBoolean())
         .andExpect(jsonPath("$.rateCardConfigured").isBoolean())
         .andExpect(jsonPath("$.budgetConfigured").isBoolean())
         .andExpect(jsonPath("$.teamAssigned").isBoolean())
@@ -131,10 +131,10 @@ class ProjectSetupStatusControllerTest {
   void getSetupStatus_freshProject_hasFalseChecks() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/setup-status")
+            get("/api/matters/" + projectId + "/setup-status")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_setupstatus_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerAssigned").value(false))
+        .andExpect(jsonPath("$.clientAssigned").value(false))
         .andExpect(jsonPath("$.budgetConfigured").value(false))
         .andExpect(jsonPath("$.teamAssigned").value(false))
         .andExpect(jsonPath("$.overallComplete").value(false));
@@ -146,7 +146,7 @@ class ProjectSetupStatusControllerTest {
     var nonExistent = UUID.randomUUID();
     mockMvc
         .perform(
-            get("/api/projects/" + nonExistent + "/setup-status")
+            get("/api/matters/" + nonExistent + "/setup-status")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_setupstatus_owner")))
         .andExpect(status().isNotFound());
   }
@@ -155,7 +155,7 @@ class ProjectSetupStatusControllerTest {
   @Order(4)
   void getSetupStatus_withoutAuth_returns401() throws Exception {
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/setup-status"))
+        .perform(get("/api/matters/" + projectId + "/setup-status"))
         .andExpect(status().isUnauthorized());
   }
 
@@ -165,7 +165,7 @@ class ProjectSetupStatusControllerTest {
     // Tenant B tries to access Tenant A's project — should get 404 (schema isolation)
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/setup-status")
+            get("/api/matters/" + projectId + "/setup-status")
                 .with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_setupstatus_owner_b")))
         .andExpect(status().isNotFound());
   }

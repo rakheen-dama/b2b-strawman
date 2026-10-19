@@ -9,15 +9,15 @@ import java.time.LocalDate;
  * court_calendar} module). The firm-side regulatory deadlines source was removed in Phase 86 (Epic
  * 604A).
  *
- * <p>This DTO is the shape returned by {@code GET /api/projects/{id}/upcoming-deadlines}. Order is
- * date ASC; {@code type} identifies the source so the frontend can render a small badge.
+ * <p>This DTO is the shape returned by {@code GET /api/matters/{matterId}/upcoming-deadlines}.
+ * Order is date ASC; {@code type} identifies the source so the frontend can render a small badge.
  *
  * @param type always {@code "COURT"}
  * @param date the deadline date (always future-or-today)
  * @param description short label (court name + judge)
  * @param status pass-through from source (e.g. {@code SCHEDULED}, {@code POSTPONED}); nullable
  */
-public record ProjectUpcomingDeadline(
+public record MatterUpcomingDeadline(
     String type, LocalDate date, String description, String status) {
 
   public static final String TYPE_COURT = "COURT";

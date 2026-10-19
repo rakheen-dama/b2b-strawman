@@ -81,7 +81,7 @@ class ProjectCustomFieldIntegrationTest {
   void shouldCreateProjectWithCustomFields() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -107,7 +107,7 @@ class ProjectCustomFieldIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -122,7 +122,7 @@ class ProjectCustomFieldIntegrationTest {
     // Update with custom fields
     mockMvc
         .perform(
-            put("/api/projects/" + id)
+            put("/api/matters/" + id)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -145,7 +145,7 @@ class ProjectCustomFieldIntegrationTest {
   void shouldReturn400ForInvalidCustomFieldValue() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -166,7 +166,7 @@ class ProjectCustomFieldIntegrationTest {
     // Create project with specific custom field
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -184,7 +184,7 @@ class ProjectCustomFieldIntegrationTest {
     // Filter by custom field
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcf_owner"))
                 .param("customField[court]", "Magistrate Court"))
         .andExpect(status().isOk())
@@ -217,7 +217,7 @@ class ProjectCustomFieldIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -232,7 +232,7 @@ class ProjectCustomFieldIntegrationTest {
     // Apply field groups
     mockMvc
         .perform(
-            put("/api/projects/" + projectId + "/field-groups")
+            put("/api/matters/" + projectId + "/field-groups")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -301,7 +301,7 @@ class ProjectCustomFieldIntegrationTest {
     // frontend does (GET the project, spread it, then overwrite customFields).
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -309,7 +309,7 @@ class ProjectCustomFieldIntegrationTest {
                     {
                       "name": "L-35 Matter",
                       "description": "Matter for prospect client",
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "customFields": {
                         "court": "High Court",
                         "is_urgent": true
@@ -320,7 +320,7 @@ class ProjectCustomFieldIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.customFields.court").value("High Court"))
         .andExpect(jsonPath("$.customFields.is_urgent").value(true))
-        .andExpect(jsonPath("$.customerId").value(prospectCustomerId.toString()));
+        .andExpect(jsonPath("$.clientId").value(prospectCustomerId.toString()));
   }
 
   // --- Helpers ---

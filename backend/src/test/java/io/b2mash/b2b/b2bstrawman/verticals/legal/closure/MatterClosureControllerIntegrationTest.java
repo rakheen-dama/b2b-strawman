@@ -475,7 +475,7 @@ class MatterClosureControllerIntegrationTest {
     // Act + Assert: matter detail returns retentionEndsOn populated.
     mockMvc
         .perform(
-            get("/api/projects/" + projectId)
+            get("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(projectId.toString()))
@@ -500,7 +500,7 @@ class MatterClosureControllerIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId)
+            get("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("ACTIVE"))
@@ -543,7 +543,7 @@ class MatterClosureControllerIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId)
+            get("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("CLOSED"))

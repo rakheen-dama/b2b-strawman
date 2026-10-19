@@ -76,7 +76,7 @@ class TimeEntryRateSnapshotTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(ownerJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -90,7 +90,7 @@ class TimeEntryRateSnapshotTest {
     // Add member to project so they have view access
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

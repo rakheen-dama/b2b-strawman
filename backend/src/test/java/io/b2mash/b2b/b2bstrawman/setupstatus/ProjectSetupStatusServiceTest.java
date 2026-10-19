@@ -67,8 +67,8 @@ class ProjectSetupStatusServiceTest {
 
     var result = service.getSetupStatus(PROJECT_ID);
 
-    assertThat(result.projectId()).isEqualTo(PROJECT_ID);
-    assertThat(result.customerAssigned()).isFalse();
+    assertThat(result.matterId()).isEqualTo(PROJECT_ID);
+    assertThat(result.clientAssigned()).isFalse();
     assertThat(result.rateCardConfigured()).isFalse();
     assertThat(result.budgetConfigured()).isFalse();
     assertThat(result.teamAssigned()).isFalse();
@@ -90,7 +90,7 @@ class ProjectSetupStatusServiceTest {
 
     var result = service.getSetupStatus(PROJECT_ID);
 
-    assertThat(result.customerAssigned()).isTrue();
+    assertThat(result.clientAssigned()).isTrue();
     assertThat(result.rateCardConfigured()).isTrue();
     assertThat(result.budgetConfigured()).isTrue();
     assertThat(result.teamAssigned()).isTrue();
@@ -112,7 +112,7 @@ class ProjectSetupStatusServiceTest {
 
     var result = service.getSetupStatus(PROJECT_ID);
 
-    assertThat(result.customerAssigned()).isTrue();
+    assertThat(result.clientAssigned()).isTrue();
     assertThat(result.completionPercentage()).isEqualTo(40); // customer + no required fields
   }
 

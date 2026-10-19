@@ -36,8 +36,6 @@ DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.TeamWorkloadEntry#projects
 DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.UpcomingDeadline#projectName
 DTO io.b2mash.b2b.b2bstrawman.document.DocumentController$DocumentResponse#customerId
 DTO io.b2mash.b2b.b2bstrawman.document.DocumentController$DocumentResponse#projectId
-DTO io.b2mash.b2b.b2bstrawman.member.ProjectMemberController$ProjectMemberResponse
-DTO io.b2mash.b2b.b2bstrawman.member.ProjectMemberController$ProjectMemberResponse#projectRole
 DTO io.b2mash.b2b.b2bstrawman.mywork.MyWorkController$MyWorkProjectSummary
 DTO io.b2mash.b2b.b2bstrawman.mywork.MyWorkController$MyWorkProjectSummary#projectId
 DTO io.b2mash.b2b.b2bstrawman.mywork.MyWorkController$MyWorkProjectSummary#projectName
@@ -46,47 +44,11 @@ DTO io.b2mash.b2b.b2bstrawman.mywork.MyWorkController$MyWorkTaskItem#projectName
 DTO io.b2mash.b2b.b2bstrawman.mywork.MyWorkController$MyWorkTimeEntryItem#projectId
 DTO io.b2mash.b2b.b2bstrawman.mywork.MyWorkController$MyWorkTimeEntryItem#projectName
 DTO io.b2mash.b2b.b2bstrawman.mywork.MyWorkController$MyWorkTimeSummaryResponse#byProject
-DTO io.b2mash.b2b.b2bstrawman.project.ProjectController$CompleteProjectRequest
-DTO io.b2mash.b2b.b2bstrawman.project.ProjectController$CreateProjectRequest
-DTO io.b2mash.b2b.b2bstrawman.project.ProjectController$CreateProjectRequest#customerId
-DTO io.b2mash.b2b.b2bstrawman.project.ProjectController$ProjectResponse
-DTO io.b2mash.b2b.b2bstrawman.project.ProjectController$ProjectResponse#customerId
-DTO io.b2mash.b2b.b2bstrawman.project.ProjectController$ProjectResponse#projectRole
-DTO io.b2mash.b2b.b2bstrawman.project.ProjectController$UpdateProjectRequest
-DTO io.b2mash.b2b.b2bstrawman.project.ProjectController$UpdateProjectRequest#customerId
-DTO io.b2mash.b2b.b2bstrawman.project.ProjectUpcomingDeadline
-DTO io.b2mash.b2b.b2bstrawman.project.ProjectWithRole
-DTO io.b2mash.b2b.b2bstrawman.project.ProjectWithRole#project
-DTO io.b2mash.b2b.b2bstrawman.project.ProjectWithRole#projectRole
-DTO io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest#customerId
-DTO io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest#projectLeadMemberId
-DTO io.b2mash.b2b.b2bstrawman.projecttemplate.dto.ProjectTemplateResponse
-DTO io.b2mash.b2b.b2bstrawman.projecttemplate.dto.ProjectTemplateResponse#sourceProjectId
-DTO io.b2mash.b2b.b2bstrawman.projecttemplate.dto.SaveFromProjectRequest
 DTO io.b2mash.b2b.b2bstrawman.setupstatus.MissingFieldSummary#customerCount
-DTO io.b2mash.b2b.b2bstrawman.setupstatus.ProjectSetupStatus
-DTO io.b2mash.b2b.b2bstrawman.setupstatus.ProjectSetupStatus#customerAssigned
-DTO io.b2mash.b2b.b2bstrawman.setupstatus.ProjectSetupStatus#projectId
-DTO io.b2mash.b2b.b2bstrawman.setupstatus.ProjectUnbilledBreakdown
-DTO io.b2mash.b2b.b2bstrawman.setupstatus.ProjectUnbilledBreakdown#projectId
-DTO io.b2mash.b2b.b2bstrawman.setupstatus.ProjectUnbilledBreakdown#projectName
-DTO io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummary#byProject
 DTO io.b2mash.b2b.b2bstrawman.task.dto.TaskDtos$TaskResponse#projectId
-ROUTE DELETE /api/project-templates/{id}
-ROUTE DELETE /api/projects/{id}
 ROUTE DELETE /api/projects/{projectId}/budget
 ROUTE DELETE /api/projects/{projectId}/comments/{commentId}
-ROUTE DELETE /api/projects/{projectId}/members/{memberId}
 ROUTE GET /api/dashboard/project-health
-ROUTE GET /api/project-templates
-ROUTE GET /api/project-templates/{id}
-ROUTE GET /api/project-templates/{id}/prerequisite-check
-ROUTE GET /api/projects
-ROUTE GET /api/projects/{id}
-ROUTE GET /api/projects/{id}/setup-status
-ROUTE GET /api/projects/{id}/tags
-ROUTE GET /api/projects/{id}/unbilled-summary
-ROUTE GET /api/projects/{id}/upcoming-deadlines
 ROUTE GET /api/projects/{projectId}/activity
 ROUTE GET /api/projects/{projectId}/budget
 ROUTE GET /api/projects/{projectId}/budget/status
@@ -94,27 +56,11 @@ ROUTE GET /api/projects/{projectId}/comments
 ROUTE GET /api/projects/{projectId}/documents
 ROUTE GET /api/projects/{projectId}/health
 ROUTE GET /api/projects/{projectId}/member-hours
-ROUTE GET /api/projects/{projectId}/members
 ROUTE GET /api/projects/{projectId}/task-summary
 ROUTE GET /api/projects/{projectId}/tasks
-ROUTE PATCH /api/projects/{id}/archive
-ROUTE PATCH /api/projects/{id}/complete
-ROUTE PATCH /api/projects/{id}/reopen
 ROUTE POST /api/customers/{customerId}/documents/upload-init
-ROUTE POST /api/project-templates
-ROUTE POST /api/project-templates/from-project/{projectId}
-ROUTE POST /api/project-templates/{id}/duplicate
-ROUTE POST /api/project-templates/{id}/instantiate
-ROUTE POST /api/projects
-ROUTE POST /api/projects/{id}/tags
 ROUTE POST /api/projects/{projectId}/comments
 ROUTE POST /api/projects/{projectId}/documents/upload-init
-ROUTE POST /api/projects/{projectId}/members
 ROUTE POST /api/projects/{projectId}/tasks
-ROUTE PUT /api/project-templates/{id}
-ROUTE PUT /api/project-templates/{id}/required-customer-fields
-ROUTE PUT /api/projects/{id}
-ROUTE PUT /api/projects/{id}/field-groups
 ROUTE PUT /api/projects/{projectId}/budget
 ROUTE PUT /api/projects/{projectId}/comments/{commentId}
-ROUTE PUT /api/projects/{projectId}/members/{memberId}/role

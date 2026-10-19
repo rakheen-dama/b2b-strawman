@@ -107,7 +107,7 @@ class ShardScopePropagationTest {
             .addFilter(shardCapture, "/*")
             .build();
 
-    capturingMvc.perform(get("/api/projects").with(jwt)).andExpect(status().isOk());
+    capturingMvc.perform(get("/api/matters").with(jwt)).andExpect(status().isOk());
 
     assertThat(capturedShardId.get())
         .as("SHARD_ID should be bound to 'primary' during the HTTP request")
@@ -137,14 +137,14 @@ class ShardScopePropagationTest {
             .build();
 
     // First request populates the cache
-    capturingMvc.perform(get("/api/projects").with(jwt)).andExpect(status().isOk());
+    capturingMvc.perform(get("/api/matters").with(jwt)).andExpect(status().isOk());
     assertThat(capturedShardId.get())
         .as("SHARD_ID should be bound on first (cache-miss) request")
         .isEqualTo("primary");
 
     // Reset capture and make second request — should hit cache
     capturedShardId.set(null);
-    capturingMvc.perform(get("/api/projects").with(jwt)).andExpect(status().isOk());
+    capturingMvc.perform(get("/api/matters").with(jwt)).andExpect(status().isOk());
 
     assertThat(capturedShardId.get())
         .as("SHARD_ID should still be bound on cache-hit request")

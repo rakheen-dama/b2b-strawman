@@ -5,8 +5,9 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
+import io.b2mash.b2b.b2bstrawman.project.dto.MatterResponse;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
-import io.b2mash.b2b.b2bstrawman.setupstatus.ProjectSetupStatus;
+import io.b2mash.b2b.b2bstrawman.setupstatus.MatterSetupStatus;
 import io.b2mash.b2b.b2bstrawman.setupstatus.ProjectSetupStatusService;
 import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummary;
 import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummaryService;
@@ -17,7 +18,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/projects")
+@RequestMapping("/api/matters")
 public class ProjectController {
 
   private final ProjectService projectService;
@@ -58,7 +58,7 @@ public class ProjectController {
   }
 
   @GetMapping
-  public ResponseEntity<List<ProjectResponse>> listProjects(
+  public ResponseEntity<List<MatterResponse>> listProjects(
       @RequestParam(required = false) UUID view,
       @RequestParam(required = false) String status,
       @RequestParam(required = false) LocalDate dueBefore,
@@ -69,21 +69,22 @@ public class ProjectController {
         projectService.listProjects(view, status, dueBefore, customerId, allParams, actor));
   }
 
-  @GetMapping("/{id}")
-  public ResponseEntity<ProjectResponse> getProject(@PathVariable UUID id, ActorContext actor) {
-    var pwr = projectService.getProject(id, actor);
+  @GetMapping("/{matterId}")
+  public ResponseEntity<MatterResponse> getProject(
+      @PathVariable UUID matterId, ActorContext actor) {
+    var pwr = projectService.getProject(matterId, actor);
     // ADR-342: storage key, do not rename
-    var tags = entityTagService.getEntityTags("PROJECT", id);
-    var memberNames = projectService.resolveProjectMemberNames(List.of(pwr.project()));
-    LocalDate retentionEndsOn = projectService.computeRetentionEndsOn(pwr.project());
+    var tags = entityTagService.getEntityTags("PROJECT", matterId);
+    var memberNames = projectService.resolveProjectMemberNames(List.of(pwr.matter()));
+    LocalDate retentionEndsOn = projectService.computeRetentionEndsOn(pwr.matter());
     return ResponseEntity.ok(
-        ProjectResponse.from(pwr.project(), pwr.projectRole(), tags, memberNames, retentionEndsOn));
+        MatterResponse.from(pwr.matter(), pwr.matterRole(), tags, memberNames, retentionEndsOn));
   }
 
   @PostMapping
   @RequiresCapability("PROJECT_MANAGEMENT")
-  public ResponseEntity<ProjectResponse> createProject(
-      @Valid @RequestBody CreateProjectRequest request) {
+  public ResponseEntity<MatterResponse> createProject(
+      @Valid @RequestBody CreateMatterRequest request) {
     UUID createdBy = RequestScopes.requireMemberId();
     var project =
         projectService.createProject(
@@ -92,134 +93,140 @@ public class ProjectController {
             createdBy,
             request.customFields(),
             request.appliedFieldGroups(),
-            request.customerId(),
+            request.clientId(),
             request.dueDate(),
             request.referenceNumber(),
             request.priority(),
             request.workType());
     var memberNames = projectService.resolveProjectMemberNames(List.of(project));
-    return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))
-        .body(ProjectResponse.from(project, Roles.PROJECT_LEAD, memberNames));
+    return ResponseEntity.created(URI.create("/api/matters/" + project.getId()))
+        .body(MatterResponse.from(project, Roles.PROJECT_LEAD, memberNames));
   }
 
-  @PutMapping("/{id}")
-  public ResponseEntity<ProjectResponse> updateProject(
-      @PathVariable UUID id, @Valid @RequestBody UpdateProjectRequest request, ActorContext actor) {
+  @PutMapping("/{matterId}")
+  public ResponseEntity<MatterResponse> updateProject(
+      @PathVariable UUID matterId,
+      @Valid @RequestBody UpdateMatterRequest request,
+      ActorContext actor) {
     var pwr =
         projectService.updateProject(
-            id,
+            matterId,
             request.name(),
             request.description(),
             actor,
             request.customFields(),
             request.appliedFieldGroups(),
-            request.customerId(),
+            request.clientId(),
             request.dueDate(),
             request.referenceNumber(),
             request.priority(),
             request.workType());
     // ADR-342: storage key, do not rename
-    var tags = entityTagService.getEntityTags("PROJECT", id);
-    var memberNames = projectService.resolveProjectMemberNames(List.of(pwr.project()));
+    var tags = entityTagService.getEntityTags("PROJECT", matterId);
+    var memberNames = projectService.resolveProjectMemberNames(List.of(pwr.matter()));
     return ResponseEntity.ok(
-        ProjectResponse.from(pwr.project(), pwr.projectRole(), tags, memberNames));
+        MatterResponse.from(pwr.matter(), pwr.matterRole(), tags, memberNames));
   }
 
-  @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteProject(@PathVariable UUID id) {
-    projectService.deleteProject(id);
+  @DeleteMapping("/{matterId}")
+  public ResponseEntity<Void> deleteProject(@PathVariable UUID matterId) {
+    projectService.deleteProject(matterId);
     return ResponseEntity.noContent().build();
   }
 
-  @PatchMapping("/{id}/complete")
+  @PatchMapping("/{matterId}/complete")
   @RequiresCapability("PROJECT_MANAGEMENT")
-  public ResponseEntity<ProjectResponse> completeProject(
-      @PathVariable UUID id,
-      @RequestBody(required = false) CompleteProjectRequest request,
+  public ResponseEntity<MatterResponse> completeProject(
+      @PathVariable UUID matterId,
+      @RequestBody(required = false) CompleteMatterRequest request,
       ActorContext actor) {
     boolean ack = request != null && Boolean.TRUE.equals(request.acknowledgeUnbilledTime());
-    var project = projectService.completeProject(id, ack, actor);
+    var project = projectService.completeProject(matterId, ack, actor);
     var memberNames = projectService.resolveProjectMemberNames(List.of(project));
     // ADR-342: storage key, do not rename
-    var tags = entityTagService.getEntityTags("PROJECT", id);
-    return ResponseEntity.ok(ProjectResponse.from(project, null, tags, memberNames));
+    var tags = entityTagService.getEntityTags("PROJECT", matterId);
+    return ResponseEntity.ok(MatterResponse.from(project, null, tags, memberNames));
   }
 
-  @PatchMapping("/{id}/archive")
+  @PatchMapping("/{matterId}/archive")
   @RequiresCapability("PROJECT_MANAGEMENT")
-  public ResponseEntity<ProjectResponse> archiveProject(@PathVariable UUID id, ActorContext actor) {
-    var project = projectService.archiveProject(id, actor);
+  public ResponseEntity<MatterResponse> archiveProject(
+      @PathVariable UUID matterId, ActorContext actor) {
+    var project = projectService.archiveProject(matterId, actor);
     var memberNames = projectService.resolveProjectMemberNames(List.of(project));
     // ADR-342: storage key, do not rename
-    var tags = entityTagService.getEntityTags("PROJECT", id);
-    return ResponseEntity.ok(ProjectResponse.from(project, null, tags, memberNames));
+    var tags = entityTagService.getEntityTags("PROJECT", matterId);
+    return ResponseEntity.ok(MatterResponse.from(project, null, tags, memberNames));
   }
 
-  @PatchMapping("/{id}/reopen")
+  @PatchMapping("/{matterId}/reopen")
   @RequiresCapability("PROJECT_MANAGEMENT")
-  public ResponseEntity<ProjectResponse> reopenProject(@PathVariable UUID id, ActorContext actor) {
-    var project = projectService.reopenProject(id, actor);
+  public ResponseEntity<MatterResponse> reopenProject(
+      @PathVariable UUID matterId, ActorContext actor) {
+    var project = projectService.reopenProject(matterId, actor);
     var memberNames = projectService.resolveProjectMemberNames(List.of(project));
     // ADR-342: storage key, do not rename
-    var tags = entityTagService.getEntityTags("PROJECT", id);
-    return ResponseEntity.ok(ProjectResponse.from(project, null, tags, memberNames));
+    var tags = entityTagService.getEntityTags("PROJECT", matterId);
+    return ResponseEntity.ok(MatterResponse.from(project, null, tags, memberNames));
   }
 
-  @PutMapping("/{id}/field-groups")
+  @PutMapping("/{matterId}/field-groups")
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<List<FieldDefinitionResponse>> setFieldGroups(
-      @PathVariable UUID id,
+      @PathVariable UUID matterId,
       @Valid @RequestBody SetFieldGroupsRequest request,
       ActorContext actor) {
-    var fieldDefs = projectService.setFieldGroups(id, request.appliedFieldGroups(), actor);
+    var fieldDefs = projectService.setFieldGroups(matterId, request.appliedFieldGroups(), actor);
     return ResponseEntity.ok(fieldDefs);
   }
 
-  @PostMapping("/{id}/tags")
+  @PostMapping("/{matterId}/tags")
   public ResponseEntity<List<TagResponse>> setProjectTags(
-      @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request, ActorContext actor) {
+      @PathVariable UUID matterId,
+      @Valid @RequestBody SetEntityTagsRequest request,
+      ActorContext actor) {
     // Verify project access
-    projectService.getProject(id, actor);
+    projectService.getProject(matterId, actor);
     // ADR-342: storage key, do not rename
-    var tags = entityTagService.setEntityTags("PROJECT", id, request.tagIds());
+    var tags = entityTagService.setEntityTags("PROJECT", matterId, request.tagIds());
     return ResponseEntity.ok(tags);
   }
 
-  @GetMapping("/{id}/tags")
+  @GetMapping("/{matterId}/tags")
   public ResponseEntity<List<TagResponse>> getProjectTags(
-      @PathVariable UUID id, ActorContext actor) {
+      @PathVariable UUID matterId, ActorContext actor) {
     // Verify project access
-    projectService.getProject(id, actor);
+    projectService.getProject(matterId, actor);
     // ADR-342: storage key, do not rename
-    var tags = entityTagService.getEntityTags("PROJECT", id);
+    var tags = entityTagService.getEntityTags("PROJECT", matterId);
     return ResponseEntity.ok(tags);
   }
 
-  @GetMapping("/{id}/setup-status")
-  public ResponseEntity<ProjectSetupStatus> getSetupStatus(@PathVariable UUID id) {
-    return ResponseEntity.ok(projectSetupStatusService.getSetupStatus(id));
+  @GetMapping("/{matterId}/setup-status")
+  public ResponseEntity<MatterSetupStatus> getSetupStatus(@PathVariable UUID matterId) {
+    return ResponseEntity.ok(projectSetupStatusService.getSetupStatus(matterId));
   }
 
-  @GetMapping("/{id}/unbilled-summary")
+  @GetMapping("/{matterId}/unbilled-summary")
   @RequiresCapability("PROJECT_MANAGEMENT")
-  public ResponseEntity<UnbilledTimeSummary> getUnbilledSummary(@PathVariable UUID id) {
-    return ResponseEntity.ok(unbilledTimeSummaryService.getProjectUnbilledSummary(id));
+  public ResponseEntity<UnbilledTimeSummary> getUnbilledSummary(@PathVariable UUID matterId) {
+    return ResponseEntity.ok(unbilledTimeSummaryService.getProjectUnbilledSummary(matterId));
   }
 
-  @GetMapping("/{id}/upcoming-deadlines")
-  public ResponseEntity<List<ProjectUpcomingDeadline>> getUpcomingDeadlines(
-      @PathVariable UUID id, ActorContext actor) {
-    return ResponseEntity.ok(projectUpcomingDeadlinesService.getUpcomingDeadlines(id, actor));
+  @GetMapping("/{matterId}/upcoming-deadlines")
+  public ResponseEntity<List<MatterUpcomingDeadline>> getUpcomingDeadlines(
+      @PathVariable UUID matterId, ActorContext actor) {
+    return ResponseEntity.ok(projectUpcomingDeadlinesService.getUpcomingDeadlines(matterId, actor));
   }
 
-  public record CompleteProjectRequest(Boolean acknowledgeUnbilledTime) {}
+  public record CompleteMatterRequest(Boolean acknowledgeUnbilledTime) {}
 
-  public record CreateProjectRequest(
+  public record CreateMatterRequest(
       @NotBlank(message = "name is required")
           @Size(max = 255, message = "name must be at most 255 characters")
           String name,
       @Size(max = 2000, message = "description must be at most 2000 characters") String description,
-      UUID customerId,
+      UUID clientId,
       LocalDate dueDate,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
@@ -228,12 +235,12 @@ public class ProjectController {
       ProjectPriority priority,
       @Size(max = 50, message = "workType must be at most 50 characters") String workType) {}
 
-  public record UpdateProjectRequest(
+  public record UpdateMatterRequest(
       @NotBlank(message = "name is required")
           @Size(max = 255, message = "name must be at most 255 characters")
           String name,
       @Size(max = 2000, message = "description must be at most 2000 characters") String description,
-      UUID customerId,
+      UUID clientId,
       LocalDate dueDate,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
@@ -241,135 +248,4 @@ public class ProjectController {
           String referenceNumber,
       ProjectPriority priority,
       @Size(max = 50, message = "workType must be at most 50 characters") String workType) {}
-
-  public record ProjectResponse(
-      UUID id,
-      String name,
-      String description,
-      String status,
-      UUID customerId,
-      LocalDate dueDate,
-      UUID createdBy,
-      String createdByName,
-      Instant createdAt,
-      Instant updatedAt,
-      Instant completedAt,
-      UUID completedBy,
-      String completedByName,
-      Instant archivedAt,
-      Instant retentionClockStartedAt,
-      LocalDate retentionEndsOn,
-      String projectRole,
-      Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups,
-      List<TagResponse> tags,
-      String referenceNumber,
-      ProjectPriority priority,
-      String workType) {
-
-    public static ProjectResponse from(Project project) {
-      return from(project, Map.of());
-    }
-
-    public static ProjectResponse from(Project project, Map<UUID, String> memberNames) {
-      return new ProjectResponse(
-          project.getId(),
-          project.getName(),
-          project.getDescription(),
-          project.getStatus().name(),
-          project.getCustomerId(),
-          project.getDueDate(),
-          project.getCreatedBy(),
-          project.getCreatedBy() != null ? memberNames.get(project.getCreatedBy()) : null,
-          project.getCreatedAt(),
-          project.getUpdatedAt(),
-          project.getCompletedAt(),
-          project.getCompletedBy(),
-          project.getCompletedBy() != null ? memberNames.get(project.getCompletedBy()) : null,
-          project.getArchivedAt(),
-          project.getRetentionClockStartedAt(),
-          null,
-          null,
-          project.getCustomFields(),
-          project.getAppliedFieldGroups(),
-          List.of(),
-          project.getReferenceNumber(),
-          project.getPriority(),
-          project.getWorkType());
-    }
-
-    public static ProjectResponse from(
-        Project project, String projectRole, Map<UUID, String> memberNames) {
-      return new ProjectResponse(
-          project.getId(),
-          project.getName(),
-          project.getDescription(),
-          project.getStatus().name(),
-          project.getCustomerId(),
-          project.getDueDate(),
-          project.getCreatedBy(),
-          project.getCreatedBy() != null ? memberNames.get(project.getCreatedBy()) : null,
-          project.getCreatedAt(),
-          project.getUpdatedAt(),
-          project.getCompletedAt(),
-          project.getCompletedBy(),
-          project.getCompletedBy() != null ? memberNames.get(project.getCompletedBy()) : null,
-          project.getArchivedAt(),
-          project.getRetentionClockStartedAt(),
-          null,
-          projectRole,
-          project.getCustomFields(),
-          project.getAppliedFieldGroups(),
-          List.of(),
-          project.getReferenceNumber(),
-          project.getPriority(),
-          project.getWorkType());
-    }
-
-    public static ProjectResponse from(
-        Project project,
-        String projectRole,
-        List<TagResponse> tags,
-        Map<UUID, String> memberNames) {
-      return from(project, projectRole, tags, memberNames, null);
-    }
-
-    /**
-     * Detail-endpoint factory that includes the per-matter retention end date
-     * (GAP-OBS-Day60-RetentionShape). {@code retentionEndsOn} is null whenever the matter is not
-     * CLOSED, the retention clock isn't stamped, or the org's {@code legalMatterRetentionYears} is
-     * unconfigured (see {@link ProjectService#computeRetentionEndsOn}).
-     */
-    public static ProjectResponse from(
-        Project project,
-        String projectRole,
-        List<TagResponse> tags,
-        Map<UUID, String> memberNames,
-        LocalDate retentionEndsOn) {
-      return new ProjectResponse(
-          project.getId(),
-          project.getName(),
-          project.getDescription(),
-          project.getStatus().name(),
-          project.getCustomerId(),
-          project.getDueDate(),
-          project.getCreatedBy(),
-          project.getCreatedBy() != null ? memberNames.get(project.getCreatedBy()) : null,
-          project.getCreatedAt(),
-          project.getUpdatedAt(),
-          project.getCompletedAt(),
-          project.getCompletedBy(),
-          project.getCompletedBy() != null ? memberNames.get(project.getCompletedBy()) : null,
-          project.getArchivedAt(),
-          project.getRetentionClockStartedAt(),
-          retentionEndsOn,
-          projectRole,
-          project.getCustomFields(),
-          project.getAppliedFieldGroups(),
-          tags,
-          project.getReferenceNumber(),
-          project.getPriority(),
-          project.getWorkType());
-    }
-  }
 }

@@ -32,7 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * Controller-level integration test for {@code GET /api/projects/{id}/upcoming-deadlines} (GAP-L-58
+ * Controller-level integration test for {@code GET /api/matters/{id}/upcoming-deadlines} (GAP-L-58
  * / E9.3).
  *
  * <p>Asserts that with two future court dates and one past court date on a matter, the endpoint
@@ -151,7 +151,7 @@ class ProjectUpcomingDeadlinesIntegrationTest {
     var result =
         mockMvc
             .perform(
-                get("/api/projects/{id}/upcoming-deadlines", projectId)
+                get("/api/matters/{id}/upcoming-deadlines", projectId)
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pud_owner")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$").isArray())
@@ -186,7 +186,7 @@ class ProjectUpcomingDeadlinesIntegrationTest {
     var result =
         mockMvc
             .perform(
-                get("/api/projects/{id}/upcoming-deadlines", projectId)
+                get("/api/matters/{id}/upcoming-deadlines", projectId)
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pud_owner")))
             .andExpect(status().isOk())
             .andReturn();
@@ -205,7 +205,7 @@ class ProjectUpcomingDeadlinesIntegrationTest {
   void unknownProject_returns404() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/{id}/upcoming-deadlines", UUID.randomUUID())
+            get("/api/matters/{id}/upcoming-deadlines", UUID.randomUUID())
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pud_owner")))
         .andExpect(status().isNotFound());
   }

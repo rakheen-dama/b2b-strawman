@@ -52,7 +52,7 @@ class TenantFilterJitProvisioningTest {
     assertThat(mappingRepository.findByClerkOrgId(JIT_ORG_ID)).isEmpty();
 
     mockMvc
-        .perform(get("/api/projects").with(jwtForOrg(JIT_ORG_ID, JIT_ORG_SLUG)))
+        .perform(get("/api/matters").with(jwtForOrg(JIT_ORG_ID, JIT_ORG_SLUG)))
         .andExpect(status().isOk());
 
     // Verify org is now provisioned
@@ -75,12 +75,12 @@ class TenantFilterJitProvisioningTest {
     // First request triggers JIT provisioning
     String orgId = "org_jit_cache_test";
     mockMvc
-        .perform(get("/api/projects").with(jwtForOrg(orgId, "cache-test-org")))
+        .perform(get("/api/matters").with(jwtForOrg(orgId, "cache-test-org")))
         .andExpect(status().isOk());
 
     // Second request should succeed (uses cache, no re-provision)
     mockMvc
-        .perform(get("/api/projects").with(jwtForOrg(orgId, "cache-test-org")))
+        .perform(get("/api/matters").with(jwtForOrg(orgId, "cache-test-org")))
         .andExpect(status().isOk());
 
     // Only one mapping should exist
@@ -91,7 +91,7 @@ class TenantFilterJitProvisioningTest {
   void provisionedOrg_noJitCall() throws Exception {
     // Pre-provisioned org should work without JIT
     mockMvc
-        .perform(get("/api/projects").with(jwtForOrg(PRE_PROVISIONED_ORG_ID, "pre-prov-org")))
+        .perform(get("/api/matters").with(jwtForOrg(PRE_PROVISIONED_ORG_ID, "pre-prov-org")))
         .andExpect(status().isOk());
   }
 
@@ -99,7 +99,7 @@ class TenantFilterJitProvisioningTest {
   void concurrent_firstRequests_idempotent() throws Exception {
     // First request triggers JIT provisioning
     mockMvc
-        .perform(get("/api/projects").with(jwtForOrg(JIT_ORG_ID_2, "concurrent-org")))
+        .perform(get("/api/matters").with(jwtForOrg(JIT_ORG_ID_2, "concurrent-org")))
         .andExpect(status().isOk());
 
     // Evict cache to force re-lookup
@@ -107,7 +107,7 @@ class TenantFilterJitProvisioningTest {
 
     // Second request should find existing mapping
     mockMvc
-        .perform(get("/api/projects").with(jwtForOrg(JIT_ORG_ID_2, "concurrent-org")))
+        .perform(get("/api/matters").with(jwtForOrg(JIT_ORG_ID_2, "concurrent-org")))
         .andExpect(status().isOk());
 
     // Only one mapping should exist
@@ -118,7 +118,7 @@ class TenantFilterJitProvisioningTest {
   void jitProvisioning_usesSlugAsOrgName() throws Exception {
     String orgId = "org_jit_slug_name";
     mockMvc
-        .perform(get("/api/projects").with(jwtForOrg(orgId, "my-org-slug")))
+        .perform(get("/api/matters").with(jwtForOrg(orgId, "my-org-slug")))
         .andExpect(status().isOk());
 
     assertThat(mappingRepository.findByClerkOrgId(orgId)).isPresent();
@@ -127,7 +127,7 @@ class TenantFilterJitProvisioningTest {
   @Test
   void jitProvisioning_noSlug_usesOrgIdAsName() throws Exception {
     String orgId = "org_jit_no_slug";
-    mockMvc.perform(get("/api/projects").with(jwtForOrgNoSlug(orgId))).andExpect(status().isOk());
+    mockMvc.perform(get("/api/matters").with(jwtForOrgNoSlug(orgId))).andExpect(status().isOk());
 
     assertThat(mappingRepository.findByClerkOrgId(orgId)).isPresent();
   }
@@ -137,7 +137,7 @@ class TenantFilterJitProvisioningTest {
     // With capability-based auth, any authenticated user can trigger JIT provisioning
     String orgId = "org_jit_member_role";
     mockMvc
-        .perform(get("/api/projects").with(jwtForOrgWithRole(orgId, "member-org", "member")))
+        .perform(get("/api/matters").with(jwtForOrgWithRole(orgId, "member-org", "member")))
         .andExpect(status().isOk());
 
     assertThat(mappingRepository.findByClerkOrgId(orgId)).isPresent();
@@ -147,7 +147,7 @@ class TenantFilterJitProvisioningTest {
   void jitProvisioning_adminRole_provisions() throws Exception {
     String orgId = "org_jit_admin_role";
     mockMvc
-        .perform(get("/api/projects").with(jwtForOrgWithRole(orgId, "admin-org", "admin")))
+        .perform(get("/api/matters").with(jwtForOrgWithRole(orgId, "admin-org", "admin")))
         .andExpect(status().isOk());
 
     assertThat(mappingRepository.findByClerkOrgId(orgId)).isPresent();

@@ -430,7 +430,7 @@ class MyWorkIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -447,7 +447,7 @@ class MyWorkIntegrationTest {
       throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(jwt)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

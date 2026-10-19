@@ -182,7 +182,7 @@ class FieldValidationBugFixIntegrationTest {
     // 2. Create a project that uses this custom field
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vbf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

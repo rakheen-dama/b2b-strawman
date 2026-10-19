@@ -59,7 +59,7 @@ class TaskLifecycleIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -73,7 +73,7 @@ class TaskLifecycleIntegrationTest {
     // Add admin and member to the project
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -85,7 +85,7 @@ class TaskLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

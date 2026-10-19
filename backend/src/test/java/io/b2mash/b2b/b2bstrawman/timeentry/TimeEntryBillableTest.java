@@ -79,7 +79,7 @@ class TimeEntryBillableTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(ownerJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -93,7 +93,7 @@ class TimeEntryBillableTest {
     // Add member to project
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

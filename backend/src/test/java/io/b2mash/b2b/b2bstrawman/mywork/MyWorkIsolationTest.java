@@ -244,7 +244,7 @@ class MyWorkIsolationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

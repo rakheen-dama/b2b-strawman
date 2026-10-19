@@ -52,14 +52,14 @@ public class ProjectUpcomingDeadlinesService {
    * have view access to the project (enforced via {@link ProjectAccessService#requireViewAccess}).
    */
   @Transactional(readOnly = true)
-  public List<ProjectUpcomingDeadline> getUpcomingDeadlines(UUID projectId, ActorContext actor) {
+  public List<MatterUpcomingDeadline> getUpcomingDeadlines(UUID projectId, ActorContext actor) {
     projectRepository
         .findById(projectId)
         .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
     projectAccessService.requireViewAccess(projectId, actor);
 
     LocalDate today = LocalDate.now(clock);
-    List<ProjectUpcomingDeadline> rows = new ArrayList<>();
+    List<MatterUpcomingDeadline> rows = new ArrayList<>();
 
     // --- Court dates (legal vertical) ---
     if (moduleGuard.isModuleEnabled("court_calendar")) {
@@ -70,15 +70,15 @@ public class ProjectUpcomingDeadlinesService {
           continue;
         }
         rows.add(
-            new ProjectUpcomingDeadline(
-                ProjectUpcomingDeadline.TYPE_COURT,
+            new MatterUpcomingDeadline(
+                MatterUpcomingDeadline.TYPE_COURT,
                 cd.getScheduledDate(),
                 describeCourtDate(cd),
                 cd.getStatus()));
       }
     }
 
-    rows.sort(Comparator.comparing(ProjectUpcomingDeadline::date));
+    rows.sort(Comparator.comparing(MatterUpcomingDeadline::date));
     return rows;
   }
 

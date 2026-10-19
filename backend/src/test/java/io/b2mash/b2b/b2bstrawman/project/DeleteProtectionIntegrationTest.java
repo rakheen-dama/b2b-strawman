@@ -62,7 +62,7 @@ class DeleteProtectionIntegrationTest {
     var projectId = createProject("Empty Active Project");
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId)
+            delete("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isNoContent());
   }
@@ -74,7 +74,7 @@ class DeleteProtectionIntegrationTest {
 
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId)
+            delete("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail", containsString("task(s)")));
@@ -89,7 +89,7 @@ class DeleteProtectionIntegrationTest {
     // Project has tasks (which have time entries), so the task guard triggers first
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId)
+            delete("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail", containsString("task(s)")));
@@ -111,7 +111,7 @@ class DeleteProtectionIntegrationTest {
     // Now try to delete the project -- should be rejected because of invoice link
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId)
+            delete("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail", containsString("invoice(s)")));
@@ -124,7 +124,7 @@ class DeleteProtectionIntegrationTest {
 
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId)
+            delete("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail", containsString("completed")));
@@ -137,7 +137,7 @@ class DeleteProtectionIntegrationTest {
 
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId)
+            delete("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail", containsString("archived")));
@@ -241,8 +241,7 @@ class DeleteProtectionIntegrationTest {
     // Project should still be active
     mockMvc
         .perform(
-            get("/api/projects/" + projectId)
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
+            get("/api/matters/" + projectId).with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("ACTIVE"));
   }
@@ -258,8 +257,7 @@ class DeleteProtectionIntegrationTest {
     // Project should still be accessible and active
     mockMvc
         .perform(
-            get("/api/projects/" + projectId)
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
+            get("/api/matters/" + projectId).with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("ACTIVE"));
   }
@@ -288,7 +286,7 @@ class DeleteProtectionIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -334,7 +332,7 @@ class DeleteProtectionIntegrationTest {
   private void archiveProject(String projectId) throws Exception {
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/archive")
+            patch("/api/matters/" + projectId + "/archive")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isOk());
   }
@@ -342,7 +340,7 @@ class DeleteProtectionIntegrationTest {
   private void completeProject(String projectId) throws Exception {
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/complete")
+            patch("/api/matters/" + projectId + "/complete")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isOk());
   }
@@ -350,7 +348,7 @@ class DeleteProtectionIntegrationTest {
   private void reopenProject(String projectId) throws Exception {
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/reopen")
+            patch("/api/matters/" + projectId + "/reopen")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isOk());
   }

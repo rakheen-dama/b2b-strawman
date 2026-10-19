@@ -75,7 +75,7 @@ class DocxGenerationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(projectBody))

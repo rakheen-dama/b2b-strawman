@@ -58,7 +58,7 @@ class MemberFilterIntegrationTest {
 
     // Make API request — MemberFilter resolves existing member
     mockMvc
-        .perform(get("/api/projects").with(TestJwtFactory.adminJwt(ORG_ID, "user_existing_filter")))
+        .perform(get("/api/matters").with(TestJwtFactory.adminJwt(ORG_ID, "user_existing_filter")))
         .andExpect(status().isOk());
   }
 
@@ -66,7 +66,7 @@ class MemberFilterIntegrationTest {
   void shouldLazyCreateMemberForUnknownUser() throws Exception {
     // Make API request with user not in members table
     mockMvc
-        .perform(get("/api/projects").with(TestJwtFactory.memberJwt(ORG_ID, "user_lazy_create")))
+        .perform(get("/api/matters").with(TestJwtFactory.memberJwt(ORG_ID, "user_lazy_create")))
         .andExpect(status().isOk());
 
     // Verify member was lazy-created in tenant schema
@@ -108,12 +108,12 @@ class MemberFilterIntegrationTest {
   void shouldCacheMemberAndNotDuplicateOnSecondRequest() throws Exception {
     // First request — lazy-creates and caches
     mockMvc
-        .perform(get("/api/projects").with(TestJwtFactory.memberJwt(ORG_ID, "user_cache_test")))
+        .perform(get("/api/matters").with(TestJwtFactory.memberJwt(ORG_ID, "user_cache_test")))
         .andExpect(status().isOk());
 
     // Second request — hits cache
     mockMvc
-        .perform(get("/api/projects").with(TestJwtFactory.memberJwt(ORG_ID, "user_cache_test")))
+        .perform(get("/api/matters").with(TestJwtFactory.memberJwt(ORG_ID, "user_cache_test")))
         .andExpect(status().isOk());
 
     // Verify exactly one member record exists (not duplicated)

@@ -13,7 +13,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.CreateTemplateRequest;
-import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.SaveFromProjectRequest;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.SaveFromMatterRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.TemplateTaskRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.UpdateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -260,7 +260,7 @@ class ProjectTemplateServiceTest {
 
                   // Request tasks in reverse order
                   var request =
-                      new SaveFromProjectRequest(
+                      new SaveFromMatterRequest(
                           "From Project Template",
                           "{customer}",
                           null,
@@ -273,7 +273,7 @@ class ProjectTemplateServiceTest {
                           project.getId(), request, new ActorContext(memberId, "owner"));
 
                   assertThat(response.source()).isEqualTo("FROM_PROJECT");
-                  assertThat(response.sourceProjectId()).isEqualTo(project.getId());
+                  assertThat(response.sourceMatterId()).isEqualTo(project.getId());
                   assertThat(response.tasks()).hasSize(3);
                   assertThat(response.tasks().get(0).name()).isEqualTo("Third Task");
                   assertThat(response.tasks().get(1).name()).isEqualTo("First Task");
@@ -314,7 +314,7 @@ class ProjectTemplateServiceTest {
 
                   var roleMap = Map.of(task1.getId(), "PROJECT_LEAD");
                   var request =
-                      new SaveFromProjectRequest(
+                      new SaveFromMatterRequest(
                           "Role Template",
                           "{customer}",
                           null,
@@ -347,7 +347,7 @@ class ProjectTemplateServiceTest {
                               project.getId(), "Valid Task", null, "MEDIUM", null, null, memberId));
 
                   var request =
-                      new SaveFromProjectRequest(
+                      new SaveFromMatterRequest(
                           "Skip Template",
                           "{customer}",
                           null,
@@ -448,7 +448,7 @@ class ProjectTemplateServiceTest {
                       new ProjectMember(project.getId(), secondMemberId, "lead", memberId));
 
                   var request =
-                      new SaveFromProjectRequest(
+                      new SaveFromMatterRequest(
                           "Lead Template",
                           "{customer}",
                           null,

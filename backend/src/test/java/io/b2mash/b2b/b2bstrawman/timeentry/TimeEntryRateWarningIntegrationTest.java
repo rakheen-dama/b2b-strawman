@@ -49,7 +49,7 @@ class TimeEntryRateWarningIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(ownerJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

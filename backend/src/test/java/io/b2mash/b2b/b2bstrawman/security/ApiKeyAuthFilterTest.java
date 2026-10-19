@@ -98,7 +98,7 @@ class ApiKeyAuthFilterTest {
 
   @Test
   void shouldNotFilter_nonInternalPath() {
-    request.setRequestURI("/api/projects");
+    request.setRequestURI("/api/matters");
 
     assertThat(filter.shouldNotFilter(request)).isTrue();
   }

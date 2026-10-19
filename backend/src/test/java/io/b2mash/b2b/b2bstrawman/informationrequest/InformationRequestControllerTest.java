@@ -981,12 +981,12 @@ class InformationRequestControllerTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"name": "InfoReq Test Project", "customerId": "%s"}
+                        {"name": "InfoReq Test Project", "clientId": "%s"}
                         """
                             .formatted(activeCustomerId)))
             .andExpect(status().isCreated())

@@ -25,14 +25,14 @@ class SecurityIntegrationTest {
 
   @Test
   void unauthenticatedRequest_toApi_returns401() throws Exception {
-    mockMvc.perform(get("/api/projects")).andExpect(status().isUnauthorized());
+    mockMvc.perform(get("/api/matters")).andExpect(status().isUnauthorized());
   }
 
   @Test
   void authenticatedRequest_withValidJwt_doesNotReturn401() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(
                     jwt()
                         .jwt(

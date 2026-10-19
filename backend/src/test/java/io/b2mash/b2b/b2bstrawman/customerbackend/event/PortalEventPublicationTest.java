@@ -56,7 +56,7 @@ class PortalEventPublicationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -101,7 +101,7 @@ class PortalEventPublicationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

@@ -110,7 +110,7 @@ class WorkTypeNormalisationIntegrationTest {
 
     String templates =
         mockMvc
-            .perform(get("/api/project-templates").with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+            .perform(get("/api/matter-templates").with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -136,7 +136,7 @@ class WorkTypeNormalisationIntegrationTest {
     String body =
         mockMvc
             .perform(
-                post("/api/project-templates/" + conveyancingTemplateId + "/instantiate")
+                post("/api/matter-templates/" + conveyancingTemplateId + "/instantiate")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -158,7 +158,7 @@ class WorkTypeNormalisationIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + id)
+            put("/api/matters/" + id)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Erf 3 (update)\", \"workType\": \" litigation \"}"))
@@ -167,7 +167,7 @@ class WorkTypeNormalisationIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + id)
+            put("/api/matters/" + id)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Erf 3 (update)\"}"))
@@ -200,7 +200,7 @@ class WorkTypeNormalisationIntegrationTest {
     String expanding = "ß".repeat(26);
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Expanding\", \"workType\": \"%s\"}".formatted(expanding)))
@@ -211,7 +211,7 @@ class WorkTypeNormalisationIntegrationTest {
   void projectTemplateCreateNormalisesWorkType() throws Exception {
     mockMvc
         .perform(
-            post("/api/project-templates")
+            post("/api/matter-templates")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -227,7 +227,7 @@ class WorkTypeNormalisationIntegrationTest {
   private String postProjectWithWorkType(String name, String workType) throws Exception {
     return mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"%s\", \"workType\": \"%s\"}".formatted(name, workType)))

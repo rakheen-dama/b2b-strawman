@@ -74,7 +74,7 @@ class BillingRateControllerTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

@@ -72,12 +72,12 @@ class ProjectMemberIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/members")
+            get("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(1)))
         .andExpect(jsonPath("$[0].memberId").value(ownerMemberId))
-        .andExpect(jsonPath("$[0].projectRole").value("lead"))
+        .andExpect(jsonPath("$[0].matterRole").value("lead"))
         .andExpect(jsonPath("$[0].orgRole").value("owner"))
         .andExpect(jsonPath("$[0].name").value("Owner"))
         .andExpect(jsonPath("$[0].email").value("owner@test.com"));
@@ -91,7 +91,7 @@ class ProjectMemberIntegrationTest {
     // Admin created the project (lead), add a regular member
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberMemberId)))
@@ -99,7 +99,7 @@ class ProjectMemberIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/members")
+            get("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(2)))
@@ -118,7 +118,7 @@ class ProjectMemberIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberMemberId)))
@@ -126,7 +126,7 @@ class ProjectMemberIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/members")
+            get("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_pm_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(2)));
@@ -139,7 +139,7 @@ class ProjectMemberIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberMemberId)))
@@ -147,7 +147,7 @@ class ProjectMemberIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberMemberId)))
@@ -161,7 +161,7 @@ class ProjectMemberIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"00000000-0000-0000-0000-000000000000\"}"))
@@ -177,7 +177,7 @@ class ProjectMemberIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberMemberId)))
@@ -185,13 +185,13 @@ class ProjectMemberIntegrationTest {
 
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId + "/members/" + memberMemberId)
+            delete("/api/matters/" + projectId + "/members/" + memberMemberId)
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin")))
         .andExpect(status().isNoContent());
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/members")
+            get("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(1)));
@@ -204,7 +204,7 @@ class ProjectMemberIntegrationTest {
 
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId + "/members/" + adminMemberId)
+            delete("/api/matters/" + projectId + "/members/" + adminMemberId)
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin")))
         .andExpect(status().isBadRequest());
   }
@@ -216,7 +216,7 @@ class ProjectMemberIntegrationTest {
 
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId + "/members/" + extraMemberId)
+            delete("/api/matters/" + projectId + "/members/" + extraMemberId)
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin")))
         .andExpect(status().isNotFound());
   }
@@ -231,7 +231,7 @@ class ProjectMemberIntegrationTest {
     // Add another member
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberMemberId)))
@@ -240,7 +240,7 @@ class ProjectMemberIntegrationTest {
     // Transfer lead from admin to member
     mockMvc
         .perform(
-            put("/api/projects/" + projectId + "/members/" + memberMemberId + "/role")
+            put("/api/matters/" + projectId + "/members/" + memberMemberId + "/role")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"role\": \"lead\"}"))
@@ -249,15 +249,15 @@ class ProjectMemberIntegrationTest {
     // Verify roles swapped
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/members")
+            get("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(2)))
         .andExpect(
-            jsonPath("$[?(@.memberId == '%s')].projectRole".formatted(adminMemberId))
+            jsonPath("$[?(@.memberId == '%s')].matterRole".formatted(adminMemberId))
                 .value("member"))
         .andExpect(
-            jsonPath("$[?(@.memberId == '%s')].projectRole".formatted(memberMemberId))
+            jsonPath("$[?(@.memberId == '%s')].matterRole".formatted(memberMemberId))
                 .value("lead"));
   }
 
@@ -269,7 +269,7 @@ class ProjectMemberIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + projectId + "/members/" + memberMemberId + "/role")
+            put("/api/matters/" + projectId + "/members/" + memberMemberId + "/role")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"role\": \"lead\"}"))
@@ -304,7 +304,7 @@ class ProjectMemberIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/members")
+            get("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_pm_member")))
         .andExpect(status().isOk());
   }
@@ -316,7 +316,7 @@ class ProjectMemberIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_pm_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(extraMemberId)))
@@ -326,7 +326,7 @@ class ProjectMemberIntegrationTest {
   @Test
   void unauthenticatedCannotAccessProjectMembers() throws Exception {
     mockMvc
-        .perform(get("/api/projects/00000000-0000-0000-0000-000000000000/members"))
+        .perform(get("/api/matters/00000000-0000-0000-0000-000000000000/members"))
         .andExpect(status().isUnauthorized());
   }
 
@@ -340,7 +340,7 @@ class ProjectMemberIntegrationTest {
     // Tenant B cannot see tenant A's project members
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/members")
+            get("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.memberJwt(ORG_B_ID, "user_pm_tenant_b")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(0)));
@@ -362,7 +362,7 @@ class ProjectMemberIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"name\": \"%s\", \"description\": null}".formatted(name)))

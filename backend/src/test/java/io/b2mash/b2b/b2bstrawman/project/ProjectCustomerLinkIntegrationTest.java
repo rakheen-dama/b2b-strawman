@@ -70,17 +70,17 @@ class ProjectCustomerLinkIntegrationTest {
   void shouldCreateProjectWithCustomerLink() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"name": "Linked Project", "description": "With customer",
-                     "customerId": "%s", "dueDate": "2026-06-30"}
+                     "clientId": "%s", "dueDate": "2026-06-30"}
                     """
                         .formatted(activeCustomerId)))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.customerId").value(activeCustomerId))
+        .andExpect(jsonPath("$.clientId").value(activeCustomerId))
         .andExpect(jsonPath("$.dueDate").value("2026-06-30"));
   }
 
@@ -88,7 +88,7 @@ class ProjectCustomerLinkIntegrationTest {
   void shouldCreateProjectWithoutCustomerLink() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -96,7 +96,7 @@ class ProjectCustomerLinkIntegrationTest {
                     {"name": "Standalone Project", "description": "No customer"}
                     """))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.customerId").isEmpty())
+        .andExpect(jsonPath("$.clientId").isEmpty())
         .andExpect(jsonPath("$.dueDate").isEmpty());
   }
 
@@ -104,13 +104,13 @@ class ProjectCustomerLinkIntegrationTest {
   void shouldRejectCreateProjectWithNonExistentCustomer() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"name": "Bad Link", "description": "Nonexistent customer",
-                     "customerId": "00000000-0000-0000-0000-000000000999"}
+                     "clientId": "00000000-0000-0000-0000-000000000999"}
                     """))
         .andExpect(status().isNotFound());
   }
@@ -119,13 +119,13 @@ class ProjectCustomerLinkIntegrationTest {
   void shouldRejectCreateProjectWithProspectCustomer() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"name": "Prospect Link", "description": "Prospect customer",
-                     "customerId": "%s"}
+                     "clientId": "%s"}
                     """
                         .formatted(prospectCustomerId)))
         .andExpect(status().isBadRequest());
@@ -135,13 +135,13 @@ class ProjectCustomerLinkIntegrationTest {
   void shouldRejectCreateProjectWithOffboardedCustomer() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"name": "Offboarded Link", "description": "Offboarded customer",
-                     "customerId": "%s"}
+                     "clientId": "%s"}
                     """
                         .formatted(offboardedCustomerId)))
         .andExpect(status().isBadRequest());
@@ -155,17 +155,17 @@ class ProjectCustomerLinkIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"name": "Update Link Test", "description": "Now linked",
-                     "customerId": "%s", "dueDate": "2026-12-31"}
+                     "clientId": "%s", "dueDate": "2026-12-31"}
                     """
                         .formatted(activeCustomerId)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerId").value(activeCustomerId))
+        .andExpect(jsonPath("$.clientId").value(activeCustomerId))
         .andExpect(jsonPath("$.dueDate").value("2026-12-31"));
   }
 
@@ -177,7 +177,7 @@ class ProjectCustomerLinkIntegrationTest {
     // Update without customerId — null means no change, customer link is preserved
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -185,7 +185,7 @@ class ProjectCustomerLinkIntegrationTest {
                     {"name": "Keep Link Test", "description": "Still linked"}
                     """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerId").value(activeCustomerId));
+        .andExpect(jsonPath("$.clientId").value(activeCustomerId));
   }
 
   @Test
@@ -194,13 +194,13 @@ class ProjectCustomerLinkIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"name": "Update Bad Link", "description": "Nonexistent customer",
-                     "customerId": "00000000-0000-0000-0000-000000000999"}
+                     "clientId": "00000000-0000-0000-0000-000000000999"}
                     """))
         .andExpect(status().isNotFound());
   }
@@ -211,13 +211,13 @@ class ProjectCustomerLinkIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"name": "Update Prospect Link", "description": "Prospect customer",
-                     "customerId": "%s"}
+                     "clientId": "%s"}
                     """
                         .formatted(prospectCustomerId)))
         .andExpect(status().isBadRequest());
@@ -229,13 +229,13 @@ class ProjectCustomerLinkIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"name": "Update Offboarded Link", "description": "Offboarded customer",
-                     "customerId": "%s"}
+                     "clientId": "%s"}
                     """
                         .formatted(offboardedCustomerId)))
         .andExpect(status().isBadRequest());
@@ -252,7 +252,7 @@ class ProjectCustomerLinkIntegrationTest {
     var result =
         mockMvc
             .perform(
-                get("/api/projects")
+                get("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                     .param("status", "ALL")
                     .param("customerId", activeCustomerId))
@@ -262,7 +262,7 @@ class ProjectCustomerLinkIntegrationTest {
 
     // Verify all returned projects have the matching customerId
     String json = result.getResponse().getContentAsString();
-    List<String> customerIds = JsonPath.read(json, "$[*].customerId");
+    List<String> customerIds = JsonPath.read(json, "$[*].clientId");
     org.assertj.core.api.Assertions.assertThat(customerIds).isNotEmpty();
     org.assertj.core.api.Assertions.assertThat(customerIds)
         .allMatch(cid -> activeCustomerId.equals(cid));
@@ -278,7 +278,7 @@ class ProjectCustomerLinkIntegrationTest {
   void shouldCreateProjectWithDueDateOnly() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -288,7 +288,7 @@ class ProjectCustomerLinkIntegrationTest {
                     """))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.dueDate").value("2026-03-15"))
-        .andExpect(jsonPath("$.customerId").isEmpty());
+        .andExpect(jsonPath("$.clientId").isEmpty());
   }
 
   // --- 205B: OFFBOARDING guard + archive protection ---
@@ -297,13 +297,13 @@ class ProjectCustomerLinkIntegrationTest {
   void shouldRejectCreateProjectWithOffboardingCustomer() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"name": "Offboarding Link", "description": "Offboarding customer",
-                     "customerId": "%s"}
+                     "clientId": "%s"}
                     """
                         .formatted(offboardingCustomerId)))
         .andExpect(status().isBadRequest());
@@ -315,13 +315,13 @@ class ProjectCustomerLinkIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"name": "Update Offboarding Link", "description": "Offboarding customer",
-                     "customerId": "%s"}
+                     "clientId": "%s"}
                     """
                         .formatted(offboardingCustomerId)))
         .andExpect(status().isBadRequest());
@@ -363,7 +363,7 @@ class ProjectCustomerLinkIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -380,12 +380,12 @@ class ProjectCustomerLinkIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"name": "%s", "description": "Linked project", "customerId": "%s"}
+                        {"name": "%s", "description": "Linked project", "clientId": "%s"}
                         """
                             .formatted(name, custId)))
             .andExpect(status().isCreated())

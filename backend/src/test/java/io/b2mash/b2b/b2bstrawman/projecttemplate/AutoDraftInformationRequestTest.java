@@ -376,7 +376,7 @@ class AutoDraftInformationRequestTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/project-templates")
+                post("/api/matter-templates")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_autodraft_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -414,7 +414,7 @@ class AutoDraftInformationRequestTest {
     // Update template with requestTemplateId
     mockMvc
         .perform(
-            put("/api/project-templates/" + templateId)
+            put("/api/matter-templates/" + templateId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_autodraft_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -435,7 +435,7 @@ class AutoDraftInformationRequestTest {
     // GET should also return the requestTemplateId
     mockMvc
         .perform(
-            get("/api/project-templates/" + templateId)
+            get("/api/matter-templates/" + templateId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_autodraft_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.requestTemplateId").value(rtIdHolder[0].toString()));

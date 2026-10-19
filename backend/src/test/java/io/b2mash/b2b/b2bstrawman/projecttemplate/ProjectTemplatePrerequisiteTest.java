@@ -83,7 +83,7 @@ class ProjectTemplatePrerequisiteTest {
 
     mockMvc
         .perform(
-            put("/api/project-templates/" + templateId + "/required-customer-fields")
+            put("/api/matter-templates/" + templateId + "/required-client-fields")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpq243_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -119,7 +119,7 @@ class ProjectTemplatePrerequisiteTest {
 
     mockMvc
         .perform(
-            put("/api/project-templates/" + templateId + "/required-customer-fields")
+            put("/api/matter-templates/" + templateId + "/required-client-fields")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_tpq243_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -139,7 +139,7 @@ class ProjectTemplatePrerequisiteTest {
     // Assign the field as required for this template
     mockMvc
         .perform(
-            put("/api/project-templates/" + templateId + "/required-customer-fields")
+            put("/api/matter-templates/" + templateId + "/required-client-fields")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpq243_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -171,7 +171,7 @@ class ProjectTemplatePrerequisiteTest {
 
     mockMvc
         .perform(
-            get("/api/project-templates/" + templateId + "/prerequisite-check")
+            get("/api/matter-templates/" + templateId + "/prerequisite-check")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_tpq243_member"))
                 .param("customerId", custId[0].toString()))
         .andExpect(status().isOk())
@@ -188,7 +188,7 @@ class ProjectTemplatePrerequisiteTest {
     // Assign the field as required for this template
     mockMvc
         .perform(
-            put("/api/project-templates/" + templateId + "/required-customer-fields")
+            put("/api/matter-templates/" + templateId + "/required-client-fields")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpq243_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -219,7 +219,7 @@ class ProjectTemplatePrerequisiteTest {
 
     mockMvc
         .perform(
-            get("/api/project-templates/" + templateId + "/prerequisite-check")
+            get("/api/matter-templates/" + templateId + "/prerequisite-check")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_tpq243_member"))
                 .param("customerId", custId[0].toString()))
         .andExpect(status().isOk())
@@ -240,7 +240,7 @@ class ProjectTemplatePrerequisiteTest {
     // Set required field on template
     mockMvc
         .perform(
-            put("/api/project-templates/" + templateId + "/required-customer-fields")
+            put("/api/matter-templates/" + templateId + "/required-client-fields")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpq243_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -272,14 +272,14 @@ class ProjectTemplatePrerequisiteTest {
 
     mockMvc
         .perform(
-            post("/api/project-templates/" + templateId + "/instantiate")
+            post("/api/matter-templates/" + templateId + "/instantiate")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpq243_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {
                       "name": "Gated Project OK",
-                      "customerId": "%s"
+                      "clientId": "%s"
                     }
                     """
                         .formatted(custId[0])))
@@ -296,7 +296,7 @@ class ProjectTemplatePrerequisiteTest {
     // Set required field on template
     mockMvc
         .perform(
-            put("/api/project-templates/" + templateId + "/required-customer-fields")
+            put("/api/matter-templates/" + templateId + "/required-client-fields")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpq243_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -327,14 +327,14 @@ class ProjectTemplatePrerequisiteTest {
 
     mockMvc
         .perform(
-            post("/api/project-templates/" + templateId + "/instantiate")
+            post("/api/matter-templates/" + templateId + "/instantiate")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpq243_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {
                       "name": "Gated Project Blocked",
-                      "customerId": "%s"
+                      "clientId": "%s"
                     }
                     """
                         .formatted(custId[0])))

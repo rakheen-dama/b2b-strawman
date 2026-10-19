@@ -57,7 +57,7 @@ class EventPublicationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -71,7 +71,7 @@ class EventPublicationTest {
     // Add member to the project
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberIdMember)))
@@ -284,7 +284,7 @@ class EventPublicationTest {
     // Add the new member to the project
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(newMemberId)))

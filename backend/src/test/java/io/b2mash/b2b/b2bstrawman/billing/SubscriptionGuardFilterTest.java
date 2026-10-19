@@ -76,7 +76,7 @@ class SubscriptionGuardFilterTest {
     // 403'd in GRACE_PERIOD (gracePeriod_post_blocked), so the pair proves the guard toggles.
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Test\"}"))
@@ -90,7 +90,7 @@ class SubscriptionGuardFilterTest {
     setSubscriptionStatus(Subscription.SubscriptionStatus.ACTIVE);
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Test\"}"))
@@ -115,7 +115,7 @@ class SubscriptionGuardFilterTest {
     setSubscriptionStatus(Subscription.SubscriptionStatus.GRACE_PERIOD);
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Test\"}"))
@@ -129,7 +129,7 @@ class SubscriptionGuardFilterTest {
     setSubscriptionStatus(Subscription.SubscriptionStatus.GRACE_PERIOD);
     mockMvc
         .perform(
-            put("/api/projects/00000000-0000-0000-0000-000000000001")
+            put("/api/matters/00000000-0000-0000-0000-000000000001")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Test\"}"))
@@ -142,7 +142,7 @@ class SubscriptionGuardFilterTest {
     setSubscriptionStatus(Subscription.SubscriptionStatus.GRACE_PERIOD);
     mockMvc
         .perform(
-            delete("/api/projects/00000000-0000-0000-0000-000000000001")
+            delete("/api/matters/00000000-0000-0000-0000-000000000001")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner")))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.type").value("subscription_required"));
@@ -173,7 +173,7 @@ class SubscriptionGuardFilterTest {
     setSubscriptionStatus(Subscription.SubscriptionStatus.SUSPENDED);
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Test\"}"))
@@ -188,7 +188,7 @@ class SubscriptionGuardFilterTest {
     setSubscriptionStatus(Subscription.SubscriptionStatus.EXPIRED);
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Test\"}"))
@@ -202,7 +202,7 @@ class SubscriptionGuardFilterTest {
   void locked_get_blocked() throws Exception {
     setSubscriptionStatus(Subscription.SubscriptionStatus.LOCKED);
     mockMvc
-        .perform(get("/api/projects").with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner")))
+        .perform(get("/api/matters").with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner")))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.type").value("subscription_locked"))
         .andExpect(jsonPath("$.resubscribeUrl").value("/settings/billing"));
@@ -213,7 +213,7 @@ class SubscriptionGuardFilterTest {
     setSubscriptionStatus(Subscription.SubscriptionStatus.LOCKED);
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Test\"}"))
@@ -238,7 +238,7 @@ class SubscriptionGuardFilterTest {
   void noOrgContext_passes() throws Exception {
     // Request without JWT — no org context bound, guard filter skips
     mockMvc
-        .perform(get("/api/projects"))
+        .perform(get("/api/matters"))
         .andExpect(
             result -> {
               int s = result.getResponse().getStatus();

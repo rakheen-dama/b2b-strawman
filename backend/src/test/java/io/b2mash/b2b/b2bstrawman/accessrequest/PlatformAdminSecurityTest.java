@@ -87,7 +87,7 @@ class PlatformAdminSecurityTest {
   void regularApiEndpoint_unaffectedByGroupFilter() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(
                     jwt()
                         .jwt(

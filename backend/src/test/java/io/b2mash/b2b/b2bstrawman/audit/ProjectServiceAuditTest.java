@@ -61,7 +61,7 @@ class ProjectServiceAuditTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -102,7 +102,7 @@ class ProjectServiceAuditTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -117,7 +117,7 @@ class ProjectServiceAuditTest {
     // Update the project
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -157,7 +157,7 @@ class ProjectServiceAuditTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -172,7 +172,7 @@ class ProjectServiceAuditTest {
     // Update with same values
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -254,7 +254,7 @@ class ProjectServiceAuditTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"name\": \"%s\", \"workType\": \"%s\"}".formatted(name, workType)))
@@ -266,7 +266,7 @@ class ProjectServiceAuditTest {
   private void putProject(UUID projectId, String body) throws Exception {
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
@@ -278,7 +278,7 @@ class ProjectServiceAuditTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -292,7 +292,7 @@ class ProjectServiceAuditTest {
 
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId)
+            delete("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner")))
         .andExpect(status().isNoContent());
 
@@ -321,7 +321,7 @@ class ProjectServiceAuditTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -336,7 +336,7 @@ class ProjectServiceAuditTest {
     // Only change description, keep name the same
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -369,7 +369,7 @@ class ProjectServiceAuditTest {
     // Attempt create with blank name -- should fail validation (400)
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -403,7 +403,7 @@ class ProjectServiceAuditTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + fakeId)
+            put("/api/matters/" + fakeId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

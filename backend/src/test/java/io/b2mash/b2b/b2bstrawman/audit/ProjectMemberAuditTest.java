@@ -69,7 +69,7 @@ class ProjectMemberAuditTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pma_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -84,7 +84,7 @@ class ProjectMemberAuditTest {
     // Add a member to the project
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pma_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -128,7 +128,7 @@ class ProjectMemberAuditTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pma_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -143,7 +143,7 @@ class ProjectMemberAuditTest {
     // Add then remove a member
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pma_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -155,7 +155,7 @@ class ProjectMemberAuditTest {
 
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId + "/members/" + memberMemberId)
+            delete("/api/matters/" + projectId + "/members/" + memberMemberId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pma_owner")))
         .andExpect(status().isNoContent());
 
@@ -190,7 +190,7 @@ class ProjectMemberAuditTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pma_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -205,7 +205,7 @@ class ProjectMemberAuditTest {
     // Add member2 to the project
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pma_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -219,7 +219,7 @@ class ProjectMemberAuditTest {
     // The owner is currently the lead (project creator)
     mockMvc
         .perform(
-            put("/api/projects/" + projectId + "/members/" + member2MemberId + "/role")
+            put("/api/matters/" + projectId + "/members/" + member2MemberId + "/role")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pma_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -283,7 +283,7 @@ class ProjectMemberAuditTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pma_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -297,7 +297,7 @@ class ProjectMemberAuditTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pma_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

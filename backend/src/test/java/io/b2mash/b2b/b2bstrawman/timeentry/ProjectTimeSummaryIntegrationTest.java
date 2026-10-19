@@ -78,7 +78,7 @@ class ProjectTimeSummaryIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(ownerJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -93,7 +93,7 @@ class ProjectTimeSummaryIntegrationTest {
     var emptyProjectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(ownerJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -132,7 +132,7 @@ class ProjectTimeSummaryIntegrationTest {
     var projectBResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(tenantBOwnerJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -406,7 +406,7 @@ class ProjectTimeSummaryIntegrationTest {
   private void addMemberToProject(String projId, String memId) throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projId + "/members")
+            post("/api/matters/" + projId + "/members")
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

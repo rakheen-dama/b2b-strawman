@@ -246,6 +246,11 @@ Check: compilation correctness, convention adherence, no DocTeams-specific code 
 Spring Boot 4 imports correct, base package is io.github.rakheendama.starter.
 ```
 3. If review passes AND the target repo's merge-gate hook clears → merge immediately (auto-merge mode):
+> **Merge from a Claude session opened in the template repo, not from a b2b-strawman session.**
+> b2b-strawman's `.claude/hooks/pre-pr-merge-gate.sh` fires on any Bash command containing `gh pr merge`
+> in a b2b-strawman session: it refuses compound commands (`cd … && gh pr merge …`) and would gate a
+> bare `gh pr merge {PR_NUM}` against b2b-strawman's PR {PR_NUM}, not the template repo's.
+
 ```bash
 cd /Users/rakheendama/Projects/2026/java-keycloak-multitenant-saas
 gh pr merge {PR_NUM} --squash --delete-branch

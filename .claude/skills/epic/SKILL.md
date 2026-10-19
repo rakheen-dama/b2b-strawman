@@ -367,16 +367,22 @@ If critical or high issues are found, dispatch another `general-purpose` subagen
 **Ask the user before merging.** Do not auto-merge.
 
 The merge-gate hook will block `gh pr merge` if:
-- The verify marker for any touched area (backend / frontend / portal) is missing or stale (>24h) or `exit != 0`.
-- The PR is not documentation-only.
-
+- The command is not a single plain `gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch] --match-head-commit <full-sha>` — compound commands, `--admin`, `--repo`, `--auto` and free-text flags are refused; the pin must equal the current PR head.
+- Any reported GitHub check is not `pass` or `skipping`, or the check list is empty or unreadable (CodeRabbit registers as a check, so wait for it too).
+- The PR body lacks the review audit trail: two `## Verdict: APPROVE @<sha>` lines whose `<sha>` (≥7 hex) is a prefix of the CURRENT PR head, plus a `## CodeRabbit: REVIEWED` or `## CodeRabbit: DEFERRED` line — required for EVERY PR, documentation-only included. A push after the reviews invalidates them; re-review and re-record.
+- The verify marker for any touched area (backend / frontend / portal; `packages/` → frontend + portal) is missing, stale (>24h), has `exit != 0`, or is not from an ancestor of the PR head.
+Documentation-only PRs need no area verify marker but still need green CI and the audit trail; there is no automatic allow.
 If the hook blocks you, that means a marker is missing or stale — fix the verify, write the marker, retry. **Do NOT bypass with `--admin` or by editing the hook.** If you genuinely think the hook is wrong, raise it and fix the hook upstream.
 
 If user-approved and gate-clear:
 
 ```bash
 # 1. Merge the PR
-gh pr merge {PR_NUMBER} --squash --delete-branch
+# Step 1 — read the current head SHA (the gate pins the merge to it):
+gh pr view {PR_NUMBER} --json headRefOid -q .headRefOid
+# Step 2 — merge with that literal 40-char SHA. The hook inspects the command TEXT before the
+# shell expands it, so a "$(…)" substitution is refused: paste the SHA, do not substitute it.
+gh pr merge {PR_NUMBER} --squash --delete-branch --match-head-commit <sha-from-step-1>
 
 # 2. Clean up worktree
 cd /Users/rakheendama/Projects/2026/b2b-strawman

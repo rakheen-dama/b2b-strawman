@@ -320,22 +320,28 @@ PR body MUST include:
 - Out-of-scope items (anything you noticed but did not fix).
 
 ### 7. Review (CLAUDE.md §2 — mandatory for agent-authored PRs)
-Self-review is not enough. Either:
-- (a) Wait for CodeRabbit (if configured on the repo), or
-- (b) Dispatch a `superpowers:code-reviewer` subagent on the PR with framing "find the slop", or
-- (c) Stop and ask the user to review before merge.
+Self-review is not enough, and the merge gate (Step 8) needs a specific audit trail, so do ALL of:
+- Dispatch **two** independent `feature-dev:code-reviewer` subagents on the PR (e.g. bug/quality and architecture/scope framings). Give each the head SHA it is reviewing. Each must end with `## Verdict: APPROVE @<that-sha>`; on `REQUEST_CHANGES`, fix, push, and have the reviewer re-verify the new head.
+- Wait for CodeRabbit (bounded; it registers as a GitHub check) and address its findings; record `## CodeRabbit: REVIEWED — …` or `## CodeRabbit: DEFERRED — …`.
+- Append the audit trail to the PR body (`gh pr edit --body-file`): both bound verdict blocks + the CodeRabbit line, exactly as epic_v2 Step 4.5 describes.
 
-Do NOT merge an agent-authored PR without an independent review pass.
+Do NOT merge an agent-authored PR without this trail; the hook denies otherwise.
 
 ### 8. Merge (gated by `.claude/hooks/pre-pr-merge-gate.sh`)
 The merge-gate hook will block `gh pr merge` if:
-- The verify marker for any touched area (backend / frontend / portal) is missing or stale (>24h) or `exit != 0`.
-- The PR is not documentation-only.
-
+- The command is not a single plain `gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch] --match-head-commit <full-sha>` — compound commands, `--admin`, `--repo`, `--auto` and free-text flags are refused; the pin must equal the current PR head.
+- Any reported GitHub check is not `pass` or `skipping`, or the check list is empty or unreadable (CodeRabbit registers as a check, so wait for it too).
+- The PR body lacks the review audit trail: two `## Verdict: APPROVE @<sha>` lines whose `<sha>` (≥7 hex) is a prefix of the CURRENT PR head, plus a `## CodeRabbit: REVIEWED` or `## CodeRabbit: DEFERRED` line — required for EVERY PR, documentation-only included. A push after the reviews invalidates them; re-review and re-record.
+- The verify marker for any touched area (backend / frontend / portal; `packages/` → frontend + portal) is missing, stale (>24h), has `exit != 0`, or is not from an ancestor of the PR head.
+Documentation-only PRs need no area verify marker but still need green CI and the audit trail; there is no automatic allow.
 If the hook blocks you, that means a marker is missing — fix the verify, write the marker, retry. Do NOT bypass with `--admin` or by editing the hook.
 
 ```bash
-gh pr merge {PR_NUMBER} --squash --delete-branch
+# Step 1 — read the current head SHA (the gate pins the merge to it):
+gh pr view {PR_NUMBER} --json headRefOid -q .headRefOid
+# Step 2 — merge with that literal 40-char SHA. The hook inspects the command TEXT before the
+# shell expands it, so a "$(…)" substitution is refused: paste the SHA, do not substitute it.
+gh pr merge {PR_NUMBER} --squash --delete-branch --match-head-commit <sha-from-step-1>
 git checkout {BRANCH} && git pull origin {BRANCH}
 ```
 

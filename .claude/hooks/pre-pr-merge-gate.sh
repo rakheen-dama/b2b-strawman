@@ -17,10 +17,27 @@
 # (backend changes → backend marker, etc.), and refuses the merge if any
 # required marker is missing, stale, or not on a parent of HEAD.
 #
+# In addition (2026-10-19), every PR — docs-only included — must have its GitHub
+# checks green: `gh pr checks` buckets must all be `pass` or `skipping`
+# (path-filtered jobs). `pending`, `fail` and `cancel` deny the merge, and so does
+# an empty/unreadable check list (fail-closed). The review audit trail (two
+# `## Verdict: APPROVE @<head-sha>` markers bound to the merged commit + a
+# `## CodeRabbit:` line in the PR body) is
+# required for EVERY PR — there is no documentation-only exemption — and verify
+# markers are required per touched layer. Together this is what lets
+# `Bash(gh pr merge:*)` be allow-listed in .claude/settings.json without a
+# human review step. Very large PRs (gh pr diff fails past ~300 files) are
+# denied and fall to a human merge. The command itself must be a single plain
+# `gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch] --match-head-commit <full-sha>`
+# (the pin is mandatory: it must equal the head the gate checked).
+#
 # This is enforcement, not advice. Do not bypass without raising the gate
 # upstream. See CLAUDE.md §10.
 
 set -euo pipefail
+# The script is written for bash 3.2+ (macOS /bin/bash). Keep it free of 4.x-only syntax
+# (`${var,,}`, associative arrays, `|&`): a parse/expansion error here exits non-zero and
+# Claude Code treats a hook error as non-blocking — i.e. the merge would be ALLOWED.
 
 # Claude Code pipes the tool-call payload on stdin and passes NO positional args
 # (.claude/settings.json). The previous "$1" guard therefore exited before reading
@@ -30,46 +47,142 @@ if [[ -t 0 ]]; then
   exit 0
 fi
 
+# Emit a deny decision as valid JSON (jq escapes everything; printf fallback if jq
+# is missing) and exit 0. Every refusal in this file goes through here.
+deny() {
+  local reason="pre-pr-merge-gate: $1"
+  if command -v jq >/dev/null 2>&1; then
+    jq -cn --arg r "$reason" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
+  else
+    local esc; esc="$(printf '%s' "$reason" | tr -d '\n\t\r' | sed 's/\\/\\\\/g; s/"/\\"/g')"
+    printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "$esc"
+  fi
+  exit 0
+}
+# Fail closed: any unexpected error (set -e) becomes a deny, never a silent allow.
+trap 'deny "hook error at line $LINENO (command: $BASH_COMMAND). Merge denied fail-closed; fix the hook, do not bypass."' ERR
+
 # Read the tool-call payload from stdin (Claude Code hook contract).
 PAYLOAD="$(cat)"
-COMMAND="$(printf '%s' "$PAYLOAD" | grep -oE '"command"\s*:\s*"[^"]*"' | head -1 | sed 's/.*"command"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/' || true)"
+# Extract the FULL, unescaped command with jq (the old grep/sed stopped at the first
+# escaped quote, so `echo "x" && gh pr merge …` was read as `echo \` and never gated).
+# Fallback without jq: the raw payload — the trigger below then matches on it and the
+# strict shape (which cannot match a JSON blob) denies, i.e. fail-closed.
+if command -v jq >/dev/null 2>&1; then
+  COMMAND="$(printf '%s' "$PAYLOAD" | jq -r '.tool_input.command // ""' 2>/dev/null || printf '%s' "$PAYLOAD")"
+else
+  COMMAND="$PAYLOAD"
+fi
 
-# Only act on `gh pr merge` commands.
-if [[ ! "$COMMAND" =~ ^[[:space:]]*gh[[:space:]]+pr[[:space:]]+merge ]]; then
+
+# Act on ANY command that contains `gh pr merge` — not only one that starts with it.
+# Belt and braces: test the raw payload too, so no extraction quirk can hide the merge.
+TOOL_INPUT_STR="$(printf '%s' "$PAYLOAD" | jq -r '.tool_input | tostring' 2>/dev/null || printf '%s' "$PAYLOAD")"
+if [[ "$TOOL_INPUT_STR" =~ gh[[:space:]]+pr[[:space:]]+merge && ! "$COMMAND" =~ gh[[:space:]]+pr[[:space:]]+merge ]]; then
+  deny "tool_input mentions gh pr merge but the extracted command does not — refusing (extraction mismatch)."
+fi
+# `Bash(gh pr merge:*)` in .claude/settings.json allow-lists the merge for agents, and
+# Claude Code matches that rule per sub-command, so `cd x && gh pr merge …`,
+# `true; gh pr merge …`, env-var prefixes and multi-line commands must not slip past.
+if [[ ! "$COMMAND" =~ gh[[:space:]]+pr[[:space:]]+merge ]]; then
   exit 0
+fi
+
+# Exactly one plain invocation is accepted:
+#   gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch|-d] --match-head-commit <full-sha>
+# Anything else — compound commands, `--admin` (CLAUDE.md §10), `--repo`/`-R` (would gate
+# this repo's PR N but merge another repo's), `--auto` (merges later, after this check),
+# `--body`/`--subject`, quoting, a second `gh pr merge` — is denied with the accepted shape.
+# Real newlines/CR/tabs (jq now un-escapes them) must not be treated as plain spaces.
+if [[ "$COMMAND" == *$'\n'* || "$COMMAND" == *$'\r'* || "$COMMAND" == *$'\t'* ]]; then
+  deny "multi-line or tab-containing merge commands are refused; use a single line: gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch]"
+fi
+STRICT_SHAPE='^[[:space:]]*gh[[:space:]]+pr[[:space:]]+merge[[:space:]]+([0-9]+)([[:space:]]+(--squash|--merge|--rebase|--delete-branch|-d|--match-head-commit[[:space:]]+[0-9a-fA-F]{40}))*[[:space:]]*$'
+if [[ ! "$COMMAND" =~ $STRICT_SHAPE ]]; then
+  deny "only a single plain merge is allowed: gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch] --match-head-commit <full 40-char sha>. Compound commands, --admin, --repo/-R, --auto and free-text flags are refused (CLAUDE.md §10). Got: $COMMAND"
+fi
+PR_NUM="${BASH_REMATCH[1]}"
+# Every flag at most once, and exactly one merge strategy (gh's own rule). gh honours the
+# LAST occurrence of a repeated flag while the regex above captured the FIRST, so a repeated
+# `--match-head-commit` would be a parser differential. The command has already matched
+# STRICT_SHAPE, so it contains only [A-Za-z0-9 -] and word-splitting it is safe.
+# (A grep -o approach undercounted adjacent repeats because the match consumed the separator.)
+n_squash=0; n_merge=0; n_rebase=0; n_del=0; n_pin=0
+for w in $COMMAND; do
+  case "$w" in
+    --squash) n_squash=$((n_squash+1));;
+    --merge) n_merge=$((n_merge+1));;
+    --rebase) n_rebase=$((n_rebase+1));;
+    --delete-branch|-d) n_del=$((n_del+1));;
+    --match-head-commit) n_pin=$((n_pin+1));;
+  esac
+done
+if (( n_squash > 1 || n_merge > 1 || n_rebase > 1 || n_del > 1 || n_pin > 1 )); then
+  deny "a flag is repeated (squash=$n_squash merge=$n_merge rebase=$n_rebase delete-branch=$n_del match-head-commit=$n_pin); each flag may appear once (parser differential between this gate and gh)."
+fi
+if (( n_squash + n_merge + n_rebase != 1 )); then
+  deny "exactly one merge strategy flag (--squash | --merge | --rebase) is required; found $((n_squash + n_merge + n_rebase))."
+fi
+WANT_HEAD=""
+if [[ "$COMMAND" =~ --match-head-commit[[:space:]]+([0-9a-fA-F]{40}) ]]; then
+  WANT_HEAD="${BASH_REMATCH[1]}"
 fi
 
 REPO_ROOT="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || echo .)}"
 MARKERS_DIR="$REPO_ROOT/.claude/markers"
 mkdir -p "$MARKERS_DIR"
 
-# Extract PR number if present (`gh pr merge 1234 ...`).
-PR_NUM="$(printf '%s' "$COMMAND" | grep -oE 'gh pr merge[[:space:]]+[0-9]+' | awk '{print $NF}' || true)"
-
-if [[ -z "$PR_NUM" ]]; then
-  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"pre-pr-merge-gate: cannot extract PR number from command. Use `gh pr merge <PR_NUMBER> ...`."}}\n'
-  exit 0
-fi
-
 # Get the PR's head branch and changed files.
 HEAD_BRANCH="$(gh pr view "$PR_NUM" --json headRefName -q .headRefName 2>/dev/null || true)"
 if [[ -z "$HEAD_BRANCH" ]]; then
-  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"pre-pr-merge-gate: gh pr view '"$PR_NUM"' failed. Cannot determine head branch."}}\n'
-  exit 0
+  deny "gh pr view $PR_NUM failed (offline, unauthenticated, or no such PR). Cannot determine head branch."
+fi
+PR_HEAD_SHA="$(gh pr view "$PR_NUM" --json headRefOid -q .headRefOid 2>/dev/null || true)"
+if [[ -z "$PR_HEAD_SHA" ]]; then
+  deny "could not resolve the head SHA of PR $PR_NUM; refusing (marker ancestry cannot be checked)."
+fi
+# Resolved here, right after the head branch, so every later check can use it.
+# Mandatory pin (CodeRabbit, PR #1587): the merge must name the exact head this gate checked,
+# so a push between the check and the merge cannot land unvalidated commits — gh refuses
+# the merge server-side if the head moved. Full 40-char SHA, because that is what the
+# GitHub merge API compares.
+if [[ -z "$WANT_HEAD" ]]; then
+  deny "--match-head-commit is required so the merge is pinned to the head this gate checked. Re-run: gh pr merge $PR_NUM --squash --delete-branch --match-head-commit $PR_HEAD_SHA"
+fi
+# Portable case-fold (macOS /bin/bash is 3.2: `${var,,}` is a bad substitution there and
+# would abort the script → non-zero exit → Claude Code treats it as a hook error → fail-OPEN).
+if [[ "$(printf '%s' "$PR_HEAD_SHA" | tr 'A-F' 'a-f')" != "$(printf '%s' "$WANT_HEAD" | tr 'A-F' 'a-f')" ]]; then
+  deny "--match-head-commit $WANT_HEAD is not the current PR head ($PR_HEAD_SHA) — the branch moved after you checked it. Re-verify, then re-run with the current SHA."
 fi
 
 # Phase 86 (subtraction) precondition: the horizontal platform must be archived
 # before any deletion PR lands. Scoped to phase86/* branches (CLAUDE.md §10).
-# Runs before the docs-only early allow below so docs-only phase86 PRs are checked too.
+# Applies to every phase86 PR, documentation-only included.
 # Fail-closed: if `git ls-remote` fails (e.g. no network) the pipeline fails and the merge is denied.
 if [[ "$HEAD_BRANCH" == phase86/* || "$HEAD_BRANCH" == epic/86-* ]]; then
   if ! git -C "$REPO_ROOT" ls-remote --tags origin refs/tags/horizontal-platform-final | grep -q horizontal-platform-final; then
-    printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"pre-pr-merge-gate: tag horizontal-platform-final is not on origin. Phase 86 deletions require the archive tag (ADR-330)."}}\n'
-    exit 0
+    deny "tag horizontal-platform-final is not on origin. Phase 86 deletions require the archive tag (ADR-330)."
   fi
 fi
 
+# CI condition: all GitHub checks must be pass or skipping, for every PR.
+# `gh pr checks` exits non-zero when anything is pending/failing but still prints
+# the JSON, hence `|| true`; an empty result (CI not started / API failure) denies.
+CHECKS_JSON="$(gh pr checks "$PR_NUM" --json name,bucket 2>/dev/null || true)"
+if [[ -z "$CHECKS_JSON" || "$CHECKS_JSON" == "[]" ]]; then
+  deny "no CI checks reported for PR $PR_NUM yet (or gh pr checks failed). Wait for CI to start and finish, then retry."
+fi
+ci_not_green="$(printf '%s' "$CHECKS_JSON" | jq -r '[.[] | select(.bucket != "pass" and .bucket != "skipping")] | map("\(.name)=\(.bucket)") | join(", ")' 2>/dev/null || echo "jq-error")"
+if [[ -n "$ci_not_green" ]]; then
+  deny "CI is not green for PR $PR_NUM — $ci_not_green. Every check must be pass or skipping before merge (CLAUDE.md §1/§10)."
+fi
+
 CHANGED_FILES="$(gh pr diff "$PR_NUM" --name-only 2>/dev/null || true)"
+# Fail-closed: an empty file list (API error, rate limit, or a diff over GitHub's ~300-file
+# limit) denies. Consequence: very large PRs cannot be agent-merged and fall to a human.
+if [[ -z "$CHANGED_FILES" ]]; then
+  deny "gh pr diff --name-only returned nothing for PR $PR_NUM; cannot classify the change. Retry, or check gh auth / rate limits."
+fi
 
 needs_backend=false
 needs_frontend=false
@@ -78,12 +191,13 @@ needs_portal=false
 if printf '%s\n' "$CHANGED_FILES" | grep -qE '^backend/'; then needs_backend=true; fi
 if printf '%s\n' "$CHANGED_FILES" | grep -qE '^frontend/'; then needs_frontend=true; fi
 if printf '%s\n' "$CHANGED_FILES" | grep -qE '^portal/'; then needs_portal=true; fi
+# Shared packages (@b2mash/ui, @b2mash/shared) are consumed by both apps.
+if printf '%s\n' "$CHANGED_FILES" | grep -qE '^packages/'; then needs_frontend=true; needs_portal=true; fi
 
-# qa_cycle/ + qa/testplan/ + .claude/ diff-only PRs are documentation; allow.
-if [[ "$needs_backend" == false && "$needs_frontend" == false && "$needs_portal" == false ]]; then
-  # Documentation / config-only PR — allow.
-  exit 0
-fi
+# NOTE: there is deliberately NO docs-only early allow any more. Verify markers are
+# layer-dependent (below), but the review audit trail (two reviewer verdicts + CodeRabbit
+# line) and the CI condition apply to EVERY PR — including .claude/, .github/, infra/,
+# compose/ and qa/ changes, which is exactly where a weakened gate or CI would land.
 
 # Verify each required marker.
 missing=()
@@ -121,6 +235,10 @@ check_marker() {
   # a stale marker from an unrelated branch (the docstring at the top promises this).
   local marker_commit
   marker_commit="$(grep -oE '"commit"[[:space:]]*:[[:space:]]*"[a-f0-9]+"' "$marker" | head -1 | grep -oE '[a-f0-9]+' | tail -1 || echo "")"
+  if [[ -z "$marker_commit" ]]; then
+    stale+=("$label (marker has no commit field — rewrite it from the verified commit)")
+    return
+  fi
   if [[ -n "$marker_commit" && -n "$PR_HEAD_SHA" ]]; then
     # Fetch the PR head locally if we don't have it (best-effort — don't fail on network).
     git -C "$REPO_ROOT" cat-file -e "$PR_HEAD_SHA" 2>/dev/null || \
@@ -131,8 +249,7 @@ check_marker() {
   fi
 }
 
-# Get the PR head SHA for the marker-ancestry check.
-PR_HEAD_SHA="$(gh pr view "$PR_NUM" --json headRefOid -q .headRefOid 2>/dev/null || true)"
+# (PR_HEAD_SHA was resolved above, right after HEAD_BRANCH.)
 
 if $needs_backend; then check_marker "backend"; fi
 if $needs_frontend; then check_marker "frontend"; fi
@@ -146,12 +263,24 @@ if $needs_portal;  then check_marker "portal"; fi
 review_missing=()
 PR_BODY="$(gh pr view "$PR_NUM" --json body --jq .body 2>/dev/null || echo "")"
 
-# Two `## Verdict: APPROVE` lines required (one per superpowers reviewer).
-# Alternative: `## Verdict: REQUEST_CHANGES` + a "Critical/High resolved" line is also valid.
-verdict_count="$(printf '%s' "$PR_BODY" | grep -cE '^## Verdict: APPROVE$' || true)"
-resolved_count="$(printf '%s' "$PR_BODY" | grep -cE 'Critical.*High.*(resolved|fixed|addressed)' || true)"
-if (( verdict_count + resolved_count < 2 )); then
-  review_missing+=("two superpowers '## Verdict: APPROVE' markers (or 'Critical/High resolved' equivalents) — found verdict_count=$verdict_count resolved_count=$resolved_count")
+# Two reviewer verdicts, each BOUND to the commit it reviewed (CodeRabbit, PR #1587): a
+# verdict line is `## Verdict: APPROVE @<sha>` where <sha> (7–40 hex) is a prefix of the
+# current PR head. An approval of an earlier commit does not carry over to a later push —
+# re-review, then re-record. The old unbound `## Verdict: APPROVE` and the
+# "Critical/High resolved" alternative no longer count.
+head_lc="$(printf '%s' "$PR_HEAD_SHA" | tr 'A-F' 'a-f')"
+verdict_count=0; unbound_count=0; stale_verdicts=""
+while IFS= read -r line; do
+  [[ -z "$line" ]] && continue
+  if [[ "$line" =~ ^##[[:space:]]Verdict:[[:space:]]APPROVE[[:space:]]@([0-9a-fA-F]{7,40})[[:space:]]*$ ]]; then
+    v="$(printf '%s' "${BASH_REMATCH[1]}" | tr 'A-F' 'a-f')"
+    if [[ "$head_lc" == "$v"* ]]; then verdict_count=$((verdict_count+1)); else stale_verdicts="$stale_verdicts ${v:0:7}"; fi
+  elif [[ "$line" =~ ^##[[:space:]]Verdict:[[:space:]]APPROVE ]]; then
+    unbound_count=$((unbound_count+1))
+  fi
+done <<< "$PR_BODY"
+if (( verdict_count < 2 )); then
+  review_missing+=("two reviewer verdicts bound to the current head are required: lines of the form '## Verdict: APPROVE @${PR_HEAD_SHA:0:12}' (7–40 hex chars of the head $PR_HEAD_SHA). Found bound=$verdict_count, unbound=$unbound_count, for-other-commits=[${stale_verdicts# }]. A push after a review invalidates that review — re-review the new head and re-record.")
 fi
 
 # CodeRabbit marker — either REVIEWED or DEFERRED, written by Step 4.5 of epic_v2.
@@ -160,7 +289,7 @@ if ! printf '%s' "$PR_BODY" | grep -qE '^## CodeRabbit: (REVIEWED|DEFERRED)'; th
 fi
 
 if (( ${#missing[@]} > 0 || ${#stale[@]} > 0 || ${#review_missing[@]} > 0 )); then
-  reason="pre-pr-merge-gate (CLAUDE.md §10): merge blocked. "
+  reason="(CLAUDE.md §10) merge blocked. "
   if (( ${#missing[@]} > 0 )); then
     reason="${reason}Missing markers: ${missing[*]}. "
   fi
@@ -171,10 +300,7 @@ if (( ${#missing[@]} > 0 || ${#stale[@]} > 0 || ${#review_missing[@]} > 0 )); th
     reason="${reason}Missing review audit trail in PR body: ${review_missing[*]}. Run epic_v2 Step 4.5 (gh pr edit --body-file ...) to append the audit trail before merging. "
   fi
   reason="${reason}See CLAUDE.md §1-2 and .claude/skills/epic_v2/SKILL.md Step 4.5."
-  # JSON-escape the reason
-  esc_reason="$(printf '%s' "$reason" | sed 's/\\/\\\\/g; s/"/\\"/g')"
-  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "$esc_reason"
-  exit 0
+  deny "$reason"
 fi
 
 # All gates green.

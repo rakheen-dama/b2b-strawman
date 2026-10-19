@@ -17,6 +17,13 @@
 # (backend changes → backend marker, etc.), and refuses the merge if any
 # required marker is missing, stale, or not on a parent of HEAD.
 #
+# In addition (2026-10-19), every PR — docs-only included — must have its GitHub
+# checks green: `gh pr checks` buckets must all be `pass` or `skipping`
+# (path-filtered jobs). `pending`, `fail` and `cancel` deny the merge, and so does
+# an empty/unreadable check list (fail-closed). Together with the review audit
+# trail below this is what lets `Bash(gh pr merge:*)` be allow-listed in
+# .claude/settings.json without a human review step.
+#
 # This is enforcement, not advice. Do not bypass without raising the gate
 # upstream. See CLAUDE.md §10.
 
@@ -67,6 +74,22 @@ if [[ "$HEAD_BRANCH" == phase86/* || "$HEAD_BRANCH" == epic/86-* ]]; then
     printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"pre-pr-merge-gate: tag horizontal-platform-final is not on origin. Phase 86 deletions require the archive tag (ADR-330)."}}\n'
     exit 0
   fi
+fi
+
+# CI condition: all GitHub checks must be pass or skipping. Runs before the
+# docs-only early allow so documentation PRs are gated on CI too.
+# `gh pr checks` exits non-zero when anything is pending/failing but still prints
+# the JSON, hence `|| true`; an empty result (CI not started / API failure) denies.
+CHECKS_JSON="$(gh pr checks "$PR_NUM" --json name,bucket 2>/dev/null || true)"
+if [[ -z "$CHECKS_JSON" || "$CHECKS_JSON" == "[]" ]]; then
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"pre-pr-merge-gate: no CI checks reported for PR %s yet (or gh pr checks failed). Wait for CI to start and finish, then retry."}}\n' "$PR_NUM"
+  exit 0
+fi
+ci_not_green="$(printf '%s' "$CHECKS_JSON" | jq -r '[.[] | select(.bucket != "pass" and .bucket != "skipping")] | map("\(.name)=\(.bucket)") | join(", ")' 2>/dev/null || echo "jq-error")"
+if [[ -n "$ci_not_green" ]]; then
+  esc_ci="$(printf '%s' "$ci_not_green" | sed 's/\\/\\\\/g; s/"/\\"/g')"
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"pre-pr-merge-gate: CI is not green for PR %s — %s. Every check must be pass or skipping before merge (CLAUDE.md §1/§10)."}}\n' "$PR_NUM" "$esc_ci"
+  exit 0
 fi
 
 CHANGED_FILES="$(gh pr diff "$PR_NUM" --name-only 2>/dev/null || true)"

@@ -691,7 +691,7 @@
 | 605 | Migration Squash → tenant V1 / global V1 | Backend + Ops | 596–604 merged, `main` verify clean | L | 605A, 605B, 605C | **Done** (PR #1577) |
 | 606 | Documentation Sweep + ADR Supersession + QA Capstone | Docs + E2E/Process | 605 | M | 606A, 606B, 606C | **Done** (PR #1578; capstone PARTIAL) |
 | **Phase 87 — Legal-Native Shell: Matter/Client Vocabulary on the Wire, One Diary, Settings Consolidation** | | | | | | See [tasks/phase87-legal-native-shell.md](tasks/phase87-legal-native-shell.md) — architecture `architecture/phase87-legal-native-shell.md` §12, ADR-337..344; no migrations |
-| 607 | Wire Rename Batch 1 — Matters Core + Contract Tests (+ caller edits) | Backend + Frontend + External callers (split) | Phase 86 merged (done) | L | 607A, 607B, 607C, 607D, 607E, 607F | |
+| 607 | Wire Rename Batch 1 — Matters Core + Contract Tests (+ caller edits) | Backend + Frontend + External callers (split) | Phase 86 merged (done) | L | 607A, 607B, 607C, 607D, 607E, 607F | In progress — 607A **Done** (PR #1588) |
 | 608 | Wire Rename Batch 2 — Clients Core (+ caller edits) | Backend + Frontend + External callers (split) | 607 | M | 608A, 608B, 608C, 608D | |
 | 609 | Wire Rename Batches 3–5 — Finance, Legal Verticals, Portal API (+ caller edits) | Backend + Frontend + Portal + External callers (split; may ship as 3 PRs) | 608 | L | 609A, 609B, 609C, 609D, 609E, 609F, 609G | |
 | 610 | Frontend + Portal TS Types, API Modules, Route Segments, Redirects | Frontend + Portal (split) | 609 | L | 610A, 610B, 610C, 610D, 610E, 610F, 610G | |

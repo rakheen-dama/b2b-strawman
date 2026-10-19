@@ -1,7 +1,7 @@
 {
-  "commit": "3b1b8422f",
+  "commit": "b559c744aea6444ca78decaf0882beb18b81f4a2",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-18T10:03:08Z",
-  "summary": "PR #1581 (work type normalisation, tenant V3) final head 3b1b8422f (orchestrator run): 5339 testcases / 0 failures / 0 errors / 26 skipped, wall 902s. Backend CI pass. e2e: V3 normalised existing rows; 'Conveyancing' create/instantiate -> CONVEYANCING + conveyancing_za_matter; 60-char -> 400. Log /tmp/mvn-1581-final.log."
+  "ts": "2026-10-19T20:45:00Z",
+  "summary": "PR #1588 (Epic 607A: wire-vocabulary ratchet, MCP tool+output-DTO contract, ADR-342 literal pins; test/comment/docs only) final head b559c744a (orchestrator run): 5345 testcases / 0 failures / 0 errors / 26 skipped (baseline 5339 + 6 new). Log /tmp/mvn-607A-final.log."
 }

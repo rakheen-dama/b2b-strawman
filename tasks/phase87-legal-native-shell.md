@@ -44,7 +44,7 @@ Carried from §12.14. "Owner" is the epic whose builder must resolve or record t
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 607 | Wire Rename Batch 1 — Matters Core + Contract Tests (+ caller edits) | Backend + Frontend + External callers (split) | Phase 86 merged (done) | L | 607A, 607B, 607C, 607D, 607E, 607F | |
+| 607 | Wire Rename Batch 1 — Matters Core + Contract Tests (+ caller edits) | Backend + Frontend + External callers (split) | Phase 86 merged (done) | L | 607A, 607B, 607C, 607D, 607E, 607F | In progress — 607A **Done** (PR #1588) |
 | 608 | Wire Rename Batch 2 — Clients Core (+ caller edits) | Backend + Frontend + External callers (split) | 607 | M | 608A, 608B, 608C, 608D | |
 | 609 | Wire Rename Batches 3–5 — Finance, Legal Verticals, Portal API (+ caller edits) | Backend + Frontend + Portal + External callers (split; may ship as 3 PRs) | 608 | L | 609A, 609B, 609C, 609D, 609E, 609F, 609G | |
 | 610 | Frontend + Portal TS Types, API Modules, Route Segments, Redirects | Frontend + Portal (split) | 609 | L | 610A, 610B, 610C, 610D, 610E, 610F, 610G | |
@@ -211,7 +211,7 @@ PR rules restated from §12.12 (non-negotiable):
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **607A** | 607A.1–607A.5 | 3 new tests + 1 JSON snapshot + ~42 one-line comments + 3 docs | Contract tests + MCP snapshot; ADR-342 comment convention; gateway/security no-literal proof; V2→V4 docs. `WireVocabularyContractTest` expected red until 607C. |
+| **607A** | 607A.1–607A.5 | 3 new tests + 1 JSON snapshot + ~42 one-line comments + 3 docs | Contract tests + MCP snapshot; ADR-342 comment convention; gateway/security no-literal proof; V2→V4 docs. `WireVocabularyContractTest` expected red until 607C. **Done** (PR #1588) — `WireVocabularyContractTest` shipped as a **ratchet** (baseline `backend/src/test/resources/wire/batch1-known-offenders.txt`, 109 lines; fails on new offenders and stale lines) instead of expected-red, so `main` verifies clean: 607B/607C delete baseline lines as they rename, never edit the test file. `tool-contract.json` also pins `mcp.dto` output record shapes. |
 | **607B** | 607B.1–607B.4 | ~12 main + ~26 test files (mechanical IDE rename; capped by package) | `project/`, `member/`, `projecttemplate/`, `setupstatus/` paths + records; `MatterResponse` extracted to `project/dto`. |
 | **607C** | 607C.1–607C.4 | ~15 main + ~24 test files (mechanical; capped by package) | `dashboard/`, `activity/`, `comment/`, `budget/`, `task/`, `document/`, `mywork/`, `calendar/`; contract test green; BE-VERIFY. |
 | **607D** | 607D.1–607D.3 | ~10–14 lib files (+ `actions.ts` in `$FA/projects/**`, 18 files, mechanical) | Frontend `lib/api`/`lib/types`/`dashboard-types` field + path edits for Batch 1; `projects/**` server actions. |

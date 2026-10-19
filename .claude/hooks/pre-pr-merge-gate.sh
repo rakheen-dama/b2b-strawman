@@ -39,7 +39,15 @@ fi
 
 # Read the tool-call payload from stdin (Claude Code hook contract).
 PAYLOAD="$(cat)"
-COMMAND="$(printf '%s' "$PAYLOAD" | grep -oE '"command"\s*:\s*"[^"]*"' | head -1 | sed 's/.*"command"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/' || true)"
+# Extract the FULL, unescaped command with jq (the old grep/sed stopped at the first
+# escaped quote, so `echo "x" && gh pr merge …` was read as `echo \` and never gated).
+# Fallback without jq: the raw payload — the trigger below then matches on it and the
+# strict shape (which cannot match a JSON blob) denies, i.e. fail-closed.
+if command -v jq >/dev/null 2>&1; then
+  COMMAND="$(printf '%s' "$PAYLOAD" | jq -r '.tool_input.command // ""' 2>/dev/null || printf '%s' "$PAYLOAD")"
+else
+  COMMAND="$PAYLOAD"
+fi
 
 # Emit a deny decision as valid JSON (jq escapes everything; printf fallback if jq
 # is missing) and exit 0. Every refusal in this file goes through here.
@@ -57,6 +65,10 @@ deny() {
 trap 'deny "hook error at line $LINENO (command: $BASH_COMMAND). Merge denied fail-closed; fix the hook, do not bypass."' ERR
 
 # Act on ANY command that contains `gh pr merge` — not only one that starts with it.
+# Belt and braces: test the raw payload too, so no extraction quirk can hide the merge.
+if [[ "$PAYLOAD" =~ gh[[:space:]]+pr[[:space:]]+merge && ! "$COMMAND" =~ gh[[:space:]]+pr[[:space:]]+merge ]]; then
+  deny "payload mentions gh pr merge but the extracted command does not — refusing (extraction mismatch)."
+fi
 # `Bash(gh pr merge:*)` in .claude/settings.json allow-lists the merge for agents, and
 # Claude Code matches that rule per sub-command, so `cd x && gh pr merge …`,
 # `true; gh pr merge …`, env-var prefixes and multi-line commands must not slip past.
@@ -69,6 +81,10 @@ fi
 # Anything else — compound commands, `--admin` (CLAUDE.md §10), `--repo`/`-R` (would gate
 # this repo's PR N but merge another repo's), `--auto` (merges later, after this check),
 # `--body`/`--subject`, quoting, a second `gh pr merge` — is denied with the accepted shape.
+# Real newlines/CR/tabs (jq now un-escapes them) must not be treated as plain spaces.
+if [[ "$COMMAND" == *$'\n'* || "$COMMAND" == *$'\r'* || "$COMMAND" == *$'\t'* ]]; then
+  deny "multi-line or tab-containing merge commands are refused; use a single line: gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch]"
+fi
 STRICT_SHAPE='^[[:space:]]*gh[[:space:]]+pr[[:space:]]+merge[[:space:]]+([0-9]+)([[:space:]]+(--squash|--merge|--rebase|--delete-branch|-d|--match-head-commit[[:space:]]+[0-9a-fA-F]{7,40}))*[[:space:]]*$'
 if [[ ! "$COMMAND" =~ $STRICT_SHAPE ]]; then
   deny "only a single plain merge is allowed: gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch] [--match-head-commit <sha>]. Compound commands, --admin, --repo/-R, --auto and free-text flags are refused (CLAUDE.md §10). Got: $COMMAND"
@@ -181,7 +197,7 @@ check_marker() {
   fi
 }
 
-# Get the PR head SHA for the marker-ancestry check.
+# (PR_HEAD_SHA was resolved above, before the docs-only allow.)
 
 if $needs_backend; then check_marker "backend"; fi
 if $needs_frontend; then check_marker "frontend"; fi

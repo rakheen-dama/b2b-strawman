@@ -1,7 +1,7 @@
 {
-  "commit": "e95115c6844501982c15df73f034f09c79d597ae",
+  "commit": "4c9a02e9403967498e3132a2fd74a924b825c3fa",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-19T23:37:22+02:00",
-  "summary": "PR #1589 (Epic 607B: project/member/projecttemplate/setupstatus wire rename to matter vocabulary) final head e95115c68 (orchestrator run): 5345 testcases / 0 failures / 0 errors / 26 skipped (unchanged vs 607A baseline 5345 — rename only, no new tests). Ratchet baseline 109 -> 55. Log /tmp/mvn-607B-final.log."
+  "ts": "2026-10-20T00:25:00+02:00",
+  "summary": "PR #1590 (Epic 607C: dashboard/activity/comment/budget/task/document/mywork/calendar wire rename to matter vocabulary) head 4c9a02e94 (orchestrator run): 5345 testcases / 0 failures / 0 errors / 26 skipped (unchanged vs 607B — rename only). Ratchet baseline 55 -> 4. Log /tmp/mvn-607C-final.log."
 }

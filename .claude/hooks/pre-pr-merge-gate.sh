@@ -20,9 +20,13 @@
 # In addition (2026-10-19), every PR — docs-only included — must have its GitHub
 # checks green: `gh pr checks` buckets must all be `pass` or `skipping`
 # (path-filtered jobs). `pending`, `fail` and `cancel` deny the merge, and so does
-# an empty/unreadable check list (fail-closed). Together with the review audit
-# trail below this is what lets `Bash(gh pr merge:*)` be allow-listed in
-# .claude/settings.json without a human review step.
+# an empty/unreadable check list (fail-closed). The review audit trail (two
+# `## Verdict: APPROVE` markers + a `## CodeRabbit:` line in the PR body) is
+# required for EVERY PR — there is no documentation-only exemption — and verify
+# markers are required per touched layer. Together this is what lets
+# `Bash(gh pr merge:*)` be allow-listed in .claude/settings.json without a
+# human review step. The command itself must be a single plain
+# `gh pr merge <N> [--squash|--merge|--rebase] [--delete-branch] [--match-head-commit <sha>]`.
 #
 # This is enforcement, not advice. Do not bypass without raising the gate
 # upstream. See CLAUDE.md §10.
@@ -38,17 +42,6 @@ if [[ -t 0 ]]; then
 fi
 
 # Read the tool-call payload from stdin (Claude Code hook contract).
-PAYLOAD="$(cat)"
-# Extract the FULL, unescaped command with jq (the old grep/sed stopped at the first
-# escaped quote, so `echo "x" && gh pr merge …` was read as `echo \` and never gated).
-# Fallback without jq: the raw payload — the trigger below then matches on it and the
-# strict shape (which cannot match a JSON blob) denies, i.e. fail-closed.
-if command -v jq >/dev/null 2>&1; then
-  COMMAND="$(printf '%s' "$PAYLOAD" | jq -r '.tool_input.command // ""' 2>/dev/null || printf '%s' "$PAYLOAD")"
-else
-  COMMAND="$PAYLOAD"
-fi
-
 # Emit a deny decision as valid JSON (jq escapes everything; printf fallback if jq
 # is missing) and exit 0. Every refusal in this file goes through here.
 deny() {
@@ -64,10 +57,23 @@ deny() {
 # Fail closed: any unexpected error (set -e) becomes a deny, never a silent allow.
 trap 'deny "hook error at line $LINENO (command: $BASH_COMMAND). Merge denied fail-closed; fix the hook, do not bypass."' ERR
 
+PAYLOAD="$(cat)"
+# Extract the FULL, unescaped command with jq (the old grep/sed stopped at the first
+# escaped quote, so `echo "x" && gh pr merge …` was read as `echo \` and never gated).
+# Fallback without jq: the raw payload — the trigger below then matches on it and the
+# strict shape (which cannot match a JSON blob) denies, i.e. fail-closed.
+if command -v jq >/dev/null 2>&1; then
+  COMMAND="$(printf '%s' "$PAYLOAD" | jq -r '.tool_input.command // ""' 2>/dev/null || printf '%s' "$PAYLOAD")"
+else
+  COMMAND="$PAYLOAD"
+fi
+
+
 # Act on ANY command that contains `gh pr merge` — not only one that starts with it.
 # Belt and braces: test the raw payload too, so no extraction quirk can hide the merge.
-if [[ "$PAYLOAD" =~ gh[[:space:]]+pr[[:space:]]+merge && ! "$COMMAND" =~ gh[[:space:]]+pr[[:space:]]+merge ]]; then
-  deny "payload mentions gh pr merge but the extracted command does not — refusing (extraction mismatch)."
+TOOL_INPUT_STR="$(printf '%s' "$PAYLOAD" | jq -r '.tool_input | tostring' 2>/dev/null || printf '%s' "$PAYLOAD")"
+if [[ "$TOOL_INPUT_STR" =~ gh[[:space:]]+pr[[:space:]]+merge && ! "$COMMAND" =~ gh[[:space:]]+pr[[:space:]]+merge ]]; then
+  deny "tool_input mentions gh pr merge but the extracted command does not — refusing (extraction mismatch)."
 fi
 # `Bash(gh pr merge:*)` in .claude/settings.json allow-lists the merge for agents, and
 # Claude Code matches that rule per sub-command, so `cd x && gh pr merge …`,
@@ -136,6 +142,11 @@ if [[ -n "$ci_not_green" ]]; then
 fi
 
 CHANGED_FILES="$(gh pr diff "$PR_NUM" --name-only 2>/dev/null || true)"
+# Fail-closed: an empty file list (API error, rate limit, oversized diff) must not be
+# mistaken for a documentation-only PR.
+if [[ -z "$CHANGED_FILES" ]]; then
+  deny "gh pr diff --name-only returned nothing for PR $PR_NUM; cannot classify the change. Retry, or check gh auth / rate limits."
+fi
 
 needs_backend=false
 needs_frontend=false
@@ -144,12 +155,13 @@ needs_portal=false
 if printf '%s\n' "$CHANGED_FILES" | grep -qE '^backend/'; then needs_backend=true; fi
 if printf '%s\n' "$CHANGED_FILES" | grep -qE '^frontend/'; then needs_frontend=true; fi
 if printf '%s\n' "$CHANGED_FILES" | grep -qE '^portal/'; then needs_portal=true; fi
+# Shared packages (@b2mash/ui, @b2mash/shared) are consumed by both apps.
+if printf '%s\n' "$CHANGED_FILES" | grep -qE '^packages/'; then needs_frontend=true; needs_portal=true; fi
 
-# qa_cycle/ + qa/testplan/ + .claude/ diff-only PRs are documentation; allow.
-if [[ "$needs_backend" == false && "$needs_frontend" == false && "$needs_portal" == false ]]; then
-  # Documentation / config-only PR — allow.
-  exit 0
-fi
+# NOTE: there is deliberately NO docs-only early allow any more. Verify markers are
+# layer-dependent (below), but the review audit trail (two reviewer verdicts + CodeRabbit
+# line) and the CI condition apply to EVERY PR — including .claude/, .github/, infra/,
+# compose/ and qa/ changes, which is exactly where a weakened gate or CI would land.
 
 # Verify each required marker.
 missing=()
@@ -187,6 +199,10 @@ check_marker() {
   # a stale marker from an unrelated branch (the docstring at the top promises this).
   local marker_commit
   marker_commit="$(grep -oE '"commit"[[:space:]]*:[[:space:]]*"[a-f0-9]+"' "$marker" | head -1 | grep -oE '[a-f0-9]+' | tail -1 || echo "")"
+  if [[ -z "$marker_commit" ]]; then
+    stale+=("$label (marker has no commit field — rewrite it from the verified commit)")
+    return
+  fi
   if [[ -n "$marker_commit" && -n "$PR_HEAD_SHA" ]]; then
     # Fetch the PR head locally if we don't have it (best-effort — don't fail on network).
     git -C "$REPO_ROOT" cat-file -e "$PR_HEAD_SHA" 2>/dev/null || \

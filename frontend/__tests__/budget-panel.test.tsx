@@ -15,7 +15,7 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/budget-actions", () => ({
 
 function makeBudget(overrides: Partial<BudgetStatusResponse> = {}): BudgetStatusResponse {
   return {
-    projectId: "p1",
+    matterId: "p1",
     budgetHours: 200,
     budgetAmount: 50000,
     budgetCurrency: "USD",

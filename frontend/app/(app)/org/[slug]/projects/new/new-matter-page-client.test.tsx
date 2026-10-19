@@ -33,7 +33,7 @@ function template(id: string, name: string, workType: string | null): ProjectTem
     description: null,
     billableDefault: true,
     source: "MANUAL",
-    sourceProjectId: null,
+    sourceMatterId: null,
     active: true,
     taskCount: 0,
     tagCount: 0,

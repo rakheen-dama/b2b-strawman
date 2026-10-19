@@ -51,7 +51,7 @@ afterEach(() => {
 const MOCK_DOCUMENTS: Document[] = [
   {
     id: "doc-1",
-    projectId: null,
+    matterId: null,
     fileName: "contract.pdf",
     contentType: "application/pdf",
     size: 1024000,
@@ -66,7 +66,7 @@ const MOCK_DOCUMENTS: Document[] = [
   },
   {
     id: "doc-2",
-    projectId: null,
+    matterId: null,
     fileName: "logo.png",
     contentType: "image/png",
     size: 512000,

@@ -36,8 +36,8 @@ function makeItem(overrides: Partial<CalendarItem> = {}): CalendarItem {
     status: "OPEN",
     priority: "MEDIUM",
     assigneeId: null,
-    projectId: "proj-1",
-    projectName: "Test Project",
+    matterId: "proj-1",
+    matterName: "Test Project",
     ...overrides,
   };
 }

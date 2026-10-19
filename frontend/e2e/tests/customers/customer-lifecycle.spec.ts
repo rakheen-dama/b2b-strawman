@@ -197,7 +197,8 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
 
     // The Projects tab may exist but creating projects should be blocked.
     // Check via API — attempting to create a project for a PROSPECT should fail.
-    const projectRes = await fetch(`${BACKEND_URL}/api/projects`, {
+    // Phase 87 S1 (ADR-337): API path
+    const projectRes = await fetch(`${BACKEND_URL}/api/matters`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -206,7 +207,8 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
       body: JSON.stringify({
         name: `Should Fail ${RUN_ID}`,
         description: "This should be blocked by lifecycle guard",
-        customerId: prospect.id,
+        // Phase 87 S1 (ADR-337): API field (CreateMatterRequest.clientId)
+        clientId: prospect.id,
       }),
     });
     // Expect either 400, 409, or 422 — project creation blocked for PROSPECT
@@ -352,7 +354,8 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
     const token = await getToken("alice");
 
     // Attempt to create a project for the OFFBOARDED customer
-    const projectRes = await fetch(`${BACKEND_URL}/api/projects`, {
+    // Phase 87 S1 (ADR-337): API path
+    const projectRes = await fetch(`${BACKEND_URL}/api/matters`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -361,7 +364,8 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
       body: JSON.stringify({
         name: `Should Fail Offboarded ${RUN_ID}`,
         description: "Blocked by lifecycle guard",
-        customerId,
+        // Phase 87 S1 (ADR-337): API field (CreateMatterRequest.clientId)
+        clientId: customerId,
       }),
     });
     expect([400, 409, 422].includes(projectRes.status) || projectRes.ok).toBeTruthy();

@@ -33,7 +33,7 @@ vi.mock("next/navigation", () => ({
 function makeDocument(overrides: Partial<Document> = {}): Document {
   return {
     id: "doc1",
-    projectId: null,
+    matterId: null,
     fileName: "contract.pdf",
     contentType: "application/pdf",
     size: 1024000,

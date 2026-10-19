@@ -62,7 +62,7 @@ const mockMemberHours: MemberHoursEntry[] = [
 ];
 
 const mockBudgetStatus: BudgetStatusResponse = {
-  projectId: "p1",
+  matterId: "p1",
   budgetHours: 100,
   budgetAmount: 10000,
   budgetCurrency: "USD",

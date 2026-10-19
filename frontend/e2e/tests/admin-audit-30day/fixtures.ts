@@ -60,7 +60,8 @@ export async function getMatterIdByName(
     extraHTTPHeaders: { Authorization: `Bearer ${token}` },
   });
   try {
-    const res = await ctx.get(`${API_BASE}/api/projects?size=200`);
+    // Phase 87 S1 (ADR-337): API path
+    const res = await ctx.get(`${API_BASE}/api/matters?size=200`);
     if (!res.ok()) return null;
     const body = (await res.json()) as { content?: MatterSummary[] } | MatterSummary[];
     const projects = Array.isArray(body) ? body : (body.content ?? []);
@@ -101,7 +102,8 @@ export async function seedDay0LoginAndMatterCreation(
   const matterName = opts.matterName ?? "Audit Capstone Matter Day 0";
   const ctx = await request.newContext({ extraHTTPHeaders: authHeaders(opts.token) });
   try {
-    const matterRes = await ctx.post(`${API_BASE}/api/projects`, {
+    // Phase 87 S1 (ADR-337): API path
+    const matterRes = await ctx.post(`${API_BASE}/api/matters`, {
       data: { name: matterName },
     });
     if (!matterRes.ok()) {
@@ -318,8 +320,10 @@ export async function seedDay20CustomerActivity(
     });
 
     // Create a matter on the customer.
-    const matterRes = await ctx.post(`${API_BASE}/api/projects`, {
-      data: { name: "Day 20 capstone matter", customerId: opts.customerId },
+    // Phase 87 S1 (ADR-337): API path
+    const matterRes = await ctx.post(`${API_BASE}/api/matters`, {
+      // Phase 87 S1 (ADR-337): API field (CreateMatterRequest.clientId)
+      data: { name: "Day 20 capstone matter", clientId: opts.customerId },
     });
     let matterId: string | undefined;
     if (matterRes.ok()) {

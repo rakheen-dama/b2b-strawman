@@ -154,7 +154,7 @@ describe("KPIDashboard", () => {
     const jsx = await KPIDashboard({
       ...defaultProps,
       setupStatus: {
-        customerAssigned: true,
+        clientAssigned: true,
         rateCardConfigured: true,
         budgetConfigured: true,
         teamAssigned: true,

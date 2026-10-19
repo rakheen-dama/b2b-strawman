@@ -81,7 +81,8 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
 
     // Create project
     const { data: project } = await apiPost(
-      "/api/projects",
+      // Phase 87 S1 (ADR-337): API path
+      "/api/matters",
       {
         name: PROJECT_NAME,
         description: "Project for budget E2E tests",
@@ -95,7 +96,8 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
     const carol = members.find((m) => m.name?.includes("Carol"));
     if (carol) {
       await apiPost(
-        `/api/projects/${projectId}/members`,
+        // Phase 87 S1 (ADR-337): API path
+        `/api/matters/${projectId}/members`,
         {
           memberId: carol.id,
           projectRole: "contributor",
@@ -106,7 +108,8 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
 
     // Create task for time logging
     const { data: task } = await apiPost(
-      `/api/projects/${projectId}/tasks`,
+      // Phase 87 S1 (ADR-337): API path
+      `/api/matters/${projectId}/tasks`,
       {
         title: TASK_TITLE,
       },
@@ -148,7 +151,8 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
 
     // Set budget: 100 hours, R50,000
     const { status, data } = await apiPut(
-      `/api/projects/${projectId}/budget`,
+      // Phase 87 S1 (ADR-337): API path
+      `/api/matters/${projectId}/budget`,
       {
         budgetHours: 100,
         budgetAmount: 50000,
@@ -197,7 +201,8 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
 
     // Verify budget status via API — should show consumed hours
     const aliceToken = await getToken("alice");
-    const budgetStatus = await apiGet(`/api/projects/${projectId}/budget`, aliceToken);
+    // Phase 87 S1 (ADR-337): API path
+    const budgetStatus = await apiGet(`/api/matters/${projectId}/budget`, aliceToken);
 
     expect(Number(budgetStatus.hoursConsumed)).toBeGreaterThanOrEqual(2);
     expect(Number(budgetStatus.hoursRemaining)).toBeLessThanOrEqual(98);

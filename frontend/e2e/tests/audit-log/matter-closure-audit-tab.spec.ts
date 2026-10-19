@@ -43,7 +43,8 @@ async function findCloseableMatter(token: string): Promise<MatterSummary | null>
   });
 
   // Pull a page of projects; pick the first non-CLOSED, non-ARCHIVED matter.
-  const res = await ctx.get(`${API_BASE}/api/projects?size=50`);
+  // Phase 87 S1 (ADR-337): API path
+  const res = await ctx.get(`${API_BASE}/api/matters?size=50`);
   if (!res.ok()) {
     await ctx.dispose();
     return null;

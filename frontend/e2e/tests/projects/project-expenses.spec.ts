@@ -78,7 +78,8 @@ test.describe.serial("EXPENSE-01: Project Expenses", () => {
   test.beforeAll(async () => {
     const token = await getToken("alice");
     const { data: project } = await apiPost(
-      "/api/projects",
+      // Phase 87 S1 (ADR-337): API path
+      "/api/matters",
       {
         name: PROJECT_NAME,
         description: "Project for expense E2E tests",
@@ -92,7 +93,8 @@ test.describe.serial("EXPENSE-01: Project Expenses", () => {
     const bob = members.find((m) => m.name?.includes("Bob"));
     if (bob) {
       await apiPost(
-        `/api/projects/${projectId}/members`,
+        // Phase 87 S1 (ADR-337): API path
+        `/api/matters/${projectId}/members`,
         {
           memberId: bob.id,
           projectRole: "contributor",

@@ -1,7 +1,7 @@
 {
-  "commit": "03339e6ff",
-  "command": "cd frontend && pnpm run lint && rm -rf .next && pnpm run build && caffeinate -is pnpm test && pnpm run format:check",
+  "commit": "1c1fb4ee7",
+  "command": "cd frontend && pnpm install && pnpm run lint && rm -rf .next && pnpm run build && caffeinate -is pnpm test && pnpm run format:check",
   "exit": 0,
-  "ts": "2026-10-18T21:59:46Z",
-  "summary": "PR #1585 (Next null-prefetch patch) on 03339e6ff (orchestrator run): lint 0 errors; build OK; vitest 2240 passed | 2 skipped; prettier clean. Final head bb3337a71 adds opt-in e2e probe + docs only: lint/prettier re-run clean. e2e fresh stack: lifecycle 63/4 (pre-existing), depth-ii 28/0/12 x2. CI Frontend pass."
+  "ts": "2026-10-19T23:08:10Z",
+  "summary": "PR #1591 (607D) on 1c1fb4ee7 (orchestrator run): lint 0 errors / 95 warnings (= main); build OK; vitest 355 files, 2246 passed | 2 skipped; prettier clean. CI Frontend pass."
 }

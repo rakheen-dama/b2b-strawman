@@ -90,7 +90,7 @@ Pure deletions of removed-feature steps carry: `Removed — Epic 596 (#1565), AD
 | 12.1 | `"L&D documents"` → `"Obtain death certificate & will"`. |
 | 14.2 | `complete FICA checklist → ACTIVE` → `Start Onboarding → complete the 9-item individual checklist (as Day 2) → Activate Customer → ACTIVE`. |
 | 14.3 | `matter_type = CONVEYANCING` → `Work Type **CONVEYANCING** inherited from the template (#1580)`. |
-| 22.3 | Same rewrite as 14.2. |
+| 22.3 | Same rewrite as 14.2 (both superseded by §8 H1: auto-activation on the last required Confirm; Activate Customer only as the post-save fallback). |
 | 22.4 | → `Create matter from template **Litigation (Road Accident Fund -- RAF)** → Work Type **LITIGATION** (the RAF template carries LITIGATION; "Road Accident Fund" is the template, not a work type), case_number = "RAF/2026/0042"`. |
 | 80.5 | ~~Drop `and upcoming court events`~~ **Reverted (§8 second review, item 2)**: whether My Work should show court events is a product decision (Phase 87 slice 613 folds court events into the Diary), not a drift fix. Step left as originally written; needs an explicit founder call. |
 
@@ -131,7 +131,7 @@ Insert after 4.3:
 
 | Where | Change |
 |---|---|
-| Day 5, after 5.6 | Add `5.7` (Bob): `On Sipho's client detail the lifecycle badge reads **PROSPECT**. Click the header card's **Start Onboarding** → confirm → badge **ONBOARDING**; **Compliance** group → **Onboarding** sub-tab shows **Legal Individual Client Onboarding**, 0/9 completed (9 items, 8 required; five show "Requires document").` Day 5 checkpoints: add `- [ ] Sipho ONBOARDING with the individual checklist instantiated`. |
+| Day 5, after 5.6 | Add `5.7` (Bob): `On Sipho's client detail the lifecycle badge reads **PROSPECT**. Click the header card's **Start Onboarding** → confirm → badge **ONBOARDING**; **Compliance** group → **Onboarding** sub-tab shows **Legal Individual Client Onboarding**, 0/9 completed (9 items, 8 required; six show "Requires document" — corrected per §8 M3).` Day 5 checkpoints: add `- [ ] Sipho ONBOARDING with the individual checklist instantiated`. |
 | Day 10 Phase A, before 10.2 | Add 10.1a–10.1d (Thandi), see §4.4. 10.2 unchanged. Day 10 checkpoints: add `- [ ] Sipho ACTIVE (required by the Day 28 billing run: BillingRunSelectionService selects lifecycle_status = ACTIVE only)`. |
 | Day 28 header note | Append one line to the existing cycle-16 note: `Sipho's activation is now scripted at 10.1a–10.1d (Post-86 coherence amendment, 2026-10-19).` |
 
@@ -144,11 +144,11 @@ Insert after 4.3:
 | 14.8 | Template name → `**Liquidation and Distribution Account Pack**` (request pack `legal-za-liquidation-distribution`). |
 | 15.10 | → `Navigate directly to /requests/[morokaInfoRequestId] → expect 404 / 403 / redirect. MUST NOT show "Liquidation and Distribution Account Pack"`. |
 | 15.11 | → `Navigate directly to /trust/[morokaMatterId] → expect 404 / 403 / redirect. MUST NOT render Moroka's R 25,000 deposit or any EST-2026-002 movement`. |
-| 15.12 | → `Removed — the portal has no per-document or per-transaction route; 15.11 and 15.16 cover the trust leak, 15.17 the document leak.` (keep the id, mark removed) |
+| 15.12 | ~~Removed — no per-document route~~ **Superseded by §8.1 High-1**: removed at the UI level only; the document leak is probed at the API level by 15.17 (`/portal/documents/{id}/presign-download`) and 15.17a (`/portal/projects/{id}/documents`). |
 | 15.14 | → `curl -sS http://localhost:8080/portal/projects/[morokaMatterId]/summary -H "Authorization: Bearer $SIPHO_JWT"` → 403/404. |
 | 15.15 | → `curl -sS http://localhost:8080/portal/requests/[morokaInfoRequestId] …` → 403/404. |
 | 15.16 | → `curl -sS http://localhost:8080/portal/trust/matters/[morokaMatterId]/transactions …` → 403/404. |
-| 15.17 | → `curl -sS http://localhost:8080/portal/trust/matters/[morokaMatterId]/statement-documents …` → 403/404 or empty; never Moroka document bytes. |
+| 15.17 | ~~statement-documents~~ **Superseded by §8.1 High-1**: 15.17 probes `/portal/documents/[morokaDocumentId]/presign-download`; new 15.17a probes `/portal/projects/[morokaMatterId]/documents` and the trust `statement-documents` endpoint. |
 | 15.18 | → `curl -sS http://localhost:8080/portal/trust/summary … \| jq` and `curl -sS http://localhost:8080/portal/requests … \| jq` → only Sipho's ids; balance R 50,000 not R 75,000. |
 | Day 15 Phase B/C intro | Add: `Routes/endpoints are today's (/projects, /portal/projects); Phase 87 renames them to /matters (609F, 617A) under ADR-344.` |
 | 21.5 | `"Draft particulars of claim"` → `"File RAF1 claim form + supporting documents"` (the RAF template task that Day 60.7 later expects to carry 1h30m). |
@@ -282,3 +282,18 @@ The independent review re-verified every hunk and found the following; each was 
 | Med (M2/M4) | §8 is agent-authored; an agent cannot grant itself §6 authorisation for the M2 precondition hunks or the M4 master-doc hunks. | — | Both listed in the PR body under "needs founder acknowledgement"; M2 is defensible under the §1 boundary rule, M4 is reversible. |
 | Low | `tasks/phase87-legal-native-shell.md:821` (617B.1) still says "the 12 stale Pipeline refs"; none remain after this PR (21 removed). | — | Not edited here (scope §7); follow-up: 617B.1 becomes "verify zero Pipeline refs". |
 | Low | 90-day Day 2 completes "Engagement Letter Signed" before the Day 4 letter exists; wow #7 appended out of chronological order. | — | Left as is (step order preserved; §7 product observation stands). |
+
+### 8.2 CodeRabbit (10 actionable comments, all addressed)
+
+| Comment | Disposition |
+|---|---|
+| master: add the portal to the manual Session 0 path (M.3/M.4) | Fixed — four terminals, five health checks incl. `:3002/login`. |
+| master: smoke list omits the full-lifecycle plan when the 90-day plan is the current cycle | Fixed — "the other lifecycle plan's Day 0". |
+| master: "reset the tenant between plans" contradicts portal/admin-audit needing prior state (Major) | Fixed — reset only between the two lifecycle plans; explicit "do not reset before portal/admin-audit". |
+| 90-day 2.7: after fixing the prerequisite, the save itself re-runs the check (`CustomerService.java:434` → `recheckLifecycleAdvance`) | Fixed in 2.7, 8.6 and full-lifecycle 10.1c — Activate Customer only if still ONBOARDING after the save. |
+| full-lifecycle Day 15 checkpoint "4+ direct-URL probes" vs three real routes | Fixed — checkpoint names the three (matter, request, trust). |
+| full-lifecycle 15.14–15.17a: print the HTTP status | Fixed — `-w '\nHTTP %{http_code}\n'` on every probe. |
+| audit L103: unescaped `\|` in a table cell | Fixed — comma-separated list. |
+| spec §3.4 14.2/22.3 still read as unconditional Activate | Fixed — rows marked superseded by §8 H1. |
+| spec §4.2 5.7 still said "five" | Fixed — six. |
+| spec §4.3 15.12/15.17 not reconciled with §8.1 | Fixed — rows marked superseded with the new probes. |

@@ -95,7 +95,7 @@ The test suite gate is enforced **per fix PR**, not only at cycle end. But the f
 
 - [ ] Last fix PR in the cycle has all four suites green
 - [ ] Running the full suites against `main` (after all cycle fixes merged) is still green
-- [ ] If the cycle changed any shared code (vertical profile loader, `NavZone`, promoted slug list, billing page), run the other legal plans' smoke sections (90-day Day 0, portal Day 0, admin-audit Day 0) and both legal Playwright configs on the :3001 mock stack before declaring demo-ready
+- [ ] If the cycle changed any shared code (vertical profile loader, `NavZone`, promoted slug list, billing page), run the smoke sections of the plans not being cycled (the other lifecycle plan's Day 0 — full-lifecycle or 90-day, whichever is not the current cycle — plus portal Day 0 and admin-audit Day 0) and both legal Playwright configs on the :3001 mock stack before declaring demo-ready
 
 ## Order of operations (sequential, not parallel)
 
@@ -118,14 +118,16 @@ Each lifecycle script starts with "Prep & Reset — Session 0". This master doc 
 
 - [ ] **M.1** From repo root: `bash compose/scripts/dev-up.sh` — wait for "infra up" confirmation
 - [ ] **M.2** If first run on this machine: `bash compose/scripts/keycloak-bootstrap.sh` — confirm output mentions `padmin@docteams.local` created
-- [ ] **M.3** In three separate terminals (or via `bash compose/scripts/svc.sh start all`):
+- [ ] **M.3** In four separate terminals (or via `bash compose/scripts/svc.sh start all`, which starts all four):
   - Backend: `SPRING_PROFILES_ACTIVE=local,keycloak ./mvnw spring-boot:run` (port 8080)
   - Gateway: `./mvnw spring-boot:run` (port 8443)
   - Frontend: `NEXT_PUBLIC_AUTH_MODE=keycloak pnpm dev` (port 3000)
-- [ ] **M.4** Health checks (run all four):
+  - Portal: `pnpm dev` in `portal/` (port 3002) — needed by every plan with a portal step (full-lifecycle, portal-client, 90-day 4.3b/14.12/68.1)
+- [ ] **M.4** Health checks (run all five):
   - `curl -sf http://localhost:8080/actuator/health` → `{"status":"UP"}`
   - `curl -sf http://localhost:8443/actuator/health` → `{"status":"UP"}`
   - `curl -sf http://localhost:3000/` → 200 OK
+  - `curl -sf -o /dev/null -w '%{http_code}' http://localhost:3002/login` → 200
   - `curl -sf http://localhost:8180/realms/docteams` → realm JSON
 - [ ] **M.5** Open Mailpit (`http://localhost:8025`) — inbox should be empty
 - [ ] **M.6** Drop any leftover tenant schemas from a previous run:
@@ -190,7 +192,7 @@ The skill:
 4. On success of all steps, runs exit-criteria checkpoints and writes the gap report
 5. Stops when the script runs clean on a single pass
 
-Between plans, merge the accumulated fixes to `main`, redeploy, and reset the tenant per each plan's Session 0 before starting the next.
+Between the two lifecycle plans (full-lifecycle → 90-day), merge the accumulated fixes to `main`, redeploy, and reset the tenant per the plan's Session 0 before starting the next. Do **not** reset before the portal and admin-audit plans — they read the state the preceding lifecycle plan built (see "Order of operations").
 
 ## Recent-change checkpoint reference
 

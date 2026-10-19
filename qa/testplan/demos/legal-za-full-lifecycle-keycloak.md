@@ -394,7 +394,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **10.1a** Sipho's client detail → **Work** group → **Documents** sub-tab → **Upload Document** → upload one small PDF named "Sipho Dlamini — certified FICA pack.pdf" (the checklist document picker lists client-level documents; always upload this file even if the Day 4 portal uploads appear in the picker, so the run is reproducible) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.2: Sipho must be ACTIVE for the Day 28 billing run; ONBOARDING→ACTIVE needs a complete checklist)
 - [ ] **10.1b** **Compliance** group → **Onboarding** sub-tab → for each of the 9 items in order: **Mark Complete** → where "Requires document" shows, pick the PDF from 10.1a → **Confirm** → **Completed**. Complete "Engagement Letter Signed" before "Power of Attorney Signed" (dependency). Progress reads **9/9 completed**. If a completed item still renders Pending, reload — `FIXME(depth-ii:checklist-stale-after-complete)`, intermittent
-- [ ] **10.1c** When the last required item is confirmed the checklist instance completes and the client **auto-transitions to ACTIVE** (`checklist/ChecklistInstanceService.checkLifecycleAdvance`, provided the activation prerequisites Address Line 1 / City / Country (from 2.3) are on file — `StructuralPrerequisiteCheck.LIFECYCLE_ACTIVATION_FIELDS`) → lifecycle badge **ACTIVE**; the header primary action now reads **Edit**. If the badge still reads ONBOARDING, a `PREREQUISITE_BLOCKED_ACTIVATION` notification was raised — fill the missing field on the client, then the header action reads **Activate Customer** → click → ACTIVE
+- [ ] **10.1c** When the last required item is confirmed the checklist instance completes and the client **auto-transitions to ACTIVE** (`checklist/ChecklistInstanceService.checkLifecycleAdvance`, provided the activation prerequisites Address Line 1 / City / Country (from 2.3) are on file — `StructuralPrerequisiteCheck.LIFECYCLE_ACTIVATION_FIELDS`) → lifecycle badge **ACTIVE**; the header primary action now reads **Edit**. If the badge still reads ONBOARDING, a `PREREQUISITE_BLOCKED_ACTIVATION` notification was raised — fill the missing field on the client and save; the save re-runs the check (`CustomerService.java:434` → `recheckLifecycleAdvance`) and usually flips the badge to ACTIVE by itself. Only if it still reads ONBOARDING after the save, click **Activate Customer** → ACTIVE
 - [ ] **10.1d** **Work** → **Generated Docs**: the engagement letter's acceptance badge reads **Accepted** (from Day 8)
 - [ ] **10.2** Matter lifecycle: verify matter has auto-transitioned to **ACTIVE** (Phase 29 lifecycle), or transition manually per current UX
 
@@ -527,11 +527,11 @@ Using the Moroka entity IDs captured Day 14, attempt direct URL navigation while
 
 Using Sipho's portal JWT (capture from browser devtools → Application → cookies / localStorage → look for `portal_jwt` or similar):
 
-- [ ] **15.14** `curl -sS http://localhost:8080/portal/projects/[morokaMatterId]/summary -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** or **404**. MUST NOT return 200 with Moroka data.
-- [ ] **15.15** `curl -sS http://localhost:8080/portal/requests/[morokaInfoRequestId] -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404**
-- [ ] **15.16** `curl -sS http://localhost:8080/portal/trust/matters/[morokaMatterId]/transactions -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404**
-- [ ] **15.17** `curl -sS http://localhost:8080/portal/documents/[morokaDocumentId]/presign-download -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404**; MUST NOT return a presigned URL for Moroka's death certificate (`portal/PortalDocumentController.java:57`)
-- [ ] **15.17a** `curl -sS http://localhost:8080/portal/projects/[morokaMatterId]/documents -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404** (`PortalDocumentController.java:31`); and `curl -sS http://localhost:8080/portal/trust/matters/[morokaMatterId]/statement-documents …` → **403** / **404** or empty
+- [ ] **15.14** `curl -sS -w '\nHTTP %{http_code}\n' http://localhost:8080/portal/projects/[morokaMatterId]/summary -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** or **404**. MUST NOT return 200 with Moroka data.
+- [ ] **15.15** `curl -sS -w '\nHTTP %{http_code}\n' http://localhost:8080/portal/requests/[morokaInfoRequestId] -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404**
+- [ ] **15.16** `curl -sS -w '\nHTTP %{http_code}\n' http://localhost:8080/portal/trust/matters/[morokaMatterId]/transactions -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404**
+- [ ] **15.17** `curl -sS -w '\nHTTP %{http_code}\n' http://localhost:8080/portal/documents/[morokaDocumentId]/presign-download -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404**; MUST NOT return a presigned URL for Moroka's death certificate (`portal/PortalDocumentController.java:57`)
+- [ ] **15.17a** `curl -sS -w '\nHTTP %{http_code}\n' http://localhost:8080/portal/projects/[morokaMatterId]/documents -H "Authorization: Bearer $SIPHO_JWT"` → expect **403** / **404** (`PortalDocumentController.java:31`); and `curl -sS -w '\nHTTP %{http_code}\n' http://localhost:8080/portal/trust/matters/[morokaMatterId]/statement-documents -H "Authorization: Bearer $SIPHO_JWT"` → **403** / **404** or empty (the `-w` suffix prints the status after each body so a 200-with-empty-body cannot be mistaken for a denial)
 - [ ] **15.18** `curl -sS http://localhost:8080/portal/trust/summary -H "Authorization: Bearer $SIPHO_JWT" | jq '.'` and `curl -sS http://localhost:8080/portal/requests -H "Authorization: Bearer $SIPHO_JWT" | jq '.'` → only Sipho's entities; balance R 50,000 (not R 75,000); no Moroka ids in any list field
 
 ### Phase D: Activity trail + digest leak probe
@@ -541,7 +541,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 **Day 15 checkpoints (BLOCKER severity — any failure here is a HIGH/BLOCKER gap)**
 - [ ] List views on `/home`, `/projects`, `/trust`, `/invoices`, `/deadlines` show ONLY Sipho's data
-- [ ] Direct-URL probes to 4+ Moroka entity IDs denied at the frontend (no matter data renders)
+- [ ] Direct-URL probes to the three Moroka entities the portal has pages for (matter 15.9, request 15.10, trust 15.11) denied at the frontend (no Moroka data renders)
 - [ ] API-level probes to 5+ Moroka endpoints denied at backend (403/404, never 200) — matter summary, request, trust transactions, document presign, matter documents
 - [ ] Trust balance card shows R 50,000 (Sipho's only) — not R 75,000 (aggregate leak)
 - [ ] Activity trail / digest have zero Moroka references

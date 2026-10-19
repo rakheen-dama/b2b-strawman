@@ -67,7 +67,7 @@ class SecurityAuditTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sec_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -82,7 +82,7 @@ class SecurityAuditTest {
     // Add the member to the project with "member" role (not lead), so they can VIEW but NOT EDIT
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sec_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -99,7 +99,7 @@ class SecurityAuditTest {
     // AccessDeniedException
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_sec_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -124,7 +124,7 @@ class SecurityAuditTest {
                           e -> {
                             var details = e.getDetails();
                             return details != null
-                                && "/api/projects".equals(details.get("path"))
+                                && "/api/matters".equals(details.get("path"))
                                 && "POST".equals(details.get("method"));
                           })
                       .toList();
@@ -144,7 +144,7 @@ class SecurityAuditTest {
     // PUT update triggers ForbiddenException from ProjectAccessService.requireEditAccess()
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_sec_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -168,7 +168,7 @@ class SecurityAuditTest {
                           e -> {
                             var details = e.getDetails();
                             return details != null
-                                && ("/api/projects/" + projectId).equals(details.get("path"))
+                                && ("/api/matters/" + projectId).equals(details.get("path"))
                                 && "PUT".equals(details.get("method"));
                           })
                       .toList();
@@ -186,17 +186,17 @@ class SecurityAuditTest {
   @Test
   void authFailed_noJwt_logsWarning(CapturedOutput output) throws Exception {
     // Unauthenticated request -- triggers AuditAuthenticationEntryPoint log.warn()
-    mockMvc.perform(get("/api/projects")).andExpect(status().isUnauthorized());
+    mockMvc.perform(get("/api/matters")).andExpect(status().isUnauthorized());
 
     assertThat(output.getOut() + output.getErr()).contains("security.auth_failed");
-    assertThat(output.getOut() + output.getErr()).contains("/api/projects");
+    assertThat(output.getOut() + output.getErr()).contains("/api/matters");
   }
 
   @Test
   void authFailed_notLoggedOnValidJwt(CapturedOutput output) throws Exception {
     // Authenticated request -- should NOT trigger auth failure logging
     mockMvc
-        .perform(get("/api/projects").with(TestJwtFactory.ownerJwt(ORG_ID, "user_sec_owner")))
+        .perform(get("/api/matters").with(TestJwtFactory.ownerJwt(ORG_ID, "user_sec_owner")))
         .andExpect(status().isOk());
 
     assertThat(output.getOut() + output.getErr()).doesNotContain("security.auth_failed");

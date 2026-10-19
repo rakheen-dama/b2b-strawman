@@ -238,14 +238,14 @@ class UnbilledTimeSummaryControllerTest {
     // Project A: 2 entries, 120+60=180 min = 3.00 hours, amount = 3000+1500 = 4500
     mockMvc
         .perform(
-            get("/api/projects/" + projectIdA + "/unbilled-summary")
+            get("/api/matters/" + projectIdA + "/unbilled-summary")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalHours").value(3.0))
         .andExpect(jsonPath("$.totalAmount").value(4500.0))
         .andExpect(jsonPath("$.entryCount").value(2))
         .andExpect(jsonPath("$.currency").value("ZAR"))
-        .andExpect(jsonPath("$.byProject").doesNotExist());
+        .andExpect(jsonPath("$.byMatter").doesNotExist());
   }
 
   @Test
@@ -254,13 +254,13 @@ class UnbilledTimeSummaryControllerTest {
     // Project B: all entries have invoice_id set
     mockMvc
         .perform(
-            get("/api/projects/" + projectIdB + "/unbilled-summary")
+            get("/api/matters/" + projectIdB + "/unbilled-summary")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalHours").value(0))
         .andExpect(jsonPath("$.totalAmount").value(0))
         .andExpect(jsonPath("$.entryCount").value(0))
-        .andExpect(jsonPath("$.byProject").doesNotExist());
+        .andExpect(jsonPath("$.byMatter").doesNotExist());
   }
 
   @Test
@@ -274,8 +274,8 @@ class UnbilledTimeSummaryControllerTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.entryCount").value(3))
-        .andExpect(jsonPath("$.byProject").isArray())
-        .andExpect(jsonPath("$.byProject.length()").value(2));
+        .andExpect(jsonPath("$.byMatter").isArray())
+        .andExpect(jsonPath("$.byMatter.length()").value(2));
   }
 
   @Test
@@ -289,14 +289,14 @@ class UnbilledTimeSummaryControllerTest {
         .andExpect(jsonPath("$.totalHours").value(0))
         .andExpect(jsonPath("$.totalAmount").value(0))
         .andExpect(jsonPath("$.entryCount").value(0))
-        .andExpect(jsonPath("$.byProject").doesNotExist());
+        .andExpect(jsonPath("$.byMatter").doesNotExist());
   }
 
   @Test
   @Order(5)
   void projectUnbilledSummary_unauthenticated_returns401() throws Exception {
     mockMvc
-        .perform(get("/api/projects/" + projectIdA + "/unbilled-summary"))
+        .perform(get("/api/matters/" + projectIdA + "/unbilled-summary"))
         .andExpect(status().isUnauthorized());
   }
 
@@ -315,13 +315,13 @@ class UnbilledTimeSummaryControllerTest {
     // Only billable counted: 90 min = 1.50 hours, amount = (90/60)*2000 = 3000
     mockMvc
         .perform(
-            get("/api/projects/" + projectIdC + "/unbilled-summary")
+            get("/api/matters/" + projectIdC + "/unbilled-summary")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalHours").value(1.5))
         .andExpect(jsonPath("$.totalAmount").value(3000.0))
         .andExpect(jsonPath("$.entryCount").value(1))
-        .andExpect(jsonPath("$.byProject").doesNotExist());
+        .andExpect(jsonPath("$.byMatter").doesNotExist());
   }
 
   @Test
@@ -330,7 +330,7 @@ class UnbilledTimeSummaryControllerTest {
     var nonExistent = UUID.randomUUID();
     mockMvc
         .perform(
-            get("/api/projects/" + nonExistent + "/unbilled-summary")
+            get("/api/matters/" + nonExistent + "/unbilled-summary")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isNotFound());
   }
@@ -351,7 +351,7 @@ class UnbilledTimeSummaryControllerTest {
   void projectUnbilledSummary_memberRole_returns403() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/" + projectIdA + "/unbilled-summary")
+            get("/api/matters/" + projectIdA + "/unbilled-summary")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_unbilled_member")))
         .andExpect(status().isForbidden());
   }

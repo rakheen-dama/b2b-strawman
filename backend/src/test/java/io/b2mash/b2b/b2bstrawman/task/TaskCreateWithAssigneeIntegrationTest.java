@@ -60,7 +60,7 @@ class TaskCreateWithAssigneeIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.adminJwt(ORG_ID, "user_assignee_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -74,7 +74,7 @@ class TaskCreateWithAssigneeIntegrationTest {
     // Add regular member to the project
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_assignee_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

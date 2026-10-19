@@ -26,9 +26,9 @@ import io.b2mash.b2b.b2bstrawman.dashboard.dto.UtilizationSummary;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import io.b2mash.b2b.b2bstrawman.project.MatterWithRole;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectStatus;
-import io.b2mash.b2b.b2bstrawman.project.ProjectWithRole;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
@@ -606,7 +606,7 @@ public class DashboardService {
 
   private List<ProjectHealth> computeProjectHealthList(ActorContext actor) {
     // Get accessible projects based on role
-    List<ProjectWithRole> projectsWithRoles;
+    List<MatterWithRole> projectsWithRoles;
     if (isAdminOrOwner(actor.orgRole())) {
       projectsWithRoles = projectRepository.findAllProjectsWithRole(actor.memberId());
     } else {
@@ -618,7 +618,7 @@ public class DashboardService {
     return projectsWithRoles.stream()
         .map(
             projectWithRole -> {
-              var project = projectWithRole.project();
+              var project = projectWithRole.matter();
               UUID projectId = project.getId();
 
               long totalTasks = taskRepository.countByProjectId(projectId);

@@ -62,7 +62,7 @@ class TaskIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -76,7 +76,7 @@ class TaskIntegrationTest {
     // Add the member to the project
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -90,7 +90,7 @@ class TaskIntegrationTest {
     var projectBResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_B_ID, "user_task_tenant_b"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

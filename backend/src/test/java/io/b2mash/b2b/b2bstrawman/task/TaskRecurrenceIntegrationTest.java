@@ -58,7 +58,7 @@ class TaskRecurrenceIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -71,7 +71,7 @@ class TaskRecurrenceIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

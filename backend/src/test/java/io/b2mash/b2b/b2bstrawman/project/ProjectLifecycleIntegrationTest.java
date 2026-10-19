@@ -99,7 +99,7 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/complete")
+            patch("/api/matters/" + projectId + "/complete")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("COMPLETED"))
@@ -115,7 +115,7 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/complete")
+            patch("/api/matters/" + projectId + "/complete")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isBadRequest());
   }
@@ -142,7 +142,7 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/complete")
+            patch("/api/matters/" + projectId + "/complete")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isConflict());
   }
@@ -169,7 +169,7 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/complete")
+            patch("/api/matters/" + projectId + "/complete")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -186,7 +186,7 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/archive")
+            patch("/api/matters/" + projectId + "/archive")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("ARCHIVED"))
@@ -200,13 +200,13 @@ class ProjectLifecycleIntegrationTest {
     // Complete the project (no tasks, so no open task guardrail)
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/complete")
+            patch("/api/matters/" + projectId + "/complete")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk());
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/archive")
+            patch("/api/matters/" + projectId + "/archive")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("ARCHIVED"));
@@ -220,7 +220,7 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/archive")
+            patch("/api/matters/" + projectId + "/archive")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("ARCHIVED"));
@@ -232,13 +232,13 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/complete")
+            patch("/api/matters/" + projectId + "/complete")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk());
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/reopen")
+            patch("/api/matters/" + projectId + "/reopen")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("ACTIVE"))
@@ -251,13 +251,13 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/archive")
+            patch("/api/matters/" + projectId + "/archive")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk());
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/reopen")
+            patch("/api/matters/" + projectId + "/reopen")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("ACTIVE"))
@@ -271,12 +271,12 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + archivedProjectId + "/archive")
+            patch("/api/matters/" + archivedProjectId + "/archive")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk());
 
     mockMvc
-        .perform(get("/api/projects").with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
+        .perform(get("/api/matters").with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.id == '%s')]", activeProjectId).exists())
         .andExpect(jsonPath("$[?(@.id == '%s')]", archivedProjectId).doesNotExist());
@@ -289,14 +289,14 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + completedProjectId + "/complete")
+            patch("/api/matters/" + completedProjectId + "/complete")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk());
 
     // Filter for COMPLETED only
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"))
                 .param("status", "COMPLETED"))
         .andExpect(status().isOk())
@@ -306,7 +306,7 @@ class ProjectLifecycleIntegrationTest {
     // Filter for ACTIVE,COMPLETED — should return both
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"))
                 .param("status", "ACTIVE,COMPLETED"))
         .andExpect(status().isOk())
@@ -322,19 +322,19 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + archivedProjectId + "/archive")
+            patch("/api/matters/" + archivedProjectId + "/archive")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk());
     mockMvc
         .perform(
-            patch("/api/projects/" + completedProjectId + "/complete")
+            patch("/api/matters/" + completedProjectId + "/complete")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk());
 
     // status=ALL should return projects in all statuses
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"))
                 .param("status", "ALL"))
         .andExpect(status().isOk())
@@ -347,7 +347,7 @@ class ProjectLifecycleIntegrationTest {
   void shouldRejectInvalidStatusParameter() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"))
                 .param("status", "BOGUS"))
         .andExpect(status().isBadRequest());
@@ -377,7 +377,7 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"))
                 .param("dueBefore", "2026-06-01"))
         .andExpect(status().isOk())
@@ -392,7 +392,7 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/archive")
+            patch("/api/matters/" + projectId + "/archive")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk());
 
@@ -417,7 +417,7 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/archive")
+            patch("/api/matters/" + projectId + "/archive")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk());
 
@@ -439,7 +439,7 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/complete")
+            patch("/api/matters/" + projectId + "/complete")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_plc_member")))
         .andExpect(status().isForbidden());
   }
@@ -450,7 +450,7 @@ class ProjectLifecycleIntegrationTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/reopen")
+            patch("/api/matters/" + projectId + "/reopen")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isBadRequest());
   }
@@ -476,7 +476,7 @@ class ProjectLifecycleIntegrationTest {
     // updated
     mockMvc
         .perform(
-            put("/api/projects/" + projectA)
+            put("/api/matters/" + projectA)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"OBS-8801 Lifecycle Feed A (renamed)\"}"))
@@ -485,28 +485,28 @@ class ProjectLifecycleIntegrationTest {
     // completed (no tasks -> no open-task guardrail)
     mockMvc
         .perform(
-            patch("/api/projects/" + projectA + "/complete")
+            patch("/api/matters/" + projectA + "/complete")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk());
 
     // reopened (from completed)
     mockMvc
         .perform(
-            patch("/api/projects/" + projectA + "/reopen")
+            patch("/api/matters/" + projectA + "/reopen")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk());
 
     // archived
     mockMvc
         .perform(
-            patch("/api/projects/" + projectA + "/archive")
+            patch("/api/matters/" + projectA + "/archive")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk());
 
     // reopened (from archived — second project.reopened row)
     mockMvc
         .perform(
-            patch("/api/projects/" + projectA + "/reopen")
+            patch("/api/matters/" + projectA + "/reopen")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isOk());
 
@@ -543,7 +543,7 @@ class ProjectLifecycleIntegrationTest {
     String projectB = createProject("OBS-8801 Lifecycle Feed B");
     mockMvc
         .perform(
-            delete("/api/projects/" + projectB)
+            delete("/api/matters/" + projectB)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isNoContent());
 
@@ -577,7 +577,7 @@ class ProjectLifecycleIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -610,7 +610,7 @@ class ProjectLifecycleIntegrationTest {
   private void addMemberToProject(String projectId, String memberId) throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

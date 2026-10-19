@@ -73,7 +73,7 @@ class CustomerProjectIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -87,7 +87,7 @@ class CustomerProjectIntegrationTest {
     // Add the member to the project as a lead so they can link
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"" + projectLeadMemberId + "\"}"))
@@ -97,7 +97,7 @@ class CustomerProjectIntegrationTest {
     mockMvc
         .perform(
             org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put(
-                    "/api/projects/" + projectId + "/members/" + projectLeadMemberId + "/role")
+                    "/api/matters/" + projectId + "/members/" + projectLeadMemberId + "/role")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"role\": \"lead\"}"))
@@ -208,12 +208,12 @@ class CustomerProjectIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"name": "Direct FK Project", "description": "Linked via customerId FK", "customerId": "%s"}
+                        {"name": "Direct FK Project", "description": "Linked via customerId FK", "clientId": "%s"}
                         """
                             .formatted(customerId)))
             .andExpect(status().isCreated())
@@ -239,12 +239,12 @@ class CustomerProjectIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"name": "Dedup Project", "description": "Linked both ways", "customerId": "%s"}
+                        {"name": "Dedup Project", "description": "Linked both ways", "clientId": "%s"}
                         """
                             .formatted(customerId)))
             .andExpect(status().isCreated())
@@ -309,7 +309,7 @@ class CustomerProjectIntegrationTest {
     var project2Result =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -419,7 +419,7 @@ class CustomerProjectIntegrationTest {
     var tenantBProjectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_B_ID, "user_cp_tenant_b"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -486,7 +486,7 @@ class CustomerProjectIntegrationTest {
     var projectResultA =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(STARTER_A_ID, "user_cp_starter_a"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -545,7 +545,7 @@ class CustomerProjectIntegrationTest {
     var projectResultA =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(STARTER_A_ID, "user_cp_starter_a"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

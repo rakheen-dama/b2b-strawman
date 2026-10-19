@@ -42,7 +42,7 @@ public class ProjectSetupStatusService {
   }
 
   @Transactional(readOnly = true)
-  public ProjectSetupStatus getSetupStatus(UUID projectId) {
+  public MatterSetupStatus getSetupStatus(UUID projectId) {
     var project =
         projectRepository
             .findById(projectId)
@@ -78,7 +78,7 @@ public class ProjectSetupStatusService {
     int completionPercentage = (passCount * 100) / 5;
     boolean overallComplete = passCount == 5;
 
-    return new ProjectSetupStatus(
+    return new MatterSetupStatus(
         projectId,
         customerAssigned,
         rateCardConfigured,

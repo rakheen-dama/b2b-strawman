@@ -50,7 +50,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -65,7 +65,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     for (String mid : List.of(memberIdAdmin, memberIdMember, memberIdMember2)) {
       mockMvc
           .perform(
-              post("/api/projects/" + projectId + "/members")
+              post("/api/matters/" + projectId + "/members")
                   .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                   .contentType(MediaType.APPLICATION_JSON)
                   .content("{\"memberId\": \"%s\"}".formatted(mid)))
@@ -228,7 +228,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     var archiveProjectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -257,7 +257,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     // Archive the project
     mockMvc
         .perform(
-            patch("/api/projects/" + archiveProjectId + "/archive")
+            patch("/api/matters/" + archiveProjectId + "/archive")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner")))
         .andExpect(status().isOk());
 
@@ -290,7 +290,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     var archiveProjectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -340,7 +340,7 @@ class CommentControllerTest extends AbstractIntegrationTest {
     // Archive the project
     mockMvc
         .perform(
-            patch("/api/projects/" + archiveProjectId + "/archive")
+            patch("/api/matters/" + archiveProjectId + "/archive")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner")))
         .andExpect(status().isOk());
 

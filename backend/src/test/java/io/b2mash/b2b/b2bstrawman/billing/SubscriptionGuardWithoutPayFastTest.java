@@ -209,7 +209,7 @@ class SubscriptionGuardWithoutPayFastTest {
     setStatus(Subscription.SubscriptionStatus.GRACE_PERIOD);
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(owner)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"GWP Grace Write\"}"))
@@ -219,7 +219,7 @@ class SubscriptionGuardWithoutPayFastTest {
 
     setStatus(Subscription.SubscriptionStatus.LOCKED);
     mockMvc
-        .perform(get("/api/projects").with(owner))
+        .perform(get("/api/matters").with(owner))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.type").value("subscription_locked"));
     mockMvc.perform(get("/api/billing/subscription").with(owner)).andExpect(status().isOk());

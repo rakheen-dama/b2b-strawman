@@ -80,7 +80,7 @@ class ProjectUpcomingDeadlinesServiceTest {
     var rows = service.getUpcomingDeadlines(projectId, actor);
 
     assertThat(rows).hasSize(2);
-    assertThat(rows).extracting(ProjectUpcomingDeadline::type).containsOnly("COURT");
+    assertThat(rows).extracting(MatterUpcomingDeadline::type).containsOnly("COURT");
 
     assertThat(rows.get(0).date()).isEqualTo(LocalDate.of(2026, 6, 10));
     assertThat(rows.get(0).description()).contains("Johannesburg High Court", "Judge Mogoeng");

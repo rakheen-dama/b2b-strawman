@@ -185,7 +185,7 @@ class ProjectTemplateWorkTypeIntegrationTest {
     MvcResult created =
         mockMvc
             .perform(
-                post("/api/project-templates")
+                post("/api/matter-templates")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -201,7 +201,7 @@ class ProjectTemplateWorkTypeIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/project-templates/" + id)
+            put("/api/matter-templates/" + id)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -215,14 +215,14 @@ class ProjectTemplateWorkTypeIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/project-templates/" + id + "/duplicate")
+            post("/api/matter-templates/" + id + "/duplicate")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.workType").value("ESTATES"));
 
     mockMvc
         .perform(
-            put("/api/project-templates/" + id)
+            put("/api/matter-templates/" + id)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -238,7 +238,7 @@ class ProjectTemplateWorkTypeIntegrationTest {
   void createTemplateRejectsWorkTypeLongerThan50() throws Exception {
     mockMvc
         .perform(
-            post("/api/project-templates")
+            post("/api/matter-templates")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -258,7 +258,7 @@ class ProjectTemplateWorkTypeIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/project-templates/from-project/" + projectId)
+            post("/api/matter-templates/from-matter/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -272,7 +272,7 @@ class ProjectTemplateWorkTypeIntegrationTest {
 
   private String listTemplates() throws Exception {
     return mockMvc
-        .perform(get("/api/project-templates").with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+        .perform(get("/api/matter-templates").with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
         .andExpect(status().isOk())
         .andReturn()
         .getResponse()
@@ -282,7 +282,7 @@ class ProjectTemplateWorkTypeIntegrationTest {
   private MvcResult instantiate(String json) throws Exception {
     return mockMvc
         .perform(
-            post("/api/project-templates/" + conveyancingTemplateId + "/instantiate")
+            post("/api/matter-templates/" + conveyancingTemplateId + "/instantiate")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))

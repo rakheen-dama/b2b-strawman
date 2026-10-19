@@ -4,14 +4,14 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-public record ProjectTemplateResponse(
+public record MatterTemplateResponse(
     UUID id,
     String name,
     String namePattern,
     String description,
     boolean billableDefault,
     String source,
-    UUID sourceProjectId,
+    UUID sourceMatterId,
     boolean active,
     int taskCount,
     int tagCount,

@@ -53,7 +53,7 @@ class AuditEventControllerTest extends AbstractIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -67,7 +67,7 @@ class AuditEventControllerTest extends AbstractIntegrationTest {
     // Add member to project so we can create tasks
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -96,7 +96,7 @@ class AuditEventControllerTest extends AbstractIntegrationTest {
     var project2Result =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -110,7 +110,7 @@ class AuditEventControllerTest extends AbstractIntegrationTest {
     var project3Result =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

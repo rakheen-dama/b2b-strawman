@@ -99,12 +99,12 @@ class InformationRequestAutomationIsolationIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_iso_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"name": "Iso Test Project", "customerId": "%s"}
+                        {"name": "Iso Test Project", "clientId": "%s"}
                         """
                             .formatted(customerId)))
             .andExpect(status().isCreated())

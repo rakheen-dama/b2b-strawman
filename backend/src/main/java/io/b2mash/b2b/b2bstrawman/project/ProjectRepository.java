@@ -11,30 +11,30 @@ import org.springframework.data.repository.query.Param;
 public interface ProjectRepository extends JpaRepository<Project, UUID> {
   @Query(
       """
-      SELECT new io.b2mash.b2b.b2bstrawman.project.ProjectWithRole(
+      SELECT new io.b2mash.b2b.b2bstrawman.project.MatterWithRole(
           p, pm.projectRole
       )
       FROM Project p JOIN ProjectMember pm ON p.id = pm.projectId
       WHERE pm.memberId = :memberId
       ORDER BY p.createdAt DESC
       """)
-  List<ProjectWithRole> findProjectsForMember(@Param("memberId") UUID memberId);
+  List<MatterWithRole> findProjectsForMember(@Param("memberId") UUID memberId);
 
   @Query(
       """
-      SELECT new io.b2mash.b2b.b2bstrawman.project.ProjectWithRole(
+      SELECT new io.b2mash.b2b.b2bstrawman.project.MatterWithRole(
           p, pm.projectRole
       )
       FROM Project p LEFT JOIN ProjectMember pm
         ON p.id = pm.projectId AND pm.memberId = :memberId
       ORDER BY p.createdAt DESC
       """)
-  List<ProjectWithRole> findAllProjectsWithRole(@Param("memberId") UUID memberId);
+  List<MatterWithRole> findAllProjectsWithRole(@Param("memberId") UUID memberId);
 
   /** Lists all projects for an org-level user (admin/owner), optionally filtered by status. */
   @Query(
       """
-      SELECT new io.b2mash.b2b.b2bstrawman.project.ProjectWithRole(
+      SELECT new io.b2mash.b2b.b2bstrawman.project.MatterWithRole(
           p, pm.projectRole
       )
       FROM Project p LEFT JOIN ProjectMember pm
@@ -42,7 +42,7 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
       WHERE :status IS NULL OR p.status = :status
       ORDER BY p.createdAt DESC
       """)
-  List<ProjectWithRole> findAllProjectsWithRoleAndStatus(
+  List<MatterWithRole> findAllProjectsWithRoleAndStatus(
       @Param("memberId") UUID memberId, @Param("status") ProjectStatus status);
 
   /**

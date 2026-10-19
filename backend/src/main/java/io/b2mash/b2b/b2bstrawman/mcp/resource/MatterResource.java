@@ -78,7 +78,7 @@ public class MatterResource {
       McpToolAudit.emitInvoked(
           "kazi://matter", meta, auditService, metrics, McpToolAudit.elapsed(startNanos));
       return objectMapper.writeValueAsString(
-          McpMatterDto.from(withRole.project(), withRole.projectRole()));
+          McpMatterDto.from(withRole.matter(), withRole.matterRole()));
     } catch (ResourceNotFoundException e) {
       McpToolAudit.emitDenied(
           "kazi://matter",

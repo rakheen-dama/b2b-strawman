@@ -145,7 +145,7 @@ class EventProjectionIntegrationTest {
     // Update the project name
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

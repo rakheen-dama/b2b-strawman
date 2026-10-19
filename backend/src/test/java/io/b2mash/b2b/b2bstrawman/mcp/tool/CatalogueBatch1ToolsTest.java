@@ -111,7 +111,7 @@ class CatalogueBatch1ToolsTest {
     // Assign the member to ONE matter only — so list_matters shows them exactly one.
     mockMvc
         .perform(
-            post("/api/projects/" + assignedMatterId + "/members")
+            post("/api/matters/" + assignedMatterId + "/members")
                 .with(owner)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberId)))

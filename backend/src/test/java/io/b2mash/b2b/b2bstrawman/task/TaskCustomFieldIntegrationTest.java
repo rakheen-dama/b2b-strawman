@@ -45,7 +45,7 @@ class TaskCustomFieldIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tcf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

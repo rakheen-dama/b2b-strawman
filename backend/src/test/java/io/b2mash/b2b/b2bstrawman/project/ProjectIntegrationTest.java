@@ -149,7 +149,7 @@ class ProjectIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -163,14 +163,14 @@ class ProjectIntegrationTest {
             .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.createdAt").exists())
             .andExpect(jsonPath("$.updatedAt").exists())
-            .andExpect(jsonPath("$.projectRole").value("lead"))
+            .andExpect(jsonPath("$.matterRole").value("lead"))
             .andReturn();
 
     var id = TestEntityHelper.extractIdFromLocation(createResult);
 
     // Owner can always get any project
     mockMvc
-        .perform(get("/api/projects/" + id).with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")))
+        .perform(get("/api/matters/" + id).with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Test Project"))
         .andExpect(jsonPath("$.description").value("A test project"));
@@ -180,7 +180,7 @@ class ProjectIntegrationTest {
   void shouldListProjects() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -191,7 +191,7 @@ class ProjectIntegrationTest {
 
     // Admin sees all projects
     mockMvc
-        .perform(get("/api/projects").with(TestJwtFactory.adminJwt(ORG_ID, "user_admin")))
+        .perform(get("/api/matters").with(TestJwtFactory.adminJwt(ORG_ID, "user_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(greaterThanOrEqualTo(1)));
@@ -202,7 +202,7 @@ class ProjectIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -216,7 +216,7 @@ class ProjectIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + id)
+            put("/api/matters/" + id)
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -233,7 +233,7 @@ class ProjectIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -246,11 +246,11 @@ class ProjectIntegrationTest {
     var id = TestEntityHelper.extractIdFromLocation(createResult);
 
     mockMvc
-        .perform(delete("/api/projects/" + id).with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")))
+        .perform(delete("/api/matters/" + id).with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")))
         .andExpect(status().isNoContent());
 
     mockMvc
-        .perform(get("/api/projects/" + id).with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")))
+        .perform(get("/api/matters/" + id).with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -260,7 +260,7 @@ class ProjectIntegrationTest {
   void shouldReject400WhenNameIsBlank() throws Exception {
     var result =
         mockMvc.perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -274,7 +274,7 @@ class ProjectIntegrationTest {
   void shouldReject400WhenNameIsMissing() throws Exception {
     var result =
         mockMvc.perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -289,7 +289,7 @@ class ProjectIntegrationTest {
     String longName = "a".repeat(256);
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -305,7 +305,7 @@ class ProjectIntegrationTest {
     String longDesc = "a".repeat(2001);
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Valid\", \"description\": \"" + longDesc + "\"}"))
@@ -318,7 +318,7 @@ class ProjectIntegrationTest {
   void shouldReturn404ForNonexistentProject() throws Exception {
     var result =
         mockMvc.perform(
-            get("/api/projects/00000000-0000-0000-0000-000000000000")
+            get("/api/matters/00000000-0000-0000-0000-000000000000")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")));
     ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Project not found");
   }
@@ -327,7 +327,7 @@ class ProjectIntegrationTest {
   void shouldReturn404WhenUpdatingNonexistentProject() throws Exception {
     var result =
         mockMvc.perform(
-            put("/api/projects/00000000-0000-0000-0000-000000000000")
+            put("/api/matters/00000000-0000-0000-0000-000000000000")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -341,7 +341,7 @@ class ProjectIntegrationTest {
   void shouldReturn404WhenDeletingNonexistentProject() throws Exception {
     var result =
         mockMvc.perform(
-            delete("/api/projects/00000000-0000-0000-0000-000000000000")
+            delete("/api/matters/00000000-0000-0000-0000-000000000000")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")));
     ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Project not found");
   }
@@ -352,7 +352,7 @@ class ProjectIntegrationTest {
   void memberWithoutCapabilityCannotCreateProject() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -367,7 +367,7 @@ class ProjectIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -380,8 +380,7 @@ class ProjectIntegrationTest {
     var id = TestEntityHelper.extractIdFromLocation(createResult);
 
     mockMvc
-        .perform(
-            delete("/api/projects/" + id).with(TestJwtFactory.memberJwt(ORG_ID, "user_member")))
+        .perform(delete("/api/matters/" + id).with(TestJwtFactory.memberJwt(ORG_ID, "user_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -390,7 +389,7 @@ class ProjectIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -403,7 +402,7 @@ class ProjectIntegrationTest {
     var id = TestEntityHelper.extractIdFromLocation(createResult);
 
     mockMvc
-        .perform(delete("/api/projects/" + id).with(TestJwtFactory.adminJwt(ORG_ID, "user_admin")))
+        .perform(delete("/api/matters/" + id).with(TestJwtFactory.adminJwt(ORG_ID, "user_admin")))
         .andExpect(status().isForbidden());
   }
 
@@ -412,7 +411,7 @@ class ProjectIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -426,7 +425,7 @@ class ProjectIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + id)
+            put("/api/matters/" + id)
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -438,7 +437,7 @@ class ProjectIntegrationTest {
 
   @Test
   void unauthenticatedUserCannotAccessProjects() throws Exception {
-    mockMvc.perform(get("/api/projects")).andExpect(status().isUnauthorized());
+    mockMvc.perform(get("/api/matters")).andExpect(status().isUnauthorized());
   }
 
   // --- Tenant isolation ---
@@ -449,7 +448,7 @@ class ProjectIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -464,20 +463,20 @@ class ProjectIntegrationTest {
     // Verify visible from tenant A (owner can see all)
     mockMvc
         .perform(
-            get("/api/projects/" + projectId).with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")))
+            get("/api/matters/" + projectId).with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Tenant A Isolation"));
 
     // Verify NOT visible from tenant B
     mockMvc
         .perform(
-            get("/api/projects/" + projectId)
+            get("/api/matters/" + projectId)
                 .with(TestJwtFactory.memberJwt(ORG_B_ID, "user_tenant_b")))
         .andExpect(status().isNotFound());
 
     // Verify tenant B list doesn't include tenant A's project
     mockMvc
-        .perform(get("/api/projects").with(TestJwtFactory.memberJwt(ORG_B_ID, "user_tenant_b")))
+        .perform(get("/api/matters").with(TestJwtFactory.memberJwt(ORG_B_ID, "user_tenant_b")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[*].name", everyItem(not("Tenant A Isolation"))));
   }
@@ -490,7 +489,7 @@ class ProjectIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -503,7 +502,7 @@ class ProjectIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + id + "/unbilled-summary")
+            get("/api/matters/" + id + "/unbilled-summary")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_proj_314b_custom")))
         .andExpect(status().isOk());
   }
@@ -513,7 +512,7 @@ class ProjectIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -526,7 +525,7 @@ class ProjectIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + id + "/unbilled-summary")
+            get("/api/matters/" + id + "/unbilled-summary")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_proj_314b_nocap")))
         .andExpect(status().isForbidden());
   }

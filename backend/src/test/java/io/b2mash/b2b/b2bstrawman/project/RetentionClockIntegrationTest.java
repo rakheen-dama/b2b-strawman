@@ -112,13 +112,13 @@ class RetentionClockIntegrationTest {
 
   private void completeProject(String projectId) throws Exception {
     mockMvc
-        .perform(patch("/api/projects/" + projectId + "/complete").with(OWNER_JWT))
+        .perform(patch("/api/matters/" + projectId + "/complete").with(OWNER_JWT))
         .andExpect(status().isOk());
   }
 
   private void reopenProject(String projectId) throws Exception {
     mockMvc
-        .perform(patch("/api/projects/" + projectId + "/reopen").with(OWNER_JWT))
+        .perform(patch("/api/matters/" + projectId + "/reopen").with(OWNER_JWT))
         .andExpect(status().isOk());
   }
 

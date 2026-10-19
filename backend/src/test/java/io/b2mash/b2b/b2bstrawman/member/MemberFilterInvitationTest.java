@@ -87,7 +87,7 @@ class MemberFilterInvitationTest {
     // User logs in for the first time with the invited email
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(
                     jwt()
                         .jwt(
@@ -130,7 +130,7 @@ class MemberFilterInvitationTest {
     // User logs in
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(
                     jwt()
                         .jwt(
@@ -171,7 +171,7 @@ class MemberFilterInvitationTest {
     // User logs in with an expired invitation
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(
                     jwt()
                         .jwt(
@@ -196,7 +196,7 @@ class MemberFilterInvitationTest {
     // User logs in without any invitation
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(
                     jwt()
                         .jwt(

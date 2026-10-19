@@ -28,7 +28,7 @@ class TenantFilterJitDisabledTest {
     // JIT is disabled by default (app.jit-provisioning.enabled=false)
     // An unprovisioned org should get 403
     mockMvc
-        .perform(get("/api/projects").with(jwtForUnprovisionedOrg()))
+        .perform(get("/api/matters").with(jwtForUnprovisionedOrg()))
         .andExpect(status().isForbidden());
   }
 

@@ -111,7 +111,7 @@ class ProjectAccessIntegrationTest {
     createProjectAs(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "Owner Sees All");
 
     mockMvc
-        .perform(get("/api/projects").with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner")))
+        .perform(get("/api/matters").with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.name == 'Owner Sees All')]").exists());
   }
@@ -121,7 +121,7 @@ class ProjectAccessIntegrationTest {
     createProjectAs(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "Admin Sees All");
 
     mockMvc
-        .perform(get("/api/projects").with(TestJwtFactory.adminJwt(ORG_ID, "user_access_admin")))
+        .perform(get("/api/matters").with(TestJwtFactory.adminJwt(ORG_ID, "user_access_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.name == 'Admin Sees All')]").exists());
   }
@@ -133,7 +133,7 @@ class ProjectAccessIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects").with(TestJwtFactory.memberJwt(ORG_ID, "user_access_nonmember")))
+            get("/api/matters").with(TestJwtFactory.memberJwt(ORG_ID, "user_access_nonmember")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.name == 'Not For NonMember')]").doesNotExist());
   }
@@ -146,14 +146,14 @@ class ProjectAccessIntegrationTest {
     // Add regular member to this project
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(regularMemberId)))
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(get("/api/projects").with(TestJwtFactory.memberJwt(ORG_ID, "user_access_regular")))
+        .perform(get("/api/matters").with(TestJwtFactory.memberJwt(ORG_ID, "user_access_regular")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.name == 'Member Is On This')]").exists());
   }
@@ -165,7 +165,7 @@ class ProjectAccessIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(regularMemberId)))
@@ -173,15 +173,15 @@ class ProjectAccessIntegrationTest {
 
     // Creator (owner) sees their lead role
     mockMvc
-        .perform(get("/api/projects").with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner")))
+        .perform(get("/api/matters").with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[?(@.name == 'Role In Listing')].projectRole").value("lead"));
+        .andExpect(jsonPath("$[?(@.name == 'Role In Listing')].matterRole").value("lead"));
 
     // Regular member sees their role
     mockMvc
-        .perform(get("/api/projects").with(TestJwtFactory.memberJwt(ORG_ID, "user_access_regular")))
+        .perform(get("/api/matters").with(TestJwtFactory.memberJwt(ORG_ID, "user_access_regular")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[?(@.name == 'Role In Listing')].projectRole").value("member"));
+        .andExpect(jsonPath("$[?(@.name == 'Role In Listing')].matterRole").value("member"));
   }
 
   // --- Single project access ---
@@ -194,7 +194,7 @@ class ProjectAccessIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId)
+            get("/api/matters/" + projectId)
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_access_nonmember")))
         .andExpect(status().isNotFound());
   }
@@ -206,7 +206,7 @@ class ProjectAccessIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId)
+            get("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Owner Can Get"));
@@ -219,7 +219,7 @@ class ProjectAccessIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId)
+            get("/api/matters/" + projectId)
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_access_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Admin Can Get"));
@@ -232,7 +232,7 @@ class ProjectAccessIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(regularMemberId)))
@@ -240,11 +240,11 @@ class ProjectAccessIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId)
+            get("/api/matters/" + projectId)
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_access_regular")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Regular Can Get"))
-        .andExpect(jsonPath("$.projectRole").value("member"));
+        .andExpect(jsonPath("$.matterRole").value("member"));
   }
 
   @Test
@@ -255,10 +255,10 @@ class ProjectAccessIntegrationTest {
     // Owner is not on the project member list (unless they created it — they did as owner)
     mockMvc
         .perform(
-            get("/api/projects/" + projectId)
+            get("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.projectRole").value("lead"));
+        .andExpect(jsonPath("$.matterRole").value("lead"));
   }
 
   @Test
@@ -268,11 +268,11 @@ class ProjectAccessIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId)
+            get("/api/matters/" + projectId)
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_access_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Admin Not Member"))
-        .andExpect(jsonPath("$.projectRole").isEmpty());
+        .andExpect(jsonPath("$.matterRole").isEmpty());
   }
 
   @Test
@@ -282,11 +282,11 @@ class ProjectAccessIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId)
+            get("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Owner Not Member"))
-        .andExpect(jsonPath("$.projectRole").isEmpty());
+        .andExpect(jsonPath("$.matterRole").isEmpty());
   }
 
   // --- Create project (requires PROJECT_MANAGEMENT capability) ---
@@ -295,7 +295,7 @@ class ProjectAccessIntegrationTest {
   void memberWithoutCapabilityCannotCreateProject() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects")
+            post("/api/matters")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_access_regular"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -312,10 +312,10 @@ class ProjectAccessIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId)
+            get("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.projectRole").value("lead"));
+        .andExpect(jsonPath("$.matterRole").value("lead"));
   }
 
   // --- Update project ---
@@ -327,7 +327,7 @@ class ProjectAccessIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -345,7 +345,7 @@ class ProjectAccessIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_access_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -364,7 +364,7 @@ class ProjectAccessIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(regularMemberId)))
@@ -372,7 +372,7 @@ class ProjectAccessIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_access_regular"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -390,7 +390,7 @@ class ProjectAccessIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + projectId)
+            put("/api/matters/" + projectId)
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_access_nonmember"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -406,7 +406,7 @@ class ProjectAccessIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"name\": \"%s\", \"description\": null}".formatted(name)))

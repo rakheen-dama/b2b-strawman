@@ -53,7 +53,7 @@ class MemberFilterJitSyncTest {
   @Test
   void jitEnabled_newMember_usesJwtEmailAndName() throws Exception {
     mockMvc
-        .perform(get("/api/projects").with(jwtWithEmailAndName("user_jit_email", ORG_ID)))
+        .perform(get("/api/matters").with(jwtWithEmailAndName("user_jit_email", ORG_ID)))
         .andExpect(status().isOk());
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
@@ -69,7 +69,7 @@ class MemberFilterJitSyncTest {
   @Test
   void jitEnabled_noEmailClaim_usesPlaceholder() throws Exception {
     mockMvc
-        .perform(get("/api/projects").with(jwtWithoutEmail("user_jit_no_email", ORG_ID)))
+        .perform(get("/api/matters").with(jwtWithoutEmail("user_jit_no_email", ORG_ID)))
         .andExpect(status().isOk());
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
@@ -86,12 +86,12 @@ class MemberFilterJitSyncTest {
   void existingMember_noReCreation() throws Exception {
     // First request creates the member
     mockMvc
-        .perform(get("/api/projects").with(jwtWithEmailAndName("user_jit_existing", ORG_ID)))
+        .perform(get("/api/matters").with(jwtWithEmailAndName("user_jit_existing", ORG_ID)))
         .andExpect(status().isOk());
 
     // Second request should not duplicate
     mockMvc
-        .perform(get("/api/projects").with(jwtWithEmailAndName("user_jit_existing", ORG_ID)))
+        .perform(get("/api/matters").with(jwtWithEmailAndName("user_jit_existing", ORG_ID)))
         .andExpect(status().isOk());
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
@@ -105,7 +105,7 @@ class MemberFilterJitSyncTest {
   @Test
   void jitEnabled_noNameClaim_nameIsNull() throws Exception {
     mockMvc
-        .perform(get("/api/projects").with(jwtWithEmailOnly("user_jit_no_name", ORG_ID)))
+        .perform(get("/api/matters").with(jwtWithEmailOnly("user_jit_no_name", ORG_ID)))
         .andExpect(status().isOk());
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
@@ -122,12 +122,12 @@ class MemberFilterJitSyncTest {
   void secondRequest_sameUser_usesExisting() throws Exception {
     // First request creates the member
     mockMvc
-        .perform(get("/api/projects").with(jwtWithEmailAndName("user_jit_second_req", ORG_ID)))
+        .perform(get("/api/matters").with(jwtWithEmailAndName("user_jit_second_req", ORG_ID)))
         .andExpect(status().isOk());
 
     // Second request for same user should reuse existing member
     mockMvc
-        .perform(get("/api/projects").with(jwtWithEmailAndName("user_jit_second_req", ORG_ID)))
+        .perform(get("/api/matters").with(jwtWithEmailAndName("user_jit_second_req", ORG_ID)))
         .andExpect(status().isOk());
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)

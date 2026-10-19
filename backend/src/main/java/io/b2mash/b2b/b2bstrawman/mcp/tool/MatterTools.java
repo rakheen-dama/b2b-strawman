@@ -92,7 +92,7 @@ public class MatterTools {
             .map(
                 p ->
                     new McpMatterListItem(
-                        p.id(), p.name(), p.status(), p.customerId(), p.dueDate(), p.createdAt()))
+                        p.id(), p.name(), p.status(), p.clientId(), p.dueDate(), p.createdAt()))
             .toList();
     // Guard against an unbounded materialised result set: if the full list exceeds the per-call
     // ceiling, fail with a structured error telling the LLM to narrow its query rather than ever
@@ -126,7 +126,7 @@ public class MatterTools {
     var actor = ActorContext.fromRequestScopes();
     try {
       var withRole = projectService.getProject(id, actor);
-      var dto = McpMatterDto.from(withRole.project(), withRole.projectRole());
+      var dto = McpMatterDto.from(withRole.matter(), withRole.matterRole());
       var meta = McpAuditMetadata.builder().rowCount(1).entityRef(id).build();
       emitInvoked("get_matter", meta, startNanos);
       return dto;

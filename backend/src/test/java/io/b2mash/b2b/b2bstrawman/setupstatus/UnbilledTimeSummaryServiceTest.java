@@ -64,7 +64,7 @@ class UnbilledTimeSummaryServiceTest {
     assertThat(result.totalAmount()).isEqualByComparingTo("6750.00");
     assertThat(result.currency()).isEqualTo("ZAR");
     assertThat(result.entryCount()).isEqualTo(3);
-    assertThat(result.byProject()).isNull();
+    assertThat(result.byMatter()).isNull();
   }
 
   @Test
@@ -91,7 +91,7 @@ class UnbilledTimeSummaryServiceTest {
     assertThat(result.totalAmount()).isEqualByComparingTo("0");
     assertThat(result.currency()).isEqualTo("USD");
     assertThat(result.entryCount()).isZero();
-    assertThat(result.byProject()).isNull();
+    assertThat(result.byMatter()).isNull();
   }
 
   @Test
@@ -112,7 +112,7 @@ class UnbilledTimeSummaryServiceTest {
     assertThat(result.totalAmount()).isEqualByComparingTo("0");
     assertThat(result.currency()).isEqualTo("USD");
     assertThat(result.entryCount()).isZero();
-    assertThat(result.byProject()).isNull();
+    assertThat(result.byMatter()).isNull();
   }
 
   @Test
@@ -152,18 +152,18 @@ class UnbilledTimeSummaryServiceTest {
     assertThat(result.totalAmount()).isEqualByComparingTo("4500.00");
     assertThat(result.currency()).isEqualTo("ZAR");
     assertThat(result.entryCount()).isEqualTo(3);
-    assertThat(result.byProject()).hasSize(2);
+    assertThat(result.byMatter()).hasSize(2);
 
-    var breakdown1 = result.byProject().get(0);
-    assertThat(breakdown1.projectId()).isEqualTo(projectId1);
-    assertThat(breakdown1.projectName()).isEqualTo("Project Alpha");
+    var breakdown1 = result.byMatter().get(0);
+    assertThat(breakdown1.matterId()).isEqualTo(projectId1);
+    assertThat(breakdown1.matterName()).isEqualTo("Project Alpha");
     assertThat(breakdown1.hours()).isEqualByComparingTo("2.00");
     assertThat(breakdown1.amount()).isEqualByComparingTo("3000.00");
     assertThat(breakdown1.entryCount()).isEqualTo(2);
 
-    var breakdown2 = result.byProject().get(1);
-    assertThat(breakdown2.projectId()).isEqualTo(projectId2);
-    assertThat(breakdown2.projectName()).isEqualTo("Project Beta");
+    var breakdown2 = result.byMatter().get(1);
+    assertThat(breakdown2.matterId()).isEqualTo(projectId2);
+    assertThat(breakdown2.matterName()).isEqualTo("Project Beta");
     assertThat(breakdown2.hours()).isEqualByComparingTo("1.00");
     assertThat(breakdown2.amount()).isEqualByComparingTo("1500.00");
     assertThat(breakdown2.entryCount()).isEqualTo(1);
@@ -187,7 +187,7 @@ class UnbilledTimeSummaryServiceTest {
     assertThat(result.totalAmount()).isEqualByComparingTo("0");
     assertThat(result.currency()).isEqualTo("USD");
     assertThat(result.entryCount()).isZero();
-    assertThat(result.byProject()).isNull();
+    assertThat(result.byMatter()).isNull();
   }
 
   @Test

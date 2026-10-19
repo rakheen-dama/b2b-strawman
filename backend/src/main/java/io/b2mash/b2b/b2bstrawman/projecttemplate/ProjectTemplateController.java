@@ -5,11 +5,11 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.prerequisite.dto.PrerequisiteCheckResponse;
-import io.b2mash.b2b.b2bstrawman.project.ProjectController;
+import io.b2mash.b2b.b2bstrawman.project.dto.MatterResponse;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.CreateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest;
-import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.ProjectTemplateResponse;
-import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.SaveFromProjectRequest;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.MatterTemplateResponse;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.SaveFromMatterRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.UpdateTemplateRequest;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/project-templates")
+@RequestMapping("/api/matter-templates")
 public class ProjectTemplateController {
 
   private final ProjectTemplateService projectTemplateService;
@@ -40,28 +40,28 @@ public class ProjectTemplateController {
   }
 
   @GetMapping
-  public ResponseEntity<List<ProjectTemplateResponse>> listTemplates() {
+  public ResponseEntity<List<MatterTemplateResponse>> listTemplates() {
     return ResponseEntity.ok(projectTemplateService.list());
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<ProjectTemplateResponse> getTemplate(@PathVariable UUID id) {
+  public ResponseEntity<MatterTemplateResponse> getTemplate(@PathVariable UUID id) {
     return ResponseEntity.ok(projectTemplateService.get(id));
   }
 
   @PostMapping
   @RequiresCapability("PROJECT_MANAGEMENT")
-  public ResponseEntity<ProjectTemplateResponse> createTemplate(
+  public ResponseEntity<MatterTemplateResponse> createTemplate(
       @Valid @RequestBody CreateTemplateRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
     var response = projectTemplateService.create(request, memberId);
-    return ResponseEntity.created(URI.create("/api/project-templates/" + response.id()))
+    return ResponseEntity.created(URI.create("/api/matter-templates/" + response.id()))
         .body(response);
   }
 
   @PutMapping("/{id}")
   @RequiresCapability("PROJECT_MANAGEMENT")
-  public ResponseEntity<ProjectTemplateResponse> updateTemplate(
+  public ResponseEntity<MatterTemplateResponse> updateTemplate(
       @PathVariable UUID id, @Valid @RequestBody UpdateTemplateRequest request) {
     return ResponseEntity.ok(projectTemplateService.update(id, request));
   }
@@ -75,35 +75,35 @@ public class ProjectTemplateController {
 
   @PostMapping("/{id}/duplicate")
   @RequiresCapability("PROJECT_MANAGEMENT")
-  public ResponseEntity<ProjectTemplateResponse> duplicateTemplate(@PathVariable UUID id) {
+  public ResponseEntity<MatterTemplateResponse> duplicateTemplate(@PathVariable UUID id) {
     UUID memberId = RequestScopes.requireMemberId();
     var response = projectTemplateService.duplicate(id, memberId);
-    return ResponseEntity.created(URI.create("/api/project-templates/" + response.id()))
+    return ResponseEntity.created(URI.create("/api/matter-templates/" + response.id()))
         .body(response);
   }
 
-  @PostMapping("/from-project/{projectId}")
-  public ResponseEntity<ProjectTemplateResponse> saveFromProject(
-      @PathVariable UUID projectId,
-      @Valid @RequestBody SaveFromProjectRequest request,
+  @PostMapping("/from-matter/{matterId}")
+  public ResponseEntity<MatterTemplateResponse> saveFromProject(
+      @PathVariable UUID matterId,
+      @Valid @RequestBody SaveFromMatterRequest request,
       ActorContext actor) {
-    var response = projectTemplateService.saveFromProject(projectId, request, actor);
-    return ResponseEntity.created(URI.create("/api/project-templates/" + response.id()))
+    var response = projectTemplateService.saveFromProject(matterId, request, actor);
+    return ResponseEntity.created(URI.create("/api/matter-templates/" + response.id()))
         .body(response);
   }
 
   @PostMapping("/{id}/instantiate")
-  public ResponseEntity<ProjectController.ProjectResponse> instantiateTemplate(
+  public ResponseEntity<MatterResponse> instantiateTemplate(
       @PathVariable UUID id, @Valid @RequestBody InstantiateTemplateRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
     var project = projectTemplateService.instantiateTemplate(id, request, memberId);
-    return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))
-        .body(ProjectController.ProjectResponse.from(project));
+    return ResponseEntity.created(URI.create("/api/matters/" + project.getId()))
+        .body(MatterResponse.from(project));
   }
 
-  @PutMapping("/{id}/required-customer-fields")
+  @PutMapping("/{id}/required-client-fields")
   @RequiresCapability("PROJECT_MANAGEMENT")
-  public ResponseEntity<ProjectTemplateResponse> updateRequiredCustomerFields(
+  public ResponseEntity<MatterTemplateResponse> updateRequiredCustomerFields(
       @PathVariable UUID id, @RequestBody UpdateRequiredFieldsRequest request) {
     return ResponseEntity.ok(
         projectTemplateService.updateRequiredCustomerFields(id, request.fieldDefinitionIds()));

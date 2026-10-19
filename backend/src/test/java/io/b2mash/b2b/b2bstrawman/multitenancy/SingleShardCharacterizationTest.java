@@ -77,7 +77,7 @@ class SingleShardCharacterizationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -93,7 +93,7 @@ class SingleShardCharacterizationTest {
 
     // Read the project back
     mockMvc
-        .perform(get("/api/projects/" + projectId).with(jwt))
+        .perform(get("/api/matters/" + projectId).with(jwt))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Shard Test Project"));
   }
@@ -103,7 +103,7 @@ class SingleShardCharacterizationTest {
     var jwt = TestJwtFactory.ownerJwt(ORG_ID, "user_shard_owner");
 
     mockMvc
-        .perform(get("/api/projects").with(jwt))
+        .perform(get("/api/matters").with(jwt))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
   }

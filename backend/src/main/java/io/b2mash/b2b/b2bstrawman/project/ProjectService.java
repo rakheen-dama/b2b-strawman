@@ -21,7 +21,7 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.project.ProjectController.ProjectResponse;
+import io.b2mash.b2b.b2bstrawman.project.dto.MatterResponse;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
@@ -138,7 +138,7 @@ public class ProjectService {
   }
 
   @Transactional(readOnly = true)
-  public List<ProjectWithRole> listProjects(ActorContext actor) {
+  public List<MatterWithRole> listProjects(ActorContext actor) {
     if (Roles.ORG_OWNER.equals(actor.orgRole()) || Roles.ORG_ADMIN.equals(actor.orgRole())) {
       return repository.findAllProjectsWithRole(actor.memberId());
     }
@@ -146,8 +146,8 @@ public class ProjectService {
   }
 
   /**
-   * Lists projects as {@link ProjectResponse} DTOs, applying the optional view / status / dueBefore
-   * / customerId / custom-field / tag filters used by {@code GET /api/projects}.
+   * Lists projects as {@link MatterResponse} DTOs, applying the optional view / status / dueBefore
+   * / customerId / custom-field / tag filters used by {@code GET /api/matters}.
    *
    * <p>Two filtering modes exist:
    *
@@ -165,7 +165,7 @@ public class ProjectService {
    * behavior-preserving.
    */
   @Transactional(readOnly = true)
-  public List<ProjectResponse> listProjects(
+  public List<MatterResponse> listProjects(
       UUID view,
       String status,
       LocalDate dueBefore,
@@ -181,7 +181,7 @@ public class ProjectService {
       if (!isAdminOrOwner) {
         accessibleIds =
             listProjects(actor).stream()
-                .map(pwr -> pwr.project().getId())
+                .map(pwr -> pwr.matter().getId())
                 .collect(Collectors.toSet());
       }
 
@@ -203,7 +203,7 @@ public class ProjectService {
         return filtered.stream()
             .map(
                 p ->
-                    ProjectResponse.from(
+                    MatterResponse.from(
                         p, null, tagsByEntityId.getOrDefault(p.getId(), List.of()), memberNames))
             .toList();
       }
@@ -217,7 +217,7 @@ public class ProjectService {
     if (statusFilter != null) {
       projectsWithRoles =
           projectsWithRoles.stream()
-              .filter(pwr -> statusFilter.contains(pwr.project().getStatus()))
+              .filter(pwr -> statusFilter.contains(pwr.matter().getStatus()))
               .toList();
     }
 
@@ -227,8 +227,8 @@ public class ProjectService {
           projectsWithRoles.stream()
               .filter(
                   pwr ->
-                      pwr.project().getDueDate() != null
-                          && pwr.project().getDueDate().isBefore(dueBefore))
+                      pwr.matter().getDueDate() != null
+                          && pwr.matter().getDueDate().isBefore(dueBefore))
               .toList();
     }
 
@@ -236,25 +236,25 @@ public class ProjectService {
     if (customerId != null) {
       projectsWithRoles =
           projectsWithRoles.stream()
-              .filter(pwr -> customerId.equals(pwr.project().getCustomerId()))
+              .filter(pwr -> customerId.equals(pwr.matter().getCustomerId()))
               .toList();
     }
 
     // Batch-load tags for all projects (2 queries instead of 2N)
-    var projectIds = projectsWithRoles.stream().map(pwr -> pwr.project().getId()).toList();
+    var projectIds = projectsWithRoles.stream().map(pwr -> pwr.matter().getId()).toList();
     // ADR-342: storage key, do not rename
     var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", projectIds);
-    var allProjects = projectsWithRoles.stream().map(ProjectWithRole::project).toList();
+    var allProjects = projectsWithRoles.stream().map(MatterWithRole::matter).toList();
     var memberNames = resolveProjectMemberNames(allProjects);
 
     var projects =
         projectsWithRoles.stream()
             .map(
                 pwr ->
-                    ProjectResponse.from(
-                        pwr.project(),
-                        pwr.projectRole(),
-                        tagsByEntityId.getOrDefault(pwr.project().getId(), List.of()),
+                    MatterResponse.from(
+                        pwr.matter(),
+                        pwr.matterRole(),
+                        tagsByEntityId.getOrDefault(pwr.matter().getId(), List.of()),
                         memberNames))
             .toList();
 
@@ -309,11 +309,11 @@ public class ProjectService {
   }
 
   @Transactional(readOnly = true)
-  public ProjectWithRole getProject(UUID id, ActorContext actor) {
+  public MatterWithRole getProject(UUID id, ActorContext actor) {
     var project =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     var access = projectAccessService.requireViewAccess(id, actor);
-    return new ProjectWithRole(project, access.projectRole());
+    return new MatterWithRole(project, access.projectRole());
   }
 
   @Transactional
@@ -459,13 +459,13 @@ public class ProjectService {
   }
 
   @Transactional
-  public ProjectWithRole updateProject(
+  public MatterWithRole updateProject(
       UUID id, String name, String description, ActorContext actor) {
     return updateProject(id, name, description, actor, null, null, null, null, null, null, null);
   }
 
   @Transactional
-  public ProjectWithRole updateProject(
+  public MatterWithRole updateProject(
       UUID id,
       String name,
       String description,
@@ -487,7 +487,7 @@ public class ProjectService {
   }
 
   @Transactional
-  public ProjectWithRole updateProject(
+  public MatterWithRole updateProject(
       UUID id,
       String name,
       String description,
@@ -511,7 +511,7 @@ public class ProjectService {
   }
 
   @Transactional
-  public ProjectWithRole updateProject(
+  public MatterWithRole updateProject(
       UUID id,
       String name,
       String description,
@@ -606,7 +606,7 @@ public class ProjectService {
         new ProjectUpdatedEvent(
             project.getId(), project.getName(), project.getDescription(), null, orgId, tenantId));
 
-    return new ProjectWithRole(project, access.projectRole());
+    return new MatterWithRole(project, access.projectRole());
   }
 
   @Transactional

@@ -95,7 +95,7 @@ class MatterClientResourceTest {
     unassignedMatterId = TestEntityHelper.createProject(mockMvc, owner, "Owner-Only Matter");
     mockMvc
         .perform(
-            post("/api/projects/" + assignedMatterId + "/members")
+            post("/api/matters/" + assignedMatterId + "/members")
                 .with(owner)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberId)))

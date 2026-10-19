@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/projects/{projectId}/members")
+@RequestMapping("/api/matters/{matterId}/members")
 public class ProjectMemberController {
 
   private final ProjectMemberService projectMemberService;
@@ -28,43 +28,43 @@ public class ProjectMemberController {
   }
 
   @GetMapping
-  public ResponseEntity<List<ProjectMemberResponse>> listMembers(@PathVariable UUID projectId) {
+  public ResponseEntity<List<MatterMemberResponse>> listMembers(@PathVariable UUID matterId) {
     var members =
-        projectMemberService.listProjectMembers(projectId).stream()
-            .map(ProjectMemberResponse::from)
+        projectMemberService.listProjectMembers(matterId).stream()
+            .map(MatterMemberResponse::from)
             .toList();
     return ResponseEntity.ok(members);
   }
 
   @PostMapping
   public ResponseEntity<Void> addMember(
-      @PathVariable UUID projectId, @Valid @RequestBody AddMemberRequest request) {
+      @PathVariable UUID matterId, @Valid @RequestBody AddMemberRequest request) {
     UUID addedBy = RequestScopes.requireMemberId();
 
-    var projectMember = projectMemberService.addMember(projectId, request.memberId(), addedBy);
+    var projectMember = projectMemberService.addMember(matterId, request.memberId(), addedBy);
     return ResponseEntity.created(
-            URI.create("/api/projects/" + projectId + "/members/" + projectMember.getMemberId()))
+            URI.create("/api/matters/" + matterId + "/members/" + projectMember.getMemberId()))
         .build();
   }
 
   @DeleteMapping("/{memberId}")
   public ResponseEntity<Void> removeMember(
-      @PathVariable UUID projectId, @PathVariable UUID memberId) {
+      @PathVariable UUID matterId, @PathVariable UUID memberId) {
     UUID requestedBy = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
 
-    projectMemberService.removeMember(projectId, memberId, requestedBy, orgRole);
+    projectMemberService.removeMember(matterId, memberId, requestedBy, orgRole);
     return ResponseEntity.noContent().build();
   }
 
   @PutMapping("/{memberId}/role")
   public ResponseEntity<Void> transferLead(
-      @PathVariable UUID projectId,
+      @PathVariable UUID matterId,
       @PathVariable UUID memberId,
       @Valid @RequestBody TransferLeadRequest request) {
     UUID currentLeadId = RequestScopes.requireMemberId();
 
-    projectMemberService.transferLead(projectId, currentLeadId, memberId);
+    projectMemberService.transferLead(matterId, currentLeadId, memberId);
     return ResponseEntity.noContent().build();
   }
 
@@ -72,18 +72,18 @@ public class ProjectMemberController {
 
   public record TransferLeadRequest(@NotNull(message = "role is required") String role) {}
 
-  public record ProjectMemberResponse(
+  public record MatterMemberResponse(
       UUID id,
       UUID memberId,
       String name,
       String email,
       String avatarUrl,
-      String projectRole,
+      String matterRole,
       String orgRole,
       Instant createdAt) {
 
-    public static ProjectMemberResponse from(ProjectMemberInfo info) {
-      return new ProjectMemberResponse(
+    public static MatterMemberResponse from(ProjectMemberInfo info) {
+      return new MatterMemberResponse(
           info.id(),
           info.memberId(),
           info.name(),

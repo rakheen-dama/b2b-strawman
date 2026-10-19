@@ -85,7 +85,7 @@ class SingleShardFullCharacterizationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -101,13 +101,13 @@ class SingleShardFullCharacterizationTest {
 
     // Read back
     mockMvc
-        .perform(get("/api/projects/" + projectId).with(jwt))
+        .perform(get("/api/matters/" + projectId).with(jwt))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Full Char Project"));
 
     // List projects
     mockMvc
-        .perform(get("/api/projects").with(jwt))
+        .perform(get("/api/matters").with(jwt))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
 

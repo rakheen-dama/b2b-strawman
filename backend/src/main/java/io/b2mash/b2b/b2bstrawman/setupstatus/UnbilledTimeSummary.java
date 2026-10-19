@@ -9,4 +9,4 @@ public record UnbilledTimeSummary(
     BigDecimal totalAmount,
     String currency,
     int entryCount,
-    @Nullable List<ProjectUnbilledBreakdown> byProject) {}
+    @Nullable List<MatterUnbilledBreakdown> byMatter) {}

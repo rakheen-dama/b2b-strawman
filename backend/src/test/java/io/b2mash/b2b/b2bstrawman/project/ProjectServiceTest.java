@@ -62,13 +62,13 @@ class ProjectServiceTest {
   void listProjects_adminSeesAll() {
     var project = new Project("Test", "Desc", MEMBER_ID);
     when(repository.findAllProjectsWithRole(MEMBER_ID))
-        .thenReturn(List.of(new ProjectWithRole(project, null)));
+        .thenReturn(List.of(new MatterWithRole(project, null)));
 
     var result = service.listProjects(new ActorContext(MEMBER_ID, "admin"));
 
     assertThat(result).hasSize(1);
-    assertThat(result.getFirst().project().getName()).isEqualTo("Test");
-    assertThat(result.getFirst().projectRole()).isNull();
+    assertThat(result.getFirst().matter().getName()).isEqualTo("Test");
+    assertThat(result.getFirst().matterRole()).isNull();
     verify(repository).findAllProjectsWithRole(MEMBER_ID);
   }
 
@@ -76,12 +76,12 @@ class ProjectServiceTest {
   void listProjects_memberSeesOnlyTheirProjects() {
     var project = new Project("Mine", "Desc", MEMBER_ID);
     when(repository.findProjectsForMember(MEMBER_ID))
-        .thenReturn(List.of(new ProjectWithRole(project, "lead")));
+        .thenReturn(List.of(new MatterWithRole(project, "lead")));
 
     var result = service.listProjects(new ActorContext(MEMBER_ID, "member"));
 
     assertThat(result).hasSize(1);
-    assertThat(result.getFirst().project().getName()).isEqualTo("Mine");
+    assertThat(result.getFirst().matter().getName()).isEqualTo("Mine");
     verify(repository).findProjectsForMember(MEMBER_ID);
   }
 
@@ -95,8 +95,8 @@ class ProjectServiceTest {
 
     var result = service.getProject(id, new ActorContext(MEMBER_ID, "member"));
 
-    assertThat(result.project().getName()).isEqualTo("Found");
-    assertThat(result.projectRole()).isEqualTo("member");
+    assertThat(result.matter().getName()).isEqualTo("Found");
+    assertThat(result.matterRole()).isEqualTo("member");
   }
 
   @Test
@@ -185,8 +185,8 @@ class ProjectServiceTest {
     var result =
         service.updateProject(id, "Updated", "New Desc", new ActorContext(MEMBER_ID, "admin"));
 
-    assertThat(result.project().getName()).isEqualTo("Updated");
-    assertThat(result.project().getDescription()).isEqualTo("New Desc");
+    assertThat(result.matter().getName()).isEqualTo("Updated");
+    assertThat(result.matter().getDescription()).isEqualTo("New Desc");
     verify(repository).save(existing);
   }
 

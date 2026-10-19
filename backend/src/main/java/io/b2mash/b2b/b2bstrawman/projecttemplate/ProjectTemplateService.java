@@ -33,8 +33,8 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.CreateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest;
-import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.ProjectTemplateResponse;
-import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.SaveFromProjectRequest;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.MatterTemplateResponse;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.SaveFromMatterRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.TagResponse;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.TemplateTaskItemResponse;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.TemplateTaskResponse;
@@ -141,7 +141,7 @@ public class ProjectTemplateService {
   }
 
   @Transactional
-  public ProjectTemplateResponse create(CreateTemplateRequest request, UUID memberId) {
+  public MatterTemplateResponse create(CreateTemplateRequest request, UUID memberId) {
     var template =
         new ProjectTemplate(
             request.name(),
@@ -207,7 +207,7 @@ public class ProjectTemplateService {
   }
 
   @Transactional
-  public ProjectTemplateResponse update(UUID id, UpdateTemplateRequest request) {
+  public MatterTemplateResponse update(UUID id, UpdateTemplateRequest request) {
     var template =
         templateRepository
             .findById(id)
@@ -295,7 +295,7 @@ public class ProjectTemplateService {
   }
 
   @Transactional
-  public ProjectTemplateResponse duplicate(UUID id, UUID memberId) {
+  public MatterTemplateResponse duplicate(UUID id, UUID memberId) {
     var source =
         templateRepository
             .findById(id)
@@ -361,19 +361,19 @@ public class ProjectTemplateService {
   }
 
   @Transactional(readOnly = true)
-  public List<ProjectTemplateResponse> list() {
+  public List<MatterTemplateResponse> list() {
     return templateRepository.findAllByOrderByNameAsc().stream().map(this::buildResponse).toList();
   }
 
   @Transactional(readOnly = true)
-  public List<ProjectTemplateResponse> listActive() {
+  public List<MatterTemplateResponse> listActive() {
     return templateRepository.findByActiveOrderByNameAsc(true).stream()
         .map(this::buildResponse)
         .toList();
   }
 
   @Transactional(readOnly = true)
-  public ProjectTemplateResponse get(UUID id) {
+  public MatterTemplateResponse get(UUID id) {
     var template =
         templateRepository
             .findById(id)
@@ -382,8 +382,8 @@ public class ProjectTemplateService {
   }
 
   @Transactional
-  public ProjectTemplateResponse saveFromProject(
-      UUID projectId, SaveFromProjectRequest request, ActorContext actor) {
+  public MatterTemplateResponse saveFromProject(
+      UUID projectId, SaveFromMatterRequest request, ActorContext actor) {
     // 1. Load project
     var project =
         projectRepository
@@ -491,15 +491,15 @@ public class ProjectTemplateService {
 
     // 2. Load customer (if requested)
     Customer customer = null;
-    if (request.customerId() != null) {
+    if (request.clientId() != null) {
       customer =
           customerRepository
-              .findById(request.customerId())
-              .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
+              .findById(request.clientId())
+              .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
 
       // Check engagement prerequisites for manual project creation
       var prereqCheck =
-          prerequisiteService.checkEngagementPrerequisites(request.customerId(), templateId);
+          prerequisiteService.checkEngagementPrerequisites(request.clientId(), templateId);
       if (!prereqCheck.passed()) {
         throw new PrerequisiteNotMetException(prereqCheck);
       }
@@ -564,9 +564,9 @@ public class ProjectTemplateService {
     }
 
     // 7. Set project lead
-    if (request.projectLeadMemberId() != null) {
+    if (request.matterLeadMemberId() != null) {
       projectMemberRepository.save(
-          new ProjectMember(project.getId(), request.projectLeadMemberId(), "LEAD", memberId));
+          new ProjectMember(project.getId(), request.matterLeadMemberId(), "LEAD", memberId));
     }
 
     // 8. Create tasks from template (snapshot — no live references)
@@ -582,7 +582,7 @@ public class ProjectTemplateService {
             .collect(Collectors.groupingBy(TemplateTaskItem::getTemplateTaskId));
 
     for (var tt : templateTasks) {
-      UUID assigneeId = resolveAssignee(tt.getAssigneeRole(), request.projectLeadMemberId());
+      UUID assigneeId = resolveAssignee(tt.getAssigneeRole(), request.matterLeadMemberId());
       // Task constructor: (projectId, title, description, priority, type, dueDate, createdBy)
       var task =
           new Task(
@@ -840,7 +840,7 @@ public class ProjectTemplateService {
   }
 
   @Transactional
-  public ProjectTemplateResponse updateRequiredCustomerFields(
+  public MatterTemplateResponse updateRequiredCustomerFields(
       UUID templateId, List<UUID> fieldDefinitionIds) {
     var template =
         templateRepository
@@ -1048,7 +1048,7 @@ public class ProjectTemplateService {
     }
   }
 
-  private ProjectTemplateResponse buildResponse(ProjectTemplate template) {
+  private MatterTemplateResponse buildResponse(ProjectTemplate template) {
     var templateTasks = templateTaskRepository.findByTemplateIdOrderBySortOrder(template.getId());
 
     // Batch-load all items for this template's tasks (avoids N+1)
@@ -1086,7 +1086,7 @@ public class ProjectTemplateService {
             .map(tag -> new TagResponse(tag.getId(), tag.getName(), tag.getColor()))
             .toList();
 
-    return new ProjectTemplateResponse(
+    return new MatterTemplateResponse(
         template.getId(),
         template.getName(),
         template.getNamePattern(),

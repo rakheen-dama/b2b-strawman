@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public record SaveFromProjectRequest(
+public record SaveFromMatterRequest(
     @NotBlank @Size(max = 300) String name,
     @NotBlank @Size(max = 300) String namePattern,
     String description,

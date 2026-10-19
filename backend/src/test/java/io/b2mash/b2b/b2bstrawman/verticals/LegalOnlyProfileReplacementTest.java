@@ -220,7 +220,7 @@ class LegalOnlyProfileReplacementTest {
 
     mockMvc
         .perform(
-            get("/api/projects/{id}/upcoming-deadlines", projectId)
+            get("/api/matters/{id}/upcoming-deadlines", projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(1)))

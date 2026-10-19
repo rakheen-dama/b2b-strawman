@@ -90,7 +90,7 @@ class TimeEntryIntegrationTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(ownerJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -104,7 +104,7 @@ class TimeEntryIntegrationTest {
     // Add admin, member, and member2 to the project
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -116,7 +116,7 @@ class TimeEntryIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -128,7 +128,7 @@ class TimeEntryIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/members")
+            post("/api/matters/" + projectId + "/members")
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -157,7 +157,7 @@ class TimeEntryIntegrationTest {
     var projectBResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(tenantBOwnerJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

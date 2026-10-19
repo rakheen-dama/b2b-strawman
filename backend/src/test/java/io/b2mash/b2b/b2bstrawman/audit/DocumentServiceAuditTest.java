@@ -57,7 +57,7 @@ class DocumentServiceAuditTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_doc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

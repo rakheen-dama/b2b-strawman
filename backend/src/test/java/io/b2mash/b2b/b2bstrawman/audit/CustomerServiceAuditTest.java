@@ -190,7 +190,7 @@ class CustomerServiceAuditTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ca_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -256,7 +256,7 @@ class CustomerServiceAuditTest {
     var projectResult =
         mockMvc
             .perform(
-                post("/api/projects")
+                post("/api/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ca_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

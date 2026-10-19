@@ -65,7 +65,7 @@ class MemberFilterDbRoleTest {
     // JWT says "member" but DB has "admin" — DB should win
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(
                     jwt()
                         .jwt(
@@ -89,7 +89,7 @@ class MemberFilterDbRoleTest {
     // JWT says "admin" but DB has "member" — DB should win, member stays "member"
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(
                     jwt()
                         .jwt(
@@ -113,7 +113,7 @@ class MemberFilterDbRoleTest {
     // JWT says "admin" but user doesn't exist — should get default "member" role (no invitation)
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(
                     jwt()
                         .jwt(
@@ -140,7 +140,7 @@ class MemberFilterDbRoleTest {
     // First request — loads from DB and caches
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(
                     jwt()
                         .jwt(
@@ -152,7 +152,7 @@ class MemberFilterDbRoleTest {
     // Second request — should hit cache, still resolve DB role
     mockMvc
         .perform(
-            get("/api/projects")
+            get("/api/matters")
                 .with(
                     jwt()
                         .jwt(

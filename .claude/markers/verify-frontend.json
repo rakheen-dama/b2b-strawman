@@ -1,7 +1,7 @@
 {
-  "commit": "1f0e689e5bd323bfe038539f2c7eb35e2f529f79",
+  "commit": "14f11b0159c3a2741a9da17eed9e7703eb62adf1",
   "command": "cd frontend && pnpm run lint && pnpm run format:check && rm -rf .next && pnpm run build && pnpm test",
   "exit": 0,
-  "ts": "2026-10-20T10:34:25+02:00",
-  "summary": "PR #1604 (609G; frontend change = e2e spec portal-data-isolation only) on 1f0e689e5 (orchestrator run): lint 0 errors / 95 warnings (= main); prettier clean; build OK; vitest 359 files, 2286 passed | 2 skipped (= main)."
+  "ts": "2026-10-20T11:27:47+02:00",
+  "summary": "PR #1605 (610A; TS type renames + lib/api matters/clients/paths/query modules) on 14f11b015 (orchestrator run): lint 0 errors / 95 warnings (= main); prettier clean; build OK; vitest 362 files, 2307 passed | 2 skipped (main 359/2286/2; +3 new test files, +21 tests); tsc 166 = baseline, identical error set."
 }

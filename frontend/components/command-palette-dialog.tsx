@@ -27,8 +27,11 @@ export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPalett
   const { isModuleEnabled } = useOrgProfile();
   const { items: recentItems } = useRecentItems();
 
-  const pages = [...NAV_GROUPS.flatMap((g) => g.items), ...UTILITY_ITEMS].filter((item) =>
-    canAccessNavItem(item, access)
+  // Same gates as the sidebar (nav-zone.tsx): capability/adminOnly + module (Phase 87 612B.1).
+  const pages = [...NAV_GROUPS.flatMap((g) => g.items), ...UTILITY_ITEMS].filter(
+    (item) =>
+      canAccessNavItem(item, access) &&
+      (!item.requiredModule || isModuleEnabled(item.requiredModule))
   );
 
   const settings = SETTINGS_ITEMS.filter(

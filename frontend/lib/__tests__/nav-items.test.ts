@@ -15,15 +15,15 @@ const ALL_ITEMS = NAV_GROUPS.flatMap((g) => g.items);
 const zone = (id: string) => NAV_GROUPS.find((g) => g.id === id)!;
 const item = (label: string) => ALL_ITEMS.find((i) => i.label === label);
 
-// Phase 87 S6a (612A, ADR-339 §12.6.1). 612A ships 28 items: Today carries the interim
-// Calendar + Court calendar pair (613D replaces both with one Diary item → Today 3) and Fees has 5
-// (612B adds "Unbilled work" together with its /invoices/unbilled page → Fees 6, total 29; after
-// 613D the spec's final 28 = 3 + 5 + 3 + 6 + 7 + 4).
+// Phase 87 S6a (612A/612B, ADR-339 §12.6.1). After 612B there are 29 items: Today carries the
+// interim Calendar + Court calendar pair (613D replaces both with one Diary item → Today 3) and
+// Fees has 6 (612B added "Unbilled work" together with its /invoices/unbilled page); after 613D
+// the spec's final 28 = 3 + 5 + 3 + 6 + 7 + 4.
 const ZONE_SIZES: Record<string, number> = {
   today: 4,
   matters: 5,
   clients: 3,
-  fees: 5,
+  fees: 6,
   trust: 7,
   firm: 4,
 };
@@ -54,9 +54,9 @@ describe("NAV_GROUPS — six zones around the attorney's week (ADR-339)", () => 
     ]);
   });
 
-  it("has 28 items with the expected per-zone sizes", () => {
+  it("has 29 items with the expected per-zone sizes", () => {
     expect(Object.fromEntries(NAV_GROUPS.map((g) => [g.id, g.items.length]))).toEqual(ZONE_SIZES);
-    expect(ALL_ITEMS).toHaveLength(28);
+    expect(ALL_ITEMS).toHaveLength(29);
   });
 
   it("keeps every zone at ≤ 6 items except trust (≤ 7)", () => {
@@ -129,6 +129,7 @@ describe("NAV_GROUPS — six zones around the attorney's week (ADR-339)", () => 
     ["Clients", "CUSTOMER_MANAGEMENT", undefined],
     ["FICA & compliance", "CUSTOMER_MANAGEMENT", undefined],
     ["Data requests", "CUSTOMER_MANAGEMENT", undefined],
+    ["Unbilled work", "INVOICING", undefined],
     ["Fee notes", "INVOICING", undefined],
     ["Fee runs", "INVOICING", "bulk_billing"],
     ["Debtors", "INVOICING", undefined],
@@ -142,6 +143,18 @@ describe("NAV_GROUPS — six zones around the attorney's week (ADR-339)", () => 
     expect(item(label), label).toBeDefined();
     expect(item(label)!.requiredCapability).toEqual(cap);
     expect(item(label)!.requiredModule).toBe(mod);
+  });
+
+  it("Fees: Unbilled work first, then Fee notes, Fee runs, Debtors, Disbursements, Tariffs (612B)", () => {
+    expect(zone("fees").items.map((i) => i.label)).toEqual([
+      "Unbilled work",
+      "Fee notes",
+      "Fee runs",
+      "Debtors",
+      "Disbursements",
+      "Tariffs",
+    ]);
+    expect(item("Unbilled work")?.href("acme")).toBe("/org/acme/invoices/unbilled");
   });
 
   it("Data requests points at the POPIA data-requests list (OI-1)", () => {

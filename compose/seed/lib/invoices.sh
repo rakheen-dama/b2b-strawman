@@ -11,13 +11,13 @@ seed_invoices() {
   existing=$(api_get "/api/invoices?size=200" "$jwt")
 
   # ── Invoice 1: Acme Corp (manual lines) ─────────────────────────
-  acme_invoice=$(echo "$existing" | jq -r '.[] | select(.customerName == "Acme Corp") | .id' 2>/dev/null | head -1)
+  acme_invoice=$(echo "$existing" | jq -r '.[] | select(.clientName == "Acme Corp") | .id' 2>/dev/null | head -1)
   if [ -n "$acme_invoice" ] && [ "$acme_invoice" != "null" ]; then
     echo "    [skip] Acme Corp invoice exists (${acme_invoice})"
     ACME_INVOICE_ID="$acme_invoice"
   else
     body=$(api_post "/api/invoices" "{
-      \"customerId\": \"${ACME_ID}\",
+      \"clientId\": \"${ACME_ID}\",
       \"currency\": \"ZAR\",
       \"notes\": \"Legacy migration completed work\",
       \"paymentTerms\": \"Net 30\"
@@ -52,13 +52,13 @@ seed_invoices() {
   fi
 
   # ── Invoice 2: Bright Solutions (manual lines, NOT time entries) ─
-  bright_invoice=$(echo "$existing" | jq -r '.[] | select(.customerName == "Bright Solutions") | .id' 2>/dev/null | head -1)
+  bright_invoice=$(echo "$existing" | jq -r '.[] | select(.clientName == "Bright Solutions") | .id' 2>/dev/null | head -1)
   if [ -n "$bright_invoice" ] && [ "$bright_invoice" != "null" ]; then
     echo "    [skip] Bright Solutions invoice exists (${bright_invoice})"
     BRIGHT_INVOICE_ID="$bright_invoice"
   else
     body=$(api_post "/api/invoices" "{
-      \"customerId\": \"${BRIGHT_ID}\",
+      \"clientId\": \"${BRIGHT_ID}\",
       \"currency\": \"ZAR\",
       \"notes\": \"Mobile App and SEO Audit work\",
       \"paymentTerms\": \"Net 15\"

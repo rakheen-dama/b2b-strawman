@@ -79,7 +79,8 @@ test.describe("CMD-01: Command Palette", () => {
 
     // Type a search term
     const searchInput = paletteCheck.locator("input").first();
-    await searchInput.fill("Invoices");
+    // Phase 87 611B (ADR-338): label amendment
+    await searchInput.fill("Fee notes");
     await page.waitForTimeout(500);
 
     // Press Enter to navigate or click the result

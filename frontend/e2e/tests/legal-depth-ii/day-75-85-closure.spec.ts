@@ -179,7 +179,8 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
     const before = new Set(await feeNoteLinks());
 
     await newFeeNote.click();
-    const generate = page.getByRole("dialog", { name: /Generate Fee Note|Select Unbilled Items/ });
+    // Phase 87 611B (ADR-338): label amendment
+    const generate = page.getByRole("dialog", { name: /Generate fee note|Select Unbilled Items/ });
     await expect(generate).toBeVisible({ timeout: 15_000 });
     await generate.getByRole("button", { name: "Fetch Unbilled Time" }).click();
     await expect(generate.getByTestId("disbursement-selection-section")).toContainText(

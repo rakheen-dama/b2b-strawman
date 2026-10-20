@@ -38,8 +38,8 @@ export async function performConflictCheck(data: {
   checkedIdNumber?: string;
   checkedRegistrationNumber?: string;
   checkType: string;
-  customerId?: string;
-  projectId?: string;
+  clientId?: string;
+  matterId?: string;
 }): Promise<{ success: boolean; data?: ConflictCheck; error?: string }> {
   try {
     const body: Record<string, unknown> = {
@@ -49,8 +49,8 @@ export async function performConflictCheck(data: {
     if (data.checkedIdNumber) body.checkedIdNumber = data.checkedIdNumber;
     if (data.checkedRegistrationNumber)
       body.checkedRegistrationNumber = data.checkedRegistrationNumber;
-    if (data.customerId) body.customerId = data.customerId;
-    if (data.projectId) body.projectId = data.projectId;
+    if (data.clientId) body.clientId = data.clientId;
+    if (data.matterId) body.matterId = data.matterId;
 
     const result = await api.post<ConflictCheck>("/api/conflict-checks", body);
     return { success: true, data: result };

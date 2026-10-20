@@ -28,8 +28,8 @@ export interface CourtDateFilters {
   to?: string;
   status?: CourtDateStatus;
   dateType?: CourtDateType;
-  customerId?: string;
-  projectId?: string;
+  clientId?: string;
+  matterId?: string;
 }
 
 // ── Court Date actions ─────────────────────────────────────────────
@@ -42,8 +42,8 @@ export async function fetchCourtDates(
   if (filters?.to) params.set("to", filters.to);
   if (filters?.status) params.set("status", filters.status);
   if (filters?.dateType) params.set("dateType", filters.dateType);
-  if (filters?.customerId) params.set("customerId", filters.customerId);
-  if (filters?.projectId) params.set("projectId", filters.projectId);
+  if (filters?.clientId) params.set("clientId", filters.clientId);
+  if (filters?.matterId) params.set("matterId", filters.matterId);
   params.set("size", "100");
 
   return api.get<PaginatedResponse<CourtDate>>(`/api/court-dates?${params.toString()}`);
@@ -56,7 +56,7 @@ export async function fetchCourtDate(id: string): Promise<CourtDate> {
 export async function createCourtDate(
   slug: string,
   data: {
-    projectId: string;
+    matterId: string;
     dateType: string;
     scheduledDate: string;
     scheduledTime?: string;
@@ -140,10 +140,10 @@ export async function recordOutcome(
 // ── Prescription Tracker actions ───────────────────────────────────
 
 export async function fetchPrescriptionTrackers(filters?: {
-  customerId?: string;
+  clientId?: string;
 }): Promise<PaginatedResponse<PrescriptionTracker>> {
   const params = new URLSearchParams();
-  if (filters?.customerId) params.set("customerId", filters.customerId);
+  if (filters?.clientId) params.set("clientId", filters.clientId);
   params.set("size", "100");
 
   return api.get<PaginatedResponse<PrescriptionTracker>>(
@@ -154,7 +154,7 @@ export async function fetchPrescriptionTrackers(filters?: {
 export async function createPrescriptionTracker(
   slug: string,
   data: {
-    projectId: string;
+    matterId: string;
     causeOfActionDate: string;
     prescriptionType: string;
     customYears?: number;

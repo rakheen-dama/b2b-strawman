@@ -121,7 +121,7 @@ export function CreateDisbursementDialog({
   // different project — a trust transaction is always scoped to a single
   // matter, and keeping a stale linkage would silently cross-link matters.
   useEffect(() => {
-    if (linkedTx && linkedTx.projectId !== selectedProjectId) {
+    if (linkedTx && linkedTx.matterId !== selectedProjectId) {
       setLinkedTx(null);
       form.setValue("trustTransactionId", "");
     }
@@ -213,8 +213,8 @@ export function CreateDisbursementDialog({
     setIsSubmitting(true);
     try {
       const result = await createDisbursementAction(slug, {
-        projectId: values.projectId,
-        customerId: values.customerId,
+        matterId: values.projectId,
+        clientId: values.customerId,
         category: values.category,
         description: values.description,
         amount: values.amount,

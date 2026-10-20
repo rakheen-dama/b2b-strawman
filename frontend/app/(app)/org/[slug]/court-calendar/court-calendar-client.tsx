@@ -155,7 +155,7 @@ export function CourtCalendarClient({
     if (!clientSearch.trim()) return courtDates;
     const q = clientSearch.toLowerCase();
     return courtDates.filter(
-      (d) => d.customerName?.toLowerCase().includes(q) || d.projectName?.toLowerCase().includes(q)
+      (d) => d.clientName?.toLowerCase().includes(q) || d.matterName?.toLowerCase().includes(q)
     );
   }, [courtDates, clientSearch]);
 
@@ -348,13 +348,13 @@ export function CourtCalendarClient({
               <div>
                 <dt className="text-slate-500 dark:text-slate-400">Matter</dt>
                 <dd className="font-medium text-slate-950 dark:text-slate-50">
-                  {selectedCourtDate.projectName}
+                  {selectedCourtDate.matterName}
                 </dd>
               </div>
               <div>
                 <dt className="text-slate-500 dark:text-slate-400">Client</dt>
                 <dd className="text-slate-700 dark:text-slate-300">
-                  {selectedCourtDate.customerName}
+                  {selectedCourtDate.clientName}
                 </dd>
               </div>
               <div>

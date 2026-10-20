@@ -182,7 +182,7 @@ describe("Trust Interest", () => {
         {
           id: "alloc-1",
           interestRunId: "run-calc",
-          customerId: "cust-001",
+          clientId: "cust-001",
           averageDailyBalance: 100000,
           daysInPeriod: 90,
           grossInterest: 2500,
@@ -306,7 +306,7 @@ describe("Trust Interest", () => {
         {
           id: "alloc-p1",
           interestRunId: "run-post",
-          customerId: "cust-001",
+          clientId: "cust-001",
           averageDailyBalance: 50000,
           daysInPeriod: 90,
           grossInterest: 1250,

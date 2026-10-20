@@ -77,10 +77,10 @@ beforeEach(() => vi.clearAllMocks());
 function makeCourtDate(overrides: Partial<CourtDate> = {}): CourtDate {
   return {
     id: "cd-1",
-    projectId: "proj-1",
-    projectName: "Smith v Jones",
-    customerId: "cust-1",
-    customerName: "John Smith",
+    matterId: "proj-1",
+    matterName: "Smith v Jones",
+    clientId: "cust-1",
+    clientName: "John Smith",
     dateType: "HEARING",
     scheduledDate: "2026-04-15",
     scheduledTime: "09:00",
@@ -101,10 +101,10 @@ function makeCourtDate(overrides: Partial<CourtDate> = {}): CourtDate {
 function makeTracker(overrides: Partial<PrescriptionTracker> = {}): PrescriptionTracker {
   return {
     id: "pt-1",
-    projectId: "proj-1",
-    projectName: "Smith v Jones",
-    customerId: "cust-1",
-    customerName: "John Smith",
+    matterId: "proj-1",
+    matterName: "Smith v Jones",
+    clientId: "cust-1",
+    clientName: "John Smith",
     causeOfActionDate: "2024-01-15",
     prescriptionType: "GENERAL_3Y",
     customYears: null,

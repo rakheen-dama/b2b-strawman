@@ -28,8 +28,8 @@ export type DisbursementBillingStatus = "UNBILLED" | "BILLED" | "WRITTEN_OFF";
 
 export interface DisbursementResponse {
   id: string;
-  projectId: string;
-  customerId: string;
+  matterId: string;
+  clientId: string;
   category: DisbursementCategory;
   description: string;
   amount: number;
@@ -65,7 +65,7 @@ export interface UnbilledDisbursementItem {
 }
 
 export interface UnbilledDisbursementsResponse {
-  projectId: string;
+  matterId: string;
   currency: "ZAR";
   items: UnbilledDisbursementItem[];
   totalAmount: number;
@@ -85,8 +85,8 @@ export interface PaginatedDisbursementsResponse {
 // ---- Request types ----
 
 export interface CreateDisbursementRequest {
-  projectId: string;
-  customerId: string;
+  matterId: string;
+  clientId: string;
   category: DisbursementCategory;
   description: string;
   amount: number;
@@ -121,7 +121,7 @@ export interface WriteOffRequest {
 // ---- List params ----
 
 export interface ListDisbursementsParams {
-  projectId?: string;
+  matterId?: string;
   approvalStatus?: DisbursementApprovalStatus;
   billingStatus?: DisbursementBillingStatus;
   category?: DisbursementCategory;
@@ -136,7 +136,7 @@ export async function listDisbursements(
   params: ListDisbursementsParams = {}
 ): Promise<PaginatedDisbursementsResponse> {
   const search = new URLSearchParams();
-  if (params.projectId) search.set("projectId", params.projectId);
+  if (params.matterId) search.set("matterId", params.matterId);
   if (params.approvalStatus) search.set("approvalStatus", params.approvalStatus);
   if (params.billingStatus) search.set("billingStatus", params.billingStatus);
   if (params.category) search.set("category", params.category);
@@ -190,10 +190,10 @@ export async function writeOffDisbursement(
 }
 
 export async function listUnbilled(params: {
-  projectId: string;
+  matterId: string;
 }): Promise<UnbilledDisbursementsResponse> {
   const search = new URLSearchParams();
-  search.set("projectId", params.projectId);
+  search.set("matterId", params.matterId);
   return api.get<UnbilledDisbursementsResponse>(
     `/api/legal/disbursements/unbilled?${search.toString()}`
   );

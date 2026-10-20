@@ -224,16 +224,16 @@ export default async function ClientLedgersPage({
                     <tbody>
                       {ledgerPage.content.map((ledger) => (
                         <tr
-                          key={ledger.customerId}
+                          key={ledger.clientId}
                           className="border-b border-slate-100 last:border-0 dark:border-slate-800"
-                          data-testid={`ledger-row-${ledger.customerId}`}
+                          data-testid={`ledger-row-${ledger.clientId}`}
                         >
                           <td className="py-3 pr-4">
                             <Link
-                              href={`/org/${slug}/trust-accounting/client-ledgers/${ledger.customerId}`}
+                              href={`/org/${slug}/trust-accounting/client-ledgers/${ledger.clientId}`}
                               className="font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
                             >
-                              {ledger.customerName}
+                              {ledger.clientName}
                             </Link>
                           </td>
                           <td className="py-3 pr-4 text-right font-mono text-slate-950 tabular-nums dark:text-slate-50">

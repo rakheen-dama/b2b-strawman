@@ -98,7 +98,7 @@ export function CreateCourtDateDialog({ slug, onSuccess }: CreateCourtDateDialog
 
     try {
       const result = await createCourtDate(slug, {
-        projectId: values.projectId,
+        matterId: values.projectId,
         dateType: values.dateType,
         scheduledDate: values.scheduledDate,
         scheduledTime: values.scheduledTime || undefined,

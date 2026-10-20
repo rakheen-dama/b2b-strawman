@@ -29,14 +29,14 @@ export interface GateResult {
 }
 
 export interface ClosureReport {
-  projectId: string;
+  matterId: string;
   evaluatedAt: string;
   allPassed: boolean;
   gates: GateResult[];
 }
 
 export interface CloseMatterResponse {
-  projectId: string;
+  matterId: string;
   status: "CLOSED";
   closedAt: string;
   closureLogId: string;
@@ -48,7 +48,7 @@ export interface CloseMatterResponse {
 }
 
 export interface ReopenMatterResponse {
-  projectId: string;
+  matterId: string;
   status: "ACTIVE";
   reopenedAt: string;
   closureLogId: string;
@@ -56,7 +56,7 @@ export interface ReopenMatterResponse {
 
 export interface ClosureLogEntry {
   id: string;
-  projectId: string;
+  matterId: string;
   closedBy: string;
   // LZKC-014: display name resolved server-side via MemberNameResolver;
   // null when the member row no longer exists.
@@ -170,7 +170,7 @@ export async function reopenMatter(
       err.detail?.type === RETENTION_ELAPSED_PROBLEM_TYPE
     ) {
       const retentionEndedOn = (err.detail.retentionEndedOn as string | undefined) ?? "";
-      const pid = (err.detail.projectId as string | undefined) ?? projectId;
+      const pid = (err.detail.matterId as string | undefined) ?? projectId;
       throw new RetentionElapsedError(retentionEndedOn, pid);
     }
     throw err;

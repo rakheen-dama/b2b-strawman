@@ -24,7 +24,7 @@ export function ProjectCourtDatesTab({ projectId, slug }: ProjectCourtDatesTabPr
 
   const { data, isLoading, mutate } = useSWR(
     `project-court-dates-${projectId}`,
-    () => fetchCourtDates({ projectId }),
+    () => fetchCourtDates({ matterId: projectId }),
     { dedupingInterval: 2000 }
   );
 

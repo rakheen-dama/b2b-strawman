@@ -119,8 +119,8 @@ function makeInvestment(overrides: Record<string, unknown> = {}) {
   return {
     id: "inv-1",
     trustAccountId: "acc-1",
-    customerId: "cust-1111-2222-3333-444444444444",
-    customerName: "Acme Corp",
+    clientId: "cust-1111-2222-3333-444444444444",
+    clientName: "Acme Corp",
     institution: "FNB Money Market",
     accountNumber: "INV-001",
     principal: 500000,
@@ -220,12 +220,12 @@ describe("Epic 455 — Investment Basis", () => {
     mockFetchInvestments.mockResolvedValue([
       makeInvestment({
         id: "inv-firm",
-        customerName: "Firm Client",
+        clientName: "Firm Client",
         investmentBasis: "FIRM_DISCRETION",
       }),
       makeInvestment({
         id: "inv-client",
-        customerName: "Client Instruction Client",
+        clientName: "Client Instruction Client",
         investmentBasis: "CLIENT_INSTRUCTION",
       }),
     ]);
@@ -245,7 +245,7 @@ describe("Epic 455 — Investment Basis", () => {
     mockFetchInvestments.mockResolvedValue([
       makeInvestment({
         id: "inv-client-inst",
-        customerName: "Client Instruction Co",
+        clientName: "Client Instruction Co",
         investmentBasis: "CLIENT_INSTRUCTION",
       }),
     ]);
@@ -308,7 +308,7 @@ describe("Epic 455 — Investment Basis", () => {
         {
           id: "alloc-1",
           interestRunId: "run-1",
-          customerId: "cust-1111-2222-3333-444444444444",
+          clientId: "cust-1111-2222-3333-444444444444",
           averageDailyBalance: 100000,
           daysInPeriod: 90,
           grossInterest: 2500,
@@ -391,7 +391,7 @@ describe("Epic 455 — Investment Basis", () => {
         {
           id: "alloc-2",
           interestRunId: "run-2",
-          customerId: "cust-2222-3333-4444-555555555555",
+          clientId: "cust-2222-3333-4444-555555555555",
           averageDailyBalance: 200000,
           daysInPeriod: 90,
           grossInterest: 5000,

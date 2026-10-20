@@ -22,7 +22,7 @@ export interface StatementSummary {
 }
 
 export interface MatterRef {
-  projectId: string;
+  matterId: string;
   name: string;
 }
 

@@ -119,10 +119,10 @@ export function PrescriptionTab({ trackers, slug, onRefresh }: PrescriptionTabPr
                     className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
                   >
                     <td className="px-4 py-3 text-sm font-medium text-slate-950 dark:text-slate-50">
-                      {tracker.projectName}
+                      {tracker.matterName}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
-                      {tracker.customerName}
+                      {tracker.clientName}
                     </td>
                     <td className="px-4 py-3">
                       <Badge variant="outline">

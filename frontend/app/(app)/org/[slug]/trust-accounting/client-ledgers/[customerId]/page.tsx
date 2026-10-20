@@ -218,7 +218,7 @@ export default async function ClientDetailPage({
           Back to Client Ledgers
         </Link>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          {ledgerCard.customerName}
+          {ledgerCard.clientName}
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Client ledger detail and transaction history

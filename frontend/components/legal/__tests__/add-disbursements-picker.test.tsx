@@ -69,7 +69,7 @@ describe("AddDisbursementsPicker", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFetchUnbilled.mockResolvedValue({
-      projectId: "p1",
+      matterId: "p1",
       currency: "ZAR",
       items: [
         makeUnbilledItem({ id: "d1", description: "Sheriff service", amount: 500 }),

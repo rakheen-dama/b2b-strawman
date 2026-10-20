@@ -124,7 +124,7 @@ export function UpcomingCourtDatesWidget({ orgSlug }: UpcomingCourtDatesWidgetPr
                   {dateTypeLabel(cd.dateType)}
                 </Badge>
                 <span className="truncate text-xs text-slate-700 dark:text-slate-300">
-                  {cd.projectName}
+                  {cd.matterName}
                 </span>
               </div>
               <span className="ml-2 shrink-0 text-[10px] text-slate-500 dark:text-slate-400">

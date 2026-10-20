@@ -111,8 +111,8 @@ function makeInvestment(overrides: Record<string, unknown> = {}) {
   return {
     id: "inv-1",
     trustAccountId: "acc-1",
-    customerId: "cust-1111-2222-3333-444444444444",
-    customerName: "Acme Corp",
+    clientId: "cust-1111-2222-3333-444444444444",
+    clientName: "Acme Corp",
     institution: "FNB Money Market",
     accountNumber: "INV-001",
     principal: 500000,
@@ -163,13 +163,13 @@ describe("Trust Investments & Reports", () => {
     mockFetchInvestments.mockResolvedValue([
       makeInvestment({
         id: "inv-1",
-        customerName: "Smith & Associates",
+        clientName: "Smith & Associates",
         institution: "FNB Money Market",
         status: "ACTIVE",
       }),
       makeInvestment({
         id: "inv-2",
-        customerName: "Jones Trust",
+        clientName: "Jones Trust",
         institution: "Nedbank Call Account",
         principal: 250000,
         interestRate: 0.065,
@@ -252,14 +252,14 @@ describe("Trust Investments & Reports", () => {
     mockFetchInvestments.mockResolvedValue([
       makeInvestment({
         id: "inv-maturing",
-        customerName: "Maturing Client",
+        clientName: "Maturing Client",
         institution: "Maturing Soon Bank",
         maturityDate: soonStr,
         status: "ACTIVE",
       }),
       makeInvestment({
         id: "inv-safe",
-        customerName: "Safe Client",
+        clientName: "Safe Client",
         institution: "Far Away Bank",
         maturityDate: laterStr,
         status: "ACTIVE",

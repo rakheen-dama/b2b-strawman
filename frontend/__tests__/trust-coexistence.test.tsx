@@ -204,8 +204,8 @@ describe("Trust smoke tests", () => {
           data: {
             id: "ledger-1",
             trustAccountId: "ta-1",
-            customerId: "cust-1",
-            customerName: "Test Client",
+            clientId: "cust-1",
+            clientName: "Test Client",
             balance: 50000,
             totalDeposits: 80000,
             totalPayments: 25000,
@@ -285,8 +285,8 @@ describe("Trust smoke tests", () => {
           data: {
             id: "ledger-summary",
             trustAccountId: "ta-summary",
-            customerId: "cust-summary",
-            customerName: "Summary Client",
+            clientId: "cust-summary",
+            clientName: "Summary Client",
             balance: 125750.5,
             totalDeposits: 200000,
             totalPayments: 70000,

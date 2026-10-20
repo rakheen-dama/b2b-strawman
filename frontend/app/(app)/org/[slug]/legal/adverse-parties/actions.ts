@@ -98,8 +98,8 @@ export async function linkAdverseParty(
   slug: string,
   id: string,
   data: {
-    projectId: string;
-    customerId: string;
+    matterId: string;
+    clientId: string;
     relationship: string;
     description?: string;
   }
@@ -126,7 +126,7 @@ export async function unlinkAdverseParty(slug: string, linkId: string): Promise<
 }
 
 export async function fetchProjectAdverseParties(projectId: string): Promise<AdversePartyLink[]> {
-  return api.get<AdversePartyLink[]>(`/api/projects/${projectId}/adverse-parties`);
+  return api.get<AdversePartyLink[]>(`/api/matters/${projectId}/adverse-parties`);
 }
 
 // -- Projects & Customers (for form selectors) --

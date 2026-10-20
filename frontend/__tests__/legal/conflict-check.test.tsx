@@ -94,8 +94,8 @@ function makeConflictCheck(overrides: Partial<ConflictCheck> = {}): ConflictChec
     resolvedBy: null,
     checkedAt: "2026-04-01T10:00:00Z",
     resolvedAt: null,
-    customerId: null,
-    projectId: null,
+    clientId: null,
+    matterId: null,
     ...overrides,
   };
 }

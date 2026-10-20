@@ -212,7 +212,7 @@ describe("MatterReopenDialog", () => {
     mockReopen.mockResolvedValue({
       success: true,
       data: {
-        projectId: "p1",
+        matterId: "p1",
         status: "ACTIVE",
         reopenedAt: "2026-04-19T10:00:00Z",
         closureLogId: "log-1",
@@ -380,7 +380,7 @@ describe("MatterReopenDialog", () => {
     resolveAction({
       success: true,
       data: {
-        projectId: "p1",
+        matterId: "p1",
         status: "ACTIVE",
         reopenedAt: "2026-04-19T10:00:00Z",
         closureLogId: "log-1",

@@ -99,7 +99,7 @@ export async function getXeroTaxRates(): Promise<XeroTaxRate[]> {
 // ---- Customer Import ----
 
 export async function importXeroCustomers(): Promise<XeroCustomerImportResult> {
-  return api.post<XeroCustomerImportResult>("/api/integrations/xero/import-customers");
+  return api.post<XeroCustomerImportResult>("/api/integrations/xero/import-clients");
 }
 
 // ---- Xero Settings ----

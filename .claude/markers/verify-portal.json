@@ -1,7 +1,7 @@
 {
-  "commit": "1f0e689e5bd323bfe038539f2c7eb35e2f529f79",
-  "command": "pnpm install && cd portal && pnpm run lint && rm -rf .next && pnpm run build && pnpm test",
+  "commit": "c9ea9b29d50d4f23e516778634b9e64518186b07",
+  "command": "pnpm install --frozen-lockfile && cd portal && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-20T10:34:25+02:00",
-  "summary": "PR #1604 (609G portal callers on /portal/matters) on 1f0e689e5 (orchestrator run): portal lint 0 errors / 6 warnings; build OK; vitest 39 files, 180 passed (+1 file/+3 tests: matter-wire guard). Browser check (isolated Chromium, portal dev :3002 -> e2e backend :8081): exchange -> portal_customer {id,name=Acme Corp}, topbar client name, matter detail/tasks/documents/comments/summary all 200 on /portal/matters/*, comment POST 201 persisted after reload, /portal/me profile shows client. REGRESSION full 52/0/1 (skip = no 2nd ACTIVE client); cross-client probe own=200 other=404. CI Portal pass."
+  "ts": "2026-10-20T16:36:41+0200",
+  "summary": "PR #1610 (610F portal PortalMatter* type names + MatterCard + prettier format:check) on c9ea9b29d (orchestrator run): portal lint 0 errors / 6 warnings; format:check clean (new script; prettier 3.8.3 devDep); vitest 39 files, 180 passed; build OK. Browser check (isolated headless Chromium, portal dev :3002 -> e2e backend :8081): magic-link login -> /projects renders 5 MatterCards linking /projects/<id>, detail page opens. CI Portal pass."
 }

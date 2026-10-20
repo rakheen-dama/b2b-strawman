@@ -21,14 +21,14 @@ seed_comments() {
 
     # Check existing comments (bare array response, dedup by body substring)
     _ac_short_body=$(echo "$_ac_body" | head -c 40)
-    _ac_existing=$(api_get "/api/projects/${_ac_project_id}/comments?entityType=${_ac_entity_type}&entityId=${_ac_entity_id}&size=200" "$_ac_jwt" \
+    _ac_existing=$(api_get "/api/matters/${_ac_project_id}/comments?entityType=${_ac_entity_type}&entityId=${_ac_entity_id}&size=200" "$_ac_jwt" \
       | jq -r ".[] | select(.body | startswith(\"${_ac_short_body}\")) | .id" 2>/dev/null)
     if [ -n "$_ac_existing" ] && [ "$_ac_existing" != "null" ]; then
       echo "    [skip] Comment on ${_ac_entity_type} (${_ac_entity_id})" >&2
       return 0
     fi
 
-    api_post "/api/projects/${_ac_project_id}/comments" "{
+    api_post "/api/matters/${_ac_project_id}/comments" "{
       \"entityType\": \"${_ac_entity_type}\",
       \"entityId\": \"${_ac_entity_id}\",
       \"body\": \"${_ac_body}\",

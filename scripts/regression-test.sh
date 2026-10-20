@@ -195,7 +195,7 @@ if should_run "rbac"; then
   assert_http "Member accesses My Work" "2"
 
   # Member can list projects
-  api_get "/api/projects" "$CAROL" > /dev/null
+  api_get "/api/matters" "$CAROL" > /dev/null
   assert_http "Member lists projects" "2"
 
   echo ""
@@ -219,10 +219,8 @@ if should_run "customer_lifecycle"; then
   cust_status=$(echo "$cust_resp" | jq -r '.lifecycleStatus')
   assert_eq "Defaults to PROSPECT" "PROSPECT" "$cust_status"
 
-  # PROSPECT cannot create project (lifecycle guard)
-  api_post "/api/projects" "{\"name\":\"Should-Fail-${RUN_ID}\"}" "$ALICE" > /dev/null
-  # Need to link customer — create project with customerId
-  proj_fail=$(api_post "/api/projects" "{\"name\":\"Should-Fail-${RUN_ID}\",\"customerId\":\"${CUST_ID}\"}" "$ALICE")
+  # PROSPECT cannot create project (lifecycle guard) — matter linked via clientId
+  proj_fail=$(api_post "/api/matters" "{\"name\":\"Should-Fail-${RUN_ID}\",\"clientId\":\"${CUST_ID}\"}" "$ALICE")
   _pf_status=$(last_status)
   case "$_pf_status" in
     400|409) echo "    [PASS] PROSPECT blocked from project: HTTP ${_pf_status}" >&2; PASS=$((PASS + 1)) ;;
@@ -264,7 +262,7 @@ if should_run "customer_lifecycle"; then
   assert_http "OFFBOARDING -> OFFBOARDED" "2"
 
   # OFFBOARDED blocked from project
-  proj_fail2=$(api_post "/api/projects" "{\"name\":\"Should-Fail2-${RUN_ID}\",\"customerId\":\"${CUST_ID}\"}" "$ALICE")
+  proj_fail2=$(api_post "/api/matters" "{\"name\":\"Should-Fail2-${RUN_ID}\",\"clientId\":\"${CUST_ID}\"}" "$ALICE")
   _pf2_status=$(last_status)
   case "$_pf2_status" in
     400|409) echo "    [PASS] OFFBOARDED blocked from project: HTTP ${_pf2_status}" >&2; PASS=$((PASS + 1)) ;;
@@ -408,7 +406,7 @@ if should_run "task_lifecycle"; then
   echo "── Task Lifecycle ─────────────────────────────────────"
 
   # Get a project from seed
-  projects=$(api_get "/api/projects" "$ALICE")
+  projects=$(api_get "/api/matters" "$ALICE")
   PROJ_ID=$(echo "$projects" | jq -r '.[0].id // empty')
   if [ -z "$PROJ_ID" ]; then
     PROJ_ID=$(echo "$projects" | jq -r '.content[0].id // empty')
@@ -418,12 +416,12 @@ if should_run "task_lifecycle"; then
   # Add Carol as project member so she can claim tasks
   CAROL_MEMBER_ID=$(api_get "/api/members" "$ALICE" | jq -r '[.[] | select(.name=="Carol Member")][0].id // empty')
   if [ -n "$CAROL_MEMBER_ID" ]; then
-    api_post "/api/projects/${PROJ_ID}/members" "{\"memberId\":\"${CAROL_MEMBER_ID}\"}" "$ALICE" > /dev/null 2>&1 || true
+    api_post "/api/matters/${PROJ_ID}/members" "{\"memberId\":\"${CAROL_MEMBER_ID}\"}" "$ALICE" > /dev/null 2>&1 || true
   fi
 
   # Create task
   RUN_ID=$(date +%s | tail -c 5)
-  task_resp=$(api_post "/api/projects/${PROJ_ID}/tasks" "{\"title\":\"RegTask-${RUN_ID}\",\"priority\":\"MEDIUM\"}" "$ALICE")
+  task_resp=$(api_post "/api/matters/${PROJ_ID}/tasks" "{\"title\":\"RegTask-${RUN_ID}\",\"priority\":\"MEDIUM\"}" "$ALICE")
   assert_http "Create task" "2"
   TASK_ID=$(echo "$task_resp" | jq -r '.id')
   task_status=$(echo "$task_resp" | jq -r '.status')
@@ -521,7 +519,7 @@ if should_run "portal_isolation"; then
 
           if [ -n "$OTHER_CUST_ID" ]; then
             # Get other customer's projects via org API
-            other_projects=$(api_get "/api/projects?customerId=${OTHER_CUST_ID}" "$ALICE")
+            other_projects=$(api_get "/api/matters?customerId=${OTHER_CUST_ID}" "$ALICE")
             OTHER_PROJ_ID=$(echo "$other_projects" | jq -r '.[0].id // .content[0].id // empty')
 
             if [ -n "$OTHER_PROJ_ID" ]; then

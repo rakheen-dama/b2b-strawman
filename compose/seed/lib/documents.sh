@@ -59,8 +59,8 @@ seed_documents() {
 
   # ── Project-scoped: design mockup ──────────────────────────────
   _upload_doc \
-    "/api/projects/${WEBSITE_REDESIGN_ID}/documents/upload-init" \
-    "/api/projects/${WEBSITE_REDESIGN_ID}/documents" \
+    "/api/matters/${WEBSITE_REDESIGN_ID}/documents/upload-init" \
+    "/api/matters/${WEBSITE_REDESIGN_ID}/documents" \
     "design-mockup.pdf" "application/pdf" \
     "Placeholder content for design mockup document" \
     "design-mockup.pdf (Website Redesign)"

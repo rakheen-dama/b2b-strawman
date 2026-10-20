@@ -55,14 +55,14 @@ seed_rates_budgets() {
     _sb_budget_json="$3"
 
     # Check if budget exists
-    _sb_existing=$(api_get "/api/projects/${_sb_project_id}/budget" "$jwt")
+    _sb_existing=$(api_get "/api/matters/${_sb_project_id}/budget" "$jwt")
     _sb_has_budget=$(echo "$_sb_existing" | jq -r '.budgetHours // .budgetAmount // empty' 2>/dev/null)
     if [ -n "$_sb_has_budget" ]; then
       echo "    [skip] ${_sb_label} budget exists"
       return 0
     fi
 
-    api_put "/api/projects/${_sb_project_id}/budget" "$_sb_budget_json" "$jwt" > /dev/null
+    api_put "/api/matters/${_sb_project_id}/budget" "$_sb_budget_json" "$jwt" > /dev/null
     check_status "${_sb_label} budget"
   }
 

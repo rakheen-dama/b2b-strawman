@@ -27,7 +27,7 @@ seed_tasks() {
     _st_due_date="$5"
 
     # Check if task already exists in this project (bare array response)
-    _st_existing=$(api_get "/api/projects/${_st_project_id}/tasks?status=OPEN,IN_PROGRESS,DONE&size=200" "$jwt" \
+    _st_existing=$(api_get "/api/matters/${_st_project_id}/tasks?status=OPEN,IN_PROGRESS,DONE&size=200" "$jwt" \
       | jq -r ".[] | select(.title == \"${_st_title}\") | .id" 2>/dev/null)
     if [ -n "$_st_existing" ] && [ "$_st_existing" != "null" ]; then
       echo "    [skip] ${_st_title} (${_st_existing})" >&2
@@ -45,7 +45,7 @@ seed_tasks() {
       _st_due_field="\"dueDate\": \"${_st_due_date}\","
     fi
 
-    _st_body=$(api_post "/api/projects/${_st_project_id}/tasks" "{
+    _st_body=$(api_post "/api/matters/${_st_project_id}/tasks" "{
       \"title\": \"${_st_title}\",
       ${_st_assignee_field}
       ${_st_due_field}

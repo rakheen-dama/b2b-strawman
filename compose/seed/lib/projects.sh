@@ -19,29 +19,29 @@ seed_projects() {
     _cp_customer_id="$3"
 
     # Check if project already exists (bare array response)
-    _cp_id=$(find_existing "/api/projects" ".[] | select(.name == \"${_cp_name}\")" "$jwt")
+    _cp_id=$(find_existing "/api/matters" ".[] | select(.name == \"${_cp_name}\")" "$jwt")
 
     if [ -n "$_cp_id" ] && [ "$_cp_id" != "null" ]; then
       echo "    [skip] ${_cp_name} already exists (${_cp_id})" >&2
       # Still ensure Bob and Carol are project members (boot seed doesn't add them)
-      api_post "/api/projects/${_cp_id}/members" "{\"memberId\":\"${BOB_MEMBER_ID}\",\"projectRole\":\"contributor\"}" "$jwt" > /dev/null
-      api_post "/api/projects/${_cp_id}/members" "{\"memberId\":\"${CAROL_MEMBER_ID}\",\"projectRole\":\"contributor\"}" "$jwt" > /dev/null
+      api_post "/api/matters/${_cp_id}/members" "{\"memberId\":\"${BOB_MEMBER_ID}\",\"projectRole\":\"contributor\"}" "$jwt" > /dev/null
+      api_post "/api/matters/${_cp_id}/members" "{\"memberId\":\"${CAROL_MEMBER_ID}\",\"projectRole\":\"contributor\"}" "$jwt" > /dev/null
       echo "$_cp_id"
       return 0
     fi
 
-    _cp_body=$(api_post "/api/projects" "{
+    _cp_body=$(api_post "/api/matters" "{
       \"name\": \"${_cp_name}\",
       \"description\": \"${_cp_description}\",
-      \"customerId\": \"${_cp_customer_id}\"
+      \"clientId\": \"${_cp_customer_id}\"
     }" "$jwt")
     check_status "Create ${_cp_name}" || return 1
     _cp_id=$(echo "$_cp_body" | jq -r '.id')
 
     # Add Bob and Carol as project members
-    api_post "/api/projects/${_cp_id}/members" "{\"memberId\":\"${BOB_MEMBER_ID}\",\"projectRole\":\"contributor\"}" "$jwt" > /dev/null
+    api_post "/api/matters/${_cp_id}/members" "{\"memberId\":\"${BOB_MEMBER_ID}\",\"projectRole\":\"contributor\"}" "$jwt" > /dev/null
     check_status "  Add Bob to ${_cp_name}"
-    api_post "/api/projects/${_cp_id}/members" "{\"memberId\":\"${CAROL_MEMBER_ID}\",\"projectRole\":\"contributor\"}" "$jwt" > /dev/null
+    api_post "/api/matters/${_cp_id}/members" "{\"memberId\":\"${CAROL_MEMBER_ID}\",\"projectRole\":\"contributor\"}" "$jwt" > /dev/null
     check_status "  Add Carol to ${_cp_name}"
 
     echo "$_cp_id"

@@ -1,7 +1,7 @@
 {
-  "commit": "4c9a02e9403967498e3132a2fd74a924b825c3fa",
-  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
+  "commit": "089958797b7db045eb59b2edf84bbbb1cad34ba0",
+  "command": "cd backend && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-20T00:25:00+02:00",
-  "summary": "PR #1590 (Epic 607C: dashboard/activity/comment/budget/task/document/mywork/calendar wire rename to matter vocabulary) head 4c9a02e94 (orchestrator run): 5345 testcases / 0 failures / 0 errors / 26 skipped (unchanged vs 607B — rename only). Ratchet baseline 55 -> 4. Log /tmp/mvn-607C-final.log."
+  "ts": "2026-10-20T02:50:00+02:00",
+  "summary": "PR #1594 (Epic 608A: customer/ + ProjectCustomerController + ClientReadiness wire rename to client vocabulary, Batch 2) head 089958797 (orchestrator run): 5345 testcases / 0 failures / 0 errors / 26 skipped (unchanged vs 607C — rename only). Ratchet baseline 4 -> 3. Log /tmp/mvn-608A-final.log."
 }

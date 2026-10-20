@@ -169,7 +169,7 @@ class StatementControllerIntegrationTest {
         .andExpect(jsonPath("$.templateId").isNotEmpty())
         .andExpect(jsonPath("$.htmlPreview").isNotEmpty())
         .andExpect(jsonPath("$.pdfUrl").isNotEmpty())
-        .andExpect(jsonPath("$.matter.projectId").value(projectId.toString()))
+        .andExpect(jsonPath("$.matter.matterId").value(projectId.toString()))
         .andExpect(jsonPath("$.matter.name").value("Statement Ctrl Matter"))
         .andExpect(jsonPath("$.summary").exists())
         .andExpect(jsonPath("$.summary.totalFees").exists())

@@ -46,12 +46,12 @@ public class CourtCalendarController {
           LocalDate dateTo,
       @RequestParam(required = false) String dateType,
       @RequestParam(required = false) String status,
-      @RequestParam(required = false) UUID customerId,
-      @RequestParam(required = false) UUID projectId,
+      @RequestParam(required = false) UUID clientId,
+      @RequestParam(required = false) UUID matterId,
       Pageable pageable) {
     return ResponseEntity.ok(
         courtCalendarService.list(
-            new CourtDateFilters(dateFrom, dateTo, dateType, status, customerId, projectId),
+            new CourtDateFilters(dateFrom, dateTo, dateType, status, clientId, matterId),
             pageable));
   }
 

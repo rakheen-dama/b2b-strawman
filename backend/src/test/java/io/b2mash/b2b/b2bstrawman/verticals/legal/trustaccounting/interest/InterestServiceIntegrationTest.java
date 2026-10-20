@@ -167,7 +167,7 @@ class InterestServiceIntegrationTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": %s,
                       "reference": "%s",
                       "description": "Test deposit",
@@ -238,7 +238,7 @@ class InterestServiceIntegrationTest {
     // Should have allocation for customer1
     var customer1Alloc =
         allocations.stream()
-            .filter(a -> a.customerId().equals(UUID.fromString(customerId1)))
+            .filter(a -> a.clientId().equals(UUID.fromString(customerId1)))
             .findFirst()
             .orElse(null);
 
@@ -284,12 +284,12 @@ class InterestServiceIntegrationTest {
 
     var customer1Alloc =
         allocations.stream()
-            .filter(a -> a.customerId().equals(UUID.fromString(customerId1)))
+            .filter(a -> a.clientId().equals(UUID.fromString(customerId1)))
             .findFirst()
             .orElse(null);
     var customer2Alloc =
         allocations.stream()
-            .filter(a -> a.customerId().equals(UUID.fromString(customerId2)))
+            .filter(a -> a.clientId().equals(UUID.fromString(customerId2)))
             .findFirst()
             .orElse(null);
 
@@ -377,7 +377,7 @@ class InterestServiceIntegrationTest {
     // Customer3 had 0 balance for June 1-15, then 10,000 for June 16-30 (15 days)
     var customer3Alloc =
         allocations.stream()
-            .filter(a -> a.customerId().equals(UUID.fromString(customerId3)))
+            .filter(a -> a.clientId().equals(UUID.fromString(customerId3)))
             .findFirst();
 
     assertThat(customer3Alloc).isPresent();
@@ -418,7 +418,7 @@ class InterestServiceIntegrationTest {
 
     var customer4Alloc =
         allocations.stream()
-            .filter(a -> a.customerId().equals(UUID.fromString(customerId4)))
+            .filter(a -> a.clientId().equals(UUID.fromString(customerId4)))
             .findFirst()
             .orElseThrow();
 
@@ -457,7 +457,7 @@ class InterestServiceIntegrationTest {
     // Customer1 should have an allocation from their existing balance
     var customer1Alloc =
         allocations.stream()
-            .filter(a -> a.customerId().equals(UUID.fromString(customerId1)))
+            .filter(a -> a.clientId().equals(UUID.fromString(customerId1)))
             .findFirst();
     assertThat(customer1Alloc).isPresent();
     assertThat(BigDecimal.ZERO.compareTo(customer1Alloc.get().grossInterest())).isLessThan(0);
@@ -798,14 +798,14 @@ class InterestServiceIntegrationTest {
 
     var customer1Share =
         allocations.stream()
-            .filter(a -> a.customerId().equals(UUID.fromString(customerId1)))
+            .filter(a -> a.clientId().equals(UUID.fromString(customerId1)))
             .findFirst()
             .map(a -> a.clientShare())
             .orElse(BigDecimal.ZERO);
 
     var customer2Share =
         allocations.stream()
-            .filter(a -> a.customerId().equals(UUID.fromString(customerId2)))
+            .filter(a -> a.clientId().equals(UUID.fromString(customerId2)))
             .findFirst()
             .map(a -> a.clientShare())
             .orElse(BigDecimal.ZERO);

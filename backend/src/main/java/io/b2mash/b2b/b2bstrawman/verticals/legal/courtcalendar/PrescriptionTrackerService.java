@@ -52,7 +52,7 @@ public class PrescriptionTrackerService {
   // --- DTO Records ---
 
   public record CreatePrescriptionTrackerRequest(
-      @NotNull UUID projectId,
+      @NotNull UUID matterId,
       @NotNull LocalDate causeOfActionDate,
       @NotBlank String prescriptionType,
       Integer customYears,
@@ -69,10 +69,10 @@ public class PrescriptionTrackerService {
 
   public record PrescriptionTrackerResponse(
       UUID id,
-      UUID projectId,
-      String projectName,
-      UUID customerId,
-      String customerName,
+      UUID matterId,
+      String matterName,
+      UUID clientId,
+      String clientName,
       LocalDate causeOfActionDate,
       String prescriptionType,
       Integer customYears,
@@ -96,8 +96,8 @@ public class PrescriptionTrackerService {
 
     var project =
         projectRepository
-            .findById(request.projectId())
-            .orElseThrow(() -> new ResourceNotFoundException("Project", request.projectId()));
+            .findById(request.matterId())
+            .orElseThrow(() -> new ResourceNotFoundException("Project", request.matterId()));
 
     validatePrescriptionType(request.prescriptionType());
 
@@ -107,7 +107,7 @@ public class PrescriptionTrackerService {
 
     var tracker =
         new PrescriptionTracker(
-            request.projectId(),
+            request.matterId(),
             project.getCustomerId(),
             request.causeOfActionDate(),
             request.prescriptionType(),

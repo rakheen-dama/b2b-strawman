@@ -101,7 +101,7 @@ public class InterestService {
   public record InterestAllocationResponse(
       UUID id,
       UUID interestRunId,
-      UUID customerId,
+      UUID clientId,
       BigDecimal averageDailyBalance,
       int daysInPeriod,
       BigDecimal grossInterest,

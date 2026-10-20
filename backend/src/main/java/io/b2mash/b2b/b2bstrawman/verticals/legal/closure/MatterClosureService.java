@@ -150,7 +150,7 @@ public class MatterClosureService {
   public ClosureReportResponse evaluateForController(UUID projectId) {
     MatterClosureReport report = evaluate(projectId);
     return new ClosureReportResponse(
-        report.projectId(), report.evaluatedAt(), report.allPassed(), report.gates());
+        report.matterId(), report.evaluatedAt(), report.allPassed(), report.gates());
   }
 
   // ---------- close ----------

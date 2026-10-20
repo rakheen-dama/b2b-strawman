@@ -6,10 +6,10 @@ import java.util.List;
 /** Request to sync an invoice to the external accounting system. */
 public record InvoiceSyncRequest(
     String invoiceNumber,
-    String customerName,
+    String clientName,
     List<LineItem> lineItems,
     String currency,
     LocalDate issueDate,
     LocalDate dueDate,
     String externalReference,
-    String customerEmail) {}
+    String clientEmail) {}

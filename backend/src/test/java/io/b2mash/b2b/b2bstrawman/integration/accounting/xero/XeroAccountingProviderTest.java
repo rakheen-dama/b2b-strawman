@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingTaxCodeMapping;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingTaxCodeMappingService;
-import io.b2mash.b2b.b2bstrawman.integration.accounting.CustomerSyncRequest;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.ClientSyncRequest;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.InvoiceSyncRequest;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.LineItem;
 import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
@@ -135,7 +135,7 @@ class XeroAccountingProviderTest {
         .thenReturn(Map.of("Contacts", List.of(Map.of("ContactID", "xero-contact-uuid-001"))));
 
     var request =
-        new CustomerSyncRequest(
+        new ClientSyncRequest(
             "Acme Corp", "billing@acme.com", "123 Main St", null, "Cape Town", "8001", "ZA", null);
 
     var result = provider.syncCustomer(request);
@@ -154,7 +154,7 @@ class XeroAccountingProviderTest {
     when(xeroApiClient.createOrUpdateContact(eq(XERO_TENANT_ID), any(), eq(ACCESS_TOKEN)))
         .thenThrow(new XeroApiClient.XeroApiException("Xero API error: HTTP 422"));
 
-    var request = new CustomerSyncRequest("Bad Customer", null, null, null, null, null, null, null);
+    var request = new ClientSyncRequest("Bad Customer", null, null, null, null, null, null, null);
 
     var result = provider.syncCustomer(request);
 

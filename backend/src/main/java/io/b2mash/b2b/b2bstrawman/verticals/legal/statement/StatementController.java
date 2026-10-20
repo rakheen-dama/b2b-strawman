@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
  * ModuleNotEnabledException} (-> 403 ProblemDetail) if the tenant does not have it enabled.
  */
 @RestController
-@RequestMapping("/api/matters/{projectId}/statements")
+@RequestMapping("/api/matters/{matterId}/statements")
 public class StatementController {
 
   private final StatementService statementService;
@@ -38,24 +38,24 @@ public class StatementController {
   @PostMapping
   @RequiresCapability("GENERATE_STATEMENT_OF_ACCOUNT")
   public ResponseEntity<StatementResponse> generate(
-      @PathVariable UUID projectId, @Valid @RequestBody GenerateStatementRequest request) {
-    var response = statementService.generate(projectId, request, RequestScopes.requireMemberId());
+      @PathVariable UUID matterId, @Valid @RequestBody GenerateStatementRequest request) {
+    var response = statementService.generate(matterId, request, RequestScopes.requireMemberId());
     return ResponseEntity.created(
-            URI.create("/api/matters/" + projectId + "/statements/" + response.id()))
+            URI.create("/api/matters/" + matterId + "/statements/" + response.id()))
         .body(response);
   }
 
   @GetMapping
   @RequiresCapability("VIEW_LEGAL")
   public ResponseEntity<Page<StatementResponse>> list(
-      @PathVariable UUID projectId, Pageable pageable) {
-    return ResponseEntity.ok(statementService.list(projectId, pageable));
+      @PathVariable UUID matterId, Pageable pageable) {
+    return ResponseEntity.ok(statementService.list(matterId, pageable));
   }
 
   @GetMapping("/{id}")
   @RequiresCapability("VIEW_LEGAL")
   public ResponseEntity<StatementResponse> getById(
-      @PathVariable UUID projectId, @PathVariable UUID id) {
-    return ResponseEntity.ok(statementService.getById(projectId, id));
+      @PathVariable UUID matterId, @PathVariable UUID id) {
+    return ResponseEntity.ok(statementService.getById(matterId, id));
   }
 }

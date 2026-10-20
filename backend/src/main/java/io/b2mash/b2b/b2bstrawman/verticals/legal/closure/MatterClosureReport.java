@@ -11,4 +11,4 @@ import java.util.UUID;
  * {@code MatterClosureLog.gate_report} at close-time.
  */
 public record MatterClosureReport(
-    UUID projectId, Instant evaluatedAt, boolean allPassed, List<GateReportItem> gates) {}
+    UUID matterId, Instant evaluatedAt, boolean allPassed, List<GateReportItem> gates) {}

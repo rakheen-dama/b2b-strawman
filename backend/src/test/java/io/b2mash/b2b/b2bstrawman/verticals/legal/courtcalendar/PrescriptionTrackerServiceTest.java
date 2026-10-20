@@ -122,9 +122,9 @@ class PrescriptionTrackerServiceTest {
                   assertThat(response.prescriptionType()).isEqualTo("GENERAL_3Y");
                   assertThat(response.causeOfActionDate()).isEqualTo(causeDate);
                   assertThat(response.prescriptionDate()).isEqualTo(expectedPrescriptionDate);
-                  assertThat(response.customerId()).isEqualTo(customerId);
-                  assertThat(response.projectName()).isEqualTo("MVA Claim - Smith");
-                  assertThat(response.customerName()).isEqualTo("Prescription Test Corp");
+                  assertThat(response.clientId()).isEqualTo(customerId);
+                  assertThat(response.matterName()).isEqualTo("MVA Claim - Smith");
+                  assertThat(response.clientName()).isEqualTo("Prescription Test Corp");
                   assertThat(response.notes()).isEqualTo("Motor vehicle accident claim");
                   assertThat(response.id()).isNotNull();
                 }));

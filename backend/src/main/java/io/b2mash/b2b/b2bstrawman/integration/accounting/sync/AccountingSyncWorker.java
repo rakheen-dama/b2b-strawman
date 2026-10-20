@@ -5,7 +5,7 @@ import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingProvider;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingSyncResult;
-import io.b2mash.b2b.b2bstrawman.integration.accounting.CustomerSyncRequest;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.ClientSyncRequest;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.InvoiceSyncRequest;
 import java.time.Duration;
 import java.time.Instant;
@@ -214,7 +214,7 @@ public class AccountingSyncWorker {
       }
       case CUSTOMER -> {
         // Stub request — real payload mapping in 519A
-        var request = new CustomerSyncRequest("Pending", null, null, null, null, null, null, null);
+        var request = new ClientSyncRequest("Pending", null, null, null, null, null, null, null);
         yield provider.syncCustomer(request);
       }
       case PAYMENT_PULL ->

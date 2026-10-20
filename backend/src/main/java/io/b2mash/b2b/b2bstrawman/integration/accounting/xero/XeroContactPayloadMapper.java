@@ -1,13 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.integration.accounting.xero;
 
-import io.b2mash.b2b.b2bstrawman.integration.accounting.CustomerSyncRequest;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.ClientSyncRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
 /**
- * Pure-function mapper that translates a Kazi {@link CustomerSyncRequest} into the JSON shape
+ * Pure-function mapper that translates a Kazi {@link ClientSyncRequest} into the JSON shape
  * expected by the Xero Contacts API.
  */
 @Component
@@ -19,9 +19,9 @@ public class XeroContactPayloadMapper {
    * @param request the customer sync request containing customer details
    * @return a map representing the Xero contact JSON payload
    */
-  public Map<String, Object> map(CustomerSyncRequest request) {
+  public Map<String, Object> map(ClientSyncRequest request) {
     var contact = new HashMap<String, Object>();
-    contact.put("Name", request.customerName());
+    contact.put("Name", request.clientName());
 
     if (request.email() != null) {
       contact.put("EmailAddress", request.email());

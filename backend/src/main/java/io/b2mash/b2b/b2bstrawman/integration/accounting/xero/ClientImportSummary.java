@@ -11,5 +11,5 @@ package io.b2mash.b2b.b2bstrawman.integration.accounting.xero;
  * @param total total number of Xero contacts processed (created + skippedDuplicate +
  *     skippedNoEmail)
  */
-public record CustomerImportSummary(
+public record ClientImportSummary(
     int created, int skippedDuplicate, int skippedNoEmail, int total) {}

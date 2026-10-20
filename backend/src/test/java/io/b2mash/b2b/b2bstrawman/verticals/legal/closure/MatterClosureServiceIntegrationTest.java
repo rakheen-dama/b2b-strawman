@@ -144,7 +144,7 @@ class MatterClosureServiceIntegrationTest {
     runInTenantAsOwner(
         () -> {
           var report = matterClosureService.evaluate(projectId);
-          assertThat(report.projectId()).isEqualTo(projectId);
+          assertThat(report.matterId()).isEqualTo(projectId);
           assertThat(report.gates()).hasSize(9);
           // FINAL_BILL_ISSUED should fail on a fresh project with no invoices — so allPassed=false
           assertThat(report.allPassed()).isFalse();
@@ -176,7 +176,7 @@ class MatterClosureServiceIntegrationTest {
                 .isInstanceOfSatisfying(
                     ClosureGateFailedException.class,
                     ex -> {
-                      assertThat(ex.getReport().projectId()).isEqualTo(projectId);
+                      assertThat(ex.getReport().matterId()).isEqualTo(projectId);
                       assertThat(ex.getReport().allPassed()).isFalse();
                       assertThat(ex.getReport().gates()).hasSize(9);
                       // At least one gate in the report has passed=false (FINAL_BILL_ISSUED)
@@ -251,7 +251,7 @@ class MatterClosureServiceIntegrationTest {
                       VALID_JUSTIFICATION),
                   memberId);
 
-          assertThat(response.projectId()).isEqualTo(projectId);
+          assertThat(response.matterId()).isEqualTo(projectId);
           assertThat(response.status()).isEqualTo(ProjectStatus.CLOSED.name());
           assertThat(response.closedAt()).isNotNull();
           assertThat(response.closureLogId()).isNotNull();
@@ -338,7 +338,7 @@ class MatterClosureServiceIntegrationTest {
           var response =
               matterClosureService.reopen(
                   projectId, new ReopenRequest(VALID_REOPEN_NOTES), memberId);
-          assertThat(response.projectId()).isEqualTo(projectId);
+          assertThat(response.matterId()).isEqualTo(projectId);
           assertThat(response.status()).isEqualTo(ProjectStatus.ACTIVE.name());
           assertThat(response.reopenedAt()).isNotNull();
           assertThat(response.closureLogId()).isNotNull();

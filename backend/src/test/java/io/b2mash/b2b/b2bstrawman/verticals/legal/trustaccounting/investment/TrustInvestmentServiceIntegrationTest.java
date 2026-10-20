@@ -134,7 +134,7 @@ class TrustInvestmentServiceIntegrationTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": %s,
                       "reference": "%s",
                       "description": "Test deposit",
@@ -177,7 +177,7 @@ class TrustInvestmentServiceIntegrationTest {
     assertThat(response.maturityDate()).isEqualTo(LocalDate.of(2026, 8, 1));
     assertThat(response.notes()).isEqualTo("6-month fixed deposit");
     assertThat(response.trustAccountId()).isEqualTo(trustAccountId);
-    assertThat(response.customerId()).isEqualTo(customerId);
+    assertThat(response.clientId()).isEqualTo(customerId);
   }
 
   @Test

@@ -115,13 +115,13 @@ public class DisbursementService {
     moduleGuard.requireModule(MODULE_ID);
 
     projectRepository
-        .findById(req.projectId())
-        .orElseThrow(() -> new ResourceNotFoundException("Project", req.projectId()));
+        .findById(req.matterId())
+        .orElseThrow(() -> new ResourceNotFoundException("Project", req.matterId()));
     customerRepository
-        .findById(req.customerId())
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", req.customerId()));
+        .findById(req.clientId())
+        .orElseThrow(() -> new ResourceNotFoundException("Customer", req.clientId()));
 
-    validateTrustLink(req.paymentSource(), req.trustTransactionId(), req.projectId());
+    validateTrustLink(req.paymentSource(), req.trustTransactionId(), req.matterId());
 
     var effectiveVat =
         req.vatTreatment() != null ? req.vatTreatment() : defaultVatTreatmentFor(req.category());
@@ -129,8 +129,8 @@ public class DisbursementService {
 
     var entity =
         new LegalDisbursement(
-            req.projectId(),
-            req.customerId(),
+            req.matterId(),
+            req.clientId(),
             req.category().name(),
             req.description(),
             req.amount(),
@@ -543,7 +543,7 @@ public class DisbursementService {
 
   /**
    * Same filter as {@link #listUnbilledForProject(UUID)} but returns the full response-shape record
-   * (items + pre-computed totals) used by {@code GET /api/legal/disbursements/unbilled?projectId=}.
+   * (items + pre-computed totals) used by {@code GET /api/legal/disbursements/unbilled?matterId=}.
    * Currency is hardcoded {@code "ZAR"} per the legal-ZA profile (arch §67.4.1). Totals are
    * computed via {@link BigDecimal#add} and normalised to scale 2 with {@link
    * RoundingMode#HALF_UP}.

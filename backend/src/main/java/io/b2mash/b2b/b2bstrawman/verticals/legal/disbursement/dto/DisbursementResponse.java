@@ -14,8 +14,8 @@ import java.util.UUID;
 /** Canonical response DTO for a {@code LegalDisbursement}. */
 public record DisbursementResponse(
     UUID id,
-    UUID projectId,
-    UUID customerId,
+    UUID matterId,
+    UUID clientId,
     DisbursementCategory category,
     String description,
     BigDecimal amount,

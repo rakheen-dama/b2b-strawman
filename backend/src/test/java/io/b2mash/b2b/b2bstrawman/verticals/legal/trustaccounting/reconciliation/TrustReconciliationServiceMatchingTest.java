@@ -119,7 +119,7 @@ class TrustReconciliationServiceMatchingTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "amount": %s,
                           "reference": "%s",
                           "description": "Test deposit",
@@ -147,7 +147,7 @@ class TrustReconciliationServiceMatchingTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "amount": %s,
                           "reference": "%s",
                           "description": "Test payment",

@@ -2,7 +2,7 @@ package io.b2mash.b2b.b2bstrawman.integration.accounting.xero;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.b2mash.b2b.b2bstrawman.integration.accounting.CustomerSyncRequest;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.ClientSyncRequest;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,7 @@ class XeroContactPayloadMapperTest {
   @SuppressWarnings("unchecked")
   void map_producesCorrectXeroContactJson() {
     var request =
-        new CustomerSyncRequest(
+        new ClientSyncRequest(
             "Acme Corp",
             "billing@acme.com",
             "123 Main St",
@@ -46,7 +46,7 @@ class XeroContactPayloadMapperTest {
   @Test
   void map_handlesNullAddressFields() {
     var request =
-        new CustomerSyncRequest(
+        new ClientSyncRequest(
             "Name Only Corp", "info@nameonly.com", null, null, null, null, null, null);
 
     Map<String, Object> payload = mapper.map(request);
@@ -59,8 +59,7 @@ class XeroContactPayloadMapperTest {
 
   @Test
   void map_omitsEmailWhenNull() {
-    var request =
-        new CustomerSyncRequest("No Email Corp", null, null, null, null, null, null, null);
+    var request = new ClientSyncRequest("No Email Corp", null, null, null, null, null, null, null);
 
     Map<String, Object> payload = mapper.map(request);
 
@@ -74,7 +73,7 @@ class XeroContactPayloadMapperTest {
   @SuppressWarnings("unchecked")
   void map_includesAddressWhenPartialFieldsPresent() {
     var request =
-        new CustomerSyncRequest(
+        new ClientSyncRequest(
             "Partial Addr Corp", null, null, null, "Johannesburg", "2000", null, null);
 
     Map<String, Object> payload = mapper.map(request);
@@ -97,8 +96,7 @@ class XeroContactPayloadMapperTest {
   @Test
   void map_omitsAccountNumberWhenExternalReferenceNull() {
     var request =
-        new CustomerSyncRequest(
-            "No Ref Corp", "info@noref.com", null, null, null, null, null, null);
+        new ClientSyncRequest("No Ref Corp", "info@noref.com", null, null, null, null, null, null);
 
     Map<String, Object> payload = mapper.map(request);
 
@@ -108,7 +106,7 @@ class XeroContactPayloadMapperTest {
   @Test
   void map_includesAccountNumberWhenExternalReferencePresent() {
     var request =
-        new CustomerSyncRequest(
+        new ClientSyncRequest(
             "Ref Corp", null, null, null, null, null, null, "KAZI-CUST-unique-ref");
 
     Map<String, Object> payload = mapper.map(request);

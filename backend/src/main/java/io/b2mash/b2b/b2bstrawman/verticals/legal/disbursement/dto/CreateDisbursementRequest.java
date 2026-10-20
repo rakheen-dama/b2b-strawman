@@ -20,8 +20,8 @@ import java.util.UUID;
  * required and service-validated against the linked {@code TrustTransaction}.
  */
 public record CreateDisbursementRequest(
-    @NotNull(message = "projectId is required") UUID projectId,
-    @NotNull(message = "customerId is required") UUID customerId,
+    @NotNull(message = "matterId is required") UUID matterId,
+    @NotNull(message = "clientId is required") UUID clientId,
     @NotNull(message = "category is required") DisbursementCategory category,
     @NotBlank(message = "description is required")
         @Size(max = 5000, message = "description must not exceed 5000 characters")

@@ -11,7 +11,7 @@ import io.b2mash.b2b.b2bstrawman.integration.OrgIntegration;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegrationRepository;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingProvider;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingSyncResult;
-import io.b2mash.b2b.b2bstrawman.integration.accounting.CustomerSyncRequest;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.ClientSyncRequest;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.InvoiceSyncRequest;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.AccountingXeroConnection;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.AccountingXeroConnectionRepository;
@@ -203,7 +203,7 @@ class AccountingSyncWorkerTest {
         () -> {
           when(integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingProvider.class))
               .thenReturn(accountingProvider);
-          when(accountingProvider.syncCustomer(any(CustomerSyncRequest.class)))
+          when(accountingProvider.syncCustomer(any(ClientSyncRequest.class)))
               .thenReturn(
                   new AccountingSyncResult(false, null, "validation error: email is required"));
 

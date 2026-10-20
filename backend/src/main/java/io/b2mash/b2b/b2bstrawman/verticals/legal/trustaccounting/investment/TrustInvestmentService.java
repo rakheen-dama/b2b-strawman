@@ -63,7 +63,7 @@ public class TrustInvestmentService {
   // --- DTO Records ---
 
   public record PlaceInvestmentRequest(
-      @NotNull UUID customerId,
+      @NotNull UUID clientId,
       @NotBlank String institution,
       @NotBlank String accountNumber,
       @Positive BigDecimal principal,
@@ -76,8 +76,8 @@ public class TrustInvestmentService {
   public record TrustInvestmentResponse(
       UUID id,
       UUID trustAccountId,
-      UUID customerId,
-      String customerName,
+      UUID clientId,
+      String clientName,
       String institution,
       String accountNumber,
       BigDecimal principal,
@@ -113,13 +113,13 @@ public class TrustInvestmentService {
 
     var customer =
         customerRepository
-            .findById(request.customerId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
+            .findById(request.clientId())
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
 
     // Check client has sufficient balance
     var ledgerCard =
         ledgerCardRepository
-            .findByTrustAccountIdAndCustomerId(accountId, request.customerId())
+            .findByTrustAccountIdAndCustomerId(accountId, request.clientId())
             .orElse(null);
 
     if (ledgerCard == null || ledgerCard.getBalance().compareTo(request.principal()) < 0) {
@@ -131,7 +131,7 @@ public class TrustInvestmentService {
     // Create PAYMENT transaction (goes through normal approval workflow)
     var paymentRequest =
         new TrustTransactionService.RecordPaymentRequest(
-            request.customerId(),
+            request.clientId(),
             null, // no project for investments
             request.principal(),
             "INV-" + request.institution() + "-" + request.accountNumber(),
@@ -144,7 +144,7 @@ public class TrustInvestmentService {
     var investment =
         new TrustInvestment(
             accountId,
-            request.customerId(),
+            request.clientId(),
             request.institution(),
             request.accountNumber(),
             request.principal(),
@@ -165,7 +165,7 @@ public class TrustInvestmentService {
             .details(
                 Map.of(
                     "trust_account_id", accountId.toString(),
-                    "customer_id", request.customerId().toString(),
+                    "customer_id", request.clientId().toString(),
                     "institution", request.institution(),
                     "principal", request.principal().toString(),
                     "interest_rate", request.interestRate().toString(),

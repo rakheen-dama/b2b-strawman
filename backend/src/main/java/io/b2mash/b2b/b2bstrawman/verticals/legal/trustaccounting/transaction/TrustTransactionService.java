@@ -87,36 +87,36 @@ public class TrustTransactionService {
   // --- DTO Records ---
 
   public record RecordDepositRequest(
-      UUID customerId,
-      UUID projectId,
+      UUID clientId,
+      UUID matterId,
       BigDecimal amount,
       String reference,
       String description,
       LocalDate transactionDate) {}
 
   public record RecordTransferRequest(
-      UUID sourceCustomerId,
-      UUID targetCustomerId,
-      UUID projectId,
+      UUID sourceClientId,
+      UUID targetClientId,
+      UUID matterId,
       BigDecimal amount,
       String reference,
       String description,
       LocalDate transactionDate) {}
 
   public record RecordPaymentRequest(
-      UUID customerId,
-      UUID projectId,
+      UUID clientId,
+      UUID matterId,
       BigDecimal amount,
       String reference,
       String description,
       LocalDate transactionDate) {}
 
   public record RecordFeeTransferRequest(
-      UUID customerId, UUID invoiceId, BigDecimal amount, String reference) {}
+      UUID clientId, UUID invoiceId, BigDecimal amount, String reference) {}
 
   public record RecordRefundRequest(
-      UUID customerId,
-      UUID projectId,
+      UUID clientId,
+      UUID matterId,
       BigDecimal amount,
       String reference,
       String description,
@@ -127,9 +127,9 @@ public class TrustTransactionService {
       UUID trustAccountId,
       String transactionType,
       BigDecimal amount,
-      UUID customerId,
-      UUID projectId,
-      UUID counterpartyCustomerId,
+      UUID clientId,
+      UUID matterId,
+      UUID counterpartyClientId,
       UUID invoiceId,
       String reference,
       String description,
@@ -217,8 +217,8 @@ public class TrustTransactionService {
 
     var customer =
         customerRepository
-            .findById(request.customerId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
+            .findById(request.clientId())
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -227,8 +227,8 @@ public class TrustTransactionService {
             trustAccountId,
             "DEPOSIT",
             request.amount(),
-            request.customerId(),
-            request.projectId(),
+            request.clientId(),
+            request.matterId(),
             null,
             request.reference(),
             request.description(),
@@ -243,11 +243,11 @@ public class TrustTransactionService {
     // we catch that and re-query with the lock to update the now-existing row.
     var ledgerCard =
         ledgerCardRepository
-            .findByAccountAndCustomerForUpdate(trustAccountId, request.customerId())
+            .findByAccountAndCustomerForUpdate(trustAccountId, request.clientId())
             .orElse(null);
 
     if (ledgerCard == null) {
-      ledgerCard = upsertNewLedgerCard(trustAccountId, request.customerId());
+      ledgerCard = upsertNewLedgerCard(trustAccountId, request.clientId());
     }
 
     ledgerCard.addDeposit(request.amount(), request.transactionDate());
@@ -261,7 +261,7 @@ public class TrustTransactionService {
             .details(
                 Map.of(
                     "amount", request.amount().toString(),
-                    "customer_id", request.customerId().toString(),
+                    "customer_id", request.clientId().toString(),
                     "customer_name", customer.getName(),
                     "reference", request.reference()))
             .build());
@@ -278,7 +278,7 @@ public class TrustTransactionService {
             saved.getProjectId(),
             "DEPOSIT",
             request.amount(),
-            request.customerId(),
+            request.clientId(),
             memberId,
             RequestScopes.getTenantIdOrNull(),
             RequestScopes.getOrgIdOrNull()));
@@ -302,32 +302,31 @@ public class TrustTransactionService {
       throw new InvalidStateException("Cannot record transfer", "Trust account is closed");
     }
 
-    if (request.sourceCustomerId().equals(request.targetCustomerId())) {
+    if (request.sourceClientId().equals(request.targetClientId())) {
       throw new InvalidStateException(
           "Invalid transfer", "Source and target customer cannot be the same");
     }
 
     var sourceCustomer =
         customerRepository
-            .findById(request.sourceCustomerId())
-            .orElseThrow(
-                () -> new ResourceNotFoundException("Customer", request.sourceCustomerId()));
+            .findById(request.sourceClientId())
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.sourceClientId()));
 
     customerRepository
-        .findById(request.targetCustomerId())
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", request.targetCustomerId()));
+        .findById(request.targetClientId())
+        .orElseThrow(() -> new ResourceNotFoundException("Customer", request.targetClientId()));
 
     var memberId = RequestScopes.requireMemberId();
 
     // Determine lock order: ascending UUID to prevent deadlocks
     UUID firstId =
-        request.sourceCustomerId().compareTo(request.targetCustomerId()) < 0
-            ? request.sourceCustomerId()
-            : request.targetCustomerId();
+        request.sourceClientId().compareTo(request.targetClientId()) < 0
+            ? request.sourceClientId()
+            : request.targetClientId();
     UUID secondId =
-        request.sourceCustomerId().compareTo(request.targetCustomerId()) < 0
-            ? request.targetCustomerId()
-            : request.sourceCustomerId();
+        request.sourceClientId().compareTo(request.targetClientId()) < 0
+            ? request.targetClientId()
+            : request.sourceClientId();
 
     // Acquire locks in deterministic order
     var firstLedger =
@@ -342,7 +341,7 @@ public class TrustTransactionService {
     // Resolve source and target ledger cards
     ClientLedgerCard sourceLedger;
     ClientLedgerCard targetLedger;
-    if (firstId.equals(request.sourceCustomerId())) {
+    if (firstId.equals(request.sourceClientId())) {
       sourceLedger = firstLedger;
       targetLedger = secondLedger;
     } else {
@@ -377,9 +376,9 @@ public class TrustTransactionService {
             trustAccountId,
             "TRANSFER_OUT",
             request.amount(),
-            request.sourceCustomerId(),
-            request.projectId(),
-            request.targetCustomerId(),
+            request.sourceClientId(),
+            request.matterId(),
+            request.targetClientId(),
             request.reference(),
             request.description(),
             request.transactionDate(),
@@ -391,9 +390,9 @@ public class TrustTransactionService {
             trustAccountId,
             "TRANSFER_IN",
             request.amount(),
-            request.targetCustomerId(),
-            request.projectId(),
-            request.sourceCustomerId(),
+            request.targetClientId(),
+            request.matterId(),
+            request.sourceClientId(),
             request.reference(),
             request.description(),
             request.transactionDate(),
@@ -409,7 +408,7 @@ public class TrustTransactionService {
 
     // Upsert target ledger — handle concurrent insert race
     if (targetLedger == null) {
-      targetLedger = upsertNewLedgerCard(trustAccountId, request.targetCustomerId());
+      targetLedger = upsertNewLedgerCard(trustAccountId, request.targetClientId());
     }
     targetLedger.creditBalance(request.amount(), request.transactionDate());
     ledgerCardRepository.save(targetLedger);
@@ -422,8 +421,8 @@ public class TrustTransactionService {
             .details(
                 Map.of(
                     "amount", request.amount().toString(),
-                    "source_customer_id", request.sourceCustomerId().toString(),
-                    "target_customer_id", request.targetCustomerId().toString(),
+                    "source_customer_id", request.sourceClientId().toString(),
+                    "target_customer_id", request.targetClientId().toString(),
                     "reference", request.reference()))
             .build());
 
@@ -439,7 +438,7 @@ public class TrustTransactionService {
             savedOut.getProjectId(),
             "TRANSFER_OUT",
             request.amount(),
-            request.sourceCustomerId(),
+            request.sourceClientId(),
             memberId,
             tenantId,
             orgId));
@@ -450,7 +449,7 @@ public class TrustTransactionService {
             savedIn.getProjectId(),
             "TRANSFER_IN",
             request.amount(),
-            request.targetCustomerId(),
+            request.targetClientId(),
             memberId,
             tenantId,
             orgId));
@@ -477,8 +476,8 @@ public class TrustTransactionService {
 
     var customer =
         customerRepository
-            .findById(request.customerId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
+            .findById(request.clientId())
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -487,8 +486,8 @@ public class TrustTransactionService {
             trustAccountId,
             "PAYMENT",
             request.amount(),
-            request.customerId(),
-            request.projectId(),
+            request.clientId(),
+            request.matterId(),
             null,
             request.reference(),
             request.description(),
@@ -506,7 +505,7 @@ public class TrustTransactionService {
             .details(
                 Map.of(
                     "amount", request.amount().toString(),
-                    "customer_id", request.customerId().toString(),
+                    "customer_id", request.clientId().toString(),
                     "customer_name", customer.getName(),
                     "reference", request.reference()))
             .build());
@@ -518,7 +517,7 @@ public class TrustTransactionService {
             saved.getProjectId(),
             "PAYMENT",
             request.amount(),
-            request.customerId(),
+            request.clientId(),
             memberId,
             RequestScopes.getTenantIdOrNull(),
             RequestScopes.getOrgIdOrNull()));
@@ -546,15 +545,15 @@ public class TrustTransactionService {
 
     var customer =
         customerRepository
-            .findById(request.customerId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
+            .findById(request.clientId())
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
 
     var invoice =
         invoiceRepository
             .findById(request.invoiceId())
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", request.invoiceId()));
 
-    if (!invoice.getCustomerId().equals(request.customerId())) {
+    if (!invoice.getCustomerId().equals(request.clientId())) {
       throw new InvalidStateException(
           "Invalid fee transfer", "Invoice does not belong to the specified customer");
     }
@@ -581,7 +580,7 @@ public class TrustTransactionService {
             trustAccountId,
             "FEE_TRANSFER",
             request.amount(),
-            request.customerId(),
+            request.clientId(),
             inferredProjectId,
             null,
             request.reference(),
@@ -602,7 +601,7 @@ public class TrustTransactionService {
             .details(
                 Map.of(
                     "amount", request.amount().toString(),
-                    "customer_id", request.customerId().toString(),
+                    "customer_id", request.clientId().toString(),
                     "customer_name", customer.getName(),
                     "invoice_id", request.invoiceId().toString(),
                     "project_id", inferredProjectId == null ? "" : inferredProjectId.toString(),
@@ -616,7 +615,7 @@ public class TrustTransactionService {
             saved.getProjectId(),
             "FEE_TRANSFER",
             request.amount(),
-            request.customerId(),
+            request.clientId(),
             memberId,
             RequestScopes.getTenantIdOrNull(),
             RequestScopes.getOrgIdOrNull()));
@@ -643,8 +642,8 @@ public class TrustTransactionService {
 
     var customer =
         customerRepository
-            .findById(request.customerId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
+            .findById(request.clientId())
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -653,8 +652,8 @@ public class TrustTransactionService {
             trustAccountId,
             "REFUND",
             request.amount(),
-            request.customerId(),
-            request.projectId(),
+            request.clientId(),
+            request.matterId(),
             null,
             request.reference(),
             request.description(),
@@ -672,9 +671,9 @@ public class TrustTransactionService {
             .details(
                 Map.of(
                     "amount", request.amount().toString(),
-                    "customer_id", request.customerId().toString(),
+                    "customer_id", request.clientId().toString(),
                     "customer_name", customer.getName(),
-                    "project_id", request.projectId() == null ? "" : request.projectId().toString(),
+                    "project_id", request.matterId() == null ? "" : request.matterId().toString(),
                     "reference", request.reference()))
             .build());
 
@@ -685,7 +684,7 @@ public class TrustTransactionService {
             saved.getProjectId(),
             "REFUND",
             request.amount(),
-            request.customerId(),
+            request.clientId(),
             memberId,
             RequestScopes.getTenantIdOrNull(),
             RequestScopes.getOrgIdOrNull()));

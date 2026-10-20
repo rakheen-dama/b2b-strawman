@@ -41,7 +41,7 @@ class NoOpAccountingProviderTest {
   @Test
   void syncCustomer_returns_success_with_noop_reference() {
     var request =
-        new CustomerSyncRequest(
+        new ClientSyncRequest(
             "Acme Corp", "billing@acme.com", "123 Main St", null, "Cape Town", "8001", "ZA", null);
 
     var result = provider.syncCustomer(request);

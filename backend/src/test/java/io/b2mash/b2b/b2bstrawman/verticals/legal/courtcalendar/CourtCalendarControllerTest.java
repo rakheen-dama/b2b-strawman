@@ -54,6 +54,8 @@ class CourtCalendarControllerTest {
   private UUID memberId;
   private UUID customerId;
   private UUID projectId;
+  private UUID otherCustomerId;
+  private UUID otherProjectId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -106,6 +108,20 @@ class CourtCalendarControllerTest {
                       project.setCustomerId(customerId);
                       project = projectRepository.saveAndFlush(project);
                       projectId = project.getId();
+
+                      // Second client + matter so the list filters have a row to exclude.
+                      var otherCustomer =
+                          customerRepository.saveAndFlush(
+                              createActiveCustomer(
+                                  "Ctrl Filter Other Corp",
+                                  "ctrl_filter_other@test.com",
+                                  memberId));
+                      otherCustomerId = otherCustomer.getId();
+
+                      var otherProject =
+                          new Project("Ctrl Filter Other Matter", "Filter test", memberId);
+                      otherProject.setCustomerId(otherCustomerId);
+                      otherProjectId = projectRepository.saveAndFlush(otherProject).getId();
                     }));
   }
 
@@ -119,7 +135,7 @@ class CourtCalendarControllerTest {
                 .content(
                     """
                     {
-                      "projectId": "%s",
+                      "matterId": "%s",
                       "dateType": "HEARING",
                       "scheduledDate": "2026-05-15",
                       "scheduledTime": "10:00",
@@ -135,10 +151,10 @@ class CourtCalendarControllerTest {
         .andExpect(jsonPath("$.status").value("SCHEDULED"))
         .andExpect(jsonPath("$.dateType").value("HEARING"))
         .andExpect(jsonPath("$.courtName").value("Johannesburg High Court"))
-        .andExpect(jsonPath("$.projectId").value(projectId.toString()))
-        .andExpect(jsonPath("$.customerId").value(customerId.toString()))
-        .andExpect(jsonPath("$.projectName").value("Ctrl Test Matter"))
-        .andExpect(jsonPath("$.customerName").value("Ctrl Test Corp"));
+        .andExpect(jsonPath("$.matterId").value(projectId.toString()))
+        .andExpect(jsonPath("$.clientId").value(customerId.toString()))
+        .andExpect(jsonPath("$.matterName").value("Ctrl Test Matter"))
+        .andExpect(jsonPath("$.clientName").value("Ctrl Test Corp"));
   }
 
   @Test
@@ -152,7 +168,7 @@ class CourtCalendarControllerTest {
                 .content(
                     """
                     {
-                      "projectId": "%s",
+                      "matterId": "%s",
                       "dateType": "TRIAL",
                       "scheduledDate": "2026-06-01",
                       "courtName": "Cape Town High Court"
@@ -180,7 +196,7 @@ class CourtCalendarControllerTest {
                     .content(
                         """
                         {
-                          "projectId": "%s",
+                          "matterId": "%s",
                           "dateType": "MOTION",
                           "scheduledDate": "2026-07-10",
                           "courtName": "Pretoria High Court",
@@ -214,7 +230,7 @@ class CourtCalendarControllerTest {
                     .content(
                         """
                         {
-                          "projectId": "%s",
+                          "matterId": "%s",
                           "dateType": "HEARING",
                           "scheduledDate": "2026-08-01",
                           "courtName": "Original Court"
@@ -258,7 +274,7 @@ class CourtCalendarControllerTest {
                     .content(
                         """
                         {
-                          "projectId": "%s",
+                          "matterId": "%s",
                           "dateType": "HEARING",
                           "scheduledDate": "2026-09-01",
                           "courtName": "Postpone Test Court"
@@ -319,7 +335,7 @@ class CourtCalendarControllerTest {
                     .content(
                         """
                         {
-                          "projectId": "%s",
+                          "matterId": "%s",
                           "dateType": "TRIAL",
                           "scheduledDate": "2026-10-01",
                           "courtName": "Outcome Test Court"
@@ -360,7 +376,7 @@ class CourtCalendarControllerTest {
                     .content(
                         """
                         {
-                          "projectId": "%s",
+                          "matterId": "%s",
                           "dateType": "HEARING",
                           "scheduledDate": "2026-12-01",
                           "courtName": "Terminal State Court"
@@ -414,7 +430,7 @@ class CourtCalendarControllerTest {
                 .content(
                     """
                     {
-                      "projectId": "%s",
+                      "matterId": "%s",
                       "dateType": "HEARING",
                       "scheduledDate": "2026-11-01",
                       "courtName": "Forbidden Court"
@@ -422,5 +438,91 @@ class CourtCalendarControllerTest {
                     """
                         .formatted(projectId)))
         .andExpect(status().isForbidden());
+  }
+
+  // --- List filters: ?matterId= / ?clientId= must bind (a stale param name is silently ignored
+  // by Spring and returns the unfiltered list, so each assertion checks the other row is absent)
+  // ---
+
+  @Test
+  void getCourtDates_filteredByMatterIdAndClientId_excludesOtherMattersRows() throws Exception {
+    String ownId = createCourtDate(projectId, "Filter Own Court");
+    String otherId = createCourtDate(otherProjectId, "Filter Other Court");
+
+    List<String> byMatter = listIds("/api/court-dates", "matterId", otherProjectId);
+    assertThat(byMatter).contains(otherId).doesNotContain(ownId);
+
+    List<String> byClient = listIds("/api/court-dates", "clientId", customerId);
+    assertThat(byClient).contains(ownId).doesNotContain(otherId);
+  }
+
+  @Test
+  void getPrescriptionTrackers_filteredByMatterIdAndClientId_excludesOtherMattersRows()
+      throws Exception {
+    String ownId = createPrescriptionTracker(projectId);
+    String otherId = createPrescriptionTracker(otherProjectId);
+
+    List<String> byMatter = listIds("/api/prescription-trackers", "matterId", otherProjectId);
+    assertThat(byMatter).contains(otherId).doesNotContain(ownId);
+
+    List<String> byClient = listIds("/api/prescription-trackers", "clientId", customerId);
+    assertThat(byClient).contains(ownId).doesNotContain(otherId);
+  }
+
+  private String createCourtDate(UUID matterId, String courtName) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/court-dates")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_court_ctrl_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "matterId": "%s",
+                          "dateType": "HEARING",
+                          "scheduledDate": "2026-11-20",
+                          "courtName": "%s"
+                        }
+                        """
+                            .formatted(matterId, courtName)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+  }
+
+  private String createPrescriptionTracker(UUID matterId) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/prescription-trackers")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_court_ctrl_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "matterId": "%s",
+                          "causeOfActionDate": "2026-01-15",
+                          "prescriptionType": "GENERAL_3Y"
+                        }
+                        """
+                            .formatted(matterId)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+  }
+
+  private List<String> listIds(String path, String paramName, UUID paramValue) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                get(path)
+                    .param(paramName, paramValue.toString())
+                    .param("size", "200")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_court_ctrl_owner")))
+            .andExpect(status().isOk())
+            .andReturn();
+    return com.jayway.jsonpath.JsonPath.read(
+        result.getResponse().getContentAsString(), "$.content[*].id");
   }
 }

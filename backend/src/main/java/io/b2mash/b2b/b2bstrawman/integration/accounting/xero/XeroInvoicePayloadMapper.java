@@ -35,9 +35,9 @@ public class XeroInvoicePayloadMapper {
 
     // Contact
     var contact = new HashMap<String, Object>();
-    contact.put("Name", request.customerName());
-    if (request.customerEmail() != null) {
-      contact.put("EmailAddress", request.customerEmail());
+    contact.put("Name", request.clientName());
+    if (request.clientEmail() != null) {
+      contact.put("EmailAddress", request.clientEmail());
     }
     payload.put("Contact", contact);
 

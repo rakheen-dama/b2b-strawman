@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingProvider;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingSyncResult;
-import io.b2mash.b2b.b2bstrawman.integration.accounting.CustomerSyncRequest;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.ClientSyncRequest;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.InvoiceSyncRequest;
 import io.b2mash.b2b.b2bstrawman.integration.signing.DocumentSigningProvider;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -34,7 +34,7 @@ class IntegrationRegistryTest {
     }
 
     @Override
-    public AccountingSyncResult syncCustomer(CustomerSyncRequest request) {
+    public AccountingSyncResult syncCustomer(ClientSyncRequest request) {
       return new AccountingSyncResult(true, "NOOP-TEST", null);
     }
 
@@ -57,7 +57,7 @@ class IntegrationRegistryTest {
     }
 
     @Override
-    public AccountingSyncResult syncCustomer(CustomerSyncRequest request) {
+    public AccountingSyncResult syncCustomer(ClientSyncRequest request) {
       return new AccountingSyncResult(false, null, "duplicate");
     }
 
@@ -80,7 +80,7 @@ class IntegrationRegistryTest {
     }
 
     @Override
-    public AccountingSyncResult syncCustomer(CustomerSyncRequest request) {
+    public AccountingSyncResult syncCustomer(ClientSyncRequest request) {
       return new AccountingSyncResult(true, "XERO-456", null);
     }
 

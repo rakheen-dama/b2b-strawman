@@ -31,30 +31,30 @@ public class ClientLedgerController {
     return ResponseEntity.ok(clientLedgerService.listClientLedgers(accountId, pageable));
   }
 
-  @GetMapping("/api/trust-accounts/{accountId}/client-ledgers/{customerId}")
+  @GetMapping("/api/trust-accounts/{accountId}/client-ledgers/{clientId}")
   @RequiresCapability("VIEW_TRUST")
   public ResponseEntity<ClientLedgerCardResponse> getByCustomer(
-      @PathVariable UUID accountId, @PathVariable UUID customerId) {
-    return ResponseEntity.ok(clientLedgerService.getClientLedger(customerId, accountId));
+      @PathVariable UUID accountId, @PathVariable UUID clientId) {
+    return ResponseEntity.ok(clientLedgerService.getClientLedger(clientId, accountId));
   }
 
-  @GetMapping("/api/trust-accounts/{accountId}/client-ledgers/{customerId}/history")
+  @GetMapping("/api/trust-accounts/{accountId}/client-ledgers/{clientId}/history")
   @RequiresCapability("VIEW_TRUST")
   public ResponseEntity<Page<TrustTransactionResponse>> getHistory(
-      @PathVariable UUID accountId, @PathVariable UUID customerId, Pageable pageable) {
+      @PathVariable UUID accountId, @PathVariable UUID clientId, Pageable pageable) {
     return ResponseEntity.ok(
-        clientLedgerService.getClientTransactionHistory(customerId, accountId, pageable));
+        clientLedgerService.getClientTransactionHistory(clientId, accountId, pageable));
   }
 
-  @GetMapping("/api/trust-accounts/{accountId}/client-ledgers/{customerId}/statement")
+  @GetMapping("/api/trust-accounts/{accountId}/client-ledgers/{clientId}/statement")
   @RequiresCapability("VIEW_TRUST")
   public ResponseEntity<LedgerStatementResponse> getStatement(
       @PathVariable UUID accountId,
-      @PathVariable UUID customerId,
+      @PathVariable UUID clientId,
       @RequestParam LocalDate startDate,
       @RequestParam LocalDate endDate) {
     return ResponseEntity.ok(
-        clientLedgerService.getClientLedgerStatement(customerId, accountId, startDate, endDate));
+        clientLedgerService.getClientLedgerStatement(clientId, accountId, startDate, endDate));
   }
 
   @GetMapping("/api/trust-accounts/{accountId}/total-balance")

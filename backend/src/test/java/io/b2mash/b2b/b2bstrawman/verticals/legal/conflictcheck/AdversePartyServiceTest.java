@@ -165,10 +165,10 @@ class AdversePartyServiceTest {
 
                   assertThat(response.id()).isNotNull();
                   assertThat(response.adversePartyId()).isEqualTo(party.getId());
-                  assertThat(response.projectId()).isEqualTo(projectId);
+                  assertThat(response.matterId()).isEqualTo(projectId);
                   assertThat(response.relationship()).isEqualTo("OPPOSING_PARTY");
                   assertThat(response.adversePartyName()).isEqualTo("Link Test Corp");
-                  assertThat(response.projectName()).isEqualTo("Smith v Jones");
+                  assertThat(response.matterName()).isEqualTo("Smith v Jones");
                 }));
   }
 

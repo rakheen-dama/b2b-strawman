@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
  * check live inside the service.
  */
 @RestController
-@RequestMapping("/api/matters/{projectId}/closure")
+@RequestMapping("/api/matters/{matterId}/closure")
 public class MatterClosureController {
 
   private final MatterClosureService matterClosureService;
@@ -36,29 +36,29 @@ public class MatterClosureController {
 
   @GetMapping("/evaluate")
   @RequiresCapability("VIEW_LEGAL")
-  public ResponseEntity<ClosureReportResponse> evaluate(@PathVariable UUID projectId) {
-    return ResponseEntity.ok(matterClosureService.evaluateForController(projectId));
+  public ResponseEntity<ClosureReportResponse> evaluate(@PathVariable UUID matterId) {
+    return ResponseEntity.ok(matterClosureService.evaluateForController(matterId));
   }
 
   @PostMapping("/close")
   @RequiresCapability("CLOSE_MATTER")
   public ResponseEntity<CloseMatterResponse> close(
-      @PathVariable UUID projectId, @Valid @RequestBody ClosureRequest request) {
+      @PathVariable UUID matterId, @Valid @RequestBody ClosureRequest request) {
     return ResponseEntity.ok(
-        matterClosureService.close(projectId, request, RequestScopes.requireMemberId()));
+        matterClosureService.close(matterId, request, RequestScopes.requireMemberId()));
   }
 
   @PostMapping("/reopen")
   @RequiresCapability("CLOSE_MATTER")
   public ResponseEntity<ReopenMatterResponse> reopen(
-      @PathVariable UUID projectId, @Valid @RequestBody ReopenRequest request) {
+      @PathVariable UUID matterId, @Valid @RequestBody ReopenRequest request) {
     return ResponseEntity.ok(
-        matterClosureService.reopen(projectId, request, RequestScopes.requireMemberId()));
+        matterClosureService.reopen(matterId, request, RequestScopes.requireMemberId()));
   }
 
   @GetMapping("/log")
   @RequiresCapability("VIEW_LEGAL")
-  public ResponseEntity<List<ClosureLogResponse>> log(@PathVariable UUID projectId) {
-    return ResponseEntity.ok(matterClosureService.getLog(projectId));
+  public ResponseEntity<List<ClosureLogResponse>> log(@PathVariable UUID matterId) {
+    return ResponseEntity.ok(matterClosureService.getLog(matterId));
   }
 }

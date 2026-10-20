@@ -41,7 +41,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  * <p>Covers:
  *
  * <ul>
- *   <li>{@code GET /api/legal/disbursements/unbilled?projectId=} returns only APPROVED + UNBILLED
+ *   <li>{@code GET /api/legal/disbursements/unbilled?matterId=} returns only APPROVED + UNBILLED
  *       rows, ordered by incurredDate ASC, with correct totals.
  *   <li>{@link io.b2mash.b2b.b2bstrawman.invoice.UnbilledTimeService#getUnbilledTime(UUID,
  *       LocalDate, LocalDate)} populates a non-empty {@code disbursements} list when the {@code
@@ -240,10 +240,10 @@ class DisbursementUnbilledEndpointIntegrationTest {
     mockMvc
         .perform(
             get("/api/legal/disbursements/unbilled")
-                .param("projectId", projectId.toString())
+                .param("matterId", projectId.toString())
                 .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_unbilled_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.projectId").value(projectId.toString()))
+        .andExpect(jsonPath("$.matterId").value(projectId.toString()))
         .andExpect(jsonPath("$.currency").value("ZAR"))
         .andExpect(jsonPath("$.items.length()").value(1))
         .andExpect(jsonPath("$.items[0].id").value(approvedUnbilledId.toString()))
@@ -259,7 +259,7 @@ class DisbursementUnbilledEndpointIntegrationTest {
     mockMvc
         .perform(
             get("/api/legal/disbursements/unbilled")
-                .param("projectId", orderingProjectId.toString())
+                .param("matterId", orderingProjectId.toString())
                 .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.items.length()").value(3))
@@ -280,7 +280,7 @@ class DisbursementUnbilledEndpointIntegrationTest {
     mockMvc
         .perform(
             get("/api/legal/disbursements/unbilled")
-                .param("projectId", totalsProjectId.toString())
+                .param("matterId", totalsProjectId.toString())
                 .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.items.length()").value(2))

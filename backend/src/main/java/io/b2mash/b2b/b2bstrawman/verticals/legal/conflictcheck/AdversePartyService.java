@@ -83,8 +83,8 @@ public class AdversePartyService {
       Instant updatedAt) {}
 
   public record LinkRequest(
-      @NotNull UUID projectId,
-      @NotNull UUID customerId,
+      @NotNull UUID matterId,
+      @NotNull UUID clientId,
       @NotBlank String relationship,
       String description) {}
 
@@ -92,10 +92,10 @@ public class AdversePartyService {
       UUID id,
       UUID adversePartyId,
       String adversePartyName,
-      UUID projectId,
-      String projectName,
-      UUID customerId,
-      String customerName,
+      UUID matterId,
+      String matterName,
+      UUID clientId,
+      String clientName,
       String relationship,
       String description,
       Instant createdAt) {}
@@ -209,17 +209,17 @@ public class AdversePartyService {
 
     var project =
         projectRepository
-            .findById(request.projectId())
-            .orElseThrow(() -> new ResourceNotFoundException("Project", request.projectId()));
+            .findById(request.matterId())
+            .orElseThrow(() -> new ResourceNotFoundException("Project", request.matterId()));
 
     var customer =
         customerRepository
-            .findById(request.customerId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
+            .findById(request.clientId())
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
 
     // Check for duplicate link
     adversePartyLinkRepository
-        .findByAdversePartyIdAndProjectId(adversePartyId, request.projectId())
+        .findByAdversePartyIdAndProjectId(adversePartyId, request.matterId())
         .ifPresent(
             existing -> {
               throw new ResourceConflictException(
@@ -227,14 +227,14 @@ public class AdversePartyService {
                   "Adverse party "
                       + adversePartyId
                       + " is already linked to project "
-                      + request.projectId());
+                      + request.matterId());
             });
 
     var link =
         new AdversePartyLink(
             adversePartyId,
-            request.projectId(),
-            request.customerId(),
+            request.matterId(),
+            request.clientId(),
             request.relationship(),
             request.description());
 
@@ -249,7 +249,7 @@ public class AdversePartyService {
                 Map.of(
                     "adverse_party_id", adversePartyId.toString(),
                     "adverse_party_name", adverseParty.getName(),
-                    "project_id", request.projectId().toString(),
+                    "project_id", request.matterId().toString(),
                     "relationship", request.relationship()))
             .build());
 

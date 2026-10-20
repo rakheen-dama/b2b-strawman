@@ -242,7 +242,7 @@ class StatementRenderingIntegrationTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": 50000.00,
                       "reference": "DEP/2026/001",
                       "description": "Initial RAF settlement deposit",

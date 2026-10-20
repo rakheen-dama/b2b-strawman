@@ -50,6 +50,15 @@ ensure_invoice_prerequisites() {
   _eip_jwt="$2"
 
   _eip_cust=$(api_get "/api/clients/${_eip_cust_id}" "$_eip_jwt")
+  _eip_get_status=$(last_status)
+  case "$_eip_get_status" in
+    2[0-9][0-9]) ;;
+    *) echo "    [warn] Fetch client for invoice prerequisites (HTTP ${_eip_get_status}) — skipping fill" >&2; return 0 ;;
+  esac
+  if [ -z "$_eip_cust" ]; then
+    echo "    [warn] Empty client response for invoice prerequisites — skipping fill" >&2
+    return 0
+  fi
   _eip_missing=$(echo "$_eip_cust" | jq -r '[.addressLine1, .city, .country] | map(select((. // "") == "")) | length')
   if [ "$_eip_missing" = "0" ]; then
     return 0

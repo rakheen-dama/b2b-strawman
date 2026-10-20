@@ -113,9 +113,9 @@ class CompletenessQueryTest {
     // totalRequired includes seeded fields from common-customer pack + test fields
     mockMvc
         .perform(
-            get("/api/customers/completeness-summary")
+            get("/api/clients/completeness-summary")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cqt_owner"))
-                .param("customerIds", customerId1))
+                .param("clientIds", customerId1))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$." + customerId1 + ".totalRequired").isNumber())
         .andExpect(jsonPath("$." + customerId1 + ".filled").value(0))
@@ -126,9 +126,9 @@ class CompletenessQueryTest {
   void batchCompute_multipleCustomers_returnsScores() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/completeness-summary")
+            get("/api/clients/completeness-summary")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cqt_owner"))
-                .param("customerIds", customerId1 + "," + customerId2))
+                .param("clientIds", customerId1 + "," + customerId2))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$." + customerId1 + ".totalRequired").isNumber())
         .andExpect(jsonPath("$." + customerId1 + ".filled").isNumber())
@@ -140,9 +140,9 @@ class CompletenessQueryTest {
   void batchCompute_avoidNPlusOne_singleQuery() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/completeness-summary")
+            get("/api/clients/completeness-summary")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cqt_owner"))
-                .param("customerIds", customerId1 + "," + customerId2 + "," + customerId3))
+                .param("clientIds", customerId1 + "," + customerId2 + "," + customerId3))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$." + customerId1).exists())
         .andExpect(jsonPath("$." + customerId2).exists())
@@ -153,7 +153,7 @@ class CompletenessQueryTest {
   void aggregatedQuery_returnsTopMissingFields() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/completeness-summary/aggregated")
+            get("/api/clients/completeness-summary/aggregated")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cqt_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.topMissingFields").isArray())
@@ -165,7 +165,7 @@ class CompletenessQueryTest {
   void aggregatedQuery_memberRole_returnsForbidden() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/completeness-summary/aggregated")
+            get("/api/clients/completeness-summary/aggregated")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_cqt_member")))
         .andExpect(status().isForbidden());
   }
@@ -175,7 +175,7 @@ class CompletenessQueryTest {
     // Fill ALL required fields (seeded common-customer pack + test fields) via API update
     mockMvc
         .perform(
-            put("/api/customers/" + customerId3)
+            put("/api/clients/" + customerId3)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cqt_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -197,9 +197,9 @@ class CompletenessQueryTest {
 
     mockMvc
         .perform(
-            get("/api/customers/completeness-summary")
+            get("/api/clients/completeness-summary")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cqt_owner"))
-                .param("customerIds", customerId3))
+                .param("clientIds", customerId3))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$." + customerId3 + ".percentage").value(100));
   }

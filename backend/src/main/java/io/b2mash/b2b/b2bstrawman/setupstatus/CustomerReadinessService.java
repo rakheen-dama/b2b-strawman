@@ -44,7 +44,7 @@ public class CustomerReadinessService {
   }
 
   @Transactional(readOnly = true)
-  public CustomerReadiness getReadiness(UUID customerId) {
+  public ClientReadiness getReadiness(UUID customerId) {
     var customer =
         customerRepository
             .findById(customerId)
@@ -68,7 +68,7 @@ public class CustomerReadinessService {
     String overallReadiness =
         computeOverallReadiness(lifecycle, requiredFields, checklistProgress, hasLinkedProjects);
 
-    return new CustomerReadiness(
+    return new ClientReadiness(
         customerId,
         lifecycleStatusStr,
         checklistProgress,

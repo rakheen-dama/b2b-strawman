@@ -60,7 +60,7 @@ class AnonymizationControllerTest {
     var result =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_anon_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -75,7 +75,7 @@ class AnonymizationControllerTest {
     var anonResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_anon_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -116,7 +116,7 @@ class AnonymizationControllerTest {
     var result =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_anon_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

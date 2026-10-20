@@ -60,7 +60,7 @@ class CustomerServiceAuditTest {
     var result =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ca_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -96,7 +96,7 @@ class CustomerServiceAuditTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ca_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -110,7 +110,7 @@ class CustomerServiceAuditTest {
 
     mockMvc
         .perform(
-            put("/api/customers/" + customerId)
+            put("/api/clients/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ca_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -149,7 +149,7 @@ class CustomerServiceAuditTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ca_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -164,7 +164,7 @@ class CustomerServiceAuditTest {
     // Archive the customer (DELETE endpoint archives, doesn't truly delete)
     mockMvc
         .perform(
-            delete("/api/customers/" + customerId)
+            delete("/api/clients/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ca_owner")))
         .andExpect(status().isOk());
 
@@ -211,7 +211,7 @@ class CustomerServiceAuditTest {
     var customerResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ca_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -229,7 +229,7 @@ class CustomerServiceAuditTest {
     // Link customer to project
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + projectId)
+            post("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ca_owner")))
         .andExpect(status().isCreated());
 
@@ -277,7 +277,7 @@ class CustomerServiceAuditTest {
     var customerResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ca_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -295,13 +295,13 @@ class CustomerServiceAuditTest {
     // Link then unlink
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + projectId)
+            post("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ca_owner")))
         .andExpect(status().isCreated());
 
     mockMvc
         .perform(
-            delete("/api/customers/" + customerId + "/projects/" + projectId)
+            delete("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ca_owner")))
         .andExpect(status().isNoContent());
 
@@ -327,7 +327,7 @@ class CustomerServiceAuditTest {
   private void transitionToActive(UUID customerId) throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/transition")
+            post("/api/clients/" + customerId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ca_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))

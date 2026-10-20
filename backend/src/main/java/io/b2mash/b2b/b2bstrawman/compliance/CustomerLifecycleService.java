@@ -8,8 +8,8 @@ import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceRepository;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
-import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.DormancyCandidate;
-import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.DormancyCheckResult;
+import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.DormancyCandidate;
+import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.DormancyCheckResult;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -266,7 +266,7 @@ public class CustomerLifecycleService {
         Boolean didTransition =
             requiresNewTx.execute(
                 tx -> {
-                  var customer = customerRepository.findById(candidate.customerId()).orElse(null);
+                  var customer = customerRepository.findById(candidate.clientId()).orElse(null);
                   if (customer == null || customer.getLifecycleStatus() != LifecycleStatus.ACTIVE) {
                     return false;
                   }
@@ -320,7 +320,7 @@ public class CustomerLifecycleService {
       } catch (Exception e) {
         log.error(
             "Auto-dormancy: failed to transition customer {}: {}",
-            candidate.customerId(),
+            candidate.clientId(),
             e.getMessage(),
             e);
       }

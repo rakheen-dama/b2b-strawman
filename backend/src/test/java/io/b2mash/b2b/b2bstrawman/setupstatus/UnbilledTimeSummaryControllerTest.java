@@ -270,7 +270,7 @@ class UnbilledTimeSummaryControllerTest {
     // Total: 3 entries, 180+90=270 min = 4.50 hours, amount = 4500+3000 = 7500
     mockMvc
         .perform(
-            get("/api/customers/" + customerIdWithEntries + "/unbilled-summary")
+            get("/api/clients/" + customerIdWithEntries + "/unbilled-summary")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.entryCount").value(3))
@@ -283,7 +283,7 @@ class UnbilledTimeSummaryControllerTest {
   void customerUnbilledSummary_noEntries_returnsZeros() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/" + customerIdEmpty + "/unbilled-summary")
+            get("/api/clients/" + customerIdEmpty + "/unbilled-summary")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalHours").value(0))
@@ -304,7 +304,7 @@ class UnbilledTimeSummaryControllerTest {
   @Order(6)
   void customerUnbilledSummary_unauthenticated_returns401() throws Exception {
     mockMvc
-        .perform(get("/api/customers/" + customerIdWithEntries + "/unbilled-summary"))
+        .perform(get("/api/clients/" + customerIdWithEntries + "/unbilled-summary"))
         .andExpect(status().isUnauthorized());
   }
 
@@ -341,7 +341,7 @@ class UnbilledTimeSummaryControllerTest {
     var nonExistent = UUID.randomUUID();
     mockMvc
         .perform(
-            get("/api/customers/" + nonExistent + "/unbilled-summary")
+            get("/api/clients/" + nonExistent + "/unbilled-summary")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isNotFound());
   }
@@ -361,7 +361,7 @@ class UnbilledTimeSummaryControllerTest {
   void customerUnbilledSummary_memberRole_returns403() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/" + customerIdWithEntries + "/unbilled-summary")
+            get("/api/clients/" + customerIdWithEntries + "/unbilled-summary")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_unbilled_member")))
         .andExpect(status().isForbidden());
   }

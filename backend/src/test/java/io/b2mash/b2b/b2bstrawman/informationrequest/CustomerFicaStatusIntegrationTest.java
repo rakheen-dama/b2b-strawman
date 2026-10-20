@@ -27,7 +27,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * End-to-end coverage for {@code GET /api/customers/{id}/fica-status} (GAP-L-46).
+ * End-to-end coverage for {@code GET /api/clients/{id}/fica-status} (GAP-L-46).
  *
  * <p>Verifies the three status states — {@code NOT_STARTED} (no FICA request), {@code IN_PROGRESS}
  * (FICA request exists but not all items accepted), {@code DONE} (every item ACCEPTED). Uses direct
@@ -68,7 +68,7 @@ class CustomerFicaStatusIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/customers/{id}/fica-status", freshCustomer)
+            get("/api/clients/{id}/fica-status", freshCustomer)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fica_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.customerId").value(freshCustomer))
@@ -86,7 +86,7 @@ class CustomerFicaStatusIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/customers/{id}/fica-status", isolatedCustomer)
+            get("/api/clients/{id}/fica-status", isolatedCustomer)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fica_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.customerId").value(isolatedCustomer))
@@ -126,7 +126,7 @@ class CustomerFicaStatusIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/customers/{id}/fica-status", doneCustomer)
+            get("/api/clients/{id}/fica-status", doneCustomer)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fica_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.customerId").value(doneCustomer))
@@ -141,7 +141,7 @@ class CustomerFicaStatusIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fica_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

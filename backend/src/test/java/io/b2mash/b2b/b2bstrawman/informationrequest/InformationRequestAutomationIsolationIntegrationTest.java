@@ -243,7 +243,7 @@ class InformationRequestAutomationIsolationIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -255,7 +255,7 @@ class InformationRequestAutomationIsolationIntegrationTest {
     String cid = JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
     mockMvc
         .perform(
-            post("/api/customers/" + cid + "/transition")
+            post("/api/clients/" + cid + "/transition")
                 .with(jwt)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))

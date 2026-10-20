@@ -243,7 +243,7 @@ class PortalTaskSyncIntegrationTest {
   private void transitionCustomerToActive(String customerId) throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/transition")
+            post("/api/clients/" + customerId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
@@ -255,7 +255,7 @@ class PortalTaskSyncIntegrationTest {
   private void linkProjectToCustomer(String customerId, String projectId) throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + projectId)
+            post("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner")))
         .andExpect(status().isCreated());
   }

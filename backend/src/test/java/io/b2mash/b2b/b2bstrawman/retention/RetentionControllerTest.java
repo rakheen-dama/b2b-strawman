@@ -126,7 +126,7 @@ class RetentionControllerTest {
     var result =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -348,7 +348,7 @@ class RetentionControllerTest {
     // Verify customer is anonymized by fetching it
     mockMvc
         .perform(
-            get("/api/customers/" + customerId)
+            get("/api/clients/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Anonymized Customer " + customerId.substring(0, 6)));

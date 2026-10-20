@@ -66,7 +66,7 @@ class CustomerTagIntegrationTest {
   void shouldSetTagsOnCustomer() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/tags")
+            post("/api/clients/" + customerId + "/tags")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ct_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -83,7 +83,7 @@ class CustomerTagIntegrationTest {
     // Set tags first
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/tags")
+            post("/api/clients/" + customerId + "/tags")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ct_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -96,7 +96,7 @@ class CustomerTagIntegrationTest {
     // Get tags
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/tags")
+            get("/api/clients/" + customerId + "/tags")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ct_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].name").value("Cust Premium"));
@@ -115,7 +115,7 @@ class CustomerTagIntegrationTest {
     // Tag only the first customer with both tags
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/tags")
+            post("/api/clients/" + customerId + "/tags")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ct_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -128,7 +128,7 @@ class CustomerTagIntegrationTest {
     // Filter by single tag slug
     mockMvc
         .perform(
-            get("/api/customers")
+            get("/api/clients")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ct_owner"))
                 .param("tags", "cust_premium"))
         .andExpect(status().isOk())
@@ -138,7 +138,7 @@ class CustomerTagIntegrationTest {
     // Filter by both tag slugs (AND logic)
     mockMvc
         .perform(
-            get("/api/customers")
+            get("/api/clients")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ct_owner"))
                 .param("tags", "cust_premium,cust_enterprise"))
         .andExpect(status().isOk())

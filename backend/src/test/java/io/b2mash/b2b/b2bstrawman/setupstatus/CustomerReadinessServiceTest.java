@@ -60,10 +60,10 @@ class CustomerReadinessServiceTest {
 
     var result = service.getReadiness(CUSTOMER_ID);
 
-    assertThat(result.customerId()).isEqualTo(CUSTOMER_ID);
+    assertThat(result.clientId()).isEqualTo(CUSTOMER_ID);
     assertThat(result.lifecycleStatus()).isEqualTo("PROSPECT");
     assertThat(result.overallReadiness()).isEqualTo("Needs Attention");
-    assertThat(result.hasLinkedProjects()).isFalse();
+    assertThat(result.hasLinkedMatters()).isFalse();
   }
 
   @Test
@@ -96,7 +96,7 @@ class CustomerReadinessServiceTest {
     assertThat(result.checklistProgress()).isNull();
     assertThat(result.requiredFields().filled()).isEqualTo(1);
     assertThat(result.requiredFields().total()).isEqualTo(1);
-    assertThat(result.hasLinkedProjects()).isTrue();
+    assertThat(result.hasLinkedMatters()).isTrue();
     assertThat(result.overallReadiness()).isEqualTo("Complete");
   }
 
@@ -135,7 +135,7 @@ class CustomerReadinessServiceTest {
 
     var result = service.getReadiness(CUSTOMER_ID);
 
-    assertThat(result.hasLinkedProjects()).isFalse();
+    assertThat(result.hasLinkedMatters()).isFalse();
     assertThat(result.overallReadiness()).isEqualTo("Needs Attention");
   }
 

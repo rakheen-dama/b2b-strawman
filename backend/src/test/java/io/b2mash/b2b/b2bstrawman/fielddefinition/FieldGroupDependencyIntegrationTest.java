@@ -80,7 +80,7 @@ class FieldGroupDependencyIntegrationTest {
     var result =
         mockMvc
             .perform(
-                put("/api/customers/" + customerId + "/field-groups")
+                put("/api/clients/" + customerId + "/field-groups")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fg_dep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"appliedFieldGroups\":[\"" + groupAId + "\"]}"))
@@ -111,7 +111,7 @@ class FieldGroupDependencyIntegrationTest {
     // Apply only group A
     mockMvc
         .perform(
-            put("/api/customers/" + customerId + "/field-groups")
+            put("/api/clients/" + customerId + "/field-groups")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fg_dep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"appliedFieldGroups\":[\"" + groupAId + "\"]}"))
@@ -186,7 +186,7 @@ class FieldGroupDependencyIntegrationTest {
     UUID customerId = createCustomer("Remove Dep Test Customer");
     mockMvc
         .perform(
-            put("/api/customers/" + customerId + "/field-groups")
+            put("/api/clients/" + customerId + "/field-groups")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fg_dep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"appliedFieldGroups\":[\"" + groupAId + "\",\"" + groupBId + "\"]}"))
@@ -195,7 +195,7 @@ class FieldGroupDependencyIntegrationTest {
     // Now remove group B (the dependency) — should be allowed
     mockMvc
         .perform(
-            put("/api/customers/" + customerId + "/field-groups")
+            put("/api/clients/" + customerId + "/field-groups")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fg_dep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"appliedFieldGroups\":[\"" + groupAId + "\"]}"))

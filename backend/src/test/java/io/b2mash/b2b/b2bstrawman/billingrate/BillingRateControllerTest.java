@@ -89,7 +89,7 @@ class BillingRateControllerTest {
     var customerResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -107,7 +107,7 @@ class BillingRateControllerTest {
     // Link customer to project (for resolve cascade testing)
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/customers/" + customerId)
+            post("/api/matters/" + projectId + "/clients/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner")))
         .andExpect(status().isCreated());
 
@@ -463,7 +463,7 @@ class BillingRateControllerTest {
   private void transitionCustomerToActive(String customerId) throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/transition")
+            post("/api/clients/" + customerId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))

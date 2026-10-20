@@ -15,11 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public final class CustomerDtos {
+public final class ClientDtos {
 
-  private CustomerDtos() {}
+  private ClientDtos() {}
 
-  public record CreateCustomerRequest(
+  public record CreateClientRequest(
       @NotBlank(message = "name is required")
           @Size(max = 255, message = "name must be at most 255 characters")
           String name,
@@ -32,7 +32,7 @@ public final class CustomerDtos {
       String notes,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
-      CustomerType customerType,
+      CustomerType clientType,
       @Size(max = 100, message = "registrationNumber must be at most 100 characters")
           String registrationNumber,
       @Size(max = 255, message = "addressLine1 must be at most 255 characters") String addressLine1,
@@ -49,7 +49,7 @@ public final class CustomerDtos {
       @Size(max = 30, message = "entityType must be at most 30 characters") String entityType,
       LocalDate financialYearEnd) {}
 
-  public record UpdateCustomerRequest(
+  public record UpdateClientRequest(
       @NotBlank(message = "name is required")
           @Size(max = 255, message = "name must be at most 255 characters")
           String name,
@@ -78,7 +78,7 @@ public final class CustomerDtos {
       @Size(max = 30, message = "entityType must be at most 30 characters") String entityType,
       LocalDate financialYearEnd) {}
 
-  public record CustomerResponse(
+  public record ClientResponse(
       UUID id,
       String name,
       String email,
@@ -94,7 +94,7 @@ public final class CustomerDtos {
       List<UUID> appliedFieldGroups,
       List<TagResponse> tags,
       LifecycleStatus lifecycleStatus,
-      CustomerType customerType,
+      CustomerType clientType,
       Instant lifecycleStatusChangedAt,
       String registrationNumber,
       String addressLine1,
@@ -111,17 +111,17 @@ public final class CustomerDtos {
       LocalDate financialYearEnd,
       boolean collectionsExempt) {
 
-    public static CustomerResponse from(Customer customer) {
+    public static ClientResponse from(Customer customer) {
       return from(customer, List.of(), Map.of());
     }
 
-    public static CustomerResponse from(Customer customer, List<TagResponse> tags) {
+    public static ClientResponse from(Customer customer, List<TagResponse> tags) {
       return from(customer, tags, Map.of());
     }
 
-    public static CustomerResponse from(
+    public static ClientResponse from(
         Customer customer, List<TagResponse> tags, Map<UUID, String> memberNames) {
-      return new CustomerResponse(
+      return new ClientResponse(
           customer.getId(),
           customer.getName(),
           customer.getEmail(),
@@ -156,19 +156,19 @@ public final class CustomerDtos {
     }
   }
 
-  public record CustomerProjectResponse(
-      UUID customerId, UUID projectId, UUID linkedBy, Instant createdAt) {
+  public record ClientMatterResponse(
+      UUID clientId, UUID matterId, UUID linkedBy, Instant createdAt) {
 
-    public static CustomerProjectResponse from(CustomerProject link) {
-      return new CustomerProjectResponse(
+    public static ClientMatterResponse from(CustomerProject link) {
+      return new ClientMatterResponse(
           link.getCustomerId(), link.getProjectId(), link.getLinkedBy(), link.getCreatedAt());
     }
   }
 
-  public record LinkedProjectResponse(UUID id, String name, String description, Instant createdAt) {
+  public record LinkedMatterResponse(UUID id, String name, String description, Instant createdAt) {
 
-    public static LinkedProjectResponse from(Project project) {
-      return new LinkedProjectResponse(
+    public static LinkedMatterResponse from(Project project) {
+      return new LinkedMatterResponse(
           project.getId(), project.getName(), project.getDescription(), project.getCreatedAt());
     }
   }
@@ -203,5 +203,5 @@ public final class CustomerDtos {
   public record DormancyCheckResult(int thresholdDays, List<DormancyCandidate> candidates) {}
 
   public record DormancyCandidate(
-      UUID customerId, String customerName, Instant lastActivityDate, long daysSinceActivity) {}
+      UUID clientId, String clientName, Instant lastActivityDate, long daysSinceActivity) {}
 }

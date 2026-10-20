@@ -186,7 +186,7 @@ class InvoiceSyncIntegrationTest {
   private void transitionCustomerToActive(String customerId) throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/transition")
+            post("/api/clients/" + customerId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
@@ -198,7 +198,7 @@ class InvoiceSyncIntegrationTest {
   private void linkProjectToCustomer(String customerId, String projectId) throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + projectId)
+            post("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner")))
         .andExpect(status().isCreated());
   }
@@ -224,7 +224,7 @@ class InvoiceSyncIntegrationTest {
       throws Exception {
     mockMvc
         .perform(
-            put("/api/customers/{id}", customerId)
+            put("/api/clients/{id}", customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

@@ -95,7 +95,7 @@ class AutoApplyOnCreationIntegrationTest {
     var createCustomerResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_aac_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -266,7 +266,7 @@ class AutoApplyOnCreationIntegrationTest {
     var createCustomerResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_aac_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

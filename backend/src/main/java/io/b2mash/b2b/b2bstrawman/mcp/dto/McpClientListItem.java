@@ -7,8 +7,8 @@ import java.util.UUID;
  * Compact {@code list_clients} row (§11.4): {@code {id, name, type, lifecycleStatus}} only.
  *
  * <p>Decision: deliberately OMITs the controller's tag/member-name enrichment ({@code
- * CustomerResponse.from}) — keeping the list token-efficient and avoiding N extra batch queries.
- * Full client detail (contacts, linked matters) is fetched on demand by {@code get_client}.
+ * ClientResponse.from}) — keeping the list token-efficient and avoiding N extra batch queries. Full
+ * client detail (contacts, linked matters) is fetched on demand by {@code get_client}.
  *
  * @param id client id
  * @param name client name

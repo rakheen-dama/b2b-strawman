@@ -74,7 +74,7 @@ class PortalEventPublicationTest {
 
     mockMvc
         .perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -127,7 +127,7 @@ class PortalEventPublicationTest {
     var customerResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -145,7 +145,7 @@ class PortalEventPublicationTest {
 
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + projectId)
+            post("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner")))
         .andExpect(status().isCreated());
 
@@ -283,7 +283,7 @@ class PortalEventPublicationTest {
   private void transitionCustomerToActive(String customerId) throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/transition")
+            post("/api/clients/" + customerId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))

@@ -82,7 +82,7 @@ class EventProjectionIntegrationTest {
     // Link customer to project
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + projectId)
+            post("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner")))
         .andExpect(status().isCreated());
 
@@ -168,7 +168,7 @@ class EventProjectionIntegrationTest {
     // Unlink customer from project
     mockMvc
         .perform(
-            delete("/api/customers/" + customerId + "/projects/" + projectId)
+            delete("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner")))
         .andExpect(status().isNoContent());
 
@@ -198,7 +198,7 @@ class EventProjectionIntegrationTest {
     // Link customer to project
     mockMvc
         .perform(
-            post("/api/customers/" + freshCustomerId + "/projects/" + freshProjectId)
+            post("/api/clients/" + freshCustomerId + "/matters/" + freshProjectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner")))
         .andExpect(status().isCreated());
 
@@ -221,7 +221,7 @@ class EventProjectionIntegrationTest {
   private void transitionCustomerToActive(String customerId) throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/transition")
+            post("/api/clients/" + customerId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))

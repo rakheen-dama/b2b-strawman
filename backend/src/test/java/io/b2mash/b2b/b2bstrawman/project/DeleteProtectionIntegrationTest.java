@@ -274,7 +274,7 @@ class DeleteProtectionIntegrationTest {
     // Archive should be rejected
     mockMvc
         .perform(
-            delete("/api/customers/" + customerId)
+            delete("/api/clients/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail", containsString("invoice")));
@@ -358,7 +358,7 @@ class DeleteProtectionIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -374,7 +374,7 @@ class DeleteProtectionIntegrationTest {
     mockMvc
         .perform(
             org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put(
-                    "/api/customers/{id}", customerId)
+                    "/api/clients/{id}", customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -398,7 +398,7 @@ class DeleteProtectionIntegrationTest {
       throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/transition")
+            post("/api/clients/" + customerId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -443,7 +443,7 @@ class DeleteProtectionIntegrationTest {
   private void linkProjectToCustomer(String projectId, UUID customerId) throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/customers/" + customerId)
+            post("/api/matters/" + projectId + "/clients/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isCreated());
   }

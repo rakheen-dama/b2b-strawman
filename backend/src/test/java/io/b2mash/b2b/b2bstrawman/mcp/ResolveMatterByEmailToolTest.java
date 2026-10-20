@@ -113,7 +113,7 @@ class ResolveMatterByEmailToolTest {
     mockMvc
         .perform(
             org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
-                    "/api/customers/{id}/transition", customerId)
+                    "/api/clients/{id}/transition", customerId)
                 .with(jwt)
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
@@ -128,7 +128,7 @@ class ResolveMatterByEmailToolTest {
     mockMvc
         .perform(
             org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
-                    "/api/customers/{id}/projects/{projectId}", customerId, projectId)
+                    "/api/clients/{id}/matters/{projectId}", customerId, projectId)
                 .with(jwt))
         .andExpect(
             org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isCreated());

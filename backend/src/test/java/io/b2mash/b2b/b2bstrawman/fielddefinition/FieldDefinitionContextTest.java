@@ -265,7 +265,7 @@ class FieldDefinitionContextTest {
   void createCustomer_rejectsUnknownFieldSlug_returns400() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fdc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

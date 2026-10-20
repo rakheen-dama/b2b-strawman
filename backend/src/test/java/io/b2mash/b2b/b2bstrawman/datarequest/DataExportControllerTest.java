@@ -61,7 +61,7 @@ class DataExportControllerTest {
     var result =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dex_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

@@ -442,7 +442,7 @@ class CustomerLifecyclePrerequisiteTest {
       // Attempt manual transition via MockMvc — should return 422
       mockMvc
           .perform(
-              post("/api/customers/" + customerId + "/transition")
+              post("/api/clients/" + customerId + "/transition")
                   .with(TestJwtFactory.adminJwt(ORG_ID, "user_prereq_242b"))
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(

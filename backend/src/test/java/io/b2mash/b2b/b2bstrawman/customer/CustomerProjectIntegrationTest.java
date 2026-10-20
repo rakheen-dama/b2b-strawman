@@ -131,11 +131,11 @@ class CustomerProjectIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + projectId)
+            post("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.customerId").value(customerId))
-        .andExpect(jsonPath("$.projectId").value(projectId))
+        .andExpect(jsonPath("$.clientId").value(customerId))
+        .andExpect(jsonPath("$.matterId").value(projectId))
         .andExpect(jsonPath("$.linkedBy").exists())
         .andExpect(jsonPath("$.createdAt").exists());
   }
@@ -147,14 +147,14 @@ class CustomerProjectIntegrationTest {
     // First link succeeds
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + projectId)
+            post("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
         .andExpect(status().isCreated());
 
     // Second link should be 409
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + projectId)
+            post("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
         .andExpect(status().isConflict());
   }
@@ -166,14 +166,14 @@ class CustomerProjectIntegrationTest {
     // Link first
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + projectId)
+            post("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
         .andExpect(status().isCreated());
 
     // Unlink
     mockMvc
         .perform(
-            delete("/api/customers/" + customerId + "/projects/" + projectId)
+            delete("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
         .andExpect(status().isNoContent());
   }
@@ -185,14 +185,14 @@ class CustomerProjectIntegrationTest {
     // Link customer to project
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + projectId)
+            post("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
         .andExpect(status().isCreated());
 
     // List projects for customer
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/projects")
+            get("/api/clients/" + customerId + "/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
@@ -222,7 +222,7 @@ class CustomerProjectIntegrationTest {
     // List projects for customer — should include the project linked via direct FK
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/projects")
+            get("/api/clients/" + customerId + "/matters")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
@@ -254,7 +254,7 @@ class CustomerProjectIntegrationTest {
     // Attempting to link again via the join table should now return 409 (already linked)
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + dedupProjectId)
+            post("/api/clients/" + customerId + "/matters/" + dedupProjectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
         .andExpect(status().isConflict());
 
@@ -262,7 +262,7 @@ class CustomerProjectIntegrationTest {
     var result =
         mockMvc
             .perform(
-                get("/api/customers/" + customerId + "/projects")
+                get("/api/clients/" + customerId + "/matters")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$").isArray())
@@ -284,14 +284,14 @@ class CustomerProjectIntegrationTest {
     // Link customer to project
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + projectId)
+            post("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
         .andExpect(status().isCreated());
 
     // List customers for project
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/customers")
+            get("/api/matters/" + projectId + "/clients")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
@@ -323,7 +323,7 @@ class CustomerProjectIntegrationTest {
     // Member (not a project member at all) cannot link
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + project2Id)
+            post("/api/clients/" + customerId + "/matters/" + project2Id)
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_cp_member")))
         .andExpect(status().isNotFound());
   }
@@ -335,12 +335,12 @@ class CustomerProjectIntegrationTest {
     // The member is a project lead on projectId (set up in @BeforeAll)
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + projectId)
+            post("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_cp_member")))
         .andExpect(status().isCreated());
   }
 
-  // --- Project-side endpoints (/api/projects/{pid}/customers/{cid}) ---
+  // --- Project-side endpoints (/api/matters/{matterId}/clients/{clientId}) ---
 
   @Test
   void shouldLinkAndUnlinkViaProjectEndpoint() throws Exception {
@@ -349,16 +349,16 @@ class CustomerProjectIntegrationTest {
     // Link via project-side endpoint
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/customers/" + customerId)
+            post("/api/matters/" + projectId + "/clients/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.customerId").value(customerId))
-        .andExpect(jsonPath("$.projectId").value(projectId));
+        .andExpect(jsonPath("$.clientId").value(customerId))
+        .andExpect(jsonPath("$.matterId").value(projectId));
 
     // Unlink via project-side endpoint
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId + "/customers/" + customerId)
+            delete("/api/matters/" + projectId + "/clients/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
         .andExpect(status().isNoContent());
   }
@@ -369,7 +369,7 @@ class CustomerProjectIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/customers/" + customerId)
+            post("/api/matters/" + projectId + "/clients/" + customerId)
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cp_admin")))
         .andExpect(status().isCreated());
   }
@@ -383,7 +383,7 @@ class CustomerProjectIntegrationTest {
     // Never linked — unlink should return 404
     mockMvc
         .perform(
-            delete("/api/customers/" + customerId + "/projects/" + projectId)
+            delete("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
         .andExpect(status().isNotFound());
   }
@@ -392,7 +392,7 @@ class CustomerProjectIntegrationTest {
   void shouldReturn404WhenLinkingNonExistentCustomer() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/00000000-0000-0000-0000-000000000000/projects/" + projectId)
+            post("/api/clients/00000000-0000-0000-0000-000000000000/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
         .andExpect(status().isNotFound());
   }
@@ -403,7 +403,7 @@ class CustomerProjectIntegrationTest {
 
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/00000000-0000-0000-0000-000000000000")
+            post("/api/clients/" + customerId + "/matters/00000000-0000-0000-0000-000000000000")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
         .andExpect(status().isNotFound());
   }
@@ -433,7 +433,7 @@ class CustomerProjectIntegrationTest {
     // Tenant B cannot see tenant A's customer to link it
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + tenantBProjectId)
+            post("/api/clients/" + customerId + "/matters/" + tenantBProjectId)
                 .with(TestJwtFactory.ownerJwt(ORG_B_ID, "user_cp_tenant_b")))
         .andExpect(status().isNotFound());
   }
@@ -446,7 +446,7 @@ class CustomerProjectIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(STARTER_A_ID, "user_cp_starter_a"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -460,7 +460,7 @@ class CustomerProjectIntegrationTest {
     // Starter A can see it
     mockMvc
         .perform(
-            get("/api/customers/" + customerIdA)
+            get("/api/clients/" + customerIdA)
                 .with(TestJwtFactory.ownerJwt(STARTER_A_ID, "user_cp_starter_a")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Starter A Customer"));
@@ -468,14 +468,14 @@ class CustomerProjectIntegrationTest {
     // Starter B cannot see it
     mockMvc
         .perform(
-            get("/api/customers/" + customerIdA)
+            get("/api/clients/" + customerIdA)
                 .with(TestJwtFactory.ownerJwt(STARTER_B_ID, "user_cp_starter_b")))
         .andExpect(status().isNotFound());
 
     // Starter B's customer list does not include Starter A's customer
     mockMvc
         .perform(
-            get("/api/customers").with(TestJwtFactory.ownerJwt(STARTER_B_ID, "user_cp_starter_b")))
+            get("/api/clients").with(TestJwtFactory.ownerJwt(STARTER_B_ID, "user_cp_starter_b")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[*].name", everyItem(not("Starter A Customer"))));
   }
@@ -500,7 +500,7 @@ class CustomerProjectIntegrationTest {
     var customerResultA =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(STARTER_A_ID, "user_cp_starter_a"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -518,14 +518,14 @@ class CustomerProjectIntegrationTest {
     // Link in Starter A
     mockMvc
         .perform(
-            post("/api/customers/" + customerIdA + "/projects/" + projectIdA)
+            post("/api/clients/" + customerIdA + "/matters/" + projectIdA)
                 .with(TestJwtFactory.ownerJwt(STARTER_A_ID, "user_cp_starter_a")))
         .andExpect(status().isCreated());
 
     // List projects for customer in Starter A
     mockMvc
         .perform(
-            get("/api/customers/" + customerIdA + "/projects")
+            get("/api/clients/" + customerIdA + "/matters")
                 .with(TestJwtFactory.ownerJwt(STARTER_A_ID, "user_cp_starter_a")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
@@ -534,7 +534,7 @@ class CustomerProjectIntegrationTest {
     // Starter B cannot see Starter A's customer or project
     mockMvc
         .perform(
-            get("/api/customers/" + customerIdA + "/projects")
+            get("/api/clients/" + customerIdA + "/matters")
                 .with(TestJwtFactory.ownerJwt(STARTER_B_ID, "user_cp_starter_b")))
         .andExpect(status().isNotFound());
   }
@@ -560,7 +560,7 @@ class CustomerProjectIntegrationTest {
     var customerResultB =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(STARTER_B_ID, "user_cp_starter_b"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -578,7 +578,7 @@ class CustomerProjectIntegrationTest {
     // Starter B cannot link their customer to Starter A's project (project not visible)
     mockMvc
         .perform(
-            post("/api/customers/" + customerIdB + "/projects/" + projectIdA)
+            post("/api/clients/" + customerIdB + "/matters/" + projectIdA)
                 .with(TestJwtFactory.ownerJwt(STARTER_B_ID, "user_cp_starter_b")))
         .andExpect(status().isNotFound());
   }
@@ -589,7 +589,7 @@ class CustomerProjectIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -612,7 +612,7 @@ class CustomerProjectIntegrationTest {
       throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/transition")
+            post("/api/clients/" + customerId + "/transition")
                 .with(jwt)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))

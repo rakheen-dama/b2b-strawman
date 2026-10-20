@@ -1,6 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
-import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.CustomerProjectResponse;
+import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.ClientMatterResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import java.net.URI;
 import java.time.Instant;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/projects/{projectId}/customers")
+@RequestMapping("/api/matters/{matterId}/clients")
 public class ProjectCustomerController {
 
   private final CustomerProjectService customerProjectService;
@@ -25,38 +25,36 @@ public class ProjectCustomerController {
   }
 
   @GetMapping
-  public ResponseEntity<List<LinkedCustomerResponse>> listCustomersForProject(
-      @PathVariable UUID projectId, ActorContext actor) {
+  public ResponseEntity<List<LinkedClientResponse>> listCustomersForProject(
+      @PathVariable UUID matterId, ActorContext actor) {
 
-    var customers = customerProjectService.listCustomersForProject(projectId, actor);
-    return ResponseEntity.ok(customers.stream().map(LinkedCustomerResponse::from).toList());
+    var customers = customerProjectService.listCustomersForProject(matterId, actor);
+    return ResponseEntity.ok(customers.stream().map(LinkedClientResponse::from).toList());
   }
 
-  @PostMapping("/{customerId}")
-  public ResponseEntity<CustomerProjectResponse> linkCustomerToProject(
-      @PathVariable UUID projectId, @PathVariable UUID customerId, ActorContext actor) {
+  @PostMapping("/{clientId}")
+  public ResponseEntity<ClientMatterResponse> linkCustomerToProject(
+      @PathVariable UUID matterId, @PathVariable UUID clientId, ActorContext actor) {
 
     var link =
-        customerProjectService.linkCustomerToProject(
-            customerId, projectId, actor.memberId(), actor);
-    return ResponseEntity.created(
-            URI.create("/api/projects/" + projectId + "/customers/" + customerId))
-        .body(CustomerProjectResponse.from(link));
+        customerProjectService.linkCustomerToProject(clientId, matterId, actor.memberId(), actor);
+    return ResponseEntity.created(URI.create("/api/matters/" + matterId + "/clients/" + clientId))
+        .body(ClientMatterResponse.from(link));
   }
 
-  @DeleteMapping("/{customerId}")
+  @DeleteMapping("/{clientId}")
   public ResponseEntity<Void> unlinkCustomerFromProject(
-      @PathVariable UUID projectId, @PathVariable UUID customerId, ActorContext actor) {
+      @PathVariable UUID matterId, @PathVariable UUID clientId, ActorContext actor) {
 
-    customerProjectService.unlinkCustomerFromProject(customerId, projectId, actor);
+    customerProjectService.unlinkCustomerFromProject(clientId, matterId, actor);
     return ResponseEntity.noContent().build();
   }
 
-  public record LinkedCustomerResponse(
+  public record LinkedClientResponse(
       UUID id, String name, String email, String phone, String status, Instant createdAt) {
 
-    public static LinkedCustomerResponse from(Customer customer) {
-      return new LinkedCustomerResponse(
+    public static LinkedClientResponse from(Customer customer) {
+      return new LinkedClientResponse(
           customer.getId(),
           customer.getName(),
           customer.getEmail(),

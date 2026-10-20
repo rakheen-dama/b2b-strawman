@@ -67,7 +67,7 @@ class PortalContactAutoProvisionerTest {
     // GET portal contacts — listener should have produced exactly one row matching email + name
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/portal-contacts")
+            get("/api/clients/" + customerId + "/portal-contacts")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pap_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
@@ -95,7 +95,7 @@ class PortalContactAutoProvisionerTest {
     // Still exactly one portal contact for this customer.
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/portal-contacts")
+            get("/api/clients/" + customerId + "/portal-contacts")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pap_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1));

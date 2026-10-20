@@ -88,14 +88,14 @@ class PortalResyncIntegrationTest {
     // Link customer A to project A
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/projects/" + projectId)
+            post("/api/clients/" + customerId + "/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_resync_owner")))
         .andExpect(status().isCreated());
 
     // Link customer B to project B
     mockMvc
         .perform(
-            post("/api/customers/" + customer2Id + "/projects/" + project2Id)
+            post("/api/clients/" + customer2Id + "/matters/" + project2Id)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_resync_owner")))
         .andExpect(status().isCreated());
 
@@ -195,7 +195,7 @@ class PortalResyncIntegrationTest {
   private void transitionCustomerToActive(String customerId) throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/transition")
+            post("/api/clients/" + customerId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_resync_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))

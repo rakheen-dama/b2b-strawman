@@ -909,7 +909,7 @@ class InformationRequestControllerTest {
     var result =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -925,7 +925,7 @@ class InformationRequestControllerTest {
     var result =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -1001,7 +1001,7 @@ class InformationRequestControllerTest {
     var result =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -1016,7 +1016,7 @@ class InformationRequestControllerTest {
     // Transition PROSPECT -> ONBOARDING
     mockMvc
         .perform(
-            post("/api/customers/" + activeCustomerId + "/transition")
+            post("/api/clients/" + activeCustomerId + "/transition")
                 .with(jwt)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))

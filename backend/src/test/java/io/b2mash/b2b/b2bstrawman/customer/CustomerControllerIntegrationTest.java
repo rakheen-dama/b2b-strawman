@@ -47,7 +47,7 @@ class CustomerControllerIntegrationTest {
   void createCustomerWithAllNewFieldsReturns201() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccnf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -95,7 +95,7 @@ class CustomerControllerIntegrationTest {
   void createCustomerWithOnlyCoreFieldsReturns201WithNullNewFields() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccnf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -131,7 +131,7 @@ class CustomerControllerIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccnf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -145,7 +145,7 @@ class CustomerControllerIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/customers/" + id)
+            put("/api/clients/" + id)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccnf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -188,7 +188,7 @@ class CustomerControllerIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccnf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -210,7 +210,7 @@ class CustomerControllerIntegrationTest {
     // Update, setting those fields to null (by omitting them)
     mockMvc
         .perform(
-            put("/api/customers/" + id)
+            put("/api/clients/" + id)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccnf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

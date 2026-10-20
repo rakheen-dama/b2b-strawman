@@ -64,7 +64,8 @@ export default async function ProjectsPage({
     typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : null;
 
   // Auto-open "New from Template" dialog when landing here via the
-  // `/projects/new?customerId=...` redirect (GAP-S3-05).
+  // `/matters?new=1&customerId=...` deep-link (GAP-S3-05), e.g. from the
+  // client detail Matters panel.
   const autoOpenNew =
     typeof resolvedSearchParams.new === "string" && resolvedSearchParams.new === "1";
   const initialCustomerId =

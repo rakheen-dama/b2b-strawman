@@ -3,8 +3,8 @@
  *
  * Next.js renders a template between the org layout and its pages, keyed by the segment
  * below org/[slug], so it is remounted — together with the new page, in the same commit —
- * when the user moves to another section (e.g. /projects -> /customers); navigation within
- * a section (e.g. /projects -> /projects/[id]) does not re-run the entrance. The page is
+ * when the user moves to another section (e.g. /matters -> /clients); navigation within
+ * a section (e.g. /matters -> /matters/[id]) does not re-run the entrance. The page is
  * mounted exactly once per navigation and never rendered into an outgoing wrapper (as the
  * old pathname-keyed AnimatePresence did, which remounted the new page ~100ms after it
  * appeared and discarded anything the user had started). The fade is a plain CSS animation: it needs no JavaScript, so server-rendered

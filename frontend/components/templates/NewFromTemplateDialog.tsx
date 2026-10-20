@@ -38,9 +38,8 @@ interface NewFromTemplateDialogProps {
   children: React.ReactNode;
   /**
    * When true, the dialog opens on mount. Used by deep-links like
-   * `/projects/new?customerId=...` (GAP-S3-05) where the route redirects
-   * to `/projects?new=1&customerId=...` and expects the dialog to open
-   * automatically.
+   * `/matters?new=1&customerId=...` (GAP-S3-05), e.g. from the client
+   * detail Matters panel, which expect the dialog to open automatically.
    */
   autoOpen?: boolean;
   /**

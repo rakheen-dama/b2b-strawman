@@ -112,7 +112,7 @@ describe("CommandPaletteDialog", () => {
 
   it("shows Recent group heading when recentItems is non-empty", () => {
     vi.mocked(useRecentItems).mockReturnValue({
-      items: [{ href: "/org/test-org/projects/abc", label: "Alpha Project" }],
+      items: [{ href: "/org/test-org/matters/abc", label: "Alpha Project" }],
       addItem: vi.fn(),
     });
     renderDialog();

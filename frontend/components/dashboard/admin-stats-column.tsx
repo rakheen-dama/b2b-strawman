@@ -31,7 +31,7 @@ export function AdminStatsColumn({
       </CardHeader>
       <CardContent className="space-y-1 pt-0">
         <Link
-          href={`/org/${orgSlug}/customers?showIncomplete=true`}
+          href={`/org/${orgSlug}/clients?showIncomplete=true`}
           className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
         >
           <Users className="size-4 shrink-0 text-slate-400" />
@@ -40,7 +40,7 @@ export function AdminStatsColumn({
         </Link>
 
         <Link
-          href={`/org/${orgSlug}/customers`}
+          href={`/org/${orgSlug}/clients`}
           className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
         >
           <ClipboardList className="size-4 shrink-0 text-slate-400" />

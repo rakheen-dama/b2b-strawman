@@ -244,7 +244,7 @@ export default async function MyWorkPage({
               title={t("myWork.list.heading")}
               description={<TerminologyText template={t("myWork.list.description")} />}
               actionLabel={t("myWork.list.cta")}
-              actionHref={`/org/${slug}/projects`}
+              actionHref={`/org/${slug}/matters`}
             />
           ) : (
             <MyWorkTasksClient

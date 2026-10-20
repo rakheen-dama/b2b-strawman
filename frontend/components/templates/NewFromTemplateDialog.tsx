@@ -198,7 +198,7 @@ export function NewFromTemplateDialog({
 
       if (result.success && result.projectId) {
         setOpen(false);
-        router.push(`/org/${slug}/projects/${result.projectId}`);
+        router.push(`/org/${slug}/matters/${result.projectId}`);
       } else {
         // OBS-301: surface per-field validation errors inline. The backend
         // returns a `fieldErrors: [{ field, message }]` array on the

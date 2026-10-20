@@ -130,7 +130,7 @@ export function DormancyCandidateList({ candidates, orgSlug }: DormancyCandidate
                 </td>
                 <td className="px-4 py-3">
                   <Link
-                    href={`/org/${orgSlug}/customers/${candidate.clientId}`}
+                    href={`/org/${orgSlug}/clients/${candidate.clientId}`}
                     className="font-medium text-slate-950 hover:text-teal-600 dark:text-slate-50"
                   >
                     {candidate.clientName}

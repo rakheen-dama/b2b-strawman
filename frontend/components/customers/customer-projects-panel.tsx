@@ -67,7 +67,7 @@ export function CustomerProjectsPanel({
       {canManage && (
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" asChild>
-            <Link href={`/org/${slug}/projects?new=1&customerId=${customerId}`}>
+            <Link href={`/org/${slug}/matters?new=1&customerId=${customerId}`}>
               <LayoutTemplate className="mr-1.5 size-4" />
               New {t("Project")}
             </Link>
@@ -133,7 +133,7 @@ export function CustomerProjectsPanel({
                 >
                   <td className="px-4 py-3">
                     <Link
-                      href={`/org/${slug}/projects/${project.id}`}
+                      href={`/org/${slug}/matters/${project.id}`}
                       className="font-medium text-slate-950 hover:underline dark:text-slate-50"
                     >
                       {project.name}

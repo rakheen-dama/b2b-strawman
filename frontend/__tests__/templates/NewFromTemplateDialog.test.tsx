@@ -189,7 +189,7 @@ describe("NewFromTemplateDialog", () => {
       );
     });
     await waitFor(() => {
-      expect(mockRouterPush).toHaveBeenCalledWith("/org/acme/projects/proj-new");
+      expect(mockRouterPush).toHaveBeenCalledWith("/org/acme/matters/proj-new");
     });
   });
 

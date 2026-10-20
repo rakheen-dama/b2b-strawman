@@ -166,7 +166,7 @@ export function RequestDetailClient({ request, slug }: RequestDetailClientProps)
           </div>
           <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
             <Link
-              href={`/org/${slug}/customers/${request.clientId}`}
+              href={`/org/${slug}/clients/${request.clientId}`}
               className="text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
             >
               {request.clientName}

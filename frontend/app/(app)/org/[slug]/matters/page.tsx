@@ -221,7 +221,7 @@ export default async function ProjectsPage({
             return (
               <Link
                 key={project.id}
-                href={`/org/${slug}/projects/${project.id}`}
+                href={`/org/${slug}/matters/${project.id}`}
                 className="group rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600"
               >
                 <div className="rounded-lg border border-slate-200 bg-white p-6 transition-all duration-150 hover:border-slate-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700">

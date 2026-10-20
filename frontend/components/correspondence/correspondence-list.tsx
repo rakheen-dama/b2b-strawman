@@ -74,7 +74,7 @@ export function CorrespondenceList({ items, slug, projectId }: CorrespondenceLis
             <TableCell className="text-right">
               {item.attachmentCount > 0 ? (
                 <Link
-                  href={`/org/${slug}/projects/${projectId}?tab=documents`}
+                  href={`/org/${slug}/matters/${projectId}?tab=documents`}
                   className="inline-flex items-center gap-1 text-teal-600 hover:text-teal-700"
                 >
                   <Paperclip className="size-3" />

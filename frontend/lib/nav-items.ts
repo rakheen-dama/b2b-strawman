@@ -109,7 +109,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       {
         label: "Projects",
-        href: (slug) => `/org/${slug}/projects`,
+        href: (slug) => `/org/${slug}/matters`,
         icon: FolderOpen,
       },
     ],
@@ -121,7 +121,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       {
         label: "Customers",
-        href: (slug) => `/org/${slug}/customers`,
+        href: (slug) => `/org/${slug}/clients`,
         icon: UserRound,
         requiredCapability: "CUSTOMER_MANAGEMENT",
       },
@@ -273,7 +273,7 @@ export const NAV_GROUPS: NavGroup[] = [
       // AI entry point. The matter-intake page is the member-appropriate AI surface.
       {
         label: "AI Intake",
-        href: (slug) => `/org/${slug}/projects/new`,
+        href: (slug) => `/org/${slug}/matters/new`,
         icon: Sparkles,
         exact: true,
         requiredCapability: "AI_EXECUTE",

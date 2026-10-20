@@ -32,7 +32,7 @@ export function ProjectStatusFilter({ slug }: ProjectStatusFilterProps) {
         }
         // Preserve other params like view
         const queryString = params.toString();
-        const href = `/org/${slug}/projects${queryString ? `?${queryString}` : ""}`;
+        const href = `/org/${slug}/matters${queryString ? `?${queryString}` : ""}`;
 
         return (
           <Link

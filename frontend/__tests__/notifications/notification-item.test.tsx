@@ -71,6 +71,6 @@ describe("NotificationItem", () => {
     await user.click(button);
 
     expect(mockMarkNotificationRead).toHaveBeenCalledWith("n1");
-    expect(mockPush).toHaveBeenCalledWith("/org/acme/projects/p1?tab=tasks");
+    expect(mockPush).toHaveBeenCalledWith("/org/acme/matters/p1?tab=tasks");
   });
 });

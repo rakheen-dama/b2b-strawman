@@ -122,6 +122,6 @@ describe("Completeness Visibility (Epic 251B)", () => {
     expect(billingRow).not.toBeNull();
     await user.click(billingRow!);
 
-    expect(mockPush).toHaveBeenCalledWith("/org/test-org/customers?showIncomplete=true");
+    expect(mockPush).toHaveBeenCalledWith("/org/test-org/clients?showIncomplete=true");
   });
 });

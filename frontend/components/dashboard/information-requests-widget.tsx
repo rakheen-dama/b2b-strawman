@@ -114,7 +114,7 @@ export function InformationRequestsWidget({ data, orgSlug }: InformationRequests
           variant="ghost"
           size="sm"
           className="text-muted-foreground"
-          onClick={() => router.push(`/org/${orgSlug}/customers`)}
+          onClick={() => router.push(`/org/${orgSlug}/clients`)}
         >
           View customer requests &rarr;
         </Button>

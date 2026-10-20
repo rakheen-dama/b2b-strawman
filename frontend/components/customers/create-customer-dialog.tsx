@@ -227,7 +227,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
         // Redirect to the new customer's detail page (GAP-L-32). Fall back to
         // staying on the list if the server didn't return an id (older callers).
         if (result.customerId) {
-          router.push(`/org/${slug}/customers/${result.customerId}`);
+          router.push(`/org/${slug}/clients/${result.customerId}`);
         }
       } else {
         const { t } = createMessages("errors");

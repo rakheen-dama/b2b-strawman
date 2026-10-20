@@ -101,7 +101,7 @@ export function CollectionsClient({ slug, debtors, gates, previews }: Collection
                   >
                     <td className="px-4 py-3">
                       <Link
-                        href={`/org/${slug}/customers/${debtor.clientId}`}
+                        href={`/org/${slug}/clients/${debtor.clientId}`}
                         className="font-medium text-slate-950 hover:underline dark:text-slate-50"
                       >
                         {debtor.clientName}

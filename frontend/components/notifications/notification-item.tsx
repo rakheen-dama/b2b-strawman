@@ -31,7 +31,7 @@ function getDeepLinkUrl(orgSlug: string, notification: Notification): string | n
   const { referenceMatterId, referenceEntityType } = notification;
   if (!referenceMatterId) return null;
 
-  const base = `/org/${orgSlug}/projects/${referenceMatterId}`;
+  const base = `/org/${orgSlug}/matters/${referenceMatterId}`;
   switch (referenceEntityType) {
     case "TASK":
       return `${base}?tab=tasks`;

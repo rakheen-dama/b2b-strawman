@@ -55,9 +55,9 @@ export function formatDate(d: Date): string {
  */
 export function getItemLink(item: CalendarItem, slug: string): string {
   if (item.itemType === "TASK") {
-    return `/org/${slug}/projects/${item.matterId}?taskId=${item.id}`;
+    return `/org/${slug}/matters/${item.matterId}?taskId=${item.id}`;
   }
-  return `/org/${slug}/projects/${item.matterId}`;
+  return `/org/${slug}/matters/${item.matterId}`;
 }
 
 function parseDueDateToDate(dateStr: string): Date {

@@ -1,13 +1,13 @@
 import Link from "next/link";
 
 const ENTITY_ROUTES: Record<string, (id: string) => string> = {
-  customer: (id) => `/customers/${id}`,
-  project: (id) => `/projects/${id}`,
+  customer: (id) => `/clients/${id}`,
+  project: (id) => `/matters/${id}`,
   invoice: (id) => `/invoices/${id}`,
   information_request: (id) => `/information-requests/${id}`,
   document: (id) => `/documents/${id}`,
   trust_transaction: (id) => `/trust-accounting/transactions/${id}`,
-  matter_closure: (id) => `/projects/${id}/closure`,
+  matter_closure: (id) => `/matters/${id}/closure`,
   data_subject_request: (id) => `/settings/data-protection/requests/${id}`,
   org_role: (id) => `/settings/roles/${id}`,
   member: (id) => `/team#member-${id}`,

@@ -116,7 +116,7 @@ export function AssignedTaskList({ tasks, slug }: AssignedTaskListProps) {
                 <TableRow
                   key={task.id}
                   className="cursor-pointer border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900"
-                  onClick={() => router.push(`/org/${slug}/projects/${task.matterId}`)}
+                  onClick={() => router.push(`/org/${slug}/matters/${task.matterId}`)}
                 >
                   <TableCell>
                     <Badge variant="member">{task.matterName}</Badge>

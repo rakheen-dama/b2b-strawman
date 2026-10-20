@@ -70,7 +70,7 @@ export function ArchiveCustomerDialog({
       const result = await archiveCustomer(slug, customerId);
       if (result.success) {
         setOpen(false);
-        router.push(`/org/${slug}/customers`);
+        router.push(`/org/${slug}/clients`);
       } else {
         setError(result.error ?? "Failed to archive customer.");
         setIsArchiving(false);

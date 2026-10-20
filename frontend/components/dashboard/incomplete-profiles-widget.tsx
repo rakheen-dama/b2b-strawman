@@ -78,7 +78,7 @@ export function IncompleteProfilesWidget({ data, orgSlug }: IncompleteProfilesWi
                 <li key={field.fieldSlug}>
                   <button
                     type="button"
-                    onClick={() => router.push(`/org/${orgSlug}/customers?showIncomplete=true`)}
+                    onClick={() => router.push(`/org/${orgSlug}/clients?showIncomplete=true`)}
                     className="flex w-full items-center justify-between rounded-md px-2 py-1 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
                   >
                     <span className="truncate text-slate-700 dark:text-slate-300">
@@ -99,7 +99,7 @@ export function IncompleteProfilesWidget({ data, orgSlug }: IncompleteProfilesWi
           variant="ghost"
           size="sm"
           className="text-muted-foreground"
-          onClick={() => router.push(`/org/${orgSlug}/customers`)}
+          onClick={() => router.push(`/org/${orgSlug}/clients`)}
         >
           View all customers &rarr;
         </Button>

@@ -96,7 +96,7 @@ export function NewMatterPageClient({
 
       if (result.success && result.projectId) {
         toast.success("Matter created successfully");
-        router.push(`/org/${slug}/projects/${result.projectId}`);
+        router.push(`/org/${slug}/matters/${result.projectId}`);
       } else {
         setError(result.error ?? "Failed to create matter.");
       }
@@ -112,7 +112,7 @@ export function NewMatterPageClient({
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link
-          href={`/org/${slug}/projects`}
+          href={`/org/${slug}/matters`}
           className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-300"
         >
           <ArrowLeft className="size-4" />
@@ -272,7 +272,7 @@ export function NewMatterPageClient({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => router.push(`/org/${slug}/projects`)}
+                  onClick={() => router.push(`/org/${slug}/matters`)}
                 >
                   Cancel
                 </Button>

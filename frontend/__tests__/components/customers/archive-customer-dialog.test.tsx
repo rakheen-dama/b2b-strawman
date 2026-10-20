@@ -69,7 +69,7 @@ describe("ArchiveCustomerDialog", () => {
     });
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/org/acme/customers");
+      expect(mockPush).toHaveBeenCalledWith("/org/acme/clients");
     });
   });
 

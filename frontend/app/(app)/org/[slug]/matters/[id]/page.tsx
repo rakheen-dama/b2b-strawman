@@ -422,7 +422,7 @@ export default async function ProjectDetailPage({
       {/* Back link + overflow actions row */}
       <div className="flex items-center justify-between">
         <Link
-          href={`/org/${slug}/projects`}
+          href={`/org/${slug}/matters`}
           className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ArrowLeft className="mr-1.5 size-4" />

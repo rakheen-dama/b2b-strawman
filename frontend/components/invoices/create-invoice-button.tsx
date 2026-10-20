@@ -31,7 +31,7 @@ export function CreateInvoiceButton({ customers, slug }: CreateInvoiceButtonProp
 
   function handleSelect(customerId: string) {
     setOpen(false);
-    router.push(`/org/${slug}/customers/${customerId}?tab=invoices`);
+    router.push(`/org/${slug}/clients/${customerId}?tab=invoices`);
   }
 
   if (customers.length === 0) return null;

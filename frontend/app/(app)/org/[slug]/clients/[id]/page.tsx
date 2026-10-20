@@ -478,7 +478,7 @@ export default async function CustomerDetailPage({
       {/* Back link */}
       <div>
         <Link
-          href={`/org/${slug}/customers`}
+          href={`/org/${slug}/clients`}
           className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ArrowLeft className="mr-1.5 size-4" />
@@ -631,7 +631,7 @@ export default async function CustomerDetailPage({
               customerTemplateReadiness.length > 0
                 ? {
                     templates: customerTemplateReadiness,
-                    baseHref: `/org/${slug}/customers/${id}`,
+                    baseHref: `/org/${slug}/clients/${id}`,
                   }
                 : null
             }

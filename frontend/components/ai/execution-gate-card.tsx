@@ -161,7 +161,7 @@ export function ExecutionGateCard({
             Subject is not exposed by the backend; link to the matter's Correspondence tab. */}
         {showCorrespondenceOrigin && (
           <Link
-            href={`/org/${slug}/projects/${correspondenceOrigin!.projectId}?tab=correspondence`}
+            href={`/org/${slug}/matters/${correspondenceOrigin!.projectId}?tab=correspondence`}
             className="inline-flex items-center gap-1.5 text-sm text-teal-600 hover:text-teal-700"
           >
             <Mail className="size-3.5" />

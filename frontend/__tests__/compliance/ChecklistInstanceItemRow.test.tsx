@@ -17,7 +17,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 // Mock kyc-actions to avoid server-only import chain
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/kyc-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/kyc-actions", () => ({
   verifyKycAction: vi.fn().mockResolvedValue({ success: true }),
   getKycStatusAction: vi.fn().mockResolvedValue({ configured: false, provider: null }),
   getKycResultAction: vi.fn().mockResolvedValue({ success: true, data: null }),

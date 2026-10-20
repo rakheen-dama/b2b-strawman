@@ -50,7 +50,7 @@ export async function setCollectionsExemptionAction(
     return { success: false, error: "Failed to update collections exemption." };
   }
 
-  revalidatePath(`/org/${slug}/customers/${customerId}`);
+  revalidatePath(`/org/${slug}/clients/${customerId}`);
   return { success: true };
 }
 
@@ -77,7 +77,7 @@ export async function linkProject(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/customers/${customerId}`);
+  revalidatePath(`/org/${slug}/clients/${customerId}`);
 
   return { success: true };
 }
@@ -101,7 +101,7 @@ export async function unlinkProject(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/customers/${customerId}`);
+  revalidatePath(`/org/${slug}/clients/${customerId}`);
 
   return { success: true };
 }
@@ -150,7 +150,7 @@ export async function confirmCustomerUpload(
     return { success: false, error: "Failed to confirm upload." };
   }
 
-  revalidatePath(`/org/${slug}/customers/${customerId}`);
+  revalidatePath(`/org/${slug}/clients/${customerId}`);
 
   return { success: true };
 }
@@ -184,7 +184,7 @@ export async function toggleDocumentVisibility(
     return { success: false, error: "Failed to update visibility." };
   }
 
-  revalidatePath(`/org/${slug}/customers/${customerId}`);
+  revalidatePath(`/org/${slug}/clients/${customerId}`);
 
   return { success: true };
 }

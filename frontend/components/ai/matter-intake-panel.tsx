@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Loader2, Sparkles } from "lucide-react";
 import { IntakeResultDisplay } from "@/components/ai/intake-result-display";
 import { ExecutionGateCard } from "@/components/ai/execution-gate-card";
-import { invokeMatterIntakeAction } from "@/app/(app)/org/[slug]/projects/new/intake-actions";
+import { invokeMatterIntakeAction } from "@/app/(app)/org/[slug]/matters/new/intake-actions";
 import { approveGateAction, rejectGateAction } from "@/app/(app)/org/[slug]/ai/reviews/actions";
 import type { MatterIntakeResponse } from "@/lib/api/ai";
 import Link from "next/link";

@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CompleteProjectDialog } from "@/components/projects/complete-project-dialog";
-import { archiveProject, reopenProject } from "@/app/(app)/org/[slug]/projects/actions";
+import { archiveProject, reopenProject } from "@/app/(app)/org/[slug]/matters/actions";
 import { useTerminology } from "@/lib/terminology";
 import type { MatterStatus } from "@/lib/types";
 

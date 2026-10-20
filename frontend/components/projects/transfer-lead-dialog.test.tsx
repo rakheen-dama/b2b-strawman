@@ -5,7 +5,7 @@ import { TransferLeadDialog } from "./transfer-lead-dialog";
 
 const mockTransferLead = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/member-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/member-actions", () => ({
   transferLead: (...args: unknown[]) => mockTransferLead(...args),
 }));
 

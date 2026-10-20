@@ -19,7 +19,7 @@ const mockCancelTask = vi.fn();
 const mockReopenTask = vi.fn();
 const mockFetchTimeEntries = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/task-actions", () => ({
   fetchTask: (...args: unknown[]) => mockFetchTask(...args),
   updateTask: (...args: unknown[]) => mockUpdateTask(...args),
   completeTask: (...args: unknown[]) => mockCompleteTask(...args),
@@ -27,7 +27,7 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-actions", () => ({
   reopenTask: (...args: unknown[]) => mockReopenTask(...args),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-entry-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/time-entry-actions", () => ({
   fetchTimeEntries: (...args: unknown[]) => mockFetchTimeEntries(...args),
   updateTimeEntry: vi.fn(),
   deleteTimeEntry: vi.fn(),

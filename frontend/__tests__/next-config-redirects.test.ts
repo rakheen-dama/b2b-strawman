@@ -3,7 +3,7 @@ import nextConfig from "@/next.config";
 
 /**
  * GAP-Doc-Drift-26: legacy /org/:slug/settings/team must redirect to the
- * canonical /org/:slug/team with a permanent (301) redirect so that
+ * canonical /org/:slug/team with a permanent (308) redirect so that
  * old bookmarks and QA scenario docs don't 404.
  */
 describe("next.config redirects", () => {

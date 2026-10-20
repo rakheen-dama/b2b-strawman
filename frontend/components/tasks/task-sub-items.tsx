@@ -10,7 +10,7 @@ import {
   addTaskItem,
   toggleTaskItem,
   deleteTaskItem,
-} from "@/app/(app)/org/[slug]/projects/[id]/task-item-actions";
+} from "@/app/(app)/org/[slug]/matters/[id]/task-item-actions";
 import type { TaskItem } from "@/lib/types";
 
 interface TaskSubItemsProps {

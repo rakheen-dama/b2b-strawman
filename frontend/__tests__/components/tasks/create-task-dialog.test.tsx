@@ -5,7 +5,7 @@ import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 
 const mockCreateTask = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/task-actions", () => ({
   createTask: (...args: unknown[]) => mockCreateTask(...args),
 }));
 

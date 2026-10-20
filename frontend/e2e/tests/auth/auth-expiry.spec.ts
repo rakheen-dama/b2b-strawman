@@ -55,7 +55,8 @@ test.describe("graceful expiry funnel", () => {
     await page.goto("/dashboard");
 
     // Final URL is the persisted destination, reached via the full chain.
-    await expect(page).toHaveURL(/\/org\/e2e-test-org\/projects/, { timeout: 15_000 });
+    // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
+    await expect(page).toHaveURL(/\/org\/e2e-test-org\/matters/, { timeout: 15_000 });
 
     // The key is consumed (read-once).
     const remaining = await page.evaluate(() => window.sessionStorage.getItem("kazi.returnTo"));

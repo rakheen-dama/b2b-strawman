@@ -86,7 +86,7 @@ vi.mock("next/link", () => ({
 
 // ── Imports after mocks ──────────────────────────────────────────
 import ClientLedgersPage from "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/page";
-import ClientDetailPage from "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/[customerId]/page";
+import ClientDetailPage from "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/[clientId]/page";
 
 // ── Helpers ──────────────────────────────────────────────────────
 
@@ -161,7 +161,7 @@ async function renderListPage(searchParams = {}) {
 
 async function renderDetailPage(searchParams = {}) {
   const result = await ClientDetailPage({
-    params: Promise.resolve({ slug: "acme", customerId: "cust-1" }),
+    params: Promise.resolve({ slug: "acme", clientId: "cust-1" }),
     searchParams: Promise.resolve(searchParams),
   });
   render(result);

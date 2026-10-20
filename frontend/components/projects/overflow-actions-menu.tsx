@@ -15,7 +15,7 @@ import { GenerateStatementOfAccountAction } from "@/components/projects/generate
 import { SaveAsTemplateDialog } from "@/components/templates/SaveAsTemplateDialog";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
 import { DeleteProjectDialog } from "@/components/projects/delete-project-dialog";
-import { archiveProject } from "@/app/(app)/org/[slug]/projects/actions";
+import { archiveProject } from "@/app/(app)/org/[slug]/matters/actions";
 import { useTerminology } from "@/lib/terminology";
 import type { Matter, Task, TagResponse, TemplateListResponse, MatterStatus } from "@/lib/types";
 

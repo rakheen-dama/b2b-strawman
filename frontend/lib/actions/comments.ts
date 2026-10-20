@@ -50,7 +50,7 @@ export async function createProjectComment(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${orgSlug}/projects/${projectId}`);
+  revalidatePath(`/org/${orgSlug}/matters/${projectId}`);
 
   return { success: true };
 }
@@ -81,7 +81,7 @@ export async function createComment(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${orgSlug}/projects/${projectId}`);
+  revalidatePath(`/org/${orgSlug}/matters/${projectId}`);
 
   return { success: true };
 }
@@ -115,7 +115,7 @@ export async function updateComment(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${orgSlug}/projects/${projectId}`);
+  revalidatePath(`/org/${orgSlug}/matters/${projectId}`);
 
   return { success: true };
 }
@@ -140,7 +140,7 @@ export async function deleteComment(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${orgSlug}/projects/${projectId}`);
+  revalidatePath(`/org/${orgSlug}/matters/${projectId}`);
 
   return { success: true };
 }

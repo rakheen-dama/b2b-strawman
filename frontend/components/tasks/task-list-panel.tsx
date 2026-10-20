@@ -16,7 +16,7 @@ import {
   completeTask,
   reopenTask,
   fetchTasks,
-} from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
+} from "@/app/(app)/org/[slug]/matters/[id]/task-actions";
 import { cn } from "@/lib/utils";
 import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
 import { toast } from "sonner";

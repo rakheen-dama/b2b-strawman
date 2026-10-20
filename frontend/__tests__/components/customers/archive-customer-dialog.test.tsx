@@ -6,7 +6,7 @@ import { ArchiveCustomerDialog } from "@/components/customers/archive-customer-d
 const mockArchiveCustomer = vi.fn();
 const mockPush = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/customers/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/actions", () => ({
   archiveCustomer: (...args: unknown[]) => mockArchiveCustomer(...args),
 }));
 

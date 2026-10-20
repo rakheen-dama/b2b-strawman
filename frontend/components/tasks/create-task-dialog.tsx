@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { createTask } from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
+import { createTask } from "@/app/(app)/org/[slug]/matters/[id]/task-actions";
 import { AssigneeSelector } from "@/components/tasks/assignee-selector";
 import { formatRecurrenceRule } from "@/lib/recurrence";
 import type { RecurrenceFrequency } from "@/lib/recurrence";

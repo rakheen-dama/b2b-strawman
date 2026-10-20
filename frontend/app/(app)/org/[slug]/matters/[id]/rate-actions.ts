@@ -39,7 +39,7 @@ export async function createProjectBillingRate(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   return { success: true };
 }
 
@@ -71,7 +71,7 @@ export async function updateProjectBillingRate(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   return { success: true };
 }
 
@@ -95,6 +95,6 @@ export async function deleteProjectBillingRate(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   return { success: true };
 }

@@ -137,7 +137,7 @@ export async function createCustomer(
     return { success: false, error: message };
   }
 
-  revalidatePath(`/org/${slug}/customers`);
+  revalidatePath(`/org/${slug}/clients`);
   revalidatePath(`/org/${slug}/dashboard`);
 
   return { success: true, customerId: created?.id };
@@ -194,8 +194,8 @@ export async function updateCustomer(
     return { success: false, error: message };
   }
 
-  revalidatePath(`/org/${slug}/customers`);
-  revalidatePath(`/org/${slug}/customers/${id}`);
+  revalidatePath(`/org/${slug}/clients`);
+  revalidatePath(`/org/${slug}/clients/${id}`);
   revalidatePath(`/org/${slug}/dashboard`);
 
   return { success: true };
@@ -217,7 +217,7 @@ export async function archiveCustomer(slug: string, id: string): Promise<ActionR
     return { success: false, error: message };
   }
 
-  revalidatePath(`/org/${slug}/customers`);
+  revalidatePath(`/org/${slug}/clients`);
   revalidatePath(`/org/${slug}/dashboard`);
 
   return { success: true };

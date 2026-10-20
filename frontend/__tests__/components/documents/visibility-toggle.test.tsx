@@ -8,7 +8,7 @@ import { VisibilityToggle } from "@/components/documents/visibility-toggle";
 const mockToggleVisibility = vi.fn();
 const mockRefresh = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/actions", () => ({
   toggleDocumentVisibility: (...args: unknown[]) => mockToggleVisibility(...args),
 }));
 

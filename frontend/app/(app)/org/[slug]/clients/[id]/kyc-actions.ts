@@ -28,7 +28,7 @@ export async function verifyKycAction(
       ...rest,
       clientId: customerId,
     });
-    revalidatePath(`/org/${slug}/customers/${customerId}`);
+    revalidatePath(`/org/${slug}/clients/${customerId}`);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof ApiError) {

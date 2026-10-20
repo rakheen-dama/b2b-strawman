@@ -25,7 +25,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ModuleGate } from "@/components/module-gate";
 import { reopenMatterSchema, type ReopenMatterFormData } from "@/lib/schemas/matter-reopen";
-import { reopenMatterAction } from "@/app/(app)/org/[slug]/projects/[id]/matter-reopen-actions";
+import { reopenMatterAction } from "@/app/(app)/org/[slug]/matters/[id]/matter-reopen-actions";
 
 interface MatterReopenDialogProps {
   slug: string;

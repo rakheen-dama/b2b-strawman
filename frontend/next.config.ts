@@ -1,19 +1,13 @@
 import type { NextConfig } from "next";
+import { LEGACY_REDIRECTS } from "./lib/legacy-redirects";
 
 const nextConfig: NextConfig = {
   output: "standalone",
   transpilePackages: ["@b2mash/ui", "@b2mash/shared"],
   async redirects() {
-    return [
-      // GAP-Doc-Drift-26: Legacy bookmarks and QA scenario docs reference
-      // /org/:slug/settings/team but the canonical route is /org/:slug/team.
-      // Permanent (HTTP 301) so browsers cache the new URL.
-      {
-        source: "/org/:slug/settings/team",
-        destination: "/org/:slug/team",
-        permanent: true,
-      },
-    ];
+    // One committed table (Phase 87 §12.7.4 / §12.10.5): lib/legacy-redirects.ts.
+    // `permanent: true` rows are served as HTTP 308.
+    return [...LEGACY_REDIRECTS];
   },
 };
 

@@ -70,7 +70,7 @@ export async function createProject(slug: string, formData: FormData): Promise<A
     return { success: false, error: message };
   }
 
-  revalidatePath(`/org/${slug}/projects`);
+  revalidatePath(`/org/${slug}/matters`);
   revalidatePath(`/org/${slug}/dashboard`);
 
   return { success: true };
@@ -127,8 +127,8 @@ export async function updateProject(
     return { success: false, error: message };
   }
 
-  revalidatePath(`/org/${slug}/projects`);
-  revalidatePath(`/org/${slug}/projects/${id}`);
+  revalidatePath(`/org/${slug}/matters`);
+  revalidatePath(`/org/${slug}/matters/${id}`);
   revalidatePath(`/org/${slug}/dashboard`);
 
   return { success: true };
@@ -150,10 +150,10 @@ export async function deleteProject(slug: string, id: string): Promise<ActionRes
     return { success: false, error: message };
   }
 
-  revalidatePath(`/org/${slug}/projects`);
+  revalidatePath(`/org/${slug}/matters`);
   revalidatePath(`/org/${slug}/dashboard`);
 
-  redirect(`/org/${slug}/projects`);
+  redirect(`/org/${slug}/matters`);
 }
 
 export async function completeProject(
@@ -176,8 +176,8 @@ export async function completeProject(
     return { success: false, error: message };
   }
 
-  revalidatePath(`/org/${slug}/projects`);
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   revalidatePath(`/org/${slug}/dashboard`);
 
   return { success: true };
@@ -199,8 +199,8 @@ export async function archiveProject(slug: string, projectId: string): Promise<A
     return { success: false, error: message };
   }
 
-  revalidatePath(`/org/${slug}/projects`);
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   revalidatePath(`/org/${slug}/dashboard`);
 
   return { success: true };
@@ -222,8 +222,8 @@ export async function reopenProject(slug: string, projectId: string): Promise<Ac
     return { success: false, error: message };
   }
 
-  revalidatePath(`/org/${slug}/projects`);
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   revalidatePath(`/org/${slug}/dashboard`);
 
   return { success: true };

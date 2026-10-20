@@ -24,7 +24,7 @@ export async function invokeFicaVerificationAction(
 
   try {
     const result = await invokeFicaVerification(customerId);
-    revalidatePath(`/org/${slug}/customers/${customerId}`);
+    revalidatePath(`/org/${slug}/clients/${customerId}`);
     if (result.status === "FAILED") {
       return {
         success: false,

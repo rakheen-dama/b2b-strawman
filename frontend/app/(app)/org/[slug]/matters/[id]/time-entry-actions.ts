@@ -62,9 +62,9 @@ export async function createTimeEntry(
     return { success: false, error: message };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   // Also revalidate customer pages so customer unbilled summaries refresh (BUG-004)
-  revalidatePath(`/org/${slug}/customers`, "layout");
+  revalidatePath(`/org/${slug}/clients`, "layout");
 
   return { success: true };
 }
@@ -88,8 +88,8 @@ export async function updateTimeEntry(
     };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
-  revalidatePath(`/org/${slug}/customers`, "layout");
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
+  revalidatePath(`/org/${slug}/clients`, "layout");
 
   return { success: true };
 }
@@ -112,8 +112,8 @@ export async function deleteTimeEntry(
     };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
-  revalidatePath(`/org/${slug}/customers`, "layout");
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
+  revalidatePath(`/org/${slug}/clients`, "layout");
 
   return { success: true };
 }

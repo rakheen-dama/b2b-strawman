@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Archive, RotateCcw } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
-import { reopenProject } from "@/app/(app)/org/[slug]/projects/actions";
+import { reopenProject } from "@/app/(app)/org/[slug]/matters/actions";
 
 interface ArchivedProjectBannerProps {
   slug: string;

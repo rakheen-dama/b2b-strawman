@@ -4,7 +4,7 @@ import { TimeSummaryPanel } from "@/components/projects/time-summary-panel";
 import type { MatterTimeSummary, MemberTimeSummary, TaskTimeSummary } from "@/lib/types";
 
 // Mock the server actions
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-summary-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/time-summary-actions", () => ({
   fetchProjectTimeSummary: vi.fn(),
   fetchTimeSummaryByMember: vi.fn(),
   fetchTimeSummaryByTask: vi.fn(),

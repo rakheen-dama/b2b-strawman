@@ -25,18 +25,18 @@ import { renderDialogToSsr } from "../lib/ssr-snapshot";
 // --- Server-action + next/navigation mocks (must be hoisted before the
 // component imports below). Each dialog imports its own action module
 // server-side; we stub them so the module graph loads in vitest.
-vi.mock("@/app/(app)/org/[slug]/customers/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/actions", () => ({
   updateCustomer: vi.fn(),
 }));
 vi.mock("@/lib/actions/comments", () => ({
   deleteComment: vi.fn(),
 }));
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/expense-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/expense-actions", () => ({
   createExpense: vi.fn(),
   updateExpense: vi.fn(),
   deleteExpense: vi.fn(),
 }));
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/actions", () => ({
   initiateUpload: vi.fn(),
   confirmUpload: vi.fn(),
   cancelUpload: vi.fn(),

@@ -18,7 +18,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { fetchProjects, linkProject } from "@/app/(app)/org/[slug]/customers/[id]/actions";
+import { fetchProjects, linkProject } from "@/app/(app)/org/[slug]/clients/[id]/actions";
 import { useTerminology } from "@/lib/terminology";
 import type { Matter } from "@/lib/types";
 

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@b2mash/ui/label";
 import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
-import { setCollectionsExemptionAction } from "@/app/(app)/org/[slug]/customers/[id]/actions";
+import { setCollectionsExemptionAction } from "@/app/(app)/org/[slug]/clients/[id]/actions";
 
 interface CollectionsExemptionToggleProps {
   slug: string;

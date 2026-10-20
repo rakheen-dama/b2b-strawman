@@ -19,7 +19,7 @@ vi.mock("next/navigation", () => ({
 
 // Mock kyc-actions
 const mockVerifyKycAction = vi.fn();
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/kyc-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/kyc-actions", () => ({
   verifyKycAction: (...args: unknown[]) => mockVerifyKycAction(...args),
   getKycStatusAction: vi.fn().mockResolvedValue({ configured: true, provider: "verifynow" }),
   getKycResultAction: vi.fn().mockResolvedValue({ success: true, data: null }),

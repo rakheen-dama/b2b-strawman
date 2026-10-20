@@ -16,7 +16,7 @@ import { Label } from "@b2mash/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CurrencySelector } from "@/components/rates/currency-selector";
 import { HelpTip } from "@/components/help-tip";
-import { upsertBudget } from "@/app/(app)/org/[slug]/projects/[id]/budget-actions";
+import { upsertBudget } from "@/app/(app)/org/[slug]/matters/[id]/budget-actions";
 import type { BudgetStatusResponse, UpsertBudgetRequest } from "@/lib/types";
 
 interface BudgetConfigDialogProps {

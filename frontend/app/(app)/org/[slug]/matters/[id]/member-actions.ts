@@ -37,7 +37,7 @@ export async function addProjectMember(
     return { success: false, error: "Failed to add member." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
 
   return { success: true };
 }
@@ -56,7 +56,7 @@ export async function removeProjectMember(
     return { success: false, error: "Failed to remove member." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
 
   return { success: true };
 }
@@ -75,7 +75,7 @@ export async function transferLead(
     return { success: false, error: "Failed to transfer lead role." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
 
   return { success: true };
 }

@@ -21,7 +21,7 @@ import {
 import {
   addProjectMember,
   fetchOrgMembers,
-} from "@/app/(app)/org/[slug]/projects/[id]/member-actions";
+} from "@/app/(app)/org/[slug]/matters/[id]/member-actions";
 import type { OrgMember, MatterMember } from "@/lib/types";
 
 function MemberAvatar({ name }: { name: string | null }) {

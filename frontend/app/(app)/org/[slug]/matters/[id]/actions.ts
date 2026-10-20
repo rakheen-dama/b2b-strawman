@@ -63,7 +63,7 @@ export async function confirmUpload(
     return { success: false, error: "Failed to confirm upload." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
 
   return { success: true };
 }
@@ -116,7 +116,7 @@ export async function linkCustomerToProject(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   return { success: true };
 }
 
@@ -139,6 +139,6 @@ export async function unlinkCustomerFromProject(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   return { success: true };
 }

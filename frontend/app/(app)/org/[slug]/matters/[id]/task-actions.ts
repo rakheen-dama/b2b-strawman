@@ -81,7 +81,7 @@ export async function createTask(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
 
   return { success: true };
 }
@@ -103,7 +103,7 @@ export async function updateTask(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
 
   return { success: true };
 }
@@ -129,7 +129,7 @@ export async function deleteTask(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
 
   return { success: true };
 }
@@ -154,7 +154,7 @@ export async function claimTask(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
 
   return { success: true };
 }
@@ -173,7 +173,7 @@ export async function releaseTask(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
 
   return { success: true };
 }
@@ -191,7 +191,7 @@ export async function completeTask(
 ): Promise<CompleteTaskResult> {
   try {
     const response = await api.patch<CompleteTaskResponse>(`/api/tasks/${taskId}/complete`);
-    revalidatePath(`/org/${slug}/projects/${projectId}`);
+    revalidatePath(`/org/${slug}/matters/${projectId}`);
     return { success: true, nextInstance: response?.nextInstance ?? null };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -222,7 +222,7 @@ export async function cancelTask(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   return { success: true };
 }
 
@@ -240,6 +240,6 @@ export async function reopenTask(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   return { success: true };
 }

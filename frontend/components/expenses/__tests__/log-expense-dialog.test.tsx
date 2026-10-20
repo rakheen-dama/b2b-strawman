@@ -9,12 +9,12 @@ import { makeExpense } from "./fixtures";
 const mockCreateExpense = vi.fn();
 const mockUpdateExpense = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/expense-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/expense-actions", () => ({
   createExpense: (...args: unknown[]) => mockCreateExpense(...args),
   updateExpense: (...args: unknown[]) => mockUpdateExpense(...args),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/actions", () => ({
   initiateUpload: vi.fn(),
   confirmUpload: vi.fn(),
   cancelUpload: vi.fn(),

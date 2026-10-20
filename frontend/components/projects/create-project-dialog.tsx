@@ -24,7 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { createProject, fetchActiveCustomers } from "@/app/(app)/org/[slug]/projects/actions";
+import { createProject, fetchActiveCustomers } from "@/app/(app)/org/[slug]/matters/actions";
 import type { Client } from "@/lib/types";
 import { Plus, ShieldAlert } from "lucide-react";
 import { createMessages } from "@/lib/messages";

@@ -367,7 +367,8 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     await page
       .getByRole("option", { name: new RegExp(`^${escapeRegExp(siphoClientName())}(\\s|$)`) })
       .click();
-    await page.waitForURL(/\/customers\/[0-9a-f-]{36}\?tab=invoices/);
+    // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
+    await page.waitForURL(/\/clients\/[0-9a-f-]{36}\?tab=invoices/);
 
     await page.getByRole("tabpanel").getByRole("button", { name: "New Fee Note" }).click();
     const dialog = page.getByRole("dialog", { name: "Generate Fee Note" });

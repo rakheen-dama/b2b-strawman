@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Lock, Globe, Send, Loader2 } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import type { DocumentVisibility } from "@/lib/types";
-import { toggleDocumentVisibility } from "@/app/(app)/org/[slug]/customers/[id]/actions";
+import { toggleDocumentVisibility } from "@/app/(app)/org/[slug]/clients/[id]/actions";
 
 interface VisibilityToggleProps {
   documentId: string;

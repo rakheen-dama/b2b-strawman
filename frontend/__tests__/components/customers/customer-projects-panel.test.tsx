@@ -4,7 +4,7 @@ import { CustomerProjectsPanel } from "@/components/customers/customer-projects-
 import type { Matter } from "@/lib/types";
 
 // Mock server actions used by LinkProjectDialog (child component)
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/actions", () => ({
   fetchProjects: vi.fn().mockResolvedValue([]),
   linkProject: vi.fn().mockResolvedValue({ success: true }),
   unlinkProject: vi.fn().mockResolvedValue({ success: true }),

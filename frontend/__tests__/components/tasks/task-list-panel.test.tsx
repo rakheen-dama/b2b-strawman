@@ -17,7 +17,7 @@ const mockReopenTask = vi.fn();
 const mockRefresh = vi.fn();
 const mockPush = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/task-actions", () => ({
   claimTask: (...args: unknown[]) => mockClaimTask(...args),
   releaseTask: (...args: unknown[]) => mockReleaseTask(...args),
   updateTask: (...args: unknown[]) => mockUpdateTask(...args),
@@ -30,7 +30,7 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-actions", () => ({
 
 const mockFetchTimeEntries = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-entry-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/time-entry-actions", () => ({
   fetchTimeEntries: (...args: unknown[]) => mockFetchTimeEntries(...args),
   updateTimeEntry: vi.fn(),
   deleteTimeEntry: vi.fn(),

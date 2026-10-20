@@ -71,7 +71,7 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions", () => 
 // OBS-1001: TrustBalanceCard now embeds the trust transaction dialogs which
 // import the customer-projects server action for the dependent matter
 // combobox. Stub it out so happy-dom doesn't try to load `server-only`.
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/actions", () => ({
   fetchCustomerProjects: vi.fn().mockResolvedValue([]),
 }));
 

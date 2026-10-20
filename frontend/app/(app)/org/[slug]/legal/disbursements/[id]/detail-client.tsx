@@ -26,7 +26,7 @@ import {
   submitForApprovalAction,
   uploadReceiptAction,
 } from "@/app/(app)/org/[slug]/legal/disbursements/actions";
-import { getDownloadUrl } from "@/app/(app)/org/[slug]/projects/[id]/actions";
+import { getDownloadUrl } from "@/app/(app)/org/[slug]/matters/[id]/actions";
 import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
 
 interface DisbursementDetailClientProps {

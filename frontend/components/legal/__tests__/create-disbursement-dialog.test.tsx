@@ -14,7 +14,7 @@ vi.mock("@/app/(app)/org/[slug]/legal/disbursements/actions", () => ({
   fetchCustomers: () => mockFetchCustomers(),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/actions", () => ({
   initiateUpload: vi.fn(),
   confirmUpload: vi.fn(),
   cancelUpload: vi.fn(),

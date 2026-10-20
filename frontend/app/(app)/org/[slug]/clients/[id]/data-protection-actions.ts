@@ -72,8 +72,8 @@ export async function executeAnonymization(
   try {
     const result = await anonymizeClient(customerId, { confirmationName, reason });
 
-    revalidatePath(`/org/${slug}/customers`);
-    revalidatePath(`/org/${slug}/customers/${customerId}`);
+    revalidatePath(`/org/${slug}/clients`);
+    revalidatePath(`/org/${slug}/clients/${customerId}`);
 
     return { success: true, data: result };
   } catch (error) {

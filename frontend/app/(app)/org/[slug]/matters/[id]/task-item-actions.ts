@@ -29,7 +29,7 @@ export async function addTaskItem(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
 
   return { success: true };
 }
@@ -49,7 +49,7 @@ export async function toggleTaskItem(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
 
   return { success: true };
 }
@@ -74,7 +74,7 @@ export async function updateTaskItem(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
 
   return { success: true };
 }
@@ -94,7 +94,7 @@ export async function deleteTaskItem(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
 
   return { success: true };
 }

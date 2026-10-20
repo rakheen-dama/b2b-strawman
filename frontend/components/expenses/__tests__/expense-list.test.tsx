@@ -12,7 +12,7 @@ const mockRestoreExpense = vi.fn();
 const mockCreateExpense = vi.fn();
 const mockUpdateExpense = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/expense-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/expense-actions", () => ({
   deleteExpense: (...args: unknown[]) => mockDeleteExpense(...args),
   writeOffExpense: (...args: unknown[]) => mockWriteOffExpense(...args),
   restoreExpense: (...args: unknown[]) => mockRestoreExpense(...args),
@@ -21,7 +21,7 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/expense-actions", () => ({
 }));
 
 // Mock upload actions used by LogExpenseDialog (rendered inside ExpenseList for edit)
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/actions", () => ({
   initiateUpload: vi.fn(),
   confirmUpload: vi.fn(),
   cancelUpload: vi.fn(),

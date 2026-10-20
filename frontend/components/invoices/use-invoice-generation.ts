@@ -5,7 +5,7 @@ import {
   fetchUnbilledTime,
   createInvoiceDraft,
   validateInvoiceGeneration,
-} from "@/app/(app)/org/[slug]/customers/[id]/invoice-actions";
+} from "@/app/(app)/org/[slug]/clients/[id]/invoice-actions";
 import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
 import type { UnbilledTimeResponse, UnbilledMatterGroup, ValidationCheck } from "@/lib/types";
 import type { PrerequisiteViolation } from "@/components/prerequisite/types";

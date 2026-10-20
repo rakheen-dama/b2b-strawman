@@ -12,7 +12,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@b2mash/ui/button";
-import { deleteBudget } from "@/app/(app)/org/[slug]/projects/[id]/budget-actions";
+import { deleteBudget } from "@/app/(app)/org/[slug]/matters/[id]/budget-actions";
 import { AlertTriangle } from "lucide-react";
 
 interface DeleteBudgetDialogProps {

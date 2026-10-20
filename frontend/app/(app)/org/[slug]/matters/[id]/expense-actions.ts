@@ -78,7 +78,7 @@ export async function createExpense(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   return { success: true };
 }
 
@@ -103,7 +103,7 @@ export async function updateExpense(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   return { success: true };
 }
 
@@ -127,7 +127,7 @@ export async function deleteExpense(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   return { success: true };
 }
 
@@ -145,7 +145,7 @@ export async function writeOffExpense(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   return { success: true };
 }
 
@@ -163,7 +163,7 @@ export async function restoreExpense(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   return { success: true };
 }
 

@@ -40,7 +40,7 @@ import {
   cancelUpload,
   confirmUpload,
   initiateUpload,
-} from "@/app/(app)/org/[slug]/projects/[id]/actions";
+} from "@/app/(app)/org/[slug]/matters/[id]/actions";
 import { TrustTransactionLinkDialog } from "@/components/legal/trust-transaction-link-dialog";
 import { formatCurrency } from "@/lib/format";
 import { useOrgProfile } from "@/lib/org-profile";

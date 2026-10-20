@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { StatementOfAccountDialog } from "@/components/legal/statement-of-account-dialog";
-import { listStatementsAction } from "@/app/(app)/org/[slug]/projects/[id]/statement-actions";
+import { listStatementsAction } from "@/app/(app)/org/[slug]/matters/[id]/statement-actions";
 import { downloadGeneratedDocumentAction } from "@/app/(app)/org/[slug]/settings/templates/template-generation-actions";
 import { useCapabilities } from "@/lib/capabilities";
 import { formatDate, formatCurrency } from "@/lib/format";

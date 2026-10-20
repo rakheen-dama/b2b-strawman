@@ -6,7 +6,7 @@ import type { Client } from "@/lib/types";
 
 const mockUpdateCustomer = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/customers/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/actions", () => ({
   updateCustomer: (...args: unknown[]) => mockUpdateCustomer(...args),
 }));
 

@@ -29,7 +29,7 @@ vi.mock("next/link", () => ({
 }));
 
 // Mock task-actions and time-entry-actions (used by TaskDetailSheet)
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/task-actions", () => ({
   fetchTask: vi.fn().mockResolvedValue({
     id: "task-1",
     matterId: "proj-1",
@@ -50,7 +50,7 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-actions", () => ({
   updateTask: vi.fn(),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-entry-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/time-entry-actions", () => ({
   fetchTimeEntries: vi.fn().mockResolvedValue([]),
 }));
 

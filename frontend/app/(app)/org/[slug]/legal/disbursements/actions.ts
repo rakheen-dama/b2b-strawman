@@ -79,7 +79,7 @@ export async function createDisbursementAction(
   try {
     const result = await createDisbursementApi(data);
     revalidatePath(`/org/${slug}/legal/disbursements`);
-    revalidatePath(`/org/${slug}/projects/${data.matterId}`);
+    revalidatePath(`/org/${slug}/matters/${data.matterId}`);
     return { success: true, data: result };
   } catch (error) {
     const message = error instanceof ApiError ? error.message : "Failed to create disbursement";
@@ -98,7 +98,7 @@ export async function updateDisbursementAction(
     revalidatePath(`/org/${slug}/legal/disbursements/${id}`);
     // Also revalidate the project page so the Disbursements tab reflects the update.
     if (result?.matterId) {
-      revalidatePath(`/org/${slug}/projects/${result.matterId}`);
+      revalidatePath(`/org/${slug}/matters/${result.matterId}`);
     }
     return { success: true, data: result };
   } catch (error) {
@@ -139,7 +139,7 @@ export async function submitForApprovalAction(
     revalidatePath(`/org/${slug}/legal/disbursements`);
     revalidatePath(`/org/${slug}/legal/disbursements/${id}`);
     if (result?.matterId) {
-      revalidatePath(`/org/${slug}/projects/${result.matterId}`);
+      revalidatePath(`/org/${slug}/matters/${result.matterId}`);
     }
     return { success: true, data: result };
   } catch (error) {
@@ -168,7 +168,7 @@ export async function approveDisbursementAction(
     revalidatePath(`/org/${slug}/legal/disbursements`);
     revalidatePath(`/org/${slug}/legal/disbursements/${id}`);
     if (result?.matterId) {
-      revalidatePath(`/org/${slug}/projects/${result.matterId}`);
+      revalidatePath(`/org/${slug}/matters/${result.matterId}`);
     }
     return { success: true, data: result };
   } catch (error) {
@@ -200,7 +200,7 @@ export async function rejectDisbursementAction(
     revalidatePath(`/org/${slug}/legal/disbursements`);
     revalidatePath(`/org/${slug}/legal/disbursements/${id}`);
     if (result?.matterId) {
-      revalidatePath(`/org/${slug}/projects/${result.matterId}`);
+      revalidatePath(`/org/${slug}/matters/${result.matterId}`);
     }
     return { success: true, data: result };
   } catch (error) {

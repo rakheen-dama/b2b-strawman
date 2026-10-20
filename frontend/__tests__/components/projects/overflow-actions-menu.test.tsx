@@ -38,7 +38,7 @@ vi.mock("@/lib/capabilities", () => ({
 }));
 
 // Mock server actions
-vi.mock("@/app/(app)/org/[slug]/projects/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/actions", () => ({
   archiveProject: vi.fn(),
 }));
 

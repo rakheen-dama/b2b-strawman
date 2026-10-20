@@ -7,7 +7,7 @@ import type { Client } from "@/lib/types";
 import { NewMatterPageClient } from "./new-matter-page-client";
 
 /**
- * `/org/[slug]/projects/new` route.
+ * `/org/[slug]/matters/new` route.
  *
  * Full matter intake page with project creation form alongside the AI intake panel.
  * Deep-links from "New Matter for this client" on customer detail pages navigate here

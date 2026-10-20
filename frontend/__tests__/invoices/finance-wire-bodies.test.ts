@@ -47,18 +47,18 @@ vi.mock("@/lib/api/capabilities", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-import { createProjectBillingRate } from "@/app/(app)/org/[slug]/projects/[id]/rate-actions";
-import { createCustomerBillingRate } from "@/app/(app)/org/[slug]/customers/[id]/rate-actions";
-import { validateInvoiceGeneration } from "@/app/(app)/org/[slug]/customers/[id]/invoice-actions";
-import { resolveRate } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
+import { createProjectBillingRate } from "@/app/(app)/org/[slug]/matters/[id]/rate-actions";
+import { createCustomerBillingRate } from "@/app/(app)/org/[slug]/clients/[id]/rate-actions";
+import { validateInvoiceGeneration } from "@/app/(app)/org/[slug]/clients/[id]/invoice-actions";
+import { resolveRate } from "@/app/(app)/org/[slug]/matters/[id]/time-entry-actions";
 import { fetchInvoices } from "@/app/(app)/org/[slug]/invoices/invoice-crud-actions";
 import {
   getOrgProfitability,
   getProjectProfitability,
   getCustomerProfitability,
 } from "@/app/(app)/org/[slug]/profitability/actions";
-import { fetchProjectTimeSummary } from "@/app/(app)/org/[slug]/projects/[id]/time-summary-actions";
-import { deleteExpense } from "@/app/(app)/org/[slug]/projects/[id]/expense-actions";
+import { fetchProjectTimeSummary } from "@/app/(app)/org/[slug]/matters/[id]/time-summary-actions";
+import { deleteExpense } from "@/app/(app)/org/[slug]/matters/[id]/expense-actions";
 import { loadPreview } from "@/lib/api/billing-runs";
 
 const RATE = {

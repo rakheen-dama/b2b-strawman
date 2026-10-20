@@ -10,7 +10,7 @@ vi.mock("@/app/(app)/org/[slug]/settings/collections/actions", () => ({
 }));
 
 const mockSetCollectionsExemptionAction = vi.fn();
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/actions", () => ({
   setCollectionsExemptionAction: (...args: unknown[]) => mockSetCollectionsExemptionAction(...args),
 }));
 

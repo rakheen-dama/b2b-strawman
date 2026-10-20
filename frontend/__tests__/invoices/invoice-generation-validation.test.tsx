@@ -9,7 +9,7 @@ const mockValidateInvoiceGeneration = vi.fn();
 const mockFetchUnbilledTime = vi.fn();
 const mockCreateInvoiceDraft = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/invoice-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/invoice-actions", () => ({
   fetchUnbilledTime: (...args: unknown[]) => mockFetchUnbilledTime(...args),
   createInvoiceDraft: (...args: unknown[]) => mockCreateInvoiceDraft(...args),
   validateInvoiceGeneration: (...args: unknown[]) => mockValidateInvoiceGeneration(...args),

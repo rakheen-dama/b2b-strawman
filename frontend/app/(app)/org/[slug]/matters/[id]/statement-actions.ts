@@ -34,7 +34,7 @@ export async function generateStatementAction(
 ): Promise<GenerateStatementResult> {
   try {
     const data = await generateStatement(projectId, req);
-    revalidatePath(`/org/${slug}/projects/${projectId}`);
+    revalidatePath(`/org/${slug}/matters/${projectId}`);
     return { success: true, data };
   } catch (err) {
     if (err instanceof ApiError && err.status === 403) {

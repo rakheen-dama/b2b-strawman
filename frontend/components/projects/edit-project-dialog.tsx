@@ -25,7 +25,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { updateProject, fetchActiveCustomers } from "@/app/(app)/org/[slug]/projects/actions";
+import { updateProject, fetchActiveCustomers } from "@/app/(app)/org/[slug]/matters/actions";
 import type { Matter, Client } from "@/lib/types";
 import { editProjectSchema, type EditProjectFormData } from "@/lib/schemas/project";
 import { nativeSelectClassName } from "@/lib/styles/native-select";

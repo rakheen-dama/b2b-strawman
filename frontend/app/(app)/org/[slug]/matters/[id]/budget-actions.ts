@@ -30,7 +30,7 @@ export async function upsertBudget(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   return { success: true };
 }
 
@@ -47,7 +47,7 @@ export async function deleteBudget(slug: string, projectId: string): Promise<Act
       }
       if (error.status === 404) {
         // Already deleted, treat as success
-        revalidatePath(`/org/${slug}/projects/${projectId}`);
+        revalidatePath(`/org/${slug}/matters/${projectId}`);
         return { success: true };
       }
       return { success: false, error: error.message };
@@ -55,6 +55,6 @@ export async function deleteBudget(slug: string, projectId: string): Promise<Act
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
   return { success: true };
 }

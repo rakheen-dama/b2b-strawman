@@ -24,7 +24,7 @@ import {
 import { VisibilityToggle } from "@/components/documents/visibility-toggle";
 import { CustomerDocumentUpload } from "@/components/documents/customer-document-upload";
 import { formatDate, formatFileSize } from "@/lib/format";
-import { getDownloadUrl } from "@/app/(app)/org/[slug]/projects/[id]/actions";
+import { getDownloadUrl } from "@/app/(app)/org/[slug]/matters/[id]/actions";
 import type { Document, DocumentStatus } from "@/lib/types";
 
 // --- Helpers ---

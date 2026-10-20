@@ -13,7 +13,7 @@ import {
 import { Button } from "@b2mash/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle } from "lucide-react";
-import { transitionCustomerLifecycle } from "@/app/(app)/org/[slug]/customers/[id]/lifecycle-actions";
+import { transitionCustomerLifecycle } from "@/app/(app)/org/[slug]/clients/[id]/lifecycle-actions";
 import { useTerminology } from "@/lib/terminology";
 import type { LifecycleStatus } from "@/lib/types";
 import type { PrerequisiteCheck } from "@/components/prerequisite/types";

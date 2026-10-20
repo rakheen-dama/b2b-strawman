@@ -4,19 +4,18 @@ import { CLIENTS_PATH } from "@/lib/api/clients";
 import { NextResponse } from "next/server";
 
 /**
- * BFF proxy for GET /api/customers.
+ * BFF proxy for GET /api/clients.
  *
- * Forwards browser-origin `GET /api/customers[?<query>]` to the API
+ * Forwards browser-origin `GET /api/clients[?<query>]` to the API
  * gateway (or backend in mock mode). Required because some client-side
  * flows (combobox fetches, ad-hoc prefetch, QA harnesses) hit
- * `/api/customers` on the Next.js origin (port 3000) instead of the
+ * `/api/clients` on the Next.js origin (port 3000) instead of the
  * gateway (port 8443). Without this route, Next.js would respond 404.
  *
  * Upstream target is the Clients collection (`CLIENTS_PATH` from `lib/api/clients.ts`;
  * Phase 87 S2/S4, ADR-337). It is a raw pass-through (status, body and content-type
  * verbatim), so it uses the path constant rather than `listClients()`, which parses and
- * throws. This Next.js route file itself stays at `app/api/customers/route.ts` until 610D
- * renames it.
+ * throws. Moved from `app/api/customers/route.ts` in Phase 87 610D.
  *
  * Server components and actions should call the `lib/api/clients.ts` functions
  * (e.g. `listClients()`) — they route through the gateway on their own. This handler

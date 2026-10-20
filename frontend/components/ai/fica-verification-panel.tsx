@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Loader2, Sparkles } from "lucide-react";
 import { FicaResultDisplay } from "@/components/ai/fica-result-display";
 import { ExecutionGateCard } from "@/components/ai/execution-gate-card";
-import { invokeFicaVerificationAction } from "@/app/(app)/org/[slug]/customers/[id]/fica-actions";
+import { invokeFicaVerificationAction } from "@/app/(app)/org/[slug]/clients/[id]/fica-actions";
 import { approveGateAction, rejectGateAction } from "@/app/(app)/org/[slug]/ai/reviews/actions";
 import type { FicaVerificationResponse } from "@/lib/api/ai";
 import Link from "next/link";

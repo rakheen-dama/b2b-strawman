@@ -25,7 +25,7 @@ export async function invokeContractReviewAction(
 
   try {
     const result = await invokeContractReview(documentId, projectId);
-    revalidatePath(`/org/${slug}/projects/${projectId}`);
+    revalidatePath(`/org/${slug}/matters/${projectId}`);
     if (result.status === "FAILED") {
       return {
         success: false,
@@ -76,7 +76,7 @@ export async function invokeDraftingAction(
 
   try {
     const result = await invokeDrafting(templateId, projectId);
-    revalidatePath(`/org/${slug}/projects/${projectId}`);
+    revalidatePath(`/org/${slug}/matters/${projectId}`);
     if (result.status === "FAILED") {
       return {
         success: false,

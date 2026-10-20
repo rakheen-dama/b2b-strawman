@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { deleteExpense } from "@/app/(app)/org/[slug]/projects/[id]/expense-actions";
+import { deleteExpense } from "@/app/(app)/org/[slug]/matters/[id]/expense-actions";
 
 type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>;
 type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>["size"]>;

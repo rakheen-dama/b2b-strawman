@@ -27,7 +27,7 @@ function revalidateInvoicePaths(slug: string, invoiceId: string, customerId?: st
   revalidatePath(`/org/${slug}/invoices`);
   revalidatePath(`/org/${slug}/invoices/${invoiceId}`);
   if (customerId) {
-    revalidatePath(`/org/${slug}/customers/${customerId}`);
+    revalidatePath(`/org/${slug}/clients/${customerId}`);
   }
 }
 

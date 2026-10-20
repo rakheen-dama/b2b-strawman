@@ -46,7 +46,7 @@ export async function createRequestAction(
 ): Promise<ActionResult> {
   try {
     const data = await createRequest(input);
-    revalidatePath(`/org/${slug}/customers/${customerId}`);
+    revalidatePath(`/org/${slug}/clients/${customerId}`);
     return { success: true, data };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -69,7 +69,7 @@ export async function sendRequestAction(
 ): Promise<ActionResult> {
   try {
     const data = await sendRequest(requestId);
-    revalidatePath(`/org/${slug}/customers/${customerId}`);
+    revalidatePath(`/org/${slug}/clients/${customerId}`);
     return { success: true, data };
   } catch (error) {
     if (error instanceof ApiError) {

@@ -12,12 +12,12 @@ vi.mock("@/lib/actions/prerequisite-actions", () => ({
   updateEntityCustomFieldsAction: vi.fn(),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/lifecycle-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/lifecycle-actions", () => ({
   transitionCustomerLifecycle: vi.fn(),
 }));
 
 import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
-import { transitionCustomerLifecycle } from "@/app/(app)/org/[slug]/customers/[id]/lifecycle-actions";
+import { transitionCustomerLifecycle } from "@/app/(app)/org/[slug]/clients/[id]/lifecycle-actions";
 
 const mockCheckPrereqs = vi.mocked(checkPrerequisitesAction);
 const mockTransition = vi.mocked(transitionCustomerLifecycle);

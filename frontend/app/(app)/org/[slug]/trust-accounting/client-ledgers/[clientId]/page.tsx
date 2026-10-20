@@ -71,7 +71,7 @@ export default async function ClientDetailPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ slug: string; customerId: string }>;
+  params: Promise<{ slug: string; clientId: string }>;
   searchParams: Promise<{
     status?: string;
     type?: string;
@@ -80,7 +80,7 @@ export default async function ClientDetailPage({
     page?: string;
   }>;
 }) {
-  const { slug, customerId } = await params;
+  const { slug, clientId } = await params;
   const search = await searchParams;
 
   // Module gating
@@ -123,7 +123,7 @@ export default async function ClientDetailPage({
   // Fetch client ledger card
   let ledgerCard: ClientLedgerCard | null = null;
   try {
-    ledgerCard = await fetchClientLedger(accountId, customerId);
+    ledgerCard = await fetchClientLedger(accountId, clientId);
   } catch {
     notFound();
   }
@@ -136,7 +136,7 @@ export default async function ClientDetailPage({
   let historyPage: ClientHistoryPage | null = null;
   let fetchError = false;
   try {
-    historyPage = await fetchClientHistory(accountId, customerId, {
+    historyPage = await fetchClientHistory(accountId, clientId, {
       status: search.status,
       type: search.type,
       dateFrom: search.dateFrom,
@@ -160,7 +160,7 @@ export default async function ClientDetailPage({
       if (value && key !== "page") newParams.set(key, value);
     }
     const qs = newParams.toString();
-    return `/org/${slug}/trust-accounting/client-ledgers/${customerId}${qs ? `?${qs}` : ""}`;
+    return `/org/${slug}/trust-accounting/client-ledgers/${clientId}${qs ? `?${qs}` : ""}`;
   }
 
   function pageUrl(page: number): string {
@@ -170,7 +170,7 @@ export default async function ClientDetailPage({
     }
     newParams.set("page", String(page));
     const qs = newParams.toString();
-    return `/org/${slug}/trust-accounting/client-ledgers/${customerId}?${qs}`;
+    return `/org/${slug}/trust-accounting/client-ledgers/${clientId}?${qs}`;
   }
 
   // Compute running balance from transaction history
@@ -272,7 +272,7 @@ export default async function ClientDetailPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <PrintStatementButton accountId={accountId} customerId={customerId} />
+          <PrintStatementButton accountId={accountId} customerId={clientId} />
         </CardContent>
       </Card>
 
@@ -335,7 +335,7 @@ export default async function ClientDetailPage({
       </div>
 
       {/* Date Range Filters */}
-      <ClientHistoryFilters slug={slug} customerId={customerId} search={search} />
+      <ClientHistoryFilters slug={slug} customerId={clientId} search={search} />
 
       {/* Error State */}
       {fetchError && (

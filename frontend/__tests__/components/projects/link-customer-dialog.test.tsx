@@ -8,7 +8,7 @@ import type { Client } from "@/lib/types";
 const mockFetchCustomers = vi.fn();
 const mockLinkCustomerToProject = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/actions", () => ({
   fetchCustomers: (...args: unknown[]) => mockFetchCustomers(...args),
   linkCustomerToProject: (...args: unknown[]) => mockLinkCustomerToProject(...args),
   unlinkCustomerFromProject: vi.fn().mockResolvedValue({ success: true }),

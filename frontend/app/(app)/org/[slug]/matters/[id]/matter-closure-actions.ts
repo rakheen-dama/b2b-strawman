@@ -61,8 +61,8 @@ export async function closeMatterAction(
   }
   try {
     const data = await closeMatter(projectId, req);
-    revalidatePath(`/org/${slug}/projects/${projectId}`);
-    revalidatePath(`/org/${slug}/projects`);
+    revalidatePath(`/org/${slug}/matters/${projectId}`);
+    revalidatePath(`/org/${slug}/matters`);
     return { success: true, data };
   } catch (err) {
     if (err instanceof ClosureGatesFailedError) {

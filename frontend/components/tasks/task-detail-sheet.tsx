@@ -12,8 +12,8 @@ import { TaskDetailHeader } from "@/components/tasks/task-detail-header";
 import { TaskDetailMetadata } from "@/components/tasks/task-detail-metadata";
 import { RecurrenceEditor } from "@/components/tasks/task-recurrence-editor";
 import { toast } from "sonner";
-import { fetchTask, updateTask } from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
-import { fetchTimeEntries } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
+import { fetchTask, updateTask } from "@/app/(app)/org/[slug]/matters/[id]/task-actions";
+import { fetchTimeEntries } from "@/app/(app)/org/[slug]/matters/[id]/time-entry-actions";
 import type {
   Task,
   TaskStatus,

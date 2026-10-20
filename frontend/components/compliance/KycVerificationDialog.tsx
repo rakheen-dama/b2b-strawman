@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, CheckCircle2, XCircle, AlertTriangle, Info } from "lucide-react";
 import { kycVerifySchema, type KycVerifyFormData } from "@/lib/schemas/kyc";
-import { verifyKycAction } from "@/app/(app)/org/[slug]/customers/[id]/kyc-actions";
+import { verifyKycAction } from "@/app/(app)/org/[slug]/clients/[id]/kyc-actions";
 import type { KycVerifyResponse } from "@/lib/types";
 
 interface KycVerificationDialogProps {

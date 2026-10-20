@@ -189,7 +189,8 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     await expect(dialog.getByLabel(/Work Type/)).toHaveValue("CONVEYANCING");
     await dialog.getByRole("button", { name: "Create Matter" }).click();
 
-    await page.waitForURL(/\/projects\/[0-9a-f-]{36}/, { timeout: 15_000 });
+    // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
+    await page.waitForURL(/\/matters\/[0-9a-f-]{36}/, { timeout: 15_000 });
     await expect(page.getByRole("heading", { level: 1, name: matterName() })).toBeVisible();
     await expect(page.locator("main")).toContainText("CONVEYANCING");
     await expect(page.locator("main")).toContainText(clientName());
@@ -217,7 +218,8 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
       const link = page.getByRole("link", { name: new RegExp(escapeRegExp(matterName())) }).first();
       await expect(link).toBeVisible({ timeout: 15_000 });
       await link.click();
-      await expect(page).toHaveURL(/\/projects\/[0-9a-f-]{36}/, { timeout: 15_000 });
+      // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
+      await expect(page).toHaveURL(/\/matters\/[0-9a-f-]{36}/, { timeout: 15_000 });
       await expect(
         page.getByRole("heading", { level: 1, name: matterName() }),
         `matter content rendered after click-through #${i}`

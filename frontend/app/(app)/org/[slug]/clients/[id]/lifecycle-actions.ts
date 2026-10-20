@@ -48,8 +48,8 @@ export async function transitionCustomerLifecycle(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/customers`);
-  revalidatePath(`/org/${slug}/customers/${customerId}`);
+  revalidatePath(`/org/${slug}/clients`);
+  revalidatePath(`/org/${slug}/clients/${customerId}`);
 
   return { success: true };
 }

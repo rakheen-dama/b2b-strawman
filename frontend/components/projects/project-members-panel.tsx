@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table";
 import { AddMemberDialog } from "@/components/projects/add-member-dialog";
 import { TransferLeadDialog } from "@/components/projects/transfer-lead-dialog";
-import { removeProjectMember } from "@/app/(app)/org/[slug]/projects/[id]/member-actions";
+import { removeProjectMember } from "@/app/(app)/org/[slug]/matters/[id]/member-actions";
 import { formatDate } from "@/lib/format";
 import type { MatterMember, MatterRole } from "@/lib/types";
 

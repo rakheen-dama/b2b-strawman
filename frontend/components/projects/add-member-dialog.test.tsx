@@ -8,7 +8,7 @@ import type { OrgMember, MatterMember } from "@/lib/types";
 const mockFetchOrgMembers = vi.fn();
 const mockAddProjectMember = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/member-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/member-actions", () => ({
   fetchOrgMembers: (...args: unknown[]) => mockFetchOrgMembers(...args),
   addProjectMember: (...args: unknown[]) => mockAddProjectMember(...args),
 }));

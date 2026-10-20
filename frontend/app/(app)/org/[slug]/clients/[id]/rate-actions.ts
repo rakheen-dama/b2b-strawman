@@ -39,7 +39,7 @@ export async function createCustomerBillingRate(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/customers/${customerId}`);
+  revalidatePath(`/org/${slug}/clients/${customerId}`);
   return { success: true };
 }
 
@@ -71,7 +71,7 @@ export async function updateCustomerBillingRate(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/customers/${customerId}`);
+  revalidatePath(`/org/${slug}/clients/${customerId}`);
   return { success: true };
 }
 
@@ -95,6 +95,6 @@ export async function deleteCustomerBillingRate(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/customers/${customerId}`);
+  revalidatePath(`/org/${slug}/clients/${customerId}`);
   return { success: true };
 }

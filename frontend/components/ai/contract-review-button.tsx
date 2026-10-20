@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Loader2, Sparkles } from "lucide-react";
 import { ContractReviewResults } from "@/components/ai/contract-review-results";
 import { ExecutionGateCard } from "@/components/ai/execution-gate-card";
-import { invokeContractReviewAction } from "@/app/(app)/org/[slug]/projects/[id]/ai-review-actions";
+import { invokeContractReviewAction } from "@/app/(app)/org/[slug]/matters/[id]/ai-review-actions";
 import { approveGateAction, rejectGateAction } from "@/app/(app)/org/[slug]/ai/reviews/actions";
 import type { ContractReviewResponse } from "@/lib/api/ai";
 import Link from "next/link";

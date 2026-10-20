@@ -36,8 +36,8 @@ export async function reopenMatterAction(
   }
   try {
     const data = await reopenMatter(projectId, notes);
-    revalidatePath(`/org/${slug}/projects/${projectId}`);
-    revalidatePath(`/org/${slug}/projects`);
+    revalidatePath(`/org/${slug}/matters/${projectId}`);
+    revalidatePath(`/org/${slug}/matters`);
     return { success: true, data };
   } catch (err) {
     if (err instanceof RetentionElapsedError) {

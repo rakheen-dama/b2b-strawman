@@ -66,7 +66,7 @@ vi.mock("@/lib/actions/notifications", () => ({
 }));
 
 import { updateProjectNamingPattern } from "@/app/(app)/org/[slug]/settings/project-naming/actions";
-import { verifyKycAction } from "@/app/(app)/org/[slug]/customers/[id]/kyc-actions";
+import { verifyKycAction } from "@/app/(app)/org/[slug]/clients/[id]/kyc-actions";
 import {
   invokeFicaVerification,
   invokeMatterIntake,

@@ -50,7 +50,7 @@ export async function completeChecklistItem(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/customers/${customerId}`);
+  revalidatePath(`/org/${slug}/clients/${customerId}`);
   return { success: true };
 }
 
@@ -74,7 +74,7 @@ export async function skipChecklistItem(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/customers/${customerId}`);
+  revalidatePath(`/org/${slug}/clients/${customerId}`);
   return { success: true };
 }
 
@@ -97,7 +97,7 @@ export async function reopenChecklistItem(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/customers/${customerId}`);
+  revalidatePath(`/org/${slug}/clients/${customerId}`);
   return { success: true };
 }
 
@@ -120,6 +120,6 @@ export async function instantiateChecklist(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/customers/${customerId}`);
+  revalidatePath(`/org/${slug}/clients/${customerId}`);
   return { success: true };
 }

@@ -143,7 +143,8 @@ export async function openMatter(
   const link = page.getByRole("link", { name: new RegExp(escapeRegExp(matterName)) }).first();
   await expect(link, `matter "${matterName}" should be listed`).toBeVisible({ timeout: 15_000 });
   await clickThrough(link, page.getByRole("heading", { level: 1, name: matterName }));
-  await expect(page).toHaveURL(/\/projects\/[0-9a-f-]{36}/);
+  // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
+  await expect(page).toHaveURL(/\/matters\/[0-9a-f-]{36}/);
 }
 
 /**
@@ -155,7 +156,8 @@ export async function openClient(page: Page, clientName: string): Promise<void> 
   const link = page.getByRole("link", { name: clientName, exact: true });
   await expect(link, `client "${clientName}" should be listed`).toBeVisible({ timeout: 15_000 });
   await clickThrough(link, page.getByRole("heading", { level: 1, name: clientName }));
-  await expect(page).toHaveURL(/\/customers\/[0-9a-f-]{36}/);
+  // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
+  await expect(page).toHaveURL(/\/clients\/[0-9a-f-]{36}/);
 }
 
 /**
@@ -216,7 +218,8 @@ export async function createClient(page: Page, client: NewClient): Promise<void>
     dialog.getByRole("button", { name: "Create Client" }),
     page.getByRole("heading", { level: 1, name: client.name })
   );
-  await expect(page).toHaveURL(/\/customers\/[0-9a-f-]{36}/);
+  // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
+  await expect(page).toHaveURL(/\/clients\/[0-9a-f-]{36}/);
 }
 
 /** PROSPECT → ONBOARDING from the client page (new matters cannot be opened for a prospect). */

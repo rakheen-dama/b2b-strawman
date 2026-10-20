@@ -71,7 +71,7 @@ export async function createInvoiceDraft(
 ): Promise<CreateDraftResult> {
   try {
     const invoice = await api.post<InvoiceResponse>("/api/invoices", request);
-    revalidatePath(`/org/${slug}/customers/${customerId}`);
+    revalidatePath(`/org/${slug}/clients/${customerId}`);
     return { success: true, invoice };
   } catch (error) {
     if (error instanceof ApiError) {

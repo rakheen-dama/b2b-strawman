@@ -38,7 +38,7 @@ import { AddProjectRateDialog } from "@/components/rates/add-project-rate-dialog
 import {
   updateProjectBillingRate,
   deleteProjectBillingRate,
-} from "@/app/(app)/org/[slug]/projects/[id]/rate-actions";
+} from "@/app/(app)/org/[slug]/matters/[id]/rate-actions";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { BillingRate, MatterMember } from "@/lib/types";
 

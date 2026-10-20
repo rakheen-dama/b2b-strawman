@@ -23,7 +23,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { updateCustomer } from "@/app/(app)/org/[slug]/customers/actions";
+import { updateCustomer } from "@/app/(app)/org/[slug]/clients/actions";
 import type { Client, ClientType } from "@/lib/types";
 import { editCustomerSchema, type EditCustomerFormData } from "@/lib/schemas/customer";
 import { COUNTRIES } from "@/lib/constants/countries";

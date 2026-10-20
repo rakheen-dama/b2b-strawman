@@ -154,7 +154,7 @@ export default function ProfilePage() {
                   Customer
                 </dt>
                 <dd className="mt-1 text-sm text-slate-900">
-                  {profile.customerName}
+                  {profile.clientName}
                 </dd>
               </div>
             </dl>

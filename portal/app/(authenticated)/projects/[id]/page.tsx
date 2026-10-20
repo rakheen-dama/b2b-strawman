@@ -69,16 +69,16 @@ export default function ProjectDetailPage() {
     try {
       const [project, tasks, documents, comments, summary] =
         await Promise.all([
-          portalGet<PortalProjectDetail>(`/portal/projects/${projectId}`),
-          portalGet<PortalTask[]>(`/portal/projects/${projectId}/tasks`),
+          portalGet<PortalProjectDetail>(`/portal/matters/${projectId}`),
+          portalGet<PortalTask[]>(`/portal/matters/${projectId}/tasks`),
           portalGet<PortalDocument[]>(
-            `/portal/projects/${projectId}/documents`,
+            `/portal/matters/${projectId}/documents`,
           ),
           portalGet<PortalComment[]>(
-            `/portal/projects/${projectId}/comments`,
+            `/portal/matters/${projectId}/comments`,
           ),
           portalGet<PortalProjectSummary>(
-            `/portal/projects/${projectId}/summary`,
+            `/portal/matters/${projectId}/summary`,
           ),
         ]);
 
@@ -103,7 +103,7 @@ export default function ProjectDetailPage() {
   function handleCommentPosted() {
     // Refetch comments
     portalGet<PortalComment[]>(
-      `/portal/projects/${projectId}/comments`,
+      `/portal/matters/${projectId}/comments`,
     ).then((comments) => {
       setData((prev) => (prev ? { ...prev, comments } : prev));
     }).catch(() => {});

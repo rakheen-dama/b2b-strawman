@@ -50,8 +50,8 @@ describe("ExchangePage", () => {
         JSON.stringify({
           token: "jwt-token-here",
           email: "alice@testcorp.com",
-          customerId: "cust-1",
-          customerName: "Test Corp",
+          clientId: "cust-1",
+          clientName: "Test Corp",
         }),
         { status: 200 },
       ),
@@ -121,8 +121,8 @@ describe("ExchangePage", () => {
         JSON.stringify({
           token: "jwt-token-here",
           email: "alice@testcorp.com",
-          customerId: "cust-1",
-          customerName: "Test Corp",
+          clientId: "cust-1",
+          clientName: "Test Corp",
         }),
         { status: 200 },
       ),
@@ -148,8 +148,8 @@ describe("ExchangePage", () => {
         JSON.stringify({
           token: "jwt-token-here",
           email: "alice@testcorp.com",
-          customerId: "cust-1",
-          customerName: "Test Corp",
+          clientId: "cust-1",
+          clientName: "Test Corp",
         }),
         { status: 200 },
       ),

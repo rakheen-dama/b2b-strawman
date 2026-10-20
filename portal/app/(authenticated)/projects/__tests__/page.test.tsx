@@ -120,7 +120,7 @@ describe("ProjectsPage", () => {
 
   it("shows error state on fetch failure", async () => {
     mockPortalGet.mockImplementation((path: string) => {
-      if (path === "/portal/projects") {
+      if (path === "/portal/matters") {
         return Promise.reject(new Error("Network error"));
       }
       // PendingAcceptancesList also calls portalGet — return empty to keep it quiet
@@ -136,7 +136,7 @@ describe("ProjectsPage", () => {
 
   it("filters projects via the All / Active / Past segmented control", async () => {
     mockPortalGet.mockImplementation((path: string) => {
-      if (path === "/portal/projects") {
+      if (path === "/portal/matters") {
         return Promise.resolve([
           {
             id: "proj-active",

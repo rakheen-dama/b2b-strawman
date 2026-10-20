@@ -95,7 +95,7 @@ describe("CommentSection", () => {
     });
 
     expect(mockPortalPost).toHaveBeenCalledWith(
-      "/portal/projects/proj-1/comments",
+      "/portal/matters/proj-1/comments",
       { content: "My comment" },
     );
     expect(onCommentPosted).toHaveBeenCalled();

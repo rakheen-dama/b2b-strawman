@@ -28,8 +28,8 @@ interface RequestDetail {
   id: string;
   requestNumber: string;
   status: string;
-  projectId: string;
-  projectName: string;
+  matterId: string;
+  matterName: string;
   totalItems: number;
   submittedItems: number;
   acceptedItems: number;
@@ -95,7 +95,7 @@ export default function RequestDetailPage({
           {detail.requestNumber}
         </p>
         <h1 className="font-display mt-1 text-2xl font-semibold text-slate-900">
-          {detail.projectName}
+          {detail.matterName}
         </h1>
         <p className="mt-2 text-sm text-slate-600">
           {detail.status === "COMPLETED"

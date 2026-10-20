@@ -71,8 +71,8 @@ describe("ProfilePage", () => {
   it("renders contact info after loading", async () => {
     mockPortalGet.mockResolvedValue({
       contactId: "contact-1",
-      customerId: "cust-1",
-      customerName: "Acme Corp",
+      clientId: "cust-1",
+      clientName: "Acme Corp",
       email: "alice@acme.com",
       displayName: "Alice Smith",
       role: "PRIMARY",
@@ -90,8 +90,8 @@ describe("ProfilePage", () => {
   it("shows customer name", async () => {
     mockPortalGet.mockResolvedValue({
       contactId: "contact-1",
-      customerId: "cust-1",
-      customerName: "Acme Corp",
+      clientId: "cust-1",
+      clientName: "Acme Corp",
       email: "alice@acme.com",
       displayName: "Alice Smith",
       role: "BILLING",
@@ -109,8 +109,8 @@ describe("ProfilePage", () => {
   it("displays GENERAL role as client-facing 'Contact' label", async () => {
     mockPortalGet.mockResolvedValue({
       contactId: "contact-1",
-      customerId: "cust-1",
-      customerName: "Acme Corp",
+      clientId: "cust-1",
+      clientName: "Acme Corp",
       email: "alice@acme.com",
       displayName: "Alice Smith",
       role: "GENERAL",
@@ -127,8 +127,8 @@ describe("ProfilePage", () => {
   it("displays PRIMARY role as 'Primary Contact'", async () => {
     mockPortalGet.mockResolvedValue({
       contactId: "contact-1",
-      customerId: "cust-1",
-      customerName: "Acme Corp",
+      clientId: "cust-1",
+      clientName: "Acme Corp",
       email: "alice@acme.com",
       displayName: "Alice Smith",
       role: "PRIMARY",
@@ -144,8 +144,8 @@ describe("ProfilePage", () => {
   it("displays BILLING role as 'Billing Contact'", async () => {
     mockPortalGet.mockResolvedValue({
       contactId: "contact-1",
-      customerId: "cust-1",
-      customerName: "Acme Corp",
+      clientId: "cust-1",
+      clientName: "Acme Corp",
       email: "alice@acme.com",
       displayName: "Alice Smith",
       role: "BILLING",
@@ -161,8 +161,8 @@ describe("ProfilePage", () => {
   it("falls back to prettified enum for unknown role codes", async () => {
     mockPortalGet.mockResolvedValue({
       contactId: "contact-1",
-      customerId: "cust-1",
-      customerName: "Acme Corp",
+      clientId: "cust-1",
+      clientName: "Acme Corp",
       email: "alice@acme.com",
       displayName: "Alice Smith",
       role: "APPROVER",

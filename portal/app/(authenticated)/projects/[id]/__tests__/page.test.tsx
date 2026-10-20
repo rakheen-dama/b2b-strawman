@@ -104,7 +104,7 @@ const mockComments = [
 ];
 
 const mockSummary = {
-  projectId: "proj-1",
+  matterId: "proj-1",
   totalHours: 24.5,
   billableHours: 20.0,
   lastActivityAt: "2026-02-20T14:00:00Z",
@@ -194,5 +194,28 @@ describe("ProjectDetailPage", () => {
     });
 
     expect(screen.queryByText("Project Summary")).not.toBeInTheDocument();
+  });
+
+  // Phase 87 S3 Batch 5 (ADR-337, Epic 609G): /portal/projects/** 404s since 609F (#1603).
+  it("fetches every matter resource from /portal/matters", async () => {
+    setupMocks();
+
+    render(<ProjectDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Website Redesign")).toBeInTheDocument();
+    });
+
+    const paths = mockPortalGet.mock.calls.map(([p]) => p as string);
+    expect(paths).toEqual(
+      expect.arrayContaining([
+        "/portal/matters/proj-1",
+        "/portal/matters/proj-1/tasks",
+        "/portal/matters/proj-1/documents",
+        "/portal/matters/proj-1/comments",
+        "/portal/matters/proj-1/summary",
+      ]),
+    );
+    expect(paths.some((p) => p.startsWith("/portal/projects"))).toBe(false);
   });
 });

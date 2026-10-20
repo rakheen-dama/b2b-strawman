@@ -10,8 +10,8 @@ interface PortalRequest {
   id: string;
   requestNumber: string;
   status: string;
-  projectId: string;
-  projectName: string;
+  matterId: string;
+  matterName: string;
   totalItems: number;
   submittedItems: number;
   acceptedItems: number;
@@ -86,7 +86,7 @@ export default function RequestsPage() {
                       {r.requestNumber}
                     </p>
                     <p className="mt-1 font-medium text-slate-900">
-                      {r.projectName}
+                      {r.matterName}
                     </p>
                   </div>
                   <div className="text-right text-sm text-slate-600">

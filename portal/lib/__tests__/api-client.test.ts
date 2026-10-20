@@ -31,11 +31,11 @@ describe("api-client", () => {
     mockGetJwt.mockReturnValue("test-jwt-token");
     mockFetch.mockResolvedValue(new Response(JSON.stringify({}), { status: 200 }));
 
-    await portalFetch("/portal/projects");
+    await portalFetch("/portal/matters");
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
     const [url, options] = mockFetch.mock.calls[0];
-    expect(url).toBe("http://localhost:8080/portal/projects");
+    expect(url).toBe("http://localhost:8080/portal/matters");
     const headers = options.headers as Headers;
     expect(headers.get("Authorization")).toBe("Bearer test-jwt-token");
   });
@@ -43,10 +43,10 @@ describe("api-client", () => {
   it("portalFetch prepends base URL to path", async () => {
     mockFetch.mockResolvedValue(new Response(JSON.stringify({}), { status: 200 }));
 
-    await portalFetch("/portal/projects");
+    await portalFetch("/portal/matters");
 
     const [url] = mockFetch.mock.calls[0];
-    expect(url).toBe("http://localhost:8080/portal/projects");
+    expect(url).toBe("http://localhost:8080/portal/matters");
   });
 
   it("portalFetch clears auth and redirects on 401", async () => {
@@ -60,7 +60,7 @@ describe("api-client", () => {
       value: { ...originalLocation, href: "" },
     });
 
-    await expect(portalFetch("/portal/projects")).rejects.toThrow("Unauthorized");
+    await expect(portalFetch("/portal/matters")).rejects.toThrow("Unauthorized");
     expect(mockClearAuth).toHaveBeenCalledTimes(1);
     expect(window.location.href).toBe("/login");
 
@@ -106,7 +106,7 @@ describe("api-client", () => {
       }),
     );
 
-    const result = await portalGet<{ id: string; name: string }>("/portal/projects/1");
+    const result = await portalGet<{ id: string; name: string }>("/portal/matters/1");
 
     expect(result).toEqual(payload);
   });

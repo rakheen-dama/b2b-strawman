@@ -32,6 +32,7 @@ import type {
   LifecycleHistoryEntry,
   LifecycleStatus,
   Matter,
+  PortalContactSummary,
   SetEntityTagsRequest,
   StandaloneAnonymizationResult,
   StandaloneExportResult,
@@ -43,8 +44,6 @@ import type {
   UploadInitRequest,
   UploadInitResponse,
 } from "@/lib/types";
-// Type-only import from a "use server" file is erased at compile time (no runtime coupling).
-import type { PortalContactSummary } from "@/lib/actions/acceptance-actions";
 
 // ---- Path helpers ----
 

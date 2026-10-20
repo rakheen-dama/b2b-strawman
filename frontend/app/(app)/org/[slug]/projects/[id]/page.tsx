@@ -10,6 +10,21 @@ import {
   getTemplates,
   getViews,
 } from "@/lib/api";
+import {
+  getMatter,
+  getMatterBudget,
+  getMatterProfitability,
+  getMatterTags,
+  getMatterTimeSummary,
+  getMatterTimeSummaryByMember,
+  getMatterTimeSummaryByTask,
+  listMatterClients,
+  listMatterDocuments,
+  listMatterExpenses,
+  listMatterMembers,
+  listMatterTasks,
+} from "@/lib/api/matters";
+import { getClientFicaStatus } from "@/lib/api/clients";
 import type {
   OrgMember,
   Matter,
@@ -93,7 +108,7 @@ export default async function ProjectDetailPage({
 
   let project: Matter;
   try {
-    project = await api.get<Matter>(`/api/matters/${id}`);
+    project = await getMatter(id);
   } catch (error) {
     handleApiError(error);
   }
@@ -166,7 +181,7 @@ export default async function ProjectDetailPage({
 
   let documents: Document[] = [];
   try {
-    documents = await api.get<Document[]>(`/api/matters/${id}/documents`);
+    documents = await listMatterDocuments(id);
   } catch {
     // Non-fatal: show empty documents list if fetch fails
   }
@@ -180,21 +195,21 @@ export default async function ProjectDetailPage({
 
   let members: MatterMember[] = [];
   try {
-    members = await api.get<MatterMember[]>(`/api/matters/${id}/members`);
+    members = await listMatterMembers(id);
   } catch {
     // Non-fatal: show empty members list if fetch fails
   }
 
   let tasks: Task[] = [];
   try {
-    tasks = await api.get<Task[]>(`/api/matters/${id}/tasks`);
+    tasks = await listMatterTasks(id);
   } catch {
     // Non-fatal: show empty tasks list if fetch fails
   }
 
   let customers: Client[] = [];
   try {
-    customers = await api.get<Client[]>(`/api/matters/${id}/clients`);
+    customers = await listMatterClients(id);
   } catch {
     // Non-fatal: show empty customers list if fetch fails
   }
@@ -217,7 +232,7 @@ export default async function ProjectDetailPage({
   let ficaStatus: FicaStatus | null = null;
   if (customers.length > 0) {
     try {
-      ficaStatus = await api.get<FicaStatus>(`/api/clients/${customers[0].id}/fica-status`);
+      ficaStatus = await getClientFicaStatus(customers[0].id);
     } catch {
       ficaStatus = null;
     }
@@ -235,9 +250,9 @@ export default async function ProjectDetailPage({
   let timeSummaryByMember: MemberTimeSummary[] | null = null;
   try {
     const [summaryRes, byTaskRes, byMemberRes] = await Promise.all([
-      api.get<MatterTimeSummary>(`/api/matters/${id}/time-summary`),
-      api.get<TaskTimeSummary[]>(`/api/matters/${id}/time-summary/by-task`),
-      api.get<MemberTimeSummary[]>(`/api/matters/${id}/time-summary/by-member`).catch(() => null),
+      getMatterTimeSummary(id),
+      getMatterTimeSummaryByTask(id),
+      getMatterTimeSummaryByMember(id).catch(() => null),
     ]);
     timeSummary = summaryRes;
     timeSummaryByTask = byTaskRes;
@@ -252,9 +267,7 @@ export default async function ProjectDetailPage({
     page: { totalElements: 0, totalPages: 0, size: 20, number: 0 },
   };
   try {
-    expenseData = await api.get<PaginatedExpenseResponse>(
-      `/api/matters/${id}/expenses?sort=date,desc`
-    );
+    expenseData = await listMatterExpenses(id, { sort: "date,desc" });
   } catch {
     // Non-fatal: show empty expenses tab
   }
@@ -280,7 +293,7 @@ export default async function ProjectDetailPage({
   // Budget status for the "Budget" tab
   let budgetStatus: BudgetStatusResponse | null = null;
   try {
-    budgetStatus = await api.get<BudgetStatusResponse>(`/api/matters/${id}/budget`);
+    budgetStatus = await getMatterBudget(id);
   } catch {
     // Non-fatal: 404 means no budget set, other errors show empty state
   }
@@ -289,9 +302,7 @@ export default async function ProjectDetailPage({
   let projectProfitability: MatterProfitabilityResponse | null = null;
   if (canManage) {
     try {
-      projectProfitability = await api.get<MatterProfitabilityResponse>(
-        `/api/matters/${id}/profitability`
-      );
+      projectProfitability = await getMatterProfitability(id);
     } catch {
       // Non-fatal: show empty state in financials tab
     }
@@ -384,10 +395,7 @@ export default async function ProjectDetailPage({
   let projectTags: TagResponse[] = [];
   let allTags: TagResponse[] = [];
   try {
-    const [entityTags, orgTags] = await Promise.all([
-      api.get<TagResponse[]>(`/api/matters/${id}/tags`),
-      getTags(),
-    ]);
+    const [entityTags, orgTags] = await Promise.all([getMatterTags(id), getTags()]);
     projectTags = entityTags;
     allTags = orgTags;
   } catch {

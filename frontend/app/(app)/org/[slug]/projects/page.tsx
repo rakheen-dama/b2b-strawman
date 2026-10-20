@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { RequiresCapability } from "@/lib/capabilities";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
+import { listMatters, getMatterBudgetStatus } from "@/lib/api/matters";
+import { listClients } from "@/lib/api/clients";
 import { getProjectTemplates } from "@/lib/api/templates";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type {
@@ -83,15 +85,12 @@ export default async function ProjectsPage({
   const rawStatus =
     typeof resolvedSearchParams.status === "string" ? resolvedSearchParams.status : null;
   const statusParam = rawStatus && VALID_STATUSES.has(rawStatus as MatterStatus) ? rawStatus : null;
-  const queryParts: string[] = [];
-  if (currentViewId) queryParts.push(`view=${currentViewId}`);
-  if (statusParam) queryParts.push(`status=${statusParam}`);
-  const projectsEndpoint =
-    queryParts.length > 0 ? `/api/matters?${queryParts.join("&")}` : "/api/matters";
-
   let projects: Matter[] = [];
   try {
-    projects = await api.get<Matter[]>(projectsEndpoint);
+    projects = await listMatters({
+      view: currentViewId ?? undefined,
+      status: statusParam ?? undefined,
+    });
   } catch (error) {
     handleApiError(error);
   }
@@ -129,7 +128,7 @@ export default async function ProjectsPage({
     if (activeTemplates.length > 0) {
       const [membersResult, customersResult] = await Promise.allSettled([
         api.get<OrgMember[]>("/api/members"),
-        api.get<Client[]>("/api/clients"),
+        listClients(),
       ]);
       if (membersResult.status === "fulfilled") orgMembers = membersResult.value;
       if (customersResult.status === "fulfilled") allCustomers = customersResult.value;
@@ -139,9 +138,7 @@ export default async function ProjectsPage({
   // Fetch budget status for each project (admin-only, non-fatal — 404 means no budget)
   const budgetStatuses = new Map<string, LightweightBudgetStatus>();
   if (isAdmin && projects.length > 0) {
-    const results = await Promise.allSettled(
-      projects.map((p) => api.get<LightweightBudgetStatus>(`/api/matters/${p.id}/budget/status`))
-    );
+    const results = await Promise.allSettled(projects.map((p) => getMatterBudgetStatus(p.id)));
     results.forEach((result, i) => {
       if (result.status === "fulfilled" && result.value) {
         budgetStatuses.set(projects[i].id, result.value);

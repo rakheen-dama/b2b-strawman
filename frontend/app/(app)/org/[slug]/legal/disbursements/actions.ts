@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError, api } from "@/lib/api";
+import { listMatters } from "@/lib/api/matters";
+import { listClients } from "@/lib/api/clients";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import {
   approveDisbursement as approveDisbursementApi,
@@ -300,15 +302,15 @@ export async function fetchUnbilledDisbursementsAction(
 }
 
 export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
-  const result = await api.get<
-    { id: string; name: string }[] | PaginatedResponse<{ id: string; name: string }>
-  >("/api/matters?size=200");
+  const result = (await listMatters({ size: 200 })) as
+    | { id: string; name: string }[]
+    | PaginatedResponse<{ id: string; name: string }>;
   return Array.isArray(result) ? result : (result.content ?? []);
 }
 
 export async function fetchCustomers(): Promise<{ id: string; name: string }[]> {
-  const result = await api.get<
-    { id: string; name: string }[] | PaginatedResponse<{ id: string; name: string }>
-  >("/api/clients?size=200");
+  const result = (await listClients({ size: 200 })) as
+    | { id: string; name: string }[]
+    | PaginatedResponse<{ id: string; name: string }>;
   return Array.isArray(result) ? result : (result.content ?? []);
 }

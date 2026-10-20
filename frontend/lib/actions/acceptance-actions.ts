@@ -1,6 +1,7 @@
 "use server";
 
 import { api, ApiError } from "@/lib/api";
+import type { PortalContactSummary } from "@/lib/types";
 
 // ---- Types ----
 
@@ -10,12 +11,6 @@ export interface ActionResult<T = void> {
   success: boolean;
   data?: T;
   error?: string;
-}
-
-export interface PortalContactSummary {
-  id: string;
-  displayName: string;
-  email: string;
 }
 
 export interface AcceptanceRequestContact {

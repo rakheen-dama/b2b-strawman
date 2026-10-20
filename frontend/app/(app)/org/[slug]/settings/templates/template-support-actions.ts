@@ -12,6 +12,8 @@ import {
   getDocxFields,
   downloadDocxTemplate,
 } from "@/lib/api";
+import { listMatters } from "@/lib/api/matters";
+import { listClients } from "@/lib/api/clients";
 import { revalidatePath } from "next/cache";
 import type {
   TemplateDetailResponse,
@@ -222,11 +224,11 @@ export async function fetchVariableMetadataAction(
 // ---- Entity Picker Actions ----
 
 export async function fetchProjectsForPicker(): Promise<Matter[]> {
-  return api.get<Matter[]>("/api/matters");
+  return listMatters();
 }
 
 export async function fetchCustomersForPicker(): Promise<Client[]> {
-  return api.get<Client[]>("/api/clients");
+  return listClients();
 }
 
 export async function fetchInvoicesForPicker(): Promise<InvoiceResponse[]> {

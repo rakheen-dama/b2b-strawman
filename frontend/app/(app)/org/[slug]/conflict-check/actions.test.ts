@@ -25,6 +25,18 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
+// Phase 87 610B: fetchProjects/fetchCustomers now go through lib/api/{matters,clients}, which
+// call `api` from "@/lib/api/client" — mock it with the same spy so the URL assertions still hold.
+vi.mock("@/lib/api/client", () => ({
+  api: {
+    get: (...args: unknown[]) => mockGet(...args),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
 // next/cache is referenced via revalidatePath in actions.ts; stub it so the
 // "use server" module can load without pulling Next.js runtime internals.
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));

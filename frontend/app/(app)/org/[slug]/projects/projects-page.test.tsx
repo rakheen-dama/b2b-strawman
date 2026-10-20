@@ -48,6 +48,12 @@ vi.mock("@/lib/api", () => ({
 }));
 
 // Mock templates API (has "server-only" import)
+// Phase 87 610B: the page reads matters/clients/budget-status through lib/api/{matters,clients},
+// which call `api` from "@/lib/api/client".
+vi.mock("@/lib/api/client", () => ({
+  api: { get: (...args: unknown[]) => mockApiGet(...args) },
+}));
+
 vi.mock("@/lib/api/templates", () => ({
   getProjectTemplates: vi.fn().mockResolvedValue([]),
 }));

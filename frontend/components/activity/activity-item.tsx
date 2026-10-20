@@ -8,7 +8,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { RelativeDate } from "@/components/ui/relative-date";
-import type { ActivityItem as ActivityItemType } from "@/lib/actions/activity";
+import type { ActivityItem as ActivityItemType } from "@/lib/types";
 
 interface ActivityItemProps {
   item: ActivityItemType;

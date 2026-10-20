@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ProjectCommentsSection } from "@/components/projects/project-comments-section";
-import type { Comment } from "@/lib/actions/comments";
+import type { Comment } from "@/lib/types";
 
 const mockFetchProjectComments = vi.fn();
 const mockCreateProjectComment = vi.fn();

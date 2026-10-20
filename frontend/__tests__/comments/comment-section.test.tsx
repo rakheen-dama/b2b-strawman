@@ -3,7 +3,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AddCommentForm } from "@/components/comments/add-comment-form";
 import { CommentItem } from "@/components/comments/comment-item";
-import type { Comment } from "@/lib/actions/comments";
+import type { Comment } from "@/lib/types";
 
 const mockCreateComment = vi.fn();
 const mockUpdateComment = vi.fn();

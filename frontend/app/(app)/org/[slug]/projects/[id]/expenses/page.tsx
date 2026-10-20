@@ -1,6 +1,7 @@
 import { getCurrentUserEmail } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
+import { listMatterExpenses, listMatterMembers, listMatterTasks } from "@/lib/api/matters";
 import { ExpenseList } from "@/components/expenses/expense-list";
 import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
 import { Button } from "@b2mash/ui/button";
@@ -21,23 +22,21 @@ export default async function ProjectExpensesPage({
     page: { totalElements: 0, totalPages: 0, size: 20, number: 0 },
   };
   try {
-    expenses = await api.get<PaginatedExpenseResponse>(
-      `/api/matters/${id}/expenses?sort=date,desc`
-    );
+    expenses = await listMatterExpenses(id, { sort: "date,desc" });
   } catch {
     // Non-fatal: show empty list
   }
 
   let members: MatterMember[] = [];
   try {
-    members = await api.get<MatterMember[]>(`/api/matters/${id}/members`);
+    members = await listMatterMembers(id);
   } catch {
     // Non-fatal
   }
 
   let tasks: Task[] = [];
   try {
-    tasks = await api.get<Task[]>(`/api/matters/${id}/tasks`);
+    tasks = await listMatterTasks(id);
   } catch {
     // Non-fatal
   }

@@ -5,7 +5,8 @@ import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { AvatarCircle } from "@/components/ui/avatar-circle";
-import { type Comment, fetchProjectComments, createProjectComment } from "@/lib/actions/comments";
+import { fetchProjectComments, createProjectComment } from "@/lib/actions/comments";
+import type { Comment } from "@/lib/types";
 import { RelativeDate } from "@/components/ui/relative-date";
 
 interface ProjectCommentsSectionProps {

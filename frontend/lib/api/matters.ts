@@ -19,9 +19,12 @@ import { setEntityFieldGroups } from "./fields";
 import { MATTERS_PATH, matterPath } from "./paths";
 import { toQuery, type QueryValue } from "./query";
 import type {
+  ActivityResponse,
+  AdversePartyLink,
   BudgetStatusResponse,
   Client,
   ClientMatter,
+  Comment,
   CreateExpenseRequest,
   CreateMatterRequest,
   CreateTaskRequest,
@@ -34,6 +37,7 @@ import type {
   MatterProfitabilityResponse,
   MatterSetupStatus,
   MatterTimeSummary,
+  MatterUpcomingDeadline,
   MemberTimeSummary,
   PaginatedExpenseResponse,
   SetEntityTagsRequest,
@@ -52,10 +56,6 @@ import type {
   MemberHoursEntry,
   TaskSummaryResponse,
 } from "@/lib/dashboard-types";
-// Type-only imports from "use server" files are erased at compile time (no runtime coupling).
-import type { ActivityResponse } from "@/lib/actions/activity";
-import type { Comment } from "@/lib/actions/comments";
-import type { ProjectUpcomingDeadline } from "@/lib/actions/dashboard";
 
 // ---- Path helpers ----
 
@@ -199,8 +199,8 @@ export async function getMatterUnbilledSummary(matterId: string): Promise<Unbill
 
 export async function getMatterUpcomingDeadlines(
   matterId: string
-): Promise<ProjectUpcomingDeadline[]> {
-  return api.get<ProjectUpcomingDeadline[]>(matterPath(matterId, "upcoming-deadlines"));
+): Promise<MatterUpcomingDeadline[]> {
+  return api.get<MatterUpcomingDeadline[]>(matterPath(matterId, "upcoming-deadlines"));
 }
 
 export async function getMatterHealth(matterId: string): Promise<MatterHealthDetail> {
@@ -414,4 +414,10 @@ export async function restoreMatterExpense(
   expenseId: string
 ): Promise<ExpenseResponse> {
   return api.patch<ExpenseResponse>(matterPath(matterId, `expenses/${expenseId}/restore`), {});
+}
+
+// ---- Nested: legal ----
+
+export async function listMatterAdverseParties(matterId: string): Promise<AdversePartyLink[]> {
+  return api.get<AdversePartyLink[]>(matterPath(matterId, "adverse-parties"));
 }

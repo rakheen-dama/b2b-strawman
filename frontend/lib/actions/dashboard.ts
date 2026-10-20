@@ -11,7 +11,7 @@ import type {
   CrossMatterActivityItem,
   PersonalDashboardResponse,
 } from "@/lib/dashboard-types";
-import type { AggregatedCompletenessResponse } from "@/lib/types";
+import type { AggregatedCompletenessResponse, MatterUpcomingDeadline } from "@/lib/types";
 import type { InformationRequestSummary } from "@/lib/api/information-requests";
 import { listRules, listExecutions } from "@/lib/api/automations";
 import type { AutomationSummary } from "@/lib/api/automations";
@@ -143,23 +143,11 @@ export async function fetchProjectMemberHours(
   }
 }
 
-/**
- * GAP-L-58 / E9.3 — fetches the upcoming court dates for a matter. Returns rows already filtered
- * to future-or-today and sorted by date ASC by the backend. The regulatory deadlines source was
- * removed in Phase 86 (Epic 604A), so the backend only emits COURT rows.
- */
-export interface ProjectUpcomingDeadline {
-  type: "COURT";
-  date: string;
-  description: string;
-  status: string | null;
-}
-
 export async function fetchProjectUpcomingDeadlines(
   projectId: string
-): Promise<ProjectUpcomingDeadline[] | null> {
+): Promise<MatterUpcomingDeadline[] | null> {
   try {
-    return await api.get<ProjectUpcomingDeadline[]>(`/api/matters/${projectId}/upcoming-deadlines`);
+    return await api.get<MatterUpcomingDeadline[]>(`/api/matters/${projectId}/upcoming-deadlines`);
   } catch {
     return null;
   }

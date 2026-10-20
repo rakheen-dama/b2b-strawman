@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
+import { listClients } from "@/lib/api/clients";
 import { getOrgSettings } from "@/lib/api/settings";
 import type { InvoiceResponse, InvoiceStatus } from "@/lib/types";
-import type { Client } from "@/lib/types/client";
 import { StatusBadge } from "@/components/invoices/status-badge";
 import { CreateInvoiceButton } from "@/components/invoices/create-invoice-button";
 import { EmptyState } from "@/components/empty-state";
@@ -88,7 +88,7 @@ export default async function InvoicesPage({
   // Fetch active customers for "New Invoice" button
   let customers: { id: string; name: string }[] = [];
   try {
-    const raw = await api.get<Client[]>("/api/clients");
+    const raw = await listClients();
     customers = (Array.isArray(raw) ? raw : [])
       .filter((c) => c.status === "ACTIVE")
       .map((c) => ({ id: c.id, name: c.name }));

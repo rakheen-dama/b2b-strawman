@@ -3,7 +3,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ActivityItem } from "@/components/activity/activity-item";
 import { ActivityFeedClient } from "@/components/activity/activity-feed-client";
-import type { ActivityItem as ActivityItemType } from "@/lib/actions/activity";
+import type { ActivityItem as ActivityItemType } from "@/lib/types";
 
 const mockLoadMoreActivity = vi.fn();
 

@@ -2,6 +2,7 @@
 
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
+import { createMatterTask, listMatterTasks } from "@/lib/api/matters";
 import { revalidatePath } from "next/cache";
 import type { Task, CreateTaskRequest, CompleteTaskResponse } from "@/lib/types";
 
@@ -20,17 +21,14 @@ export async function fetchTasks(
     recurring?: boolean;
   }
 ): Promise<Task[]> {
-  const params = new URLSearchParams();
-  if (filters?.status) params.set("status", filters.status);
-  if (filters?.assigneeId) params.set("assigneeId", filters.assigneeId);
-  if (filters?.priority) params.set("priority", filters.priority);
-  if (filters?.viewId) params.set("view", filters.viewId);
-  if (filters?.recurring) params.set("recurring", "true");
-
-  const query = params.toString();
-  const url = `/api/matters/${projectId}/tasks${query ? `?${query}` : ""}`;
-
-  return api.get<Task[]>(url);
+  return listMatterTasks(projectId, {
+    status: filters?.status,
+    assigneeId: filters?.assigneeId,
+    priority: filters?.priority,
+    view: filters?.viewId,
+    // Only send `recurring=true`; `toQuery` would emit `recurring=false` for false.
+    recurring: filters?.recurring || undefined,
+  });
 }
 
 export async function fetchTask(taskId: string): Promise<Task> {
@@ -75,7 +73,7 @@ export async function createTask(
   };
 
   try {
-    await api.post<Task>(`/api/matters/${projectId}/tasks`, body);
+    await createMatterTask(projectId, body);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };

@@ -1,6 +1,7 @@
 "use server";
 
 import { api, ApiError } from "@/lib/api";
+import { listMatters } from "@/lib/api/matters";
 import { revalidatePath } from "next/cache";
 import type { CourtDate, CourtDateStatus, CourtDateType, PrescriptionTracker } from "@/lib/types";
 
@@ -190,7 +191,7 @@ export async function interruptPrescription(
 // ── Projects (for dialogs) ─────────────────────────────────────────
 
 export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
-  const result = await api.get<{ id: string; name: string }[]>("/api/matters?size=200");
+  const result = await listMatters({ size: 200 });
   return result ?? [];
 }
 

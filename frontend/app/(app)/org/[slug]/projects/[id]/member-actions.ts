@@ -1,6 +1,12 @@
 "use server";
 
 import { api, ApiError } from "@/lib/api";
+import {
+  addMatterMember,
+  listMatterMembers,
+  removeMatterMember,
+  transferMatterLead,
+} from "@/lib/api/matters";
 import { revalidatePath } from "next/cache";
 import type { MatterMember, OrgMember } from "@/lib/types";
 
@@ -10,7 +16,7 @@ interface ActionResult {
 }
 
 export async function fetchProjectMembers(projectId: string): Promise<MatterMember[]> {
-  return api.get<MatterMember[]>(`/api/matters/${projectId}/members`);
+  return listMatterMembers(projectId);
 }
 
 export async function fetchOrgMembers(): Promise<OrgMember[]> {
@@ -23,7 +29,7 @@ export async function addProjectMember(
   memberId: string
 ): Promise<ActionResult> {
   try {
-    await api.post(`/api/matters/${projectId}/members`, { memberId });
+    await addMatterMember(projectId, memberId);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -42,7 +48,7 @@ export async function removeProjectMember(
   memberId: string
 ): Promise<ActionResult> {
   try {
-    await api.delete(`/api/matters/${projectId}/members/${memberId}`);
+    await removeMatterMember(projectId, memberId);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -61,7 +67,7 @@ export async function transferLead(
   memberId: string
 ): Promise<ActionResult> {
   try {
-    await api.put(`/api/matters/${projectId}/members/${memberId}/role`, { role: "lead" });
+    await transferMatterLead(projectId, memberId);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };

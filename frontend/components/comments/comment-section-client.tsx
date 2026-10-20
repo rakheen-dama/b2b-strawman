@@ -3,7 +3,7 @@
 import useSWR from "swr";
 import { MessageSquare } from "lucide-react";
 import { fetchComments } from "@/lib/actions/comments";
-import type { Comment } from "@/lib/actions/comments";
+import type { Comment } from "@/lib/types";
 import { createMessages } from "@/lib/messages";
 import { EmptyState } from "@/components/empty-state";
 import { AddCommentForm } from "@/components/comments/add-comment-form";

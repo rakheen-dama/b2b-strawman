@@ -3,15 +3,15 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { setCollectionsExemption } from "@/lib/api/collections";
+import {
+  initClientDocumentUpload,
+  linkClientMatter,
+  listClientMatters,
+  unlinkClientMatter,
+} from "@/lib/api/clients";
+import { listMatters } from "@/lib/api/matters";
 import { revalidatePath } from "next/cache";
-import type {
-  Matter,
-  ClientMatter,
-  Document,
-  UploadInitRequest,
-  UploadInitResponse,
-  DocumentVisibility,
-} from "@/lib/types";
+import type { Matter, Document, UploadInitRequest, DocumentVisibility } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
@@ -26,7 +26,7 @@ interface UploadInitResult {
 }
 
 export async function fetchCustomerProjects(customerId: string): Promise<Matter[]> {
-  return api.get<Matter[]>(`/api/clients/${customerId}/matters`);
+  return listClientMatters(customerId);
 }
 
 // Collections exemption toggle (Phase 83, Epic 588C). Admin/owner-only — the
@@ -55,7 +55,7 @@ export async function setCollectionsExemptionAction(
 }
 
 export async function fetchProjects(): Promise<Matter[]> {
-  return api.get<Matter[]>("/api/matters");
+  return listMatters();
 }
 
 export async function linkProject(
@@ -69,7 +69,7 @@ export async function linkProject(
   }
 
   try {
-    await api.post<ClientMatter>(`/api/clients/${customerId}/matters/${projectId}`);
+    await linkClientMatter(customerId, projectId);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -93,7 +93,7 @@ export async function unlinkProject(
   }
 
   try {
-    await api.delete(`/api/clients/${customerId}/matters/${projectId}`);
+    await unlinkClientMatter(customerId, projectId);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -122,10 +122,7 @@ export async function initiateCustomerUpload(
   const body: UploadInitRequest = { fileName, contentType, size };
 
   try {
-    const result = await api.post<UploadInitResponse>(
-      `/api/clients/${customerId}/documents/upload-init`,
-      body
-    );
+    const result = await initClientDocumentUpload(customerId, body);
     return {
       success: true,
       documentId: result.documentId,

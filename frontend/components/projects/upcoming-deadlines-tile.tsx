@@ -1,10 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { Badge } from "@b2mash/ui/badge";
 import { CalendarDays } from "lucide-react";
-import type { ProjectUpcomingDeadline } from "@/lib/actions/dashboard";
+import type { MatterUpcomingDeadline } from "@/lib/types";
 
 interface UpcomingDeadlinesTileProps {
-  deadlines: ProjectUpcomingDeadline[];
+  deadlines: MatterUpcomingDeadline[];
 }
 
 /**

@@ -331,3 +331,9 @@ export interface UpdateComplianceSettingsRequest {
   dormancyThresholdDays?: number;
   dataRequestDeadlineDays?: number;
 }
+
+export interface PortalContactSummary {
+  id: string;
+  displayName: string;
+  email: string;
+}

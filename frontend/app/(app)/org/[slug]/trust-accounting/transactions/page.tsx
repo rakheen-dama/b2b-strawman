@@ -4,6 +4,7 @@ import { ArrowUpRight, ArrowDownLeft, ChevronLeft, ChevronRight } from "lucide-r
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
+import { listClients } from "@/lib/api/clients";
 import { getCurrentUserEmail } from "@/lib/auth";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
 import { Badge } from "@b2mash/ui/badge";
@@ -20,7 +21,6 @@ import { TransactionFilters } from "@/components/trust/transaction-filters";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import {
   transactionTypeLabel,
-  type Client,
   type OrgMember,
   type TrustTransactionStatus,
   type TrustTransactionType,
@@ -155,7 +155,7 @@ export default async function TransactionsPage({
   let pickerCustomers: Array<{ id: string; name: string; email: string }> = [];
   if (canManageTrust) {
     try {
-      const customers = await api.get<Client[]>("/api/clients?status=ACTIVE");
+      const customers = await listClients({ status: "ACTIVE" });
       pickerCustomers = customers.map((c) => ({
         id: c.id,
         name: c.name,

@@ -6,7 +6,7 @@ import { AvatarCircle } from "@/components/ui/avatar-circle";
 import { EditCommentDialog } from "@/components/comments/edit-comment-dialog";
 import { DeleteCommentDialog } from "@/components/comments/delete-comment-dialog";
 import { RelativeDate } from "@/components/ui/relative-date";
-import type { Comment } from "@/lib/actions/comments";
+import type { Comment } from "@/lib/types";
 
 interface CommentItemProps {
   comment: Comment;

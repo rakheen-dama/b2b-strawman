@@ -1,7 +1,8 @@
 "use server";
 
 import { api } from "@/lib/api";
-import type { Matter, OrgMember } from "@/lib/types";
+import { listMatters } from "@/lib/api/matters";
+import type { OrgMember } from "@/lib/types";
 import type { CalendarFilters, CalendarResponse } from "./calendar-types";
 
 export async function getCalendarItems(
@@ -21,7 +22,7 @@ export async function getCalendarItems(
 }
 
 export async function getCalendarProjects(): Promise<{ id: string; name: string }[]> {
-  const projects = await api.get<Matter[]>("/api/matters");
+  const projects = await listMatters();
   return projects.map((p) => ({ id: p.id, name: p.name }));
 }
 

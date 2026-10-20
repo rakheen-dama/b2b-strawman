@@ -1,7 +1,8 @@
 "use server";
 
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { api, ApiError } from "@/lib/api";
+import { ApiError } from "@/lib/api";
+import { listClients } from "@/lib/api/clients";
 import {
   createDataRequestApi,
   updateDataRequestStatus,
@@ -41,7 +42,7 @@ export async function fetchCustomersForSelector(): Promise<Client[]> {
   if (!caps.isAdmin && !caps.isOwner) {
     throw new Error("Unauthorized");
   }
-  return api.get<Client[]>("/api/clients");
+  return listClients();
 }
 
 function revalidateRequestPaths(slug: string, requestId?: string) {

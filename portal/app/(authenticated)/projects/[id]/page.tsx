@@ -13,19 +13,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import { useTerminology } from "@/lib/terminology";
 import type {
-  PortalProjectDetail,
+  PortalMatterDetail,
   PortalTask,
   PortalDocument,
   PortalComment,
-  PortalProjectSummary,
+  PortalMatterSummary,
 } from "@/lib/types";
 
 interface ProjectData {
-  project: PortalProjectDetail;
+  project: PortalMatterDetail;
   tasks: PortalTask[];
   documents: PortalDocument[];
   comments: PortalComment[];
-  summary: PortalProjectSummary;
+  summary: PortalMatterSummary;
 }
 
 function PageSkeleton() {
@@ -68,11 +68,11 @@ export default function ProjectDetailPage() {
     setIsLoading(true);
     try {
       const [project, tasks, documents, comments, summary] = await Promise.all([
-        portalGet<PortalProjectDetail>(`/portal/matters/${projectId}`),
+        portalGet<PortalMatterDetail>(`/portal/matters/${projectId}`),
         portalGet<PortalTask[]>(`/portal/matters/${projectId}/tasks`),
         portalGet<PortalDocument[]>(`/portal/matters/${projectId}/documents`),
         portalGet<PortalComment[]>(`/portal/matters/${projectId}/comments`),
-        portalGet<PortalProjectSummary>(`/portal/matters/${projectId}/summary`),
+        portalGet<PortalMatterSummary>(`/portal/matters/${projectId}/summary`),
       ]);
 
       if (!isMountedRef.current || requestId !== requestIdRef.current) return;

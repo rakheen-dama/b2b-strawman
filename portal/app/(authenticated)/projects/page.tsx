@@ -4,12 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { FolderOpen } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
 import { useBranding } from "@/hooks/use-branding";
-import { ProjectCard } from "@/components/project-card";
+import { MatterCard } from "@/components/matter-card";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import { PendingAcceptancesList } from "@/components/pending-acceptances-list";
 import { cn } from "@/lib/utils";
 import { useTerminology } from "@/lib/terminology";
-import type { PortalProject } from "@/lib/types";
+import type { PortalMatter } from "@/lib/types";
 
 type ProjectFilter = "all" | "active" | "past";
 
@@ -38,7 +38,7 @@ function ProjectSkeleton() {
 export default function ProjectsPage() {
   const { orgName } = useBranding();
   const { t } = useTerminology();
-  const [projects, setProjects] = useState<PortalProject[]>([]);
+  const [projects, setProjects] = useState<PortalMatter[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<ProjectFilter>("all");
@@ -55,7 +55,7 @@ export default function ProjectsPage() {
     setError(null);
     setIsLoading(true);
     try {
-      const data = await portalGet<PortalProject[]>("/portal/matters");
+      const data = await portalGet<PortalMatter[]>("/portal/matters");
       setProjects(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load projects");
@@ -158,7 +158,7 @@ export default function ProjectsPage() {
       {!isLoading && !error && visibleProjects.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {visibleProjects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <MatterCard key={project.id} matter={project} />
           ))}
         </div>
       )}

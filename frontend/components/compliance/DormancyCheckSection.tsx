@@ -6,8 +6,8 @@ import { useTerminology } from "@/lib/terminology";
 import { DormancyCandidateList } from "./DormancyCandidateList";
 
 interface DormancyCandidate {
-  customerId: string;
-  customerName: string;
+  clientId: string;
+  clientName: string;
   lastActivityDate: string | null;
   daysSinceActivity: number;
 }

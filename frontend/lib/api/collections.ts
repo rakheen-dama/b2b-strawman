@@ -44,10 +44,9 @@ export async function setCollectionsExemption(
   customerId: string,
   exempt: boolean
 ): Promise<CollectionsExemptionResponse> {
-  return api.put<CollectionsExemptionResponse>(
-    `/api/customers/${customerId}/collections-exemption`,
-    { collectionsExempt: exempt }
-  );
+  return api.put<CollectionsExemptionResponse>(`/api/clients/${customerId}/collections-exemption`, {
+    collectionsExempt: exempt,
+  });
 }
 
 // ---- Debtors / Activities Types (591B) ----

@@ -14,7 +14,7 @@ export interface Document {
   size: number;
   status: DocumentStatus;
   scope: DocumentScope;
-  customerId: string | null;
+  clientId: string | null;
   visibility: DocumentVisibility;
   uploadedBy: string | null;
   uploadedByName: string | null;

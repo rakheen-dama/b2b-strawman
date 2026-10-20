@@ -98,7 +98,7 @@ export async function resolveConflict(
 }
 
 // -- Projects & Customers (for form selectors) --
-// Both /api/matters and /api/customers return a flat List<...Response> (no
+// Both /api/matters and /api/clients return a flat List<...Response> (no
 // pagination envelope). We accept both shapes defensively in case those
 // endpoints are ever paginated. See backend CustomerController.listCustomers
 // and ProjectController.listProjects (both return ResponseEntity<List<...>>).
@@ -113,6 +113,6 @@ export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
 export async function fetchCustomers(): Promise<{ id: string; name: string }[]> {
   const result = await api.get<
     { id: string; name: string }[] | PaginatedResponse<{ id: string; name: string }>
-  >("/api/customers?size=200");
+  >("/api/clients?size=200");
   return Array.isArray(result) ? result : (result?.content ?? []);
 }

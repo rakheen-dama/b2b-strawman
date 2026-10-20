@@ -43,7 +43,8 @@ async function createCustomerViaApi(
   email: string,
   token: string
 ): Promise<Record<string, unknown>> {
-  const res = await fetch(`${BACKEND_URL}/api/customers`, {
+  // Phase 87 S2 (ADR-337): API path
+  const res = await fetch(`${BACKEND_URL}/api/clients`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -60,7 +61,8 @@ async function transitionViaApi(
   targetStatus: string,
   token: string
 ): Promise<Response> {
-  return fetch(`${BACKEND_URL}/api/customers/${customerId}/transition`, {
+  // Phase 87 S2 (ADR-337): API path
+  return fetch(`${BACKEND_URL}/api/clients/${customerId}/transition`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -126,7 +128,8 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
     const token = await getToken("alice");
 
     // Get checklists for this customer
-    const checklistRes = await fetch(`${BACKEND_URL}/api/customers/${customerId}/checklists`, {
+    // Phase 87 S2 (ADR-337): API path
+    const checklistRes = await fetch(`${BACKEND_URL}/api/clients/${customerId}/checklists`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -154,7 +157,8 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
     }
 
     // Check current status and transition to ACTIVE
-    const customerRes = await fetch(`${BACKEND_URL}/api/customers/${customerId}`, {
+    // Phase 87 S2 (ADR-337): API path
+    const customerRes = await fetch(`${BACKEND_URL}/api/clients/${customerId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const customer = await customerRes.json();
@@ -164,7 +168,8 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
       const transRes = await transitionViaApi(customerId, "ACTIVE", token);
       if (!transRes.ok) {
         // May have already auto-transitioned or prerequisites not met
-        const refreshRes = await fetch(`${BACKEND_URL}/api/customers/${customerId}`, {
+        // Phase 87 S2 (ADR-337): API path
+        const refreshRes = await fetch(`${BACKEND_URL}/api/clients/${customerId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const refreshed = await refreshRes.json();
@@ -175,7 +180,8 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
     }
 
     // Verify ACTIVE via API
-    const verifyRes = await fetch(`${BACKEND_URL}/api/customers/${customerId}`, {
+    // Phase 87 S2 (ADR-337): API path
+    const verifyRes = await fetch(`${BACKEND_URL}/api/clients/${customerId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const verified = await verifyRes.json();
@@ -243,7 +249,8 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
   test("ACTIVE -> DORMANT", async ({ page }) => {
     // First ensure customer is ACTIVE via API
     const token = await getToken("alice");
-    const customerRes = await fetch(`${BACKEND_URL}/api/customers/${customerId}`, {
+    // Phase 87 S2 (ADR-337): API path
+    const customerRes = await fetch(`${BACKEND_URL}/api/clients/${customerId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const customer = await customerRes.json();

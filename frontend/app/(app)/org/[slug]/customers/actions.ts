@@ -108,7 +108,7 @@ export async function createCustomer(
     phone,
     idNumber,
     notes,
-    customerType,
+    clientType: customerType,
     addressLine1,
     addressLine2,
     city,
@@ -127,7 +127,7 @@ export async function createCustomer(
 
   let created: Customer;
   try {
-    created = await api.post<Customer>("/api/customers", body);
+    created = await api.post<Customer>("/api/clients", body);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -184,7 +184,7 @@ export async function updateCustomer(
   };
 
   try {
-    await api.put<Customer>(`/api/customers/${id}`, body);
+    await api.put<Customer>(`/api/clients/${id}`, body);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -207,7 +207,7 @@ export async function archiveCustomer(slug: string, id: string): Promise<ActionR
   }
 
   try {
-    await api.delete(`/api/customers/${id}`);
+    await api.delete(`/api/clients/${id}`);
   } catch (error) {
     const message =
       error instanceof ApiError

@@ -39,7 +39,8 @@ test.describe("DOC-02: Document Generation", () => {
   test("Generate document from template on customer/project page", async ({ page }) => {
     // Find a customer via API first
     const jwt = await getAliceJwt();
-    const custRes = await fetch(`${BACKEND_URL}/api/customers`, {
+    // Phase 87 S2 (ADR-337): API path
+    const custRes = await fetch(`${BACKEND_URL}/api/clients`, {
       headers: { Authorization: `Bearer ${jwt}` },
     });
     const customers = await custRes.json();
@@ -134,7 +135,8 @@ test.describe("DOC-02: Document Generation", () => {
   test("Preview shows resolved variables", async ({ page }) => {
     // Find a customer via API first
     const jwt = await getAliceJwt();
-    const custRes = await fetch(`${BACKEND_URL}/api/customers`, {
+    // Phase 87 S2 (ADR-337): API path
+    const custRes = await fetch(`${BACKEND_URL}/api/clients`, {
       headers: { Authorization: `Bearer ${jwt}` },
     });
     const customers = await custRes.json();

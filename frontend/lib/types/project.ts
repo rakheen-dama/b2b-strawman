@@ -171,11 +171,11 @@ export interface ProjectSetupStatus {
 }
 
 export interface CustomerReadiness {
-  customerId: string;
+  clientId: string;
   lifecycleStatus: string;
   checklistProgress: ChecklistProgress | null;
   requiredFields: RequiredFieldStatus;
-  hasLinkedProjects: boolean;
+  hasLinkedMatters: boolean;
   overallReadiness: string;
 }
 

@@ -70,7 +70,7 @@ function buildDefaults(customer: Customer): EditCustomerFormData {
     phone: customer.phone ?? "",
     idNumber: customer.idNumber ?? "",
     notes: customer.notes ?? "",
-    customerType: (customer.customerType as CustomerType) ?? "INDIVIDUAL",
+    customerType: (customer.clientType as CustomerType) ?? "INDIVIDUAL",
     addressLine1: customer.addressLine1 ?? "",
     addressLine2: customer.addressLine2 ?? "",
     city: customer.city ?? "",

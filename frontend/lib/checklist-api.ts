@@ -10,7 +10,7 @@ import type {
 export async function getCustomerChecklists(
   customerId: string
 ): Promise<ChecklistInstanceResponse[]> {
-  return api.get<ChecklistInstanceResponse[]>(`/api/customers/${customerId}/checklists`);
+  return api.get<ChecklistInstanceResponse[]>(`/api/clients/${customerId}/checklists`);
 }
 
 export async function getChecklistInstance(id: string): Promise<ChecklistInstanceResponse> {
@@ -39,7 +39,7 @@ export async function instantiateChecklist(
   customerId: string,
   templateId: string
 ): Promise<ChecklistInstanceResponse> {
-  return api.post<ChecklistInstanceResponse>(`/api/customers/${customerId}/checklists`, {
+  return api.post<ChecklistInstanceResponse>(`/api/clients/${customerId}/checklists`, {
     templateId,
   });
 }

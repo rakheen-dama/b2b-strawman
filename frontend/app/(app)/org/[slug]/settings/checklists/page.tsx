@@ -124,7 +124,7 @@ export default async function ChecklistsSettingsPage({
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <Badge variant="neutral">{template.customerType}</Badge>
+                    <Badge variant="neutral">{template.clientType}</Badge>
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={template.source === "ORG_CUSTOM" ? "success" : "neutral"}>

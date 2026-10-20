@@ -145,7 +145,8 @@ test.describe("DP-01: Customer Data Protection", () => {
 
     // Create customer via API
     const token = await getAuthToken();
-    const createRes = await fetch(`${BACKEND_URL}/api/customers`, {
+    // Phase 87 S2 (ADR-337): API path
+    const createRes = await fetch(`${BACKEND_URL}/api/clients`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -243,7 +244,8 @@ test.describe("DP-01: Customer Data Protection", () => {
     const token = await getAuthToken();
 
     // Find an anonymized customer via API
-    const listRes = await fetch(`${BACKEND_URL}/api/customers?status=ANONYMIZED`, {
+    // Phase 87 S2 (ADR-337): API path
+    const listRes = await fetch(`${BACKEND_URL}/api/clients?status=ANONYMIZED`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -262,7 +264,8 @@ test.describe("DP-01: Customer Data Protection", () => {
     }
 
     // Attempt to change status — should fail with 400 or 409
-    const transitionRes = await fetch(`${BACKEND_URL}/api/customers/${anonCustomer.id}/status`, {
+    // Phase 87 S2 (ADR-337): API path
+    const transitionRes = await fetch(`${BACKEND_URL}/api/clients/${anonCustomer.id}/status`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

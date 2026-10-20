@@ -28,7 +28,7 @@ const mockInstances: ChecklistInstanceResponse[] = [
   {
     id: "inst-1",
     templateId: "tpl-1",
-    customerId: "c1",
+    clientId: "c1",
     status: "IN_PROGRESS",
     startedAt: "2026-02-18T10:00:00Z",
     completedAt: null,
@@ -103,7 +103,7 @@ const mockTemplates: ChecklistTemplateResponse[] = [
     name: "Generic Onboarding",
     slug: "generic-onboarding",
     description: "Standard onboarding checklist",
-    customerType: "ANY",
+    clientType: "ANY",
     source: "PLATFORM",
     packId: "generic-onboarding",
     active: true,

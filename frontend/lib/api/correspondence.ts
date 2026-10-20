@@ -29,7 +29,7 @@ export async function getProjectCorrespondence(
   params: { page?: number; size?: number } = {}
 ): Promise<PaginatedCorrespondenceResponse> {
   return api.get<PaginatedCorrespondenceResponse>(
-    `/api/projects/${projectId}/correspondence${buildQuery(params)}`
+    `/api/matters/${projectId}/correspondence${buildQuery(params)}`
   );
 }
 
@@ -38,6 +38,6 @@ export async function getCustomerCorrespondence(
   params: { page?: number; size?: number } = {}
 ): Promise<PaginatedCorrespondenceResponse> {
   return api.get<PaginatedCorrespondenceResponse>(
-    `/api/customers/${customerId}/correspondence${buildQuery(params)}`
+    `/api/clients/${customerId}/correspondence${buildQuery(params)}`
   );
 }

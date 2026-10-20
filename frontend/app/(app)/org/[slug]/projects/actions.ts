@@ -222,5 +222,5 @@ export async function reopenProject(slug: string, projectId: string): Promise<Ac
 }
 
 export async function fetchActiveCustomers(): Promise<Customer[]> {
-  return api.get<Customer[]>("/api/customers?status=ACTIVE");
+  return api.get<Customer[]>("/api/clients?status=ACTIVE");
 }

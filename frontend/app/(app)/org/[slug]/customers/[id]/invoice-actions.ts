@@ -31,7 +31,7 @@ export async function fetchUnbilledTime(
     if (from) params.set("from", from);
     if (to) params.set("to", to);
     const qs = params.toString();
-    const url = `/api/customers/${customerId}/unbilled-time${qs ? `?${qs}` : ""}`;
+    const url = `/api/clients/${customerId}/unbilled-time${qs ? `?${qs}` : ""}`;
     const data = await api.get<UnbilledTimeResponse>(url);
     return { success: true, data };
   } catch (error) {

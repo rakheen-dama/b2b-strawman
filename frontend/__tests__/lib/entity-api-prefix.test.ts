@@ -18,14 +18,18 @@ import { entityApiPrefix, getEntityTags, setEntityTags } from "@/lib/api/tags";
 import { setEntityFieldGroups } from "@/lib/api/fields";
 
 // Phase 87 S1 (ADR-337): matters moved to /api/matters/**, but the EntityType
-// storage key stays "PROJECT" (ADR-342). Customers move in Batch 2 (608).
+// storage key stays "PROJECT" (ADR-342). Phase 87 S2: clients moved to
+// /api/clients/** ("CUSTOMER" storage key unchanged).
 describe("entityApiPrefix", () => {
   it("maps the PROJECT storage key to the matters collection", () => {
     expect(entityApiPrefix("PROJECT")).toBe("matters");
   });
 
+  it("maps the CUSTOMER storage key to the clients collection", () => {
+    expect(entityApiPrefix("CUSTOMER")).toBe("clients");
+  });
+
   it("keeps the pluralised lowercase segment for the other entity types", () => {
-    expect(entityApiPrefix("CUSTOMER")).toBe("customers");
     expect(entityApiPrefix("TASK")).toBe("tasks");
     expect(entityApiPrefix("INVOICE")).toBe("invoices");
   });
@@ -56,10 +60,10 @@ describe("entity tag / field-group endpoints use entityApiPrefix", () => {
     });
   });
 
-  it("leaves CUSTOMER and TASK paths unchanged", async () => {
+  it("routes CUSTOMER to /api/clients and leaves TASK unchanged", async () => {
     await getEntityTags("CUSTOMER", "c1");
     await setEntityFieldGroups("TASK", "t1", []);
-    expect(mockGet).toHaveBeenCalledWith("/api/customers/c1/tags");
+    expect(mockGet).toHaveBeenCalledWith("/api/clients/c1/tags");
     expect(mockPut).toHaveBeenCalledWith("/api/tasks/t1/field-groups", {
       appliedFieldGroups: [],
     });

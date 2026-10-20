@@ -31,7 +31,7 @@ export interface Customer {
   appliedFieldGroups?: string[];
   tags?: TagResponse[];
   lifecycleStatus?: LifecycleStatus;
-  customerType?: string;
+  clientType?: string;
   lifecycleStatusChangedAt?: string | null;
   // Promoted customer fields (Epic 463 / Phase 63)
   addressLine1?: string | null;
@@ -79,7 +79,7 @@ export interface CreateCustomerRequest {
   phone?: string;
   idNumber?: string;
   notes?: string;
-  customerType?: CustomerType;
+  clientType?: CustomerType;
   // Promoted customer fields (Epic 463 / Phase 63)
   addressLine1?: string;
   addressLine2?: string;
@@ -119,8 +119,8 @@ export interface UpdateCustomerRequest {
 }
 
 export interface CustomerProject {
-  customerId: string;
-  projectId: string;
+  clientId: string;
+  matterId: string;
   linkedBy: string | null;
   createdAt: string;
 }
@@ -146,7 +146,7 @@ export interface ChecklistTemplateResponse {
   name: string;
   slug: string;
   description: string | null;
-  customerType: string;
+  clientType: string;
   source: string;
   packId: string | null;
   active: boolean;
@@ -191,7 +191,7 @@ export interface ChecklistInstanceItemResponse {
 export interface ChecklistInstanceResponse {
   id: string;
   templateId: string;
-  customerId: string;
+  clientId: string;
   status: ChecklistInstanceStatus;
   startedAt: string;
   completedAt: string | null;
@@ -209,8 +209,8 @@ export type DataRequestType = "ACCESS" | "DELETION" | "CORRECTION" | "OBJECTION"
 
 export interface DataRequestResponse {
   id: string;
-  customerId: string;
-  customerName: string;
+  clientId: string;
+  clientName: string;
   requestType: DataRequestType;
   status: DataRequestStatus;
   description: string;

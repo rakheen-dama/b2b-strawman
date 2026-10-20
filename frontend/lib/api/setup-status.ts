@@ -14,7 +14,7 @@ export async function fetchProjectSetupStatus(projectId: string): Promise<Projec
 }
 
 export async function fetchCustomerReadiness(customerId: string): Promise<CustomerReadiness> {
-  return api.get<CustomerReadiness>(`/api/customers/${customerId}/readiness`);
+  return api.get<CustomerReadiness>(`/api/clients/${customerId}/readiness`);
 }
 
 export async function fetchProjectUnbilledSummary(projectId: string): Promise<UnbilledTimeSummary> {
@@ -24,7 +24,7 @@ export async function fetchProjectUnbilledSummary(projectId: string): Promise<Un
 export async function fetchCustomerUnbilledSummary(
   customerId: string
 ): Promise<UnbilledTimeSummary> {
-  return api.get<UnbilledTimeSummary>(`/api/customers/${customerId}/unbilled-summary`);
+  return api.get<UnbilledTimeSummary>(`/api/clients/${customerId}/unbilled-summary`);
 }
 
 export async function fetchCompletenessScore(
@@ -32,9 +32,9 @@ export async function fetchCompletenessScore(
 ): Promise<CompletenessScore | null> {
   try {
     const params = new URLSearchParams();
-    params.append("customerIds", customerId);
+    params.append("clientIds", customerId);
     const result = await api.get<Record<string, CompletenessScore>>(
-      `/api/customers/completeness-summary?${params.toString()}`
+      `/api/clients/completeness-summary?${params.toString()}`
     );
     return result[customerId] ?? null;
   } catch {

@@ -9,8 +9,8 @@ export interface UpdateDataProtectionSettingsRequest {
 
 export interface DsarRequest {
   id: string;
-  customerId: string | null;
-  customerName: string | null;
+  clientId: string | null;
+  clientName: string | null;
   requestType: "ACCESS" | "DELETION" | "CORRECTION" | "OBJECTION" | "PORTABILITY";
   status: "RECEIVED" | "IN_PROGRESS" | "COMPLETED" | "REJECTED";
   subjectName: string | null;
@@ -90,8 +90,8 @@ export interface PaiaGenerateResponse {
 // ---- Standalone Customer Data Protection (Epic 380A) ----
 
 export interface AnonymizationPreview {
-  customerId: string;
-  customerName: string;
+  clientId: string;
+  clientName: string;
   affectedEntities: {
     portalContacts: number;
     projects: number;

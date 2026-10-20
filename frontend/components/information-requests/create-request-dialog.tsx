@@ -181,8 +181,8 @@ export function CreateRequestDialog({
     try {
       const result = await createRequestAction(slug, customerId, {
         requestTemplateId: isAdHoc ? null : templateId,
-        customerId,
-        projectId: projectId ?? null,
+        clientId: customerId,
+        matterId: projectId ?? null,
         portalContactId,
         reminderIntervalDays: reminderDays,
         dueDate: dueDate.trim() === "" ? null : dueDate,

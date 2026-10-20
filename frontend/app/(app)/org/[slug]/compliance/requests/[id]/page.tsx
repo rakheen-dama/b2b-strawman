@@ -72,7 +72,7 @@ export default async function DataRequestDetailPage({
       <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="font-display text-3xl font-bold text-slate-950 dark:text-slate-50">
-            {request.customerName}
+            {request.clientName}
           </h1>
           <Badge variant={statusConfig.variant} className={statusConfig.className}>
             {statusConfig.label}

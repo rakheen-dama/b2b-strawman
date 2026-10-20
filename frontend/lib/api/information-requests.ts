@@ -109,10 +109,10 @@ export interface InformationRequestItemResponse {
 export interface InformationRequestResponse {
   id: string;
   requestNumber: string;
-  customerId: string;
-  customerName: string;
-  projectId: string | null;
-  projectName: string | null;
+  clientId: string;
+  clientName: string;
+  matterId: string | null;
+  matterName: string | null;
   portalContactId: string;
   portalContactName: string;
   portalContactEmail: string;
@@ -140,8 +140,8 @@ export interface CreateInformationRequestItem {
 
 export interface CreateInformationRequestRequest {
   requestTemplateId?: string | null;
-  customerId: string;
-  projectId?: string | null;
+  clientId: string;
+  matterId?: string | null;
   portalContactId: string;
   reminderIntervalDays: number;
   dueDate?: string | null;
@@ -239,9 +239,9 @@ export async function getRequestSummary(): Promise<InformationRequestSummary> {
 export async function getCustomerRequests(
   customerId: string
 ): Promise<InformationRequestResponse[]> {
-  return api.get<InformationRequestResponse[]>(`/api/customers/${customerId}/information-requests`);
+  return api.get<InformationRequestResponse[]>(`/api/clients/${customerId}/information-requests`);
 }
 
 export async function getProjectRequests(projectId: string): Promise<InformationRequestResponse[]> {
-  return api.get<InformationRequestResponse[]>(`/api/projects/${projectId}/information-requests`);
+  return api.get<InformationRequestResponse[]>(`/api/matters/${projectId}/information-requests`);
 }

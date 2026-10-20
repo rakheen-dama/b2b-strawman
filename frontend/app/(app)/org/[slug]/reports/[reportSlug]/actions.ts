@@ -91,7 +91,7 @@ export async function fetchEntityOptionsAction(
       };
     }
     if (type === "customer") {
-      const customers = await api.get<Customer[]>("/api/customers");
+      const customers = await api.get<Customer[]>("/api/clients");
       return {
         data: customers.map((c) => ({ id: c.id, label: c.name })),
       };

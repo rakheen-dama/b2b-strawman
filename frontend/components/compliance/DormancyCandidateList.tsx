@@ -7,8 +7,8 @@ import { markCustomerDormant } from "@/app/(app)/org/[slug]/compliance/actions";
 import { cn } from "@/lib/utils";
 
 interface DormancyCandidate {
-  customerId: string;
-  customerName: string;
+  clientId: string;
+  clientName: string;
   lastActivityDate: string | null;
   daysSinceActivity: number;
 }
@@ -45,7 +45,7 @@ export function DormancyCandidateList({ candidates, orgSlug }: DormancyCandidate
     if (selected.size === candidates.length) {
       setSelected(new Set());
     } else {
-      setSelected(new Set(candidates.map((c) => c.customerId)));
+      setSelected(new Set(candidates.map((c) => c.clientId)));
     }
   }
 
@@ -123,23 +123,23 @@ export function DormancyCandidateList({ candidates, orgSlug }: DormancyCandidate
           <tbody>
             {candidates.map((candidate) => (
               <tr
-                key={candidate.customerId}
+                key={candidate.clientId}
                 className="border-b border-slate-100 last:border-0 dark:border-slate-800"
               >
                 <td className="px-4 py-3">
                   <input
                     type="checkbox"
-                    checked={selected.has(candidate.customerId)}
-                    onChange={() => toggleSelect(candidate.customerId)}
+                    checked={selected.has(candidate.clientId)}
+                    onChange={() => toggleSelect(candidate.clientId)}
                     className="rounded border-slate-300 dark:border-slate-600"
                   />
                 </td>
                 <td className="px-4 py-3">
                   <Link
-                    href={`/org/${orgSlug}/customers/${candidate.customerId}`}
+                    href={`/org/${orgSlug}/customers/${candidate.clientId}`}
                     className="font-medium text-slate-950 hover:text-teal-600 dark:text-slate-50"
                   >
-                    {candidate.customerName}
+                    {candidate.clientName}
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
@@ -159,11 +159,11 @@ export function DormancyCandidateList({ candidates, orgSlug }: DormancyCandidate
                 </td>
                 <td className="px-4 py-3">
                   <button
-                    onClick={() => handleMarkDormant(candidate.customerId)}
-                    disabled={loading.has(candidate.customerId)}
+                    onClick={() => handleMarkDormant(candidate.clientId)}
+                    disabled={loading.has(candidate.clientId)}
                     className="rounded-full bg-slate-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900"
                   >
-                    {loading.has(candidate.customerId) ? "Marking..." : "Mark as Dormant"}
+                    {loading.has(candidate.clientId) ? "Marking..." : "Mark as Dormant"}
                   </button>
                 </td>
               </tr>

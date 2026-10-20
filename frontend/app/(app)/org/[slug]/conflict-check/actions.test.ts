@@ -47,7 +47,7 @@ describe("conflict-check actions — fetchCustomers / fetchProjects defensive pa
       { id: "c1", name: "Sipho Dlamini" },
       { id: "c2", name: "Nontando Zulu" },
     ]);
-    expect(mockGet).toHaveBeenCalledWith("/api/customers?size=200");
+    expect(mockGet).toHaveBeenCalledWith("/api/clients?size=200");
   });
 
   it("fetchCustomers handles paginated wrapper shape (forward-compat)", async () => {

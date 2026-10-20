@@ -31,8 +31,8 @@ interface ActionResult {
 }
 
 interface DormancyCandidate {
-  customerId: string;
-  customerName: string;
+  clientId: string;
+  clientName: string;
   lastActivityDate: string | null;
   daysSinceActivity: number;
 }

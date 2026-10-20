@@ -107,14 +107,14 @@ export default async function CustomerDetailPage({
 
   let customer: Customer;
   try {
-    customer = await api.get<Customer>(`/api/customers/${id}`);
+    customer = await api.get<Customer>(`/api/clients/${id}`);
   } catch (error) {
     handleApiError(error);
   }
 
   let linkedProjects: Project[] = [];
   try {
-    linkedProjects = await api.get<Project[]>(`/api/customers/${id}/projects`);
+    linkedProjects = await api.get<Project[]>(`/api/clients/${id}/matters`);
   } catch {
     // Non-fatal: show empty projects list if fetch fails
   }
@@ -201,7 +201,7 @@ export default async function CustomerDetailPage({
   let allTags: TagResponse[] = [];
   try {
     const [entityTags, orgTags] = await Promise.all([
-      api.get<TagResponse[]>(`/api/customers/${id}/tags`),
+      api.get<TagResponse[]>(`/api/clients/${id}/tags`),
       getTags(),
     ]);
     customerTags = entityTags;
@@ -363,7 +363,7 @@ export default async function CustomerDetailPage({
     ? [
         {
           label: "Projects linked",
-          complete: customerReadiness.hasLinkedProjects,
+          complete: customerReadiness.hasLinkedMatters,
           actionHref: `?tab=projects`,
         },
         {

@@ -41,7 +41,8 @@ async function getToken(user: "alice" | "bob" | "carol"): Promise<string> {
 
 // Find an ACTIVE customer from seed data via API
 async function findActiveCustomer(token: string): Promise<{ id: string; name: string }> {
-  const res = await fetch(`${BACKEND_URL}/api/customers`, {
+  // Phase 87 S2 (ADR-337): API path
+  const res = await fetch(`${BACKEND_URL}/api/clients`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   const customers = await res.json();

@@ -26,7 +26,7 @@ interface UploadInitResult {
 }
 
 export async function fetchCustomerProjects(customerId: string): Promise<Project[]> {
-  return api.get<Project[]>(`/api/customers/${customerId}/projects`);
+  return api.get<Project[]>(`/api/clients/${customerId}/matters`);
 }
 
 // Collections exemption toggle (Phase 83, Epic 588C). Admin/owner-only — the
@@ -69,7 +69,7 @@ export async function linkProject(
   }
 
   try {
-    await api.post<CustomerProject>(`/api/customers/${customerId}/projects/${projectId}`);
+    await api.post<CustomerProject>(`/api/clients/${customerId}/matters/${projectId}`);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -93,7 +93,7 @@ export async function unlinkProject(
   }
 
   try {
-    await api.delete(`/api/customers/${customerId}/projects/${projectId}`);
+    await api.delete(`/api/clients/${customerId}/matters/${projectId}`);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -123,7 +123,7 @@ export async function initiateCustomerUpload(
 
   try {
     const result = await api.post<UploadInitResponse>(
-      `/api/customers/${customerId}/documents/upload-init`,
+      `/api/clients/${customerId}/documents/upload-init`,
       body
     );
     return {

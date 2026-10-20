@@ -40,11 +40,11 @@ export default async function InformationRequestDetailPage({
     <div className="space-y-8">
       <div>
         <Link
-          href={`/org/${slug}/customers/${request.customerId}`}
+          href={`/org/${slug}/customers/${request.clientId}`}
           className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ArrowLeft className="mr-1.5 size-4" />
-          Back to {request.customerName}
+          Back to {request.clientName}
         </Link>
       </div>
 

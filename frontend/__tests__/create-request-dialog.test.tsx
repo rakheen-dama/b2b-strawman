@@ -210,6 +210,12 @@ describe("CreateRequestDialog (GAP-L-67) — ad-hoc items", () => {
     ];
     expect(payload.requestTemplateId).toBe(TEMPLATE_FIXTURE.id);
     expect(payload.items).toBeUndefined();
+    // Phase 87 S2 (ADR-337): wire keys are clientId/matterId; the old keys are
+    // silently dropped by the backend (no matter link, no 400).
+    expect(payload.clientId).toBe("cust-1");
+    expect(payload.matterId).toBeNull();
+    expect(payload).not.toHaveProperty("customerId");
+    expect(payload).not.toHaveProperty("projectId");
   });
 
   it("Save as Draft allows ad-hoc with 0 items (existing behaviour)", async () => {

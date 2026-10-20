@@ -173,7 +173,8 @@ export async function seedDay5PermissionDenial(
     extraHTTPHeaders: { Authorization: `Bearer ${opts.memberToken}` },
   });
   try {
-    const res = await ctx.delete(`${API_BASE}/api/customers/${opts.targetCustomerId}`);
+    // Phase 87 S2 (ADR-337): API path
+    const res = await ctx.delete(`${API_BASE}/api/clients/${opts.targetCustomerId}`);
     return {
       deniedStatus: res.status(),
       denied: res.status() === 403,
@@ -315,7 +316,8 @@ export async function seedDay20CustomerActivity(
   const ctx = await request.newContext({ extraHTTPHeaders: authHeaders(opts.token) });
   try {
     // Touch the customer to emit `customer.updated`.
-    await ctx.patch(`${API_BASE}/api/customers/${opts.customerId}`, {
+    // Phase 87 S2 (ADR-337): API path
+    await ctx.patch(`${API_BASE}/api/clients/${opts.customerId}`, {
       data: { notes: `Day 20 capstone touch ${new Date().toISOString()}` },
     });
 

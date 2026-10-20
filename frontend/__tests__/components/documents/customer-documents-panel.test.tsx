@@ -39,7 +39,7 @@ function makeDocument(overrides: Partial<Document> = {}): Document {
     size: 1024000,
     status: "UPLOADED",
     scope: "CUSTOMER",
-    customerId: "c1",
+    clientId: "c1",
     visibility: "INTERNAL",
     uploadedBy: "m1",
     uploadedAt: "2024-06-01T00:00:00Z",

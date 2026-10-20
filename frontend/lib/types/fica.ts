@@ -1,4 +1,4 @@
-// FICA status projection from GET /api/customers/{id}/fica-status
+// FICA status projection from GET /api/clients/{clientId}/fica-status
 // (GAP-L-46).
 //
 // Info-request-only signal today; designed so later phases can fold in
@@ -7,7 +7,7 @@
 export type FicaOnboardingStatus = "NOT_STARTED" | "IN_PROGRESS" | "DONE";
 
 export interface FicaStatus {
-  customerId: string;
+  clientId: string;
   status: FicaOnboardingStatus;
   /** ISO instant; populated only when status === "DONE". */
   lastVerifiedAt: string | null;

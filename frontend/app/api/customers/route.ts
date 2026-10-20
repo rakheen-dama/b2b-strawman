@@ -11,7 +11,10 @@ import { NextResponse } from "next/server";
  * `/api/customers` on the Next.js origin (port 3000) instead of the
  * gateway (port 8443). Without this route, Next.js would respond 404.
  *
- * Server components should continue to call `api.get("/api/customers")`
+ * Upstream target is `/api/clients` (Phase 87 S2, ADR-337). This Next.js route
+ * file itself stays at `app/api/customers/route.ts` until 610D renames it.
+ *
+ * Server components should continue to call `api.get("/api/clients")`
  * directly via `lib/api/client.ts` — they route through the gateway on
  * their own. This handler exists purely so browser fetches do not 404.
  *
@@ -37,7 +40,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const qs = url.search; // includes leading "?" when present
 
-  const upstream = await fetch(`${API_BASE}/api/customers${qs}`, {
+  const upstream = await fetch(`${API_BASE}/api/clients${qs}`, {
     method: "GET",
     headers: authOptions.headers,
     credentials: authOptions.credentials,

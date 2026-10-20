@@ -11,7 +11,7 @@ describe("FicaStatusCard (GAP-L-46)", () => {
       <FicaStatusCard
         slug="legal-test"
         ficaStatus={{
-          customerId: "11111111-1111-1111-1111-111111111111",
+          clientId: "11111111-1111-1111-1111-111111111111",
           status: "DONE",
           lastVerifiedAt: "2026-04-22T10:30:00Z",
           requestId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
@@ -33,7 +33,7 @@ describe("FicaStatusCard (GAP-L-46)", () => {
       <FicaStatusCard
         slug="acme"
         ficaStatus={{
-          customerId: "11111111-1111-1111-1111-111111111111",
+          clientId: "11111111-1111-1111-1111-111111111111",
           status: "IN_PROGRESS",
           lastVerifiedAt: null,
           requestId: "req-123",
@@ -50,7 +50,7 @@ describe("FicaStatusCard (GAP-L-46)", () => {
       <FicaStatusCard
         slug="legal-test"
         ficaStatus={{
-          customerId: "11111111-1111-1111-1111-111111111111",
+          clientId: "11111111-1111-1111-1111-111111111111",
           status: "IN_PROGRESS",
           lastVerifiedAt: null,
           requestId: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
@@ -69,7 +69,7 @@ describe("FicaStatusCard (GAP-L-46)", () => {
       <FicaStatusCard
         slug="legal-test"
         ficaStatus={{
-          customerId: "11111111-1111-1111-1111-111111111111",
+          clientId: "11111111-1111-1111-1111-111111111111",
           status: "NOT_STARTED",
           lastVerifiedAt: null,
           requestId: null,

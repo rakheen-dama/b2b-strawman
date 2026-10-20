@@ -168,7 +168,7 @@ export async function downloadCertificate(
 export async function fetchPortalContacts(customerId: string): Promise<PortalContactSummary[]> {
   try {
     const contacts = await api.get<PortalContactSummary[]>(
-      `/api/customers/${customerId}/portal-contacts`
+      `/api/clients/${customerId}/portal-contacts`
     );
     return contacts;
   } catch (error) {

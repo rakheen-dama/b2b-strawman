@@ -18,8 +18,8 @@ const futureDate = `${y + 1}-${String(m).padStart(2, "0")}-${String(d).padStart(
 const mockRequests: DataRequestResponse[] = [
   {
     id: "req-1",
-    customerId: "cust-1",
-    customerName: "Acme Corp",
+    clientId: "cust-1",
+    clientName: "Acme Corp",
     requestType: "DELETION",
     status: "RECEIVED",
     description: "Please delete all my data.",
@@ -35,8 +35,8 @@ const mockRequests: DataRequestResponse[] = [
   },
   {
     id: "req-2",
-    customerId: "cust-2",
-    customerName: "Beta Ltd",
+    clientId: "cust-2",
+    clientName: "Beta Ltd",
     requestType: "ACCESS",
     status: "IN_PROGRESS",
     description: "Please provide a copy of my data.",

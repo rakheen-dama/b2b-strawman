@@ -101,7 +101,7 @@ export async function getDownloadUrl(documentId: string): Promise<DownloadUrlRes
 // ---- Customer-project linking actions ----
 
 export async function fetchCustomers(): Promise<Customer[]> {
-  return api.get<Customer[]>("/api/customers");
+  return api.get<Customer[]>("/api/clients");
 }
 
 export async function linkCustomerToProject(
@@ -115,7 +115,7 @@ export async function linkCustomerToProject(
   }
 
   try {
-    await api.post<CustomerProject>(`/api/projects/${projectId}/customers/${customerId}`);
+    await api.post<CustomerProject>(`/api/matters/${projectId}/clients/${customerId}`);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -138,7 +138,7 @@ export async function unlinkCustomerFromProject(
   }
 
   try {
-    await api.delete(`/api/projects/${projectId}/customers/${customerId}`);
+    await api.delete(`/api/matters/${projectId}/clients/${customerId}`);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };

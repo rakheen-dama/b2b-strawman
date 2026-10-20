@@ -16,12 +16,12 @@ public record ComplianceSnapshot(
     int totalActiveCustomers,
     String dataCollectionNotes) {
 
-  /** FICA/CDD compliance summary with flagged customers for AI attention. */
+  /** FICA/CDD compliance summary with flagged clients for AI attention. */
   public record FicaCddSummary(
       int compliant,
       int nonCompliant,
       int criticallyOverdue,
-      List<FlaggedCustomer> flaggedCustomers) {}
+      List<FlaggedCustomer> flaggedClients) {}
 
   /** POPIA processing activity and DSAR status summary. */
   public record PopiaSummary(

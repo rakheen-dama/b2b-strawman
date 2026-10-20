@@ -1,11 +1,8 @@
-# WireVocabularyContractTest ratchet baseline (ADR-337) — Phase 87 wire-rename worklist.
-# Each line is legacy project/customer vocabulary still on the wire inside
-# WireVocabularyContractTest.SCOPED_PACKAGES. This file must only SHRINK:
-#   - 607B/607C delete lines as they rename (the test fails on stale lines);
-#   - the test fails on any offender NOT listed here (new legacy vocabulary).
-# 608B widens SCOPED_PACKAGES to Batch 2 (the only time lines are added). Entries in Batch 1
-# packages whose rename ADR-337 schedules for 608 (e.g. the /api/customers/{customerId}/...
-# document upload route and DocumentResponse#customerId) legitimately remain until then.
+# WireVocabularyContractTest ratchet baseline (ADR-337) — Phase 87 wire-rename residue.
+# Each line is legacy project/customer vocabulary still on the wire anywhere under
+# io.b2mash.b2b.b2bstrawman outside the mcp package (scope list removed in 609F).
+# This file must only SHRINK — the test fails on stale lines and on any offender NOT listed here.
+# Remaining line(s) and owner: TeamWorkloadEntry#projects — 614A deletes team-workload.
 # Never add a line by hand to make the build green — rename the route/record instead.
 # Regenerate: ./mvnw test -Dtest=WireVocabularyContractTest -Dwire.contract.update=true
 # Format: "ROUTE <METHODS> <pattern>" | "DTO <class>" | "DTO <class>#<component>"

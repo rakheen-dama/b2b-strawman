@@ -13,8 +13,8 @@ public record CheckoutRequest(
     String invoiceNumber,
     BigDecimal amount,
     String currency,
-    String customerEmail,
-    String customerName,
+    String clientEmail,
+    String clientName,
     String successUrl,
     String cancelUrl,
     Map<String, String> metadata) {

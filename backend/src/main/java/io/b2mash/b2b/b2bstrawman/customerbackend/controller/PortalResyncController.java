@@ -32,5 +32,5 @@ public class PortalResyncController {
             result.documentsProjected()));
   }
 
-  public record ResyncResponse(String message, int projectsProjected, int documentsProjected) {}
+  public record ResyncResponse(String message, int mattersSynced, int documentsSynced) {}
 }

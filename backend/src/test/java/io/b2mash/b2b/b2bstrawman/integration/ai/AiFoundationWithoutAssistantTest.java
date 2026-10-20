@@ -305,7 +305,7 @@ class AiFoundationWithoutAssistantTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"documentId":"%s","projectId":"%s"}
+                    {"documentId":"%s","matterId":"%s"}
                     """
                         .formatted(documentId, projectId)))
         .andExpect(status().isOk())

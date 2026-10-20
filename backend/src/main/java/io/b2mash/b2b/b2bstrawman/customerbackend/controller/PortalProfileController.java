@@ -40,8 +40,8 @@ public class PortalProfileController {
 
   public record PortalProfileResponse(
       UUID contactId,
-      UUID customerId,
-      String customerName,
+      UUID clientId,
+      String clientName,
       String email,
       String displayName,
       String role) {}

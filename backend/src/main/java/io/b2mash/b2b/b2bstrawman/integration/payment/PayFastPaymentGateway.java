@@ -79,7 +79,7 @@ public class PayFastPaymentGateway implements PaymentGateway {
       data.put("notify_url", appBaseUrl + "/api/webhooks/payment/payfast");
       data.put("amount", request.amount().setScale(2, RoundingMode.HALF_UP).toPlainString());
       data.put("item_name", "Invoice " + request.invoiceNumber());
-      data.put("email_address", request.customerEmail());
+      data.put("email_address", request.clientEmail());
       data.put("custom_str1", tenantSchema);
       data.put("custom_str2", request.invoiceId().toString());
 

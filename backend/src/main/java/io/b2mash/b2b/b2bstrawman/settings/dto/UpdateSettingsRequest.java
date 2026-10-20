@@ -15,5 +15,5 @@ public record UpdateSettingsRequest(
     Boolean accountingEnabled,
     Boolean aiEnabled,
     Boolean documentSigningEnabled,
-    @Size(max = 500, message = "projectNamingPattern must be at most 500 characters")
-        String projectNamingPattern) {}
+    @Size(max = 500, message = "matterNamingPattern must be at most 500 characters")
+        String matterNamingPattern) {}

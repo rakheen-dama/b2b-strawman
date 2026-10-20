@@ -342,7 +342,7 @@ class PortalIntegrationTest {
 
       var result =
           mockMvc
-              .perform(get("/portal/projects").header("Authorization", "Bearer " + token))
+              .perform(get("/portal/matters").header("Authorization", "Bearer " + token))
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.length()").value(1))
               .andExpect(jsonPath("$[0].name").value("Portal Project"))
@@ -358,14 +358,14 @@ class PortalIntegrationTest {
       String token = portalTokenForCustomerA();
 
       mockMvc
-          .perform(get("/portal/projects").header("Authorization", "Bearer " + token))
+          .perform(get("/portal/matters").header("Authorization", "Bearer " + token))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$[0].documentCount").value(1)); // only SHARED docs counted
     }
 
     @Test
     void shouldReturn401WithoutToken() throws Exception {
-      mockMvc.perform(get("/portal/projects")).andExpect(status().isUnauthorized());
+      mockMvc.perform(get("/portal/matters")).andExpect(status().isUnauthorized());
     }
   }
 
@@ -379,11 +379,15 @@ class PortalIntegrationTest {
       var result =
           mockMvc
               .perform(
-                  get("/portal/projects/{projectId}/documents", projectId)
+                  get("/portal/matters/{matterId}/documents", projectId)
                       .header("Authorization", "Bearer " + token))
               // Both manually-shared (SHARED) and system-auto-shared (PORTAL) docs are visible.
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.length()").value(2))
+              // Phase 87 (609F): matter linkage is on the wire as matterId/matterName.
+              .andExpect(jsonPath("$[0].matterId").value(projectId.toString()))
+              .andExpect(jsonPath("$[0].matterName").exists())
+              .andExpect(jsonPath("$[0].projectId").doesNotExist())
               .andReturn();
 
       String body = result.getResponse().getContentAsString();
@@ -398,7 +402,7 @@ class PortalIntegrationTest {
       var result =
           mockMvc
               .perform(
-                  get("/portal/projects/{projectId}/documents", projectId)
+                  get("/portal/matters/{matterId}/documents", projectId)
                       .header("Authorization", "Bearer " + token))
               .andExpect(status().isOk())
               .andReturn();
@@ -419,7 +423,7 @@ class PortalIntegrationTest {
       var result =
           mockMvc
               .perform(
-                  get("/portal/projects/{projectId}/documents", projectId)
+                  get("/portal/matters/{matterId}/documents", projectId)
                       .header("Authorization", "Bearer " + token))
               .andExpect(status().isOk())
               .andReturn();
@@ -452,7 +456,7 @@ class PortalIntegrationTest {
 
       mockMvc
           .perform(
-              get("/portal/projects/{projectId}/documents", unlinkedProjectId)
+              get("/portal/matters/{matterId}/documents", unlinkedProjectId)
                   .header("Authorization", "Bearer " + token))
           .andExpect(status().isNotFound());
     }
@@ -533,7 +537,7 @@ class PortalIntegrationTest {
       // org A customer can only see org A projects
       var result =
           mockMvc
-              .perform(get("/portal/projects").header("Authorization", "Bearer " + token))
+              .perform(get("/portal/matters").header("Authorization", "Bearer " + token))
               .andExpect(status().isOk())
               .andReturn();
 
@@ -552,7 +556,7 @@ class PortalIntegrationTest {
 
       // Customer B should get empty project list
       mockMvc
-          .perform(get("/portal/projects").header("Authorization", "Bearer " + tokenB))
+          .perform(get("/portal/matters").header("Authorization", "Bearer " + tokenB))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.length()").value(0));
 

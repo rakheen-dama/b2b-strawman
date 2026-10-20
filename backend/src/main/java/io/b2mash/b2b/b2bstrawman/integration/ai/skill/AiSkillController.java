@@ -42,7 +42,7 @@ public class AiSkillController {
     return ResponseEntity.ok(
         SkillExecutionResponse.from(
             executionService.executeFicaVerification(
-                request.customerId(), RequestScopes.requireMemberId()),
+                request.clientId(), RequestScopes.requireMemberId()),
             llmJsonParser,
             objectMapper));
   }
@@ -55,7 +55,7 @@ public class AiSkillController {
     return ResponseEntity.ok(
         SkillExecutionResponse.from(
             executionService.executeMatterIntake(
-                request.customerId(), request.description(), RequestScopes.requireMemberId()),
+                request.clientId(), request.description(), RequestScopes.requireMemberId()),
             llmJsonParser,
             objectMapper));
   }
@@ -68,7 +68,7 @@ public class AiSkillController {
     return ResponseEntity.ok(
         SkillExecutionResponse.from(
             executionService.executeContractReview(
-                request.documentId(), request.projectId(), RequestScopes.requireMemberId()),
+                request.documentId(), request.matterId(), RequestScopes.requireMemberId()),
             llmJsonParser,
             objectMapper));
   }
@@ -81,7 +81,7 @@ public class AiSkillController {
     return ResponseEntity.ok(
         SkillExecutionResponse.from(
             executionService.executeDrafting(
-                request.templateId(), request.projectId(), RequestScopes.requireMemberId()),
+                request.templateId(), request.matterId(), RequestScopes.requireMemberId()),
             llmJsonParser,
             objectMapper));
   }
@@ -100,13 +100,13 @@ public class AiSkillController {
 
   // ── DTOs ────────────────────────────────────────────────────────────────
 
-  public record FicaVerificationRequest(UUID customerId) {}
+  public record FicaVerificationRequest(UUID clientId) {}
 
-  public record MatterIntakeRequest(UUID customerId, String description) {}
+  public record MatterIntakeRequest(UUID clientId, String description) {}
 
-  public record ContractReviewRequest(UUID documentId, UUID projectId) {}
+  public record ContractReviewRequest(UUID documentId, UUID matterId) {}
 
-  public record DraftingRequest(UUID templateId, UUID projectId) {}
+  public record DraftingRequest(UUID templateId, UUID matterId) {}
 
   public record ComplianceAuditRequest() {}
 

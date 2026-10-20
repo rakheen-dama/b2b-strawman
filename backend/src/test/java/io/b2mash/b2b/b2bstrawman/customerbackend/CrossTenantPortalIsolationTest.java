@@ -201,7 +201,8 @@ class CrossTenantPortalIsolationTest {
   @Test
   void orgACustomerCannotViewOrgBProjectDetail() throws Exception {
     mockMvc
-        .perform(get("/portal/projects/{id}", projectB).header("Authorization", "Bearer " + tokenA))
+        .perform(
+            get("/portal/matters/{matterId}", projectB).header("Authorization", "Bearer " + tokenA))
         .andExpect(status().isNotFound());
   }
 
@@ -209,7 +210,7 @@ class CrossTenantPortalIsolationTest {
   void orgACustomerCannotListOrgBComments() throws Exception {
     mockMvc
         .perform(
-            get("/portal/projects/{projectId}/comments", projectB)
+            get("/portal/matters/{matterId}/comments", projectB)
                 .header("Authorization", "Bearer " + tokenA))
         .andExpect(status().isNotFound());
   }
@@ -218,7 +219,7 @@ class CrossTenantPortalIsolationTest {
   void orgACustomerCannotGetOrgBSummary() throws Exception {
     mockMvc
         .perform(
-            get("/portal/projects/{projectId}/summary", projectB)
+            get("/portal/matters/{matterId}/summary", projectB)
                 .header("Authorization", "Bearer " + tokenA))
         .andExpect(status().isNotFound());
   }
@@ -226,7 +227,7 @@ class CrossTenantPortalIsolationTest {
   @Test
   void orgACustomerProjectListDoesNotContainOrgBProjects() throws Exception {
     mockMvc
-        .perform(get("/portal/projects").header("Authorization", "Bearer " + tokenA))
+        .perform(get("/portal/matters").header("Authorization", "Bearer " + tokenA))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.name == 'Org B Project')]").doesNotExist());
   }

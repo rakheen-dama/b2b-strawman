@@ -34,7 +34,7 @@ function makeNotification(overrides: Partial<Notification> = {}): Notification {
     body: null,
     referenceEntityType: "TASK",
     referenceEntityId: "t1",
-    referenceProjectId: "p1",
+    referenceMatterId: "p1",
     isRead: false,
     createdAt: "2026-02-12T14:30:00Z",
     ...overrides,

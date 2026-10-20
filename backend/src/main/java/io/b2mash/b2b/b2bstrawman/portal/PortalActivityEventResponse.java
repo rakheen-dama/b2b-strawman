@@ -11,8 +11,9 @@ import java.util.UUID;
  * <p>The {@code summary} field is a human-readable label derived from the event type so the portal
  * can render rows without knowing the firm's internal vocabulary.
  *
- * <p>{@code projectId} is extracted from the JSONB {@code details->>'project_id'} field so the
- * portal can deep-link rows back to the matter detail page when present.
+ * <p>{@code matterId} is extracted from the JSONB {@code details->>'project_id'} field (the stored
+ * audit-details key, unchanged) so the portal can deep-link rows back to the matter detail page
+ * when present.
  */
 public record PortalActivityEventResponse(
     UUID id,
@@ -21,7 +22,7 @@ public record PortalActivityEventResponse(
     String actorName,
     UUID entityId,
     String entityType,
-    UUID projectId,
+    UUID matterId,
     String summary,
     Instant occurredAt) {
 

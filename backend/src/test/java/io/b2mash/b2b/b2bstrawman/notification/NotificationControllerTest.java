@@ -133,7 +133,10 @@ class NotificationControllerTest extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.page.totalElements").value(3))
         .andExpect(jsonPath("$.content[0].type").exists())
         .andExpect(jsonPath("$.content[0].title").exists())
-        .andExpect(jsonPath("$.content[0].createdAt").exists());
+        .andExpect(jsonPath("$.content[0].createdAt").exists())
+        // Phase 87 (609F): matter deep-link is on the wire as referenceMatterId.
+        .andExpect(jsonPath("$.content[0].referenceMatterId").exists())
+        .andExpect(jsonPath("$.content[0].referenceProjectId").doesNotExist());
   }
 
   @Test

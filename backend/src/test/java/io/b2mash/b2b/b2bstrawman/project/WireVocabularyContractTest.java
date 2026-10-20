@@ -37,21 +37,23 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 /**
  * ADR-337 wire-vocabulary contract — a RATCHET over the Phase 87 rename batches.
  *
- * <p>Enumerates (1) every Spring MVC route whose handler bean lives in {@link #SCOPED_PACKAGES} and
- * (2) every wire record in those packages (architecture §12.3.1 heuristic plus {@link
- * #ADDITIONAL_WIRE_RECORDS}), and collects the ones still carrying the legacy {@code
- * project}/{@code customer} nouns. The current offenders must equal the committed baseline {@code
- * src/test/resources/wire/batch1-known-offenders.txt}:
+ * <p>Enumerates (1) every Spring MVC route whose handler bean lives under {@code
+ * io.b2mash.b2b.b2bstrawman} and (2) every wire record under that package (architecture §12.3.1
+ * heuristic plus {@link #ADDITIONAL_WIRE_RECORDS}) — excluding the {@code mcp} package, the
+ * published plugin contract pinned by {@code McpToolContractTest} (ADR-343) — and collects the ones
+ * still carrying the legacy {@code project}/{@code customer} nouns. The former package scope list
+ * (607A Batch 1, 608B + Batch 2) was deleted in 609F. The current offenders must equal the
+ * committed baseline {@code src/test/resources/wire/batch1-known-offenders.txt}:
  *
  * <ul>
  *   <li>an offender NOT in the baseline fails the build (new legacy vocabulary on the wire);
  *   <li>a baseline line that no longer offends fails the build (stale — delete it; the baseline
- *       only shrinks as 607B/607C/608 rename).
+ *       only shrinks).
  * </ul>
  *
- * <p>Regenerate the baseline (scope change in 608B, or to drop renamed lines) with {@code ./mvnw
- * test -Dtest=WireVocabularyContractTest -Dwire.contract.update=true}; the PR diff of the baseline
- * must be deletions only, except when the scope constant widens.
+ * <p>Regenerate the baseline (to drop renamed lines) with {@code ./mvnw test
+ * -Dtest=WireVocabularyContractTest -Dwire.contract.update=true}; the PR diff of the baseline must
+ * be deletions only.
  *
  * <p>Annotated exactly like {@code McpHandshakeIntegrationTest} so it reuses that context-cache
  * key. Audit/EntityTag literal stability (ADR-342) is NOT here — see {@code
@@ -63,33 +65,13 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 @ActiveProfiles("test")
 class WireVocabularyContractTest {
 
+  /**
+   * Scan root. Since 609F the scope is every handler bean / wire record under {@code BASE} except
+   * the {@code mcp} package (ADR-343) — there is no scope list.
+   */
   private static final String BASE = "io.b2mash.b2b.b2bstrawman";
 
-  /**
-   * Phase 87 Batch 1 (Epic 607) + Batch 2 (Epic 608B). Edited ONLY in 607A (Batch 1), 608B (+ Batch
-   * 2) and 609F (scope removed — whole base package, excluding {@code mcp}).
-   */
-  static final Set<String> SCOPED_PACKAGES =
-      Set.of(
-          // Batch 1 — matters core (Epic 607)
-          "project",
-          "member",
-          "projecttemplate",
-          "setupstatus",
-          "dashboard",
-          "activity",
-          "comment",
-          "budget",
-          "task",
-          "document",
-          "mywork",
-          "calendar",
-          // Batch 2 — clients core (Epic 608)
-          "customer",
-          "informationrequest",
-          "checklist",
-          "datarequest",
-          "correspondence");
+  private static final String SCOPE_LABEL = BASE + " (excluding .mcp)";
 
   /**
    * Wire records the §12.3.1 name heuristic misses (their names do not end in
@@ -145,14 +127,11 @@ class WireVocabularyContractTest {
 
   private static final String HEADER =
       """
-      # WireVocabularyContractTest ratchet baseline (ADR-337) — Phase 87 wire-rename worklist.
-      # Each line is legacy project/customer vocabulary still on the wire inside
-      # WireVocabularyContractTest.SCOPED_PACKAGES. This file must only SHRINK:
-      #   - 607B/607C delete lines as they rename (the test fails on stale lines);
-      #   - the test fails on any offender NOT listed here (new legacy vocabulary).
-      # 608B widens SCOPED_PACKAGES to Batch 2 (the only time lines are added). Entries in Batch 1
-      # packages whose rename ADR-337 schedules for 608 (e.g. the /api/customers/{customerId}/...
-      # document upload route and DocumentResponse#customerId) legitimately remain until then.
+      # WireVocabularyContractTest ratchet baseline (ADR-337) — Phase 87 wire-rename residue.
+      # Each line is legacy project/customer vocabulary still on the wire anywhere under
+      # io.b2mash.b2b.b2bstrawman outside the mcp package (scope list removed in 609F).
+      # This file must only SHRINK — the test fails on stale lines and on any offender NOT listed here.
+      # Remaining line(s) and owner: TeamWorkloadEntry#projects — 614A deletes team-workload.
       # Never add a line by hand to make the build green — rename the route/record instead.
       # Regenerate: ./mvnw test -Dtest=WireVocabularyContractTest -Dwire.contract.update=true
       # Format: "ROUTE <METHODS> <pattern>" | "DTO <class>" | "DTO <class>#<component>"
@@ -181,11 +160,10 @@ class WireVocabularyContractTest {
         }
       }
     }
-    assertThat(SCOPED_PACKAGES).isNotEmpty();
     assertThat(scopedRoutes)
         .as(
-            "the route scan must see handler methods in %s (guard against a moved package)",
-            SCOPED_PACKAGES)
+            "the route scan must see handler methods under %s (guard against a moved package)",
+            BASE)
         .isPositive();
     ratchet(ROUTE, offenders);
   }
@@ -197,31 +175,26 @@ class WireVocabularyContractTest {
     SortedMap<String, String> offenders = new TreeMap<>();
     Set<String> seenAdditional = new TreeSet<>();
     int scanned = 0;
-    for (String pkg : SCOPED_PACKAGES) {
-      for (BeanDefinition bd : scanner.findCandidateComponents(BASE + "." + pkg)) {
-        Class<?> c =
-            ClassUtils.resolveClassName(bd.getBeanClassName(), getClass().getClassLoader());
-        if (isTestClass(c) || !isWireRecord(c)) {
-          continue;
-        }
-        if (ADDITIONAL_WIRE_RECORD_NAMES.contains(c.getName())) {
-          seenAdditional.add(c.getName());
-        }
-        scanned++;
-        if (containsLegacyNoun(c.getSimpleName())) {
-          offenders.put(DTO + c.getName(), "record name");
-        }
-        for (var rc : c.getRecordComponents()) {
-          if (containsLegacyNoun(rc.getName())) {
-            offenders.put(DTO + c.getName() + "#" + rc.getName(), "record component");
-          }
+    for (BeanDefinition bd : scanner.findCandidateComponents(BASE)) {
+      Class<?> c = ClassUtils.resolveClassName(bd.getBeanClassName(), getClass().getClassLoader());
+      if (isTestClass(c) || !inScope(c.getPackageName()) || !isWireRecord(c)) {
+        continue;
+      }
+      if (ADDITIONAL_WIRE_RECORD_NAMES.contains(c.getName())) {
+        seenAdditional.add(c.getName());
+      }
+      scanned++;
+      if (containsLegacyNoun(c.getSimpleName())) {
+        offenders.put(DTO + c.getName(), "record name");
+      }
+      for (var rc : c.getRecordComponents()) {
+        if (containsLegacyNoun(rc.getName())) {
+          offenders.put(DTO + c.getName() + "#" + rc.getName(), "record component");
         }
       }
     }
     assertThat(scanned)
-        .as(
-            "the DTO scan must see wire records in %s (guard against a moved package)",
-            SCOPED_PACKAGES)
+        .as("the DTO scan must see wire records under %s (guard against a moved package)", BASE)
         .isPositive();
     // Every alias group must resolve to at least one scanned record: a rename to the listed
     // post-rename name passes; a deletion, a move out of scope, or a rename to an UNLISTED name
@@ -244,13 +217,7 @@ class WireVocabularyContractTest {
     if (pkg.startsWith(BASE + ".mcp")) {
       return false; // published plugin contract — pinned by McpToolContractTest (ADR-343)
     }
-    for (String s : SCOPED_PACKAGES) {
-      String p = BASE + "." + s;
-      if (pkg.equals(p) || pkg.startsWith(p + ".")) {
-        return true;
-      }
-    }
-    return false;
+    return pkg.equals(BASE) || pkg.startsWith(BASE + ".");
   }
 
   /**
@@ -317,7 +284,7 @@ class WireVocabularyContractTest {
   private static void ratchet(String kind, SortedMap<String, String> offenders) throws IOException {
     System.out.printf(
         "%n[WireVocabularyContractTest] %s offenders in scope %s: %d%n",
-        kind.trim(), new TreeSet<>(SCOPED_PACKAGES), offenders.size());
+        kind.trim(), SCOPE_LABEL, offenders.size());
     offenders.forEach((k, v) -> System.out.println("  " + k + "    <- " + v));
 
     List<String> all = readBaseline();

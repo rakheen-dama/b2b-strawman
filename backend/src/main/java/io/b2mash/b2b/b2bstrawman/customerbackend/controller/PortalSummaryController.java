@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
  * CustomerAuthFilter).
  */
 @RestController
-@RequestMapping("/portal/projects/{projectId}/summary")
+@RequestMapping("/portal/matters/{matterId}/summary")
 public class PortalSummaryController {
 
   private final PortalReadModelService portalReadModelService;
@@ -31,22 +31,22 @@ public class PortalSummaryController {
    * exists. Returns 404 if the project is not linked to the customer.
    */
   @GetMapping
-  public ResponseEntity<PortalSummaryResponse> getProjectSummary(@PathVariable UUID projectId) {
+  public ResponseEntity<PortalSummaryResponse> getProjectSummary(@PathVariable UUID matterId) {
     UUID customerId = RequestScopes.requireCustomerId();
     String orgId = RequestScopes.requireOrgId();
-    var summary = portalReadModelService.getProjectSummary(projectId, customerId, orgId);
+    var summary = portalReadModelService.getProjectSummary(matterId, customerId, orgId);
 
     var response =
         summary
             .map(
                 s ->
                     new PortalSummaryResponse(
-                        projectId, s.totalHours(), s.billableHours(), s.lastActivityAt()))
-            .orElse(new PortalSummaryResponse(projectId, BigDecimal.ZERO, BigDecimal.ZERO, null));
+                        matterId, s.totalHours(), s.billableHours(), s.lastActivityAt()))
+            .orElse(new PortalSummaryResponse(matterId, BigDecimal.ZERO, BigDecimal.ZERO, null));
 
     return ResponseEntity.ok(response);
   }
 
   public record PortalSummaryResponse(
-      UUID projectId, BigDecimal totalHours, BigDecimal billableHours, Instant lastActivityAt) {}
+      UUID matterId, BigDecimal totalHours, BigDecimal billableHours, Instant lastActivityAt) {}
 }

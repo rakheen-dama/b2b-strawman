@@ -76,7 +76,7 @@ public class NotificationController {
       String body,
       String referenceEntityType,
       UUID referenceEntityId,
-      UUID referenceProjectId,
+      UUID referenceMatterId,
       boolean isRead,
       Instant createdAt) {
 

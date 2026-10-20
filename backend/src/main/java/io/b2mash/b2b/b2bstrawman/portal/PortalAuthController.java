@@ -55,5 +55,5 @@ public class PortalAuthController {
       @NotBlank(message = "token is required") String token,
       @NotBlank(message = "orgId is required") String orgId) {}
 
-  public record PortalTokenResponse(String token, UUID customerId, String customerName) {}
+  public record PortalTokenResponse(String token, UUID clientId, String clientName) {}
 }

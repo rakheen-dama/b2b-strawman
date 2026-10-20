@@ -11,7 +11,7 @@ public record AcceptanceRequestResponse(
     UUID id,
     UUID generatedDocumentId,
     UUID portalContactId,
-    UUID customerId,
+    UUID clientId,
     AcceptanceStatus status,
     Instant sentAt,
     Instant viewedAt,

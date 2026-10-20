@@ -138,7 +138,7 @@ class PortalCommentPostIntegrationTest {
   void post_comment_returns_201_with_comment() throws Exception {
     mockMvc
         .perform(
-            post("/portal/projects/{projectId}/comments", projectId)
+            post("/portal/matters/{matterId}/comments", projectId)
                 .header("Authorization", "Bearer " + portalToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -156,7 +156,7 @@ class PortalCommentPostIntegrationTest {
   void post_comment_empty_content_returns_400() throws Exception {
     mockMvc
         .perform(
-            post("/portal/projects/{projectId}/comments", projectId)
+            post("/portal/matters/{matterId}/comments", projectId)
                 .header("Authorization", "Bearer " + portalToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -171,7 +171,7 @@ class PortalCommentPostIntegrationTest {
     String longContent = "x".repeat(2001);
     mockMvc
         .perform(
-            post("/portal/projects/{projectId}/comments", projectId)
+            post("/portal/matters/{matterId}/comments", projectId)
                 .header("Authorization", "Bearer " + portalToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -187,7 +187,7 @@ class PortalCommentPostIntegrationTest {
     UUID unlinkedProjectId = UUID.randomUUID();
     mockMvc
         .perform(
-            post("/portal/projects/{projectId}/comments", unlinkedProjectId)
+            post("/portal/matters/{matterId}/comments", unlinkedProjectId)
                 .header("Authorization", "Bearer " + portalToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -201,7 +201,7 @@ class PortalCommentPostIntegrationTest {
   void post_comment_on_archived_project_returns_400() throws Exception {
     mockMvc
         .perform(
-            post("/portal/projects/{projectId}/comments", archivedProjectId)
+            post("/portal/matters/{matterId}/comments", archivedProjectId)
                 .header("Authorization", "Bearer " + portalToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -215,7 +215,7 @@ class PortalCommentPostIntegrationTest {
   void post_comment_without_auth_returns_401() throws Exception {
     mockMvc
         .perform(
-            post("/portal/projects/{projectId}/comments", projectId)
+            post("/portal/matters/{matterId}/comments", projectId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -229,7 +229,7 @@ class PortalCommentPostIntegrationTest {
     // Post a comment
     mockMvc
         .perform(
-            post("/portal/projects/{projectId}/comments", projectId)
+            post("/portal/matters/{matterId}/comments", projectId)
                 .header("Authorization", "Bearer " + portalToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -241,7 +241,7 @@ class PortalCommentPostIntegrationTest {
     // Verify it appears in the GET list
     mockMvc
         .perform(
-            get("/portal/projects/{projectId}/comments", projectId)
+            get("/portal/matters/{matterId}/comments", projectId)
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.content == 'Visible in list')]").exists());

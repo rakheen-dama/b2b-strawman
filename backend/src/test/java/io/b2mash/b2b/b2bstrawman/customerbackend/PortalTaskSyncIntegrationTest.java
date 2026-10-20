@@ -170,7 +170,7 @@ class PortalTaskSyncIntegrationTest {
 
     mockMvc
         .perform(
-            get("/portal/projects/" + projectId + "/tasks")
+            get("/portal/matters/" + projectId + "/tasks")
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.name == 'Task Delta')]").exists());
@@ -189,7 +189,7 @@ class PortalTaskSyncIntegrationTest {
 
     mockMvc
         .perform(
-            get("/portal/projects/" + emptyProjectId + "/tasks")
+            get("/portal/matters/" + emptyProjectId + "/tasks")
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(0));
@@ -198,7 +198,7 @@ class PortalTaskSyncIntegrationTest {
   @Test
   void portalEndpoint_returns401_withoutToken() throws Exception {
     mockMvc
-        .perform(get("/portal/projects/" + projectId + "/tasks"))
+        .perform(get("/portal/matters/" + projectId + "/tasks"))
         .andExpect(status().isUnauthorized());
   }
 
@@ -213,7 +213,7 @@ class PortalTaskSyncIntegrationTest {
 
     mockMvc
         .perform(
-            get("/portal/projects/" + unlinkedProjectId + "/tasks")
+            get("/portal/matters/" + unlinkedProjectId + "/tasks")
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isNotFound());
   }

@@ -456,8 +456,8 @@ class MagicLinkTokenIntegrationTest {
                           .formatted(token, ORG_ID_A)))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.token").isNotEmpty())
-          .andExpect(jsonPath("$.customerId").value(customerIdA.toString()))
-          .andExpect(jsonPath("$.customerName").value("MLT Customer A"));
+          .andExpect(jsonPath("$.clientId").value(customerIdA.toString()))
+          .andExpect(jsonPath("$.clientName").value("MLT Customer A"));
     }
 
     @Test
@@ -519,7 +519,7 @@ class MagicLinkTokenIntegrationTest {
       // Step 3: Use portal JWT to access authenticated endpoint
       var portalResult =
           mockMvc
-              .perform(get("/portal/projects").header("Authorization", "Bearer " + portalJwt))
+              .perform(get("/portal/matters").header("Authorization", "Bearer " + portalJwt))
               .andReturn();
 
       // Should get 200 (not 401/403) -- proves the JWT works for authenticated portal access
@@ -589,7 +589,7 @@ class MagicLinkTokenIntegrationTest {
       // This JWT binds org A's tenant context -- data returned is only org A's
       var result =
           mockMvc
-              .perform(get("/portal/projects").header("Authorization", "Bearer " + portalJwtA))
+              .perform(get("/portal/matters").header("Authorization", "Bearer " + portalJwtA))
               .andReturn();
 
       // The request succeeds (auth is valid for org A), not 401/403

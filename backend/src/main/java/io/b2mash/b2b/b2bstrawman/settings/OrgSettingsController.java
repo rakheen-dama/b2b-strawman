@@ -56,7 +56,7 @@ public class OrgSettingsController {
             request.accountingEnabled(),
             request.aiEnabled(),
             request.documentSigningEnabled(),
-            request.projectNamingPattern(),
+            request.matterNamingPattern(),
             actor));
   }
 

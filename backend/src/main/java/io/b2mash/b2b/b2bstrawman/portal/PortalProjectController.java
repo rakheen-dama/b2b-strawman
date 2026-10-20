@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
  * read-only and require a valid portal JWT (enforced by CustomerAuthFilter).
  */
 @RestController
-@RequestMapping("/portal/projects")
+@RequestMapping("/portal/matters")
 public class PortalProjectController {
 
   private final PortalReadModelService portalReadModelService;
@@ -27,7 +27,7 @@ public class PortalProjectController {
 
   /** Lists projects linked to the authenticated customer. */
   @GetMapping
-  public ResponseEntity<List<PortalProjectResponse>> listProjects() {
+  public ResponseEntity<List<PortalMatterResponse>> listProjects() {
     UUID customerId = RequestScopes.requireCustomerId();
     String orgId = RequestScopes.requireOrgId();
     var projects = portalReadModelService.listProjects(orgId, customerId);
@@ -36,7 +36,7 @@ public class PortalProjectController {
         projects.stream()
             .map(
                 p ->
-                    new PortalProjectResponse(
+                    new PortalMatterResponse(
                         p.id(),
                         p.name(),
                         p.status(),
@@ -49,14 +49,14 @@ public class PortalProjectController {
   }
 
   /** Returns project detail for a specific project linked to the authenticated customer. */
-  @GetMapping("/{id}")
-  public ResponseEntity<PortalProjectDetailResponse> getProjectDetail(@PathVariable UUID id) {
+  @GetMapping("/{matterId}")
+  public ResponseEntity<PortalMatterDetailResponse> getProjectDetail(@PathVariable UUID matterId) {
     UUID customerId = RequestScopes.requireCustomerId();
     String orgId = RequestScopes.requireOrgId();
-    var project = portalReadModelService.getProjectDetail(id, customerId, orgId);
+    var project = portalReadModelService.getProjectDetail(matterId, customerId, orgId);
 
     return ResponseEntity.ok(
-        new PortalProjectDetailResponse(
+        new PortalMatterDetailResponse(
             project.id(),
             project.name(),
             project.status(),
@@ -67,11 +67,11 @@ public class PortalProjectController {
   }
 
   /** Lists tasks for a specific project linked to the authenticated customer. */
-  @GetMapping("/{projectId}/tasks")
-  public ResponseEntity<List<PortalTaskResponse>> listTasks(@PathVariable UUID projectId) {
+  @GetMapping("/{matterId}/tasks")
+  public ResponseEntity<List<PortalTaskResponse>> listTasks(@PathVariable UUID matterId) {
     UUID customerId = RequestScopes.requireCustomerId();
     String orgId = RequestScopes.requireOrgId();
-    var tasks = portalReadModelService.listTasks(orgId, customerId, projectId);
+    var tasks = portalReadModelService.listTasks(orgId, customerId, matterId);
 
     var response =
         tasks.stream()
@@ -84,7 +84,7 @@ public class PortalProjectController {
     return ResponseEntity.ok(response);
   }
 
-  public record PortalProjectResponse(
+  public record PortalMatterResponse(
       UUID id,
       String name,
       String status,
@@ -92,7 +92,7 @@ public class PortalProjectController {
       long documentCount,
       Instant createdAt) {}
 
-  public record PortalProjectDetailResponse(
+  public record PortalMatterDetailResponse(
       UUID id,
       String name,
       String status,

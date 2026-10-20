@@ -210,7 +210,7 @@ class AcceptanceControllerIntegrationTest {
             .andExpect(jsonPath("$.status").value("SENT"))
             .andExpect(jsonPath("$.generatedDocumentId").value(generatedDocumentId.toString()))
             .andExpect(jsonPath("$.portalContactId").value(portalContactId.toString()))
-            .andExpect(jsonPath("$.customerId").value(customerId.toString()))
+            .andExpect(jsonPath("$.clientId").value(customerId.toString()))
             .andExpect(jsonPath("$.contact.displayName").value("Test Contact"))
             .andExpect(jsonPath("$.contact.email").value("contact@test.com"))
             .andExpect(jsonPath("$.document.fileName").value("test-doc.pdf"))

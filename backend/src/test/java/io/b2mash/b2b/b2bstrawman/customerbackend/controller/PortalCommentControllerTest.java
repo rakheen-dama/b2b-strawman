@@ -191,7 +191,7 @@ class PortalCommentControllerTest {
   void listCommentsReturnsCommentsForLinkedProject() throws Exception {
     mockMvc
         .perform(
-            get("/portal/projects/{projectId}/comments", projectId)
+            get("/portal/matters/{matterId}/comments", projectId)
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(3))
@@ -204,7 +204,7 @@ class PortalCommentControllerTest {
   void listCommentsReturnsEmptyListForProjectWithNoComments() throws Exception {
     mockMvc
         .perform(
-            get("/portal/projects/{projectId}/comments", projectWithNoComments)
+            get("/portal/matters/{matterId}/comments", projectWithNoComments)
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(0));
@@ -216,7 +216,7 @@ class PortalCommentControllerTest {
 
     mockMvc
         .perform(
-            get("/portal/projects/{projectId}/comments", unlinkedProjectId)
+            get("/portal/matters/{matterId}/comments", unlinkedProjectId)
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isNotFound());
   }
@@ -224,7 +224,7 @@ class PortalCommentControllerTest {
   @Test
   void listCommentsReturns401WithoutToken() throws Exception {
     mockMvc
-        .perform(get("/portal/projects/{projectId}/comments", projectId))
+        .perform(get("/portal/matters/{matterId}/comments", projectId))
         .andExpect(status().isUnauthorized());
   }
 
@@ -233,7 +233,7 @@ class PortalCommentControllerTest {
     var result =
         mockMvc
             .perform(
-                get("/portal/projects/{projectId}/comments", projectId)
+                get("/portal/matters/{matterId}/comments", projectId)
                     .header("Authorization", "Bearer " + portalToken))
             .andExpect(status().isOk())
             .andReturn();
@@ -253,7 +253,7 @@ class PortalCommentControllerTest {
     // Customer A's token should not be able to access Customer B's project
     mockMvc
         .perform(
-            get("/portal/projects/{projectId}/comments", otherCustomerProjectId)
+            get("/portal/matters/{matterId}/comments", otherCustomerProjectId)
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isNotFound());
   }

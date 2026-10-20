@@ -52,7 +52,7 @@ class CustomerLifecycleControllerTest {
     // PROSPECT -> ONBOARDING
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/transition")
+            post("/api/clients/" + customerId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -69,7 +69,7 @@ class CustomerLifecycleControllerTest {
     // ACTIVE -> DORMANT
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/transition")
+            post("/api/clients/" + customerId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -86,7 +86,7 @@ class CustomerLifecycleControllerTest {
 
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/transition")
+            post("/api/clients/" + customerId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -103,7 +103,7 @@ class CustomerLifecycleControllerTest {
 
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/transition")
+            post("/api/clients/" + customerId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -120,7 +120,7 @@ class CustomerLifecycleControllerTest {
     // Perform transitions to create audit events (PROSPECT -> ONBOARDING -> ACTIVE)
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/transition")
+            post("/api/clients/" + customerId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -136,7 +136,7 @@ class CustomerLifecycleControllerTest {
     // Get lifecycle history
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/lifecycle")
+            get("/api/clients/" + customerId + "/lifecycle")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
@@ -146,7 +146,7 @@ class CustomerLifecycleControllerTest {
   void shouldReturnDormancyCheckResult() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/dormancy-check")
+            post("/api/clients/dormancy-check")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.thresholdDays").isNumber())
@@ -157,7 +157,7 @@ class CustomerLifecycleControllerTest {
   void shouldReturn403ForMemberOnDormancyCheck() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/dormancy-check")
+            post("/api/clients/dormancy-check")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isForbidden());
   }
@@ -168,7 +168,7 @@ class CustomerLifecycleControllerTest {
 
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/transition")
+            post("/api/clients/" + customerId + "/transition")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -184,7 +184,7 @@ class CustomerLifecycleControllerTest {
 
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/lifecycle")
+            get("/api/clients/" + customerId + "/lifecycle")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isOk());
   }
@@ -195,7 +195,7 @@ class CustomerLifecycleControllerTest {
 
     mockMvc
         .perform(
-            get("/api/customers/lifecycle-summary")
+            get("/api/clients/lifecycle-summary")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isMap());
@@ -205,7 +205,7 @@ class CustomerLifecycleControllerTest {
   void shouldReturn403ForMemberOnLifecycleSummary() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/lifecycle-summary")
+            get("/api/clients/lifecycle-summary")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isForbidden());
   }
@@ -220,7 +220,7 @@ class CustomerLifecycleControllerTest {
     var result =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

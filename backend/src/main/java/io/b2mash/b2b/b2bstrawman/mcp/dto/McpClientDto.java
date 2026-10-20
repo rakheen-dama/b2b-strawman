@@ -14,7 +14,7 @@ import java.util.UUID;
  * carries single {@code contactName/contactEmail/contactPhone} fields. We project those as a
  * single-element {@code contacts} list (or an empty list if all three are null). {@code
  * linkedMatters} is resolved from a SEPARATE {@code CustomerProjectService.listProjectsForCustomer}
- * call (NOT from {@code getCustomer}), mirroring the controller's {@code LinkedProjectResponse}.
+ * call (NOT from {@code getCustomer}), mirroring the controller's {@code LinkedMatterResponse}.
  */
 public record McpClientDto(
     UUID id,

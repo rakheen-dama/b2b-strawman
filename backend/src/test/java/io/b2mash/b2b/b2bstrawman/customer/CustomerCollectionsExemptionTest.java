@@ -27,7 +27,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Integration tests for the per-customer collections-exemption endpoint (Phase 83, Epic 588B):
- * {@code PUT /api/customers/{id}/collections-exemption}. Covers owner-set, admin-clear (with a
+ * {@code PUT /api/clients/{id}/collections-exemption}. Covers owner-set, admin-clear (with a
  * repository-level persistence check under tenant scope), member-forbidden (403), and unknown-id
  * (404 ProblemDetail). No audit type exists for exemption — the flag lives on the customer row.
  */
@@ -72,7 +72,7 @@ class CustomerCollectionsExemptionTest {
 
     mockMvc
         .perform(
-            put("/api/customers/{id}/collections-exemption", customerId)
+            put("/api/clients/{id}/collections-exemption", customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exempt_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -98,7 +98,7 @@ class CustomerCollectionsExemptionTest {
     // Set first (owner), then clear (admin).
     mockMvc
         .perform(
-            put("/api/customers/{id}/collections-exemption", customerId)
+            put("/api/clients/{id}/collections-exemption", customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exempt_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -109,7 +109,7 @@ class CustomerCollectionsExemptionTest {
 
     mockMvc
         .perform(
-            put("/api/customers/{id}/collections-exemption", customerId)
+            put("/api/clients/{id}/collections-exemption", customerId)
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_exempt_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -133,7 +133,7 @@ class CustomerCollectionsExemptionTest {
 
     mockMvc
         .perform(
-            put("/api/customers/{id}/collections-exemption", customerId)
+            put("/api/clients/{id}/collections-exemption", customerId)
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_exempt_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -151,7 +151,7 @@ class CustomerCollectionsExemptionTest {
     var unknownId = UUID.randomUUID();
     mockMvc
         .perform(
-            put("/api/customers/{id}/collections-exemption", unknownId)
+            put("/api/clients/{id}/collections-exemption", unknownId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exempt_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

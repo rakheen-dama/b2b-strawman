@@ -296,7 +296,7 @@ class DisbursementUnbilledEndpointIntegrationTest {
   void legalTenant_GET_customerUnbilledTime_includesPopulatedDisbursementsList() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/unbilled-time")
+            get("/api/clients/" + customerId + "/unbilled-time")
                 .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.customerId").value(customerId.toString()))
@@ -319,7 +319,7 @@ class DisbursementUnbilledEndpointIntegrationTest {
   void nonLegalTenant_GET_customerUnbilledTime_omitsDisbursementsField() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/" + nonLegalCustomerId + "/unbilled-time")
+            get("/api/clients/" + nonLegalCustomerId + "/unbilled-time")
                 .with(
                     TestJwtFactory.ownerJwt(NONLEGAL_ORG_ID, "user_disb_unbilled_nonlegal_owner")))
         .andExpect(status().isOk())

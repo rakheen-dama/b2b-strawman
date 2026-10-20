@@ -184,7 +184,7 @@ class PortalAuthIntegrationTest {
     void existingStaffApiUnaffectedByPortalChain() throws Exception {
       mockMvc
           .perform(
-              get("/api/customers")
+              get("/api/clients")
                   .with(
                       jwt()
                           .jwt(
@@ -201,7 +201,7 @@ class PortalAuthIntegrationTest {
       try {
         var result =
             mockMvc
-                .perform(get("/api/customers").header("Authorization", "Bearer " + portalToken))
+                .perform(get("/api/clients").header("Authorization", "Bearer " + portalToken))
                 .andReturn();
         assertThat(result.getResponse().getStatus()).isEqualTo(401);
       } catch (Exception e) {

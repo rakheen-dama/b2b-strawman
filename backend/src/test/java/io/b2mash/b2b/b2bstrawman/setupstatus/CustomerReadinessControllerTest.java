@@ -173,14 +173,14 @@ class CustomerReadinessControllerTest {
   void getReadiness_returns200_withExpectedShape() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/" + activeCustomerId + "/readiness")
+            get("/api/clients/" + activeCustomerId + "/readiness")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_readiness_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerId").value(activeCustomerId.toString()))
+        .andExpect(jsonPath("$.clientId").value(activeCustomerId.toString()))
         .andExpect(jsonPath("$.lifecycleStatus").value("ACTIVE"))
         .andExpect(jsonPath("$.requiredFields.filled").isNumber())
         .andExpect(jsonPath("$.requiredFields.total").isNumber())
-        .andExpect(jsonPath("$.hasLinkedProjects").isBoolean())
+        .andExpect(jsonPath("$.hasLinkedMatters").isBoolean())
         .andExpect(jsonPath("$.overallReadiness").isString());
   }
 
@@ -189,12 +189,12 @@ class CustomerReadinessControllerTest {
   void getReadiness_prospectCustomer_noProjects_needsAttention() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/" + prospectCustomerId + "/readiness")
+            get("/api/clients/" + prospectCustomerId + "/readiness")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_readiness_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.lifecycleStatus").value("PROSPECT"))
         .andExpect(jsonPath("$.overallReadiness").value("Needs Attention"))
-        .andExpect(jsonPath("$.hasLinkedProjects").value(false));
+        .andExpect(jsonPath("$.hasLinkedMatters").value(false));
   }
 
   @Test
@@ -202,17 +202,17 @@ class CustomerReadinessControllerTest {
   void getReadiness_activeCustomer_withLinkedProject_hasLinkedProjectsTrue() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/" + activeCustomerWithProjectId + "/readiness")
+            get("/api/clients/" + activeCustomerWithProjectId + "/readiness")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_readiness_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.hasLinkedProjects").value(true));
+        .andExpect(jsonPath("$.hasLinkedMatters").value(true));
   }
 
   @Test
   @Order(4)
   void getReadiness_withoutAuth_returns401() throws Exception {
     mockMvc
-        .perform(get("/api/customers/" + activeCustomerId + "/readiness"))
+        .perform(get("/api/clients/" + activeCustomerId + "/readiness"))
         .andExpect(status().isUnauthorized());
   }
 
@@ -222,7 +222,7 @@ class CustomerReadinessControllerTest {
     // Tenant B's JWT trying to access Tenant A's customer
     mockMvc
         .perform(
-            get("/api/customers/" + prospectCustomerId + "/readiness")
+            get("/api/clients/" + prospectCustomerId + "/readiness")
                 .with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_readiness_owner_b")))
         .andExpect(status().isNotFound());
   }

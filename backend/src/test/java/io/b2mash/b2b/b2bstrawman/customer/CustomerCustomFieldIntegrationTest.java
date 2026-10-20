@@ -52,7 +52,7 @@ class CustomerCustomFieldIntegrationTest {
     String email = nextEmail();
     mockMvc
         .perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -80,7 +80,7 @@ class CustomerCustomFieldIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -96,7 +96,7 @@ class CustomerCustomFieldIntegrationTest {
     // Update with custom fields
     mockMvc
         .perform(
-            put("/api/customers/" + customerId)
+            put("/api/clients/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -121,7 +121,7 @@ class CustomerCustomFieldIntegrationTest {
     String email = nextEmail();
     mockMvc
         .perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -144,7 +144,7 @@ class CustomerCustomFieldIntegrationTest {
     // Create customer with specific custom field value
     mockMvc
         .perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -163,7 +163,7 @@ class CustomerCustomFieldIntegrationTest {
     // Filter by custom field
     mockMvc
         .perform(
-            get("/api/customers")
+            get("/api/clients")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                 .param("customField[industry]", "Healthcare"))
         .andExpect(status().isOk())
@@ -197,7 +197,7 @@ class CustomerCustomFieldIntegrationTest {
     var customerResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -213,7 +213,7 @@ class CustomerCustomFieldIntegrationTest {
     // Apply field groups
     mockMvc
         .perform(
-            put("/api/customers/" + customerId + "/field-groups")
+            put("/api/clients/" + customerId + "/field-groups")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

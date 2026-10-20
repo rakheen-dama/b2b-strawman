@@ -344,7 +344,7 @@ class ViewFilterIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/customers")
+            get("/api/clients")
                 .param("view", viewId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
@@ -358,7 +358,7 @@ class ViewFilterIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/customers")
+            get("/api/clients")
                 .param("view", viewId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())

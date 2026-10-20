@@ -455,7 +455,7 @@ class InformationRequestNotificationAuditIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -468,7 +468,7 @@ class InformationRequestNotificationAuditIntegrationTest {
     // Transition PROSPECT -> ONBOARDING
     mockMvc
         .perform(
-            post("/api/customers/" + cid + "/transition")
+            post("/api/clients/" + cid + "/transition")
                 .with(jwt)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))

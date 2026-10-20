@@ -265,7 +265,7 @@ class UnbilledTimeIntegrationTest {
   void shouldReturnUnbilledTimeGroupedByProject() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/unbilled-time")
+            get("/api/clients/" + customerId + "/unbilled-time")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.customerId").value(customerId.toString()))
@@ -282,7 +282,7 @@ class UnbilledTimeIntegrationTest {
     var result =
         mockMvc
             .perform(
-                get("/api/customers/" + customerId + "/unbilled-time")
+                get("/api/clients/" + customerId + "/unbilled-time")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
             .andExpect(status().isOk())
             .andReturn();
@@ -296,7 +296,7 @@ class UnbilledTimeIntegrationTest {
     var result =
         mockMvc
             .perform(
-                get("/api/customers/" + customerId + "/unbilled-time")
+                get("/api/clients/" + customerId + "/unbilled-time")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
             .andExpect(status().isOk())
             .andReturn();
@@ -310,7 +310,7 @@ class UnbilledTimeIntegrationTest {
     // Only entries on or after 2025-01-16 — should only get Project Beta (Jan 20)
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/unbilled-time")
+            get("/api/clients/" + customerId + "/unbilled-time")
                 .param("from", "2025-01-16")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
@@ -322,7 +322,7 @@ class UnbilledTimeIntegrationTest {
     // Only entries on or before 2025-01-17 — should only get Project Alpha (Jan 15)
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/unbilled-time")
+            get("/api/clients/" + customerId + "/unbilled-time")
                 .param("to", "2025-01-17")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
@@ -335,7 +335,7 @@ class UnbilledTimeIntegrationTest {
     var result =
         mockMvc
             .perform(
-                get("/api/customers/" + customerId + "/unbilled-time")
+                get("/api/clients/" + customerId + "/unbilled-time")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
             .andExpect(status().isOk())
             .andReturn();
@@ -347,7 +347,7 @@ class UnbilledTimeIntegrationTest {
   void shouldReturn404ForNonExistentCustomer() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/" + UUID.randomUUID() + "/unbilled-time")
+            get("/api/clients/" + UUID.randomUUID() + "/unbilled-time")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isNotFound());
   }
@@ -356,7 +356,7 @@ class UnbilledTimeIntegrationTest {
   void shouldDenyMemberAccessToUnbilledTime() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/unbilled-time")
+            get("/api/clients/" + customerId + "/unbilled-time")
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_unbilled_member", "member")))
         .andExpect(status().isForbidden());
   }
@@ -386,7 +386,7 @@ class UnbilledTimeIntegrationTest {
     // Step 1: Fetch unbilled time
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/unbilled-time")
+            get("/api/clients/" + customerId + "/unbilled-time")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk());
 
@@ -426,7 +426,7 @@ class UnbilledTimeIntegrationTest {
     var unbilledResult =
         mockMvc
             .perform(
-                get("/api/customers/" + customerId + "/unbilled-time")
+                get("/api/clients/" + customerId + "/unbilled-time")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
             .andExpect(status().isOk())
             .andReturn();

@@ -275,7 +275,7 @@ class ConditionalVisibilityIntegrationTest {
     // Controlling = "show" => dependent is visible => required => no value provided => 400
     mockMvc
         .perform(
-            put("/api/customers/" + customerId)
+            put("/api/clients/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cond_vis_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -310,7 +310,7 @@ class ConditionalVisibilityIntegrationTest {
     // should still be rejected by type validation
     mockMvc
         .perform(
-            put("/api/customers/" + customerId)
+            put("/api/clients/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cond_vis_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -447,7 +447,7 @@ class ConditionalVisibilityIntegrationTest {
         "[" + String.join(",", groupIds.stream().map(id -> "\"" + id + "\"").toList()) + "]";
     mockMvc
         .perform(
-            put("/api/customers/" + customerId + "/field-groups")
+            put("/api/clients/" + customerId + "/field-groups")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cond_vis_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"appliedFieldGroups\":" + idsJson + "}"))
@@ -458,7 +458,7 @@ class ConditionalVisibilityIntegrationTest {
       UUID customerId, String name, String email, String customFieldsJson) throws Exception {
     mockMvc
         .perform(
-            put("/api/customers/" + customerId)
+            put("/api/clients/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cond_vis_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

@@ -82,7 +82,7 @@ class PrerequisiteControllerTest {
     var customerResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -471,7 +471,7 @@ class PrerequisiteControllerTest {
 
     mockMvc
         .perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -492,7 +492,7 @@ class PrerequisiteControllerTest {
   void shouldRejectUnknownCustomFieldSlug() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

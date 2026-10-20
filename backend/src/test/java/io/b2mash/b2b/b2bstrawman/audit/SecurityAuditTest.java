@@ -208,7 +208,7 @@ class SecurityAuditTest {
     var customerResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sec_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

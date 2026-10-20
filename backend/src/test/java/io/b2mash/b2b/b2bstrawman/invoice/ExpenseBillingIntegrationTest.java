@@ -131,7 +131,7 @@ class ExpenseBillingIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/unbilled-time")
+            get("/api/clients/" + customerId + "/unbilled-time")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.unbilledExpenses").isArray())
@@ -152,7 +152,7 @@ class ExpenseBillingIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/unbilled-time")
+            get("/api/clients/" + customerId + "/unbilled-time")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.unbilledExpenses[?(@.id=='" + expId + "')]").doesNotExist());
@@ -168,7 +168,7 @@ class ExpenseBillingIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/unbilled-time")
+            get("/api/clients/" + customerId + "/unbilled-time")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.unbilledExpenses[?(@.id=='" + expId + "')]").doesNotExist());

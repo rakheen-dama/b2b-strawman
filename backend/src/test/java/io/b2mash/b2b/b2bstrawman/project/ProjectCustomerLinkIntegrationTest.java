@@ -337,7 +337,7 @@ class ProjectCustomerLinkIntegrationTest {
     // Attempt to archive (DELETE) the customer — should be blocked with 409
     mockMvc
         .perform(
-            delete("/api/customers/" + custId)
+            delete("/api/clients/" + custId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner")))
         .andExpect(status().isConflict())
         .andExpect(
@@ -352,7 +352,7 @@ class ProjectCustomerLinkIntegrationTest {
     // Archive should succeed
     mockMvc
         .perform(
-            delete("/api/customers/" + custId)
+            delete("/api/clients/" + custId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner")))
         .andExpect(status().isOk());
   }
@@ -397,7 +397,7 @@ class ProjectCustomerLinkIntegrationTest {
     var result =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -416,7 +416,7 @@ class ProjectCustomerLinkIntegrationTest {
     // Transition ACTIVE -> OFFBOARDING
     mockMvc
         .perform(
-            post("/api/customers/" + custId + "/transition")
+            post("/api/clients/" + custId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"OFFBOARDING\"}"))
@@ -425,7 +425,7 @@ class ProjectCustomerLinkIntegrationTest {
     // Transition OFFBOARDING -> OFFBOARDED
     mockMvc
         .perform(
-            post("/api/customers/" + custId + "/transition")
+            post("/api/clients/" + custId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"OFFBOARDED\"}"))
@@ -440,7 +440,7 @@ class ProjectCustomerLinkIntegrationTest {
     // Transition PROSPECT -> ONBOARDING
     mockMvc
         .perform(
-            post("/api/customers/" + custId + "/transition")
+            post("/api/clients/" + custId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
@@ -460,7 +460,7 @@ class ProjectCustomerLinkIntegrationTest {
     // Transition ACTIVE -> OFFBOARDING only (don't go to OFFBOARDED)
     mockMvc
         .perform(
-            post("/api/customers/" + custId + "/transition")
+            post("/api/clients/" + custId + "/transition")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"OFFBOARDING\"}"))

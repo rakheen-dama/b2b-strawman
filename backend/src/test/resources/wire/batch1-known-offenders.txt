@@ -11,5 +11,4 @@
 # Format: "ROUTE <METHODS> <pattern>" | "DTO <class>" | "DTO <class>#<component>"
 DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.TeamWorkloadEntry#projects
 DTO io.b2mash.b2b.b2bstrawman.document.DocumentController$DocumentResponse#customerId
-DTO io.b2mash.b2b.b2bstrawman.setupstatus.MissingFieldSummary#customerCount
 ROUTE POST /api/customers/{customerId}/documents/upload-init

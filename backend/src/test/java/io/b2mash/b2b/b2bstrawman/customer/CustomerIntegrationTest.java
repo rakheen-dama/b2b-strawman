@@ -132,7 +132,7 @@ class CustomerIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -161,8 +161,7 @@ class CustomerIntegrationTest {
     var id = TestEntityHelper.extractIdFromLocation(createResult);
 
     mockMvc
-        .perform(
-            get("/api/customers/" + id).with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner")))
+        .perform(get("/api/clients/" + id).with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Acme Corp"))
         .andExpect(jsonPath("$.email").value("contact@acme.com"));
@@ -172,7 +171,7 @@ class CustomerIntegrationTest {
   void shouldCreateCustomerWithMinimalFields() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cust_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -190,7 +189,7 @@ class CustomerIntegrationTest {
   void shouldRejectDuplicateEmail() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -201,7 +200,7 @@ class CustomerIntegrationTest {
 
     var result =
         mockMvc.perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -216,7 +215,7 @@ class CustomerIntegrationTest {
   void shouldListCustomers() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cust_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -226,7 +225,7 @@ class CustomerIntegrationTest {
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(get("/api/customers").with(TestJwtFactory.memberJwt(ORG_ID, "user_cust_member")))
+        .perform(get("/api/clients").with(TestJwtFactory.memberJwt(ORG_ID, "user_cust_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(greaterThanOrEqualTo(1)));
@@ -237,7 +236,7 @@ class CustomerIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.adminJwt(ORG_ID, "user_cust_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -251,7 +250,7 @@ class CustomerIntegrationTest {
 
     mockMvc
         .perform(
-            put("/api/customers/" + id)
+            put("/api/clients/" + id)
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cust_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -277,7 +276,7 @@ class CustomerIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -291,14 +290,13 @@ class CustomerIntegrationTest {
 
     mockMvc
         .perform(
-            delete("/api/customers/" + id).with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner")))
+            delete("/api/clients/" + id).with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("ARCHIVED"));
 
     // Archived customer should still be retrievable
     mockMvc
-        .perform(
-            get("/api/customers/" + id).with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner")))
+        .perform(get("/api/clients/" + id).with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("ARCHIVED"));
   }
@@ -309,7 +307,7 @@ class CustomerIntegrationTest {
   void shouldReject400WhenNameIsMissing() throws Exception {
     var result =
         mockMvc.perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cust_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -323,7 +321,7 @@ class CustomerIntegrationTest {
   void shouldReject400WhenEmailIsMissing() throws Exception {
     var result =
         mockMvc.perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cust_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -337,7 +335,7 @@ class CustomerIntegrationTest {
   void shouldReject400WhenEmailIsInvalid() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cust_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -353,7 +351,7 @@ class CustomerIntegrationTest {
   void shouldReturn404ForNonexistentCustomer() throws Exception {
     var result =
         mockMvc.perform(
-            get("/api/customers/00000000-0000-0000-0000-000000000000")
+            get("/api/clients/00000000-0000-0000-0000-000000000000")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner")));
     ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Customer not found");
   }
@@ -364,7 +362,7 @@ class CustomerIntegrationTest {
   void customRoleWithCapability_accessesCustomerEndpoint_returns201() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_cust_315a_custom"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -378,7 +376,7 @@ class CustomerIntegrationTest {
   void customRoleWithoutCapability_accessesCustomerEndpoint_returns403() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_cust_315a_nocap"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -394,7 +392,7 @@ class CustomerIntegrationTest {
   void memberCannotCreateCustomer() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers")
+            post("/api/clients")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_cust_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -408,7 +406,7 @@ class CustomerIntegrationTest {
   void memberCanListAndGetCustomers() throws Exception {
     // Member can list
     mockMvc
-        .perform(get("/api/customers").with(TestJwtFactory.memberJwt(ORG_ID, "user_cust_member")))
+        .perform(get("/api/clients").with(TestJwtFactory.memberJwt(ORG_ID, "user_cust_member")))
         .andExpect(status().isOk());
   }
 
@@ -419,7 +417,7 @@ class CustomerIntegrationTest {
     var createResult =
         mockMvc
             .perform(
-                post("/api/customers")
+                post("/api/clients")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -434,7 +432,7 @@ class CustomerIntegrationTest {
     // Visible from tenant A
     mockMvc
         .perform(
-            get("/api/customers/" + customerId)
+            get("/api/clients/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Tenant A Customer"));
@@ -442,14 +440,13 @@ class CustomerIntegrationTest {
     // NOT visible from tenant B
     mockMvc
         .perform(
-            get("/api/customers/" + customerId)
+            get("/api/clients/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_B_ID, "user_cust_tenant_b")))
         .andExpect(status().isNotFound());
 
     // Tenant B list doesn't include tenant A's customer
     mockMvc
-        .perform(
-            get("/api/customers").with(TestJwtFactory.ownerJwt(ORG_B_ID, "user_cust_tenant_b")))
+        .perform(get("/api/clients").with(TestJwtFactory.ownerJwt(ORG_B_ID, "user_cust_tenant_b")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[*].name", everyItem(not("Tenant A Customer"))));
   }

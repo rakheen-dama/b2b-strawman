@@ -37,7 +37,7 @@ public final class TestChecklistHelper {
     // the explicit transition.
     var getResult =
         mockMvc
-            .perform(get("/api/customers/" + customerId).with(jwt))
+            .perform(get("/api/clients/" + customerId).with(jwt))
             .andExpect(status().isOk())
             .andReturn();
     String currentStatus =
@@ -48,7 +48,7 @@ public final class TestChecklistHelper {
 
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/transition")
+            post("/api/clients/" + customerId + "/transition")
                 .with(jwt)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -68,7 +68,7 @@ public final class TestChecklistHelper {
       MockMvc mockMvc, String customerId, JwtRequestPostProcessor jwt) throws Exception {
     var result =
         mockMvc
-            .perform(get("/api/customers/" + customerId).with(jwt))
+            .perform(get("/api/clients/" + customerId).with(jwt))
             .andExpect(status().isOk())
             .andReturn();
     String json = result.getResponse().getContentAsString();
@@ -101,7 +101,7 @@ public final class TestChecklistHelper {
                 jsonString(name), jsonString(email), jsonString(phone), jsonString(idNumber));
     mockMvc
         .perform(
-            put("/api/customers/" + customerId)
+            put("/api/clients/" + customerId)
                 .with(jwt)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))

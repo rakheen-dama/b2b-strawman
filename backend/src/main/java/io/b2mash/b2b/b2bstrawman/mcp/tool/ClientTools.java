@@ -42,7 +42,7 @@ import tools.jackson.databind.ObjectMapper;
  * the live MCP_ACCESS front-door gate in 565B.
  *
  * <p>{@code list_clients} deliberately OMITs the controller's tag/member-name enrichment ({@code
- * CustomerResponse.from}) — the list row is {@code {id, name, type, lifecycleStatus}} only, keeping
+ * ClientResponse.from}) — the list row is {@code {id, name, type, lifecycleStatus}} only, keeping
  * it token-efficient and avoiding the extra batch queries. Full detail (contacts + linked matters)
  * comes from {@code get_client}, where {@code linkedMatters} is resolved via a SEPARATE {@link
  * CustomerProjectService#listProjectsForCustomer(UUID, ActorContext)} call (not from {@code

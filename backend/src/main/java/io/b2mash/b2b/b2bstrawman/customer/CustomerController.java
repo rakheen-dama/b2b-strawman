@@ -2,16 +2,16 @@ package io.b2mash.b2b.b2bstrawman.customer;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
+import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.ClientMatterResponse;
+import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.ClientResponse;
+import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.CreateClientRequest;
+import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.DormancyCheckResult;
+import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.LinkedMatterResponse;
+import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.TransitionRequest;
+import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.TransitionResponse;
+import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.UpdateClientRequest;
 import io.b2mash.b2b.b2bstrawman.customer.dto.CollectionsExemptionRequest;
 import io.b2mash.b2b.b2bstrawman.customer.dto.CollectionsExemptionResponse;
-import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.CreateCustomerRequest;
-import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.CustomerProjectResponse;
-import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.CustomerResponse;
-import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.DormancyCheckResult;
-import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.LinkedProjectResponse;
-import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.TransitionRequest;
-import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.TransitionResponse;
-import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.UpdateCustomerRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService;
@@ -24,8 +24,8 @@ import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactSummary;
 import io.b2mash.b2b.b2bstrawman.setupstatus.AggregatedCompletenessResponse;
+import io.b2mash.b2b.b2bstrawman.setupstatus.ClientReadiness;
 import io.b2mash.b2b.b2bstrawman.setupstatus.CompletenessScore;
-import io.b2mash.b2b.b2bstrawman.setupstatus.CustomerReadiness;
 import io.b2mash.b2b.b2bstrawman.setupstatus.CustomerReadinessService;
 import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummary;
 import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummaryService;
@@ -54,7 +54,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/customers")
+@RequestMapping("/api/clients")
 public class CustomerController {
 
   private final CustomerService customerService;
@@ -92,7 +92,7 @@ public class CustomerController {
   }
 
   @GetMapping
-  public ResponseEntity<List<CustomerResponse>> listCustomers(
+  public ResponseEntity<List<ClientResponse>> listCustomers(
       @RequestParam(required = false) UUID view,
       @RequestParam(required = false) LifecycleStatus lifecycleStatus,
       @RequestParam(required = false) Map<String, String> allParams) {
@@ -114,7 +114,7 @@ public class CustomerController {
             filtered.stream()
                 .map(
                     c ->
-                        CustomerResponse.from(
+                        ClientResponse.from(
                             c, tagsByEntityId.getOrDefault(c.getId(), List.of()), memberNames))
                 .toList();
         return ResponseEntity.ok(responses);
@@ -137,7 +137,7 @@ public class CustomerController {
         customerEntities.stream()
             .map(
                 c ->
-                    CustomerResponse.from(
+                    ClientResponse.from(
                         c, tagsByEntityId.getOrDefault(c.getId(), List.of()), memberNames))
             .toList();
 
@@ -174,8 +174,8 @@ public class CustomerController {
 
   @GetMapping("/completeness-summary")
   public ResponseEntity<Map<UUID, CompletenessScore>> getCompletenessSummary(
-      @RequestParam List<UUID> customerIds) {
-    return ResponseEntity.ok(customerReadinessService.batchComputeCompleteness(customerIds));
+      @RequestParam List<UUID> clientIds) {
+    return ResponseEntity.ok(customerReadinessService.batchComputeCompleteness(clientIds));
   }
 
   @GetMapping("/completeness-summary/aggregated")
@@ -184,19 +184,19 @@ public class CustomerController {
     return ResponseEntity.ok(customerReadinessService.getAggregatedSummary(10));
   }
 
-  @GetMapping("/{id}")
-  public ResponseEntity<CustomerResponse> getCustomer(@PathVariable UUID id) {
-    var customer = customerService.getCustomer(id);
+  @GetMapping("/{clientId}")
+  public ResponseEntity<ClientResponse> getCustomer(@PathVariable UUID clientId) {
+    var customer = customerService.getCustomer(clientId);
     // ADR-342: storage key, do not rename
-    var tags = entityTagService.getEntityTags("CUSTOMER", id);
+    var tags = entityTagService.getEntityTags("CUSTOMER", clientId);
     var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
-    return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));
+    return ResponseEntity.ok(ClientResponse.from(customer, tags, memberNames));
   }
 
   @PostMapping
   @RequiresCapability("CUSTOMER_MANAGEMENT")
-  public ResponseEntity<CustomerResponse> createCustomer(
-      @Valid @RequestBody CreateCustomerRequest request) {
+  public ResponseEntity<ClientResponse> createCustomer(
+      @Valid @RequestBody CreateClientRequest request) {
     UUID createdBy = RequestScopes.requireMemberId();
     var customer =
         customerService.createCustomer(
@@ -208,7 +208,7 @@ public class CustomerController {
             createdBy,
             request.customFields(),
             request.appliedFieldGroups(),
-            request.customerType(),
+            request.clientType(),
             request.registrationNumber(),
             request.addressLine1(),
             request.addressLine2(),
@@ -223,17 +223,17 @@ public class CustomerController {
             request.entityType(),
             request.financialYearEnd());
     var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
-    return ResponseEntity.created(URI.create("/api/customers/" + customer.getId()))
-        .body(CustomerResponse.from(customer, List.of(), memberNames));
+    return ResponseEntity.created(URI.create("/api/clients/" + customer.getId()))
+        .body(ClientResponse.from(customer, List.of(), memberNames));
   }
 
-  @PutMapping("/{id}")
+  @PutMapping("/{clientId}")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
-  public ResponseEntity<CustomerResponse> updateCustomer(
-      @PathVariable UUID id, @Valid @RequestBody UpdateCustomerRequest request) {
+  public ResponseEntity<ClientResponse> updateCustomer(
+      @PathVariable UUID clientId, @Valid @RequestBody UpdateClientRequest request) {
     var customer =
         customerService.updateCustomer(
-            id,
+            clientId,
             request.name(),
             request.email(),
             request.phone(),
@@ -255,66 +255,67 @@ public class CustomerController {
             request.entityType(),
             request.financialYearEnd());
     // ADR-342: storage key, do not rename
-    var tags = entityTagService.getEntityTags("CUSTOMER", id);
+    var tags = entityTagService.getEntityTags("CUSTOMER", clientId);
     var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
-    return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));
+    return ResponseEntity.ok(ClientResponse.from(customer, tags, memberNames));
   }
 
-  @DeleteMapping("/{id}")
+  @DeleteMapping("/{clientId}")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
-  public ResponseEntity<CustomerResponse> archiveCustomer(@PathVariable UUID id) {
-    var customer = customerService.archiveCustomer(id);
+  public ResponseEntity<ClientResponse> archiveCustomer(@PathVariable UUID clientId) {
+    var customer = customerService.archiveCustomer(clientId);
     // ADR-342: storage key, do not rename
-    var tags = entityTagService.getEntityTags("CUSTOMER", id);
+    var tags = entityTagService.getEntityTags("CUSTOMER", clientId);
     var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
-    return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));
+    return ResponseEntity.ok(ClientResponse.from(customer, tags, memberNames));
   }
 
-  @PostMapping("/{id}/unarchive")
+  @PostMapping("/{clientId}/unarchive")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
-  public ResponseEntity<CustomerResponse> unarchiveCustomer(@PathVariable UUID id) {
-    var customer = customerService.unarchiveCustomer(id);
+  public ResponseEntity<ClientResponse> unarchiveCustomer(@PathVariable UUID clientId) {
+    var customer = customerService.unarchiveCustomer(clientId);
     // ADR-342: storage key, do not rename
-    var tags = entityTagService.getEntityTags("CUSTOMER", id);
+    var tags = entityTagService.getEntityTags("CUSTOMER", clientId);
     var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
-    return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));
+    return ResponseEntity.ok(ClientResponse.from(customer, tags, memberNames));
   }
 
   // --- Customer-Project linking endpoints ---
 
-  @PostMapping("/{id}/projects/{projectId}")
-  public ResponseEntity<CustomerProjectResponse> linkProject(
-      @PathVariable UUID id, @PathVariable UUID projectId, ActorContext actor) {
+  @PostMapping("/{clientId}/matters/{matterId}")
+  public ResponseEntity<ClientMatterResponse> linkProject(
+      @PathVariable UUID clientId, @PathVariable UUID matterId, ActorContext actor) {
 
-    var link = customerProjectService.linkCustomerToProject(id, projectId, actor.memberId(), actor);
-    return ResponseEntity.created(URI.create("/api/customers/" + id + "/projects/" + projectId))
-        .body(CustomerProjectResponse.from(link));
+    var link =
+        customerProjectService.linkCustomerToProject(clientId, matterId, actor.memberId(), actor);
+    return ResponseEntity.created(URI.create("/api/clients/" + clientId + "/matters/" + matterId))
+        .body(ClientMatterResponse.from(link));
   }
 
-  @DeleteMapping("/{id}/projects/{projectId}")
+  @DeleteMapping("/{clientId}/matters/{matterId}")
   public ResponseEntity<Void> unlinkProject(
-      @PathVariable UUID id, @PathVariable UUID projectId, ActorContext actor) {
+      @PathVariable UUID clientId, @PathVariable UUID matterId, ActorContext actor) {
 
-    customerProjectService.unlinkCustomerFromProject(id, projectId, actor);
+    customerProjectService.unlinkCustomerFromProject(clientId, matterId, actor);
     return ResponseEntity.noContent().build();
   }
 
-  @GetMapping("/{id}/projects")
-  public ResponseEntity<List<LinkedProjectResponse>> listProjectsForCustomer(
-      @PathVariable UUID id, ActorContext actor) {
-    var projects = customerProjectService.listProjectsForCustomer(id, actor);
-    return ResponseEntity.ok(projects.stream().map(LinkedProjectResponse::from).toList());
+  @GetMapping("/{clientId}/matters")
+  public ResponseEntity<List<LinkedMatterResponse>> listProjectsForCustomer(
+      @PathVariable UUID clientId, ActorContext actor) {
+    var projects = customerProjectService.listProjectsForCustomer(clientId, actor);
+    return ResponseEntity.ok(projects.stream().map(LinkedMatterResponse::from).toList());
   }
 
-  @GetMapping("/{id}/unbilled-summary")
+  @GetMapping("/{clientId}/unbilled-summary")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
-  public ResponseEntity<UnbilledTimeSummary> getUnbilledSummary(@PathVariable UUID id) {
-    return ResponseEntity.ok(unbilledTimeSummaryService.getCustomerUnbilledSummary(id));
+  public ResponseEntity<UnbilledTimeSummary> getUnbilledSummary(@PathVariable UUID clientId) {
+    return ResponseEntity.ok(unbilledTimeSummaryService.getCustomerUnbilledSummary(clientId));
   }
 
-  @GetMapping("/{id}/readiness")
-  public ResponseEntity<CustomerReadiness> getReadiness(@PathVariable UUID id) {
-    return ResponseEntity.ok(customerReadinessService.getReadiness(id));
+  @GetMapping("/{clientId}/readiness")
+  public ResponseEntity<ClientReadiness> getReadiness(@PathVariable UUID clientId) {
+    return ResponseEntity.ok(customerReadinessService.getReadiness(clientId));
   }
 
   /**
@@ -323,85 +324,86 @@ public class CustomerController {
    * NOT_STARTED|IN_PROGRESS|DONE, lastVerifiedAt, requestId}}. Info-request-only signal — no
    * KYC-adapter coupling.
    */
-  @GetMapping("/{id}/fica-status")
-  public ResponseEntity<FicaStatusResponse> getFicaStatus(@PathVariable UUID id) {
-    return ResponseEntity.ok(informationRequestService.getFicaStatus(id));
+  @GetMapping("/{clientId}/fica-status")
+  public ResponseEntity<FicaStatusResponse> getFicaStatus(@PathVariable UUID clientId) {
+    return ResponseEntity.ok(informationRequestService.getFicaStatus(clientId));
   }
 
-  @GetMapping("/{id}/unbilled-time")
+  @GetMapping("/{clientId}/unbilled-time")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<UnbilledTimeResponse> getUnbilledTime(
-      @PathVariable UUID id,
+      @PathVariable UUID clientId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-    return ResponseEntity.ok(invoiceService.getUnbilledTime(id, from, to));
+    return ResponseEntity.ok(invoiceService.getUnbilledTime(clientId, from, to));
   }
 
-  @PutMapping("/{id}/field-groups")
+  @PutMapping("/{clientId}/field-groups")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<List<FieldDefinitionResponse>> setFieldGroups(
-      @PathVariable UUID id, @Valid @RequestBody SetFieldGroupsRequest request) {
-    var fieldDefs = customerService.setFieldGroups(id, request.appliedFieldGroups());
+      @PathVariable UUID clientId, @Valid @RequestBody SetFieldGroupsRequest request) {
+    var fieldDefs = customerService.setFieldGroups(clientId, request.appliedFieldGroups());
     return ResponseEntity.ok(fieldDefs);
   }
 
   // Collections exemption (Phase 83, §2.3). CUSTOMER_MANAGEMENT gates the endpoint; the service
   // additionally enforces admin/owner-only (that capability is grantable to custom member roles).
-  @PutMapping("/{id}/collections-exemption")
+  @PutMapping("/{clientId}/collections-exemption")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<CollectionsExemptionResponse> setCollectionsExemption(
-      @PathVariable UUID id,
+      @PathVariable UUID clientId,
       @Valid @RequestBody CollectionsExemptionRequest request,
       ActorContext actor) {
     return ResponseEntity.ok(
-        customerService.setCollectionsExemption(id, request.collectionsExempt(), actor));
+        customerService.setCollectionsExemption(clientId, request.collectionsExempt(), actor));
   }
 
-  @PostMapping("/{id}/tags")
+  @PostMapping("/{clientId}/tags")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<List<TagResponse>> setCustomerTags(
-      @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request) {
+      @PathVariable UUID clientId, @Valid @RequestBody SetEntityTagsRequest request) {
     // Verify customer exists
-    customerService.getCustomer(id);
+    customerService.getCustomer(clientId);
     // ADR-342: storage key, do not rename
-    var tags = entityTagService.setEntityTags("CUSTOMER", id, request.tagIds());
+    var tags = entityTagService.setEntityTags("CUSTOMER", clientId, request.tagIds());
     return ResponseEntity.ok(tags);
   }
 
-  @GetMapping("/{id}/tags")
-  public ResponseEntity<List<TagResponse>> getCustomerTags(@PathVariable UUID id) {
+  @GetMapping("/{clientId}/tags")
+  public ResponseEntity<List<TagResponse>> getCustomerTags(@PathVariable UUID clientId) {
     // Verify customer exists
-    customerService.getCustomer(id);
+    customerService.getCustomer(clientId);
     // ADR-342: storage key, do not rename
-    var tags = entityTagService.getEntityTags("CUSTOMER", id);
+    var tags = entityTagService.getEntityTags("CUSTOMER", clientId);
     return ResponseEntity.ok(tags);
   }
 
   // --- Portal contacts endpoint ---
 
-  @GetMapping("/{id}/portal-contacts")
+  @GetMapping("/{clientId}/portal-contacts")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
-  public ResponseEntity<List<PortalContactSummary>> getPortalContacts(@PathVariable UUID id) {
-    return ResponseEntity.ok(portalContactService.listPortalContactSummaries(id));
+  public ResponseEntity<List<PortalContactSummary>> getPortalContacts(@PathVariable UUID clientId) {
+    return ResponseEntity.ok(portalContactService.listPortalContactSummaries(clientId));
   }
 
   // --- Lifecycle endpoints ---
 
-  @PostMapping("/{id}/transition")
+  @PostMapping("/{clientId}/transition")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<TransitionResponse> transitionLifecycle(
-      @PathVariable UUID id, @Valid @RequestBody TransitionRequest request) {
+      @PathVariable UUID clientId, @Valid @RequestBody TransitionRequest request) {
     UUID actorId = RequestScopes.requireMemberId();
     var customer =
-        customerLifecycleService.transition(id, request.targetStatus(), request.notes(), actorId);
+        customerLifecycleService.transition(
+            clientId, request.targetStatus(), request.notes(), actorId);
     var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
     return ResponseEntity.ok(TransitionResponse.from(customer, memberNames));
   }
 
-  @GetMapping("/{id}/lifecycle")
-  public ResponseEntity<List<AuditEvent>> getLifecycleHistory(@PathVariable UUID id) {
-    customerService.getCustomer(id);
-    var history = customerLifecycleService.getLifecycleHistory(id);
+  @GetMapping("/{clientId}/lifecycle")
+  public ResponseEntity<List<AuditEvent>> getLifecycleHistory(@PathVariable UUID clientId) {
+    customerService.getCustomer(clientId);
+    var history = customerLifecycleService.getLifecycleHistory(clientId);
     return ResponseEntity.ok(history);
   }
 

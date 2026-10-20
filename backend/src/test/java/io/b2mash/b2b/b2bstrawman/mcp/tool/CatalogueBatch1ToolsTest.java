@@ -280,14 +280,14 @@ class CatalogueBatch1ToolsTest {
     // (a single transition, no checklist) which the gate permits, then link via the join table.
     mockMvc
         .perform(
-            post("/api/customers/" + clientId + "/transition")
+            post("/api/clients/" + clientId + "/transition")
                 .with(owner)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\":\"ONBOARDING\"}"))
         .andExpect(status().isOk());
     String linkedMatter = TestEntityHelper.createProject(mockMvc, owner, "Linked-Client Matter");
     mockMvc
-        .perform(post("/api/customers/" + clientId + "/projects/" + linkedMatter).with(owner))
+        .perform(post("/api/clients/" + clientId + "/matters/" + linkedMatter).with(owner))
         .andExpect(status().isCreated());
 
     JsonNode result = callTool(owner, session, "get_client", "{\"id\":\"%s\"}".formatted(clientId));

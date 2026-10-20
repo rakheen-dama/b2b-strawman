@@ -143,16 +143,17 @@ export default async function CustomerDetailPage({
     try {
       const [ratesRes, membersRes, profitabilityRes, breakdownRes, invoicesRes] = await Promise.all(
         [
-          api.get<{ content: BillingRate[] }>(`/api/billing-rates?customerId=${id}`),
+          api.get<{ content: BillingRate[] }>(`/api/billing-rates?clientId=${id}`),
           api.get<OrgMember[]>("/api/members"),
           api
-            .get<CustomerProfitabilityResponse>(`/api/customers/${id}/profitability`)
+            .get<CustomerProfitabilityResponse>(`/api/clients/${id}/profitability`)
             .catch(() => null),
+          // D4 (Phase 87): backend /api/reports/profitability still takes customerId (ReportController:66) — do not rename until the backend moves.
           api
             .get<OrgProfitabilityResponse>(`/api/reports/profitability?customerId=${id}`)
             .catch(() => null),
           api
-            .get<InvoiceResponse[]>(`/api/invoices?customerId=${id}`)
+            .get<InvoiceResponse[]>(`/api/invoices?clientId=${id}`)
             .catch(() => [] as InvoiceResponse[]),
         ]
       );

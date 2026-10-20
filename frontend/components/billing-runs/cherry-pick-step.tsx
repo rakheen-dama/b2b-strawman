@@ -307,7 +307,7 @@ export function CherryPickStep({
                         <span
                           className={`font-medium ${isExcluded ? "text-slate-400 line-through dark:text-slate-500" : "text-slate-950 dark:text-slate-50"}`}
                         >
-                          {item.customerName}
+                          {item.clientName}
                         </span>
                         {isExcluded && (
                           <span className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">

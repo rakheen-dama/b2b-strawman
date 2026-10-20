@@ -22,7 +22,7 @@ export default async function ProjectExpensesPage({
   };
   try {
     expenses = await api.get<PaginatedExpenseResponse>(
-      `/api/projects/${id}/expenses?sort=date,desc`
+      `/api/matters/${id}/expenses?sort=date,desc`
     );
   } catch {
     // Non-fatal: show empty list

@@ -96,15 +96,15 @@ export function CollectionsClient({ slug, debtors, gates, previews }: Collection
               <tbody>
                 {debtors.map((debtor) => (
                   <tr
-                    key={`${debtor.customerId}-${debtor.currency}`}
+                    key={`${debtor.clientId}-${debtor.currency}`}
                     className="group border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
                   >
                     <td className="px-4 py-3">
                       <Link
-                        href={`/org/${slug}/customers/${debtor.customerId}`}
+                        href={`/org/${slug}/customers/${debtor.clientId}`}
                         className="font-medium text-slate-950 hover:underline dark:text-slate-50"
                       >
-                        {debtor.customerName}
+                        {debtor.clientName}
                       </Link>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         {debtor.invoiceCount} invoice{debtor.invoiceCount === 1 ? "" : "s"} ·{" "}

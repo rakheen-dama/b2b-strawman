@@ -50,6 +50,7 @@ export async function getOrgProfitability(
     const params = new URLSearchParams();
     if (from) params.set("from", from);
     if (to) params.set("to", to);
+    // D4 (Phase 87): backend /api/reports/profitability still takes customerId (ReportController:66) — do not rename until the backend moves.
     if (customerId) params.set("customerId", customerId);
     const qs = params.toString();
     const data = await api.get<OrgProfitabilityResponse>(
@@ -80,7 +81,7 @@ export async function getProjectProfitability(
     if (to) params.set("to", to);
     const qs = params.toString();
     const data = await api.get<ProjectProfitabilityResponse>(
-      `/api/projects/${projectId}/profitability${qs ? `?${qs}` : ""}`
+      `/api/matters/${projectId}/profitability${qs ? `?${qs}` : ""}`
     );
     return { data };
   } catch (error) {
@@ -107,7 +108,7 @@ export async function getCustomerProfitability(
     if (to) params.set("to", to);
     const qs = params.toString();
     const data = await api.get<CustomerProfitabilityResponse>(
-      `/api/customers/${customerId}/profitability${qs ? `?${qs}` : ""}`
+      `/api/clients/${customerId}/profitability${qs ? `?${qs}` : ""}`
     );
     return { data };
   } catch (error) {

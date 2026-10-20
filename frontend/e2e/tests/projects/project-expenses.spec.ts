@@ -124,7 +124,8 @@ test.describe.serial("EXPENSE-01: Project Expenses", () => {
     const today = new Date().toISOString().split("T")[0];
 
     const { status, data } = await apiPost(
-      `/api/projects/${projectId}/expenses`,
+      // Phase 87 S3 (ADR-337): API path
+      `/api/matters/${projectId}/expenses`,
       {
         date: today,
         description: `Billable expense ${RUN_ID}`,
@@ -158,7 +159,8 @@ test.describe.serial("EXPENSE-01: Project Expenses", () => {
     const today = new Date().toISOString().split("T")[0];
 
     const { status, data } = await apiPost(
-      `/api/projects/${projectId}/expenses`,
+      // Phase 87 S3 (ADR-337): API path
+      `/api/matters/${projectId}/expenses`,
       {
         date: today,
         description: `Non-billable expense ${RUN_ID}`,
@@ -188,7 +190,8 @@ test.describe.serial("EXPENSE-01: Project Expenses", () => {
 
     // Update the first expense to a different amount
     const { status, data } = await apiPut(
-      `/api/projects/${projectId}/expenses/${expenseId}`,
+      // Phase 87 S3 (ADR-337): API path
+      `/api/matters/${projectId}/expenses/${expenseId}`,
       {
         amount: 375.5,
         description: `Updated expense ${RUN_ID}`,

@@ -125,7 +125,7 @@ export async function resolveRate(
 ): Promise<ResolvedRate | null> {
   try {
     return await api.get<ResolvedRate>(
-      `/api/billing-rates/resolve?memberId=${encodeURIComponent(memberId)}&projectId=${encodeURIComponent(projectId)}&date=${encodeURIComponent(date)}`
+      `/api/billing-rates/resolve?memberId=${encodeURIComponent(memberId)}&matterId=${encodeURIComponent(projectId)}&date=${encodeURIComponent(date)}`
     );
   } catch (error) {
     if (!(error instanceof ApiError && error.status === 404)) {

@@ -17,7 +17,7 @@ export async function fetchProjectTimeSummary(
   to?: string
 ): Promise<ProjectTimeSummary> {
   return api.get<ProjectTimeSummary>(
-    `/api/projects/${projectId}/time-summary${buildDateParams(from, to)}`
+    `/api/matters/${projectId}/time-summary${buildDateParams(from, to)}`
   );
 }
 
@@ -28,7 +28,7 @@ export async function fetchTimeSummaryByMember(
 ): Promise<MemberTimeSummary[] | null> {
   try {
     return await api.get<MemberTimeSummary[]>(
-      `/api/projects/${projectId}/time-summary/by-member${buildDateParams(from, to)}`
+      `/api/matters/${projectId}/time-summary/by-member${buildDateParams(from, to)}`
     );
   } catch (error) {
     if (error instanceof ApiError && error.status === 403) {
@@ -44,6 +44,6 @@ export async function fetchTimeSummaryByTask(
   to?: string
 ): Promise<TaskTimeSummary[]> {
   return api.get<TaskTimeSummary[]>(
-    `/api/projects/${projectId}/time-summary/by-task${buildDateParams(from, to)}`
+    `/api/matters/${projectId}/time-summary/by-task${buildDateParams(from, to)}`
   );
 }

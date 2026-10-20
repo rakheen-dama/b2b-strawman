@@ -235,9 +235,9 @@ export default async function ProjectDetailPage({
   let timeSummaryByMember: MemberTimeSummary[] | null = null;
   try {
     const [summaryRes, byTaskRes, byMemberRes] = await Promise.all([
-      api.get<ProjectTimeSummary>(`/api/projects/${id}/time-summary`),
-      api.get<TaskTimeSummary[]>(`/api/projects/${id}/time-summary/by-task`),
-      api.get<MemberTimeSummary[]>(`/api/projects/${id}/time-summary/by-member`).catch(() => null),
+      api.get<ProjectTimeSummary>(`/api/matters/${id}/time-summary`),
+      api.get<TaskTimeSummary[]>(`/api/matters/${id}/time-summary/by-task`),
+      api.get<MemberTimeSummary[]>(`/api/matters/${id}/time-summary/by-member`).catch(() => null),
     ]);
     timeSummary = summaryRes;
     timeSummaryByTask = byTaskRes;
@@ -253,7 +253,7 @@ export default async function ProjectDetailPage({
   };
   try {
     expenseData = await api.get<PaginatedExpenseResponse>(
-      `/api/projects/${id}/expenses?sort=date,desc`
+      `/api/matters/${id}/expenses?sort=date,desc`
     );
   } catch {
     // Non-fatal: show empty expenses tab
@@ -265,7 +265,7 @@ export default async function ProjectDetailPage({
   if (canManage) {
     try {
       const [ratesRes, settingsRes] = await Promise.all([
-        api.get<{ content: BillingRate[] }>(`/api/billing-rates?projectId=${id}`),
+        api.get<{ content: BillingRate[] }>(`/api/billing-rates?matterId=${id}`),
         api.get<OrgSettings>("/api/settings").catch(() => null),
       ]);
       projectBillingRates = ratesRes?.content ?? [];
@@ -290,7 +290,7 @@ export default async function ProjectDetailPage({
   if (canManage) {
     try {
       projectProfitability = await api.get<ProjectProfitabilityResponse>(
-        `/api/projects/${id}/profitability`
+        `/api/matters/${id}/profitability`
       );
     } catch {
       // Non-fatal: show empty state in financials tab

@@ -78,7 +78,7 @@ vi.mock("@/app/(app)/org/[slug]/invoices/[id]/edit/(components)/add-disbursement
 function makeDraftInvoice(overrides?: Partial<InvoiceResponse>): InvoiceResponse {
   return {
     id: "inv-1",
-    customerId: "c1",
+    clientId: "c1",
     invoiceNumber: null,
     status: "DRAFT",
     currency: "USD",
@@ -91,9 +91,9 @@ function makeDraftInvoice(overrides?: Partial<InvoiceResponse>): InvoiceResponse
     paymentTerms: null,
     paymentReference: null,
     paidAt: null,
-    customerName: "Acme Corp",
-    customerEmail: "billing@acme.com",
-    customerAddress: null,
+    clientName: "Acme Corp",
+    clientEmail: "billing@acme.com",
+    clientAddress: null,
     orgName: "My Org",
     createdBy: "user-1",
     approvedBy: null,
@@ -102,8 +102,8 @@ function makeDraftInvoice(overrides?: Partial<InvoiceResponse>): InvoiceResponse
     lines: [
       {
         id: "line-1",
-        projectId: "p1",
-        projectName: "Project Alpha",
+        matterId: "p1",
+        matterName: "Project Alpha",
         timeEntryId: "te-1",
         expenseId: null,
         lineType: "TIME",

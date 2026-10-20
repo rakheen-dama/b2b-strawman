@@ -17,7 +17,7 @@ export async function createCustomerBillingRate(
   try {
     await api.post<BillingRate>("/api/billing-rates", {
       ...data,
-      customerId,
+      clientId: customerId,
     });
   } catch (error) {
     if (error instanceof ApiError) {

@@ -37,7 +37,7 @@ export default async function ProfitabilityPage({ params }: { params: Promise<{ 
   const { from, to } = getCurrentMonthRange();
 
   let utilization: UtilizationResponse = { from, to, members: [] };
-  let profitability: OrgProfitabilityResponse = { projects: [] };
+  let profitability: OrgProfitabilityResponse = { matters: [] };
 
   try {
     [utilization, profitability] = await Promise.all([
@@ -59,7 +59,7 @@ export default async function ProfitabilityPage({ params }: { params: Promise<{ 
         </p>
       </div>
 
-      {utilization.members.length === 0 && profitability.projects.length === 0 ? (
+      {utilization.members.length === 0 && profitability.matters.length === 0 ? (
         <EmptyState
           icon={TrendingUp}
           title={t("profitability.page.heading")}

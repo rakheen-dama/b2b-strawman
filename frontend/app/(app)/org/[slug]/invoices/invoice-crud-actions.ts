@@ -61,7 +61,7 @@ export async function fetchInvoices(
   try {
     const params = new URLSearchParams();
     if (status) params.set("status", status);
-    if (customerId) params.set("customerId", customerId);
+    if (customerId) params.set("clientId", customerId);
     const qs = params.toString();
     const url = `/api/invoices${qs ? `?${qs}` : ""}`;
     const invoices = await api.get<InvoiceResponse[]>(url);

@@ -63,7 +63,7 @@ function billingRun(): BillingRun {
     periodTo: "2026-07-31",
     currency: "ZAR",
     includeExpenses: false,
-    totalCustomers: 3,
+    totalClients: 3,
     totalInvoices: 4,
     totalAmount: 1000,
     totalSent: 4,
@@ -78,8 +78,8 @@ function billingRun(): BillingRun {
 function sendStepItem(): BillingRunItem {
   return {
     id: "item-1",
-    customerId: "c-1",
-    customerName: "Dlamini Holdings",
+    clientId: "c-1",
+    clientName: "Dlamini Holdings",
     status: "APPROVED" as BillingRunItem["status"],
     unbilledTimeAmount: 100,
     unbilledExpenseAmount: 0,
@@ -172,8 +172,8 @@ describe("LZKC-031: Compliance terminology", () => {
 
 describe("LZKC-031: Profitability terminology", () => {
   const profitability: CustomerProfitabilityResponse = {
-    customerId: "c-1",
-    customerName: "Dlamini Holdings",
+    clientId: "c-1",
+    clientName: "Dlamini Holdings",
     currencies: [
       {
         currency: "ZAR",

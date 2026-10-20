@@ -120,7 +120,7 @@ function LineSection({
             </span>
           </td>
           <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
-            {line.projectName || "\u2014"}
+            {line.matterName || "\u2014"}
           </td>
           <td className="px-4 py-3 text-right text-sm text-slate-900 dark:text-slate-100">
             {line.quantity}

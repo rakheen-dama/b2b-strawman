@@ -73,9 +73,9 @@ function ProjectBreakdownTable({ projects }: { projects: ProjectProfitabilitySum
         </TableHeader>
         <TableBody>
           {projects.map((p) => (
-            <TableRow key={`${p.projectId}-${p.currency}`}>
+            <TableRow key={`${p.matterId}-${p.currency}`}>
               <TableCell className="font-medium text-slate-950 dark:text-slate-50">
-                {p.projectName}
+                {p.matterName}
               </TableCell>
               <TableCell className="text-slate-600 dark:text-slate-400">{p.currency}</TableCell>
               <TableCell className="text-right text-slate-600 dark:text-slate-400">
@@ -158,8 +158,8 @@ export function CustomerFinancialsTab({
       ))}
 
       {/* Per-project breakdown table */}
-      {projectBreakdown && projectBreakdown.projects.length > 0 && (
-        <ProjectBreakdownTable projects={projectBreakdown.projects} />
+      {projectBreakdown && projectBreakdown.matters.length > 0 && (
+        <ProjectBreakdownTable projects={projectBreakdown.matters} />
       )}
     </div>
   );

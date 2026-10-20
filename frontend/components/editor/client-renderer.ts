@@ -475,8 +475,8 @@ export function buildPreviewContext(
       return {
         invoice: entityData,
         customer: {
-          name: entityData.customerName,
-          email: entityData.customerEmail,
+          name: entityData.clientName,
+          email: entityData.clientEmail,
         },
       };
   }

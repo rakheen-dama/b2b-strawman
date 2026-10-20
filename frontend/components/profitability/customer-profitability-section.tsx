@@ -38,7 +38,7 @@ function aggregateByCustomer(projects: ProjectProfitabilitySummary[]): CustomerA
   const map = new Map<string, CustomerAggregate>();
 
   for (const p of projects) {
-    const name = p.customerName ?? "Unassigned";
+    const name = p.clientName ?? "Unassigned";
     const key = `${name}::${p.currency}`;
 
     if (!map.has(key)) {
@@ -152,7 +152,7 @@ export function CustomerProfitabilitySection({
     });
   }
 
-  const aggregated = useMemo(() => aggregateByCustomer(data.projects), [data]);
+  const aggregated = useMemo(() => aggregateByCustomer(data.matters), [data]);
   const sorted = useMemo(
     () => sortCustomers(aggregated, sortField, sortDir),
     [aggregated, sortField, sortDir]
@@ -303,12 +303,12 @@ export function CustomerProfitabilitySection({
                     {isExpanded &&
                       customer.projects.map((project) => (
                         <TableRow
-                          key={`${key}::${project.projectId}`}
+                          key={`${key}::${project.matterId}`}
                           className="bg-slate-50 dark:bg-slate-900/30"
                         >
                           <TableCell />
                           <TableCell className="pl-8 text-sm text-slate-600 dark:text-slate-400">
-                            {project.projectName}
+                            {project.matterName}
                           </TableCell>
                           <TableCell className="text-sm text-slate-500">
                             {project.currency}

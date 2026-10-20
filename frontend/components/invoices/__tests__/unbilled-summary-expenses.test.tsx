@@ -4,12 +4,12 @@ import { UnbilledSummary } from "@/components/invoices/unbilled-summary";
 import type { UnbilledTimeResponse, ExpenseCategory } from "@/lib/types";
 
 const sampleDataWithExpenses: UnbilledTimeResponse = {
-  customerId: "c1",
-  customerName: "Acme Corp",
-  projects: [
+  clientId: "c1",
+  clientName: "Acme Corp",
+  matters: [
     {
-      projectId: "p1",
-      projectName: "Case 12345",
+      matterId: "p1",
+      matterName: "Case 12345",
       entries: [
         {
           id: "te1",
@@ -34,8 +34,8 @@ const sampleDataWithExpenses: UnbilledTimeResponse = {
   unbilledExpenses: [
     {
       id: "exp1",
-      projectId: "p1",
-      projectName: "Case 12345",
+      matterId: "p1",
+      matterName: "Case 12345",
       date: "2026-02-15",
       description: "Court filing fee",
       amount: 250,
@@ -47,8 +47,8 @@ const sampleDataWithExpenses: UnbilledTimeResponse = {
     },
     {
       id: "exp2",
-      projectId: "p1",
-      projectName: "Case 12345",
+      matterId: "p1",
+      matterName: "Case 12345",
       date: "2026-02-16",
       description: "Courier delivery",
       amount: 150,
@@ -65,9 +65,9 @@ const sampleDataWithExpenses: UnbilledTimeResponse = {
 };
 
 const emptyData: UnbilledTimeResponse = {
-  customerId: "c1",
-  customerName: "Acme Corp",
-  projects: [],
+  clientId: "c1",
+  clientName: "Acme Corp",
+  matters: [],
   grandTotals: {},
   unbilledExpenses: [],
   unbilledExpenseTotals: {},

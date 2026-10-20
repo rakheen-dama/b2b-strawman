@@ -17,8 +17,8 @@ afterEach(() => {
 
 function makeDebtor(overrides: Partial<DebtorResponse> = {}): DebtorResponse {
   return {
-    customerId: "cust-1",
-    customerName: "Naidoo & Co",
+    clientId: "cust-1",
+    clientName: "Naidoo & Co",
     outstandingTotal: 412000,
     currency: "ZAR",
     invoiceCount: 3,
@@ -37,8 +37,8 @@ describe("CollectionsClient — debtor book", () => {
     const debtors = [
       makeDebtor(),
       makeDebtor({
-        customerId: "cust-2",
-        customerName: "Exempt Holdings",
+        clientId: "cust-2",
+        clientName: "Exempt Holdings",
         outstandingTotal: 5000,
         oldestDaysOverdue: -3, // not yet due
         collectionsExempt: true,

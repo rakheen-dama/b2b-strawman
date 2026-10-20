@@ -118,7 +118,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
   function handleRegenerateLink() {
     setError(null);
     startTransition(async () => {
-      const result = await refreshPaymentLink(slug, invoice.id, invoice.customerId);
+      const result = await refreshPaymentLink(slug, invoice.id, invoice.clientId);
       if (result.success && result.invoice) {
         setInvoice(result.invoice);
       } else {
@@ -130,7 +130,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
   function handleSaveDraft() {
     setError(null);
     startTransition(async () => {
-      const result = await updateInvoice(slug, invoice.id, invoice.customerId, {
+      const result = await updateInvoice(slug, invoice.id, invoice.clientId, {
         dueDate: dueDate || undefined,
         notes: notes || undefined,
         paymentTerms: paymentTerms || undefined,
@@ -152,7 +152,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
     if (!confirm("Are you sure you want to delete this draft invoice?")) return;
     setError(null);
     startTransition(async () => {
-      const result = await deleteInvoice(slug, invoice.id, invoice.customerId);
+      const result = await deleteInvoice(slug, invoice.id, invoice.clientId);
       if (result.success) {
         router.push(`/org/${slug}/invoices`);
       } else {
@@ -164,7 +164,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
   function handleApprove() {
     setError(null);
     startTransition(async () => {
-      const result = await approveInvoice(slug, invoice.id, invoice.customerId);
+      const result = await approveInvoice(slug, invoice.id, invoice.clientId);
       if (result.success && result.invoice) {
         setInvoice(result.invoice);
       } else {
@@ -176,7 +176,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
   function handleSend() {
     setError(null);
     startTransition(async () => {
-      const result = await sendInvoice(slug, invoice.id, invoice.customerId);
+      const result = await sendInvoice(slug, invoice.id, invoice.clientId);
       if (result.success && result.invoice) {
         setInvoice(result.invoice);
       } else if (result.canOverride && result.validationChecks) {
@@ -192,7 +192,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
     setError(null);
     setShowSendOverride(false);
     startTransition(async () => {
-      const result = await sendInvoice(slug, invoice.id, invoice.customerId, true);
+      const result = await sendInvoice(slug, invoice.id, invoice.clientId, true);
       if (result.success && result.invoice) {
         setInvoice(result.invoice);
         setSendValidationChecks([]);
@@ -208,7 +208,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
       const result = await recordPayment(
         slug,
         invoice.id,
-        invoice.customerId,
+        invoice.clientId,
         paymentRef ? { paymentReference: paymentRef } : undefined
       );
       if (result.success && result.invoice) {
@@ -225,7 +225,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
     if (!confirm("Are you sure you want to void this invoice? This cannot be undone.")) return;
     setError(null);
     startTransition(async () => {
-      const result = await voidInvoice(slug, invoice.id, invoice.customerId);
+      const result = await voidInvoice(slug, invoice.id, invoice.clientId);
       if (result.success && result.invoice) {
         setInvoice(result.invoice);
       } else {
@@ -266,7 +266,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
         unitPrice: parseFloat(newLineRate) || 0,
         taxRateId: newLineTaxRateId !== "none" ? newLineTaxRateId : null,
       };
-      const result = await addLineItem(slug, invoice.id, invoice.customerId, request);
+      const result = await addLineItem(slug, invoice.id, invoice.clientId, request);
       if (result.success && result.invoice) {
         setInvoice(result.invoice);
         setShowAddLine(false);
@@ -298,7 +298,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
         slug,
         invoice.id,
         editingLine!.id,
-        invoice.customerId,
+        invoice.clientId,
         request
       );
       if (result.success && result.invoice) {
@@ -313,7 +313,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
   function handleDeleteLine(lineId: string) {
     setError(null);
     startTransition(async () => {
-      const result = await deleteLineItem(slug, invoice.id, lineId, invoice.customerId);
+      const result = await deleteLineItem(slug, invoice.id, lineId, invoice.clientId);
       if (result.success) {
         setInvoice((prev) => ({
           ...prev,

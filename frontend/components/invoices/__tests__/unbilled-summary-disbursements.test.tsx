@@ -4,12 +4,12 @@ import { UnbilledSummary } from "@/components/invoices/unbilled-summary";
 import type { UnbilledTimeResponse } from "@/lib/types";
 
 const baseData: UnbilledTimeResponse = {
-  customerId: "c1",
-  customerName: "Acme Attorneys",
-  projects: [
+  clientId: "c1",
+  clientName: "Acme Attorneys",
+  matters: [
     {
-      projectId: "p1",
-      projectName: "Matter 2026/001",
+      matterId: "p1",
+      matterName: "Matter 2026/001",
       entries: [
         {
           id: "te1",

@@ -20,7 +20,7 @@ function StatCard({ label, value }: { label: ReactNode; value: string }) {
 }
 
 export function BillingRunSummaryCards({ billingRun }: BillingRunSummaryCardsProps) {
-  const totalCustomers = billingRun.totalCustomers ?? 0;
+  const totalCustomers = billingRun.totalClients ?? 0;
   const totalInvoices = billingRun.totalInvoices ?? 0;
   const totalSent = billingRun.totalSent ?? 0;
   const totalFailed = billingRun.totalFailed ?? 0;

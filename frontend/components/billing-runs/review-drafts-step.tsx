@@ -194,7 +194,7 @@ export function ReviewDraftsStep({
       const result = await updateInvoice(
         slug,
         selectedItem.invoiceId,
-        selectedItem.customerId,
+        selectedItem.clientId,
         request
       );
       if (!result.success) {
@@ -218,7 +218,7 @@ export function ReviewDraftsStep({
         draftItems
           .filter((item) => item.invoiceId)
           .map((item) =>
-            updateInvoice(slug, item.invoiceId!, item.customerId, {
+            updateInvoice(slug, item.invoiceId!, item.clientId, {
               dueDate: batchDueDate,
             })
           )
@@ -243,7 +243,7 @@ export function ReviewDraftsStep({
         draftItems
           .filter((item) => item.invoiceId)
           .map((item) =>
-            updateInvoice(slug, item.invoiceId!, item.customerId, {
+            updateInvoice(slug, item.invoiceId!, item.clientId, {
               paymentTerms: batchPaymentTerms,
             })
           )
@@ -412,7 +412,7 @@ export function ReviewDraftsStep({
                   <span
                     className={item.status === "FAILED" ? "text-red-600 dark:text-red-400" : ""}
                   >
-                    {item.customerName}
+                    {item.clientName}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
@@ -478,7 +478,7 @@ export function ReviewDraftsStep({
           <ul className="space-y-1 text-sm text-red-600 dark:text-red-400">
             {failedItems.map((item) => (
               <li key={item.id}>
-                {item.customerName}: {item.failureReason ?? "Unknown error"}
+                {item.clientName}: {item.failureReason ?? "Unknown error"}
               </li>
             ))}
           </ul>
@@ -500,7 +500,7 @@ export function ReviewDraftsStep({
         <SheetContent>
           <SheetHeader>
             <SheetTitle>Edit Invoice</SheetTitle>
-            <SheetDescription>{selectedItem?.customerName ?? "Invoice"}</SheetDescription>
+            <SheetDescription>{selectedItem?.clientName ?? "Invoice"}</SheetDescription>
           </SheetHeader>
           <div className="space-y-4 p-4">
             <div className="space-y-2">

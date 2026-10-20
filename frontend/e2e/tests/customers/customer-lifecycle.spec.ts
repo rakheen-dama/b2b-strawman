@@ -237,7 +237,8 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        customerId: prospect.id,
+        // Phase 87 S3 (ADR-337): request body
+        clientId: prospect.id,
         currency: "ZAR",
         timeEntryIds: [],
       }),

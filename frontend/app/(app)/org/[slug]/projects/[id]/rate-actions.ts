@@ -17,7 +17,7 @@ export async function createProjectBillingRate(
   try {
     await api.post<BillingRate>("/api/billing-rates", {
       ...data,
-      projectId,
+      matterId: projectId,
     });
   } catch (error) {
     if (error instanceof ApiError) {

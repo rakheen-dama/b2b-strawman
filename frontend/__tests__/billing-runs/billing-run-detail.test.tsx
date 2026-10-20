@@ -36,7 +36,7 @@ const mockBillingRun: BillingRun = {
   periodTo: "2026-03-31",
   currency: "ZAR",
   includeExpenses: true,
-  totalCustomers: 5,
+  totalClients: 5,
   totalInvoices: 4,
   totalAmount: 125000.0,
   totalSent: 2,
@@ -50,8 +50,8 @@ const mockBillingRun: BillingRun = {
 const mockItems: BillingRunItem[] = [
   {
     id: "item-1",
-    customerId: "cust-1",
-    customerName: "Acme Corp",
+    clientId: "cust-1",
+    clientName: "Acme Corp",
     status: "GENERATED",
     unbilledTimeAmount: 50000,
     unbilledExpenseAmount: 5000,
@@ -65,8 +65,8 @@ const mockItems: BillingRunItem[] = [
   },
   {
     id: "item-2",
-    customerId: "cust-2",
-    customerName: "Beta LLC",
+    clientId: "cust-2",
+    clientName: "Beta LLC",
     status: "FAILED",
     unbilledTimeAmount: 30000,
     unbilledExpenseAmount: 0,

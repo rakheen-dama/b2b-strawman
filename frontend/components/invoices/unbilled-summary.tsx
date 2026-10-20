@@ -44,13 +44,13 @@ export function UnbilledSummary({
   const expensesByProject = data.unbilledExpenses.reduce<
     Record<string, { projectName: string; expenses: UnbilledExpenseEntry[] }>
   >((acc, expense) => {
-    if (!acc[expense.projectId]) {
-      acc[expense.projectId] = {
-        projectName: expense.projectName,
+    if (!acc[expense.matterId]) {
+      acc[expense.matterId] = {
+        projectName: expense.matterName,
         expenses: [],
       };
     }
-    acc[expense.projectId].expenses.push(expense);
+    acc[expense.matterId].expenses.push(expense);
     return acc;
   }, {});
 
@@ -78,7 +78,7 @@ export function UnbilledSummary({
     combinedTotals[curr] = (combinedTotals[curr] ?? 0) + amount;
   }
 
-  const hasTimeEntries = data.projects.some((p) => p.entries.length > 0);
+  const hasTimeEntries = data.matters.some((p) => p.entries.length > 0);
   const hasExpenses = data.unbilledExpenses.length > 0;
   const hasDisbursements = disbursements.length > 0;
 
@@ -99,16 +99,16 @@ export function UnbilledSummary({
             Time Entries
           </h3>
           <div className="space-y-3">
-            {data.projects
+            {data.matters
               .filter((p) => p.entries.length > 0)
               .map((project) => (
                 <div
-                  key={project.projectId}
+                  key={project.matterId}
                   className="rounded-lg border border-slate-200 dark:border-slate-800"
                 >
                   <div className="border-b border-slate-200 px-4 py-2.5 dark:border-slate-800">
                     <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                      {project.projectName}
+                      {project.matterName}
                     </span>
                     <span className="ml-2 text-xs text-slate-500">
                       {project.entries.length} {project.entries.length === 1 ? "entry" : "entries"}

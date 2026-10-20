@@ -47,11 +47,11 @@ function makeProfitability(
   overrides: Partial<OrgProfitabilityResponse> = {}
 ): OrgProfitabilityResponse {
   return {
-    projects: [
+    matters: [
       {
-        projectId: "p1",
-        projectName: "Alpha Project",
-        customerName: "Acme Corp",
+        matterId: "p1",
+        matterName: "Alpha Project",
+        clientName: "Acme Corp",
         currency: "USD",
         billableHours: 100,
         billableValue: 15000,
@@ -60,9 +60,9 @@ function makeProfitability(
         marginPercent: 40,
       },
       {
-        projectId: "p2",
-        projectName: "Beta Project",
-        customerName: null,
+        matterId: "p2",
+        matterName: "Beta Project",
+        clientName: null,
         currency: "EUR",
         billableHours: 50,
         billableValue: 7500,
@@ -201,7 +201,7 @@ describe("Profitability Page", () => {
     });
 
     it("renders empty state when no project data", () => {
-      const data = makeProfitability({ projects: [] });
+      const data = makeProfitability({ matters: [] });
       render(
         <TerminologyProvider verticalProfile={null}>
           <ProjectProfitabilityTable

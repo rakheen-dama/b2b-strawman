@@ -59,7 +59,8 @@ async function createDraft(token: string, customerId: string): Promise<Record<st
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
-      customerId,
+      // Phase 87 S3 (ADR-337): request body
+      clientId: customerId,
       currency: "ZAR",
       timeEntryIds: [],
       notes: `Arithmetic test ${RUN_ID}`,

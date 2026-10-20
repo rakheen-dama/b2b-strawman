@@ -14,7 +14,7 @@ export type ExpenseBillingStatus = "BILLED" | "NON_BILLABLE" | "UNBILLED";
 
 export interface ExpenseResponse {
   id: string;
-  projectId: string;
+  matterId: string;
   taskId: string | null;
   memberId: string;
   memberName: string | null;

@@ -174,15 +174,15 @@ export function InvoiceGenerationDialog({
                 </div>
               )}
 
-              {h.unbilledData.projects.length === 0 ? (
+              {h.unbilledData.matters.length === 0 ? (
                 <p className="py-8 text-center text-sm text-slate-500">
                   No unbilled time entries found for this period.
                 </p>
               ) : (
                 <div className="max-h-96 space-y-4 overflow-y-auto">
-                  {h.unbilledData.projects.map((project) => (
+                  {h.unbilledData.matters.map((project) => (
                     <ProjectEntryGroup
-                      key={project.projectId}
+                      key={project.matterId}
                       project={project}
                       currency={h.currency}
                       selectedEntryIds={h.selectedEntryIds}
@@ -364,10 +364,10 @@ function ProjectEntryGroup({
           onChange={() => onToggleProject(project)}
           disabled={selectableEntries.length === 0}
           className="size-4 rounded accent-teal-600"
-          aria-label={`Select all entries for ${project.projectName}`}
+          aria-label={`Select all entries for ${project.matterName}`}
         />
         <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-          {project.projectName}
+          {project.matterName}
         </span>
         <span className="text-xs text-slate-500">
           {selectableEntries.length} of {project.entries.length} selectable
@@ -410,10 +410,10 @@ function ExpenseSelectionSection({
     { projectName: string; expenses: UnbilledExpenseEntry[] }
   > = {};
   for (const expense of expenses) {
-    if (!expensesByProject[expense.projectId]) {
-      expensesByProject[expense.projectId] = { projectName: expense.projectName, expenses: [] };
+    if (!expensesByProject[expense.matterId]) {
+      expensesByProject[expense.matterId] = { projectName: expense.matterName, expenses: [] };
     }
-    expensesByProject[expense.projectId].expenses.push(expense);
+    expensesByProject[expense.matterId].expenses.push(expense);
   }
 
   return (

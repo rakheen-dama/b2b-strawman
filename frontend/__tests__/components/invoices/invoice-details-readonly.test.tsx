@@ -6,7 +6,7 @@ import type { InvoiceResponse } from "@/lib/types";
 function makeInvoice(overrides: Partial<InvoiceResponse> = {}): InvoiceResponse {
   return {
     id: "inv-1",
-    customerId: "cust-1",
+    clientId: "cust-1",
     invoiceNumber: "INV-001",
     status: "SENT",
     currency: "USD",
@@ -23,9 +23,9 @@ function makeInvoice(overrides: Partial<InvoiceResponse> = {}): InvoiceResponse 
     billingPeriodEnd: null,
     paymentReference: null,
     paidAt: null,
-    customerName: "Acme",
-    customerEmail: null,
-    customerAddress: null,
+    clientName: "Acme",
+    clientEmail: null,
+    clientAddress: null,
     orgName: "Org",
     createdBy: "u1",
     createdByName: null,

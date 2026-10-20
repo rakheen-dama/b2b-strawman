@@ -223,7 +223,7 @@ export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps
                 key={item.id}
                 className="border-b border-slate-100 last:border-b-0 dark:border-slate-800"
               >
-                <td className="px-4 py-3">{item.customerName}</td>
+                <td className="px-4 py-3">{item.clientName}</td>
                 <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
                   {item.invoiceId ? `INV-${item.invoiceId.slice(0, 8)}` : "—"}
                 </td>

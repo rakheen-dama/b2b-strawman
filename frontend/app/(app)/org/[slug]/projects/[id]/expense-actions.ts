@@ -63,7 +63,7 @@ export async function createExpense(
   };
 
   try {
-    await api.post<ExpenseResponse>(`/api/projects/${projectId}/expenses`, body);
+    await api.post<ExpenseResponse>(`/api/matters/${projectId}/expenses`, body);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -82,7 +82,7 @@ export async function updateExpense(
   data: UpdateExpenseRequest
 ): Promise<ActionResult> {
   try {
-    await api.put<ExpenseResponse>(`/api/projects/${projectId}/expenses/${expenseId}`, data);
+    await api.put<ExpenseResponse>(`/api/matters/${projectId}/expenses/${expenseId}`, data);
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {
@@ -106,7 +106,7 @@ export async function deleteExpense(
   expenseId: string
 ): Promise<ActionResult> {
   try {
-    await api.delete(`/api/projects/${projectId}/expenses/${expenseId}`);
+    await api.delete(`/api/matters/${projectId}/expenses/${expenseId}`);
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {
@@ -130,7 +130,7 @@ export async function writeOffExpense(
   expenseId: string
 ): Promise<ActionResult> {
   try {
-    await api.patch(`/api/projects/${projectId}/expenses/${expenseId}/write-off`, {});
+    await api.patch(`/api/matters/${projectId}/expenses/${expenseId}/write-off`, {});
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -148,7 +148,7 @@ export async function restoreExpense(
   expenseId: string
 ): Promise<ActionResult> {
   try {
-    await api.patch(`/api/projects/${projectId}/expenses/${expenseId}/restore`, {});
+    await api.patch(`/api/matters/${projectId}/expenses/${expenseId}/restore`, {});
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -181,7 +181,7 @@ export async function listExpenses(
   searchParams.set("sort", "date,desc");
 
   const qs = searchParams.toString();
-  const url = `/api/projects/${projectId}/expenses${qs ? `?${qs}` : ""}`;
+  const url = `/api/matters/${projectId}/expenses${qs ? `?${qs}` : ""}`;
   return api.get<PaginatedExpenseResponse>(url);
 }
 

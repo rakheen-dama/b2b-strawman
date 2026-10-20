@@ -54,8 +54,8 @@ afterEach(() => {
 const mockGeneratedItems: BillingRunItem[] = [
   {
     id: "item-1",
-    customerId: "cust-1",
-    customerName: "Acme Corp",
+    clientId: "cust-1",
+    clientName: "Acme Corp",
     status: "GENERATED",
     unbilledTimeAmount: 50000,
     unbilledExpenseAmount: 5000,
@@ -69,8 +69,8 @@ const mockGeneratedItems: BillingRunItem[] = [
   },
   {
     id: "item-2",
-    customerId: "cust-2",
-    customerName: "Widget Inc",
+    clientId: "cust-2",
+    clientName: "Widget Inc",
     status: "FAILED",
     unbilledTimeAmount: 30000,
     unbilledExpenseAmount: 0,
@@ -89,8 +89,8 @@ const mockGeneratedItems: BillingRunItem[] = [
 const mockApprovedItems: BillingRunItem[] = [
   {
     id: "item-1",
-    customerId: "cust-1",
-    customerName: "Acme Corp",
+    clientId: "cust-1",
+    clientName: "Acme Corp",
     status: "GENERATED",
     unbilledTimeAmount: 50000,
     unbilledExpenseAmount: 5000,

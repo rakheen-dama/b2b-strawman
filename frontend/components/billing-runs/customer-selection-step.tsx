@@ -156,11 +156,11 @@ export function CustomerSelectionStep({
                       <Checkbox
                         checked={selectedIds.has(item.id)}
                         onCheckedChange={() => toggleCustomer(item.id)}
-                        aria-label={`Select ${item.customerName}`}
+                        aria-label={`Select ${item.clientName}`}
                       />
                     </td>
                     <td className="py-3 pr-4 font-medium text-slate-950 dark:text-slate-50">
-                      {item.customerName}
+                      {item.clientName}
                     </td>
                     <td className="py-3 pr-4 text-right text-slate-600 dark:text-slate-400">
                       {formatCurrency(item.unbilledTimeAmount, currency)}

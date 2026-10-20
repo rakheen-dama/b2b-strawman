@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
  * customer. All endpoints require a valid portal JWT (enforced by CustomerAuthFilter).
  */
 @RestController
-@RequestMapping("/portal/projects/{projectId}/comments")
+@RequestMapping("/portal/matters/{matterId}/comments")
 public class PortalCommentController {
 
   private final PortalReadModelService portalReadModelService;
@@ -39,10 +39,10 @@ public class PortalCommentController {
   /** Lists comments for a portal project. Returns 404 if the project is not linked to customer. */
   @GetMapping
   public ResponseEntity<List<PortalCommentResponse>> listProjectComments(
-      @PathVariable UUID projectId) {
+      @PathVariable UUID matterId) {
     UUID customerId = RequestScopes.requireCustomerId();
     String orgId = RequestScopes.requireOrgId();
-    var comments = portalReadModelService.listProjectComments(projectId, customerId, orgId);
+    var comments = portalReadModelService.listProjectComments(matterId, customerId, orgId);
 
     var response =
         comments.stream()
@@ -55,12 +55,12 @@ public class PortalCommentController {
   /** Posts a new comment on a portal project. Returns 404 if project is not linked to customer. */
   @PostMapping
   public ResponseEntity<PortalCommentResponse> postComment(
-      @PathVariable UUID projectId, @Valid @RequestBody CreateCommentRequest request) {
+      @PathVariable UUID matterId, @Valid @RequestBody CreateCommentRequest request) {
     UUID customerId = RequestScopes.requireCustomerId();
     String orgId = RequestScopes.requireOrgId();
 
     // Verify project belongs to customer (throws 404 if not) and is not archived
-    var project = portalReadModelService.getProjectDetail(projectId, customerId, orgId);
+    var project = portalReadModelService.getProjectDetail(matterId, customerId, orgId);
     if ("ARCHIVED".equals(project.status())) {
       throw new InvalidStateException(
           "Project is archived", "Project is archived. No modifications allowed.");
@@ -77,7 +77,7 @@ public class PortalCommentController {
     // Delegate to service (transactional: save, read-model sync, audit, event)
     var comment =
         portalCommentService.createPortalComment(
-            projectId, authorId, authorName, request.content(), orgId);
+            matterId, authorId, authorName, request.content(), orgId);
 
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(

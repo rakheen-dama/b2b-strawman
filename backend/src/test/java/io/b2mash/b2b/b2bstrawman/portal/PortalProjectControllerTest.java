@@ -123,7 +123,7 @@ class PortalProjectControllerTest {
   void getProjectDetailReturnsCorrectFields() throws Exception {
     mockMvc
         .perform(
-            get("/portal/projects/{id}", projectId)
+            get("/portal/matters/{matterId}", projectId)
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(projectId.toString()))
@@ -139,7 +139,7 @@ class PortalProjectControllerTest {
 
     mockMvc
         .perform(
-            get("/portal/projects/{id}", unlinkedProjectId)
+            get("/portal/matters/{matterId}", unlinkedProjectId)
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isNotFound());
   }
@@ -148,7 +148,7 @@ class PortalProjectControllerTest {
   void getProjectDetailIncludesDocumentAndCommentCounts() throws Exception {
     mockMvc
         .perform(
-            get("/portal/projects/{id}", projectId)
+            get("/portal/matters/{matterId}", projectId)
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.documentCount").value(5))
@@ -157,13 +157,15 @@ class PortalProjectControllerTest {
 
   @Test
   void getProjectDetailReturns401WithoutToken() throws Exception {
-    mockMvc.perform(get("/portal/projects/{id}", projectId)).andExpect(status().isUnauthorized());
+    mockMvc
+        .perform(get("/portal/matters/{matterId}", projectId))
+        .andExpect(status().isUnauthorized());
   }
 
   @Test
   void listProjectsReturnsProjectsFromReadModel() throws Exception {
     mockMvc
-        .perform(get("/portal/projects").header("Authorization", "Bearer " + portalToken))
+        .perform(get("/portal/matters").header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].id").value(projectId.toString()))
         .andExpect(jsonPath("$[0].name").value("Website Redesign"))
@@ -175,7 +177,7 @@ class PortalProjectControllerTest {
     // List endpoint should return the same project that the detail endpoint can resolve
     var listResult =
         mockMvc
-            .perform(get("/portal/projects").header("Authorization", "Bearer " + portalToken))
+            .perform(get("/portal/matters").header("Authorization", "Bearer " + portalToken))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].id").exists())
             .andReturn();
@@ -185,7 +187,8 @@ class PortalProjectControllerTest {
     // Detail endpoint must also succeed for the same project ID
     mockMvc
         .perform(
-            get("/portal/projects/{id}", listedId).header("Authorization", "Bearer " + portalToken))
+            get("/portal/matters/{matterId}", listedId)
+                .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(listedId));
   }

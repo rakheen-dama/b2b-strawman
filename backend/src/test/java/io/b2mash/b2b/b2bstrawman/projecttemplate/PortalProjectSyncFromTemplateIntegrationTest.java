@@ -150,14 +150,14 @@ class PortalProjectSyncFromTemplateIntegrationTest {
     String portalToken = portalJwtService.issueToken(customerId, ORG_ID);
 
     mockMvc
-        .perform(get("/portal/projects").header("Authorization", "Bearer " + portalToken))
+        .perform(get("/portal/matters").header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.id == '" + projectId + "')]").exists())
         .andExpect(jsonPath("$[?(@.id == '" + projectId + "')].name").value("Sipho Matter P03"));
 
     mockMvc
         .perform(
-            get("/portal/projects/{id}", projectId)
+            get("/portal/matters/{matterId}", projectId)
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(projectId.toString()))
@@ -239,13 +239,13 @@ class PortalProjectSyncFromTemplateIntegrationTest {
     String customerBToken = portalJwtService.issueToken(customerBId[0], ORG_ID);
 
     mockMvc
-        .perform(get("/portal/projects").header("Authorization", "Bearer " + customerBToken))
+        .perform(get("/portal/matters").header("Authorization", "Bearer " + customerBToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.id == '" + matterAId[0] + "')]").doesNotExist());
 
     mockMvc
         .perform(
-            get("/portal/projects/{id}", matterAId[0])
+            get("/portal/matters/{matterId}", matterAId[0])
                 .header("Authorization", "Bearer " + customerBToken))
         .andExpect(status().isNotFound());
 
@@ -360,7 +360,7 @@ class PortalProjectSyncFromTemplateIntegrationTest {
     // 4. End-to-end: the portal HTTP endpoint returns the same matter.
     String portalToken = portalJwtService.issueToken(customerId, ORG_ID);
     mockMvc
-        .perform(get("/portal/projects").header("Authorization", "Bearer " + portalToken))
+        .perform(get("/portal/matters").header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.id == '" + projectId + "')]").exists())
         .andExpect(

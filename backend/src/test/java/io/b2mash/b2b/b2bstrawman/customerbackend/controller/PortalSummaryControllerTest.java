@@ -142,10 +142,10 @@ class PortalSummaryControllerTest {
   void getSummaryReturnsSeededData() throws Exception {
     mockMvc
         .perform(
-            get("/portal/projects/{projectId}/summary", projectWithSummary)
+            get("/portal/matters/{matterId}/summary", projectWithSummary)
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.projectId").value(projectWithSummary.toString()))
+        .andExpect(jsonPath("$.matterId").value(projectWithSummary.toString()))
         .andExpect(jsonPath("$.totalHours").value(42.5))
         .andExpect(jsonPath("$.billableHours").value(38.0))
         .andExpect(jsonPath("$.lastActivityAt").value("2026-02-11T16:00:00Z"));
@@ -155,10 +155,10 @@ class PortalSummaryControllerTest {
   void getSummaryReturnsZeroStubWhenNoSummaryExists() throws Exception {
     mockMvc
         .perform(
-            get("/portal/projects/{projectId}/summary", projectWithoutSummary)
+            get("/portal/matters/{matterId}/summary", projectWithoutSummary)
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.projectId").value(projectWithoutSummary.toString()))
+        .andExpect(jsonPath("$.matterId").value(projectWithoutSummary.toString()))
         .andExpect(jsonPath("$.totalHours").value(0))
         .andExpect(jsonPath("$.billableHours").value(0))
         .andExpect(jsonPath("$.lastActivityAt").isEmpty());
@@ -169,7 +169,7 @@ class PortalSummaryControllerTest {
     UUID unlinkedProjectId = UUID.randomUUID();
     mockMvc
         .perform(
-            get("/portal/projects/{projectId}/summary", unlinkedProjectId)
+            get("/portal/matters/{matterId}/summary", unlinkedProjectId)
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isNotFound());
   }
@@ -177,7 +177,7 @@ class PortalSummaryControllerTest {
   @Test
   void getSummaryReturns401WithoutToken() throws Exception {
     mockMvc
-        .perform(get("/portal/projects/{projectId}/summary", projectWithSummary))
+        .perform(get("/portal/matters/{matterId}/summary", projectWithSummary))
         .andExpect(status().isUnauthorized());
   }
 }

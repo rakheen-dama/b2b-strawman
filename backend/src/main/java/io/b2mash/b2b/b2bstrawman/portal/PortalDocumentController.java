@@ -28,11 +28,11 @@ public class PortalDocumentController {
   }
 
   /** Lists SHARED documents for a project linked to the customer. */
-  @GetMapping("/projects/{projectId}/documents")
+  @GetMapping("/matters/{matterId}/documents")
   public ResponseEntity<List<PortalDocumentResponse>> listProjectDocuments(
-      @PathVariable UUID projectId) {
+      @PathVariable UUID matterId) {
     UUID customerId = RequestScopes.requireCustomerId();
-    var documents = portalQueryService.listProjectDocuments(projectId, customerId);
+    var documents = portalQueryService.listProjectDocuments(matterId, customerId);
     var projectNames = portalQueryService.resolveProjectNames(documents);
     var response =
         documents.stream().map(doc -> PortalDocumentResponse.from(doc, projectNames)).toList();
@@ -72,8 +72,8 @@ public class PortalDocumentController {
       long size,
       String scope,
       String status,
-      UUID projectId,
-      String projectName,
+      UUID matterId,
+      String matterName,
       Instant createdAt) {
 
     public static PortalDocumentResponse from(Document document, Map<UUID, String> projectNames) {

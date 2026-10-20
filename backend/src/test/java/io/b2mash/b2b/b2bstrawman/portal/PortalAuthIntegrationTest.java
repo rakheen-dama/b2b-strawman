@@ -142,13 +142,13 @@ class PortalAuthIntegrationTest {
 
     @Test
     void authenticatedPortalEndpointsReject401WithoutToken() throws Exception {
-      mockMvc.perform(get("/portal/projects")).andExpect(status().isUnauthorized());
+      mockMvc.perform(get("/portal/matters")).andExpect(status().isUnauthorized());
     }
 
     @Test
     void authenticatedPortalEndpointsReject401WithInvalidToken() throws Exception {
       mockMvc
-          .perform(get("/portal/projects").header("Authorization", "Bearer invalid-token"))
+          .perform(get("/portal/matters").header("Authorization", "Bearer invalid-token"))
           .andExpect(status().isUnauthorized());
     }
 
@@ -158,7 +158,7 @@ class PortalAuthIntegrationTest {
 
       var result =
           mockMvc
-              .perform(get("/portal/projects").header("Authorization", "Bearer " + portalToken))
+              .perform(get("/portal/matters").header("Authorization", "Bearer " + portalToken))
               .andReturn();
 
       int statusCode = result.getResponse().getStatus();
@@ -170,7 +170,7 @@ class PortalAuthIntegrationTest {
     void staffJwtCannotAccessPortalEndpoints() throws Exception {
       mockMvc
           .perform(
-              get("/portal/projects")
+              get("/portal/matters")
                   .with(
                       jwt()
                           .jwt(

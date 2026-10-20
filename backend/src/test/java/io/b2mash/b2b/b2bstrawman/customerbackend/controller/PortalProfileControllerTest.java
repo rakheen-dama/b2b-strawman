@@ -102,7 +102,7 @@ class PortalProfileControllerTest {
         .perform(get("/portal/me").header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.contactId").exists())
-        .andExpect(jsonPath("$.customerId").value(customerId.toString()))
+        .andExpect(jsonPath("$.clientId").value(customerId.toString()))
         .andExpect(jsonPath("$.email").value("alice@profiletest.com"))
         .andExpect(jsonPath("$.displayName").value("Alice Smith"))
         .andExpect(jsonPath("$.role").value("PRIMARY"));
@@ -113,7 +113,7 @@ class PortalProfileControllerTest {
     mockMvc
         .perform(get("/portal/me").header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerName").value("Profile Test Corp"));
+        .andExpect(jsonPath("$.clientName").value("Profile Test Corp"));
   }
 
   @Test

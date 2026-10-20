@@ -1,6 +1,8 @@
 "use server";
 
 import { api, ApiError } from "@/lib/api";
+import { listMatters } from "@/lib/api/matters";
+import { listClients } from "@/lib/api/clients";
 import { revalidatePath } from "next/cache";
 import type { ConflictCheck, ConflictCheckResult, ConflictCheckType } from "@/lib/types";
 
@@ -104,15 +106,17 @@ export async function resolveConflict(
 // and ProjectController.listProjects (both return ResponseEntity<List<...>>).
 
 export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
-  const result = await api.get<
-    { id: string; name: string }[] | PaginatedResponse<{ id: string; name: string }>
-  >("/api/matters?size=200");
+  const result = (await listMatters({ size: 200 })) as
+    | { id: string; name: string }[]
+    | PaginatedResponse<{ id: string; name: string }>
+    | null;
   return Array.isArray(result) ? result : (result?.content ?? []);
 }
 
 export async function fetchCustomers(): Promise<{ id: string; name: string }[]> {
-  const result = await api.get<
-    { id: string; name: string }[] | PaginatedResponse<{ id: string; name: string }>
-  >("/api/clients?size=200");
+  const result = (await listClients({ size: 200 })) as
+    | { id: string; name: string }[]
+    | PaginatedResponse<{ id: string; name: string }>
+    | null;
   return Array.isArray(result) ? result : (result?.content ?? []);
 }

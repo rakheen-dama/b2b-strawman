@@ -1,9 +1,10 @@
 "use server";
 
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { api, ApiError } from "@/lib/api";
+import { ApiError } from "@/lib/api";
+import { archiveClient, createClient, updateClient } from "@/lib/api/clients";
 import { revalidatePath } from "next/cache";
-import type { Client, UpdateClientRequest } from "@/lib/types";
+import type { Client, CreateClientRequest, UpdateClientRequest } from "@/lib/types";
 import { classifyError } from "@/lib/error-handler";
 import { createMessages } from "@/lib/messages";
 
@@ -108,7 +109,7 @@ export async function createCustomer(
     phone,
     idNumber,
     notes,
-    clientType: customerType,
+    clientType: customerType as CreateClientRequest["clientType"],
     addressLine1,
     addressLine2,
     city,
@@ -127,7 +128,7 @@ export async function createCustomer(
 
   let created: Client;
   try {
-    created = await api.post<Client>("/api/clients", body);
+    created = await createClient(body);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -184,7 +185,7 @@ export async function updateCustomer(
   };
 
   try {
-    await api.put<Client>(`/api/clients/${id}`, body);
+    await updateClient(id, body);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -207,7 +208,7 @@ export async function archiveCustomer(slug: string, id: string): Promise<ActionR
   }
 
   try {
-    await api.delete(`/api/clients/${id}`);
+    await archiveClient(id);
   } catch (error) {
     const message =
       error instanceof ApiError

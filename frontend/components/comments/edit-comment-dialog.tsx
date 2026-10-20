@@ -14,7 +14,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@b2mash/ui/label";
 import { updateComment } from "@/lib/actions/comments";
-import type { Comment } from "@/lib/actions/comments";
+import type { Comment } from "@/lib/types";
 
 type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>;
 type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>["size"]>;

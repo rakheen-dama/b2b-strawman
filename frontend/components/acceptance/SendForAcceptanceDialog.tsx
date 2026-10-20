@@ -20,7 +20,7 @@ import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { HelpTip } from "@/components/help-tip";
 import { fetchPortalContacts, sendForAcceptance } from "@/lib/actions/acceptance-actions";
-import type { PortalContactSummary } from "@/lib/actions/acceptance-actions";
+import type { PortalContactSummary } from "@/lib/types";
 
 interface SendForAcceptanceDialogProps {
   generatedDocumentId: string;

@@ -1,8 +1,9 @@
 "use server";
 
-import { api, ApiError } from "@/lib/api";
+import { ApiError } from "@/lib/api";
+import { deleteMatterBudget, upsertMatterBudget } from "@/lib/api/matters";
 import { revalidatePath } from "next/cache";
-import type { BudgetStatusResponse, UpsertBudgetRequest } from "@/lib/types";
+import type { UpsertBudgetRequest } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
@@ -15,7 +16,7 @@ export async function upsertBudget(
   data: UpsertBudgetRequest
 ): Promise<ActionResult> {
   try {
-    await api.put<BudgetStatusResponse>(`/api/matters/${projectId}/budget`, data);
+    await upsertMatterBudget(projectId, data);
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {
@@ -35,7 +36,7 @@ export async function upsertBudget(
 
 export async function deleteBudget(slug: string, projectId: string): Promise<ActionResult> {
   try {
-    await api.delete(`/api/matters/${projectId}/budget`);
+    await deleteMatterBudget(projectId);
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {

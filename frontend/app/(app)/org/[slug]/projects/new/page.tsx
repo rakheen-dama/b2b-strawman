@@ -1,6 +1,6 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getAiProfile } from "@/lib/api/ai";
-import { api } from "@/lib/api";
+import { listClients } from "@/lib/api/clients";
 import { getProjectTemplates } from "@/lib/api/templates";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { Client } from "@/lib/types";
@@ -51,7 +51,7 @@ export default async function NewProjectPage({
   let customers: Client[] = [];
   let templates: ProjectTemplateResponse[] = [];
   try {
-    customers = await api.get<Client[]>("/api/clients?status=ACTIVE");
+    customers = await listClients({ status: "ACTIVE" });
   } catch {
     // Non-fatal: customer select will be empty
   }

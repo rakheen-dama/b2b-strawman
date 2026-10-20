@@ -1,7 +1,12 @@
 "use server";
 
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { api, ApiError } from "@/lib/api";
+import { ApiError } from "@/lib/api";
+import {
+  anonymizeClient,
+  exportClientData,
+  getClientAnonymizationPreview,
+} from "@/lib/api/clients";
 import { revalidatePath } from "next/cache";
 import type {
   StandaloneExportResult,
@@ -24,7 +29,7 @@ export async function triggerDataExport(
   }
 
   try {
-    const result = await api.post<StandaloneExportResult>(`/api/clients/${customerId}/data-export`);
+    const result = await exportClientData(customerId);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -43,9 +48,7 @@ export async function fetchAnonymizationPreview(
   }
 
   try {
-    const result = await api.get<AnonymizationPreview>(
-      `/api/clients/${customerId}/anonymize/preview`
-    );
+    const result = await getClientAnonymizationPreview(customerId);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -67,10 +70,7 @@ export async function executeAnonymization(
   }
 
   try {
-    const result = await api.post<StandaloneAnonymizationResult>(
-      `/api/clients/${customerId}/anonymize`,
-      { confirmationName, reason }
-    );
+    const result = await anonymizeClient(customerId, { confirmationName, reason });
 
     revalidatePath(`/org/${slug}/customers`);
     revalidatePath(`/org/${slug}/customers/${customerId}`);

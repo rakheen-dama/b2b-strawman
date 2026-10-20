@@ -32,7 +32,7 @@ import type {
   CreateInformationRequestItem,
   RequestTemplateResponse,
 } from "@/lib/api/information-requests";
-import type { PortalContactSummary } from "@/lib/actions/acceptance-actions";
+import type { PortalContactSummary } from "@/lib/types";
 
 type AdHocItem = {
   id: string; // local-only key for React list rendering

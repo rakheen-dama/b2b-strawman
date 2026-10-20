@@ -1,11 +1,18 @@
 "use server";
 
-import { api, ApiError } from "@/lib/api";
+import { ApiError } from "@/lib/api";
+import {
+  createMatterExpense,
+  deleteMatterExpense,
+  listMatterExpenses,
+  restoreMatterExpense,
+  updateMatterExpense,
+  writeOffMatterExpense,
+} from "@/lib/api/matters";
 import { revalidatePath } from "next/cache";
 import type {
   CreateExpenseRequest,
   UpdateExpenseRequest,
-  ExpenseResponse,
   ExpenseCategory,
   PaginatedExpenseResponse,
 } from "@/lib/types";
@@ -63,7 +70,7 @@ export async function createExpense(
   };
 
   try {
-    await api.post<ExpenseResponse>(`/api/matters/${projectId}/expenses`, body);
+    await createMatterExpense(projectId, body);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -82,7 +89,7 @@ export async function updateExpense(
   data: UpdateExpenseRequest
 ): Promise<ActionResult> {
   try {
-    await api.put<ExpenseResponse>(`/api/matters/${projectId}/expenses/${expenseId}`, data);
+    await updateMatterExpense(projectId, expenseId, data);
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {
@@ -106,7 +113,7 @@ export async function deleteExpense(
   expenseId: string
 ): Promise<ActionResult> {
   try {
-    await api.delete(`/api/matters/${projectId}/expenses/${expenseId}`);
+    await deleteMatterExpense(projectId, expenseId);
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {
@@ -130,7 +137,7 @@ export async function writeOffExpense(
   expenseId: string
 ): Promise<ActionResult> {
   try {
-    await api.patch(`/api/matters/${projectId}/expenses/${expenseId}/write-off`, {});
+    await writeOffMatterExpense(projectId, expenseId);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -148,7 +155,7 @@ export async function restoreExpense(
   expenseId: string
 ): Promise<ActionResult> {
   try {
-    await api.patch(`/api/matters/${projectId}/expenses/${expenseId}/restore`, {});
+    await restoreMatterExpense(projectId, expenseId);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -171,18 +178,15 @@ export async function listExpenses(
     size?: number;
   }
 ): Promise<PaginatedExpenseResponse> {
-  const searchParams = new URLSearchParams();
-  if (params?.category) searchParams.set("category", params.category);
-  if (params?.from) searchParams.set("from", params.from);
-  if (params?.to) searchParams.set("to", params.to);
-  if (params?.memberId) searchParams.set("memberId", params.memberId);
-  if (params?.page != null) searchParams.set("page", String(params.page));
-  if (params?.size != null) searchParams.set("size", String(params.size));
-  searchParams.set("sort", "date,desc");
-
-  const qs = searchParams.toString();
-  const url = `/api/matters/${projectId}/expenses${qs ? `?${qs}` : ""}`;
-  return api.get<PaginatedExpenseResponse>(url);
+  return listMatterExpenses(projectId, {
+    category: params?.category,
+    from: params?.from,
+    to: params?.to,
+    memberId: params?.memberId,
+    page: params?.page,
+    size: params?.size,
+    sort: "date,desc",
+  });
 }
 
 /** @deprecated Use `getMyExpenses` from `@/lib/actions/expense-actions` instead. */

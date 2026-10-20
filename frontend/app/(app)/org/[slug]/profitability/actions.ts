@@ -2,6 +2,8 @@
 
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
+import { getMatterProfitability } from "@/lib/api/matters";
+import { getClientProfitability } from "@/lib/api/clients";
 import type {
   UtilizationResponse,
   OrgProfitabilityResponse,
@@ -76,13 +78,7 @@ export async function getProjectProfitability(
   }
 
   try {
-    const params = new URLSearchParams();
-    if (from) params.set("from", from);
-    if (to) params.set("to", to);
-    const qs = params.toString();
-    const data = await api.get<MatterProfitabilityResponse>(
-      `/api/matters/${projectId}/profitability${qs ? `?${qs}` : ""}`
-    );
+    const data = await getMatterProfitability(projectId, { from, to });
     return { data };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -103,13 +99,7 @@ export async function getCustomerProfitability(
   }
 
   try {
-    const params = new URLSearchParams();
-    if (from) params.set("from", from);
-    if (to) params.set("to", to);
-    const qs = params.toString();
-    const data = await api.get<ClientProfitabilityResponse>(
-      `/api/clients/${customerId}/profitability${qs ? `?${qs}` : ""}`
-    );
+    const data = await getClientProfitability(customerId, { from, to });
     return { data };
   } catch (error) {
     if (error instanceof ApiError) {

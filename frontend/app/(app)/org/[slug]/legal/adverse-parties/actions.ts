@@ -1,6 +1,8 @@
 "use server";
 
 import { api, ApiError } from "@/lib/api";
+import { listMatterAdverseParties, listMatters } from "@/lib/api/matters";
+import { listClients } from "@/lib/api/clients";
 import { revalidatePath } from "next/cache";
 import type { AdverseParty, AdversePartyLink, AdversePartyType } from "@/lib/types";
 
@@ -126,21 +128,24 @@ export async function unlinkAdverseParty(slug: string, linkId: string): Promise<
 }
 
 export async function fetchProjectAdverseParties(projectId: string): Promise<AdversePartyLink[]> {
-  return api.get<AdversePartyLink[]>(`/api/matters/${projectId}/adverse-parties`);
+  return listMatterAdverseParties(projectId);
 }
 
 // -- Projects & Customers (for form selectors) --
 
 export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
-  const result =
-    await api.get<PaginatedResponse<{ id: string; name: string }>>("/api/matters?size=200");
+  // FIXME(607D follow-up): /api/matters is a flat list; .content is undefined (pre-existing bug, not fixed in 610B).
+  const result = (await listMatters({ size: 200 })) as unknown as PaginatedResponse<{
+    id: string;
+    name: string;
+  }>;
   return result.content;
 }
 
 export async function fetchCustomers(): Promise<{ id: string; name: string }[]> {
-  const result = await api.get<
-    { id: string; name: string }[] | PaginatedResponse<{ id: string; name: string }>
-  >("/api/clients?size=200");
+  const result = (await listClients({ size: 200 })) as
+    | { id: string; name: string }[]
+    | PaginatedResponse<{ id: string; name: string }>;
   // /api/clients returns a flat List<CustomerResponse> (not a paginated envelope).
   // Handle both shapes defensively in case the backend is ever paginated.
   return Array.isArray(result) ? result : (result.content ?? []);

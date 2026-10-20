@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
+import { handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
+import { getClientCompletenessSummary, listClients } from "@/lib/api/clients";
 import { RequiresCapability } from "@/lib/capabilities";
 import type {
   Client,
@@ -122,17 +123,16 @@ export default async function CustomersPage({
     // Non-fatal: view selector won't show saved views
   }
 
-  // Build query string with view filters
-  let customersEndpoint = "/api/clients";
-  if (currentViewId) {
-    customersEndpoint = `/api/clients?view=${currentViewId}`;
-  } else if (lifecycleFilter) {
-    customersEndpoint = `/api/clients?lifecycleStatus=${lifecycleFilter}`;
-  }
-
   let customers: Client[] = [];
   try {
-    customers = await api.get<Client[]>(customersEndpoint);
+    // A saved view takes precedence over the lifecycle filter.
+    customers = await listClients(
+      currentViewId
+        ? { view: currentViewId }
+        : lifecycleFilter
+          ? { lifecycleStatus: lifecycleFilter }
+          : undefined
+    );
   } catch (error) {
     handleApiError(error);
   }
@@ -141,11 +141,7 @@ export default async function CustomersPage({
   let completenessScores: Record<string, CompletenessScore> = {};
   if (customers.length > 0) {
     try {
-      const params = new URLSearchParams();
-      customers.forEach((c) => params.append("clientIds", c.id));
-      completenessScores = await api.get<Record<string, CompletenessScore>>(
-        `/api/clients/completeness-summary?${params.toString()}`
-      );
+      completenessScores = await getClientCompletenessSummary(customers.map((c) => c.id));
     } catch {
       // Non-fatal: completeness column will show N/A
     }

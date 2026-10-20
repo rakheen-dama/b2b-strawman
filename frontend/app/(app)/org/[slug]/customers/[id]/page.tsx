@@ -8,6 +8,12 @@ import {
   getTags,
   getTemplates,
 } from "@/lib/api";
+import {
+  getClient,
+  getClientProfitability,
+  getClientTags,
+  listClientMatters,
+} from "@/lib/api/clients";
 import type {
   Client,
   ClientReadiness,
@@ -107,14 +113,14 @@ export default async function CustomerDetailPage({
 
   let customer: Client;
   try {
-    customer = await api.get<Client>(`/api/clients/${id}`);
+    customer = await getClient(id);
   } catch (error) {
     handleApiError(error);
   }
 
   let linkedProjects: Matter[] = [];
   try {
-    linkedProjects = await api.get<Matter[]>(`/api/clients/${id}/matters`);
+    linkedProjects = await listClientMatters(id);
   } catch {
     // Non-fatal: show empty projects list if fetch fails
   }
@@ -145,9 +151,7 @@ export default async function CustomerDetailPage({
         [
           api.get<{ content: BillingRate[] }>(`/api/billing-rates?clientId=${id}`),
           api.get<OrgMember[]>("/api/members"),
-          api
-            .get<ClientProfitabilityResponse>(`/api/clients/${id}/profitability`)
-            .catch(() => null),
+          getClientProfitability(id).catch(() => null),
           // D4 (Phase 87): backend /api/reports/profitability still takes customerId (ReportController:66) — do not rename until the backend moves.
           api
             .get<OrgProfitabilityResponse>(`/api/reports/profitability?customerId=${id}`)
@@ -201,10 +205,7 @@ export default async function CustomerDetailPage({
   let customerTags: TagResponse[] = [];
   let allTags: TagResponse[] = [];
   try {
-    const [entityTags, orgTags] = await Promise.all([
-      api.get<TagResponse[]>(`/api/clients/${id}/tags`),
-      getTags(),
-    ]);
+    const [entityTags, orgTags] = await Promise.all([getClientTags(id), getTags()]);
     customerTags = entityTags;
     allTags = orgTags;
   } catch {

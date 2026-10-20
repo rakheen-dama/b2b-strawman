@@ -12,7 +12,7 @@ import {
 import { ActivityFilter } from "@/components/activity/activity-filter";
 import { ActivityItem } from "@/components/activity/activity-item";
 import { loadMoreActivity } from "@/app/(app)/org/[slug]/projects/[id]/activity-actions";
-import type { ActivityItem as ActivityItemType } from "@/lib/actions/activity";
+import type { ActivityItem as ActivityItemType } from "@/lib/types";
 
 const ALL_ACTORS_VALUE = "__all__";
 

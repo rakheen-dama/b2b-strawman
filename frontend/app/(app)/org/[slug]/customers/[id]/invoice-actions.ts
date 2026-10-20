@@ -1,6 +1,7 @@
 "use server";
 
 import { api, ApiError } from "@/lib/api";
+import { getClientUnbilledTime } from "@/lib/api/clients";
 import { revalidatePath } from "next/cache";
 import type {
   UnbilledTimeResponse,
@@ -27,12 +28,7 @@ export async function fetchUnbilledTime(
   to?: string
 ): Promise<UnbilledTimeResult> {
   try {
-    const params = new URLSearchParams();
-    if (from) params.set("from", from);
-    if (to) params.set("to", to);
-    const qs = params.toString();
-    const url = `/api/clients/${customerId}/unbilled-time${qs ? `?${qs}` : ""}`;
-    const data = await api.get<UnbilledTimeResponse>(url);
+    const data = await getClientUnbilledTime(customerId, { from, to });
     return { success: true, data };
   } catch (error) {
     if (error instanceof ApiError) {

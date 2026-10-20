@@ -52,6 +52,7 @@ import {
   listMatterComments,
   listMatterExpenses,
   writeOffMatterExpense,
+  listMatterAdverseParties,
 } from "@/lib/api/matters";
 
 // Phase 87 S4 (610A): the matters module is the single place `/api/matters` is spelled.
@@ -130,7 +131,7 @@ describe("matters API module URL building", () => {
     expect(mockGet).toHaveBeenLastCalledWith("/api/matters/m1/time-summary");
   });
 
-  it("nested helpers: tasks, documents, members, clients, budget, comments, expenses", async () => {
+  it("nested helpers: tasks, documents, members, clients, budget, comments, expenses, adverse parties", async () => {
     await listMatterTasks("m1", { status: "OPEN", recurring: true });
     expect(mockGet).toHaveBeenLastCalledWith("/api/matters/m1/tasks?status=OPEN&recurring=true");
     await createMatterTask("m1", { title: "Draft will" });
@@ -160,5 +161,7 @@ describe("matters API module URL building", () => {
     expect(mockGet).toHaveBeenLastCalledWith("/api/matters/m1/expenses?page=0&sort=date%2Cdesc");
     await writeOffMatterExpense("m1", "e1");
     expect(mockPatch).toHaveBeenLastCalledWith("/api/matters/m1/expenses/e1/write-off", {});
+    await listMatterAdverseParties("m1");
+    expect(mockGet).toHaveBeenLastCalledWith("/api/matters/m1/adverse-parties");
   });
 });

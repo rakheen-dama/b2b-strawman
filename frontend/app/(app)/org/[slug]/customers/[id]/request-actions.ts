@@ -13,7 +13,7 @@ import {
   type RequestTemplateResponse,
 } from "@/lib/api/information-requests";
 import { fetchPortalContacts } from "@/lib/actions/acceptance-actions";
-import type { PortalContactSummary } from "@/lib/actions/acceptance-actions";
+import type { PortalContactSummary } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;

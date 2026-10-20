@@ -1,10 +1,19 @@
 "use server";
 
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { api, ApiError } from "@/lib/api";
+import { ApiError } from "@/lib/api";
+import {
+  createMatter,
+  updateMatter,
+  deleteMatter,
+  completeMatter,
+  archiveMatter,
+  reactivateMatter,
+} from "@/lib/api/matters";
+import { listClients } from "@/lib/api/clients";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type { Matter, Client, CreateMatterRequest, UpdateMatterRequest } from "@/lib/types";
+import type { Client, CreateMatterRequest, UpdateMatterRequest } from "@/lib/types";
 import { classifyError } from "@/lib/error-handler";
 import { createMessages } from "@/lib/messages";
 
@@ -52,7 +61,7 @@ export async function createProject(slug: string, formData: FormData): Promise<A
   };
 
   try {
-    await api.post<Matter>("/api/matters", body);
+    await createMatter(body);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -109,7 +118,7 @@ export async function updateProject(
   };
 
   try {
-    await api.put<Matter>(`/api/matters/${id}`, body);
+    await updateMatter(id, body);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -132,7 +141,7 @@ export async function deleteProject(slug: string, id: string): Promise<ActionRes
   }
 
   try {
-    await api.delete(`/api/matters/${id}`);
+    await deleteMatter(id);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -158,8 +167,7 @@ export async function completeProject(
   }
 
   try {
-    const body = acknowledgeUnbilledTime ? { acknowledgeUnbilledTime } : undefined;
-    await api.patch<Matter>(`/api/matters/${projectId}/complete`, body);
+    await completeMatter(projectId, { acknowledgeUnbilledTime });
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -182,7 +190,7 @@ export async function archiveProject(slug: string, projectId: string): Promise<A
   }
 
   try {
-    await api.patch<Matter>(`/api/matters/${projectId}/archive`);
+    await archiveMatter(projectId);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -205,7 +213,7 @@ export async function reopenProject(slug: string, projectId: string): Promise<Ac
   }
 
   try {
-    await api.patch<Matter>(`/api/matters/${projectId}/reopen`);
+    await reactivateMatter(projectId);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -222,5 +230,5 @@ export async function reopenProject(slug: string, projectId: string): Promise<Ac
 }
 
 export async function fetchActiveCustomers(): Promise<Client[]> {
-  return api.get<Client[]>("/api/clients?status=ACTIVE");
+  return listClients({ status: "ACTIVE" });
 }

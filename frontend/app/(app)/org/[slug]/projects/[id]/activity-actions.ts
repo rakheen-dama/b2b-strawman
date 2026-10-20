@@ -1,7 +1,7 @@
 "use server";
 
 import { fetchProjectActivity } from "@/lib/actions/activity";
-import type { ActivityResponse } from "@/lib/actions/activity";
+import type { ActivityResponse } from "@/lib/types";
 
 export async function loadMoreActivity(
   projectId: string,

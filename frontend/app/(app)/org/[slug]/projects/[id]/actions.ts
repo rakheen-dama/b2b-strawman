@@ -2,14 +2,10 @@
 
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
+import { initMatterDocumentUpload, linkMatterClient, unlinkMatterClient } from "@/lib/api/matters";
+import { listClients } from "@/lib/api/clients";
 import { revalidatePath } from "next/cache";
-import type {
-  Client,
-  ClientMatter,
-  UploadInitRequest,
-  UploadInitResponse,
-  PresignDownloadResponse,
-} from "@/lib/types";
+import type { Client, UploadInitRequest, PresignDownloadResponse } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
@@ -39,10 +35,7 @@ export async function initiateUpload(
   const body: UploadInitRequest = { fileName, contentType, size };
 
   try {
-    const result = await api.post<UploadInitResponse>(
-      `/api/matters/${projectId}/documents/upload-init`,
-      body
-    );
+    const result = await initMatterDocumentUpload(projectId, body);
     return {
       success: true,
       documentId: result.documentId,
@@ -101,7 +94,7 @@ export async function getDownloadUrl(documentId: string): Promise<DownloadUrlRes
 // ---- Customer-project linking actions ----
 
 export async function fetchCustomers(): Promise<Client[]> {
-  return api.get<Client[]>("/api/clients");
+  return listClients();
 }
 
 export async function linkCustomerToProject(
@@ -115,7 +108,7 @@ export async function linkCustomerToProject(
   }
 
   try {
-    await api.post<ClientMatter>(`/api/matters/${projectId}/clients/${customerId}`);
+    await linkMatterClient(projectId, customerId);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -138,7 +131,7 @@ export async function unlinkCustomerFromProject(
   }
 
   try {
-    await api.delete(`/api/matters/${projectId}/clients/${customerId}`);
+    await unlinkMatterClient(projectId, customerId);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { EditCommentDialog } from "@/components/comments/edit-comment-dialog";
-import type { Comment } from "@/lib/actions/comments";
+import type { Comment } from "@/lib/types";
 
 const mockUpdateComment = vi.fn();
 

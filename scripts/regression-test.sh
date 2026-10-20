@@ -46,7 +46,7 @@ ensure_invoice_prerequisites() {
   _eip_jwt="$2"
 
   # Get the current customer data
-  _eip_cust=$(api_get "/api/customers/${_eip_cust_id}" "$_eip_jwt")
+  _eip_cust=$(api_get "/api/clients/${_eip_cust_id}" "$_eip_jwt")
   _eip_name=$(echo "$_eip_cust" | jq -r '.name')
   _eip_email=$(echo "$_eip_cust" | jq -r '.email')
 
@@ -61,7 +61,7 @@ ensure_invoice_prerequisites() {
   fi
 
   # Update customer with required custom fields for invoicing
-  api_put "/api/customers/${_eip_cust_id}" "{
+  api_put "/api/clients/${_eip_cust_id}" "{
     \"name\": \"${_eip_name}\",
     \"email\": \"${_eip_email}\",
     \"appliedFieldGroups\": ${_eip_groups},
@@ -170,7 +170,7 @@ if should_run "rbac"; then
   echo "── RBAC ──────────────────────────────────────────────"
 
   # Owner can list customers
-  api_get "/api/customers" "$ALICE" > /dev/null
+  api_get "/api/clients" "$ALICE" > /dev/null
   assert_http "Owner lists customers" "2"
 
   # Owner can list rates
@@ -178,11 +178,11 @@ if should_run "rbac"; then
   assert_http "Owner lists billing rates" "2"
 
   # Admin can list customers
-  api_get "/api/customers" "$BOB" > /dev/null
+  api_get "/api/clients" "$BOB" > /dev/null
   assert_http "Admin lists customers" "2"
 
   # Member blocked from customers
-  api_get "/api/customers" "$CAROL" > /dev/null
+  api_get "/api/clients" "$CAROL" > /dev/null
   _carol_cust_status=$(last_status)
   case "$_carol_cust_status" in
     403|404) echo "    [PASS] Member blocked from customers: HTTP ${_carol_cust_status}" >&2; PASS=$((PASS + 1)) ;;
@@ -210,7 +210,7 @@ if should_run "customer_lifecycle"; then
   # Create a test customer (PROSPECT by default)
   RUN_ID=$(date +%s | tail -c 5)
   CUST_BODY="{\"name\":\"RegTest-${RUN_ID}\",\"email\":\"reg${RUN_ID}@test.com\",\"phone\":\"+27110000000\"}"
-  cust_resp=$(api_post "/api/customers" "$CUST_BODY" "$ALICE")
+  cust_resp=$(api_post "/api/clients" "$CUST_BODY" "$ALICE")
   assert_http "Create customer" "2"
   CUST_ID=$(echo "$cust_resp" | jq -r '.id')
   assert_not_empty "Customer ID" "$CUST_ID"
@@ -228,15 +228,15 @@ if should_run "customer_lifecycle"; then
   esac
 
   # PROSPECT -> ONBOARDING
-  api_patch "/api/customers/${CUST_ID}/lifecycle" "$ALICE" > /dev/null 2>&1 || true
-  api_post "/api/customers/${CUST_ID}/transition" "{\"targetStatus\":\"ONBOARDING\"}" "$ALICE" > /dev/null
+  api_patch "/api/clients/${CUST_ID}/lifecycle" "$ALICE" > /dev/null 2>&1 || true
+  api_post "/api/clients/${CUST_ID}/transition" "{\"targetStatus\":\"ONBOARDING\"}" "$ALICE" > /dev/null
   assert_http "PROSPECT -> ONBOARDING" "2"
 
   # Invalid: PROSPECT -> ACTIVE (skip) — create another customer to test
   CUST_BODY2="{\"name\":\"RegSkip-${RUN_ID}\",\"email\":\"skip${RUN_ID}@test.com\",\"phone\":\"+27110000001\"}"
-  cust2_resp=$(api_post "/api/customers" "$CUST_BODY2" "$ALICE")
+  cust2_resp=$(api_post "/api/clients" "$CUST_BODY2" "$ALICE")
   CUST2_ID=$(echo "$cust2_resp" | jq -r '.id')
-  api_post "/api/customers/${CUST2_ID}/transition" "{\"targetStatus\":\"ACTIVE\"}" "$ALICE" > /dev/null
+  api_post "/api/clients/${CUST2_ID}/transition" "{\"targetStatus\":\"ACTIVE\"}" "$ALICE" > /dev/null
   _skip_status=$(last_status)
   case "$_skip_status" in
     400|409) echo "    [PASS] PROSPECT->ACTIVE skip rejected: HTTP ${_skip_status}" >&2; PASS=$((PASS + 1)) ;;
@@ -245,20 +245,20 @@ if should_run "customer_lifecycle"; then
 
   # Complete onboarding checklists to transition to ACTIVE
   complete_checklists "$CUST_ID" "$ALICE"
-  cust_after=$(api_get "/api/customers/${CUST_ID}" "$ALICE")
+  cust_after=$(api_get "/api/clients/${CUST_ID}" "$ALICE")
   cust_status_after=$(echo "$cust_after" | jq -r '.lifecycleStatus')
   assert_eq "Auto-transition to ACTIVE" "ACTIVE" "$cust_status_after"
 
   # ACTIVE -> DORMANT
-  api_post "/api/customers/${CUST_ID}/transition" "{\"targetStatus\":\"DORMANT\"}" "$ALICE" > /dev/null
+  api_post "/api/clients/${CUST_ID}/transition" "{\"targetStatus\":\"DORMANT\"}" "$ALICE" > /dev/null
   assert_http "ACTIVE -> DORMANT" "2"
 
   # DORMANT -> OFFBOARDING
-  api_post "/api/customers/${CUST_ID}/transition" "{\"targetStatus\":\"OFFBOARDING\"}" "$ALICE" > /dev/null
+  api_post "/api/clients/${CUST_ID}/transition" "{\"targetStatus\":\"OFFBOARDING\"}" "$ALICE" > /dev/null
   assert_http "DORMANT -> OFFBOARDING" "2"
 
   # OFFBOARDING -> OFFBOARDED
-  api_post "/api/customers/${CUST_ID}/transition" "{\"targetStatus\":\"OFFBOARDED\"}" "$ALICE" > /dev/null
+  api_post "/api/clients/${CUST_ID}/transition" "{\"targetStatus\":\"OFFBOARDED\"}" "$ALICE" > /dev/null
   assert_http "OFFBOARDING -> OFFBOARDED" "2"
 
   # OFFBOARDED blocked from project
@@ -279,7 +279,7 @@ if should_run "invoice_lifecycle"; then
   echo "── Invoice Lifecycle ──────────────────────────────────"
 
   # Find an ACTIVE customer from seed
-  customers=$(api_get "/api/customers" "$ALICE")
+  customers=$(api_get "/api/clients" "$ALICE")
   ACTIVE_CUST_ID=$(echo "$customers" | jq -r '[.[] | select(.lifecycleStatus=="ACTIVE")][0].id')
   assert_not_empty "Active customer for invoicing" "$ACTIVE_CUST_ID"
 
@@ -353,7 +353,7 @@ fi
 if should_run "invoice_math"; then
   echo "── Invoice Arithmetic ─────────────────────────────────"
 
-  customers=$(api_get "/api/customers" "$ALICE")
+  customers=$(api_get "/api/clients" "$ALICE")
   MATH_CUST_ID=$(echo "$customers" | jq -r '[.[] | select(.lifecycleStatus=="ACTIVE")][0].id')
 
   # Ensure customer has required custom fields for invoice generation
@@ -461,7 +461,7 @@ if should_run "portal_isolation"; then
   echo "── Portal Data Isolation ──────────────────────────────"
 
   # Find first ACTIVE customer with email from seed (Acme Corp or Bright Solutions)
-  customers=$(api_get "/api/customers" "$ALICE")
+  customers=$(api_get "/api/clients" "$ALICE")
   PORTAL_CUST_ID=$(echo "$customers" | jq -r '[.[] | select(.lifecycleStatus=="ACTIVE" and .email != null and .email != "")][0].id // empty')
 
   if [ -z "$PORTAL_CUST_ID" ]; then
@@ -472,7 +472,7 @@ if should_run "portal_isolation"; then
     PORTAL_CUST_EMAIL=$(echo "$customers" | jq -r "[.[] | select(.id==\"${PORTAL_CUST_ID}\")][0].email")
 
     # Try to get portal contact email; fall back to customer email
-    portal_detail=$(api_get "/api/customers/${PORTAL_CUST_ID}" "$ALICE")
+    portal_detail=$(api_get "/api/clients/${PORTAL_CUST_ID}" "$ALICE")
     CONTACT_EMAIL=$(echo "$portal_detail" | jq -r '.contacts[0].email // empty')
     if [ -z "$CONTACT_EMAIL" ]; then
       CONTACT_EMAIL="$PORTAL_CUST_EMAIL"
@@ -540,7 +540,7 @@ if should_run "portal_isolation"; then
 
           # Portal JWT cannot access org API
           org_resp=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X GET "${BACKEND_URL}/api/customers" \
+            -X GET "${BACKEND_URL}/api/clients" \
             -H "Authorization: Bearer ${PORTAL_JWT}")
           case "$org_resp" in
             401|403) echo "    [PASS] Portal JWT blocked from org API: HTTP ${org_resp}" >&2; PASS=$((PASS + 1)) ;;

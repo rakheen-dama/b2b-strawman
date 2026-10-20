@@ -67,7 +67,7 @@ seed_documents() {
 
   # ── Customer-scoped: service agreement ─────────────────────────
   _upload_doc \
-    "/api/customers/${ACME_ID}/documents/upload-init" \
+    "/api/clients/${ACME_ID}/documents/upload-init" \
     "/api/documents?scope=CUSTOMER&customerId=${ACME_ID}" \
     "service-agreement.pdf" "application/pdf" \
     "Placeholder content for service agreement document" \

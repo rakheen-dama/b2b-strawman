@@ -323,7 +323,7 @@ class TimeEntryBillingIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR",
                           "timeEntryIds": %s
                         }

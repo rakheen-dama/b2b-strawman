@@ -8,13 +8,13 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.report.ReportController.ClientProfitabilityResponse;
 import io.b2mash.b2b.b2bstrawman.report.ReportController.CurrencyBreakdown;
-import io.b2mash.b2b.b2bstrawman.report.ReportController.CustomerProfitabilityResponse;
+import io.b2mash.b2b.b2bstrawman.report.ReportController.MatterProfitabilityResponse;
+import io.b2mash.b2b.b2bstrawman.report.ReportController.MatterProfitabilitySummary;
 import io.b2mash.b2b.b2bstrawman.report.ReportController.MemberUtilizationRecord;
 import io.b2mash.b2b.b2bstrawman.report.ReportController.MemberValueBreakdown;
 import io.b2mash.b2b.b2bstrawman.report.ReportController.OrgProfitabilityResponse;
-import io.b2mash.b2b.b2bstrawman.report.ReportController.ProjectProfitabilityResponse;
-import io.b2mash.b2b.b2bstrawman.report.ReportController.ProjectProfitabilitySummary;
 import io.b2mash.b2b.b2bstrawman.report.ReportController.UtilizationResponse;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.math.BigDecimal;
@@ -61,7 +61,7 @@ public class ReportService {
    * owner access required (via ProjectAccessService).
    */
   @Transactional(readOnly = true)
-  public ProjectProfitabilityResponse getProjectProfitability(
+  public MatterProfitabilityResponse getProjectProfitability(
       UUID projectId, LocalDate from, LocalDate to, ActorContext actor) {
     projectAccessService.requireViewAccess(projectId, actor);
 
@@ -78,7 +78,7 @@ public class ReportService {
 
     log.debug("Project {} profitability: {} currency breakdown(s)", projectId, currencies.size());
 
-    return new ProjectProfitabilityResponse(projectId, project.getName(), currencies);
+    return new MatterProfitabilityResponse(projectId, project.getName(), currencies);
   }
 
   /**
@@ -86,7 +86,7 @@ public class ReportService {
    * linked projects. Admin or owner access required.
    */
   @Transactional(readOnly = true)
-  public CustomerProfitabilityResponse getCustomerProfitability(
+  public ClientProfitabilityResponse getCustomerProfitability(
       UUID customerId, LocalDate from, LocalDate to, ActorContext actor) {
     requireAdminOrOwner(actor.orgRole());
 
@@ -103,7 +103,7 @@ public class ReportService {
 
     log.debug("Customer {} profitability: {} currency breakdown(s)", customerId, currencies.size());
 
-    return new CustomerProfitabilityResponse(customerId, customer.getName(), currencies);
+    return new ClientProfitabilityResponse(customerId, customer.getName(), currencies);
   }
 
   /**
@@ -231,7 +231,7 @@ public class ReportService {
     }
 
     // Merge revenue and cost, compute margin
-    List<ProjectProfitabilitySummary> projects = new ArrayList<>();
+    List<MatterProfitabilitySummary> projects = new ArrayList<>();
     for (var revenue : revenueList) {
       String key = revenue.getProjectId() + "|" + revenue.getCurrency();
       var cost = costMap.get(key);
@@ -243,7 +243,7 @@ public class ReportService {
       String customerName = customerNameByProject.get(revenue.getProjectId());
 
       projects.add(
-          new ProjectProfitabilitySummary(
+          new MatterProfitabilitySummary(
               revenue.getProjectId(),
               revenue.getProjectName(),
               customerName,
@@ -265,7 +265,7 @@ public class ReportService {
         var cost = entry.getValue();
         String customerName = customerNameByProject.get(cost.getProjectId());
         projects.add(
-            new ProjectProfitabilitySummary(
+            new MatterProfitabilitySummary(
                 cost.getProjectId(),
                 cost.getProjectName(),
                 customerName,
@@ -281,7 +281,7 @@ public class ReportService {
     // Sort by margin DESC, nulls last
     projects.sort(
         Comparator.comparing(
-            ProjectProfitabilitySummary::margin, Comparator.nullsLast(Comparator.reverseOrder())));
+            MatterProfitabilitySummary::margin, Comparator.nullsLast(Comparator.reverseOrder())));
 
     log.debug("Org profitability: {} project-currency entries", projects.size());
 

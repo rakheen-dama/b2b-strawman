@@ -72,14 +72,14 @@ public class TimeEntryController {
     return ResponseEntity.ok(response);
   }
 
-  @PatchMapping("/api/projects/{projectId}/time-entries/{id}/billable")
+  @PatchMapping("/api/matters/{matterId}/time-entries/{id}/billable")
   public ResponseEntity<TimeEntryResponse> toggleBillable(
-      @PathVariable UUID projectId,
+      @PathVariable UUID matterId,
       @PathVariable UUID id,
       @Valid @RequestBody ToggleBillableRequest request,
       ActorContext actor) {
 
-    var entry = timeEntryService.toggleBillable(projectId, id, request.billable(), actor);
+    var entry = timeEntryService.toggleBillable(matterId, id, request.billable(), actor);
     var names = timeEntryService.resolveNames(List.of(entry));
     var invoiceNumbers = timeEntryService.resolveInvoiceNumbers(List.of(entry));
     return ResponseEntity.ok(TimeEntryResponse.from(entry, names, invoiceNumbers));

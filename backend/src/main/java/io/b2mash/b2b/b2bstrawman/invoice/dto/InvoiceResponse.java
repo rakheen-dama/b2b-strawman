@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public record InvoiceResponse(
     UUID id,
-    UUID customerId,
+    UUID clientId,
     String invoiceNumber,
     InvoiceStatus status,
     String currency,
@@ -26,9 +26,9 @@ public record InvoiceResponse(
     String paymentTerms,
     String paymentReference,
     Instant paidAt,
-    String customerName,
-    String customerEmail,
-    String customerAddress,
+    String clientName,
+    String clientEmail,
+    String clientAddress,
     String orgName,
     UUID createdBy,
     String createdByName,

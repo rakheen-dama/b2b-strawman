@@ -174,7 +174,7 @@ class ActionPointPrerequisiteTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "currency": "ZAR"
                     }
                     """
@@ -193,7 +193,7 @@ class ActionPointPrerequisiteTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "currency": "ZAR"
                     }
                     """
@@ -212,7 +212,7 @@ class ActionPointPrerequisiteTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"customerId": "%s", "currency": "ZAR"}
+                    {"clientId": "%s", "currency": "ZAR"}
                     """
                         .formatted(incompleteCustomerId)))
         .andExpect(status().isUnprocessableEntity())
@@ -234,7 +234,7 @@ class ActionPointPrerequisiteTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"customerId": "%s", "currency": "ZAR"}
+                    {"clientId": "%s", "currency": "ZAR"}
                     """
                         .formatted(incompleteCustomerId)))
         .andExpect(status().isUnprocessableEntity())
@@ -254,7 +254,7 @@ class ActionPointPrerequisiteTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"customerId": "%s", "currency": "ZAR"}
+                    {"clientId": "%s", "currency": "ZAR"}
                     """
                         .formatted(combinedViolationsCustomerId)))
         .andExpect(status().isUnprocessableEntity())
@@ -273,7 +273,7 @@ class ActionPointPrerequisiteTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"customerId": "%s", "currency": "ZAR"}
+                    {"clientId": "%s", "currency": "ZAR"}
                     """
                         .formatted(incompleteCustomerId)))
         .andExpect(status().isUnprocessableEntity())
@@ -300,7 +300,7 @@ class ActionPointPrerequisiteTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"customerId": "%s", "currency": "ZAR"}
+                        {"clientId": "%s", "currency": "ZAR"}
                         """
                             .formatted(incompleteCustomerId)))
             .andExpect(status().isUnprocessableEntity())
@@ -333,7 +333,7 @@ class ActionPointPrerequisiteTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"customerId": "%s", "currency": "ZAR"}
+                    {"clientId": "%s", "currency": "ZAR"}
                     """
                         .formatted(flowCustomerId)))
         .andExpect(status().isUnprocessableEntity())
@@ -376,7 +376,7 @@ class ActionPointPrerequisiteTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"customerId": "%s", "currency": "ZAR"}
+                    {"clientId": "%s", "currency": "ZAR"}
                     """
                         .formatted(flowCustomerId)))
         .andExpect(status().isCreated());

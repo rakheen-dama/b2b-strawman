@@ -24,25 +24,25 @@ public class ReportController {
     this.reportService = reportService;
   }
 
-  @GetMapping("/api/projects/{projectId}/profitability")
-  public ResponseEntity<ProjectProfitabilityResponse> getProjectProfitability(
-      @PathVariable UUID projectId,
+  @GetMapping("/api/matters/{matterId}/profitability")
+  public ResponseEntity<MatterProfitabilityResponse> getProjectProfitability(
+      @PathVariable UUID matterId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
       ActorContext actor) {
 
-    var response = reportService.getProjectProfitability(projectId, from, to, actor);
+    var response = reportService.getProjectProfitability(matterId, from, to, actor);
     return ResponseEntity.ok(response);
   }
 
-  @GetMapping("/api/customers/{customerId}/profitability")
-  public ResponseEntity<CustomerProfitabilityResponse> getCustomerProfitability(
-      @PathVariable UUID customerId,
+  @GetMapping("/api/clients/{clientId}/profitability")
+  public ResponseEntity<ClientProfitabilityResponse> getCustomerProfitability(
+      @PathVariable UUID clientId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
       ActorContext actor) {
 
-    var response = reportService.getCustomerProfitability(customerId, from, to, actor);
+    var response = reportService.getCustomerProfitability(clientId, from, to, actor);
     return ResponseEntity.ok(response);
   }
 
@@ -85,12 +85,12 @@ public class ReportController {
       BigDecimal totalExpenseRevenue) {}
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  public record ProjectProfitabilityResponse(
-      UUID projectId, String projectName, List<CurrencyBreakdown> currencies) {}
+  public record MatterProfitabilityResponse(
+      UUID matterId, String matterName, List<CurrencyBreakdown> currencies) {}
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  public record CustomerProfitabilityResponse(
-      UUID customerId, String customerName, List<CurrencyBreakdown> currencies) {}
+  public record ClientProfitabilityResponse(
+      UUID clientId, String clientName, List<CurrencyBreakdown> currencies) {}
 
   public record MemberValueBreakdown(
       String currency, BigDecimal billableValue, BigDecimal costValue) {}
@@ -107,10 +107,10 @@ public class ReportController {
   public record UtilizationResponse(
       LocalDate from, LocalDate to, List<MemberUtilizationRecord> members) {}
 
-  public record ProjectProfitabilitySummary(
-      UUID projectId,
-      String projectName,
-      String customerName,
+  public record MatterProfitabilitySummary(
+      UUID matterId,
+      String matterName,
+      String clientName,
       String currency,
       BigDecimal billableHours,
       BigDecimal billableValue,
@@ -119,5 +119,5 @@ public class ReportController {
       BigDecimal marginPercent) {}
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  public record OrgProfitabilityResponse(List<ProjectProfitabilitySummary> projects) {}
+  public record OrgProfitabilityResponse(List<MatterProfitabilitySummary> matters) {}
 }

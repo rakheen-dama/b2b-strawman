@@ -212,7 +212,7 @@ class InvoiceSyncIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"customerId": "%s", "currency": "%s"}
+                        {"clientId": "%s", "currency": "%s"}
                         """
                             .formatted(customerId, currency)))
             .andExpect(status().isCreated())

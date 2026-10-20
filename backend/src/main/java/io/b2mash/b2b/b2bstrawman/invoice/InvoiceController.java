@@ -85,7 +85,7 @@ public class InvoiceController {
 
   @GetMapping("/unbilled-summary")
   @RequiresCapability("INVOICING")
-  public ResponseEntity<List<BillingRunDtos.CustomerUnbilledSummary>> getUnbilledSummary(
+  public ResponseEntity<List<BillingRunDtos.ClientUnbilledSummary>> getUnbilledSummary(
       @RequestParam LocalDate periodFrom,
       @RequestParam LocalDate periodTo,
       @RequestParam String currency) {
@@ -95,10 +95,10 @@ public class InvoiceController {
   @GetMapping
   @RequiresCapability("INVOICING")
   public ResponseEntity<List<InvoiceResponse>> listInvoices(
-      @RequestParam(required = false) UUID customerId,
+      @RequestParam(required = false) UUID clientId,
       @RequestParam(required = false) InvoiceStatus status,
-      @RequestParam(required = false) UUID projectId) {
-    return ResponseEntity.ok(invoiceService.findAll(customerId, status, projectId));
+      @RequestParam(required = false) UUID matterId) {
+    return ResponseEntity.ok(invoiceService.findAll(clientId, status, matterId));
   }
 
   // --- Custom fields ---
@@ -159,7 +159,7 @@ public class InvoiceController {
       @Valid @RequestBody ValidateGenerationRequest request) {
     return ResponseEntity.ok(
         invoiceService.validateInvoiceGeneration(
-            request.customerId(), request.timeEntryIds(), request.templateId()));
+            request.clientId(), request.timeEntryIds(), request.templateId()));
   }
 
   // --- Lifecycle transitions ---

@@ -121,11 +121,11 @@ class BillingRunPreviewCardinalityTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"customerIds": ["%s"]}
+                    {"clientIds": ["%s"]}
                     """
                         .formatted(customerId)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.totalCustomers").value(1))
+        .andExpect(jsonPath("$.totalClients").value(1))
         .andExpect(jsonPath("$.items[0].unbilledExpenseCount").value(1))
         // Pre-fix this returned 11250.00 (1250 × 9 tasks). Must be 1250.00 exactly.
         .andExpect(jsonPath("$.items[0].unbilledExpenseAmount").value(1250.00))
@@ -177,7 +177,7 @@ class BillingRunPreviewCardinalityTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"customerIds": ["%s"]}
+                    {"clientIds": ["%s"]}
                     """
                         .formatted(customerId)))
         .andExpect(status().isOk())
@@ -232,7 +232,7 @@ class BillingRunPreviewCardinalityTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"customerIds": ["%s"]}
+                    {"clientIds": ["%s"]}
                     """
                         .formatted(customerId)))
         .andExpect(status().isOk())

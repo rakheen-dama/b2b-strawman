@@ -143,7 +143,7 @@ public class InvoiceCreationService {
 
   @Transactional
   public InvoiceResponse createDraft(CreateInvoiceRequest request, UUID createdBy) {
-    var customer = validateInvoicePrerequisites(request.customerId());
+    var customer = validateInvoicePrerequisites(request.clientId());
     var warnings = collectDraftWarnings(customer);
 
     String orgId = RequestScopes.requireOrgId();
@@ -154,7 +154,7 @@ public class InvoiceCreationService {
 
     var invoice =
         new Invoice(
-            request.customerId(),
+            request.clientId(),
             request.currency(),
             customer.getName(),
             customer.getEmail(),
@@ -185,11 +185,11 @@ public class InvoiceCreationService {
     invoice = invoiceRepository.save(invoice);
 
     var timeEntryIds = request.timeEntryIds();
-    createTimeEntryLines(invoice, timeEntryIds, request.customerId(), request.currency());
+    createTimeEntryLines(invoice, timeEntryIds, request.clientId(), request.currency());
 
     var expenseIds = request.expenseIds();
     int expSortOffset = timeEntryIds != null && !timeEntryIds.isEmpty() ? timeEntryIds.size() : 0;
-    createExpenseLines(invoice, expenseIds, request.customerId(), expSortOffset);
+    createExpenseLines(invoice, expenseIds, request.clientId(), expSortOffset);
 
     // Apply org-default tax rate to time + expense lines BEFORE creating disbursement lines —
     // disbursements have VAT-treatment-specific rates resolved per-line that must not be
@@ -206,14 +206,14 @@ public class InvoiceCreationService {
     // the same @Transactional scope; a rollback here unbinds the disbursement.
     var disbursementIds = request.disbursementIds();
     int disbSortOffset = expSortOffset + (expenseIds != null ? expenseIds.size() : 0);
-    createDisbursementLines(invoice, disbursementIds, request.customerId(), disbSortOffset);
+    createDisbursementLines(invoice, disbursementIds, request.clientId(), disbSortOffset);
 
     applyFieldGroups(invoice);
 
     invoiceTaxService.recalculateInvoiceTotals(invoice);
     invoice = invoiceRepository.save(invoice);
 
-    log.info("Created draft invoice {} for customer {}", invoice.getId(), request.customerId());
+    log.info("Created draft invoice {} for customer {}", invoice.getId(), request.clientId());
 
     int totalLineCount =
         (timeEntryIds != null ? timeEntryIds.size() : 0)
@@ -228,7 +228,7 @@ public class InvoiceCreationService {
             .details(
                 Map.of(
                     "customer_id",
-                    request.customerId().toString(),
+                    request.clientId().toString(),
                     "customer_name",
                     customer.getName(),
                     "currency",
@@ -492,7 +492,7 @@ public class InvoiceCreationService {
       line =
           new InvoiceLine(
               invoiceId,
-              request.projectId(),
+              request.matterId(),
               null,
               description,
               request.quantity(),
@@ -514,7 +514,7 @@ public class InvoiceCreationService {
       line =
           new InvoiceLine(
               invoiceId,
-              request.projectId(),
+              request.matterId(),
               null,
               request.description(),
               request.quantity(),

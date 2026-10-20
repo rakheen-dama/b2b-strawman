@@ -220,7 +220,7 @@ class ExpenseControllerTest {
   void shouldCreateExpense() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/expenses")
+            post("/api/matters/" + projectId + "/expenses")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -234,7 +234,7 @@ class ExpenseControllerTest {
                     """))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").exists())
-        .andExpect(jsonPath("$.projectId").value(projectId))
+        .andExpect(jsonPath("$.matterId").value(projectId))
         .andExpect(jsonPath("$.memberId").value(memberIdOwner))
         .andExpect(jsonPath("$.memberName").value("EXP Owner"))
         .andExpect(jsonPath("$.date").value("2026-02-15"))
@@ -250,7 +250,7 @@ class ExpenseControllerTest {
   void shouldCreateExpenseWithAllOptionalFields() throws Exception {
     mockMvc
         .perform(
-            post("/api/projects/" + projectId + "/expenses")
+            post("/api/matters/" + projectId + "/expenses")
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -293,7 +293,7 @@ class ExpenseControllerTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/expenses")
+            get("/api/matters/" + projectId + "/expenses")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -319,7 +319,7 @@ class ExpenseControllerTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/expenses")
+            get("/api/matters/" + projectId + "/expenses")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"))
                 .param("category", "SOFTWARE"))
         .andExpect(status().isOk())
@@ -337,7 +337,7 @@ class ExpenseControllerTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/expenses/" + expenseId)
+            get("/api/matters/" + projectId + "/expenses/" + expenseId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(expenseId))
@@ -375,7 +375,7 @@ class ExpenseControllerTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/expenses/" + fakeId)
+            get("/api/matters/" + projectId + "/expenses/" + fakeId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner")))
         .andExpect(status().isNotFound());
   }
@@ -392,7 +392,7 @@ class ExpenseControllerTest {
     // Try to get the expense using a different project
     mockMvc
         .perform(
-            get("/api/projects/" + projectId2 + "/expenses/" + expenseId)
+            get("/api/matters/" + projectId2 + "/expenses/" + expenseId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner")))
         .andExpect(status().isNotFound());
   }
@@ -410,7 +410,7 @@ class ExpenseControllerTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + projectId + "/expenses/" + expenseId)
+            put("/api/matters/" + projectId + "/expenses/" + expenseId)
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -438,7 +438,7 @@ class ExpenseControllerTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + projectId + "/expenses/" + expenseId)
+            put("/api/matters/" + projectId + "/expenses/" + expenseId)
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_exp_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -460,7 +460,7 @@ class ExpenseControllerTest {
 
     mockMvc
         .perform(
-            put("/api/projects/" + projectId + "/expenses/" + expenseId)
+            put("/api/matters/" + projectId + "/expenses/" + expenseId)
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member2", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -481,14 +481,14 @@ class ExpenseControllerTest {
 
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId + "/expenses/" + expenseId)
+            delete("/api/matters/" + projectId + "/expenses/" + expenseId)
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member")))
         .andExpect(status().isNoContent());
 
     // Verify it's gone
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/expenses/" + expenseId)
+            get("/api/matters/" + projectId + "/expenses/" + expenseId)
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member")))
         .andExpect(status().isNotFound());
   }
@@ -504,7 +504,7 @@ class ExpenseControllerTest {
 
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId + "/expenses/" + expenseId)
+            delete("/api/matters/" + projectId + "/expenses/" + expenseId)
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_exp_admin")))
         .andExpect(status().isNoContent());
   }
@@ -520,7 +520,7 @@ class ExpenseControllerTest {
 
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId + "/expenses/" + expenseId)
+            delete("/api/matters/" + projectId + "/expenses/" + expenseId)
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member2", "member")))
         .andExpect(status().isForbidden());
   }
@@ -535,7 +535,7 @@ class ExpenseControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/write-off")
+            patch("/api/matters/" + projectId + "/expenses/" + expenseId + "/write-off")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_exp_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.billable").value(false))
@@ -554,7 +554,7 @@ class ExpenseControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/write-off")
+            patch("/api/matters/" + projectId + "/expenses/" + expenseId + "/write-off")
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member")))
         .andExpect(status().isForbidden());
   }
@@ -565,7 +565,7 @@ class ExpenseControllerTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/expenses")
+                post("/api/matters/" + projectId + "/expenses")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -584,7 +584,7 @@ class ExpenseControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/write-off")
+            patch("/api/matters/" + projectId + "/expenses/" + expenseId + "/write-off")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_exp_admin")))
         .andExpect(status().isConflict());
   }
@@ -598,14 +598,14 @@ class ExpenseControllerTest {
     // First write it off
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/write-off")
+            patch("/api/matters/" + projectId + "/expenses/" + expenseId + "/write-off")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_exp_admin")))
         .andExpect(status().isOk());
 
     // Then restore it
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/restore")
+            patch("/api/matters/" + projectId + "/expenses/" + expenseId + "/restore")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_exp_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.billable").value(true))
@@ -624,14 +624,14 @@ class ExpenseControllerTest {
     // Write it off first as admin
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/write-off")
+            patch("/api/matters/" + projectId + "/expenses/" + expenseId + "/write-off")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_exp_admin")))
         .andExpect(status().isOk());
 
     // Member tries to restore
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/restore")
+            patch("/api/matters/" + projectId + "/expenses/" + expenseId + "/restore")
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member")))
         .andExpect(status().isForbidden());
   }
@@ -648,7 +648,7 @@ class ExpenseControllerTest {
     // Try to restore an expense that is already billable
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/restore")
+            patch("/api/matters/" + projectId + "/expenses/" + expenseId + "/restore")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_exp_admin")))
         .andExpect(status().isConflict());
   }
@@ -666,7 +666,7 @@ class ExpenseControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/write-off")
+            patch("/api/matters/" + projectId + "/expenses/" + expenseId + "/write-off")
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_314a_custom", "member")))
         .andExpect(status().isOk());
   }
@@ -682,7 +682,7 @@ class ExpenseControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/write-off")
+            patch("/api/matters/" + projectId + "/expenses/" + expenseId + "/write-off")
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_314a_nocap", "member")))
         .andExpect(status().isForbidden());
   }
@@ -695,7 +695,7 @@ class ExpenseControllerTest {
     var result =
         mockMvc
             .perform(
-                post("/api/projects/" + projectId + "/expenses")
+                post("/api/matters/" + projectId + "/expenses")
                     .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

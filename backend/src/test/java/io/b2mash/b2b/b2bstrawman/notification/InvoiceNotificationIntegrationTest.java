@@ -315,7 +315,7 @@ class InvoiceNotificationIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR",
                           "timeEntryIds": ["%s"]
                         }

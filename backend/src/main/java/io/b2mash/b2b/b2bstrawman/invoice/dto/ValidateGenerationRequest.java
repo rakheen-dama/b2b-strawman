@@ -5,4 +5,4 @@ import java.util.List;
 import java.util.UUID;
 
 public record ValidateGenerationRequest(
-    @NotNull UUID customerId, List<UUID> timeEntryIds, UUID templateId) {}
+    @NotNull UUID clientId, List<UUID> timeEntryIds, UUID templateId) {}

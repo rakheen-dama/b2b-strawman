@@ -98,7 +98,7 @@ class InvoiceNewFieldsIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR",
                           "poNumber": "PO-12345",
                           "taxType": "VAT"
@@ -121,7 +121,7 @@ class InvoiceNewFieldsIntegrationTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "currency": "ZAR",
                       "billingPeriodStart": "2026-01-01",
                       "billingPeriodEnd": "2026-01-31"
@@ -143,7 +143,7 @@ class InvoiceNewFieldsIntegrationTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "currency": "ZAR"
                     }
                     """
@@ -165,7 +165,7 @@ class InvoiceNewFieldsIntegrationTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "currency": "ZAR",
                       "dueDate": "2026-06-30",
                       "poNumber": "PO-DUE-TEST",
@@ -191,7 +191,7 @@ class InvoiceNewFieldsIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR",
                           "poNumber": "PO-ORIG",
                           "taxType": "VAT"
@@ -237,7 +237,7 @@ class InvoiceNewFieldsIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR",
                           "poNumber": "PO-RETAIN",
                           "taxType": "SALES_TAX",
@@ -281,7 +281,7 @@ class InvoiceNewFieldsIntegrationTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "currency": "ZAR",
                       "billingPeriodStart": "2026-03-31",
                       "billingPeriodEnd": "2026-03-01"

@@ -147,8 +147,8 @@ class BillingRateControllerTest {
             .andExpect(jsonPath("$.currency").value("USD"))
             .andExpect(jsonPath("$.hourlyRate").value(150.00))
             .andExpect(jsonPath("$.effectiveFrom").value("2025-01-01"))
-            .andExpect(jsonPath("$.projectId").isEmpty())
-            .andExpect(jsonPath("$.customerId").isEmpty())
+            .andExpect(jsonPath("$.matterId").isEmpty())
+            .andExpect(jsonPath("$.clientId").isEmpty())
             .andReturn();
 
     createdRateId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
@@ -261,7 +261,7 @@ class BillingRateControllerTest {
         .perform(
             get("/api/billing-rates/resolve")
                 .param("memberId", memberIdOwner)
-                .param("projectId", projectId)
+                .param("matterId", projectId)
                 .param("date", "2025-06-15")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner")))
         .andExpect(status().isOk())
@@ -278,7 +278,7 @@ class BillingRateControllerTest {
         .perform(
             get("/api/billing-rates/resolve")
                 .param("memberId", memberIdMember)
-                .param("projectId", projectId)
+                .param("matterId", projectId)
                 .param("date", "2025-06-15")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner")))
         .andExpect(status().isNotFound());
@@ -297,7 +297,7 @@ class BillingRateControllerTest {
                     """
                     {
                       "memberId": "%s",
-                      "projectId": "%s",
+                      "matterId": "%s",
                       "currency": "USD",
                       "hourlyRate": 200.00,
                       "effectiveFrom": "2025-01-01"
@@ -311,7 +311,7 @@ class BillingRateControllerTest {
         .perform(
             get("/api/billing-rates/resolve")
                 .param("memberId", memberIdOwner)
-                .param("projectId", projectId)
+                .param("matterId", projectId)
                 .param("date", "2025-06-15")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner")))
         .andExpect(status().isOk())
@@ -429,7 +429,7 @@ class BillingRateControllerTest {
         .perform(
             get("/api/billing-rates/resolve")
                 .param("memberId", memberIdOwner)
-                .param("projectId", projectId)
+                .param("matterId", projectId)
                 .param("date", "2025-06-15")
                 .with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_brc_owner_b")))
         .andExpect(status().isNotFound());
@@ -447,8 +447,8 @@ class BillingRateControllerTest {
                     """
                     {
                       "memberId": "%s",
-                      "projectId": "%s",
-                      "customerId": "%s",
+                      "matterId": "%s",
+                      "clientId": "%s",
                       "currency": "USD",
                       "hourlyRate": 100.00,
                       "effectiveFrom": "2025-01-01"

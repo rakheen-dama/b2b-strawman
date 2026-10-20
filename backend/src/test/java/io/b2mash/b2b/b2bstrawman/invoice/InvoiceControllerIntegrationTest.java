@@ -249,7 +249,7 @@ class InvoiceControllerIntegrationTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "currency": "ZAR",
                       "timeEntryIds": ["%s"],
                       "dueDate": "2025-02-28",
@@ -261,13 +261,13 @@ class InvoiceControllerIntegrationTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.status").value("DRAFT"))
         .andExpect(jsonPath("$.currency").value("ZAR"))
-        .andExpect(jsonPath("$.customerName").value("Ctrl Test Corp"))
+        .andExpect(jsonPath("$.clientName").value("Ctrl Test Corp"))
         .andExpect(jsonPath("$.orgName").value("Invoice Ctrl Test Org"))
         .andExpect(jsonPath("$.notes").value("January 2025 services"))
         .andExpect(jsonPath("$.paymentTerms").value("Net 30"))
         .andExpect(jsonPath("$.lines").isArray())
         .andExpect(jsonPath("$.lines.length()").value(1))
-        .andExpect(jsonPath("$.lines[0].projectName").value("Ctrl Test Project"))
+        .andExpect(jsonPath("$.lines[0].matterName").value("Ctrl Test Project"))
         .andExpect(jsonPath("$.subtotal").isNumber());
   }
 
@@ -281,7 +281,7 @@ class InvoiceControllerIntegrationTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "currency": "ZAR"
                     }
                     """
@@ -299,7 +299,7 @@ class InvoiceControllerIntegrationTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "currency": "ZAR",
                       "timeEntryIds": ["%s"]
                     }
@@ -320,7 +320,7 @@ class InvoiceControllerIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR",
                           "timeEntryIds": ["%s"],
                           "notes": "Initial"
@@ -407,7 +407,7 @@ class InvoiceControllerIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR"
                         }
                         """
@@ -444,7 +444,7 @@ class InvoiceControllerIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR",
                           "notes": "Detail test"
                         }
@@ -463,7 +463,7 @@ class InvoiceControllerIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(invoiceId))
         .andExpect(jsonPath("$.status").value("DRAFT"))
-        .andExpect(jsonPath("$.customerName").value("Ctrl Test Corp"))
+        .andExpect(jsonPath("$.clientName").value("Ctrl Test Corp"))
         .andExpect(jsonPath("$.lines").isArray());
   }
 
@@ -479,7 +479,7 @@ class InvoiceControllerIntegrationTest {
     mockMvc
         .perform(
             get("/api/invoices")
-                .param("customerId", customerId.toString())
+                .param("clientId", customerId.toString())
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
@@ -506,7 +506,7 @@ class InvoiceControllerIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR"
                         }
                         """
@@ -526,7 +526,7 @@ class InvoiceControllerIntegrationTest {
                     .content(
                         """
                         {
-                          "projectId": "%s",
+                          "matterId": "%s",
                           "description": "Setup fee",
                           "quantity": 1.0000,
                           "unitPrice": 5000.00,
@@ -641,7 +641,7 @@ class InvoiceControllerIntegrationTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "currency": "ZAR"
                     }
                     """

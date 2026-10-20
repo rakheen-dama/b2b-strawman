@@ -136,7 +136,7 @@ class InvoiceAuditIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR",
                           "timeEntryIds": ["%s"]
                         }
@@ -263,7 +263,7 @@ class InvoiceAuditIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR",
                           "timeEntryIds": ["%s"]
                         }

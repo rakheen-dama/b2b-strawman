@@ -299,7 +299,7 @@ class DisbursementUnbilledEndpointIntegrationTest {
             get("/api/clients/" + customerId + "/unbilled-time")
                 .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_unbilled_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerId").value(customerId.toString()))
+        .andExpect(jsonPath("$.clientId").value(customerId.toString()))
         .andExpect(jsonPath("$.disbursements").isArray())
         // Legal tenant: approved+unbilled rows across all projects for this customer
         // (no projectId narrowing). At least the 1 on projectId + 1 on otherProjectId + 3 on
@@ -323,7 +323,7 @@ class DisbursementUnbilledEndpointIntegrationTest {
                 .with(
                     TestJwtFactory.ownerJwt(NONLEGAL_ORG_ID, "user_disb_unbilled_nonlegal_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerId").value(nonLegalCustomerId.toString()))
+        .andExpect(jsonPath("$.clientId").value(nonLegalCustomerId.toString()))
         .andExpect(jsonPath("$.disbursements").doesNotExist());
   }
 

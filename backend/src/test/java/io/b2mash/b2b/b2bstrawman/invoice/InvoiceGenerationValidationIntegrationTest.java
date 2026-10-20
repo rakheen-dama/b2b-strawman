@@ -143,7 +143,7 @@ class InvoiceGenerationValidationIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    { "customerId": "%s", "timeEntryIds": ["%s"] }
+                    { "clientId": "%s", "timeEntryIds": ["%s"] }
                     """
                         .formatted(customerId, teId)))
         .andExpect(status().isOk())
@@ -167,7 +167,7 @@ class InvoiceGenerationValidationIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    { "customerId": "%s", "timeEntryIds": ["%s"] }
+                    { "clientId": "%s", "timeEntryIds": ["%s"] }
                     """
                         .formatted(customerId, teId)))
         .andExpect(status().isOk())
@@ -189,7 +189,7 @@ class InvoiceGenerationValidationIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    { "customerId": "%s", "timeEntryIds": ["%s"] }
+                    { "clientId": "%s", "timeEntryIds": ["%s"] }
                     """
                         .formatted(customerId, teId)))
         .andExpect(status().isOk())
@@ -297,7 +297,7 @@ class InvoiceGenerationValidationIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    { "customerId": "%s", "currency": "ZAR",
+                    { "clientId": "%s", "currency": "ZAR",
                       "timeEntryIds": ["%s"] }
                     """
                         .formatted(customerIdRef[0], teId)))
@@ -444,7 +444,7 @@ class InvoiceGenerationValidationIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    { "customerId": "%s", "currency": "ZAR",
+                    { "clientId": "%s", "currency": "ZAR",
                       "timeEntryIds": ["%s"] }
                     """
                         .formatted(prospectCustomerId[0], teId)))
@@ -518,7 +518,7 @@ class InvoiceGenerationValidationIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        { "customerId": "%s", "currency": "ZAR",
+                        { "clientId": "%s", "currency": "ZAR",
                           "timeEntryIds": ["%s"] }
                         """
                             .formatted(customerIdRef[0], teId)))
@@ -604,7 +604,7 @@ class InvoiceGenerationValidationIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        { "customerId": "%s", "currency": "ZAR",
+                        { "clientId": "%s", "currency": "ZAR",
                           "timeEntryIds": ["%s"] }
                         """
                             .formatted(customerId, teId)))

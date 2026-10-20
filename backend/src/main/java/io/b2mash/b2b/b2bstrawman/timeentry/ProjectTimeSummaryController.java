@@ -20,55 +20,55 @@ public class ProjectTimeSummaryController {
     this.timeEntryService = timeEntryService;
   }
 
-  @GetMapping("/api/projects/{id}/time-summary")
-  public ResponseEntity<ProjectTimeSummaryResponse> getProjectTimeSummary(
-      @PathVariable UUID id,
+  @GetMapping("/api/matters/{matterId}/time-summary")
+  public ResponseEntity<MatterTimeSummaryResponse> getProjectTimeSummary(
+      @PathVariable UUID matterId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
       ActorContext actor) {
 
-    var summary = timeEntryService.getProjectTimeSummary(id, actor, from, to);
-    return ResponseEntity.ok(ProjectTimeSummaryResponse.from(id, summary));
+    var summary = timeEntryService.getProjectTimeSummary(matterId, actor, from, to);
+    return ResponseEntity.ok(MatterTimeSummaryResponse.from(matterId, summary));
   }
 
-  @GetMapping("/api/projects/{id}/time-summary/by-member")
+  @GetMapping("/api/matters/{matterId}/time-summary/by-member")
   public ResponseEntity<List<MemberTimeSummaryResponse>> getProjectTimeSummaryByMember(
-      @PathVariable UUID id,
+      @PathVariable UUID matterId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
       ActorContext actor) {
 
-    var summaries = timeEntryService.getProjectTimeSummaryByMember(id, actor, from, to);
+    var summaries = timeEntryService.getProjectTimeSummaryByMember(matterId, actor, from, to);
     var response = summaries.stream().map(MemberTimeSummaryResponse::from).toList();
     return ResponseEntity.ok(response);
   }
 
-  @GetMapping("/api/projects/{id}/time-summary/by-task")
+  @GetMapping("/api/matters/{matterId}/time-summary/by-task")
   public ResponseEntity<List<TaskTimeSummaryResponse>> getProjectTimeSummaryByTask(
-      @PathVariable UUID id,
+      @PathVariable UUID matterId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
       ActorContext actor) {
 
-    var summaries = timeEntryService.getProjectTimeSummaryByTask(id, actor, from, to);
+    var summaries = timeEntryService.getProjectTimeSummaryByTask(matterId, actor, from, to);
     var response = summaries.stream().map(TaskTimeSummaryResponse::from).toList();
     return ResponseEntity.ok(response);
   }
 
   // --- DTOs ---
 
-  public record ProjectTimeSummaryResponse(
-      UUID projectId,
+  public record MatterTimeSummaryResponse(
+      UUID matterId,
       long billableMinutes,
       long nonBillableMinutes,
       long totalMinutes,
       long contributorCount,
       long entryCount) {
 
-    public static ProjectTimeSummaryResponse from(
-        UUID projectId, ProjectTimeSummaryProjection projection) {
-      return new ProjectTimeSummaryResponse(
-          projectId,
+    public static MatterTimeSummaryResponse from(
+        UUID matterId, ProjectTimeSummaryProjection projection) {
+      return new MatterTimeSummaryResponse(
+          matterId,
           projection.getBillableMinutes(),
           projection.getNonBillableMinutes(),
           projection.getTotalMinutes(),

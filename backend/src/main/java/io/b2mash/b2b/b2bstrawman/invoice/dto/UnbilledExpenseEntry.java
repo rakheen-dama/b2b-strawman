@@ -6,8 +6,8 @@ import java.util.UUID;
 
 public record UnbilledExpenseEntry(
     UUID id,
-    UUID projectId,
-    String projectName,
+    UUID matterId,
+    String matterName,
     LocalDate date,
     String description,
     BigDecimal amount,

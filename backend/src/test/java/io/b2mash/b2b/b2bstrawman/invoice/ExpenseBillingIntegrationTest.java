@@ -186,7 +186,7 @@ class ExpenseBillingIntegrationTest {
     String body =
         """
         {
-          "customerId": "%s",
+          "clientId": "%s",
           "currency": "ZAR",
           "expenseIds": ["%s"]
         }
@@ -214,7 +214,7 @@ class ExpenseBillingIntegrationTest {
     String body =
         """
         {
-          "customerId": "%s",
+          "clientId": "%s",
           "currency": "ZAR",
           "expenseIds": ["%s"]
         }
@@ -246,7 +246,7 @@ class ExpenseBillingIntegrationTest {
     String body =
         """
         {
-          "customerId": "%s",
+          "clientId": "%s",
           "currency": "ZAR",
           "expenseIds": ["%s"]
         }
@@ -273,7 +273,7 @@ class ExpenseBillingIntegrationTest {
     String body =
         """
         {
-          "customerId": "%s",
+          "clientId": "%s",
           "currency": "ZAR",
           "timeEntryIds": ["%s"],
           "expenseIds": ["%s"]
@@ -391,7 +391,7 @@ class ExpenseBillingIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/profitability")
+            get("/api/matters/" + projectId + "/profitability")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.currencies[?(@.currency=='ZAR')].totalExpenseCost").exists());
@@ -406,7 +406,7 @@ class ExpenseBillingIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/profitability")
+            get("/api/matters/" + projectId + "/profitability")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.currencies[?(@.currency=='ZAR')].totalExpenseRevenue").exists());
@@ -422,7 +422,7 @@ class ExpenseBillingIntegrationTest {
     var result =
         mockMvc
             .perform(
-                get("/api/projects/" + projectId + "/profitability")
+                get("/api/matters/" + projectId + "/profitability")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
             .andExpect(status().isOk())
             .andReturn();
@@ -446,7 +446,7 @@ class ExpenseBillingIntegrationTest {
     var result =
         mockMvc
             .perform(
-                get("/api/projects/" + projectId + "/profitability")
+                get("/api/matters/" + projectId + "/profitability")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
             .andExpect(status().isOk())
             .andReturn();
@@ -538,7 +538,7 @@ class ExpenseBillingIntegrationTest {
     String body =
         """
         {
-          "customerId": "%s",
+          "clientId": "%s",
           "currency": "ZAR",
           "expenseIds": ["%s"]
         }

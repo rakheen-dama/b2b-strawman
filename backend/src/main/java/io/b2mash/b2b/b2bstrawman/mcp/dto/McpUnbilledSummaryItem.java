@@ -1,12 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.mcp.dto;
 
-import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.CustomerUnbilledSummary;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.ClientUnbilledSummary;
 import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummary;
 import java.util.UUID;
 
 /**
  * Unbilled-work projection for {@code get_unbilled_time} (Epic 564A). The firm-wide path returns a
- * page of per-client rows ({@link #from(CustomerUnbilledSummary, String)}); the per-matter path
+ * page of per-client rows ({@link #from(ClientUnbilledSummary, String)}); the per-matter path
  * returns a single {@link McpUnbilledMatterSummary} object instead. Money is carried as minor units
  * (long) + currency — the firm-side rows carry no currency of their own, so it is supplied by the
  * tool from its {@code currency} argument / the matter summary's own currency.
@@ -20,10 +20,10 @@ public record McpUnbilledSummaryItem(
     UUID customerId, String customerName, long amountMinor, String currency) {
 
   /** Projects a firm-wide per-client unbilled row, attaching the request currency. */
-  public static McpUnbilledSummaryItem from(CustomerUnbilledSummary row, String currency) {
+  public static McpUnbilledSummaryItem from(ClientUnbilledSummary row, String currency) {
     return new McpUnbilledSummaryItem(
-        row.customerId(),
-        row.customerName(),
+        row.clientId(),
+        row.clientName(),
         row.totalUnbilledAmount() == null
             ? 0L
             : row.totalUnbilledAmount().movePointRight(2).longValueExact(),

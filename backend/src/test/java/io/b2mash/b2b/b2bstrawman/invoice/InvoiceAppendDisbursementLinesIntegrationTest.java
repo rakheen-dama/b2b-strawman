@@ -202,7 +202,7 @@ class InvoiceAppendDisbursementLinesIntegrationTest {
 
     String createBody =
         """
-        { "customerId": "%s", "currency": "ZAR", "disbursementIds": ["%s"] }
+        { "clientId": "%s", "currency": "ZAR", "disbursementIds": ["%s"] }
         """
             .formatted(customerId, dExisting);
 
@@ -272,7 +272,7 @@ class InvoiceAppendDisbursementLinesIntegrationTest {
             "Adv Initial");
     String createBody =
         """
-        { "customerId": "%s", "currency": "ZAR", "disbursementIds": ["%s"] }
+        { "clientId": "%s", "currency": "ZAR", "disbursementIds": ["%s"] }
         """
             .formatted(customerId, dInitial);
     var createResult =
@@ -337,7 +337,7 @@ class InvoiceAppendDisbursementLinesIntegrationTest {
     // First invoice bills d1.
     String createBody =
         """
-        { "customerId": "%s", "currency": "ZAR", "disbursementIds": ["%s"] }
+        { "clientId": "%s", "currency": "ZAR", "disbursementIds": ["%s"] }
         """
             .formatted(customerId, d1);
     mockMvc
@@ -401,7 +401,7 @@ class InvoiceAppendDisbursementLinesIntegrationTest {
   private String createEmptyDraftInvoice() throws Exception {
     String body =
         """
-        { "customerId": "%s", "currency": "ZAR" }
+        { "clientId": "%s", "currency": "ZAR" }
         """
             .formatted(customerId);
     var result =

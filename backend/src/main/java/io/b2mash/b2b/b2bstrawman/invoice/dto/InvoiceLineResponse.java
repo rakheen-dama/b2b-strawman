@@ -7,8 +7,8 @@ import java.util.UUID;
 
 public record InvoiceLineResponse(
     UUID id,
-    UUID projectId,
-    String projectName,
+    UUID matterId,
+    String matterName,
     UUID timeEntryId,
     UUID expenseId,
     InvoiceLineType lineType,
@@ -26,16 +26,16 @@ public record InvoiceLineResponse(
     String lineSource,
     String tariffItemNumber) {
 
-  public static InvoiceLineResponse from(InvoiceLine line, String projectName) {
-    return from(line, projectName, null);
+  public static InvoiceLineResponse from(InvoiceLine line, String matterName) {
+    return from(line, matterName, null);
   }
 
   public static InvoiceLineResponse from(
-      InvoiceLine line, String projectName, String tariffItemNumber) {
+      InvoiceLine line, String matterName, String tariffItemNumber) {
     return new InvoiceLineResponse(
         line.getId(),
         line.getProjectId(),
-        projectName,
+        matterName,
         line.getTimeEntryId(),
         line.getExpenseId(),
         line.getLineType(),

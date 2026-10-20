@@ -289,7 +289,7 @@ class AdminReSnapshotTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"projectId": "%s", "memberId": "%s"}
+                    {"matterId": "%s", "memberId": "%s"}
                     """
                         .formatted(projectId1, memberIdOwner)))
         .andExpect(status().isOk())

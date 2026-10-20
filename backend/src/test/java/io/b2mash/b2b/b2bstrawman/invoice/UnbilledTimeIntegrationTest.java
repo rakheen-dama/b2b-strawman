@@ -268,10 +268,10 @@ class UnbilledTimeIntegrationTest {
             get("/api/clients/" + customerId + "/unbilled-time")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerId").value(customerId.toString()))
-        .andExpect(jsonPath("$.customerName").value("UB Corp"))
-        .andExpect(jsonPath("$.projects").isArray())
-        .andExpect(jsonPath("$.projects.length()").value(2))
+        .andExpect(jsonPath("$.clientId").value(customerId.toString()))
+        .andExpect(jsonPath("$.clientName").value("UB Corp"))
+        .andExpect(jsonPath("$.matters").isArray())
+        .andExpect(jsonPath("$.matters.length()").value(2))
         .andExpect(jsonPath("$.grandTotals.ZAR").exists())
         .andExpect(jsonPath("$.grandTotals.ZAR.hours").isNumber())
         .andExpect(jsonPath("$.grandTotals.ZAR.amount").isNumber());
@@ -314,7 +314,7 @@ class UnbilledTimeIntegrationTest {
                 .param("from", "2025-01-16")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.projects.length()").value(1));
+        .andExpect(jsonPath("$.matters.length()").value(1));
   }
 
   @Test
@@ -326,8 +326,8 @@ class UnbilledTimeIntegrationTest {
                 .param("to", "2025-01-17")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.projects.length()").value(1))
-        .andExpect(jsonPath("$.projects[0].projectName").value("Project Alpha"));
+        .andExpect(jsonPath("$.matters.length()").value(1))
+        .andExpect(jsonPath("$.matters[0].matterName").value("Project Alpha"));
   }
 
   @Test
@@ -372,7 +372,7 @@ class UnbilledTimeIntegrationTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "currency": "ZAR",
                       "timeEntryIds": ["%s"]
                     }
@@ -400,7 +400,7 @@ class UnbilledTimeIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR",
                           "timeEntryIds": ["%s", "%s"]
                         }

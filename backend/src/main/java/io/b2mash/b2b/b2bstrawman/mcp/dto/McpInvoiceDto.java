@@ -67,8 +67,8 @@ public record McpInvoiceDto(
   public static McpInvoiceDto listItem(InvoiceResponse inv) {
     return new McpInvoiceDto(
         inv.id(),
-        inv.customerId(),
-        inv.customerName(),
+        inv.clientId(),
+        inv.clientName(),
         inv.invoiceNumber(),
         inv.status() != null ? inv.status().name() : null,
         inv.currency(),
@@ -99,8 +99,8 @@ public record McpInvoiceDto(
                 l ->
                     new Line(
                         l.id(),
-                        l.projectId(),
-                        l.projectName(),
+                        l.matterId(),
+                        l.matterName(),
                         l.lineType() != null ? l.lineType().name() : null,
                         l.description(),
                         minor(l.amount())))
@@ -120,8 +120,8 @@ public record McpInvoiceDto(
 
     return new McpInvoiceDto(
         inv.id(),
-        inv.customerId(),
-        inv.customerName(),
+        inv.clientId(),
+        inv.clientName(),
         inv.invoiceNumber(),
         inv.status() != null ? inv.status().name() : null,
         inv.currency(),

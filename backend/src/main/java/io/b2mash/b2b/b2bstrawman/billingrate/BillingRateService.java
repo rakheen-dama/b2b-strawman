@@ -337,7 +337,7 @@ public class BillingRateService {
     if (projectId != null && customerId != null) {
       throw new InvalidStateException(
           "Invalid billing rate scope",
-          "A billing rate cannot have both matterId and clientId set. Use separate rates for project and customer overrides.");
+          "A billing rate cannot have both matterId and clientId set. Use separate rates for matter and client overrides.");
     }
   }
 

@@ -8,8 +8,8 @@
  * `MATTERS_PATH` / `matterPath` and `CLIENTS_PATH` / `clientPath`, so callers keep importing
  * from them. Not re-exported from the barrel (would duplicate those re-exports).
  *
- * 610C's no-inline-literal scan should whitelist this file alongside `matters.ts` and
- * `clients.ts`.
+ * Whitelisted (with `matters.ts` / `clients.ts`) by
+ * `__tests__/lib/api/no-inline-matter-client-literals.test.ts`.
  */
 
 export const MATTERS_SEGMENT = "matters";

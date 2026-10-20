@@ -5,12 +5,12 @@ import type { SetupStep } from "@/components/setup/types";
 import { HealthBadge } from "@/components/dashboard/health-badge";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
 import {
-  fetchProjectHealthDetail,
-  fetchProjectMemberHours,
-  fetchProjectUpcomingDeadlines,
-} from "@/lib/actions/dashboard";
+  getMatterBudget,
+  getMatterHealth,
+  getMatterMemberHours,
+  getMatterUpcomingDeadlines,
+} from "@/lib/api/matters";
 import { UpcomingDeadlinesTile } from "@/components/projects/upcoming-deadlines-tile";
-import { api } from "@/lib/api";
 import { daysUntil, resolveDateRange } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
 import {
@@ -23,7 +23,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
-import type { BudgetStatusResponse, MatterSetupStatus, FicaStatus } from "@/lib/types";
+import type { MatterSetupStatus, FicaStatus } from "@/lib/types";
 import type { ReactNode } from "react";
 
 // --- Health band color mapping ---
@@ -129,10 +129,10 @@ export async function KPIDashboard({
 
   const [healthResult, memberHoursResult, budgetResult, upcomingDeadlinesResult] =
     await Promise.allSettled([
-      fetchProjectHealthDetail(projectId),
-      fetchProjectMemberHours(projectId, from, to),
-      api.get<BudgetStatusResponse>(`/api/matters/${projectId}/budget`).catch(() => null),
-      fetchProjectUpcomingDeadlines(projectId),
+      getMatterHealth(projectId),
+      getMatterMemberHours(projectId, { from, to }),
+      getMatterBudget(projectId),
+      getMatterUpcomingDeadlines(projectId),
     ]);
 
   const health = settled(healthResult);

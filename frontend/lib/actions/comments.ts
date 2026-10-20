@@ -1,6 +1,12 @@
 "use server";
 
-import { api, ApiError } from "@/lib/api";
+import { ApiError } from "@/lib/api";
+import {
+  createMatterComment,
+  deleteMatterComment,
+  listMatterComments,
+  updateMatterComment,
+} from "@/lib/api/matters";
 import { revalidatePath } from "next/cache";
 import type { Comment } from "@/lib/types";
 
@@ -14,13 +20,11 @@ export async function fetchComments(
   entityType: string,
   entityId: string
 ): Promise<Comment[]> {
-  return api.get<Comment[]>(
-    `/api/matters/${projectId}/comments?entityType=${encodeURIComponent(entityType)}&entityId=${encodeURIComponent(entityId)}`
-  );
+  return listMatterComments(projectId, { entityType, entityId });
 }
 
 export async function fetchProjectComments(projectId: string): Promise<Comment[]> {
-  return api.get<Comment[]>(`/api/matters/${projectId}/comments?entityType=PROJECT&size=50`);
+  return listMatterComments(projectId, { entityType: "PROJECT", size: 50 });
 }
 
 export async function createProjectComment(
@@ -33,7 +37,7 @@ export async function createProjectComment(
   }
 
   try {
-    await api.post(`/api/matters/${projectId}/comments`, {
+    await createMatterComment(projectId, {
       entityType: "PROJECT",
       entityId: projectId,
       body: body.trim(),
@@ -64,7 +68,7 @@ export async function createComment(
   }
 
   try {
-    await api.post(`/api/matters/${projectId}/comments`, {
+    await createMatterComment(projectId, {
       entityType,
       entityId,
       body: body.trim(),
@@ -94,7 +98,7 @@ export async function updateComment(
   }
 
   try {
-    await api.put(`/api/matters/${projectId}/comments/${commentId}`, {
+    await updateMatterComment(projectId, commentId, {
       body: body.trim(),
       ...(visibility ? { visibility } : {}),
     });
@@ -122,7 +126,7 @@ export async function deleteComment(
   commentId: string
 ): Promise<ActionResult> {
   try {
-    await api.delete(`/api/matters/${projectId}/comments/${commentId}`);
+    await deleteMatterComment(projectId, commentId);
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {

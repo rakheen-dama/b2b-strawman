@@ -1,6 +1,7 @@
 import "server-only";
 
 import { api } from "@/lib/api/client";
+import { matterPath } from "./paths";
 
 // ---- Request types ----
 
@@ -52,7 +53,7 @@ export async function generateStatement(
   projectId: string,
   req: GenerateStatementRequest
 ): Promise<StatementResponse> {
-  return api.post<StatementResponse>(`/api/matters/${projectId}/statements`, req);
+  return api.post<StatementResponse>(matterPath(projectId, "statements"), req);
 }
 
 export async function listStatements(
@@ -64,10 +65,10 @@ export async function listStatements(
   search.set("page", String(page));
   search.set("size", String(size));
   return api.get<PaginatedStatementsResponse>(
-    `/api/matters/${projectId}/statements?${search.toString()}`
+    `${matterPath(projectId, "statements")}?${search.toString()}`
   );
 }
 
 export async function getStatement(projectId: string, id: string): Promise<StatementResponse> {
-  return api.get<StatementResponse>(`/api/matters/${projectId}/statements/${id}`);
+  return api.get<StatementResponse>(matterPath(projectId, `statements/${id}`));
 }

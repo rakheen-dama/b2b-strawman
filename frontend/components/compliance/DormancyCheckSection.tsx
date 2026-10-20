@@ -4,13 +4,7 @@ import { useState } from "react";
 import { runDormancyCheck } from "@/app/(app)/org/[slug]/compliance/actions";
 import { useTerminology } from "@/lib/terminology";
 import { DormancyCandidateList } from "./DormancyCandidateList";
-
-interface DormancyCandidate {
-  clientId: string;
-  clientName: string;
-  lastActivityDate: string | null;
-  daysSinceActivity: number;
-}
+import type { DormancyCandidate } from "@/lib/types";
 
 interface DormancyCheckSectionProps {
   orgSlug: string;

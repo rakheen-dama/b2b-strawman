@@ -3,12 +3,11 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { ApiError } from "@/lib/api";
 import {
-  getLifecycleStatusCounts,
-  getOnboardingPipelineData,
-  getDashboardDataRequests,
-  runDormancyCheck as apiRunDormancyCheck,
-  transitionLifecycle,
-} from "@/lib/compliance-api";
+  getClientLifecycleSummary,
+  runClientDormancyCheck,
+  transitionClientLifecycle,
+} from "@/lib/api/clients";
+import { getDashboardDataRequests, getOnboardingPipelineData } from "@/lib/compliance-api";
 import {
   invokeComplianceAudit,
   getAuditReports,
@@ -16,7 +15,7 @@ import {
   updateFindingStatus,
 } from "@/lib/api/compliance-audit";
 import { revalidatePath } from "next/cache";
-import type { DataRequestResponse } from "@/lib/types";
+import type { DataRequestResponse, DormancyCandidate } from "@/lib/types";
 import type {
   ComplianceAuditInvokeResponse,
   ComplianceAuditReportResponse,
@@ -28,13 +27,6 @@ import type {
 interface ActionResult {
   success: boolean;
   error?: string;
-}
-
-interface DormancyCandidate {
-  clientId: string;
-  clientName: string;
-  lastActivityDate: string | null;
-  daysSinceActivity: number;
 }
 
 interface DashboardData {
@@ -61,7 +53,7 @@ export async function getComplianceDashboardData(
 
   try {
     const [lifecycleCounts, onboardingCustomers, urgentRequests] = await Promise.all([
-      getLifecycleStatusCounts(),
+      getClientLifecycleSummary(),
       getOnboardingPipelineData(),
       getDashboardDataRequests(),
     ]);
@@ -94,7 +86,7 @@ export async function runDormancyCheck(
   }
 
   try {
-    const result = await apiRunDormancyCheck();
+    const result = await runClientDormancyCheck();
     return { success: true, candidates: result.candidates };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -111,7 +103,11 @@ export async function markCustomerDormant(customerId: string, slug: string): Pro
   }
 
   try {
-    await transitionLifecycle(customerId, "DORMANT", "Marked dormant via compliance dashboard");
+    await transitionClientLifecycle(
+      customerId,
+      "DORMANT",
+      "Marked dormant via compliance dashboard"
+    );
     revalidatePath(`/org/${slug}/compliance`);
     return { success: true };
   } catch (error) {

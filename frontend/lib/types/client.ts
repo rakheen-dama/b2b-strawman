@@ -73,6 +73,20 @@ export interface LifecycleHistoryEntry {
   occurredAt: string;
 }
 
+/** One candidate row of `POST /api/clients/dormancy-check` (`ClientDtos.DormancyCandidate`). */
+export interface DormancyCandidate {
+  clientId: string;
+  clientName: string;
+  lastActivityDate: string | null;
+  daysSinceActivity: number;
+}
+
+/** `POST /api/clients/dormancy-check` response (`ClientDtos.DormancyCheckResult`). */
+export interface DormancyCheckResult {
+  thresholdDays: number;
+  candidates: DormancyCandidate[];
+}
+
 export interface CreateClientRequest {
   name: string;
   email: string;

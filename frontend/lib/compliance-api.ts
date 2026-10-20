@@ -1,40 +1,12 @@
 import "server-only";
 
 import { api } from "@/lib/api";
-import type {
-  LifecycleHistoryEntry,
-  TransitionResponse,
-  DataRequestResponse,
-  DataRequestStatus,
-  AnonymizationResult,
-} from "@/lib/types";
+import { listClients } from "@/lib/api/clients";
+import type { DataRequestResponse, DataRequestStatus, AnonymizationResult } from "@/lib/types";
 
-export async function transitionLifecycle(
-  id: string,
-  targetStatus: string,
-  notes?: string
-): Promise<TransitionResponse> {
-  return api.post<TransitionResponse>(`/api/clients/${id}/transition`, {
-    targetStatus,
-    notes: notes ?? null,
-  });
-}
-
-export async function getLifecycleHistory(id: string): Promise<LifecycleHistoryEntry[]> {
-  return api.get<LifecycleHistoryEntry[]>(`/api/clients/${id}/lifecycle`);
-}
-
-export async function runDormancyCheck(): Promise<{
-  thresholdDays: number;
-  candidates: Array<{
-    clientId: string;
-    clientName: string;
-    lastActivityDate: string | null;
-    daysSinceActivity: number;
-  }>;
-}> {
-  return api.post(`/api/clients/dormancy-check`);
-}
+// Client lifecycle transition / history / summary and the dormancy check are owned by
+// `lib/api/clients.ts` (Phase 87 610C; 610A review H1). This file keeps the data-request
+// (DSAR) wrappers and the compliance-dashboard composites.
 
 export async function getDataRequests(status?: DataRequestStatus): Promise<DataRequestResponse[]> {
   const qs = status ? `?status=${encodeURIComponent(status)}` : "";
@@ -82,10 +54,6 @@ export async function executeDataDeletion(
   });
 }
 
-export async function getLifecycleStatusCounts(): Promise<Record<string, number>> {
-  return api.get<Record<string, number>>("/api/clients/lifecycle-summary");
-}
-
 export async function getOnboardingPipelineData(): Promise<
   Array<{
     id: string;
@@ -94,12 +62,10 @@ export async function getOnboardingPipelineData(): Promise<
     checklistProgress: { completed: number; total: number };
   }>
 > {
-  const customers = await api.get<
-    Array<{ id: string; name: string; lifecycleStatusChangedAt?: string | null }>
-  >("/api/clients?lifecycleStatus=ONBOARDING");
+  const clients = await listClients({ lifecycleStatus: "ONBOARDING" });
   // Return with stub checklistProgress — progress can't be fetched per-customer in bulk without N+1
   // TODO: Add bulk checklist progress endpoint for efficient dashboard loading
-  return customers.map((c) => ({
+  return clients.map((c) => ({
     id: c.id,
     name: c.name,
     lifecycleStatusChangedAt: c.lifecycleStatusChangedAt ?? null,

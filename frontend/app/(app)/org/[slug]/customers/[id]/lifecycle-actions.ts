@@ -2,7 +2,7 @@
 
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { ApiError } from "@/lib/api";
-import { transitionLifecycle, getLifecycleHistory } from "@/lib/compliance-api";
+import { getClientLifecycleHistory, transitionClientLifecycle } from "@/lib/api/clients";
 import { revalidatePath } from "next/cache";
 import type { LifecycleHistoryEntry } from "@/lib/types";
 import type { PrerequisiteCheck } from "@/components/prerequisite/types";
@@ -25,7 +25,7 @@ export async function transitionCustomerLifecycle(
   }
 
   try {
-    await transitionLifecycle(customerId, targetStatus, notes);
+    await transitionClientLifecycle(customerId, targetStatus, notes);
   } catch (error) {
     if (error instanceof ApiError) {
       // 422 with prerequisite violations — return payload so caller can open PrerequisiteModal
@@ -56,7 +56,7 @@ export async function transitionCustomerLifecycle(
 
 export async function fetchLifecycleHistory(customerId: string): Promise<LifecycleHistoryEntry[]> {
   try {
-    return await getLifecycleHistory(customerId);
+    return await getClientLifecycleHistory(customerId);
   } catch {
     return [];
   }

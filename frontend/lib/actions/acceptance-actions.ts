@@ -1,6 +1,7 @@
 "use server";
 
 import { api, ApiError } from "@/lib/api";
+import { listClientPortalContacts } from "@/lib/api/clients";
 import type { PortalContactSummary } from "@/lib/types";
 
 // ---- Types ----
@@ -162,10 +163,7 @@ export async function downloadCertificate(
 
 export async function fetchPortalContacts(customerId: string): Promise<PortalContactSummary[]> {
   try {
-    const contacts = await api.get<PortalContactSummary[]>(
-      `/api/clients/${customerId}/portal-contacts`
-    );
-    return contacts;
+    return await listClientPortalContacts(customerId);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
       return [];

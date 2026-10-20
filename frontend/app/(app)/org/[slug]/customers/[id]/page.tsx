@@ -11,7 +11,9 @@ import {
 import {
   getClient,
   getClientProfitability,
+  getClientReadiness,
   getClientTags,
+  getClientUnbilledSummary,
   listClientMatters,
 } from "@/lib/api/clients";
 import type {
@@ -59,11 +61,7 @@ import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocument
 import { ChecklistInstancePanel } from "@/components/compliance/ChecklistInstancePanel";
 import type { KycSummary } from "@/components/customers/kyc-status-badge";
 import { ActionCard } from "@/components/setup";
-import {
-  fetchCustomerReadiness,
-  fetchCustomerUnbilledSummary,
-  fetchTemplateReadiness,
-} from "@/lib/api/setup-status";
+import { fetchTemplateReadiness } from "@/lib/api/setup-status";
 import { getCustomerChecklists, getChecklistTemplates } from "@/lib/checklist-api";
 import type { KycIntegrationStatus } from "@/lib/types";
 import {
@@ -315,8 +313,8 @@ export default async function CustomerDetailPage({
   let customerTemplateReadiness: TemplateReadiness[] = [];
   try {
     const [readinessRes, unbilledRes, templateReadinessRes] = await Promise.all([
-      fetchCustomerReadiness(id),
-      fetchCustomerUnbilledSummary(id),
+      getClientReadiness(id),
+      getClientUnbilledSummary(id),
       fetchTemplateReadiness("CUSTOMER", id),
     ]);
     customerReadiness = readinessRes;

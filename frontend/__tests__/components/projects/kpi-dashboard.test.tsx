@@ -8,9 +8,10 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-// Mock dashboard server actions — inline values to avoid hoisting issues
-vi.mock("@/lib/actions/dashboard", () => ({
-  fetchProjectHealthDetail: vi.fn().mockResolvedValue({
+// Mock the matters API module (kpi-dashboard reads health, member hours, budget and deadlines
+// directly from lib/api/matters since Phase 87 610C) — inline values to avoid hoisting issues
+vi.mock("@/lib/api/matters", () => ({
+  getMatterHealth: vi.fn().mockResolvedValue({
     healthStatus: "AT_RISK",
     healthReasons: ["Budget exceeded"],
     metrics: {
@@ -25,15 +26,12 @@ vi.mock("@/lib/actions/dashboard", () => ({
       daysSinceLastActivity: 2,
     },
   }),
-  fetchProjectMemberHours: vi.fn().mockResolvedValue([
+  getMatterMemberHours: vi.fn().mockResolvedValue([
     { memberId: "m1", memberName: "Alice", totalHours: 20, billableHours: 18 },
     { memberId: "m2", memberName: "Bob", totalHours: 15, billableHours: 12 },
   ]),
-  fetchProjectUpcomingDeadlines: vi.fn().mockResolvedValue([]),
-}));
-
-vi.mock("@/lib/api", () => ({
-  api: { get: vi.fn().mockResolvedValue(null) },
+  getMatterBudget: vi.fn().mockResolvedValue(null),
+  getMatterUpcomingDeadlines: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock("@/lib/date-utils", () => ({

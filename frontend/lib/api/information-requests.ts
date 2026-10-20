@@ -1,6 +1,7 @@
 import "server-only";
 
 import { api } from "./client";
+import { clientPath, matterPath } from "./paths";
 
 // ---- Response Types ----
 
@@ -239,9 +240,9 @@ export async function getRequestSummary(): Promise<InformationRequestSummary> {
 export async function getCustomerRequests(
   customerId: string
 ): Promise<InformationRequestResponse[]> {
-  return api.get<InformationRequestResponse[]>(`/api/clients/${customerId}/information-requests`);
+  return api.get<InformationRequestResponse[]>(clientPath(customerId, "information-requests"));
 }
 
 export async function getProjectRequests(projectId: string): Promise<InformationRequestResponse[]> {
-  return api.get<InformationRequestResponse[]>(`/api/matters/${projectId}/information-requests`);
+  return api.get<InformationRequestResponse[]>(matterPath(projectId, "information-requests"));
 }

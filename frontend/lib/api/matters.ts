@@ -7,8 +7,9 @@
  * types for the Matters bounded context. Clients live in `./clients.ts` (plural).
  *
  * `matterPath()` / `MATTERS_PATH` are re-exported from `./paths.ts` — the single place the
- * `matters` wire segment is spelled (shared with `tags.ts#entityApiPrefix`); other lib/api modules
- * (closure, statements, correspondence, information-requests) switch to it in 610C.
+ * `matters` wire segment is spelled (shared with `tags.ts#entityApiPrefix` and the sibling
+ * closure / statements / correspondence / information-requests modules, which build URLs with
+ * `matterPath()`). Guarded by `__tests__/lib/api/no-inline-matter-client-literals.test.ts`.
  * The tag / field-group storage key for matters stays `"PROJECT"` (ADR-342).
  */
 import "server-only";

@@ -138,6 +138,7 @@ CLERK_JWKS_URI
 # Playwright
 node_modules/
 /test-results/
+frontend/test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/

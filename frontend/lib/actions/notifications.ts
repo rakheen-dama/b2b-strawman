@@ -9,7 +9,7 @@ export interface Notification {
   body: string | null;
   referenceEntityType: string | null;
   referenceEntityId: string | null;
-  referenceProjectId: string | null;
+  referenceMatterId: string | null;
   isRead: boolean;
   createdAt: string;
 }

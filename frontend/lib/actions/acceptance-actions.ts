@@ -33,7 +33,7 @@ export interface AcceptanceRequestResponse {
   id: string;
   generatedDocumentId: string;
   portalContactId: string;
-  customerId: string;
+  clientId: string;
   status: AcceptanceStatus;
   sentAt: string | null;
   viewedAt: string | null;

@@ -28,7 +28,7 @@ function makeRequest(
     id: "req-1",
     generatedDocumentId: "doc-1",
     portalContactId: "contact-1",
-    customerId: "cust-1",
+    clientId: "cust-1",
     status: "SENT",
     sentAt: "2026-02-20T10:00:00Z",
     viewedAt: null,

@@ -22,8 +22,13 @@ export async function verifyKycAction(
   }
 ): Promise<ActionResult<KycVerifyResponse>> {
   try {
-    const result = await api.post<KycVerifyResponse>("/api/kyc/verify", data);
-    revalidatePath(`/org/${slug}/customers/${data.customerId}`);
+    // Phase 87 (609F): the KycVerifyRequest body key is clientId.
+    const { customerId, ...rest } = data;
+    const result = await api.post<KycVerifyResponse>("/api/kyc/verify", {
+      ...rest,
+      clientId: customerId,
+    });
+    revalidatePath(`/org/${slug}/customers/${customerId}`);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof ApiError) {

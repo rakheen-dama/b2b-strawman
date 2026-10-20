@@ -36,7 +36,7 @@ export async function updateProjectNamingPattern(
       accountingEnabled: current.accountingEnabled ?? false,
       aiEnabled: current.aiEnabled ?? false,
       documentSigningEnabled: current.documentSigningEnabled ?? false,
-      projectNamingPattern: projectNamingPattern || null,
+      matterNamingPattern: projectNamingPattern || null,
     });
   } catch (error) {
     if (error instanceof ApiError) {

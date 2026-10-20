@@ -242,7 +242,9 @@ export interface FicaVerificationResponse {
 export async function invokeFicaVerification(
   customerId: string
 ): Promise<FicaVerificationResponse> {
-  return api.post<FicaVerificationResponse>("/api/ai/skills/fica-verification", { customerId });
+  return api.post<FicaVerificationResponse>("/api/ai/skills/fica-verification", {
+    clientId: customerId,
+  });
 }
 
 // ---- Matter Intake Types ----
@@ -312,7 +314,7 @@ export async function invokeMatterIntake(
   description: string
 ): Promise<MatterIntakeResponse> {
   return api.post<MatterIntakeResponse>("/api/ai/skills/matter-intake", {
-    customerId,
+    clientId: customerId,
     description,
   });
 }
@@ -423,7 +425,7 @@ export async function invokeContractReview(
   // server-side), so no client-side JSON.parse is needed — consistent with the other skills.
   return api.post<ContractReviewResponse>("/api/ai/skills/contract-review", {
     documentId,
-    projectId,
+    matterId: projectId,
   });
 }
 
@@ -437,6 +439,6 @@ export async function invokeDrafting(
   // server-side), so no client-side JSON.parse is needed — consistent with the other skills.
   return api.post<DraftingResponse>("/api/ai/skills/drafting", {
     templateId,
-    projectId,
+    matterId: projectId,
   });
 }

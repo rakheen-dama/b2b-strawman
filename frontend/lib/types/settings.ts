@@ -37,7 +37,7 @@ export interface OrgSettings {
   billingEmailRateLimit?: number;
   defaultBillingRunCurrency?: string | null;
   // project naming
-  projectNamingPattern?: string | null;
+  matterNamingPattern?: string | null;
   // vertical profile for terminology overrides
   verticalProfile?: string | null;
   // vertical architecture: module gating + i18n namespace

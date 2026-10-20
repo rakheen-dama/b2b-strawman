@@ -53,7 +53,7 @@ export default async function ProjectNamingPage({ params }: { params: Promise<{ 
 
       <ProjectNamingSettings
         slug={slug}
-        projectNamingPattern={settings.projectNamingPattern ?? ""}
+        projectNamingPattern={settings.matterNamingPattern ?? ""}
       />
     </div>
   );

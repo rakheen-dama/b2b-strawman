@@ -28,10 +28,10 @@ const NOTIFICATION_ICON_MAP: Record<string, LucideIcon> = {
 };
 
 function getDeepLinkUrl(orgSlug: string, notification: Notification): string | null {
-  const { referenceProjectId, referenceEntityType } = notification;
-  if (!referenceProjectId) return null;
+  const { referenceMatterId, referenceEntityType } = notification;
+  if (!referenceMatterId) return null;
 
-  const base = `/org/${orgSlug}/projects/${referenceProjectId}`;
+  const base = `/org/${orgSlug}/projects/${referenceMatterId}`;
   switch (referenceEntityType) {
     case "TASK":
       return `${base}?tab=tasks`;

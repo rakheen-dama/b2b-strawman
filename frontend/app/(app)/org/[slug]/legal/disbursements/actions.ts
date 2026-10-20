@@ -63,7 +63,7 @@ export async function fetchUnbilledDisbursements(
   projectId: string
 ): Promise<UnbilledDisbursementsResponse | null> {
   try {
-    return await listUnbilledApi({ projectId });
+    return await listUnbilledApi({ matterId: projectId });
   } catch (error) {
     console.error("Failed to fetch unbilled disbursements:", error);
     return null;
@@ -77,7 +77,7 @@ export async function createDisbursementAction(
   try {
     const result = await createDisbursementApi(data);
     revalidatePath(`/org/${slug}/legal/disbursements`);
-    revalidatePath(`/org/${slug}/projects/${data.projectId}`);
+    revalidatePath(`/org/${slug}/projects/${data.matterId}`);
     return { success: true, data: result };
   } catch (error) {
     const message = error instanceof ApiError ? error.message : "Failed to create disbursement";
@@ -95,8 +95,8 @@ export async function updateDisbursementAction(
     revalidatePath(`/org/${slug}/legal/disbursements`);
     revalidatePath(`/org/${slug}/legal/disbursements/${id}`);
     // Also revalidate the project page so the Disbursements tab reflects the update.
-    if (result?.projectId) {
-      revalidatePath(`/org/${slug}/projects/${result.projectId}`);
+    if (result?.matterId) {
+      revalidatePath(`/org/${slug}/projects/${result.matterId}`);
     }
     return { success: true, data: result };
   } catch (error) {
@@ -136,8 +136,8 @@ export async function submitForApprovalAction(
     const result = await submitForApprovalApi(id);
     revalidatePath(`/org/${slug}/legal/disbursements`);
     revalidatePath(`/org/${slug}/legal/disbursements/${id}`);
-    if (result?.projectId) {
-      revalidatePath(`/org/${slug}/projects/${result.projectId}`);
+    if (result?.matterId) {
+      revalidatePath(`/org/${slug}/projects/${result.matterId}`);
     }
     return { success: true, data: result };
   } catch (error) {
@@ -165,8 +165,8 @@ export async function approveDisbursementAction(
     const result = await approveDisbursementApi(id, trimmedNotes ? { notes: trimmedNotes } : {});
     revalidatePath(`/org/${slug}/legal/disbursements`);
     revalidatePath(`/org/${slug}/legal/disbursements/${id}`);
-    if (result?.projectId) {
-      revalidatePath(`/org/${slug}/projects/${result.projectId}`);
+    if (result?.matterId) {
+      revalidatePath(`/org/${slug}/projects/${result.matterId}`);
     }
     return { success: true, data: result };
   } catch (error) {
@@ -197,8 +197,8 @@ export async function rejectDisbursementAction(
     const result = await rejectDisbursementApi(id, { notes: trimmedNotes });
     revalidatePath(`/org/${slug}/legal/disbursements`);
     revalidatePath(`/org/${slug}/legal/disbursements/${id}`);
-    if (result?.projectId) {
-      revalidatePath(`/org/${slug}/projects/${result.projectId}`);
+    if (result?.matterId) {
+      revalidatePath(`/org/${slug}/projects/${result.matterId}`);
     }
     return { success: true, data: result };
   } catch (error) {
@@ -212,8 +212,8 @@ export async function rejectDisbursementAction(
  *
  * Phase 60 exposes trust transactions via the account-scoped endpoint
  * `GET /api/trust-accounts/{accountId}/transactions?...`. There is no flat
- * `/api/trust-transactions?projectId=...` endpoint yet, and the current
- * controller ignores projectId/status/type query params, so we:
+ * `/api/trust-transactions?matterId=...` endpoint yet, and the current
+ * controller ignores matterId/status/type query params, so we:
  *   1. Walk all trust accounts for the org and page through every page of
  *      transactions per account.
  *   2. Apply client-side filtering to keep only APPROVED DISBURSEMENT_PAYMENT
@@ -244,7 +244,7 @@ export async function fetchApprovedTrustDisbursementPayments(
       try {
         while (page < totalPages) {
           const search = new URLSearchParams();
-          search.set("projectId", projectId);
+          search.set("matterId", projectId);
           search.set("status", "APPROVED");
           search.set("type", "DISBURSEMENT_PAYMENT");
           search.set("size", String(PAGE_SIZE));
@@ -276,12 +276,12 @@ export async function fetchApprovedTrustDisbursementPayments(
   );
 
   // Defensive client-side filter — the backend controller currently ignores
-  // projectId/status/type params, so we must verify each row matches.
+  // matterId/status/type params, so we must verify each row matches.
   return transactionsPerAccount
     .flat()
     .filter(
       (t) =>
-        t.projectId === projectId &&
+        t.matterId === projectId &&
         t.status === "APPROVED" &&
         t.transactionType === "DISBURSEMENT_PAYMENT"
     );
@@ -292,7 +292,7 @@ export async function fetchUnbilledDisbursementsAction(
 ): Promise<UnbilledDisbursementsResponse | null> {
   if (!projectId) return null;
   try {
-    return await listUnbilledApi({ projectId });
+    return await listUnbilledApi({ matterId: projectId });
   } catch (error) {
     console.error("Failed to fetch unbilled disbursements:", error);
     return null;

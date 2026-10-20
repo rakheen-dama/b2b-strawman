@@ -7,8 +7,8 @@ import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
 function makeDisbursement(overrides: Partial<DisbursementResponse> = {}): DisbursementResponse {
   return {
     id: "d1",
-    projectId: "p1",
-    customerId: "c1",
+    matterId: "p1",
+    clientId: "c1",
     category: "SHERIFF_FEES",
     description: "Sheriff service of summons",
     amount: 500,
@@ -83,7 +83,7 @@ describe("DisbursementListView", () => {
   });
 
   it("resolves matter name from projectNames map", () => {
-    const row = makeDisbursement({ id: "d1", projectId: "p1" });
+    const row = makeDisbursement({ id: "d1", matterId: "p1" });
     render(<DisbursementListView disbursements={[row]} projectNames={{ p1: "Matter 2026/001" }} />);
 
     expect(screen.getByText("Matter 2026/001")).toBeInTheDocument();

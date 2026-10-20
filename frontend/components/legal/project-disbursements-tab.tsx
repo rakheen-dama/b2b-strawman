@@ -28,7 +28,7 @@ export function ProjectDisbursementsTab({
 
   const { data, isLoading, mutate } = useSWR(
     `project-disbursements-${projectId}`,
-    () => fetchDisbursements({ projectId, size: PAGE_SIZE }),
+    () => fetchDisbursements({ matterId: projectId, size: PAGE_SIZE }),
     { dedupingInterval: 2000 }
   );
 

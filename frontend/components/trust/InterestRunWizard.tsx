@@ -313,7 +313,7 @@ export function InterestRunWizard({
                         key={a.id}
                         className="border-b border-slate-100 last:border-0 dark:border-slate-800"
                       >
-                        <td className="py-3 pr-4 font-mono text-xs">{a.customerId}</td>
+                        <td className="py-3 pr-4 font-mono text-xs">{a.clientId}</td>
                         <td className="py-3 pr-4 text-right font-mono tabular-nums">
                           {formatCurrency(a.averageDailyBalance, currency)}
                         </td>

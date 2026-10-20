@@ -192,7 +192,7 @@ export function DisbursementListView({
                   {d.incurredDate}
                 </td>
                 <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
-                  {projectNames?.[d.projectId] ?? "\u2014"}
+                  {projectNames?.[d.matterId] ?? "\u2014"}
                 </td>
                 <td className="px-4 py-3">
                   <Badge variant="outline">{categoryLabel(d.category)}</Badge>

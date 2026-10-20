@@ -68,7 +68,7 @@ function makeStatement(overrides: Partial<StatementResponse> = {}): StatementRes
     generatedAt: "2026-04-17T10:30:00Z",
     htmlPreview: null,
     pdfUrl: "/api/documents/s-1/pdf",
-    matter: { projectId: "p1", name: "Smith v Jones" },
+    matter: { matterId: "p1", name: "Smith v Jones" },
     summary: {
       totalFees: 42000,
       totalDisbursements: 3200,

@@ -94,8 +94,8 @@ export function ConflictCheckForm({
         checkedIdNumber: values.checkedIdNumber || undefined,
         checkedRegistrationNumber: values.checkedRegistrationNumber || undefined,
         checkType: values.checkType,
-        customerId: values.customerId || undefined,
-        projectId: values.projectId || undefined,
+        clientId: values.customerId || undefined,
+        matterId: values.projectId || undefined,
       });
       if (res.success && res.data) {
         setResult(res.data);

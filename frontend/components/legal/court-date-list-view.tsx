@@ -188,10 +188,10 @@ export function CourtDateListView({
                   {cd.courtName}
                 </td>
                 <td className="px-4 py-3 text-sm font-medium text-slate-950 dark:text-slate-50">
-                  {cd.projectName}
+                  {cd.matterName}
                 </td>
                 <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
-                  {cd.customerName}
+                  {cd.clientName}
                 </td>
                 <td className="px-4 py-3">{statusBadge(cd.status)}</td>
                 <td className="px-4 py-3 text-right">

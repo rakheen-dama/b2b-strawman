@@ -14,10 +14,10 @@ export type CourtDateStatus = "SCHEDULED" | "POSTPONED" | "HEARD" | "CANCELLED";
 
 export interface CourtDate {
   id: string;
-  projectId: string;
-  projectName: string;
-  customerId: string;
-  customerName: string;
+  matterId: string;
+  matterName: string;
+  clientId: string;
+  clientName: string;
   dateType: CourtDateType;
   scheduledDate: string; // ISO date "2026-03-15"
   scheduledTime: string | null; // "09:00"
@@ -46,10 +46,10 @@ export type PrescriptionStatus = "RUNNING" | "WARNED" | "INTERRUPTED" | "EXPIRED
 
 export interface PrescriptionTracker {
   id: string;
-  projectId: string;
-  projectName: string;
-  customerId: string;
-  customerName: string;
+  matterId: string;
+  matterName: string;
+  clientId: string;
+  clientName: string;
   causeOfActionDate: string; // ISO date
   prescriptionType: PrescriptionType;
   customYears: number | null;
@@ -71,6 +71,7 @@ export type ConflictCheckType = "NEW_CLIENT" | "NEW_MATTER" | "PERIODIC_REVIEW";
 export type ConflictResolution = "PROCEED" | "DECLINED" | "WAIVER_OBTAINED" | "REFERRED";
 
 export interface ConflictMatch {
+  // Legacy keys on purpose — ConflictCheckService.ConflictDetail is JSONB-persisted (PR #1601 Q2); do not rename until storage/wire split.
   adversePartyId: string;
   adversePartyName: string;
   projectId: string;
@@ -98,8 +99,8 @@ export interface ConflictCheck {
   resolvedBy: string | null;
   checkedAt: string;
   resolvedAt: string | null;
-  customerId: string | null;
-  projectId: string | null;
+  clientId: string | null;
+  matterId: string | null;
 }
 
 // Adverse party types
@@ -135,10 +136,10 @@ export interface AdversePartyLink {
   id: string;
   adversePartyId: string;
   adversePartyName: string;
-  projectId: string;
-  projectName: string;
-  customerId: string;
-  customerName: string;
+  matterId: string;
+  matterName: string;
+  clientId: string;
+  clientName: string;
   relationship: AdversePartyRelationship;
   description: string | null;
   createdAt: string;

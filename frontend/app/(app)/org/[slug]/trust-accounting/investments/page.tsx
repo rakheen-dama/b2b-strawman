@@ -212,7 +212,7 @@ export default async function InvestmentsPage({
                           data-testid={maturing ? "maturity-alert" : `investment-row-${inv.id}`}
                         >
                           <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">
-                            {inv.customerName}
+                            {inv.clientName}
                           </td>
                           <td className="py-3 pr-4">
                             <Badge variant={BASIS_BADGE_VARIANT[inv.investmentBasis]}>

@@ -68,7 +68,7 @@ function makeGate(overrides: Partial<GateResult> = {}): GateResult {
 
 function makeReport(overrides: Partial<ClosureReport> = {}): ClosureReport {
   return {
-    projectId: "p1",
+    matterId: "p1",
     evaluatedAt: "2026-04-17T10:14:30Z",
     allPassed: true,
     gates: [makeGate()],
@@ -155,7 +155,7 @@ describe("MatterClosureDialog", () => {
     mockClose.mockResolvedValue({
       success: true,
       data: {
-        projectId: "p1",
+        matterId: "p1",
         status: "CLOSED",
         closedAt: "2026-04-17T10:15:02Z",
         closureLogId: "log-1",
@@ -388,7 +388,7 @@ describe("MatterClosureDialog", () => {
     mockClose.mockResolvedValue({
       success: true,
       data: {
-        projectId: "p1",
+        matterId: "p1",
         status: "CLOSED",
         closedAt: "2026-04-28T08:00:00Z",
         closureLogId: "log-1",

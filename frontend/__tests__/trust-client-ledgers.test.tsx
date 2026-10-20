@@ -107,8 +107,8 @@ function makeLedgerCard(overrides: Record<string, unknown> = {}) {
   return {
     id: "ledger-1",
     trustAccountId: "acc-1",
-    customerId: "cust-1",
-    customerName: "Acme Corp",
+    clientId: "cust-1",
+    clientName: "Acme Corp",
     balance: 50000,
     totalDeposits: 100000,
     totalPayments: 40000,
@@ -127,9 +127,9 @@ function makeTx(overrides: Record<string, unknown> = {}) {
     trustAccountId: "acc-1",
     transactionType: "DEPOSIT",
     amount: 50000,
-    customerId: "cust-1",
-    projectId: null,
-    counterpartyCustomerId: null,
+    clientId: "cust-1",
+    matterId: null,
+    counterpartyClientId: null,
     invoiceId: null,
     reference: "DEP-001",
     description: "Initial deposit",
@@ -181,14 +181,14 @@ describe("Client Ledgers", () => {
     mockFetchClientLedgers.mockResolvedValue({
       content: [
         makeLedgerCard({
-          customerId: "cust-1",
-          customerName: "Acme Corp",
+          clientId: "cust-1",
+          clientName: "Acme Corp",
           balance: 50000,
         }),
         makeLedgerCard({
           id: "ledger-2",
-          customerId: "cust-2",
-          customerName: "Beta Inc",
+          clientId: "cust-2",
+          clientName: "Beta Inc",
           balance: 25000,
           totalDeposits: 50000,
           totalPayments: 20000,
@@ -215,8 +215,8 @@ describe("Client Ledgers", () => {
     mockFetchClientLedgers.mockResolvedValue({
       content: [
         makeLedgerCard({
-          customerId: "cust-1",
-          customerName: "Acme Corp",
+          clientId: "cust-1",
+          clientName: "Acme Corp",
           balance: 50000,
         }),
       ],
@@ -242,8 +242,8 @@ describe("Client Ledgers", () => {
     setupDefaultMocks();
     mockFetchClientLedger.mockResolvedValue(
       makeLedgerCard({
-        customerId: "cust-1",
-        customerName: "Acme Corp",
+        clientId: "cust-1",
+        clientName: "Acme Corp",
         balance: 50000,
       })
     );
@@ -288,8 +288,8 @@ describe("Client Ledgers", () => {
     setupDefaultMocks();
     mockFetchClientLedger.mockResolvedValue(
       makeLedgerCard({
-        customerId: "cust-1",
-        customerName: "Acme Corp",
+        clientId: "cust-1",
+        clientName: "Acme Corp",
         balance: 50000,
       })
     );

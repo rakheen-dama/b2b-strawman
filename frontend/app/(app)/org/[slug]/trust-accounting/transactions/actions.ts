@@ -62,8 +62,8 @@ export async function fetchTransactions(
   if (params.dateTo) queryParams.set("dateTo", params.dateTo);
   if (params.type) queryParams.set("type", params.type);
   if (params.status) queryParams.set("status", params.status);
-  if (params.customerId) queryParams.set("customerId", params.customerId);
-  if (params.projectId) queryParams.set("projectId", params.projectId);
+  if (params.customerId) queryParams.set("clientId", params.customerId);
+  if (params.projectId) queryParams.set("matterId", params.projectId);
   queryParams.set("page", String(params.page ?? 0));
   queryParams.set("size", String(params.size ?? 20));
   queryParams.set("sort", "transactionDate,desc");
@@ -90,8 +90,8 @@ export async function recordDeposit(
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/trust-accounts/${accountId}/transactions/deposit`, {
-      customerId: data.customerId,
-      projectId: data.projectId || null,
+      clientId: data.customerId,
+      matterId: data.projectId || null,
       amount: data.amount,
       reference: data.reference,
       description: data.description || null,
@@ -113,8 +113,8 @@ export async function recordPayment(
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/trust-accounts/${accountId}/transactions/payment`, {
-      customerId: data.customerId,
-      projectId: data.projectId || null,
+      clientId: data.customerId,
+      matterId: data.projectId || null,
       amount: data.amount,
       reference: data.reference,
       description: data.description || null,
@@ -136,9 +136,9 @@ export async function recordTransfer(
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/trust-accounts/${accountId}/transactions/transfer`, {
-      sourceCustomerId: data.sourceCustomerId,
-      targetCustomerId: data.targetCustomerId,
-      projectId: data.projectId || null,
+      sourceClientId: data.sourceCustomerId,
+      targetClientId: data.targetCustomerId,
+      matterId: data.projectId || null,
       amount: data.amount,
       reference: data.reference,
       description: data.description || null,
@@ -160,7 +160,7 @@ export async function recordFeeTransfer(
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/trust-accounts/${accountId}/transactions/fee-transfer`, {
-      customerId: data.customerId,
+      clientId: data.customerId,
       invoiceId: data.invoiceId,
       amount: data.amount,
       reference: data.reference,
@@ -181,8 +181,8 @@ export async function recordRefund(
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/trust-accounts/${accountId}/transactions/refund`, {
-      customerId: data.customerId,
-      projectId: data.projectId || null,
+      clientId: data.customerId,
+      matterId: data.projectId || null,
       amount: data.amount,
       reference: data.reference,
       description: data.description || null,

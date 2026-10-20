@@ -77,9 +77,9 @@ export interface TrustTransaction {
   trustAccountId: string;
   transactionType: TrustTransactionType;
   amount: number;
-  customerId: string;
-  projectId: string | null;
-  counterpartyCustomerId: string | null;
+  clientId: string;
+  matterId: string | null;
+  counterpartyClientId: string | null;
   invoiceId: string | null;
   reference: string;
   description: string | null;
@@ -104,8 +104,8 @@ export interface TrustTransaction {
 export interface ClientLedgerCard {
   id: string;
   trustAccountId: string;
-  customerId: string;
-  customerName: string;
+  clientId: string;
+  clientName: string;
   balance: number;
   totalDeposits: number;
   totalPayments: number;
@@ -255,8 +255,8 @@ export type InvestmentBasis = "FIRM_DISCRETION" | "CLIENT_INSTRUCTION";
 export interface TrustInvestment {
   id: string;
   trustAccountId: string;
-  customerId: string;
-  customerName: string;
+  clientId: string;
+  clientName: string;
   institution: string;
   accountNumber: string;
   principal: number;
@@ -299,7 +299,7 @@ export interface InterestRun {
 export interface InterestAllocation {
   id: string;
   interestRunId: string;
-  customerId: string;
+  clientId: string;
   averageDailyBalance: number;
   daysInPeriod: number;
   grossInterest: number;

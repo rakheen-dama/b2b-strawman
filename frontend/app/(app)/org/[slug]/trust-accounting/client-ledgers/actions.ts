@@ -61,7 +61,7 @@ export async function fetchClientLedgers(
   }
   if (params.search) {
     const term = params.search.toLowerCase();
-    content = content.filter((c) => c.customerName.toLowerCase().includes(term));
+    content = content.filter((c) => c.clientName.toLowerCase().includes(term));
   }
 
   // Recalculate pagination metadata after client-side filtering.
@@ -81,14 +81,14 @@ export async function fetchClientLedgers(
 
 export async function fetchClientLedger(
   accountId: string,
-  customerId: string
+  clientId: string
 ): Promise<ClientLedgerCard> {
-  return api.get<ClientLedgerCard>(`/api/trust-accounts/${accountId}/client-ledgers/${customerId}`);
+  return api.get<ClientLedgerCard>(`/api/trust-accounts/${accountId}/client-ledgers/${clientId}`);
 }
 
 export async function fetchClientHistory(
   accountId: string,
-  customerId: string,
+  clientId: string,
   params: {
     page?: number;
     size?: number;
@@ -109,7 +109,7 @@ export async function fetchClientHistory(
 
   const qs = queryParams.toString();
   const result = await api.get<PaginatedResponse<TrustTransaction>>(
-    `/api/trust-accounts/${accountId}/client-ledgers/${customerId}/history?${qs}`
+    `/api/trust-accounts/${accountId}/client-ledgers/${clientId}/history?${qs}`
   );
 
   return {
@@ -123,7 +123,7 @@ export async function fetchClientHistory(
 
 export async function fetchClientStatement(
   accountId: string,
-  customerId: string,
+  clientId: string,
   startDate: string,
   endDate: string
 ): Promise<LedgerStatementResponse> {
@@ -133,7 +133,7 @@ export async function fetchClientStatement(
 
   const qs = queryParams.toString();
   return api.get<LedgerStatementResponse>(
-    `/api/trust-accounts/${accountId}/client-ledgers/${customerId}/statement?${qs}`
+    `/api/trust-accounts/${accountId}/client-ledgers/${clientId}/statement?${qs}`
   );
 }
 

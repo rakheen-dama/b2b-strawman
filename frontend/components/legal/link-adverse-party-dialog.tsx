@@ -89,8 +89,8 @@ export function LinkAdversePartyDialog({
     setIsSubmitting(true);
     try {
       const result = await linkAdverseParty(slug, adversePartyId, {
-        projectId: values.projectId,
-        customerId: values.customerId,
+        matterId: values.projectId,
+        clientId: values.customerId,
         relationship: values.relationship,
         description: values.description || undefined,
       });

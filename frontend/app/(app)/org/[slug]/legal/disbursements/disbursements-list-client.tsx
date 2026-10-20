@@ -56,7 +56,7 @@ export function DisbursementsListClient({
     startTransition(async () => {
       try {
         const result = await fetchDisbursements({
-          projectId: projectFilter || undefined,
+          matterId: projectFilter || undefined,
           category: (categoryFilter || undefined) as DisbursementCategory | undefined,
           approvalStatus: (approvalFilter || undefined) as DisbursementApprovalStatus | undefined,
           billingStatus: (billingFilter || undefined) as DisbursementBillingStatus | undefined,

@@ -102,7 +102,7 @@ export function CreatePrescriptionDialog({ slug, onSuccess }: CreatePrescription
 
     try {
       const result = await createPrescriptionTracker(slug, {
-        projectId: values.projectId,
+        matterId: values.projectId,
         causeOfActionDate: values.causeOfActionDate,
         prescriptionType: values.prescriptionType,
         customYears: values.prescriptionType === "CUSTOM" ? values.customYears : undefined,

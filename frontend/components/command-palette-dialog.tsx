@@ -10,7 +10,7 @@ import {
   CommandGroup,
   CommandItem,
 } from "@/components/ui/command";
-import { NAV_GROUPS, UTILITY_ITEMS, SETTINGS_ITEMS } from "@/lib/nav-items";
+import { NAV_GROUPS, UTILITY_ITEMS, SETTINGS_ITEMS, canAccessNavItem } from "@/lib/nav-items";
 import { useCapabilities } from "@/lib/capabilities";
 import { useOrgProfile } from "@/lib/org-profile";
 import { useRecentItems } from "@/components/recent-items-provider";
@@ -23,18 +23,19 @@ interface CommandPaletteDialogProps {
 
 export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPaletteDialogProps) {
   const router = useRouter();
-  const { hasCapability, isAdmin } = useCapabilities();
+  const access = useCapabilities();
   const { isModuleEnabled } = useOrgProfile();
   const { items: recentItems } = useRecentItems();
 
-  const pages = [...NAV_GROUPS.flatMap((g) => g.items), ...UTILITY_ITEMS].filter(
-    (item) => !item.requiredCapability || hasCapability(item.requiredCapability)
+  const pages = [...NAV_GROUPS.flatMap((g) => g.items), ...UTILITY_ITEMS].filter((item) =>
+    canAccessNavItem(item, access)
   );
 
   const settings = SETTINGS_ITEMS.filter(
     (item) =>
       !item.comingSoon &&
-      (!item.adminOnly || isAdmin) &&
+      // Same admin rule as the pages (admin = isAdmin || isOwner, as in the settings layout).
+      canAccessNavItem(item, access) &&
       (!item.requiredModule || isModuleEnabled(item.requiredModule))
   );
 

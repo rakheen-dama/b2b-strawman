@@ -38,7 +38,7 @@ afterEach(() => {
   cleanup();
 });
 
-// All capabilities — lets all nav items render
+// All capabilities + legal modules — lets every zone render (Trust needs VIEW_TRUST + trust_accounting)
 const ALL_CAPABILITIES = [
   "FINANCIAL_VISIBILITY",
   "INVOICING",
@@ -46,11 +46,26 @@ const ALL_CAPABILITIES = [
   "TEAM_OVERSIGHT",
   "CUSTOMER_MANAGEMENT",
   "AUTOMATIONS",
+  "VIEW_TRUST",
+  "AI_REVIEW",
+];
+const LEGAL_MODULES = [
+  "court_calendar",
+  "conflict_check",
+  "information_requests",
+  "bulk_billing",
+  "disbursements",
+  "lssa_tariff",
+  "trust_accounting",
 ];
 
 function renderSidebar() {
   return render(
-    <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
+    <OrgProfileProvider
+      verticalProfile={null}
+      enabledModules={LEGAL_MODULES}
+      terminologyNamespace={null}
+    >
       <CapabilityProvider
         capabilities={ALL_CAPABILITIES}
         role="Owner"
@@ -66,15 +81,16 @@ function renderSidebar() {
 }
 
 describe("DesktopSidebar", () => {
-  it("renders all 5 zone headers", () => {
+  it("renders the six zone headers (Phase 87 612A, ADR-339)", () => {
     mockUsePathname.mockReturnValue("/org/test-org/dashboard");
     renderSidebar();
 
-    expect(screen.getByText("Work")).toBeInTheDocument();
-    expect(screen.getAllByText("Matters").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("Clients")).toBeInTheDocument();
-    expect(screen.getByText("Finance")).toBeInTheDocument();
-    expect(screen.getAllByText("Team").length).toBeGreaterThanOrEqual(1);
+    for (const label of ["Today", "Matters", "Clients", "Fees", "Trust", "Firm"]) {
+      expect(screen.getByRole("button", { name: label })).toBeInTheDocument();
+    }
+    for (const gone of ["Work", "Finance", "Team", "AI"]) {
+      expect(screen.queryByRole("button", { name: gone })).not.toBeInTheDocument();
+    }
   });
 
   it("collapses a zone on header click, hides its items", async () => {
@@ -82,24 +98,34 @@ describe("DesktopSidebar", () => {
     mockUsePathname.mockReturnValue("/org/test-org/other");
     renderSidebar();
 
-    // Dashboard is in the Work zone (defaultExpanded: true)
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
+    // Home is in the Today zone (defaultExpanded: true)
+    expect(screen.getByRole("link", { name: "Home" })).toBeInTheDocument();
 
-    // Click the "Work" zone header button
-    const workHeader = screen.getByRole("button", { name: /work/i });
-    await user.click(workHeader);
+    await user.click(screen.getByRole("button", { name: "Today" }));
 
-    // Work zone items should now be hidden
-    expect(screen.queryByText("Dashboard")).not.toBeInTheDocument();
-    expect(screen.queryByText("My Work")).not.toBeInTheDocument();
+    // Today zone items should now be hidden
+    expect(screen.queryByRole("link", { name: "Home" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "My work" })).not.toBeInTheDocument();
   });
 
-  it("renders utility footer section with Notifications and Settings", () => {
+  it("renders the utility footer with Notifications only — Settings lives in Firm", async () => {
+    const user = userEvent.setup();
     mockUsePathname.mockReturnValue("/org/test-org/other");
     renderSidebar();
 
-    expect(screen.getByText("Notifications")).toBeInTheDocument();
-    expect(screen.getByText("Settings")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Notifications" })).toHaveAttribute(
+      "href",
+      "/org/test-org/notifications"
+    );
+    // Firm is collapsed by default, and the footer no longer carries Settings.
+    expect(screen.queryByRole("link", { name: "Settings" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Firm" }));
+    expect(screen.getAllByRole("link", { name: "Settings" })).toHaveLength(1);
+    expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute(
+      "href",
+      "/org/test-org/settings/general"
+    );
   });
 
   it("renders search pill with ⌘K badge", () => {

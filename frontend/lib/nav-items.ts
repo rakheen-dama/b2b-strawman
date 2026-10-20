@@ -1,30 +1,33 @@
 import {
-  LayoutDashboard,
-  ClipboardList,
+  House,
+  ListChecks,
   CalendarDays,
-  FolderOpen,
-  Users,
-  UserRound,
-  Bell,
-  TrendingUp,
-  BarChart3,
-  Receipt,
-  ShieldCheck,
-  Settings,
-  Scale,
   Gavel,
-  ShieldAlert,
-  FileSpreadsheet,
+  Scale,
+  Plus,
+  SearchCheck,
+  Users,
+  Sparkles,
+  Contact,
+  ShieldCheck,
+  Inbox,
+  Receipt,
+  Layers,
+  Banknote,
+  Wallet,
   BookOpen,
-  ArrowLeftRight,
-  Calculator,
   Landmark,
+  ArrowLeftRight,
+  Book,
+  CheckCheck,
+  Percent,
   PiggyBank,
   FileBarChart,
-  Layers,
-  Brain,
-  Sparkles,
-  HandCoins,
+  UsersRound,
+  BarChart3,
+  ScrollText,
+  Settings,
+  Bell,
   type LucideIcon,
 } from "lucide-react";
 import type { CAPABILITIES } from "@/lib/capabilities";
@@ -36,13 +39,21 @@ export interface NavItem {
   label: string;
   href: (slug: string) => string;
   icon: LucideIcon;
-  /** Use exact match instead of startsWith for active detection */
+  /**
+   * Active only on an exact pathname match (no `/`-segment prefix match). Within a zone the single
+   * active item is the longest matching href (nav-zone.tsx).
+   */
   exact?: boolean;
-  /** If set, sidebar only shows this item when the user has this capability */
-  requiredCapability?: CapabilityName;
+  /**
+   * If set, the item is only shown when the user has this capability. An array is an any-of gate:
+   * the item shows when the user has at least one of the listed capabilities.
+   */
+  requiredCapability?: CapabilityName | readonly CapabilityName[];
   /** If set, sidebar only shows this item when the org has this module enabled */
   requiredModule?: string;
-  /** Optional keywords for future command palette fuzzy search */
+  /** If true, the item is only shown to admins and owners (mirrors SettingsItem.adminOnly) */
+  adminOnly?: boolean;
+  /** Optional keywords for command palette fuzzy search */
   keywords?: string[];
   /** If true, the sidebar renders an <a target="_blank"> instead of <Link> */
   external?: boolean;
@@ -65,28 +76,54 @@ export interface SettingsItem {
   requiredModule?: string;
 }
 
+/** The capability/role facts a nav item's access gates are evaluated against. */
+export interface NavAccess {
+  hasCapability: (cap: string) => boolean;
+  isAdmin: boolean;
+  isOwner: boolean;
+}
+
 /**
- * Grouped navigation items organized into 6 logical zones.
- * This is the source of truth for sidebar navigation structure.
+ * Whether the user may see a nav item: its capability gate (any-of when an array) and its
+ * admin-only flag (admin = isAdmin || isOwner, same rule as the settings layout). The module gate
+ * (`requiredModule`) is applied separately by the caller. Shared by the sidebar zones and the
+ * command palette so both apply the same rule.
+ */
+export function canAccessNavItem(
+  item: Pick<NavItem, "requiredCapability" | "adminOnly">,
+  { hasCapability, isAdmin, isOwner }: NavAccess
+): boolean {
+  const required = item.requiredCapability;
+  const capabilityOk =
+    !required ||
+    (typeof required === "string" ? hasCapability(required) : required.some(hasCapability));
+  return capabilityOk && (!item.adminOnly || isAdmin || isOwner);
+}
+
+/**
+ * The attorney's week in six zones (Phase 87 S6a, ADR-339): Today · Matters · Clients · Fees ·
+ * Trust · Firm. One level deep — a zone is the only grouping; ≤ 6 items per zone except Trust (7).
+ * Labels are sentence case. AI has no zone: AI intake is "New matter", AI reviews sits in Matters.
+ * Interim until later slices: Today carries Calendar + Court calendar (613D → one Diary item);
+ * Firm › Audit trail / Settings point at the current settings routes (616 → settings families);
+ * Fees gains "Unbilled work" in 612B. Profitability's single entry is Firm › Reports.
+ * Source of truth for the desktop sidebar, the mobile sheet and the command palette.
  */
 export const NAV_GROUPS: NavGroup[] = [
   {
-    id: "work",
-    label: "Work",
+    id: "today",
+    label: "Today",
     defaultExpanded: true,
     items: [
       {
-        label: "Dashboard",
+        label: "Home",
         href: (slug) => `/org/${slug}/dashboard`,
-        icon: LayoutDashboard,
+        icon: House,
         exact: true,
+        keywords: ["dashboard"],
       },
-      {
-        label: "My Work",
-        href: (slug) => `/org/${slug}/my-work`,
-        icon: ClipboardList,
-        exact: true,
-      },
+      { label: "My work", href: (slug) => `/org/${slug}/my-work`, icon: ListChecks, exact: true },
+      // Interim (Phase 87 S6a): Calendar + Court calendar are replaced by one "Diary" item in 613D.
       {
         label: "Calendar",
         href: (slug) => `/org/${slug}/calendar`,
@@ -94,7 +131,7 @@ export const NAV_GROUPS: NavGroup[] = [
         exact: true,
       },
       {
-        label: "Court Calendar",
+        label: "Court calendar",
         href: (slug) => `/org/${slug}/court-calendar`,
         icon: Gavel,
         exact: true,
@@ -103,125 +140,157 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    id: "projects",
+    id: "matters",
     label: "Matters",
     defaultExpanded: true,
     items: [
+      { label: "Matters", href: (slug) => `/org/${slug}/matters`, icon: Scale },
       {
-        label: "Matters",
-        href: (slug) => `/org/${slug}/matters`,
-        icon: FolderOpen,
+        // AI intake lives inside this page and self-gates on AI_EXECUTE (ADR-339). Any-of gate:
+        // members hold AI_EXECUTE but not PROJECT_MANAGEMENT and must keep their AI-intake entry
+        // (AIVERIFY-011).
+        label: "New matter",
+        href: (slug) => `/org/${slug}/matters/new`,
+        icon: Plus,
+        exact: true,
+        requiredCapability: ["PROJECT_MANAGEMENT", "AI_EXECUTE"],
+      },
+      {
+        label: "Conflict check",
+        href: (slug) => `/org/${slug}/conflict-check`,
+        icon: SearchCheck,
+        exact: true,
+        requiredModule: "conflict_check",
+      },
+      {
+        label: "Adverse parties",
+        href: (slug) => `/org/${slug}/legal/adverse-parties`,
+        icon: Users,
+        exact: true,
+        requiredModule: "conflict_check",
+      },
+      {
+        // Gate-review queue — the only way to reach /ai/reviews once the AI zone is gone.
+        label: "AI reviews",
+        href: (slug) => `/org/${slug}/ai/reviews`,
+        icon: Sparkles,
+        exact: true,
+        requiredCapability: "AI_REVIEW",
       },
     ],
   },
   {
     id: "clients",
     label: "Clients",
-    defaultExpanded: false,
+    defaultExpanded: true,
     items: [
       {
         label: "Clients",
         href: (slug) => `/org/${slug}/clients`,
-        icon: UserRound,
+        icon: Contact,
         requiredCapability: "CUSTOMER_MANAGEMENT",
       },
       {
-        label: "Compliance",
+        label: "FICA & compliance",
         href: (slug) => `/org/${slug}/compliance`,
         icon: ShieldCheck,
+        exact: true,
         requiredCapability: "CUSTOMER_MANAGEMENT",
       },
       {
-        label: "Conflict Check",
-        href: (slug) => `/org/${slug}/conflict-check`,
-        icon: ShieldAlert,
-        exact: true,
-        requiredModule: "conflict_check",
-      },
-      {
-        label: "Adverse Parties",
-        href: (slug) => `/org/${slug}/legal/adverse-parties`,
-        icon: Scale,
-        exact: true,
-        requiredModule: "conflict_check",
+        // /compliance/requests is the POPIA data-subject requests list (DataRequestsPage), not
+        // client information requests — so it is labelled for what it is and has no module gate.
+        label: "Data requests",
+        href: (slug) => `/org/${slug}/compliance/requests`,
+        icon: Inbox,
+        requiredCapability: "CUSTOMER_MANAGEMENT",
       },
     ],
   },
   {
-    id: "finance",
-    label: "Finance",
+    id: "fees",
+    label: "Fees",
     defaultExpanded: false,
     items: [
+      // 612B prepends "Unbilled work" (/invoices/unbilled, INVOICING, Hourglass) with its page.
       {
+        // Prefix match so /invoices/[id] highlights Fee notes; nav-zone's longest-match keeps
+        // /invoices/billing-runs/* and /invoices/collections on their own items.
         label: "Fee notes",
         href: (slug) => `/org/${slug}/invoices`,
         icon: Receipt,
         requiredCapability: "INVOICING",
       },
       {
-        label: "Billing Runs",
+        label: "Fee runs",
         href: (slug) => `/org/${slug}/invoices/billing-runs`,
         icon: Layers,
         requiredCapability: "INVOICING",
         requiredModule: "bulk_billing",
+        keywords: ["billing runs"],
       },
       {
-        label: "Collections",
+        label: "Debtors",
         href: (slug) => `/org/${slug}/invoices/collections`,
-        icon: HandCoins,
+        icon: Banknote,
         exact: true,
         requiredCapability: "INVOICING",
+        keywords: ["collections"],
       },
       {
-        label: "Profitability",
-        href: (slug) => `/org/${slug}/profitability`,
-        icon: TrendingUp,
+        label: "Disbursements",
+        href: (slug) => `/org/${slug}/legal/disbursements`,
+        icon: Wallet,
+        requiredModule: "disbursements",
+      },
+      {
+        label: "Tariffs",
+        href: (slug) => `/org/${slug}/legal/tariffs`,
+        icon: BookOpen,
         exact: true,
-        requiredCapability: "FINANCIAL_VISIBILITY",
+        requiredModule: "lssa_tariff",
       },
+    ],
+  },
+  {
+    id: "trust",
+    label: "Trust",
+    defaultExpanded: false,
+    items: [
       {
-        label: "Reports",
-        href: (slug) => `/org/${slug}/reports`,
-        icon: BarChart3,
-        exact: true,
-        requiredCapability: "FINANCIAL_VISIBILITY",
-      },
-      {
-        label: "Trust Accounting",
+        label: "Overview",
         href: (slug) => `/org/${slug}/trust-accounting`,
-        icon: Scale,
+        icon: Landmark,
         exact: true,
         requiredCapability: "VIEW_TRUST",
         requiredModule: "trust_accounting",
+        keywords: ["trust accounting"],
       },
       {
         label: "Transactions",
         href: (slug) => `/org/${slug}/trust-accounting/transactions`,
         icon: ArrowLeftRight,
-        exact: true,
         requiredCapability: "VIEW_TRUST",
         requiredModule: "trust_accounting",
       },
       {
-        label: "Client Ledgers",
+        label: "Client ledgers",
         href: (slug) => `/org/${slug}/trust-accounting/client-ledgers`,
-        icon: BookOpen,
-        exact: true,
+        icon: Book,
         requiredCapability: "VIEW_TRUST",
         requiredModule: "trust_accounting",
       },
       {
         label: "Reconciliation",
         href: (slug) => `/org/${slug}/trust-accounting/reconciliation`,
-        icon: Calculator,
-        exact: true,
+        icon: CheckCheck,
         requiredCapability: "VIEW_TRUST",
         requiredModule: "trust_accounting",
       },
       {
         label: "Interest",
         href: (slug) => `/org/${slug}/trust-accounting/interest`,
-        icon: Landmark,
+        icon: Percent,
         exact: true,
         requiredCapability: "VIEW_TRUST",
         requiredModule: "trust_accounting",
@@ -235,64 +304,50 @@ export const NAV_GROUPS: NavGroup[] = [
         requiredModule: "trust_accounting",
       },
       {
-        label: "Trust Reports",
+        label: "Trust reports",
         href: (slug) => `/org/${slug}/trust-accounting/reports`,
         icon: FileBarChart,
         exact: true,
         requiredCapability: "VIEW_TRUST",
         requiredModule: "trust_accounting",
       },
-      {
-        label: "Tariffs",
-        href: (slug) => `/org/${slug}/legal/tariffs`,
-        icon: FileSpreadsheet,
-        exact: true,
-        requiredModule: "lssa_tariff",
-      },
     ],
   },
   {
-    id: "team",
-    label: "Team",
-    defaultExpanded: true,
-    items: [
-      {
-        label: "Team",
-        href: (slug) => `/org/${slug}/team`,
-        icon: Users,
-        exact: true,
-      },
-    ],
-  },
-  {
-    id: "ai",
-    label: "AI",
+    id: "firm",
+    label: "Firm",
     defaultExpanded: false,
     items: [
-      // Members with AI_EXECUTE (the role grant in the tenant baseline) need an
-      // AI entry point. The matter-intake page is the member-appropriate AI surface.
+      { label: "Team", href: (slug) => `/org/${slug}/team`, icon: UsersRound, exact: true },
       {
-        label: "AI Intake",
-        href: (slug) => `/org/${slug}/matters/new`,
-        icon: Sparkles,
-        exact: true,
-        requiredCapability: "AI_EXECUTE",
+        // Single entry for profitability too: /reports/profitability (the standalone
+        // /profitability route redirects there — lib/legacy-redirects.ts).
+        label: "Reports",
+        href: (slug) => `/org/${slug}/reports`,
+        icon: BarChart3,
+        requiredCapability: "FINANCIAL_VISIBILITY",
       },
-      // Gate-review queue — owner/admin only.
       {
-        label: "AI Reviews",
-        href: (slug) => `/org/${slug}/ai/reviews`,
-        icon: Brain,
-        exact: true,
-        requiredCapability: "AI_REVIEW",
+        // Interim (S6a): current route; 616 points it at /settings/firm?tab=audit-trail.
+        label: "Audit trail",
+        href: (slug) => `/org/${slug}/settings/audit-log`,
+        icon: ScrollText,
+        adminOnly: true,
+        keywords: ["audit log"],
+      },
+      {
+        // Interim (S6a): current settings index target; 616 points it at /settings/firm.
+        label: "Settings",
+        href: (slug) => `/org/${slug}/settings/general`,
+        icon: Settings,
       },
     ],
   },
 ];
 
 /**
- * Utility items pinned to the sidebar footer.
- * Not part of any NavGroup — always visible.
+ * Utility items pinned to the sidebar footer (SidebarUtilityFooter — desktop and mobile share it).
+ * Notifications only: Settings lives in the Firm zone and nowhere else (ADR-339).
  */
 export const UTILITY_ITEMS: NavItem[] = [
   {
@@ -300,11 +355,6 @@ export const UTILITY_ITEMS: NavItem[] = [
     href: (slug) => `/org/${slug}/notifications`,
     icon: Bell,
     exact: true,
-  },
-  {
-    label: "Settings",
-    href: (slug) => `/org/${slug}/settings/general`,
-    icon: Settings,
   },
 ];
 
@@ -466,10 +516,3 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
     adminOnly: true,
   },
 ];
-
-/**
- * Backward-compatible flat array derived from NAV_GROUPS + UTILITY_ITEMS.
- * Used by MobileSidebar which iterates over this array
- * to render all sidebar items including Notifications and Settings.
- */
-export const NAV_ITEMS: NavItem[] = [...NAV_GROUPS.flatMap((g) => g.items), ...UTILITY_ITEMS];

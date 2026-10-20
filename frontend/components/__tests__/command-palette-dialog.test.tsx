@@ -90,9 +90,36 @@ describe("CommandPaletteDialog", () => {
     expect(screen.queryByText("Fee notes")).not.toBeInTheDocument();
   });
 
-  it("renders Pages items for user with capabilities — Dashboard is visible", () => {
+  it("renders Pages items for user with capabilities — Home is visible", () => {
     renderDialog({ capabilities: ALL_CAPABILITIES, isAdmin: false, isOwner: true });
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
+    expect(screen.getByText("Home")).toBeInTheDocument();
+  });
+
+  // Phase 87 S6a (612A, OI-3): the palette applies the same adminOnly rule as the sidebar.
+  it("omits the adminOnly Audit trail page for a non-admin member", () => {
+    renderDialog({
+      capabilities: ALL_CAPABILITIES,
+      isAdmin: false,
+      isOwner: false,
+      role: "member",
+    });
+    expect(screen.queryByText("Audit trail")).not.toBeInTheDocument();
+  });
+
+  it("shows the adminOnly Audit trail page to an owner", () => {
+    renderDialog({ capabilities: ALL_CAPABILITIES, isAdmin: false, isOwner: true });
+    expect(screen.getByText("Audit trail")).toBeInTheDocument();
+  });
+
+  // Phase 87 S6a (612A, OI-2): any-of gate — AIVERIFY-011 members keep New matter (AI intake).
+  it("shows New matter to a member with AI_EXECUTE but no PROJECT_MANAGEMENT", () => {
+    renderDialog({ capabilities: ["AI_EXECUTE"], isAdmin: false, isOwner: false, role: "member" });
+    expect(screen.getByText("New matter")).toBeInTheDocument();
+  });
+
+  it("hides New matter from a member with neither PROJECT_MANAGEMENT nor AI_EXECUTE", () => {
+    renderDialog({ capabilities: ["INVOICING"], isAdmin: false, isOwner: false, role: "member" });
+    expect(screen.queryByText("New matter")).not.toBeInTheDocument();
   });
 
   it("omits comingSoon settings items — Security is not in DOM", () => {
@@ -108,6 +135,11 @@ describe("CommandPaletteDialog", () => {
       role: "member",
     });
     expect(screen.queryByText("Batch Billing")).not.toBeInTheDocument();
+  });
+
+  it("shows adminOnly settings items to an owner who is not flagged admin (same rule as pages)", () => {
+    renderDialog({ capabilities: ALL_CAPABILITIES, isAdmin: false, isOwner: true });
+    expect(screen.getByText("Roles & Permissions")).toBeInTheDocument();
   });
 
   it("shows Recent group heading when recentItems is non-empty", () => {

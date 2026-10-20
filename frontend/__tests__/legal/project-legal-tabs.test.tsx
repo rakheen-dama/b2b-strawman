@@ -261,25 +261,25 @@ describe("UpcomingCourtDatesWidget", () => {
 describe("Sidebar nav items", () => {
   it("legal nav items have correct requiredModule values", () => {
     // Court Calendar
-    const workGroup = NAV_GROUPS.find((g) => g.id === "work");
-    const courtCalItem = workGroup?.items.find((i) => i.label === "Court Calendar");
+    const todayZone = NAV_GROUPS.find((g) => g.id === "today");
+    const courtCalItem = todayZone?.items.find((i) => i.label === "Court calendar");
     expect(courtCalItem).toBeDefined();
     expect(courtCalItem?.requiredModule).toBe("court_calendar");
 
     // Conflict Check
-    const clientsGroup = NAV_GROUPS.find((g) => g.id === "clients");
-    const conflictItem = clientsGroup?.items.find((i) => i.label === "Conflict Check");
+    const mattersZone = NAV_GROUPS.find((g) => g.id === "matters");
+    const conflictItem = mattersZone?.items.find((i) => i.label === "Conflict check");
     expect(conflictItem).toBeDefined();
     expect(conflictItem?.requiredModule).toBe("conflict_check");
 
     // Adverse Parties
-    const adverseItem = clientsGroup?.items.find((i) => i.label === "Adverse Parties");
+    const adverseItem = mattersZone?.items.find((i) => i.label === "Adverse parties");
     expect(adverseItem).toBeDefined();
     expect(adverseItem?.requiredModule).toBe("conflict_check");
 
     // Tariffs
-    const financeGroup = NAV_GROUPS.find((g) => g.id === "finance");
-    const tariffItem = financeGroup?.items.find((i) => i.label === "Tariffs");
+    const feesZone = NAV_GROUPS.find((g) => g.id === "fees");
+    const tariffItem = feesZone?.items.find((i) => i.label === "Tariffs");
     expect(tariffItem).toBeDefined();
     expect(tariffItem?.requiredModule).toBe("lssa_tariff");
   });

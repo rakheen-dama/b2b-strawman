@@ -416,23 +416,23 @@ describe("TrustBalanceCard", () => {
 });
 
 describe("Sidebar nav items", () => {
-  it("has 7 trust items in finance group with correct module and capability", () => {
-    const financeGroup = NAV_GROUPS.find((g) => g.id === "finance");
-    expect(financeGroup).toBeDefined();
+  it("has 7 trust items in the trust zone with correct module and capability", () => {
+    const trustZone = NAV_GROUPS.find((g) => g.id === "trust");
+    expect(trustZone).toBeDefined();
 
-    const trustItems = financeGroup!.items.filter(
+    const trustItems = trustZone!.items.filter(
       (item) => item.requiredModule === "trust_accounting"
     );
     expect(trustItems).toHaveLength(7);
 
     const expectedLabels = [
-      "Trust Accounting",
+      "Overview",
       "Transactions",
-      "Client Ledgers",
+      "Client ledgers",
       "Reconciliation",
       "Interest",
       "Investments",
-      "Trust Reports",
+      "Trust reports",
     ];
 
     for (const label of expectedLabels) {

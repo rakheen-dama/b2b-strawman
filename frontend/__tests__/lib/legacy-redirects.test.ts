@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import fs from "node:fs";
+import path from "node:path";
 import nextConfig from "@/next.config";
 import { LEGACY_REDIRECTS } from "@/lib/legacy-redirects";
 
@@ -101,6 +103,24 @@ describe("LEGACY_REDIRECTS", () => {
       destination: "/org/:slug/clients/:path*",
       permanent: true,
     });
+  });
+
+  it("redirects /profitability to its single entry under Reports (612A)", () => {
+    expect(LEGACY_REDIRECTS).toContainEqual({
+      source: "/org/:slug/profitability",
+      destination: "/org/:slug/reports/profitability",
+      permanent: true,
+    });
+  });
+
+  it("serves the real profitability page at /reports/profitability — no page-level loop back (612A)", () => {
+    const orgDir = path.resolve(__dirname, "../../app/(app)/org/[slug]");
+    // The old route has no page (the config redirect owns it) ...
+    expect(fs.existsSync(path.join(orgDir, "profitability", "page.tsx"))).toBe(false);
+    // ... and the destination renders the page instead of redirecting back to /profitability.
+    const page = fs.readFileSync(path.join(orgDir, "reports", "profitability", "page.tsx"), "utf8");
+    expect(page).not.toMatch(/\bredirect\(/);
+    expect(page).toContain("ProfitabilityContent");
   });
 
   it("keeps the pre-Phase-87 /settings/team row", () => {

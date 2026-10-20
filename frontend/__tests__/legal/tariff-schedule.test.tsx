@@ -219,8 +219,8 @@ describe("Schedule clone button", () => {
 
 describe("Tariff nav item", () => {
   it("tariff nav item has requiredModule: lssa_tariff", () => {
-    const financeGroup = NAV_GROUPS.find((g) => g.id === "finance");
-    const tariffItem = financeGroup?.items.find((i) => i.label === "Tariffs");
+    const feesZone = NAV_GROUPS.find((g) => g.id === "fees");
+    const tariffItem = feesZone?.items.find((i) => i.label === "Tariffs");
     expect(tariffItem).toBeDefined();
     expect(tariffItem?.requiredModule).toBe("lssa_tariff");
   });

@@ -7,6 +7,32 @@ import type { ReportListResponse } from "@/lib/api/reports";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
 import { EmptyState } from "@/components/empty-state";
 
+function ReportCard({
+  href,
+  name,
+  description,
+}: {
+  href: string;
+  name: string;
+  description: string;
+}) {
+  return (
+    <Link href={href}>
+      <Card className="h-full transition-shadow hover:shadow-md">
+        <CardHeader>
+          <CardTitle className="text-slate-950 dark:text-slate-50">{name}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <span className="text-sm font-medium text-teal-600 dark:text-teal-400">
+            Run Report &rarr;
+          </span>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
+
 export default async function ReportsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const capData = await fetchMyCapabilities();
@@ -35,6 +61,22 @@ export default async function ReportsPage({ params }: { params: Promise<{ slug: 
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Reports</h1>
       </div>
 
+      {/* Profitability is a built-in page, not a backend report definition: this card is its single
+          UI entry (Phase 87 S6a, ADR-339). Its page applies the same gate as this index (admin,
+          owner or FINANCIAL_VISIBILITY), so anyone past the gate above may open it. */}
+      <section className="space-y-4">
+        <h2 className="font-display text-xl text-slate-900 dark:text-slate-100">
+          Firm performance
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ReportCard
+            href={`/org/${slug}/reports/profitability`}
+            name="Profitability"
+            description="Team utilization, matter profitability, and client profitability across your organization"
+          />
+        </div>
+      </section>
+
       {/* Category Sections */}
       {data.categories.length === 0 ? (
         <EmptyState
@@ -54,21 +96,12 @@ export default async function ReportsPage({ params }: { params: Promise<{ slug: 
             </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {category.reports.map((report) => (
-                <Link key={report.slug} href={`/org/${slug}/reports/${report.slug}`}>
-                  <Card className="h-full transition-shadow hover:shadow-md">
-                    <CardHeader>
-                      <CardTitle className="text-slate-950 dark:text-slate-50">
-                        {report.name}
-                      </CardTitle>
-                      <CardDescription>{report.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <span className="text-sm font-medium text-teal-600 dark:text-teal-400">
-                        Run Report &rarr;
-                      </span>
-                    </CardContent>
-                  </Card>
-                </Link>
+                <ReportCard
+                  key={report.slug}
+                  href={`/org/${slug}/reports/${report.slug}`}
+                  name={report.name}
+                  description={report.description}
+                />
               ))}
             </div>
           </section>

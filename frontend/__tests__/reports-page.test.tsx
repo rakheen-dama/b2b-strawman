@@ -30,6 +30,7 @@ vi.mock("next/link", () => ({
 
 // Must import page AFTER vi.mock declarations
 import ReportsPage from "@/app/(app)/org/[slug]/reports/page";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 
 async function renderPage(categories = defaultCategories()) {
   mockGetReportDefinitions.mockResolvedValue({ categories });
@@ -107,5 +108,35 @@ describe("ReportsPage", () => {
     await renderPage([]);
 
     expect(screen.getByText("No reports available")).toBeInTheDocument();
+  });
+
+  // Phase 87 S6a (612A): Profitability's single UI entry is a card on the Reports index.
+  it("links a Profitability card to /reports/profitability", async () => {
+    await renderPage();
+
+    const link = screen.getByText("Profitability").closest("a");
+    expect(link).toHaveAttribute("href", "/org/acme/reports/profitability");
+  });
+
+  it("keeps the Profitability card when no report definitions are configured", async () => {
+    await renderPage([]);
+
+    expect(screen.getByText("Profitability").closest("a")).toHaveAttribute(
+      "href",
+      "/org/acme/reports/profitability"
+    );
+  });
+
+  it("hides the Profitability card when the user lacks FINANCIAL_VISIBILITY", async () => {
+    vi.mocked(fetchMyCapabilities).mockResolvedValueOnce({
+      capabilities: [],
+      role: "Member",
+      isAdmin: false,
+      isOwner: false,
+    } as Awaited<ReturnType<typeof fetchMyCapabilities>>);
+    await renderPage();
+
+    expect(screen.queryByText("Profitability")).not.toBeInTheDocument();
+    expect(document.querySelector('a[href="/org/acme/reports/profitability"]')).toBeNull();
   });
 });

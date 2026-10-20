@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Shield, Search } from "lucide-react";
-import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
-import { NAV_GROUPS, UTILITY_ITEMS } from "@/lib/nav-items";
+import { NAV_GROUPS } from "@/lib/nav-items";
 import { NavZone } from "@/components/nav-zone";
+import { SidebarUtilityFooter } from "@/components/sidebar-utility-footer";
 import { SidebarUserFooter } from "@/components/sidebar-user-footer";
 import { useCommandPalette } from "@/components/command-palette-provider";
 
@@ -126,55 +126,7 @@ export function DesktopSidebar({
         </>
       )}
 
-      {/* Utility footer — Notifications + Settings */}
-      <div className="mx-4 border-t border-white/10" />
-      <div className="p-2">
-        {UTILITY_ITEMS.map((item) => {
-          const href = item.href(slug);
-
-          if (item.external) {
-            return (
-              <a
-                key={item.label}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="relative flex items-center gap-2 rounded-md px-3 py-2 text-sm text-white/60 transition-colors hover:bg-slate-800 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </a>
-            );
-          }
-
-          const isActive = item.exact ? pathname === href : pathname.startsWith(href);
-
-          return (
-            <Link
-              key={item.label}
-              href={href}
-              className={cn(
-                "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
-                isActive
-                  ? "bg-white/5 text-white"
-                  : "text-white/60 hover:bg-slate-800 hover:text-white"
-              )}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="sidebar-indicator"
-                  aria-hidden="true"
-                  className="absolute top-1 bottom-1 left-0 w-0.5 rounded-full"
-                  style={{ backgroundColor: "var(--brand-color)" }}
-                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                />
-              )}
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </Link>
-          );
-        })}
-      </div>
+      <SidebarUtilityFooter slug={slug} indicatorLayoutId="sidebar-indicator" />
 
       {/* Footer */}
       <SidebarUserFooter userName={userName} userEmail={userEmail} />

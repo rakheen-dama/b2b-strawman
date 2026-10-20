@@ -8,7 +8,24 @@ import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useCapabilities } from "@/lib/capabilities";
 import { useOrgProfile } from "@/lib/org-profile";
-import type { NavGroup } from "@/lib/nav-items";
+import { canAccessNavItem, type NavGroup, type NavItem } from "@/lib/nav-items";
+
+/**
+ * The href of the single active item in a zone: the longest href among the visible items that
+ * matches the pathname (exact equality when `item.exact`, else equality or a `/`-segment prefix).
+ * Longest-match keeps parent/child pairs in one zone unambiguous — `/matters/new` highlights only
+ * "New matter", `/invoices/billing-runs/x` only "Fee runs", `/invoices/abc` only "Fee notes" — so
+ * at most one active indicator mounts per zone.
+ */
+function findActiveHref(items: NavItem[], slug: string, pathname: string): string | null {
+  let active: string | null = null;
+  for (const item of items) {
+    const href = item.href(slug);
+    const matches = pathname === href || (!item.exact && pathname.startsWith(`${href}/`));
+    if (matches && (active === null || href.length > active.length)) active = href;
+  }
+  return active;
+}
 
 export interface NavZoneProps {
   zone: NavGroup;
@@ -19,16 +36,18 @@ export interface NavZoneProps {
 export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
   const [expanded, setExpanded] = useState(zone.defaultExpanded ?? true);
   const pathname = usePathname();
-  const { hasCapability } = useCapabilities();
+  const access = useCapabilities();
   const { isModuleEnabled } = useOrgProfile();
 
   const visibleItems = zone.items.filter(
     (item) =>
-      (!item.requiredCapability || hasCapability(item.requiredCapability)) &&
+      canAccessNavItem(item, access) &&
       (!item.requiredModule || isModuleEnabled(item.requiredModule))
   );
 
   if (visibleItems.length === 0) return null;
+
+  const activeHref = findActiveHref(visibleItems, slug, pathname);
 
   return (
     <div>
@@ -62,11 +81,11 @@ export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
           >
             {visibleItems.map((item) => {
               const href = item.href(slug);
-              const isActive = item.exact ? pathname === href : pathname.startsWith(href);
+              const isActive = href === activeHref;
 
               return (
                 <Link
-                  key={item.href(slug)}
+                  key={href}
                   href={href}
                   onClick={onNavItemClick}
                   className={cn(

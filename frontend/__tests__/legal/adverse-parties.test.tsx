@@ -194,8 +194,8 @@ describe("LinkAdversePartyDialog", () => {
 
 describe("Nav items - adverse parties", () => {
   it("adverse-parties nav item has requiredModule: conflict_check", () => {
-    const clientsGroup = NAV_GROUPS.find((g) => g.id === "clients");
-    const adverseItem = clientsGroup?.items.find((i) => i.label === "Adverse Parties");
+    const mattersZone = NAV_GROUPS.find((g) => g.id === "matters");
+    const adverseItem = mattersZone?.items.find((i) => i.label === "Adverse parties");
     expect(adverseItem).toBeDefined();
     expect(adverseItem?.requiredModule).toBe("conflict_check");
     expect(adverseItem?.requiredCapability).toBeUndefined();

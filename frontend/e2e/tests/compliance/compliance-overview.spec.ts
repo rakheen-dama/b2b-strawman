@@ -32,7 +32,10 @@ test.describe("COMPLY-01: Compliance Overview", () => {
     await expect(page.locator("body")).not.toContainText("Something went wrong");
 
     // Look for requests tab/section or navigate to requests sub-page
+    // Phase 87 S6a (ADR-344): nav — scope to <main>; the expanded Clients zone's sidebar
+    // "Data requests" link would otherwise be the first match.
     const requestsTab = page
+      .locator("main")
       .locator('[role="tab"]:has-text("Requests"), a:has-text("Requests")')
       .first();
     if (await requestsTab.isVisible().catch(() => false)) {

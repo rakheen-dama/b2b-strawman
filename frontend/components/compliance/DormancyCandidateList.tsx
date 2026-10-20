@@ -5,13 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { markCustomerDormant } from "@/app/(app)/org/[slug]/compliance/actions";
 import { cn } from "@/lib/utils";
-
-interface DormancyCandidate {
-  clientId: string;
-  clientName: string;
-  lastActivityDate: string | null;
-  daysSinceActivity: number;
-}
+import type { DormancyCandidate } from "@/lib/types";
 
 interface DormancyCandidateListProps {
   candidates: DormancyCandidate[];

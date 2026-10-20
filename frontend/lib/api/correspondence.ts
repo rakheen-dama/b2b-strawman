@@ -1,6 +1,7 @@
 import "server-only";
 
 import { api } from "./client";
+import { clientPath, matterPath } from "./paths";
 
 export interface CorrespondenceListItem {
   id: string;
@@ -29,7 +30,7 @@ export async function getProjectCorrespondence(
   params: { page?: number; size?: number } = {}
 ): Promise<PaginatedCorrespondenceResponse> {
   return api.get<PaginatedCorrespondenceResponse>(
-    `/api/matters/${projectId}/correspondence${buildQuery(params)}`
+    `${matterPath(projectId, "correspondence")}${buildQuery(params)}`
   );
 }
 
@@ -38,6 +39,6 @@ export async function getCustomerCorrespondence(
   params: { page?: number; size?: number } = {}
 ): Promise<PaginatedCorrespondenceResponse> {
   return api.get<PaginatedCorrespondenceResponse>(
-    `/api/clients/${customerId}/correspondence${buildQuery(params)}`
+    `${clientPath(customerId, "correspondence")}${buildQuery(params)}`
   );
 }

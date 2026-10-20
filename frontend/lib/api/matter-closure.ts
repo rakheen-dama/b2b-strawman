@@ -1,6 +1,7 @@
 import "server-only";
 
 import { api, ApiError } from "./client";
+import { matterPath } from "./paths";
 
 // ---- Enums / unions ----
 
@@ -133,7 +134,7 @@ export class RetentionElapsedError extends Error {
 // ---- API functions ----
 
 export async function evaluateClosure(projectId: string): Promise<ClosureReport> {
-  return api.get<ClosureReport>(`/api/matters/${projectId}/closure/evaluate`);
+  return api.get<ClosureReport>(matterPath(projectId, "closure/evaluate"));
 }
 
 export async function closeMatter(
@@ -141,7 +142,7 @@ export async function closeMatter(
   req: CloseMatterRequest
 ): Promise<CloseMatterResponse> {
   try {
-    return await api.post<CloseMatterResponse>(`/api/matters/${projectId}/closure/close`, req);
+    return await api.post<CloseMatterResponse>(matterPath(projectId, "closure/close"), req);
   } catch (err) {
     if (
       err instanceof ApiError &&
@@ -160,7 +161,7 @@ export async function reopenMatter(
   notes: string
 ): Promise<ReopenMatterResponse> {
   try {
-    return await api.post<ReopenMatterResponse>(`/api/matters/${projectId}/closure/reopen`, {
+    return await api.post<ReopenMatterResponse>(matterPath(projectId, "closure/reopen"), {
       notes,
     });
   } catch (err) {
@@ -178,5 +179,5 @@ export async function reopenMatter(
 }
 
 export async function listClosureLog(projectId: string): Promise<ClosureLogEntry[]> {
-  return api.get<ClosureLogEntry[]>(`/api/matters/${projectId}/closure/log`);
+  return api.get<ClosureLogEntry[]>(matterPath(projectId, "closure/log"));
 }

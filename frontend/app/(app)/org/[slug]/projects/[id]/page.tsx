@@ -14,6 +14,7 @@ import {
   getMatter,
   getMatterBudget,
   getMatterProfitability,
+  getMatterSetupStatus,
   getMatterTags,
   getMatterTimeSummary,
   getMatterTimeSummaryByMember,
@@ -77,7 +78,6 @@ import {
 } from "@/lib/api/information-requests";
 import { RequestList } from "@/components/information-requests/request-list";
 import { CreateRequestDialog } from "@/components/information-requests/create-request-dialog";
-import { fetchProjectSetupStatus } from "@/lib/api/setup-status";
 import { getAiProfile } from "@/lib/api/ai";
 import type { MatterSetupStatus, FicaStatus } from "@/lib/types";
 import type { SetupStep } from "@/components/setup/types";
@@ -121,7 +121,7 @@ export default async function ProjectDetailPage({
   // Setup guidance data (Epic 112A)
   let setupStatus: MatterSetupStatus | null = null;
   try {
-    setupStatus = await fetchProjectSetupStatus(id);
+    setupStatus = await getMatterSetupStatus(id);
   } catch {
     // Non-fatal: setup guidance cards will not render if fetch fails
   }

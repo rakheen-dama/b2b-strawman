@@ -7,8 +7,9 @@
  * URLs and payload types for the Clients bounded context (Open Question #16).
  *
  * `clientPath()` / `CLIENTS_PATH` are re-exported from `./paths.ts` — the single place the
- * `clients` wire segment is spelled (shared with `tags.ts#entityApiPrefix`); other lib/api modules
- * (checklists, collections, correspondence, information-requests) switch to it in 610C.
+ * `clients` wire segment is spelled (shared with `tags.ts#entityApiPrefix` and the sibling
+ * checklists / collections / correspondence / information-requests modules, which build URLs with
+ * `clientPath()`). Guarded by `__tests__/lib/api/no-inline-matter-client-literals.test.ts`.
  * The tag / field-group storage key for clients stays `"CUSTOMER"` (ADR-342).
  */
 import "server-only";
@@ -21,12 +22,14 @@ import { toQuery, type QueryValue } from "./query";
 import type {
   AggregatedCompletenessResponse,
   AnonymizationPreview,
+  AnonymizeClientRequest,
   Client,
   ClientMatter,
   ClientProfitabilityResponse,
   ClientReadiness,
   CompletenessScore,
   CreateClientRequest,
+  DormancyCheckResult,
   FicaStatus,
   FieldDefinitionResponse,
   LifecycleHistoryEntry,
@@ -63,21 +66,6 @@ export interface ListClientsParams {
 export interface ClientDateRange {
   from?: string;
   to?: string;
-}
-
-export interface DormancyCheckResult {
-  thresholdDays: number;
-  candidates: Array<{
-    clientId: string;
-    clientName: string;
-    lastActivityDate: string | null;
-    daysSinceActivity: number;
-  }>;
-}
-
-export interface AnonymizeClientRequest {
-  confirmationName: string;
-  reason: string;
 }
 
 // ---- Core CRUD ----

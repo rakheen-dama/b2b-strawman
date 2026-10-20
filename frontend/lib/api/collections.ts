@@ -1,6 +1,7 @@
 import "server-only";
 
 import { api } from "./client";
+import { clientPath } from "./paths";
 
 // ---- Collections Settings Types (588C) ----
 // 591B extends this file with debtors/activities types — keep sections additive.
@@ -44,7 +45,7 @@ export async function setCollectionsExemption(
   customerId: string,
   exempt: boolean
 ): Promise<CollectionsExemptionResponse> {
-  return api.put<CollectionsExemptionResponse>(`/api/clients/${customerId}/collections-exemption`, {
+  return api.put<CollectionsExemptionResponse>(clientPath(customerId, "collections-exemption"), {
     collectionsExempt: exempt,
   });
 }

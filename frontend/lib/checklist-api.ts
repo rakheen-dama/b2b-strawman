@@ -1,6 +1,7 @@
 import "server-only";
 
 import { api } from "@/lib/api";
+import { clientPath } from "@/lib/api/clients";
 import type {
   ChecklistInstanceResponse,
   ChecklistInstanceItemResponse,
@@ -10,7 +11,7 @@ import type {
 export async function getCustomerChecklists(
   customerId: string
 ): Promise<ChecklistInstanceResponse[]> {
-  return api.get<ChecklistInstanceResponse[]>(`/api/clients/${customerId}/checklists`);
+  return api.get<ChecklistInstanceResponse[]>(clientPath(customerId, "checklists"));
 }
 
 export async function getChecklistInstance(id: string): Promise<ChecklistInstanceResponse> {
@@ -39,7 +40,7 @@ export async function instantiateChecklist(
   customerId: string,
   templateId: string
 ): Promise<ChecklistInstanceResponse> {
-  return api.post<ChecklistInstanceResponse>(`/api/clients/${customerId}/checklists`, {
+  return api.post<ChecklistInstanceResponse>(clientPath(customerId, "checklists"), {
     templateId,
   });
 }

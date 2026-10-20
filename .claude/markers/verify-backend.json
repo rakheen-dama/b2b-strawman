@@ -1,7 +1,7 @@
 {
-  "commit": "c1dd0bf00dc3136df30ce11f1cbb67c31915a38c",
-  "command": "cd backend && bash scripts/verify.sh -q",
+  "commit": "cbb540aad46212dfc09e81ae458b421fa19ccf03",
+  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-20T03:32:38+02:00",
-  "summary": "PR #1595 (Epic 608B: informationrequest/checklist/datarequest/correspondence + client upload-init wire rename to client/matter vocabulary, Batch 2) head c1dd0bf00 (orchestrator run): 5345 testcases / 0 failures / 0 errors / 26 skipped (unchanged vs 608A — rename only). Ratchet baseline 3 -> 1. Log /tmp/mvn-608B-final.log."
+  "ts": "2026-10-20T05:24:43+02:00",
+  "summary": "PR #1598 (Epic 609A: finance backend wire rename Batch 3) commit cbb540aad (orchestrator run): 5345 testcases / 0 failures / 0 errors / 26 skipped (unchanged vs 608B — rename only). Final head b46a0acd differs by one unasserted error-message string; Backend CI covers the final head. Log /tmp/mvn-609A-final.log."
 }

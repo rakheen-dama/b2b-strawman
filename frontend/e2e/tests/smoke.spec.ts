@@ -13,9 +13,11 @@ test("owner can create a project", async ({ page }) => {
   await loginAs(page, "alice");
   // Phase 87 S4 (ADR-344): route rename
   await page.goto("/org/e2e-test-org/matters");
-  await page.getByRole("button", { name: /New (Project|Engagement)/i }).click();
+  // Phase 87 S5 (ADR-344): label
+  await page.getByRole("button", { name: "New Matter" }).click();
   await page.getByLabel("Name").fill(name);
-  await page.getByRole("button", { name: /Create (Project|Engagement)/i }).click();
+  // Phase 87 S5 (ADR-344): label
+  await page.getByRole("button", { name: "Create Matter" }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 10000 });
   // Phase 87 S4 (ADR-344): route rename
   await page.goto("/org/e2e-test-org/matters");

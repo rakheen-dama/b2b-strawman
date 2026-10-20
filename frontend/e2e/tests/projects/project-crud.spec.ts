@@ -81,10 +81,11 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
     await page.goto(`${BASE}/matters`);
     await expect(page.locator("h1").first()).toBeVisible({ timeout: 10000 });
 
-    // Click "New Project" / "New Engagement" / "New Matter" (terminology may vary)
-    const newBtn = page.getByRole("button", { name: /^New\s/i });
+    // Click "New Matter" (not "New from Template", which also starts with "New")
+    // Phase 87 S5 (ADR-344): label
+    const newBtn = page.getByRole("button", { name: "New Matter" });
     await newBtn.click();
-    // Dialog title is "Create Project"
+    // Dialog title is "Create Matter"
     await expect(page.getByRole("dialog")).toBeVisible({ timeout: 5000 });
 
     // Fill in the form — scope to dialog
@@ -112,8 +113,9 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
       // If no Acme, leave as "-- None --" (internal project)
     }
 
-    // Submit — button text is "Create Project" (not terminology-dependent)
-    await dialog.getByRole("button", { name: "Create Project" }).click();
+    // Submit — button text is "Create Matter"
+    // Phase 87 S5 (ADR-344): label
+    await dialog.getByRole("button", { name: "Create Matter" }).click();
     await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 10000 });
 
     // Verify project appears in the list

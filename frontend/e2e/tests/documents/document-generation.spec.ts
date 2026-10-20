@@ -68,9 +68,10 @@ test.describe("DOC-02: Document Generation", () => {
       // Try project detail page instead
       // Phase 87 S4 (ADR-344): route rename
       await page.goto(`${BASE}/matters`);
-      await expect(
-        page.getByRole("heading", { name: /Projects|Engagements/i, level: 1 })
-      ).toBeVisible({ timeout: 10000 });
+      // Phase 87 S5 (ADR-344): label
+      await expect(page.getByRole("heading", { name: "Matters", level: 1 })).toBeVisible({
+        timeout: 10000,
+      });
 
       const projectLink = page
         .getByRole("link")

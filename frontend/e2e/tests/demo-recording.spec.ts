@@ -80,8 +80,9 @@ test("Legal-ZA 90-day demo walkthrough", async ({ page }) => {
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(PAUSE);
 
-    // Show Action Items tab
-    const actionItemsTab = page.getByRole("tab", { name: /action items/i });
+    // Show Tasks tab
+    // Phase 87 S5 (ADR-344): label
+    const actionItemsTab = page.getByRole("tab", { name: /tasks/i });
     if (await actionItemsTab.isVisible()) {
       await actionItemsTab.click();
       await page.waitForTimeout(SHORT);

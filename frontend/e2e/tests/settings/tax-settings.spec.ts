@@ -90,7 +90,8 @@ test.describe("SET-03: Tax Settings", () => {
     const content = page.locator('main, [role="main"], .flex-1').first();
     const contentText = await content.textContent({ timeout: 10000 });
 
-    if (!contentText?.match(/invoice/i)) {
+    // Phase 87 S5 (ADR-344): label
+    if (!contentText?.match(/fee note/i)) {
       test.skip(true, "Invoices page not available for tax verification");
       return;
     }

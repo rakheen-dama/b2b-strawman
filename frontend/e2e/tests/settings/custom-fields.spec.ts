@@ -94,9 +94,10 @@ test.describe("CF-01: Custom Fields", () => {
     }
 
     // Open new customer dialog
-    const newBtn = page.getByRole("button", { name: /new.*customer/i }).first();
+    // Phase 87 S5 (ADR-344): label
+    const newBtn = page.getByRole("button", { name: /new.*client/i }).first();
     if (!(await newBtn.isVisible({ timeout: 10000 }).catch(() => false))) {
-      test.skip(true, "New Customer button not found");
+      test.skip(true, "New Client button not found");
       return;
     }
 

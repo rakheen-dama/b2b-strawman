@@ -28,7 +28,6 @@ vi.mock("@/components/sidebar-user-footer", () => ({
 
 import { usePathname } from "next/navigation";
 import { CapabilityProvider } from "@/lib/capabilities";
-import { TerminologyProvider } from "@/lib/terminology";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { DesktopSidebar } from "@/components/desktop-sidebar";
 import { CommandPaletteProvider } from "@/components/command-palette-provider";
@@ -52,18 +51,16 @@ const ALL_CAPABILITIES = [
 function renderSidebar() {
   return render(
     <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
-      <TerminologyProvider verticalProfile={null}>
-        <CapabilityProvider
-          capabilities={ALL_CAPABILITIES}
-          role="Owner"
-          isAdmin={false}
-          isOwner={true}
-        >
-          <CommandPaletteProvider slug="test-org">
-            <DesktopSidebar slug="test-org" />
-          </CommandPaletteProvider>
-        </CapabilityProvider>
-      </TerminologyProvider>
+      <CapabilityProvider
+        capabilities={ALL_CAPABILITIES}
+        role="Owner"
+        isAdmin={false}
+        isOwner={true}
+      >
+        <CommandPaletteProvider slug="test-org">
+          <DesktopSidebar slug="test-org" />
+        </CommandPaletteProvider>
+      </CapabilityProvider>
     </OrgProfileProvider>
   );
 }
@@ -74,7 +71,7 @@ describe("DesktopSidebar", () => {
     renderSidebar();
 
     expect(screen.getByText("Work")).toBeInTheDocument();
-    expect(screen.getAllByText("Projects").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Matters").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Clients")).toBeInTheDocument();
     expect(screen.getByText("Finance")).toBeInTheDocument();
     expect(screen.getAllByText("Team").length).toBeGreaterThanOrEqual(1);

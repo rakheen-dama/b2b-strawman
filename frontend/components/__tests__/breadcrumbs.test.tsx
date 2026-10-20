@@ -8,7 +8,6 @@ vi.mock("next/navigation", () => ({
 
 import { usePathname } from "next/navigation";
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { TerminologyProvider } from "@/lib/terminology";
 
 const mockUsePathname = vi.mocked(usePathname);
 
@@ -19,11 +18,7 @@ afterEach(() => {
 describe("Breadcrumbs", () => {
   it("renders Settings as a link segment when on settings subpage", () => {
     mockUsePathname.mockReturnValue("/org/acme/settings/billing");
-    render(
-      <TerminologyProvider verticalProfile={null}>
-        <Breadcrumbs slug="acme" />
-      </TerminologyProvider>
-    );
+    render(<Breadcrumbs slug="acme" />);
     const settingsLink = screen.getByRole("link", { name: "Settings" });
     expect(settingsLink).toBeInTheDocument();
     expect(settingsLink).toHaveAttribute("href", "/org/acme/settings");
@@ -31,41 +26,25 @@ describe("Breadcrumbs", () => {
 
   it('renders correct label for rates segment ("Rates & Currency")', () => {
     mockUsePathname.mockReturnValue("/org/acme/settings/rates");
-    render(
-      <TerminologyProvider verticalProfile={null}>
-        <Breadcrumbs slug="acme" />
-      </TerminologyProvider>
-    );
+    render(<Breadcrumbs slug="acme" />);
     expect(screen.getByText("Rates & Currency")).toBeInTheDocument();
   });
 
   it('renders correct label for custom-fields segment ("Custom Fields")', () => {
     mockUsePathname.mockReturnValue("/org/acme/settings/custom-fields");
-    render(
-      <TerminologyProvider verticalProfile={null}>
-        <Breadcrumbs slug="acme" />
-      </TerminologyProvider>
-    );
+    render(<Breadcrumbs slug="acme" />);
     expect(screen.getByText("Custom Fields")).toBeInTheDocument();
   });
 
-  it('renders correct label for project-naming segment ("Project Naming")', () => {
+  it('renders correct label for project-naming segment ("Matter Naming")', () => {
     mockUsePathname.mockReturnValue("/org/acme/settings/project-naming");
-    render(
-      <TerminologyProvider verticalProfile={null}>
-        <Breadcrumbs slug="acme" />
-      </TerminologyProvider>
-    );
-    expect(screen.getByText("Project Naming")).toBeInTheDocument();
+    render(<Breadcrumbs slug="acme" />);
+    expect(screen.getByText("Matter Naming")).toBeInTheDocument();
   });
 
   it("renders Settings > Billing two-level path correctly", () => {
     mockUsePathname.mockReturnValue("/org/acme/settings/billing");
-    render(
-      <TerminologyProvider verticalProfile={null}>
-        <Breadcrumbs slug="acme" />
-      </TerminologyProvider>
-    );
+    render(<Breadcrumbs slug="acme" />);
     // "Settings" should be a link (intermediate)
     const settingsLink = screen.getByRole("link", { name: "Settings" });
     expect(settingsLink).toBeInTheDocument();
@@ -81,11 +60,7 @@ describe("Breadcrumbs", () => {
 
     function renderAt(pathname: string) {
       mockUsePathname.mockReturnValue(pathname);
-      render(
-        <TerminologyProvider verticalProfile={null}>
-          <Breadcrumbs slug="acme" />
-        </TerminologyProvider>
-      );
+      render(<Breadcrumbs slug="acme" />);
     }
 
     it("renders legal as plain text, not a link, on /legal/disbursements", () => {
@@ -135,11 +110,7 @@ describe("Breadcrumbs", () => {
 
     function renderCrumbsAt(pathname: string) {
       mockUsePathname.mockReturnValue(pathname);
-      render(
-        <TerminologyProvider verticalProfile={null}>
-          <Breadcrumbs slug="acme" />
-        </TerminologyProvider>
-      );
+      render(<Breadcrumbs slug="acme" />);
     }
 
     it("labels /matters/<id> as Matters > Matter and links the list", () => {
@@ -170,6 +141,43 @@ describe("Breadcrumbs", () => {
     it("labels /trust-accounting/client-ledgers/<id> as Client Ledger", () => {
       renderCrumbsAt(`/org/acme/trust-accounting/client-ledgers/${CLIENT_ID}`);
       expect(screen.getByText("Client Ledger").tagName).toBe("SPAN");
+    });
+  });
+
+  describe("legal labels (Phase 87 611B)", () => {
+    const INVOICE_ID = "7d3f9e4a-5b6c-4d7e-8f90-a1b2c3d4e5f6";
+    const MATTER_ID = "8e4a0f5b-6c7d-4e8f-9a01-b2c3d4e5f6a7";
+
+    function renderCrumbsAt(pathname: string) {
+      mockUsePathname.mockReturnValue(pathname);
+      render(<Breadcrumbs slug="acme" />);
+    }
+
+    it("labels /settings/project-templates as Matter Templates", () => {
+      renderCrumbsAt("/org/acme/settings/project-templates");
+      expect(screen.getByText("Matter Templates")).toBeInTheDocument();
+      expect(screen.queryByText("Project Templates")).not.toBeInTheDocument();
+    });
+
+    it("labels the /invoices list page Fee notes", () => {
+      renderCrumbsAt("/org/acme/invoices");
+      expect(screen.getByText("Fee notes").tagName).toBe("SPAN");
+      expect(screen.queryByText("Invoices")).not.toBeInTheDocument();
+    });
+
+    it("labels /invoices/<id> as Fee notes > Fee note and links the list", () => {
+      renderCrumbsAt(`/org/acme/invoices/${INVOICE_ID}`);
+      expect(screen.getByRole("link", { name: "Fee notes" })).toHaveAttribute(
+        "href",
+        "/org/acme/invoices"
+      );
+      expect(screen.getByText("Fee note").tagName).toBe("SPAN");
+    });
+
+    it("labels /matters/<id>/expenses as Disbursements (not the raw segment)", () => {
+      renderCrumbsAt(`/org/acme/matters/${MATTER_ID}/expenses`);
+      expect(screen.getByText("Disbursements").tagName).toBe("SPAN");
+      expect(screen.queryByText("expenses")).not.toBeInTheDocument();
     });
   });
 });

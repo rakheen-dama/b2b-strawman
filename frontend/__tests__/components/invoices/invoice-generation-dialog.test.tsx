@@ -123,9 +123,9 @@ describe("InvoiceGenerationDialog", () => {
       />
     );
 
-    await user.click(screen.getByText("New Invoice"));
+    await user.click(screen.getByText("New fee note"));
 
-    expect(screen.getByText("Generate Invoice")).toBeInTheDocument();
+    expect(screen.getByText("Generate fee note")).toBeInTheDocument();
     expect(screen.getByLabelText("From Date")).toBeInTheDocument();
     expect(screen.getByLabelText("To Date")).toBeInTheDocument();
     expect(screen.getByLabelText("Currency")).toBeInTheDocument();
@@ -148,7 +148,7 @@ describe("InvoiceGenerationDialog", () => {
       />
     );
 
-    await user.click(screen.getByText("New Invoice"));
+    await user.click(screen.getByText("New fee note"));
     await user.click(screen.getByRole("button", { name: "Fetch Unbilled Time" }));
 
     await waitFor(() => {
@@ -179,7 +179,7 @@ describe("InvoiceGenerationDialog", () => {
       />
     );
 
-    await user.click(screen.getByText("New Invoice"));
+    await user.click(screen.getByText("New fee note"));
     await user.click(screen.getByRole("button", { name: "Fetch Unbilled Time" }));
 
     await waitFor(() => {
@@ -212,7 +212,7 @@ describe("InvoiceGenerationDialog", () => {
       />
     );
 
-    await user.click(screen.getByText("New Invoice"));
+    await user.click(screen.getByText("New fee note"));
     await user.click(screen.getByRole("button", { name: "Fetch Unbilled Time" }));
 
     await waitFor(() => {
@@ -240,7 +240,7 @@ describe("InvoiceGenerationDialog", () => {
       />
     );
 
-    await user.click(screen.getByText("New Invoice"));
+    await user.click(screen.getByText("New fee note"));
     await user.click(screen.getByRole("button", { name: "Fetch Unbilled Time" }));
 
     await waitFor(() => {
@@ -320,7 +320,7 @@ describe("InvoiceGenerationDialog", () => {
         />
       );
 
-      await user.click(screen.getByText("New Invoice"));
+      await user.click(screen.getByText("New fee note"));
       await user.click(screen.getByRole("button", { name: "Fetch Unbilled Time" }));
 
       await waitFor(() => {
@@ -355,7 +355,7 @@ describe("InvoiceGenerationDialog", () => {
         />
       );
 
-      await user.click(screen.getByText("New Invoice"));
+      await user.click(screen.getByText("New fee note"));
       await user.click(screen.getByRole("button", { name: "Fetch Unbilled Time" }));
 
       await waitFor(() => {
@@ -380,7 +380,7 @@ describe("InvoiceGenerationDialog", () => {
         />
       );
 
-      await user.click(screen.getByText("New Invoice"));
+      await user.click(screen.getByText("New fee note"));
       await user.click(screen.getByRole("button", { name: "Fetch Unbilled Time" }));
 
       await waitFor(() => {
@@ -420,7 +420,7 @@ describe("InvoiceGenerationDialog", () => {
         />
       );
 
-      await user.click(screen.getByText("New Invoice"));
+      await user.click(screen.getByText("New fee note"));
       await user.click(screen.getByRole("button", { name: "Fetch Unbilled Time" }));
 
       await waitFor(() => {

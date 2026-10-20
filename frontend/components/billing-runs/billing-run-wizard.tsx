@@ -7,13 +7,11 @@ import { CustomerSelectionStep } from "./customer-selection-step";
 import { CherryPickStep } from "./cherry-pick-step";
 import { ReviewDraftsStep } from "./review-drafts-step";
 import { SendStep } from "./send-step";
-import { TerminologyText } from "@/components/terminology-text";
 import type { BillingRunItem } from "@/lib/api/billing-runs";
 
-// {TermKey} placeholders are resolved by TerminologyText at render time.
 const STEP_LABELS = [
   "Configure",
-  "Select {Customers}",
+  "Select Clients",
   "Review & Cherry-Pick",
   "Review Drafts",
   "Send",
@@ -83,7 +81,7 @@ export function BillingRunWizard({
                       : "text-slate-500 dark:text-slate-400"
                   }`}
                 >
-                  <TerminologyText template={label} />
+                  {label}
                 </span>
                 {index < STEP_LABELS.length - 1 && (
                   <div className="mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700" />

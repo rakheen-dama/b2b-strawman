@@ -22,7 +22,6 @@ import {
 } from "@/app/(app)/org/[slug]/conflict-check/actions";
 import { ConflictCheckResultDisplay } from "@/components/legal/conflict-check-result";
 import type { ConflictCheck } from "@/lib/types";
-import { useTerminology } from "@/lib/terminology";
 
 const CHECK_TYPES = [
   { value: "NEW_CLIENT", label: "New Client" },
@@ -45,7 +44,6 @@ export function ConflictCheckForm({
   initialFormDefaults,
   onCheckComplete,
 }: ConflictCheckFormProps) {
-  const { t } = useTerminology();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ConflictCheck | null>(null);
@@ -188,7 +186,7 @@ export function ConflictCheckForm({
               name="customerId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("Customer")} (optional)</FormLabel>
+                  <FormLabel>Client (optional)</FormLabel>
                   <FormControl>
                     <select
                       value={field.value}

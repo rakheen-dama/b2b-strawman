@@ -4,8 +4,6 @@ import { api } from "@/lib/api";
 import { createMessages } from "@/lib/messages";
 import { EmptyState } from "@/components/empty-state";
 import { PermissionDenied } from "@/components/permission-denied";
-import { TerminologyHeading } from "@/components/terminology-heading";
-import { TerminologyText } from "@/components/terminology-text";
 import type { UtilizationResponse, OrgProfitabilityResponse } from "@/lib/types";
 import { ProfitabilityContent } from "@/components/profitability/profitability-content";
 
@@ -51,11 +49,9 @@ export default async function ProfitabilityPage({ params }: { params: Promise<{ 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          <TerminologyHeading term="Profitability" />
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Profitability</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          <TerminologyText template="Team utilization, {project} profitability, and {customer} profitability across your organization" />
+          Team utilization, matter profitability, and client profitability across your organization
         </p>
       </div>
 

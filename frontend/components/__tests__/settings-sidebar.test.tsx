@@ -49,6 +49,18 @@ describe("SettingsSidebar", () => {
     expect(screen.getByText("Access & Integrations")).toBeInTheDocument();
   });
 
+  it("renders legal labels verbatim — Matter Templates / Matter Naming (Phase 87 611B)", () => {
+    mockUsePathname.mockReturnValue("/org/test-org/settings/billing");
+
+    renderSidebar({ slug: "test-org", isAdmin: true });
+
+    // getAllByText because mobile + desktop both render them
+    expect(screen.getAllByText("Matter Templates").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText("Matter Naming").length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryByText("Project Templates")).not.toBeInTheDocument();
+    expect(screen.queryByText("Project Naming")).not.toBeInTheDocument();
+  });
+
   it("hides adminOnly items when isAdmin=false", () => {
     mockUsePathname.mockReturnValue("/org/test-org/settings/billing");
 

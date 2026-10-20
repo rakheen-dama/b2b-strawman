@@ -88,8 +88,8 @@ describe("BillingRunSummaryCards", () => {
     expect(screen.getByText("4")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
     expect(screen.getByText("1")).toBeInTheDocument();
-    expect(screen.getByText("Customers")).toBeInTheDocument();
-    expect(screen.getByText("Invoices Generated")).toBeInTheDocument();
+    expect(screen.getByText("Clients")).toBeInTheDocument();
+    expect(screen.getByText("Fee notes generated")).toBeInTheDocument();
     expect(screen.getByText("Sent")).toBeInTheDocument();
     expect(screen.getByText("Failed")).toBeInTheDocument();
     expect(screen.getByText("Total Amount")).toBeInTheDocument();

@@ -115,9 +115,9 @@ describe("CustomFieldsContent", () => {
   it("renders tabs for 3 entity types", () => {
     render(<CustomFieldsContent {...makeProps()} />);
 
-    expect(screen.getByRole("tab", { name: "Projects" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Matters" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Tasks" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Customers" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Clients" })).toBeInTheDocument();
   });
 
   it("displays field definitions in table", () => {

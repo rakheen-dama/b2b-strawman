@@ -85,9 +85,9 @@ describe("CommandPaletteDialog", () => {
     expect(settingsHeadings.length).toBeGreaterThan(0);
   });
 
-  it("renders a capability-filtered nav item — Invoices hidden when user has no capabilities", () => {
+  it("renders a capability-filtered nav item — Fee notes hidden when user has no capabilities", () => {
     renderDialog({ capabilities: [], isAdmin: false, isOwner: false, role: "member" });
-    expect(screen.queryByText("Invoices")).not.toBeInTheDocument();
+    expect(screen.queryByText("Fee notes")).not.toBeInTheDocument();
   });
 
   it("renders Pages items for user with capabilities — Dashboard is visible", () => {
@@ -121,13 +121,13 @@ describe("CommandPaletteDialog", () => {
     expect(screen.getByText("Alpha Project")).toBeInTheDocument();
   });
 
-  it("navigates the Projects page item to the renamed /matters route (Phase 87 610E)", async () => {
+  it("navigates the Matters page item to the renamed /matters route (Phase 87 610E)", async () => {
     const paletteMockPush = vi.fn();
     vi.mocked(useRouter).mockReturnValue({ push: paletteMockPush } as unknown as ReturnType<
       typeof useRouter
     >);
     renderDialog();
-    await userEvent.setup().click(screen.getByText("Projects"));
+    await userEvent.setup().click(screen.getByText("Matters"));
     expect(paletteMockPush).toHaveBeenCalledWith("/org/test-org/matters");
   });
 });

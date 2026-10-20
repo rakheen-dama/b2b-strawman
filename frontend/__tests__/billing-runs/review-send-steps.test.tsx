@@ -199,6 +199,17 @@ describe("SendStep", () => {
     expect(screen.getByText("Approved")).toBeInTheDocument();
   });
 
+  it("renders legal table headers — Client / Fee note #", async () => {
+    mockGetItems.mockResolvedValue({ success: true, items: mockApprovedItems });
+
+    render(<SendStep slug="test-org" billingRunId="run-1" currency="ZAR" onBack={vi.fn()} />);
+
+    expect(await screen.findByText("Client")).toBeInTheDocument();
+    expect(screen.getByText("Fee note #")).toBeInTheDocument();
+    expect(screen.queryByText("Customer")).not.toBeInTheDocument();
+    expect(screen.queryByText("Invoice #")).not.toBeInTheDocument();
+  });
+
   it("shows send confirmation dialog when Send All is clicked", async () => {
     mockGetItems.mockResolvedValue({ success: true, items: mockApprovedItems });
 

@@ -17,7 +17,6 @@ vi.mock("motion/react", () => ({
 
 import { usePathname } from "next/navigation";
 import { CapabilityProvider } from "@/lib/capabilities";
-import { TerminologyProvider } from "@/lib/terminology";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { NavZone } from "@/components/nav-zone";
 import { NAV_GROUPS, type NavGroup } from "@/lib/nav-items";
@@ -43,8 +42,8 @@ const workZone: NavGroup = {
       exact: true,
     },
     {
-      label: "Projects",
-      href: (slug) => `/org/${slug}/projects`,
+      label: "Matters",
+      href: (slug) => `/org/${slug}/matters`,
       icon: FolderOpen,
     },
   ],
@@ -56,7 +55,7 @@ const financeZone: NavGroup = {
   defaultExpanded: true,
   items: [
     {
-      label: "Invoices",
+      label: "Fee notes",
       href: (slug) => `/org/${slug}/invoices`,
       icon: Receipt,
       requiredCapability: "INVOICING",
@@ -100,16 +99,14 @@ function renderWithProviders(
       enabledModules={enabledModules}
       terminologyNamespace={null}
     >
-      <TerminologyProvider verticalProfile={null}>
-        <CapabilityProvider
-          capabilities={capabilities}
-          role="Member"
-          isAdmin={isAdmin}
-          isOwner={isOwner}
-        >
-          {ui}
-        </CapabilityProvider>
-      </TerminologyProvider>
+      <CapabilityProvider
+        capabilities={capabilities}
+        role="Member"
+        isAdmin={isAdmin}
+        isOwner={isOwner}
+      >
+        {ui}
+      </CapabilityProvider>
     </OrgProfileProvider>
   );
 }
@@ -131,7 +128,7 @@ describe("NavZone", () => {
     renderWithProviders(<NavZone zone={workZone} slug="test-org" />);
 
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("Projects")).toBeInTheDocument();
+    expect(screen.getByText("Matters")).toBeInTheDocument();
   });
 
   it("collapses items on zone header click", async () => {
@@ -149,7 +146,7 @@ describe("NavZone", () => {
 
     // Items should be hidden after collapse
     expect(screen.queryByText("Dashboard")).not.toBeInTheDocument();
-    expect(screen.queryByText("Projects")).not.toBeInTheDocument();
+    expect(screen.queryByText("Matters")).not.toBeInTheDocument();
   });
 
   it("hides zone entirely when all items are capability-gated and user lacks capability", () => {
@@ -164,7 +161,7 @@ describe("NavZone", () => {
     // Zone label should not be rendered
     expect(screen.queryByText("Finance")).not.toBeInTheDocument();
     // Items should not be rendered
-    expect(screen.queryByText("Invoices")).not.toBeInTheDocument();
+    expect(screen.queryByText("Fee notes")).not.toBeInTheDocument();
   });
 
   it("shows active indicator on current path", () => {
@@ -177,8 +174,8 @@ describe("NavZone", () => {
     expect(dashboardLink).toHaveClass("bg-white/5");
     expect(dashboardLink).toHaveClass("text-white");
 
-    // Projects link should not have active class
-    const projectsLink = screen.getByRole("link", { name: /projects/i });
+    // Matters link should not have active class
+    const projectsLink = screen.getByRole("link", { name: /matters/i });
     expect(projectsLink).toHaveClass("text-white/60");
     expect(projectsLink).not.toHaveClass("bg-white/5");
   });
@@ -206,25 +203,37 @@ describe("NavZone", () => {
 
     expect(screen.queryByText("Trust Accounting")).not.toBeInTheDocument();
   });
+
+  it("renders labels verbatim — no runtime substitution (Phase 87 611B)", () => {
+    mockUsePathname.mockReturnValue("/org/test-org/other");
+
+    renderWithProviders(<NavZone zone={financeZone} slug="test-org" />, {
+      capabilities: ["INVOICING"],
+    });
+
+    expect(screen.getByText("Finance")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Fee notes" })).toBeInTheDocument();
+    expect(screen.queryByText("Invoices")).not.toBeInTheDocument();
+  });
 });
 
 describe("NavZone active state on the renamed routes (Phase 87 610E)", () => {
-  it("highlights the real Projects item on a /matters detail page and links /matters", () => {
+  it("highlights the real Matters item on a /matters detail page and links /matters", () => {
     mockUsePathname.mockReturnValue("/org/test-org/matters/abc");
     const projectsZone = NAV_GROUPS.find((g) => g.id === "projects")!;
     renderWithProviders(<NavZone zone={projectsZone} slug="test-org" />);
-    const link = screen.getByRole("link", { name: "Projects" });
+    const link = screen.getByRole("link", { name: "Matters" });
     expect(link).toHaveAttribute("href", "/org/test-org/matters");
     expect(link).toHaveClass("bg-white/5");
   });
 
-  it("highlights the real Customers item on a /clients detail page and links /clients", () => {
+  it("highlights the real Clients item on a /clients detail page and links /clients", () => {
     mockUsePathname.mockReturnValue("/org/test-org/clients/c-1");
     const clientsZone = { ...NAV_GROUPS.find((g) => g.id === "clients")!, defaultExpanded: true };
     renderWithProviders(<NavZone zone={clientsZone} slug="test-org" />, {
       capabilities: ["CUSTOMER_MANAGEMENT"],
     });
-    const link = screen.getByRole("link", { name: "Customers" });
+    const link = screen.getByRole("link", { name: "Clients" });
     expect(link).toHaveAttribute("href", "/org/test-org/clients");
     expect(link).toHaveClass("bg-white/5");
   });

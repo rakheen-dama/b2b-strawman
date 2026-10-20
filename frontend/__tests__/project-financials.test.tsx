@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { ProjectFinancialsTab } from "@/components/profitability/project-financials-tab";
-import { TerminologyProvider } from "@/lib/terminology";
 import type { MatterProfitabilityResponse } from "@/lib/types";
 
 function makeProfitability(
@@ -37,13 +36,9 @@ describe("ProjectFinancialsTab", () => {
 
   it("renders profitability data with currency breakdowns", () => {
     const profitability = makeProfitability();
-    render(
-      <TerminologyProvider verticalProfile={null}>
-        <ProjectFinancialsTab profitability={profitability} />
-      </TerminologyProvider>
-    );
+    render(<ProjectFinancialsTab profitability={profitability} />);
 
-    expect(screen.getByText("Project Profitability")).toBeInTheDocument();
+    expect(screen.getByText("Matter Profitability")).toBeInTheDocument();
     expect(screen.getByText("120.0h")).toBeInTheDocument();
     expect(screen.getByText(/US\$18\s000,00/)).toBeInTheDocument();
     expect(screen.getByText(/US\$10\s800,00/)).toBeInTheDocument();
@@ -66,11 +61,7 @@ describe("ProjectFinancialsTab", () => {
         },
       ],
     });
-    render(
-      <TerminologyProvider verticalProfile={null}>
-        <ProjectFinancialsTab profitability={profitability} />
-      </TerminologyProvider>
-    );
+    render(<ProjectFinancialsTab profitability={profitability} />);
 
     // Cost shows N/A from formatCurrencySafe, margin and margin% show N/A
     const naElements = screen.getAllByText("N/A");
@@ -78,11 +69,7 @@ describe("ProjectFinancialsTab", () => {
   });
 
   it("shows empty state when profitability is null", () => {
-    render(
-      <TerminologyProvider verticalProfile={null}>
-        <ProjectFinancialsTab profitability={null} />
-      </TerminologyProvider>
-    );
+    render(<ProjectFinancialsTab profitability={null} />);
 
     expect(screen.getByText("No financial data yet")).toBeInTheDocument();
     expect(

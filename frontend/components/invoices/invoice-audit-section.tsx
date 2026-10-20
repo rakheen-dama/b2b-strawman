@@ -1,8 +1,6 @@
 "use client";
 
 import { AuditTimelineTab } from "@/components/audit/audit-timeline-tab";
-import { useTerminology } from "@/lib/terminology";
-import { auditTabLabel } from "@b2mash/shared/terminology-map";
 import { CAPABILITIES, useCapabilities } from "@/lib/capabilities";
 
 /**
@@ -13,7 +11,6 @@ import { CAPABILITIES, useCapabilities } from "@/lib/capabilities";
  * heading does not orphan above an empty pane.
  */
 export function InvoiceAuditSection({ invoiceId }: { invoiceId: string }) {
-  const { t } = useTerminology();
   const { hasCapability, isLoading } = useCapabilities();
 
   if (isLoading || !hasCapability(CAPABILITIES.TEAM_OVERSIGHT)) {
@@ -22,7 +19,7 @@ export function InvoiceAuditSection({ invoiceId }: { invoiceId: string }) {
 
   return (
     <div className="space-y-4" data-testid="invoice-audit-section">
-      <h2 className="font-display text-lg text-slate-950 dark:text-slate-50">{auditTabLabel(t)}</h2>
+      <h2 className="font-display text-lg text-slate-950 dark:text-slate-50">Audit trail</h2>
       <AuditTimelineTab entityType="invoice" entityId={invoiceId} />
     </div>
   );

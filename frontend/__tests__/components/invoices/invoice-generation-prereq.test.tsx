@@ -55,7 +55,7 @@ describe("InvoiceGenerationDialog — prerequisite gate", () => {
       />
     );
 
-    await user.click(screen.getByRole("button", { name: /New Invoice/i }));
+    await user.click(screen.getByRole("button", { name: /New fee note/i }));
 
     await waitFor(() => {
       expect(mockCheckPrerequisitesAction).toHaveBeenCalledWith(
@@ -87,10 +87,10 @@ describe("InvoiceGenerationDialog — prerequisite gate", () => {
       />
     );
 
-    await user.click(screen.getByRole("button", { name: /New Invoice/i }));
+    await user.click(screen.getByRole("button", { name: /New fee note/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("Generate Invoice")).toBeInTheDocument();
+      expect(screen.getByText("Generate fee note")).toBeInTheDocument();
     });
 
     // PrerequisiteModal should NOT be visible

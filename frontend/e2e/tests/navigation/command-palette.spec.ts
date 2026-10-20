@@ -79,7 +79,8 @@ test.describe("CMD-01: Command Palette", () => {
 
     // Type a search term
     const searchInput = paletteCheck.locator("input").first();
-    await searchInput.fill("Invoices");
+    // Phase 87 611B (ADR-338): label amendment
+    await searchInput.fill("Fee notes");
     await page.waitForTimeout(500);
 
     // Press Enter to navigate or click the result
@@ -90,11 +91,10 @@ test.describe("CMD-01: Command Palette", () => {
       await page.keyboard.press("Enter");
     }
 
-    await page.waitForTimeout(1000);
-
-    // Should have navigated to invoices page
-    const url = page.url();
-    expect(url).toContain("invoice");
+    // Should have navigated to invoices page.
+    // Phase 87 611B: auto-waiting URL assertion — the fixed 1000ms sleep raced
+    // the client navigation (measured 1.0–1.7s on a used e2e stack, main and branch alike).
+    await expect(page).toHaveURL(/invoice/);
   });
 
   test("Escape closes palette", async ({ page }) => {

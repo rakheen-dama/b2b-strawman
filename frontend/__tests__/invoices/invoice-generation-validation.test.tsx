@@ -162,7 +162,7 @@ describe("Invoice Generation Validation", () => {
     );
 
     // Open dialog
-    await user.click(screen.getByText("New Invoice"));
+    await user.click(screen.getByText("New fee note"));
 
     // Click fetch unbilled time (step 1 -> step 2)
     await user.click(screen.getByText("Fetch Unbilled Time"));
@@ -244,8 +244,8 @@ describe("Invoice Generation Validation", () => {
 
     render(<InvoiceDetailClient invoice={mockInvoice} slug="test-org" isAdmin={true} />);
 
-    // Click Send Invoice
-    await user.click(screen.getByText("Send Invoice"));
+    // Click Send fee note
+    await user.click(screen.getByText("Send fee note"));
 
     // Wait for override dialog
     await waitFor(() => {

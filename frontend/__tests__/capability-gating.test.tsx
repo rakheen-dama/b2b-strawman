@@ -30,7 +30,6 @@ vi.mock("@/components/command-palette-provider", () => ({
 }));
 
 import { CapabilityProvider, RequiresCapability } from "@/lib/capabilities";
-import { TerminologyProvider } from "@/lib/terminology";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { DesktopSidebar } from "@/components/desktop-sidebar";
 
@@ -39,39 +38,35 @@ afterEach(() => {
 });
 
 describe("Sidebar capability gating", () => {
-  it("hides Invoices when user lacks INVOICING capability", () => {
+  it("hides Fee notes when user lacks INVOICING capability", () => {
     render(
       <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
-        <TerminologyProvider verticalProfile={null}>
-          <CapabilityProvider
-            capabilities={["PROJECT_MANAGEMENT"]}
-            role="Member"
-            isAdmin={false}
-            isOwner={false}
-          >
-            <DesktopSidebar slug="test-org" />
-          </CapabilityProvider>
-        </TerminologyProvider>
+        <CapabilityProvider
+          capabilities={["PROJECT_MANAGEMENT"]}
+          role="Member"
+          isAdmin={false}
+          isOwner={false}
+        >
+          <DesktopSidebar slug="test-org" />
+        </CapabilityProvider>
       </OrgProfileProvider>
     );
 
-    expect(screen.queryByText("Invoices")).not.toBeInTheDocument();
+    expect(screen.queryByText("Fee notes")).not.toBeInTheDocument();
   });
 
-  it("shows Invoices when user has INVOICING capability", async () => {
+  it("shows Fee notes when user has INVOICING capability", async () => {
     const user = userEvent.setup();
     render(
       <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
-        <TerminologyProvider verticalProfile={null}>
-          <CapabilityProvider
-            capabilities={["INVOICING"]}
-            role="Accountant"
-            isAdmin={false}
-            isOwner={false}
-          >
-            <DesktopSidebar slug="test-org" />
-          </CapabilityProvider>
-        </TerminologyProvider>
+        <CapabilityProvider
+          capabilities={["INVOICING"]}
+          role="Accountant"
+          isAdmin={false}
+          isOwner={false}
+        >
+          <DesktopSidebar slug="test-org" />
+        </CapabilityProvider>
       </OrgProfileProvider>
     );
 
@@ -79,7 +74,7 @@ describe("Sidebar capability gating", () => {
     const financeHeader = screen.getByText("Finance");
     await user.click(financeHeader.closest("button")!);
 
-    expect(screen.getByText("Invoices")).toBeInTheDocument();
+    expect(screen.getByText("Fee notes")).toBeInTheDocument();
   });
 
   it("shows all nav items for admin users", async () => {
@@ -90,11 +85,9 @@ describe("Sidebar capability gating", () => {
         enabledModules={["bulk_billing"]}
         terminologyNamespace={null}
       >
-        <TerminologyProvider verticalProfile={null}>
-          <CapabilityProvider capabilities={[]} role="Admin" isAdmin={true} isOwner={false}>
-            <DesktopSidebar slug="test-org" />
-          </CapabilityProvider>
-        </TerminologyProvider>
+        <CapabilityProvider capabilities={[]} role="Admin" isAdmin={true} isOwner={false}>
+          <DesktopSidebar slug="test-org" />
+        </CapabilityProvider>
       </OrgProfileProvider>
     );
 
@@ -104,8 +97,8 @@ describe("Sidebar capability gating", () => {
     const financeHeader = screen.getByText("Finance");
     await user.click(financeHeader.closest("button")!);
 
-    expect(screen.getByText("Invoices")).toBeInTheDocument();
-    expect(screen.getByText("Customers")).toBeInTheDocument();
+    expect(screen.getByText("Fee notes")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Clients" })).toBeInTheDocument();
     expect(screen.getByText("Profitability")).toBeInTheDocument();
     expect(screen.getByText("Reports")).toBeInTheDocument();
     expect(screen.getByText("Compliance")).toBeInTheDocument();

@@ -124,7 +124,7 @@ describe("Invoice Generation — expense selection", () => {
         />
       );
 
-      await user.click(screen.getByText("New Invoice"));
+      await user.click(screen.getByText("New fee note"));
       await user.click(screen.getByText("Fetch Unbilled Time"));
 
       await waitFor(
@@ -157,7 +157,7 @@ describe("Invoice Generation — expense selection", () => {
       />
     );
 
-    await user.click(screen.getByText("New Invoice"));
+    await user.click(screen.getByText("New fee note"));
     await user.click(screen.getByText("Fetch Unbilled Time"));
 
     await waitFor(
@@ -192,7 +192,7 @@ describe("Invoice Generation — expense selection", () => {
         />
       );
 
-      await user.click(screen.getByText("New Invoice"));
+      await user.click(screen.getByText("New fee note"));
       await user.click(screen.getByText("Fetch Unbilled Time"));
 
       await waitFor(

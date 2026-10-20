@@ -31,15 +31,14 @@ import {
 import { EmptyState } from "@/components/empty-state";
 import { HelpTip } from "@/components/help-tip";
 import { createMessages } from "@/lib/messages";
-import { useTerminology } from "@/lib/terminology";
 
 const ENTITY_TYPES: EntityType[] = ["PROJECT", "TASK", "CUSTOMER", "INVOICE"];
 
 const ENTITY_TYPE_LABELS: Record<EntityType, string> = {
-  PROJECT: "Projects",
+  PROJECT: "Matters",
   TASK: "Tasks",
-  CUSTOMER: "Customers",
-  INVOICE: "Invoices",
+  CUSTOMER: "Clients",
+  INVOICE: "Fee notes",
 };
 
 interface CustomFieldsContentProps {
@@ -56,12 +55,11 @@ export function CustomFieldsContent({
   canManage,
 }: CustomFieldsContentProps) {
   const { t: tMsg } = createMessages("empty-states");
-  const { t } = useTerminology();
   const [activeTab, setActiveTab] = useState<EntityType>("PROJECT");
 
   const entityTypeTabs = ENTITY_TYPES.map((value) => ({
     value,
-    label: t(ENTITY_TYPE_LABELS[value]),
+    label: ENTITY_TYPE_LABELS[value],
   }));
 
   const allFields = [

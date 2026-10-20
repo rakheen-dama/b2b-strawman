@@ -27,7 +27,6 @@ import {
   fetchProjects,
   fetchCustomers,
 } from "@/app/(app)/org/[slug]/legal/adverse-parties/actions";
-import { useTerminology } from "@/lib/terminology";
 
 const RELATIONSHIPS = [
   { value: "OPPOSING_PARTY", label: "Opposing Party" },
@@ -54,7 +53,6 @@ export function LinkAdversePartyDialog({
   slug,
   onSuccess,
 }: LinkAdversePartyDialogProps) {
-  const { t } = useTerminology();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
@@ -154,7 +152,7 @@ export function LinkAdversePartyDialog({
               name="customerId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("Customer")} *</FormLabel>
+                  <FormLabel>Client *</FormLabel>
                   <FormControl>
                     <select
                       value={field.value}

@@ -8,62 +8,16 @@ vi.mock("next/navigation", () => ({
   usePathname: vi.fn(() => "/org/test-org/projects"),
 }));
 
-vi.mock("motion/react", () => ({
-  motion: {
-    div: ({ children, ...props }: React.ComponentProps<"div">) => <div {...props}>{children}</div>,
-  },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
-
 import { usePathname } from "next/navigation";
 import { TerminologyProvider, useTerminology } from "@/lib/terminology";
-import { CapabilityProvider } from "@/lib/capabilities";
-import { OrgProfileProvider } from "@/lib/org-profile";
-import { NavZone } from "@/components/nav-zone";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { TerminologyHeading } from "@/components/terminology-heading";
 import { TerminologyText } from "@/components/terminology-text";
-import { FolderOpen } from "lucide-react";
-import type { NavGroup } from "@/lib/nav-items";
 
 const mockUsePathname = vi.mocked(usePathname);
 
 afterEach(() => {
   cleanup();
-});
-
-// ---- Test 1: Sidebar nav labels ----
-
-describe("364B: terminology in sidebar nav", () => {
-  it("renders Matters instead of Projects with legal-za profile", () => {
-    mockUsePathname.mockReturnValue("/org/test-org/dashboard");
-
-    const deliveryZone: NavGroup = {
-      id: "delivery",
-      label: "Delivery",
-      defaultExpanded: true,
-      items: [
-        {
-          label: "Projects",
-          href: (slug) => `/org/${slug}/projects`,
-          icon: FolderOpen,
-        },
-      ],
-    };
-
-    render(
-      <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
-        <CapabilityProvider capabilities={[]} role="owner" isAdmin={false} isOwner={true}>
-          <TerminologyProvider verticalProfile="legal-za">
-            <NavZone zone={deliveryZone} slug="test-org" />
-          </TerminologyProvider>
-        </CapabilityProvider>
-      </OrgProfileProvider>
-    );
-
-    expect(screen.getByText("Matters")).toBeInTheDocument();
-    expect(screen.queryByText("Projects")).not.toBeInTheDocument();
-  });
 });
 
 // ---- Test 2: Breadcrumbs ----

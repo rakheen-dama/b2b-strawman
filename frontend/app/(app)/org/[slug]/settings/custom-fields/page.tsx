@@ -4,7 +4,6 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { HelpTip } from "@/components/help-tip";
 import { CustomFieldsContent } from "./custom-fields-content";
-import { TerminologyText } from "@/components/terminology-text";
 import type { FieldDefinitionResponse, FieldGroupResponse, EntityType } from "@/lib/types";
 
 const ENTITY_TYPES: EntityType[] = ["PROJECT", "TASK", "CUSTOMER", "INVOICE"];
@@ -86,7 +85,7 @@ export default async function CustomFieldsSettingsPage({
           <HelpTip code="fields.types" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          <TerminologyText template="Define custom fields and groups for {projects}, {tasks}, {customers}, and {invoices}." />
+          Define custom fields and groups for matters, tasks, clients, and fee notes.
         </p>
       </div>
 

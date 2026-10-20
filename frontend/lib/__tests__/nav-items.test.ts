@@ -188,11 +188,31 @@ describe("SETTINGS_ITEMS", () => {
 });
 
 describe("matter/client hrefs (Phase 87 610E)", () => {
-  it("use the renamed route segments (labels unchanged — 611/612)", () => {
+  it("use the renamed route segments", () => {
     const hrefs = NAV_GROUPS.flatMap((g) => g.items).map((i) => i.href("acme"));
     expect(hrefs).toEqual(
       expect.arrayContaining(["/org/acme/matters", "/org/acme/clients", "/org/acme/matters/new"])
     );
     expect(hrefs.filter((h) => /\/(projects|customers)(\/|$)/.test(h))).toEqual([]);
+  });
+});
+
+describe("legal labels (Phase 87 611B)", () => {
+  it("labels the projects zone Matters (zone id unchanged)", () => {
+    const projects = NAV_GROUPS.find((g) => g.id === "projects");
+    expect(projects?.label).toBe("Matters");
+  });
+
+  it("labels the matter, client and fee-note items in legal copy", () => {
+    const labels = NAV_GROUPS.flatMap((g) => g.items).map((i) => i.label);
+    expect(labels).toEqual(expect.arrayContaining(["Matters", "Clients", "Fee notes"]));
+  });
+
+  it("has no generic Projects/Customers/Invoices zone or item label", () => {
+    const labels = [
+      ...NAV_GROUPS.map((g) => g.label),
+      ...NAV_GROUPS.flatMap((g) => g.items).map((i) => i.label),
+    ];
+    expect(labels.filter((l) => /^(Projects|Customers|Invoices)$/.test(l))).toEqual([]);
   });
 });

@@ -11,12 +11,14 @@ test("mock login redirects to dashboard", async ({ page }) => {
 test("owner can create a project", async ({ page }) => {
   const name = `E2E Test ${Date.now()}`;
   await loginAs(page, "alice");
-  await page.goto("/org/e2e-test-org/projects");
+  // Phase 87 S4 (ADR-344): route rename
+  await page.goto("/org/e2e-test-org/matters");
   await page.getByRole("button", { name: /New (Project|Engagement)/i }).click();
   await page.getByLabel("Name").fill(name);
   await page.getByRole("button", { name: /Create (Project|Engagement)/i }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 10000 });
-  await page.goto("/org/e2e-test-org/projects");
+  // Phase 87 S4 (ADR-344): route rename
+  await page.goto("/org/e2e-test-org/matters");
   await expect(page.getByText(name).first()).toBeVisible({ timeout: 10000 });
 });
 

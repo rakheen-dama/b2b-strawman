@@ -28,7 +28,8 @@ test.describe.serial("Day 75 — Complex Engagement & Adverse Parties", () => {
   // ── 75.1-75.2: Sipho 2nd matter (Litigation template) ────────────
   test("Alice: Create 2nd litigation matter for Sipho", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.getByRole("heading", { name: /Projects|Matters/i, level: 1 })).toBeVisible({
       timeout: 10_000,
     });
@@ -234,7 +235,8 @@ test.describe.serial("Day 75 — Complex Engagement & Adverse Parties", () => {
   // ── 75.11-75.15: Estate progression (Moroka) ─────────────────────
   test("Alice: Progress Moroka estate — mark action items DONE", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
     const estateMatter = page.getByRole("link", { name: /Moroka|Estate/i }).first();
@@ -265,7 +267,8 @@ test.describe.serial("Day 75 — Complex Engagement & Adverse Parties", () => {
 
   test("Alice: Log 360min on Moroka estate matter", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
     const estateMatter = page.getByRole("link", { name: /Moroka|Estate/i }).first();
@@ -348,7 +351,8 @@ test.describe.serial("Day 75 — Complex Engagement & Adverse Parties", () => {
   // ── 75.16-75.18: Apex 2nd matter (Commercial template) ────────────
   test("Alice: Create 2nd Commercial matter for Apex (annual returns)", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.getByRole("heading", { name: /Projects|Matters/i, level: 1 })).toBeVisible({
       timeout: 10_000,
     });

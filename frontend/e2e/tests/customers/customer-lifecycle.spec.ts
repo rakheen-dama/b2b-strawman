@@ -90,14 +90,16 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
 
     // Verify in UI
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/customers/${customerId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients/${customerId}`);
     await expect(page.getByText(LIFECYCLE_NAME).first()).toBeVisible({ timeout: 10000 });
     await expect(page.getByText(/Prospect/).first()).toBeVisible({ timeout: 5000 });
   });
 
   test("PROSPECT -> ONBOARDING", async ({ page }) => {
     await loginAs(page, "bob");
-    await page.goto(`${BASE}/customers/${customerId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients/${customerId}`);
     await expect(page.getByText(LIFECYCLE_NAME).first()).toBeVisible({ timeout: 10000 });
 
     // Click "Change Status" button (LifecycleTransitionDropdown trigger)
@@ -198,7 +200,8 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
     );
 
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/customers/${prospect.id}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients/${prospect.id}`);
     await expect(page.getByText(/Prospect/).first()).toBeVisible({ timeout: 10000 });
 
     // The Projects tab may exist but creating projects should be blocked.
@@ -269,7 +272,8 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
     }
 
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/customers/${customerId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients/${customerId}`);
     await expect(page.getByText(LIFECYCLE_NAME).first()).toBeVisible({ timeout: 10000 });
 
     // The "Change Status" button may not appear if customer is not ACTIVE
@@ -300,7 +304,8 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
 
   test("DORMANT -> OFFBOARDING", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/customers/${customerId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients/${customerId}`);
     await expect(page.getByText(LIFECYCLE_NAME).first()).toBeVisible({ timeout: 10000 });
 
     const changeStatusBtn = page.getByRole("button", { name: "Change Status" });
@@ -330,7 +335,8 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
 
   test("OFFBOARDING -> OFFBOARDED", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/customers/${customerId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients/${customerId}`);
     await expect(page.getByText(LIFECYCLE_NAME).first()).toBeVisible({ timeout: 10000 });
 
     const changeStatusBtn = page.getByRole("button", { name: "Change Status" });

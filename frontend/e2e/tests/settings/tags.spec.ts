@@ -75,7 +75,8 @@ test.describe("TAG-01: Tags", () => {
 
   test("Apply tag to entity", async ({ page }) => {
     // Navigate to a project or customer to apply a tag
-    await page.goto(`${base}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${base}/matters`);
     await expect(page.locator("body")).not.toContainText("Something went wrong");
 
     // Click on first project

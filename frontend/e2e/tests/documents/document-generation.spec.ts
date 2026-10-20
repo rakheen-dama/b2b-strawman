@@ -54,7 +54,8 @@ test.describe("DOC-02: Document Generation", () => {
     }
 
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/customers/${activeCustomer.id}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients/${activeCustomer.id}`);
     await page.waitForLoadState("networkidle");
 
     // Look for a "Generate Document" button or dropdown
@@ -65,7 +66,8 @@ test.describe("DOC-02: Document Generation", () => {
 
     if (!hasGenerate) {
       // Try project detail page instead
-      await page.goto(`${BASE}/projects`);
+      // Phase 87 S4 (ADR-344): route rename
+      await page.goto(`${BASE}/matters`);
       await expect(
         page.getByRole("heading", { name: /Projects|Engagements/i, level: 1 })
       ).toBeVisible({ timeout: 10000 });
@@ -150,7 +152,8 @@ test.describe("DOC-02: Document Generation", () => {
     }
 
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/customers/${activeCustomer.id}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients/${activeCustomer.id}`);
     await page.waitForLoadState("networkidle");
 
     // Look for generate document or any preview functionality

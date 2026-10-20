@@ -34,7 +34,8 @@ test.describe.serial("Day 7 — First Week of Work", () => {
 
   test("Carol: Log 90min time on Sipho matter", async ({ page }) => {
     await loginAs(page, "carol");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
     // Navigate to the first matter (Sipho's litigation)
@@ -103,7 +104,8 @@ test.describe.serial("Day 7 — First Week of Work", () => {
   // ── Bob: Log time on Sipho (letter of demand) + Apex (due diligence)
   test("Bob: Log 120min on Sipho — letter of demand", async ({ page }) => {
     await loginAs(page, "bob");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
     const matterLink = page.getByRole("link", { name: /Ndlovu|Sipho|RAF/i }).first();
@@ -140,7 +142,8 @@ test.describe.serial("Day 7 — First Week of Work", () => {
 
   test("Bob: Add comment on Sipho matter", async ({ page }) => {
     await loginAs(page, "bob");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
     const matterLink = page.getByRole("link", { name: /Ndlovu|Sipho|RAF/i }).first();
@@ -223,7 +226,8 @@ test.describe.serial("Day 7 — First Week of Work", () => {
   // ── Alice: Log time on Moroka estate ──────────────────────────────
   test("Alice: Log 60min on Moroka estate matter", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
     const matterLink = page.getByRole("link", { name: /Moroka|Estate/i }).first();

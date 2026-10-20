@@ -38,7 +38,8 @@ test("Legal-ZA 90-day demo walkthrough", async ({ page }) => {
   await page.waitForTimeout(SHORT);
 
   // ── Scene 4: Clients list ──
-  await page.goto(`${BASE}/customers`);
+  // Phase 87 S4 (ADR-344): route rename
+  await page.goto(`${BASE}/clients`);
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(PAUSE);
 
@@ -67,7 +68,8 @@ test("Legal-ZA 90-day demo walkthrough", async ({ page }) => {
   await page.waitForTimeout(SHORT);
 
   // ── Scene 5: Matters list ──
-  await page.goto(`${BASE}/projects`);
+  // Phase 87 S4 (ADR-344): route rename
+  await page.goto(`${BASE}/matters`);
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(PAUSE);
 

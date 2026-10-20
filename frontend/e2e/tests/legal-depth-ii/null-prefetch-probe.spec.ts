@@ -39,7 +39,8 @@ interface ProbeRoute {
 const ROUTES: ProbeRoute[] = [
   {
     name: "Matters list -> matter (projects/[id])",
-    start: `${ORG}/projects`,
+    // Phase 87 S4 (ADR-344): route rename
+    start: `${ORG}/matters`,
     // Phase 87 610E (ADR-344): URL-only — list hrefs now point at /matters directly
     link: (p) => p.locator(`#main-content a[href^="${ORG}/matters/"]`).first(),
     // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
@@ -56,7 +57,8 @@ const ROUTES: ProbeRoute[] = [
   },
   {
     name: "Sidebar /projects -> /dashboard",
-    start: `${ORG}/projects`,
+    // Phase 87 S4 (ADR-344): route rename
+    start: `${ORG}/matters`,
     link: (p) =>
       p.locator(`aside a[href="${ORG}/dashboard"], nav a[href="${ORG}/dashboard"]`).first(),
     url: /\/dashboard$/,

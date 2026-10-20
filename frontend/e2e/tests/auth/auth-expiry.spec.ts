@@ -28,7 +28,8 @@ test.describe("graceful expiry funnel", () => {
     // Navigate directly to the branded route as the funnel would, asserting the
     // reason banner renders. (In the real KC flow the middleware/apiRequest
     // funnel performs this redirect; here we assert the route itself.)
-    await page.goto("/sign-in?reason=expired&returnTo=%2Forg%2Fe2e-test-org%2Fprojects");
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto("/sign-in?reason=expired&returnTo=%2Forg%2Fe2e-test-org%2Fmatters");
 
     await expect(page).toHaveURL(/\/sign-in\?reason=expired/);
     await expect(page.getByText(/session expired for security/i)).toBeVisible();
@@ -42,9 +43,11 @@ test.describe("graceful expiry funnel", () => {
     // establish the same-origin context, then write the allowlisted
     // destination into sessionStorage (survives the same-origin navigation to
     // /dashboard below).
-    await page.goto("/sign-in?reason=expired&returnTo=%2Forg%2Fe2e-test-org%2Fprojects");
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto("/sign-in?reason=expired&returnTo=%2Forg%2Fe2e-test-org%2Fmatters");
     await page.evaluate(() => {
-      window.sessionStorage.setItem("kazi.returnTo", "/org/e2e-test-org/projects");
+      // Phase 87 S4 (ADR-344): route rename
+      window.sessionStorage.setItem("kazi.returnTo", "/org/e2e-test-org/matters");
     });
 
     // Land on /dashboard — the gateway's default post-login target. The real

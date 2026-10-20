@@ -117,7 +117,8 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
   }) => {
     const matterName = siphoMatterName();
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await page.getByRole("button", { name: "New from Template" }).click();
 
     const dialog = page.getByRole("dialog", { name: /New from Template/ });
@@ -373,7 +374,8 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
     // Own matter, so the disbursement this creates never touches Sipho's statement/closure
     const reproMatter = `Ndlovu — transition repro ${attemptRunId()}`;
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await page.getByRole("button", { name: "New Matter" }).click();
     const matterDialog = page.getByRole("dialog", { name: "Create Matter" });
     await matterDialog.getByLabel("Name", { exact: true }).fill(reproMatter);

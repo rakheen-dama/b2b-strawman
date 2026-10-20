@@ -84,7 +84,8 @@ test.describe("CF-01: Custom Fields", () => {
   });
 
   test("Custom field appears on entity form", async ({ page }) => {
-    await page.goto(`${base}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${base}/clients`);
     const bodyText = await page.locator("body").textContent();
 
     if (bodyText?.includes("Something went wrong")) {
@@ -128,7 +129,8 @@ test.describe("CF-01: Custom Fields", () => {
 
   test("Custom field value persists", async ({ page }) => {
     // Navigate to an existing customer's detail
-    await page.goto(`${base}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${base}/clients`);
     const bodyText = await page.locator("body").textContent();
 
     if (bodyText?.includes("Something went wrong")) {

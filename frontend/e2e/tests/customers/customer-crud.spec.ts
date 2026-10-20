@@ -46,7 +46,8 @@ test.describe.serial("CUST-01: Customer CRUD", () => {
 
   test("Create customer with required fields", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     // Heading uses TerminologyHeading — "Customers" or "Clients"
     await expect(page.locator("h1").first()).toBeVisible({ timeout: 10000 });
 
@@ -81,7 +82,8 @@ test.describe.serial("CUST-01: Customer CRUD", () => {
     }
 
     // Reload and verify customer appears
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await expect(page.getByText(CUSTOMER_NAME).first()).toBeVisible({ timeout: 10000 });
   });
 
@@ -90,7 +92,8 @@ test.describe.serial("CUST-01: Customer CRUD", () => {
     const email2 = `testcust2-${RUN_ID}@example.com`;
 
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await expect(page.locator("h1").first()).toBeVisible({ timeout: 10000 });
 
     const newBtn = page.getByRole("button", { name: /New (Customer|Client)/i });
@@ -153,7 +156,8 @@ test.describe.serial("CUST-01: Customer CRUD", () => {
     }
 
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/customers/${target.id}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients/${target.id}`);
     // Customer detail heading is text-2xl — just check the name appears
     await expect(page.getByText(CUSTOMER_NAME).first()).toBeVisible({ timeout: 10000 });
 
@@ -178,7 +182,8 @@ test.describe.serial("CUST-01: Customer CRUD", () => {
 
   test("Search customer list", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await expect(page.locator("h1").first()).toBeVisible({ timeout: 10000 });
 
     // The customer list page does not have a search input — it uses lifecycle filter pills.
@@ -199,7 +204,8 @@ test.describe.serial("CUST-01: Customer CRUD", () => {
 
   test("Customer list pagination", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await expect(page.locator("h1").first()).toBeVisible({ timeout: 10000 });
 
     // Wait for data to load

@@ -125,7 +125,8 @@ test.describe("Epic 508B — Matter closure override audit surface", () => {
 
     // ── Login + navigate to project detail ─────────────────────────────
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects/${target.id}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${target.id}`);
     await page.waitForLoadState("networkidle");
 
     // ── Assert closure-history section is rendered (only on CLOSED) ────

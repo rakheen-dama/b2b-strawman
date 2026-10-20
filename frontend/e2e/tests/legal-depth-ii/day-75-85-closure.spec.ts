@@ -105,7 +105,8 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
     page,
   }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     // "New Matter" (not "New from Template"): no template → no open tasks
     await page.getByRole("button", { name: "New Matter" }).click();
     const dialog = page.getByRole("dialog", { name: "Create Matter" });

@@ -134,7 +134,8 @@ export async function openMatter(
   matterName: string,
   { closed = false }: { closed?: boolean } = {}
 ): Promise<void> {
-  await page.goto(`${BASE}/projects`);
+  // Phase 87 S4 (ADR-344): route rename
+  await page.goto(`${BASE}/matters`);
   if (closed) {
     // The list shows active matters by default; closed ones sit behind the "Closed" chip
     await page.getByTestId("project-status-filter").getByRole("link", { name: "Closed" }).click();
@@ -152,7 +153,8 @@ export async function openMatter(
  * page is ready (heading visible).
  */
 export async function openClient(page: Page, clientName: string): Promise<void> {
-  await page.goto(`${BASE}/customers`);
+  // Phase 87 S4 (ADR-344): route rename
+  await page.goto(`${BASE}/clients`);
   const link = page.getByRole("link", { name: clientName, exact: true });
   await expect(link, `client "${clientName}" should be listed`).toBeVisible({ timeout: 15_000 });
   await clickThrough(link, page.getByRole("heading", { level: 1, name: clientName }));
@@ -190,7 +192,8 @@ export interface NewClient {
  * notes require) and leaves the browser on the new client's page.
  */
 export async function createClient(page: Page, client: NewClient): Promise<void> {
-  await page.goto(`${BASE}/customers`);
+  // Phase 87 S4 (ADR-344): route rename
+  await page.goto(`${BASE}/clients`);
   await page.getByRole("button", { name: "New Client" }).click();
 
   // The dialog title changes from "Create Client" (step 1) to "Additional Information" (step 2)

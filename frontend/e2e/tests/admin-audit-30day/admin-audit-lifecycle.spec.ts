@@ -109,7 +109,8 @@ test.describe("Phase 69 capstone — Day 20 per-entity customer Audit tab", () =
     test.skip(true, SKIP_REASON);
 
     await loginAs(page, "bob");
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await page.waitForLoadState("networkidle");
 
     await expect(page.locator("body")).not.toContainText("Something went wrong");

@@ -126,7 +126,8 @@ test.describe.serial("Day 45 — Reconciliation & Prescription", () => {
     await loginAs(page, "alice");
 
     // Prescription tracking might be on the matter detail page
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
     const siphoMatter = page.getByRole("link", { name: /Ndlovu|Sipho|RAF/i }).first();

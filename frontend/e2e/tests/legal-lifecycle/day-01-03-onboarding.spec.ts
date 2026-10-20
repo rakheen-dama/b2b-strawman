@@ -83,7 +83,8 @@ test.describe.serial("Day 1 — Sipho Ndlovu Onboarding", () => {
   // ── 1.4-1.9: Create client Sipho Ndlovu ──────────────────────────
   test("Bob: Create client Sipho Ndlovu (Individual)", async ({ page }) => {
     await loginAs(page, "bob");
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await expect(page.getByRole("heading", { name: /Customers|Clients/i, level: 1 })).toBeVisible({
       timeout: 10_000,
     });
@@ -155,14 +156,16 @@ test.describe.serial("Day 1 — Sipho Ndlovu Onboarding", () => {
     }
 
     // Verify client appears in list
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await expect(page.getByText(CLIENT_NAME).first()).toBeVisible({ timeout: 10_000 });
   });
 
   // ── 1.10-1.15: Transition PROSPECT -> ONBOARDING -> ACTIVE ───────
   test("Bob: Transition Sipho to ONBOARDING", async ({ page }) => {
     await loginAs(page, "bob");
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await expect(page.getByRole("heading", { name: /Customers|Clients/i, level: 1 })).toBeVisible({
       timeout: 10_000,
     });
@@ -193,7 +196,8 @@ test.describe.serial("Day 1 — Sipho Ndlovu Onboarding", () => {
 
   test("Bob: Complete FICA checklist for Sipho — auto-transitions to ACTIVE", async ({ page }) => {
     await loginAs(page, "bob");
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await page
       .getByRole("link", {
         name: new RegExp(CLIENT_NAME.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"),
@@ -237,7 +241,8 @@ test.describe.serial("Day 1 — Sipho Ndlovu Onboarding", () => {
   // ── 1.16-1.22: Create matter from Litigation template ─────────────
   test("Alice: Create Litigation matter for Sipho", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.getByRole("heading", { name: /Projects|Matters/i, level: 1 })).toBeVisible({
       timeout: 10_000,
     });
@@ -308,7 +313,8 @@ test.describe.serial("Day 1 — Sipho Ndlovu Onboarding", () => {
     }
 
     // Verify matter created — check project list
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     const matterVisible = await page
       .getByText(new RegExp(`Ndlovu.*RAF|RAF.*Ndlovu`, "i"))
       .first()
@@ -358,7 +364,8 @@ test.describe.serial("Day 2 — Apex Holdings & Moroka Trust Onboarding", () => 
 
   test("Bob: Create client Apex Holdings (Company)", async ({ page }) => {
     await loginAs(page, "bob");
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await expect(page.getByRole("heading", { name: /Customers|Clients/i, level: 1 })).toBeVisible({
       timeout: 10_000,
     });
@@ -397,7 +404,8 @@ test.describe.serial("Day 2 — Apex Holdings & Moroka Trust Onboarding", () => 
       await page.waitForTimeout(500);
     }
 
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await expect(page.getByText(APEX_NAME).first()).toBeVisible({ timeout: 10_000 });
 
     // Screenshot — client with legal fields populated
@@ -431,7 +439,8 @@ test.describe.serial("Day 2 — Apex Holdings & Moroka Trust Onboarding", () => 
 
   test("Bob: Create client Moroka Family Trust", async ({ page }) => {
     await loginAs(page, "bob");
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await expect(page.getByRole("heading", { name: /Customers|Clients/i, level: 1 })).toBeVisible({
       timeout: 10_000,
     });
@@ -470,13 +479,15 @@ test.describe.serial("Day 2 — Apex Holdings & Moroka Trust Onboarding", () => 
       await page.waitForTimeout(500);
     }
 
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await expect(page.getByText(MOROKA_NAME).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("Alice: Create Deceased Estate matter for Moroka from template", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.getByRole("heading", { name: /Projects|Matters/i, level: 1 })).toBeVisible({
       timeout: 10_000,
     });
@@ -524,7 +535,8 @@ test.describe.serial("Day 2 — Apex Holdings & Moroka Trust Onboarding", () => 
     }
 
     // Verify and screenshot
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     const matterVisible = await page
       .getByText(/Moroka|Estate/i)
       .first()
@@ -571,7 +583,8 @@ test.describe.serial("Day 3 — QuickCollect Services Onboarding", () => {
 
   test("Bob: Create client QuickCollect Services (Company)", async ({ page }) => {
     await loginAs(page, "bob");
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await expect(page.getByRole("heading", { name: /Customers|Clients/i, level: 1 })).toBeVisible({
       timeout: 10_000,
     });
@@ -610,13 +623,15 @@ test.describe.serial("Day 3 — QuickCollect Services Onboarding", () => {
       await page.waitForTimeout(500);
     }
 
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await expect(page.getByText(QC_NAME).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("Alice: Create initial Collections matter for QuickCollect", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.getByRole("heading", { name: /Projects|Matters/i, level: 1 })).toBeVisible({
       timeout: 10_000,
     });
@@ -652,14 +667,16 @@ test.describe.serial("Day 3 — QuickCollect Services Onboarding", () => {
     }
 
     // Verify at least one matter created
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.locator("main")).toBeVisible();
   });
 
   // ── Verify all 4 clients exist ────────────────────────────────────
   test("Alice: Verify 4 clients on client list", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await expect(page.getByRole("heading", { name: /Customers|Clients/i, level: 1 })).toBeVisible({
       timeout: 10_000,
     });

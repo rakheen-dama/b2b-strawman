@@ -106,7 +106,8 @@ test.describe.serial("EXPENSE-01: Project Expenses", () => {
 
   test("1. View expenses tab on project", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
     await expect(page.getByRole("heading", { name: PROJECT_NAME, level: 1 })).toBeVisible({
       timeout: 10000,
     });
@@ -144,7 +145,8 @@ test.describe.serial("EXPENSE-01: Project Expenses", () => {
 
     // Verify in UI
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
     await page.getByRole("tab", { name: "Expenses" }).click();
     await expect(page.getByRole("tabpanel", { name: "Expenses" })).toBeVisible({ timeout: 5000 });
 
@@ -178,7 +180,8 @@ test.describe.serial("EXPENSE-01: Project Expenses", () => {
 
     // Verify in UI
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
     await page.getByRole("tab", { name: "Expenses" }).click();
     await expect(page.getByText(`Non-billable expense ${RUN_ID}`).first()).toBeVisible({
       timeout: 10000,
@@ -204,7 +207,8 @@ test.describe.serial("EXPENSE-01: Project Expenses", () => {
 
     // Verify updated description in UI
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
     await page.getByRole("tab", { name: "Expenses" }).click();
     await expect(page.getByText(`Updated expense ${RUN_ID}`).first()).toBeVisible({
       timeout: 10000,

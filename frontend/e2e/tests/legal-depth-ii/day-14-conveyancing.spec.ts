@@ -175,7 +175,8 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
   // ── 14.2-14.3: Create conveyancing matter from Property Transfer template ──
   test("Alice (Thandi): Create matter using Property Transfer template", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await page.getByRole("button", { name: "New from Template" }).click();
 
     const dialog = page.getByRole("dialog", { name: /New from Template/ });
@@ -214,7 +215,8 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
       const context = await browser.newContext();
       const page = await context.newPage();
       await loginAs(page, "alice");
-      await page.goto(`${BASE}/projects`);
+      // Phase 87 S4 (ADR-344): route rename
+      await page.goto(`${BASE}/matters`);
       const link = page.getByRole("link", { name: new RegExp(escapeRegExp(matterName())) }).first();
       await expect(link).toBeVisible({ timeout: 15_000 });
       await link.click();

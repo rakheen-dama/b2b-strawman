@@ -92,7 +92,7 @@ export const PORTAL_NAV_LABELS: Record<string, string> = {
   "portal.nav.matters": "Matters",
   "portal.nav.trust": "Trust",
   "portal.nav.deadlines": "Deadlines",
-  "portal.nav.invoices": "Invoices",
+  "portal.nav.invoices": "Fee Notes",
   "portal.nav.requests": "Requests",
   "portal.nav.acceptance": "Acceptance",
   "portal.nav.activity": "Activity",

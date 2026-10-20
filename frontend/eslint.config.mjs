@@ -38,7 +38,8 @@ const eslintConfig = defineConfig([
             { name: "@/components/terminology-heading", message: NO_VOCABULARY_LAYER },
             { name: "@/components/terminology-text", message: NO_VOCABULARY_LAYER },
             { name: "@b2mash/shared/terminology-map", message: NO_VOCABULARY_LAYER },
-            // The @b2mash/shared barrel re-exports the terminology map until 611E deletes it.
+            // 611E deleted packages/shared/src/terminology-map.ts; the barrel names stay banned so
+            // the map cannot come back.
             {
               name: "@b2mash/shared",
               importNames: [

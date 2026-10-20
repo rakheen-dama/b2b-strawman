@@ -168,7 +168,7 @@ describe("InvoiceDetailPage", () => {
     // Notes
     expect(screen.getByText("Payment due within 30 days")).toBeInTheDocument();
     // Back link
-    expect(screen.getByText("Back to invoices")).toBeInTheDocument();
+    expect(screen.getByText("Back to fee notes")).toBeInTheDocument();
     // Download button
     expect(screen.getByText("Download PDF")).toBeInTheDocument();
   });

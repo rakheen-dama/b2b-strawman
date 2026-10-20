@@ -5,7 +5,6 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./terminology-map": "./src/terminology-map.ts",
     "./format": "./src/format.ts"
   }
 }

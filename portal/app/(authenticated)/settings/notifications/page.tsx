@@ -13,7 +13,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { Button } from "@b2mash/ui/button";
 import { Skeleton } from "@b2mash/ui/skeleton";
-import { useTerminology } from "@/lib/terminology";
 
 interface ToggleRowProps {
   id: string;
@@ -95,7 +94,6 @@ function NotificationsPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const shouldAutoUnsubscribe = searchParams.get("unsubscribe") === "1";
-  const { t } = useTerminology();
 
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -308,7 +306,7 @@ function NotificationsPageInner() {
                 <ToggleRow
                   id="pref-action"
                   label="Action-required notifications"
-                  description={`${t("Invoice")}, acceptance, and information-request emails.`}
+                  description="Fee Note, acceptance, and information-request emails."
                   checked={prefs.actionRequiredEnabled}
                   disabled={isSaving}
                   onChange={(v) => handleToggle("actionRequiredEnabled", v)}

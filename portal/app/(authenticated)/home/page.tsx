@@ -13,7 +13,6 @@ import { portalGet } from "@/lib/api-client";
 import { useModules } from "@/hooks/use-portal-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { formatCurrency, formatDate } from "@b2mash/shared/format";
-import { useTerminology } from "@/lib/terminology";
 import type { PortalInvoice, PortalPendingAcceptance } from "@/lib/types";
 
 interface InfoRequestSummary {
@@ -173,7 +172,6 @@ function DeadlinesCard() {
 }
 
 function RecentInvoicesCard() {
-  const { t } = useTerminology();
   const [invoices, setInvoices] = useState<PortalInvoice[] | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -200,14 +198,14 @@ function RecentInvoicesCard() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-sm text-slate-600">
-          <Receipt className="size-4" /> Recent {t("invoices")}
+          <Receipt className="size-4" /> Recent fee notes
         </CardTitle>
       </CardHeader>
       <CardContent>
         {invoices === null ? (
           <p className="text-sm text-slate-500">Loading...</p>
         ) : invoices.length === 0 ? (
-          <p className="text-sm text-slate-500">No {t("invoices")} yet.</p>
+          <p className="text-sm text-slate-500">No fee notes yet.</p>
         ) : (
           <ul className="space-y-2">
             {invoices.map((inv) => (

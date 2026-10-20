@@ -1,5 +1,32 @@
 import { describe, it, expect } from "vitest";
-import { PORTAL_NAV_ITEMS, filterNavItems } from "@/lib/nav-items";
+import {
+  PORTAL_NAV_ITEMS,
+  PORTAL_NAV_LABELS,
+  filterNavItems,
+} from "@/lib/nav-items";
+
+describe("PORTAL_NAV_LABELS", () => {
+  // Phase 87 611E: rendered directly by PortalSidebar (the t() pass is gone). Today's labels —
+  // "Fee Notes" is what legal-za tenants already saw via t("Invoices"). New labels are 617A.
+  it("carries today's legal labels", () => {
+    expect(PORTAL_NAV_LABELS).toEqual({
+      "portal.nav.home": "Home",
+      "portal.nav.matters": "Matters",
+      "portal.nav.trust": "Trust",
+      "portal.nav.deadlines": "Deadlines",
+      "portal.nav.invoices": "Fee Notes",
+      "portal.nav.requests": "Requests",
+      "portal.nav.acceptance": "Acceptance",
+      "portal.nav.activity": "Activity",
+    });
+  });
+
+  it("has a label for every nav item", () => {
+    for (const item of PORTAL_NAV_ITEMS) {
+      expect(PORTAL_NAV_LABELS[item.labelKey]).toBeTruthy();
+    }
+  });
+});
 
 describe("PORTAL_NAV_ITEMS", () => {
   // GAP-P-07: "documents" entry removed — the /documents route is not

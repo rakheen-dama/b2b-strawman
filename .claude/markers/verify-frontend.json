@@ -1,7 +1,7 @@
 {
-  "commit": "f18d1d6273882017d69e652f0370476af249b74a",
+  "commit": "6e02e1c6c32cb6fd2e978e8c21038d7d4341b666",
   "command": "cd frontend && pnpm run lint && pnpm run format:check && rm -rf .next && pnpm run build && pnpm test",
   "exit": 0,
-  "ts": "2026-10-20T13:04:06+02:00",
-  "summary": "PR #1606 (610B; app/ matter/client API literals routed through lib/api/matters+clients; M2 type moves) on f18d1d627 (orchestrator run): lint 0 errors / 95 warnings (= main); prettier clean; build OK; vitest 362 files, 2307 passed | 2 skipped (= main); tsc 166 = baseline. E2E A/B vs main a75bc081f: projects+customers identical failing set; legal-lifecycle identical failing set (incl. day-60:41, pre-existing, not in carried list); depth-ii PR 27/1/15 vs main 13/15/15."
+  "ts": "2026-10-20T13:47:00+02:00",
+  "summary": "PR #1607 (610C; components/lib matter/client API literals routed through lib/api/{matters,clients,paths}; overlapping wrappers in setup-status/compliance-api/actions/dashboard deleted; Dormancy*/AnonymizeClientRequest collapsed into lib/types; AST no-inline-literal scan + characterization test) on 6e02e1c6c (orchestrator run): lint 0 errors / 95 warnings (= main); prettier clean; build OK; vitest 364 files, 2316 passed | 2 skipped; tsc 166 = baseline (identical error set). E2E (frontend rebuilt from branch) vs 610B record: projects+customers 7/6/2/33 identical set; legal-lifecycle 62/5/5/20 identical set (incl. day-60:41); depth-ii 27/1/15 (day-75-85-closure:381)."
 }

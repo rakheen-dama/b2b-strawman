@@ -53,6 +53,7 @@ import { validateInvoiceGeneration } from "@/app/(app)/org/[slug]/customers/[id]
 import { resolveRate } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
 import { fetchInvoices } from "@/app/(app)/org/[slug]/invoices/invoice-crud-actions";
 import {
+  getOrgProfitability,
   getProjectProfitability,
   getCustomerProfitability,
 } from "@/app/(app)/org/[slug]/profitability/actions";
@@ -123,15 +124,34 @@ describe("finance wire bodies (Phase 87 S3)", () => {
     expect(url).toBe("/api/invoices?status=SENT&clientId=c-1");
   });
 
-  it("matter/client-scoped finance paths use /api/matters and /api/clients", async () => {
+  it("getProjectProfitability uses /api/matters/{id}/profitability", async () => {
     await getProjectProfitability("m-1");
+    expect(mockGet).toHaveBeenCalledWith("/api/matters/m-1/profitability");
+  });
+
+  it("getCustomerProfitability uses /api/clients/{id}/profitability", async () => {
     await getCustomerProfitability("c-1");
+    expect(mockGet).toHaveBeenCalledWith("/api/clients/c-1/profitability");
+  });
+
+  it("fetchProjectTimeSummary uses /api/matters/{id}/time-summary", async () => {
     await fetchProjectTimeSummary("m-1");
+    expect(mockGet).toHaveBeenCalledWith("/api/matters/m-1/time-summary");
+  });
+
+  it("deleteExpense uses /api/matters/{id}/expenses/{expenseId}", async () => {
     await deleteExpense("acme", "m-1", "e-1");
-    const getUrls = mockGet.mock.calls.map((c) => c[0] as string);
-    expect(getUrls).toContain("/api/matters/m-1/profitability");
-    expect(getUrls).toContain("/api/clients/c-1/profitability");
-    expect(getUrls).toContain("/api/matters/m-1/time-summary");
     expect(apiMock.delete).toHaveBeenCalledWith("/api/matters/m-1/expenses/e-1");
+  });
+
+  // D4 (Phase 87): the backend param on /api/reports/profitability is still
+  // customerId (ReportController:66). A mechanical rename to clientId would be
+  // silently dropped by Spring and return org-wide profitability — keep this red
+  // until the backend moves.
+  it("getOrgProfitability still filters with ?customerId= (D4 keep)", async () => {
+    await getOrgProfitability("2026-10-01", "2026-10-31", "c-1");
+    expect(mockGet).toHaveBeenCalledWith(
+      "/api/reports/profitability?from=2026-10-01&to=2026-10-31&customerId=c-1"
+    );
   });
 });

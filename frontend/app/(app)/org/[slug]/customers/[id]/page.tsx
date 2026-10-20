@@ -148,6 +148,7 @@ export default async function CustomerDetailPage({
           api
             .get<CustomerProfitabilityResponse>(`/api/clients/${id}/profitability`)
             .catch(() => null),
+          // D4 (Phase 87): backend /api/reports/profitability still takes customerId (ReportController:66) — do not rename until the backend moves.
           api
             .get<OrgProfitabilityResponse>(`/api/reports/profitability?customerId=${id}`)
             .catch(() => null),

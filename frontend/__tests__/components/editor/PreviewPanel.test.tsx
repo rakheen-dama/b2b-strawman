@@ -349,8 +349,8 @@ describe("buildPreviewContext", () => {
     const data = {
       id: "3",
       invoiceNumber: "INV-001",
-      customerName: "Acme Corp",
-      customerEmail: "acme@example.com",
+      clientName: "Acme Corp",
+      clientEmail: "acme@example.com",
     };
     const ctx = buildPreviewContext("INVOICE", data);
     expect(ctx.invoice).toBe(data);

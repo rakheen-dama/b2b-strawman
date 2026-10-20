@@ -50,6 +50,7 @@ export async function getOrgProfitability(
     const params = new URLSearchParams();
     if (from) params.set("from", from);
     if (to) params.set("to", to);
+    // D4 (Phase 87): backend /api/reports/profitability still takes customerId (ReportController:66) — do not rename until the backend moves.
     if (customerId) params.set("customerId", customerId);
     const qs = params.toString();
     const data = await api.get<OrgProfitabilityResponse>(

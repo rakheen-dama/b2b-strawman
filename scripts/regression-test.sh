@@ -281,7 +281,7 @@ if should_run "invoice_lifecycle"; then
   ensure_invoice_prerequisites "$ACTIVE_CUST_ID" "$ALICE"
 
   # Create a draft invoice
-  INV_BODY="{\"customerId\":\"${ACTIVE_CUST_ID}\",\"currency\":\"ZAR\"}"
+  INV_BODY="{\"clientId\":\"${ACTIVE_CUST_ID}\",\"currency\":\"ZAR\"}"
   inv_resp=$(api_post "/api/invoices" "$INV_BODY" "$ALICE")
   assert_http "Create draft invoice" "2"
   INV_ID=$(echo "$inv_resp" | jq -r '.id')
@@ -354,7 +354,7 @@ if should_run "invoice_math"; then
   ensure_invoice_prerequisites "$MATH_CUST_ID" "$ALICE"
 
   # Single line: 3 x R450 = R1350, tax 15% = R202.50, total = R1552.50
-  inv_m1=$(api_post "/api/invoices" "{\"customerId\":\"${MATH_CUST_ID}\",\"currency\":\"ZAR\"}" "$ALICE")
+  inv_m1=$(api_post "/api/invoices" "{\"clientId\":\"${MATH_CUST_ID}\",\"currency\":\"ZAR\"}" "$ALICE")
   INV_M1_ID=$(echo "$inv_m1" | jq -r '.id')
   api_post "/api/invoices/${INV_M1_ID}/lines" '{"description":"Consulting","quantity":3,"unitPrice":450,"sortOrder":0}' "$ALICE" > /dev/null
   inv_m1_detail=$(api_get "/api/invoices/${INV_M1_ID}" "$ALICE")
@@ -366,7 +366,7 @@ if should_run "invoice_math"; then
   assert_eq "3x450 total" "1552.50" "$total"
 
   # Multi-line: (2x500) + (1x1500) = R2500, tax = R375, total = R2875
-  inv_m2=$(api_post "/api/invoices" "{\"customerId\":\"${MATH_CUST_ID}\",\"currency\":\"ZAR\"}" "$ALICE")
+  inv_m2=$(api_post "/api/invoices" "{\"clientId\":\"${MATH_CUST_ID}\",\"currency\":\"ZAR\"}" "$ALICE")
   INV_M2_ID=$(echo "$inv_m2" | jq -r '.id')
   api_post "/api/invoices/${INV_M2_ID}/lines" '{"description":"Line A","quantity":2,"unitPrice":500,"sortOrder":0}' "$ALICE" > /dev/null
   api_post "/api/invoices/${INV_M2_ID}/lines" '{"description":"Line B","quantity":1,"unitPrice":1500,"sortOrder":1}' "$ALICE" > /dev/null
@@ -376,7 +376,7 @@ if should_run "invoice_math"; then
   assert_eq "Multi-line total" "2875.00" "$(printf "%.2f" "$(echo "$inv_m2_detail" | jq -r '.total')")"
 
   # Fractional quantity: 0.5 x R1200 = R600
-  inv_m3=$(api_post "/api/invoices" "{\"customerId\":\"${MATH_CUST_ID}\",\"currency\":\"ZAR\"}" "$ALICE")
+  inv_m3=$(api_post "/api/invoices" "{\"clientId\":\"${MATH_CUST_ID}\",\"currency\":\"ZAR\"}" "$ALICE")
   INV_M3_ID=$(echo "$inv_m3" | jq -r '.id')
   api_post "/api/invoices/${INV_M3_ID}/lines" '{"description":"Half hour","quantity":0.5,"unitPrice":1200,"sortOrder":0}' "$ALICE" > /dev/null
   inv_m3_detail=$(api_get "/api/invoices/${INV_M3_ID}" "$ALICE")

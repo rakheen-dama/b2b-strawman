@@ -18,7 +18,7 @@ seed_rates_budgets() {
 
   _rate_exists() {
     _re_member_id="$1"
-    echo "$existing_rates" | jq -e ".content[] | select(.memberId == \"${_re_member_id}\" and .projectId == null and .customerId == null)" > /dev/null 2>&1
+    echo "$existing_rates" | jq -e ".content[] | select(.memberId == \"${_re_member_id}\" and .matterId == null and .clientId == null)" > /dev/null 2>&1
   }
 
   if ! _rate_exists "$ALICE_MEMBER_ID"; then

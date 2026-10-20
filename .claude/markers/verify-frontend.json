@@ -1,7 +1,7 @@
 {
-  "commit": "fbf02077595d5f7ad20cf368f0658c96bfb0b4b6",
+  "commit": "85f18718e919033f8a3325625346bd53817ee5a4",
   "command": "pnpm install --frozen-lockfile && cd frontend && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-20T22:39:58+0200",
-  "summary": "PR #1616 (611E; packages/shared terminology-map deleted — frontend touched only by an eslint.config.mjs comment refresh, OD-2 barrel ban kept) on fbf020775 (orchestrator run, detached verify worktree): lint 0 errors / 92 warnings (= 611D); prettier clean; vitest 369 files, 2341 passed | 2 skipped (= 611D); build OK. No frontend source/copy change → no frontend E2E run (no UI delta). CI Frontend + qodana pass."
+  "ts": "2026-10-20T23:15:00+0200",
+  "summary": "PR #1617 (611F; Playwright label locators only, frontend/e2e/tests/** 9 files) on 85f18718e (orchestrator run, detached verify-611F worktree): lint 0 errors / 92 warnings (= 611E); prettier clean; vitest 369 files, 2341 passed | 2 skipped (= 611E); build OK. E2E A/B fresh stack per run (A=main ed30ed689, B=PR): legal-lifecycle 63/4/25 both (4 = carried), legal-depth-ii 28/0/15 both; default targeted 7 specs A 10/4/20 -> B 19/1/14, no B-only regression. Evidence /tmp/e2e-611F/. CI Frontend + qodana pass."
 }

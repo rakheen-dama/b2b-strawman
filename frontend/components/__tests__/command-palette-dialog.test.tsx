@@ -162,4 +162,17 @@ describe("CommandPaletteDialog", () => {
     await userEvent.setup().click(screen.getByText("Matters"));
     expect(paletteMockPush).toHaveBeenCalledWith("/org/test-org/matters");
   });
+
+  // Phase 87 612B.1 (ADR-339 §12.6.1): the palette applies the sidebar's module gate to pages.
+  it("hides module-gated pages (Disbursements, Trust reports) when their modules are off", () => {
+    renderDialog({ enabledModules: [] });
+    expect(screen.queryByText("Disbursements")).not.toBeInTheDocument();
+    expect(screen.queryByText("Trust reports")).not.toBeInTheDocument();
+  });
+
+  it("shows module-gated pages when their modules are on", () => {
+    renderDialog({ enabledModules: ["disbursements", "trust_accounting"] });
+    expect(screen.getByText("Disbursements")).toBeInTheDocument();
+    expect(screen.getByText("Trust reports")).toBeInTheDocument();
+  });
 });

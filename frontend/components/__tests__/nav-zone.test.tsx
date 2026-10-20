@@ -351,6 +351,11 @@ describe("NavZone longest-match active item (Phase 87 612A)", () => {
     expect(activeLinks()).toEqual(["Debtors"]);
   });
 
+  it("highlights only Unbilled work on /invoices/unbilled (612B)", () => {
+    renderZone("fees", "/org/test-org/invoices/unbilled");
+    expect(activeLinks()).toEqual(["Unbilled work"]);
+  });
+
   it("highlights only New matter on /matters/new", () => {
     renderZone("matters", "/org/test-org/matters/new");
     expect(activeLinks()).toEqual(["New matter"]);

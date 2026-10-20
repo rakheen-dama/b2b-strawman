@@ -11,6 +11,7 @@ import {
   Contact,
   ShieldCheck,
   Inbox,
+  Hourglass,
   Receipt,
   Layers,
   Banknote,
@@ -105,8 +106,8 @@ export function canAccessNavItem(
  * Trust · Firm. One level deep — a zone is the only grouping; ≤ 6 items per zone except Trust (7).
  * Labels are sentence case. AI has no zone: AI intake is "New matter", AI reviews sits in Matters.
  * Interim until later slices: Today carries Calendar + Court calendar (613D → one Diary item);
- * Firm › Audit trail / Settings point at the current settings routes (616 → settings families);
- * Fees gains "Unbilled work" in 612B. Profitability's single entry is Firm › Reports.
+ * Firm › Audit trail / Settings point at the current settings routes (616 → settings families).
+ * Profitability's single entry is Firm › Reports.
  * Source of truth for the desktop sidebar, the mobile sheet and the command palette.
  */
 export const NAV_GROUPS: NavGroup[] = [
@@ -212,7 +213,16 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Fees",
     defaultExpanded: false,
     items: [
-      // 612B prepends "Unbilled work" (/invoices/unbilled, INVOICING, Hourglass) with its page.
+      {
+        // Phase 87 612B: per-client unbilled time + expenses (GET /api/invoices/unbilled-summary).
+        // Longest-match in nav-zone keeps /invoices/unbilled off the "Fee notes" prefix item.
+        label: "Unbilled work",
+        href: (slug) => `/org/${slug}/invoices/unbilled`,
+        icon: Hourglass,
+        exact: true,
+        requiredCapability: "INVOICING",
+        keywords: ["unbilled", "wip", "work in progress"],
+      },
       {
         // Prefix match so /invoices/[id] highlights Fee notes; nav-zone's longest-match keeps
         // /invoices/billing-runs/* and /invoices/collections on their own items.

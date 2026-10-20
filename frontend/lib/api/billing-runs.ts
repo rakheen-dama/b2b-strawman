@@ -71,12 +71,22 @@ export interface BatchFailure {
   reason: string;
 }
 
+/**
+ * Per-client unbilled time + expenses for a period and currency. Mirrors the backend
+ * `BillingRunDtos.ClientUnbilledSummary` (GET /api/invoices/unbilled-summary). Legal
+ * disbursements are not part of this read.
+ */
 export interface CustomerUnbilledSummary {
   clientId: string;
   clientName: string;
+  clientEmail: string | null;
+  unbilledTimeEntryCount: number;
   unbilledTimeAmount: number;
+  unbilledExpenseCount: number;
   unbilledExpenseAmount: number;
   totalUnbilledAmount: number;
+  hasPrerequisiteIssues: boolean;
+  prerequisiteIssueReason: string | null;
 }
 
 export interface UnbilledTimeEntry {
@@ -148,6 +158,16 @@ export interface EntrySelectionDto {
   entryType: EntryType;
   entryId: string;
   included: boolean;
+}
+
+/** All three are required by the backend (no open-ended period — Phase 87 OQ #15). */
+export interface UnbilledSummaryParams {
+  /** yyyy-MM-dd, inclusive */
+  periodFrom: string;
+  /** yyyy-MM-dd, inclusive */
+  periodTo: string;
+  /** ISO 4217 code, exact match against the entries' currency */
+  currency: string;
 }
 
 // ---- Paginated Response ----
@@ -256,4 +276,15 @@ export async function batchSend(
   request: BatchSendRequest
 ): Promise<BatchOperationResult> {
   return api.post<BatchOperationResult>(`/api/billing-runs/${id}/send`, request);
+}
+
+export async function getUnbilledSummary(
+  params: UnbilledSummaryParams
+): Promise<CustomerUnbilledSummary[]> {
+  const qs = new URLSearchParams({
+    periodFrom: params.periodFrom,
+    periodTo: params.periodTo,
+    currency: params.currency,
+  });
+  return api.get<CustomerUnbilledSummary[]>(`/api/invoices/unbilled-summary?${qs.toString()}`);
 }

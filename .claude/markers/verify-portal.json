@@ -1,7 +1,7 @@
 {
-  "commit": "c9ea9b29d50d4f23e516778634b9e64518186b07",
+  "commit": "fbf02077595d5f7ad20cf368f0658c96bfb0b4b6",
   "command": "pnpm install --frozen-lockfile && cd portal && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-20T16:36:41+0200",
-  "summary": "PR #1610 (610F portal PortalMatter* type names + MatterCard + prettier format:check) on c9ea9b29d (orchestrator run): portal lint 0 errors / 6 warnings; format:check clean (new script; prettier 3.8.3 devDep); vitest 39 files, 180 passed; build OK. Browser check (isolated headless Chromium, portal dev :3002 -> e2e backend :8081): magic-link login -> /projects renders 5 MatterCards linking /projects/<id>, detail page opens. CI Portal pass."
+  "ts": "2026-10-20T22:39:58+0200",
+  "summary": "PR #1616 (611E; portal terminology mechanism deleted — lib/terminology.tsx + provider test + TerminologyProvider mount + useProfile/useTerminologyKey; 25 t() call sites → today's legal-za literals; nav 'Invoices' → 'Fee Notes' (today's rendered label, E-1); packages/shared terminology-map.ts + ./terminology-map export deleted; portal ESLint no-restricted-imports ban + wiring test; portal no-terminology-remnants scan) on fbf020775 (orchestrator run, detached verify worktree): portal lint 0 errors / 6 warnings (= main); format:check clean; vitest 40 files, 188 passed (main 39/180); build OK. Browser A/B (isolated headless Chromium, portal dev :3002 -> e2e backend :8081, magic-link login contact@acme.example.com): branch vs main identical text on nav (Home|Matters|Trust|Deadlines|Fee Notes|Requests|Activity), /projects 'Your Matters', matter detail 'Back to matters', /invoices 'Fee Notes / No fee notes yet.', /home 'Recent fee notes', /profile — only diff a relative timestamp; 0 console errors both. CI Portal + Frontend + qodana pass."
 }

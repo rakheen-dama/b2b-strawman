@@ -1,7 +1,7 @@
 {
-  "commit": "af01aaf36548ca5370908f7587165ea5f634b51c",
-  "command": "cd frontend && pnpm install --frozen-lockfile && pnpm run lint && pnpm run format:check && pnpm test && pnpm run build",
+  "commit": "fbf02077595d5f7ad20cf368f0658c96bfb0b4b6",
+  "command": "pnpm install --frozen-lockfile && cd frontend && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-20T21:31:50+02:00",
-  "summary": "PR #1615 (611D; frontend terminology mechanism deleted — lib/terminology.tsx, TerminologyHeading/Text, vertical-profile picker + profile-actions, TerminologyProvider mount; ESLint no-restricted-imports ban; no-terminology-remnants scan + empty allow-list; 4+2 Customer->Client copy fixes; day-00 dead Apply-Profile branch removed; CLAUDE.md single-vocabulary rule) on af01aaf36 (orchestrator run, detached verify worktree): lint 0 errors / 92 warnings (main 95; -3 from deleted test); prettier clean; vitest 369 files, 2341 passed | 2 skipped (main 372/2363: -5 deleted files +2 new); build OK (same on 0802f6fb8). E2E A/B on 0802f6fb8 vs main (fresh e2e-down/up per run; A1 baselines, A2 control, B branch): legal-lifecycle 63/4 both identical set; depth-ii A2 24/1 (billing-rate setup flake) vs B 28/0; default targeted 58/8 vs 56/8 identical fail set (all on main, 611F locators). No B-only failures. af01aaf36 = 2 collections paragraph strings only, no e2e reference."
+  "ts": "2026-10-20T22:39:58+0200",
+  "summary": "PR #1616 (611E; packages/shared terminology-map deleted — frontend touched only by an eslint.config.mjs comment refresh, OD-2 barrel ban kept) on fbf020775 (orchestrator run, detached verify worktree): lint 0 errors / 92 warnings (= 611D); prettier clean; vitest 369 files, 2341 passed | 2 skipped (= 611D); build OK. No frontend source/copy change → no frontend E2E run (no UI delta). CI Frontend + qodana pass."
 }

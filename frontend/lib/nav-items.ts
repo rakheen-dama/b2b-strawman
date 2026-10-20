@@ -104,11 +104,11 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     id: "projects",
-    label: "Projects",
+    label: "Matters",
     defaultExpanded: true,
     items: [
       {
-        label: "Projects",
+        label: "Matters",
         href: (slug) => `/org/${slug}/matters`,
         icon: FolderOpen,
       },
@@ -120,7 +120,7 @@ export const NAV_GROUPS: NavGroup[] = [
     defaultExpanded: false,
     items: [
       {
-        label: "Customers",
+        label: "Clients",
         href: (slug) => `/org/${slug}/clients`,
         icon: UserRound,
         requiredCapability: "CUSTOMER_MANAGEMENT",
@@ -153,7 +153,7 @@ export const NAV_GROUPS: NavGroup[] = [
     defaultExpanded: false,
     items: [
       {
-        label: "Invoices",
+        label: "Fee notes",
         href: (slug) => `/org/${slug}/invoices`,
         icon: Receipt,
         requiredCapability: "INVOICING",

@@ -3,7 +3,6 @@ import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { redirect } from "next/navigation";
 import { TemplateEditor } from "@/components/templates/TemplateEditor";
-import { TerminologyText } from "@/components/terminology-text";
 import { getProjectTemplate } from "@/lib/api/templates";
 import { getTags, getFieldDefinitions } from "@/lib/api";
 import { listRequestTemplates } from "@/lib/api/information-requests";
@@ -71,7 +70,7 @@ export default async function TemplateEditorPage({
           className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ChevronLeft className="size-4" />
-          <TerminologyText template="{Project} Templates" />
+          Matter Templates
         </Link>
         <p className="text-slate-600 dark:text-slate-400">
           Template not found. It may have been deleted.
@@ -87,12 +86,12 @@ export default async function TemplateEditorPage({
         className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
       >
         <ChevronLeft className="size-4" />
-        <TerminologyText template="{Project} Templates" />
+        Matter Templates
       </Link>
 
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          {template ? template.name : <TerminologyText template="New {Project} Template" />}
+          {template ? template.name : "New Matter Template"}
         </h1>
       </div>
 

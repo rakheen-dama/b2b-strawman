@@ -30,7 +30,6 @@ import {
   fetchCustomers,
 } from "@/app/(app)/org/[slug]/legal/adverse-parties/actions";
 import type { AdverseParty } from "@/lib/types";
-import { useTerminology } from "@/lib/terminology";
 
 const RELATIONSHIPS = [
   { value: "OPPOSING_PARTY", label: "Opposing Party" },
@@ -62,7 +61,6 @@ export function LinkAdversePartyToProjectDialog({
   projectId,
   onSuccess,
 }: LinkAdversePartyToProjectDialogProps) {
-  const { t } = useTerminology();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -170,7 +168,7 @@ export function LinkAdversePartyToProjectDialog({
               name="customerId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("Customer")} *</FormLabel>
+                  <FormLabel>Client *</FormLabel>
                   <FormControl>
                     <select
                       value={field.value}

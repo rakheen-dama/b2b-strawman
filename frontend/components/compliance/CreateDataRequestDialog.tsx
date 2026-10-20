@@ -28,7 +28,6 @@ import {
   fetchCustomersForSelector,
 } from "@/app/(app)/org/[slug]/compliance/requests/actions";
 import type { Client, DataRequestType } from "@/lib/types";
-import { useTerminology } from "@/lib/terminology";
 
 interface CreateDataRequestDialogProps {
   slug: string;
@@ -42,7 +41,6 @@ const REQUEST_TYPES: { value: DataRequestType; label: string }[] = [
 ];
 
 export function CreateDataRequestDialog({ slug }: CreateDataRequestDialogProps) {
-  const { t } = useTerminology();
   const [open, setOpen] = useState(false);
   const [customers, setCustomers] = useState<Client[]>([]);
   const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
@@ -137,7 +135,7 @@ export function CreateDataRequestDialog({ slug }: CreateDataRequestDialogProps) 
         <div className="space-y-4">
           {/* Customer selector */}
           <div className="space-y-1.5">
-            <Label>{t("Customer")}</Label>
+            <Label>Client</Label>
             {fetchError ? (
               <p className="text-destructive text-sm">{fetchError}</p>
             ) : (

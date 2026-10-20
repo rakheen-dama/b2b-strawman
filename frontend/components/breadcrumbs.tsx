@@ -3,7 +3,6 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { useTerminology } from "@/lib/terminology";
 
 const SEGMENT_LABELS: Record<string, string> = {
   // Core nav
@@ -25,8 +24,8 @@ const SEGMENT_LABELS: Record<string, string> = {
   checklists: "Checklists",
   acceptance: "Document Acceptance",
   compliance: "Compliance",
-  "project-templates": "Project Templates",
-  "project-naming": "Project Naming",
+  "project-templates": "Matter Templates",
+  "project-naming": "Matter Naming",
   "request-templates": "Request Templates",
   "request-settings": "Request Settings",
   "batch-billing": "Batch Billing",
@@ -42,7 +41,8 @@ const SEGMENT_LABELS: Record<string, string> = {
   "court-calendar": "Court Calendar",
   "conflict-check": "Conflict Check",
   "client-ledgers": "Client Ledgers",
-  invoices: "Invoices",
+  invoices: "Fee notes",
+  expenses: "Disbursements",
 };
 
 /** Segments that contain dynamic child routes (e.g. /matters/[id]) */
@@ -50,7 +50,7 @@ const PARENT_SEGMENT_FALLBACKS: Record<string, string> = {
   matters: "Matter",
   settings: "Settings",
   clients: "Client",
-  invoices: "Invoice",
+  invoices: "Fee note",
   "client-ledgers": "Client Ledger",
 };
 
@@ -91,7 +91,6 @@ interface BreadcrumbsProps {
 
 export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
   const pathname = usePathname();
-  const { t } = useTerminology();
 
   // Strip the /org/[slug]/ prefix to get the relative path segments
   const prefix = `/org/${slug}/`;
@@ -113,15 +112,11 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
       {segments.map((segment, index) => {
         const isLast = index === segments.length - 1;
         const parentSegment = index > 0 ? segments[index - 1] : undefined;
-        const rawLabel =
+        const label =
           SEGMENT_LABELS[segment] ??
           (isUuid(segment) && parentSegment
             ? (PARENT_SEGMENT_FALLBACKS[parentSegment] ?? segment)
             : segment);
-        // Translate labels that contain a terminology-mapped prefix
-        // (e.g. "Project Templates" → "Matter Templates" in legal-za).
-        const prefixMatch = rawLabel.match(/^(Project|Customer|Client|Invoice)\s+(.+)$/);
-        const label = prefixMatch ? `${t(prefixMatch[1])} ${prefixMatch[2]}` : t(rawLabel);
 
         // Build the href for intermediate segments
         const prefixSegments = segments.slice(0, index + 1);

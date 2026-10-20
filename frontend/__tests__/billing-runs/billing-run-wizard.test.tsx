@@ -78,7 +78,7 @@ describe("BillingRunWizard", () => {
     render(<BillingRunWizard slug="test-org" />);
 
     expect(screen.getByText("Configure")).toBeInTheDocument();
-    expect(screen.getByText("Select Customers")).toBeInTheDocument();
+    expect(screen.getByText("Select Clients")).toBeInTheDocument();
     expect(screen.getByText("Review & Cherry-Pick")).toBeInTheDocument();
     expect(screen.getByText("Review Drafts")).toBeInTheDocument();
     expect(screen.getByText("Send")).toBeInTheDocument();

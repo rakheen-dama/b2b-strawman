@@ -12,7 +12,6 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { Receipt, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { HelpTip } from "@/components/help-tip";
-import { TerminologyHeading } from "@/components/terminology-heading";
 import { TerminologyText } from "@/components/terminology-text";
 
 function computeSummary(invoices: InvoiceResponse[], fallbackCurrency: string) {
@@ -124,7 +123,7 @@ export default async function InvoicesPage({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
-            <TerminologyHeading term="Invoices" />
+            Fee notes
             <HelpTip code="invoices.lifecycle" />
           </h1>
           {invoices.length > 0 && (
@@ -142,7 +141,7 @@ export default async function InvoicesPage({
           href={`/org/${slug}/invoices`}
           className="border-b-2 border-slate-900 px-4 py-2 text-sm font-medium text-slate-900 dark:border-slate-100 dark:text-slate-100"
         >
-          <TerminologyHeading term="Invoices" />
+          Fee notes
         </Link>
         <Link
           href={`/org/${slug}/invoices/billing-runs`}
@@ -210,14 +209,14 @@ export default async function InvoicesPage({
           icon={Receipt}
           title={
             validatedStatus ? (
-              <TerminologyText template={`No ${validatedStatus.toLowerCase()} {invoices} found`} />
+              `No ${validatedStatus.toLowerCase()} fee notes found`
             ) : (
               <TerminologyText template={t("invoices.list.heading")} />
             )
           }
           description={
             validatedStatus ? (
-              <TerminologyText template={`No ${validatedStatus.toLowerCase()} {invoices} found.`} />
+              `No ${validatedStatus.toLowerCase()} fee notes found.`
             ) : (
               <TerminologyText template={t("invoices.list.description")} />
             )
@@ -229,10 +228,10 @@ export default async function InvoicesPage({
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  <TerminologyHeading term="Invoice" />
+                  Fee note
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  <TerminologyHeading term="Customer" />
+                  Client
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Status

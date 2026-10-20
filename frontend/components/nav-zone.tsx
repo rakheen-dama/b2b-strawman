@@ -7,7 +7,6 @@ import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useCapabilities } from "@/lib/capabilities";
-import { useTerminology } from "@/lib/terminology";
 import { useOrgProfile } from "@/lib/org-profile";
 import type { NavGroup } from "@/lib/nav-items";
 
@@ -21,7 +20,6 @@ export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
   const [expanded, setExpanded] = useState(zone.defaultExpanded ?? true);
   const pathname = usePathname();
   const { hasCapability } = useCapabilities();
-  const { t } = useTerminology();
   const { isModuleEnabled } = useOrgProfile();
 
   const visibleItems = zone.items.filter(
@@ -42,7 +40,7 @@ export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
         className="flex w-full items-center justify-between px-3 py-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
         <span className="text-[11px] font-medium tracking-widest text-white/40 uppercase">
-          {t(zone.label)}
+          {zone.label}
         </span>
         <ChevronRight
           className={cn(
@@ -88,7 +86,7 @@ export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
                     />
                   )}
                   <item.icon className="h-4 w-4" />
-                  {t(item.label)}
+                  {item.label}
                 </Link>
               );
             })}

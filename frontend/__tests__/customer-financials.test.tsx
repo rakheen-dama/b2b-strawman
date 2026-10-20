@@ -70,7 +70,8 @@ describe("CustomerFinancialsTab", () => {
     const profitability = makeProfitability();
     render(<CustomerFinancialsTab profitability={profitability} projectBreakdown={null} />);
 
-    expect(screen.getByText("Customer Profitability")).toBeInTheDocument();
+    expect(screen.getByText("Client Profitability")).toBeInTheDocument();
+    expect(screen.queryByText("Customer Profitability")).not.toBeInTheDocument();
     expect(screen.getByText("200.0h")).toBeInTheDocument();
     expect(screen.getByText(/US\$30\s000,00/)).toBeInTheDocument();
     expect(screen.getByText(/US\$18\s000,00/)).toBeInTheDocument();

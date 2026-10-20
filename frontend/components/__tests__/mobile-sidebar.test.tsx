@@ -22,7 +22,6 @@ vi.mock("@/components/sidebar-user-footer", () => ({
 
 import { usePathname } from "next/navigation";
 import { CapabilityProvider } from "@/lib/capabilities";
-import { TerminologyProvider } from "@/lib/terminology";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { MobileSidebar } from "@/components/mobile-sidebar";
 
@@ -45,16 +44,14 @@ const ALL_CAPABILITIES = [
 function renderMobileSidebar(props: { groups?: string[] } = {}) {
   return render(
     <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
-      <TerminologyProvider verticalProfile={null}>
-        <CapabilityProvider
-          capabilities={ALL_CAPABILITIES}
-          role="Owner"
-          isAdmin={false}
-          isOwner={true}
-        >
-          <MobileSidebar slug="test-org" {...props} />
-        </CapabilityProvider>
-      </TerminologyProvider>
+      <CapabilityProvider
+        capabilities={ALL_CAPABILITIES}
+        role="Owner"
+        isAdmin={false}
+        isOwner={true}
+      >
+        <MobileSidebar slug="test-org" {...props} />
+      </CapabilityProvider>
     </OrgProfileProvider>
   );
 }
@@ -75,7 +72,7 @@ describe("MobileSidebar", () => {
     await user.click(screen.getByRole("button", { name: /toggle menu/i }));
 
     expect(screen.getByText("Work")).toBeInTheDocument();
-    expect(screen.getAllByText("Projects").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Matters").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Clients")).toBeInTheDocument();
     expect(screen.getByText("Finance")).toBeInTheDocument();
     expect(screen.getAllByText("Team").length).toBeGreaterThanOrEqual(1);

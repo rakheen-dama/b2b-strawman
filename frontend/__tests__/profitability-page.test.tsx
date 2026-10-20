@@ -3,7 +3,6 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { UtilizationTable } from "@/components/profitability/utilization-table";
 import { ProjectProfitabilityTable } from "@/components/profitability/project-profitability-table";
-import { TerminologyProvider } from "@/lib/terminology";
 import type { UtilizationResponse, OrgProfitabilityResponse } from "@/lib/types";
 
 // Mock server actions
@@ -167,16 +166,14 @@ describe("Profitability Page", () => {
     it("renders project profitability table with project data", () => {
       const data = makeProfitability();
       render(
-        <TerminologyProvider verticalProfile={null}>
-          <ProjectProfitabilityTable
-            initialData={data}
-            initialFrom="2026-02-01"
-            initialTo="2026-02-14"
-          />
-        </TerminologyProvider>
+        <ProjectProfitabilityTable
+          initialData={data}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+        />
       );
 
-      expect(screen.getByText("Project Profitability")).toBeInTheDocument();
+      expect(screen.getByText("Matter Profitability")).toBeInTheDocument();
       expect(screen.getByText("Alpha Project")).toBeInTheDocument();
       expect(screen.getByText("Acme Corp")).toBeInTheDocument();
       expect(screen.getByText(/US\$15\s000,00/)).toBeInTheDocument();
@@ -186,13 +183,11 @@ describe("Profitability Page", () => {
     it("shows N/A badge when margin data is missing", () => {
       const data = makeProfitability();
       render(
-        <TerminologyProvider verticalProfile={null}>
-          <ProjectProfitabilityTable
-            initialData={data}
-            initialFrom="2026-02-01"
-            initialTo="2026-02-14"
-          />
-        </TerminologyProvider>
+        <ProjectProfitabilityTable
+          initialData={data}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+        />
       );
 
       // Beta Project has null margin/marginPercent
@@ -203,13 +198,11 @@ describe("Profitability Page", () => {
     it("renders empty state when no project data", () => {
       const data = makeProfitability({ matters: [] });
       render(
-        <TerminologyProvider verticalProfile={null}>
-          <ProjectProfitabilityTable
-            initialData={data}
-            initialFrom="2026-02-01"
-            initialTo="2026-02-14"
-          />
-        </TerminologyProvider>
+        <ProjectProfitabilityTable
+          initialData={data}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+        />
       );
 
       expect(screen.getByText("No project profitability data for this period")).toBeInTheDocument();
@@ -218,13 +211,11 @@ describe("Profitability Page", () => {
     it("shows dash for projects without a customer", () => {
       const data = makeProfitability();
       render(
-        <TerminologyProvider verticalProfile={null}>
-          <ProjectProfitabilityTable
-            initialData={data}
-            initialFrom="2026-02-01"
-            initialTo="2026-02-14"
-          />
-        </TerminologyProvider>
+        <ProjectProfitabilityTable
+          initialData={data}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+        />
       );
 
       // Beta Project has no customer

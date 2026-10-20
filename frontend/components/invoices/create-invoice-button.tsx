@@ -13,7 +13,6 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Plus } from "lucide-react";
-import { TerminologyText } from "@/components/terminology-text";
 
 interface CustomerOption {
   id: string;
@@ -41,7 +40,7 @@ export function CreateInvoiceButton({ customers, slug }: CreateInvoiceButtonProp
       <PopoverTrigger asChild>
         <Button variant="accent" size="sm">
           <Plus className="mr-1.5 size-4" />
-          <TerminologyText template="New {Invoice}" />
+          New fee note
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-0" align="end">

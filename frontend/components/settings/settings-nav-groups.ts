@@ -30,8 +30,8 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
     label: "Work",
     items: [
       { label: "Time Tracking", href: "time-tracking" },
-      { label: "Project Templates", href: "project-templates" },
-      { label: "Project Naming", href: "project-naming" },
+      { label: "Matter Templates", href: "project-templates" },
+      { label: "Matter Naming", href: "project-naming" },
       {
         label: "Automations",
         href: "automations",

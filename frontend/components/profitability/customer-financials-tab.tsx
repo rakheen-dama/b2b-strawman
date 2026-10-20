@@ -15,8 +15,6 @@ import type {
   OrgProfitabilityResponse,
   MatterProfitabilitySummary,
 } from "@/lib/types";
-import { TerminologyHeading } from "@/components/terminology-heading";
-import { TerminologyText } from "@/components/terminology-text";
 
 interface CustomerFinancialsTabProps {
   profitability: ClientProfitabilityResponse | null;
@@ -60,9 +58,7 @@ function ProjectBreakdownTable({ projects }: { projects: MatterProfitabilitySumm
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>
-              <TerminologyHeading term="Project" />
-            </TableHead>
+            <TableHead>Matter</TableHead>
             <TableHead>Currency</TableHead>
             <TableHead className="text-right">Hours</TableHead>
             <TableHead className="text-right">Revenue</TableHead>
@@ -130,7 +126,7 @@ export function CustomerFinancialsTab({
   return (
     <div className="space-y-6">
       <h3 className="font-display text-lg text-slate-950 dark:text-slate-50">
-        <TerminologyText template="{Customer} Profitability" />
+        Client Profitability
       </h3>
       {profitability.currencies.map((curr) => (
         <div key={curr.currency} className="space-y-3">

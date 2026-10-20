@@ -7,7 +7,7 @@ describe("OnboardingPipelineSection", () => {
 
   it("shows empty state when no customers", () => {
     render(<OnboardingPipelineSection customers={[]} orgSlug="test-org" />);
-    expect(screen.getByText("No customers currently in onboarding")).toBeInTheDocument();
+    expect(screen.getByText("No clients currently in onboarding")).toBeInTheDocument();
   });
 
   it("renders customer names with links", () => {

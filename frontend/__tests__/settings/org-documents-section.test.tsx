@@ -40,7 +40,6 @@ vi.mock("@/components/command-palette-provider", () => ({
 
 import { OrgDocumentsSection } from "@/components/settings/org-documents-section";
 import { CapabilityProvider } from "@/lib/capabilities";
-import { TerminologyProvider } from "@/lib/terminology";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { DesktopSidebar } from "@/components/desktop-sidebar";
 
@@ -133,20 +132,18 @@ describe("Sidebar nav label changes", () => {
   function renderSidebar() {
     return render(
       <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
-        <TerminologyProvider verticalProfile={null}>
-          <CapabilityProvider capabilities={[]} role="Admin" isAdmin={true} isOwner={false}>
-            <DesktopSidebar slug="test-org" />
-          </CapabilityProvider>
-        </TerminologyProvider>
+        <CapabilityProvider capabilities={[]} role="Admin" isAdmin={true} isOwner={false}>
+          <DesktopSidebar slug="test-org" />
+        </CapabilityProvider>
       </OrgProfileProvider>
     );
   }
 
-  it('renders "Projects" group label instead of "Delivery"', () => {
+  it('renders "Matters" group label instead of "Delivery"', () => {
     renderSidebar();
 
-    // "Projects" appears as both a group label and a nav item, so at least 2
-    const projectsElements = screen.getAllByText("Projects");
+    // "Matters" appears as both a group label and a nav item, so at least 2
+    const projectsElements = screen.getAllByText("Matters");
     expect(projectsElements.length).toBeGreaterThanOrEqual(2);
     // "Delivery" group should not exist
     expect(screen.queryByText("Delivery")).not.toBeInTheDocument();

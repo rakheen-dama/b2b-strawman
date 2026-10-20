@@ -109,7 +109,7 @@ describe("CustomerInvoicesTab", () => {
     expect(screen.getByText("US$300,00")).toBeInTheDocument();
   });
 
-  it("shows New Invoice button when canManage is true and opens dialog", async () => {
+  it("shows New fee note button when canManage is true and opens dialog", async () => {
     const user = userEvent.setup();
 
     render(
@@ -123,15 +123,15 @@ describe("CustomerInvoicesTab", () => {
       />
     );
 
-    const newInvoiceButton = screen.getByRole("button", { name: /new invoice/i });
+    const newInvoiceButton = screen.getByRole("button", { name: /new fee note/i });
     expect(newInvoiceButton).toBeInTheDocument();
 
     await user.click(newInvoiceButton);
 
-    expect(screen.getByText("Generate Invoice")).toBeInTheDocument();
+    expect(screen.getByText("Generate fee note")).toBeInTheDocument();
   });
 
-  it("hides New Invoice button when canManage is false", () => {
+  it("hides New fee note button when canManage is false", () => {
     render(
       <CustomerInvoicesTab
         invoices={sampleInvoices}
@@ -143,7 +143,7 @@ describe("CustomerInvoicesTab", () => {
       />
     );
 
-    expect(screen.queryByRole("button", { name: /new invoice/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /new fee note/i })).toBeNull();
     // Table should still render
     expect(screen.getByText("INV-2026-001")).toBeInTheDocument();
   });

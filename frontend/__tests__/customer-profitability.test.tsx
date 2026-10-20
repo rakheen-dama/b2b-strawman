@@ -59,7 +59,7 @@ describe("CustomerProfitabilitySection", () => {
     const data = makeData();
     render(<CustomerProfitabilitySection initialData={data} {...defaultProps} />);
 
-    expect(screen.getByText("Customer Profitability")).toBeInTheDocument();
+    expect(screen.getByText("Client Profitability")).toBeInTheDocument();
     // Acme Corp aggregate: revenue = 15000 + 7500 = 22500
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
     expect(screen.getByText(/US\$22\s500,00/)).toBeInTheDocument();

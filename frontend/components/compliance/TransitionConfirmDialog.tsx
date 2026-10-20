@@ -14,7 +14,6 @@ import { Button } from "@b2mash/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle } from "lucide-react";
 import { transitionCustomerLifecycle } from "@/app/(app)/org/[slug]/clients/[id]/lifecycle-actions";
-import { useTerminology } from "@/lib/terminology";
 import type { LifecycleStatus } from "@/lib/types";
 import type { PrerequisiteCheck } from "@/components/prerequisite/types";
 
@@ -47,7 +46,7 @@ const TRANSITION_META: Partial<Record<LifecycleStatus, TransitionMeta>> = {
     requiresNotes: false,
   },
   ACTIVE: {
-    title: "Activate Customer",
+    title: "Activate Client",
     description:
       "This will mark the customer as Active. All onboarding checklists must be completed before activation.",
     confirmLabel: "Activate",
@@ -63,7 +62,7 @@ const TRANSITION_META: Partial<Record<LifecycleStatus, TransitionMeta>> = {
     requiresNotes: false,
   },
   OFFBOARDING: {
-    title: "Offboard Customer",
+    title: "Offboard Client",
     description:
       "This will begin the offboarding process. The customer will become read-only and no new work can be created.",
     confirmLabel: "Begin Offboarding",
@@ -89,7 +88,6 @@ export function TransitionConfirmDialog({
   onSuccess,
   onPrerequisiteFailed,
 }: TransitionConfirmDialogProps) {
-  const { t } = useTerminology();
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
@@ -155,7 +153,7 @@ export function TransitionConfirmDialog({
               </div>
             </div>
           )}
-          <AlertDialogTitle className="text-center">{t(meta.title)}</AlertDialogTitle>
+          <AlertDialogTitle className="text-center">{meta.title}</AlertDialogTitle>
           <AlertDialogDescription className="text-center">
             {meta.description}
           </AlertDialogDescription>

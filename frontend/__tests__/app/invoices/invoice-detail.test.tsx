@@ -147,9 +147,9 @@ describe("InvoiceDetailClient", () => {
     const invoice = makeDraftInvoice();
     render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
-    expect(screen.getByText("Draft Invoice")).toBeInTheDocument();
+    expect(screen.getByText("Draft fee note")).toBeInTheDocument();
     expect(screen.getByText("Draft")).toBeInTheDocument(); // StatusBadge
-    expect(screen.getByText("Customer: Acme Corp")).toBeInTheDocument();
+    expect(screen.getByText("Client: Acme Corp")).toBeInTheDocument();
 
     // Editable form fields
     expect(screen.getByLabelText("Due Date")).toBeInTheDocument();
@@ -185,7 +185,7 @@ describe("InvoiceDetailClient", () => {
     expect(screen.getByText("Approved")).toBeInTheDocument(); // StatusBadge
 
     // Lifecycle buttons
-    expect(screen.getByRole("button", { name: /send invoice/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /send fee note/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /void/i })).toBeInTheDocument();
 
     // No draft edit form
@@ -216,7 +216,7 @@ describe("InvoiceDetailClient", () => {
     const invoice = makeDraftInvoice();
     render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={false} />);
 
-    expect(screen.getByText("Draft Invoice")).toBeInTheDocument();
+    expect(screen.getByText("Draft fee note")).toBeInTheDocument();
 
     // No action buttons
     expect(screen.queryByRole("button", { name: /approve/i })).not.toBeInTheDocument();

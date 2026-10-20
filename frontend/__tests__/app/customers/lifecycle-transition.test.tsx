@@ -3,7 +3,6 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { LifecycleTransitionDropdown } from "@/components/compliance/LifecycleTransitionDropdown";
 import { SetupProgressCard } from "@/components/setup/setup-progress-card";
-import { TerminologyProvider } from "@/lib/terminology";
 import type { PrerequisiteCheck } from "@/components/prerequisite/types";
 
 // Mock server actions and prerequisite actions
@@ -67,13 +66,7 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
     mockCheckPrereqs.mockResolvedValueOnce(failedCheck);
 
     render(
-      <TerminologyProvider verticalProfile={null}>
-        <LifecycleTransitionDropdown
-          currentStatus="ONBOARDING"
-          customerId="cust-1"
-          slug="test-org"
-        />
-      </TerminologyProvider>
+      <LifecycleTransitionDropdown currentStatus="ONBOARDING" customerId="cust-1" slug="test-org" />
     );
 
     // Open the dropdown
@@ -100,13 +93,7 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
     mockCheckPrereqs.mockResolvedValueOnce(passedCheck);
 
     render(
-      <TerminologyProvider verticalProfile={null}>
-        <LifecycleTransitionDropdown
-          currentStatus="ONBOARDING"
-          customerId="cust-1"
-          slug="test-org"
-        />
-      </TerminologyProvider>
+      <LifecycleTransitionDropdown currentStatus="ONBOARDING" customerId="cust-1" slug="test-org" />
     );
 
     await user.click(screen.getByRole("button", { name: /change status/i }));
@@ -118,7 +105,7 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
 
     // TransitionConfirmDialog should be shown (not PrerequisiteModal)
     await waitFor(() => {
-      expect(screen.getByText("Activate Customer")).toBeInTheDocument();
+      expect(screen.getByText("Activate Client")).toBeInTheDocument();
     });
     // Should NOT show prerequisite modal
     expect(screen.queryByText("Prerequisites: Customer Activation")).not.toBeInTheDocument();
@@ -137,13 +124,7 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
     });
 
     render(
-      <TerminologyProvider verticalProfile={null}>
-        <LifecycleTransitionDropdown
-          currentStatus="ONBOARDING"
-          customerId="cust-1"
-          slug="test-org"
-        />
-      </TerminologyProvider>
+      <LifecycleTransitionDropdown currentStatus="ONBOARDING" customerId="cust-1" slug="test-org" />
     );
 
     await user.click(screen.getByRole("button", { name: /change status/i }));
@@ -151,7 +132,7 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
 
     // Wait for prereq check to pass, showing confirm dialog
     await waitFor(() => {
-      expect(screen.getByText("Activate Customer")).toBeInTheDocument();
+      expect(screen.getByText("Activate Client")).toBeInTheDocument();
     });
 
     // Click Activate in the confirm dialog

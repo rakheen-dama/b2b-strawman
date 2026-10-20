@@ -25,7 +25,6 @@ import { InvoiceAuditSection } from "@/components/invoices/invoice-audit-section
 import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
 import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
 import { PROMOTED_INVOICE_SLUGS } from "@/lib/constants/promoted-field-slugs";
-import { TerminologyText } from "@/components/terminology-text";
 import { XeroStatusChip } from "@/components/invoices/XeroStatusChip";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -125,7 +124,7 @@ export default async function InvoiceDetailPage({
           className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ArrowLeft className="mr-1.5 size-4" />
-          <TerminologyText template="Back to {Invoices}" />
+          Back to fee notes
         </Link>
         {invoiceTemplates.length > 0 && (
           <GenerateDocumentDropdown

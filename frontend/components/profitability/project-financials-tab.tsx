@@ -1,7 +1,6 @@
 import { TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
-import { TerminologyHeading } from "@/components/terminology-heading";
 import { formatCurrency, formatCurrencySafe } from "@/lib/format";
 import type { MatterProfitabilityResponse } from "@/lib/types";
 
@@ -46,7 +45,7 @@ export function ProjectFinancialsTab({ profitability }: ProjectFinancialsTabProp
   return (
     <div className="space-y-6">
       <h3 className="font-display text-lg text-slate-950 dark:text-slate-50">
-        <TerminologyHeading term="Project Profitability" />
+        Matter Profitability
       </h3>
       {profitability.currencies.map((curr) => (
         <div key={curr.currency} className="space-y-3">

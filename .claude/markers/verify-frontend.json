@@ -1,7 +1,7 @@
 {
-  "commit": "14f11b0159c3a2741a9da17eed9e7703eb62adf1",
+  "commit": "f18d1d6273882017d69e652f0370476af249b74a",
   "command": "cd frontend && pnpm run lint && pnpm run format:check && rm -rf .next && pnpm run build && pnpm test",
   "exit": 0,
-  "ts": "2026-10-20T11:27:47+02:00",
-  "summary": "PR #1605 (610A; TS type renames + lib/api matters/clients/paths/query modules) on 14f11b015 (orchestrator run): lint 0 errors / 95 warnings (= main); prettier clean; build OK; vitest 362 files, 2307 passed | 2 skipped (main 359/2286/2; +3 new test files, +21 tests); tsc 166 = baseline, identical error set."
+  "ts": "2026-10-20T13:04:06+02:00",
+  "summary": "PR #1606 (610B; app/ matter/client API literals routed through lib/api/matters+clients; M2 type moves) on f18d1d627 (orchestrator run): lint 0 errors / 95 warnings (= main); prettier clean; build OK; vitest 362 files, 2307 passed | 2 skipped (= main); tsc 166 = baseline. E2E A/B vs main a75bc081f: projects+customers identical failing set; legal-lifecycle identical failing set (incl. day-60:41, pre-existing, not in carried list); depth-ii PR 27/1/15 vs main 13/15/15."
 }

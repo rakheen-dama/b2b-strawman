@@ -1,7 +1,7 @@
 {
-  "commit": "d4cecfe24",
+  "commit": "8a4978323",
   "command": "cd frontend && pnpm install && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test",
   "exit": 0,
-  "ts": "2026-10-20T04:18:43Z",
-  "summary": "PR #1599 (609B) on d4cecfe24 (orchestrator run): lint 0 errors / 95 warnings (= main); prettier clean; build OK; vitest 357 files, 2262 passed | 2 skipped; tsc 166 (= baseline, builder+fixer)."
+  "ts": "2026-10-20T07:30:00Z",
+  "summary": "PR #1602 (609E) on 8a4978323 (orchestrator run): lint 0 errors / 95 warnings (= main); prettier clean; build OK; vitest 358 files, 2282 passed | 2 skipped; tsc 166 (= baseline). E2E-LEGAL run on fresh stack: no 609E-caused failures (classified in PR body)."
 }

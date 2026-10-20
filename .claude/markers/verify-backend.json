@@ -1,7 +1,7 @@
 {
-  "commit": "cbb540aad46212dfc09e81ae458b421fa19ccf03",
+  "commit": "9ea4a61a2e5018a4a7fb14c1cb1bfc0e5174438a",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-20T05:24:43+02:00",
-  "summary": "PR #1598 (Epic 609A: finance backend wire rename Batch 3) commit cbb540aad (orchestrator run): 5345 testcases / 0 failures / 0 errors / 26 skipped (unchanged vs 608B — rename only). Final head b46a0acd differs by one unasserted error-message string; Backend CI covers the final head. Log /tmp/mvn-609A-final.log."
+  "ts": "2026-10-20T08:20:42+02:00",
+  "summary": "PR #1601 (Epic 609D: legal verticals + integrations backend wire rename Batch 4) final head 9ea4a61a2 (orchestrator run): 5348 testcases / 0 failures / 0 errors / 26 skipped (+3 vs 609A: 2 court-calendar filter tests + 1 HTTP 409 retention test). Prior head 8cdf848c also green (5347). Log /tmp/mvn-609D-final.log."
 }

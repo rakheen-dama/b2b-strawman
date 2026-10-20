@@ -57,9 +57,9 @@ describe("PendingAcceptancesList responsive layout", () => {
     });
 
     // The row wrapper should flip from flex-col to flex-row at sm breakpoint.
-    const row = screen.getByText("Service Agreement 2026").closest(
-      'div[class*="flex-col"]',
-    ) as HTMLElement | null;
+    const row = screen
+      .getByText("Service Agreement 2026")
+      .closest('div[class*="flex-col"]') as HTMLElement | null;
     expect(row).not.toBeNull();
     expect(row!.className).toContain("flex-col");
     expect(row!.className).toContain("sm:flex-row");

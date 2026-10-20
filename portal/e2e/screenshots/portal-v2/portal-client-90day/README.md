@@ -13,7 +13,7 @@ The deferral is documented in `tasks/phase68-gap-report.md` (`GAP-013` — curat
 The path **`portal/e2e/screenshots/portal-v2/portal-client-90day/`** is correct (it matches the `snapshotPathTemplate` in `portal/playwright.portal.config.ts`):
 
 ```ts
-snapshotPathTemplate: "{testDir}/../../screenshots/portal-v2/{projectName}/{arg}{ext}"
+snapshotPathTemplate: "{testDir}/../../screenshots/portal-v2/{projectName}/{arg}{ext}";
 ```
 
 Resolving with `testDir = ./e2e/tests`, `projectName = portal-client-90day`, and `arg = "day-00-home-landing.png"` (which already includes its own `.png`), the resolved path is:
@@ -42,6 +42,7 @@ The current `snapshotPathTemplate` does **not** include `{platform}` or `{browse
 ### Prerequisites
 
 1. **Keycloak dev stack**:
+
    ```bash
    bash compose/scripts/dev-up.sh
    bash compose/scripts/keycloak-bootstrap.sh
@@ -51,6 +52,7 @@ The current `snapshotPathTemplate` does **not** include `{platform}` or `{browse
    ```
 
 2. **Three firm-side lifecycles run** (each provisions its own vertical tenant + portal contact):
+
    ```bash
    /qa-cycle-kc qa/testplan/demos/legal-za-90day-keycloak.md           # → mathebula-partners (Days 0–21 minimum)
    /qa-cycle-kc qa/testplan/demos/accounting-za-90day-keycloak-v2.md   # → ledger-collective (Days 0–60)
@@ -122,6 +124,7 @@ NODE_OPTIONS="" pnpm exec playwright test \
 ```
 
 Any failure here is either:
+
 - A real flake (suspect timestamp drift — see Risk #8 in the slice brief; the 500A specs do not yet install a frozen clock).
 - A real visual regression (log as a new gap; do **not** re-baseline blindly).
 
@@ -136,20 +139,20 @@ Both are documented as follow-up tooling improvements in `tasks/phase68-gap-repo
 
 ## Expected baselines (12 files, profile-gated subset)
 
-| File | Source spec | Profile gating |
-|---|---|---|
-| `day-00-home-landing.png` | `day-00-07.spec.ts` | all profiles |
-| `day-00-info-request-detail.png` | `day-00-07.spec.ts` | all profiles |
-| `day-03-info-request-submitted.png` | `day-00-07.spec.ts` | all profiles |
-| `day-07-deadlines-list.png` | `day-00-07.spec.ts` | accounting-za / legal-za only |
-| `day-21-trust-balance.png` | `day-14-30.spec.ts` | legal-za only |
-| `day-45-invoice-detail.png` | `day-45-75.spec.ts` | all profiles |
-| `day-45-invoice-paid.png` | `day-45-75.spec.ts` | all profiles |
-| `day-60-document-downloaded.png` | `day-45-75.spec.ts` | legal-za / accounting-za |
-| `day-75-deadline-nudge-read.png` | `day-45-75.spec.ts` | accounting-za / legal-za |
-| `day-85-profile-updated.png` | `day-85-90.spec.ts` | all profiles |
-| `day-85-notifications-biweekly.png` | `day-85-90.spec.ts` | all profiles |
-| `day-90-activity-trail.png` | `day-85-90.spec.ts` | all profiles |
+| File                                | Source spec         | Profile gating                |
+| ----------------------------------- | ------------------- | ----------------------------- |
+| `day-00-home-landing.png`           | `day-00-07.spec.ts` | all profiles                  |
+| `day-00-info-request-detail.png`    | `day-00-07.spec.ts` | all profiles                  |
+| `day-03-info-request-submitted.png` | `day-00-07.spec.ts` | all profiles                  |
+| `day-07-deadlines-list.png`         | `day-00-07.spec.ts` | accounting-za / legal-za only |
+| `day-21-trust-balance.png`          | `day-14-30.spec.ts` | legal-za only                 |
+| `day-45-invoice-detail.png`         | `day-45-75.spec.ts` | all profiles                  |
+| `day-45-invoice-paid.png`           | `day-45-75.spec.ts` | all profiles                  |
+| `day-60-document-downloaded.png`    | `day-45-75.spec.ts` | legal-za / accounting-za      |
+| `day-75-deadline-nudge-read.png`    | `day-45-75.spec.ts` | accounting-za / legal-za      |
+| `day-85-profile-updated.png`        | `day-85-90.spec.ts` | all profiles                  |
+| `day-85-notifications-biweekly.png` | `day-85-90.spec.ts` | all profiles                  |
+| `day-90-activity-trail.png`         | `day-85-90.spec.ts` | all profiles                  |
 
 Total: 12 distinct PNGs after a full three-tenant run.
 

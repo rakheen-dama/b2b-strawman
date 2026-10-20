@@ -3,9 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { DeadlineDetailPanel } from "@/components/deadlines/deadline-detail-panel";
 import type { PortalDeadline } from "@/lib/api/deadlines";
 
-function makeDeadline(
-  overrides: Partial<PortalDeadline> = {},
-): PortalDeadline {
+function makeDeadline(overrides: Partial<PortalDeadline> = {}): PortalDeadline {
   return {
     id: "d-1",
     sourceEntity: "FILING_SCHEDULE",

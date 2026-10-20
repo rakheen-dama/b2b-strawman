@@ -14,10 +14,7 @@ import { useModules } from "@/hooks/use-portal-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { formatCurrency, formatDate } from "@b2mash/shared/format";
 import { useTerminology } from "@/lib/terminology";
-import type {
-  PortalInvoice,
-  PortalPendingAcceptance,
-} from "@/lib/types";
+import type { PortalInvoice, PortalPendingAcceptance } from "@/lib/types";
 
 interface InfoRequestSummary {
   id: string;
@@ -106,9 +103,7 @@ function AcceptancesCard() {
   const [count, setCount] = useState<number | null>(null);
   useEffect(() => {
     let cancelled = false;
-    portalGet<PortalPendingAcceptance[]>(
-      "/portal/acceptance-requests/pending",
-    )
+    portalGet<PortalPendingAcceptance[]>("/portal/acceptance-requests/pending")
       .then((data) => {
         if (!cancelled) setCount(Array.isArray(data) ? data.length : 0);
       })
@@ -216,10 +211,7 @@ function RecentInvoicesCard() {
         ) : (
           <ul className="space-y-2">
             {invoices.map((inv) => (
-              <li
-                key={inv.id}
-                className="flex justify-between gap-4 text-sm"
-              >
+              <li key={inv.id} className="flex justify-between gap-4 text-sm">
                 <Link
                   href={`/invoices/${inv.id}`}
                   className="text-teal-600 hover:underline"

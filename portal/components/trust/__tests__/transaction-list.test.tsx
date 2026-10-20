@@ -1,25 +1,11 @@
-import {
-  describe,
-  it,
-  expect,
-  vi,
-  beforeEach,
-  afterEach,
-} from "vitest";
-import {
-  cleanup,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 const mockGetMatterTransactions = vi.fn();
 vi.mock("@/lib/api/trust", async () => {
   const actual =
-    await vi.importActual<typeof import("@/lib/api/trust")>(
-      "@/lib/api/trust",
-    );
+    await vi.importActual<typeof import("@/lib/api/trust")>("@/lib/api/trust");
   return {
     ...actual,
     getMatterTransactions: (...args: unknown[]) =>

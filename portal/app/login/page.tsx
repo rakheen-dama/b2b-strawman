@@ -163,7 +163,9 @@ function LoginForm() {
             </div>
             {magicLink && (
               <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
-                <p className="text-xs font-medium text-amber-800">Dev mode — click to sign in:</p>
+                <p className="text-xs font-medium text-amber-800">
+                  Dev mode — click to sign in:
+                </p>
                 <a
                   href={magicLink}
                   className="mt-1 block min-h-11 text-sm font-medium text-amber-700 underline break-all"
@@ -196,9 +198,7 @@ function LoginForm() {
               <CardTitle className="text-xl">{orgName}</CardTitle>
             </>
           )}
-          <CardDescription>
-            Sign in to your client portal
-          </CardDescription>
+          <CardDescription>Sign in to your client portal</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">

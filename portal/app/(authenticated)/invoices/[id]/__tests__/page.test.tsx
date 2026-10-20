@@ -166,9 +166,7 @@ describe("InvoiceDetailPage", () => {
     // Status badge
     expect(screen.getByText("SENT")).toBeInTheDocument();
     // Notes
-    expect(
-      screen.getByText("Payment due within 30 days"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Payment due within 30 days")).toBeInTheDocument();
     // Back link
     expect(screen.getByText("Back to invoices")).toBeInTheDocument();
     // Download button

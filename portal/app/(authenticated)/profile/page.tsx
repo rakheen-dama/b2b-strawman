@@ -5,12 +5,7 @@ import { useRouter } from "next/navigation";
 import { User } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { portalGet } from "@/lib/api-client";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@b2mash/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { Badge } from "@b2mash/ui/badge";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import type { PortalProfile } from "@/lib/types";
@@ -44,7 +39,8 @@ const ROLE_LABELS: Record<string, string> = {
 
 function formatRole(role: string): string {
   return (
-    ROLE_LABELS[role] ?? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
+    ROLE_LABELS[role] ??
+    role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
   );
 }
 
@@ -150,9 +146,7 @@ export default function ProfilePage() {
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium text-slate-500">
-                  Customer
-                </dt>
+                <dt className="text-xs font-medium text-slate-500">Customer</dt>
                 <dd className="mt-1 text-sm text-slate-900">
                   {profile.clientName}
                 </dd>

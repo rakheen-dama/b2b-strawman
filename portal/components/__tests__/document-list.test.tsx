@@ -96,8 +96,6 @@ describe("DocumentList", () => {
   it("shows empty state when no documents", () => {
     render(<DocumentList documents={[]} />);
 
-    expect(
-      screen.getByText("No documents shared yet."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No documents shared yet.")).toBeInTheDocument();
   });
 });

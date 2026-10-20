@@ -94,7 +94,9 @@ describe("NotificationsPage", () => {
 
     render(<NotificationsPage />);
 
-    const digest = await screen.findByRole("switch", { name: /Weekly digest/i });
+    const digest = await screen.findByRole("switch", {
+      name: /Weekly digest/i,
+    });
     expect(digest).toBeChecked();
 
     const trust = screen.getByRole("switch", { name: /Trust activity/i });
@@ -200,7 +202,9 @@ describe("NotificationsPage", () => {
   it("?unsubscribe=1 with digest already off still strips the query param", async () => {
     mockSearchParams = new URLSearchParams("unsubscribe=1");
 
-    mockGetPreferences.mockResolvedValue(defaultPrefs({ digestEnabled: false }));
+    mockGetPreferences.mockResolvedValue(
+      defaultPrefs({ digestEnabled: false }),
+    );
 
     render(<NotificationsPage />);
 

@@ -116,7 +116,9 @@ describe("InvoiceDetailPage — Payment Section", () => {
       expect(screen.getAllByText("Pay Now").length).toBeGreaterThanOrEqual(1);
     });
 
-    const payLinks = screen.getAllByText("Pay Now").map((el) => el.closest("a"));
+    const payLinks = screen
+      .getAllByText("Pay Now")
+      .map((el) => el.closest("a"));
     for (const payLink of payLinks) {
       expect(payLink).toHaveAttribute(
         "href",
@@ -202,7 +204,9 @@ describe("PaymentSuccessPage", () => {
       expect(screen.getByText("Payment confirmed")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Payment received — thank you!")).toBeInTheDocument();
+    expect(
+      screen.getByText("Payment received — thank you!"),
+    ).toBeInTheDocument();
     expect(
       screen.queryByText("Payment is being processed..."),
     ).not.toBeInTheDocument();
@@ -214,9 +218,10 @@ describe("PaymentSuccessPage", () => {
   it("shows timeout message when polling exceeds duration", async () => {
     // Return SENT forever — never resolve to PAID
     mockGetPaymentStatus.mockImplementation(
-      () => new Promise((resolve) => {
-        setTimeout(() => resolve({ status: "SENT", paidAt: null }), 10);
-      }),
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => resolve({ status: "SENT", paidAt: null }), 10);
+        }),
     );
 
     vi.useFakeTimers({ shouldAdvanceTime: true });

@@ -91,12 +91,8 @@ describe("PendingAcceptancesList", () => {
     render(<PendingAcceptancesList />);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Service Agreement 2026"),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("NDA - Project Alpha"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Service Agreement 2026")).toBeInTheDocument();
+      expect(screen.getByText("NDA - Project Alpha")).toBeInTheDocument();
     });
 
     expect(screen.getByText("Pending Acceptances")).toBeInTheDocument();

@@ -73,7 +73,8 @@ export default function PaymentCancelledPage() {
             Payment was cancelled
           </h1>
           <p className="text-sm text-slate-600">
-            Your payment was not completed. You can try again when you are ready.
+            Your payment was not completed. You can try again when you are
+            ready.
           </p>
         </div>
 

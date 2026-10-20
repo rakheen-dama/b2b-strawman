@@ -55,7 +55,7 @@ export function useAuth(): UseAuthReturn {
   const snapshot = useSyncExternalStore(
     subscribeAuth,
     getSnapshot,
-    getServerSnapshot
+    getServerSnapshot,
   );
 
   const logout = useCallback(() => {

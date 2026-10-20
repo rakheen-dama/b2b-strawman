@@ -33,9 +33,7 @@ export default function InvoicesPage() {
       const data = await portalGet<PortalInvoice[]>("/portal/invoices");
       setInvoices(data);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load invoices",
-      );
+      setError(err instanceof Error ? err.message : "Failed to load invoices");
     } finally {
       setIsLoading(false);
     }
@@ -143,7 +141,10 @@ export default function InvoicesPage() {
             data-testid="invoices-list-desktop"
             className="hidden overflow-x-auto rounded-lg border border-slate-200 md:block"
           >
-            <table className="w-full text-sm" aria-label={`${t("Invoice")} list`}>
+            <table
+              className="w-full text-sm"
+              aria-label={`${t("Invoice")} list`}
+            >
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50">
                   <th className="px-4 py-3 text-left font-medium text-slate-600">

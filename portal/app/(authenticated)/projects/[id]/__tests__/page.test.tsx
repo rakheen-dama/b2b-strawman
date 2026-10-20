@@ -145,9 +145,13 @@ describe("ProjectDetailPage", () => {
       screen.getByText("Modernizing the company website"),
     ).toBeInTheDocument();
     // Task (renders in both mobile card and desktop table layouts)
-    expect(screen.getAllByText("Design mockups").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Design mockups").length).toBeGreaterThanOrEqual(
+      1,
+    );
     // Document (renders in both mobile card and desktop table layouts)
-    expect(screen.getAllByText("proposal.pdf").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("proposal.pdf").length).toBeGreaterThanOrEqual(
+      1,
+    );
     // Comment
     expect(screen.getByText("Looks good!")).toBeInTheDocument();
     // Summary

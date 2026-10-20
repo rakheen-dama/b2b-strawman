@@ -58,9 +58,7 @@ export default function ProjectsPage() {
       const data = await portalGet<PortalProject[]>("/portal/matters");
       setProjects(data);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load projects",
-      );
+      setError(err instanceof Error ? err.message : "Failed to load projects");
     } finally {
       setIsLoading(false);
     }
@@ -133,7 +131,9 @@ export default function ProjectsPage() {
       {!isLoading && !error && projects.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <FolderOpen className="mb-4 size-12 text-slate-300" />
-          <p className="text-lg font-medium text-slate-600">No {t("projects")} yet</p>
+          <p className="text-lg font-medium text-slate-600">
+            No {t("projects")} yet
+          </p>
           <p className="mt-1 text-sm text-slate-500">
             Your {orgName} team will share {t("projects")} with you here.
           </p>
@@ -146,7 +146,9 @@ export default function ProjectsPage() {
         visibleProjects.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <FolderOpen className="mb-4 size-12 text-slate-300" />
-            <p className="text-lg font-medium text-slate-600">No {t("projects")}</p>
+            <p className="text-lg font-medium text-slate-600">
+              No {t("projects")}
+            </p>
             <p className="mt-1 text-sm text-slate-500">
               Try a different filter to see more {t("projects")}.
             </p>

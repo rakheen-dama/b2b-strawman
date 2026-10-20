@@ -68,10 +68,7 @@ describe("filterNavItems", () => {
 
   it("excludes profile-gated items when tenantProfile is undefined", () => {
     const filtered = filterNavItems(PORTAL_NAV_ITEMS, {
-      enabledModules: [
-        "trust_accounting",
-        "deadlines",
-      ],
+      enabledModules: ["trust_accounting", "deadlines"],
     });
     expect(filtered.some((i) => i.id === "trust")).toBe(false);
     expect(filtered.some((i) => i.id === "deadlines")).toBe(false);

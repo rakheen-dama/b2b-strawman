@@ -29,7 +29,9 @@ describe("api-client", () => {
 
   it("portalFetch adds Authorization header when JWT exists", async () => {
     mockGetJwt.mockReturnValue("test-jwt-token");
-    mockFetch.mockResolvedValue(new Response(JSON.stringify({}), { status: 200 }));
+    mockFetch.mockResolvedValue(
+      new Response(JSON.stringify({}), { status: 200 }),
+    );
 
     await portalFetch("/portal/matters");
 
@@ -41,7 +43,9 @@ describe("api-client", () => {
   });
 
   it("portalFetch prepends base URL to path", async () => {
-    mockFetch.mockResolvedValue(new Response(JSON.stringify({}), { status: 200 }));
+    mockFetch.mockResolvedValue(
+      new Response(JSON.stringify({}), { status: 200 }),
+    );
 
     await portalFetch("/portal/matters");
 
@@ -60,7 +64,9 @@ describe("api-client", () => {
       value: { ...originalLocation, href: "" },
     });
 
-    await expect(portalFetch("/portal/matters")).rejects.toThrow("Unauthorized");
+    await expect(portalFetch("/portal/matters")).rejects.toThrow(
+      "Unauthorized",
+    );
     expect(mockClearAuth).toHaveBeenCalledTimes(1);
     expect(window.location.href).toBe("/login");
 
@@ -72,7 +78,9 @@ describe("api-client", () => {
   });
 
   it("publicFetch calls fetch without Authorization header", async () => {
-    mockFetch.mockResolvedValue(new Response(JSON.stringify({}), { status: 200 }));
+    mockFetch.mockResolvedValue(
+      new Response(JSON.stringify({}), { status: 200 }),
+    );
 
     await publicFetch("/portal/branding?orgId=org_abc");
 
@@ -84,7 +92,9 @@ describe("api-client", () => {
   });
 
   it("publicFetch sets Content-Type for requests with body", async () => {
-    mockFetch.mockResolvedValue(new Response(JSON.stringify({}), { status: 200 }));
+    mockFetch.mockResolvedValue(
+      new Response(JSON.stringify({}), { status: 200 }),
+    );
 
     await publicFetch("/portal/auth/request-link", {
       method: "POST",
@@ -106,7 +116,9 @@ describe("api-client", () => {
       }),
     );
 
-    const result = await portalGet<{ id: string; name: string }>("/portal/matters/1");
+    const result = await portalGet<{ id: string; name: string }>(
+      "/portal/matters/1",
+    );
 
     expect(result).toEqual(payload);
   });

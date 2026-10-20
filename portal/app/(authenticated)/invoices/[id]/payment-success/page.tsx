@@ -35,7 +35,8 @@ export default function PaymentSuccessPage() {
               Payment is being processed...
             </h1>
             <p className="text-sm text-slate-600">
-              Please wait while we confirm your payment. This usually takes a few seconds.
+              Please wait while we confirm your payment. This usually takes a
+              few seconds.
             </p>
           </div>
         )}
@@ -70,7 +71,8 @@ export default function PaymentSuccessPage() {
               Payment is still being processed
             </h1>
             <p className="text-sm text-slate-600">
-              Your payment is taking longer than expected. Check back later for confirmation.
+              Your payment is taking longer than expected. Check back later for
+              confirmation.
             </p>
           </div>
         )}

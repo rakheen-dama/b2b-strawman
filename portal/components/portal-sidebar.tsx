@@ -6,10 +6,7 @@ import { User, LogOut } from "lucide-react";
 import { Dialog } from "radix-ui";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
-import {
-  usePortalContext,
-  useBranding,
-} from "@/hooks/use-portal-context";
+import { usePortalContext, useBranding } from "@/hooks/use-portal-context";
 import {
   PORTAL_NAV_ITEMS,
   PORTAL_NAV_LABELS,

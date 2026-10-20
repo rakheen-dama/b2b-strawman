@@ -1,7 +1,8 @@
 import { getJwt, clearAuth } from "@/lib/auth";
 import type { PaymentStatusResponse } from "@/lib/types";
 
-const BASE_URL = process.env.NEXT_PUBLIC_PORTAL_API_URL ?? "http://localhost:8080";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_PORTAL_API_URL ?? "http://localhost:8080";
 
 /**
  * Portal API fetch wrapper. Injects the JWT as a Bearer token.
@@ -9,7 +10,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_PORTAL_API_URL ?? "http://localhost:808
  */
 export async function portalFetch(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<Response> {
   const jwt = getJwt();
 
@@ -82,10 +83,10 @@ export async function portalPost<T>(path: string, body: unknown): Promise<T> {
  * Used by the payment success page to poll for confirmation.
  */
 export async function getPaymentStatus(
-  invoiceId: string
+  invoiceId: string,
 ): Promise<PaymentStatusResponse> {
   return portalGet<PaymentStatusResponse>(
-    `/portal/invoices/${invoiceId}/payment-status`
+    `/portal/invoices/${invoiceId}/payment-status`,
   );
 }
 
@@ -95,7 +96,7 @@ export async function getPaymentStatus(
  */
 export async function publicFetch(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<Response> {
   const headers = new Headers(options.headers);
   if (!headers.has("Content-Type") && options.body) {

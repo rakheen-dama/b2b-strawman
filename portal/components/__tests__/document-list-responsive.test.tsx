@@ -43,9 +43,7 @@ describe("DocumentList responsive layout (regression)", () => {
     const mobileContainer = container.querySelector(
       "div.flex.flex-col.gap-3.md\\:hidden",
     );
-    const desktopContainer = container.querySelector(
-      "div.hidden.md\\:block",
-    );
+    const desktopContainer = container.querySelector("div.hidden.md\\:block");
 
     expect(mobileContainer).not.toBeNull();
     expect(desktopContainer).not.toBeNull();
@@ -78,9 +76,7 @@ describe("DocumentList responsive layout (regression)", () => {
     const mobileContainer = container.querySelector(
       "div.flex.flex-col.gap-3.md\\:hidden",
     );
-    const desktopContainer = container.querySelector(
-      "div.hidden.md\\:block",
-    );
+    const desktopContainer = container.querySelector("div.hidden.md\\:block");
 
     expect(mobileContainer).toBeNull();
     expect(desktopContainer).toBeNull();

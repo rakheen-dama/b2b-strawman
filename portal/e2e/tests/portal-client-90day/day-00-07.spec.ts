@@ -29,7 +29,8 @@ const PORTAL_EMAIL =
   process.env.PORTAL_CONTACT_EMAIL || "sipho.portal@example.com";
 const SKIP = process.env.SKIP_PORTAL_BASELINES === "true";
 
-test.describe.serial("Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3)", () => {
+test.describe
+  .serial("Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3)", () => {
   test.beforeAll(async () => {
     test.skip(
       SKIP,
@@ -125,7 +126,9 @@ test.describe.serial("Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3)"
     const infoRequestLink = page
       .getByRole("link", { name: /info request|view/i })
       .first();
-    if (!(await infoRequestLink.isVisible({ timeout: 5000 }).catch(() => false))) {
+    if (
+      !(await infoRequestLink.isVisible({ timeout: 5000 }).catch(() => false))
+    ) {
       test.skip(true, "No pending info request to submit against");
       return;
     }

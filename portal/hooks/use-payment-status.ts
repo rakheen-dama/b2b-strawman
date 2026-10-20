@@ -18,7 +18,9 @@ export function usePaymentStatus(invoiceId: string): UsePaymentStatusReturn {
 
   useEffect(() => {
     let cancelled = false;
-    const timer = { id: undefined as ReturnType<typeof setInterval> | undefined };
+    const timer = {
+      id: undefined as ReturnType<typeof setInterval> | undefined,
+    };
     const startTime = Date.now();
     const POLL_INTERVAL = 3000; // 3 seconds
     const MAX_DURATION = 30000; // 30 seconds

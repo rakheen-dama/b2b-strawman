@@ -38,11 +38,7 @@ export function PortalTopbar({ onHamburgerClick }: PortalTopbarProps) {
         </Button>
         {logoUrl && isSafeImageUrl(logoUrl) ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={logoUrl}
-            alt={`${orgName} logo`}
-            className="h-6 w-auto"
-          />
+          <img src={logoUrl} alt={`${orgName} logo`} className="h-6 w-auto" />
         ) : (
           <span className="font-display text-sm font-semibold text-slate-900">
             {orgName}

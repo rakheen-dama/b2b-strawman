@@ -14,12 +14,11 @@ vi.mock("next/link", () => ({
     children: React.ReactNode;
     href: string;
     [k: string]: unknown;
-  }) =>
-    (
-      <a href={href} {...props}>
-        {children}
-      </a>
-    ),
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 const mockLogout = vi.fn();
@@ -105,9 +104,7 @@ describe("PortalSidebar (desktop)", () => {
   it("exposes the Profile link and Logout button in the footer", () => {
     render(<PortalSidebar />);
     expect(screen.getByText("Profile")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /logout/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /logout/i })).toBeInTheDocument();
   });
 });
 

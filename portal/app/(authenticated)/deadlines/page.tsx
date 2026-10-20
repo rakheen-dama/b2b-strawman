@@ -103,8 +103,7 @@ export default function DeadlinesPage() {
   const selectedDeadline = useMemo(() => {
     if (!selectedKey || !deadlines) return null;
     return (
-      deadlines.find((d) => `${d.sourceEntity}-${d.id}` === selectedKey) ??
-      null
+      deadlines.find((d) => `${d.sourceEntity}-${d.id}` === selectedKey) ?? null
     );
   }, [selectedKey, deadlines]);
 

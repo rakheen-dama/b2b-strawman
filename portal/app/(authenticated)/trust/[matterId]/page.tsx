@@ -85,9 +85,7 @@ export default function TrustMatterDetailPage() {
       } catch (err) {
         if (!cancelled) {
           setSummaryError(
-            err instanceof Error
-              ? err.message
-              : "Failed to load trust balance",
+            err instanceof Error ? err.message : "Failed to load trust balance",
           );
         }
       } finally {
@@ -221,9 +219,7 @@ export default function TrustMatterDetailPage() {
               className="mb-3 size-8 text-slate-300"
               aria-hidden="true"
             />
-            <p className="text-sm text-slate-600">
-              No statement documents yet
-            </p>
+            <p className="text-sm text-slate-600">No statement documents yet</p>
           </div>
         ) : (
           <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200">

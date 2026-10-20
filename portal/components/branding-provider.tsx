@@ -73,6 +73,8 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
   };
 
   return (
-    <BrandingContext.Provider value={value}>{children}</BrandingContext.Provider>
+    <BrandingContext.Provider value={value}>
+      {children}
+    </BrandingContext.Provider>
   );
 }

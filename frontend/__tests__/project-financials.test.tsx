@@ -8,8 +8,8 @@ function makeProfitability(
   overrides: Partial<ProjectProfitabilityResponse> = {}
 ): ProjectProfitabilityResponse {
   return {
-    projectId: "p1",
-    projectName: "Alpha Project",
+    matterId: "p1",
+    matterName: "Alpha Project",
     currencies: [
       {
         currency: "USD",

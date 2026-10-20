@@ -49,8 +49,8 @@ afterEach(() => {
 const mockItems: BillingRunItem[] = [
   {
     id: "item-1",
-    customerId: "cust-1",
-    customerName: "Acme Corp",
+    clientId: "cust-1",
+    clientName: "Acme Corp",
     status: "PENDING",
     unbilledTimeAmount: 50000,
     unbilledExpenseAmount: 5000,
@@ -64,8 +64,8 @@ const mockItems: BillingRunItem[] = [
   },
   {
     id: "item-2",
-    customerId: "cust-2",
-    customerName: "Beta LLC",
+    clientId: "cust-2",
+    clientName: "Beta LLC",
     status: "PENDING",
     unbilledTimeAmount: 30000,
     unbilledExpenseAmount: 0,
@@ -109,7 +109,7 @@ const mockTimeEntries: UnbilledTimeEntry[] = [
 const mockExpenses: UnbilledExpense[] = [
   {
     id: "exp-1",
-    projectId: "proj-1",
+    matterId: "proj-1",
     memberId: "member-1",
     date: "2026-03-01",
     description: "Software license",
@@ -126,8 +126,8 @@ const mockExpenses: UnbilledExpense[] = [
 const mockDisbursements: UnbilledDisbursement[] = [
   {
     id: "disb-1",
-    projectId: "proj-1",
-    customerId: "cust-1",
+    matterId: "proj-1",
+    clientId: "cust-1",
     incurredDate: "2026-03-15",
     description: "Sheriff service of summons",
     category: "SHERIFF_FEES",

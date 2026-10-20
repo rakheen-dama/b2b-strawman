@@ -7,8 +7,8 @@ function makeProfitability(
   overrides: Partial<CustomerProfitabilityResponse> = {}
 ): CustomerProfitabilityResponse {
   return {
-    customerId: "c1",
-    customerName: "Acme Corp",
+    clientId: "c1",
+    clientName: "Acme Corp",
     currencies: [
       {
         currency: "USD",
@@ -29,11 +29,11 @@ function makeProjectBreakdown(
   overrides: Partial<OrgProfitabilityResponse> = {}
 ): OrgProfitabilityResponse {
   return {
-    projects: [
+    matters: [
       {
-        projectId: "p1",
-        projectName: "Alpha Project",
-        customerName: "Acme Corp",
+        matterId: "p1",
+        matterName: "Alpha Project",
+        clientName: "Acme Corp",
         currency: "USD",
         billableHours: 120,
         billableValue: 18000,
@@ -42,9 +42,9 @@ function makeProjectBreakdown(
         marginPercent: 40,
       },
       {
-        projectId: "p2",
-        projectName: "Beta Project",
-        customerName: "Acme Corp",
+        matterId: "p2",
+        matterName: "Beta Project",
+        clientName: "Acme Corp",
         currency: "USD",
         billableHours: 80,
         billableValue: 12000,

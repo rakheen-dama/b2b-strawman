@@ -16,8 +16,8 @@ export type InvoiceLineType =
 
 export interface InvoiceLineResponse {
   id: string;
-  projectId: string | null;
-  projectName: string | null;
+  matterId: string | null;
+  matterName: string | null;
   timeEntryId: string | null;
   expenseId: string | null;
   lineType: InvoiceLineType;
@@ -46,7 +46,7 @@ export interface TaxBreakdownEntry {
 
 export interface InvoiceResponse {
   id: string;
-  customerId: string;
+  clientId: string;
   invoiceNumber: string | null;
   status: InvoiceStatus;
   currency: string;
@@ -63,9 +63,9 @@ export interface InvoiceResponse {
   billingPeriodEnd: string | null;
   paymentReference: string | null;
   paidAt: string | null;
-  customerName: string;
-  customerEmail: string | null;
-  customerAddress: string | null;
+  clientName: string;
+  clientEmail: string | null;
+  clientAddress: string | null;
   orgName: string;
   createdBy: string;
   createdByName: string | null;
@@ -114,7 +114,7 @@ export interface PaymentEvent {
 }
 
 export interface CreateInvoiceDraftRequest {
-  customerId: string;
+  clientId: string;
   currency: string;
   timeEntryIds: string[];
   expenseIds?: string[];
@@ -136,7 +136,7 @@ export interface UpdateInvoiceRequest {
 }
 
 export interface AddLineItemRequest {
-  projectId?: string;
+  matterId?: string;
   description: string;
   quantity: number;
   unitPrice: number;
@@ -176,16 +176,16 @@ export interface UnbilledTimeEntry {
 }
 
 export interface UnbilledProjectGroup {
-  projectId: string;
-  projectName: string;
+  matterId: string;
+  matterName: string;
   entries: UnbilledTimeEntry[];
   totals: Record<string, CurrencyTotal>;
 }
 
 export interface UnbilledTimeResponse {
-  customerId: string;
-  customerName: string;
-  projects: UnbilledProjectGroup[];
+  clientId: string;
+  clientName: string;
+  matters: UnbilledProjectGroup[];
   grandTotals: Record<string, CurrencyTotal>;
   unbilledExpenses: UnbilledExpenseEntry[];
   unbilledExpenseTotals: Record<string, number>;
@@ -215,8 +215,8 @@ export interface UnbilledDisbursementEntry {
 
 export interface UnbilledExpenseEntry {
   id: string;
-  projectId: string;
-  projectName: string;
+  matterId: string;
+  matterName: string;
   date: string;
   description: string;
   amount: number;

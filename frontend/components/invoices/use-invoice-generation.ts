@@ -99,7 +99,7 @@ export function useInvoiceGeneration({
         if (result.success && result.data) {
           setUnbilledData(result.data);
           const matchingIds = new Set<string>();
-          for (const project of result.data.projects) {
+          for (const project of result.data.matters) {
             for (const entry of project.entries) {
               if (entry.billingRateCurrency === currency) matchingIds.add(entry.id);
             }
@@ -247,7 +247,7 @@ export function useInvoiceGeneration({
     startTransition(async () => {
       try {
         const result = await createInvoiceDraft(slug, customerId, {
-          customerId,
+          clientId: customerId,
           currency,
           timeEntryIds: Array.from(selectedEntryIds),
           expenseIds: selectedExpenseIds.size > 0 ? Array.from(selectedExpenseIds) : undefined,
@@ -270,7 +270,7 @@ export function useInvoiceGeneration({
 
   // Computed values
   const timeTotal = unbilledData
-    ? unbilledData.projects.reduce(
+    ? unbilledData.matters.reduce(
         (sum, project) =>
           sum +
           project.entries
@@ -297,10 +297,10 @@ export function useInvoiceGeneration({
     selectedEntryIds.size + selectedExpenseIds.size + selectedDisbursementIds.size;
 
   const nullRateEntries = unbilledData
-    ? unbilledData.projects.flatMap((p) =>
+    ? unbilledData.matters.flatMap((p) =>
         p.entries
           .filter((e) => e.billingRateSnapshot == null && e.rateSource !== "RESOLVED")
-          .map((e) => ({ ...e, projectName: p.projectName }))
+          .map((e) => ({ ...e, projectName: p.matterName }))
       )
     : [];
 

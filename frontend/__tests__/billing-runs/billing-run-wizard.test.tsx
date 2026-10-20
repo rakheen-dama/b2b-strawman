@@ -37,13 +37,13 @@ afterEach(() => {
 
 const mockPreview: BillingRunPreview = {
   billingRunId: "run-1",
-  totalCustomers: 2,
+  totalClients: 2,
   totalUnbilledAmount: 85000,
   items: [
     {
       id: "item-1",
-      customerId: "cust-1",
-      customerName: "Acme Corp",
+      clientId: "cust-1",
+      clientName: "Acme Corp",
       status: "PENDING",
       unbilledTimeAmount: 50000,
       unbilledExpenseAmount: 5000,
@@ -57,8 +57,8 @@ const mockPreview: BillingRunPreview = {
     },
     {
       id: "item-2",
-      customerId: "cust-2",
-      customerName: "Beta LLC",
+      clientId: "cust-2",
+      clientName: "Beta LLC",
       status: "PENDING",
       unbilledTimeAmount: 30000,
       unbilledExpenseAmount: 0,

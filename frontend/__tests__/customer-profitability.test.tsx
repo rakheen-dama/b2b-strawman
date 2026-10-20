@@ -13,11 +13,11 @@ vi.mock("@/app/(app)/org/[slug]/profitability/actions", () => ({
 
 function makeData(overrides: Partial<OrgProfitabilityResponse> = {}): OrgProfitabilityResponse {
   return {
-    projects: [
+    matters: [
       {
-        projectId: "p1",
-        projectName: "Alpha Project",
-        customerName: "Acme Corp",
+        matterId: "p1",
+        matterName: "Alpha Project",
+        clientName: "Acme Corp",
         currency: "USD",
         billableHours: 100,
         billableValue: 15000,
@@ -26,9 +26,9 @@ function makeData(overrides: Partial<OrgProfitabilityResponse> = {}): OrgProfita
         marginPercent: 40,
       },
       {
-        projectId: "p2",
-        projectName: "Beta Project",
-        customerName: "Acme Corp",
+        matterId: "p2",
+        matterName: "Beta Project",
+        clientName: "Acme Corp",
         currency: "USD",
         billableHours: 50,
         billableValue: 7500,
@@ -73,11 +73,11 @@ describe("CustomerProfitabilitySection", () => {
 
   it("shows em-dash when cost data is missing", () => {
     const data = makeData({
-      projects: [
+      matters: [
         {
-          projectId: "p1",
-          projectName: "No Cost Project",
-          customerName: "Widget Inc",
+          matterId: "p1",
+          matterName: "No Cost Project",
+          clientName: "Widget Inc",
           currency: "EUR",
           billableHours: 80,
           billableValue: 12000,
@@ -98,7 +98,7 @@ describe("CustomerProfitabilitySection", () => {
   });
 
   it("renders empty state when no project data", () => {
-    const data = makeData({ projects: [] });
+    const data = makeData({ matters: [] });
     render(<CustomerProfitabilitySection initialData={data} {...defaultProps} />);
 
     expect(screen.getByText("No customer profitability data for this period")).toBeInTheDocument();
@@ -134,11 +134,11 @@ describe("CustomerProfitabilitySection", () => {
 
   it("groups projects without a customer under Unassigned", () => {
     const data = makeData({
-      projects: [
+      matters: [
         {
-          projectId: "p1",
-          projectName: "Orphan Project",
-          customerName: null,
+          matterId: "p1",
+          matterName: "Orphan Project",
+          clientName: null,
           currency: "USD",
           billableHours: 20,
           billableValue: 3000,

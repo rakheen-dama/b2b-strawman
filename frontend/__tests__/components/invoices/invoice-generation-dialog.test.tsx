@@ -23,12 +23,12 @@ vi.mock("@/lib/actions/prerequisite-actions", () => ({
 }));
 
 const sampleUnbilledData: UnbilledTimeResponse = {
-  customerId: "c1",
-  customerName: "Acme Corp",
-  projects: [
+  clientId: "c1",
+  clientName: "Acme Corp",
+  matters: [
     {
-      projectId: "p1",
-      projectName: "Project Alpha",
+      matterId: "p1",
+      matterName: "Project Alpha",
       entries: [
         {
           id: "e1",
@@ -258,7 +258,7 @@ describe("InvoiceGenerationDialog", () => {
 
     await waitFor(() => {
       expect(mockCreateInvoiceDraft).toHaveBeenCalledWith("acme", "c1", {
-        customerId: "c1",
+        clientId: "c1",
         currency: "USD",
         timeEntryIds: expect.arrayContaining(["e1", "e2"]),
       });
@@ -278,12 +278,12 @@ describe("InvoiceGenerationDialog", () => {
     };
 
     const zarUnbilledData: UnbilledTimeResponse = {
-      customerId: "c1",
-      customerName: "Mathebula Partners",
-      projects: [
+      clientId: "c1",
+      clientName: "Mathebula Partners",
+      matters: [
         {
-          projectId: "p1",
-          projectName: "Matter Alpha",
+          matterId: "p1",
+          matterName: "Matter Alpha",
           entries: [
             {
               id: "t1",
@@ -398,7 +398,7 @@ describe("InvoiceGenerationDialog", () => {
           "mathebula",
           "c1",
           expect.objectContaining({
-            customerId: "c1",
+            clientId: "c1",
             currency: "ZAR",
             timeEntryIds: expect.arrayContaining(["t1"]),
             disbursementIds: ["d1"],

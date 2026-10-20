@@ -47,7 +47,7 @@ export function InvoiceDetailClient({
   // that; otherwise leave null and let the picker show its "select a matter"
   // empty state.
   const linePids = Array.from(
-    new Set((h.invoice.lines ?? []).map((l) => l.projectId).filter((pid): pid is string => !!pid))
+    new Set((h.invoice.lines ?? []).map((l) => l.matterId).filter((pid): pid is string => !!pid))
   );
   const invoiceProjectId = linePids.length === 1 ? linePids[0] : null;
 
@@ -169,7 +169,7 @@ export function InvoiceDetailClient({
             onOpenChange={setShowTariffDialog}
             invoiceId={h.invoice.id}
             slug={slug}
-            customerId={h.invoice.customerId}
+            customerId={h.invoice.clientId}
             onSuccess={async () => {
               setShowTariffDialog(false);
               await h.handleRefresh();
@@ -197,7 +197,7 @@ export function InvoiceDetailClient({
             onOpenChange={setShowDisbursementsDialog}
             invoiceId={h.invoice.id}
             slug={slug}
-            customerId={h.invoice.customerId}
+            customerId={h.invoice.clientId}
             projectId={invoiceProjectId}
             onSuccess={async () => {
               setShowDisbursementsDialog(false);

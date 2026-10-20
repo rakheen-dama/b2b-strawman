@@ -62,8 +62,8 @@ function mapToPickerItems(entityType: TemplateEntityType, data: PickerData[]): P
       return (data as InvoiceResponse[]).map((i) => ({
         id: i.id,
         label: i.invoiceNumber ?? `Draft (${i.id.slice(0, 8)}\u2026)`,
-        sublabel: i.customerName,
-        searchValue: `${i.invoiceNumber ?? ""} ${i.customerName ?? ""}`,
+        sublabel: i.clientName,
+        searchValue: `${i.invoiceNumber ?? ""} ${i.clientName ?? ""}`,
       }));
   }
 }

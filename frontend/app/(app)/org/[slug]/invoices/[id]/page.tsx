@@ -133,7 +133,7 @@ export default async function InvoiceDetailPage({
             entityId={id}
             entityType="INVOICE"
             slug={slug}
-            customerId={invoice!.customerId}
+            customerId={invoice!.clientId}
             isAdmin={isAdmin}
           />
         )}
@@ -186,7 +186,7 @@ export default async function InvoiceDetailPage({
           entityId={id}
           slug={slug}
           isAdmin={isAdmin}
-          customerId={invoice!.customerId}
+          customerId={invoice!.clientId}
         />
       </div>
 

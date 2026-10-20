@@ -53,8 +53,8 @@ const PREVIEW_ONLY_ERROR =
 const strictModeItems: BillingRunItem[] = [
   {
     id: "item-sm-1",
-    customerId: "cust-sm-1",
-    customerName: "StrictMode Attorneys",
+    clientId: "cust-sm-1",
+    clientName: "StrictMode Attorneys",
     status: "GENERATED",
     unbilledTimeAmount: 50000,
     unbilledExpenseAmount: 5000,

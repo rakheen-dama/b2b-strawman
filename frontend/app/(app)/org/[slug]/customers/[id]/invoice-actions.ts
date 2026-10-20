@@ -55,7 +55,7 @@ export async function validateInvoiceGeneration(
 ): Promise<ValidationResult> {
   try {
     const checks = await api.post<ValidationCheck[]>("/api/invoices/validate-generation", {
-      customerId,
+      clientId: customerId,
       timeEntryIds,
       templateId: templateId ?? null,
     });

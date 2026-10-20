@@ -6,10 +6,10 @@ export interface BillingRate {
   id: string;
   memberId: string;
   memberName: string;
-  projectId: string | null;
-  projectName: string | null;
-  customerId: string | null;
-  customerName: string | null;
+  matterId: string | null;
+  matterName: string | null;
+  clientId: string | null;
+  clientName: string | null;
   scope: BillingRateScope;
   currency: string;
   hourlyRate: number;
@@ -21,8 +21,8 @@ export interface BillingRate {
 
 export interface CreateBillingRateRequest {
   memberId: string;
-  projectId?: string;
-  customerId?: string;
+  matterId?: string;
+  clientId?: string;
   currency: string;
   hourlyRate: number;
   effectiveFrom: string;
@@ -135,9 +135,9 @@ export interface UtilizationResponse {
 }
 
 export interface ProjectProfitabilitySummary {
-  projectId: string;
-  projectName: string;
-  customerName: string | null;
+  matterId: string;
+  matterName: string;
+  clientName: string | null;
   currency: string;
   billableHours: number;
   billableValue: number;
@@ -147,7 +147,7 @@ export interface ProjectProfitabilitySummary {
 }
 
 export interface OrgProfitabilityResponse {
-  projects: ProjectProfitabilitySummary[];
+  matters: ProjectProfitabilitySummary[];
 }
 
 export interface CurrencyBreakdown {
@@ -162,14 +162,14 @@ export interface CurrencyBreakdown {
 }
 
 export interface ProjectProfitabilityResponse {
-  projectId: string;
-  projectName: string;
+  matterId: string;
+  matterName: string;
   currencies: CurrencyBreakdown[];
 }
 
 export interface CustomerProfitabilityResponse {
-  customerId: string;
-  customerName: string;
+  clientId: string;
+  clientName: string;
   currencies: CurrencyBreakdown[];
 }
 

@@ -65,8 +65,8 @@ export interface DebtorLastActivity {
 }
 
 export interface DebtorResponse {
-  customerId: string;
-  customerName: string;
+  clientId: string;
+  clientName: string;
   outstandingTotal: number;
   currency: string;
   invoiceCount: number;
@@ -106,8 +106,8 @@ export interface CollectionActivityResponse {
 }
 
 export interface DebtorDetailResponse {
-  customerId: string;
-  customerName: string;
+  clientId: string;
+  clientName: string;
   collectionsExempt: boolean;
   outstandingInvoices: OutstandingInvoice[];
   activities: {

@@ -66,7 +66,7 @@ vi.mock("@/app/(app)/org/[slug]/invoices/invoice-payment-actions", () => ({
 function makeInvoice(overrides: Partial<InvoiceResponse> = {}): InvoiceResponse {
   return {
     id: "inv-1",
-    customerId: "cust-1",
+    clientId: "cust-1",
     invoiceNumber: "INV-001",
     status: "SENT",
     currency: "ZAR",
@@ -79,9 +79,9 @@ function makeInvoice(overrides: Partial<InvoiceResponse> = {}): InvoiceResponse 
     paymentTerms: null,
     paymentReference: null,
     paidAt: null,
-    customerName: "Acme Corp",
-    customerEmail: "billing@acme.com",
-    customerAddress: null,
+    clientName: "Acme Corp",
+    clientEmail: "billing@acme.com",
+    clientAddress: null,
     orgName: "DocTeams",
     createdBy: "user-1",
     createdByName: "Alice",

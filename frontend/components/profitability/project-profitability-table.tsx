@@ -43,10 +43,10 @@ function sortProjects(
     let cmp = 0;
     switch (field) {
       case "projectName":
-        cmp = a.projectName.localeCompare(b.projectName);
+        cmp = a.matterName.localeCompare(b.matterName);
         break;
       case "customerName":
-        cmp = (a.customerName ?? "").localeCompare(b.customerName ?? "");
+        cmp = (a.clientName ?? "").localeCompare(b.clientName ?? "");
         break;
       case "billableHours":
         cmp = a.billableHours - b.billableHours;
@@ -105,7 +105,7 @@ export function ProjectProfitabilityTable({
     });
   }
 
-  const sorted = sortProjects(data.projects, sortField, sortDir);
+  const sorted = sortProjects(data.matters, sortField, sortDir);
 
   return (
     <Card>
@@ -218,11 +218,11 @@ export function ProjectProfitabilityTable({
             </TableHeader>
             <TableBody>
               {sorted.map((project) => (
-                <TableRow key={`${project.projectId}-${project.currency}`}>
-                  <TableCell className="font-medium">{project.projectName}</TableCell>
+                <TableRow key={`${project.matterId}-${project.currency}`}>
+                  <TableCell className="font-medium">{project.matterName}</TableCell>
                   <TableCell>
-                    {project.customerName ? (
-                      project.customerName
+                    {project.clientName ? (
+                      project.clientName
                     ) : (
                       <span className="text-slate-400">&mdash;</span>
                     )}

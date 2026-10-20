@@ -78,7 +78,7 @@ export default async function InvoicesPage({
   try {
     const queryParams = new URLSearchParams();
     if (search.status) queryParams.set("status", search.status);
-    if (search.customerId) queryParams.set("customerId", search.customerId);
+    if (search.customerId) queryParams.set("clientId", search.customerId);
     const qs = queryParams.toString();
     invoices = await api.get<InvoiceResponse[]>(`/api/invoices${qs ? `?${qs}` : ""}`);
   } catch {
@@ -266,7 +266,7 @@ export default async function InvoicesPage({
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
-                    {invoice.customerName}
+                    {invoice.clientName}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">

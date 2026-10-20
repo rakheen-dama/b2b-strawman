@@ -3,7 +3,7 @@ import type { ExpenseResponse, ExpenseCategory, ExpenseBillingStatus } from "@/l
 export function makeExpense(overrides: Partial<ExpenseResponse> = {}): ExpenseResponse {
   return {
     id: "exp1",
-    projectId: "p1",
+    matterId: "p1",
     taskId: null,
     memberId: "m1",
     memberName: "Alice Johnson",

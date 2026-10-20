@@ -121,8 +121,8 @@ beforeEach(() => vi.clearAllMocks());
 function makeLine(overrides: Partial<InvoiceLineResponse> = {}): InvoiceLineResponse {
   return {
     id: "line-1",
-    projectId: null,
-    projectName: null,
+    matterId: null,
+    matterName: null,
     timeEntryId: null,
     expenseId: null,
     lineType: "TIME",

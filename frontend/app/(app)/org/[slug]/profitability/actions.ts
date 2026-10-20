@@ -80,7 +80,7 @@ export async function getProjectProfitability(
     if (to) params.set("to", to);
     const qs = params.toString();
     const data = await api.get<ProjectProfitabilityResponse>(
-      `/api/projects/${projectId}/profitability${qs ? `?${qs}` : ""}`
+      `/api/matters/${projectId}/profitability${qs ? `?${qs}` : ""}`
     );
     return { data };
   } catch (error) {
@@ -107,7 +107,7 @@ export async function getCustomerProfitability(
     if (to) params.set("to", to);
     const qs = params.toString();
     const data = await api.get<CustomerProfitabilityResponse>(
-      `/api/customers/${customerId}/profitability${qs ? `?${qs}` : ""}`
+      `/api/clients/${customerId}/profitability${qs ? `?${qs}` : ""}`
     );
     return { data };
   } catch (error) {

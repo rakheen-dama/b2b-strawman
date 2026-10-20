@@ -52,8 +52,8 @@ describe("InvoiceLineTable", () => {
   const sampleLines: InvoiceLineResponse[] = [
     {
       id: "line-1",
-      projectId: "p1",
-      projectName: "Project Alpha",
+      matterId: "p1",
+      matterName: "Project Alpha",
       timeEntryId: "te-1",
       expenseId: null,
       lineType: "TIME",
@@ -70,8 +70,8 @@ describe("InvoiceLineTable", () => {
     },
     {
       id: "line-2",
-      projectId: null,
-      projectName: null,
+      matterId: null,
+      matterName: null,
       timeEntryId: null,
       expenseId: null,
       lineType: "MANUAL",
@@ -151,8 +151,8 @@ describe("InvoiceLineTable", () => {
     const disbursementLine: InvoiceLineResponse[] = [
       {
         id: "line-disb-1",
-        projectId: "p1",
-        projectName: "Dlamini v RAF",
+        matterId: "p1",
+        matterName: "Dlamini v RAF",
         timeEntryId: null,
         expenseId: null,
         lineType: "DISBURSEMENT",
@@ -182,8 +182,8 @@ describe("InvoiceLineTable", () => {
     const mixedLines: InvoiceLineResponse[] = [
       {
         id: "line-time-1",
-        projectId: "p1",
-        projectName: "Dlamini v RAF",
+        matterId: "p1",
+        matterName: "Dlamini v RAF",
         timeEntryId: "te-1",
         expenseId: null,
         lineType: "TIME",
@@ -202,8 +202,8 @@ describe("InvoiceLineTable", () => {
       },
       {
         id: "line-disb-2",
-        projectId: "p1",
-        projectName: "Dlamini v RAF",
+        matterId: "p1",
+        matterName: "Dlamini v RAF",
         timeEntryId: null,
         expenseId: null,
         lineType: "DISBURSEMENT",

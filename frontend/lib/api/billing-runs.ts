@@ -26,7 +26,7 @@ export interface BillingRun {
   periodTo: string;
   currency: string;
   includeExpenses: boolean;
-  totalCustomers: number | null;
+  totalClients: number | null;
   totalInvoices: number | null;
   totalAmount: number | null;
   totalSent: number | null;
@@ -39,8 +39,8 @@ export interface BillingRun {
 
 export interface BillingRunItem {
   id: string;
-  customerId: string;
-  customerName: string;
+  clientId: string;
+  clientName: string;
   status: BillingRunItemStatus;
   unbilledTimeAmount: number;
   unbilledExpenseAmount: number;
@@ -55,7 +55,7 @@ export interface BillingRunItem {
 
 export interface BillingRunPreview {
   billingRunId: string;
-  totalCustomers: number;
+  totalClients: number;
   totalUnbilledAmount: number;
   items: BillingRunItem[];
 }
@@ -72,8 +72,8 @@ export interface BatchFailure {
 }
 
 export interface CustomerUnbilledSummary {
-  customerId: string;
-  customerName: string;
+  clientId: string;
+  clientName: string;
   unbilledTimeAmount: number;
   unbilledExpenseAmount: number;
   totalUnbilledAmount: number;
@@ -94,7 +94,7 @@ export interface UnbilledTimeEntry {
 
 export interface UnbilledExpense {
   id: string;
-  projectId: string;
+  matterId: string;
   memberId: string;
   date: string;
   description: string | null;
@@ -111,8 +111,8 @@ export interface UnbilledExpense {
 // component (amount + vatAmount) so the cherry-pick subtotal can sum it directly.
 export interface UnbilledDisbursement {
   id: string;
-  projectId: string;
-  customerId: string;
+  matterId: string;
+  clientId: string;
   incurredDate: string;
   description: string;
   category: string;
@@ -197,8 +197,8 @@ export async function cancelBillingRun(id: string): Promise<void> {
   return api.delete<void>(`/api/billing-runs/${id}`);
 }
 
-export async function loadPreview(id: string, customerIds?: string[]): Promise<BillingRunPreview> {
-  const body = customerIds ? { customerIds } : undefined;
+export async function loadPreview(id: string, clientIds?: string[]): Promise<BillingRunPreview> {
+  const body = clientIds ? { clientIds } : undefined;
   return api.post<BillingRunPreview>(`/api/billing-runs/${id}/preview`, body);
 }
 

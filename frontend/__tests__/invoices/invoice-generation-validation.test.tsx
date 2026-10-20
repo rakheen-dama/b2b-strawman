@@ -122,10 +122,10 @@ describe("Invoice Generation Validation", () => {
     mockFetchUnbilledTime.mockResolvedValue({
       success: true,
       data: {
-        projects: [
+        matters: [
           {
-            projectId: "p1",
-            projectName: "Test Project",
+            matterId: "p1",
+            matterName: "Test Project",
             entries: [
               {
                 id: "e1",
@@ -207,7 +207,7 @@ describe("Invoice Generation Validation", () => {
 
     const mockInvoice = {
       id: "inv-1",
-      customerId: "cust-1",
+      clientId: "cust-1",
       invoiceNumber: "INV-001",
       status: "APPROVED" as const,
       currency: "ZAR",
@@ -220,9 +220,9 @@ describe("Invoice Generation Validation", () => {
       paymentTerms: "Net 30",
       paymentReference: null,
       paidAt: null,
-      customerName: "Test Corp",
-      customerEmail: "test@test.com",
-      customerAddress: null,
+      clientName: "Test Corp",
+      clientEmail: "test@test.com",
+      clientAddress: null,
       orgName: "",
       createdBy: "user-1",
       createdByName: "Alice",

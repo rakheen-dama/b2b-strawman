@@ -160,7 +160,7 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ sl
                     {formatLocalDate(run.periodFrom)} &ndash; {formatLocalDate(run.periodTo)}
                   </td>
                   <td className="hidden px-4 py-3 text-right text-sm text-slate-600 md:table-cell dark:text-slate-400">
-                    {run.totalCustomers ?? "\u2014"}
+                    {run.totalClients ?? "\u2014"}
                   </td>
                   <td className="hidden px-4 py-3 text-right text-sm text-slate-600 md:table-cell dark:text-slate-400">
                     {run.totalInvoices ?? "\u2014"}

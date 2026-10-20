@@ -31,12 +31,12 @@ vi.mock("@/lib/actions/prerequisite-actions", () => ({
 }));
 
 const dataWithExpenses: UnbilledTimeResponse = {
-  customerId: "c1",
-  customerName: "Acme Corp",
-  projects: [
+  clientId: "c1",
+  clientName: "Acme Corp",
+  matters: [
     {
-      projectId: "p1",
-      projectName: "Project Alpha",
+      matterId: "p1",
+      matterName: "Project Alpha",
       entries: [
         {
           id: "te1",
@@ -57,8 +57,8 @@ const dataWithExpenses: UnbilledTimeResponse = {
   unbilledExpenses: [
     {
       id: "exp1",
-      projectId: "p1",
-      projectName: "Project Alpha",
+      matterId: "p1",
+      matterName: "Project Alpha",
       date: "2026-01-20",
       description: "Software license",
       amount: 50,
@@ -70,8 +70,8 @@ const dataWithExpenses: UnbilledTimeResponse = {
     },
     {
       id: "exp2",
-      projectId: "p1",
-      projectName: "Project Alpha",
+      matterId: "p1",
+      matterName: "Project Alpha",
       date: "2026-01-21",
       description: "Travel expense",
       amount: 100,
@@ -217,7 +217,7 @@ describe("Invoice Generation — expense selection", () => {
       await waitFor(
         () => {
           expect(mockCreateInvoiceDraft).toHaveBeenCalledWith("acme", "c1", {
-            customerId: "c1",
+            clientId: "c1",
             currency: "USD",
             timeEntryIds: ["te1"],
             expenseIds: ["exp1"],
@@ -237,8 +237,8 @@ describe("Invoice Line Table — lineType grouping", () => {
   const mixedLines: InvoiceLineResponse[] = [
     {
       id: "line-1",
-      projectId: "p1",
-      projectName: "Project Alpha",
+      matterId: "p1",
+      matterName: "Project Alpha",
       timeEntryId: "te1",
       expenseId: null,
       lineType: "TIME",
@@ -255,8 +255,8 @@ describe("Invoice Line Table — lineType grouping", () => {
     },
     {
       id: "line-2",
-      projectId: "p1",
-      projectName: "Project Alpha",
+      matterId: "p1",
+      matterName: "Project Alpha",
       timeEntryId: null,
       expenseId: "exp1",
       lineType: "EXPENSE",
@@ -273,8 +273,8 @@ describe("Invoice Line Table — lineType grouping", () => {
     },
     {
       id: "line-3",
-      projectId: null,
-      projectName: null,
+      matterId: null,
+      matterName: null,
       timeEntryId: null,
       expenseId: null,
       lineType: "MANUAL",

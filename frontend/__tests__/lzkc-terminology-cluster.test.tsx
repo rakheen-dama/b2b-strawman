@@ -1,22 +1,7 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { TerminologyProvider } from "@/lib/terminology";
 import { TerminologyText } from "@/components/terminology-text";
-import { CalendarPageClient } from "@/app/(app)/org/[slug]/calendar/calendar-page-client";
-
-// CalendarPageClient uses the app router.
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
-  usePathname: () => "/org/test-org/my-work",
-  useSearchParams: () => new URLSearchParams(),
-}));
-
-// CalendarPageClient loads projects/members via server actions on mount.
-vi.mock("@/app/(app)/org/[slug]/calendar/calendar-actions", () => ({
-  getCalendarItems: vi.fn(() => Promise.resolve({ items: [], overdueCount: 0 })),
-  getCalendarProjects: vi.fn(() => Promise.resolve([])),
-  getCalendarMembers: vi.fn(() => Promise.resolve([])),
-}));
 
 afterEach(() => {
   cleanup();
@@ -50,33 +35,5 @@ describe("LZKC-003: TerminologyText {a term} article token", () => {
   it("still substitutes plain tokens without an article", () => {
     withProfile("legal-za", <TerminologyText template="No {proposals} yet" />);
     expect(screen.getByText("No engagement letters yet")).toBeTruthy();
-  });
-});
-
-// ---- LZKC-021: Calendar filters ----
-
-describe("LZKC-021: Calendar filter terminology", () => {
-  const props = {
-    initialItems: [],
-    initialOverdueCount: 0,
-    initialYear: 2026,
-    initialMonth: 7,
-    slug: "test-org",
-  };
-
-  it("legal-za renders 'All Matters' filter and 'Matters'/'Action Items' type chips", async () => {
-    withProfile("legal-za", <CalendarPageClient {...props} />);
-    // Select placeholder + hidden option both carry the label
-    expect((await screen.findAllByText("All Matters")).length).toBeGreaterThan(0);
-    expect(screen.getByRole("button", { name: "Matters" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Action Items" })).toBeTruthy();
-    expect(screen.queryByText("All Projects")).toBeNull();
-  });
-
-  it("default renders 'All Projects' filter and 'Tasks'/'Projects' chips without a profile", async () => {
-    withProfile(null, <CalendarPageClient {...props} />);
-    expect((await screen.findAllByText("All Projects")).length).toBeGreaterThan(0);
-    expect(screen.getByRole("button", { name: "Projects" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Tasks" })).toBeTruthy();
   });
 });

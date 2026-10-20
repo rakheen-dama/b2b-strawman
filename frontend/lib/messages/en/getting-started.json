@@ -9,27 +9,27 @@
     "dismissCancel": "Cancel"
   },
   "create_project": {
-    "label": "Create your first project",
-    "description": "Projects are where your team organises work, tracks time, and manages documents."
+    "label": "Open your first matter",
+    "description": "Matters are where your team organises work, records time, and manages documents."
+  },
+  "log_time": {
+    "label": "Record time on a task",
+    "description": "Time recording powers fee notes, fee estimates, and profitability reports."
+  },
+  "create_invoice": {
+    "label": "Issue your first fee note",
+    "description": "Pull recorded time into a fee note. Send it to your client directly from Kazi."
   },
   "add_customer": {
-    "label": "Add a customer",
-    "description": "Customers represent the organisations you serve. Link them to projects for invoicing."
+    "label": "Add a client",
+    "description": "Clients are the people and organisations you act for. Link them to matters for billing."
+  },
+  "setup_rates": {
+    "label": "Set up your billing rates",
+    "description": "Define billing and cost rates to enable profitability tracking and accurate fee notes."
   },
   "invite_member": {
     "label": "Invite a team member",
     "description": "Collaboration is better together. Invite colleagues to start working as a team."
-  },
-  "log_time": {
-    "label": "Log time on a task",
-    "description": "Time tracking powers invoicing, budgets, and profitability reports."
-  },
-  "setup_rates": {
-    "label": "Set up your rate card",
-    "description": "Define billing and cost rates to enable profitability tracking and accurate invoicing."
-  },
-  "create_invoice": {
-    "label": "Generate your first invoice",
-    "description": "Pull tracked time into a professional invoice. Send it to your client directly from Kazi."
   }
 }

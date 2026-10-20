@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import type { GridTaskRow } from "./weekly-time-grid";
-import { TerminologyHeading } from "@/components/terminology-heading";
 
 // --- CSV Parser Types ---
 
@@ -151,7 +150,7 @@ export function parseCsv(content: string, availableTasks: GridTaskRow[]): ParseC
 
     // Validate project_name
     if (!projectName) {
-      errors.push("Project name is required");
+      errors.push("Matter name is required");
     }
 
     // Validate hours
@@ -368,9 +367,7 @@ export function CsvImportDialog({ availableTasks, onImport, children }: CsvImpor
                       <TableHead className="text-xs">Status</TableHead>
                       <TableHead className="text-xs">Date</TableHead>
                       <TableHead className="text-xs">Task</TableHead>
-                      <TableHead className="text-xs">
-                        <TerminologyHeading term="Project" />
-                      </TableHead>
+                      <TableHead className="text-xs">Matter</TableHead>
                       <TableHead className="text-xs">Hours</TableHead>
                       <TableHead className="text-xs">Errors</TableHead>
                     </TableRow>

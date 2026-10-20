@@ -44,11 +44,6 @@ describe("LZKC-031: My Work task-table column headers", () => {
     expect(screen.queryByText("Project")).toBeNull();
   });
 
-  it("AssignedTaskList keeps 'Project' column header without a profile", () => {
-    withProfile(null, <AssignedTaskList tasks={[task()]} slug="test-org" />);
-    expect(screen.getByText("Project")).toBeTruthy();
-  });
-
   it("AvailableTaskList renders 'Matter' column header for legal-za", () => {
     withProfile("legal-za", <AvailableTaskList tasks={[task({ id: "t-2" })]} slug="test-org" />);
     expect(screen.getByText("Matter")).toBeTruthy();

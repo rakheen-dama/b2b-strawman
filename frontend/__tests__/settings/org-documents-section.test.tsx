@@ -143,8 +143,8 @@ describe("Sidebar nav label changes", () => {
     renderSidebar();
 
     // "Matters" appears as both a group label and a nav item, so at least 2
-    const projectsElements = screen.getAllByText("Matters");
-    expect(projectsElements.length).toBeGreaterThanOrEqual(2);
+    const mattersElements = screen.getAllByText("Matters");
+    expect(mattersElements.length).toBeGreaterThanOrEqual(2);
     // "Delivery" group should not exist
     expect(screen.queryByText("Delivery")).not.toBeInTheDocument();
   });

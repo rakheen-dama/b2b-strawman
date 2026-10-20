@@ -49,9 +49,9 @@ describe("Empty State Page Integrations", () => {
     );
 
     expect(screen.getByText("No profitability data yet")).toBeInTheDocument();
-    expect(screen.getByText(/Set up rate cards in Settings/)).toBeInTheDocument();
+    expect(screen.getByText(/Set up billing rates in Settings/)).toBeInTheDocument();
 
-    const link = screen.getByText("Go to rate card settings");
+    const link = screen.getByText("Go to rate settings");
     expect(link).toBeInTheDocument();
     expect(link.closest("a")).toHaveAttribute("href", "/org/test-org/settings/rates");
   });
@@ -71,7 +71,7 @@ describe("Empty State Page Integrations", () => {
     expect(screen.getByText(/new comments, task assignments/)).toBeInTheDocument();
   });
 
-  it("rate cards settings renders EmptyState with catalog text when no members", () => {
+  it("billing rates settings renders EmptyState with catalog text when no members", () => {
     const { t } = createMessages("empty-states");
 
     render(
@@ -82,7 +82,7 @@ describe("Empty State Page Integrations", () => {
       />
     );
 
-    expect(screen.getByText("No rate cards yet")).toBeInTheDocument();
+    expect(screen.getByText("No billing rates yet")).toBeInTheDocument();
     expect(screen.getByText(/define what you charge clients/)).toBeInTheDocument();
   });
 

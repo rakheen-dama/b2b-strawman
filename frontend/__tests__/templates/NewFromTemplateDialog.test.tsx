@@ -139,7 +139,11 @@ describe("NewFromTemplateDialog", () => {
     await user.click(screen.getByText("Open NewFromDialog"));
     await user.click(screen.getByText("Monthly Bookkeeping"));
     await user.click(screen.getByRole("button", { name: "Next" }));
-    expect(screen.getByLabelText("Project name")).toBeInTheDocument();
+    expect(screen.getByLabelText("Matter name")).toBeInTheDocument();
+    expect(screen.getByLabelText(/Reference Number/)).toHaveAttribute(
+      "placeholder",
+      "e.g. RAF-2026-001"
+    );
   });
 
   it("Back button returns to step 1", async () => {
@@ -180,7 +184,7 @@ describe("NewFromTemplateDialog", () => {
     await user.click(screen.getByText("Open NewFromDialog"));
     await user.click(screen.getByText("Monthly Bookkeeping"));
     await user.click(screen.getByRole("button", { name: "Next" }));
-    await user.click(screen.getByRole("button", { name: "Create Project" }));
+    await user.click(screen.getByRole("button", { name: "Create Matter" }));
     await waitFor(() => {
       expect(mockInstantiateTemplate).toHaveBeenCalledWith(
         "acme",
@@ -212,7 +216,7 @@ describe("NewFromTemplateDialog", () => {
     await user.click(screen.getByText("Open NewFromDialog"));
     await user.click(screen.getByText("Monthly Bookkeeping"));
     await user.click(screen.getByRole("button", { name: "Next" }));
-    await user.click(screen.getByRole("button", { name: "Create Project" }));
+    await user.click(screen.getByRole("button", { name: "Create Matter" }));
     await waitFor(() => {
       expect(screen.getByText("Template is inactive")).toBeInTheDocument();
     });
@@ -248,11 +252,11 @@ describe("NewFromTemplateDialog", () => {
     await user.click(screen.getByText("Open Dialog prereq test"));
     await user.click(screen.getByText("Monthly Bookkeeping"));
     await user.click(screen.getByRole("button", { name: "Next" }));
-    // Select customer
-    const customerSelect = screen.getByLabelText(/customer/i);
-    await user.selectOptions(customerSelect, "c-1");
+    // Select client
+    const clientSelect = screen.getByLabelText(/client/i);
+    await user.selectOptions(clientSelect, "c-1");
     // Try to create
-    await user.click(screen.getByRole("button", { name: "Create Project" }));
+    await user.click(screen.getByRole("button", { name: "Create Matter" }));
     await waitFor(() => {
       expect(screen.getByTestId("prerequisite-modal")).toBeInTheDocument();
     });
@@ -276,7 +280,7 @@ describe("NewFromTemplateDialog", () => {
     await user.click(screen.getByText("Monthly Bookkeeping"));
     await user.click(screen.getByRole("button", { name: "Next" }));
     // Do NOT select a customer — leave as None
-    await user.click(screen.getByRole("button", { name: "Create Project" }));
+    await user.click(screen.getByRole("button", { name: "Create Matter" }));
     await waitFor(() => {
       expect(mockInstantiateTemplate).toHaveBeenCalled();
     });
@@ -321,7 +325,7 @@ describe("NewFromTemplateDialog work type prefill", () => {
 
     expect(screen.getByLabelText(/work type/i)).toHaveValue("CONVEYANCING");
 
-    await user.click(screen.getByRole("button", { name: "Create Project" }));
+    await user.click(screen.getByRole("button", { name: "Create Matter" }));
     await waitFor(() => {
       expect(mockInstantiateTemplate).toHaveBeenCalledWith(
         "acme",

@@ -59,25 +59,22 @@ describe("createMessages", () => {
     );
   });
 
-  it("resolves role-variant keys for projects empty state", () => {
+  it("resolves role-variant keys for matters empty state", () => {
     const { t } = createMessages("empty-states");
     const adminDesc = t("projects.list.description");
     const memberDesc = t("projects.list.descriptionMember");
-    // Copy now uses {Projects}/{project}/{projects} placeholders that TerminologyText
-    // expands at render time (OBS-5001 — vertical-aware terminology).
-    expect(adminDesc).toContain("Create your first {project}");
-    expect(memberDesc).toContain("not on any {projects}");
+    // Literal legal copy — no {TermKey} tokens (Phase 87 611C, ADR-338).
+    expect(adminDesc).toBe("Open your first matter to start recording time.");
+    expect(memberDesc).toContain("not on any matters");
     expect(adminDesc).not.toBe(memberDesc);
   });
 
-  it("resolves role-variant keys for customers empty state", () => {
+  it("resolves role-variant keys for clients empty state", () => {
     const { t } = createMessages("empty-states");
     const adminDesc = t("customers.list.description");
     const memberDesc = t("customers.list.descriptionMember");
-    // Copy now uses {Customers}/{customer} placeholders that TerminologyText
-    // expands at render time (GAP-L-31 — vertical-aware terminology).
-    expect(adminDesc).toContain("Add your first {customer}");
-    expect(memberDesc).toContain("No {customers} have been added");
+    expect(adminDesc).toContain("Add your first client");
+    expect(memberDesc).toBe("No clients have been added yet.");
     expect(adminDesc).not.toBe(memberDesc);
   });
 });

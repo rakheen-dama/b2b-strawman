@@ -36,6 +36,12 @@ describe("AssignedTaskList", () => {
     cleanup();
   });
 
+  it("renders the Matter column header (literal legal copy, Phase 87 611C, ADR-338)", () => {
+    render(<AssignedTaskList tasks={[makeTask()]} slug="acme" />);
+    expect(screen.getByText("Matter")).toBeInTheDocument();
+    expect(screen.queryByText("Project")).toBeNull();
+  });
+
   it("renders tasks with project names, titles, and count badge", () => {
     const tasks = [
       makeTask({ id: "t1", matterName: "Project Alpha", title: "Task One" }),

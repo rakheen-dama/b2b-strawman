@@ -175,9 +175,9 @@ describe("NavZone", () => {
     expect(dashboardLink).toHaveClass("text-white");
 
     // Matters link should not have active class
-    const projectsLink = screen.getByRole("link", { name: /matters/i });
-    expect(projectsLink).toHaveClass("text-white/60");
-    expect(projectsLink).not.toHaveClass("bg-white/5");
+    const mattersLink = screen.getByRole("link", { name: /matters/i });
+    expect(mattersLink).toHaveClass("text-white/60");
+    expect(mattersLink).not.toHaveClass("bg-white/5");
   });
 
   // 370.8 Test 1: module-gated item visible when module enabled

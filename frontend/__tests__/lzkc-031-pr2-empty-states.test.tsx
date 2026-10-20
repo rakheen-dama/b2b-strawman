@@ -1,18 +1,14 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { TerminologyProvider } from "@/lib/terminology";
-import { TerminologyText } from "@/components/terminology-text";
 import { TodayTimeEntries } from "@/components/my-work/today-time-entries";
 import { createMessages } from "@/lib/messages";
+import emptyStates from "@/lib/messages/en/empty-states.json";
+import help from "@/lib/messages/en/help.json";
+import gettingStarted from "@/lib/messages/en/getting-started.json";
 
 /**
- * LZKC-031 PR-2 — class B: message-catalog terminology residuals.
- *
- * The two enumerated catalog strings (empty-states.json:28 myWork.list.description,
- * :42 timeEntries.list.description) were plain text bypassing the terminology layer.
- * Post-fix they carry {TermKey} placeholders and their consumers render them through
- * <TerminologyText> — legal-za substitutes matters / fee notes, the default profile
- * keeps projects / invoices (identity fallback).
+ * LZKC-031 PR-2 — message-catalog copy is literal legal English (Phase 87 611C, ADR-338).
+ * The catalogs carry no {TermKey} tokens; consumers render the catalog string directly.
  */
 
 afterEach(() => {
@@ -21,34 +17,40 @@ afterEach(() => {
 
 const { t } = createMessages("empty-states");
 
-function withProfile(profile: string | null, ui: React.ReactElement) {
-  return render(<TerminologyProvider verticalProfile={profile}>{ui}</TerminologyProvider>);
+function values(obj: unknown): string[] {
+  if (typeof obj === "string") return [obj];
+  if (obj && typeof obj === "object") return Object.values(obj).flatMap(values);
+  return [];
 }
 
-describe("LZKC-031 PR-2 — empty-states.json myWork.list.description (line 28)", () => {
-  it("legal-za renders 'across all matters' and 'Head to a matter'", () => {
-    withProfile("legal-za", <TerminologyText template={t("myWork.list.description")} />);
-    expect(screen.getByText(/across all matters will appear here/)).toBeTruthy();
-    expect(screen.getByText(/Head to a matter to create or pick up tasks/)).toBeTruthy();
-    expect(screen.queryByText(/\bprojects?\b/)).toBeNull();
-  });
+describe("message catalogs — no terminology tokens", () => {
+  // Durable guard (ADR-338): message catalogues carry no runtime {token} substitution — keep until 611D's no-terminology-remnants scan covers catalogues.
+  // Single-brace {token} (old TerminologyText template); {{var}} interpolation is allowed.
+  const SINGLE_BRACE_TOKEN = /(?<!\{)\{[A-Za-z][\w ]*\}(?!\})/;
 
-  it("default profile keeps 'across all projects' and 'Head to a project'", () => {
-    withProfile(null, <TerminologyText template={t("myWork.list.description")} />);
-    expect(screen.getByText(/across all projects will appear here/)).toBeTruthy();
-    expect(screen.getByText(/Head to a project to create or pick up tasks/)).toBeTruthy();
+  it.each([
+    ["empty-states", emptyStates as unknown],
+    ["help", help as unknown],
+    ["getting-started", gettingStarted as unknown],
+  ])("%s.json has no {Token} placeholders", (_ns, catalog) => {
+    expect(values(catalog).filter((v) => SINGLE_BRACE_TOKEN.test(v))).toEqual([]);
   });
 });
 
-describe("LZKC-031 PR-2 — empty-states.json timeEntries.list.description (line 42) via TodayTimeEntries", () => {
-  it("legal-za renders 'generate accurate fee notes'", () => {
-    withProfile("legal-za", <TodayTimeEntries entries={[]} />);
-    expect(screen.getByText(/generate accurate fee notes/)).toBeTruthy();
-    expect(screen.queryByText(/generate accurate invoices/)).toBeNull();
+describe("empty-states.json myWork.list.description", () => {
+  it("reads 'across all matters' and 'Head to a matter'", () => {
+    const copy = t("myWork.list.description");
+    expect(copy).toContain("across all matters will appear here");
+    expect(copy).toContain("Head to a matter to create or pick up tasks");
+    expect(copy).not.toMatch(/\bprojects?\b/);
   });
+});
 
-  it("default profile keeps 'generate accurate invoices'", () => {
-    withProfile(null, <TodayTimeEntries entries={[]} />);
-    expect(screen.getByText(/generate accurate invoices/)).toBeTruthy();
+describe("TodayTimeEntries empty state", () => {
+  it("renders 'No time recordings yet' and 'generate accurate fee notes'", () => {
+    render(<TodayTimeEntries entries={[]} />);
+    expect(screen.getByText("No time recordings yet")).toBeInTheDocument();
+    expect(screen.getByText(/generate accurate fee notes/)).toBeInTheDocument();
+    expect(screen.queryByText(/generate accurate invoices/)).toBeNull();
   });
 });

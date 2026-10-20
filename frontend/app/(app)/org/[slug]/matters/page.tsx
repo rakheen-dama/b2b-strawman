@@ -29,7 +29,6 @@ import type { MatterStatus } from "@/lib/types";
 import { AlertTriangle, Calendar, FileText, FolderOpen, Users } from "lucide-react";
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
-import { TerminologyText } from "@/components/terminology-text";
 import { createMessages } from "@/lib/messages";
 
 const PROJECT_STATUS_BADGE: Record<
@@ -201,13 +200,9 @@ export default async function ProjectsPage({
       {projects.length === 0 ? (
         <EmptyState
           icon={FolderOpen}
-          title={<TerminologyText template={t("projects.list.heading")} />}
+          title={t("projects.list.heading")}
           description={
-            <TerminologyText
-              template={
-                isAdmin ? t("projects.list.description") : t("projects.list.descriptionMember")
-              }
-            />
+            isAdmin ? t("projects.list.description") : t("projects.list.descriptionMember")
           }
           action={<CreateProjectDialog slug={slug} />}
         />

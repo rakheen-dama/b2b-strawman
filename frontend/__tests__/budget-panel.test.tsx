@@ -54,13 +54,13 @@ describe("BudgetPanel", () => {
       />
     );
 
-    expect(screen.getByText("No budget configured")).toBeInTheDocument();
+    expect(screen.getByText("No fee estimate set")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Set a budget to track spending against your project plan. Choose between fixed-price or time-and-materials."
+        "Set a fee estimate to track spending against the matter. Choose between fixed-price or time-and-materials."
       )
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Configure budget" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Set fee estimate" })).toBeInTheDocument();
   });
 
   it("hides Set Budget button for non-managers in empty state", () => {
@@ -74,8 +74,8 @@ describe("BudgetPanel", () => {
       />
     );
 
-    expect(screen.getByText("No budget configured")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Configure budget" })).not.toBeInTheDocument();
+    expect(screen.getByText("No fee estimate set")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Set fee estimate" })).not.toBeInTheDocument();
   });
 
   it("renders ON_TRACK status with progress bars", () => {

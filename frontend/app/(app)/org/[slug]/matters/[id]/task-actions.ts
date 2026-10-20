@@ -1,0 +1,245 @@
+"use server";
+
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
+import { api, ApiError } from "@/lib/api";
+import { createMatterTask, listMatterTasks } from "@/lib/api/matters";
+import { revalidatePath } from "next/cache";
+import type { Task, CreateTaskRequest, CompleteTaskResponse } from "@/lib/types";
+
+interface ActionResult {
+  success: boolean;
+  error?: string;
+}
+
+export async function fetchTasks(
+  projectId: string,
+  filters?: {
+    status?: string;
+    assigneeId?: string;
+    priority?: string;
+    viewId?: string;
+    recurring?: boolean;
+  }
+): Promise<Task[]> {
+  return listMatterTasks(projectId, {
+    status: filters?.status,
+    assigneeId: filters?.assigneeId,
+    priority: filters?.priority,
+    view: filters?.viewId,
+    // Only send `recurring=true`; `toQuery` would emit `recurring=false` for false.
+    recurring: filters?.recurring || undefined,
+  });
+}
+
+export async function fetchTask(taskId: string): Promise<Task> {
+  return api.get<Task>(`/api/tasks/${taskId}`);
+}
+
+export async function createTask(
+  slug: string,
+  projectId: string,
+  formData: FormData,
+  assigneeId?: string | null
+): Promise<ActionResult> {
+  // Backend enforces access via ProjectAccessService — any project member can create tasks
+  const title = formData.get("title")?.toString().trim() ?? "";
+  if (!title) {
+    return { success: false, error: "Task title is required." };
+  }
+
+  const description = formData.get("description")?.toString().trim() || undefined;
+  const priority = formData.get("priority")?.toString() || undefined;
+  const type = formData.get("type")?.toString().trim() || undefined;
+  const dueDate = formData.get("dueDate")?.toString() || undefined;
+  const estimatedHoursRaw = formData.get("estimatedHours")?.toString().trim();
+  const estimatedHours =
+    estimatedHoursRaw && estimatedHoursRaw !== ""
+      ? Number.parseFloat(estimatedHoursRaw)
+      : undefined;
+  const recurrenceRule = formData.get("recurrenceRule")?.toString() || undefined;
+  const recurrenceEndDate = formData.get("recurrenceEndDate")?.toString() || undefined;
+
+  const body: CreateTaskRequest = {
+    title,
+    description,
+    priority: priority as CreateTaskRequest["priority"],
+    type,
+    dueDate,
+    estimatedHours:
+      estimatedHours !== undefined && !Number.isNaN(estimatedHours) ? estimatedHours : undefined,
+    assigneeId: assigneeId ?? undefined,
+    recurrenceRule,
+    recurrenceEndDate,
+  };
+
+  try {
+    await createMatterTask(projectId, body);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
+
+  return { success: true };
+}
+
+// Backend enforces update permissions: assignee can update their own task,
+// lead/admin/owner can update any task in the project.
+export async function updateTask(
+  slug: string,
+  taskId: string,
+  projectId: string,
+  data: Record<string, unknown>
+): Promise<ActionResult> {
+  try {
+    await api.put<Task>(`/api/tasks/${taskId}`, data);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
+
+  return { success: true };
+}
+
+export async function deleteTask(
+  slug: string,
+  taskId: string,
+  projectId: string
+): Promise<ActionResult> {
+  const caps = await fetchMyCapabilities();
+  const isAdmin = caps.isAdmin || caps.isOwner;
+
+  if (!isAdmin) {
+    return { success: false, error: "Only admins and owners can delete tasks." };
+  }
+
+  try {
+    await api.delete(`/api/tasks/${taskId}`);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
+
+  return { success: true };
+}
+
+export async function claimTask(
+  slug: string,
+  taskId: string,
+  projectId: string
+): Promise<ActionResult> {
+  try {
+    await api.post<Task>(`/api/tasks/${taskId}/claim`);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 400 || error.status === 409) {
+        return {
+          success: false,
+          error: "This task was just claimed by someone else. Please refresh.",
+        };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
+
+  return { success: true };
+}
+
+export async function releaseTask(
+  slug: string,
+  taskId: string,
+  projectId: string
+): Promise<ActionResult> {
+  try {
+    await api.post<Task>(`/api/tasks/${taskId}/release`);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
+
+  return { success: true };
+}
+
+interface CompleteTaskResult {
+  success: boolean;
+  error?: string;
+  nextInstance?: Task | null;
+}
+
+export async function completeTask(
+  slug: string,
+  taskId: string,
+  projectId: string
+): Promise<CompleteTaskResult> {
+  try {
+    const response = await api.patch<CompleteTaskResponse>(`/api/tasks/${taskId}/complete`);
+    revalidatePath(`/org/${slug}/matters/${projectId}`);
+    return { success: true, nextInstance: response?.nextInstance ?? null };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+export async function cancelTask(
+  slug: string,
+  taskId: string,
+  projectId: string
+): Promise<ActionResult> {
+  const caps = await fetchMyCapabilities();
+  const isAdmin = caps.isAdmin || caps.isOwner;
+
+  if (!isAdmin) {
+    return { success: false, error: "Only admins and owners can cancel tasks." };
+  }
+
+  try {
+    await api.patch<Task>(`/api/tasks/${taskId}/cancel`);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
+  return { success: true };
+}
+
+export async function reopenTask(
+  slug: string,
+  taskId: string,
+  projectId: string
+): Promise<ActionResult> {
+  try {
+    await api.patch<Task>(`/api/tasks/${taskId}/reopen`);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
+  return { success: true };
+}

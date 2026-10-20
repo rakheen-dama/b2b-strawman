@@ -23,7 +23,7 @@ vi.mock("next/navigation", () => ({
 const mockCreateTask = vi.fn();
 const mockFetchTasks = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/task-actions", () => ({
   createTask: (...args: unknown[]) => mockCreateTask(...args),
   fetchTasks: (...args: unknown[]) => mockFetchTasks(...args),
   completeTask: vi.fn(),
@@ -36,7 +36,7 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-actions", () => ({
   deleteTask: vi.fn(),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-entry-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/time-entry-actions", () => ({
   fetchTimeEntries: vi.fn().mockResolvedValue([]),
   updateTimeEntry: vi.fn(),
   deleteTimeEntry: vi.fn(),

@@ -28,7 +28,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { fetchCustomerProjects } from "@/app/(app)/org/[slug]/customers/[id]/actions";
+import { fetchCustomerProjects } from "@/app/(app)/org/[slug]/clients/[id]/actions";
 import { cn } from "@/lib/utils";
 
 export type TrustPickerCustomer = { id: string; name: string; email: string };

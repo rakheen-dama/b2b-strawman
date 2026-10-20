@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button, type buttonVariants } from "@b2mash/ui/button";
 import type { VariantProps } from "class-variance-authority";
-import { archiveCustomer } from "@/app/(app)/org/[slug]/customers/actions";
+import { archiveCustomer } from "@/app/(app)/org/[slug]/clients/actions";
 import { useRouter } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
 

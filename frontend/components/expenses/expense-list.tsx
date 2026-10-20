@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 import {
   writeOffExpense,
   restoreExpense,
-} from "@/app/(app)/org/[slug]/projects/[id]/expense-actions";
+} from "@/app/(app)/org/[slug]/matters/[id]/expense-actions";
 import type { ExpenseResponse, ExpenseCategory, ExpenseBillingStatus } from "@/lib/types";
 import { Badge } from "@b2mash/ui/badge";
 

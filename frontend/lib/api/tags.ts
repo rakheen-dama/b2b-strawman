@@ -15,7 +15,7 @@ import type {
  * Phase 87 S1/S2 (ADR-337): matters are served at `/api/matters/**` and clients at
  * `/api/clients/**`; the `EntityType` literals themselves stay `"PROJECT"` / `"CUSTOMER"`
  * because they are storage keys (ADR-342). Route segments
- * (`/org/{slug}/projects/...`) are NOT derived from this — they move in 610D.
+ * (`/org/{slug}/matters/...`) are NOT derived from this — they moved in 610D.
  */
 export function entityApiPrefix(entityType: EntityType): string {
   if (entityType === "PROJECT") return MATTERS_SEGMENT;

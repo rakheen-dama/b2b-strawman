@@ -11,7 +11,7 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/request-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/request-actions", () => ({
   createRequestAction: vi.fn(),
   sendRequestAction: vi.fn(),
   fetchActiveTemplatesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),

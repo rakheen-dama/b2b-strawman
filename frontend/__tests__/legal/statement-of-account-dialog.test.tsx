@@ -35,7 +35,7 @@ vi.mock("sonner", () => ({
 const mockGenerate = vi.fn();
 const mockList = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/statement-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/statement-actions", () => ({
   generateStatementAction: (...args: unknown[]) => mockGenerate(...args),
   listStatementsAction: (...args: unknown[]) => mockList(...args),
 }));

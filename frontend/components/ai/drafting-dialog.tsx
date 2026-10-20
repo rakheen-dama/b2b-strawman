@@ -23,7 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DraftingVariableTable } from "@/components/ai/drafting-variable-table";
 import { ExecutionGateCard } from "@/components/ai/execution-gate-card";
-import { invokeDraftingAction } from "@/app/(app)/org/[slug]/projects/[id]/ai-review-actions";
+import { invokeDraftingAction } from "@/app/(app)/org/[slug]/matters/[id]/ai-review-actions";
 import { approveGateAction, rejectGateAction } from "@/app/(app)/org/[slug]/ai/reviews/actions";
 import { draftingVariableFillsSchema } from "@/lib/schemas/drafting";
 import {

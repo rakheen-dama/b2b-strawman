@@ -6,7 +6,7 @@ import { LogTimeDialog } from "@/components/tasks/log-time-dialog";
 const mockCreateTimeEntry = vi.fn();
 const mockResolveRate = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-entry-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/time-entry-actions", () => ({
   createTimeEntry: (...args: unknown[]) => mockCreateTimeEntry(...args),
   resolveRate: (...args: unknown[]) => mockResolveRate(...args),
 }));

@@ -12,7 +12,7 @@ import type { Client } from "@/lib/types";
 const mockCreateProject = vi.fn();
 const mockFetchActiveCustomers = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/actions", () => ({
   createProject: (...args: unknown[]) => mockCreateProject(...args),
   fetchActiveCustomers: (...args: unknown[]) => mockFetchActiveCustomers(...args),
 }));

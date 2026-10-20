@@ -8,7 +8,7 @@ const mockCreateCustomerBillingRate = vi.fn();
 const mockUpdateCustomerBillingRate = vi.fn();
 const mockDeleteCustomerBillingRate = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/rate-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/rate-actions", () => ({
   createCustomerBillingRate: (...args: unknown[]) => mockCreateCustomerBillingRate(...args),
   updateCustomerBillingRate: (...args: unknown[]) => mockUpdateCustomerBillingRate(...args),
   deleteCustomerBillingRate: (...args: unknown[]) => mockDeleteCustomerBillingRate(...args),

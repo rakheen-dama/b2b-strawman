@@ -16,7 +16,7 @@ vi.mock("next/navigation", () => ({
 const mockCompleteProject = vi.fn();
 const mockArchiveProject = vi.fn();
 const mockReopenProject = vi.fn();
-vi.mock("@/app/(app)/org/[slug]/projects/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/actions", () => ({
   completeProject: (...args: unknown[]) => mockCompleteProject(...args),
   archiveProject: (...args: unknown[]) => mockArchiveProject(...args),
   reopenProject: (...args: unknown[]) => mockReopenProject(...args),
@@ -26,7 +26,7 @@ vi.mock("@/app/(app)/org/[slug]/projects/actions", () => ({
   fetchActiveCustomers: vi.fn(),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/actions", () => ({
   unlinkProject: vi.fn(),
 }));
 

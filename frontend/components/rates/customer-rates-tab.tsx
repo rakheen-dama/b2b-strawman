@@ -38,7 +38,7 @@ import {
   createCustomerBillingRate,
   updateCustomerBillingRate,
   deleteCustomerBillingRate,
-} from "@/app/(app)/org/[slug]/customers/[id]/rate-actions";
+} from "@/app/(app)/org/[slug]/clients/[id]/rate-actions";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { BillingRate, OrgMember } from "@/lib/types";
 

@@ -24,13 +24,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Loader2, Plus } from "lucide-react";
-import { createCustomer } from "@/app/(app)/org/[slug]/customers/actions";
+import { createCustomer } from "@/app/(app)/org/[slug]/clients/actions";
 import { createMessages } from "@/lib/messages";
 import { scrollToFirstError } from "@/lib/error-handler";
 import { useTerminology, withIndefiniteArticle } from "@/lib/terminology";
 import { useSubscription } from "@/lib/subscription-context";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { fetchIntakeFields } from "@/app/(app)/org/[slug]/customers/intake-actions";
+import { fetchIntakeFields } from "@/app/(app)/org/[slug]/clients/intake-actions";
 import { IntakeFieldsSection, isFieldVisible } from "@/components/customers/intake-fields-section";
 import type { FieldValue } from "@/components/prerequisite/inline-field-editor";
 import type { IntakeFieldGroup } from "@/components/prerequisite/types";

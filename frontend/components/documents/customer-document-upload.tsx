@@ -23,7 +23,7 @@ import {
   initiateCustomerUpload,
   confirmCustomerUpload,
   cancelCustomerUpload,
-} from "@/app/(app)/org/[slug]/customers/[id]/actions";
+} from "@/app/(app)/org/[slug]/clients/[id]/actions";
 
 // --- Upload state reducer ---
 

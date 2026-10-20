@@ -1,0 +1,144 @@
+"use server";
+
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
+import { api, ApiError } from "@/lib/api";
+import { initMatterDocumentUpload, linkMatterClient, unlinkMatterClient } from "@/lib/api/matters";
+import { listClients } from "@/lib/api/clients";
+import { revalidatePath } from "next/cache";
+import type { Client, UploadInitRequest, PresignDownloadResponse } from "@/lib/types";
+
+interface ActionResult {
+  success: boolean;
+  error?: string;
+}
+
+interface UploadInitResult {
+  success: boolean;
+  error?: string;
+  documentId?: string;
+  presignedUrl?: string;
+}
+
+interface DownloadUrlResult {
+  success: boolean;
+  error?: string;
+  presignedUrl?: string;
+}
+
+export async function initiateUpload(
+  slug: string,
+  projectId: string,
+  fileName: string,
+  contentType: string,
+  size: number
+): Promise<UploadInitResult> {
+  const body: UploadInitRequest = { fileName, contentType, size };
+
+  try {
+    const result = await initMatterDocumentUpload(projectId, body);
+    return {
+      success: true,
+      documentId: result.documentId,
+      presignedUrl: result.presignedUrl,
+    };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to initiate upload." };
+  }
+}
+
+export async function confirmUpload(
+  slug: string,
+  projectId: string,
+  documentId: string
+): Promise<ActionResult> {
+  try {
+    await api.post(`/api/documents/${documentId}/confirm`);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to confirm upload." };
+  }
+
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
+
+  return { success: true };
+}
+
+export async function cancelUpload(documentId: string): Promise<ActionResult> {
+  try {
+    await api.delete(`/api/documents/${documentId}/cancel`);
+    return { success: true };
+  } catch {
+    return { success: false, error: "Failed to cancel upload." };
+  }
+}
+
+export async function getDownloadUrl(documentId: string): Promise<DownloadUrlResult> {
+  try {
+    const result = await api.get<PresignDownloadResponse>(
+      `/api/documents/${documentId}/presign-download`
+    );
+    return { success: true, presignedUrl: result.presignedUrl };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to get download URL." };
+  }
+}
+
+// ---- Customer-project linking actions ----
+
+export async function fetchCustomers(): Promise<Client[]> {
+  return listClients();
+}
+
+export async function linkCustomerToProject(
+  slug: string,
+  projectId: string,
+  customerId: string
+): Promise<ActionResult> {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
+    return { success: false, error: "Only admins and owners can link customers." };
+  }
+
+  try {
+    await linkMatterClient(projectId, customerId);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
+  return { success: true };
+}
+
+export async function unlinkCustomerFromProject(
+  slug: string,
+  projectId: string,
+  customerId: string
+): Promise<ActionResult> {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
+    return { success: false, error: "Only admins and owners can unlink customers." };
+  }
+
+  try {
+    await unlinkMatterClient(projectId, customerId);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/matters/${projectId}`);
+  return { success: true };
+}

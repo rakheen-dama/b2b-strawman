@@ -14,7 +14,7 @@ import {
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { CurrencySelector } from "@/components/rates/currency-selector";
-import { createProjectBillingRate } from "@/app/(app)/org/[slug]/projects/[id]/rate-actions";
+import { createProjectBillingRate } from "@/app/(app)/org/[slug]/matters/[id]/rate-actions";
 import type { MatterMember } from "@/lib/types";
 
 interface AddProjectRateDialogProps {

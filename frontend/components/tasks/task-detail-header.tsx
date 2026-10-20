@@ -19,7 +19,7 @@ import {
   cancelTask,
   reopenTask,
   fetchTask,
-} from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
+} from "@/app/(app)/org/[slug]/matters/[id]/task-actions";
 import { toast } from "sonner";
 import type { Task, TaskStatus } from "@/lib/types";
 

@@ -21,7 +21,7 @@ import {
   skipChecklistItem,
   reopenChecklistItem,
   instantiateChecklist,
-} from "@/app/(app)/org/[slug]/customers/[id]/checklist-actions";
+} from "@/app/(app)/org/[slug]/clients/[id]/checklist-actions";
 import { cn } from "@/lib/utils";
 import type {
   ChecklistInstanceResponse,

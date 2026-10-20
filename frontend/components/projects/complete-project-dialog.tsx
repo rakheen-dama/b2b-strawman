@@ -13,7 +13,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@b2mash/ui/button";
-import { completeProject } from "@/app/(app)/org/[slug]/projects/actions";
+import { completeProject } from "@/app/(app)/org/[slug]/matters/actions";
 import { useTerminology } from "@/lib/terminology";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, AlertTriangle, CircleAlert } from "lucide-react";

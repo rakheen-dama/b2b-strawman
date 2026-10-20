@@ -5,7 +5,7 @@ import { CustomerInvoicesTab } from "@/components/customers/customer-invoices-ta
 import type { InvoiceResponse } from "@/lib/types";
 
 // Mock the invoice actions used by InvoiceGenerationDialog
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/invoice-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/invoice-actions", () => ({
   fetchUnbilledTime: vi.fn(),
   createInvoiceDraft: vi.fn(),
 }));

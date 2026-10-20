@@ -13,11 +13,11 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockRouterPush, refresh: vi.fn() }),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/customers/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/actions", () => ({
   createCustomer: (...args: unknown[]) => mockCreateCustomer(...args),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/customers/intake-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/intake-actions", () => ({
   fetchIntakeFields: (...args: unknown[]) => mockFetchIntakeFields(...args),
 }));
 

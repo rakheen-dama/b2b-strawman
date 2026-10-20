@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { updateTask } from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
+import { updateTask } from "@/app/(app)/org/[slug]/matters/[id]/task-actions";
 import { parseRecurrenceRule, formatRecurrenceRule } from "@/lib/recurrence";
 import type { RecurrenceFrequency } from "@/lib/recurrence";
 import type { Task } from "@/lib/types";

@@ -5,7 +5,7 @@ import { TimeEntryList } from "@/components/tasks/time-entry-list";
 import type { TimeEntry } from "@/lib/types";
 
 // Mock the server actions used by edit/delete dialogs
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-entry-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/time-entry-actions", () => ({
   updateTimeEntry: vi.fn(),
   deleteTimeEntry: vi.fn(),
 }));

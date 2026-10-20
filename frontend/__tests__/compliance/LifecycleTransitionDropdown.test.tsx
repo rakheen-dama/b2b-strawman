@@ -7,7 +7,7 @@ import { TerminologyProvider } from "@/lib/terminology";
 // Mock the server action called inside TransitionConfirmDialog
 const mockTransitionCustomerLifecycle = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/lifecycle-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/lifecycle-actions", () => ({
   transitionCustomerLifecycle: (...args: unknown[]) => mockTransitionCustomerLifecycle(...args),
 }));
 

@@ -7,7 +7,7 @@ import type { ActivityItem as ActivityItemType } from "@/lib/types";
 
 const mockLoadMoreActivity = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/activity-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/activity-actions", () => ({
   loadMoreActivity: (...args: unknown[]) => mockLoadMoreActivity(...args),
 }));
 

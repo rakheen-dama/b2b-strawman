@@ -11,7 +11,7 @@ const mockAddTaskItem = vi.fn();
 const mockToggleTaskItem = vi.fn();
 const mockDeleteTaskItem = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-item-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/task-item-actions", () => ({
   fetchTaskItems: (...args: unknown[]) => mockFetchTaskItems(...args),
   addTaskItem: (...args: unknown[]) => mockAddTaskItem(...args),
   toggleTaskItem: (...args: unknown[]) => mockToggleTaskItem(...args),

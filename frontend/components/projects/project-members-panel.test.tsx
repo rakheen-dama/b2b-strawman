@@ -7,7 +7,7 @@ import type { MatterMember } from "@/lib/types";
 
 // Mock server actions
 const mockRemoveProjectMember = vi.fn();
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/member-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/member-actions", () => ({
   removeProjectMember: (...args: unknown[]) => mockRemoveProjectMember(...args),
   fetchOrgMembers: vi.fn().mockResolvedValue([]),
   addProjectMember: vi.fn().mockResolvedValue({ success: true }),

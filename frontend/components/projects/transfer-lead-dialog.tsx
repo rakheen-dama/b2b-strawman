@@ -12,7 +12,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@b2mash/ui/button";
-import { transferLead } from "@/app/(app)/org/[slug]/projects/[id]/member-actions";
+import { transferLead } from "@/app/(app)/org/[slug]/matters/[id]/member-actions";
 
 interface TransferLeadDialogProps {
   slug: string;

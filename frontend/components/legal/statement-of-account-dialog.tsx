@@ -33,7 +33,7 @@ import {
 import {
   generateStatementAction,
   listStatementsAction,
-} from "@/app/(app)/org/[slug]/projects/[id]/statement-actions";
+} from "@/app/(app)/org/[slug]/matters/[id]/statement-actions";
 import { downloadGeneratedDocumentAction } from "@/app/(app)/org/[slug]/settings/templates/template-generation-actions";
 import type { StatementResponse } from "@/lib/api/statement-of-account";
 

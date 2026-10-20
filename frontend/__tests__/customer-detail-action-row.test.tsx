@@ -27,7 +27,7 @@ const mockUpdateCustomer = vi.fn();
 const mockArchiveCustomer = vi.fn();
 const mockPush = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/customers/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/actions", () => ({
   updateCustomer: (...args: unknown[]) => mockUpdateCustomer(...args),
   archiveCustomer: (...args: unknown[]) => mockArchiveCustomer(...args),
 }));

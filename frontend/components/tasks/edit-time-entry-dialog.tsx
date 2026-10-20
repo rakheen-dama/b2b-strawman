@@ -14,7 +14,7 @@ import {
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { updateTimeEntry } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
+import { updateTimeEntry } from "@/app/(app)/org/[slug]/matters/[id]/time-entry-actions";
 import { formatCurrencySafe } from "@/lib/format";
 import type { TimeEntry } from "@/lib/types";
 

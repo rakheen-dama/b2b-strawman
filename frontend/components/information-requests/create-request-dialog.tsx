@@ -27,7 +27,7 @@ import {
   sendRequestAction,
   fetchActiveTemplatesAction,
   fetchPortalContactsAction,
-} from "@/app/(app)/org/[slug]/customers/[id]/request-actions";
+} from "@/app/(app)/org/[slug]/clients/[id]/request-actions";
 import type {
   CreateInformationRequestItem,
   RequestTemplateResponse,

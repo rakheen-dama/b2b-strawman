@@ -9,7 +9,7 @@ const mockSendRequest = vi.fn();
 const mockFetchTemplates = vi.fn();
 const mockFetchContacts = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/request-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/request-actions", () => ({
   createRequestAction: (...args: unknown[]) => mockCreateRequest(...args),
   sendRequestAction: (...args: unknown[]) => mockSendRequest(...args),
   fetchActiveTemplatesAction: (...args: unknown[]) => mockFetchTemplates(...args),

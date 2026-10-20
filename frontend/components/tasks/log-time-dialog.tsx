@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   createTimeEntry,
   resolveRate,
-} from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
+} from "@/app/(app)/org/[slug]/matters/[id]/time-entry-actions";
 import { formatCurrencySafe, formatDuration } from "@/lib/format";
 import type { ResolvedRate } from "@/lib/types";
 import { HelpTip } from "@/components/help-tip";

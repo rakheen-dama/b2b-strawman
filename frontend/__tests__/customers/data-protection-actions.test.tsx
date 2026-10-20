@@ -9,7 +9,7 @@ const mockTriggerDataExport = vi.fn();
 const mockFetchAnonymizationPreview = vi.fn();
 const mockExecuteAnonymization = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/data-protection-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/data-protection-actions", () => ({
   triggerDataExport: (...args: unknown[]) => mockTriggerDataExport(...args),
   fetchAnonymizationPreview: (...args: unknown[]) => mockFetchAnonymizationPreview(...args),
   executeAnonymization: (...args: unknown[]) => mockExecuteAnonymization(...args),

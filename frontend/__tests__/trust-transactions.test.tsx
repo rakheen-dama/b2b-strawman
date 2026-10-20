@@ -69,7 +69,7 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
 
 // OBS-1001: dependent matter combobox calls fetchCustomerProjects via SWR.
 // Stub the server action so happy-dom never loads `server-only`.
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/actions", () => ({
   fetchCustomerProjects: vi.fn().mockResolvedValue([]),
 }));
 

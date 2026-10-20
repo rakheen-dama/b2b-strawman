@@ -12,7 +12,7 @@ const mockResolveRate = vi.fn();
 const mockUpdateTimeEntry = vi.fn();
 const mockDeleteTimeEntry = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-entry-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/time-entry-actions", () => ({
   createTimeEntry: (...args: unknown[]) => mockCreateTimeEntry(...args),
   resolveRate: (...args: unknown[]) => mockResolveRate(...args),
   updateTimeEntry: (...args: unknown[]) => mockUpdateTimeEntry(...args),

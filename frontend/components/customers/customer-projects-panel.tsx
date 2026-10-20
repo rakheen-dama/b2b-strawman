@@ -6,7 +6,7 @@ import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@b2mash/ui/button";
 import { LinkProjectDialog } from "@/components/customers/link-project-dialog";
-import { unlinkProject } from "@/app/(app)/org/[slug]/customers/[id]/actions";
+import { unlinkProject } from "@/app/(app)/org/[slug]/clients/[id]/actions";
 import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
 import { useTerminology } from "@/lib/terminology";
 import type { Matter, MatterStatus } from "@/lib/types";

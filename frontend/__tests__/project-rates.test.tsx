@@ -8,7 +8,7 @@ const mockCreateProjectBillingRate = vi.fn();
 const mockUpdateProjectBillingRate = vi.fn();
 const mockDeleteProjectBillingRate = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/rate-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/rate-actions", () => ({
   createProjectBillingRate: (...args: unknown[]) => mockCreateProjectBillingRate(...args),
   updateProjectBillingRate: (...args: unknown[]) => mockUpdateProjectBillingRate(...args),
   deleteProjectBillingRate: (...args: unknown[]) => mockDeleteProjectBillingRate(...args),

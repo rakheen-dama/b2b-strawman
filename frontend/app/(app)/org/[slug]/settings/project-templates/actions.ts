@@ -173,7 +173,7 @@ export async function instantiateTemplateAction(
 }> {
   try {
     const result = await instantiateProjectTemplate(templateId, data);
-    revalidatePath(`/org/${slug}/projects`);
+    revalidatePath(`/org/${slug}/matters`);
     return { success: true, projectId: result.id };
   } catch (error) {
     if (error instanceof ApiError) {

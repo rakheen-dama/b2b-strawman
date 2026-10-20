@@ -18,10 +18,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  fetchCustomers,
-  linkCustomerToProject,
-} from "@/app/(app)/org/[slug]/projects/[id]/actions";
+import { fetchCustomers, linkCustomerToProject } from "@/app/(app)/org/[slug]/matters/[id]/actions";
 import { useTerminology } from "@/lib/terminology";
 import type { Client } from "@/lib/types";
 

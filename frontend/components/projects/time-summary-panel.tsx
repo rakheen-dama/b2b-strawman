@@ -17,7 +17,7 @@ import {
   fetchProjectTimeSummary,
   fetchTimeSummaryByMember,
   fetchTimeSummaryByTask,
-} from "@/app/(app)/org/[slug]/projects/[id]/time-summary-actions";
+} from "@/app/(app)/org/[slug]/matters/[id]/time-summary-actions";
 
 interface TimeSummaryPanelProps {
   projectId: string;

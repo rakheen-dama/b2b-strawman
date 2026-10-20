@@ -41,7 +41,8 @@ const ROUTES: ProbeRoute[] = [
     name: "Matters list -> matter (projects/[id])",
     start: `${ORG}/projects`,
     link: (p) => p.locator(`#main-content a[href^="${ORG}/projects/"]`).first(),
-    url: /\/projects\/[0-9a-f-]{36}$/,
+    // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
+    url: /\/matters\/[0-9a-f-]{36}$/,
     marker: (p) => p.locator('#main-content [data-testid="matter-name"]'),
   },
   {

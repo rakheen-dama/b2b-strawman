@@ -129,7 +129,8 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
     await selectNativeOption(dialog.getByLabel(/^Client/), siphoClientName());
     await dialog.getByRole("button", { name: "Create Matter" }).click();
 
-    await page.waitForURL(/\/projects\/[0-9a-f-]{36}/, { timeout: 15_000 });
+    // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
+    await page.waitForURL(/\/matters\/[0-9a-f-]{36}/, { timeout: 15_000 });
     await expect(page.getByRole("heading", { level: 1, name: matterName })).toBeVisible();
     await expect(page.locator("main")).toContainText(siphoClientName());
   });

@@ -15,12 +15,12 @@ import {
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { createExpense, updateExpense } from "@/app/(app)/org/[slug]/projects/[id]/expense-actions";
+import { createExpense, updateExpense } from "@/app/(app)/org/[slug]/matters/[id]/expense-actions";
 import {
   initiateUpload,
   confirmUpload,
   cancelUpload,
-} from "@/app/(app)/org/[slug]/projects/[id]/actions";
+} from "@/app/(app)/org/[slug]/matters/[id]/actions";
 import type { ExpenseResponse, ExpenseCategory, UpdateExpenseRequest } from "@/lib/types";
 
 const EXPENSE_CATEGORIES: { value: ExpenseCategory; label: string }[] = [

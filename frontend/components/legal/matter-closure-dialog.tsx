@@ -39,7 +39,7 @@ import { closeMatterSchema, type CloseMatterFormData } from "@/lib/schemas/matte
 import {
   closeMatterAction,
   evaluateClosureAction,
-} from "@/app/(app)/org/[slug]/projects/[id]/matter-closure-actions";
+} from "@/app/(app)/org/[slug]/matters/[id]/matter-closure-actions";
 import type { ClosureReport } from "@/lib/api/matter-closure";
 
 interface MatterClosureDialogProps {

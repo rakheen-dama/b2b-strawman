@@ -8,7 +8,7 @@ import type { Matter } from "@/lib/types";
 const mockFetchProjects = vi.fn();
 const mockLinkProject = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/actions", () => ({
   fetchProjects: (...args: unknown[]) => mockFetchProjects(...args),
   linkProject: (...args: unknown[]) => mockLinkProject(...args),
 }));

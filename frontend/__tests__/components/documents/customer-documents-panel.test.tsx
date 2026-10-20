@@ -4,14 +4,14 @@ import { CustomerDocumentsPanel } from "@/components/documents/customer-document
 import type { Document } from "@/lib/types";
 
 // Mock server actions
-vi.mock("@/app/(app)/org/[slug]/customers/[id]/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/actions", () => ({
   initiateCustomerUpload: vi.fn().mockResolvedValue({ success: true }),
   confirmCustomerUpload: vi.fn().mockResolvedValue({ success: true }),
   cancelCustomerUpload: vi.fn().mockResolvedValue({ success: true }),
   toggleDocumentVisibility: vi.fn().mockResolvedValue({ success: true }),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/actions", () => ({
   getDownloadUrl: vi
     .fn()
     .mockResolvedValue({ success: true, presignedUrl: "https://example.com/file" }),

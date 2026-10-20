@@ -37,7 +37,7 @@ vi.mock("sonner", () => ({
   toast: { success: toastSuccess, error: toastError },
 }));
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/matter-reopen-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/matter-reopen-actions", () => ({
   reopenMatterAction: (...args: unknown[]) => mockReopen(...args),
 }));
 

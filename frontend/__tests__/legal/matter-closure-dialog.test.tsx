@@ -35,7 +35,7 @@ vi.mock("sonner", () => ({
 const mockEvaluate = vi.fn();
 const mockClose = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/matter-closure-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/matter-closure-actions", () => ({
   evaluateClosureAction: (...args: unknown[]) => mockEvaluate(...args),
   closeMatterAction: (...args: unknown[]) => mockClose(...args),
 }));

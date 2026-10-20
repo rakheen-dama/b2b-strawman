@@ -39,7 +39,7 @@ import {
   confirmUpload,
   cancelUpload,
   getDownloadUrl,
-} from "@/app/(app)/org/[slug]/projects/[id]/actions";
+} from "@/app/(app)/org/[slug]/matters/[id]/actions";
 import { cn } from "@/lib/utils";
 import { createMessages } from "@/lib/messages";
 import { ContractReviewButton, isReviewableDocument } from "@/components/ai/contract-review-button";

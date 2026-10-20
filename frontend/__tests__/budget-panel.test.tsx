@@ -8,7 +8,7 @@ import type { BudgetStatusResponse } from "@/lib/types";
 const mockUpsertBudget = vi.fn();
 const mockDeleteBudget = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/budget-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/budget-actions", () => ({
   upsertBudget: (...args: unknown[]) => mockUpsertBudget(...args),
   deleteBudget: (...args: unknown[]) => mockDeleteBudget(...args),
 }));

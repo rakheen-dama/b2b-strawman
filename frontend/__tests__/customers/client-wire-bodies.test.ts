@@ -40,7 +40,7 @@ vi.mock("@/lib/api/capabilities", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-import { createCustomer, updateCustomer } from "@/app/(app)/org/[slug]/customers/actions";
+import { createCustomer, updateCustomer } from "@/app/(app)/org/[slug]/clients/actions";
 import { createRequest, updateRequest } from "@/lib/api/information-requests";
 
 describe("client wire bodies (Phase 87 S2)", () => {

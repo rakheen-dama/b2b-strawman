@@ -6,7 +6,7 @@ import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@b2mash/ui/button";
 import { LinkCustomerDialog } from "@/components/projects/link-customer-dialog";
-import { unlinkCustomerFromProject } from "@/app/(app)/org/[slug]/projects/[id]/actions";
+import { unlinkCustomerFromProject } from "@/app/(app)/org/[slug]/matters/[id]/actions";
 import { formatDate } from "@/lib/format";
 import type { Client } from "@/lib/types";
 import { useTerminology } from "@/lib/terminology";

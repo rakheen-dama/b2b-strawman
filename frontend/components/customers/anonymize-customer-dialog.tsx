@@ -18,7 +18,7 @@ import { AlertTriangle, ShieldCheck, Loader2 } from "lucide-react";
 import {
   fetchAnonymizationPreview,
   executeAnonymization,
-} from "@/app/(app)/org/[slug]/customers/[id]/data-protection-actions";
+} from "@/app/(app)/org/[slug]/clients/[id]/data-protection-actions";
 import { useRouter } from "next/navigation";
 import type { StandaloneAnonymizationResult } from "@/lib/types/data-protection";
 

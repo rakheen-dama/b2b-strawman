@@ -4,7 +4,7 @@ import { DocumentsPanel } from "@/components/documents/documents-panel";
 
 vi.mock("server-only", () => ({}));
 
-vi.mock("@/app/(app)/org/[slug]/projects/[id]/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/actions", () => ({
   initiateUpload: vi.fn().mockResolvedValue({ success: true }),
   confirmUpload: vi.fn().mockResolvedValue({ success: true }),
   cancelUpload: vi.fn().mockResolvedValue({ success: true }),

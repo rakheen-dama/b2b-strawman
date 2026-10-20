@@ -9,7 +9,7 @@ import type { FicaStatus } from "@/lib/types/fica";
  * FICA onboarding status tile (GAP-L-46).
  *
  * Info-request-only signal; no KYC-adapter coupling yet. The backend
- * projection comes from `GET /api/customers/{id}/fica-status` which
+ * projection comes from `GET /api/clients/{clientId}/fica-status` which
  * derives status from the customer's fica-onboarding-pack information
  * requests. When adapter outcomes and beneficial-owner coverage are
  * added later (separate phase) the server can upgrade the projection

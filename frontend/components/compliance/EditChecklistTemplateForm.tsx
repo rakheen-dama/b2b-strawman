@@ -39,7 +39,7 @@ export function EditChecklistTemplateForm({ slug, template }: EditChecklistTempl
   const [name, setName] = useState(template.name);
   const [description, setDescription] = useState(template.description ?? "");
   const [customerType, setCustomerType] = useState<CustomerType>(
-    (template.customerType as CustomerType) ?? "COMPANY"
+    (template.clientType as CustomerType) ?? "COMPANY"
   );
   const [autoInstantiate, setAutoInstantiate] = useState(template.autoInstantiate);
 
@@ -98,7 +98,7 @@ export function EditChecklistTemplateForm({ slug, template }: EditChecklistTempl
     const input: UpdateChecklistTemplateInput = {
       name: name.trim(),
       description: description.trim() || undefined,
-      customerType,
+      clientType: customerType,
       autoInstantiate,
       items: validItems.map((item, index) => ({
         name: item.name.trim(),

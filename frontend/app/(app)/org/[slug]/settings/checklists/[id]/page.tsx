@@ -87,7 +87,7 @@ export default async function ChecklistTemplateDetailPage({
         <Badge variant={template.source === "ORG_CUSTOM" ? "success" : "neutral"}>
           {template.source === "PLATFORM" ? "Platform" : "Custom"}
         </Badge>
-        <Badge variant="neutral">{template.customerType}</Badge>
+        <Badge variant="neutral">{template.clientType}</Badge>
         <Badge variant={template.active ? "success" : "destructive"}>
           {template.active ? "Active" : "Inactive"}
         </Badge>

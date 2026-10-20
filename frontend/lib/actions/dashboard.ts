@@ -56,7 +56,7 @@ export async function fetchDashboardActivity(
 export async function fetchAggregatedCompleteness(): Promise<AggregatedCompletenessResponse | null> {
   try {
     return await api.get<AggregatedCompletenessResponse>(
-      "/api/customers/completeness-summary/aggregated"
+      "/api/clients/completeness-summary/aggregated"
     );
   } catch {
     return null;

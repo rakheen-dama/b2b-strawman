@@ -51,7 +51,7 @@ export default async function NewProjectPage({
   let customers: Customer[] = [];
   let templates: ProjectTemplateResponse[] = [];
   try {
-    customers = await api.get<Customer[]>("/api/customers?status=ACTIVE");
+    customers = await api.get<Customer[]>("/api/clients?status=ACTIVE");
   } catch {
     // Non-fatal: customer select will be empty
   }

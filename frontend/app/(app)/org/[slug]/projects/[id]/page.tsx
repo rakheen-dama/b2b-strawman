@@ -194,7 +194,7 @@ export default async function ProjectDetailPage({
 
   let customers: Customer[] = [];
   try {
-    customers = await api.get<Customer[]>(`/api/projects/${id}/customers`);
+    customers = await api.get<Customer[]>(`/api/matters/${id}/clients`);
   } catch {
     // Non-fatal: show empty customers list if fetch fails
   }
@@ -217,7 +217,7 @@ export default async function ProjectDetailPage({
   let ficaStatus: FicaStatus | null = null;
   if (customers.length > 0) {
     try {
-      ficaStatus = await api.get<FicaStatus>(`/api/customers/${customers[0].id}/fica-status`);
+      ficaStatus = await api.get<FicaStatus>(`/api/clients/${customers[0].id}/fica-status`);
     } catch {
       ficaStatus = null;
     }

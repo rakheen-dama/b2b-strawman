@@ -85,7 +85,7 @@ export function IncompleteProfilesWidget({ data, orgSlug }: IncompleteProfilesWi
                       {field.fieldName}
                     </span>
                     <span className="ml-2 shrink-0 font-mono text-xs text-slate-500 tabular-nums">
-                      {field.customerCount} {field.customerCount === 1 ? "customer" : "customers"}
+                      {field.clientCount} {field.clientCount === 1 ? "customer" : "customers"}
                     </span>
                   </button>
                 </li>

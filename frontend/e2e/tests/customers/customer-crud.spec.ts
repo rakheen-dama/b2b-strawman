@@ -128,7 +128,8 @@ test.describe.serial("CUST-01: Customer CRUD", () => {
 
     // Verify customer created via API
     const token = await getToken("alice");
-    const res = await fetch(`${BACKEND_URL}/api/customers`, {
+    // Phase 87 S2 (ADR-337): API path
+    const res = await fetch(`${BACKEND_URL}/api/clients`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const customers = await res.json();
@@ -139,7 +140,8 @@ test.describe.serial("CUST-01: Customer CRUD", () => {
   test("Edit customer name", async ({ page }) => {
     // First find the customer via API
     const token = await getToken("alice");
-    const listRes = await fetch(`${BACKEND_URL}/api/customers`, {
+    // Phase 87 S2 (ADR-337): API path
+    const listRes = await fetch(`${BACKEND_URL}/api/clients`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const customers = await listRes.json();

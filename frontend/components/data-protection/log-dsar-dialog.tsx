@@ -74,7 +74,7 @@ export function LogDsarRequestDialog({ slug }: LogDsarRequestDialogProps) {
     setError(null);
     setIsSubmitting(true);
     try {
-      // Backend DTO only accepts { customerId, requestType, description }.
+      // Backend DTO only accepts { clientId, requestType, description }.
       // Structured fields (subjectName, subjectEmail, receivedDate) are encoded
       // into the description until the backend adds dedicated columns.
       const descriptionLines = [
@@ -84,7 +84,7 @@ export function LogDsarRequestDialog({ slug }: LogDsarRequestDialogProps) {
       ].filter(Boolean);
 
       const result = await createDsarRequest(slug, {
-        customerId: values.customerId,
+        clientId: values.customerId,
         requestType: values.requestType,
         description: descriptionLines.join("\n"),
       });

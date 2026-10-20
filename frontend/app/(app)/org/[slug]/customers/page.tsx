@@ -123,11 +123,11 @@ export default async function CustomersPage({
   }
 
   // Build query string with view filters
-  let customersEndpoint = "/api/customers";
+  let customersEndpoint = "/api/clients";
   if (currentViewId) {
-    customersEndpoint = `/api/customers?view=${currentViewId}`;
+    customersEndpoint = `/api/clients?view=${currentViewId}`;
   } else if (lifecycleFilter) {
-    customersEndpoint = `/api/customers?lifecycleStatus=${lifecycleFilter}`;
+    customersEndpoint = `/api/clients?lifecycleStatus=${lifecycleFilter}`;
   }
 
   let customers: Customer[] = [];
@@ -142,9 +142,9 @@ export default async function CustomersPage({
   if (customers.length > 0) {
     try {
       const params = new URLSearchParams();
-      customers.forEach((c) => params.append("customerIds", c.id));
+      customers.forEach((c) => params.append("clientIds", c.id));
       completenessScores = await api.get<Record<string, CompletenessScore>>(
-        `/api/customers/completeness-summary?${params.toString()}`
+        `/api/clients/completeness-summary?${params.toString()}`
       );
     } catch {
       // Non-fatal: completeness column will show N/A

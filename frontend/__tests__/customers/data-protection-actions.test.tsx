@@ -116,8 +116,8 @@ describe("AnonymizeCustomerDialog", () => {
     mockFetchAnonymizationPreview.mockResolvedValue({
       success: true,
       data: {
-        customerId: "c1",
-        customerName: "Acme Corp",
+        clientId: "c1",
+        clientName: "Acme Corp",
         affectedEntities: {
           portalContacts: 2,
           projects: 3,

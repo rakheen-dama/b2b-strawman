@@ -14,26 +14,26 @@ export async function transitionLifecycle(
   targetStatus: string,
   notes?: string
 ): Promise<TransitionResponse> {
-  return api.post<TransitionResponse>(`/api/customers/${id}/transition`, {
+  return api.post<TransitionResponse>(`/api/clients/${id}/transition`, {
     targetStatus,
     notes: notes ?? null,
   });
 }
 
 export async function getLifecycleHistory(id: string): Promise<LifecycleHistoryEntry[]> {
-  return api.get<LifecycleHistoryEntry[]>(`/api/customers/${id}/lifecycle`);
+  return api.get<LifecycleHistoryEntry[]>(`/api/clients/${id}/lifecycle`);
 }
 
 export async function runDormancyCheck(): Promise<{
   thresholdDays: number;
   candidates: Array<{
-    customerId: string;
-    customerName: string;
+    clientId: string;
+    clientName: string;
     lastActivityDate: string | null;
     daysSinceActivity: number;
   }>;
 }> {
-  return api.post(`/api/customers/dormancy-check`);
+  return api.post(`/api/clients/dormancy-check`);
 }
 
 export async function getDataRequests(status?: DataRequestStatus): Promise<DataRequestResponse[]> {
@@ -46,7 +46,7 @@ export async function getDataRequest(id: string): Promise<DataRequestResponse> {
 }
 
 export async function createDataRequestApi(body: {
-  customerId: string;
+  clientId: string;
   requestType: string;
   description: string;
 }): Promise<DataRequestResponse> {
@@ -78,12 +78,12 @@ export async function executeDataDeletion(
   confirmCustomerName: string
 ): Promise<AnonymizationResult> {
   return api.post<AnonymizationResult>(`/api/data-requests/${id}/execute-deletion`, {
-    confirmCustomerName,
+    confirmClientName: confirmCustomerName,
   });
 }
 
 export async function getLifecycleStatusCounts(): Promise<Record<string, number>> {
-  return api.get<Record<string, number>>("/api/customers/lifecycle-summary");
+  return api.get<Record<string, number>>("/api/clients/lifecycle-summary");
 }
 
 export async function getOnboardingPipelineData(): Promise<
@@ -96,7 +96,7 @@ export async function getOnboardingPipelineData(): Promise<
 > {
   const customers = await api.get<
     Array<{ id: string; name: string; lifecycleStatusChangedAt?: string | null }>
-  >("/api/customers?lifecycleStatus=ONBOARDING");
+  >("/api/clients?lifecycleStatus=ONBOARDING");
   // Return with stub checklistProgress — progress can't be fetched per-customer in bulk without N+1
   // TODO: Add bulk checklist progress endpoint for efficient dashboard loading
   return customers.map((c) => ({

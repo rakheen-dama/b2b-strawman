@@ -130,7 +130,7 @@ export default async function ProjectsPage({
     if (activeTemplates.length > 0) {
       const [membersResult, customersResult] = await Promise.allSettled([
         api.get<OrgMember[]>("/api/members"),
-        api.get<Customer[]>("/api/customers"),
+        api.get<Customer[]>("/api/clients"),
       ]);
       if (membersResult.status === "fulfilled") orgMembers = membersResult.value;
       if (customersResult.status === "fulfilled") allCustomers = customersResult.value;

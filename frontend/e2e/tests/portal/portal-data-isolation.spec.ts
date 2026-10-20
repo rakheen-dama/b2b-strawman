@@ -40,7 +40,8 @@ test.describe("PORTAL-01: Data Isolation", () => {
 
   test("Portal JWT blocked from org API", async () => {
     const jwt = await getPortalJwt(KGOSI_EMAIL);
-    const res = await fetch(`${BACKEND_URL}/api/customers`, {
+    // Phase 87 S2 (ADR-337): API path
+    const res = await fetch(`${BACKEND_URL}/api/clients`, {
       headers: { Authorization: `Bearer ${jwt}` },
     });
     expect([401, 403]).toContain(res.status);

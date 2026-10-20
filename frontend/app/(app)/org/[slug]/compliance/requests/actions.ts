@@ -41,7 +41,7 @@ export async function fetchCustomersForSelector(): Promise<Customer[]> {
   if (!caps.isAdmin && !caps.isOwner) {
     throw new Error("Unauthorized");
   }
-  return api.get<Customer[]>("/api/customers");
+  return api.get<Customer[]>("/api/clients");
 }
 
 function revalidateRequestPaths(slug: string, requestId?: string) {
@@ -63,7 +63,7 @@ export async function createDataRequest(
   }
 
   try {
-    const request = await createDataRequestApi({ customerId, requestType, description });
+    const request = await createDataRequestApi({ clientId: customerId, requestType, description });
     revalidateRequestPaths(slug);
     return { success: true, request };
   } catch (error) {

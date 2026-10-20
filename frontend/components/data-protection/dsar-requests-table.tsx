@@ -337,15 +337,13 @@ export function DsarRequestsTable({ requests, slug }: DsarRequestsTableProps) {
                   <td className="px-4 py-3">
                     <div>
                       <span className="font-medium text-slate-900 dark:text-slate-100">
-                        {req.subjectName ?? req.customerName ?? "\u2014"}
+                        {req.subjectName ?? req.clientName ?? "\u2014"}
                       </span>
-                      {req.customerName &&
-                        req.subjectName &&
-                        req.customerName !== req.subjectName && (
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
-                            {req.customerName}
-                          </p>
-                        )}
+                      {req.clientName && req.subjectName && req.clientName !== req.subjectName && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {req.clientName}
+                        </p>
+                      )}
                       {req.subjectEmail && (
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {req.subjectEmail}

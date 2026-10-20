@@ -81,7 +81,7 @@ export function CreateChecklistTemplateForm({ slug }: CreateChecklistTemplateFor
     const input: CreateChecklistTemplateInput = {
       name: name.trim(),
       description: description.trim() || undefined,
-      customerType,
+      clientType: customerType,
       autoInstantiate,
       items: validItems.map((item, index) => ({
         name: item.name.trim(),

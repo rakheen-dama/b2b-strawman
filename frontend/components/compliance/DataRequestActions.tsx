@@ -187,7 +187,7 @@ export function DataRequestActions({ request, slug }: DataRequestActionsProps) {
         onOpenChange={setDeletionDialogOpen}
         slug={slug}
         requestId={request.id}
-        customerName={request.customerName}
+        customerName={request.clientName}
       />
     </div>
   );

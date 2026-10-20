@@ -309,6 +309,6 @@ export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
 export async function fetchCustomers(): Promise<{ id: string; name: string }[]> {
   const result = await api.get<
     { id: string; name: string }[] | PaginatedResponse<{ id: string; name: string }>
-  >("/api/customers?size=200");
+  >("/api/clients?size=200");
   return Array.isArray(result) ? result : (result.content ?? []);
 }

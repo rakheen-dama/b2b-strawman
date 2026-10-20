@@ -61,15 +61,15 @@ export function RequestList({ requests, slug, showCustomer = true }: RequestList
                 >
                   {request.requestNumber}
                 </Link>
-                {request.projectName && (
+                {request.matterName && (
                   <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                    {request.projectName}
+                    {request.matterName}
                   </p>
                 )}
               </td>
               {showCustomer && (
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
-                  {request.customerName}
+                  {request.clientName}
                 </td>
               )}
               <td className="px-4 py-3 text-slate-600 dark:text-slate-400">

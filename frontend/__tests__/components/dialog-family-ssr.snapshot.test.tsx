@@ -66,7 +66,7 @@ const STUB_CUSTOMER: Customer = {
   createdByName: null,
   createdAt: "2026-01-01T00:00:00Z",
   updatedAt: "2026-01-01T00:00:00Z",
-  customerType: "INDIVIDUAL",
+  clientType: "INDIVIDUAL",
   phone: null,
   idNumber: null,
   notes: null,

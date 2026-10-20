@@ -43,8 +43,8 @@ function makeAggregatedData(): AggregatedCompletenessResponse {
     incompleteCount: 5,
     totalCount: 12,
     topMissingFields: [
-      { fieldName: "Billing Address", fieldSlug: "billing-address", customerCount: 5 },
-      { fieldName: "VAT Number", fieldSlug: "vat-number", customerCount: 3 },
+      { fieldName: "Billing Address", fieldSlug: "billing-address", clientCount: 5 },
+      { fieldName: "VAT Number", fieldSlug: "vat-number", clientCount: 3 },
     ],
   };
 }

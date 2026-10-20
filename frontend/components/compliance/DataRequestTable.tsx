@@ -81,7 +81,7 @@ export function DataRequestTable({ requests, slug }: DataRequestTableProps) {
                     href={`/org/${slug}/compliance/requests/${request.id}`}
                     className="font-medium text-slate-950 hover:underline dark:text-slate-50"
                   >
-                    {request.customerName}
+                    {request.clientName}
                   </Link>
                 </td>
                 <td className="px-4 py-3">

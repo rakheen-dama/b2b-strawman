@@ -32,8 +32,8 @@ const futureDate = `${y + 1}-${String(m).padStart(2, "0")}-${String(d).padStart(
 
 const baseRequest: DsarRequest = {
   id: "req-1",
-  customerId: "cust-1",
-  customerName: "Acme Corp",
+  clientId: "cust-1",
+  clientName: "Acme Corp",
   requestType: "ACCESS",
   status: "RECEIVED",
   subjectName: "Jane Doe",
@@ -179,7 +179,7 @@ describe("LogDsarRequestDialog", () => {
       expect(mockCreateDsarRequest).toHaveBeenCalledWith(
         "acme",
         expect.objectContaining({
-          customerId: "550e8400-e29b-41d4-a716-446655440000",
+          clientId: "550e8400-e29b-41d4-a716-446655440000",
           requestType: "DELETION",
         })
       );

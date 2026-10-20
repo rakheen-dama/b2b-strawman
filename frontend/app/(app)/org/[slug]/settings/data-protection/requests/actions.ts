@@ -11,7 +11,7 @@ interface ActionResult<T = undefined> {
 }
 
 export interface CreateDsarRequestData {
-  customerId: string;
+  clientId: string;
   requestType: string;
   description: string;
 }

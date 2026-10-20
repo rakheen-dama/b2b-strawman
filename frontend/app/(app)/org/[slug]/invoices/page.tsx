@@ -88,7 +88,7 @@ export default async function InvoicesPage({
   // Fetch active customers for "New Invoice" button
   let customers: { id: string; name: string }[] = [];
   try {
-    const raw = await api.get<Customer[]>("/api/customers");
+    const raw = await api.get<Customer[]>("/api/clients");
     customers = (Array.isArray(raw) ? raw : [])
       .filter((c) => c.status === "ACTIVE")
       .map((c) => ({ id: c.id, name: c.name }));

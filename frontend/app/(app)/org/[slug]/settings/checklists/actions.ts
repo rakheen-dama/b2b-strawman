@@ -13,7 +13,7 @@ interface ActionResult {
 export interface CreateChecklistTemplateInput {
   name: string;
   description?: string;
-  customerType: string;
+  clientType: string;
   autoInstantiate: boolean;
   items: {
     name: string;

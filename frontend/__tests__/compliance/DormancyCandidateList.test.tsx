@@ -27,14 +27,14 @@ describe("DormancyCandidateList", () => {
   it("renders rows with customer name and days since activity", () => {
     const candidates = [
       {
-        customerId: "c1",
-        customerName: "Acme Corp",
+        clientId: "c1",
+        clientName: "Acme Corp",
         lastActivityDate: "2025-01-01T00:00:00Z",
         daysSinceActivity: 45,
       },
       {
-        customerId: "c2",
-        customerName: "Beta Inc",
+        clientId: "c2",
+        clientName: "Beta Inc",
         lastActivityDate: null,
         daysSinceActivity: 120,
       },
@@ -49,8 +49,8 @@ describe("DormancyCandidateList", () => {
   it("shows days since activity in red when >90", () => {
     const candidates = [
       {
-        customerId: "c1",
-        customerName: "Old Corp",
+        clientId: "c1",
+        clientName: "Old Corp",
         lastActivityDate: null,
         daysSinceActivity: 100,
       },
@@ -65,8 +65,8 @@ describe("DormancyCandidateList", () => {
     const user = userEvent.setup();
     const candidates = [
       {
-        customerId: "c1",
-        customerName: "Mark Me Corp",
+        clientId: "c1",
+        clientName: "Mark Me Corp",
         lastActivityDate: null,
         daysSinceActivity: 95,
       },

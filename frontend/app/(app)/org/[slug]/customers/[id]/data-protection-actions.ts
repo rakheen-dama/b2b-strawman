@@ -24,9 +24,7 @@ export async function triggerDataExport(
   }
 
   try {
-    const result = await api.post<StandaloneExportResult>(
-      `/api/customers/${customerId}/data-export`
-    );
+    const result = await api.post<StandaloneExportResult>(`/api/clients/${customerId}/data-export`);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -46,7 +44,7 @@ export async function fetchAnonymizationPreview(
 
   try {
     const result = await api.get<AnonymizationPreview>(
-      `/api/customers/${customerId}/anonymize/preview`
+      `/api/clients/${customerId}/anonymize/preview`
     );
     return { success: true, data: result };
   } catch (error) {
@@ -70,7 +68,7 @@ export async function executeAnonymization(
 
   try {
     const result = await api.post<StandaloneAnonymizationResult>(
-      `/api/customers/${customerId}/anonymize`,
+      `/api/clients/${customerId}/anonymize`,
       { confirmationName, reason }
     );
 

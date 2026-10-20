@@ -11,12 +11,15 @@ import type {
 
 /**
  * Backend collection segment for an entity's tag / field-group / custom-field endpoints.
- * Phase 87 S1 (ADR-337): matters are served at `/api/matters/**`; the `EntityType` literal
- * itself stays `"PROJECT"` because it is a storage key (ADR-342). Route segments
+ * Phase 87 S1/S2 (ADR-337): matters are served at `/api/matters/**` and clients at
+ * `/api/clients/**`; the `EntityType` literals themselves stay `"PROJECT"` / `"CUSTOMER"`
+ * because they are storage keys (ADR-342). Route segments
  * (`/org/{slug}/projects/...`) are NOT derived from this — they move in 610D.
  */
 export function entityApiPrefix(entityType: EntityType): string {
-  return entityType === "PROJECT" ? "matters" : entityType.toLowerCase() + "s";
+  if (entityType === "PROJECT") return "matters";
+  if (entityType === "CUSTOMER") return "clients";
+  return entityType.toLowerCase() + "s";
 }
 
 // ---- Tags ----

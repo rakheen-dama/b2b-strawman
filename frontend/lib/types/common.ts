@@ -47,7 +47,7 @@ export interface CompletenessScore {
 export interface MissingFieldSummary {
   fieldName: string;
   fieldSlug: string;
-  customerCount: number;
+  clientCount: number;
 }
 
 export interface AggregatedCompletenessResponse {

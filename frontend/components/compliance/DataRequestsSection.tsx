@@ -75,7 +75,7 @@ export function DataRequestsSection({
                       className="border-b border-slate-100 last:border-0 dark:border-slate-800"
                     >
                       <td className="px-4 py-3 font-medium text-slate-950 dark:text-slate-50">
-                        {req.customerName}
+                        {req.clientName}
                       </td>
                       <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
                         {req.requestType}

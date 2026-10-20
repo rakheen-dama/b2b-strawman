@@ -226,7 +226,7 @@ export async function fetchProjectsForPicker(): Promise<Project[]> {
 }
 
 export async function fetchCustomersForPicker(): Promise<Customer[]> {
-  return api.get<Customer[]>("/api/customers");
+  return api.get<Customer[]>("/api/clients");
 }
 
 export async function fetchInvoicesForPicker(): Promise<InvoiceResponse[]> {

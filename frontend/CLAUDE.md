@@ -171,9 +171,13 @@ Components started from Shadcn scaffolding but **have been customized** with pro
 - PostCSS via `@tailwindcss/postcss` plugin
 - CSS variables for theming in `app/globals.css`
 - Use `cn()` to merge Tailwind classes (clsx + tailwind-merge) — source of truth is `@b2mash/ui/cn`; `@/lib/utils` re-exports it for existing import sites
-- Terminology and date/currency formatting come from `@b2mash/shared` — don't reimplement locally
+- Date/currency formatting comes from `@b2mash/shared/format` (re-exported by `@/lib/format`) — don't reimplement locally
 - Slate color classes: `bg-slate-50` through `bg-slate-950`, `text-slate-*`, `border-slate-*`
 - Teal accent classes: `bg-teal-500`, `bg-teal-600`, `text-teal-*`
+
+### Single Vocabulary
+
+**Single vocabulary.** Kazi is legal-only. Write the legal word in the source — Matter, Client, Fee note, Disbursement, Tariff, Time recording, Fee estimate, Task, Diary. There is no runtime substitution layer: no `useTerminology`, no `t("Project")`, no `<TerminologyText>`, no terminology map in `@b2mash/shared`. ESLint `no-restricted-imports` and `__tests__/no-terminology-remnants.test.ts` enforce this. Long-form help/empty-state copy still comes from `lib/messages` (`createMessages(ns).t("dotted.key")`), which is an i18n loader, not a terminology layer. "Mandate" is used only on engagement-letter acceptance surfaces.
 
 ### TypeScript
 
@@ -186,6 +190,7 @@ Components started from Shadcn scaffolding but **have been customized** with pro
 
 - Flat config (`eslint.config.mjs`)
 - Extends `eslint-config-next/core-web-vitals` and `eslint-config-next/typescript`
+- `no-restricted-imports` bans the deleted terminology modules (ADR-338); keep all restricted paths in that one config object (a later flat-config object setting the same rule replaces, not merges)
 - Run with `pnpm run lint`
 
 ### Testing
@@ -209,6 +214,7 @@ Components started from Shadcn scaffolding but **have been customized** with pro
 - Never use indigo for accents — use **teal** instead
 - Never import `motion` in server components — it's client-only. Only import in `"use client"` files.
 - Never pass functions or component references as props from Server Components to `"use client"` components — Next.js 16 throws a runtime serialization error. Pass serializable data (strings, objects) instead.
+- Never add a runtime terminology/vocabulary substitution layer (`useTerminology`, `t("Project")`, `<TerminologyText>`, a terminology map) — write the legal word (ADR-338)
 - Never place two `<DialogTrigger asChild>` / `<AlertDialogTrigger asChild>` Radix siblings adjacent in the same parent JSX — they collide under React 19 + Radix `Slot` reconciliation and only one trigger wires up its `onClick`. See _Dialog Trigger Composition_ below.
 
 ### RSC Serialization Boundary

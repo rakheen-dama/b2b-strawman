@@ -4,7 +4,6 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { GeneralSettingsForm } from "@/components/settings/general-settings-form";
 import { HelpTip } from "@/components/help-tip";
-import { VerticalProfileSection } from "@/components/settings/vertical-profile-section";
 import { OrgDocumentsSection } from "@/components/settings/org-documents-section";
 import { PortalSettingsSection } from "@/components/settings/portal-settings-section";
 import type { Document, OrgSettings } from "@/lib/types";
@@ -66,12 +65,6 @@ export default async function GeneralSettingsPage({
           Manage your organization&apos;s currency, tax configuration, and branding.
         </p>
       </div>
-
-      <VerticalProfileSection
-        slug={slug}
-        currentProfile={settings.verticalProfile ?? null}
-        isOwner={caps.isOwner}
-      />
 
       <GeneralSettingsForm
         slug={slug}

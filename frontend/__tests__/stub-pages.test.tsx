@@ -70,7 +70,6 @@ vi.mock("@/app/(app)/org/[slug]/clients/[id]/actions", () => ({
 
 import useSWR from "swr";
 import { OrgProfileProvider } from "@/lib/org-profile";
-import { TerminologyProvider } from "@/lib/terminology";
 import { ModuleGate } from "@/components/module-gate";
 import { TrustBalanceCard } from "@/components/customers/trust-balance-card";
 import { Badge } from "@b2mash/ui/badge";
@@ -208,16 +207,14 @@ describe("Conditional conflict check section", () => {
 // ---- 372.8: Trust balance card renders correctly under legal-za profile ----
 
 describe("372B: trust balance card under legal-za profile context", () => {
-  it("renders trust balance card correctly within legal-za profile providers", () => {
+  it("renders trust balance card correctly within the legal-za OrgProfileProvider", () => {
     render(
       <OrgProfileProvider
         verticalProfile="legal-za"
         enabledModules={["trust_accounting"]}
         terminologyNamespace="en-ZA-legal"
       >
-        <TerminologyProvider verticalProfile="legal-za">
-          <TrustBalanceCard customerId="cust-1" slug="acme" />
-        </TerminologyProvider>
+        <TrustBalanceCard customerId="cust-1" slug="acme" />
       </OrgProfileProvider>
     );
 

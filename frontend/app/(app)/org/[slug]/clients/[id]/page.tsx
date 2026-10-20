@@ -518,10 +518,10 @@ export default async function CustomerDetailPage({
         <div className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
           <ShieldCheck className="mt-0.5 size-5 shrink-0 text-slate-500 dark:text-slate-400" />
           <div className="text-sm text-slate-700 dark:text-slate-300">
-            <p className="font-medium">Customer data anonymized</p>
+            <p className="font-medium">Client data anonymized</p>
             <p className="mt-0.5 text-slate-500 dark:text-slate-400">
-              This customer&apos;s personal data has been anonymized. All identifying information
-              has been removed.
+              This client&apos;s personal data has been anonymized. All identifying information has
+              been removed.
             </p>
           </div>
         </div>

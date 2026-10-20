@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { LifecycleTransitionDropdown } from "@/components/compliance/LifecycleTransitionDropdown";
-import { TerminologyProvider } from "@/lib/terminology";
 
 // Mock the server action called inside TransitionConfirmDialog
 const mockTransitionCustomerLifecycle = vi.fn();
@@ -28,23 +27,15 @@ describe("LifecycleTransitionDropdown", () => {
     cleanup();
   });
 
-  function renderWithProvider(ui: React.ReactElement) {
-    return render(<TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>);
-  }
-
   it("renders 'Change Status' button for PROSPECT status", () => {
-    renderWithProvider(
-      <LifecycleTransitionDropdown currentStatus="PROSPECT" customerId="c1" slug="acme" />
-    );
+    render(<LifecycleTransitionDropdown currentStatus="PROSPECT" customerId="c1" slug="acme" />);
     expect(screen.getByText("Change Status")).toBeInTheDocument();
   });
 
   it("shows 'Start Onboarding' transition for PROSPECT", async () => {
     const user = userEvent.setup();
 
-    renderWithProvider(
-      <LifecycleTransitionDropdown currentStatus="PROSPECT" customerId="c1" slug="acme" />
-    );
+    render(<LifecycleTransitionDropdown currentStatus="PROSPECT" customerId="c1" slug="acme" />);
 
     await user.click(screen.getByText("Change Status"));
     expect(screen.getByText("Start Onboarding")).toBeInTheDocument();
@@ -53,9 +44,7 @@ describe("LifecycleTransitionDropdown", () => {
   it("shows 'Reactivate' transition for DORMANT status", async () => {
     const user = userEvent.setup();
 
-    renderWithProvider(
-      <LifecycleTransitionDropdown currentStatus="DORMANT" customerId="c1" slug="acme" />
-    );
+    render(<LifecycleTransitionDropdown currentStatus="DORMANT" customerId="c1" slug="acme" />);
 
     await user.click(screen.getByText("Change Status"));
     expect(screen.getByText("Reactivate")).toBeInTheDocument();
@@ -64,9 +53,7 @@ describe("LifecycleTransitionDropdown", () => {
   it("shows 'Offboard Customer' transition for ACTIVE status", async () => {
     const user = userEvent.setup();
 
-    renderWithProvider(
-      <LifecycleTransitionDropdown currentStatus="ACTIVE" customerId="c1" slug="acme" />
-    );
+    render(<LifecycleTransitionDropdown currentStatus="ACTIVE" customerId="c1" slug="acme" />);
 
     await user.click(screen.getByText("Change Status"));
     expect(screen.getByText("Offboard Customer")).toBeInTheDocument();
@@ -75,9 +62,7 @@ describe("LifecycleTransitionDropdown", () => {
   it("shows 'Reactivate' transition for OFFBOARDED status", async () => {
     const user = userEvent.setup();
 
-    renderWithProvider(
-      <LifecycleTransitionDropdown currentStatus="OFFBOARDED" customerId="c1" slug="acme" />
-    );
+    render(<LifecycleTransitionDropdown currentStatus="OFFBOARDED" customerId="c1" slug="acme" />);
 
     await user.click(screen.getByText("Change Status"));
     expect(screen.getByText("Reactivate")).toBeInTheDocument();
@@ -86,9 +71,7 @@ describe("LifecycleTransitionDropdown", () => {
   it("PROSPECT only shows Start Onboarding (not Activate)", async () => {
     const user = userEvent.setup();
 
-    renderWithProvider(
-      <LifecycleTransitionDropdown currentStatus="PROSPECT" customerId="c1" slug="acme" />
-    );
+    render(<LifecycleTransitionDropdown currentStatus="PROSPECT" customerId="c1" slug="acme" />);
 
     await user.click(screen.getByText("Change Status"));
     expect(screen.getByText("Start Onboarding")).toBeInTheDocument();
@@ -100,7 +83,7 @@ describe("LifecycleTransitionDropdown", () => {
     const onTransition = vi.fn();
     const user = userEvent.setup();
 
-    renderWithProvider(
+    render(
       <LifecycleTransitionDropdown
         currentStatus="PROSPECT"
         customerId="c1"

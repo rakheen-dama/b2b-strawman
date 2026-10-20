@@ -11,6 +11,11 @@
  * auth middleware (`proxy.ts`).
  *
  * Dependency-free on purpose: `next.config.ts` imports it by relative path.
+ *
+ * Typing note: `as const` turns a future `has: [...]` array into a readonly tuple, which
+ * Next's mutable `Redirect[]` rejects. The slice adding the first `has` row (613D) must
+ * adapt the typing, e.g. `satisfies readonly Redirect[]` here plus a mutable copy of
+ * `has` in `next.config.ts` `redirects()`.
  */
 export const LEGACY_REDIRECTS = [
   // GAP-Doc-Drift-26: legacy bookmarks and QA scenario docs reference

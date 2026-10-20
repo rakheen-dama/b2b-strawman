@@ -19,6 +19,14 @@ function toIsoDate(d: Date): string {
   return d.toLocaleDateString("en-CA");
 }
 
+/** Strict yyyy-MM-dd: shape check plus a UTC round-trip, so 2026-02-31 is rejected (not rolled over). */
+function isValidIsoDate(value: string | undefined): value is string {
+  if (!value || !ISO_DATE.test(value)) return false;
+  const [y, m, d] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d;
+}
+
 export default async function UnbilledWorkPage({
   params,
   searchParams,
@@ -49,9 +57,13 @@ export default async function UnbilledWorkPage({
   const defaultFrom = toIsoDate(
     new Date(now.getFullYear(), now.getMonth() - DEFAULT_PERIOD_MONTHS, now.getDate())
   );
-  const periodFrom =
-    search.periodFrom && ISO_DATE.test(search.periodFrom) ? search.periodFrom : defaultFrom;
-  const periodTo = search.periodTo && ISO_DATE.test(search.periodTo) ? search.periodTo : defaultTo;
+  let periodFrom = isValidIsoDate(search.periodFrom) ? search.periodFrom : defaultFrom;
+  let periodTo = isValidIsoDate(search.periodTo) ? search.periodTo : defaultTo;
+  // An inverted range (hand-edited URL) restores both defaults; yyyy-MM-dd compares lexically.
+  if (periodFrom > periodTo) {
+    periodFrom = defaultFrom;
+    periodTo = defaultTo;
+  }
   const currency =
     search.currency && CURRENCY_CODE.test(search.currency) ? search.currency : orgCurrency;
   const currencyOptions = [...new Set([orgCurrency, currency, ...COMMON_CURRENCIES])];

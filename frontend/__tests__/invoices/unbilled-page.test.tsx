@@ -153,6 +153,24 @@ describe("Unbilled work page (Phase 87 612B)", () => {
     });
   });
 
+  it("falls back to the default periodFrom for an impossible calendar date", async () => {
+    await renderPage({ periodFrom: "2026-02-31", periodTo: "2026-03-31" });
+    expect(mockGetUnbilledSummary).toHaveBeenCalledWith({
+      periodFrom: "2024-10-21",
+      periodTo: "2026-03-31",
+      currency: "ZAR",
+    });
+  });
+
+  it("falls back to both defaults for an inverted range", async () => {
+    await renderPage({ periodFrom: "2026-10-15", periodTo: "2025-01-01" });
+    expect(mockGetUnbilledSummary).toHaveBeenCalledWith({
+      periodFrom: "2024-10-21",
+      periodTo: "2026-10-21",
+      currency: "ZAR",
+    });
+  });
+
   it("applies an edited period to the URL search params", async () => {
     await renderPage();
     fireEvent.change(screen.getByLabelText("From"), { target: { value: "2026-01-01" } });

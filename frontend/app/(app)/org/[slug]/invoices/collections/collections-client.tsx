@@ -49,7 +49,7 @@ export function CollectionsClient({ slug, debtors, gates, previews }: Collection
         <div>
           <h2 className="font-display text-xl text-slate-950 dark:text-slate-50">Debtor book</h2>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Outstanding balances grouped by customer and currency, aged into buckets.
+            Outstanding balances grouped by client and currency, aged into buckets.
           </p>
         </div>
 
@@ -173,7 +173,7 @@ export function CollectionsClient({ slug, debtors, gates, previews }: Collection
               Pending reminders
             </h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              Review the drafted reminders before they are sent to customers.
+              Review the drafted reminders before they are sent to clients.
             </p>
           </div>
           <ReminderQueue slug={slug} gates={gates} previews={previews} />

@@ -119,7 +119,7 @@ echo "    [ok] Got Alice's JWT"
 echo ""
 echo "==> Step 5: Create customer"
 CUSTOMER_RESPONSE=$(curl -s -w "\n%{http_code}" \
-  -X POST "${BACKEND_URL}/api/customers" \
+  -X POST "${BACKEND_URL}/api/clients" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ${ALICE_JWT}" \
   -d '{
@@ -139,7 +139,7 @@ check_status "Create customer" "$CUSTOMER_STATUS"
 
 if [ "$CUSTOMER_STATUS" = "409" ]; then
   # Re-run against existing data (e2e-reseed.sh): resolve the existing customer
-  CUSTOMER_ID=$(curl -sf "${BACKEND_URL}/api/customers?size=200" \
+  CUSTOMER_ID=$(curl -sf "${BACKEND_URL}/api/clients?size=200" \
     -H "Authorization: Bearer ${ALICE_JWT}" | jq -r '
       (if type == "array" then . else .content end)[]
       | select(.email == "contact@acme.example.com") | .id' | head -1)
@@ -157,7 +157,7 @@ echo ""
 echo "==> Step 6: Transition customer PROSPECT -> ONBOARDING -> ACTIVE"
 
 INITIAL_STATUS=$(curl -sf \
-  "${BACKEND_URL}/api/customers/${CUSTOMER_ID}" \
+  "${BACKEND_URL}/api/clients/${CUSTOMER_ID}" \
   -H "Authorization: Bearer ${ALICE_JWT}" | jq -r '.lifecycleStatus')
 if [ "$INITIAL_STATUS" = "ACTIVE" ]; then
   echo "    [ok] Already ACTIVE"
@@ -165,7 +165,7 @@ else
 
   # PROSPECT -> ONBOARDING
   STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-    -X POST "${BACKEND_URL}/api/customers/${CUSTOMER_ID}/transition" \
+    -X POST "${BACKEND_URL}/api/clients/${CUSTOMER_ID}/transition" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${ALICE_JWT}" \
     -d '{"targetStatus": "ONBOARDING", "notes": "E2E seed: start onboarding"}')
@@ -173,7 +173,7 @@ else
 
   # Complete all checklist items (required before ACTIVE transition)
   CHECKLISTS=$(curl -sf \
-    "${BACKEND_URL}/api/customers/${CUSTOMER_ID}/checklists" \
+    "${BACKEND_URL}/api/clients/${CUSTOMER_ID}/checklists" \
     -H "Authorization: Bearer ${ALICE_JWT}")
 
   ITEM_IDS=$(echo "$CHECKLISTS" | jq -r '
@@ -198,14 +198,14 @@ else
 
   # Check if auto-transitioned to ACTIVE; if not, transition explicitly
   CURRENT_STATUS=$(curl -sf \
-    "${BACKEND_URL}/api/customers/${CUSTOMER_ID}" \
+    "${BACKEND_URL}/api/clients/${CUSTOMER_ID}" \
     -H "Authorization: Bearer ${ALICE_JWT}" | jq -r '.lifecycleStatus')
 
   if [ "$CURRENT_STATUS" = "ACTIVE" ]; then
     echo "    [ok] Auto-transitioned to ACTIVE"
   else
     STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-      -X POST "${BACKEND_URL}/api/customers/${CUSTOMER_ID}/transition" \
+      -X POST "${BACKEND_URL}/api/clients/${CUSTOMER_ID}/transition" \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer ${ALICE_JWT}" \
       -d '{"targetStatus": "ACTIVE", "notes": "E2E seed: activate customer"}')

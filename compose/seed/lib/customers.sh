@@ -17,13 +17,13 @@ seed_customers() {
     _ec_target="$6"
 
     # Check if customer already exists (bare array response)
-    _ec_id=$(find_existing "/api/customers" ".[] | select(.name == \"${_ec_name}\")" "$jwt")
+    _ec_id=$(find_existing "/api/clients" ".[] | select(.name == \"${_ec_name}\")" "$jwt")
 
     if [ -n "$_ec_id" ] && [ "$_ec_id" != "null" ]; then
       echo "    [skip] ${_ec_name} already exists (${_ec_id})" >&2
 
       # Check current status and fix if wrong
-      _ec_current=$(api_get "/api/customers/${_ec_id}" "$jwt" | jq -r '.lifecycleStatus')
+      _ec_current=$(api_get "/api/clients/${_ec_id}" "$jwt" | jq -r '.lifecycleStatus')
 
       if [ "$_ec_current" = "$_ec_target" ]; then
         echo "$_ec_id"
@@ -36,39 +36,39 @@ seed_customers() {
       case "$_ec_current" in
         PROSPECT)
           if [ "$_ec_target" = "PROSPECT" ]; then echo "$_ec_id"; return 0; fi
-          api_post "/api/customers/${_ec_id}/transition" '{"targetStatus":"ONBOARDING","notes":"seed"}' "$jwt" > /dev/null
+          api_post "/api/clients/${_ec_id}/transition" '{"targetStatus":"ONBOARDING","notes":"seed"}' "$jwt" > /dev/null
           check_status "${_ec_name} -> ONBOARDING"
           if [ "$_ec_target" = "ONBOARDING" ]; then echo "$_ec_id"; return 0; fi
           complete_checklists "$_ec_id" "$jwt"
-          _ec_check=$(api_get "/api/customers/${_ec_id}" "$jwt" | jq -r '.lifecycleStatus')
+          _ec_check=$(api_get "/api/clients/${_ec_id}" "$jwt" | jq -r '.lifecycleStatus')
           if [ "$_ec_check" != "ACTIVE" ]; then
-            api_post "/api/customers/${_ec_id}/transition" '{"targetStatus":"ACTIVE","notes":"seed"}' "$jwt" > /dev/null
+            api_post "/api/clients/${_ec_id}/transition" '{"targetStatus":"ACTIVE","notes":"seed"}' "$jwt" > /dev/null
             check_status "${_ec_name} -> ACTIVE"
           fi
           if [ "$_ec_target" = "ACTIVE" ]; then echo "$_ec_id"; return 0; fi
           if [ "$_ec_target" = "DORMANT" ]; then
-            api_post "/api/customers/${_ec_id}/transition" '{"targetStatus":"DORMANT","notes":"seed"}' "$jwt" > /dev/null
+            api_post "/api/clients/${_ec_id}/transition" '{"targetStatus":"DORMANT","notes":"seed"}' "$jwt" > /dev/null
             check_status "${_ec_name} -> DORMANT"
           fi
           ;;
         ONBOARDING)
           if [ "$_ec_target" = "ONBOARDING" ]; then echo "$_ec_id"; return 0; fi
           complete_checklists "$_ec_id" "$jwt"
-          _ec_check=$(api_get "/api/customers/${_ec_id}" "$jwt" | jq -r '.lifecycleStatus')
+          _ec_check=$(api_get "/api/clients/${_ec_id}" "$jwt" | jq -r '.lifecycleStatus')
           if [ "$_ec_check" != "ACTIVE" ]; then
-            api_post "/api/customers/${_ec_id}/transition" '{"targetStatus":"ACTIVE","notes":"seed"}' "$jwt" > /dev/null
+            api_post "/api/clients/${_ec_id}/transition" '{"targetStatus":"ACTIVE","notes":"seed"}' "$jwt" > /dev/null
             check_status "${_ec_name} -> ACTIVE"
           fi
           if [ "$_ec_target" = "ACTIVE" ]; then echo "$_ec_id"; return 0; fi
           if [ "$_ec_target" = "DORMANT" ]; then
-            api_post "/api/customers/${_ec_id}/transition" '{"targetStatus":"DORMANT","notes":"seed"}' "$jwt" > /dev/null
+            api_post "/api/clients/${_ec_id}/transition" '{"targetStatus":"DORMANT","notes":"seed"}' "$jwt" > /dev/null
             check_status "${_ec_name} -> DORMANT"
           fi
           ;;
         ACTIVE)
           if [ "$_ec_target" = "ACTIVE" ]; then echo "$_ec_id"; return 0; fi
           if [ "$_ec_target" = "DORMANT" ]; then
-            api_post "/api/customers/${_ec_id}/transition" '{"targetStatus":"DORMANT","notes":"seed"}' "$jwt" > /dev/null
+            api_post "/api/clients/${_ec_id}/transition" '{"targetStatus":"DORMANT","notes":"seed"}' "$jwt" > /dev/null
             check_status "${_ec_name} -> DORMANT"
           fi
           ;;
@@ -82,7 +82,7 @@ seed_customers() {
     fi
 
     # Create new customer
-    _ec_body=$(api_post "/api/customers" "{
+    _ec_body=$(api_post "/api/clients" "{
       \"name\": \"${_ec_name}\",
       \"email\": \"${_ec_email}\",
       \"phone\": \"${_ec_phone}\",
@@ -102,7 +102,7 @@ seed_customers() {
       return 0
     fi
 
-    api_post "/api/customers/${_ec_id}/transition" '{"targetStatus":"ONBOARDING","notes":"seed"}' "$jwt" > /dev/null
+    api_post "/api/clients/${_ec_id}/transition" '{"targetStatus":"ONBOARDING","notes":"seed"}' "$jwt" > /dev/null
     check_status "${_ec_name} -> ONBOARDING"
 
     if [ "$_ec_target" = "ONBOARDING" ]; then
@@ -112,9 +112,9 @@ seed_customers() {
 
     # Complete checklists to allow ACTIVE transition (auto-transitions when all done)
     complete_checklists "$_ec_id" "$jwt"
-    _ec_check=$(api_get "/api/customers/${_ec_id}" "$jwt" | jq -r '.lifecycleStatus')
+    _ec_check=$(api_get "/api/clients/${_ec_id}" "$jwt" | jq -r '.lifecycleStatus')
     if [ "$_ec_check" != "ACTIVE" ]; then
-      api_post "/api/customers/${_ec_id}/transition" '{"targetStatus":"ACTIVE","notes":"seed"}' "$jwt" > /dev/null
+      api_post "/api/clients/${_ec_id}/transition" '{"targetStatus":"ACTIVE","notes":"seed"}' "$jwt" > /dev/null
       check_status "${_ec_name} -> ACTIVE"
     else
       echo "    [ok] ${_ec_name} auto-transitioned to ACTIVE" >&2
@@ -126,7 +126,7 @@ seed_customers() {
     fi
 
     if [ "$_ec_target" = "DORMANT" ]; then
-      api_post "/api/customers/${_ec_id}/transition" '{"targetStatus":"DORMANT","notes":"seed"}' "$jwt" > /dev/null
+      api_post "/api/clients/${_ec_id}/transition" '{"targetStatus":"DORMANT","notes":"seed"}' "$jwt" > /dev/null
       check_status "${_ec_name} -> DORMANT"
     fi
 

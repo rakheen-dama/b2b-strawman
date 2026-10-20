@@ -137,7 +137,7 @@ complete_checklists() {
   _cc_customer_id="$1"
   _cc_jwt="$2"
 
-  checklists=$(api_get "/api/customers/${_cc_customer_id}/checklists" "$_cc_jwt")
+  checklists=$(api_get "/api/clients/${_cc_customer_id}/checklists" "$_cc_jwt")
 
   item_ids=$(echo "$checklists" | jq -r '
     [.[] | .items[]? | select(.status != "COMPLETED" and .status != "SKIPPED") | .id] | .[]

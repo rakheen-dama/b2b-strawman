@@ -81,7 +81,7 @@ public class ChecklistTemplateService {
             request.name(),
             request.description(),
             finalSlug,
-            request.customerType(),
+            request.clientType(),
             "ORG_CUSTOM",
             request.autoInstantiate());
 

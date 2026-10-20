@@ -19,11 +19,11 @@ public class DataExportController {
     this.dataExportService = dataExportService;
   }
 
-  @PostMapping("/api/customers/{customerId}/data-export")
+  @PostMapping("/api/clients/{clientId}/data-export")
   @RequiresCapability("MANAGE_COMPLIANCE")
-  public ResponseEntity<ExportResult> triggerExport(@PathVariable UUID customerId) {
+  public ResponseEntity<ExportResult> triggerExport(@PathVariable UUID clientId) {
     return ResponseEntity.accepted()
-        .body(dataExportService.triggerCustomerExport(customerId, RequestScopes.requireMemberId()));
+        .body(dataExportService.triggerCustomerExport(clientId, RequestScopes.requireMemberId()));
   }
 
   @GetMapping("/api/data-exports/{exportId}")

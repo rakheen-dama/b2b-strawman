@@ -90,7 +90,7 @@ class AnonymizationControllerTest {
     // Anonymize this customer via POST endpoint so it's in ANONYMIZED state
     mockMvc
         .perform(
-            post("/api/customers/" + alreadyAnonymizedCustomerId + "/anonymize")
+            post("/api/clients/" + alreadyAnonymizedCustomerId + "/anonymize")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_anon_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -129,7 +129,7 @@ class AnonymizationControllerTest {
 
     mockMvc
         .perform(
-            post("/api/customers/" + freshCustomerId + "/anonymize")
+            post("/api/clients/" + freshCustomerId + "/anonymize")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_anon_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -148,7 +148,7 @@ class AnonymizationControllerTest {
   void postAnonymize_wrongConfirmationName_returns400() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/anonymize")
+            post("/api/clients/" + customerId + "/anonymize")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_anon_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -163,7 +163,7 @@ class AnonymizationControllerTest {
     // ADMIN has MANAGE_COMPLIANCE but NOT MANAGE_COMPLIANCE_DESTRUCTIVE
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/anonymize")
+            post("/api/clients/" + customerId + "/anonymize")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_anon_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -177,11 +177,11 @@ class AnonymizationControllerTest {
   void getPreview_returns200WithCorrectCounts() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/anonymize/preview")
+            get("/api/clients/" + customerId + "/anonymize/preview")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_anon_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerId").value(customerId))
-        .andExpect(jsonPath("$.customerName").value(customerName))
+        .andExpect(jsonPath("$.clientId").value(customerId))
+        .andExpect(jsonPath("$.clientName").value(customerName))
         .andExpect(jsonPath("$.portalContacts").isNumber())
         .andExpect(jsonPath("$.projects").isNumber())
         .andExpect(jsonPath("$.documents").isNumber())
@@ -193,7 +193,7 @@ class AnonymizationControllerTest {
   void postAnonymize_alreadyAnonymized_returns409() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + alreadyAnonymizedCustomerId + "/anonymize")
+            post("/api/clients/" + alreadyAnonymizedCustomerId + "/anonymize")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_anon_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -209,10 +209,10 @@ class AnonymizationControllerTest {
     // Contrasts with POST /anonymize which requires MANAGE_COMPLIANCE_DESTRUCTIVE (OWNER-only)
     mockMvc
         .perform(
-            get("/api/customers/" + customerId + "/anonymize/preview")
+            get("/api/clients/" + customerId + "/anonymize/preview")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_anon_admin")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerId").value(customerId))
-        .andExpect(jsonPath("$.customerName").exists());
+        .andExpect(jsonPath("$.clientId").value(customerId))
+        .andExpect(jsonPath("$.clientName").exists());
   }
 }

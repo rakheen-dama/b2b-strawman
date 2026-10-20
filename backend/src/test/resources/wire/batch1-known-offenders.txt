@@ -10,5 +10,3 @@
 # Regenerate: ./mvnw test -Dtest=WireVocabularyContractTest -Dwire.contract.update=true
 # Format: "ROUTE <METHODS> <pattern>" | "DTO <class>" | "DTO <class>#<component>"
 DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.TeamWorkloadEntry#projects
-DTO io.b2mash.b2b.b2bstrawman.document.DocumentController$DocumentResponse#customerId
-ROUTE POST /api/customers/{customerId}/documents/upload-init

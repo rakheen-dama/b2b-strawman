@@ -9,8 +9,8 @@ import java.util.UUID;
  * confirming.
  */
 public record AnonymizationPreview(
-    UUID customerId,
-    String customerName,
+    UUID clientId,
+    String clientName,
     int portalContacts,
     int projects,
     int documents,

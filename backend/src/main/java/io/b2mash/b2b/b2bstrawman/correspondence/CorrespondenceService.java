@@ -53,11 +53,11 @@ public class CorrespondenceService {
       return FileCorrespondenceResult.idempotent(existing.get().getId());
     }
 
-    validateLinkage(cmd.customerId(), cmd.matterId());
+    validateLinkage(cmd.clientId(), cmd.matterId());
 
     var correspondence =
         new Correspondence(
-            cmd.customerId(),
+            cmd.clientId(),
             cmd.matterId(),
             cmd.subject(),
             cmd.bodyText(),

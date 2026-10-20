@@ -102,8 +102,8 @@ class InformationRequestNotificationAuditIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
-                          "projectId": "%s",
+                          "clientId": "%s",
+                          "matterId": "%s",
                           "portalContactId": "%s",
                           "items": [
                             {"name": "Bank Statements", "description": "Jan-Dec", "responseType": "FILE_UPLOAD", "required": true, "sortOrder": 0},
@@ -296,8 +296,8 @@ class InformationRequestNotificationAuditIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
-                          "projectId": "%s",
+                          "clientId": "%s",
+                          "matterId": "%s",
                           "portalContactId": "%s",
                           "items": [
                             {"name": "Cancel Test Item", "responseType": "FILE_UPLOAD", "required": true, "sortOrder": 0}

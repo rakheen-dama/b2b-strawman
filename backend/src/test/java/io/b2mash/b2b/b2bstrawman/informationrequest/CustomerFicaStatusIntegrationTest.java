@@ -71,7 +71,7 @@ class CustomerFicaStatusIntegrationTest {
             get("/api/clients/{id}/fica-status", freshCustomer)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fica_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerId").value(freshCustomer))
+        .andExpect(jsonPath("$.clientId").value(freshCustomer))
         .andExpect(jsonPath("$.status").value("NOT_STARTED"))
         .andExpect(jsonPath("$.lastVerifiedAt").doesNotExist())
         .andExpect(jsonPath("$.requestId").doesNotExist());
@@ -89,7 +89,7 @@ class CustomerFicaStatusIntegrationTest {
             get("/api/clients/{id}/fica-status", isolatedCustomer)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fica_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerId").value(isolatedCustomer))
+        .andExpect(jsonPath("$.clientId").value(isolatedCustomer))
         .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
         .andExpect(jsonPath("$.lastVerifiedAt").doesNotExist())
         .andExpect(jsonPath("$.requestId").isNotEmpty());
@@ -129,7 +129,7 @@ class CustomerFicaStatusIntegrationTest {
             get("/api/clients/{id}/fica-status", doneCustomer)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fica_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerId").value(doneCustomer))
+        .andExpect(jsonPath("$.clientId").value(doneCustomer))
         .andExpect(jsonPath("$.status").value("DONE"))
         .andExpect(jsonPath("$.lastVerifiedAt").isNotEmpty())
         .andExpect(jsonPath("$.requestId").value(requestId));
@@ -210,7 +210,7 @@ class CustomerFicaStatusIntegrationTest {
                         """
                         {
                           "requestTemplateId": "%s",
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "portalContactId": "%s",
                           "reminderIntervalDays": 7
                         }

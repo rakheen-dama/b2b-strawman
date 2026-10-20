@@ -687,7 +687,7 @@ class DocumentIntegrationTest {
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.scope").value("PROJECT"))
-        .andExpect(jsonPath("$.customerId").isEmpty())
+        .andExpect(jsonPath("$.clientId").isEmpty())
         .andExpect(jsonPath("$.visibility").value("INTERNAL"))
         .andExpect(jsonPath("$.status").value("UPLOADED"))
         .andExpect(jsonPath("$.matterId").value(projectId));

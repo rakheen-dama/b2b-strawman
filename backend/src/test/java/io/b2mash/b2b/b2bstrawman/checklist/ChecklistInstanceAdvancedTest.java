@@ -485,7 +485,7 @@ class ChecklistInstanceAdvancedTest {
 
     mockMvc
         .perform(
-            get("/api/customers/" + ids[0] + "/checklists")
+            get("/api/clients/" + ids[0] + "/checklists")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adv_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
@@ -525,12 +525,12 @@ class ChecklistInstanceAdvancedTest {
 
     mockMvc
         .perform(
-            post("/api/customers/" + ids[1] + "/checklists")
+            post("/api/clients/" + ids[1] + "/checklists")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adv_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"templateId\": \"%s\"}".formatted(ids[0])))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.customerId").value(ids[1].toString()))
+        .andExpect(jsonPath("$.clientId").value(ids[1].toString()))
         .andExpect(jsonPath("$.templateId").value(ids[0].toString()))
         .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
         .andExpect(jsonPath("$.items.length()").value(1));
@@ -684,7 +684,7 @@ class ChecklistInstanceAdvancedTest {
 
     mockMvc
         .perform(
-            post("/api/customers/" + ids[1] + "/checklists")
+            post("/api/clients/" + ids[1] + "/checklists")
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_adv_315a_custom", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"templateId\": \"%s\"}".formatted(ids[0])))
@@ -703,7 +703,7 @@ class ChecklistInstanceAdvancedTest {
 
     mockMvc
         .perform(
-            post("/api/customers/" + ids[1] + "/checklists")
+            post("/api/clients/" + ids[1] + "/checklists")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_adv_315a_nocap"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"templateId\": \"%s\"}".formatted(ids[0])))

@@ -18,15 +18,15 @@ public final class InformationRequestDtos {
 
   public record CreateInformationRequestRequest(
       UUID requestTemplateId,
-      @NotNull UUID customerId,
-      UUID projectId,
+      @NotNull UUID clientId,
+      UUID matterId,
       @NotNull UUID portalContactId,
       Integer reminderIntervalDays,
       LocalDate dueDate,
       @Valid List<AdHocItemRequest> items) {}
 
   public record UpdateInformationRequestRequest(
-      Integer reminderIntervalDays, UUID projectId, LocalDate dueDate) {}
+      Integer reminderIntervalDays, UUID matterId, LocalDate dueDate) {}
 
   public record AdHocItemRequest(
       @NotBlank String name,
@@ -50,10 +50,10 @@ public final class InformationRequestDtos {
       UUID id,
       String requestNumber,
       UUID requestTemplateId,
-      UUID customerId,
-      String customerName,
-      UUID projectId,
-      String projectName,
+      UUID clientId,
+      String clientName,
+      UUID matterId,
+      String matterName,
       UUID portalContactId,
       String portalContactName,
       String portalContactEmail,
@@ -204,5 +204,5 @@ public final class InformationRequestDtos {
    * </ul>
    */
   public record FicaStatusResponse(
-      UUID customerId, String status, Instant lastVerifiedAt, UUID requestId) {}
+      UUID clientId, String status, Instant lastVerifiedAt, UUID requestId) {}
 }

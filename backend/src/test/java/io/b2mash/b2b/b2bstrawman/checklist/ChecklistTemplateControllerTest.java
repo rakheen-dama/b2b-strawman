@@ -134,7 +134,7 @@ class ChecklistTemplateControllerTest {
                         {
                           "name": "Client Onboarding",
                           "description": "Standard onboarding checklist",
-                          "customerType": "INDIVIDUAL",
+                          "clientType": "INDIVIDUAL",
                           "autoInstantiate": true,
                           "items": [
                             {
@@ -157,7 +157,7 @@ class ChecklistTemplateControllerTest {
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.name").value("Client Onboarding"))
             .andExpect(jsonPath("$.slug").value("client-onboarding"))
-            .andExpect(jsonPath("$.customerType").value("INDIVIDUAL"))
+            .andExpect(jsonPath("$.clientType").value("INDIVIDUAL"))
             .andExpect(jsonPath("$.source").value("ORG_CUSTOM"))
             .andExpect(jsonPath("$.active").value(true))
             .andExpect(jsonPath("$.items.length()").value(2))
@@ -276,7 +276,7 @@ class ChecklistTemplateControllerTest {
                     """
                     {
                       "name": "Member Template",
-                      "customerType": "ANY",
+                      "clientType": "ANY",
                       "autoInstantiate": true,
                       "items": []
                     }
@@ -297,7 +297,7 @@ class ChecklistTemplateControllerTest {
                     """
                     {
                       "name": "Individual Filter Test",
-                      "customerType": "INDIVIDUAL",
+                      "clientType": "INDIVIDUAL",
                       "autoInstantiate": true,
                       "items": []
                     }
@@ -314,7 +314,7 @@ class ChecklistTemplateControllerTest {
                     """
                     {
                       "name": "Company Filter Test",
-                      "customerType": "COMPANY",
+                      "clientType": "COMPANY",
                       "autoInstantiate": true,
                       "items": []
                     }
@@ -328,7 +328,10 @@ class ChecklistTemplateControllerTest {
                 .param("customerType", "INDIVIDUAL")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cl_ctrl_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[?(@.customerType == 'COMPANY')]").doesNotExist());
+        // positive guard: the filter key is really on the wire, so the negative check below
+        // cannot pass vacuously on a renamed/missing field
+        .andExpect(jsonPath("$[?(@.clientType == 'INDIVIDUAL')]").exists())
+        .andExpect(jsonPath("$[?(@.clientType == 'COMPANY')]").doesNotExist());
   }
 
   // --- Capability Tests (added in Epic 315A) ---
@@ -345,7 +348,7 @@ class ChecklistTemplateControllerTest {
                     """
                     {
                       "name": "Cap Test Template",
-                      "customerType": "ANY",
+                      "clientType": "ANY",
                       "autoInstantiate": false,
                       "items": []
                     }
@@ -365,7 +368,7 @@ class ChecklistTemplateControllerTest {
                     """
                     {
                       "name": "NoCap Template",
-                      "customerType": "ANY",
+                      "clientType": "ANY",
                       "autoInstantiate": false,
                       "items": []
                     }

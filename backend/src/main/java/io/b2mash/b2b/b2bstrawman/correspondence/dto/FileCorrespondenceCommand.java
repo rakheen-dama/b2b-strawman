@@ -10,7 +10,7 @@ import java.util.UUID;
  */
 public record FileCorrespondenceCommand(
     UUID matterId, // == projectId; the matter the email is filed into
-    UUID customerId,
+    UUID clientId,
     String messageId, // idempotency key, required
     String subject,
     String bodyText,

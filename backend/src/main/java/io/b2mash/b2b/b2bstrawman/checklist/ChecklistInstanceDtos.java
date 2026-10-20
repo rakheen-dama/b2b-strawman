@@ -76,7 +76,7 @@ public final class ChecklistInstanceDtos {
   public record ChecklistInstanceResponse(
       UUID id,
       UUID templateId,
-      UUID customerId,
+      UUID clientId,
       String status,
       Instant startedAt,
       Instant completedAt,

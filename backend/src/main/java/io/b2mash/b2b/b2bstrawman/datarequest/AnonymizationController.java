@@ -21,19 +21,19 @@ public class AnonymizationController {
     this.dataAnonymizationService = dataAnonymizationService;
   }
 
-  @PostMapping("/api/customers/{customerId}/anonymize")
+  @PostMapping("/api/clients/{clientId}/anonymize")
   @RequiresCapability("MANAGE_COMPLIANCE_DESTRUCTIVE")
   public ResponseEntity<DataAnonymizationService.AnonymizationResult> anonymizeCustomer(
-      @PathVariable UUID customerId, @Valid @RequestBody AnonymizationRequest body) {
+      @PathVariable UUID clientId, @Valid @RequestBody AnonymizationRequest body) {
     return ResponseEntity.ok(
         dataAnonymizationService.anonymizeCustomer(
-            customerId, body.confirmationName(), body.reason(), RequestScopes.requireMemberId()));
+            clientId, body.confirmationName(), body.reason(), RequestScopes.requireMemberId()));
   }
 
-  @GetMapping("/api/customers/{customerId}/anonymize/preview")
+  @GetMapping("/api/clients/{clientId}/anonymize/preview")
   @RequiresCapability("MANAGE_COMPLIANCE")
-  public ResponseEntity<AnonymizationPreview> previewAnonymization(@PathVariable UUID customerId) {
-    return ResponseEntity.ok(dataAnonymizationService.previewAnonymization(customerId));
+  public ResponseEntity<AnonymizationPreview> previewAnonymization(@PathVariable UUID clientId) {
+    return ResponseEntity.ok(dataAnonymizationService.previewAnonymization(clientId));
   }
 
   public record AnonymizationRequest(@NotBlank String confirmationName, String reason) {}

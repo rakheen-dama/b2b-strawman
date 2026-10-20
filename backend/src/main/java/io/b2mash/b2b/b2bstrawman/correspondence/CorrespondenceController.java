@@ -26,17 +26,17 @@ public class CorrespondenceController {
     this.correspondenceService = correspondenceService;
   }
 
-  @GetMapping("/api/projects/{projectId}/correspondence")
+  @GetMapping("/api/matters/{matterId}/correspondence")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<Page<CorrespondenceListResponse>> listProjectCorrespondence(
-      @PathVariable UUID projectId, Pageable pageable, ActorContext actor) {
-    return ResponseEntity.ok(correspondenceService.listForProject(projectId, actor, pageable));
+      @PathVariable UUID matterId, Pageable pageable, ActorContext actor) {
+    return ResponseEntity.ok(correspondenceService.listForProject(matterId, actor, pageable));
   }
 
-  @GetMapping("/api/customers/{customerId}/correspondence")
+  @GetMapping("/api/clients/{clientId}/correspondence")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<Page<CorrespondenceListResponse>> listCustomerCorrespondence(
-      @PathVariable UUID customerId, Pageable pageable) {
-    return ResponseEntity.ok(correspondenceService.listForCustomer(customerId, pageable));
+      @PathVariable UUID clientId, Pageable pageable) {
+    return ResponseEntity.ok(correspondenceService.listForCustomer(clientId, pageable));
   }
 }

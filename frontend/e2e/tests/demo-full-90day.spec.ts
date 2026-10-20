@@ -386,7 +386,8 @@ test("Legal-ZA 90-Day Demo — Zero to Hero", async ({ page }) => {
   if (await siphoMatter.isVisible().catch(() => false)) {
     await siphoMatter.click();
     await wait(page, BEAT);
-    await clickTab(page, "action items", QUICK);
+    // Phase 87 S5 (ADR-344): label
+    await clickTab(page, "tasks", QUICK);
     await clickTab(page, "time", QUICK);
     await clickTab(page, "documents", QUICK);
     await clickTab(page, "activity", BEAT);

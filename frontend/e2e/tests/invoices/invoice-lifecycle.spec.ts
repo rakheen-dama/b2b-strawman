@@ -142,11 +142,12 @@ test.describe.serial("INV-02: Invoice Lifecycle", () => {
       await page.goto(`${BASE}/invoices/${invoiceId}`);
       await expect(page.getByText(/Approved/i).first()).toBeVisible({ timeout: 10000 });
 
-      const sendBtn = page.getByRole("button", { name: /Send Invoice/i });
+      // Phase 87 S5 (ADR-344): label
+      const sendBtn = page.getByRole("button", { name: /Send fee note/i });
       const hasSendBtn = await sendBtn.isVisible({ timeout: 5000 }).catch(() => false);
 
       if (!hasSendBtn) {
-        test.skip(true, "Send Invoice button not visible and API send failed");
+        test.skip(true, "Send fee note button not visible and API send failed");
         return;
       }
 

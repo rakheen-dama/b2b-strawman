@@ -48,10 +48,10 @@ test.describe.serial("CUST-01: Customer CRUD", () => {
     await loginAs(page, "alice");
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${BASE}/clients`);
-    // Heading uses TerminologyHeading — "Customers" or "Clients"
+    // Heading is "Clients"
     await expect(page.locator("h1").first()).toBeVisible({ timeout: 10000 });
 
-    // Click "New Customer" or "New Client" (terminology may vary)
+    // Click "New Client"
     const newBtn = page.getByRole("button", { name: /New (Customer|Client)/i });
     await expect(newBtn).toBeVisible({ timeout: 5000 });
     await newBtn.click();
@@ -66,8 +66,9 @@ test.describe.serial("CUST-01: Customer CRUD", () => {
     await page.getByRole("button", { name: "Next" }).click();
     await page.waitForTimeout(2000);
 
-    // Submit — button text is "Create Customer"
-    const createBtn = page.getByRole("button", { name: "Create Customer" });
+    // Submit — button text is "Create Client"
+    // Phase 87 S5 (ADR-344): label
+    const createBtn = page.getByRole("button", { name: "Create Client" });
     await createBtn.evaluate((el: HTMLElement) => el.click());
     await page.waitForTimeout(3000);
 
@@ -116,7 +117,8 @@ test.describe.serial("CUST-01: Customer CRUD", () => {
     expect(step2Visible || true).toBeTruthy(); // Step 2 may or may not have custom fields
 
     // Submit
-    const createBtn = page.getByRole("button", { name: "Create Customer" });
+    // Phase 87 S5 (ADR-344): label
+    const createBtn = page.getByRole("button", { name: "Create Client" });
     await createBtn.evaluate((el: HTMLElement) => el.click());
     await page.waitForTimeout(3000);
 

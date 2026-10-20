@@ -1,7 +1,7 @@
 {
-  "commit": "85f18718e919033f8a3325625346bd53817ee5a4",
+  "commit": "9d9208cc885ba17a2739dfd15919902265e81abb",
   "command": "pnpm install --frozen-lockfile && cd frontend && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-20T23:15:00+0200",
-  "summary": "PR #1617 (611F; Playwright label locators only, frontend/e2e/tests/** 9 files) on 85f18718e (orchestrator run, detached verify-611F worktree): lint 0 errors / 92 warnings (= 611E); prettier clean; vitest 369 files, 2341 passed | 2 skipped (= 611E); build OK. E2E A/B fresh stack per run (A=main ed30ed689, B=PR): legal-lifecycle 63/4/25 both (4 = carried), legal-depth-ii 28/0/15 both; default targeted 7 specs A 10/4/20 -> B 19/1/14, no B-only regression. Evidence /tmp/e2e-611F/. CI Frontend + qodana pass."
+  "ts": "2026-10-21T00:14:31+0200",
+  "summary": "PR #1618 (612A; six-zone NAV_GROUPS, shared footer, /profitability -> /reports/profitability + Reports card, longest-match nav highlight, canAccessNavItem any-of/adminOnly in sidebar+palette) on 9d9208cc8 (orchestrator run, detached e2e-612A-B worktree): lint 0 errors / 92 warnings (= main); prettier clean; vitest 369 files, 2393 passed | 2 skipped; build OK. E2E A/B fresh stack per side, each built from its own checkout (A=main 05c9af2e3, B=PR): legal-lifecycle 65/15/12 both, identical fail set + identical first-error per test (6 carried locations + missing-baseline snapshot failures); legal-depth-ii 13/15/15 both, identical (all missing-baseline); targeted default 9 specs (navigation x2, compliance-overview, finance/reports, finance/profitability, billing-runs, invoice-lifecycle, rbac-capabilities, smoke) 42/0/3 both. Evidence /tmp/e2e-612A/. CI Frontend + qodana pass."
 }

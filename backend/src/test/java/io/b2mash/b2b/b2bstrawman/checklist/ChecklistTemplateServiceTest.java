@@ -90,7 +90,7 @@ class ChecklistTemplateServiceTest {
 
     assertThat(result.name()).isEqualTo("KYC Onboarding");
     assertThat(result.slug()).isEqualTo("kyc-onboarding");
-    assertThat(result.customerType()).isEqualTo("INDIVIDUAL");
+    assertThat(result.clientType()).isEqualTo("INDIVIDUAL");
     assertThat(result.source()).isEqualTo("ORG_CUSTOM");
     assertThat(result.active()).isTrue();
     assertThat(result.items()).hasSize(2);

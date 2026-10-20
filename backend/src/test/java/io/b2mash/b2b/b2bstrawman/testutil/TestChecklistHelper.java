@@ -120,7 +120,7 @@ public final class TestChecklistHelper {
       MockMvc mockMvc, String customerId, JwtRequestPostProcessor jwt) throws Exception {
     var result =
         mockMvc
-            .perform(get("/api/customers/" + customerId + "/checklists").with(jwt))
+            .perform(get("/api/clients/" + customerId + "/checklists").with(jwt))
             .andExpect(status().isOk())
             .andReturn();
     String json = result.getResponse().getContentAsString();

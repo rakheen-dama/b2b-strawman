@@ -87,7 +87,7 @@ class DataExportControllerTest {
   void postExport_returns202WithExportId() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/data-export")
+            post("/api/clients/" + customerId + "/data-export")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dex_owner")))
         .andExpect(status().isAccepted())
         .andExpect(jsonPath("$.exportId").exists())
@@ -100,7 +100,7 @@ class DataExportControllerTest {
     var postResult =
         mockMvc
             .perform(
-                post("/api/customers/" + customerId + "/data-export")
+                post("/api/clients/" + customerId + "/data-export")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dex_owner")))
             .andExpect(status().isAccepted())
             .andReturn();
@@ -137,7 +137,7 @@ class DataExportControllerTest {
   void postExport_memberRole_returns403() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/data-export")
+            post("/api/clients/" + customerId + "/data-export")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_dex_member")))
         .andExpect(status().isForbidden());
   }
@@ -146,7 +146,7 @@ class DataExportControllerTest {
   void postExport_nonExistentCustomer_returns404() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + UUID.randomUUID() + "/data-export")
+            post("/api/clients/" + UUID.randomUUID() + "/data-export")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dex_owner")))
         .andExpect(status().isNotFound());
   }

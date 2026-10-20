@@ -112,7 +112,7 @@ class CorrespondenceListAccessTest {
   void viewerWithNoMcpCapabilityCanReadProjectCorrespondence() throws Exception {
     // ownerA has NO MCP capability granted — proves the gate is plain project view-access, not MCP.
     mockMvc
-        .perform(get("/api/projects/{id}/correspondence", matterA).with(ownerA))
+        .perform(get("/api/matters/{matterId}/correspondence", matterA).with(ownerA))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[0].subject").value("Tenant A subject"));
   }
@@ -122,7 +122,7 @@ class CorrespondenceListAccessTest {
     // ResourceNotFoundException -> 404 (security-by-obscurity) when the member can't view the
     // matter.
     mockMvc
-        .perform(get("/api/projects/{id}/correspondence", matterA).with(outsiderA))
+        .perform(get("/api/matters/{matterId}/correspondence", matterA).with(outsiderA))
         .andExpect(status().isNotFound());
   }
 
@@ -130,7 +130,7 @@ class CorrespondenceListAccessTest {
   void tenantBCannotReadTenantAProjectCorrespondence() throws Exception {
     // search_path isolation: matterA is invisible in tenant B -> requireViewAccess throws 404.
     mockMvc
-        .perform(get("/api/projects/{id}/correspondence", matterA).with(ownerB))
+        .perform(get("/api/matters/{matterId}/correspondence", matterA).with(ownerB))
         .andExpect(status().isNotFound());
   }
 
@@ -138,7 +138,7 @@ class CorrespondenceListAccessTest {
   void tenantBCannotReadTenantACustomerCorrespondence() throws Exception {
     // clientA is invisible in tenant B -> existence check throws 404.
     mockMvc
-        .perform(get("/api/customers/{id}/correspondence", clientA).with(ownerB))
+        .perform(get("/api/clients/{clientId}/correspondence", clientA).with(ownerB))
         .andExpect(status().isNotFound());
   }
 }

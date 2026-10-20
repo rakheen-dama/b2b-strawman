@@ -119,7 +119,7 @@ class DocumentScopeIntegrationTest {
   void shouldInitiateCustomerScopedUpload() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/documents/upload-init")
+            post("/api/clients/" + customerId + "/documents/upload-init")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -136,7 +136,7 @@ class DocumentScopeIntegrationTest {
   void memberCannotInitiateCustomerScopedUpload() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/documents/upload-init")
+            post("/api/clients/" + customerId + "/documents/upload-init")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_scope_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -150,7 +150,7 @@ class DocumentScopeIntegrationTest {
   void customerScopedUploadReturns404ForNonexistentCustomer() throws Exception {
     mockMvc
         .perform(
-            post("/api/customers/00000000-0000-0000-0000-000000000000/documents/upload-init")
+            post("/api/clients/00000000-0000-0000-0000-000000000000/documents/upload-init")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -203,7 +203,7 @@ class DocumentScopeIntegrationTest {
     // Upload a CUSTOMER-scoped document
     mockMvc
         .perform(
-            post("/api/customers/" + customerId + "/documents/upload-init")
+            post("/api/clients/" + customerId + "/documents/upload-init")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -220,7 +220,7 @@ class DocumentScopeIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].scope").value("CUSTOMER"))
-        .andExpect(jsonPath("$[0].customerId").value(customerId));
+        .andExpect(jsonPath("$[0].clientId").value(customerId));
   }
 
   @Test
@@ -411,7 +411,7 @@ class DocumentScopeIntegrationTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/customers/" + customerId + "/documents/upload-init")
+                post("/api/clients/" + customerId + "/documents/upload-init")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -430,7 +430,7 @@ class DocumentScopeIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("UPLOADED"))
         .andExpect(jsonPath("$.scope").value("CUSTOMER"))
-        .andExpect(jsonPath("$.customerId").value(customerId));
+        .andExpect(jsonPath("$.clientId").value(customerId));
   }
 
   // --- ORG-scoped download presign ---
@@ -500,7 +500,7 @@ class DocumentScopeIntegrationTest {
     var initResult =
         mockMvc
             .perform(
-                post("/api/customers/" + customerId + "/documents/upload-init")
+                post("/api/clients/" + customerId + "/documents/upload-init")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(

@@ -61,7 +61,7 @@ class ChecklistTemplateAdvancedTest {
                         {
                           "name": "Original Template",
                           "description": "Template to be cloned",
-                          "customerType": "ANY",
+                          "clientType": "ANY",
                           "autoInstantiate": true,
                           "items": [
                             {"name": "Step A", "sortOrder": 1, "required": true, "requiresDocument": false},
@@ -124,7 +124,7 @@ class ChecklistTemplateAdvancedTest {
                         """
                         {
                           "name": "Slug Test",
-                          "customerType": "ANY",
+                          "clientType": "ANY",
                           "autoInstantiate": false,
                           "slug": "my-template",
                           "items": []
@@ -161,7 +161,7 @@ class ChecklistTemplateAdvancedTest {
                     """
                     {
                       "name": "Cycle Test",
-                      "customerType": "ANY",
+                      "clientType": "ANY",
                       "autoInstantiate": false,
                       "items": [
                         {"name": "Item A", "sortOrder": 1, "required": true, "requiresDocument": false, "dependsOnItemId": "%s"},
@@ -188,7 +188,7 @@ class ChecklistTemplateAdvancedTest {
                     """
                     {
                       "name": "Bad Dep Test",
-                      "customerType": "ANY",
+                      "clientType": "ANY",
                       "autoInstantiate": false,
                       "items": [
                         {"name": "Item X", "sortOrder": 1, "required": true, "requiresDocument": false, "dependsOnItemId": "%s"}
@@ -213,7 +213,7 @@ class ChecklistTemplateAdvancedTest {
                         """
                         {
                           "name": "Conflict Slug",
-                          "customerType": "ANY",
+                          "clientType": "ANY",
                           "autoInstantiate": false,
                           "items": []
                         }
@@ -234,7 +234,7 @@ class ChecklistTemplateAdvancedTest {
                         """
                         {
                           "name": "Conflict Slug",
-                          "customerType": "ANY",
+                          "clientType": "ANY",
                           "autoInstantiate": false,
                           "items": []
                         }
@@ -261,7 +261,7 @@ class ChecklistTemplateAdvancedTest {
                         """
                         {
                           "name": "Ordered Template",
-                          "customerType": "ANY",
+                          "clientType": "ANY",
                           "autoInstantiate": false,
                           "sortOrder": 5,
                           "items": []
@@ -295,7 +295,7 @@ class ChecklistTemplateAdvancedTest {
                         """
                         {
                           "name": "Item Order Test",
-                          "customerType": "ANY",
+                          "clientType": "ANY",
                           "autoInstantiate": false,
                           "items": [
                             {"name": "Third", "sortOrder": 30, "required": false, "requiresDocument": false},

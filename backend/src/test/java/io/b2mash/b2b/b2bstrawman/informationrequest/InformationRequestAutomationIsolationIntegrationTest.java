@@ -145,8 +145,8 @@ class InformationRequestAutomationIsolationIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
-                          "projectId": "%s",
+                          "clientId": "%s",
+                          "matterId": "%s",
                           "portalContactId": "%s",
                           "items": [
                             {"name": "Bank Statements", "responseType": "FILE_UPLOAD", "required": true, "sortOrder": 0}

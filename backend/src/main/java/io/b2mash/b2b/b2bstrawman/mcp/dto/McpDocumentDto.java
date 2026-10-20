@@ -30,7 +30,7 @@ public record McpDocumentDto(
         doc.contentType(),
         doc.size(),
         doc.matterId(),
-        doc.customerId(),
+        doc.clientId(),
         doc.createdAt());
   }
 }

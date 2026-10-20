@@ -297,8 +297,8 @@ public class DataSubjectRequestService {
 
   public record DataSubjectRequestSummary(
       UUID id,
-      UUID customerId,
-      String customerName,
+      UUID clientId,
+      String clientName,
       String requestType,
       String status,
       String description,

@@ -21,7 +21,7 @@ public final class ChecklistTemplateDtos {
   public record CreateChecklistTemplateRequest(
       @NotBlank String name,
       String description,
-      @NotBlank String customerType,
+      @NotBlank String clientType,
       boolean autoInstantiate,
       String slug,
       Integer sortOrder,
@@ -68,7 +68,7 @@ public final class ChecklistTemplateDtos {
       String name,
       String slug,
       String description,
-      String customerType,
+      String clientType,
       String source,
       String packId,
       boolean active,

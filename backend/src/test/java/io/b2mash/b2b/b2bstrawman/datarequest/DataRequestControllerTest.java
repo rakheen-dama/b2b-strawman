@@ -131,7 +131,7 @@ class DataRequestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"customerId":"%s","requestType":"ACCESS","description":"I want my data"}
+                    {"clientId":"%s","requestType":"ACCESS","description":"I want my data"}
                     """
                         .formatted(customerId)))
         .andExpect(status().isCreated())
@@ -150,7 +150,7 @@ class DataRequestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"customerId":"%s","requestType":"ACCESS","description":"Member attempt"}
+                    {"clientId":"%s","requestType":"ACCESS","description":"Member attempt"}
                     """
                         .formatted(customerId)))
         .andExpect(status().isForbidden());
@@ -166,7 +166,7 @@ class DataRequestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"customerId":"%s","requestType":"DELETION","description":"List test"}
+                    {"clientId":"%s","requestType":"DELETION","description":"List test"}
                     """
                         .formatted(customerId)))
         .andExpect(status().isCreated());
@@ -226,7 +226,7 @@ class DataRequestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"customerId":"%s","requestType":"ACCESS","description":"Deadline status test"}
+                    {"clientId":"%s","requestType":"ACCESS","description":"Deadline status test"}
                     """
                         .formatted(customerId)))
         .andExpect(status().isCreated());

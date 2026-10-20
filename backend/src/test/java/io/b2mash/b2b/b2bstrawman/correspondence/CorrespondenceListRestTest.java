@@ -102,7 +102,7 @@ class CorrespondenceListRestTest {
   @Test
   void projectListReturnsNewestFirstWithAttachmentCountAndDirection() throws Exception {
     mockMvc
-        .perform(get("/api/projects/{id}/correspondence", matterId).with(owner))
+        .perform(get("/api/matters/{matterId}/correspondence", matterId).with(owner))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[0].subject").value("Newer subject"))
         .andExpect(jsonPath("$.content[1].subject").value("Older subject"))
@@ -114,7 +114,7 @@ class CorrespondenceListRestTest {
   @Test
   void customerListReturnsNewestFirst() throws Exception {
     mockMvc
-        .perform(get("/api/customers/{id}/correspondence", clientId).with(owner))
+        .perform(get("/api/clients/{clientId}/correspondence", clientId).with(owner))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[0].subject").value("Newer subject"))
         .andExpect(jsonPath("$.content[1].subject").value("Older subject"));
@@ -124,7 +124,9 @@ class CorrespondenceListRestTest {
   void pageSizeIsClampedToFifty() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/{id}/correspondence", matterId).param("size", "500").with(owner))
+            get("/api/matters/{matterId}/correspondence", matterId)
+                .param("size", "500")
+                .with(owner))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.page.size").value(50));
   }

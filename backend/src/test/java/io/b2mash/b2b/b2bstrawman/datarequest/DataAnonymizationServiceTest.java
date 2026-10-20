@@ -441,8 +441,8 @@ class DataAnonymizationServiceTest {
 
     var preview = runInTenant(() -> dataAnonymizationService.previewAnonymization(customerId));
 
-    assertThat(preview.customerId()).isEqualTo(customerId);
-    assertThat(preview.customerName()).isEqualTo("Preview Customer");
+    assertThat(preview.clientId()).isEqualTo(customerId);
+    assertThat(preview.clientName()).isEqualTo("Preview Customer");
     assertThat(preview.customFieldValues()).isEqualTo(2);
     assertThat(preview.portalContacts()).isZero();
     assertThat(preview.projects()).isZero();

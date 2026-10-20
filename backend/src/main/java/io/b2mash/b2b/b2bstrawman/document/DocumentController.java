@@ -56,13 +56,13 @@ public class DocumentController {
 
   // --- CUSTOMER-scoped upload-init ---
 
-  @PostMapping("/api/customers/{customerId}/documents/upload-init")
+  @PostMapping("/api/clients/{clientId}/documents/upload-init")
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<UploadInitResponse> initiateCustomerUpload(
-      @PathVariable UUID customerId, @Valid @RequestBody UploadInitRequest request) {
+      @PathVariable UUID clientId, @Valid @RequestBody UploadInitRequest request) {
     var result =
         documentService.initiateCustomerUpload(
-            customerId, request.fileName(), request.contentType(), request.size());
+            clientId, request.fileName(), request.contentType(), request.size());
     return ResponseEntity.status(201).body(UploadInitResponse.from(result));
   }
 
@@ -142,7 +142,7 @@ public class DocumentController {
       long size,
       String status,
       String scope,
-      UUID customerId,
+      UUID clientId,
       String visibility,
       UUID uploadedBy,
       String uploadedByName,

@@ -28,10 +28,10 @@ public class ChecklistInstanceController {
     this.checklistInstanceService = checklistInstanceService;
   }
 
-  @GetMapping("/api/customers/{customerId}/checklists")
+  @GetMapping("/api/clients/{clientId}/checklists")
   public ResponseEntity<List<ChecklistInstanceResponse>> listForCustomer(
-      @PathVariable UUID customerId) {
-    var responses = checklistInstanceService.getInstancesWithItemsForCustomer(customerId);
+      @PathVariable UUID clientId) {
+    var responses = checklistInstanceService.getInstancesWithItemsForCustomer(clientId);
     return ResponseEntity.ok(responses);
   }
 
@@ -41,12 +41,12 @@ public class ChecklistInstanceController {
     return ResponseEntity.ok(response);
   }
 
-  @PostMapping("/api/customers/{customerId}/checklists")
+  @PostMapping("/api/clients/{clientId}/checklists")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<ChecklistInstanceResponse> instantiateChecklist(
-      @PathVariable UUID customerId, @Valid @RequestBody InstantiateChecklistRequest request) {
+      @PathVariable UUID clientId, @Valid @RequestBody InstantiateChecklistRequest request) {
     var response =
-        checklistInstanceService.createFromTemplateWithItems(request.templateId(), customerId);
+        checklistInstanceService.createFromTemplateWithItems(request.templateId(), clientId);
     return ResponseEntity.created(URI.create("/api/checklist-instances/" + response.id()))
         .body(response);
   }

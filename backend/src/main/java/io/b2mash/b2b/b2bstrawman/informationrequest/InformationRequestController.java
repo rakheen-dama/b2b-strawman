@@ -99,16 +99,16 @@ public class InformationRequestController {
     return ResponseEntity.ok(informationRequestService.resendNotification(id));
   }
 
-  @GetMapping("/api/customers/{customerId}/information-requests")
+  @GetMapping("/api/clients/{clientId}/information-requests")
   public ResponseEntity<List<InformationRequestResponse>> listByCustomer(
-      @PathVariable UUID customerId) {
-    return ResponseEntity.ok(informationRequestService.listByCustomer(customerId));
+      @PathVariable UUID clientId) {
+    return ResponseEntity.ok(informationRequestService.listByCustomer(clientId));
   }
 
-  @GetMapping("/api/projects/{projectId}/information-requests")
+  @GetMapping("/api/matters/{matterId}/information-requests")
   public ResponseEntity<List<InformationRequestResponse>> listByProject(
-      @PathVariable UUID projectId) {
-    return ResponseEntity.ok(informationRequestService.listByProject(projectId));
+      @PathVariable UUID matterId) {
+    return ResponseEntity.ok(informationRequestService.listByProject(matterId));
   }
 
   @GetMapping("/api/information-requests/summary")

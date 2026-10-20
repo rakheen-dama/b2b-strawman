@@ -69,7 +69,7 @@ public class DataRequestController {
     var actorId = RequestScopes.requireMemberId();
     var request =
         dataSubjectRequestService.createRequest(
-            body.customerId(), body.requestType(), body.description(), actorId);
+            body.clientId(), body.requestType(), body.description(), actorId);
     var response = dataSubjectRequestService.toSummary(request);
     return ResponseEntity.created(URI.create("/api/data-requests/" + request.getId()))
         .body(response);
@@ -118,7 +118,7 @@ public class DataRequestController {
       @PathVariable UUID id, @Valid @RequestBody ExecuteDeletionBody body) {
     var actorId = RequestScopes.requireMemberId();
     var result =
-        dataAnonymizationService.executeAnonymization(id, body.confirmCustomerName(), actorId);
+        dataAnonymizationService.executeAnonymization(id, body.confirmClientName(), actorId);
     return ResponseEntity.ok(
         Map.of(
             "status",
@@ -141,11 +141,11 @@ public class DataRequestController {
 
   // DTOs
   public record CreateDataRequestBody(
-      @NotNull UUID customerId, @NotBlank String requestType, @NotBlank String description) {}
+      @NotNull UUID clientId, @NotBlank String requestType, @NotBlank String description) {}
 
   public record StatusTransitionBody(@NotBlank String action, String reason) {}
 
-  public record ExecuteDeletionBody(@NotBlank String confirmCustomerName) {}
+  public record ExecuteDeletionBody(@NotBlank String confirmClientName) {}
 
   public record ExportResponse(String exportFileKey) {}
 

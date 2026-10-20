@@ -66,11 +66,12 @@ class WireVocabularyContractTest {
   private static final String BASE = "io.b2mash.b2b.b2bstrawman";
 
   /**
-   * Phase 87 Batch 1 (Epic 607). Edited ONLY in 607A (this set), 608B (+ Batch 2) and 609F (scope
-   * removed — whole base package, excluding {@code mcp}).
+   * Phase 87 Batch 1 (Epic 607) + Batch 2 (Epic 608B). Edited ONLY in 607A (Batch 1), 608B (+ Batch
+   * 2) and 609F (scope removed — whole base package, excluding {@code mcp}).
    */
   static final Set<String> SCOPED_PACKAGES =
       Set.of(
+          // Batch 1 — matters core (Epic 607)
           "project",
           "member",
           "projecttemplate",
@@ -82,7 +83,13 @@ class WireVocabularyContractTest {
           "task",
           "document",
           "mywork",
-          "calendar");
+          "calendar",
+          // Batch 2 — clients core (Epic 608)
+          "customer",
+          "informationrequest",
+          "checklist",
+          "datarequest",
+          "correspondence");
 
   /**
    * Wire records the §12.3.1 name heuristic misses (their names do not end in
@@ -108,7 +115,9 @@ class WireVocabularyContractTest {
           Set.of(
               BASE + ".project.ProjectUpcomingDeadline", BASE + ".project.MatterUpcomingDeadline"),
           Set.of(BASE + ".project.ProjectWithRole", BASE + ".project.MatterWithRole"),
-          Set.of(BASE + ".budget.BudgetStatus"));
+          Set.of(BASE + ".budget.BudgetStatus"),
+          // Batch 2 (608B): GET /api/clients/{clientId}/readiness — name heuristic misses it.
+          Set.of(BASE + ".setupstatus.ClientReadiness"));
 
   private static final Set<String> ADDITIONAL_WIRE_RECORD_NAMES =
       ADDITIONAL_WIRE_RECORDS.stream().flatMap(Set::stream).collect(Collectors.toUnmodifiableSet());

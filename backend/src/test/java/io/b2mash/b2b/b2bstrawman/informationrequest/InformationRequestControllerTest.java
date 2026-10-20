@@ -157,7 +157,7 @@ class InformationRequestControllerTest {
                     """
                     {
                       "requestTemplateId": "%s",
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "portalContactId": "%s",
                       "reminderIntervalDays": 7
                     }
@@ -167,7 +167,7 @@ class InformationRequestControllerTest {
         .andExpect(jsonPath("$.id").exists())
         .andExpect(jsonPath("$.requestNumber").exists())
         .andExpect(jsonPath("$.status").value("DRAFT"))
-        .andExpect(jsonPath("$.customerName").value("InfoReq Test Customer"))
+        .andExpect(jsonPath("$.clientName").value("InfoReq Test Customer"))
         .andExpect(jsonPath("$.portalContactName").value("Test Contact"))
         .andExpect(jsonPath("$.portalContactEmail").value("contact@test.com"))
         .andExpect(jsonPath("$.items.length()").value(3))
@@ -185,7 +185,7 @@ class InformationRequestControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "portalContactId": "%s",
                       "items": [
                         {"name": "ID Document", "description": "Certified copy", "responseType": "FILE_UPLOAD", "required": true, "sortOrder": 0},
@@ -264,7 +264,7 @@ class InformationRequestControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"customerId": "%s", "portalContactId": "%s"}
+                        {"clientId": "%s", "portalContactId": "%s"}
                         """
                             .formatted(customerId, portalContactId)))
             .andExpect(status().isCreated())
@@ -511,7 +511,7 @@ class InformationRequestControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                        {"requestTemplateId": "%s", "clientId": "%s", "portalContactId": "%s"}
                         """
                             .formatted(templateId, customerId, portalContactId)))
             .andExpect(status().isCreated())
@@ -527,7 +527,7 @@ class InformationRequestControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                        {"requestTemplateId": "%s", "clientId": "%s", "portalContactId": "%s"}
                         """
                             .formatted(templateId, customerId, portalContactId)))
             .andExpect(status().isCreated())
@@ -590,7 +590,7 @@ class InformationRequestControllerTest {
         .andExpect(jsonPath("$.id").value(requestId))
         .andExpect(jsonPath("$.items").isArray())
         .andExpect(jsonPath("$.items.length()").value(3))
-        .andExpect(jsonPath("$.customerName").exists())
+        .andExpect(jsonPath("$.clientName").exists())
         .andExpect(jsonPath("$.portalContactName").exists());
   }
 
@@ -635,7 +635,7 @@ class InformationRequestControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(
                 """
-                {"requestTemplateId": "%s", "customerId": "%s", "projectId": "%s", "portalContactId": "%s"}
+                {"requestTemplateId": "%s", "clientId": "%s", "matterId": "%s", "portalContactId": "%s"}
                 """
                     .formatted(templateId, customerId, projectId, portalContactId)));
 
@@ -646,7 +646,7 @@ class InformationRequestControllerTest {
                 .param("projectId", projectId))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$[0].projectId").value(projectId));
+        .andExpect(jsonPath("$[0].matterId").value(projectId));
   }
 
   // ========== Convenience Endpoints ==========
@@ -655,7 +655,7 @@ class InformationRequestControllerTest {
   void shouldListByCustomer() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/{customerId}/information-requests", customerId)
+            get("/api/clients/{clientId}/information-requests", customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
@@ -670,17 +670,17 @@ class InformationRequestControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(
                 """
-                {"requestTemplateId": "%s", "customerId": "%s", "projectId": "%s", "portalContactId": "%s"}
+                {"requestTemplateId": "%s", "clientId": "%s", "matterId": "%s", "portalContactId": "%s"}
                 """
                     .formatted(templateId, customerId, projectId, portalContactId)));
 
     mockMvc
         .perform(
-            get("/api/projects/{projectId}/information-requests", projectId)
+            get("/api/matters/{matterId}/information-requests", projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$[0].projectId").value(projectId));
+        .andExpect(jsonPath("$[0].matterId").value(projectId));
   }
 
   // ========== Dashboard Summary ==========
@@ -711,7 +711,7 @@ class InformationRequestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                    {"requestTemplateId": "%s", "clientId": "%s", "portalContactId": "%s"}
                     """
                         .formatted(templateId, UUID.randomUUID(), portalContactId)))
         .andExpect(status().isNotFound());
@@ -726,7 +726,7 @@ class InformationRequestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                    {"requestTemplateId": "%s", "clientId": "%s", "portalContactId": "%s"}
                     """
                         .formatted(templateId, customerId, UUID.randomUUID())))
         .andExpect(status().isNotFound());
@@ -745,7 +745,7 @@ class InformationRequestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                    {"requestTemplateId": "%s", "clientId": "%s", "portalContactId": "%s"}
                     """
                         .formatted(templateId, customerId, otherContactId)))
         .andExpect(status().isBadRequest());
@@ -771,7 +771,7 @@ class InformationRequestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                    {"requestTemplateId": "%s", "clientId": "%s", "portalContactId": "%s"}
                     """
                         .formatted(templateId, customerId, portalContactId)))
         .andExpect(status().isForbidden());
@@ -786,7 +786,7 @@ class InformationRequestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                    {"requestTemplateId": "%s", "clientId": "%s", "portalContactId": "%s"}
                     """
                         .formatted(templateId, customerId, portalContactId)))
         .andExpect(status().isCreated());
@@ -820,7 +820,7 @@ class InformationRequestControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s", "reminderIntervalDays": 5}
+                        {"requestTemplateId": "%s", "clientId": "%s", "portalContactId": "%s", "reminderIntervalDays": 5}
                         """
                             .formatted(templateId, customerId, portalContactId)))
             .andExpect(status().isCreated())
@@ -1035,7 +1035,7 @@ class InformationRequestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                    {"requestTemplateId": "%s", "clientId": "%s", "portalContactId": "%s"}
                     """
                         .formatted(templateId, customerId, portalContactId)))
         .andExpect(status().isCreated());
@@ -1050,7 +1050,7 @@ class InformationRequestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                    {"requestTemplateId": "%s", "clientId": "%s", "portalContactId": "%s"}
                     """
                         .formatted(templateId, customerId, portalContactId)))
         .andExpect(status().isForbidden());

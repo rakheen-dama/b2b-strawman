@@ -148,15 +148,15 @@ public class InformationRequestService {
     if (request.requestTemplateId() != null) {
       return createFromTemplate(
           request.requestTemplateId(),
-          request.customerId(),
-          request.projectId(),
+          request.clientId(),
+          request.matterId(),
           request.portalContactId(),
           request.reminderIntervalDays(),
           request.dueDate());
     }
     return createAdHoc(
-        request.customerId(),
-        request.projectId(),
+        request.clientId(),
+        request.matterId(),
         request.portalContactId(),
         request.reminderIntervalDays(),
         request.dueDate(),
@@ -171,8 +171,8 @@ public class InformationRequestService {
       CreateInformationRequestRequest request, UUID memberId) {
     return doCreateFromTemplate(
         request.requestTemplateId(),
-        request.customerId(),
-        request.projectId(),
+        request.clientId(),
+        request.matterId(),
         request.portalContactId(),
         request.reminderIntervalDays(),
         request.dueDate(),
@@ -611,12 +611,12 @@ public class InformationRequestService {
             .orElseThrow(() -> new ResourceNotFoundException("InformationRequest", requestId));
     request.requireEditable();
 
-    if (dto.projectId() != null) {
+    if (dto.matterId() != null) {
       projectRepository
-          .findById(dto.projectId())
-          .orElseThrow(() -> new ResourceNotFoundException("Project", dto.projectId()));
+          .findById(dto.matterId())
+          .orElseThrow(() -> new ResourceNotFoundException("Project", dto.matterId()));
     }
-    request.setProjectId(dto.projectId());
+    request.setProjectId(dto.matterId());
     request.setReminderIntervalDays(dto.reminderIntervalDays());
     request.setDueDate(dto.dueDate());
     var saved = requestRepository.save(request);

@@ -2,8 +2,8 @@
 
 export interface AuthExchangeResponse {
   jwt: string;
-  customerId: string;
-  customerName: string;
+  clientId: string;
+  clientName: string;
   email: string;
 }
 
@@ -145,7 +145,7 @@ export interface PaymentStatusResponse {
 // === Summary ===
 
 export interface PortalProjectSummary {
-  projectId: string;
+  matterId: string;
   totalHours: number;
   billableHours: number;
   lastActivityAt: string | null;
@@ -155,8 +155,8 @@ export interface PortalProjectSummary {
 
 export interface PortalProfile {
   contactId: string;
-  customerId: string;
-  customerName: string;
+  clientId: string;
+  clientName: string;
   email: string;
   displayName: string;
   role: string; // PRIMARY, BILLING, GENERAL

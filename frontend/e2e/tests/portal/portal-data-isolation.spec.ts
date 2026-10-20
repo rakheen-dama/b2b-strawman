@@ -30,7 +30,8 @@ test.describe("PORTAL-01: Data Isolation", () => {
   test("Kgosi sees only Kgosi projects via API", async () => {
     const jwt = await getPortalJwt(KGOSI_EMAIL);
     expect(jwt).toBeTruthy();
-    const res = await fetch(`${BACKEND_URL}/portal/projects`, {
+    // Phase 87 S3 Batch 5 (ADR-337): API path
+    const res = await fetch(`${BACKEND_URL}/portal/matters`, {
       headers: { Authorization: `Bearer ${jwt}` },
     });
     expect(res.ok).toBe(true);

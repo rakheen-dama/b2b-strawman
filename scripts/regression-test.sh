@@ -460,7 +460,7 @@ if should_run "portal_isolation"; then
 
   if [ -z "$PORTAL_CUST_ID" ]; then
     echo "    [SKIP] No ACTIVE customer with email in seed — skipping portal tests" >&2
-    SKIP=$((SKIP + 5))
+    SKIP=$((SKIP + 6))
   else
     PORTAL_CUST_NAME=$(echo "$customers" | jq -r "[.[] | select(.id==\"${PORTAL_CUST_ID}\")][0].name")
     PORTAL_CUST_EMAIL=$(echo "$customers" | jq -r "[.[] | select(.id==\"${PORTAL_CUST_ID}\")][0].email")
@@ -474,7 +474,7 @@ if should_run "portal_isolation"; then
 
     if [ -z "$CONTACT_EMAIL" ]; then
       echo "    [SKIP] No email for portal customer — skipping portal tests" >&2
-      SKIP=$((SKIP + 5))
+      SKIP=$((SKIP + 6))
     else
       # Get portal JWT via magic link flow
       link_resp=$(curl -sf -X POST "${BACKEND_URL}/portal/auth/request-link" \
@@ -487,7 +487,7 @@ if should_run "portal_isolation"; then
 
       if [ -z "$PORTAL_TOKEN" ]; then
         echo "    [SKIP] No portal contact found for ${PORTAL_CUST_NAME} — skipping portal tests" >&2
-        SKIP=$((SKIP + 5))
+        SKIP=$((SKIP + 6))
       else
         exchange_resp=$(curl -sf -X POST "${BACKEND_URL}/portal/auth/exchange" \
           -H "Content-Type: application/json" \
@@ -496,10 +496,10 @@ if should_run "portal_isolation"; then
 
         if [ -z "$PORTAL_JWT" ]; then
           echo "    [SKIP] Failed to exchange token for ${PORTAL_CUST_NAME}" >&2
-          SKIP=$((SKIP + 5))
+          SKIP=$((SKIP + 6))
         else
-          # Portal customer sees projects
-          portal_projects=$(curl -sf -X GET "${BACKEND_URL}/portal/projects" \
+          # Portal customer sees projects (Phase 87 S3 Batch 5, ADR-337: API path)
+          portal_projects=$(curl -sf -X GET "${BACKEND_URL}/portal/matters" \
             -H "Authorization: Bearer ${PORTAL_JWT}" 2>/dev/null || echo "[]")
           portal_count=$(echo "$portal_projects" | jq 'length')
           assert_gt "${PORTAL_CUST_NAME} sees projects" "0" "$portal_count"
@@ -507,6 +507,25 @@ if should_run "portal_isolation"; then
           # All projects belong to this customer (no leakage)
           echo "    [PASS] ${PORTAL_CUST_NAME} portal data isolation: ${portal_count} projects" >&2
           PASS=$((PASS + 1))
+
+          # Positive control (Phase 87 609G): the client's own matter must be readable, so a
+          # 403/404 in the cross-customer check below means "blocked" — not "route missing".
+          # Before 609G the script probed the retired pre-609F detail path, which 404'd for everyone, so that check
+          # passed vacuously.
+          OWN_PROJ_ID=$(echo "$portal_projects" | jq -r '.[0].id // empty')
+          OWN_MATTER_OK=""
+          own_resp="none"
+          if [ -n "$OWN_PROJ_ID" ]; then
+            own_resp=$(curl -s -o /dev/null -w "%{http_code}" \
+              -X GET "${BACKEND_URL}/portal/matters/${OWN_PROJ_ID}" \
+              -H "Authorization: Bearer ${PORTAL_JWT}")
+          fi
+          if [ "$own_resp" = "200" ]; then
+            echo "    [PASS] Own matter detail readable: HTTP ${own_resp}" >&2; PASS=$((PASS + 1))
+            OWN_MATTER_OK=1
+          else
+            echo "    [FAIL] Own matter detail not readable (id='${OWN_PROJ_ID}', HTTP ${own_resp}) — cross-customer check would be vacuous" >&2; FAIL=$((FAIL + 1))
+          fi
 
           # Get a different ACTIVE customer for cross-access test
           OTHER_CUST_ID=$(echo "$customers" | jq -r "[.[] | select(.lifecycleStatus==\"ACTIVE\" and .id!=\"${PORTAL_CUST_ID}\")][0].id // empty")
@@ -516,17 +535,20 @@ if should_run "portal_isolation"; then
             other_projects=$(api_get "/api/matters?customerId=${OTHER_CUST_ID}" "$ALICE")
             OTHER_PROJ_ID=$(echo "$other_projects" | jq -r '.[0].id // .content[0].id // empty')
 
-            if [ -n "$OTHER_PROJ_ID" ]; then
+            if [ -z "$OTHER_PROJ_ID" ]; then
+              echo "    [SKIP] No project for cross-access test" >&2; SKIP=$((SKIP + 1))
+            elif [ -z "$OWN_MATTER_OK" ]; then
+              # Already counted as a FAIL by the positive control above.
+              echo "    [SKIP] Cross-customer check not run — positive control failed (would be vacuous)" >&2; SKIP=$((SKIP + 1))
+            else
               # Cross-customer access should return 403/404
               cross_resp=$(curl -s -o /dev/null -w "%{http_code}" \
-                -X GET "${BACKEND_URL}/portal/projects/${OTHER_PROJ_ID}" \
+                -X GET "${BACKEND_URL}/portal/matters/${OTHER_PROJ_ID}" \
                 -H "Authorization: Bearer ${PORTAL_JWT}")
               case "$cross_resp" in
                 403|404) echo "    [PASS] Cross-customer blocked: HTTP ${cross_resp}" >&2; PASS=$((PASS + 1)) ;;
                 *) echo "    [FAIL] Cross-customer NOT blocked: HTTP ${cross_resp}" >&2; FAIL=$((FAIL + 1)) ;;
               esac
-            else
-              echo "    [SKIP] No project for cross-access test" >&2; SKIP=$((SKIP + 1))
             fi
           else
             echo "    [SKIP] No second ACTIVE customer for cross-access test" >&2; SKIP=$((SKIP + 1))

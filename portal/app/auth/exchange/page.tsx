@@ -16,8 +16,8 @@ import { storeAuth } from "@/lib/auth";
 interface ExchangeBackendResponse {
   token: string;
   email: string;
-  customerId: string;
-  customerName: string;
+  clientId: string;
+  clientName: string;
 }
 
 function ExchangeHandler() {
@@ -61,8 +61,8 @@ function ExchangeHandler() {
         }
 
         storeAuth(data.token, {
-          id: data.customerId,
-          name: data.customerName,
+          id: data.clientId,
+          name: data.clientName,
           email: data.email,
           orgId: orgId!,
         });

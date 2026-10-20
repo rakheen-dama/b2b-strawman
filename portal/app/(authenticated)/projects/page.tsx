@@ -55,7 +55,7 @@ export default function ProjectsPage() {
     setError(null);
     setIsLoading(true);
     try {
-      const data = await portalGet<PortalProject[]>("/portal/projects");
+      const data = await portalGet<PortalProject[]>("/portal/matters");
       setProjects(data);
     } catch (err) {
       setError(

@@ -15,7 +15,7 @@ interface PortalActivityEvent {
   actorName: string | null;
   entityId: string;
   entityType: string;
-  projectId: string | null;
+  matterId: string | null;
   summary: string;
   occurredAt: string;
 }

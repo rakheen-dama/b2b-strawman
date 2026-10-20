@@ -52,7 +52,7 @@ export function CommentSection({
     setContent("");
 
     try {
-      await portalPost(`/portal/projects/${projectId}/comments`, {
+      await portalPost(`/portal/matters/${projectId}/comments`, {
         content: trimmed,
       });
       onCommentPosted();

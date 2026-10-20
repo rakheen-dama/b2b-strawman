@@ -40,47 +40,32 @@ api_delete() {
   cat "$_API_TMPFILE.body"
 }
 
-# Ensure a customer has the custom fields required for invoice generation
+# Ensure a client has the structural fields legal-za invoice generation requires
+# (StructuralPrerequisiteCheck INVOICE_GENERATION: addressLine1, city, country).
+# PUT /api/clients/{id} is a full replace of structural columns, so round-trip every
+# field from the GET and only fill the blanks. customFields/appliedFieldGroups are
+# omitted (null = unchanged). No-op when the client already has an address.
 ensure_invoice_prerequisites() {
   _eip_cust_id="$1"
   _eip_jwt="$2"
 
-  # Get the current customer data
   _eip_cust=$(api_get "/api/clients/${_eip_cust_id}" "$_eip_jwt")
-  _eip_name=$(echo "$_eip_cust" | jq -r '.name')
-  _eip_email=$(echo "$_eip_cust" | jq -r '.email')
-
-  # Get applied field groups and remove trust group (avoids filling trust-specific required fields)
-  _eip_groups=$(echo "$_eip_cust" | jq -c '[.appliedFieldGroups[]?]')
-
-  # Get the trust details group ID to remove it
-  _trust_group_id=$(api_get "/api/field-groups?entityType=CUSTOMER" "$_eip_jwt" | \
-    jq -r '.[] | select(.slug=="accounting_za_trust_details") | .id // empty')
-  if [ -n "$_trust_group_id" ]; then
-    _eip_groups=$(echo "$_eip_groups" | jq -c "[.[] | select(. != \"${_trust_group_id}\")]")
+  _eip_missing=$(echo "$_eip_cust" | jq -r '[.addressLine1, .city, .country] | map(select((. // "") == "")) | length')
+  if [ "$_eip_missing" = "0" ]; then
+    return 0
   fi
 
-  # Update customer with required custom fields for invoicing
-  api_put "/api/clients/${_eip_cust_id}" "{
-    \"name\": \"${_eip_name}\",
-    \"email\": \"${_eip_email}\",
-    \"appliedFieldGroups\": ${_eip_groups},
-    \"customFields\": {
-      \"acct_company_registration_number\": \"2026/000001/07\",
-      \"address_line1\": \"123 Test Street\",
-      \"vat_number\": \"4000000000\",
-      \"city\": \"Cape Town\",
-      \"country\": \"ZA\",
-      \"tax_number\": \"0000000000\",
-      \"sars_tax_reference\": \"9000000000\",
-      \"financial_year_end\": \"2026-02-28\",
-      \"acct_entity_type\": \"PTY_LTD\",
-      \"registered_address\": \"123 Test Street, Cape Town\",
-      \"primary_contact_name\": \"Test Contact\",
-      \"primary_contact_email\": \"contact@test.com\",
-      \"fica_verified\": \"VERIFIED\"
-    }
-  }" "$_eip_jwt" > /dev/null
+  _eip_body=$(echo "$_eip_cust" | jq -c '{
+    name, email, phone, idNumber, notes,
+    registrationNumber, addressLine2, stateProvince, taxNumber,
+    contactName, contactEmail, contactPhone, entityType, financialYearEnd,
+    addressLine1: (if (.addressLine1 // "") == "" then "1 Long Street" else .addressLine1 end),
+    city:         (if (.city // "") == "" then "Cape Town" else .city end),
+    postalCode:   (if (.postalCode // "") == "" then "8001" else .postalCode end),
+    country:      (if (.country // "") == "" then "ZA" else .country end)
+  }')
+  api_put "/api/clients/${_eip_cust_id}" "$_eip_body" "$_eip_jwt" > /dev/null
+  check_status "Fill invoice prerequisites (client address)" || true
 }
 
 PASS=0; FAIL=0; SKIP=0
@@ -209,7 +194,7 @@ if should_run "customer_lifecycle"; then
 
   # Create a test customer (PROSPECT by default)
   RUN_ID=$(date +%s | tail -c 5)
-  CUST_BODY="{\"name\":\"RegTest-${RUN_ID}\",\"email\":\"reg${RUN_ID}@test.com\",\"phone\":\"+27110000000\"}"
+  CUST_BODY="{\"name\":\"RegTest-${RUN_ID}\",\"email\":\"reg${RUN_ID}@test.com\",\"phone\":\"+27110000000\",\"addressLine1\":\"1 Long Street\",\"city\":\"Cape Town\",\"postalCode\":\"8001\",\"country\":\"ZA\"}"
   cust_resp=$(api_post "/api/clients" "$CUST_BODY" "$ALICE")
   assert_http "Create customer" "2"
   CUST_ID=$(echo "$cust_resp" | jq -r '.id')

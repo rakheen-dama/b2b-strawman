@@ -20,12 +20,12 @@ import {
 } from "@/components/ui/command";
 import { fetchProjects, linkProject } from "@/app/(app)/org/[slug]/customers/[id]/actions";
 import { useTerminology } from "@/lib/terminology";
-import type { Project } from "@/lib/types";
+import type { Matter } from "@/lib/types";
 
 interface LinkProjectDialogProps {
   slug: string;
   customerId: string;
-  existingProjects: Project[];
+  existingProjects: Matter[];
   children: React.ReactNode;
 }
 
@@ -44,7 +44,7 @@ export function LinkProjectDialog({
     data: allProjects,
     error: fetchError,
     isLoading,
-  } = useSWR<Project[]>(open ? "link-project-list" : null, () => fetchProjects());
+  } = useSWR<Matter[]>(open ? "link-project-list" : null, () => fetchProjects());
 
   const availableProjects = useMemo(() => {
     if (!allProjects) return [];

@@ -26,13 +26,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { updateProject, fetchActiveCustomers } from "@/app/(app)/org/[slug]/projects/actions";
-import type { Project, Customer } from "@/lib/types";
+import type { Matter, Client } from "@/lib/types";
 import { editProjectSchema, type EditProjectFormData } from "@/lib/schemas/project";
 import { nativeSelectClassName } from "@/lib/styles/native-select";
 import { useTerminology } from "@/lib/terminology";
 
 interface EditProjectDialogProps {
-  project: Project;
+  project: Matter;
   slug: string;
   children?: React.ReactNode;
   /** Controlled mode: external open state */
@@ -58,7 +58,7 @@ export function EditProjectDialog({
   const setOpen = controlledOnOpenChange ?? setInternalOpen;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customers, setCustomers] = useState<Client[]>([]);
 
   const form = useForm<EditProjectFormData>({
     resolver: zodResolver(editProjectSchema),

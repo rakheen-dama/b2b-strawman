@@ -1,3 +1,10 @@
+/**
+ * HTTP client — the server-side fetch wrapper every lib/api module builds on (`api.get/post/put/
+ * patch/delete`, `apiRequest`, `ApiError`, `handleApiError`, auth headers for mock and Keycloak BFF).
+ *
+ * Not the Clients domain module: `./clients.ts` (plural) holds the `/api/clients/**` wrappers
+ * (Phase 87 S4, Open Question #16). The file name is kept to avoid churning every importer.
+ */
 import "server-only";
 
 import { getAuthToken, AUTH_MODE } from "@/lib/auth";

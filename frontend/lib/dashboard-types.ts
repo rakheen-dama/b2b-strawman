@@ -18,7 +18,7 @@ export interface KpiResponse extends KpiValues {
   previousPeriod: KpiValues;
 }
 
-export interface ProjectHealth {
+export interface MatterHealth {
   matterId: string;
   matterName: string;
   clientName: string | null;
@@ -31,7 +31,7 @@ export interface ProjectHealth {
   hoursLogged: number;
 }
 
-export interface ProjectWorkloadEntry {
+export interface MatterWorkloadEntry {
   matterId: string;
   matterName: string;
   hours: number;
@@ -42,10 +42,10 @@ export interface TeamWorkloadEntry {
   memberName: string;
   totalHours: number;
   billableHours: number;
-  projects: ProjectWorkloadEntry[];
+  projects: MatterWorkloadEntry[];
 }
 
-export interface CrossProjectActivityItem {
+export interface CrossMatterActivityItem {
   eventId: string;
   eventType: string;
   description: string;
@@ -61,7 +61,7 @@ export interface PersonalUtilization {
   billablePercent: number;
 }
 
-export interface PersonalProjectBreakdown {
+export interface PersonalMatterBreakdown {
   matterId: string;
   matterName: string;
   hours: number;
@@ -77,20 +77,20 @@ export interface PersonalDeadline {
 
 export interface PersonalDashboardResponse {
   utilization: PersonalUtilization;
-  matterBreakdown: PersonalProjectBreakdown[];
+  matterBreakdown: PersonalMatterBreakdown[];
   overdueTaskCount: number;
   upcomingDeadlines: PersonalDeadline[];
   trend: TrendPoint[];
 }
 
 // Project health detail (from GET /api/matters/{id}/health)
-export interface ProjectHealthDetail {
+export interface MatterHealthDetail {
   healthStatus: "HEALTHY" | "AT_RISK" | "CRITICAL" | "UNKNOWN";
   healthReasons: string[];
-  metrics: ProjectHealthMetrics;
+  metrics: MatterHealthMetrics;
 }
 
-export interface ProjectHealthMetrics {
+export interface MatterHealthMetrics {
   tasksDone: number;
   tasksInProgress: number;
   tasksTodo: number;

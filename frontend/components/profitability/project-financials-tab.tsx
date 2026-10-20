@@ -3,10 +3,10 @@ import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
 import { TerminologyHeading } from "@/components/terminology-heading";
 import { formatCurrency, formatCurrencySafe } from "@/lib/format";
-import type { ProjectProfitabilityResponse } from "@/lib/types";
+import type { MatterProfitabilityResponse } from "@/lib/types";
 
 interface ProjectFinancialsTabProps {
-  profitability: ProjectProfitabilityResponse | null;
+  profitability: MatterProfitabilityResponse | null;
 }
 
 function StatCard({

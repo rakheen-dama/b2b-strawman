@@ -1,7 +1,7 @@
 "use server";
 
 import { api, ApiError } from "@/lib/api";
-import type { ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary } from "@/lib/types";
+import type { MatterTimeSummary, MemberTimeSummary, TaskTimeSummary } from "@/lib/types";
 
 function buildDateParams(from?: string, to?: string): string {
   const params = new URLSearchParams();
@@ -15,8 +15,8 @@ export async function fetchProjectTimeSummary(
   projectId: string,
   from?: string,
   to?: string
-): Promise<ProjectTimeSummary> {
-  return api.get<ProjectTimeSummary>(
+): Promise<MatterTimeSummary> {
+  return api.get<MatterTimeSummary>(
     `/api/matters/${projectId}/time-summary${buildDateParams(from, to)}`
   );
 }

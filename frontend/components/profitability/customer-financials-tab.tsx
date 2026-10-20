@@ -11,15 +11,15 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import type {
-  CustomerProfitabilityResponse,
+  ClientProfitabilityResponse,
   OrgProfitabilityResponse,
-  ProjectProfitabilitySummary,
+  MatterProfitabilitySummary,
 } from "@/lib/types";
 import { TerminologyHeading } from "@/components/terminology-heading";
 import { TerminologyText } from "@/components/terminology-text";
 
 interface CustomerFinancialsTabProps {
-  profitability: CustomerProfitabilityResponse | null;
+  profitability: ClientProfitabilityResponse | null;
   projectBreakdown: OrgProfitabilityResponse | null;
 }
 
@@ -49,7 +49,7 @@ function marginClassName(value: number | null): string | undefined {
   return cn(value >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400");
 }
 
-function ProjectBreakdownTable({ projects }: { projects: ProjectProfitabilitySummary[] }) {
+function ProjectBreakdownTable({ projects }: { projects: MatterProfitabilitySummary[] }) {
   if (projects.length === 0) return null;
 
   return (

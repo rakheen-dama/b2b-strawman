@@ -15,12 +15,12 @@ import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { CurrencySelector } from "@/components/rates/currency-selector";
 import { createProjectBillingRate } from "@/app/(app)/org/[slug]/projects/[id]/rate-actions";
-import type { ProjectMember } from "@/lib/types";
+import type { MatterMember } from "@/lib/types";
 
 interface AddProjectRateDialogProps {
   slug: string;
   projectId: string;
-  members: ProjectMember[];
+  members: MatterMember[];
   defaultCurrency: string;
   children: React.ReactNode;
 }

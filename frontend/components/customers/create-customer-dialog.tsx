@@ -34,13 +34,13 @@ import { fetchIntakeFields } from "@/app/(app)/org/[slug]/customers/intake-actio
 import { IntakeFieldsSection, isFieldVisible } from "@/components/customers/intake-fields-section";
 import type { FieldValue } from "@/components/prerequisite/inline-field-editor";
 import type { IntakeFieldGroup } from "@/components/prerequisite/types";
-import type { CustomerType } from "@/lib/types";
+import type { ClientType } from "@/lib/types";
 import { createCustomerSchema, type CreateCustomerFormData } from "@/lib/schemas/customer";
 import { COUNTRIES } from "@/lib/constants/countries";
 import { ENTITY_TYPES } from "@/lib/constants/entity-types";
 import { nativeSelectClassName } from "@/lib/styles/native-select";
 
-const CUSTOMER_TYPES: { value: CustomerType; label: string }[] = [
+const CUSTOMER_TYPES: { value: ClientType; label: string }[] = [
   { value: "INDIVIDUAL", label: "Individual" },
   { value: "COMPANY", label: "Company" },
   { value: "TRUST", label: "Trust" },

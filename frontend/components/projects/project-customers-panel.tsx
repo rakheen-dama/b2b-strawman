@@ -8,12 +8,12 @@ import { Button } from "@b2mash/ui/button";
 import { LinkCustomerDialog } from "@/components/projects/link-customer-dialog";
 import { unlinkCustomerFromProject } from "@/app/(app)/org/[slug]/projects/[id]/actions";
 import { formatDate } from "@/lib/format";
-import type { Customer } from "@/lib/types";
+import type { Client } from "@/lib/types";
 import { useTerminology } from "@/lib/terminology";
 import Link from "next/link";
 
 interface ProjectCustomersPanelProps {
-  customers: Customer[];
+  customers: Client[];
   slug: string;
   projectId: string;
   canManage: boolean;

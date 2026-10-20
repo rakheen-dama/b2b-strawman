@@ -6,13 +6,13 @@ import { Button } from "@b2mash/ui/button";
 import { StatementOfAccountDialog } from "@/components/legal/statement-of-account-dialog";
 import { useCapabilities } from "@/lib/capabilities";
 import { useOrgProfile } from "@/lib/org-profile";
-import type { ProjectStatus } from "@/lib/types";
+import type { MatterStatus } from "@/lib/types";
 
 interface GenerateStatementOfAccountActionProps {
   slug: string;
   projectId: string;
   projectName: string;
-  projectStatus: ProjectStatus;
+  projectStatus: MatterStatus;
 }
 
 export function GenerateStatementOfAccountAction({

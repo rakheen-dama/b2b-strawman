@@ -23,7 +23,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
-import type { BudgetStatusResponse, ProjectSetupStatus, FicaStatus } from "@/lib/types";
+import type { BudgetStatusResponse, MatterSetupStatus, FicaStatus } from "@/lib/types";
 import type { ReactNode } from "react";
 
 // --- Health band color mapping ---
@@ -97,7 +97,7 @@ export interface KPIDashboardProps {
   canManage: boolean;
   customerName: string | null;
   customerId: string | null;
-  setupStatus: ProjectSetupStatus | null;
+  setupStatus: MatterSetupStatus | null;
   setupSteps: SetupStep[];
   ficaStatus: FicaStatus | null;
   retentionClockStartedAt: string | null;

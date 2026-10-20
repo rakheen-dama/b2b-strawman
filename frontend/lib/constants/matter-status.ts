@@ -1,7 +1,7 @@
-import type { ProjectStatus } from "@/lib/types";
+import type { MatterStatus } from "@/lib/types";
 
-export const PROJECT_STATUS_BADGE: Record<
-  ProjectStatus,
+export const MATTER_STATUS_BADGE: Record<
+  MatterStatus,
   { label: string; variant: "success" | "warning" | "neutral" }
 > = {
   ACTIVE: { label: "Active", variant: "success" },

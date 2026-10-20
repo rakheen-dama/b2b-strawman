@@ -2,15 +2,15 @@
 
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type { ProjectMember, OrgMember } from "@/lib/types";
+import type { MatterMember, OrgMember } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
   error?: string;
 }
 
-export async function fetchProjectMembers(projectId: string): Promise<ProjectMember[]> {
-  return api.get<ProjectMember[]>(`/api/matters/${projectId}/members`);
+export async function fetchProjectMembers(projectId: string): Promise<MatterMember[]> {
+  return api.get<MatterMember[]>(`/api/matters/${projectId}/members`);
 }
 
 export async function fetchOrgMembers(): Promise<OrgMember[]> {

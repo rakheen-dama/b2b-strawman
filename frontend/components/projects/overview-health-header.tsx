@@ -1,9 +1,9 @@
 import { HealthBadge } from "@/components/dashboard/health-badge";
 import { cn } from "@/lib/utils";
-import type { ProjectHealthDetail } from "@/lib/dashboard-types";
+import type { MatterHealthDetail } from "@/lib/dashboard-types";
 
 interface OverviewHealthHeaderProps {
-  health: ProjectHealthDetail | null;
+  health: MatterHealthDetail | null;
   projectName: string;
   customerName: string | null;
 }

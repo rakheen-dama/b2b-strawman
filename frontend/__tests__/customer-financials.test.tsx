@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { CustomerFinancialsTab } from "@/components/profitability/customer-financials-tab";
-import type { CustomerProfitabilityResponse, OrgProfitabilityResponse } from "@/lib/types";
+import type { ClientProfitabilityResponse, OrgProfitabilityResponse } from "@/lib/types";
 
 function makeProfitability(
-  overrides: Partial<CustomerProfitabilityResponse> = {}
-): CustomerProfitabilityResponse {
+  overrides: Partial<ClientProfitabilityResponse> = {}
+): ClientProfitabilityResponse {
   return {
     clientId: "c1",
     clientName: "Acme Corp",

@@ -7,7 +7,7 @@ import { SetupProgressCard } from "@/components/setup/setup-progress-card";
 import { TemplateReadinessCard } from "@/components/setup/template-readiness-card";
 import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBadge";
 import type { SetupStep, ContextGroup, TemplateReadinessItem } from "@/components/setup/types";
-import type { LifecycleStatus } from "@/lib/types/customer";
+import type { LifecycleStatus } from "@/lib/types/client";
 
 interface ClientOverviewTabProps {
   /** Section A: Client Readiness — SetupProgressCard props */

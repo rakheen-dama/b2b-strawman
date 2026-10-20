@@ -3,12 +3,12 @@
 import { api } from "@/lib/api";
 import type {
   KpiResponse,
-  ProjectHealth,
-  ProjectHealthDetail,
+  MatterHealth,
+  MatterHealthDetail,
   TaskSummaryResponse,
   MemberHoursEntry,
   TeamWorkloadEntry,
-  CrossProjectActivityItem,
+  CrossMatterActivityItem,
   PersonalDashboardResponse,
 } from "@/lib/dashboard-types";
 import type { AggregatedCompletenessResponse } from "@/lib/types";
@@ -24,9 +24,9 @@ export async function fetchDashboardKpis(from: string, to: string): Promise<KpiR
   }
 }
 
-export async function fetchProjectHealth(): Promise<ProjectHealth[] | null> {
+export async function fetchProjectHealth(): Promise<MatterHealth[] | null> {
   try {
-    return await api.get<ProjectHealth[]>("/api/dashboard/matter-health");
+    return await api.get<MatterHealth[]>("/api/dashboard/matter-health");
   } catch {
     return null;
   }
@@ -45,9 +45,9 @@ export async function fetchTeamWorkload(
 
 export async function fetchDashboardActivity(
   limit: number = 10
-): Promise<CrossProjectActivityItem[] | null> {
+): Promise<CrossMatterActivityItem[] | null> {
   try {
-    return await api.get<CrossProjectActivityItem[]>(`/api/dashboard/activity?limit=${limit}`);
+    return await api.get<CrossMatterActivityItem[]>(`/api/dashboard/activity?limit=${limit}`);
   } catch {
     return null;
   }
@@ -111,9 +111,9 @@ export async function fetchAutomationSummary(): Promise<AutomationSummary | null
 
 export async function fetchProjectHealthDetail(
   projectId: string
-): Promise<ProjectHealthDetail | null> {
+): Promise<MatterHealthDetail | null> {
   try {
-    return await api.get<ProjectHealthDetail>(`/api/matters/${projectId}/health`);
+    return await api.get<MatterHealthDetail>(`/api/matters/${projectId}/health`);
   } catch {
     return null;
   }

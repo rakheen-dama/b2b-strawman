@@ -10,15 +10,15 @@ export interface OrgMember {
 
 // ---- Project Members (from ProjectMemberController.java) ----
 
-export type ProjectRole = "lead" | "member";
+export type MatterRole = "lead" | "member";
 
-export interface ProjectMember {
+export interface MatterMember {
   id: string;
   memberId: string;
   name: string;
   email: string;
   avatarUrl: string | null;
-  matterRole: ProjectRole;
+  matterRole: MatterRole;
   orgRole: string;
   createdAt: string;
 }

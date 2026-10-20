@@ -34,9 +34,9 @@ import { CompleteProjectDialog } from "@/components/projects/complete-project-di
 import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";
 import { ArchivedProjectBanner } from "@/components/projects/archived-project-banner";
 import { CustomerProjectsPanel } from "@/components/customers/customer-projects-panel";
-import type { Project } from "@/lib/types";
+import type { Matter } from "@/lib/types";
 
-function makeProject(overrides: Partial<Project> = {}): Project {
+function makeProject(overrides: Partial<Matter> = {}): Matter {
   return {
     id: "proj-1",
     name: "Test Project",
@@ -235,7 +235,7 @@ describe("CustomerProjectsPanel", () => {
   });
 
   it("renders status badges and due dates for projects", () => {
-    const projects: Project[] = [
+    const projects: Matter[] = [
       makeProject({
         id: "proj-1",
         name: "Active Project",

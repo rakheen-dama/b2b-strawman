@@ -5,7 +5,7 @@ import { CreateProjectDialog } from "@/components/projects/create-project-dialog
 import { ProjectStatusFilter } from "@/components/projects/project-status-filter";
 import { TerminologyProvider } from "@/lib/terminology";
 import { OrgProfileProvider } from "@/lib/org-profile";
-import type { Customer } from "@/lib/types";
+import type { Client } from "@/lib/types";
 
 // --- Mocks ---
 
@@ -40,7 +40,7 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-const activeCustomers: Customer[] = [
+const activeCustomers: Client[] = [
   {
     id: "c1",
     name: "Acme Corp",

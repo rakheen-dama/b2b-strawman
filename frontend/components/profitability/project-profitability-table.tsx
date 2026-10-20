@@ -16,7 +16,7 @@ import { HelpTip } from "@/components/help-tip";
 import { useTerminology } from "@/lib/terminology";
 import { formatCurrency, formatCurrencySafe } from "@/lib/format";
 import { getOrgProfitability } from "@/app/(app)/org/[slug]/profitability/actions";
-import type { OrgProfitabilityResponse, ProjectProfitabilitySummary } from "@/lib/types";
+import type { OrgProfitabilityResponse, MatterProfitabilitySummary } from "@/lib/types";
 import { ArrowUpDown } from "lucide-react";
 
 interface ProjectProfitabilityTableProps {
@@ -35,10 +35,10 @@ type SortField =
   | "marginPercent";
 
 function sortProjects(
-  projects: ProjectProfitabilitySummary[],
+  projects: MatterProfitabilitySummary[],
   field: SortField,
   dir: "asc" | "desc"
-): ProjectProfitabilitySummary[] {
+): MatterProfitabilitySummary[] {
   return [...projects].sort((a, b) => {
     let cmp = 0;
     switch (field) {

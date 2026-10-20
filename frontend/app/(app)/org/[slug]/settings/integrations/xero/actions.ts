@@ -16,7 +16,7 @@ import type {
   UpdateXeroTaxMappingRequest,
   XeroTaxMapping,
   XeroTaxRate,
-  XeroCustomerImportResult,
+  XeroClientImportResult,
   UpdateXeroSettingsRequest,
   XeroSettingsResponse,
 } from "@/lib/types";
@@ -116,7 +116,7 @@ export async function resetXeroTaxMappingsAction(slug: string): Promise<ActionRe
 
 export async function importXeroCustomersAction(
   slug: string
-): Promise<ActionResult<XeroCustomerImportResult>> {
+): Promise<ActionResult<XeroClientImportResult>> {
   try {
     const result = await importXeroCustomers();
     revalidatePath(`/org/${slug}/settings/integrations/xero`);

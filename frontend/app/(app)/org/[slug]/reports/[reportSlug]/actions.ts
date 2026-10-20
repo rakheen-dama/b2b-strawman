@@ -7,7 +7,7 @@ import {
   type ReportExecutionResponse,
 } from "@/lib/api/reports";
 import { api, ApiError } from "@/lib/api";
-import type { Project, OrgMember, Customer } from "@/lib/types";
+import type { Matter, OrgMember, Client } from "@/lib/types";
 
 interface ActionResult<T> {
   data: T | null;
@@ -75,7 +75,7 @@ export async function fetchEntityOptionsAction(
   try {
     const type = entityType.toLowerCase();
     if (type === "project") {
-      const projects = await api.get<Project[]>("/api/matters");
+      const projects = await api.get<Matter[]>("/api/matters");
       return {
         data: projects.map((p) => ({ id: p.id, label: p.name })),
       };
@@ -91,7 +91,7 @@ export async function fetchEntityOptionsAction(
       };
     }
     if (type === "customer") {
-      const customers = await api.get<Customer[]>("/api/clients");
+      const customers = await api.get<Client[]>("/api/clients");
       return {
         data: customers.map((c) => ({ id: c.id, label: c.name })),
       };

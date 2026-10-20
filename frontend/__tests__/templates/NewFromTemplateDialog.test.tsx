@@ -3,7 +3,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NewFromTemplateDialog } from "@/components/templates/NewFromTemplateDialog";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
-import type { OrgMember, Customer } from "@/lib/types";
+import type { OrgMember, Client } from "@/lib/types";
 import { SUGGESTED_WORK_TYPES } from "@/lib/constants/work-types";
 
 const mockInstantiateTemplate = vi.fn();
@@ -66,7 +66,7 @@ const MEMBERS: OrgMember[] = [
   },
 ];
 
-const CUSTOMERS: Customer[] = [
+const CUSTOMERS: Client[] = [
   {
     id: "c-1",
     name: "Acme Corp",

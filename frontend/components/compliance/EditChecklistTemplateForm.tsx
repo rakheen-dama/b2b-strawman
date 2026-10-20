@@ -11,9 +11,9 @@ import {
   updateChecklistTemplate,
   type UpdateChecklistTemplateInput,
 } from "@/app/(app)/org/[slug]/settings/checklists/actions";
-import type { ChecklistTemplateResponse, CustomerType } from "@/lib/types";
+import type { ChecklistTemplateResponse, ClientType } from "@/lib/types";
 
-const CUSTOMER_TYPES: { value: CustomerType; label: string }[] = [
+const CUSTOMER_TYPES: { value: ClientType; label: string }[] = [
   { value: "INDIVIDUAL", label: "Individual" },
   { value: "COMPANY", label: "Company" },
   { value: "TRUST", label: "Trust" },
@@ -38,8 +38,8 @@ export function EditChecklistTemplateForm({ slug, template }: EditChecklistTempl
 
   const [name, setName] = useState(template.name);
   const [description, setDescription] = useState(template.description ?? "");
-  const [customerType, setCustomerType] = useState<CustomerType>(
-    (template.clientType as CustomerType) ?? "COMPANY"
+  const [customerType, setCustomerType] = useState<ClientType>(
+    (template.clientType as ClientType) ?? "COMPANY"
   );
   const [autoInstantiate, setAutoInstantiate] = useState(template.autoInstantiate);
 
@@ -143,7 +143,7 @@ export function EditChecklistTemplateForm({ slug, template }: EditChecklistTempl
           <select
             id="checklist-customer-type"
             value={customerType}
-            onChange={(e) => setCustomerType(e.target.value as CustomerType)}
+            onChange={(e) => setCustomerType(e.target.value as ClientType)}
             className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
           >
             {CUSTOMER_TYPES.map((ct) => (

@@ -2,7 +2,7 @@
 
 import { Card } from "@b2mash/ui/card";
 import { DonutChart } from "@/components/dashboard/donut-chart";
-import type { PersonalProjectBreakdown } from "@/lib/dashboard-types";
+import type { PersonalMatterBreakdown } from "@/lib/dashboard-types";
 
 const PROJECT_COLORS = [
   "var(--color-chart-1, #2563eb)",
@@ -14,7 +14,7 @@ const PROJECT_COLORS = [
 ];
 
 interface TimeBreakdownProps {
-  data: PersonalProjectBreakdown[] | null;
+  data: PersonalMatterBreakdown[] | null;
 }
 
 export function TimeBreakdown({ data }: TimeBreakdownProps) {

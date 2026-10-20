@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
-import type { Customer } from "@/lib/types";
+import type { Client } from "@/lib/types";
 
 const mockUpdateCustomer = vi.fn();
 
@@ -10,7 +10,7 @@ vi.mock("@/app/(app)/org/[slug]/customers/actions", () => ({
   updateCustomer: (...args: unknown[]) => mockUpdateCustomer(...args),
 }));
 
-const mockCustomer: Customer = {
+const mockCustomer: Client = {
   id: "c1",
   name: "Acme Corp",
   email: "contact@acme.com",
@@ -69,7 +69,7 @@ describe("EditCustomerDialog", () => {
     mockUpdateCustomer.mockResolvedValue({ success: true });
     const user = userEvent.setup();
 
-    const customerWithPromoted: Customer = {
+    const customerWithPromoted: Client = {
       ...mockCustomer,
       addressLine1: "100 Main St",
       city: "Cape Town",

@@ -19,7 +19,7 @@ import {
   fetchCustomersForPicker,
   fetchInvoicesForPicker,
 } from "@/app/(app)/org/[slug]/settings/templates/template-support-actions";
-import type { TemplateEntityType, Project, Customer, InvoiceResponse } from "@/lib/types";
+import type { TemplateEntityType, Matter, Client, InvoiceResponse } from "@/lib/types";
 
 interface PickerItem {
   id: string;
@@ -29,19 +29,19 @@ interface PickerItem {
   data: Record<string, unknown>;
 }
 
-type PickerData = Project | Customer | InvoiceResponse;
+type PickerData = Matter | Client | InvoiceResponse;
 
 function mapToPickerItems(entityType: TemplateEntityType, data: PickerData[]): PickerItem[] {
   switch (entityType) {
     case "PROJECT":
-      return (data as Project[]).map((p) => ({
+      return (data as Matter[]).map((p) => ({
         id: p.id,
         label: p.name,
         searchValue: p.name,
         data: p as unknown as Record<string, unknown>,
       }));
     case "CUSTOMER":
-      return (data as Customer[]).map((c) => ({
+      return (data as Client[]).map((c) => ({
         id: c.id,
         label: c.name,
         sublabel: c.email,

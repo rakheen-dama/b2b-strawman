@@ -9,9 +9,9 @@ import type { KycSummary } from "@/components/customers/kyc-status-badge";
 import { XeroContactBadge } from "@/components/customers/XeroContactBadge";
 import { ClientOverflowMenu } from "@/components/customers/client-overflow-menu";
 import { formatDate } from "@/lib/format";
-import type { Customer, CustomerStatus, LifecycleStatus, TemplateListResponse } from "@/lib/types";
+import type { Client, ClientStatus, LifecycleStatus, TemplateListResponse } from "@/lib/types";
 
-const STATUS_BADGE: Record<CustomerStatus, { label: string; variant: "success" | "neutral" }> = {
+const STATUS_BADGE: Record<ClientStatus, { label: string; variant: "success" | "neutral" }> = {
   ACTIVE: { label: "Active", variant: "success" },
   ARCHIVED: { label: "Archived", variant: "neutral" },
 };
@@ -25,7 +25,7 @@ interface SmartAction {
 
 function getSmartPrimaryAction(
   lifecycleStatus: LifecycleStatus | null,
-  customerStatus: CustomerStatus
+  customerStatus: ClientStatus
 ): SmartAction | null {
   if (customerStatus === "ARCHIVED") {
     return { label: "Restore", variant: "outline" };
@@ -52,7 +52,7 @@ function getSmartPrimaryAction(
 export interface ClientHeaderCardProps {
   customerId: string;
   customerName: string;
-  customerStatus: CustomerStatus;
+  customerStatus: ClientStatus;
   lifecycleStatus: LifecycleStatus | null;
   email: string | null;
   phone: string | null;
@@ -70,7 +70,7 @@ export interface ClientHeaderCardProps {
   kycConfigured: boolean;
   kycVerified: boolean;
   /** Full customer object — forwarded to EditCustomerDialog via overflow menu */
-  customer: Customer;
+  customer: Client;
   /** Called when the smart primary action button is clicked (Epic 560 wires lifecycle transitions) */
   onPrimaryAction?: () => void;
   /** Called when "Summarise Activity" is selected from overflow menu */

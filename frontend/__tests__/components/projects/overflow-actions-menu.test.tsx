@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { OverflowActionsMenu } from "@/components/projects/overflow-actions-menu";
-import type { Project, TagResponse, TemplateListResponse } from "@/lib/types";
+import type { Matter, TagResponse, TemplateListResponse } from "@/lib/types";
 
 // ---- Mocks ----
 
@@ -76,7 +76,7 @@ vi.mock("next/navigation", () => ({
 
 // ---- Test Data ----
 
-const mockProject: Project = {
+const mockProject: Matter = {
   id: "proj-1",
   name: "Test Matter Alpha",
   description: "A test project",

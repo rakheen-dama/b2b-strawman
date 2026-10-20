@@ -1,6 +1,6 @@
 import { KPIDashboard } from "@/components/projects/kpi-dashboard";
 import type { SetupStep } from "@/components/setup/types";
-import type { ProjectSetupStatus, FicaStatus } from "@/lib/types";
+import type { MatterSetupStatus, FicaStatus } from "@/lib/types";
 
 interface OverviewTabProps {
   projectId: string;
@@ -10,7 +10,7 @@ interface OverviewTabProps {
   customerId: string | null;
   canManage: boolean;
   slug: string;
-  setupStatus: ProjectSetupStatus | null;
+  setupStatus: MatterSetupStatus | null;
   setupSteps: SetupStep[];
   ficaStatus: FicaStatus | null;
   retentionClockStartedAt: string | null;

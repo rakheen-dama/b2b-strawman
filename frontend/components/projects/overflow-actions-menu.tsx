@@ -17,13 +17,13 @@ import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
 import { DeleteProjectDialog } from "@/components/projects/delete-project-dialog";
 import { archiveProject } from "@/app/(app)/org/[slug]/projects/actions";
 import { useTerminology } from "@/lib/terminology";
-import type { Project, Task, TagResponse, TemplateListResponse, ProjectStatus } from "@/lib/types";
+import type { Matter, Task, TagResponse, TemplateListResponse, MatterStatus } from "@/lib/types";
 
 interface OverflowActionsMenuProps {
   slug: string;
   projectId: string;
   projectName: string;
-  projectStatus: ProjectStatus;
+  projectStatus: MatterStatus;
   canEdit: boolean;
   canManage: boolean;
   isAdmin: boolean;
@@ -34,7 +34,7 @@ interface OverflowActionsMenuProps {
   primaryCustomer: { id: string; name: string; email: string } | null;
   projectTags: TagResponse[];
   /** Full project object for EditProjectDialog */
-  project: Project;
+  project: Matter;
   /** Tasks for SaveAsTemplateDialog */
   tasks: Task[];
 }

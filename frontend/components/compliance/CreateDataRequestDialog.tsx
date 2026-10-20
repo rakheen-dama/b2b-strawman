@@ -27,7 +27,7 @@ import {
   createDataRequest,
   fetchCustomersForSelector,
 } from "@/app/(app)/org/[slug]/compliance/requests/actions";
-import type { Customer, DataRequestType } from "@/lib/types";
+import type { Client, DataRequestType } from "@/lib/types";
 import { useTerminology } from "@/lib/terminology";
 
 interface CreateDataRequestDialogProps {
@@ -44,11 +44,11 @@ const REQUEST_TYPES: { value: DataRequestType; label: string }[] = [
 export function CreateDataRequestDialog({ slug }: CreateDataRequestDialogProps) {
   const { t } = useTerminology();
   const [open, setOpen] = useState(false);
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customers, setCustomers] = useState<Client[]>([]);
   const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Client | null>(null);
   const [requestType, setRequestType] = useState<DataRequestType | "">("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);

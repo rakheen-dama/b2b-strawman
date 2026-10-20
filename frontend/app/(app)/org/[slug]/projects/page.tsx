@@ -5,14 +5,14 @@ import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/l
 import { getProjectTemplates } from "@/lib/api/templates";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type {
-  Project,
-  ProjectRole,
+  Matter,
+  MatterRole,
   LightweightBudgetStatus,
   FieldDefinitionResponse,
   SavedViewResponse,
   TagResponse,
   OrgMember,
-  Customer,
+  Client,
 } from "@/lib/types";
 import { Badge } from "@b2mash/ui/badge";
 import { BudgetStatusDot } from "@/components/projects/budget-status-dot";
@@ -23,7 +23,7 @@ import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
 import { createSavedViewAction } from "./view-actions";
 import { ProjectStatusFilter } from "@/components/projects/project-status-filter";
 import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
-import type { ProjectStatus } from "@/lib/types";
+import type { MatterStatus } from "@/lib/types";
 import { AlertTriangle, Calendar, FileText, FolderOpen, Users } from "lucide-react";
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
@@ -32,7 +32,7 @@ import { TerminologyText } from "@/components/terminology-text";
 import { createMessages } from "@/lib/messages";
 
 const PROJECT_STATUS_BADGE: Record<
-  ProjectStatus,
+  MatterStatus,
   { label: string; variant: "success" | "warning" | "neutral" }
 > = {
   ACTIVE: { label: "Active", variant: "success" },
@@ -41,7 +41,7 @@ const PROJECT_STATUS_BADGE: Record<
   CLOSED: { label: "Closed", variant: "neutral" },
 };
 
-const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member" }> = {
+const ROLE_BADGE: Record<MatterRole, { label: string; variant: "lead" | "member" }> = {
   lead: { label: "Lead", variant: "lead" },
   member: { label: "Member", variant: "member" },
 };
@@ -79,20 +79,19 @@ export default async function ProjectsPage({
   }
 
   // Build query string with view and status filters
-  const VALID_STATUSES = new Set<ProjectStatus>(["ACTIVE", "COMPLETED", "ARCHIVED", "CLOSED"]);
+  const VALID_STATUSES = new Set<MatterStatus>(["ACTIVE", "COMPLETED", "ARCHIVED", "CLOSED"]);
   const rawStatus =
     typeof resolvedSearchParams.status === "string" ? resolvedSearchParams.status : null;
-  const statusParam =
-    rawStatus && VALID_STATUSES.has(rawStatus as ProjectStatus) ? rawStatus : null;
+  const statusParam = rawStatus && VALID_STATUSES.has(rawStatus as MatterStatus) ? rawStatus : null;
   const queryParts: string[] = [];
   if (currentViewId) queryParts.push(`view=${currentViewId}`);
   if (statusParam) queryParts.push(`status=${statusParam}`);
   const projectsEndpoint =
     queryParts.length > 0 ? `/api/matters?${queryParts.join("&")}` : "/api/matters";
 
-  let projects: Project[] = [];
+  let projects: Matter[] = [];
   try {
-    projects = await api.get<Project[]>(projectsEndpoint);
+    projects = await api.get<Matter[]>(projectsEndpoint);
   } catch (error) {
     handleApiError(error);
   }
@@ -116,7 +115,7 @@ export default async function ProjectsPage({
   // Fetch active project templates for "New from Template" button (admin/owner only)
   let activeTemplates: ProjectTemplateResponse[] = [];
   let orgMembers: OrgMember[] = [];
-  let allCustomers: Customer[] = [];
+  let allCustomers: Client[] = [];
 
   if (isAdmin) {
     try {
@@ -130,7 +129,7 @@ export default async function ProjectsPage({
     if (activeTemplates.length > 0) {
       const [membersResult, customersResult] = await Promise.allSettled([
         api.get<OrgMember[]>("/api/members"),
-        api.get<Customer[]>("/api/clients"),
+        api.get<Client[]>("/api/clients"),
       ]);
       if (membersResult.status === "fulfilled") orgMembers = membersResult.value;
       if (customersResult.status === "fulfilled") allCustomers = customersResult.value;

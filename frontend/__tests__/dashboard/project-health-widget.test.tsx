@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { ProjectHealthWidget } from "@/components/dashboard/project-health-widget";
 import { TerminologyProvider } from "@/lib/terminology";
-import type { ProjectHealth } from "@/lib/dashboard-types";
+import type { MatterHealth } from "@/lib/dashboard-types";
 
 // Mock next/navigation
 const mockPush = vi.fn();
@@ -11,7 +11,7 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/org/acme/dashboard",
 }));
 
-const mockProjects: ProjectHealth[] = [
+const mockProjects: MatterHealth[] = [
   {
     matterId: "proj-1",
     matterName: "Website Redesign",
@@ -141,7 +141,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("shows empty filter message when no projects match filter", () => {
-    const healthyOnly: ProjectHealth[] = [
+    const healthyOnly: MatterHealth[] = [
       {
         matterId: "proj-1",
         matterName: "Good Project",

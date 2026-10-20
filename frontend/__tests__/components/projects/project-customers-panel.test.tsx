@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { ProjectCustomersPanel } from "@/components/projects/project-customers-panel";
-import type { Customer } from "@/lib/types";
+import type { Client } from "@/lib/types";
 
 // Mock server actions used by LinkCustomerDialog (child component)
 vi.mock("@/app/(app)/org/[slug]/projects/[id]/actions", () => ({
@@ -10,7 +10,7 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/actions", () => ({
   unlinkCustomerFromProject: vi.fn().mockResolvedValue({ success: true }),
 }));
 
-const mockCustomers: Customer[] = [
+const mockCustomers: Client[] = [
   {
     id: "c1",
     name: "Acme Corp",

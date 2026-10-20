@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import type { Project } from "@/lib/types";
+import type { Matter } from "@/lib/types";
 
 // Mock server-only before any imports that pull it in
 vi.mock("server-only", () => ({}));
@@ -125,7 +125,7 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-const makeProject = (overrides: Partial<Project> = {}): Project => ({
+const makeProject = (overrides: Partial<Matter> = {}): Matter => ({
   id: "proj-1",
   name: "Test Project",
   description: "A test project",

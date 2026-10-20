@@ -12,18 +12,18 @@ import {
 } from "@/lib/api";
 import type {
   OrgMember,
-  Project,
-  Customer,
+  Matter,
+  Client,
   Document,
-  ProjectMember,
+  MatterMember,
   Task,
-  ProjectTimeSummary,
+  MatterTimeSummary,
   MemberTimeSummary,
   TaskTimeSummary,
   BillingRate,
   OrgSettings,
   BudgetStatusResponse,
-  ProjectProfitabilityResponse,
+  MatterProfitabilityResponse,
   FieldDefinitionResponse,
   FieldGroupResponse,
   FieldGroupMemberResponse,
@@ -64,7 +64,7 @@ import { RequestList } from "@/components/information-requests/request-list";
 import { CreateRequestDialog } from "@/components/information-requests/create-request-dialog";
 import { fetchProjectSetupStatus } from "@/lib/api/setup-status";
 import { getAiProfile } from "@/lib/api/ai";
-import type { ProjectSetupStatus, FicaStatus } from "@/lib/types";
+import type { MatterSetupStatus, FicaStatus } from "@/lib/types";
 import type { SetupStep } from "@/components/setup/types";
 import { ArchivedProjectBanner } from "@/components/projects/archived-project-banner";
 import { OverflowActionsMenu } from "@/components/projects/overflow-actions-menu";
@@ -91,9 +91,9 @@ export default async function ProjectDetailPage({
   const isAdmin = caps.isAdmin || caps.isOwner;
   const isOwner = caps.isOwner;
 
-  let project: Project;
+  let project: Matter;
   try {
-    project = await api.get<Project>(`/api/matters/${id}`);
+    project = await api.get<Matter>(`/api/matters/${id}`);
   } catch (error) {
     handleApiError(error);
   }
@@ -104,7 +104,7 @@ export default async function ProjectDetailPage({
   // TODO(epic-535): re-add roleBadge to MatterSidebar (projectRole omitted in 532B)
 
   // Setup guidance data (Epic 112A)
-  let setupStatus: ProjectSetupStatus | null = null;
+  let setupStatus: MatterSetupStatus | null = null;
   try {
     setupStatus = await fetchProjectSetupStatus(id);
   } catch {
@@ -178,9 +178,9 @@ export default async function ProjectDetailPage({
     // Non-fatal: show empty correspondence list if fetch fails
   }
 
-  let members: ProjectMember[] = [];
+  let members: MatterMember[] = [];
   try {
-    members = await api.get<ProjectMember[]>(`/api/matters/${id}/members`);
+    members = await api.get<MatterMember[]>(`/api/matters/${id}/members`);
   } catch {
     // Non-fatal: show empty members list if fetch fails
   }
@@ -192,9 +192,9 @@ export default async function ProjectDetailPage({
     // Non-fatal: show empty tasks list if fetch fails
   }
 
-  let customers: Customer[] = [];
+  let customers: Client[] = [];
   try {
-    customers = await api.get<Customer[]>(`/api/matters/${id}/clients`);
+    customers = await api.get<Client[]>(`/api/matters/${id}/clients`);
   } catch {
     // Non-fatal: show empty customers list if fetch fails
   }
@@ -224,7 +224,7 @@ export default async function ProjectDetailPage({
   }
 
   // Time summary data for the "Time" tab
-  let timeSummary: ProjectTimeSummary = {
+  let timeSummary: MatterTimeSummary = {
     billableMinutes: 0,
     nonBillableMinutes: 0,
     totalMinutes: 0,
@@ -235,7 +235,7 @@ export default async function ProjectDetailPage({
   let timeSummaryByMember: MemberTimeSummary[] | null = null;
   try {
     const [summaryRes, byTaskRes, byMemberRes] = await Promise.all([
-      api.get<ProjectTimeSummary>(`/api/matters/${id}/time-summary`),
+      api.get<MatterTimeSummary>(`/api/matters/${id}/time-summary`),
       api.get<TaskTimeSummary[]>(`/api/matters/${id}/time-summary/by-task`),
       api.get<MemberTimeSummary[]>(`/api/matters/${id}/time-summary/by-member`).catch(() => null),
     ]);
@@ -286,10 +286,10 @@ export default async function ProjectDetailPage({
   }
 
   // Project profitability for the "Financials" tab (lead/admin/owner)
-  let projectProfitability: ProjectProfitabilityResponse | null = null;
+  let projectProfitability: MatterProfitabilityResponse | null = null;
   if (canManage) {
     try {
-      projectProfitability = await api.get<ProjectProfitabilityResponse>(
+      projectProfitability = await api.get<MatterProfitabilityResponse>(
         `/api/matters/${id}/profitability`
       );
     } catch {

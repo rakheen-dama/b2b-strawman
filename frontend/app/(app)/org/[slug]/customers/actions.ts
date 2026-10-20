@@ -3,7 +3,7 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type { Customer, UpdateCustomerRequest } from "@/lib/types";
+import type { Client, UpdateClientRequest } from "@/lib/types";
 import { classifyError } from "@/lib/error-handler";
 import { createMessages } from "@/lib/messages";
 
@@ -125,9 +125,9 @@ export async function createCustomer(
     customFields: customFields ?? {},
   };
 
-  let created: Customer;
+  let created: Client;
   try {
-    created = await api.post<Customer>("/api/clients", body);
+    created = await api.post<Client>("/api/clients", body);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -162,7 +162,7 @@ export async function updateCustomer(
     return { success: false, error: "Customer email is required." };
   }
 
-  const body: UpdateCustomerRequest = {
+  const body: UpdateClientRequest = {
     name,
     email,
     phone: data.phone?.trim() || undefined,
@@ -184,7 +184,7 @@ export async function updateCustomer(
   };
 
   try {
-    await api.put<Customer>(`/api/clients/${id}`, body);
+    await api.put<Client>(`/api/clients/${id}`, body);
   } catch (error) {
     const message =
       error instanceof ApiError

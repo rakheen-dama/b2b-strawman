@@ -49,7 +49,7 @@ import { Button } from "@b2mash/ui/button";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
 import { DeleteCommentDialog } from "@/components/comments/delete-comment-dialog";
 import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
-import type { Customer } from "@/lib/types";
+import type { Client } from "@/lib/types";
 
 // Minimal customer fixture — the SSR pass renders the trigger only; the
 // form (which actually reads these fields) lives inside `DialogContent`
@@ -57,7 +57,7 @@ import type { Customer } from "@/lib/types";
 // every field, so each must be a defined string / null-tolerant value.
 // Strictly typed against `Customer` (no double-cast) so shape drift in
 // the type breaks this fixture loud at compile time.
-const STUB_CUSTOMER: Customer = {
+const STUB_CUSTOMER: Client = {
   id: "11111111-1111-1111-1111-111111111111",
   name: "Test Customer",
   email: "test@example.com",

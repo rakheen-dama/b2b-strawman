@@ -5,7 +5,7 @@ import { ExpenseList } from "@/components/expenses/expense-list";
 import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
 import { Button } from "@b2mash/ui/button";
 import { Receipt } from "lucide-react";
-import type { PaginatedExpenseResponse, ProjectMember, Task, OrgMember } from "@/lib/types";
+import type { PaginatedExpenseResponse, MatterMember, Task, OrgMember } from "@/lib/types";
 
 export default async function ProjectExpensesPage({
   params,
@@ -28,9 +28,9 @@ export default async function ProjectExpensesPage({
     // Non-fatal: show empty list
   }
 
-  let members: ProjectMember[] = [];
+  let members: MatterMember[] = [];
   try {
-    members = await api.get<ProjectMember[]>(`/api/matters/${id}/members`);
+    members = await api.get<MatterMember[]>(`/api/matters/${id}/members`);
   } catch {
     // Non-fatal
   }

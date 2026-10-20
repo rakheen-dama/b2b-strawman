@@ -3,7 +3,7 @@ import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
 import { ArchiveCustomerDialog } from "@/components/customers/archive-customer-dialog";
-import type { Customer } from "@/lib/types";
+import type { Client } from "@/lib/types";
 
 // OBS-2103 + OBS-2103b regression guard.
 //
@@ -43,7 +43,7 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-const activeCustomer: Customer = {
+const activeCustomer: Client = {
   id: "c1",
   name: "Sipho Dlamini",
   email: "sipho@example.com",

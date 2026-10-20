@@ -4,14 +4,14 @@ import { CustomerAddressBlock } from "@/components/customers/customer-address-bl
 import { CustomerContactCard } from "@/components/customers/customer-contact-card";
 import { ENTITY_TYPES } from "@/lib/constants/entity-types";
 import { formatDate } from "@/lib/format";
-import type { Customer } from "@/lib/types";
+import type { Client } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
 // Props
 // ---------------------------------------------------------------------------
 
 interface ClientDetailsTabProps {
-  customer: Customer;
+  customer: Client;
 }
 
 // ---------------------------------------------------------------------------

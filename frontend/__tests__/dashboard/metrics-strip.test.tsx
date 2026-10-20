@@ -4,7 +4,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { MetricsStrip } from "@/components/dashboard/metrics-strip";
 import { TerminologyProvider } from "@/lib/terminology";
 import { OrgProfileProvider } from "@/lib/org-profile";
-import type { KpiResponse, ProjectHealth } from "@/lib/dashboard-types";
+import type { KpiResponse, MatterHealth } from "@/lib/dashboard-types";
 
 // Mock recharts to avoid rendering issues in happy-dom
 vi.mock("recharts", () => ({
@@ -38,7 +38,7 @@ const mockKpis: KpiResponse = {
   },
 };
 
-const mockProjectHealth: ProjectHealth[] = [
+const mockProjectHealth: MatterHealth[] = [
   {
     matterId: "p1",
     matterName: "Website Redesign",

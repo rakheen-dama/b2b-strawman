@@ -3,8 +3,8 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
 import { RequiresCapability } from "@/lib/capabilities";
 import type {
-  Customer,
-  CustomerStatus,
+  Client,
+  ClientStatus,
   CompletenessScore,
   FieldDefinitionResponse,
   LifecycleStatus,
@@ -46,7 +46,7 @@ const LIFECYCLE_FILTER_OPTIONS: Array<{ value: LifecycleStatus | ""; label: stri
   { value: "OFFBOARDED", label: "Offboarded" },
 ];
 
-const STATUS_BADGE: Record<CustomerStatus, { label: string; variant: "success" | "neutral" }> = {
+const STATUS_BADGE: Record<ClientStatus, { label: string; variant: "success" | "neutral" }> = {
   ACTIVE: { label: "Active", variant: "success" },
   ARCHIVED: { label: "Archived", variant: "neutral" },
 };
@@ -130,9 +130,9 @@ export default async function CustomersPage({
     customersEndpoint = `/api/clients?lifecycleStatus=${lifecycleFilter}`;
   }
 
-  let customers: Customer[] = [];
+  let customers: Client[] = [];
   try {
-    customers = await api.get<Customer[]>(customersEndpoint);
+    customers = await api.get<Client[]>(customersEndpoint);
   } catch (error) {
     handleApiError(error);
   }

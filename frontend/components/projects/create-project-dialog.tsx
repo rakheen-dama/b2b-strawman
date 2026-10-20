@@ -25,7 +25,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { createProject, fetchActiveCustomers } from "@/app/(app)/org/[slug]/projects/actions";
-import type { Customer } from "@/lib/types";
+import type { Client } from "@/lib/types";
 import { Plus, ShieldAlert } from "lucide-react";
 import { createMessages } from "@/lib/messages";
 import { scrollToFirstError } from "@/lib/error-handler";
@@ -58,7 +58,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customers, setCustomers] = useState<Client[]>([]);
 
   const form = useForm<CreateProjectFormData>({
     resolver: zodResolver(createProjectSchema),

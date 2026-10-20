@@ -4,11 +4,11 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import { Sparkline } from "@/components/dashboard/sparkline";
 import { MicroStackedBar } from "@/components/dashboard/micro-stacked-bar";
 import { useTerminology } from "@/lib/terminology";
-import type { KpiResponse, ProjectHealth } from "@/lib/dashboard-types";
+import type { KpiResponse, MatterHealth } from "@/lib/dashboard-types";
 
 interface MetricsStripProps {
   kpis: KpiResponse | null;
-  projectHealth: ProjectHealth[] | null;
+  projectHealth: MatterHealth[] | null;
 }
 
 function formatHours(hours: number): string {

@@ -1,21 +1,21 @@
 // ---- Projects (from ProjectController.java) ----
 
 import type { TagResponse } from "./common";
-import type { ProjectRole } from "./member";
+import type { MatterRole } from "./member";
 
-export type ProjectStatus = "ACTIVE" | "COMPLETED" | "ARCHIVED" | "CLOSED";
+export type MatterStatus = "ACTIVE" | "COMPLETED" | "ARCHIVED" | "CLOSED";
 
-export type ProjectPriority = "LOW" | "MEDIUM" | "HIGH";
+export type MatterPriority = "LOW" | "MEDIUM" | "HIGH";
 
-export interface Project {
+export interface Matter {
   id: string;
   name: string;
   description: string | null;
-  status: ProjectStatus;
+  status: MatterStatus;
   clientId: string | null;
   dueDate: string | null;
   referenceNumber: string | null;
-  priority: ProjectPriority | null;
+  priority: MatterPriority | null;
   workType: string | null;
   createdBy: string;
   createdByName: string | null;
@@ -38,35 +38,35 @@ export interface Project {
    * configured.
    */
   retentionEndsOn: string | null;
-  matterRole: ProjectRole | null;
+  matterRole: MatterRole | null;
   customFields?: Record<string, unknown>;
   appliedFieldGroups?: string[];
   tags?: TagResponse[];
 }
 
-export interface CreateProjectRequest {
+export interface CreateMatterRequest {
   name: string;
   description?: string;
   clientId?: string;
   dueDate?: string;
   referenceNumber?: string;
-  priority?: ProjectPriority;
+  priority?: MatterPriority;
   workType?: string;
 }
 
-export interface UpdateProjectRequest {
+export interface UpdateMatterRequest {
   name: string;
   description?: string;
   clientId?: string | null;
   dueDate?: string | null;
   referenceNumber?: string | null;
-  priority?: ProjectPriority | null;
+  priority?: MatterPriority | null;
   workType?: string | null;
 }
 
 // ---- Time Summaries (from ProjectTimeSummaryController.java) ----
 
-export interface ProjectTimeSummary {
+export interface MatterTimeSummary {
   billableMinutes: number;
   nonBillableMinutes: number;
   totalMinutes: number;
@@ -120,7 +120,7 @@ export interface MyWorkTimeEntryItem {
   description: string | null;
 }
 
-export interface MyWorkProjectSummary {
+export interface MyWorkMatterSummary {
   matterId: string;
   matterName: string;
   billableMinutes: number;
@@ -135,7 +135,7 @@ export interface MyWorkTimeSummary {
   billableMinutes: number;
   nonBillableMinutes: number;
   totalMinutes: number;
-  byMatter: MyWorkProjectSummary[];
+  byMatter: MyWorkMatterSummary[];
 }
 
 // ---- Setup Status ----
@@ -159,7 +159,7 @@ export interface ChecklistProgress {
   percentComplete: number;
 }
 
-export interface ProjectSetupStatus {
+export interface MatterSetupStatus {
   matterId: string;
   clientAssigned: boolean;
   rateCardConfigured: boolean;
@@ -170,7 +170,7 @@ export interface ProjectSetupStatus {
   overallComplete: boolean;
 }
 
-export interface CustomerReadiness {
+export interface ClientReadiness {
   clientId: string;
   lifecycleStatus: string;
   checklistProgress: ChecklistProgress | null;
@@ -179,7 +179,7 @@ export interface CustomerReadiness {
   overallReadiness: string;
 }
 
-export interface ProjectUnbilledBreakdown {
+export interface MatterUnbilledBreakdown {
   matterId: string;
   matterName: string;
   hours: number;
@@ -192,7 +192,7 @@ export interface UnbilledTimeSummary {
   totalAmount: number;
   currency: string;
   entryCount: number;
-  byMatter: ProjectUnbilledBreakdown[] | null;
+  byMatter: MatterUnbilledBreakdown[] | null;
 }
 
 export interface TemplateReadiness {

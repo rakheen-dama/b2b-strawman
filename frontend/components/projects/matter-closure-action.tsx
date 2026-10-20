@@ -6,13 +6,13 @@ import { Button } from "@b2mash/ui/button";
 import { MatterClosureDialog } from "@/components/legal/matter-closure-dialog";
 import { useCapabilities } from "@/lib/capabilities";
 import { useOrgProfile } from "@/lib/org-profile";
-import type { ProjectStatus } from "@/lib/types";
+import type { MatterStatus } from "@/lib/types";
 
 interface MatterClosureActionProps {
   slug: string;
   projectId: string;
   projectName: string;
-  projectStatus: ProjectStatus;
+  projectStatus: MatterStatus;
 }
 
 export function MatterClosureAction({

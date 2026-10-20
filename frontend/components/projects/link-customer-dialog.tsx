@@ -23,12 +23,12 @@ import {
   linkCustomerToProject,
 } from "@/app/(app)/org/[slug]/projects/[id]/actions";
 import { useTerminology } from "@/lib/terminology";
-import type { Customer } from "@/lib/types";
+import type { Client } from "@/lib/types";
 
 interface LinkCustomerDialogProps {
   slug: string;
   projectId: string;
-  existingCustomers: Customer[];
+  existingCustomers: Client[];
   children: React.ReactNode;
 }
 
@@ -47,7 +47,7 @@ export function LinkCustomerDialog({
     data: allCustomers,
     error: fetchError,
     isLoading,
-  } = useSWR<Customer[]>(open ? "link-customer-list" : null, () => fetchCustomers());
+  } = useSWR<Client[]>(open ? "link-customer-list" : null, () => fetchCustomers());
 
   const availableCustomers = useMemo(() => {
     if (!allCustomers) return [];

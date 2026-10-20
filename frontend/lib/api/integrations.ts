@@ -14,7 +14,7 @@ import type {
   XeroTaxMapping,
   UpdateXeroTaxMappingRequest,
   XeroTaxRate,
-  XeroCustomerImportResult,
+  XeroClientImportResult,
   XeroSettingsResponse,
   UpdateXeroSettingsRequest,
   SyncSummaryResponse,
@@ -98,8 +98,8 @@ export async function getXeroTaxRates(): Promise<XeroTaxRate[]> {
 
 // ---- Customer Import ----
 
-export async function importXeroCustomers(): Promise<XeroCustomerImportResult> {
-  return api.post<XeroCustomerImportResult>("/api/integrations/xero/import-clients");
+export async function importXeroCustomers(): Promise<XeroClientImportResult> {
+  return api.post<XeroClientImportResult>("/api/integrations/xero/import-clients");
 }
 
 // ---- Xero Settings ----

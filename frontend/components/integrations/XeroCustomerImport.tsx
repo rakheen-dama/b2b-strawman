@@ -6,7 +6,7 @@ import { Upload, CheckCircle2 } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { importXeroCustomersAction } from "@/app/(app)/org/[slug]/settings/integrations/xero/actions";
-import type { XeroCustomerImportResult } from "@/lib/types";
+import type { XeroClientImportResult } from "@/lib/types";
 
 interface XeroCustomerImportProps {
   slug: string;
@@ -14,7 +14,7 @@ interface XeroCustomerImportProps {
 
 export function XeroCustomerImport({ slug }: XeroCustomerImportProps) {
   const [isImporting, setIsImporting] = useState(false);
-  const [importResult, setImportResult] = useState<XeroCustomerImportResult | null>(null);
+  const [importResult, setImportResult] = useState<XeroClientImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function handleImport() {

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { TimeSummaryPanel } from "@/components/projects/time-summary-panel";
-import type { ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary } from "@/lib/types";
+import type { MatterTimeSummary, MemberTimeSummary, TaskTimeSummary } from "@/lib/types";
 
 // Mock the server actions
 vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-summary-actions", () => ({
@@ -12,7 +12,7 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-summary-actions", () => ({
 
 // --- Test data ---
 
-const emptySummary: ProjectTimeSummary = {
+const emptySummary: MatterTimeSummary = {
   billableMinutes: 0,
   nonBillableMinutes: 0,
   totalMinutes: 0,
@@ -20,7 +20,7 @@ const emptySummary: ProjectTimeSummary = {
   entryCount: 0,
 };
 
-const populatedSummary: ProjectTimeSummary = {
+const populatedSummary: MatterTimeSummary = {
   billableMinutes: 480,
   nonBillableMinutes: 120,
   totalMinutes: 600,

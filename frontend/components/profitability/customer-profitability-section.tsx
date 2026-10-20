@@ -14,7 +14,7 @@ import {
 import { formatCurrency, formatCurrencySafe } from "@/lib/format";
 import { useTerminology } from "@/lib/terminology";
 import { getOrgProfitability } from "@/app/(app)/org/[slug]/profitability/actions";
-import type { OrgProfitabilityResponse, ProjectProfitabilitySummary } from "@/lib/types";
+import type { OrgProfitabilityResponse, MatterProfitabilitySummary } from "@/lib/types";
 import { ArrowUpDown, ChevronDown, ChevronRight } from "lucide-react";
 
 interface CustomerProfitabilitySectionProps {
@@ -31,10 +31,10 @@ interface CustomerAggregate {
   costValue: number | null;
   margin: number | null;
   marginPercent: number | null;
-  projects: ProjectProfitabilitySummary[];
+  projects: MatterProfitabilitySummary[];
 }
 
-function aggregateByCustomer(projects: ProjectProfitabilitySummary[]): CustomerAggregate[] {
+function aggregateByCustomer(projects: MatterProfitabilitySummary[]): CustomerAggregate[] {
   const map = new Map<string, CustomerAggregate>();
 
   for (const p of projects) {

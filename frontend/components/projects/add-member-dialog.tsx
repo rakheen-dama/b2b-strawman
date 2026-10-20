@@ -22,7 +22,7 @@ import {
   addProjectMember,
   fetchOrgMembers,
 } from "@/app/(app)/org/[slug]/projects/[id]/member-actions";
-import type { OrgMember, ProjectMember } from "@/lib/types";
+import type { OrgMember, MatterMember } from "@/lib/types";
 
 function MemberAvatar({ name }: { name: string | null }) {
   const initial = (name ?? "?").charAt(0).toUpperCase();
@@ -36,7 +36,7 @@ function MemberAvatar({ name }: { name: string | null }) {
 interface AddMemberDialogProps {
   slug: string;
   projectId: string;
-  existingMembers: ProjectMember[];
+  existingMembers: MatterMember[];
   children: React.ReactNode;
 }
 

@@ -40,7 +40,7 @@ import {
   deleteProjectBillingRate,
 } from "@/app/(app)/org/[slug]/projects/[id]/rate-actions";
 import { formatCurrency, formatDate } from "@/lib/format";
-import type { BillingRate, ProjectMember } from "@/lib/types";
+import type { BillingRate, MatterMember } from "@/lib/types";
 
 // OBS-2103 / OBS-2103b / audit-03 sweep: dialog-owns-button pattern. Same
 // rationale as customer-rates-tab — Edit + Delete triggers inside the same
@@ -50,7 +50,7 @@ type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>["size"]>;
 
 interface ProjectRatesTabProps {
   billingRates: BillingRate[];
-  members: ProjectMember[];
+  members: MatterMember[];
   projectId: string;
   slug: string;
   defaultCurrency: string;

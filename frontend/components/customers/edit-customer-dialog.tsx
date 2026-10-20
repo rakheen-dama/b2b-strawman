@@ -24,13 +24,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { updateCustomer } from "@/app/(app)/org/[slug]/customers/actions";
-import type { Customer, CustomerType } from "@/lib/types";
+import type { Client, ClientType } from "@/lib/types";
 import { editCustomerSchema, type EditCustomerFormData } from "@/lib/schemas/customer";
 import { COUNTRIES } from "@/lib/constants/countries";
 import { ENTITY_TYPES } from "@/lib/constants/entity-types";
 import { nativeSelectClassName } from "@/lib/styles/native-select";
 
-const CUSTOMER_TYPES: { value: CustomerType; label: string }[] = [
+const CUSTOMER_TYPES: { value: ClientType; label: string }[] = [
   { value: "INDIVIDUAL", label: "Individual" },
   { value: "COMPANY", label: "Company" },
   { value: "TRUST", label: "Trust" },
@@ -40,7 +40,7 @@ type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>
 type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>["size"]>;
 
 interface EditCustomerDialogProps {
-  customer: Customer;
+  customer: Client;
   slug: string;
   /**
    * OBS-2103b: dialog owns the trigger button. Pass a label and (optionally)
@@ -63,14 +63,14 @@ interface EditCustomerDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-function buildDefaults(customer: Customer): EditCustomerFormData {
+function buildDefaults(customer: Client): EditCustomerFormData {
   return {
     name: customer.name,
     email: customer.email,
     phone: customer.phone ?? "",
     idNumber: customer.idNumber ?? "",
     notes: customer.notes ?? "",
-    customerType: (customer.clientType as CustomerType) ?? "INDIVIDUAL",
+    customerType: (customer.clientType as ClientType) ?? "INDIVIDUAL",
     addressLine1: customer.addressLine1 ?? "",
     addressLine2: customer.addressLine2 ?? "",
     city: customer.city ?? "",

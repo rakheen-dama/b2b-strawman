@@ -41,7 +41,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  * <p>Covers:
  *
  * <ul>
- *   <li>{@code GET /api/legal/disbursements/unbilled?projectId=} returns only APPROVED + UNBILLED
+ *   <li>{@code GET /api/legal/disbursements/unbilled?matterId=} returns only APPROVED + UNBILLED
  *       rows, ordered by incurredDate ASC, with correct totals.
  *   <li>{@link io.b2mash.b2b.b2bstrawman.invoice.UnbilledTimeService#getUnbilledTime(UUID,
  *       LocalDate, LocalDate)} populates a non-empty {@code disbursements} list when the {@code

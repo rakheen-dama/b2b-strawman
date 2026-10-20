@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,6 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -60,6 +62,7 @@ class MatterClosureControllerIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
+  @Autowired private JdbcTemplate jdbcTemplate;
 
   private String legalTenantSchema;
   private String nonLegalTenantSchema;
@@ -419,7 +422,9 @@ class MatterClosureControllerIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(reopenBody))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.matterId").value(projectId.toString()))
+        .andExpect(jsonPath("$.status").value("ACTIVE"));
 
     mockMvc
         .perform(
@@ -430,6 +435,75 @@ class MatterClosureControllerIntegrationTest {
         .andExpect(jsonPath("$[0].closedByName").value("Closure Ctrl Owner"))
         .andExpect(jsonPath("$[0].reopenedBy").value(legalOwnerMemberId.toString()))
         .andExpect(jsonPath("$[0].reopenedByName").value("Closure Ctrl Owner"));
+  }
+
+  // ==========================================================================
+  // Reopen after retention elapsed → 409 ProblemDetail carrying matterId
+  // ==========================================================================
+
+  @Test
+  void legalTenant_POST_reopen_afterRetentionElapsed_returns409_withMatterIdProblemDetail()
+      throws Exception {
+    // Pin retention years so the expected retentionEndedOn is deterministic regardless of the
+    // order other tests in this class mutate the org setting.
+    runInLegalTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var settings = orgSettingsService.getOrCreateForCurrentTenant();
+                  settings.getDataProtection().setLegalMatterRetentionYears(7);
+                  orgSettingsRepository.save(settings);
+                }));
+
+    UUID projectId = createProject("Retention Elapsed Reopen Matter");
+
+    String closeBody =
+        """
+        {
+          "reason": "CONCLUDED",
+          "notes": "Close for retention-elapsed reopen test.",
+          "generateClosureLetter": false,
+          "override": true,
+          "overrideJustification": "%s"
+        }
+        """
+            .formatted(VALID_JUSTIFICATION);
+    mockMvc
+        .perform(
+            post("/api/matters/" + projectId + "/closure/close")
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(closeBody))
+        .andExpect(status().isOk());
+
+    // Backdate the retention anchor to a fixed instant far in the past: 2000-01-15 + 7 years
+    // = 2007-01-15, which is before today, so reopen must hit the retention-elapsed branch.
+    jdbcTemplate.update(
+        "UPDATE \"%s\".projects SET retention_clock_started_at = ? WHERE id = ?"
+            .formatted(legalTenantSchema),
+        java.sql.Timestamp.from(Instant.parse("2000-01-15T00:00:00Z")),
+        projectId);
+
+    mockMvc
+        .perform(
+            post("/api/matters/" + projectId + "/closure/reopen")
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "notes": "Attempting reopen after retention elapsed."
+                    }
+                    """))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.title").value("Retention elapsed"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "Matter retention window expired on 2007-01-15. This matter can no longer be"
+                        + " reopened."))
+        .andExpect(jsonPath("$.matterId").value(projectId.toString()))
+        .andExpect(jsonPath("$.retentionEndedOn").value("2007-01-15"));
   }
 
   // ==========================================================================

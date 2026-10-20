@@ -89,6 +89,7 @@ import { ProjectDisbursementsTab } from "@/components/legal/project-disbursement
 import { ProjectStatementsTab } from "@/components/legal/project-statements-tab";
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { TerminologyText } from "@/components/terminology-text";
+import { RecordRecentItem } from "@/components/record-recent-item";
 import { createSavedViewAction } from "./view-actions";
 import { PROMOTED_PROJECT_SLUGS, PROMOTED_TASK_SLUGS } from "@/lib/constants/promoted-field-slugs";
 import { ArrowLeft, Receipt } from "lucide-react";
@@ -414,6 +415,7 @@ export default async function ProjectDetailPage({
 
   return (
     <div className="space-y-6 p-4 lg:p-6">
+      <RecordRecentItem href={`/org/${slug}/matters/${id}`} label={project.name} />
       {/* Archived banner (208.11) — above breadcrumb row */}
       {project.status === "ARCHIVED" && (
         <ArchivedProjectBanner slug={slug} projectId={id} canRestore={isAdmin} />

@@ -79,6 +79,7 @@ import { FicaVerificationPanel } from "@/components/ai/fica-verification-panel";
 import { getAiProfile } from "@/lib/api/ai";
 import { ArrowLeft, ArrowRight, UserCheck, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import { RecordRecentItem } from "@/components/record-recent-item";
 
 export default async function CustomerDetailPage({
   params,
@@ -475,6 +476,7 @@ export default async function CustomerDetailPage({
 
   return (
     <div className="space-y-6">
+      <RecordRecentItem href={`/org/${slug}/clients/${id}`} label={customer.name} />
       {/* Back link */}
       <div>
         <Link

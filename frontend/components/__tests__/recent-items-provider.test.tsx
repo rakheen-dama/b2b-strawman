@@ -29,22 +29,22 @@ function TestConsumer() {
           </li>
         ))}
       </ul>
-      <button onClick={() => addItem({ href: "/org/test-org/projects/1", label: "Project One" })}>
+      <button onClick={() => addItem({ href: "/org/test-org/matters/1", label: "Project One" })}>
         add project one
       </button>
-      <button onClick={() => addItem({ href: "/org/test-org/projects/2", label: "Project Two" })}>
+      <button onClick={() => addItem({ href: "/org/test-org/matters/2", label: "Project Two" })}>
         add project two
       </button>
-      <button onClick={() => addItem({ href: "/org/test-org/projects/3", label: "Project Three" })}>
+      <button onClick={() => addItem({ href: "/org/test-org/matters/3", label: "Project Three" })}>
         add project three
       </button>
-      <button onClick={() => addItem({ href: "/org/test-org/projects/4", label: "Project Four" })}>
+      <button onClick={() => addItem({ href: "/org/test-org/matters/4", label: "Project Four" })}>
         add project four
       </button>
-      <button onClick={() => addItem({ href: "/org/test-org/projects/5", label: "Project Five" })}>
+      <button onClick={() => addItem({ href: "/org/test-org/matters/5", label: "Project Five" })}>
         add project five
       </button>
-      <button onClick={() => addItem({ href: "/org/test-org/projects/6", label: "Project Six" })}>
+      <button onClick={() => addItem({ href: "/org/test-org/matters/6", label: "Project Six" })}>
         add project six
       </button>
     </div>
@@ -133,5 +133,12 @@ describe("RecentItemsProvider", () => {
     const items = screen.getAllByRole("listitem");
     expect(items[0].textContent).toBe("Project Six");
     expect(items.find((el) => el.textContent === "Project One")).toBeUndefined();
+  });
+  it("does not record from the pathname alone — detail pages record via RecordRecentItem", () => {
+    // Phase 87 610E (§12.6.5): the old /projects|/customers regex effect is gone; a detail URL
+    // with no recorder on the page adds nothing (one recording path per entity, no duplicates).
+    mockUsePathname.mockReturnValue("/org/test-org/matters/m-1");
+    renderProvider();
+    expect(screen.getByTestId("item-count").textContent).toBe("0");
   });
 });

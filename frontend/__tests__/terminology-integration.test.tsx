@@ -69,8 +69,8 @@ describe("364B: terminology in sidebar nav", () => {
 // ---- Test 2: Breadcrumbs ----
 
 describe("364B: terminology in breadcrumbs", () => {
-  it("renders Matters instead of Projects in breadcrumb for /projects route", () => {
-    mockUsePathname.mockReturnValue("/org/test-org/projects");
+  it("renders Matters instead of Projects in breadcrumb for /matters route", () => {
+    mockUsePathname.mockReturnValue("/org/test-org/matters");
 
     render(
       <TerminologyProvider verticalProfile="legal-za">
@@ -82,8 +82,8 @@ describe("364B: terminology in breadcrumbs", () => {
     expect(screen.queryByText("Projects")).not.toBeInTheDocument();
   });
 
-  it("renders Clients instead of Customers in breadcrumb for /customers route", () => {
-    mockUsePathname.mockReturnValue("/org/test-org/customers");
+  it("renders Clients instead of Customers in breadcrumb for /clients route", () => {
+    mockUsePathname.mockReturnValue("/org/test-org/clients");
 
     render(
       <TerminologyProvider verticalProfile="legal-za">

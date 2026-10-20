@@ -315,3 +315,54 @@ describe("NavZone active state on the renamed routes (Phase 87 610E)", () => {
     expect(link).toHaveClass("bg-white/5");
   });
 });
+
+// Phase 87 S6a (612A review): one active item per zone — the longest matching href wins.
+describe("NavZone longest-match active item (Phase 87 612A)", () => {
+  const ALL = ["PROJECT_MANAGEMENT", "AI_EXECUTE", "AI_REVIEW", "INVOICING", "CUSTOMER_MANAGEMENT"];
+
+  function activeLinks(): string[] {
+    return screen
+      .getAllByRole("link")
+      .filter((link) => link.classList.contains("bg-white/5"))
+      .map((link) => link.textContent ?? "");
+  }
+
+  function renderZone(zoneId: string, pathname: string) {
+    mockUsePathname.mockReturnValue(pathname);
+    const zone = NAV_GROUPS.find((g) => g.id === zoneId)!;
+    renderWithProviders(<NavZone zone={{ ...zone, defaultExpanded: true }} slug="test-org" />, {
+      capabilities: ALL,
+      enabledModules: ["bulk_billing", "conflict_check", "disbursements", "lssa_tariff"],
+    });
+  }
+
+  it("highlights only Fee notes on a fee-note detail page", () => {
+    renderZone("fees", "/org/test-org/invoices/abc");
+    expect(activeLinks()).toEqual(["Fee notes"]);
+  });
+
+  it("highlights only Fee runs on a fee-run detail page", () => {
+    renderZone("fees", "/org/test-org/invoices/billing-runs/x");
+    expect(activeLinks()).toEqual(["Fee runs"]);
+  });
+
+  it("highlights only Debtors on the collections page", () => {
+    renderZone("fees", "/org/test-org/invoices/collections");
+    expect(activeLinks()).toEqual(["Debtors"]);
+  });
+
+  it("highlights only New matter on /matters/new", () => {
+    renderZone("matters", "/org/test-org/matters/new");
+    expect(activeLinks()).toEqual(["New matter"]);
+  });
+
+  it("highlights only Matters on a matter detail page", () => {
+    renderZone("matters", "/org/test-org/matters/123");
+    expect(activeLinks()).toEqual(["Matters"]);
+  });
+
+  it("does not prefix-match a sibling route that merely shares the href's leading characters", () => {
+    renderZone("matters", "/org/test-org/matters-archive");
+    expect(activeLinks()).toEqual([]);
+  });
+});

@@ -24,7 +24,6 @@ interface CommandPaletteDialogProps {
 export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPaletteDialogProps) {
   const router = useRouter();
   const access = useCapabilities();
-  const { isAdmin } = access;
   const { isModuleEnabled } = useOrgProfile();
   const { items: recentItems } = useRecentItems();
 
@@ -35,7 +34,8 @@ export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPalett
   const settings = SETTINGS_ITEMS.filter(
     (item) =>
       !item.comingSoon &&
-      (!item.adminOnly || isAdmin) &&
+      // Same admin rule as the pages (admin = isAdmin || isOwner, as in the settings layout).
+      canAccessNavItem(item, access) &&
       (!item.requiredModule || isModuleEnabled(item.requiredModule))
   );
 

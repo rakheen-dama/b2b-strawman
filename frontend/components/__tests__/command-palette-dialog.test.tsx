@@ -137,6 +137,11 @@ describe("CommandPaletteDialog", () => {
     expect(screen.queryByText("Batch Billing")).not.toBeInTheDocument();
   });
 
+  it("shows adminOnly settings items to an owner who is not flagged admin (same rule as pages)", () => {
+    renderDialog({ capabilities: ALL_CAPABILITIES, isAdmin: false, isOwner: true });
+    expect(screen.getByText("Roles & Permissions")).toBeInTheDocument();
+  });
+
   it("shows Recent group heading when recentItems is non-empty", () => {
     vi.mocked(useRecentItems).mockReturnValue({
       items: [{ href: "/org/test-org/matters/abc", label: "Alpha Project" }],

@@ -39,7 +39,10 @@ export interface NavItem {
   label: string;
   href: (slug: string) => string;
   icon: LucideIcon;
-  /** Use exact match instead of startsWith for active detection */
+  /**
+   * Active only on an exact pathname match (no `/`-segment prefix match). Within a zone the single
+   * active item is the longest matching href (nav-zone.tsx).
+   */
   exact?: boolean;
   /**
    * If set, the item is only shown when the user has this capability. An array is an any-of gate:
@@ -211,10 +214,11 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       // 612B prepends "Unbilled work" (/invoices/unbilled, INVOICING, Hourglass) with its page.
       {
+        // Prefix match so /invoices/[id] highlights Fee notes; nav-zone's longest-match keeps
+        // /invoices/billing-runs/* and /invoices/collections on their own items.
         label: "Fee notes",
         href: (slug) => `/org/${slug}/invoices`,
         icon: Receipt,
-        exact: true,
         requiredCapability: "INVOICING",
       },
       {

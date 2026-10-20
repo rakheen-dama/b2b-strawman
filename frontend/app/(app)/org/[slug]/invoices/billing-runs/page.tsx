@@ -52,7 +52,7 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ sl
     <div className="space-y-8">
       {/* Page Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">Fee notes</div>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Fee notes</h1>
         <Button asChild size="sm">
           <Link href={`/org/${slug}/invoices/billing-runs/new`}>
             <Plus className="mr-1.5 size-4" />

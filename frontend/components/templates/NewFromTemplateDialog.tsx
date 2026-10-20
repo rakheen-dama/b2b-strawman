@@ -26,15 +26,15 @@ import { resolveNameTokens } from "@/lib/name-token-resolver";
 import { nativeSelectClassName } from "@/lib/styles/native-select";
 import { useTerminology } from "@/lib/terminology";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
-import type { OrgMember, Customer } from "@/lib/types";
+import type { OrgMember, Client } from "@/lib/types";
 import type { PrerequisiteViolation } from "@/components/prerequisite/types";
-import type { ProjectPriority } from "@/lib/types/project";
+import type { MatterPriority } from "@/lib/types/matter";
 
 interface NewFromTemplateDialogProps {
   slug: string;
   templates: ProjectTemplateResponse[];
   orgMembers: OrgMember[];
-  customers: Customer[];
+  customers: Client[];
   children: React.ReactNode;
   /**
    * When true, the dialog opens on mount. Used by deep-links like
@@ -93,7 +93,7 @@ export function NewFromTemplateDialog({
   });
   const [projectLeadMemberId, setProjectLeadMemberId] = useState("");
   const [referenceNumber, setReferenceNumber] = useState("");
-  const [priority, setPriority] = useState<ProjectPriority | "">("");
+  const [priority, setPriority] = useState<MatterPriority | "">("");
   const [workType, setWorkType] = useState("");
   // Once the user edits Work Type, picking a template no longer overwrites it.
   const [workTypeEdited, setWorkTypeEdited] = useState(false);
@@ -421,7 +421,7 @@ export function NewFromTemplateDialog({
                   <select
                     id="new-proj-priority"
                     value={priority}
-                    onChange={(e) => setPriority(e.target.value as ProjectPriority | "")}
+                    onChange={(e) => setPriority(e.target.value as MatterPriority | "")}
                     className={nativeSelectClassName}
                   >
                     <option value="">Select priority...</option>

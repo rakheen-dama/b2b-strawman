@@ -1,6 +1,7 @@
 import "server-only";
 
 import { api } from "./client";
+import { CLIENTS_SEGMENT, MATTERS_SEGMENT } from "./paths";
 import type {
   EntityType,
   TagResponse,
@@ -17,8 +18,8 @@ import type {
  * (`/org/{slug}/projects/...`) are NOT derived from this — they move in 610D.
  */
 export function entityApiPrefix(entityType: EntityType): string {
-  if (entityType === "PROJECT") return "matters";
-  if (entityType === "CUSTOMER") return "clients";
+  if (entityType === "PROJECT") return MATTERS_SEGMENT;
+  if (entityType === "CUSTOMER") return CLIENTS_SEGMENT;
   return entityType.toLowerCase() + "s";
 }
 

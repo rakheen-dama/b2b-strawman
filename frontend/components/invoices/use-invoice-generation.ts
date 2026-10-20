@@ -7,7 +7,7 @@ import {
   validateInvoiceGeneration,
 } from "@/app/(app)/org/[slug]/customers/[id]/invoice-actions";
 import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
-import type { UnbilledTimeResponse, UnbilledProjectGroup, ValidationCheck } from "@/lib/types";
+import type { UnbilledTimeResponse, UnbilledMatterGroup, ValidationCheck } from "@/lib/types";
 import type { PrerequisiteViolation } from "@/components/prerequisite/types";
 
 interface UseInvoiceGenerationOptions {
@@ -137,7 +137,7 @@ export function useInvoiceGeneration({
     });
   }
 
-  function handleToggleProject(project: UnbilledProjectGroup) {
+  function handleToggleProject(project: UnbilledMatterGroup) {
     const selectableEntries = project.entries.filter((e) => e.billingRateCurrency === currency);
     const allSelected = selectableEntries.every((e) => selectedEntryIds.has(e.id));
 

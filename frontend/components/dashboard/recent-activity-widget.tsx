@@ -16,10 +16,10 @@ import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { RelativeDate } from "@/components/ui/relative-date";
 import { useTerminology } from "@/lib/terminology";
-import type { CrossProjectActivityItem } from "@/lib/dashboard-types";
+import type { CrossMatterActivityItem } from "@/lib/dashboard-types";
 
 interface RecentActivityWidgetProps {
-  items: CrossProjectActivityItem[] | null;
+  items: CrossMatterActivityItem[] | null;
   orgSlug: string;
 }
 

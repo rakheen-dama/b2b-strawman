@@ -14,7 +14,7 @@ import { Label } from "@b2mash/ui/label";
 import { formatCurrency, formatDuration, formatDate } from "@/lib/format";
 import { ExpenseCategoryBadge } from "@/components/expenses/expense-category-badge";
 import type {
-  UnbilledProjectGroup,
+  UnbilledMatterGroup,
   UnbilledTimeEntry,
   UnbilledExpenseEntry,
   UnbilledDisbursementEntry,
@@ -345,11 +345,11 @@ function ProjectEntryGroup({
   onToggleEntry,
   onToggleProject,
 }: {
-  project: UnbilledProjectGroup;
+  project: UnbilledMatterGroup;
   currency: string;
   selectedEntryIds: Set<string>;
   onToggleEntry: (id: string) => void;
-  onToggleProject: (project: UnbilledProjectGroup) => void;
+  onToggleProject: (project: UnbilledMatterGroup) => void;
 }) {
   const selectableEntries = project.entries.filter((e) => e.billingRateCurrency === currency);
   const allSelected =

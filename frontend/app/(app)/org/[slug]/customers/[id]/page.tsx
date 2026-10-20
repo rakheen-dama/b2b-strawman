@@ -9,16 +9,16 @@ import {
   getTemplates,
 } from "@/lib/api";
 import type {
-  Customer,
-  CustomerReadiness,
+  Client,
+  ClientReadiness,
   UnbilledTimeSummary,
   TemplateReadiness,
   Document,
-  Project,
+  Matter,
   BillingRate,
   OrgMember,
   OrgSettings,
-  CustomerProfitabilityResponse,
+  ClientProfitabilityResponse,
   OrgProfitabilityResponse,
   InvoiceResponse,
   FieldDefinitionResponse,
@@ -105,16 +105,16 @@ export default async function CustomerDetailPage({
     }
   }
 
-  let customer: Customer;
+  let customer: Client;
   try {
-    customer = await api.get<Customer>(`/api/clients/${id}`);
+    customer = await api.get<Client>(`/api/clients/${id}`);
   } catch (error) {
     handleApiError(error);
   }
 
-  let linkedProjects: Project[] = [];
+  let linkedProjects: Matter[] = [];
   try {
-    linkedProjects = await api.get<Project[]>(`/api/clients/${id}/matters`);
+    linkedProjects = await api.get<Matter[]>(`/api/clients/${id}/matters`);
   } catch {
     // Non-fatal: show empty projects list if fetch fails
   }
@@ -136,7 +136,7 @@ export default async function CustomerDetailPage({
   // Billing rates + org members for the "Rates" tab (admin/owner only)
   let customerBillingRates: BillingRate[] = [];
   let orgMembers: OrgMember[] = [];
-  let customerProfitability: CustomerProfitabilityResponse | null = null;
+  let customerProfitability: ClientProfitabilityResponse | null = null;
   let projectBreakdown: OrgProfitabilityResponse | null = null;
   let customerInvoices: InvoiceResponse[] = [];
   if (isAdmin) {
@@ -146,7 +146,7 @@ export default async function CustomerDetailPage({
           api.get<{ content: BillingRate[] }>(`/api/billing-rates?clientId=${id}`),
           api.get<OrgMember[]>("/api/members"),
           api
-            .get<CustomerProfitabilityResponse>(`/api/clients/${id}/profitability`)
+            .get<ClientProfitabilityResponse>(`/api/clients/${id}/profitability`)
             .catch(() => null),
           // D4 (Phase 87): backend /api/reports/profitability still takes customerId (ReportController:66) — do not rename until the backend moves.
           api
@@ -309,7 +309,7 @@ export default async function CustomerDetailPage({
     customer.lifecycleStatus === "ONBOARDING" || checklistInstances.length > 0;
 
   // Setup guidance data (Epic 113A)
-  let customerReadiness: CustomerReadiness | null = null;
+  let customerReadiness: ClientReadiness | null = null;
   let customerUnbilledSummary: UnbilledTimeSummary | null = null;
   let customerTemplateReadiness: TemplateReadiness[] = [];
   try {

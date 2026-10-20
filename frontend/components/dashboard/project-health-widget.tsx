@@ -11,10 +11,10 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@b2mash/ui
 import { useTerminology } from "@/lib/terminology";
 import { HealthBadge } from "@/components/dashboard/health-badge";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
-import type { ProjectHealth } from "@/lib/dashboard-types";
+import type { MatterHealth } from "@/lib/dashboard-types";
 
 interface ProjectHealthWidgetProps {
-  projects: ProjectHealth[] | null;
+  projects: MatterHealth[] | null;
   orgSlug: string;
 }
 

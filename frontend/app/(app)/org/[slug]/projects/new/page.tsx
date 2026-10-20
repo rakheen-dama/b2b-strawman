@@ -3,7 +3,7 @@ import { getAiProfile } from "@/lib/api/ai";
 import { api } from "@/lib/api";
 import { getProjectTemplates } from "@/lib/api/templates";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
-import type { Customer } from "@/lib/types";
+import type { Client } from "@/lib/types";
 import { NewMatterPageClient } from "./new-matter-page-client";
 
 /**
@@ -48,10 +48,10 @@ export default async function NewProjectPage({
   }
 
   // Fetch customers and templates
-  let customers: Customer[] = [];
+  let customers: Client[] = [];
   let templates: ProjectTemplateResponse[] = [];
   try {
-    customers = await api.get<Customer[]>("/api/clients?status=ACTIVE");
+    customers = await api.get<Client[]>("/api/clients?status=ACTIVE");
   } catch {
     // Non-fatal: customer select will be empty
   }

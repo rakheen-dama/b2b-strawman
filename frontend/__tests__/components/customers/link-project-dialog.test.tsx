@@ -3,7 +3,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SWRTestProvider } from "@/lib/swr/test-utils";
 import { LinkProjectDialog } from "@/components/customers/link-project-dialog";
-import type { Project } from "@/lib/types";
+import type { Matter } from "@/lib/types";
 
 const mockFetchProjects = vi.fn();
 const mockLinkProject = vi.fn();
@@ -13,7 +13,7 @@ vi.mock("@/app/(app)/org/[slug]/customers/[id]/actions", () => ({
   linkProject: (...args: unknown[]) => mockLinkProject(...args),
 }));
 
-const mockAllProjects: Project[] = [
+const mockAllProjects: Matter[] = [
   {
     id: "p1",
     name: "Project Alpha",
@@ -43,7 +43,7 @@ const mockAllProjects: Project[] = [
   },
 ];
 
-const existingProjects: Project[] = [mockAllProjects[0]]; // Project Alpha is already linked
+const existingProjects: Matter[] = [mockAllProjects[0]]; // Project Alpha is already linked
 
 describe("LinkProjectDialog", () => {
   beforeEach(() => {

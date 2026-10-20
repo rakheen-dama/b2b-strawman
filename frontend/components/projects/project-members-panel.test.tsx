@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ProjectMembersPanel } from "./project-members-panel";
-import type { ProjectMember } from "@/lib/types";
+import type { MatterMember } from "@/lib/types";
 
 // Mock server actions
 const mockRemoveProjectMember = vi.fn();
@@ -34,7 +34,7 @@ vi.mock("@/components/projects/transfer-lead-dialog", () => ({
   ),
 }));
 
-const mockMembers: ProjectMember[] = [
+const mockMembers: MatterMember[] = [
   {
     id: "pm1",
     memberId: "user1",
@@ -214,7 +214,7 @@ describe("ProjectMembersPanel", () => {
 
   describe("org role badge display", () => {
     it("displays Admin badge when member has orgRole admin", () => {
-      const adminMember: ProjectMember = {
+      const adminMember: MatterMember = {
         id: "pm3",
         memberId: "user3",
         name: "Carol Admin",
@@ -236,7 +236,7 @@ describe("ProjectMembersPanel", () => {
     });
 
     it("displays Owner badge when member has orgRole owner", () => {
-      const ownerMember: ProjectMember = {
+      const ownerMember: MatterMember = {
         id: "pm4",
         memberId: "user4",
         name: "Dave Owner",
@@ -257,7 +257,7 @@ describe("ProjectMembersPanel", () => {
     });
 
     it("displays project role badge when orgRole is member", () => {
-      const regularMember: ProjectMember = {
+      const regularMember: MatterMember = {
         id: "pm5",
         memberId: "user5",
         name: "Eve Regular",

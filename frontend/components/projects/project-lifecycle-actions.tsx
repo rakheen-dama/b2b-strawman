@@ -12,13 +12,13 @@ import {
 import { CompleteProjectDialog } from "@/components/projects/complete-project-dialog";
 import { archiveProject, reopenProject } from "@/app/(app)/org/[slug]/projects/actions";
 import { useTerminology } from "@/lib/terminology";
-import type { ProjectStatus } from "@/lib/types";
+import type { MatterStatus } from "@/lib/types";
 
 interface ProjectLifecycleActionsProps {
   slug: string;
   projectId: string;
   projectName: string;
-  projectStatus: ProjectStatus;
+  projectStatus: MatterStatus;
 }
 
 export function ProjectLifecycleActions({

@@ -2,7 +2,7 @@
 
 import type { TagResponse } from "./common";
 
-export type CustomerStatus = "ACTIVE" | "ARCHIVED";
+export type ClientStatus = "ACTIVE" | "ARCHIVED";
 
 export type LifecycleStatus =
   | "PROSPECT"
@@ -13,15 +13,15 @@ export type LifecycleStatus =
   | "OFFBOARDED"
   | "ANONYMIZED";
 
-export type CustomerType = "INDIVIDUAL" | "COMPANY" | "TRUST";
+export type ClientType = "INDIVIDUAL" | "COMPANY" | "TRUST";
 
-export interface Customer {
+export interface Client {
   id: string;
   name: string;
   email: string;
   phone: string | null;
   idNumber: string | null;
-  status: CustomerStatus;
+  status: ClientStatus;
   notes: string | null;
   createdBy: string;
   createdByName: string | null;
@@ -73,13 +73,13 @@ export interface LifecycleHistoryEntry {
   occurredAt: string;
 }
 
-export interface CreateCustomerRequest {
+export interface CreateClientRequest {
   name: string;
   email: string;
   phone?: string;
   idNumber?: string;
   notes?: string;
-  clientType?: CustomerType;
+  clientType?: ClientType;
   // Promoted customer fields (Epic 463 / Phase 63)
   addressLine1?: string;
   addressLine2?: string;
@@ -96,7 +96,7 @@ export interface CreateCustomerRequest {
   financialYearEnd?: string;
 }
 
-export interface UpdateCustomerRequest {
+export interface UpdateClientRequest {
   name: string;
   email: string;
   phone?: string;
@@ -118,7 +118,7 @@ export interface UpdateCustomerRequest {
   financialYearEnd?: string;
 }
 
-export interface CustomerProject {
+export interface ClientMatter {
   clientId: string;
   matterId: string;
   linkedBy: string | null;

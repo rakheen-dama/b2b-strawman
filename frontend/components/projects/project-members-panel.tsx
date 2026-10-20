@@ -23,7 +23,7 @@ import { AddMemberDialog } from "@/components/projects/add-member-dialog";
 import { TransferLeadDialog } from "@/components/projects/transfer-lead-dialog";
 import { removeProjectMember } from "@/app/(app)/org/[slug]/projects/[id]/member-actions";
 import { formatDate } from "@/lib/format";
-import type { ProjectMember, ProjectRole } from "@/lib/types";
+import type { MatterMember, MatterRole } from "@/lib/types";
 
 const ROLE_BADGE: Record<
   string,
@@ -65,7 +65,7 @@ function MemberAvatar({ name }: { name: string }) {
 }
 
 interface ProjectMembersPanelProps {
-  members: ProjectMember[];
+  members: MatterMember[];
   slug: string;
   projectId: string;
   canManage: boolean;

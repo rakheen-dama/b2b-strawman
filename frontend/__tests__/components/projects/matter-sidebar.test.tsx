@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { MatterSidebar } from "@/components/projects/matter-sidebar";
-import type { Project, Customer, TagResponse } from "@/lib/types";
+import type { Matter, Client, TagResponse } from "@/lib/types";
 
 // Mock child components to avoid complex Radix UI portal issues
 vi.mock("@/components/field-definitions/CustomFieldSection", () => ({
@@ -46,7 +46,7 @@ vi.mock("@/components/projects/matter-reopen-action", () => ({
   MatterReopenAction: () => <div data-testid="matter-reopen-action" />,
 }));
 
-const mockProject: Project = {
+const mockProject: Matter = {
   id: "proj-1",
   name: "Test Matter Alpha",
   description: "A test project description",
@@ -72,13 +72,13 @@ const mockProject: Project = {
   appliedFieldGroups: [],
 };
 
-const mockCustomers: Customer[] = [
+const mockCustomers: Client[] = [
   {
     id: "cust-1",
     name: "Acme Corp",
     email: "acme@example.com",
     lifecycleStatus: "ACTIVE",
-  } as Customer,
+  } as Client,
 ];
 
 const mockTags: TagResponse[] = [{ id: "tag-1", name: "urgent", color: "#ff0000" } as TagResponse];

@@ -4,7 +4,7 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type { Project, Customer, CreateProjectRequest, UpdateProjectRequest } from "@/lib/types";
+import type { Matter, Client, CreateMatterRequest, UpdateMatterRequest } from "@/lib/types";
 import { classifyError } from "@/lib/error-handler";
 import { createMessages } from "@/lib/messages";
 
@@ -12,10 +12,10 @@ const PROJECT_PRIORITIES = ["LOW", "MEDIUM", "HIGH"] as const;
 
 function parseProjectPriority(
   raw: string | undefined
-): CreateProjectRequest["priority"] | undefined {
+): CreateMatterRequest["priority"] | undefined {
   if (!raw) return undefined;
   return (PROJECT_PRIORITIES as readonly string[]).includes(raw)
-    ? (raw as CreateProjectRequest["priority"])
+    ? (raw as CreateMatterRequest["priority"])
     : undefined;
 }
 
@@ -41,7 +41,7 @@ export async function createProject(slug: string, formData: FormData): Promise<A
     return { success: false, error: "Project name is required." };
   }
 
-  const body: CreateProjectRequest = {
+  const body: CreateMatterRequest = {
     name,
     description,
     clientId: customerId,
@@ -52,7 +52,7 @@ export async function createProject(slug: string, formData: FormData): Promise<A
   };
 
   try {
-    await api.post<Project>("/api/matters", body);
+    await api.post<Matter>("/api/matters", body);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -81,7 +81,7 @@ export async function updateProject(
   const referenceNumberRaw = formData.get("referenceNumber")?.toString().trim();
   const referenceNumber = referenceNumberRaw === "" ? null : (referenceNumberRaw ?? undefined);
   const priorityRaw = formData.get("priority")?.toString().trim();
-  let priority: UpdateProjectRequest["priority"];
+  let priority: UpdateMatterRequest["priority"];
   if (priorityRaw === "" || priorityRaw === undefined) {
     priority = null;
   } else {
@@ -98,7 +98,7 @@ export async function updateProject(
     return { success: false, error: "Project name is required." };
   }
 
-  const body: UpdateProjectRequest = {
+  const body: UpdateMatterRequest = {
     name,
     description,
     clientId: customerId,
@@ -109,7 +109,7 @@ export async function updateProject(
   };
 
   try {
-    await api.put<Project>(`/api/matters/${id}`, body);
+    await api.put<Matter>(`/api/matters/${id}`, body);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -159,7 +159,7 @@ export async function completeProject(
 
   try {
     const body = acknowledgeUnbilledTime ? { acknowledgeUnbilledTime } : undefined;
-    await api.patch<Project>(`/api/matters/${projectId}/complete`, body);
+    await api.patch<Matter>(`/api/matters/${projectId}/complete`, body);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -182,7 +182,7 @@ export async function archiveProject(slug: string, projectId: string): Promise<A
   }
 
   try {
-    await api.patch<Project>(`/api/matters/${projectId}/archive`);
+    await api.patch<Matter>(`/api/matters/${projectId}/archive`);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -205,7 +205,7 @@ export async function reopenProject(slug: string, projectId: string): Promise<Ac
   }
 
   try {
-    await api.patch<Project>(`/api/matters/${projectId}/reopen`);
+    await api.patch<Matter>(`/api/matters/${projectId}/reopen`);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -221,6 +221,6 @@ export async function reopenProject(slug: string, projectId: string): Promise<Ac
   return { success: true };
 }
 
-export async function fetchActiveCustomers(): Promise<Customer[]> {
-  return api.get<Customer[]>("/api/clients?status=ACTIVE");
+export async function fetchActiveCustomers(): Promise<Client[]> {
+  return api.get<Client[]>("/api/clients?status=ACTIVE");
 }

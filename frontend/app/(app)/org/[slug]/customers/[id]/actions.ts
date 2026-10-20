@@ -5,8 +5,8 @@ import { api, ApiError } from "@/lib/api";
 import { setCollectionsExemption } from "@/lib/api/collections";
 import { revalidatePath } from "next/cache";
 import type {
-  Project,
-  CustomerProject,
+  Matter,
+  ClientMatter,
   Document,
   UploadInitRequest,
   UploadInitResponse,
@@ -25,8 +25,8 @@ interface UploadInitResult {
   presignedUrl?: string;
 }
 
-export async function fetchCustomerProjects(customerId: string): Promise<Project[]> {
-  return api.get<Project[]>(`/api/clients/${customerId}/matters`);
+export async function fetchCustomerProjects(customerId: string): Promise<Matter[]> {
+  return api.get<Matter[]>(`/api/clients/${customerId}/matters`);
 }
 
 // Collections exemption toggle (Phase 83, Epic 588C). Admin/owner-only — the
@@ -54,8 +54,8 @@ export async function setCollectionsExemptionAction(
   return { success: true };
 }
 
-export async function fetchProjects(): Promise<Project[]> {
-  return api.get<Project[]>("/api/matters");
+export async function fetchProjects(): Promise<Matter[]> {
+  return api.get<Matter[]>("/api/matters");
 }
 
 export async function linkProject(
@@ -69,7 +69,7 @@ export async function linkProject(
   }
 
   try {
-    await api.post<CustomerProject>(`/api/clients/${customerId}/matters/${projectId}`);
+    await api.post<ClientMatter>(`/api/clients/${customerId}/matters/${projectId}`);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };

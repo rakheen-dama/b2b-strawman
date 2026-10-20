@@ -16,12 +16,12 @@ import { nativeSelectClassName } from "@/lib/styles/native-select";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
-import type { Customer } from "@/lib/types";
+import type { Client } from "@/lib/types";
 
 interface NewMatterPageClientProps {
   slug: string;
   initialCustomerId: string;
-  customers: Customer[];
+  customers: Client[];
   templates: ProjectTemplateResponse[];
   canExecuteAi: boolean;
   canReviewGates: boolean;

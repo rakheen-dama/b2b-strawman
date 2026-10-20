@@ -5,8 +5,8 @@ import { api, ApiError } from "@/lib/api";
 import type {
   UtilizationResponse,
   OrgProfitabilityResponse,
-  ProjectProfitabilityResponse,
-  CustomerProfitabilityResponse,
+  MatterProfitabilityResponse,
+  ClientProfitabilityResponse,
 } from "@/lib/types";
 
 interface ActionResult<T> {
@@ -69,7 +69,7 @@ export async function getProjectProfitability(
   projectId: string,
   from?: string,
   to?: string
-): Promise<ActionResult<ProjectProfitabilityResponse>> {
+): Promise<ActionResult<MatterProfitabilityResponse>> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     return { data: null, error: "Forbidden" };
@@ -80,7 +80,7 @@ export async function getProjectProfitability(
     if (from) params.set("from", from);
     if (to) params.set("to", to);
     const qs = params.toString();
-    const data = await api.get<ProjectProfitabilityResponse>(
+    const data = await api.get<MatterProfitabilityResponse>(
       `/api/matters/${projectId}/profitability${qs ? `?${qs}` : ""}`
     );
     return { data };
@@ -96,7 +96,7 @@ export async function getCustomerProfitability(
   customerId: string,
   from?: string,
   to?: string
-): Promise<ActionResult<CustomerProfitabilityResponse>> {
+): Promise<ActionResult<ClientProfitabilityResponse>> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     return { data: null, error: "Forbidden" };
@@ -107,7 +107,7 @@ export async function getCustomerProfitability(
     if (from) params.set("from", from);
     if (to) params.set("to", to);
     const qs = params.toString();
-    const data = await api.get<CustomerProfitabilityResponse>(
+    const data = await api.get<ClientProfitabilityResponse>(
       `/api/clients/${customerId}/profitability${qs ? `?${qs}` : ""}`
     );
     return { data };

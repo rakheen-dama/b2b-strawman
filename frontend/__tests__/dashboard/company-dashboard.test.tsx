@@ -23,9 +23,9 @@ function withOrgProfile(children: React.ReactNode, enabledModules: string[] = ["
 }
 import type {
   TeamWorkloadEntry,
-  CrossProjectActivityItem,
+  CrossMatterActivityItem,
   KpiResponse,
-  ProjectHealth,
+  MatterHealth,
 } from "@/lib/dashboard-types";
 
 // Mock recharts to avoid rendering issues in happy-dom
@@ -122,7 +122,7 @@ const mockKpis: KpiResponse = {
   },
 };
 
-const mockProjectHealth: ProjectHealth[] = [
+const mockProjectHealth: MatterHealth[] = [
   {
     matterId: "p1",
     matterName: "Website Redesign",
@@ -161,7 +161,7 @@ const mockWorkloadData: TeamWorkloadEntry[] = [
   },
 ];
 
-const mockActivityItems: CrossProjectActivityItem[] = [
+const mockActivityItems: CrossMatterActivityItem[] = [
   {
     eventId: "e1",
     eventType: "task.created",

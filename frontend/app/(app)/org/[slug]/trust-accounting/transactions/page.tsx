@@ -20,7 +20,7 @@ import { TransactionFilters } from "@/components/trust/transaction-filters";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import {
   transactionTypeLabel,
-  type Customer,
+  type Client,
   type OrgMember,
   type TrustTransactionStatus,
   type TrustTransactionType,
@@ -155,7 +155,7 @@ export default async function TransactionsPage({
   let pickerCustomers: Array<{ id: string; name: string; email: string }> = [];
   if (canManageTrust) {
     try {
-      const customers = await api.get<Customer[]>("/api/clients?status=ACTIVE");
+      const customers = await api.get<Client[]>("/api/clients?status=ACTIVE");
       pickerCustomers = customers.map((c) => ({
         id: c.id,
         name: c.name,

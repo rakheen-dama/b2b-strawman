@@ -5,7 +5,7 @@ import { Badge } from "@b2mash/ui/badge";
 import { TagInput } from "@/components/tags/TagInput";
 import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { ProjectStatus, TagResponse } from "@/lib/types";
+import type { MatterStatus, TagResponse } from "@/lib/types";
 
 interface MatterDetailsTabProps {
   projectId: string;
@@ -13,7 +13,7 @@ interface MatterDetailsTabProps {
   priority: string | null;
   dueDate: string | null;
   createdAt: string;
-  projectStatus: ProjectStatus;
+  projectStatus: MatterStatus;
   projectTags: TagResponse[];
   allTags: TagResponse[];
   canEdit: boolean;

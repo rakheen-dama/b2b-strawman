@@ -1,9 +1,9 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { CustomerContactCard } from "@/components/customers/customer-contact-card";
-import type { Customer } from "@/lib/types";
+import type { Client } from "@/lib/types";
 
-const baseCustomer: Customer = {
+const baseCustomer: Client = {
   id: "c1",
   name: "Acme",
   email: "a@a.com",

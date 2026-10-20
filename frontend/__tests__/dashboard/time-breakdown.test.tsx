@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { TimeBreakdown } from "@/components/my-work/time-breakdown";
-import type { PersonalProjectBreakdown } from "@/lib/dashboard-types";
+import type { PersonalMatterBreakdown } from "@/lib/dashboard-types";
 
 // Mock recharts to avoid rendering issues in happy-dom
 vi.mock("recharts", () => ({
@@ -25,7 +25,7 @@ vi.mock("recharts", () => ({
   ReferenceLine: () => <div data-testid="reference-line" />,
 }));
 
-const mockBreakdown: PersonalProjectBreakdown[] = [
+const mockBreakdown: PersonalMatterBreakdown[] = [
   {
     matterId: "p1",
     matterName: "Website Redesign",

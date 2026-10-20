@@ -3,7 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
 import { TerminologyProvider } from "@/lib/terminology";
 import { SUGGESTED_WORK_TYPES } from "@/lib/constants/work-types";
-import type { Project } from "@/lib/types";
+import type { Matter } from "@/lib/types";
 
 const mockUpdateProject = vi.fn();
 const mockFetchActiveCustomers = vi.fn();
@@ -22,7 +22,7 @@ const PROJECT = {
   referenceNumber: null,
   priority: null,
   workType: "CONVEYANCING",
-} as unknown as Project;
+} as unknown as Matter;
 
 function renderDialog() {
   return render(

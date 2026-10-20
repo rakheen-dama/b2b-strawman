@@ -3,7 +3,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SWRTestProvider } from "@/lib/swr/test-utils";
 import { LinkCustomerDialog } from "@/components/projects/link-customer-dialog";
-import type { Customer } from "@/lib/types";
+import type { Client } from "@/lib/types";
 
 const mockFetchCustomers = vi.fn();
 const mockLinkCustomerToProject = vi.fn();
@@ -14,7 +14,7 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/actions", () => ({
   unlinkCustomerFromProject: vi.fn().mockResolvedValue({ success: true }),
 }));
 
-const allCustomers: Customer[] = [
+const allCustomers: Client[] = [
   {
     id: "c1",
     name: "Acme Corp",
@@ -53,7 +53,7 @@ const allCustomers: Customer[] = [
   },
 ];
 
-const existingCustomers: Customer[] = [allCustomers[0]]; // c1 already linked
+const existingCustomers: Client[] = [allCustomers[0]]; // c1 already linked
 
 describe("LinkCustomerDialog", () => {
   beforeEach(() => {

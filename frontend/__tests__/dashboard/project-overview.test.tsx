@@ -6,8 +6,8 @@ import { HealthBadge } from "@/components/dashboard/health-badge";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
 import { cn } from "@/lib/utils";
 import type {
-  ProjectHealthDetail,
-  ProjectHealthMetrics,
+  MatterHealthDetail,
+  MatterHealthMetrics,
   MemberHoursEntry,
 } from "@/lib/dashboard-types";
 import type { BudgetStatusResponse } from "@/lib/types";
@@ -38,7 +38,7 @@ const HEALTH_BAND_COLORS: Record<string, string> = {
   UNKNOWN: "border-slate-400",
 };
 
-const mockMetrics: ProjectHealthMetrics = {
+const mockMetrics: MatterHealthMetrics = {
   tasksDone: 20,
   tasksInProgress: 10,
   tasksTodo: 4,
@@ -50,7 +50,7 @@ const mockMetrics: ProjectHealthMetrics = {
   daysSinceLastActivity: 3,
 };
 
-const mockHealth: ProjectHealthDetail = {
+const mockHealth: MatterHealthDetail = {
   healthStatus: "AT_RISK",
   healthReasons: ["Budget 85% consumed", "6 overdue tasks"],
   metrics: mockMetrics,

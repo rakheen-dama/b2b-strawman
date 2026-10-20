@@ -4,21 +4,21 @@ import Link from "next/link";
 import { Badge } from "@b2mash/ui/badge";
 import { Card } from "@b2mash/ui/card";
 import { TerminologyText } from "@/components/terminology-text";
-import { PROJECT_STATUS_BADGE } from "@/lib/constants/project-status";
+import { MATTER_STATUS_BADGE } from "@/lib/constants/matter-status";
 import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";
 import { MatterClosureAction } from "@/components/projects/matter-closure-action";
 import { MatterReopenAction } from "@/components/projects/matter-reopen-action";
 import { formatDate } from "@/lib/format";
-import type { ProjectStatus, Customer } from "@/lib/types";
+import type { MatterStatus, Client } from "@/lib/types";
 
 interface MatterHeaderCardProps {
   projectId: string;
   projectName: string;
-  projectStatus: ProjectStatus;
+  projectStatus: MatterStatus;
   workType: string | null;
   referenceNumber: string | null;
   closedAt: string | null;
-  customers: Pick<Customer, "id" | "name">[];
+  customers: Pick<Client, "id" | "name">[];
   slug: string;
   isAdmin: boolean;
 }
@@ -34,7 +34,7 @@ export function MatterHeaderCard({
   slug,
   isAdmin,
 }: MatterHeaderCardProps) {
-  const statusBadge = PROJECT_STATUS_BADGE[projectStatus];
+  const statusBadge = MATTER_STATUS_BADGE[projectStatus];
 
   return (
     <Card className="p-5" data-testid="matter-header-card">

@@ -4,7 +4,7 @@ import { lazy, Suspense } from "react";
 import { Button } from "@b2mash/ui/button";
 import { LayoutTemplate } from "lucide-react";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
-import type { OrgMember, Customer } from "@/lib/types";
+import type { OrgMember, Client } from "@/lib/types";
 
 const NewFromTemplateDialog = lazy(() =>
   import("@/components/templates/NewFromTemplateDialog").then((m) => ({
@@ -16,7 +16,7 @@ interface Props {
   slug: string;
   templates: ProjectTemplateResponse[];
   orgMembers: OrgMember[];
-  customers: Customer[];
+  customers: Client[];
   /** Auto-open the dialog on mount (deep-linked via `/projects?new=1`). */
   autoOpen?: boolean;
   /** Pre-select this customer on the form when auto-opening. */

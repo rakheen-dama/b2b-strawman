@@ -134,7 +134,7 @@ export interface UtilizationResponse {
   members: MemberUtilizationRecord[];
 }
 
-export interface ProjectProfitabilitySummary {
+export interface MatterProfitabilitySummary {
   matterId: string;
   matterName: string;
   clientName: string | null;
@@ -147,7 +147,7 @@ export interface ProjectProfitabilitySummary {
 }
 
 export interface OrgProfitabilityResponse {
-  matters: ProjectProfitabilitySummary[];
+  matters: MatterProfitabilitySummary[];
 }
 
 export interface CurrencyBreakdown {
@@ -161,13 +161,13 @@ export interface CurrencyBreakdown {
   marginPercent: number | null;
 }
 
-export interface ProjectProfitabilityResponse {
+export interface MatterProfitabilityResponse {
   matterId: string;
   matterName: string;
   currencies: CurrencyBreakdown[];
 }
 
-export interface CustomerProfitabilityResponse {
+export interface ClientProfitabilityResponse {
   clientId: string;
   clientName: string;
   currencies: CurrencyBreakdown[];

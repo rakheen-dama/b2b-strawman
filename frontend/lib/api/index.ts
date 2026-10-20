@@ -35,3 +35,5 @@ export * from "./legal-disbursements";
 export * from "./statement-of-account";
 export * from "./ai";
 export * from "./collections";
+export * from "./matters";
+export * from "./clients";

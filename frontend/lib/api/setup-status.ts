@@ -2,19 +2,19 @@ import "server-only";
 
 import { api } from "./client";
 import type {
-  ProjectSetupStatus,
-  CustomerReadiness,
+  MatterSetupStatus,
+  ClientReadiness,
   UnbilledTimeSummary,
   TemplateReadiness,
   CompletenessScore,
 } from "@/lib/types";
 
-export async function fetchProjectSetupStatus(projectId: string): Promise<ProjectSetupStatus> {
-  return api.get<ProjectSetupStatus>(`/api/matters/${projectId}/setup-status`);
+export async function fetchProjectSetupStatus(projectId: string): Promise<MatterSetupStatus> {
+  return api.get<MatterSetupStatus>(`/api/matters/${projectId}/setup-status`);
 }
 
-export async function fetchCustomerReadiness(customerId: string): Promise<CustomerReadiness> {
-  return api.get<CustomerReadiness>(`/api/clients/${customerId}/readiness`);
+export async function fetchCustomerReadiness(customerId: string): Promise<ClientReadiness> {
+  return api.get<ClientReadiness>(`/api/clients/${customerId}/readiness`);
 }
 
 export async function fetchProjectUnbilledSummary(projectId: string): Promise<UnbilledTimeSummary> {

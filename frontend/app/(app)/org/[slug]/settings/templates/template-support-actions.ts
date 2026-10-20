@@ -16,8 +16,8 @@ import { revalidatePath } from "next/cache";
 import type {
   TemplateDetailResponse,
   UpdateOrgSettingsRequest,
-  Project,
-  Customer,
+  Matter,
+  Client,
   InvoiceResponse,
 } from "@/lib/types";
 
@@ -221,12 +221,12 @@ export async function fetchVariableMetadataAction(
 
 // ---- Entity Picker Actions ----
 
-export async function fetchProjectsForPicker(): Promise<Project[]> {
-  return api.get<Project[]>("/api/matters");
+export async function fetchProjectsForPicker(): Promise<Matter[]> {
+  return api.get<Matter[]>("/api/matters");
 }
 
-export async function fetchCustomersForPicker(): Promise<Customer[]> {
-  return api.get<Customer[]>("/api/clients");
+export async function fetchCustomersForPicker(): Promise<Client[]> {
+  return api.get<Client[]>("/api/clients");
 }
 
 export async function fetchInvoicesForPicker(): Promise<InvoiceResponse[]> {

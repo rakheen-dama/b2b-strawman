@@ -2,11 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { ProjectFinancialsTab } from "@/components/profitability/project-financials-tab";
 import { TerminologyProvider } from "@/lib/terminology";
-import type { ProjectProfitabilityResponse } from "@/lib/types";
+import type { MatterProfitabilityResponse } from "@/lib/types";
 
 function makeProfitability(
-  overrides: Partial<ProjectProfitabilityResponse> = {}
-): ProjectProfitabilityResponse {
+  overrides: Partial<MatterProfitabilityResponse> = {}
+): MatterProfitabilityResponse {
   return {
     matterId: "p1",
     matterName: "Alpha Project",

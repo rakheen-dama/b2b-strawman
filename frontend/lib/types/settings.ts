@@ -1,6 +1,6 @@
 // ---- OrgSettings (from OrgSettingsController.java) ----
 
-import type { CompliancePackEntry } from "./customer";
+import type { CompliancePackEntry } from "./client";
 
 export interface OrgSettings {
   orgName?: string | null;
@@ -182,7 +182,7 @@ export interface XeroTaxRate {
   effectiveRate: number;
 }
 
-export interface XeroCustomerImportResult {
+export interface XeroClientImportResult {
   created: number;
   skippedDuplicate: number;
   skippedNoEmail: number;

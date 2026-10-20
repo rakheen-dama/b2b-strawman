@@ -1,8 +1,8 @@
 // Barrel re-export — all domain types accessible via "@/lib/types"
 
 export * from "./common";
-export * from "./project";
-export * from "./customer";
+export * from "./matter";
+export * from "./client";
 export * from "./document";
 export * from "./member";
 export * from "./task";

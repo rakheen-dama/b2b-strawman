@@ -1,6 +1,6 @@
 import type {
-  Project,
-  Customer,
+  Matter,
+  Client,
   FieldDefinitionResponse,
   FieldGroupResponse,
   FieldGroupMemberResponse,
@@ -8,8 +8,8 @@ import type {
 } from "@/lib/types";
 
 export interface MatterSidebarProps {
-  project: Project;
-  customers: Customer[];
+  project: Matter;
+  customers: Client[];
   slug: string;
   canEdit: boolean;
   canManage: boolean;

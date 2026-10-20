@@ -11,9 +11,9 @@ import {
   createChecklistTemplate,
   type CreateChecklistTemplateInput,
 } from "@/app/(app)/org/[slug]/settings/checklists/actions";
-import type { CustomerType } from "@/lib/types";
+import type { ClientType } from "@/lib/types";
 
-const CUSTOMER_TYPES: { value: CustomerType; label: string }[] = [
+const CUSTOMER_TYPES: { value: ClientType; label: string }[] = [
   { value: "INDIVIDUAL", label: "Individual" },
   { value: "COMPANY", label: "Company" },
   { value: "TRUST", label: "Trust" },
@@ -48,7 +48,7 @@ export function CreateChecklistTemplateForm({ slug }: CreateChecklistTemplateFor
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [customerType, setCustomerType] = useState<CustomerType>("COMPANY");
+  const [customerType, setCustomerType] = useState<ClientType>("COMPANY");
   const [autoInstantiate, setAutoInstantiate] = useState(false);
   const [items, setItems] = useState<ChecklistItem[]>([newItem()]);
   const [isCreating, setIsCreating] = useState(false);
@@ -126,7 +126,7 @@ export function CreateChecklistTemplateForm({ slug }: CreateChecklistTemplateFor
           <select
             id="checklist-customer-type"
             value={customerType}
-            onChange={(e) => setCustomerType(e.target.value as CustomerType)}
+            onChange={(e) => setCustomerType(e.target.value as ClientType)}
             className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
           >
             {CUSTOMER_TYPES.map((ct) => (

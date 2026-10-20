@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ProjectRatesTab } from "@/components/rates/project-rates-tab";
-import type { BillingRate, ProjectMember } from "@/lib/types";
+import type { BillingRate, MatterMember } from "@/lib/types";
 
 const mockCreateProjectBillingRate = vi.fn();
 const mockUpdateProjectBillingRate = vi.fn();
@@ -14,7 +14,7 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/rate-actions", () => ({
   deleteProjectBillingRate: (...args: unknown[]) => mockDeleteProjectBillingRate(...args),
 }));
 
-function makeMembers(): ProjectMember[] {
+function makeMembers(): MatterMember[] {
   return [
     {
       id: "pm1",

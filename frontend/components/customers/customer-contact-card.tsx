@@ -1,9 +1,9 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { User, Mail, Phone } from "lucide-react";
-import type { Customer } from "@/lib/types";
+import type { Client } from "@/lib/types";
 
 interface CustomerContactCardProps {
-  customer: Customer;
+  customer: Client;
 }
 
 /**

@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { RecentActivityWidget } from "@/components/dashboard/recent-activity-widget";
 import { TerminologyProvider } from "@/lib/terminology";
-import type { CrossProjectActivityItem } from "@/lib/dashboard-types";
+import type { CrossMatterActivityItem } from "@/lib/dashboard-types";
 
 describe("RecentActivityWidget", () => {
   afterEach(() => {
@@ -45,7 +45,7 @@ describe("RecentActivityWidget", () => {
   });
 
   it("renders activity items with actor names", () => {
-    const items: CrossProjectActivityItem[] = [
+    const items: CrossMatterActivityItem[] = [
       {
         eventId: "evt-1",
         eventType: "task.created",
@@ -68,7 +68,7 @@ describe("RecentActivityWidget", () => {
    * instead of crashing with a TypeError on null.split().
    */
   it("handles null actorName without crashing (BUG-010 regression)", () => {
-    const items: CrossProjectActivityItem[] = [
+    const items: CrossMatterActivityItem[] = [
       {
         eventId: "evt-2",
         eventType: "comment.created",
@@ -87,7 +87,7 @@ describe("RecentActivityWidget", () => {
   });
 
   it("handles undefined actorName without crashing (BUG-010 regression)", () => {
-    const items: CrossProjectActivityItem[] = [
+    const items: CrossMatterActivityItem[] = [
       {
         eventId: "evt-3",
         eventType: "task.updated",
@@ -104,7 +104,7 @@ describe("RecentActivityWidget", () => {
   });
 
   it("handles empty string actorName without crashing", () => {
-    const items: CrossProjectActivityItem[] = [
+    const items: CrossMatterActivityItem[] = [
       {
         eventId: "evt-4",
         eventType: "document.created",
@@ -121,7 +121,7 @@ describe("RecentActivityWidget", () => {
   });
 
   it("renders recent-activity-widget data-testid", () => {
-    const items: CrossProjectActivityItem[] = [
+    const items: CrossMatterActivityItem[] = [
       {
         eventId: "evt-1",
         eventType: "task.created",

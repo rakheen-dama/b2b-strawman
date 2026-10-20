@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDuration } from "@/lib/format";
-import type { ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary } from "@/lib/types";
+import type { MatterTimeSummary, MemberTimeSummary, TaskTimeSummary } from "@/lib/types";
 import {
   fetchProjectTimeSummary,
   fetchTimeSummaryByMember,
@@ -21,7 +21,7 @@ import {
 
 interface TimeSummaryPanelProps {
   projectId: string;
-  initialSummary: ProjectTimeSummary;
+  initialSummary: MatterTimeSummary;
   initialByTask: TaskTimeSummary[];
   initialByMember: MemberTimeSummary[] | null;
 }

@@ -9,11 +9,11 @@ import { LinkProjectDialog } from "@/components/customers/link-project-dialog";
 import { unlinkProject } from "@/app/(app)/org/[slug]/customers/[id]/actions";
 import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
 import { useTerminology } from "@/lib/terminology";
-import type { Project, ProjectStatus } from "@/lib/types";
+import type { Matter, MatterStatus } from "@/lib/types";
 import Link from "next/link";
 
 const STATUS_BADGE: Record<
-  ProjectStatus,
+  MatterStatus,
   { label: string; variant: "success" | "warning" | "neutral" }
 > = {
   ACTIVE: { label: "Active", variant: "success" },
@@ -23,7 +23,7 @@ const STATUS_BADGE: Record<
 };
 
 interface CustomerProjectsPanelProps {
-  projects: Project[];
+  projects: Matter[];
   slug: string;
   customerId: string;
   canManage: boolean;

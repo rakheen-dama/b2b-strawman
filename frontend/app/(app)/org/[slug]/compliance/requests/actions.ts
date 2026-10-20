@@ -10,7 +10,7 @@ import {
   executeDataDeletion,
 } from "@/lib/compliance-api";
 import { revalidatePath } from "next/cache";
-import type { DataRequestResponse, AnonymizationResult, Customer } from "@/lib/types";
+import type { DataRequestResponse, AnonymizationResult, Client } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
@@ -36,12 +36,12 @@ interface DeletionResult {
   summary?: AnonymizationResult["anonymizationSummary"];
 }
 
-export async function fetchCustomersForSelector(): Promise<Customer[]> {
+export async function fetchCustomersForSelector(): Promise<Client[]> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     throw new Error("Unauthorized");
   }
-  return api.get<Customer[]>("/api/clients");
+  return api.get<Client[]>("/api/clients");
 }
 
 function revalidateRequestPaths(slug: string, requestId?: string) {

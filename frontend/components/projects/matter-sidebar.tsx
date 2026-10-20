@@ -8,7 +8,7 @@ import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSe
 import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
 import { TagInput } from "@/components/tags/TagInput";
 import { TerminologyText } from "@/components/terminology-text";
-import { PROJECT_STATUS_BADGE } from "@/lib/constants/project-status";
+import { MATTER_STATUS_BADGE } from "@/lib/constants/matter-status";
 import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";
 import { MatterClosureAction } from "@/components/projects/matter-closure-action";
 import { MatterReopenAction } from "@/components/projects/matter-reopen-action";
@@ -30,7 +30,7 @@ export function MatterSidebar({
   projectTags,
   allTags,
 }: MatterSidebarProps) {
-  const statusBadge = PROJECT_STATUS_BADGE[project.status];
+  const statusBadge = MATTER_STATUS_BADGE[project.status];
 
   return (
     <div data-testid="matter-sidebar" className="flex h-full flex-col">

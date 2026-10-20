@@ -9,9 +9,9 @@ import { SendStep } from "@/components/billing-runs/send-step";
 import { OnboardingPipelineSection } from "@/components/compliance/OnboardingPipelineSection";
 import { DormancyCheckSection } from "@/components/compliance/DormancyCheckSection";
 import { CustomerFinancialsTab } from "@/components/profitability/customer-financials-tab";
-import type { MyWorkTaskItem } from "@/lib/types/project";
+import type { MyWorkTaskItem } from "@/lib/types/matter";
 import type { BillingRun, BillingRunItem } from "@/lib/api/billing-runs";
-import type { CustomerProfitabilityResponse } from "@/lib/types/billing";
+import type { ClientProfitabilityResponse } from "@/lib/types/billing";
 
 // Task lists navigate on row click via the app router.
 vi.mock("next/navigation", () => ({
@@ -171,7 +171,7 @@ describe("LZKC-031: Compliance terminology", () => {
 // ---- Profitability headings ----
 
 describe("LZKC-031: Profitability terminology", () => {
-  const profitability: CustomerProfitabilityResponse = {
+  const profitability: ClientProfitabilityResponse = {
     clientId: "c-1",
     clientName: "Dlamini Holdings",
     currencies: [

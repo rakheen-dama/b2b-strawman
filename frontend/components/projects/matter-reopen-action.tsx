@@ -6,13 +6,13 @@ import { Button } from "@b2mash/ui/button";
 import { MatterReopenDialog } from "@/components/legal/matter-reopen-dialog";
 import { useCapabilities } from "@/lib/capabilities";
 import { useOrgProfile } from "@/lib/org-profile";
-import type { ProjectStatus } from "@/lib/types";
+import type { MatterStatus } from "@/lib/types";
 
 interface MatterReopenActionProps {
   slug: string;
   projectId: string;
   projectName: string;
-  projectStatus: ProjectStatus;
+  projectStatus: MatterStatus;
 }
 
 export function MatterReopenAction({

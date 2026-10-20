@@ -24,12 +24,12 @@ import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog"
 import { ArchiveCustomerDialog } from "@/components/customers/archive-customer-dialog";
 import { AnonymizeCustomerDialog } from "@/components/customers/anonymize-customer-dialog";
 import { DataExportDialog } from "@/components/customers/data-export-dialog";
-import type { Customer, CustomerStatus, LifecycleStatus, TemplateListResponse } from "@/lib/types";
+import type { Client, ClientStatus, LifecycleStatus, TemplateListResponse } from "@/lib/types";
 
 interface ClientOverflowMenuProps {
   customerId: string;
   customerName: string;
-  customerStatus: CustomerStatus;
+  customerStatus: ClientStatus;
   lifecycleStatus: LifecycleStatus | null;
   slug: string;
   isAdmin: boolean;
@@ -41,7 +41,7 @@ interface ClientOverflowMenuProps {
   kycConfigured: boolean;
   kycVerified: boolean;
   /** Full customer object for EditCustomerDialog — avoids data loss from partial stubs */
-  customer: Customer;
+  customer: Client;
   /** Called when "Summarise Activity" is selected; consumer wires specialist session */
   onSummariseActivity?: () => void;
 }

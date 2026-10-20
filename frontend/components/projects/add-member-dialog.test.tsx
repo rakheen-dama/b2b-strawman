@@ -3,7 +3,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SWRTestProvider } from "@/lib/swr/test-utils";
 import { AddMemberDialog } from "./add-member-dialog";
-import type { OrgMember, ProjectMember } from "@/lib/types";
+import type { OrgMember, MatterMember } from "@/lib/types";
 
 const mockFetchOrgMembers = vi.fn();
 const mockAddProjectMember = vi.fn();
@@ -25,7 +25,7 @@ const mockOrgMembers: OrgMember[] = [
   },
 ];
 
-const existingMembers: ProjectMember[] = [
+const existingMembers: MatterMember[] = [
   {
     id: "pm1",
     memberId: "m1",

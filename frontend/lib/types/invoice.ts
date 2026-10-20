@@ -175,7 +175,7 @@ export interface UnbilledTimeEntry {
   rateSource: "SNAPSHOT" | "RESOLVED" | null;
 }
 
-export interface UnbilledProjectGroup {
+export interface UnbilledMatterGroup {
   matterId: string;
   matterName: string;
   entries: UnbilledTimeEntry[];
@@ -185,7 +185,7 @@ export interface UnbilledProjectGroup {
 export interface UnbilledTimeResponse {
   clientId: string;
   clientName: string;
-  matters: UnbilledProjectGroup[];
+  matters: UnbilledMatterGroup[];
   grandTotals: Record<string, CurrencyTotal>;
   unbilledExpenses: UnbilledExpenseEntry[];
   unbilledExpenseTotals: Record<string, number>;

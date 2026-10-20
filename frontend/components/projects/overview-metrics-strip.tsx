@@ -1,12 +1,12 @@
 import { Card } from "@b2mash/ui/card";
 import { MiniProgressRing } from "@/components/dashboard/mini-progress-ring";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
-import type { ProjectHealthMetrics } from "@/lib/dashboard-types";
+import type { MatterHealthMetrics } from "@/lib/dashboard-types";
 import type { MemberHoursEntry } from "@/lib/dashboard-types";
 import type { BudgetStatusResponse } from "@/lib/types";
 
 interface OverviewMetricsStripProps {
-  metrics: ProjectHealthMetrics | null;
+  metrics: MatterHealthMetrics | null;
   memberHours: MemberHoursEntry[] | null;
   budgetStatus: BudgetStatusResponse | null;
   marginPercent: number | null;

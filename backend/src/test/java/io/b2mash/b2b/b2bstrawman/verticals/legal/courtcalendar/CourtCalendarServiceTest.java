@@ -172,9 +172,9 @@ class CourtCalendarServiceTest {
 
                   var response = courtCalendarService.createCourtDate(request, memberId);
 
-                  assertThat(response.customerId()).isEqualTo(customerId);
-                  assertThat(response.customerName()).isEqualTo("Court Test Corp");
-                  assertThat(response.projectName()).isEqualTo("Smith v Jones");
+                  assertThat(response.clientId()).isEqualTo(customerId);
+                  assertThat(response.clientName()).isEqualTo("Court Test Corp");
+                  assertThat(response.matterName()).isEqualTo("Smith v Jones");
                 }));
   }
 

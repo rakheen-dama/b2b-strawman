@@ -54,8 +54,8 @@ public class ClientLedgerService {
   public record ClientLedgerCardResponse(
       UUID id,
       UUID trustAccountId,
-      UUID customerId,
-      String customerName,
+      UUID clientId,
+      String clientName,
       BigDecimal balance,
       BigDecimal totalDeposits,
       BigDecimal totalPayments,

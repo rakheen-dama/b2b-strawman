@@ -101,9 +101,9 @@ public class XeroIntegrationController {
     return ResponseEntity.ok(xeroOAuthService.getXeroTaxRates());
   }
 
-  @PostMapping("/import-customers")
+  @PostMapping("/import-clients")
   @RequiresCapability("INTEGRATION_MANAGE")
-  public ResponseEntity<CustomerImportSummary> importCustomers() {
+  public ResponseEntity<ClientImportSummary> importCustomers() {
     return ResponseEntity.ok(
         importService.importCustomersFromConnectedOrg(RequestScopes.requireMemberId()));
   }

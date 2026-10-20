@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 /**
- * Body payload for {@code POST /api/matters/{projectId}/closure/close} (Phase 67, Epic 489B).
+ * Body payload for {@code POST /api/matters/{matterId}/closure/close} (Phase 67, Epic 489B).
  *
  * <p>Semantic validation — override flag, justification length (&gt;=20 non-whitespace chars when
  * override=true) — happens in {@code MatterClosureService}.

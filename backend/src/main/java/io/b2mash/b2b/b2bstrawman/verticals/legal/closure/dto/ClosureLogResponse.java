@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Response row for {@code GET /api/matters/{projectId}/closure/log}.
+ * Response row for {@code GET /api/matters/{matterId}/closure/log}.
  *
  * <p>LZKC-014: alongside the raw member ids ({@code closedBy}/{@code reopenedBy}) the response
  * carries display names ({@code closedByName}/{@code reopenedByName}) batch-resolved via {@code
@@ -16,7 +16,7 @@ import java.util.UUID;
  */
 public record ClosureLogResponse(
     UUID id,
-    UUID projectId,
+    UUID matterId,
     UUID closedBy,
     String closedByName,
     Instant closedAt,

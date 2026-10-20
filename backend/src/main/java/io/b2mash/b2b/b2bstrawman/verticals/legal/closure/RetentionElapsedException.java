@@ -38,7 +38,7 @@ public class RetentionElapsedException extends ErrorResponseException {
                 + retentionEndedOn
                 + ". This matter can no longer be reopened.");
     problem.setType(TYPE_URI);
-    problem.setProperty("projectId", projectId);
+    problem.setProperty("matterId", projectId);
     problem.setProperty("retentionEndedOn", retentionEndedOn.toString());
     return problem;
   }

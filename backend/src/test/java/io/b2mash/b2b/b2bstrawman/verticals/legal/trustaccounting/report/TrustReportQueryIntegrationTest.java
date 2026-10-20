@@ -224,7 +224,7 @@ class TrustReportQueryIntegrationTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": %s,
                       "reference": "%s",
                       "description": "Test deposit for reports",

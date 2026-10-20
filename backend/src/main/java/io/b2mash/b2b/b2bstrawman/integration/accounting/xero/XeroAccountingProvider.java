@@ -8,7 +8,7 @@ import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingProvider;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingSyncResult;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingTaxCodeMapping;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingTaxCodeMappingService;
-import io.b2mash.b2b.b2bstrawman.integration.accounting.CustomerSyncRequest;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.ClientSyncRequest;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.ExternalPaymentEvent;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.InvoiceSyncRequest;
 import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
@@ -87,7 +87,7 @@ public class XeroAccountingProvider implements AccountingProvider, AccountingPay
   }
 
   @Override
-  public AccountingSyncResult syncCustomer(CustomerSyncRequest request) {
+  public AccountingSyncResult syncCustomer(ClientSyncRequest request) {
     try {
       var connection = loadConnectedConnection();
       String accessToken = getAccessToken(connection);
@@ -100,12 +100,12 @@ public class XeroAccountingProvider implements AccountingProvider, AccountingPay
       String externalId = extractContactId(response);
       log.info(
           "Xero customer sync success: customer={}, externalId={}",
-          request.customerName(),
+          request.clientName(),
           externalId);
       return new AccountingSyncResult(true, externalId, null);
 
     } catch (XeroApiClient.XeroApiException e) {
-      log.warn("Xero customer sync failed for {}: {}", request.customerName(), e.getMessage());
+      log.warn("Xero customer sync failed for {}: {}", request.clientName(), e.getMessage());
       return new AccountingSyncResult(false, null, e.getMessage());
     }
   }

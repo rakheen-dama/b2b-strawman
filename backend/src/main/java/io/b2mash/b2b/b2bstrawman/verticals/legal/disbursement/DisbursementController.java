@@ -64,19 +64,19 @@ public class DisbursementController {
   @GetMapping
   @RequiresCapability("VIEW_LEGAL")
   public ResponseEntity<Page<DisbursementResponse>> list(
-      @RequestParam(required = false) UUID projectId,
+      @RequestParam(required = false) UUID matterId,
       @RequestParam(required = false) DisbursementApprovalStatus approvalStatus,
       @RequestParam(required = false) DisbursementBillingStatus billingStatus,
       @RequestParam(required = false) DisbursementCategory category,
       Pageable pageable) {
     return ResponseEntity.ok(
-        disbursementService.list(projectId, approvalStatus, billingStatus, category, pageable));
+        disbursementService.list(matterId, approvalStatus, billingStatus, category, pageable));
   }
 
   @GetMapping("/unbilled")
   @RequiresCapability("VIEW_LEGAL")
-  public ResponseEntity<UnbilledDisbursementsResponse> listUnbilled(@RequestParam UUID projectId) {
-    return ResponseEntity.ok(disbursementService.listUnbilledResponseForProject(projectId));
+  public ResponseEntity<UnbilledDisbursementsResponse> listUnbilled(@RequestParam UUID matterId) {
+    return ResponseEntity.ok(disbursementService.listUnbilledResponseForProject(matterId));
   }
 
   @PostMapping("/{id}/submit")

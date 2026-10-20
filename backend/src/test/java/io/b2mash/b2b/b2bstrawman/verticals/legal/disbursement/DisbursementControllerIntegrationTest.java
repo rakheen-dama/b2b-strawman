@@ -207,8 +207,8 @@ class DisbursementControllerIntegrationTest {
                 .content(createBody(projectId, "Sheriff service fees", "250.00", "SHERIFF_FEES")))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").isNotEmpty())
-        .andExpect(jsonPath("$.projectId").value(projectId.toString()))
-        .andExpect(jsonPath("$.customerId").value(customerId.toString()))
+        .andExpect(jsonPath("$.matterId").value(projectId.toString()))
+        .andExpect(jsonPath("$.clientId").value(customerId.toString()))
         .andExpect(jsonPath("$.category").value("SHERIFF_FEES"))
         .andExpect(jsonPath("$.description").value("Sheriff service fees"))
         .andExpect(jsonPath("$.amount").value(250.00))
@@ -230,8 +230,8 @@ class DisbursementControllerIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(id))
-        .andExpect(jsonPath("$.projectId").value(projectId.toString()))
-        .andExpect(jsonPath("$.customerId").value(customerId.toString()))
+        .andExpect(jsonPath("$.matterId").value(projectId.toString()))
+        .andExpect(jsonPath("$.clientId").value(customerId.toString()))
         .andExpect(jsonPath("$.category").value("COUNSEL_FEES"))
         .andExpect(jsonPath("$.description").value("One-shot counsel fee"))
         .andExpect(jsonPath("$.amount").value(250.00))
@@ -304,6 +304,10 @@ class DisbursementControllerIntegrationTest {
     var a = createOfficeDisbursement("Filter-A-unique-marker", otherProjectId, "SHERIFF_FEES");
     var b = createOfficeDisbursement("Filter-B-unique-marker", otherProjectId, "COUNSEL_FEES");
     var c = createOfficeDisbursement("Filter-C-unique-marker", otherProjectId, "COURT_FEES");
+    // A row on a different matter: proves ?matterId= binds (a stale param name would be silently
+    // ignored and return the unfiltered list including this row), independent of test ordering.
+    var outside =
+        createOfficeDisbursement("Filter-outside-unique-marker", projectId, "SHERIFF_FEES");
 
     // Approve `a` so approvalStatus=APPROVED filter isolates it.
     mockMvc
@@ -323,17 +327,21 @@ class DisbursementControllerIntegrationTest {
     mockMvc
         .perform(
             get("/api/legal/disbursements")
-                .param("projectId", otherProjectId.toString())
+                .param("matterId", otherProjectId.toString())
                 .param("size", "50")
                 .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_ctrl_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content", org.hamcrest.Matchers.hasSize(3)));
+        .andExpect(jsonPath("$.content", org.hamcrest.Matchers.hasSize(3)))
+        .andExpect(
+            jsonPath(
+                "$.content[*].id",
+                org.hamcrest.Matchers.not(org.hamcrest.Matchers.hasItem(outside))));
 
     // Filter by approvalStatus=APPROVED within otherProjectId — only `a`.
     mockMvc
         .perform(
             get("/api/legal/disbursements")
-                .param("projectId", otherProjectId.toString())
+                .param("matterId", otherProjectId.toString())
                 .param("approvalStatus", "APPROVED")
                 .param("size", "50")
                 .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_ctrl_owner")))
@@ -345,7 +353,7 @@ class DisbursementControllerIntegrationTest {
     mockMvc
         .perform(
             get("/api/legal/disbursements")
-                .param("projectId", otherProjectId.toString())
+                .param("matterId", otherProjectId.toString())
                 .param("billingStatus", "UNBILLED")
                 .param("size", "50")
                 .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_ctrl_owner")))
@@ -356,7 +364,7 @@ class DisbursementControllerIntegrationTest {
     mockMvc
         .perform(
             get("/api/legal/disbursements")
-                .param("projectId", otherProjectId.toString())
+                .param("matterId", otherProjectId.toString())
                 .param("category", "COUNSEL_FEES")
                 .param("size", "50")
                 .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_ctrl_owner")))
@@ -368,7 +376,7 @@ class DisbursementControllerIntegrationTest {
     mockMvc
         .perform(
             get("/api/legal/disbursements")
-                .param("projectId", otherProjectId.toString())
+                .param("matterId", otherProjectId.toString())
                 .param("category", "COURT_FEES")
                 .param("size", "50")
                 .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_ctrl_owner")))
@@ -438,8 +446,8 @@ class DisbursementControllerIntegrationTest {
   private String createBody(UUID pid, String description, String amount, String category) {
     return """
         {
-          "projectId": "%s",
-          "customerId": "%s",
+          "matterId": "%s",
+          "clientId": "%s",
           "category": "%s",
           "description": "%s",
           "amount": %s,

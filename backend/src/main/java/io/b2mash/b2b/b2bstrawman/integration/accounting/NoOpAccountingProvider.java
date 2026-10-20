@@ -26,14 +26,14 @@ public class NoOpAccountingProvider implements AccountingProvider, AccountingPay
     log.info(
         "NoOp accounting: would sync invoice {} for customer {}",
         request.invoiceNumber(),
-        request.customerName());
+        request.clientName());
     return new AccountingSyncResult(
         true, "NOOP-" + UUID.randomUUID().toString().substring(0, 8), null);
   }
 
   @Override
-  public AccountingSyncResult syncCustomer(CustomerSyncRequest request) {
-    log.info("NoOp accounting: would sync customer {}", request.customerName());
+  public AccountingSyncResult syncCustomer(ClientSyncRequest request) {
+    log.info("NoOp accounting: would sync customer {}", request.clientName());
     return new AccountingSyncResult(
         true, "NOOP-" + UUID.randomUUID().toString().substring(0, 8), null);
   }

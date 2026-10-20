@@ -4,6 +4,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-/** Response for {@code GET /api/matters/{projectId}/closure/evaluate}. */
+/** Response for {@code GET /api/matters/{matterId}/closure/evaluate}. */
 public record ClosureReportResponse(
-    UUID projectId, Instant evaluatedAt, boolean allPassed, List<GateReportItem> gates) {}
+    UUID matterId, Instant evaluatedAt, boolean allPassed, List<GateReportItem> gates) {}

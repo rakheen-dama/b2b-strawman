@@ -224,7 +224,7 @@ class TrustTransactionServiceTest {
                   assertThat(response.transactionType()).isEqualTo("DEPOSIT");
                   assertThat(response.status()).isEqualTo("RECORDED");
                   assertThat(response.amount()).isEqualByComparingTo(new BigDecimal("10000.00"));
-                  assertThat(response.customerId()).isEqualTo(customer.getId());
+                  assertThat(response.clientId()).isEqualTo(customer.getId());
                   assertThat(response.reference()).isEqualTo("DEP-001");
                   assertThat(response.recordedBy()).isEqualTo(memberId);
                   assertThat(response.createdAt()).isNotNull();
@@ -499,15 +499,14 @@ class TrustTransactionServiceTest {
 
                   var transferOut = result.get(0);
                   assertThat(transferOut.transactionType()).isEqualTo("TRANSFER_OUT");
-                  assertThat(transferOut.customerId()).isEqualTo(sourceCustomer.getId());
-                  assertThat(transferOut.counterpartyCustomerId())
-                      .isEqualTo(targetCustomer.getId());
+                  assertThat(transferOut.clientId()).isEqualTo(sourceCustomer.getId());
+                  assertThat(transferOut.counterpartyClientId()).isEqualTo(targetCustomer.getId());
                   assertThat(transferOut.status()).isEqualTo("RECORDED");
 
                   var transferIn = result.get(1);
                   assertThat(transferIn.transactionType()).isEqualTo("TRANSFER_IN");
-                  assertThat(transferIn.customerId()).isEqualTo(targetCustomer.getId());
-                  assertThat(transferIn.counterpartyCustomerId()).isEqualTo(sourceCustomer.getId());
+                  assertThat(transferIn.clientId()).isEqualTo(targetCustomer.getId());
+                  assertThat(transferIn.counterpartyClientId()).isEqualTo(sourceCustomer.getId());
                   assertThat(transferIn.status()).isEqualTo("RECORDED");
 
                   // Both share same reference
@@ -2613,7 +2612,7 @@ class TrustTransactionServiceTest {
                               "FT-L69-SINGLE"));
 
                   txnId[0] = response.id();
-                  assertThat(response.projectId())
+                  assertThat(response.matterId())
                       .as(
                           "FEE_TRANSFER projectId should be inferred from the invoice's single line")
                       .isEqualTo(projectId);
@@ -2711,7 +2710,7 @@ class TrustTransactionServiceTest {
                               new BigDecimal("2300.00"),
                               "FT-L69-MULTI"));
 
-                  assertThat(response.projectId())
+                  assertThat(response.matterId())
                       .as("FEE_TRANSFER projectId should be null when invoice spans matters")
                       .isNull();
                 }));
@@ -2755,7 +2754,7 @@ class TrustTransactionServiceTest {
                               LocalDate.of(2026, 4, 25)));
 
                   txnId[0] = response.id();
-                  assertThat(response.projectId())
+                  assertThat(response.matterId())
                       .as("REFUND projectId should be carried through from the request")
                       .isEqualTo(projectId);
                 }));
@@ -2803,7 +2802,7 @@ class TrustTransactionServiceTest {
                               "Customer-level refund",
                               LocalDate.of(2026, 4, 25)));
 
-                  assertThat(response.projectId())
+                  assertThat(response.matterId())
                       .as("REFUND projectId should remain null when omitted (back-compat)")
                       .isNull();
                 }));

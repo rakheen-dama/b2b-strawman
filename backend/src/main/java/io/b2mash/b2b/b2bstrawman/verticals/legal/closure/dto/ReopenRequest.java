@@ -3,7 +3,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto;
 import jakarta.validation.constraints.Size;
 
 /**
- * Body payload for {@code POST /api/matters/{projectId}/closure/reopen} (Phase 67, Epic 489B).
+ * Body payload for {@code POST /api/matters/{matterId}/closure/reopen} (Phase 67, Epic 489B).
  * Length is re-validated in the service (&gt;=10 chars) to surface a domain-shaped {@link
  * io.b2mash.b2b.b2bstrawman.exception.InvalidStateException}.
  */

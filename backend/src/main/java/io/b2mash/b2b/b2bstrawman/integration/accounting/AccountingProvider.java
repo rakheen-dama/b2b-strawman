@@ -15,7 +15,7 @@ public interface AccountingProvider {
   AccountingSyncResult syncInvoice(InvoiceSyncRequest request);
 
   /** Sync a customer record to the external accounting system. */
-  AccountingSyncResult syncCustomer(CustomerSyncRequest request);
+  AccountingSyncResult syncCustomer(ClientSyncRequest request);
 
   /** Test connectivity with the configured credentials. */
   ConnectionTestResult testConnection();

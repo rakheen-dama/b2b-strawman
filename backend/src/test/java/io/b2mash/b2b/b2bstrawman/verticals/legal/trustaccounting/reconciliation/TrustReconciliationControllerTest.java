@@ -353,7 +353,7 @@ class TrustReconciliationControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": 20000.00,
                       "reference": "DEP-CTRL-COMP",
                       "description": "Controller complete test deposit",

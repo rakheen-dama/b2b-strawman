@@ -170,7 +170,7 @@ class XeroIntegrationControllerIntegrationTest {
   void importCustomers_requiresIntegrationManage_returns403ForNoCap() throws Exception {
     mockMvc
         .perform(
-            post("/api/integrations/xero/import-customers")
+            post("/api/integrations/xero/import-clients")
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_xero_ctrl_nocap", "member")))
         .andExpect(status().isForbidden());
   }
@@ -178,11 +178,11 @@ class XeroIntegrationControllerIntegrationTest {
   @Test
   void importCustomers_ownerCanAccess() throws Exception {
     when(xeroCustomerImportService.importCustomersFromConnectedOrg(any(UUID.class)))
-        .thenReturn(new CustomerImportSummary(10, 2, 1, 13));
+        .thenReturn(new ClientImportSummary(10, 2, 1, 13));
 
     mockMvc
         .perform(
-            post("/api/integrations/xero/import-customers")
+            post("/api/integrations/xero/import-clients")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_xero_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.created").value(10))

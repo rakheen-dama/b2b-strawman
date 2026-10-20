@@ -36,12 +36,12 @@ public class PrescriptionTrackerController {
   @RequiresCapability("VIEW_LEGAL")
   public ResponseEntity<Page<PrescriptionTrackerResponse>> list(
       @RequestParam(required = false) String status,
-      @RequestParam(required = false) UUID customerId,
-      @RequestParam(required = false) UUID projectId,
+      @RequestParam(required = false) UUID clientId,
+      @RequestParam(required = false) UUID matterId,
       Pageable pageable) {
     return ResponseEntity.ok(
         prescriptionTrackerService.list(
-            new PrescriptionTrackerFilters(status, customerId, projectId), pageable));
+            new PrescriptionTrackerFilters(status, clientId, matterId), pageable));
   }
 
   @GetMapping("/{id}")

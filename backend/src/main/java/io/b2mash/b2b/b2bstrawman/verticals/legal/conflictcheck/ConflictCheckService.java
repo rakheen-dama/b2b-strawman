@@ -71,8 +71,8 @@ public class ConflictCheckService {
               message =
                   "checkType must be one of: NEW_CLIENT, NEW_MATTER, PERIODIC_REVIEW, LATERAL_HIRE, RELATED_PARTY")
           String checkType,
-      UUID customerId,
-      UUID projectId) {}
+      UUID clientId,
+      UUID matterId) {}
 
   public record ResolveRequest(String resolution, String resolutionNotes, UUID waiverDocumentId) {}
 
@@ -91,8 +91,8 @@ public class ConflictCheckService {
       UUID resolvedBy,
       Instant checkedAt,
       Instant resolvedAt,
-      UUID customerId,
-      UUID projectId) {}
+      UUID clientId,
+      UUID matterId) {}
 
   public record ConflictDetail(
       UUID adversePartyId,
@@ -121,7 +121,7 @@ public class ConflictCheckService {
     // the matter-create flow), exclude that customer's own rows from the customer match candidate
     // set so the subject does not self-match on its own ID / registration / name. Adverse-party
     // matching is unaffected. Free-text probes (subjectCustomerId == null) remain untouched.
-    UUID subjectCustomerId = request.customerId();
+    UUID subjectCustomerId = request.clientId();
 
     // Step 1: Exact ID matching
     if (request.checkedIdNumber() != null && !request.checkedIdNumber().isBlank()) {
@@ -347,8 +347,8 @@ public class ConflictCheckService {
             result,
             conflictsJson,
             memberId,
-            request.customerId(),
-            request.projectId());
+            request.clientId(),
+            request.matterId());
 
     var saved = conflictCheckRepository.save(conflictCheck);
 

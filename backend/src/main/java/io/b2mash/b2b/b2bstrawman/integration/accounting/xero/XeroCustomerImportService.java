@@ -77,7 +77,7 @@ public class XeroCustomerImportService {
    * @return summary of the import outcome
    * @throws ResourceNotFoundException if no active Xero connection exists
    */
-  public CustomerImportSummary importCustomersFromConnectedOrg(UUID actorMemberId) {
+  public ClientImportSummary importCustomersFromConnectedOrg(UUID actorMemberId) {
     var connection =
         connectionRepository.findByStatus(XeroConnectionStatus.CONNECTED).stream()
             .findFirst()
@@ -108,7 +108,7 @@ public class XeroCustomerImportService {
    * @throws ResourceNotFoundException if the connection or org integration does not exist
    * @throws ResourceConflictException if customers have already been imported for this connection
    */
-  public CustomerImportSummary importCustomersFromXero(UUID connectionId, UUID actorMemberId) {
+  public ClientImportSummary importCustomersFromXero(UUID connectionId, UUID actorMemberId) {
     // Phase 1: Validate + fetch (no long-lived transaction)
     var fetchContext = validateAndFetchContacts(connectionId);
 
@@ -181,7 +181,7 @@ public class XeroCustomerImportService {
    * marks the import as completed, and emits an audit event. Called within a {@link
    * TransactionTemplate} transaction.
    */
-  private CustomerImportSummary dedupAndPersist(
+  private ClientImportSummary dedupAndPersist(
       UUID orgIntegrationId, List<Map<String, Object>> allContacts, UUID actorMemberId) {
 
     var orgIntegration =
@@ -275,7 +275,7 @@ public class XeroCustomerImportService {
     }
 
     int total = created + skippedDuplicate + skippedNoEmail;
-    var summary = new CustomerImportSummary(created, skippedDuplicate, skippedNoEmail, total);
+    var summary = new ClientImportSummary(created, skippedDuplicate, skippedNoEmail, total);
 
     // Mark import as done
     markImportCompleted(orgIntegration);

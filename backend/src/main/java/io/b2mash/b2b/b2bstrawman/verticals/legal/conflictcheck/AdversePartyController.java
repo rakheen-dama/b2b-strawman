@@ -83,9 +83,10 @@ public class AdversePartyController {
     return ResponseEntity.noContent().build();
   }
 
-  @GetMapping("/projects/{id}/adverse-parties")
+  @GetMapping("/matters/{matterId}/adverse-parties")
   @RequiresCapability("VIEW_LEGAL")
-  public ResponseEntity<List<AdversePartyLinkResponse>> listForProject(@PathVariable UUID id) {
-    return ResponseEntity.ok(adversePartyService.listForProject(id));
+  public ResponseEntity<List<AdversePartyLinkResponse>> listForProject(
+      @PathVariable UUID matterId) {
+    return ResponseEntity.ok(adversePartyService.listForProject(matterId));
   }
 }

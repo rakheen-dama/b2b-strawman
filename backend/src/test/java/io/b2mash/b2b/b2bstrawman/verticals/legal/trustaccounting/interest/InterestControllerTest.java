@@ -127,7 +127,7 @@ class InterestControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": 50000.00,
                       "reference": "DEP-CTRL-001",
                       "description": "Test deposit for controller tests",

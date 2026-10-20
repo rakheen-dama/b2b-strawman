@@ -220,8 +220,8 @@ class AdversePartyControllerTest {
                 .content(
                     """
                     {
-                      "projectId": "%s",
-                      "customerId": "%s",
+                      "matterId": "%s",
+                      "clientId": "%s",
                       "relationship": "WITNESS",
                       "description": "Key witness in matter"
                     }
@@ -230,7 +230,7 @@ class AdversePartyControllerTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.adversePartyName").value("Linkable Corp"))
         .andExpect(jsonPath("$.relationship").value("WITNESS"))
-        .andExpect(jsonPath("$.projectName").value("Controller Test Matter"));
+        .andExpect(jsonPath("$.matterName").value("Controller Test Matter"));
   }
 
   @Test
@@ -256,7 +256,7 @@ class AdversePartyControllerTest {
 
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/adverse-parties")
+            get("/api/matters/" + projectId + "/adverse-parties")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adverse_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())

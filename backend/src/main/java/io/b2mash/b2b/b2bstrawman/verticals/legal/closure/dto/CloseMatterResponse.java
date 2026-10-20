@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * Response returned by {@code POST /api/matters/{projectId}/closure/close}.
+ * Response returned by {@code POST /api/matters/{matterId}/closure/close}.
  *
  * <p>{@code retentionEndsAt} is computed as {@code closedAt +
  * orgSettings.effectiveLegalMatterRetentionYears}.
@@ -18,7 +18,7 @@ import java.util.UUID;
  * (caller did not request) or best-effort failure (mirrors closure-letter shape).
  */
 public record CloseMatterResponse(
-    UUID projectId,
+    UUID matterId,
     String status,
     Instant closedAt,
     UUID closureLogId,

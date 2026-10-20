@@ -128,7 +128,7 @@ class TrustTransactionControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": 10000.00,
                       "reference": "DEP-CTRL-001",
                       "description": "Controller test deposit",
@@ -155,7 +155,7 @@ class TrustTransactionControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": 5000.00,
                       "reference": "DEP-CTRL-PAY-SETUP",
                       "description": "Setup deposit for payment test",
@@ -173,7 +173,7 @@ class TrustTransactionControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": 2000.00,
                       "reference": "PAY-CTRL-001",
                       "description": "Controller test payment",
@@ -206,7 +206,7 @@ class TrustTransactionControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": 8000.00,
                       "reference": "DEP-CTRL-XFER-SETUP",
                       "description": "Setup deposit for transfer test",
@@ -224,8 +224,8 @@ class TrustTransactionControllerTest {
                 .content(
                     """
                     {
-                      "sourceCustomerId": "%s",
-                      "targetCustomerId": "%s",
+                      "sourceClientId": "%s",
+                      "targetClientId": "%s",
                       "amount": 3000.00,
                       "reference": "XFER-CTRL-001",
                       "description": "Controller test transfer",
@@ -251,7 +251,7 @@ class TrustTransactionControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": 1000.00,
                       "reference": "DEP-CTRL-LIST",
                       "description": "Deposit for list test",
@@ -285,7 +285,7 @@ class TrustTransactionControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": 6000.00,
                       "reference": "DEP-CTRL-APPROVE-SETUP",
                       "description": "Setup deposit for approve test",
@@ -305,7 +305,7 @@ class TrustTransactionControllerTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "amount": 1000.00,
                           "reference": "PAY-CTRL-APPROVE",
                           "description": "Payment for approve test",
@@ -341,7 +341,7 @@ class TrustTransactionControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": 7000.00,
                       "reference": "DEP-CTRL-ADMIN-APPROVE-SETUP",
                       "description": "Setup deposit for admin approve test",
@@ -361,7 +361,7 @@ class TrustTransactionControllerTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "amount": 1500.00,
                           "reference": "PAY-CTRL-ADMIN-APPROVE",
                           "description": "Payment for admin approve test",
@@ -397,7 +397,7 @@ class TrustTransactionControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": 3000.00,
                       "reference": "DEP-CTRL-REJECT-SETUP",
                       "description": "Setup deposit for reject test",
@@ -417,7 +417,7 @@ class TrustTransactionControllerTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "amount": 500.00,
                           "reference": "PAY-CTRL-REJECT",
                           "description": "Payment for reject test",
@@ -461,7 +461,7 @@ class TrustTransactionControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": 4000.00,
                       "reference": "DEP-CTRL-REVERSE",
                       "description": "Deposit for reversal test",
@@ -481,7 +481,7 @@ class TrustTransactionControllerTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "amount": 1500.00,
                           "reference": "PAY-CTRL-REVERSE",
                           "description": "Payment for reversal test",

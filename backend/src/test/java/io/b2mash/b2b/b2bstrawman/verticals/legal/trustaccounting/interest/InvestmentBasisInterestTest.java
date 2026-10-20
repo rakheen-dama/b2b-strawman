@@ -263,7 +263,7 @@ class InvestmentBasisInterestTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": %s,
                       "reference": "%s",
                       "description": "Test deposit",
@@ -286,7 +286,7 @@ class InvestmentBasisInterestTest {
 
     var ciAllocation =
         allocations.stream()
-            .filter(a -> a.customerId().equals(UUID.fromString(clientInstructionCustomerId)))
+            .filter(a -> a.clientId().equals(UUID.fromString(clientInstructionCustomerId)))
             .findFirst()
             .orElseThrow();
 
@@ -310,7 +310,7 @@ class InvestmentBasisInterestTest {
 
     var fdAllocation =
         allocations.stream()
-            .filter(a -> a.customerId().equals(UUID.fromString(firmDiscretionCustomerId)))
+            .filter(a -> a.clientId().equals(UUID.fromString(firmDiscretionCustomerId)))
             .findFirst()
             .orElseThrow();
 
@@ -335,7 +335,7 @@ class InvestmentBasisInterestTest {
 
     var mixedAllocation =
         allocations.stream()
-            .filter(a -> a.customerId().equals(UUID.fromString(mixedCustomerId)))
+            .filter(a -> a.clientId().equals(UUID.fromString(mixedCustomerId)))
             .findFirst()
             .orElseThrow();
 
@@ -359,7 +359,7 @@ class InvestmentBasisInterestTest {
 
     var ciAllocation =
         allocations.stream()
-            .filter(a -> a.customerId().equals(UUID.fromString(clientInstructionCustomerId)))
+            .filter(a -> a.clientId().equals(UUID.fromString(clientInstructionCustomerId)))
             .findFirst()
             .orElseThrow();
 
@@ -377,7 +377,7 @@ class InvestmentBasisInterestTest {
 
     var fdAllocation =
         allocations.stream()
-            .filter(a -> a.customerId().equals(UUID.fromString(firmDiscretionCustomerId)))
+            .filter(a -> a.clientId().equals(UUID.fromString(firmDiscretionCustomerId)))
             .findFirst()
             .orElseThrow();
 
@@ -397,7 +397,7 @@ class InvestmentBasisInterestTest {
 
     var fdAllocation =
         allocations.stream()
-            .filter(a -> a.customerId().equals(UUID.fromString(firmDiscretionCustomerId)))
+            .filter(a -> a.clientId().equals(UUID.fromString(firmDiscretionCustomerId)))
             .findFirst()
             .orElseThrow();
 
@@ -421,24 +421,24 @@ class InvestmentBasisInterestTest {
             .call(() -> interestService.getAllocations(runId));
 
     for (var alloc : allocations) {
-      if (alloc.customerId().equals(UUID.fromString(clientInstructionCustomerId))
-          || alloc.customerId().equals(UUID.fromString(mixedCustomerId))) {
+      if (alloc.clientId().equals(UUID.fromString(clientInstructionCustomerId))
+          || alloc.clientId().equals(UUID.fromString(mixedCustomerId))) {
         // CLIENT_INSTRUCTION or mixed: statutory rate
         assertThat(alloc.statutoryRateApplied())
-            .as("Allocation for customer %s should have statutory rate applied", alloc.customerId())
+            .as("Allocation for customer %s should have statutory rate applied", alloc.clientId())
             .isTrue();
         assertThat(alloc.lpffRateId())
-            .as("Allocation for customer %s should have null lpffRateId", alloc.customerId())
+            .as("Allocation for customer %s should have null lpffRateId", alloc.clientId())
             .isNull();
-      } else if (alloc.customerId().equals(UUID.fromString(firmDiscretionCustomerId))) {
+      } else if (alloc.clientId().equals(UUID.fromString(firmDiscretionCustomerId))) {
         // FIRM_DISCRETION: configured rate
         assertThat(alloc.statutoryRateApplied())
             .as(
                 "Allocation for customer %s should NOT have statutory rate applied",
-                alloc.customerId())
+                alloc.clientId())
             .isFalse();
         assertThat(alloc.lpffRateId())
-            .as("Allocation for customer %s should have lpffRateId populated", alloc.customerId())
+            .as("Allocation for customer %s should have lpffRateId populated", alloc.clientId())
             .isNotNull();
       }
     }

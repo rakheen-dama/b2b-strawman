@@ -17,5 +17,5 @@ public record StatementResponse(
     MatterRef matter,
     StatementSummary summary) {
 
-  public record MatterRef(UUID projectId, String name) {}
+  public record MatterRef(UUID matterId, String name) {}
 }

@@ -122,7 +122,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": 100000.00,
                       "reference": "DEP-INVEST-CTRL-001",
                       "description": "Setup deposit for investment controller tests",
@@ -145,7 +145,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "institution": "ABSA Bank",
                       "accountNumber": "9012345678",
                       "principal": 20000.00,
@@ -161,7 +161,7 @@ class TrustInvestmentControllerTest {
         .andExpect(jsonPath("$.status").value("ACTIVE"))
         .andExpect(jsonPath("$.principal").value(20000.00))
         .andExpect(jsonPath("$.institution").value("ABSA Bank"))
-        .andExpect(jsonPath("$.customerName").value("Investment Ctrl Test Customer"))
+        .andExpect(jsonPath("$.clientName").value("Investment Ctrl Test Customer"))
         .andExpect(jsonPath("$.id").isNotEmpty());
   }
 
@@ -179,7 +179,7 @@ class TrustInvestmentControllerTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "institution": "Nedbank",
                           "accountNumber": "5551234567",
                           "principal": 10000.00,
@@ -229,7 +229,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "institution": "FNB",
                       "accountNumber": "1112223334",
                       "principal": 5000.00,
@@ -269,7 +269,7 @@ class TrustInvestmentControllerTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "institution": "Standard Bank",
                           "accountNumber": "7778889990",
                           "principal": 3000.00,
@@ -304,7 +304,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "institution": "Test Bank",
                       "accountNumber": "0001112223",
                       "principal": 1000.00,
@@ -340,7 +340,7 @@ class TrustInvestmentControllerTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "institution": "Capitec",
                           "accountNumber": "4445556667",
                           "principal": 2000.00,
@@ -376,7 +376,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "institution": "Investec",
                       "accountNumber": "8880001111",
                       "principal": 5000.00,
@@ -402,7 +402,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "institution": "Capitec Basis",
                       "accountNumber": "8880002222",
                       "principal": 4000.00,
@@ -429,7 +429,7 @@ class TrustInvestmentControllerTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "institution": "FNB Basis",
                           "accountNumber": "8880003333",
                           "principal": 3000.00,
@@ -464,7 +464,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "institution": "Filter Test Bank CI",
                       "accountNumber": "8880004444",
                       "principal": 2000.00,
@@ -485,7 +485,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "institution": "Filter Test Bank FD",
                       "accountNumber": "8880005555",
                       "principal": 2000.00,
@@ -528,7 +528,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "institution": "No Basis Bank",
                       "accountNumber": "9990001111",
                       "principal": 1000.00,
@@ -550,7 +550,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "institution": "Invalid Basis Bank",
                       "accountNumber": "9990002222",
                       "principal": 1000.00,

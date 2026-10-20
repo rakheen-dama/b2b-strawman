@@ -146,7 +146,7 @@ class CatalogueBatch2TrustBillingTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"customerId":"%s","amount":25000.00,"reference":"DEP-SETUP",
+                    {"clientId":"%s","amount":25000.00,"reference":"DEP-SETUP",
                      "description":"Setup deposit","transactionDate":"2026-03-01"}"""
                         .formatted(customerId)))
         .andExpect(status().isCreated());

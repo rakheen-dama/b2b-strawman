@@ -112,7 +112,7 @@ class ClientLedgerControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": 25000.00,
                       "reference": "DEP-LEDGER-SETUP",
                       "description": "Setup deposit for ledger tests",
@@ -134,8 +134,8 @@ class ClientLedgerControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content").isNotEmpty())
-        .andExpect(jsonPath("$.content[0].customerId").value(customerId))
-        .andExpect(jsonPath("$.content[0].customerName").value("Ledger Test Customer"))
+        .andExpect(jsonPath("$.content[0].clientId").value(customerId))
+        .andExpect(jsonPath("$.content[0].clientName").value("Ledger Test Customer"))
         .andExpect(jsonPath("$.content[0].balance").isNumber())
         .andExpect(jsonPath("$.page.totalElements").value(1));
   }
@@ -147,8 +147,8 @@ class ClientLedgerControllerTest {
             get("/api/trust-accounts/" + trustAccountId + "/client-ledgers/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ledger_ctrl_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerId").value(customerId))
-        .andExpect(jsonPath("$.customerName").value("Ledger Test Customer"))
+        .andExpect(jsonPath("$.clientId").value(customerId))
+        .andExpect(jsonPath("$.clientName").value("Ledger Test Customer"))
         .andExpect(jsonPath("$.balance").value(25000.00))
         .andExpect(jsonPath("$.totalDeposits").value(25000.00));
   }
@@ -171,8 +171,8 @@ class ClientLedgerControllerTest {
                 .with(ownerJwt))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(nullValue()))
-        .andExpect(jsonPath("$.customerId").value(newCustomerId))
-        .andExpect(jsonPath("$.customerName").value("No Ledger Customer"))
+        .andExpect(jsonPath("$.clientId").value(newCustomerId))
+        .andExpect(jsonPath("$.clientName").value("No Ledger Customer"))
         .andExpect(jsonPath("$.trustAccountId").value(trustAccountId))
         .andExpect(jsonPath("$.balance").value(0))
         .andExpect(jsonPath("$.totalDeposits").value(0))
@@ -302,7 +302,7 @@ class ClientLedgerControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "amount": 5000.00,
                       "reference": "DEP-CLOSE-GUARD",
                       "description": "Deposit for close guard test",

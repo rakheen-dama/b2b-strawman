@@ -72,7 +72,7 @@ public class CourtCalendarService {
   // --- DTO Records ---
 
   public record CreateCourtDateRequest(
-      @NotNull UUID projectId,
+      @NotNull UUID matterId,
       @NotBlank String dateType,
       @NotNull LocalDate scheduledDate,
       LocalTime scheduledTime,
@@ -94,10 +94,10 @@ public class CourtCalendarService {
 
   public record CourtDateResponse(
       UUID id,
-      UUID projectId,
-      String projectName,
-      UUID customerId,
-      String customerName,
+      UUID matterId,
+      String matterName,
+      UUID clientId,
+      String clientName,
       String dateType,
       LocalDate scheduledDate,
       LocalTime scheduledTime,
@@ -128,8 +128,8 @@ public class CourtCalendarService {
 
   public record UpcomingCourtDateItem(
       UUID id,
-      UUID projectId,
-      String projectName,
+      UUID matterId,
+      String matterName,
       String dateType,
       LocalDate scheduledDate,
       String courtName,
@@ -138,8 +138,8 @@ public class CourtCalendarService {
 
   public record UpcomingPrescriptionWarningItem(
       UUID id,
-      UUID projectId,
-      String projectName,
+      UUID matterId,
+      String matterName,
       String prescriptionType,
       LocalDate prescriptionDate,
       String status,
@@ -157,8 +157,8 @@ public class CourtCalendarService {
 
     var project =
         projectRepository
-            .findById(request.projectId())
-            .orElseThrow(() -> new ResourceNotFoundException("Project", request.projectId()));
+            .findById(request.matterId())
+            .orElseThrow(() -> new ResourceNotFoundException("Project", request.matterId()));
 
     validateDateType(request.dateType());
 
@@ -166,7 +166,7 @@ public class CourtCalendarService {
 
     var courtDate =
         new CourtDate(
-            request.projectId(),
+            request.matterId(),
             project.getCustomerId(),
             request.dateType(),
             request.scheduledDate(),

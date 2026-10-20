@@ -7,7 +7,6 @@ import { portalGet } from "@/lib/api-client";
 import { formatCurrency, formatDate } from "@b2mash/shared/format";
 import { InvoiceStatusBadge } from "@/components/invoice-status-badge";
 import { Skeleton } from "@b2mash/ui/skeleton";
-import { useTerminology } from "@/lib/terminology";
 import type { PortalInvoice, PortalDownload } from "@/lib/types";
 
 function TableSkeleton() {
@@ -21,7 +20,6 @@ function TableSkeleton() {
 }
 
 export default function InvoicesPage() {
-  const { t } = useTerminology();
   const [invoices, setInvoices] = useState<PortalInvoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +57,7 @@ export default function InvoicesPage() {
   return (
     <div>
       <h1 className="font-display mb-6 text-2xl font-semibold text-slate-900">
-        {t("Invoices")}
+        Fee Notes
       </h1>
 
       {isLoading && <TableSkeleton />}
@@ -81,7 +79,7 @@ export default function InvoicesPage() {
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <FileText className="mb-4 size-12 text-slate-300" />
           <p className="text-lg font-medium text-slate-600">
-            No {t("invoices")} yet.
+            No fee notes yet.
           </p>
         </div>
       )}
@@ -141,14 +139,11 @@ export default function InvoicesPage() {
             data-testid="invoices-list-desktop"
             className="hidden overflow-x-auto rounded-lg border border-slate-200 md:block"
           >
-            <table
-              className="w-full text-sm"
-              aria-label={`${t("Invoice")} list`}
-            >
+            <table className="w-full text-sm" aria-label="Fee Note list">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50">
                   <th className="px-4 py-3 text-left font-medium text-slate-600">
-                    {t("Invoice")} #
+                    Fee Note #
                   </th>
                   <th className="px-4 py-3 text-left font-medium text-slate-600">
                     Status

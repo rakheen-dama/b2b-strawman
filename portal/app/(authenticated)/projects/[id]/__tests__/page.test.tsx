@@ -157,6 +157,7 @@ describe("ProjectDetailPage", () => {
     // Summary
     expect(screen.getByText("24.5h total")).toBeInTheDocument();
     expect(screen.getByText("20.0h billable")).toBeInTheDocument();
+    expect(screen.getByText("Matter Summary")).toBeInTheDocument();
   });
 
   it("shows error state on fetch failure", async () => {
@@ -164,16 +165,16 @@ describe("ProjectDetailPage", () => {
 
     render(<ProjectDetailPage />);
 
-    // Surfaces the real error message rather than a hardcoded "Project not found"
+    // Surfaces the real error message rather than a hardcoded "Matter not found"
     await waitFor(() => {
       expect(screen.getByText("Network error")).toBeInTheDocument();
     });
     expect(
       screen.getByText(
-        "This project may have been removed, you may not have access, or the request failed. Please try again.",
+        "This matter may have been removed, you may not have access, or the request failed. Please try again.",
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText("Back to projects")).toBeInTheDocument();
+    expect(screen.getByText("Back to matters")).toBeInTheDocument();
     expect(screen.getByText("Try again")).toBeInTheDocument();
   });
 
@@ -197,7 +198,7 @@ describe("ProjectDetailPage", () => {
       expect(screen.getByText("Website Redesign")).toBeInTheDocument();
     });
 
-    expect(screen.queryByText("Project Summary")).not.toBeInTheDocument();
+    expect(screen.queryByText("Matter Summary")).not.toBeInTheDocument();
   });
 
   // Phase 87 S3 Batch 5 (ADR-337, Epic 609G): /portal/projects/** 404s since 609F (#1603).

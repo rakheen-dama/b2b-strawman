@@ -6,13 +6,11 @@ import Link from "next/link";
 import { ArrowLeft, XCircle } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
 import { Skeleton } from "@b2mash/ui/skeleton";
-import { useTerminology } from "@/lib/terminology";
 import type { PortalInvoiceDetail } from "@/lib/types";
 
 export default function PaymentCancelledPage() {
   const params = useParams();
   const invoiceId = Array.isArray(params.id) ? params.id[0] : (params.id ?? "");
-  const { t } = useTerminology();
 
   const [invoice, setInvoice] = useState<PortalInvoiceDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,7 +59,7 @@ export default function PaymentCancelledPage() {
         className="inline-flex min-h-11 items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
       >
         <ArrowLeft className="size-4" />
-        Back to {t("invoice")}
+        Back to fee note
       </Link>
 
       <div className="mx-auto max-w-lg text-center">
@@ -93,7 +91,7 @@ export default function PaymentCancelledPage() {
             href={`/invoices/${invoiceId}`}
             className="inline-flex min-h-11 items-center justify-center text-sm text-slate-500 hover:text-slate-700"
           >
-            View {t("Invoice")}
+            View Fee Note
           </Link>
         </div>
       </div>

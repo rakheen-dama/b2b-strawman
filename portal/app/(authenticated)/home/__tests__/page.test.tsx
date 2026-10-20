@@ -36,13 +36,6 @@ vi.mock("@/hooks/use-portal-context", () => ({
   useModules: () => ["information_requests"],
 }));
 
-// Mock terminology hook — RecentInvoicesCard uses it but is hidden behind
-// a non-existent module gate; with information_requests-only modules it
-// won't render. Still safer to provide a stub.
-vi.mock("@/lib/terminology", () => ({
-  useTerminology: () => ({ t: (k: string) => k }),
-}));
-
 import HomePage from "@/app/(authenticated)/home/page";
 
 type Req = {

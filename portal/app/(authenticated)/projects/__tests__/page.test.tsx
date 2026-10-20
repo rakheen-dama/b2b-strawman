@@ -64,7 +64,6 @@ vi.mock("@/hooks/use-branding", () => ({
 }));
 
 import ProjectsPage from "@/app/(authenticated)/projects/page";
-import { TerminologyProvider } from "@/lib/terminology";
 
 describe("ProjectsPage", () => {
   beforeEach(() => {
@@ -95,7 +94,7 @@ describe("ProjectsPage", () => {
 
     render(<ProjectsPage />);
 
-    expect(screen.getByText("Your Projects")).toBeInTheDocument();
+    expect(screen.getByText("Your Matters")).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText("Website Redesign")).toBeInTheDocument();
@@ -109,10 +108,10 @@ describe("ProjectsPage", () => {
     render(<ProjectsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("No projects yet")).toBeInTheDocument();
+      expect(screen.getByText("No matters yet")).toBeInTheDocument();
       expect(
         screen.getByText(
-          "Your Test Org team will share projects with you here.",
+          "Your Test Org team will share matters with you here.",
         ),
       ).toBeInTheDocument();
     });
@@ -190,42 +189,6 @@ describe("ProjectsPage", () => {
       expect(screen.queryByText("Active Matter")).not.toBeInTheDocument();
       expect(screen.getByText("Closed Matter")).toBeInTheDocument();
       expect(screen.getByText("Completed Matter")).toBeInTheDocument();
-    });
-  });
-});
-
-describe("ProjectsPage terminology (legal-za)", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    cleanup();
-  });
-
-  it("renders 'Your Matters' heading for legal-za", async () => {
-    mockPortalGet.mockResolvedValue([]);
-
-    render(
-      <TerminologyProvider verticalProfile="legal-za">
-        <ProjectsPage />
-      </TerminologyProvider>,
-    );
-
-    expect(screen.getByText("Your Matters")).toBeInTheDocument();
-  });
-
-  it("renders 'No matters yet' empty state for legal-za", async () => {
-    mockPortalGet.mockResolvedValue([]);
-
-    render(
-      <TerminologyProvider verticalProfile="legal-za">
-        <ProjectsPage />
-      </TerminologyProvider>,
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText("No matters yet")).toBeInTheDocument();
     });
   });
 });

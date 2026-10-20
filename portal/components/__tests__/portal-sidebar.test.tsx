@@ -64,7 +64,6 @@ import {
   PortalSidebar,
   PortalSidebarMobile,
 } from "@/components/portal-sidebar";
-import { TerminologyProvider } from "@/lib/terminology";
 
 describe("PortalSidebar (desktop)", () => {
   beforeEach(() => {
@@ -74,19 +73,24 @@ describe("PortalSidebar (desktop)", () => {
     cleanup();
   });
 
-  it("renders all 7 nav items for legal-za with all modules enabled", () => {
+  // Phase 87 611E: labels render directly (no t() pass). These are today's legal labels —
+  // "Fee Notes" is what legal-za tenants already saw via t("Invoices"). 617A re-authors them.
+  it("renders all 8 nav items for legal-za with all modules enabled", () => {
     render(<PortalSidebar />);
     for (const label of [
       "Home",
       "Matters",
       "Trust",
       "Deadlines",
-      "Invoices",
+      "Fee Notes",
       "Requests",
       "Acceptance",
+      "Activity",
     ]) {
       expect(screen.getByText(label)).toBeInTheDocument();
     }
+    expect(screen.queryByText("Invoices")).not.toBeInTheDocument();
+    expect(screen.queryByText("Projects")).not.toBeInTheDocument();
   });
 
   it("does not render a Documents link (GAP-P-07: route not implemented)", () => {
@@ -105,27 +109,6 @@ describe("PortalSidebar (desktop)", () => {
     render(<PortalSidebar />);
     expect(screen.getByText("Profile")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /logout/i })).toBeInTheDocument();
-  });
-});
-
-describe("PortalSidebar terminology (legal-za)", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-  afterEach(() => {
-    cleanup();
-  });
-
-  // Phase 86 (ADR-332): legal-za is the only profile and has no portal-only override, so the
-  // seeded "Matters" label passes through t() unchanged.
-  it("renders 'Matters' for legal-za", () => {
-    render(
-      <TerminologyProvider verticalProfile="legal-za">
-        <PortalSidebar />
-      </TerminologyProvider>,
-    );
-    expect(screen.getByText("Matters")).toBeInTheDocument();
-    expect(screen.queryByText("Engagements")).not.toBeInTheDocument();
   });
 });
 

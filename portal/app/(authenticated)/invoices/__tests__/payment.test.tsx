@@ -140,7 +140,7 @@ describe("InvoiceDetailPage — Payment Section", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("This invoice has been paid"),
+        screen.getByText("This fee note has been paid"),
       ).toBeInTheDocument();
     });
 
@@ -275,6 +275,6 @@ describe("PaymentCancelledPage", () => {
       "href",
       "https://pay.example.com/session/abc123",
     );
-    expect(screen.getByText("View Invoice")).toBeInTheDocument();
+    expect(screen.getByText("View Fee Note")).toBeInTheDocument();
   });
 });

@@ -80,16 +80,8 @@ export function usePortalContextIsSettled(): boolean {
   return useContext(PortalSessionContextCtx).isSettled;
 }
 
-export function useProfile(): string | null {
-  return useContext(PortalSessionContextCtx).data?.tenantProfile ?? null;
-}
-
 export function useModules(): string[] {
   return useContext(PortalSessionContextCtx).data?.enabledModules ?? [];
-}
-
-export function useTerminologyKey(): string {
-  return useContext(PortalSessionContextCtx).data?.terminologyKey ?? "";
 }
 
 /**

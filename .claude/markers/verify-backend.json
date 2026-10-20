@@ -1,7 +1,7 @@
 {
-  "commit": "089958797b7db045eb59b2edf84bbbb1cad34ba0",
+  "commit": "c1dd0bf00dc3136df30ce11f1cbb67c31915a38c",
   "command": "cd backend && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-20T02:50:00+02:00",
-  "summary": "PR #1594 (Epic 608A: customer/ + ProjectCustomerController + ClientReadiness wire rename to client vocabulary, Batch 2) head 089958797 (orchestrator run): 5345 testcases / 0 failures / 0 errors / 26 skipped (unchanged vs 607C — rename only). Ratchet baseline 4 -> 3. Log /tmp/mvn-608A-final.log."
+  "ts": "2026-10-20T03:32:38+02:00",
+  "summary": "PR #1595 (Epic 608B: informationrequest/checklist/datarequest/correspondence + client upload-init wire rename to client/matter vocabulary, Batch 2) head c1dd0bf00 (orchestrator run): 5345 testcases / 0 failures / 0 errors / 26 skipped (unchanged vs 608A — rename only). Ratchet baseline 3 -> 1. Log /tmp/mvn-608B-final.log."
 }

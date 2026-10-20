@@ -1,7 +1,6 @@
 "use client";
 
 import { KpiCard } from "@/components/dashboard/kpi-card";
-import { useTerminology } from "@/lib/terminology";
 import type { KpiResponse } from "@/lib/dashboard-types";
 
 interface KpiCardRowProps {
@@ -31,13 +30,11 @@ function changeDirection(
 }
 
 export function KpiCardRow({ kpis, isAdmin, orgSlug }: KpiCardRowProps) {
-  const { t } = useTerminology();
-
   if (!kpis) {
     return (
       <div className="grid auto-rows-fr grid-cols-2 gap-4 lg:grid-cols-3">
         <KpiCard
-          label={t("Active Projects")}
+          label="Active Matters"
           value={0}
           emptyState="No data"
           href={`/org/${orgSlug}/matters`}
@@ -57,13 +54,13 @@ export function KpiCardRow({ kpis, isAdmin, orgSlug }: KpiCardRowProps) {
 
   const cards = [
     {
-      label: t("Active Projects"),
+      label: "Active Matters",
       value: kpis.activeMatterCount,
       changePercent: activeProjectsChange,
       changeDirection: changeDirection(activeProjectsChange),
       trend: trendValues,
       href: `/org/${orgSlug}/matters`,
-      emptyState: `No ${t("projects")} yet`,
+      emptyState: "No matters yet",
       adminOnly: false,
     },
     {

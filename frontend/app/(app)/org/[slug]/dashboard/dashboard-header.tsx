@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { DateRangeSelector } from "@/components/dashboard/date-range-selector";
-import { useTerminology } from "@/lib/terminology";
 
 interface DashboardHeaderProps {
   from: string;
@@ -15,7 +14,6 @@ function parseDateString(dateStr: string): Date {
 }
 
 export function DashboardHeader({ from, to }: DashboardHeaderProps) {
-  const { t } = useTerminology();
   const [dateRange, setDateRange] = useState({
     from: parseDateString(from),
     to: parseDateString(to),
@@ -28,7 +26,7 @@ export function DashboardHeader({ from, to }: DashboardHeaderProps) {
           Dashboard
         </h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          {`Company overview and ${t("project").toLowerCase()} health`}
+          Company overview and matter health
         </p>
       </div>
       <DateRangeSelector value={dateRange} onChange={setDateRange} />

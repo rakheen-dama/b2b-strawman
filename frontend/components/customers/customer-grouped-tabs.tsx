@@ -4,8 +4,6 @@ import { useMemo, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Tabs as TabsPrimitive } from "radix-ui";
 import { useOrgProfile } from "@/lib/org-profile";
-import { useTerminology } from "@/lib/terminology";
-import { auditTabLabel } from "@b2mash/shared/terminology-map";
 import { useAuditTabVisible } from "@/components/audit/audit-timeline-tab";
 import { GroupedTabBar } from "@/components/shared/grouped-tab-bar";
 import { CUSTOMER_TAB_GROUPS } from "@/lib/constants/customer-tab-groups";
@@ -62,7 +60,6 @@ export function CustomerGroupedTabs({
   const router = useRouter();
   const tabParam = searchParams.get("tab");
   const { isModuleEnabled } = useOrgProfile();
-  const { t } = useTerminology();
 
   // Module-gated tabs
   const showTrust = !!trustPanel && isModuleEnabled("trust_accounting");
@@ -70,7 +67,7 @@ export function CustomerGroupedTabs({
   const auditVisible = useAuditTabVisible();
   const showAudit = !!auditPanel && auditVisible;
 
-  // Build visible groups from CUSTOMER_TAB_GROUPS with module-gating and terminology rewriting
+  // Build visible groups from CUSTOMER_TAB_GROUPS with module-gating and legal tab labels
   const visibleGroups = useMemo(() => {
     const tabVisibility: Record<string, boolean> = {
       // Details group — always visible
@@ -99,11 +96,11 @@ export function CustomerGroupedTabs({
       ...group,
       visible: group.tabs.some((tab) => tabVisibility[tab.id] !== false),
       tabs: group.tabs.map((tab) => {
-        // Apply terminology rewriting to specific tab labels
+        // Legal labels for tabs whose canonical constant label differs (constants re-authored in 615E)
         let label = tab.label;
-        if (tab.id === "projects") label = t("Projects");
-        if (tab.id === "invoices") label = t("Invoices");
-        if (tab.id === "audit") label = auditTabLabel(t);
+        if (tab.id === "projects") label = "Matters";
+        if (tab.id === "invoices") label = "Fee notes";
+        if (tab.id === "audit") label = "Audit trail";
 
         return {
           ...tab,
@@ -113,7 +110,6 @@ export function CustomerGroupedTabs({
       }),
     }));
   }, [
-    t,
     generatedPanel,
     invoicesPanel,
     ratesPanel,

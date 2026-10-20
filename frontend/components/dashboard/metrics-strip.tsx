@@ -3,7 +3,6 @@
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { Sparkline } from "@/components/dashboard/sparkline";
 import { MicroStackedBar } from "@/components/dashboard/micro-stacked-bar";
-import { useTerminology } from "@/lib/terminology";
 import type { KpiResponse, MatterHealth } from "@/lib/dashboard-types";
 
 interface MetricsStripProps {
@@ -29,7 +28,6 @@ function computeTrendDirection(
 }
 
 export function MetricsStrip({ kpis, projectHealth }: MetricsStripProps) {
-  const { t } = useTerminology();
   const trendValues = kpis?.trend?.map((t) => t.value) ?? [];
   const billableHours = kpis ? (kpis.totalHoursLogged * (kpis.billablePercent ?? 0)) / 100 : 0;
   const nonBillableHours = kpis ? kpis.totalHoursLogged - billableHours : 0;
@@ -56,7 +54,7 @@ export function MetricsStrip({ kpis, projectHealth }: MetricsStripProps) {
         className="bg-card rounded-lg border border-slate-200/60 p-3"
       >
         <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">
-          {t("Active Projects")}
+          Active Matters
         </p>
         <div className="mt-1 flex items-center justify-between">
           <span className="font-mono text-xl font-bold tabular-nums">

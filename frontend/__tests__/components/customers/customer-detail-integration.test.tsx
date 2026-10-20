@@ -30,20 +30,6 @@ vi.mock("motion/react", () => ({
   },
 }));
 
-vi.mock("@/lib/terminology", () => ({
-  useTerminology: () => ({
-    t: (term: string) => term,
-    verticalProfile: null,
-  }),
-}));
-
-vi.mock("@b2mash/shared/terminology-map", () => ({
-  auditTabLabel: (t: (s: string) => string) => {
-    const v = t("audit.tab");
-    return v === "audit.tab" ? "Audit" : v;
-  },
-}));
-
 vi.mock("@/components/compliance/LifecycleStatusBadge", () => ({
   LifecycleStatusBadge: ({ status }: { status: string }) => (
     <span data-testid="lifecycle-status-badge">{status}</span>

@@ -16,7 +16,6 @@ import { SaveAsTemplateDialog } from "@/components/templates/SaveAsTemplateDialo
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
 import { DeleteProjectDialog } from "@/components/projects/delete-project-dialog";
 import { archiveProject } from "@/app/(app)/org/[slug]/matters/actions";
-import { useTerminology } from "@/lib/terminology";
 import type { Matter, Task, TagResponse, TemplateListResponse, MatterStatus } from "@/lib/types";
 
 interface OverflowActionsMenuProps {
@@ -54,7 +53,6 @@ export function OverflowActionsMenu({
   project,
   tasks,
 }: OverflowActionsMenuProps) {
-  const { t } = useTerminology();
   const [isPending, startTransition] = useTransition();
 
   // Controlled dialog states — dialogs rendered outside DropdownMenuContent to avoid Slot collision
@@ -129,7 +127,7 @@ export function OverflowActionsMenu({
           {canEdit && (
             <DropdownMenuItem onSelect={() => setEditOpen(true)}>
               <Pencil className="mr-2 size-4" />
-              Edit {t("Project")}
+              Edit Matter
             </DropdownMenuItem>
           )}
 
@@ -137,7 +135,7 @@ export function OverflowActionsMenu({
           {isAdmin && (
             <DropdownMenuItem onSelect={handleArchive} disabled={isPending}>
               <Archive className="mr-2 size-4" />
-              Archive {t("Project")}
+              Archive Matter
             </DropdownMenuItem>
           )}
 
@@ -148,7 +146,7 @@ export function OverflowActionsMenu({
               className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
             >
               <Trash2 className="mr-2 size-4" />
-              Delete {t("Project")}
+              Delete Matter
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>

@@ -38,7 +38,6 @@ import type {
   ChecklistTemplateResponse,
 } from "@/lib/types";
 import type { SetupStep, ContextGroup } from "@/components/setup/types";
-import { TerminologyText } from "@/components/terminology-text";
 import { PROMOTED_CUSTOMER_SLUGS } from "@/lib/constants/promoted-field-slugs";
 import { CustomerProjectsPanel } from "@/components/customers/customer-projects-panel";
 import { CustomerDocumentsPanel } from "@/components/documents/customer-documents-panel";
@@ -484,7 +483,7 @@ export default async function CustomerDetailPage({
           className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ArrowLeft className="mr-1.5 size-4" />
-          <TerminologyText template="Back to {Customers}" />
+          Back to Clients
         </Link>
       </div>
 
@@ -591,7 +590,7 @@ export default async function CustomerDetailPage({
             setupProgressData={
               customerReadiness
                 ? {
-                    title: <TerminologyText template="{Client} Readiness" />,
+                    title: "Client Readiness",
                     completionPercentage: customerReadinessPercentage,
                     overallComplete: customerReadinessComplete,
                     steps: customerSetupSteps,

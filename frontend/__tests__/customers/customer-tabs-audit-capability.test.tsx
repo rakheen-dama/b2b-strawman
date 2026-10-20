@@ -16,15 +16,9 @@ vi.mock("@/lib/actions/audit-events", () => ({
   fetchEntityAuditPage: vi.fn(),
 }));
 
-// Mock useOrgProfile / useTerminology — the audit-tab gate is the focus here.
+// Mock useOrgProfile — the audit-tab gate is the focus here.
 vi.mock("@/lib/org-profile", () => ({
   useOrgProfile: () => ({ isModuleEnabled: () => false }),
-}));
-vi.mock("@/lib/terminology", () => ({
-  useTerminology: () => ({ t: (s: string) => s }),
-}));
-vi.mock("@b2mash/shared/terminology-map", () => ({
-  auditTabLabel: () => "Audit Trail",
 }));
 
 // GroupedTabBar uses motion/react for the underline indicator

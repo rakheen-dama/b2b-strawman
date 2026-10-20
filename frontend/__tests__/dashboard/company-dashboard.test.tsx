@@ -95,13 +95,6 @@ vi.mock("@/lib/messages", () => ({
   }),
 }));
 
-// Mock terminology
-vi.mock("@/lib/terminology", () => ({
-  useTerminology: () => ({
-    t: (key: string) => key,
-  }),
-}));
-
 const mockKpis: KpiResponse = {
   activeMatterCount: 12,
   totalHoursLogged: 847.5,
@@ -272,7 +265,7 @@ describe("Dashboard Layout Components", () => {
         <TeamWorkloadWidget data={mockWorkloadData} isAdmin={true} />
       </>
     );
-    expect(screen.getByText("Project Health")).toBeInTheDocument();
+    expect(screen.getByText("Matter Health")).toBeInTheDocument();
     expect(screen.getByText("Team Time")).toBeInTheDocument();
   });
 

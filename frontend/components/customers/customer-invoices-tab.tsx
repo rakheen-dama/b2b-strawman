@@ -4,7 +4,6 @@ import { FileText } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { InvoiceGenerationDialog } from "@/components/invoices/invoice-generation-dialog";
-import { TerminologyText } from "@/components/terminology-text";
 import { formatDate, formatCurrency } from "@/lib/format";
 import type { InvoiceResponse, InvoiceStatus } from "@/lib/types";
 import Link from "next/link";
@@ -40,9 +39,7 @@ export function CustomerInvoicesTab({
   const header = (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <h2 className="font-semibold text-slate-900 dark:text-slate-100">
-          <TerminologyText template="{Invoices}" />
-        </h2>
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">Fee notes</h2>
         {invoices.length > 0 && <Badge variant="neutral">{invoices.length}</Badge>}
       </div>
       {canManage && (
@@ -62,8 +59,8 @@ export function CustomerInvoicesTab({
         {header}
         <EmptyState
           icon={FileText}
-          title={<TerminologyText template="No {invoices} yet" />}
-          description={<TerminologyText template="Generate {invoice} from unbilled time entries" />}
+          title="No fee notes yet"
+          description="Generate fee note from unbilled time entries"
         />
       </div>
     );

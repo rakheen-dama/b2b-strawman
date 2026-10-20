@@ -86,18 +86,18 @@ describe("Empty State Page Integrations", () => {
     expect(screen.getByText(/define what you charge clients/)).toBeInTheDocument();
   });
 
-  it("dashboard ProjectHealthWidget renders EmptyState when no projects", () => {
+  it("dashboard ProjectHealthWidget renders EmptyState when no matters", () => {
     render(
       <EmptyState
         icon={HeartPulse}
-        title="No projects yet"
-        description="Create a project to start tracking health status."
+        title="No matters yet"
+        description="Create a matter to start tracking health status."
       />
     );
 
-    expect(screen.getByText("No projects yet")).toBeInTheDocument();
+    expect(screen.getByText("No matters yet")).toBeInTheDocument();
     expect(
-      screen.getByText("Create a project to start tracking health status.")
+      screen.getByText("Create a matter to start tracking health status.")
     ).toBeInTheDocument();
   });
 });

@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { ProjectHealthWidget } from "@/components/dashboard/project-health-widget";
-import { TerminologyProvider } from "@/lib/terminology";
 import type { MatterHealth } from "@/lib/dashboard-types";
 
 // Mock next/navigation
@@ -50,10 +49,6 @@ const mockProjects: MatterHealth[] = [
   },
 ];
 
-function renderWidget(ui: React.ReactElement) {
-  return render(<TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>);
-}
-
 describe("ProjectHealthWidget", () => {
   afterEach(() => {
     cleanup();
@@ -61,17 +56,17 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("renders empty state when projects is null", () => {
-    renderWidget(<ProjectHealthWidget projects={null} orgSlug="acme" />);
-    expect(screen.getByText("No projects yet")).toBeInTheDocument();
+    render(<ProjectHealthWidget projects={null} orgSlug="acme" />);
+    expect(screen.getByText("No matters yet")).toBeInTheDocument();
   });
 
   it("renders empty state when projects is empty", () => {
-    renderWidget(<ProjectHealthWidget projects={[]} orgSlug="acme" />);
-    expect(screen.getByText("No projects yet")).toBeInTheDocument();
+    render(<ProjectHealthWidget projects={[]} orgSlug="acme" />);
+    expect(screen.getByText("No matters yet")).toBeInTheDocument();
   });
 
   it("renders all projects by default", () => {
-    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     expect(screen.getByText("Website Redesign")).toBeInTheDocument();
     expect(screen.getByText("Mobile App")).toBeInTheDocument();
@@ -79,14 +74,14 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("shows customer names when available", () => {
-    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
     expect(screen.getByText("Beta Inc")).toBeInTheDocument();
   });
 
   it("shows task ratio and hours in dense row", () => {
-    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     // Task ratios shown as X/Y
     expect(screen.getByText("20/40")).toBeInTheDocument();
@@ -95,7 +90,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("filters to at-risk and critical projects when At Risk tab clicked", () => {
-    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     fireEvent.click(screen.getByRole("button", { name: "At Risk" }));
 
@@ -106,7 +101,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("filters to over-budget projects when Over Budget tab clicked", () => {
-    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     fireEvent.click(screen.getByRole("button", { name: "Over Budget" }));
 
@@ -117,23 +112,23 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("navigates to project detail on row click", () => {
-    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     fireEvent.click(screen.getByText("Website Redesign"));
 
     expect(mockPush).toHaveBeenCalledWith("/org/acme/matters/proj-1");
   });
 
-  it("navigates to projects page when 'View all projects' clicked", () => {
-    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+  it("navigates to projects page when 'View all matters' clicked", () => {
+    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
-    fireEvent.click(screen.getByText(/View all projects/));
+    fireEvent.click(screen.getByText(/View all matters/));
 
     expect(mockPush).toHaveBeenCalledWith("/org/acme/matters");
   });
 
   it("renders filter tabs", () => {
-    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     expect(screen.getByRole("button", { name: "All" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "At Risk" })).toBeInTheDocument();
@@ -156,15 +151,15 @@ describe("ProjectHealthWidget", () => {
       },
     ];
 
-    renderWidget(<ProjectHealthWidget projects={healthyOnly} orgSlug="acme" />);
+    render(<ProjectHealthWidget projects={healthyOnly} orgSlug="acme" />);
 
     fireEvent.click(screen.getByRole("button", { name: "Over Budget" }));
 
-    expect(screen.getByText("No matching projects")).toBeInTheDocument();
+    expect(screen.getByText("No matching matters")).toBeInTheDocument();
   });
 
   it("renders project-health-panel data-testid", () => {
-    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     expect(screen.getByTestId("project-health-panel")).toBeInTheDocument();
   });

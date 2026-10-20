@@ -72,7 +72,7 @@ describe("CompleteProjectDialog", () => {
     );
 
     await user.click(screen.getByText("Open Complete Dialog"));
-    expect(screen.getByText("Complete Project")).toBeInTheDocument();
+    expect(screen.getByText("Complete Matter")).toBeInTheDocument();
     expect(screen.getByTestId("confirm-complete-btn")).toBeInTheDocument();
     expect(screen.getByText("Cancel")).toBeInTheDocument();
   });
@@ -144,7 +144,7 @@ describe("ProjectLifecycleActions", () => {
     vi.clearAllMocks();
   });
 
-  it("shows Complete Project button and overflow menu for ACTIVE status", () => {
+  it("shows Complete Matter button and overflow menu for ACTIVE status", () => {
     render(
       <ProjectLifecycleActions
         slug="test-org"
@@ -155,7 +155,7 @@ describe("ProjectLifecycleActions", () => {
     );
 
     expect(screen.getByTestId("complete-project-btn")).toBeInTheDocument();
-    expect(screen.getByText("Complete Project")).toBeInTheDocument();
+    expect(screen.getByText("Complete Matter")).toBeInTheDocument();
     expect(screen.getByTestId("project-overflow-menu")).toBeInTheDocument();
   });
 

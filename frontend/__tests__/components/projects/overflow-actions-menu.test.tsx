@@ -6,13 +6,6 @@ import type { Matter, TagResponse, TemplateListResponse } from "@/lib/types";
 
 // ---- Mocks ----
 
-// Mock terminology
-vi.mock("@/lib/terminology", () => ({
-  useTerminology: () => ({
-    t: (key: string) => key,
-  }),
-}));
-
 // Mock org-profile (controls module gates like disbursements)
 const mockIsModuleEnabled = vi.fn(() => false);
 vi.mock("@/lib/org-profile", () => ({
@@ -140,23 +133,23 @@ describe("OverflowActionsMenu", () => {
     expect(screen.getByTestId("overflow-actions-trigger")).toBeInTheDocument();
   });
 
-  it('shows "Edit Project" when canEdit is true and hides when false', async () => {
+  it('shows "Edit Matter" when canEdit is true and hides when false', async () => {
     const user = userEvent.setup();
 
     // canEdit = true — Edit should be visible
     const { unmount } = render(<OverflowActionsMenu {...defaultProps} canEdit={true} />);
     await user.click(screen.getByTestId("overflow-actions-trigger"));
-    expect(screen.getByText(/^Edit Project$/)).toBeInTheDocument();
+    expect(screen.getByText(/^Edit Matter$/)).toBeInTheDocument();
     unmount();
     cleanup();
 
     // canEdit = false — Edit should not be visible
     render(<OverflowActionsMenu {...defaultProps} canEdit={false} />);
     await user.click(screen.getByTestId("overflow-actions-trigger"));
-    expect(screen.queryByText(/^Edit Project$/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Edit Matter$/)).not.toBeInTheDocument();
   });
 
-  it('hides "Delete Project" when isOwner is false and shows when true', async () => {
+  it('hides "Delete Matter" when isOwner is false and shows when true', async () => {
     const user = userEvent.setup();
 
     // isOwner = false — Delete should not be visible

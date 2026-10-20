@@ -136,7 +136,7 @@ describe("LinkProjectDialog", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("All projects are already linked to this customer.")
+        screen.getByText("All matters are already linked to this client.")
       ).toBeInTheDocument();
     });
   });
@@ -157,7 +157,7 @@ describe("LinkProjectDialog", () => {
 
     await user.click(screen.getByText("Link Project Dialog Trigger"));
 
-    expect(screen.getByText("Loading projects...")).toBeInTheDocument();
+    expect(screen.getByText("Loading matters...")).toBeInTheDocument();
   });
 
   it("displays error when linkProject fails", async () => {

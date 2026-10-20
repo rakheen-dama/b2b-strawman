@@ -1,7 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { RecentActivityWidget } from "@/components/dashboard/recent-activity-widget";
-import { TerminologyProvider } from "@/lib/terminology";
 import type { CrossMatterActivityItem } from "@/lib/dashboard-types";
 
 describe("RecentActivityWidget", () => {
@@ -19,29 +18,11 @@ describe("RecentActivityWidget", () => {
     expect(screen.getByText("No recent activity")).toBeInTheDocument();
   });
 
-  it("uses generic 'projects' copy when no terminology profile is active", () => {
-    render(
-      <TerminologyProvider verticalProfile={null}>
-        <RecentActivityWidget items={[]} orgSlug="acme" />
-      </TerminologyProvider>
-    );
-    expect(
-      screen.getByText("Activity will appear as your team works on projects.")
-    ).toBeInTheDocument();
-  });
-
-  it("uses 'matters' copy when terminology profile is legal-za (GAP-MINOR-Copy-Projects)", () => {
-    render(
-      <TerminologyProvider verticalProfile="legal-za">
-        <RecentActivityWidget items={[]} orgSlug="acme" />
-      </TerminologyProvider>
-    );
+  it("empty-state copy says the team works on matters (GAP-MINOR-Copy-Projects)", () => {
+    render(<RecentActivityWidget items={[]} orgSlug="acme" />);
     expect(
       screen.getByText("Activity will appear as your team works on matters.")
     ).toBeInTheDocument();
-    expect(
-      screen.queryByText("Activity will appear as your team works on projects.")
-    ).not.toBeInTheDocument();
   });
 
   it("renders activity items with actor names", () => {

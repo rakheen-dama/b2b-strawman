@@ -23,7 +23,6 @@ import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBad
 import { UserRound, Users } from "lucide-react";
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
-import { TerminologyHeading } from "@/components/terminology-heading";
 import { TerminologyText } from "@/components/terminology-text";
 import { createMessages } from "@/lib/messages";
 import { PermissionDenied } from "@/components/permission-denied";
@@ -206,9 +205,7 @@ export default async function CustomersPage({
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            <TerminologyHeading term="Customers" />
-          </h1>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Clients</h1>
           <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
             {customers.length}
           </span>
@@ -274,13 +271,13 @@ export default async function CustomersPage({
         showIncomplete ? (
           <EmptyState
             icon={UserRound}
-            title={<TerminologyText template="All {customers} are complete" />}
-            description={<TerminologyText template="All {customers} have 100% completeness." />}
+            title="All clients are complete"
+            description="All clients have 100% completeness."
           />
         ) : (
           <EmptyState
             icon={Users}
-            title={<TerminologyText template="No {customers} yet" />}
+            title="No clients yet"
             description={
               <TerminologyText
                 template={

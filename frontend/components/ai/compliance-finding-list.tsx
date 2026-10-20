@@ -197,8 +197,8 @@ export function ComplianceFindingList({ reportId, slug, canReview }: ComplianceF
                   <a
                     href={
                       finding.entityType === "CUSTOMER"
-                        ? `/org/${slug}/customers/${finding.entityId}`
-                        : `/org/${slug}/projects/${finding.entityId}`
+                        ? `/org/${slug}/clients/${finding.entityId}`
+                        : `/org/${slug}/matters/${finding.entityId}`
                     }
                     className="text-teal-600 underline hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
                     onClick={(e) => e.stopPropagation()}

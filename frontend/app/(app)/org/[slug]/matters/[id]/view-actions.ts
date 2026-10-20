@@ -12,7 +12,7 @@ export async function createSavedViewAction(
   slug: string,
   req: CreateSavedViewRequest
 ): Promise<ViewActionResult> {
-  return createShared(slug, "projects", req);
+  return createShared(slug, "matters", req);
 }
 
 export async function updateSavedViewAction(
@@ -20,12 +20,12 @@ export async function updateSavedViewAction(
   viewId: string,
   req: UpdateSavedViewRequest
 ): Promise<ViewActionResult> {
-  return updateShared(slug, "projects", viewId, req);
+  return updateShared(slug, "matters", viewId, req);
 }
 
 export async function deleteSavedViewAction(
   slug: string,
   viewId: string
 ): Promise<ViewActionResult> {
-  return deleteShared(slug, "projects", viewId);
+  return deleteShared(slug, "matters", viewId);
 }

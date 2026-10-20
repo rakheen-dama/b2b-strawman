@@ -10,6 +10,17 @@ import type {
   EntityType,
 } from "@/lib/types";
 
+/**
+ * Route segment of an entity's pages (Phase 87 610E). 610D moved /projects → /matters and
+ * /customers → /clients; other entity types keep the pluralised lowercase type. Deliberately
+ * NOT `entityApiPrefix` — that is the wire path, this is the app route.
+ */
+function entityRouteSegment(entityType: EntityType): string {
+  if (entityType === "PROJECT") return "matters";
+  if (entityType === "CUSTOMER") return "clients";
+  return entityType.toLowerCase() + "s";
+}
+
 interface ActionResult {
   success: boolean;
   error?: string;
@@ -196,7 +207,7 @@ export async function updateEntityCustomFieldsAction(
   entityId: string,
   customFields: Record<string, unknown>
 ): Promise<ActionResult> {
-  const prefix = entityType.toLowerCase() + "s";
+  const prefix = entityRouteSegment(entityType);
   const apiPrefix = entityApiPrefix(entityType);
   try {
     if (entityType === "INVOICE") {
@@ -230,7 +241,7 @@ export async function setEntityFieldGroupsAction(
   entityId: string,
   appliedFieldGroups: string[]
 ): Promise<ActionResult> {
-  const prefix = entityType.toLowerCase() + "s";
+  const prefix = entityRouteSegment(entityType);
   try {
     await setEntityFieldGroups(entityType, entityId, appliedFieldGroups);
   } catch (error) {

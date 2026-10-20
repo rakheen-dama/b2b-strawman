@@ -77,7 +77,7 @@ export function OnboardingPipelineSection({ customers, orgSlug }: OnboardingPipe
                   >
                     <td className="px-4 py-3">
                       <Link
-                        href={`/org/${orgSlug}/customers/${customer.id}`}
+                        href={`/org/${orgSlug}/clients/${customer.id}`}
                         className="font-medium text-slate-950 hover:text-teal-600 dark:text-slate-50"
                       >
                         {customer.name}

@@ -98,7 +98,7 @@ describe("UrgencyTaskList — onTaskClick prop", () => {
     const row = screen.getByText("Navigate Task").closest("tr");
     fireEvent.click(row!);
 
-    expect(mockPush).toHaveBeenCalledWith("/org/acme/projects/proj-1");
+    expect(mockPush).toHaveBeenCalledWith("/org/acme/matters/proj-1");
   });
 });
 
@@ -133,6 +133,6 @@ describe("AvailableTaskList — onTaskClick prop", () => {
     const row = screen.getByText("Navigate Available").closest("tr");
     fireEvent.click(row!);
 
-    expect(mockPush).toHaveBeenCalledWith("/org/acme/projects/proj-1");
+    expect(mockPush).toHaveBeenCalledWith("/org/acme/matters/proj-1");
   });
 });

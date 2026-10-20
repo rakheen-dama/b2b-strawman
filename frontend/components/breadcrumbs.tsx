@@ -8,7 +8,7 @@ import { useTerminology } from "@/lib/terminology";
 const SEGMENT_LABELS: Record<string, string> = {
   // Core nav
   dashboard: "Dashboard",
-  projects: "Projects",
+  matters: "Matters",
   team: "Team",
   settings: "Settings",
   // Settings sub-segments
@@ -35,7 +35,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   roles: "Roles & Permissions",
   integrations: "Integrations",
   // Additional segments
-  customers: "Customers",
+  clients: "Clients",
   "my-work": "My Work",
   // Vertical module pages
   "trust-accounting": "Trust Accounting",
@@ -45,11 +45,11 @@ const SEGMENT_LABELS: Record<string, string> = {
   invoices: "Invoices",
 };
 
-/** Segments that contain dynamic child routes (e.g. /projects/[id]) */
+/** Segments that contain dynamic child routes (e.g. /matters/[id]) */
 const PARENT_SEGMENT_FALLBACKS: Record<string, string> = {
-  projects: "Project",
+  matters: "Matter",
   settings: "Settings",
-  customers: "Customer",
+  clients: "Client",
   invoices: "Invoice",
   "client-ledgers": "Client Ledger",
 };

@@ -53,7 +53,7 @@ describe("ExecutionGateCard — originating correspondence (586B.3)", () => {
     );
 
     const link = screen.getByRole("link", { name: /view originating correspondence/i });
-    expect(link).toHaveAttribute("href", "/org/acme/projects/matter-9?tab=correspondence");
+    expect(link).toHaveAttribute("href", "/org/acme/matters/matter-9?tab=correspondence");
   });
 
   it("does not render the originating-correspondence link for unrelated gate types", () => {

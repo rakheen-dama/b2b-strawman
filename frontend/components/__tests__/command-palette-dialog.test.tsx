@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -24,6 +25,7 @@ import { CapabilityProvider } from "@/lib/capabilities";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { CommandPaletteDialog } from "@/components/command-palette-dialog";
 import { useRecentItems } from "@/components/recent-items-provider";
+import { useRouter } from "next/navigation";
 
 beforeEach(() => {
   vi.mocked(useRecentItems).mockReturnValue({ items: [], addItem: vi.fn() });
@@ -110,12 +112,22 @@ describe("CommandPaletteDialog", () => {
 
   it("shows Recent group heading when recentItems is non-empty", () => {
     vi.mocked(useRecentItems).mockReturnValue({
-      items: [{ href: "/org/test-org/projects/abc", label: "Alpha Project" }],
+      items: [{ href: "/org/test-org/matters/abc", label: "Alpha Project" }],
       addItem: vi.fn(),
     });
     renderDialog();
     const recentHeadings = screen.getAllByText("Recent");
     expect(recentHeadings.length).toBeGreaterThan(0);
     expect(screen.getByText("Alpha Project")).toBeInTheDocument();
+  });
+
+  it("navigates the Projects page item to the renamed /matters route (Phase 87 610E)", async () => {
+    const paletteMockPush = vi.fn();
+    vi.mocked(useRouter).mockReturnValue({ push: paletteMockPush } as unknown as ReturnType<
+      typeof useRouter
+    >);
+    renderDialog();
+    await userEvent.setup().click(screen.getByText("Projects"));
+    expect(paletteMockPush).toHaveBeenCalledWith("/org/test-org/matters");
   });
 });

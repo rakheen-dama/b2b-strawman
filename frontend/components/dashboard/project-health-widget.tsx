@@ -184,7 +184,7 @@ export function ProjectHealthWidget({ projects, orgSlug }: ProjectHealthWidgetPr
               <button
                 key={project.matterId}
                 type="button"
-                onClick={() => router.push(`/org/${orgSlug}/projects/${project.matterId}`)}
+                onClick={() => router.push(`/org/${orgSlug}/matters/${project.matterId}`)}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
               >
                 {/* Name + Customer stacked */}
@@ -220,7 +220,7 @@ export function ProjectHealthWidget({ projects, orgSlug }: ProjectHealthWidgetPr
           variant="ghost"
           size="sm"
           className="h-7 text-xs text-slate-500"
-          onClick={() => router.push(`/org/${orgSlug}/projects`)}
+          onClick={() => router.push(`/org/${orgSlug}/matters`)}
         >
           View all {t("projects")} &rarr;
         </Button>

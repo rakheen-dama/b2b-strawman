@@ -4,6 +4,17 @@ import { api, ApiError, entityApiPrefix } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type { CreateTagRequest, UpdateTagRequest, EntityType, TagResponse } from "@/lib/types";
 
+/**
+ * Route segment of an entity's pages (Phase 87 610E). 610D moved /projects → /matters and
+ * /customers → /clients; other entity types keep the pluralised lowercase type. Deliberately
+ * NOT `entityApiPrefix` — that is the wire path, this is the app route.
+ */
+function entityRouteSegment(entityType: EntityType): string {
+  if (entityType === "PROJECT") return "matters";
+  if (entityType === "CUSTOMER") return "clients";
+  return entityType.toLowerCase() + "s";
+}
+
 interface ActionResult {
   success: boolean;
   error?: string;
@@ -101,7 +112,7 @@ export async function setEntityTagsAction(
   entityId: string,
   tagIds: string[]
 ): Promise<ActionResult> {
-  const prefix = entityType.toLowerCase() + "s";
+  const prefix = entityRouteSegment(entityType);
   try {
     await api.post(`/api/${entityApiPrefix(entityType)}/${entityId}/tags`, { tagIds });
   } catch (error) {

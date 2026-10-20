@@ -94,6 +94,6 @@ export interface TemplateReadinessItem {
 
 export interface TemplateReadinessCardProps {
   templates: TemplateReadinessItem[];
-  /** Base path (e.g. "/org/acme/projects/123") — component appends ?generateTemplate=<id> */
+  /** Base path (e.g. "/org/acme/matters/123") — component appends ?generateTemplate=<id> */
   baseHref: string;
 }

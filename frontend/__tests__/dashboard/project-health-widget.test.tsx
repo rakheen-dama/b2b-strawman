@@ -121,7 +121,7 @@ describe("ProjectHealthWidget", () => {
 
     fireEvent.click(screen.getByText("Website Redesign"));
 
-    expect(mockPush).toHaveBeenCalledWith("/org/acme/projects/proj-1");
+    expect(mockPush).toHaveBeenCalledWith("/org/acme/matters/proj-1");
   });
 
   it("navigates to projects page when 'View all projects' clicked", () => {
@@ -129,7 +129,7 @@ describe("ProjectHealthWidget", () => {
 
     fireEvent.click(screen.getByText(/View all projects/));
 
-    expect(mockPush).toHaveBeenCalledWith("/org/acme/projects");
+    expect(mockPush).toHaveBeenCalledWith("/org/acme/matters");
   });
 
   it("renders filter tabs", () => {

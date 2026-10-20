@@ -116,8 +116,8 @@ describe("CollectionsHistoryPagination", () => {
 
     const prev = screen.getByRole("link", { name: "Previous" });
     const next = screen.getByRole("link", { name: "Next" });
-    expect(prev).toHaveAttribute("href", "/org/acme/customers/cust-1?tab=details&chasePage=0");
-    expect(next).toHaveAttribute("href", "/org/acme/customers/cust-1?tab=details&chasePage=2");
+    expect(prev).toHaveAttribute("href", "/org/acme/clients/cust-1?tab=details&chasePage=0");
+    expect(next).toHaveAttribute("href", "/org/acme/clients/cust-1?tab=details&chasePage=2");
   });
 
   it("disables Previous on the first page (renders it as non-link text)", () => {

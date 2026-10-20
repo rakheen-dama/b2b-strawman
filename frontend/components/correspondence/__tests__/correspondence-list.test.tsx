@@ -46,7 +46,7 @@ describe("CorrespondenceList", () => {
     expect(screen.getByText("jane@acme.co.za")).toBeInTheDocument();
     // Attachment count is a link to the matter's Documents tab.
     const link = screen.getByRole("link", { name: /2/ });
-    expect(link).toHaveAttribute("href", "/org/acme/projects/proj-1?tab=documents");
+    expect(link).toHaveAttribute("href", "/org/acme/matters/proj-1?tab=documents");
   });
 
   it("shows the empty state when there is no correspondence", () => {

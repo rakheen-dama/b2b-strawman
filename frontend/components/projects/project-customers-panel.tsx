@@ -109,7 +109,7 @@ export function ProjectCustomersPanel({
                 >
                   <td className="px-4 py-3">
                     <Link
-                      href={`/org/${slug}/customers/${customer.id}`}
+                      href={`/org/${slug}/clients/${customer.id}`}
                       className="font-medium text-slate-950 hover:underline dark:text-slate-50"
                     >
                       {customer.name}

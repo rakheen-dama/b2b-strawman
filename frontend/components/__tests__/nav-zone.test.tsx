@@ -20,7 +20,7 @@ import { CapabilityProvider } from "@/lib/capabilities";
 import { TerminologyProvider } from "@/lib/terminology";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { NavZone } from "@/components/nav-zone";
-import type { NavGroup } from "@/lib/nav-items";
+import { NAV_GROUPS, type NavGroup } from "@/lib/nav-items";
 import { LayoutDashboard, FolderOpen, Receipt, Scale } from "lucide-react";
 
 const mockUsePathname = vi.mocked(usePathname);
@@ -205,5 +205,27 @@ describe("NavZone", () => {
     });
 
     expect(screen.queryByText("Trust Accounting")).not.toBeInTheDocument();
+  });
+});
+
+describe("NavZone active state on the renamed routes (Phase 87 610E)", () => {
+  it("highlights the real Projects item on a /matters detail page and links /matters", () => {
+    mockUsePathname.mockReturnValue("/org/test-org/matters/abc");
+    const projectsZone = NAV_GROUPS.find((g) => g.id === "projects")!;
+    renderWithProviders(<NavZone zone={projectsZone} slug="test-org" />);
+    const link = screen.getByRole("link", { name: "Projects" });
+    expect(link).toHaveAttribute("href", "/org/test-org/matters");
+    expect(link).toHaveClass("bg-white/5");
+  });
+
+  it("highlights the real Customers item on a /clients detail page and links /clients", () => {
+    mockUsePathname.mockReturnValue("/org/test-org/clients/c-1");
+    const clientsZone = { ...NAV_GROUPS.find((g) => g.id === "clients")!, defaultExpanded: true };
+    renderWithProviders(<NavZone zone={clientsZone} slug="test-org" />, {
+      capabilities: ["CUSTOMER_MANAGEMENT"],
+    });
+    const link = screen.getByRole("link", { name: "Customers" });
+    expect(link).toHaveAttribute("href", "/org/test-org/clients");
+    expect(link).toHaveClass("bg-white/5");
   });
 });

@@ -40,7 +40,7 @@ export function KpiCardRow({ kpis, isAdmin, orgSlug }: KpiCardRowProps) {
           label={t("Active Projects")}
           value={0}
           emptyState="No data"
-          href={`/org/${orgSlug}/projects`}
+          href={`/org/${orgSlug}/matters`}
         />
         <KpiCard label="Hours Logged" value={0} emptyState="No data" />
         <KpiCard label="Overdue Tasks" value={0} emptyState="No data" />
@@ -62,7 +62,7 @@ export function KpiCardRow({ kpis, isAdmin, orgSlug }: KpiCardRowProps) {
       changePercent: activeProjectsChange,
       changeDirection: changeDirection(activeProjectsChange),
       trend: trendValues,
-      href: `/org/${orgSlug}/projects`,
+      href: `/org/${orgSlug}/matters`,
       emptyState: `No ${t("projects")} yet`,
       adminOnly: false,
     },

@@ -186,3 +186,13 @@ describe("SETTINGS_ITEMS", () => {
     }
   });
 });
+
+describe("matter/client hrefs (Phase 87 610E)", () => {
+  it("use the renamed route segments (labels unchanged — 611/612)", () => {
+    const hrefs = NAV_GROUPS.flatMap((g) => g.items).map((i) => i.href("acme"));
+    expect(hrefs).toEqual(
+      expect.arrayContaining(["/org/acme/matters", "/org/acme/clients", "/org/acme/matters/new"])
+    );
+    expect(hrefs.filter((h) => /\/(projects|customers)(\/|$)/.test(h))).toEqual([]);
+  });
+});

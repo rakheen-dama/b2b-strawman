@@ -73,7 +73,7 @@ function buildFilteredUrl(
     }
   }
   const qs = new URLSearchParams(merged).toString();
-  return `/org/${slug}/customers${qs ? `?${qs}` : ""}`;
+  return `/org/${slug}/clients${qs ? `?${qs}` : ""}`;
 }
 
 export default async function CustomersPage({
@@ -238,8 +238,8 @@ export default async function CustomersPage({
           const isActive =
             lifecycleFilter === option.value || (!lifecycleFilter && option.value === "");
           const href = option.value
-            ? `/org/${slug}/customers?lifecycleStatus=${option.value}`
-            : `/org/${slug}/customers`;
+            ? `/org/${slug}/clients?lifecycleStatus=${option.value}`
+            : `/org/${slug}/clients`;
           return (
             <Link
               key={option.value}
@@ -338,7 +338,7 @@ export default async function CustomersPage({
                   >
                     <td className="px-4 py-3">
                       <Link
-                        href={`/org/${slug}/customers/${customer.id}`}
+                        href={`/org/${slug}/clients/${customer.id}`}
                         className="font-medium text-slate-950 hover:underline dark:text-slate-50"
                       >
                         {customer.name}

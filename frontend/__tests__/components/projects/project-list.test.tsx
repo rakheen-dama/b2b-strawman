@@ -99,16 +99,16 @@ describe("ProjectStatusFilter", () => {
   it("generates correct links for filter chips", () => {
     render(<ProjectStatusFilter slug="acme" />);
     const completedLink = screen.getByText("Completed").closest("a");
-    expect(completedLink).toHaveAttribute("href", "/org/acme/projects?status=COMPLETED");
+    expect(completedLink).toHaveAttribute("href", "/org/acme/matters?status=COMPLETED");
     const archivedLink = screen.getByText("Archived").closest("a");
-    expect(archivedLink).toHaveAttribute("href", "/org/acme/projects?status=ARCHIVED");
+    expect(archivedLink).toHaveAttribute("href", "/org/acme/matters?status=ARCHIVED");
     const closedLink = screen.getByText("Closed").closest("a");
-    expect(closedLink).toHaveAttribute("href", "/org/acme/projects?status=CLOSED");
+    expect(closedLink).toHaveAttribute("href", "/org/acme/matters?status=CLOSED");
     const allLink = screen.getByText("All").closest("a");
-    expect(allLink).toHaveAttribute("href", "/org/acme/projects?status=ALL");
+    expect(allLink).toHaveAttribute("href", "/org/acme/matters?status=ALL");
     // Active should link to base URL (no status param)
     const activeLink = screen.getByText("Active").closest("a");
-    expect(activeLink).toHaveAttribute("href", "/org/acme/projects");
+    expect(activeLink).toHaveAttribute("href", "/org/acme/matters");
   });
 });
 

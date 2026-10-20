@@ -87,7 +87,7 @@ describe("KpiCardRow", () => {
     renderWithProvider(<KpiCardRow kpis={mockKpis} isAdmin={false} orgSlug="acme" />);
 
     const links = screen.getAllByRole("link");
-    const projectsLink = links.find((l) => l.getAttribute("href") === "/org/acme/projects");
+    const projectsLink = links.find((l) => l.getAttribute("href") === "/org/acme/matters");
     expect(projectsLink).toBeDefined();
   });
 

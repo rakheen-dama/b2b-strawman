@@ -93,7 +93,7 @@ export function SyncLogTable({ entries, slug, canReconcile }: SyncLogTableProps)
             entry.entityType === "INVOICE"
               ? `/org/${slug}/invoices/${entry.entityId}`
               : entry.entityType === "CUSTOMER"
-                ? `/org/${slug}/customers/${entry.entityId}`
+                ? `/org/${slug}/clients/${entry.entityId}`
                 : null;
 
           const showRetry = entry.state === "DEAD_LETTER";

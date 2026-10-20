@@ -29,7 +29,7 @@ export function LifecycleDistributionSection({
         {STATUSES.map(({ key, label, icon: Icon, color }) => (
           <Link
             key={key}
-            href={`/org/${orgSlug}/customers?lifecycleStatus=${key}`}
+            href={`/org/${orgSlug}/clients?lifecycleStatus=${key}`}
             className="block h-full"
           >
             <Card className="h-full p-4 transition-shadow hover:shadow-md">

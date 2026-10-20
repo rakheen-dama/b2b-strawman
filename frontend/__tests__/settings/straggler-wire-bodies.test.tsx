@@ -147,6 +147,6 @@ describe("staff-frontend straggler wire bodies (Phase 87 S3, 609F)", () => {
 
     await userEvent.setup().click(screen.getByRole("button"));
 
-    expect(mockPush).toHaveBeenCalledWith("/org/acme/projects/m-1?tab=documents");
+    expect(mockPush).toHaveBeenCalledWith("/org/acme/matters/m-1?tab=documents");
   });
 });

@@ -117,7 +117,7 @@ export function ClientOverflowMenu({
           {showGenerateDocument && (
             <DropdownMenuItem
               onSelect={() =>
-                router.push(`/org/${slug}/customers/${customerId}?action=generate-document`)
+                router.push(`/org/${slug}/clients/${customerId}?action=generate-document`)
               }
             >
               <FileText className="mr-2 size-4" />
@@ -140,7 +140,7 @@ export function ClientOverflowMenu({
 
           {showVerifyKyc && (
             <DropdownMenuItem
-              onSelect={() => router.push(`/org/${slug}/customers/${customerId}?tab=onboarding`)}
+              onSelect={() => router.push(`/org/${slug}/clients/${customerId}?tab=onboarding`)}
             >
               <ShieldAlert className="mr-2 size-4" />
               Verify KYC

@@ -22,7 +22,7 @@ describe("OnboardingPipelineSection", () => {
     render(<OnboardingPipelineSection customers={customers} orgSlug="test-org" />);
     expect(screen.getByText("Onboarding Corp")).toBeInTheDocument();
     const link = screen.getByRole("link", { name: "Onboarding Corp" });
-    expect(link).toHaveAttribute("href", "/org/test-org/customers/c1");
+    expect(link).toHaveAttribute("href", "/org/test-org/clients/c1");
   });
 
   it("displays duration in days", () => {

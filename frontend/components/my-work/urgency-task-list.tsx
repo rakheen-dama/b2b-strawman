@@ -159,7 +159,7 @@ function TaskGroupTable({ tasks, slug, isOverdue, onTaskClick }: TaskGroupTableP
                   if (onTaskClick) {
                     onTaskClick(task.id);
                   } else {
-                    router.push(`/org/${slug}/projects/${task.matterId}`);
+                    router.push(`/org/${slug}/matters/${task.matterId}`);
                   }
                 }}
               >

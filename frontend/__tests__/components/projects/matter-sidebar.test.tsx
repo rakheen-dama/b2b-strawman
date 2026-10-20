@@ -118,7 +118,7 @@ describe("MatterSidebar", () => {
     render(<MatterSidebar {...defaultProps} />);
     const link = screen.getByText("Acme Corp");
     expect(link).toBeInTheDocument();
-    expect(link.closest("a")).toHaveAttribute("href", "/org/test-org/customers/cust-1");
+    expect(link.closest("a")).toHaveAttribute("href", "/org/test-org/clients/cust-1");
   });
 
   it("renders custom fields section when field definitions exist", () => {

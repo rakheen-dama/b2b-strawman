@@ -15,10 +15,10 @@ interface MatterClosureReportProps {
 function fixHrefFor(code: string, slug: string, projectId: string): string | null {
   switch (code) {
     case "TRUST_BALANCE_ZERO":
-      return `/org/${slug}/projects/${projectId}?tab=trust`;
+      return `/org/${slug}/matters/${projectId}?tab=trust`;
     case "ALL_DISBURSEMENTS_APPROVED":
     case "ALL_DISBURSEMENTS_SETTLED":
-      return `/org/${slug}/projects/${projectId}?tab=disbursements`;
+      return `/org/${slug}/matters/${projectId}?tab=disbursements`;
     case "FINAL_BILL_ISSUED":
       return `/org/${slug}/invoices?projectId=${projectId}`;
     case "NO_OPEN_COURT_DATES":
@@ -26,11 +26,11 @@ function fixHrefFor(code: string, slug: string, projectId: string): string | nul
     case "NO_OPEN_PRESCRIPTIONS":
       return `/org/${slug}/court-calendar?projectId=${projectId}&view=prescriptions`;
     case "ALL_TASKS_RESOLVED":
-      return `/org/${slug}/projects/${projectId}?tab=tasks`;
+      return `/org/${slug}/matters/${projectId}?tab=tasks`;
     case "ALL_INFO_REQUESTS_CLOSED":
-      return `/org/${slug}/projects/${projectId}?tab=requests`;
+      return `/org/${slug}/matters/${projectId}?tab=requests`;
     case "ALL_ACCEPTANCE_REQUESTS_FINAL":
-      return `/org/${slug}/projects/${projectId}?tab=acceptance-requests`;
+      return `/org/${slug}/matters/${projectId}?tab=acceptance-requests`;
     default:
       return null;
   }

@@ -205,10 +205,7 @@ describe("AuditLogPage (server shell)", () => {
     render(page);
 
     const link = screen.getByTestId("entity-cell-link");
-    expect(link).toHaveAttribute(
-      "href",
-      "/org/acme/customers/abcdef12-3456-7890-abcd-ef1234567890"
-    );
+    expect(link).toHaveAttribute("href", "/org/acme/clients/abcdef12-3456-7890-abcd-ef1234567890");
     expect(link.getAttribute("data-entity-type")).toBe("customer");
   });
 

@@ -48,7 +48,7 @@ describe("InformationRequestsWidget", () => {
     });
     await user.click(link);
 
-    expect(mockPush).toHaveBeenCalledWith("/org/acme/customers");
+    expect(mockPush).toHaveBeenCalledWith("/org/acme/clients");
   });
 
   it("shows overdue warning indicator when overdue count is positive", () => {

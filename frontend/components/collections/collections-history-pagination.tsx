@@ -27,7 +27,7 @@ export function CollectionsHistoryPagination({
   const hasPrev = number > 0;
   const hasNext = number < totalPages - 1;
   const hrefFor = (page: number) =>
-    `/org/${slug}/customers/${customerId}?tab=details&chasePage=${page}`;
+    `/org/${slug}/clients/${customerId}?tab=details&chasePage=${page}`;
 
   return (
     <div className="flex items-center justify-between" data-testid="chase-history-pagination">

@@ -71,7 +71,7 @@ describe("MatterClosureReport", () => {
       screen.getByTestId("matter-closure-gate-fail-ALL_DISBURSEMENTS_APPROVED")
     ).toBeInTheDocument();
     const fixLink = screen.getByTestId("matter-closure-gate-fix-ALL_DISBURSEMENTS_APPROVED");
-    expect(fixLink).toHaveAttribute("href", "/org/acme/projects/p1?tab=disbursements");
+    expect(fixLink).toHaveAttribute("href", "/org/acme/matters/p1?tab=disbursements");
   });
 
   it("routes known gate codes to the correct deep link", () => {
@@ -104,7 +104,7 @@ describe("MatterClosureReport", () => {
     );
     expect(screen.getByTestId("matter-closure-gate-fix-TRUST_BALANCE_ZERO")).toHaveAttribute(
       "href",
-      "/org/acme/projects/p1?tab=trust"
+      "/org/acme/matters/p1?tab=trust"
     );
     expect(screen.getByTestId("matter-closure-gate-fix-FINAL_BILL_ISSUED")).toHaveAttribute(
       "href",
@@ -116,7 +116,7 @@ describe("MatterClosureReport", () => {
     );
     expect(screen.getByTestId("matter-closure-gate-fix-ALL_TASKS_RESOLVED")).toHaveAttribute(
       "href",
-      "/org/acme/projects/p1?tab=tasks"
+      "/org/acme/matters/p1?tab=tasks"
     );
   });
 

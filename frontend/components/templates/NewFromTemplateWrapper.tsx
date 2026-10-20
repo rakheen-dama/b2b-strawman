@@ -17,7 +17,7 @@ interface Props {
   templates: ProjectTemplateResponse[];
   orgMembers: OrgMember[];
   customers: Client[];
-  /** Auto-open the dialog on mount (deep-linked via `/projects?new=1`). */
+  /** Auto-open the dialog on mount (deep-linked via `/matters?new=1`). */
   autoOpen?: boolean;
   /** Pre-select this customer on the form when auto-opening. */
   initialCustomerId?: string;

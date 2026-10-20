@@ -129,4 +129,47 @@ describe("Breadcrumbs", () => {
       );
     });
   });
+  describe("matter and client routes (Phase 87 610E)", () => {
+    const MATTER_ID = "5b1d7c2e-3f4a-4b5c-8d6e-7f8091a2b3c4";
+    const CLIENT_ID = "6c2e8d3f-4a5b-4c6d-9e7f-8091a2b3c4d5";
+
+    function renderCrumbsAt(pathname: string) {
+      mockUsePathname.mockReturnValue(pathname);
+      render(
+        <TerminologyProvider verticalProfile={null}>
+          <Breadcrumbs slug="acme" />
+        </TerminologyProvider>
+      );
+    }
+
+    it("labels /matters/<id> as Matters > Matter and links the list", () => {
+      renderCrumbsAt(`/org/acme/matters/${MATTER_ID}`);
+      expect(screen.getByRole("link", { name: "Matters" })).toHaveAttribute(
+        "href",
+        "/org/acme/matters"
+      );
+      expect(screen.getByText("Matter").tagName).toBe("SPAN");
+      expect(screen.queryByText(MATTER_ID)).not.toBeInTheDocument();
+    });
+
+    it("labels /clients/<id> as Clients > Client and links the list", () => {
+      renderCrumbsAt(`/org/acme/clients/${CLIENT_ID}`);
+      expect(screen.getByRole("link", { name: "Clients" })).toHaveAttribute(
+        "href",
+        "/org/acme/clients"
+      );
+      expect(screen.getByText("Client").tagName).toBe("SPAN");
+    });
+
+    it("labels the /matters list page Matters (not the raw segment)", () => {
+      renderCrumbsAt("/org/acme/matters");
+      expect(screen.getByText("Matters").tagName).toBe("SPAN");
+      expect(screen.queryByText("matters")).not.toBeInTheDocument();
+    });
+
+    it("labels /trust-accounting/client-ledgers/<id> as Client Ledger", () => {
+      renderCrumbsAt(`/org/acme/trust-accounting/client-ledgers/${CLIENT_ID}`);
+      expect(screen.getByText("Client Ledger").tagName).toBe("SPAN");
+    });
+  });
 });

@@ -64,7 +64,7 @@ export function MatterSidebar({
           <span className="min-w-0 text-slate-700 dark:text-slate-300">
             {customers.length > 0 ? (
               <Link
-                href={`/org/${slug}/customers/${customers[0].id}`}
+                href={`/org/${slug}/clients/${customers[0].id}`}
                 className="text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
               >
                 {customers[0].name}

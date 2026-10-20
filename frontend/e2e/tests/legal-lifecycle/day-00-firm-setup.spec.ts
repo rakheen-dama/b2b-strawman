@@ -37,67 +37,14 @@ test.describe.serial("Day 0 — Firm Setup", () => {
     const sidebar = page.locator('nav, aside, [data-testid="sidebar"]').first();
     const sidebarText = await sidebar.textContent({ timeout: 10_000 }).catch(() => "");
 
-    // Check if legal terminology is active OR switch to legal-za profile
-    const hasLegalTerms = sidebarText?.match(/matters/i);
-    if (!hasLegalTerms) {
-      // Attempt to switch profile to legal-za via Settings > General
-      await page.goto(`${BASE}/settings/general`);
-      await expect(page.locator("main")).toBeVisible();
-
-      const selectTrigger = page.locator('[data-slot="select-trigger"]').first();
-      const hasTrigger = await selectTrigger.isVisible({ timeout: 3000 }).catch(() => false);
-
-      if (hasTrigger) {
-        await selectTrigger.click();
-        await page.waitForTimeout(500);
-
-        const legalOption = page.getByRole("option", { name: /legal/i }).first();
-        const hasLegal = await legalOption.isVisible({ timeout: 3000 }).catch(() => false);
-
-        if (hasLegal) {
-          await legalOption.click();
-          await page.waitForTimeout(500);
-
-          const applyBtn = page.getByRole("button", { name: /Apply Profile/i });
-          const hasApply = await applyBtn.isEnabled({ timeout: 3000 }).catch(() => false);
-          if (hasApply) {
-            await applyBtn.click();
-            await page.waitForTimeout(500);
-
-            const confirmBtn = page.getByRole("button", { name: /Confirm/i });
-            const hasConfirm = await confirmBtn.isVisible({ timeout: 3000 }).catch(() => false);
-            if (hasConfirm) {
-              await confirmBtn.click();
-            }
-          }
-        } else {
-          test.skip(true, "No legal profile option available — cannot proceed");
-          return;
-        }
-      } else {
-        test.skip(true, "Profile selector not found — cannot switch to legal-za");
-        return;
-      }
-
-      await page.waitForTimeout(2000);
-      await page.goto(`${BASE}/dashboard`);
-      await expect(page.locator("main")).toBeVisible();
-    }
-
-    // Verify legal sidebar labels
-    const updatedSidebar = page.locator('nav, aside, [data-testid="sidebar"]').first();
-    const updatedText = await updatedSidebar.textContent({ timeout: 10_000 }).catch(() => "");
-
-    // "Matters" instead of "Projects", "Clients" instead of "Customers"
-    const legalNavPresent = updatedText?.match(/matters/i) || updatedText?.match(/clients/i);
-    if (!legalNavPresent) {
-      test.skip(true, "Legal terminology not active after profile switch — gap");
-    }
+    // Legal-native shell (Phase 87, ADR-338): the sidebar copy is literal legal words — "Matters"
+    // instead of "Projects", "Clients" instead of "Customers". There is no profile switch to fall back on.
+    expect(sidebarText).toMatch(/matters/i);
 
     // Check for legal-specific nav items
-    const hasTrustAccounting = updatedText?.match(/trust.?account/i);
-    const hasCourtCalendar = updatedText?.match(/court.?calendar/i);
-    const hasConflictCheck = updatedText?.match(/conflict.?check/i);
+    const hasTrustAccounting = sidebarText?.match(/trust.?account/i);
+    const hasCourtCalendar = sidebarText?.match(/court.?calendar/i);
+    const hasConflictCheck = sidebarText?.match(/conflict.?check/i);
 
     // At least trust accounting should be visible for legal profile
     if (!hasTrustAccounting && !hasCourtCalendar && !hasConflictCheck) {

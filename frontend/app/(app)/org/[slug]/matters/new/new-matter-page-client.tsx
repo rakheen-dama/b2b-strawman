@@ -134,14 +134,14 @@ export function NewMatterPageClient({
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="customerId">Customer</Label>
+                <Label htmlFor="customerId">Client</Label>
                 <select
                   id="customerId"
                   value={customerId}
                   onChange={(e) => setCustomerId(e.target.value)}
                   className={nativeSelectClassName}
                 >
-                  <option value="">-- Select a customer --</option>
+                  <option value="">-- Select a client --</option>
                   {customers.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}

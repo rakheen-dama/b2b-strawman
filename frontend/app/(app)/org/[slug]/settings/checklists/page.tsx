@@ -87,7 +87,7 @@ export default async function ChecklistsSettingsPage({
                   Name
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Customer Type
+                  Client Type
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Source

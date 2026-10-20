@@ -12,7 +12,6 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { AuthHeaderControls } from "@/components/auth-header-controls";
 import { CapabilityProvider } from "@/lib/capabilities";
 import { SubscriptionProvider } from "@/lib/subscription-context";
-import { TerminologyProvider } from "@/lib/terminology";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { CommandPaletteProvider } from "@/components/command-palette-provider";
 import { RecentItemsProvider } from "@/components/recent-items-provider";
@@ -76,8 +75,8 @@ export default async function OrgLayout({
     brandColor = settingsResult.value.brandColor ?? null;
     logoUrl = settingsResult.value.logoUrl ?? null;
   } else {
-    // Settings unavailable — fall back to no terminology overrides
-    console.error("Failed to fetch org settings for terminology:", settingsResult.reason);
+    // Settings unavailable — fall back to defaults (no modules, no branding)
+    console.error("Failed to fetch org settings, falling back to defaults:", settingsResult.reason);
   }
 
   const userInfo =
@@ -115,49 +114,47 @@ export default async function OrgLayout({
         enabledModules={enabledModules}
         terminologyNamespace={terminologyNamespace}
       >
-        <TerminologyProvider verticalProfile={verticalProfile}>
-          <RecentItemsProvider>
-            <CommandPaletteProvider slug={slug}>
-              <div className="flex min-h-screen">
-                <DesktopSidebar
-                  slug={slug}
-                  orgName={orgName}
-                  groups={groups}
-                  userName={userInfo.name}
-                  userEmail={userInfo.email}
-                  brandColor={brandColor}
-                  logoUrl={logoUrl}
-                />
-                <div className="flex flex-1 flex-col">
-                  <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-slate-200/60 bg-slate-100/80 px-4 backdrop-blur-md md:px-6 dark:border-slate-800/60 dark:bg-slate-950/90">
-                    <MobileSidebar
-                      slug={slug}
-                      orgName={orgName}
-                      groups={groups}
-                      userName={userInfo.name}
-                      userEmail={userInfo.email}
-                      brandColor={brandColor}
-                      logoUrl={logoUrl}
-                    />
-                    <Breadcrumbs slug={slug} orgName={orgName} />
-                    <div className="ml-auto flex items-center gap-3">
-                      <AuthHeaderControls />
-                      <NotificationBell orgSlug={slug} />
+        <RecentItemsProvider>
+          <CommandPaletteProvider slug={slug}>
+            <div className="flex min-h-screen">
+              <DesktopSidebar
+                slug={slug}
+                orgName={orgName}
+                groups={groups}
+                userName={userInfo.name}
+                userEmail={userInfo.email}
+                brandColor={brandColor}
+                logoUrl={logoUrl}
+              />
+              <div className="flex flex-1 flex-col">
+                <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-slate-200/60 bg-slate-100/80 px-4 backdrop-blur-md md:px-6 dark:border-slate-800/60 dark:bg-slate-950/90">
+                  <MobileSidebar
+                    slug={slug}
+                    orgName={orgName}
+                    groups={groups}
+                    userName={userInfo.name}
+                    userEmail={userInfo.email}
+                    brandColor={brandColor}
+                    logoUrl={logoUrl}
+                  />
+                  <Breadcrumbs slug={slug} orgName={orgName} />
+                  <div className="ml-auto flex items-center gap-3">
+                    <AuthHeaderControls />
+                    <NotificationBell orgSlug={slug} />
+                  </div>
+                </header>
+                <main id="main-content" className="bg-background flex-1 dark:bg-slate-950">
+                  <SubscriptionProvider billingResponse={billingData}>
+                    <SubscriptionBanner billingResponse={billingData} slug={slug} />
+                    <div className="mx-auto max-w-7xl px-6 py-6 lg:px-10">
+                      <ErrorBoundary>{children}</ErrorBoundary>
                     </div>
-                  </header>
-                  <main id="main-content" className="bg-background flex-1 dark:bg-slate-950">
-                    <SubscriptionProvider billingResponse={billingData}>
-                      <SubscriptionBanner billingResponse={billingData} slug={slug} />
-                      <div className="mx-auto max-w-7xl px-6 py-6 lg:px-10">
-                        <ErrorBoundary>{children}</ErrorBoundary>
-                      </div>
-                    </SubscriptionProvider>
-                  </main>
-                </div>
+                  </SubscriptionProvider>
+                </main>
               </div>
-            </CommandPaletteProvider>
-          </RecentItemsProvider>
-        </TerminologyProvider>
+            </div>
+          </CommandPaletteProvider>
+        </RecentItemsProvider>
       </OrgProfileProvider>
     </CapabilityProvider>
   );

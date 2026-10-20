@@ -149,12 +149,11 @@ describe("Sidebar nav label changes", () => {
     expect(screen.queryByText("Delivery")).not.toBeInTheDocument();
   });
 
-  it('renders "Team" group label instead of "Team & Resources"', () => {
+  it('renders the "Firm" zone (Team lives there) and no "Team & Resources"', () => {
     renderSidebar();
 
-    // "Team" appears as both a group label and a nav item
-    const teamElements = screen.getAllByText("Team");
-    expect(teamElements.length).toBeGreaterThanOrEqual(2);
+    // Phase 87 612A (ADR-339): the Team item lives in the Firm zone (collapsed by default)
+    expect(screen.getByRole("button", { name: "Firm" })).toBeInTheDocument();
     expect(screen.queryByText("Team & Resources")).not.toBeInTheDocument();
   });
 

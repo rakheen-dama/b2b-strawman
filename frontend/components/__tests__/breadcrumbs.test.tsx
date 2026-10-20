@@ -63,23 +63,42 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs slug="acme" />);
     }
 
-    it("renders legal as plain text, not a link, on /legal/disbursements", () => {
+    it("renders Legal as plain text, not a link, on /legal/disbursements", () => {
       renderAt("/org/acme/legal/disbursements");
-      const crumb = screen.getByText("legal");
+      const crumb = screen.getByText("Legal");
       expect(crumb.tagName).toBe("SPAN");
       expect(crumb.closest("a")).toBeNull();
-      expect(screen.queryByRole("link", { name: "legal" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("link", { name: "Legal" })).not.toBeInTheDocument();
     });
 
-    it("renders ai as plain text, not a link, on /ai/reviews", () => {
+    it("renders AI as plain text, not a link, on /ai/reviews", () => {
       renderAt("/org/acme/ai/reviews");
-      expect(screen.getByText("ai").closest("a")).toBeNull();
-      expect(screen.queryByRole("link", { name: "ai" })).not.toBeInTheDocument();
+      expect(screen.getByText("AI").closest("a")).toBeNull();
+      expect(screen.queryByRole("link", { name: "AI" })).not.toBeInTheDocument();
     });
 
-    it("renders information-requests as plain text on /information-requests/<id>", () => {
+    it("renders Information requests as plain text on /information-requests/<id>", () => {
       renderAt(`/org/acme/information-requests/${REQUEST_ID}`);
-      expect(screen.getByText("information-requests").closest("a")).toBeNull();
+      expect(screen.getByText("Information requests").closest("a")).toBeNull();
+    });
+
+    // Phase 87 S6a (612A): nav-zone pages get labels.
+    it("links Reports and labels Profitability on /reports/profitability", () => {
+      renderAt("/org/acme/reports/profitability");
+      expect(screen.getByRole("link", { name: "Reports" })).toHaveAttribute(
+        "href",
+        "/org/acme/reports"
+      );
+      expect(screen.getByText("Profitability").tagName).toBe("SPAN");
+    });
+
+    it("renders Legal as plain text and Tariffs last on /legal/tariffs", () => {
+      renderAt("/org/acme/legal/tariffs");
+      expect(screen.getByText("Legal").tagName).toBe("SPAN");
+      expect(screen.queryByRole("link", { name: "Legal" })).not.toBeInTheDocument();
+      const last = screen.getByText("Tariffs");
+      expect(last.tagName).toBe("SPAN");
+      expect(last).toHaveClass("font-medium");
     });
 
     it("renders the template id as plain text on /settings/templates/<id>/edit", () => {

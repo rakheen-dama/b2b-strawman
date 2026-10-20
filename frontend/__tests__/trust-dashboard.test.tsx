@@ -211,15 +211,15 @@ describe("TrustAccountingPage", () => {
   it("renders trust sub-items in nav with VIEW_TRUST capability", async () => {
     // Import nav items to verify structure
     const { NAV_GROUPS } = await import("@/lib/nav-items");
-    const financeGroup = NAV_GROUPS.find((g) => g.id === "finance");
+    const trustZone = NAV_GROUPS.find((g) => g.id === "trust");
 
-    expect(financeGroup).toBeDefined();
+    expect(trustZone).toBeDefined();
 
-    const trustItems = financeGroup!.items.filter(
+    const trustItems = trustZone!.items.filter(
       (item) => item.requiredModule === "trust_accounting"
     );
 
-    // Should have parent + 6 sub-items = 7 total trust items
+    // Trust zone — 7 items
     expect(trustItems.length).toBe(7);
 
     // All trust items should require VIEW_TRUST capability
@@ -229,12 +229,12 @@ describe("TrustAccountingPage", () => {
 
     // Verify sub-item labels
     const labels = trustItems.map((i) => i.label);
-    expect(labels).toContain("Trust Accounting");
+    expect(labels).toContain("Overview");
     expect(labels).toContain("Transactions");
-    expect(labels).toContain("Client Ledgers");
+    expect(labels).toContain("Client ledgers");
     expect(labels).toContain("Reconciliation");
     expect(labels).toContain("Interest");
     expect(labels).toContain("Investments");
-    expect(labels).toContain("Trust Reports");
+    expect(labels).toContain("Trust reports");
   });
 });

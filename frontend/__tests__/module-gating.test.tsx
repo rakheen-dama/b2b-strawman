@@ -42,9 +42,9 @@ describe("Nav items - resource planning removed (Epic 599)", () => {
 });
 
 describe("Nav items - bulk billing gating", () => {
-  it("Billing Runs nav item exists in finance group with requiredModule: bulk_billing", () => {
-    const financeGroup = NAV_GROUPS.find((g) => g.id === "finance");
-    const billingRunsItem = financeGroup?.items.find((i) => i.label === "Billing Runs");
+  it("Fee runs nav item exists in the fees zone with requiredModule: bulk_billing", () => {
+    const feesZone = NAV_GROUPS.find((g) => g.id === "fees");
+    const billingRunsItem = feesZone?.items.find((i) => i.label === "Fee runs");
     expect(billingRunsItem).toBeDefined();
     expect(billingRunsItem?.requiredModule).toBe("bulk_billing");
   });

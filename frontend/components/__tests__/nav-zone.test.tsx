@@ -20,7 +20,7 @@ import { CapabilityProvider } from "@/lib/capabilities";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { NavZone } from "@/components/nav-zone";
 import { NAV_GROUPS, type NavGroup } from "@/lib/nav-items";
-import { LayoutDashboard, FolderOpen, Receipt, Scale } from "lucide-react";
+import { LayoutDashboard, FolderOpen, Receipt, Scale, ScrollText, Plus } from "lucide-react";
 
 const mockUsePathname = vi.mocked(usePathname);
 
@@ -217,11 +217,88 @@ describe("NavZone", () => {
   });
 });
 
+// Phase 87 S6a (612A): Firm › Audit trail is admin-only; New matter is an any-of capability gate.
+const firmZone: NavGroup = {
+  id: "firm",
+  label: "Firm",
+  defaultExpanded: true,
+  items: [
+    {
+      label: "Audit trail",
+      href: (slug) => `/org/${slug}/settings/audit-log`,
+      icon: ScrollText,
+      adminOnly: true,
+    },
+    {
+      label: "Settings",
+      href: (slug) => `/org/${slug}/settings/general`,
+      icon: LayoutDashboard,
+    },
+  ],
+};
+
+const anyOfZone: NavGroup = {
+  id: "matters",
+  label: "Matters",
+  defaultExpanded: true,
+  items: [
+    {
+      label: "New matter",
+      href: (slug) => `/org/${slug}/matters/new`,
+      icon: Plus,
+      exact: true,
+      requiredCapability: ["PROJECT_MANAGEMENT", "AI_EXECUTE"],
+    },
+  ],
+};
+
+describe("NavZone adminOnly + any-of gates (Phase 87 612A)", () => {
+  it("hides an adminOnly item from a member", () => {
+    mockUsePathname.mockReturnValue("/org/test-org/other");
+    renderWithProviders(<NavZone zone={firmZone} slug="test-org" />, {
+      capabilities: ["FINANCIAL_VISIBILITY", "INVOICING"],
+    });
+    expect(screen.queryByText("Audit trail")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Settings" })).toBeInTheDocument();
+  });
+
+  it("shows an adminOnly item to an admin", () => {
+    mockUsePathname.mockReturnValue("/org/test-org/other");
+    renderWithProviders(<NavZone zone={firmZone} slug="test-org" />, { isAdmin: true });
+    expect(screen.getByRole("link", { name: "Audit trail" })).toHaveAttribute(
+      "href",
+      "/org/test-org/settings/audit-log"
+    );
+  });
+
+  it("shows an adminOnly item to an owner", () => {
+    mockUsePathname.mockReturnValue("/org/test-org/other");
+    renderWithProviders(<NavZone zone={firmZone} slug="test-org" />, { isOwner: true });
+    expect(screen.getByRole("link", { name: "Audit trail" })).toBeInTheDocument();
+  });
+
+  it("shows an any-of item to a member holding only the second capability (AIVERIFY-011)", () => {
+    mockUsePathname.mockReturnValue("/org/test-org/other");
+    renderWithProviders(<NavZone zone={anyOfZone} slug="test-org" />, {
+      capabilities: ["AI_EXECUTE"],
+    });
+    expect(screen.getByRole("link", { name: "New matter" })).toBeInTheDocument();
+  });
+
+  it("hides an any-of item from a member holding none of the capabilities", () => {
+    mockUsePathname.mockReturnValue("/org/test-org/other");
+    renderWithProviders(<NavZone zone={anyOfZone} slug="test-org" />, {
+      capabilities: ["INVOICING"],
+    });
+    expect(screen.queryByText("New matter")).not.toBeInTheDocument();
+  });
+});
+
 describe("NavZone active state on the renamed routes (Phase 87 610E)", () => {
   it("highlights the real Matters item on a /matters detail page and links /matters", () => {
     mockUsePathname.mockReturnValue("/org/test-org/matters/abc");
-    const projectsZone = NAV_GROUPS.find((g) => g.id === "projects")!;
-    renderWithProviders(<NavZone zone={projectsZone} slug="test-org" />);
+    const mattersZone = NAV_GROUPS.find((g) => g.id === "matters")!;
+    renderWithProviders(<NavZone zone={mattersZone} slug="test-org" />);
     const link = screen.getByRole("link", { name: "Matters" });
     expect(link).toHaveAttribute("href", "/org/test-org/matters");
     expect(link).toHaveClass("bg-white/5");
@@ -229,7 +306,7 @@ describe("NavZone active state on the renamed routes (Phase 87 610E)", () => {
 
   it("highlights the real Clients item on a /clients detail page and links /clients", () => {
     mockUsePathname.mockReturnValue("/org/test-org/clients/c-1");
-    const clientsZone = { ...NAV_GROUPS.find((g) => g.id === "clients")!, defaultExpanded: true };
+    const clientsZone = NAV_GROUPS.find((g) => g.id === "clients")!;
     renderWithProviders(<NavZone zone={clientsZone} slug="test-org" />, {
       capabilities: ["CUSTOMER_MANAGEMENT"],
     });

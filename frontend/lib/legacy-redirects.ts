@@ -36,4 +36,10 @@ export const LEGACY_REDIRECTS = [
     destination: "/org/:slug/clients/:path*",
     permanent: true,
   },
+  // Phase 87 S6a (612A, ADR-339): Profitability's single entry is Firm › Reports.
+  {
+    source: "/org/:slug/profitability",
+    destination: "/org/:slug/reports/profitability",
+    permanent: true,
+  },
 ] as const;

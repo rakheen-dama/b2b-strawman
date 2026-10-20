@@ -70,9 +70,8 @@ describe("Sidebar capability gating", () => {
       </OrgProfileProvider>
     );
 
-    // Finance zone starts collapsed (defaultExpanded: false) — expand it
-    const financeHeader = screen.getByText("Finance");
-    await user.click(financeHeader.closest("button")!);
+    // Fees zone starts collapsed (defaultExpanded: false) — expand it
+    await user.click(screen.getByRole("button", { name: "Fees" }));
 
     expect(screen.getByText("Fee notes")).toBeInTheDocument();
   });
@@ -91,17 +90,17 @@ describe("Sidebar capability gating", () => {
       </OrgProfileProvider>
     );
 
-    // Expand collapsed zones (Clients and Finance have defaultExpanded: false)
-    const clientsHeader = screen.getByText("Clients");
-    await user.click(clientsHeader.closest("button")!);
-    const financeHeader = screen.getByText("Finance");
-    await user.click(financeHeader.closest("button")!);
+    // Expand collapsed zones (Fees and Firm have defaultExpanded: false; Clients is expanded)
+    await user.click(screen.getByRole("button", { name: "Fees" }));
+    await user.click(screen.getByRole("button", { name: "Firm" }));
 
     expect(screen.getByText("Fee notes")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Clients" })).toBeInTheDocument();
-    expect(screen.getByText("Profitability")).toBeInTheDocument();
     expect(screen.getByText("Reports")).toBeInTheDocument();
-    expect(screen.getByText("Compliance")).toBeInTheDocument();
+    expect(screen.getByText("FICA & compliance")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Audit trail" })).toBeInTheDocument();
+    // Profitability's single entry is Firm › Reports (Phase 87 612A) — no sidebar item
+    expect(screen.queryByText("Profitability")).not.toBeInTheDocument();
     // Documents item removed from sidebar
     expect(screen.queryByRole("link", { name: "Documents" })).not.toBeInTheDocument();
   });

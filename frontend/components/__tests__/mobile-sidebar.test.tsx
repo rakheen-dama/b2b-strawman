@@ -31,7 +31,7 @@ afterEach(() => {
   cleanup();
 });
 
-// All capabilities — lets all nav items render
+// All capabilities + legal modules — lets every zone render (Trust needs VIEW_TRUST + trust_accounting)
 const ALL_CAPABILITIES = [
   "FINANCIAL_VISIBILITY",
   "INVOICING",
@@ -39,11 +39,26 @@ const ALL_CAPABILITIES = [
   "TEAM_OVERSIGHT",
   "CUSTOMER_MANAGEMENT",
   "AUTOMATIONS",
+  "VIEW_TRUST",
+  "AI_REVIEW",
+];
+const LEGAL_MODULES = [
+  "court_calendar",
+  "conflict_check",
+  "information_requests",
+  "bulk_billing",
+  "disbursements",
+  "lssa_tariff",
+  "trust_accounting",
 ];
 
 function renderMobileSidebar(props: { groups?: string[] } = {}) {
   return render(
-    <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
+    <OrgProfileProvider
+      verticalProfile={null}
+      enabledModules={LEGAL_MODULES}
+      terminologyNamespace={null}
+    >
       <CapabilityProvider
         capabilities={ALL_CAPABILITIES}
         role="Owner"
@@ -64,29 +79,31 @@ describe("MobileSidebar", () => {
     expect(screen.getByRole("button", { name: /toggle menu/i })).toBeInTheDocument();
   });
 
-  it("opens sheet and shows zone headers on trigger click", async () => {
+  it("opens sheet and shows the six zone headers on trigger click", async () => {
     const user = userEvent.setup();
     mockUsePathname.mockReturnValue("/org/test-org/dashboard");
     renderMobileSidebar();
 
     await user.click(screen.getByRole("button", { name: /toggle menu/i }));
 
-    expect(screen.getByText("Work")).toBeInTheDocument();
-    expect(screen.getAllByText("Matters").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("Clients")).toBeInTheDocument();
-    expect(screen.getByText("Finance")).toBeInTheDocument();
-    expect(screen.getAllByText("Team").length).toBeGreaterThanOrEqual(1);
+    for (const label of ["Today", "Matters", "Clients", "Fees", "Trust", "Firm"]) {
+      expect(screen.getByRole("button", { name: label })).toBeInTheDocument();
+    }
   });
 
-  it("renders utility footer items (Notifications, Settings)", async () => {
+  it("renders the shared utility footer (Notifications only — Settings lives in Firm)", async () => {
     const user = userEvent.setup();
     mockUsePathname.mockReturnValue("/org/test-org/dashboard");
     renderMobileSidebar();
 
     await user.click(screen.getByRole("button", { name: /toggle menu/i }));
 
-    expect(screen.getByText("Notifications")).toBeInTheDocument();
-    expect(screen.getByText("Settings")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Notifications" })).toHaveAttribute(
+      "href",
+      "/org/test-org/notifications"
+    );
+    // Firm is collapsed by default, and the footer no longer carries Settings.
+    expect(screen.queryByRole("link", { name: "Settings" })).not.toBeInTheDocument();
   });
 
   it("closes sheet on nav item click", async () => {
@@ -98,12 +115,25 @@ describe("MobileSidebar", () => {
     await user.click(screen.getByRole("button", { name: /toggle menu/i }));
 
     // Sheet should be open — zone headers visible
-    expect(screen.getByText("Work")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Today" })).toBeInTheDocument();
 
-    // Click a nav item (Dashboard link)
-    await user.click(screen.getByText("Dashboard"));
+    // Click a nav item (Home link)
+    await user.click(screen.getByRole("link", { name: "Home" }));
 
     // Sheet should close — zone headers should no longer be visible
-    expect(screen.queryByText("Work")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Today" })).not.toBeInTheDocument();
+  });
+
+  it("closes sheet when a utility footer item is clicked (shared SidebarUtilityFooter)", async () => {
+    const user = userEvent.setup();
+    mockUsePathname.mockReturnValue("/org/test-org/other");
+    renderMobileSidebar();
+
+    await user.click(screen.getByRole("button", { name: /toggle menu/i }));
+    expect(screen.getByRole("button", { name: "Today" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("link", { name: "Notifications" }));
+
+    expect(screen.queryByRole("button", { name: "Today" })).not.toBeInTheDocument();
   });
 });

@@ -1,139 +1,269 @@
 import { describe, it, expect } from "vitest";
-import { NAV_GROUPS, NAV_ITEMS, UTILITY_ITEMS, SETTINGS_ITEMS } from "../nav-items";
+import fs from "node:fs";
+import path from "node:path";
+import {
+  NAV_GROUPS,
+  UTILITY_ITEMS,
+  SETTINGS_ITEMS,
+  canAccessNavItem,
+  type NavAccess,
+} from "../nav-items";
 
-describe("NAV_GROUPS", () => {
-  it("has exactly 6 zones", () => {
-    expect(NAV_GROUPS).toHaveLength(6);
+// Same resolution as components/__tests__/breadcrumbs-routes.test.ts.
+const ORG_ROUTES_DIR = path.resolve(__dirname, "../../app/(app)/org/[slug]");
+const ALL_ITEMS = NAV_GROUPS.flatMap((g) => g.items);
+const zone = (id: string) => NAV_GROUPS.find((g) => g.id === id)!;
+const item = (label: string) => ALL_ITEMS.find((i) => i.label === label);
+
+// Phase 87 S6a (612A, ADR-339 §12.6.1). 612A ships 28 items: Today carries the interim
+// Calendar + Court calendar pair (613D replaces both with one Diary item → Today 3) and Fees has 5
+// (612B adds "Unbilled work" together with its /invoices/unbilled page → Fees 6, total 29; after
+// 613D the spec's final 28 = 3 + 5 + 3 + 6 + 7 + 4).
+const ZONE_SIZES: Record<string, number> = {
+  today: 4,
+  matters: 5,
+  clients: 3,
+  fees: 5,
+  trust: 7,
+  firm: 4,
+};
+
+/** A plain (non-admin, non-owner) user holding exactly `caps`. */
+function member(caps: string[]): NavAccess {
+  const set = new Set(caps);
+  return { hasCapability: (c) => set.has(c), isAdmin: false, isOwner: false };
+}
+
+describe("NAV_GROUPS — six zones around the attorney's week (ADR-339)", () => {
+  it("has the six zones in order", () => {
+    expect(NAV_GROUPS.map((g) => g.id)).toEqual([
+      "today",
+      "matters",
+      "clients",
+      "fees",
+      "trust",
+      "firm",
+    ]);
+    expect(NAV_GROUPS.map((g) => g.label)).toEqual([
+      "Today",
+      "Matters",
+      "Clients",
+      "Fees",
+      "Trust",
+      "Firm",
+    ]);
   });
 
-  it("zones are in correct order", () => {
-    const ids = NAV_GROUPS.map((g) => g.id);
-    expect(ids).toEqual(["work", "projects", "clients", "finance", "team", "ai"]);
+  it("has 28 items with the expected per-zone sizes", () => {
+    expect(Object.fromEntries(NAV_GROUPS.map((g) => [g.id, g.items.length]))).toEqual(ZONE_SIZES);
+    expect(ALL_ITEMS).toHaveLength(28);
   });
 
-  it("each group has at least one item", () => {
-    for (const group of NAV_GROUPS) {
-      expect(group.items.length).toBeGreaterThanOrEqual(1);
+  it("keeps every zone at ≤ 6 items except trust (≤ 7)", () => {
+    for (const g of NAV_GROUPS) {
+      expect(g.items.length, g.id).toBeLessThanOrEqual(g.id === "trust" ? 7 : 6);
     }
   });
 
-  it("total items across all groups equals 25", () => {
-    const total = NAV_GROUPS.reduce((sum, g) => sum + g.items.length, 0);
-    expect(total).toBe(25);
+  it("expands Today, Matters and Clients; collapses Fees, Trust and Firm", () => {
+    expect(NAV_GROUPS.filter((g) => g.defaultExpanded).map((g) => g.id)).toEqual([
+      "today",
+      "matters",
+      "clients",
+    ]);
   });
 
-  it("clients, finance, and ai zones default to collapsed", () => {
-    const clients = NAV_GROUPS.find((g) => g.id === "clients");
-    const finance = NAV_GROUPS.find((g) => g.id === "finance");
-    const ai = NAV_GROUPS.find((g) => g.id === "ai");
-    expect(clients?.defaultExpanded).toBe(false);
-    expect(finance?.defaultExpanded).toBe(false);
-    expect(ai?.defaultExpanded).toBe(false);
+  it("is one level deep — no item has children", () => {
+    for (const i of ALL_ITEMS) expect(i, i.label).not.toHaveProperty("children");
   });
 
-  it("work, projects, and team zones default to expanded", () => {
-    const work = NAV_GROUPS.find((g) => g.id === "work");
-    const projects = NAV_GROUPS.find((g) => g.id === "projects");
-    const team = NAV_GROUPS.find((g) => g.id === "team");
-    expect(work?.defaultExpanded).toBe(true);
-    expect(projects?.defaultExpanded).toBe(true);
-    expect(team?.defaultExpanded).toBe(true);
-  });
-
-  it("every item has a label, href function, and icon", () => {
-    for (const group of NAV_GROUPS) {
-      for (const item of group.items) {
-        expect(item.label).toBeTruthy();
-        expect(typeof item.href).toBe("function");
-        expect(item.href("test-slug")).toContain("/org/test-slug/");
-        expect(item.icon).toBeDefined();
-      }
+  it("every href resolves to a page.tsx under app/(app)/org/[slug]", () => {
+    for (const i of [...ALL_ITEMS, ...UTILITY_ITEMS]) {
+      const href = i.href("__slug__");
+      expect(href.startsWith("/org/__slug__/"), i.label).toBe(true);
+      const rel = href.slice("/org/__slug__/".length).split(/[?#]/)[0];
+      expect(
+        fs.existsSync(path.join(ORG_ROUTES_DIR, rel, "page.tsx")),
+        `${i.label} → ${href}`
+      ).toBe(true);
     }
+  });
+
+  it("labels are sentence case (one capital; acronyms AI and FICA allowed)", () => {
+    const ACRONYMS = new Set(["AI", "FICA"]);
+    const labels = [
+      ...NAV_GROUPS.map((g) => g.label),
+      ...ALL_ITEMS.map((i) => i.label),
+      ...UTILITY_ITEMS.map((i) => i.label),
+    ];
+    for (const label of labels) {
+      const [first, ...rest] = label.split(" ");
+      expect(/^[A-Z]/.test(first), label).toBe(true);
+      for (const w of rest) expect(w === w.toLowerCase() || ACRONYMS.has(w), label).toBe(true);
+    }
+  });
+
+  it("no zone label says AI", () => {
+    expect(NAV_GROUPS.filter((g) => /\bAI\b/.test(g.label))).toEqual([]);
+  });
+
+  it("labels and hrefs are unique (the palette keys pages by label)", () => {
+    const labels = [...ALL_ITEMS, ...UTILITY_ITEMS].map((i) => i.label);
+    const hrefs = ALL_ITEMS.map((i) => i.href("acme"));
+    expect(new Set(labels).size).toBe(labels.length);
+    expect(new Set(hrefs).size).toBe(hrefs.length);
+  });
+
+  // Gate table — §12.6.1 with the orchestrator rulings: OI-1 (Data requests, no module gate),
+  // OI-2 (New matter any-of PROJECT_MANAGEMENT | AI_EXECUTE), OI-5 (§12.6.1 gates exactly).
+  it.each([
+    ["Home", undefined, undefined],
+    ["My work", undefined, undefined],
+    ["Calendar", undefined, undefined],
+    ["Court calendar", undefined, "court_calendar"],
+    ["Matters", undefined, undefined],
+    ["New matter", ["PROJECT_MANAGEMENT", "AI_EXECUTE"], undefined],
+    ["Conflict check", undefined, "conflict_check"],
+    ["Adverse parties", undefined, "conflict_check"],
+    ["AI reviews", "AI_REVIEW", undefined],
+    ["Clients", "CUSTOMER_MANAGEMENT", undefined],
+    ["FICA & compliance", "CUSTOMER_MANAGEMENT", undefined],
+    ["Data requests", "CUSTOMER_MANAGEMENT", undefined],
+    ["Fee notes", "INVOICING", undefined],
+    ["Fee runs", "INVOICING", "bulk_billing"],
+    ["Debtors", "INVOICING", undefined],
+    ["Disbursements", undefined, "disbursements"],
+    ["Tariffs", undefined, "lssa_tariff"],
+    ["Team", undefined, undefined],
+    ["Reports", "FINANCIAL_VISIBILITY", undefined],
+    ["Audit trail", undefined, undefined],
+    ["Settings", undefined, undefined],
+  ])("%s is gated on capability %s / module %s", (label, cap, mod) => {
+    expect(item(label), label).toBeDefined();
+    expect(item(label)!.requiredCapability).toEqual(cap);
+    expect(item(label)!.requiredModule).toBe(mod);
+  });
+
+  it("Data requests points at the POPIA data-requests list (OI-1)", () => {
+    expect(item("Data requests")?.href("acme")).toBe("/org/acme/compliance/requests");
+    expect(item("Information requests")).toBeUndefined();
+  });
+
+  it("Trust: seven items, all VIEW_TRUST + trust_accounting", () => {
+    expect(zone("trust").items.map((i) => i.label)).toEqual([
+      "Overview",
+      "Transactions",
+      "Client ledgers",
+      "Reconciliation",
+      "Interest",
+      "Investments",
+      "Trust reports",
+    ]);
+    for (const i of zone("trust").items) {
+      expect(i.requiredCapability, i.label).toBe("VIEW_TRUST");
+      expect(i.requiredModule, i.label).toBe("trust_accounting");
+    }
+  });
+
+  it("Profitability is not a nav item — Firm › Reports is its single entry", () => {
+    expect(
+      ALL_ITEMS.some((i) => /profitab/i.test(i.label) || /\/profitability$/.test(i.href("x")))
+    ).toBe(false);
+    expect(
+      zone("firm")
+        .items.find((i) => i.label === "Reports")
+        ?.href("acme")
+    ).toBe("/org/acme/reports");
+  });
+
+  it("Firm › Audit trail and Settings point at the current settings routes (616 switches them)", () => {
+    expect(item("Audit trail")?.href("acme")).toBe("/org/acme/settings/audit-log");
+    expect(item("Audit trail")?.adminOnly).toBe(true);
+    expect(item("Settings")?.href("acme")).toBe("/org/acme/settings/general");
+    expect(zone("firm").items.map((i) => i.label)).toEqual([
+      "Team",
+      "Reports",
+      "Audit trail",
+      "Settings",
+    ]);
+    // Audit trail is the only admin-only nav item.
+    expect(ALL_ITEMS.filter((i) => i.adminOnly).map((i) => i.label)).toEqual(["Audit trail"]);
+  });
+
+  it("Today carries the interim Calendar + Court calendar items until 613D", () => {
+    expect(zone("today").items.map((i) => i.href("acme"))).toEqual([
+      "/org/acme/dashboard",
+      "/org/acme/my-work",
+      "/org/acme/calendar",
+      "/org/acme/court-calendar",
+    ]);
+  });
+
+  it("has no AI zone; AI intake = New matter, AI reviews = fifth Matters item", () => {
+    expect(NAV_GROUPS.some((g) => g.id === "ai")).toBe(false);
+    expect(item("New matter")?.href("acme")).toBe("/org/acme/matters/new");
+    expect(zone("matters").items[4]?.label).toBe("AI reviews");
   });
 });
 
 /**
- * AIVERIFY-011 — members with AI_EXECUTE must get an AI sidebar entry.
+ * AIVERIFY-011 — members with AI_EXECUTE must keep an AI-intake sidebar entry.
  *
- * The sidebar (`nav-zone.tsx`) filters a group's items by `requiredCapability`
- * and renders nothing when no item passes (`if (visibleItems.length === 0) return null`).
- * Before the fix the `ai` group held a SINGLE item gated on `AI_REVIEW`, so a plain
- * member (who has `AI_EXECUTE` but not `AI_REVIEW`/`AI_MANAGE`) saw the whole AI group
- * collapse to empty — no AI entry point at all. These tests guard that:
- *   (a) the AI group exposes at least one `AI_EXECUTE`-gated item (member visibility), and
- *   (b) the `AI_REVIEW` "AI Reviews" item is retained (owner/admin gate-review, unchanged).
+ * The default Member role holds AI_EXECUTE but not PROJECT_MANAGEMENT (tenant baseline grants).
+ * Before PR #1448 members had no AI entry point at all; the AI zone is gone in Phase 87 (ADR-339),
+ * so AI intake is reached through "New matter" (/matters/new, which self-gates intake on
+ * AI_EXECUTE). The orchestrator ruled an any-of gate (OI-2) so this live-verified fix holds.
  */
-describe("AIVERIFY-011 — AI group capability gating", () => {
-  // Mirrors nav-zone.tsx's plain-member filter: a member is not admin/owner,
-  // so hasCapability(cap) === capSet.has(cap). (No module gating on the ai group.)
-  function visibleForMember(memberCaps: string[]) {
-    const ai = NAV_GROUPS.find((g) => g.id === "ai");
-    const capSet = new Set(memberCaps);
-    return (ai?.items ?? []).filter(
-      (item) => !item.requiredCapability || capSet.has(item.requiredCapability)
-    );
-  }
+describe("AIVERIFY-011 — New matter any-of gate (Phase 87 OI-2)", () => {
+  const visibleLabels = (access: NavAccess) =>
+    ALL_ITEMS.filter((i) => canAccessNavItem(i, access)).map((i) => i.label);
 
-  it("exposes at least one AI_EXECUTE-gated item so members see the AI group", () => {
-    const ai = NAV_GROUPS.find((g) => g.id === "ai");
-    const executeItems = (ai?.items ?? []).filter(
-      (item) => item.requiredCapability === "AI_EXECUTE"
-    );
-    expect(executeItems.length).toBeGreaterThanOrEqual(1);
+  it("a member with AI_EXECUTE but no PROJECT_MANAGEMENT still sees New matter", () => {
+    expect(visibleLabels(member(["AI_EXECUTE"]))).toContain("New matter");
   });
 
-  it("retains the AI_REVIEW 'AI Reviews' item (owner/admin gate review unchanged)", () => {
-    const ai = NAV_GROUPS.find((g) => g.id === "ai");
-    const reviewItem = (ai?.items ?? []).find((item) => item.label === "AI Reviews");
-    expect(reviewItem).toBeDefined();
-    expect(reviewItem?.requiredCapability).toBe("AI_REVIEW");
+  it("a member with PROJECT_MANAGEMENT only sees New matter", () => {
+    expect(visibleLabels(member(["PROJECT_MANAGEMENT"]))).toContain("New matter");
   });
 
-  it("a member with only AI_EXECUTE sees the AI group (>=1 visible item)", () => {
-    expect(visibleForMember(["AI_EXECUTE"]).length).toBeGreaterThanOrEqual(1);
+  it("a user with neither PROJECT_MANAGEMENT nor AI_EXECUTE does not see New matter", () => {
+    expect(visibleLabels(member(["CUSTOMER_MANAGEMENT", "AI_REVIEW"]))).not.toContain("New matter");
   });
 
   it("a member with only AI_EXECUTE does NOT see the AI_REVIEW item", () => {
-    const visible = visibleForMember(["AI_EXECUTE"]);
-    expect(visible.some((i) => i.requiredCapability === "AI_REVIEW")).toBe(false);
+    expect(visibleLabels(member(["AI_EXECUTE"]))).not.toContain("AI reviews");
+  });
+});
+
+describe("canAccessNavItem", () => {
+  it("allows ungated items to everyone", () => {
+    expect(canAccessNavItem({}, member([]))).toBe(true);
   });
 
-  it("a user with no AI capabilities sees no AI items (group would collapse)", () => {
-    expect(visibleForMember([]).length).toBe(0);
+  it("checks a single capability", () => {
+    expect(canAccessNavItem({ requiredCapability: "INVOICING" }, member(["INVOICING"]))).toBe(true);
+    expect(canAccessNavItem({ requiredCapability: "INVOICING" }, member([]))).toBe(false);
+  });
+
+  it("treats an array as any-of", () => {
+    const gate = { requiredCapability: ["PROJECT_MANAGEMENT", "AI_EXECUTE"] as const };
+    expect(canAccessNavItem(gate, member(["AI_EXECUTE"]))).toBe(true);
+    expect(canAccessNavItem(gate, member(["PROJECT_MANAGEMENT"]))).toBe(true);
+    expect(canAccessNavItem(gate, member(["INVOICING"]))).toBe(false);
+  });
+
+  it("shows adminOnly items to admins and owners only", () => {
+    const gate = { adminOnly: true };
+    expect(canAccessNavItem(gate, member(["INVOICING"]))).toBe(false);
+    expect(canAccessNavItem(gate, { ...member([]), isAdmin: true })).toBe(true);
+    expect(canAccessNavItem(gate, { ...member([]), isOwner: true })).toBe(true);
   });
 });
 
 describe("UTILITY_ITEMS", () => {
-  it("has exactly 2 items (Notifications, Settings)", () => {
-    expect(UTILITY_ITEMS).toHaveLength(2);
-    const labels = UTILITY_ITEMS.map((i) => i.label);
-    expect(labels).toEqual(["Notifications", "Settings"]);
-  });
-
-  it("items have valid href functions", () => {
-    for (const item of UTILITY_ITEMS) {
-      expect(typeof item.href).toBe("function");
-      if (!item.external) {
-        expect(item.href("my-org")).toContain("/org/my-org/");
-      }
-    }
-  });
-});
-
-describe("NAV_ITEMS (backward compat)", () => {
-  it("is a flat array of all group items plus utility items", () => {
-    const expected = [...NAV_GROUPS.flatMap((g) => g.items), ...UTILITY_ITEMS];
-    expect(NAV_ITEMS).toEqual(expected);
-  });
-
-  it("total count is 27 (25 group items + 2 utility items)", () => {
-    expect(NAV_ITEMS).toHaveLength(27);
-  });
-
-  it("includes Notifications and Settings from UTILITY_ITEMS", () => {
-    const labels = NAV_ITEMS.map((i) => i.label);
-    expect(labels).toContain("Notifications");
-    expect(labels).toContain("Settings");
+  it("is Notifications only — Settings lives in the Firm zone (ADR-339)", () => {
+    expect(UTILITY_ITEMS.map((i) => i.label)).toEqual(["Notifications"]);
+    expect(UTILITY_ITEMS[0].href("my-org")).toBe("/org/my-org/notifications");
   });
 });
 
@@ -198,9 +328,8 @@ describe("matter/client hrefs (Phase 87 610E)", () => {
 });
 
 describe("legal labels (Phase 87 611B)", () => {
-  it("labels the projects zone Matters (zone id unchanged)", () => {
-    const projects = NAV_GROUPS.find((g) => g.id === "projects");
-    expect(projects?.label).toBe("Matters");
+  it("labels the matters zone Matters", () => {
+    expect(zone("matters").label).toBe("Matters");
   });
 
   it("labels the matter, client and fee-note items in legal copy", () => {

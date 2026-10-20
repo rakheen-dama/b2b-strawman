@@ -297,8 +297,8 @@ describe("CreatePrescriptionDialog", () => {
 
 describe("Nav items", () => {
   it("court-calendar nav item has requiredModule and no requiredCapability", () => {
-    const workGroup = NAV_GROUPS.find((g) => g.id === "work");
-    const courtCalItem = workGroup?.items.find((i) => i.label === "Court Calendar");
+    const todayZone = NAV_GROUPS.find((g) => g.id === "today");
+    const courtCalItem = todayZone?.items.find((i) => i.label === "Court calendar");
     expect(courtCalItem).toBeDefined();
     expect(courtCalItem?.requiredModule).toBe("court_calendar");
     expect(courtCalItem?.requiredCapability).toBeUndefined();

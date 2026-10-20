@@ -224,8 +224,8 @@ describe("ResolveConflictDialog", () => {
 
 describe("Nav items - conflict check", () => {
   it("conflict-check nav item has requiredModule: conflict_check", () => {
-    const clientsGroup = NAV_GROUPS.find((g) => g.id === "clients");
-    const conflictItem = clientsGroup?.items.find((i) => i.label === "Conflict Check");
+    const mattersZone = NAV_GROUPS.find((g) => g.id === "matters");
+    const conflictItem = mattersZone?.items.find((i) => i.label === "Conflict check");
     expect(conflictItem).toBeDefined();
     expect(conflictItem?.requiredModule).toBe("conflict_check");
     expect(conflictItem?.requiredCapability).toBeUndefined();

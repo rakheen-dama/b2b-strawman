@@ -253,8 +253,8 @@ describe("NewFromTemplateDialog", () => {
     await user.click(screen.getByText("Monthly Bookkeeping"));
     await user.click(screen.getByRole("button", { name: "Next" }));
     // Select client
-    const customerSelect = screen.getByLabelText(/client/i);
-    await user.selectOptions(customerSelect, "c-1");
+    const clientSelect = screen.getByLabelText(/client/i);
+    await user.selectOptions(clientSelect, "c-1");
     // Try to create
     await user.click(screen.getByRole("button", { name: "Create Matter" }));
     await waitFor(() => {

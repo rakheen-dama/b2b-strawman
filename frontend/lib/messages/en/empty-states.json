@@ -46,7 +46,7 @@
   "invoices": {
     "list": {
       "heading": "No fee notes yet",
-      "description": "Generate fee notes from tracked time or create them manually. You'll need at least one matter with logged time.",
+      "description": "Generate fee notes from time recorded on a matter, or create them manually.",
       "cta": "Create fee note"
     }
   },

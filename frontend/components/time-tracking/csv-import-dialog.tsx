@@ -150,7 +150,7 @@ export function parseCsv(content: string, availableTasks: GridTaskRow[]): ParseC
 
     // Validate project_name
     if (!projectName) {
-      errors.push("Project name is required");
+      errors.push("Matter name is required");
     }
 
     // Validate hours

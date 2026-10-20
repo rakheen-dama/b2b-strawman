@@ -24,6 +24,7 @@ function values(obj: unknown): string[] {
 }
 
 describe("message catalogs — no terminology tokens", () => {
+  // Durable guard (ADR-338): message catalogues carry no runtime {token} substitution — keep until 611D's no-terminology-remnants scan covers catalogues.
   // Single-brace {token} (old TerminologyText template); {{var}} interpolation is allowed.
   const SINGLE_BRACE_TOKEN = /(?<!\{)\{[A-Za-z][\w ]*\}(?!\})/;
 

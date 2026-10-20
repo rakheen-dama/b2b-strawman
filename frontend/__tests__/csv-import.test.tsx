@@ -71,7 +71,7 @@ invalid-date,Design wireframes,Project Alpha,2,,true
 
     // Row 2: missing project name
     expect(rows[2].valid).toBe(false);
-    expect(rows[2].errors).toContain("Project name is required");
+    expect(rows[2].errors).toContain("Matter name is required");
 
     // Row 3: negative hours
     expect(rows[3].valid).toBe(false);

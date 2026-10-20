@@ -1,7 +1,7 @@
 {
-  "commit": "935fc38e91d66937a8cc05b7ac6a531438482fbf",
-  "command": "cd frontend && pnpm install && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test",
+  "commit": "1f0e689e5bd323bfe038539f2c7eb35e2f529f79",
+  "command": "cd frontend && pnpm run lint && pnpm run format:check && rm -rf .next && pnpm run build && pnpm test",
   "exit": 0,
-  "ts": "2026-10-20T09:56:00+02:00",
-  "summary": "PR #1603 (609F J1 staff-frontend straggler callers) on 935fc38e9 (orchestrator run): lint 0 errors / 95 warnings (= main); prettier clean; build OK; vitest 359 files, 2286 passed | 2 skipped (+1 file / +4 tests: straggler-wire-bodies guard). Frontend CI pass."
+  "ts": "2026-10-20T10:34:25+02:00",
+  "summary": "PR #1604 (609G; frontend change = e2e spec portal-data-isolation only) on 1f0e689e5 (orchestrator run): lint 0 errors / 95 warnings (= main); prettier clean; build OK; vitest 359 files, 2286 passed | 2 skipped (= main)."
 }

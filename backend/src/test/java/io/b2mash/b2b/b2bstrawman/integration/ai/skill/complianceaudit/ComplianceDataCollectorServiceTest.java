@@ -194,7 +194,7 @@ class ComplianceDataCollectorServiceTest {
     ComplianceSnapshot snapshot = dataCollectorService.collectComplianceSnapshot();
 
     assertThat(snapshot.ficaCdd().nonCompliant()).isEqualTo(60);
-    assertThat(snapshot.ficaCdd().flaggedCustomers()).hasSize(50);
+    assertThat(snapshot.ficaCdd().flaggedClients()).hasSize(50);
     assertThat(snapshot.dataCollectionNotes()).contains("FICA/CDD flagged items truncated");
   }
 
@@ -223,7 +223,7 @@ class ComplianceDataCollectorServiceTest {
     assertThat(snapshot.totalActiveCustomers()).isZero();
     assertThat(snapshot.ficaCdd().compliant()).isZero();
     assertThat(snapshot.ficaCdd().nonCompliant()).isZero();
-    assertThat(snapshot.ficaCdd().flaggedCustomers()).isEmpty();
+    assertThat(snapshot.ficaCdd().flaggedClients()).isEmpty();
     assertThat(snapshot.popia().registeredActivities()).isZero();
     assertThat(snapshot.retention().pastExpiry()).isZero();
   }
@@ -255,7 +255,7 @@ class ComplianceDataCollectorServiceTest {
 
     assertThat(snapshot.totalActiveCustomers()).isEqualTo(550);
     // Large firm cap is 20, not 50
-    assertThat(snapshot.ficaCdd().flaggedCustomers()).hasSize(20);
+    assertThat(snapshot.ficaCdd().flaggedClients()).hasSize(20);
     assertThat(snapshot.dataCollectionNotes()).contains("Large firm mode");
     assertThat(snapshot.dataCollectionNotes()).contains("FICA/CDD flagged items truncated");
   }
@@ -302,7 +302,7 @@ class ComplianceDataCollectorServiceTest {
     assertThat(snapshot.ficaCdd().compliant()).isEqualTo(2);
     assertThat(snapshot.ficaCdd().nonCompliant()).isEqualTo(3);
     assertThat(snapshot.ficaCdd().criticallyOverdue()).isEqualTo(1);
-    assertThat(snapshot.ficaCdd().flaggedCustomers())
+    assertThat(snapshot.ficaCdd().flaggedClients())
         .anyMatch(f -> f.issue().contains("overdue >90 days"));
   }
 

@@ -92,7 +92,7 @@ public class BillingRunSelectionService {
     billingRunItemRepository.deleteByBillingRunId(billingRunId);
     entityManager.flush();
 
-    List<CustomerDiscoveryRow> discoveredCustomers = discoverEligibleCustomers(run, request);
+    List<ClientDiscoveryRow> discoveredCustomers = discoverEligibleCustomers(run, request);
 
     List<BillingRunItemResponse> itemResponses = new ArrayList<>();
     BigDecimal totalUnbilledAmount = BigDecimal.ZERO;
@@ -445,7 +445,7 @@ public class BillingRunSelectionService {
     item.setUnbilledExpenseCount(includedExpenseIds.size() + includedDisbursementIds.size());
   }
 
-  private List<CustomerDiscoveryRow> discoverEligibleCustomers(
+  private List<ClientDiscoveryRow> discoverEligibleCustomers(
       BillingRun run, LoadPreviewRequest request) {
     if (request == null || request.clientIds() == null || request.clientIds().isEmpty()) {
       return discoverCustomers(null, run.getPeriodFrom(), run.getPeriodTo(), run.getCurrency());
@@ -459,12 +459,12 @@ public class BillingRunSelectionService {
       BillingRunItemResponse response, boolean hasIssues, BigDecimal itemTotal) {}
 
   private PreviewItemResult createPreviewItem(
-      UUID billingRunId, CustomerDiscoveryRow row, BillingRun run) {
+      UUID billingRunId, ClientDiscoveryRow row, BillingRun run) {
     var prereqCheck =
         prerequisiteService.checkForContext(
-            PrerequisiteContext.INVOICE_GENERATION, EntityType.CUSTOMER, row.customerId());
+            PrerequisiteContext.INVOICE_GENERATION, EntityType.CUSTOMER, row.clientId());
 
-    var item = new BillingRunItem(billingRunId, row.customerId());
+    var item = new BillingRunItem(billingRunId, row.clientId());
     item.setUnbilledTimeAmount(row.unbilledTimeAmount());
     item.setUnbilledExpenseAmount(row.unbilledExpenseAmount());
     item.setUnbilledTimeCount(row.unbilledTimeCount());
@@ -485,7 +485,7 @@ public class BillingRunSelectionService {
 
     createEntrySelections(
         item.getId(),
-        row.customerId(),
+        row.clientId(),
         run.getPeriodFrom(),
         run.getPeriodTo(),
         run.getCurrency(),
@@ -501,8 +501,8 @@ public class BillingRunSelectionService {
     var response =
         new BillingRunItemResponse(
             item.getId(),
-            row.customerId(),
-            row.customerName(),
+            row.clientId(),
+            row.clientName(),
             item.getStatus(),
             row.unbilledTimeAmount() != null ? row.unbilledTimeAmount() : BigDecimal.ZERO,
             row.unbilledExpenseAmount() != null ? row.unbilledExpenseAmount() : BigDecimal.ZERO,
@@ -517,16 +517,16 @@ public class BillingRunSelectionService {
     return new PreviewItemResult(response, hasIssues, itemTotal);
   }
 
-  private record CustomerDiscoveryRow(
-      UUID customerId,
-      String customerName,
+  private record ClientDiscoveryRow(
+      UUID clientId,
+      String clientName,
       int unbilledTimeCount,
       BigDecimal unbilledTimeAmount,
       int unbilledExpenseCount,
       BigDecimal unbilledExpenseAmount) {}
 
   @SuppressWarnings("unchecked")
-  private List<CustomerDiscoveryRow> discoverCustomers(
+  private List<ClientDiscoveryRow> discoverCustomers(
       List<UUID> customerIds, LocalDate periodFrom, LocalDate periodTo, String currency) {
     String customerFilterClause;
     if (customerIds != null) {
@@ -630,8 +630,8 @@ public class BillingRunSelectionService {
     return rows.stream().map(this::toDiscoveryRow).toList();
   }
 
-  private CustomerDiscoveryRow toDiscoveryRow(Tuple row) {
-    return new CustomerDiscoveryRow(
+  private ClientDiscoveryRow toDiscoveryRow(Tuple row) {
+    return new ClientDiscoveryRow(
         row.get("customer_id", UUID.class),
         row.get("customer_name", String.class),
         ((Number) row.get("unbilled_time_count")).intValue(),

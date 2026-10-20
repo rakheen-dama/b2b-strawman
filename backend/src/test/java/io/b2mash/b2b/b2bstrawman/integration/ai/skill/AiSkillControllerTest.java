@@ -57,7 +57,7 @@ class AiSkillControllerTest {
         .perform(
             post("/api/ai/skills/fica-verification")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"customerId\": \"" + UUID.randomUUID() + "\"}"))
+                .content("{\"clientId\": \"" + UUID.randomUUID() + "\"}"))
         .andExpect(status().isUnauthorized());
   }
 
@@ -69,7 +69,7 @@ class AiSkillControllerTest {
             post("/api/ai/skills/fica-verification")
                 .with(TestJwtFactory.ownerJwt("org_not_provisioned", "user_unknown"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"customerId\": \"" + UUID.randomUUID() + "\"}"))
+                .content("{\"clientId\": \"" + UUID.randomUUID() + "\"}"))
         .andExpect(status().isForbidden());
   }
 
@@ -83,7 +83,7 @@ class AiSkillControllerTest {
             post("/api/ai/skills/fica-verification")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_skill_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"customerId\": \"" + UUID.randomUUID() + "\"}"))
+                .content("{\"clientId\": \"" + UUID.randomUUID() + "\"}"))
         .andExpect(status().isOk());
   }
 
@@ -96,7 +96,7 @@ class AiSkillControllerTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_skill_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
-                    "{\"customerId\": \""
+                    "{\"clientId\": \""
                         + UUID.randomUUID()
                         + "\", \"description\": \"Testing unknown skill\"}"))
         .andExpect(status().isNotFound());

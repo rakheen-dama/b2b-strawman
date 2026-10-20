@@ -110,7 +110,7 @@ class AiSkillEndToEndTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"documentId":"%s","projectId":"%s"}
+                        {"documentId":"%s","matterId":"%s"}
                         """
                             .formatted(documentId, projectId)))
             .andExpect(status().isOk())
@@ -136,7 +136,7 @@ class AiSkillEndToEndTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"documentId":"%s","projectId":"%s"}
+                        {"documentId":"%s","matterId":"%s"}
                         """
                             .formatted(documentId, projectId)))
             .andExpect(status().isOk())
@@ -183,7 +183,7 @@ class AiSkillEndToEndTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"templateId":"%s","projectId":"%s"}
+                        {"templateId":"%s","matterId":"%s"}
                         """
                             .formatted(templateId, projectId)))
             .andExpect(status().isOk())
@@ -209,7 +209,7 @@ class AiSkillEndToEndTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"templateId":"%s","projectId":"%s"}
+                        {"templateId":"%s","matterId":"%s"}
                         """
                             .formatted(templateId, projectId)))
             .andExpect(status().isOk())
@@ -333,7 +333,7 @@ class AiSkillEndToEndTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"documentId":"%s","projectId":"%s"}
+                        {"documentId":"%s","matterId":"%s"}
                         """
                             .formatted(documentId, projectId)))
             .andExpect(status().isOk())
@@ -426,7 +426,7 @@ class AiSkillEndToEndTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"documentId":"%s","projectId":"%s"}
+                    {"documentId":"%s","matterId":"%s"}
                     """
                         .formatted(UUID.randomUUID(), UUID.randomUUID())))
         .andExpect(status().isForbidden());
@@ -439,7 +439,7 @@ class AiSkillEndToEndTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"templateId":"%s","projectId":"%s"}
+                    {"templateId":"%s","matterId":"%s"}
                     """
                         .formatted(UUID.randomUUID(), UUID.randomUUID())))
         .andExpect(status().isForbidden());

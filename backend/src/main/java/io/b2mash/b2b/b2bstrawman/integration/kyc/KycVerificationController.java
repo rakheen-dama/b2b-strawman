@@ -31,7 +31,7 @@ public class KycVerificationController {
     return ResponseEntity.ok(
         KycVerifyResponse.from(
             kycVerificationService.verifyIdentity(
-                request.customerId(),
+                request.clientId(),
                 request.checklistInstanceItemId(),
                 new KycVerificationRequest(
                     request.idNumber(), request.fullName(), null, request.idDocumentType()),
@@ -54,7 +54,7 @@ public class KycVerificationController {
   // --- DTOs ---
 
   public record KycVerifyRequest(
-      @NotNull(message = "customerId is required") UUID customerId,
+      @NotNull(message = "clientId is required") UUID clientId,
       @NotNull(message = "checklistInstanceItemId is required") UUID checklistInstanceItemId,
       @NotBlank(message = "idNumber is required") String idNumber,
       @NotBlank(message = "fullName is required") String fullName,

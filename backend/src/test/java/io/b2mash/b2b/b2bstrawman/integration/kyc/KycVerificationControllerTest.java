@@ -125,7 +125,7 @@ class KycVerificationControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "checklistInstanceItemId": "%s",
                       "idNumber": "9001015009087",
                       "fullName": "Jane Smith",
@@ -199,7 +199,7 @@ class KycVerificationControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "checklistInstanceItemId": "%s",
                       "idNumber": "9001015009087",
                       "fullName": "Jane Smith",
@@ -222,7 +222,7 @@ class KycVerificationControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "checklistInstanceItemId": "%s",
                       "consentAcknowledged": true
                     }
@@ -244,7 +244,7 @@ class KycVerificationControllerTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "checklistInstanceItemId": "%s",
                       "idNumber": "9001015009087",
                       "fullName": "Jane Smith",

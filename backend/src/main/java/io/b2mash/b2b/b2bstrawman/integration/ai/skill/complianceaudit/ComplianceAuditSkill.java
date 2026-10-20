@@ -95,9 +95,9 @@ public class ComplianceAuditSkill implements AiSkill {
         .append("Critically overdue: ")
         .append(snapshot.ficaCdd().criticallyOverdue())
         .append("\n");
-    if (!snapshot.ficaCdd().flaggedCustomers().isEmpty()) {
+    if (!snapshot.ficaCdd().flaggedClients().isEmpty()) {
       prompt.append("Flagged customers:\n");
-      for (var flagged : snapshot.ficaCdd().flaggedCustomers()) {
+      for (var flagged : snapshot.ficaCdd().flaggedClients()) {
         prompt
             .append("  - ")
             .append(flagged.name())

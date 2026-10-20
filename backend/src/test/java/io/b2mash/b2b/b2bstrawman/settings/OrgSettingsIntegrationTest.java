@@ -816,6 +816,30 @@ class OrgSettingsIntegrationTest {
   }
 
   @Test
+  @Order(31)
+  void putSettings_persistsMatterNamingPatternOnWire() throws Exception {
+    // Phase 87 (609F): the wire key is matterNamingPattern. A stale projectNamingPattern body key
+    // would be silently ignored by Jackson, so pin the new name on both PUT and GET.
+    mockMvc
+        .perform(
+            put("/api/settings")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"defaultCurrency": "ZAR", "matterNamingPattern": "{year}-{seq}"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.matterNamingPattern").value("{year}-{seq}"))
+        .andExpect(jsonPath("$.projectNamingPattern").doesNotExist());
+
+    mockMvc
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.matterNamingPattern").value("{year}-{seq}"));
+  }
+
+  @Test
   void patchExpenseSettings_memberGetsForbidden() throws Exception {
     mockMvc
         .perform(

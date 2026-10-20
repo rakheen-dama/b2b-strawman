@@ -65,7 +65,7 @@ public class StripePaymentGateway implements PaymentGateway {
           SessionCreateParams.builder()
               .setMode(SessionCreateParams.Mode.PAYMENT)
               .setClientReferenceId(request.invoiceId().toString())
-              .setCustomerEmail(request.customerEmail())
+              .setCustomerEmail(request.clientEmail())
               .setSuccessUrl(request.successUrl() + separator + "session_id={CHECKOUT_SESSION_ID}")
               .setCancelUrl(request.cancelUrl())
               .putMetadata("tenantSchema", tenantSchema)

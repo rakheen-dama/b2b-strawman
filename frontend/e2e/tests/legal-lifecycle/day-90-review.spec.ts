@@ -28,7 +28,8 @@ test.describe.serial("Day 90 — Quarter Review", () => {
   // ── 90.1-90.7: Portfolio review ───────────────────────────────────
   test("Alice: Client list shows 4+ clients", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/clients`);
     await expect(page.getByRole("heading", { name: /Customers|Clients/i, level: 1 })).toBeVisible({
       timeout: 10_000,
     });
@@ -44,7 +45,8 @@ test.describe.serial("Day 90 — Quarter Review", () => {
 
   test("Alice: Matters list shows multiple matters", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.getByRole("heading", { name: /Projects|Matters/i, level: 1 })).toBeVisible({
       timeout: 10_000,
     });
@@ -235,7 +237,8 @@ test.describe.serial("Day 90 — Quarter Review", () => {
   // ── 90.25-90.27: Document generation for Sipho ────────────────────
   test("Alice: Generate document for Sipho matter", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
     const siphoMatter = page.getByRole("link", { name: /Ndlovu|Sipho|RAF/i }).first();

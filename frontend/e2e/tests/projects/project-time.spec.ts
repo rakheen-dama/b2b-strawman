@@ -130,7 +130,8 @@ test.describe.serial("PROJ-03: Time Entries", () => {
 
   test("1. Log time on task via UI", async ({ page }) => {
     await loginAs(page, "carol");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
     await expect(page.getByRole("heading", { name: PROJECT_NAME, level: 1 })).toBeVisible({
       timeout: 10000,
     });
@@ -188,7 +189,8 @@ test.describe.serial("PROJ-03: Time Entries", () => {
 
     // Verify updated entry via UI — check the Time tab
     await loginAs(page, "carol");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
     await page.getByRole("tab", { name: "Time" }).click();
     await expect(page.getByRole("tabpanel", { name: "Time" })).toBeVisible({ timeout: 5000 });
 
@@ -243,7 +245,8 @@ test.describe.serial("PROJ-03: Time Entries", () => {
 
   test("5. Billable flag defaults to checked in UI", async ({ page }) => {
     await loginAs(page, "carol");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
     await page.getByRole("tab", { name: "Tasks" }).click();
     await expect(page.getByRole("tabpanel", { name: "Tasks" })).toBeVisible({ timeout: 5000 });
 

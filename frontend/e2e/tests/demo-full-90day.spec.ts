@@ -335,7 +335,8 @@ test("Legal-ZA 90-Day Demo — Zero to Hero", async ({ page }) => {
   }
 
   // Create Sipho Dlamini
-  await nav(page, `${BASE}/customers`);
+  // Phase 87 S4 (ADR-344): route rename
+  await nav(page, `${BASE}/clients`);
   const newClientBtn = page.getByRole("button", { name: /new client|add client/i }).first();
   if (await newClientBtn.isVisible().catch(() => false)) {
     await newClientBtn.click();
@@ -361,7 +362,8 @@ test("Legal-ZA 90-Day Demo — Zero to Hero", async ({ page }) => {
   // ╔══════════════════════════════════════════════════════════════════╗
   // ║  DAY 3 — MATTER FROM TEMPLATE                                  ║
   // ╚══════════════════════════════════════════════════════════════════╝
-  await nav(page, `${BASE}/projects`);
+  // Phase 87 S4 (ADR-344): route rename
+  await nav(page, `${BASE}/matters`);
   const newMatter = page.getByRole("button", { name: /new|create/i }).first();
   if (await newMatter.isVisible().catch(() => false)) {
     await newMatter.click();
@@ -396,7 +398,8 @@ test("Legal-ZA 90-Day Demo — Zero to Hero", async ({ page }) => {
   // ╚══════════════════════════════════════════════════════════════════╝
   await switchUser(page, ACTORS.thandi);
 
-  await nav(page, `${BASE}/customers`);
+  // Phase 87 S4 (ADR-344): route rename
+  await nav(page, `${BASE}/clients`);
   const newClient2 = page.getByRole("button", { name: /new client|add client/i }).first();
   if (await newClient2.isVisible().catch(() => false)) {
     await newClient2.click();
@@ -411,7 +414,8 @@ test("Legal-ZA 90-Day Demo — Zero to Hero", async ({ page }) => {
     await wait(page, BEAT);
   }
 
-  await nav(page, `${BASE}/projects`);
+  // Phase 87 S4 (ADR-344): route rename
+  await nav(page, `${BASE}/matters`);
   const newMatter2 = page.getByRole("button", { name: /new|create/i }).first();
   if (await newMatter2.isVisible().catch(() => false)) {
     await newMatter2.click();
@@ -438,7 +442,8 @@ test("Legal-ZA 90-Day Demo — Zero to Hero", async ({ page }) => {
   // ╚══════════════════════════════════════════════════════════════════╝
   await switchUser(page, ACTORS.bob);
 
-  await nav(page, `${BASE}/customers`);
+  // Phase 87 S4 (ADR-344): route rename
+  await nav(page, `${BASE}/clients`);
   const newClient3 = page.getByRole("button", { name: /new client|add client/i }).first();
   if (await newClient3.isVisible().catch(() => false)) {
     await newClient3.click();
@@ -453,7 +458,8 @@ test("Legal-ZA 90-Day Demo — Zero to Hero", async ({ page }) => {
     await wait(page, BEAT);
   }
 
-  await nav(page, `${BASE}/projects`);
+  // Phase 87 S4 (ADR-344): route rename
+  await nav(page, `${BASE}/matters`);
   const newMatter3 = page.getByRole("button", { name: /new|create/i }).first();
   if (await newMatter3.isVisible().catch(() => false)) {
     await newMatter3.click();
@@ -489,11 +495,13 @@ test("Legal-ZA 90-Day Demo — Zero to Hero", async ({ page }) => {
   await switchUser(page, ACTORS.thandi);
 
   // Browse all 3 clients
-  await nav(page, `${BASE}/customers`);
+  // Phase 87 S4 (ADR-344): route rename
+  await nav(page, `${BASE}/clients`);
   await wait(page, BEAT);
 
   // Browse all matters
-  await nav(page, `${BASE}/projects`);
+  // Phase 87 S4 (ADR-344): route rename
+  await nav(page, `${BASE}/matters`);
   await wait(page, BEAT);
 
   // Fee Notes

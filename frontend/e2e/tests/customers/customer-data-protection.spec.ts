@@ -33,7 +33,8 @@ test.describe("DP-01: Customer Data Protection", () => {
   });
 
   test("Download customer data export", async ({ page }) => {
-    await page.goto(`${base}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${base}/clients`);
     await expect(page.locator("body")).not.toContainText("Something went wrong");
 
     // Click on first customer to go to detail
@@ -86,7 +87,8 @@ test.describe("DP-01: Customer Data Protection", () => {
   });
 
   test("Anonymize customer preview shows entity counts", async ({ page }) => {
-    await page.goto(`${base}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${base}/clients`);
     await expect(page.locator("body")).not.toContainText("Something went wrong");
 
     const customerLink = page
@@ -163,7 +165,8 @@ test.describe("DP-01: Customer Data Protection", () => {
     const customer = await createRes.json();
 
     // Navigate to the customer
-    await page.goto(`${base}/customers/${customer.id}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${base}/clients/${customer.id}`);
     const bodyText = await page.locator("body").textContent();
 
     if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
@@ -209,7 +212,8 @@ test.describe("DP-01: Customer Data Protection", () => {
 
   test("ANONYMIZED customer is read-only", async ({ page }) => {
     // This test checks if anonymized customers have edit controls disabled
-    await page.goto(`${base}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${base}/clients`);
     await expect(page.locator("body")).not.toContainText("Something went wrong");
 
     // Look for an anonymized customer badge

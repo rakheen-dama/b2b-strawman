@@ -118,7 +118,8 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
 
   test("1. Create task on project via UI", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
     await expect(page.getByRole("heading", { name: PROJECT_NAME, level: 1 })).toBeVisible({
       timeout: 10000,
     });
@@ -183,7 +184,8 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
 
     // Verify in UI
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
     await page.getByRole("tab", { name: "Tasks" }).click();
     await expect(page.getByText(EDITED_TITLE).first()).toBeVisible({ timeout: 10000 });
   });
@@ -212,7 +214,8 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
 
     // Verify in UI
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
     await page.getByRole("tab", { name: "Tasks" }).click();
     await expect(page.getByText(/In Progress/i).first()).toBeVisible({ timeout: 10000 });
   });
@@ -228,7 +231,8 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
 
     // Verify in UI — completed tasks may be filtered out by default, use status filter
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
     await page.getByRole("tab", { name: "Tasks" }).click();
 
     // The task list may filter DONE tasks — check if there's a way to show all
@@ -247,7 +251,8 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
 
     // Verify in UI
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
     await page.getByRole("tab", { name: "Tasks" }).click();
     await expect(page.getByText(EDITED_TITLE).first()).toBeVisible({ timeout: 10000 });
   });
@@ -307,7 +312,8 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
 
     // Verify in UI — Carol's name should appear on the task
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
     await page.getByRole("tab", { name: "Tasks" }).click();
     await expect(page.getByText(/Carol/).first()).toBeVisible({ timeout: 10000 });
   });

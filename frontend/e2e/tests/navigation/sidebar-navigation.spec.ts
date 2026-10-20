@@ -8,8 +8,10 @@ const NAV_ITEMS = [
   { name: "Dashboard", path: `${base}/dashboard` },
   { name: "My Work", path: `${base}/my-work` },
   { name: "Calendar", path: `${base}/calendar` },
-  { name: "Projects", path: `${base}/projects` },
-  { name: "Customers", path: `${base}/customers` },
+  // Phase 87 S4 (ADR-344): route rename
+  { name: "Projects", path: `${base}/matters` },
+  // Phase 87 S4 (ADR-344): route rename
+  { name: "Customers", path: `${base}/clients` },
   { name: "Compliance", path: `${base}/compliance` },
   { name: "Invoices", path: `${base}/invoices` },
   { name: "Profitability", path: `${base}/profitability` },

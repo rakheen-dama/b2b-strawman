@@ -120,7 +120,8 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
 
   test("1. View budget tab on project", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
     await expect(page.getByText(PROJECT_NAME).first()).toBeVisible({ timeout: 10000 });
 
     // Click Budget tab
@@ -170,7 +171,8 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
 
     // Verify in UI
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
 
     const budgetTab = page.getByRole("tab", { name: "Budget" });
     const hasTab = await budgetTab.isVisible({ timeout: 5000 }).catch(() => false);
@@ -209,7 +211,8 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
 
     // Verify in UI — budget tab should show consumed/remaining
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
 
     const budgetTab = page.getByRole("tab", { name: "Budget" });
     const hasTab = await budgetTab.isVisible({ timeout: 5000 }).catch(() => false);

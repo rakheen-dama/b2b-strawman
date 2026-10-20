@@ -406,7 +406,8 @@ test.describe.serial("Day 30 — First Billing Cycle", () => {
   // ── 30.31-30.33: Fee estimate for Apex (R150,000, alert at 80%) ───
   test("Alice: Set fee estimate on Apex matter (R150,000)", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
     const apexMatter = page.getByRole("link", { name: /Apex/i }).first();

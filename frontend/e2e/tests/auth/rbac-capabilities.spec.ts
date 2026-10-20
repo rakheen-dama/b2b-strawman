@@ -36,7 +36,8 @@ test.describe("AUTH-01: RBAC Capabilities", () => {
 
   test("Member sees permission denied on customers", async ({ page }) => {
     await loginAs(page, "carol");
-    await page.goto(`${base}/customers`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${base}/clients`);
     await expect(page.locator("body")).toContainText(/don.t have access|permission/i);
   });
 
@@ -54,7 +55,8 @@ test.describe("AUTH-01: RBAC Capabilities", () => {
 
   test("Member can access Projects", async ({ page }) => {
     await loginAs(page, "carol");
-    await page.goto(`${base}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${base}/matters`);
     await expect(page.locator("body")).not.toContainText("Something went wrong");
   });
 });

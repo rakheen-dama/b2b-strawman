@@ -77,7 +77,8 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
 
   test("1. Create project with customer", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.locator("h1").first()).toBeVisible({ timeout: 10000 });
 
     // Click "New Project" / "New Engagement" / "New Matter" (terminology may vary)
@@ -116,13 +117,15 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
     await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 10000 });
 
     // Verify project appears in the list
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.getByText(PROJECT_WITH_CUSTOMER).first()).toBeVisible({ timeout: 10000 });
   });
 
   test("2. Create project without customer (internal)", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.locator("h1").first()).toBeVisible({ timeout: 10000 });
 
     // Create via API — more reliable than UI creation for internal projects
@@ -139,13 +142,15 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
     expect(status).toBe(201);
 
     // Verify project appears in UI
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.getByText(PROJECT_WITHOUT_CUSTOMER).first()).toBeVisible({ timeout: 10000 });
   });
 
   test("3. Edit project name", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters`);
     await expect(page.locator("h1").first()).toBeVisible({ timeout: 10000 });
 
     // Navigate to the project we created (project list uses card links)
@@ -195,7 +200,8 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
     }
 
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects/${project.id}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${project.id}`);
     await expect(page.getByText(project.name).first()).toBeVisible({ timeout: 10000 });
 
     // Verify key tabs are visible and clickable
@@ -239,7 +245,8 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
 
     // Verify in UI
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/projects/${projectId}`);
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${BASE}/matters/${projectId}`);
     // Project name may be EDITED_NAME or PROJECT_WITH_CUSTOMER
     await expect(
       page.getByText(EDITED_NAME).first().or(page.getByText(PROJECT_WITH_CUSTOMER).first())

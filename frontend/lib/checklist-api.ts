@@ -1,7 +1,7 @@
 import "server-only";
 
 import { api } from "@/lib/api";
-import { clientPath } from "@/lib/api/clients";
+import { clientPath } from "@/lib/api/paths";
 import type {
   ChecklistInstanceResponse,
   ChecklistInstanceItemResponse,

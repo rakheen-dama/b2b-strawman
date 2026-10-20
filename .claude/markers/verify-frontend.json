@@ -1,7 +1,7 @@
 {
-  "commit": "6e02e1c6c32cb6fd2e978e8c21038d7d4341b666",
-  "command": "cd frontend && pnpm run lint && pnpm run format:check && rm -rf .next && pnpm run build && pnpm test",
+  "commit": "a1f14a2ae581ac393b7c7ee36769021507433bfc",
+  "command": "cd frontend && rm -rf .next && pnpm install && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test && pnpm exec tsc --noEmit",
   "exit": 0,
-  "ts": "2026-10-20T13:47:00+02:00",
-  "summary": "PR #1607 (610C; components/lib matter/client API literals routed through lib/api/{matters,clients,paths}; overlapping wrappers in setup-status/compliance-api/actions/dashboard deleted; Dormancy*/AnonymizeClientRequest collapsed into lib/types; AST no-inline-literal scan + characterization test) on 6e02e1c6c (orchestrator run): lint 0 errors / 95 warnings (= main); prettier clean; build OK; vitest 364 files, 2316 passed | 2 skipped; tsc 166 = baseline (identical error set). E2E (frontend rebuilt from branch) vs 610B record: projects+customers 7/6/2/33 identical set; legal-lifecycle 62/5/5/20 identical set (incl. day-60:41); depth-ii 27/1/15 (day-75-85-closure:381)."
+  "ts": "2026-10-20T14:52:00+02:00",
+  "summary": "PR #1608 (610D; git mv projects→matters, customers→clients, client-ledgers/[customerId]→[clientId], api/customers→api/clients; revalidatePath/redirect strings incl. 12 outside-tree (D1); lib/legacy-redirects.ts 308 table wired into next.config.ts + guards; 9 post-redirect e2e URL assertions (D3)) on a1f14a2ae (orchestrator run): lint 0 errors / 95 warnings (= main); prettier clean; build OK (no projects/customers routes in manifest); vitest 365 files, 2325 passed | 2 skipped; tsc 166 = baseline (identical error set, moved paths mapped). curl on e2e stack: /projects, /projects/x/tasks, /customers → 308 to /matters…, /clients…. E2E (frontend rebuilt from branch, reseeded per suite): projects+customers 7/6/2/33 (= 610C, locator drift); navigation+auth 26/0/1; legal-lifecycle 62/5/5/20 identical set (day-00:326, day-30:32, day-45:41, day-90:177, day-60:41); depth-ii 28/0/15 (610C 27/1/15)."
 }

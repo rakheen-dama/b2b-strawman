@@ -6,15 +6,18 @@
  * `ApiError`, auth headers) that this module builds on. This file only knows URLs and payload
  * types for the Matters bounded context. Clients live in `./clients.ts` (plural).
  *
- * `matterPath()` is the single place the `/api/matters` collection segment is spelled; other
- * lib/api modules (closure, statements, correspondence, information-requests) switch to it in
- * 610C. The tag / field-group storage key for matters stays `"PROJECT"` (ADR-342).
+ * `matterPath()` / `MATTERS_PATH` are re-exported from `./paths.ts` — the single place the
+ * `matters` wire segment is spelled (shared with `tags.ts#entityApiPrefix`); other lib/api modules
+ * (closure, statements, correspondence, information-requests) switch to it in 610C.
+ * The tag / field-group storage key for matters stays `"PROJECT"` (ADR-342).
  */
 import "server-only";
 
 import { api } from "./client";
 import { getEntityTags, setEntityTags } from "./tags";
 import { setEntityFieldGroups } from "./fields";
+import { MATTERS_PATH, matterPath } from "./paths";
+import { toQuery, type QueryValue } from "./query";
 import type {
   BudgetStatusResponse,
   Client,
@@ -56,30 +59,7 @@ import type { ProjectUpcomingDeadline } from "@/lib/actions/dashboard";
 
 // ---- Path helpers ----
 
-export const MATTERS_PATH = "/api/matters";
-
-type QueryValue = string | number | boolean | null | undefined;
-
-/** `?a=1&b=2` from defined, non-empty values (insertion order kept); `""` when nothing is set. */
-function toQuery(params?: Record<string, QueryValue>): string {
-  if (!params) return "";
-  const search = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value === undefined || value === null || value === "") continue;
-    search.set(key, String(value));
-  }
-  const qs = search.toString();
-  return qs ? `?${qs}` : "";
-}
-
-/**
- * `/api/matters`, `/api/matters/{id}` or `/api/matters/{id}/{sub}`.
- * `sub` is appended verbatim (no leading slash): `matterPath(id, "closure/evaluate")`.
- */
-export function matterPath(matterId?: string, sub?: string): string {
-  if (!matterId) return MATTERS_PATH;
-  return sub ? `${MATTERS_PATH}/${matterId}/${sub}` : `${MATTERS_PATH}/${matterId}`;
-}
+export { MATTERS_PATH, matterPath } from "./paths";
 
 // ---- Params / request types ----
 

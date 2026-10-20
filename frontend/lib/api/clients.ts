@@ -6,15 +6,18 @@
  * `ApiError`, auth headers) that every lib/api module builds on. This file (plural) only knows
  * URLs and payload types for the Clients bounded context (Open Question #16).
  *
- * `clientPath()` is the single place the `/api/clients` collection segment is spelled; other
- * lib/api modules (checklists, collections, correspondence, information-requests) switch to it
- * in 610C. The tag / field-group storage key for clients stays `"CUSTOMER"` (ADR-342).
+ * `clientPath()` / `CLIENTS_PATH` are re-exported from `./paths.ts` — the single place the
+ * `clients` wire segment is spelled (shared with `tags.ts#entityApiPrefix`); other lib/api modules
+ * (checklists, collections, correspondence, information-requests) switch to it in 610C.
+ * The tag / field-group storage key for clients stays `"CUSTOMER"` (ADR-342).
  */
 import "server-only";
 
 import { api } from "./client";
 import { getEntityTags, setEntityTags } from "./tags";
 import { setEntityFieldGroups } from "./fields";
+import { CLIENTS_PATH, clientPath } from "./paths";
+import { toQuery, type QueryValue } from "./query";
 import type {
   AggregatedCompletenessResponse,
   AnonymizationPreview,
@@ -45,37 +48,14 @@ import type { PortalContactSummary } from "@/lib/actions/acceptance-actions";
 
 // ---- Path helpers ----
 
-export const CLIENTS_PATH = "/api/clients";
-
-type QueryValue = string | number | boolean | null | undefined;
-
-/** `?a=1&b=2` from defined, non-empty values (insertion order kept); `""` when nothing is set. */
-function toQuery(params?: Record<string, QueryValue>): string {
-  if (!params) return "";
-  const search = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value === undefined || value === null || value === "") continue;
-    search.set(key, String(value));
-  }
-  const qs = search.toString();
-  return qs ? `?${qs}` : "";
-}
-
-/**
- * `/api/clients`, `/api/clients/{id}` or `/api/clients/{id}/{sub}`.
- * `sub` is appended verbatim (no leading slash): `clientPath(id, "fica-status")`.
- */
-export function clientPath(clientId?: string, sub?: string): string {
-  if (!clientId) return CLIENTS_PATH;
-  return sub ? `${CLIENTS_PATH}/${clientId}/${sub}` : `${CLIENTS_PATH}/${clientId}`;
-}
+export { CLIENTS_PATH, clientPath } from "./paths";
 
 // ---- Params / response types ----
 
 /** `GET /api/clients` filters. Extra keys pass through (`allParams` on the controller). */
 export interface ListClientsParams {
   view?: string;
-  lifecycleStatus?: LifecycleStatus | string;
+  lifecycleStatus?: LifecycleStatus;
   status?: string;
   size?: number;
   [filter: string]: QueryValue;

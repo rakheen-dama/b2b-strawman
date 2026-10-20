@@ -13,7 +13,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDuration, formatDate } from "@/lib/format";
-import { useTerminology } from "@/lib/terminology";
 import { cn } from "@/lib/utils";
 import type { MyWorkTaskItem, TaskPriority, TaskStatus } from "@/lib/types";
 
@@ -57,7 +56,6 @@ interface AssignedTaskListProps {
 
 export function AssignedTaskList({ tasks, slug }: AssignedTaskListProps) {
   const router = useRouter();
-  const { t } = useTerminology();
 
   if (tasks.length === 0) {
     return (
@@ -86,7 +84,7 @@ export function AssignedTaskList({ tasks, slug }: AssignedTaskListProps) {
           <TableHeader>
             <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
               <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                {t("Project")}
+                Matter
               </TableHead>
               <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Title

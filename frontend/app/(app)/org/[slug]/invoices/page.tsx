@@ -12,7 +12,6 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { Receipt, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { HelpTip } from "@/components/help-tip";
-import { TerminologyText } from "@/components/terminology-text";
 
 function computeSummary(invoices: InvoiceResponse[], fallbackCurrency: string) {
   const now = new Date();
@@ -208,18 +207,14 @@ export default async function InvoicesPage({
         <EmptyState
           icon={Receipt}
           title={
-            validatedStatus ? (
-              `No ${validatedStatus.toLowerCase()} fee notes found`
-            ) : (
-              <TerminologyText template={t("invoices.list.heading")} />
-            )
+            validatedStatus
+              ? `No ${validatedStatus.toLowerCase()} fee notes found`
+              : t("invoices.list.heading")
           }
           description={
-            validatedStatus ? (
-              `No ${validatedStatus.toLowerCase()} fee notes found.`
-            ) : (
-              <TerminologyText template={t("invoices.list.description")} />
-            )
+            validatedStatus
+              ? `No ${validatedStatus.toLowerCase()} fee notes found.`
+              : t("invoices.list.description")
           }
         />
       ) : (

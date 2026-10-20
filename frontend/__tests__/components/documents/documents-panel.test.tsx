@@ -33,7 +33,7 @@ describe("DocumentsPanel", () => {
     expect(screen.getByText("No documents yet")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Documents live inside projects. Create proposals, contracts, reports, or any other document your team needs."
+        "Documents live inside matters. Create engagement letters, contracts, reports, or any other document your team needs."
       )
     ).toBeInTheDocument();
   });

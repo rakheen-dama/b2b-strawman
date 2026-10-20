@@ -23,7 +23,6 @@ import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBad
 import { UserRound, Users } from "lucide-react";
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
-import { TerminologyText } from "@/components/terminology-text";
 import { createMessages } from "@/lib/messages";
 import { PermissionDenied } from "@/components/permission-denied";
 
@@ -279,11 +278,7 @@ export default async function CustomersPage({
             icon={Users}
             title="No clients yet"
             description={
-              <TerminologyText
-                template={
-                  isAdmin ? t("customers.list.description") : t("customers.list.descriptionMember")
-                }
-              />
+              isAdmin ? t("customers.list.description") : t("customers.list.descriptionMember")
             }
             action={isAdmin ? <CreateCustomerDialog slug={slug} /> : undefined}
           />

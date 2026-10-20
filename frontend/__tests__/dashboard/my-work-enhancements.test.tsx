@@ -111,6 +111,11 @@ describe("AvailableTaskList — onTaskClick prop", () => {
     mockPush.mockClear();
   });
 
+  it("renders the Matter column header (literal legal copy, Phase 87 611C, ADR-338)", () => {
+    render(<AvailableTaskList tasks={[makeTask({ id: "avail-h" })]} slug="acme" />);
+    expect(screen.getByText("Matter")).toBeInTheDocument();
+  });
+
   it("calls onTaskClick with task id when a row is clicked", () => {
     const onTaskClick = vi.fn();
     const tasks = [makeTask({ id: "avail-1", title: "Available Task" })];

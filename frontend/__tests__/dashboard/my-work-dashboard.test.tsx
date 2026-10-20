@@ -127,6 +127,11 @@ describe("UrgencyTaskList grouping", () => {
     cleanup();
   });
 
+  it("renders the Matter column header (literal legal copy, Phase 87 611C, ADR-338)", () => {
+    render(<UrgencyTaskList tasks={[makeTask({ id: "u-h", title: "Header task" })]} slug="acme" />);
+    expect(screen.getAllByText("Matter").length).toBeGreaterThan(0);
+  });
+
   it("groups overdue tasks in a separate section", () => {
     const tasks: MyWorkTaskItem[] = [
       makeTask({

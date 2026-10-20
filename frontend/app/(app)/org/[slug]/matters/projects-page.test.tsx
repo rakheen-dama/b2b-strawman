@@ -263,8 +263,8 @@ describe("ProjectsPage", () => {
       const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
-      expect(screen.getByText("No projects yet")).toBeInTheDocument();
-      expect(screen.getByText(/not on any projects yet/)).toBeInTheDocument();
+      expect(screen.getByText("No matters yet")).toBeInTheDocument();
+      expect(screen.getByText(/not on any matters yet/)).toBeInTheDocument();
     });
 
     it("shows catalog empty state message for org:admin", async () => {
@@ -279,8 +279,10 @@ describe("ProjectsPage", () => {
       const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
-      expect(screen.getByText("No projects yet")).toBeInTheDocument();
-      expect(screen.getByText(/Projects organise your work/)).toBeInTheDocument();
+      expect(screen.getByText("No matters yet")).toBeInTheDocument();
+      expect(
+        screen.getByText("Open your first matter to start recording time.")
+      ).toBeInTheDocument();
     });
 
     it("shows New Project button in empty state for members", async () => {

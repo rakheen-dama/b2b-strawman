@@ -24,7 +24,6 @@ import { toast } from "sonner";
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
 import { resolveNameTokens } from "@/lib/name-token-resolver";
 import { nativeSelectClassName } from "@/lib/styles/native-select";
-import { useTerminology } from "@/lib/terminology";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { OrgMember, Client } from "@/lib/types";
 import type { PrerequisiteViolation } from "@/components/prerequisite/types";
@@ -60,11 +59,6 @@ export function NewFromTemplateDialog({
   initialCustomerId,
 }: NewFromTemplateDialogProps) {
   const router = useRouter();
-  const { t } = useTerminology();
-  const referencePlaceholder =
-    t("project.referencePlaceholder") === "project.referencePlaceholder"
-      ? "e.g. PRJ-2026-001"
-      : t("project.referencePlaceholder");
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -280,7 +274,7 @@ export function NewFromTemplateDialog({
             </DialogTitle>
             <DialogDescription>
               {step === 1
-                ? `Choose a template to create a new ${t("project")}.`
+                ? "Choose a template to create a new matter."
                 : `Creating from: ${selectedTemplate?.name}`}
             </DialogDescription>
           </DialogHeader>
@@ -308,12 +302,12 @@ export function NewFromTemplateDialog({
               <div className="space-y-4 py-2">
                 {/* Project Name */}
                 <div className="space-y-2">
-                  <Label htmlFor="new-proj-name">{t("Project")} name</Label>
+                  <Label htmlFor="new-proj-name">Matter name</Label>
                   <Input
                     id="new-proj-name"
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
-                    placeholder={`${t("Project")} name...`}
+                    placeholder="Matter name..."
                     maxLength={255}
                   />
                   {namePreview && projectName !== namePreview && (
@@ -352,8 +346,7 @@ export function NewFromTemplateDialog({
                 {customers.length > 0 && (
                   <div className="space-y-2">
                     <Label htmlFor="new-proj-customer">
-                      {t("Customer")}{" "}
-                      <span className="text-muted-foreground font-normal">(optional)</span>
+                      Client <span className="text-muted-foreground font-normal">(optional)</span>
                     </Label>
                     <select
                       id="new-proj-customer"
@@ -375,7 +368,7 @@ export function NewFromTemplateDialog({
                 {orgMembers.length > 0 && (
                   <div className="space-y-2">
                     <Label htmlFor="new-proj-lead">
-                      {t("Project")} lead{" "}
+                      Matter lead{" "}
                       <span className="text-muted-foreground font-normal">(optional)</span>
                     </Label>
                     <select
@@ -404,7 +397,7 @@ export function NewFromTemplateDialog({
                     id="new-proj-ref"
                     value={referenceNumber}
                     onChange={(e) => setReferenceNumber(e.target.value)}
-                    placeholder={referencePlaceholder}
+                    placeholder="e.g. RAF-2026-001"
                     maxLength={100}
                   />
                   {fieldErrors.referenceNumber && (
@@ -465,7 +458,7 @@ export function NewFromTemplateDialog({
                   Back
                 </Button>
                 <Button type="button" onClick={handleSubmit} disabled={isSubmitting}>
-                  {isSubmitting ? "Creating..." : `Create ${t("Project")}`}
+                  {isSubmitting ? "Creating..." : "Create Matter"}
                 </Button>
               </DialogFooter>
             </>

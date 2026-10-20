@@ -25,7 +25,7 @@ describe("HelpTip", () => {
     const button = screen.getByRole("button", { name: /help/i });
     await user.click(button);
 
-    expect(screen.getByText("Rate card hierarchy")).toBeInTheDocument();
+    expect(screen.getByText("Rate hierarchy")).toBeInTheDocument();
   });
 
   it("displays title and body from message catalog", async () => {
@@ -34,7 +34,7 @@ describe("HelpTip", () => {
 
     await user.click(screen.getByRole("button", { name: /help/i }));
 
-    expect(screen.getByText("Rate card hierarchy")).toBeInTheDocument();
+    expect(screen.getByText("Rate hierarchy")).toBeInTheDocument();
     expect(screen.getByText(/Rates follow a three-level hierarchy/)).toBeInTheDocument();
   });
 
@@ -49,13 +49,13 @@ describe("HelpTip", () => {
 
     // Open popover
     await user.click(screen.getByRole("button", { name: /help/i }));
-    expect(screen.getByText("Rate card hierarchy")).toBeInTheDocument();
+    expect(screen.getByText("Rate hierarchy")).toBeInTheDocument();
 
     // Click outside
     await user.click(screen.getByTestId("outside"));
 
     // Popover should close (content removed from DOM)
-    expect(screen.queryByText("Rate card hierarchy")).not.toBeInTheDocument();
+    expect(screen.queryByText("Rate hierarchy")).not.toBeInTheDocument();
   });
 
   it("handles missing code gracefully (shows fallback)", async () => {

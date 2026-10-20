@@ -14,7 +14,6 @@ import { cn } from "@/lib/utils";
 import { CalendarMonthView } from "./calendar-month-view";
 import { CalendarListView } from "./calendar-list-view";
 import { getCalendarItems, getCalendarProjects, getCalendarMembers } from "./calendar-actions";
-import { useTerminology } from "@/lib/terminology";
 import type { CalendarItem } from "./calendar-types";
 import { formatDate } from "./calendar-types";
 
@@ -33,8 +32,6 @@ export function CalendarPageClient({
   initialMonth,
   slug,
 }: CalendarPageClientProps) {
-  // Renamed to `term` — `t` is already the type-chip loop variable below.
-  const { t: term } = useTerminology();
   const [items, setItems] = useState(initialItems);
   const [overdueCount, setOverdueCount] = useState(initialOverdueCount);
   const [year, setYear] = useState(initialYear);
@@ -119,10 +116,10 @@ export function CalendarPageClient({
           }}
         >
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder={`All ${term("Projects")}`} />
+            <SelectValue placeholder="All Matters" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{`All ${term("Projects")}`}</SelectItem>
+            <SelectItem value="all">All Matters</SelectItem>
             {projects.map((p) => (
               <SelectItem key={p.id} value={p.id}>
                 {p.name}
@@ -152,7 +149,7 @@ export function CalendarPageClient({
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
                 )}
               >
-                {t === "ALL" ? "All" : t === "TASK" ? term("Tasks") : term("Projects")}
+                {t === "ALL" ? "All" : t === "TASK" ? "Tasks" : "Matters"}
               </button>
             );
           })}

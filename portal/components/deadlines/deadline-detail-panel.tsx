@@ -14,10 +14,8 @@ const SOURCE_ENTITY_LABEL: Record<string, string> = {
 };
 
 const STATUS_BADGE_CLASS: Record<string, string> = {
-  UPCOMING:
-    "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-  DUE_SOON:
-    "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
+  UPCOMING: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+  DUE_SOON: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
   OVERDUE: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
   COMPLETED:
     "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
@@ -62,10 +60,10 @@ export function DeadlineDetailPanel({
   }, [open, onClose]);
 
   const statusClass = deadline
-    ? STATUS_BADGE_CLASS[deadline.status] ?? STATUS_BADGE_CLASS.UPCOMING
+    ? (STATUS_BADGE_CLASS[deadline.status] ?? STATUS_BADGE_CLASS.UPCOMING)
     : STATUS_BADGE_CLASS.UPCOMING;
   const sourceLabel = deadline
-    ? SOURCE_ENTITY_LABEL[deadline.sourceEntity] ?? deadline.sourceEntity
+    ? (SOURCE_ENTITY_LABEL[deadline.sourceEntity] ?? deadline.sourceEntity)
     : "";
 
   return (

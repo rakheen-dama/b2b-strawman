@@ -121,9 +121,10 @@ describe("DeadlineList", () => {
     expect(
       screen.getByTestId("deadline-row-FILING_SCHEDULE-medium"),
     ).toHaveAttribute("data-tone", "amber");
-    expect(
-      screen.getByTestId("deadline-row-COURT_DATE-soon"),
-    ).toHaveAttribute("data-tone", "red");
+    expect(screen.getByTestId("deadline-row-COURT_DATE-soon")).toHaveAttribute(
+      "data-tone",
+      "red",
+    );
     expect(
       screen.getByTestId("deadline-row-PRESCRIPTION_TRACKER-late"),
     ).toHaveAttribute("data-tone", "red-solid");

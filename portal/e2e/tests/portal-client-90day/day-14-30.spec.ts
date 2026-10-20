@@ -23,7 +23,8 @@ const PORTAL_EMAIL =
   process.env.PORTAL_CONTACT_EMAIL || "sipho.portal@example.com";
 const SKIP = process.env.SKIP_PORTAL_BASELINES === "true";
 
-test.describe.serial("Day 14–30 — Portal Client Lifecycle (Checkpoint 5)", () => {
+test.describe
+  .serial("Day 14–30 — Portal Client Lifecycle (Checkpoint 5)", () => {
   test.beforeAll(async () => {
     test.skip(
       SKIP,
@@ -61,7 +62,11 @@ test.describe.serial("Day 14–30 — Portal Client Lifecycle (Checkpoint 5)", (
     }
 
     // Empty state vs populated — both acceptable; only fail on 500.
-    const bodyText = (await page.locator("body").textContent().catch(() => "")) || "";
+    const bodyText =
+      (await page
+        .locator("body")
+        .textContent()
+        .catch(() => "")) || "";
     if (/something went wrong|internal server error/i.test(bodyText)) {
       throw new Error("/trust rendered an error page — investigate backend");
     }

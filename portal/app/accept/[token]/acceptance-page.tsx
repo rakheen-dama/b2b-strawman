@@ -9,12 +9,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@b2mash/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Skeleton } from "@b2mash/ui/skeleton";
@@ -99,7 +94,9 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
       } catch (err) {
         if (!cancelled) {
           setError(
-            err instanceof Error ? err.message : "Failed to load acceptance page",
+            err instanceof Error
+              ? err.message
+              : "Failed to load acceptance page",
           );
           setPageState("ERROR");
         }
@@ -221,8 +218,8 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
             <CardContent className="py-6 text-center">
               <AlertTriangle className="mx-auto mb-3 h-10 w-10 text-amber-500" />
               <p className="text-sm font-medium text-amber-800">
-                This acceptance request has expired. Please contact {orgName} for
-                a new link.
+                This acceptance request has expired. Please contact {orgName}{" "}
+                for a new link.
               </p>
             </CardContent>
           </Card>
@@ -293,7 +290,9 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
                 <Button
                   type="submit"
                   variant="accent"
-                  disabled={name.trim().length < 2 || pageState === "SUBMITTING"}
+                  disabled={
+                    name.trim().length < 2 || pageState === "SUBMITTING"
+                  }
                   className="hidden min-h-11 w-full md:inline-flex"
                 >
                   {pageState === "SUBMITTING" ? (

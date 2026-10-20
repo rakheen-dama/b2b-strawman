@@ -43,7 +43,8 @@ export function InvoiceLineTable({
             </p>
             <div className="flex items-center justify-between text-xs text-slate-500">
               <span>
-                {line.quantity} &times; {formatCurrency(line.unitPrice, currency)}
+                {line.quantity} &times;{" "}
+                {formatCurrency(line.unitPrice, currency)}
               </span>
               {hasPerLineTax && (
                 <span>

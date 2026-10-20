@@ -214,9 +214,7 @@ export function TransactionList({
             </button>
             <button
               type="button"
-              onClick={() =>
-                setPage((p) => Math.min(totalPages - 1, p + 1))
-              }
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
               className="inline-flex min-h-11 items-center gap-1 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Next page"

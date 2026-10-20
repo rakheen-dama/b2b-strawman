@@ -122,9 +122,7 @@ export default function ActivityPage() {
       {!isLoading && !error && events.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <ActivityIcon className="mb-4 size-12 text-slate-300" />
-          <p className="text-lg font-medium text-slate-600">
-            No activity yet.
-          </p>
+          <p className="text-lg font-medium text-slate-600">No activity yet.</p>
         </div>
       )}
 
@@ -145,7 +143,7 @@ export default function ActivityPage() {
                 <span className="text-xs text-slate-500">
                   {event.actorType === "PORTAL_CONTACT"
                     ? "You"
-                    : event.actorName ?? "Firm"}
+                    : (event.actorName ?? "Firm")}
                 </span>
               </div>
               <span className="text-xs text-slate-500" suppressHydrationWarning>

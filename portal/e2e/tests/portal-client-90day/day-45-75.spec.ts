@@ -26,7 +26,8 @@ const PORTAL_EMAIL =
   process.env.PORTAL_CONTACT_EMAIL || "sipho.portal@example.com";
 const SKIP = process.env.SKIP_PORTAL_BASELINES === "true";
 
-test.describe.serial("Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9)", () => {
+test.describe
+  .serial("Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9)", () => {
   test.beforeAll(async () => {
     test.skip(
       SKIP,
@@ -54,7 +55,10 @@ test.describe.serial("Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9
 
     const main = page.locator("main");
     if (!(await main.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "/invoices not rendered — tenant may not have invoices seeded");
+      test.skip(
+        true,
+        "/invoices not rendered — tenant may not have invoices seeded",
+      );
       return;
     }
 
@@ -73,7 +77,9 @@ test.describe.serial("Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9
     });
   });
 
-  test("Day 45: Client pays invoice via portal payment flow", async ({ page }) => {
+  test("Day 45: Client pays invoice via portal payment flow", async ({
+    page,
+  }) => {
     await page.goto("/invoices");
     await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(500);

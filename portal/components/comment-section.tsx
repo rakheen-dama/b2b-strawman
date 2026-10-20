@@ -21,8 +21,7 @@ export function CommentSection({
   comments,
   onCommentPosted,
 }: CommentSectionProps) {
-  const [localComments, setLocalComments] =
-    useState<PortalComment[]>(comments);
+  const [localComments, setLocalComments] = useState<PortalComment[]>(comments);
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -129,9 +128,7 @@ export function CommentSection({
           <Button
             type="submit"
             size="sm"
-            disabled={
-              !content.trim() || isOverLimit || isSubmitting
-            }
+            disabled={!content.trim() || isOverLimit || isSubmitting}
           >
             {isSubmitting ? (
               <>

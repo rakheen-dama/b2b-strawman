@@ -58,8 +58,12 @@ describe("ActivityPage", () => {
     render(<ActivityPage />);
 
     expect(screen.getByText("Activity")).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Your actions" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Firm actions" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: "Your actions" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: "Firm actions" }),
+    ).toBeInTheDocument();
 
     // Initial fetch is for the default tab (mine)
     await waitFor(() => {
@@ -75,7 +79,10 @@ describe("ActivityPage", () => {
   });
 
   it("shows the empty state when the response is empty", async () => {
-    mockPortalGet.mockResolvedValue({ content: [], page: { totalElements: 0 } });
+    mockPortalGet.mockResolvedValue({
+      content: [],
+      page: { totalElements: 0 },
+    });
 
     render(<ActivityPage />);
 

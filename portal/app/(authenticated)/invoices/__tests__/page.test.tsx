@@ -136,11 +136,9 @@ describe("InvoicesPage", () => {
   });
 
   it("downloads PDF when download button is clicked", async () => {
-    mockPortalGet
-      .mockResolvedValueOnce(mockInvoices)
-      .mockResolvedValueOnce({
-        downloadUrl: "https://s3.example.com/invoice.pdf?signed=abc",
-      });
+    mockPortalGet.mockResolvedValueOnce(mockInvoices).mockResolvedValueOnce({
+      downloadUrl: "https://s3.example.com/invoice.pdf?signed=abc",
+    });
 
     render(<InvoicesPage />);
 

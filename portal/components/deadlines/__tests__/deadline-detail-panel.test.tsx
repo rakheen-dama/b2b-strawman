@@ -4,9 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { DeadlineDetailPanel } from "@/components/deadlines/deadline-detail-panel";
 import type { PortalDeadline } from "@/lib/api/deadlines";
 
-function makeDeadline(
-  overrides: Partial<PortalDeadline> = {},
-): PortalDeadline {
+function makeDeadline(overrides: Partial<PortalDeadline> = {}): PortalDeadline {
   return {
     id: "d-1",
     sourceEntity: "FILING_SCHEDULE",
@@ -27,11 +25,7 @@ describe("DeadlineDetailPanel", () => {
 
   it("renders label, due date, status badge, description, and source-entity reference", () => {
     render(
-      <DeadlineDetailPanel
-        open
-        deadline={makeDeadline()}
-        onClose={() => {}}
-      />,
+      <DeadlineDetailPanel open deadline={makeDeadline()} onClose={() => {}} />,
     );
 
     const panel = screen.getByTestId("deadline-detail-panel");
@@ -50,11 +44,7 @@ describe("DeadlineDetailPanel", () => {
   it("calls onClose when the backdrop is clicked", async () => {
     const onClose = vi.fn();
     render(
-      <DeadlineDetailPanel
-        open
-        deadline={makeDeadline()}
-        onClose={onClose}
-      />,
+      <DeadlineDetailPanel open deadline={makeDeadline()} onClose={onClose} />,
     );
 
     const user = userEvent.setup();
@@ -65,11 +55,7 @@ describe("DeadlineDetailPanel", () => {
   it("calls onClose when the Escape key is pressed", async () => {
     const onClose = vi.fn();
     render(
-      <DeadlineDetailPanel
-        open
-        deadline={makeDeadline()}
-        onClose={onClose}
-      />,
+      <DeadlineDetailPanel open deadline={makeDeadline()} onClose={onClose} />,
     );
 
     const user = userEvent.setup();

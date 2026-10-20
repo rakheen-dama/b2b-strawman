@@ -10,12 +10,7 @@ import {
   type NotificationPreferences,
   type NotificationPreferencesUpdate,
 } from "@/lib/api/notification-preferences";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@b2mash/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { Button } from "@b2mash/ui/button";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import { useTerminology } from "@/lib/terminology";

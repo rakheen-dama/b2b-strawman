@@ -82,10 +82,10 @@ describe("AcceptancePage", () => {
       "http://localhost:8080/api/portal/acceptance/test-token/pdf",
     );
     expect(screen.getByLabelText("Full name")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "I Accept" })).toBeInTheDocument();
     expect(
-      screen.getByText("Service Agreement 2026"),
+      screen.getByRole("button", { name: "I Accept" }),
     ).toBeInTheDocument();
+    expect(screen.getByText("Service Agreement 2026")).toBeInTheDocument();
   });
 
   it("disables accept button without name", async () => {
@@ -94,7 +94,9 @@ describe("AcceptancePage", () => {
     render(<AcceptancePage token="test-token" />);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "I Accept" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "I Accept" }),
+      ).toBeInTheDocument();
     });
 
     expect(screen.getByRole("button", { name: "I Accept" })).toBeDisabled();
@@ -231,9 +233,7 @@ describe("AcceptancePage", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(
-          "Failed to load acceptance data. Please try again.",
-        ),
+        screen.getByText("Failed to load acceptance data. Please try again."),
       ).toBeInTheDocument();
     });
 
@@ -260,9 +260,7 @@ describe("AcceptancePage", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(
-          "Failed to submit acceptance. Please try again.",
-        ),
+        screen.getByText("Failed to submit acceptance. Please try again."),
       ).toBeInTheDocument();
     });
 
@@ -282,9 +280,7 @@ describe("AcceptancePage", () => {
       expect(screen.getByText("Smith & Associates")).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByAltText("Smith & Associates logo"),
-    ).toBeInTheDocument();
+    expect(screen.getByAltText("Smith & Associates logo")).toBeInTheDocument();
     expect(screen.getByAltText("Smith & Associates logo")).toHaveAttribute(
       "src",
       "https://example.com/logo.png",

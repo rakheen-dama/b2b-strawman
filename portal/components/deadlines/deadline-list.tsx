@@ -75,16 +75,13 @@ const URGENCY_TEXT_CLASS: Record<UrgencyTone, string> = {
   grey: "text-slate-600 dark:text-slate-400",
   amber: "text-amber-600 dark:text-amber-400",
   red: "text-red-600 dark:text-red-400",
-  "red-solid":
-    "rounded-md bg-red-600 px-2 py-0.5 text-white dark:bg-red-700",
+  "red-solid": "rounded-md bg-red-600 px-2 py-0.5 text-white dark:bg-red-700",
   green: "text-green-700 dark:text-green-300",
 };
 
 const STATUS_BADGE_CLASS: Record<string, string> = {
-  UPCOMING:
-    "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-  DUE_SOON:
-    "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
+  UPCOMING: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+  DUE_SOON: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
   OVERDUE: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
   COMPLETED:
     "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",

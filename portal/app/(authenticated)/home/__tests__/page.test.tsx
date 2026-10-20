@@ -55,7 +55,9 @@ type Req = {
 function setRequestsList(list: Req[] | Error) {
   mockPortalGet.mockImplementation((path: string) => {
     if (path === "/portal/requests") {
-      return list instanceof Error ? Promise.reject(list) : Promise.resolve(list);
+      return list instanceof Error
+        ? Promise.reject(list)
+        : Promise.resolve(list);
     }
     // Return a safe default for any non-/portal/requests calls so this focused
     // test stays deterministic if additional cards (e.g., RecentInvoicesCard)

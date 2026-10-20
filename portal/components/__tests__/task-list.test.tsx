@@ -31,7 +31,9 @@ describe("TaskList", () => {
     );
 
     // Both mobile and desktop layouts render; use getAllByText
-    expect(screen.getAllByText("Design homepage").length).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByText("Design homepage").length,
+    ).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("IN PROGRESS").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Alice").length).toBeGreaterThanOrEqual(1);
 

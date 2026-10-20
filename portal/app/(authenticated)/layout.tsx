@@ -4,10 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { getLastOrgId } from "@/lib/auth";
-import {
-  PortalContextProvider,
-  useProfile,
-} from "@/hooks/use-portal-context";
+import { PortalContextProvider, useProfile } from "@/hooks/use-portal-context";
 import { PortalTopbar } from "@/components/portal-topbar";
 import {
   PortalSidebar,

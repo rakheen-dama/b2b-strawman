@@ -24,17 +24,17 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-import { ProjectCard } from "@/components/project-card";
+import { MatterCard } from "@/components/matter-card";
 
-describe("ProjectCard", () => {
+describe("MatterCard", () => {
   afterEach(() => {
     cleanup();
   });
 
   it("renders project name, description, and document count", () => {
     render(
-      <ProjectCard
-        project={{
+      <MatterCard
+        matter={{
           id: "proj-1",
           name: "Website Redesign",
           description: "Redesigning the company website for modern standards",
@@ -53,8 +53,8 @@ describe("ProjectCard", () => {
 
   it("links to the project detail page", () => {
     render(
-      <ProjectCard
-        project={{
+      <MatterCard
+        matter={{
           id: "proj-42",
           name: "Annual Report",
           description: null,

@@ -49,7 +49,9 @@ describe("auth", () => {
   it("getAuth returns stored data when JWT is valid", () => {
     const jwt = buildMockJwt();
     // JWT expires in the future
-    mockDecodeJwt.mockReturnValue({ exp: Math.floor(Date.now() / 1000) + 3600 } as ReturnType<typeof decodeJwt>);
+    mockDecodeJwt.mockReturnValue({
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    } as ReturnType<typeof decodeJwt>);
 
     storeAuth(jwt, mockCustomer);
     const result = getAuth();
@@ -62,7 +64,9 @@ describe("auth", () => {
   it("getAuth returns null when JWT is expired", () => {
     const jwt = buildMockJwt();
     // JWT expired in the past
-    mockDecodeJwt.mockReturnValue({ exp: Math.floor(Date.now() / 1000) - 3600 } as ReturnType<typeof decodeJwt>);
+    mockDecodeJwt.mockReturnValue({
+      exp: Math.floor(Date.now() / 1000) - 3600,
+    } as ReturnType<typeof decodeJwt>);
 
     storeAuth(jwt, mockCustomer);
     const result = getAuth();

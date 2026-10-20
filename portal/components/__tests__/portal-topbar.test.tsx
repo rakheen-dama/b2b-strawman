@@ -11,12 +11,11 @@ vi.mock("next/link", () => ({
     children: React.ReactNode;
     href: string;
     [k: string]: unknown;
-  }) =>
-    (
-      <a href={href} {...props}>
-        {children}
-      </a>
-    ),
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 const mockLogout = vi.fn();

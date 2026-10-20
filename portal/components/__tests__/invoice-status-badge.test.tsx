@@ -29,7 +29,9 @@ describe("InvoiceStatusBadge", () => {
   });
 
   it("falls back gracefully for unknown statuses", () => {
-    const { container } = render(<InvoiceStatusBadge status="UNKNOWN_STATUS" />);
+    const { container } = render(
+      <InvoiceStatusBadge status="UNKNOWN_STATUS" />,
+    );
     expect(screen.getByText("UNKNOWN STATUS")).toBeInTheDocument();
     const badge = container.querySelector("[data-slot='badge']");
     // Falls back to VOID colors

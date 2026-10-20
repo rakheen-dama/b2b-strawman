@@ -13,19 +13,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import { useTerminology } from "@/lib/terminology";
 import type {
-  PortalProjectDetail,
+  PortalMatterDetail,
   PortalTask,
   PortalDocument,
   PortalComment,
-  PortalProjectSummary,
+  PortalMatterSummary,
 } from "@/lib/types";
 
 interface ProjectData {
-  project: PortalProjectDetail;
+  project: PortalMatterDetail;
   tasks: PortalTask[];
   documents: PortalDocument[];
   comments: PortalComment[];
-  summary: PortalProjectSummary;
+  summary: PortalMatterSummary;
 }
 
 function PageSkeleton() {
@@ -67,20 +67,13 @@ export default function ProjectDetailPage() {
     setError(null);
     setIsLoading(true);
     try {
-      const [project, tasks, documents, comments, summary] =
-        await Promise.all([
-          portalGet<PortalProjectDetail>(`/portal/matters/${projectId}`),
-          portalGet<PortalTask[]>(`/portal/matters/${projectId}/tasks`),
-          portalGet<PortalDocument[]>(
-            `/portal/matters/${projectId}/documents`,
-          ),
-          portalGet<PortalComment[]>(
-            `/portal/matters/${projectId}/comments`,
-          ),
-          portalGet<PortalProjectSummary>(
-            `/portal/matters/${projectId}/summary`,
-          ),
-        ]);
+      const [project, tasks, documents, comments, summary] = await Promise.all([
+        portalGet<PortalMatterDetail>(`/portal/matters/${projectId}`),
+        portalGet<PortalTask[]>(`/portal/matters/${projectId}/tasks`),
+        portalGet<PortalDocument[]>(`/portal/matters/${projectId}/documents`),
+        portalGet<PortalComment[]>(`/portal/matters/${projectId}/comments`),
+        portalGet<PortalMatterSummary>(`/portal/matters/${projectId}/summary`),
+      ]);
 
       if (!isMountedRef.current || requestId !== requestIdRef.current) return;
       setData({ project, tasks, documents, comments, summary });
@@ -102,11 +95,11 @@ export default function ProjectDetailPage() {
 
   function handleCommentPosted() {
     // Refetch comments
-    portalGet<PortalComment[]>(
-      `/portal/matters/${projectId}/comments`,
-    ).then((comments) => {
-      setData((prev) => (prev ? { ...prev, comments } : prev));
-    }).catch(() => {});
+    portalGet<PortalComment[]>(`/portal/matters/${projectId}/comments`)
+      .then((comments) => {
+        setData((prev) => (prev ? { ...prev, comments } : prev));
+      })
+      .catch(() => {});
   }
 
   if (isLoading) {
@@ -120,8 +113,8 @@ export default function ProjectDetailPage() {
           {error ?? `${t("Project")} not found`}
         </p>
         <p className="mt-1 text-sm text-slate-500">
-          This {t("project")} may have been removed, you may not have access, or the
-          request failed. Please try again.
+          This {t("project")} may have been removed, you may not have access, or
+          the request failed. Please try again.
         </p>
         <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row">
           <button

@@ -4,12 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@b2mash/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@b2mash/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { publicFetch } from "@/lib/api-client";
 import { storeAuth } from "@/lib/auth";
 
@@ -46,7 +41,9 @@ function ExchangeHandler() {
 
         if (!response.ok) {
           if (!cancelled) {
-            setError("Link expired or invalid. Please request a new login link.");
+            setError(
+              "Link expired or invalid. Please request a new login link.",
+            );
           }
           return;
         }
@@ -55,7 +52,9 @@ function ExchangeHandler() {
 
         if (!data.token) {
           if (!cancelled) {
-            setError("Link expired or invalid. Please request a new login link.");
+            setError(
+              "Link expired or invalid. Please request a new login link.",
+            );
           }
           return;
         }
@@ -86,7 +85,9 @@ function ExchangeHandler() {
         }
       } catch {
         if (!cancelled) {
-          setError("Network error. Please check your connection and try again.");
+          setError(
+            "Network error. Please check your connection and try again.",
+          );
         }
       }
     }

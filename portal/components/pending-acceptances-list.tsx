@@ -24,9 +24,7 @@ function AcceptanceSkeleton() {
 }
 
 export function PendingAcceptancesList() {
-  const [acceptances, setAcceptances] = useState<PortalPendingAcceptance[]>(
-    [],
-  );
+  const [acceptances, setAcceptances] = useState<PortalPendingAcceptance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

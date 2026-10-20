@@ -83,7 +83,9 @@ describe("ExchangePage", () => {
       expect(screen.getByText(/Link expired or invalid/)).toBeInTheDocument();
     });
 
-    expect(screen.getByRole("link", { name: "Back to Login" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Back to Login" }),
+    ).toBeInTheDocument();
   });
 
   it("shows loading state while exchanging", () => {

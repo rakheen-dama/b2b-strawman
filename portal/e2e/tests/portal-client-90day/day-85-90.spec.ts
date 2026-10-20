@@ -27,7 +27,8 @@ const PORTAL_EMAIL =
   process.env.PORTAL_CONTACT_EMAIL || "sipho.portal@example.com";
 const SKIP = process.env.SKIP_PORTAL_BASELINES === "true";
 
-test.describe.serial("Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11)", () => {
+test.describe
+  .serial("Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11)", () => {
   test.beforeAll(async () => {
     test.skip(
       SKIP,
@@ -87,7 +88,9 @@ test.describe.serial("Day 85–90 — Portal Client Lifecycle (Checkpoints 10–
     });
   });
 
-  test("Day 85: Client changes digest cadence to biweekly", async ({ page }) => {
+  test("Day 85: Client changes digest cadence to biweekly", async ({
+    page,
+  }) => {
     await page.goto("/settings/notifications");
     await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(500);
@@ -109,7 +112,9 @@ test.describe.serial("Day 85–90 — Portal Client Lifecycle (Checkpoints 10–
       const biweeklyOption = page
         .getByRole("option", { name: /biweekly|bi-weekly|every other/i })
         .first();
-      if (await biweeklyOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+      if (
+        await biweeklyOption.isVisible({ timeout: 2000 }).catch(() => false)
+      ) {
         await biweeklyOption.click();
         await page.waitForTimeout(300);
       }
@@ -123,9 +128,7 @@ test.describe.serial("Day 85–90 — Portal Client Lifecycle (Checkpoints 10–
       }
     }
 
-    const saveBtn = page
-      .getByRole("button", { name: /save|update/i })
-      .first();
+    const saveBtn = page.getByRole("button", { name: /save|update/i }).first();
     if (await saveBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
       await saveBtn.click();
       await page.waitForTimeout(800);
@@ -150,7 +153,9 @@ test.describe.serial("Day 85–90 — Portal Client Lifecycle (Checkpoints 10–
   });
 
   // ── Checkpoint 11 — Day 90: final digest + activity trail ──────────────
-  test("Day 90: Client reviews activity trail of the quarter", async ({ page }) => {
+  test("Day 90: Client reviews activity trail of the quarter", async ({
+    page,
+  }) => {
     // The activity trail lives either on /home (scrolled to an activity
     // section) or on a dedicated /profile/activity route. Try /home first;
     // it is the documented landing target for the quarter-summary digest link.

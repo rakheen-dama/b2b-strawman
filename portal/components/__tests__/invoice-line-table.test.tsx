@@ -38,8 +38,12 @@ describe("InvoiceLineTable", () => {
     );
 
     // Both mobile and desktop layouts render in the DOM; CSS toggles them.
-    expect(screen.getAllByText("Design consultation").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("Development work").length).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByText("Design consultation").length,
+    ).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByText("Development work").length,
+    ).toBeGreaterThanOrEqual(1);
   });
 
   it("shows subtotal, tax, and total in footer", () => {

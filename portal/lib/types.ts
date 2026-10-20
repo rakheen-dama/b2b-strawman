@@ -21,9 +21,9 @@ export interface BrandingInfo {
   footerText: string | null;
 }
 
-// === Projects ===
+// === Matters ===
 
-export interface PortalProject {
+export interface PortalMatter {
   id: string;
   name: string;
   description: string | null;
@@ -32,7 +32,7 @@ export interface PortalProject {
   status?: string; // ACTIVE | CLOSED | COMPLETED | ON_HOLD | CANCELLED — optional until backend list endpoint surfaces it
 }
 
-export interface PortalProjectDetail {
+export interface PortalMatterDetail {
   id: string;
   name: string;
   status: string;
@@ -144,7 +144,7 @@ export interface PaymentStatusResponse {
 
 // === Summary ===
 
-export interface PortalProjectSummary {
+export interface PortalMatterSummary {
   matterId: string;
   totalHours: number;
   billableHours: number;

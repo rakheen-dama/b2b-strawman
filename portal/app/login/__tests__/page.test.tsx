@@ -50,7 +50,9 @@ describe("LoginPage", () => {
     render(<LoginPage />);
 
     expect(screen.getByLabelText("Email address")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Send Magic Link" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Send Magic Link" }),
+    ).toBeInTheDocument();
   });
 
   it("shows success message after submitting email", async () => {
@@ -60,13 +62,21 @@ describe("LoginPage", () => {
     mockPublicFetch
       .mockResolvedValueOnce(
         new Response(
-          JSON.stringify({ orgName: "Test Corp", logoUrl: null, brandColor: null, footerText: null }),
+          JSON.stringify({
+            orgName: "Test Corp",
+            logoUrl: null,
+            brandColor: null,
+            footerText: null,
+          }),
           { status: 200 },
         ),
       )
       .mockResolvedValueOnce(
         new Response(
-          JSON.stringify({ message: "If an account exists, a link has been sent.", magicLink: null }),
+          JSON.stringify({
+            message: "If an account exists, a link has been sent.",
+            magicLink: null,
+          }),
           { status: 200 },
         ),
       );
@@ -77,7 +87,9 @@ describe("LoginPage", () => {
     await user.click(screen.getByRole("button", { name: "Send Magic Link" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Check your email for a login link.")).toBeInTheDocument();
+      expect(
+        screen.getByText("Check your email for a login link."),
+      ).toBeInTheDocument();
     });
   });
 
@@ -109,7 +121,12 @@ describe("LoginPage", () => {
     mockPublicFetch
       .mockResolvedValueOnce(
         new Response(
-          JSON.stringify({ orgName: "Mathebula & Partners", logoUrl: null, brandColor: null, footerText: null }),
+          JSON.stringify({
+            orgName: "Mathebula & Partners",
+            logoUrl: null,
+            brandColor: null,
+            footerText: null,
+          }),
           { status: 200 },
         ),
       )
@@ -126,7 +143,10 @@ describe("LoginPage", () => {
       expect(screen.getByText("Mathebula & Partners")).toBeInTheDocument();
     });
 
-    await user.type(screen.getByLabelText("Email address"), "sipho@example.com");
+    await user.type(
+      screen.getByLabelText("Email address"),
+      "sipho@example.com",
+    );
     await user.click(screen.getByRole("button", { name: "Send Magic Link" }));
 
     // Confirm orgId from localStorage was threaded into the request body.
@@ -148,7 +168,10 @@ describe("LoginPage", () => {
     const user = userEvent.setup();
     render(<LoginPage />);
 
-    await user.type(screen.getByLabelText("Email address"), "first@example.com");
+    await user.type(
+      screen.getByLabelText("Email address"),
+      "first@example.com",
+    );
     await user.click(screen.getByRole("button", { name: "Send Magic Link" }));
 
     await waitFor(() => {
@@ -167,7 +190,12 @@ describe("LoginPage", () => {
     );
     mockPublicFetch.mockResolvedValue(
       new Response(
-        JSON.stringify({ orgName: "Mathebula & Partners", logoUrl: null, brandColor: null, footerText: null }),
+        JSON.stringify({
+          orgName: "Mathebula & Partners",
+          logoUrl: null,
+          brandColor: null,
+          footerText: null,
+        }),
         { status: 200 },
       ),
     );

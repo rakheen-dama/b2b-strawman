@@ -161,7 +161,7 @@ class CatalogueBatch2TrustBillingTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"customerId":"%s","currency":"ZAR","dueDate":"2026-03-31"}"""
+                        {"clientId":"%s","currency":"ZAR","dueDate":"2026-03-31"}"""
                             .formatted(invoiceClientId)))
             .andExpect(status().isCreated())
             .andReturn();

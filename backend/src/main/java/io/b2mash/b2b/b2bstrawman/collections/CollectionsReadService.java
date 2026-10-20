@@ -326,8 +326,8 @@ public class CollectionsReadService {
   // ── DTOs (§4.1 field spellings are contractual — 591B binds to these) ────────
 
   public record DebtorResponse(
-      UUID customerId,
-      String customerName,
+      UUID clientId,
+      String clientName,
       BigDecimal outstandingTotal,
       String currency,
       int invoiceCount,
@@ -343,8 +343,8 @@ public class CollectionsReadService {
   public record LastActivity(String stage, String status, Instant at) {}
 
   public record DebtorDetailResponse(
-      UUID customerId,
-      String customerName,
+      UUID clientId,
+      String clientName,
       boolean collectionsExempt,
       List<OutstandingInvoice> outstandingInvoices,
       Page<ActivityResponse> activities) {}

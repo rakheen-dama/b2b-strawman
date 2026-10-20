@@ -480,7 +480,7 @@ class PaymentReconciliationServiceIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR"
                         }
                         """
@@ -503,7 +503,7 @@ class PaymentReconciliationServiceIntegrationTest {
                       "quantity": 1,
                       "unitPrice": 1500.00,
                       "sortOrder": 0,
-                      "projectId": "%s"
+                      "matterId": "%s"
                     }
                     """
                         .formatted(projectId)))

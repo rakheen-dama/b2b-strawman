@@ -209,7 +209,7 @@ class BillingRunWithoutRetainersIntegrationTest {
     List<String> customerItemIds =
         JsonPath.read(
             previewResult.getResponse().getContentAsString(),
-            "$.items[?(@.customerId == '" + customerId + "')].id");
+            "$.items[?(@.clientId == '" + customerId + "')].id");
     assertThat(customerItemIds).as("preview must include the seeded customer").hasSize(1);
 
     // Generate.

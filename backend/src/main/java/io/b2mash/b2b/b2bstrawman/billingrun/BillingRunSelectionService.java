@@ -447,11 +447,11 @@ public class BillingRunSelectionService {
 
   private List<CustomerDiscoveryRow> discoverEligibleCustomers(
       BillingRun run, LoadPreviewRequest request) {
-    if (request == null || request.customerIds() == null || request.customerIds().isEmpty()) {
+    if (request == null || request.clientIds() == null || request.clientIds().isEmpty()) {
       return discoverCustomers(null, run.getPeriodFrom(), run.getPeriodTo(), run.getCurrency());
     } else {
       return discoverCustomers(
-          request.customerIds(), run.getPeriodFrom(), run.getPeriodTo(), run.getCurrency());
+          request.clientIds(), run.getPeriodFrom(), run.getPeriodTo(), run.getCurrency());
     }
   }
 

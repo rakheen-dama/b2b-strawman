@@ -179,7 +179,7 @@ class DashboardWithoutCapacityTest {
                 .param("includeProjections", "true")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.projects").isArray())
+        .andExpect(jsonPath("$.matters").isArray())
         .andExpect(jsonPath("$.projections").doesNotExist());
   }
 
@@ -264,12 +264,12 @@ class DashboardWithoutCapacityTest {
 
     // DTO contract: no profitability response carries projections; settings carry no capacity.
     assertThat(componentNames(ReportController.OrgProfitabilityResponse.class))
-        .contains("projects")
+        .contains("matters")
         .doesNotContain("projections");
-    assertThat(componentNames(ReportController.ProjectProfitabilityResponse.class))
+    assertThat(componentNames(ReportController.MatterProfitabilityResponse.class))
         .contains("currencies")
         .doesNotContain("projections");
-    assertThat(componentNames(ReportController.CustomerProfitabilityResponse.class))
+    assertThat(componentNames(ReportController.ClientProfitabilityResponse.class))
         .contains("currencies")
         .doesNotContain("projections");
     assertThat(componentNames(SettingsResponse.class))

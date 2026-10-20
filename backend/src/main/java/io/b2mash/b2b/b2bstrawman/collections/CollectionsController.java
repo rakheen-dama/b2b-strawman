@@ -37,11 +37,11 @@ public class CollectionsController {
     return ResponseEntity.ok(collectionsReadService.getDebtors(pageable));
   }
 
-  @GetMapping("/debtors/{customerId}")
+  @GetMapping("/debtors/{clientId}")
   @RequiresCapability("INVOICING")
   public ResponseEntity<DebtorDetailResponse> getDebtor(
-      @PathVariable UUID customerId, Pageable pageable) {
-    return ResponseEntity.ok(collectionsReadService.getDebtor(customerId, pageable));
+      @PathVariable UUID clientId, Pageable pageable) {
+    return ResponseEntity.ok(collectionsReadService.getDebtor(clientId, pageable));
   }
 
   @GetMapping("/activities")

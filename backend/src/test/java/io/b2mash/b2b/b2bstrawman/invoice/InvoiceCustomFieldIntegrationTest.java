@@ -339,7 +339,7 @@ class InvoiceCustomFieldIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR"
                         }
                         """

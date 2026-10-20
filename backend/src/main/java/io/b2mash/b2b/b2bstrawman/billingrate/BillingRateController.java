@@ -37,10 +37,10 @@ public class BillingRateController {
   @GetMapping
   public ResponseEntity<ListResponse<BillingRateResponse>> listRates(
       @RequestParam(required = false) UUID memberId,
-      @RequestParam(required = false) UUID projectId,
-      @RequestParam(required = false) UUID customerId) {
+      @RequestParam(required = false) UUID matterId,
+      @RequestParam(required = false) UUID clientId) {
 
-    var rates = billingRateService.listRates(memberId, projectId, customerId);
+    var rates = billingRateService.listRates(memberId, matterId, clientId);
     var names = billingRateService.resolveNames(rates);
     var content = rates.stream().map(r -> BillingRateResponse.from(r, names)).toList();
     return ResponseEntity.ok(new ListResponse<>(content));
@@ -55,8 +55,8 @@ public class BillingRateController {
     var rate =
         billingRateService.createRate(
             request.memberId(),
-            request.projectId(),
-            request.customerId(),
+            request.matterId(),
+            request.clientId(),
             request.currency(),
             request.hourlyRate(),
             request.effectiveFrom(),
@@ -101,10 +101,10 @@ public class BillingRateController {
   @GetMapping("/resolve")
   public ResponseEntity<ResolvedRateResponse> resolveRate(
       @RequestParam UUID memberId,
-      @RequestParam UUID projectId,
+      @RequestParam UUID matterId,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
-    var resolved = billingRateService.resolveRate(memberId, projectId, date);
+    var resolved = billingRateService.resolveRate(memberId, matterId, date);
     if (resolved.isPresent()) {
       var r = resolved.get();
       return ResponseEntity.ok(
@@ -119,8 +119,8 @@ public class BillingRateController {
 
   public record CreateBillingRateRequest(
       @NotNull(message = "memberId is required") UUID memberId,
-      UUID projectId,
-      UUID customerId,
+      UUID matterId,
+      UUID clientId,
       @NotBlank(message = "currency is required")
           @Size(min = 3, max = 3, message = "currency must be exactly 3 characters")
           String currency,
@@ -144,10 +144,10 @@ public class BillingRateController {
       UUID id,
       UUID memberId,
       String memberName,
-      UUID projectId,
-      String projectName,
-      UUID customerId,
-      String customerName,
+      UUID matterId,
+      String matterName,
+      UUID clientId,
+      String clientName,
       String scope,
       String currency,
       BigDecimal hourlyRate,

@@ -37,7 +37,7 @@ public final class BillingRunDtos {
       LocalDate periodTo,
       String currency,
       boolean includeExpenses,
-      Integer totalCustomers,
+      Integer totalClients,
       Integer totalInvoices,
       BigDecimal totalAmount,
       Integer totalSent,
@@ -68,18 +68,18 @@ public final class BillingRunDtos {
     }
   }
 
-  public record LoadPreviewRequest(List<UUID> customerIds) {}
+  public record LoadPreviewRequest(List<UUID> clientIds) {}
 
   public record BillingRunPreviewResponse(
       UUID billingRunId,
-      int totalCustomers,
+      int totalClients,
       BigDecimal totalUnbilledAmount,
       List<BillingRunItemResponse> items) {}
 
   public record BillingRunItemResponse(
       UUID id,
-      UUID customerId,
-      String customerName,
+      UUID clientId,
+      String clientName,
       BillingRunItemStatus status,
       BigDecimal unbilledTimeAmount,
       BigDecimal unbilledExpenseAmount,
@@ -118,10 +118,10 @@ public final class BillingRunDtos {
     }
   }
 
-  public record CustomerUnbilledSummary(
-      UUID customerId,
-      String customerName,
-      String customerEmail,
+  public record ClientUnbilledSummary(
+      UUID clientId,
+      String clientName,
+      String clientEmail,
       int unbilledTimeEntryCount,
       BigDecimal unbilledTimeAmount,
       int unbilledExpenseCount,
@@ -132,7 +132,7 @@ public final class BillingRunDtos {
 
   public record ExpenseResponse(
       UUID id,
-      UUID projectId,
+      UUID matterId,
       UUID memberId,
       LocalDate date,
       String description,
@@ -161,8 +161,8 @@ public final class BillingRunDtos {
 
   public record DisbursementResponse(
       UUID id,
-      UUID projectId,
-      UUID customerId,
+      UUID matterId,
+      UUID clientId,
       LocalDate incurredDate,
       String description,
       String category,

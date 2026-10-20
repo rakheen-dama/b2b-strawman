@@ -219,10 +219,10 @@ class BillingRunPreviewTest {
                 .content("{}"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.billingRunId").value(billingRunId))
-        .andExpect(jsonPath("$.totalCustomers").value(1))
+        .andExpect(jsonPath("$.totalClients").value(1))
         .andExpect(jsonPath("$.items").isArray())
         .andExpect(jsonPath("$.items.length()").value(1))
-        .andExpect(jsonPath("$.items[0].customerName").value("Preview Corp"))
+        .andExpect(jsonPath("$.items[0].clientName").value("Preview Corp"))
         .andExpect(jsonPath("$.items[0].unbilledTimeCount").value(2))
         .andExpect(jsonPath("$.items[0].unbilledExpenseCount").value(1))
         .andExpect(jsonPath("$.items[0].status").value("PENDING"));
@@ -241,12 +241,12 @@ class BillingRunPreviewTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"customerIds": ["%s"]}
+                    {"clientIds": ["%s"]}
                     """
                         .formatted(customerId)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.totalCustomers").value(1))
-        .andExpect(jsonPath("$.items[0].customerId").value(customerId.toString()));
+        .andExpect(jsonPath("$.totalClients").value(1))
+        .andExpect(jsonPath("$.items[0].clientId").value(customerId.toString()));
   }
 
   @Test
@@ -259,7 +259,7 @@ class BillingRunPreviewTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.totalCustomers").value(0))
+        .andExpect(jsonPath("$.totalClients").value(0))
         .andExpect(jsonPath("$.items").isArray())
         .andExpect(jsonPath("$.items.length()").value(0));
   }
@@ -336,7 +336,7 @@ class BillingRunPreviewTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.totalCustomers").value(1))
+        .andExpect(jsonPath("$.totalClients").value(1))
         .andExpect(jsonPath("$.items[0].unbilledTimeCount").value(1))
         .andExpect(jsonPath("$.items[0].unbilledExpenseCount").value(0));
   }
@@ -351,7 +351,7 @@ class BillingRunPreviewTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(1))
-        .andExpect(jsonPath("$[0].customerName").value("Preview Corp"))
+        .andExpect(jsonPath("$[0].clientName").value("Preview Corp"))
         .andExpect(jsonPath("$[0].status").value("PENDING"));
   }
 
@@ -431,7 +431,7 @@ class BillingRunPreviewTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.totalCustomers").value(2))
+            .andExpect(jsonPath("$.totalClients").value(2))
             .andReturn();
 
     // Verify items — one should be PENDING, one should be EXCLUDED

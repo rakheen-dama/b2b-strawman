@@ -8,15 +8,15 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Unbilled invoice-picker read model for a customer. Contains three parallel tracks: time entries
- * (grouped by project), expenses, and — for tenants with the {@code disbursements} module enabled
+ * Unbilled invoice-picker read model for a client. Contains three parallel tracks: time entries
+ * (grouped by matter), expenses, and — for tenants with the {@code disbursements} module enabled
  * (legal vertical) — legal disbursements. Non-legal tenants see an empty {@code disbursements}
  * list, keeping the response byte-compatible.
  */
 public record UnbilledTimeResponse(
-    UUID customerId,
-    String customerName,
-    List<UnbilledProjectGroup> projects,
+    UUID clientId,
+    String clientName,
+    List<UnbilledMatterGroup> matters,
     Map<String, CurrencyTotal> grandTotals,
     List<UnbilledExpenseEntry> unbilledExpenses,
     Map<String, BigDecimal> unbilledExpenseTotals,

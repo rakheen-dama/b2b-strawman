@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public record AddLineItemRequest(
-    UUID projectId,
+    UUID matterId,
     String description,
     @NotNull @Positive BigDecimal quantity,
     @PositiveOrZero BigDecimal unitPrice,

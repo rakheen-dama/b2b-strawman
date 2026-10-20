@@ -216,11 +216,11 @@ class CustomerProfitabilityTest {
   void aggregatesAcrossMultipleProjects() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/{customerId}/profitability", customerId)
+            get("/api/clients/{clientId}/profitability", customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_custprofit_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerId").value(customerId.toString()))
-        .andExpect(jsonPath("$.customerName").value("Test Customer"))
+        .andExpect(jsonPath("$.clientId").value(customerId.toString()))
+        .andExpect(jsonPath("$.clientName").value("Test Customer"))
         .andExpect(jsonPath("$.currencies").isArray())
         .andExpect(jsonPath("$.currencies.length()").value(1))
         .andExpect(jsonPath("$.currencies[0].currency").value("USD"))
@@ -235,7 +235,7 @@ class CustomerProfitabilityTest {
     // Only January entries: 2h from project 1 + 1h from project 2 = 3h billable, 0 non-billable
     mockMvc
         .perform(
-            get("/api/customers/{customerId}/profitability", customerId)
+            get("/api/clients/{clientId}/profitability", customerId)
                 .param("from", "2025-01-01")
                 .param("to", "2025-01-31")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_custprofit_owner")))
@@ -250,10 +250,10 @@ class CustomerProfitabilityTest {
   void customerWithNoLinkedProjectsReturnsEmptyCurrencies() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/{customerId}/profitability", customerIdNoProjects)
+            get("/api/clients/{clientId}/profitability", customerIdNoProjects)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_custprofit_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerId").value(customerIdNoProjects.toString()))
+        .andExpect(jsonPath("$.clientId").value(customerIdNoProjects.toString()))
         .andExpect(jsonPath("$.currencies").isArray())
         .andExpect(jsonPath("$.currencies.length()").value(0));
   }
@@ -264,7 +264,7 @@ class CustomerProfitabilityTest {
     // Regular member should be rejected — customer profitability is admin/owner only
     mockMvc
         .perform(
-            get("/api/customers/{customerId}/profitability", customerId)
+            get("/api/clients/{clientId}/profitability", customerId)
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_custprofit_member", "member")))
         .andExpect(status().isForbidden());
   }
@@ -275,7 +275,7 @@ class CustomerProfitabilityTest {
     // billableValue: 300, costValue: 175, margin: 125, marginPercent: 41.67
     mockMvc
         .perform(
-            get("/api/customers/{customerId}/profitability", customerId)
+            get("/api/clients/{clientId}/profitability", customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_custprofit_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.currencies[0].margin").isNumber())
@@ -288,7 +288,7 @@ class CustomerProfitabilityTest {
     UUID fakeId = UUID.randomUUID();
     mockMvc
         .perform(
-            get("/api/customers/{customerId}/profitability", fakeId)
+            get("/api/clients/{clientId}/profitability", fakeId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_custprofit_owner")))
         .andExpect(status().isNotFound());
   }

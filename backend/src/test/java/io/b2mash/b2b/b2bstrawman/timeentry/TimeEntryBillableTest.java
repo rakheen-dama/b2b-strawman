@@ -191,7 +191,7 @@ class TimeEntryBillableTest {
   void patchBillable_toggleFromTrueToFalse() throws Exception {
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/time-entries/" + billableEntryId + "/billable")
+            patch("/api/matters/" + projectId + "/time-entries/" + billableEntryId + "/billable")
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -209,7 +209,7 @@ class TimeEntryBillableTest {
   void patchBillable_toggleBackToTrue() throws Exception {
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/time-entries/" + billableEntryId + "/billable")
+            patch("/api/matters/" + projectId + "/time-entries/" + billableEntryId + "/billable")
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -228,7 +228,7 @@ class TimeEntryBillableTest {
     // member trying to toggle billable on owner's entry should be forbidden
     mockMvc
         .perform(
-            patch("/api/projects/" + projectId + "/time-entries/" + billableEntryId + "/billable")
+            patch("/api/matters/" + projectId + "/time-entries/" + billableEntryId + "/billable")
                 .with(memberJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

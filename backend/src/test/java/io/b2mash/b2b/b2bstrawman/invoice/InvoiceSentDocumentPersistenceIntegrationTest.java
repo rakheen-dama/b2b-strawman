@@ -219,7 +219,7 @@ class InvoiceSentDocumentPersistenceIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR",
                           "timeEntryIds": ["%s"]
                         }

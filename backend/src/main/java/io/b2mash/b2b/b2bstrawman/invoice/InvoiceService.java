@@ -162,7 +162,7 @@ public class InvoiceService {
   // --- Unbilled Time ---
 
   @Transactional(readOnly = true)
-  public List<BillingRunDtos.CustomerUnbilledSummary> getUnbilledSummary(
+  public List<BillingRunDtos.ClientUnbilledSummary> getUnbilledSummary(
       LocalDate periodFrom, LocalDate periodTo, String currency) {
     return unbilledTimeService.getUnbilledSummary(periodFrom, periodTo, currency);
   }

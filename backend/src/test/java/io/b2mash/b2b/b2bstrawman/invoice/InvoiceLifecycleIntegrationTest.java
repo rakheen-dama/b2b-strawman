@@ -174,7 +174,7 @@ class InvoiceLifecycleIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR",
                           "timeEntryIds": %s
                         }
@@ -196,7 +196,7 @@ class InvoiceLifecycleIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR"
                         }
                         """
@@ -215,7 +215,7 @@ class InvoiceLifecycleIntegrationTest {
                 .content(
                     """
                     {
-                      "projectId": "%s",
+                      "matterId": "%s",
                       "description": "Consulting",
                       "quantity": 1.0000,
                       "unitPrice": 5000.00,
@@ -258,7 +258,7 @@ class InvoiceLifecycleIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR"
                         }
                         """
@@ -574,7 +574,7 @@ class InvoiceLifecycleIntegrationTest {
                 .content(
                     """
                     {
-                      "customerId": "%s",
+                      "clientId": "%s",
                       "currency": "ZAR",
                       "timeEntryIds": ["%s"]
                     }

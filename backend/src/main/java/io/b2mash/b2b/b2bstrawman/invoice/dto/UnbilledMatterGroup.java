@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public record UnbilledProjectGroup(
-    UUID projectId,
-    String projectName,
+public record UnbilledMatterGroup(
+    UUID matterId,
+    String matterName,
     List<UnbilledTimeEntry> entries,
     Map<String, CurrencyTotal> totals) {}

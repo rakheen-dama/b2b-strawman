@@ -8,7 +8,7 @@ import io.b2mash.b2b.b2bstrawman.expense.ExpenseRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CurrencyTotal;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledExpenseEntry;
-import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledProjectGroup;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledMatterGroup;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeEntry;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
@@ -73,7 +73,7 @@ public class UnbilledTimeService {
   }
 
   @Transactional(readOnly = true)
-  public List<BillingRunDtos.CustomerUnbilledSummary> getUnbilledSummary(
+  public List<BillingRunDtos.ClientUnbilledSummary> getUnbilledSummary(
       LocalDate periodFrom, LocalDate periodTo, String currency) {
 
     String sql =
@@ -155,7 +155,7 @@ public class UnbilledTimeService {
                           .collect(Collectors.joining("; "))
                       : null;
 
-              return new BillingRunDtos.CustomerUnbilledSummary(
+              return new BillingRunDtos.ClientUnbilledSummary(
                   customerId,
                   customerName,
                   customerEmail,
@@ -279,7 +279,7 @@ public class UnbilledTimeService {
     Map<String, double[]> grandHours = new LinkedHashMap<>();
     Map<String, BigDecimal> grandAmounts = new LinkedHashMap<>();
 
-    List<UnbilledProjectGroup> projectGroups = new ArrayList<>();
+    List<UnbilledMatterGroup> projectGroups = new ArrayList<>();
     for (var mapEntry : grouped.entrySet()) {
       UUID projectId = mapEntry.getKey();
       List<UnbilledTimeEntry> entries = mapEntry.getValue();
@@ -309,7 +309,7 @@ public class UnbilledTimeService {
                 projAmounts.getOrDefault(curEntry.getKey(), BigDecimal.ZERO)));
       }
 
-      projectGroups.add(new UnbilledProjectGroup(projectId, projectName, entries, projTotals));
+      projectGroups.add(new UnbilledMatterGroup(projectId, projectName, entries, projTotals));
     }
 
     Map<String, CurrencyTotal> grandTotals = new LinkedHashMap<>();

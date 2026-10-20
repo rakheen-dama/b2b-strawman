@@ -418,7 +418,7 @@ class DeleteProtectionIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"customerId": "%s", "currency": "ZAR"}
+                        {"clientId": "%s", "currency": "ZAR"}
                         """
                             .formatted(customerId)))
             .andExpect(status().isCreated())
@@ -434,7 +434,7 @@ class DeleteProtectionIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"description": "Test line", "quantity": 1, "unitPrice": 100.00, "sortOrder": 0, "projectId": "%s"}
+                    {"description": "Test line", "quantity": 1, "unitPrice": 100.00, "sortOrder": 0, "matterId": "%s"}
                     """
                         .formatted(projectId)))
         .andExpect(status().isCreated());

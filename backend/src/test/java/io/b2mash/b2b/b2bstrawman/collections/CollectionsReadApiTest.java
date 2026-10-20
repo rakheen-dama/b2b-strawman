@@ -212,8 +212,8 @@ class CollectionsReadApiTest {
     // Ordered by outstandingTotal DESC: Alpha (412000) > Bravo (50000) > Charlie (30000) …
     // > Echo (1000) last.
     JsonNode alpha = content.get(0);
-    assertThat(alpha.get("customerName").asText()).isEqualTo("Alpha Naidoo Co");
-    assertThat(alpha.get("customerId").asText()).isEqualTo(custAlpha.toString());
+    assertThat(alpha.get("clientName").asText()).isEqualTo("Alpha Naidoo Co");
+    assertThat(alpha.get("clientId").asText()).isEqualTo(custAlpha.toString());
     assertThat(alpha.get("outstandingTotal").decimalValue())
         .isEqualByComparingTo(new BigDecimal("412000.00"));
     assertThat(alpha.get("currency").asText()).isEqualTo("ZAR");
@@ -236,13 +236,13 @@ class CollectionsReadApiTest {
 
     // Bravo: exempt flag surfaces; debtor book INCLUDES exempt customers.
     JsonNode bravo = content.get(1);
-    assertThat(bravo.get("customerName").asText()).isEqualTo("Bravo Exempt Co");
+    assertThat(bravo.get("clientName").asText()).isEqualTo("Bravo Exempt Co");
     assertThat(bravo.get("collectionsExempt").asBoolean()).isTrue();
     assertThat(bravo.get("lastActivity").isNull()).isTrue();
 
     // Charlie: not-yet-overdue SENT invoice lands in the `current` bucket.
     JsonNode charlie = content.get(2);
-    assertThat(charlie.get("customerName").asText()).isEqualTo("Charlie Current Co");
+    assertThat(charlie.get("clientName").asText()).isEqualTo("Charlie Current Co");
     assertThat(charlie.get("buckets").get("current").decimalValue())
         .isEqualByComparingTo(new BigDecimal("30000.00"));
     assertThat(charlie.get("collectionsExempt").asBoolean()).isFalse();
@@ -266,7 +266,7 @@ class CollectionsReadApiTest {
     BigDecimal usdTotal = null;
     int deltaRows = 0;
     for (JsonNode row : content) {
-      if (!custDelta.toString().equals(row.get("customerId").asText())) {
+      if (!custDelta.toString().equals(row.get("clientId").asText())) {
         continue;
       }
       deltaRows++;
@@ -299,7 +299,7 @@ class CollectionsReadApiTest {
     JsonNode content = objectMapper.readTree(response).get("content");
     JsonNode echo = null;
     for (JsonNode row : content) {
-      if (custEcho.toString().equals(row.get("customerId").asText())) {
+      if (custEcho.toString().equals(row.get("clientId").asText())) {
         echo = row;
       }
     }
@@ -333,12 +333,12 @@ class CollectionsReadApiTest {
     var response =
         mockMvc
             .perform(
-                get("/api/collections/debtors/{customerId}", custAlpha)
+                get("/api/collections/debtors/{clientId}", custAlpha)
                     .param("size", "1")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_read_owner")))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.customerId").value(custAlpha.toString()))
-            .andExpect(jsonPath("$.customerName").value("Alpha Naidoo Co"))
+            .andExpect(jsonPath("$.clientId").value(custAlpha.toString()))
+            .andExpect(jsonPath("$.clientName").value("Alpha Naidoo Co"))
             .andExpect(jsonPath("$.collectionsExempt").value(false))
             .andExpect(jsonPath("$.outstandingInvoices.length()").value(3))
             // Paged activities: 2 rows total, page size 1 returns 1.

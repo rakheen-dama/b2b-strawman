@@ -120,7 +120,7 @@ class PaymentEventsControllerIntegrationTest {
                     .content(
                         """
                         {
-                          "customerId": "%s",
+                          "clientId": "%s",
                           "currency": "ZAR"
                         }
                         """
@@ -143,7 +143,7 @@ class PaymentEventsControllerIntegrationTest {
                       "quantity": 1,
                       "unitPrice": 1000.00,
                       "sortOrder": 0,
-                      "projectId": "%s"
+                      "matterId": "%s"
                     }
                     """
                         .formatted(projectId)))

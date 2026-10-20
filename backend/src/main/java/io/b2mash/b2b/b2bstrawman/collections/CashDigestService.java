@@ -250,7 +250,7 @@ public class CashDigestService {
             .map(
                 d ->
                     new CashDigestData.TopRisk(
-                        d.customerName(),
+                        d.clientName(),
                         d.outstandingTotal(),
                         d.currency(),
                         d.signals(),

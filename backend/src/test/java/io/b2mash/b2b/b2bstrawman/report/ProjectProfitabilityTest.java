@@ -176,11 +176,11 @@ class ProjectProfitabilityTest {
   void projectWithAllBillableFieldsReturnsCorrectRevenue() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/{projectId}/profitability", projectId)
+            get("/api/matters/{matterId}/profitability", projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_projprofit_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.projectId").value(projectId.toString()))
-        .andExpect(jsonPath("$.projectName").value("Profit Test Project"))
+        .andExpect(jsonPath("$.matterId").value(projectId.toString()))
+        .andExpect(jsonPath("$.matterName").value("Profit Test Project"))
         .andExpect(jsonPath("$.currencies").isArray())
         .andExpect(jsonPath("$.currencies.length()").value(1))
         .andExpect(jsonPath("$.currencies[0].currency").value("USD"))
@@ -194,7 +194,7 @@ class ProjectProfitabilityTest {
   void projectWithMixedBillableNonBillableShowsCorrectHours() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/{projectId}/profitability", projectId)
+            get("/api/matters/{matterId}/profitability", projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_projprofit_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.currencies[0].totalBillableHours").value(2.5))
@@ -208,7 +208,7 @@ class ProjectProfitabilityTest {
     // Only January entries: 2h billable + 1h non-billable = 3h total
     mockMvc
         .perform(
-            get("/api/projects/{projectId}/profitability", projectId)
+            get("/api/matters/{matterId}/profitability", projectId)
                 .param("from", "2025-01-01")
                 .param("to", "2025-01-31")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_projprofit_owner")))
@@ -227,7 +227,7 @@ class ProjectProfitabilityTest {
     // marginPercent: 75 / 250 * 100 = 30.00
     mockMvc
         .perform(
-            get("/api/projects/{projectId}/profitability", projectId)
+            get("/api/matters/{matterId}/profitability", projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_projprofit_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.currencies[0].costValue").isNumber())
@@ -240,10 +240,10 @@ class ProjectProfitabilityTest {
   void emptyProjectReturnsEmptyCurrencies() throws Exception {
     mockMvc
         .perform(
-            get("/api/projects/{projectId}/profitability", projectIdEmpty)
+            get("/api/matters/{matterId}/profitability", projectIdEmpty)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_projprofit_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.projectId").value(projectIdEmpty.toString()))
+        .andExpect(jsonPath("$.matterId").value(projectIdEmpty.toString()))
         .andExpect(jsonPath("$.currencies").isArray())
         .andExpect(jsonPath("$.currencies.length()").value(0));
   }
@@ -254,7 +254,7 @@ class ProjectProfitabilityTest {
     // memberIdMember is not a member of the project — should get 404 (security-by-obscurity)
     mockMvc
         .perform(
-            get("/api/projects/{projectId}/profitability", projectId)
+            get("/api/matters/{matterId}/profitability", projectId)
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_projprofit_member", "member")))
         .andExpect(status().isNotFound());
   }
@@ -265,7 +265,7 @@ class ProjectProfitabilityTest {
     // Without from/to, all 3 entries should be included
     mockMvc
         .perform(
-            get("/api/projects/{projectId}/profitability", projectId)
+            get("/api/matters/{matterId}/profitability", projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_projprofit_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.currencies[0].totalHours").value(3.5));
@@ -275,7 +275,7 @@ class ProjectProfitabilityTest {
   @Order(8)
   void unauthenticatedRequestReturns401() throws Exception {
     mockMvc
-        .perform(get("/api/projects/{projectId}/profitability", projectId))
+        .perform(get("/api/matters/{matterId}/profitability", projectId))
         .andExpect(status().isUnauthorized());
   }
 }

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record CreateInvoiceRequest(
-    @NotNull UUID customerId,
+    @NotNull UUID clientId,
     @NotBlank @Size(min = 3, max = 3) String currency,
     List<UUID> timeEntryIds,
     List<UUID> expenseIds,

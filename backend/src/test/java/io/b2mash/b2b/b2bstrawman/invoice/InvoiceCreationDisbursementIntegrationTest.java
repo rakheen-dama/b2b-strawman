@@ -217,7 +217,7 @@ class InvoiceCreationDisbursementIntegrationTest {
 
     String body =
         """
-        { "customerId": "%s", "currency": "ZAR", "disbursementIds": ["%s","%s","%s"] }
+        { "clientId": "%s", "currency": "ZAR", "disbursementIds": ["%s","%s","%s"] }
         """
             .formatted(customerId, std15, zero, exempt);
 
@@ -269,7 +269,7 @@ class InvoiceCreationDisbursementIntegrationTest {
 
     String body =
         """
-        { "customerId": "%s", "currency": "ZAR", "disbursementIds": ["%s"] }
+        { "clientId": "%s", "currency": "ZAR", "disbursementIds": ["%s"] }
         """
             .formatted(customerId, d1);
 
@@ -317,7 +317,7 @@ class InvoiceCreationDisbursementIntegrationTest {
 
     String body =
         """
-        { "customerId": "%s", "currency": "ZAR", "disbursementIds": ["%s","%s"] }
+        { "clientId": "%s", "currency": "ZAR", "disbursementIds": ["%s","%s"] }
         """
             .formatted(customerId, d1, d2);
 
@@ -351,7 +351,7 @@ class InvoiceCreationDisbursementIntegrationTest {
 
     String body =
         """
-        { "customerId": "%s", "currency": "ZAR", "disbursementIds": ["%s"] }
+        { "clientId": "%s", "currency": "ZAR", "disbursementIds": ["%s"] }
         """
             .formatted(customerId, draftDisbId);
 
@@ -383,7 +383,7 @@ class InvoiceCreationDisbursementIntegrationTest {
 
     String body1 =
         """
-        { "customerId": "%s", "currency": "ZAR", "disbursementIds": ["%s"] }
+        { "clientId": "%s", "currency": "ZAR", "disbursementIds": ["%s"] }
         """
             .formatted(customerId, d1);
 
@@ -428,7 +428,7 @@ class InvoiceCreationDisbursementIntegrationTest {
     String body =
         """
         {
-          "customerId": "%s",
+          "clientId": "%s",
           "currency": "ZAR",
           "timeEntryIds": ["%s"],
           "disbursementIds": ["%s"]
@@ -491,7 +491,7 @@ class InvoiceCreationDisbursementIntegrationTest {
 
     String body =
         """
-        { "customerId": "%s", "currency": "ZAR", "disbursementIds": ["%s","%s"] }
+        { "clientId": "%s", "currency": "ZAR", "disbursementIds": ["%s","%s"] }
         """
             .formatted(customerId, goodId, mismatchedId);
 

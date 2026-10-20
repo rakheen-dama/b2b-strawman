@@ -235,14 +235,14 @@ class OrgProfitabilityTest {
                 .param("to", "2025-12-31")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_orgprofit_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.projects").isArray())
-        .andExpect(jsonPath("$.projects.length()").value(3))
+        .andExpect(jsonPath("$.matters").isArray())
+        .andExpect(jsonPath("$.matters.length()").value(3))
         // Sorted by margin DESC: P1 (180) > P3 (135) > P2 (90)
-        .andExpect(jsonPath("$.projects[0].projectName").value("High Margin Project"))
-        .andExpect(jsonPath("$.projects[0].currency").value("USD"))
-        .andExpect(jsonPath("$.projects[0].billableHours").value(2.0))
-        .andExpect(jsonPath("$.projects[1].projectName").value("No Cost Project"))
-        .andExpect(jsonPath("$.projects[2].projectName").value("Low Margin Project"));
+        .andExpect(jsonPath("$.matters[0].matterName").value("High Margin Project"))
+        .andExpect(jsonPath("$.matters[0].currency").value("USD"))
+        .andExpect(jsonPath("$.matters[0].billableHours").value(2.0))
+        .andExpect(jsonPath("$.matters[1].matterName").value("No Cost Project"))
+        .andExpect(jsonPath("$.matters[2].matterName").value("Low Margin Project"));
   }
 
   @Test
@@ -256,11 +256,11 @@ class OrgProfitabilityTest {
                 .param("customerId", customerId.toString())
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_orgprofit_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.projects").isArray())
-        .andExpect(jsonPath("$.projects.length()").value(2))
+        .andExpect(jsonPath("$.matters").isArray())
+        .andExpect(jsonPath("$.matters.length()").value(2))
         // Only projects linked to the customer (P1, P2)
-        .andExpect(jsonPath("$.projects[0].customerName").value("OrgProfit Customer"))
-        .andExpect(jsonPath("$.projects[1].customerName").value("OrgProfit Customer"));
+        .andExpect(jsonPath("$.matters[0].clientName").value("OrgProfit Customer"))
+        .andExpect(jsonPath("$.matters[1].clientName").value("OrgProfit Customer"));
   }
 
   @Test
@@ -274,8 +274,8 @@ class OrgProfitabilityTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_orgprofit_owner")))
         .andExpect(status().isOk())
         // Project 3 (No Cost Project) has no customer link
-        .andExpect(jsonPath("$.projects[1].projectName").value("No Cost Project"))
-        .andExpect(jsonPath("$.projects[1].customerName").isEmpty());
+        .andExpect(jsonPath("$.matters[1].matterName").value("No Cost Project"))
+        .andExpect(jsonPath("$.matters[1].clientName").isEmpty());
   }
 
   @Test

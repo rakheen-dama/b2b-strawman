@@ -154,7 +154,7 @@ class ReportCapabilityTest {
   void customRoleWithCapability_accessesCustomerProfitability_returns200() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/{customerId}/profitability", testCustomerId)
+            get("/api/clients/{clientId}/profitability", testCustomerId)
                 .param("from", "2026-01-01")
                 .param("to", "2026-12-31")
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_rpt_314a_custom", "member")))
@@ -165,7 +165,7 @@ class ReportCapabilityTest {
   void customRoleWithoutCapability_accessesCustomerProfitability_returns403() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/{customerId}/profitability", testCustomerId)
+            get("/api/clients/{clientId}/profitability", testCustomerId)
                 .param("from", "2026-01-01")
                 .param("to", "2026-12-31")
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_rpt_314a_nocap", "member")))

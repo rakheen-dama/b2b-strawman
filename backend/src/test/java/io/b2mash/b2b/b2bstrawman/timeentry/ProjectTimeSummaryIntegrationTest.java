@@ -170,9 +170,9 @@ class ProjectTimeSummaryIntegrationTest {
     // Contributors: 3 (owner, member, member2)
     // Entries: 6
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/time-summary").with(ownerJwt()))
+        .perform(get("/api/matters/" + projectId + "/time-summary").with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.projectId").value(projectId))
+        .andExpect(jsonPath("$.matterId").value(projectId))
         .andExpect(jsonPath("$.billableMinutes").value(150))
         .andExpect(jsonPath("$.nonBillableMinutes").value(210))
         .andExpect(jsonPath("$.totalMinutes").value(360))
@@ -183,7 +183,7 @@ class ProjectTimeSummaryIntegrationTest {
   @Test
   void emptyProjectReturnsZeroes() throws Exception {
     mockMvc
-        .perform(get("/api/projects/" + emptyProjectId + "/time-summary").with(ownerJwt()))
+        .perform(get("/api/matters/" + emptyProjectId + "/time-summary").with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.billableMinutes").value(0))
         .andExpect(jsonPath("$.nonBillableMinutes").value(0))
@@ -195,7 +195,7 @@ class ProjectTimeSummaryIntegrationTest {
   @Test
   void byMemberBreakdownReturnsPerMemberRows() throws Exception {
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/time-summary/by-member").with(ownerJwt()))
+        .perform(get("/api/matters/" + projectId + "/time-summary/by-member").with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(3)))
         // Each member should have their aggregated totals
@@ -213,7 +213,7 @@ class ProjectTimeSummaryIntegrationTest {
   void byMemberRestrictedToLeadContributorGets403() throws Exception {
     // memberJwt() is a contributor (org:member with contributor project role)
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/time-summary/by-member").with(memberJwt()))
+        .perform(get("/api/matters/" + projectId + "/time-summary/by-member").with(memberJwt()))
         .andExpect(status().isForbidden());
   }
 
@@ -224,7 +224,7 @@ class ProjectTimeSummaryIntegrationTest {
         syncMember(ORG_ID, "user_pts_admin", "pts_admin@test.com", "PTS Admin", "admin");
 
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/time-summary/by-member").with(adminJwt()))
+        .perform(get("/api/matters/" + projectId + "/time-summary/by-member").with(adminJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(3)));
   }
@@ -232,7 +232,7 @@ class ProjectTimeSummaryIntegrationTest {
   @Test
   void byTaskBreakdownReturnsPerTaskRows() throws Exception {
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/time-summary/by-task").with(memberJwt()))
+        .perform(get("/api/matters/" + projectId + "/time-summary/by-task").with(memberJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(3)))
         // Task Alpha: 60+90+15 = 165, billable=60+15=75, entries=3
@@ -253,7 +253,7 @@ class ProjectTimeSummaryIntegrationTest {
   void nonProjectMemberGets404() throws Exception {
     // Tenant B owner cannot see tenant A's project summary
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/time-summary").with(tenantBOwnerJwt()))
+        .perform(get("/api/matters/" + projectId + "/time-summary").with(tenantBOwnerJwt()))
         .andExpect(status().isNotFound());
   }
 
@@ -262,7 +262,7 @@ class ProjectTimeSummaryIntegrationTest {
     // Already verified through projectTimeSummaryReturnsCorrectTotals
     // Additional check: verify billable/non-billable separation in summary
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/time-summary").with(ownerJwt()))
+        .perform(get("/api/matters/" + projectId + "/time-summary").with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(
             jsonPath("$.billableMinutes")
@@ -276,7 +276,7 @@ class ProjectTimeSummaryIntegrationTest {
   void memberCanViewProjectTotals() throws Exception {
     // Contributors (MEMBER+) can view project totals
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/time-summary").with(memberJwt()))
+        .perform(get("/api/matters/" + projectId + "/time-summary").with(memberJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalMinutes").value(360));
   }
@@ -285,7 +285,7 @@ class ProjectTimeSummaryIntegrationTest {
   void memberCanViewByTaskBreakdown() throws Exception {
     // Contributors can view per-task breakdown
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/time-summary/by-task").with(memberJwt()))
+        .perform(get("/api/matters/" + projectId + "/time-summary/by-task").with(memberJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(3)));
   }
@@ -299,7 +299,7 @@ class ProjectTimeSummaryIntegrationTest {
     // = 225 total, 105 billable, 120 non-billable, 3 contributors, 3 entries
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/time-summary")
+            get("/api/matters/" + projectId + "/time-summary")
                 .param("from", "2026-02-03")
                 .param("to", "2026-02-03")
                 .with(ownerJwt()))
@@ -315,7 +315,7 @@ class ProjectTimeSummaryIntegrationTest {
   void nullDateRangeReturnsAllTimeTotals() throws Exception {
     // No from/to params should return everything
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/time-summary").with(ownerJwt()))
+        .perform(get("/api/matters/" + projectId + "/time-summary").with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalMinutes").value(360))
         .andExpect(jsonPath("$.entryCount").value(6));
@@ -327,7 +327,7 @@ class ProjectTimeSummaryIntegrationTest {
     // task1
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/time-summary/by-task")
+            get("/api/matters/" + projectId + "/time-summary/by-task")
                 .param("from", "2026-02-04")
                 .param("to", "2026-02-06")
                 .with(ownerJwt()))
@@ -343,7 +343,7 @@ class ProjectTimeSummaryIntegrationTest {
   void timeEntriesInTenantADoNotAppearInTenantBSummary() throws Exception {
     // Tenant B's project summary should only include tenant B's entries
     mockMvc
-        .perform(get("/api/projects/" + projectBId + "/time-summary").with(tenantBOwnerJwt()))
+        .perform(get("/api/matters/" + projectBId + "/time-summary").with(tenantBOwnerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalMinutes").value(200))
         .andExpect(jsonPath("$.billableMinutes").value(200))
@@ -354,7 +354,7 @@ class ProjectTimeSummaryIntegrationTest {
   @Test
   void tenantACannotAccessTenantBProjectSummary() throws Exception {
     mockMvc
-        .perform(get("/api/projects/" + projectBId + "/time-summary").with(ownerJwt()))
+        .perform(get("/api/matters/" + projectBId + "/time-summary").with(ownerJwt()))
         .andExpect(status().isNotFound());
   }
 

@@ -25,18 +25,18 @@ public class AdminTimeEntryController {
   @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<ReSnapshotResponse> reSnapshot(
       @Valid @RequestBody ReSnapshotRequest request) {
-    if (request.projectId() == null
+    if (request.matterId() == null
         && request.memberId() == null
         && request.fromDate() == null
         && request.toDate() == null) {
       throw new InvalidStateException(
           "At least one filter required",
-          "Provide at least one of projectId, memberId, fromDate, or toDate");
+          "Provide at least one of matterId, memberId, fromDate, or toDate");
     }
 
     var result =
         timeEntryService.reSnapshotRates(
-            request.projectId(), request.memberId(), request.fromDate(), request.toDate());
+            request.matterId(), request.memberId(), request.fromDate(), request.toDate());
 
     return ResponseEntity.ok(
         new ReSnapshotResponse(
@@ -46,7 +46,7 @@ public class AdminTimeEntryController {
   // --- DTOs ---
 
   public record ReSnapshotRequest(
-      UUID projectId, UUID memberId, LocalDate fromDate, LocalDate toDate) {}
+      UUID matterId, UUID memberId, LocalDate fromDate, LocalDate toDate) {}
 
   public record ReSnapshotResponse(int entriesProcessed, int entriesUpdated, int entriesSkipped) {}
 }

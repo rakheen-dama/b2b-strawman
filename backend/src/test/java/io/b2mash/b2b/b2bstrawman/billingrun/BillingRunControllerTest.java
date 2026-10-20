@@ -161,7 +161,7 @@ class BillingRunControllerTest {
             .andExpect(jsonPath("$.periodTo").value("2026-03-31"))
             .andExpect(jsonPath("$.currency").value("USD"))
             .andExpect(jsonPath("$.includeExpenses").value(true))
-            .andExpect(jsonPath("$.totalCustomers").value(0))
+            .andExpect(jsonPath("$.totalClients").value(0))
             .andExpect(jsonPath("$.totalInvoices").value(0))
             .andReturn();
 

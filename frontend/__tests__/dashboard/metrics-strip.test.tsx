@@ -2,7 +2,6 @@ import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { MetricsStrip } from "@/components/dashboard/metrics-strip";
-import { TerminologyProvider } from "@/lib/terminology";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import type { KpiResponse, MatterHealth } from "@/lib/dashboard-types";
 
@@ -84,7 +83,7 @@ function renderWithProvider(ui: React.ReactElement, enabledModules: string[] = [
       enabledModules={enabledModules}
       terminologyNamespace={null}
     >
-      <TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>
+      {ui}
     </OrgProfileProvider>
   );
 }

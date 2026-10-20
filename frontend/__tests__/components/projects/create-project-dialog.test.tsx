@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
-import { TerminologyProvider } from "@/lib/terminology";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { SUGGESTED_WORK_TYPES } from "@/lib/constants/work-types";
 
@@ -17,9 +16,7 @@ vi.mock("@/app/(app)/org/[slug]/matters/actions", () => ({
 function renderDialog() {
   return render(
     <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
-      <TerminologyProvider verticalProfile={null}>
-        <CreateProjectDialog slug="acme" />
-      </TerminologyProvider>
+      <CreateProjectDialog slug="acme" />
     </OrgProfileProvider>
   );
 }
@@ -39,7 +36,7 @@ describe("CreateProjectDialog promoted fields (Epic 464)", () => {
     const user = userEvent.setup();
     renderDialog();
 
-    await user.click(screen.getByText(/new project/i));
+    await user.click(screen.getByText(/new matter/i));
 
     const input = await screen.findByLabelText(/reference number/i);
     expect(input).toBeInTheDocument();
@@ -50,7 +47,7 @@ describe("CreateProjectDialog promoted fields (Epic 464)", () => {
     const user = userEvent.setup();
     renderDialog();
 
-    await user.click(screen.getByText(/new project/i));
+    await user.click(screen.getByText(/new matter/i));
 
     const select = (await screen.findByLabelText(/priority/i)) as HTMLSelectElement;
     expect(select).toBeInTheDocument();
@@ -63,7 +60,7 @@ describe("CreateProjectDialog promoted fields (Epic 464)", () => {
     const user = userEvent.setup();
     renderDialog();
 
-    await user.click(screen.getByText(/new project/i));
+    await user.click(screen.getByText(/new matter/i));
 
     const input = await screen.findByLabelText(/work type/i);
     expect(input).toBeInTheDocument();
@@ -73,7 +70,7 @@ describe("CreateProjectDialog promoted fields (Epic 464)", () => {
     const user = userEvent.setup();
     renderDialog();
 
-    await user.click(screen.getByText(/new project/i));
+    await user.click(screen.getByText(/new matter/i));
 
     const input = await screen.findByLabelText(/work type/i);
     expect(input).toHaveAttribute("placeholder", "e.g. LITIGATION, CONVEYANCING");
@@ -87,14 +84,14 @@ describe("CreateProjectDialog promoted fields (Epic 464)", () => {
     const user = userEvent.setup();
     renderDialog();
 
-    await user.click(screen.getByText(/new project/i));
+    await user.click(screen.getByText(/new matter/i));
 
     await user.type(screen.getByLabelText(/^name$/i), "My Project");
     await user.type(screen.getByLabelText(/reference number/i), "REF-001");
     await user.selectOptions(screen.getByLabelText(/priority/i), "HIGH");
     await user.type(screen.getByLabelText(/work type/i), "Consulting");
 
-    await user.click(screen.getByRole("button", { name: /create project/i }));
+    await user.click(screen.getByRole("button", { name: /create matter/i }));
 
     await waitFor(() => {
       expect(mockCreateProject).toHaveBeenCalled();

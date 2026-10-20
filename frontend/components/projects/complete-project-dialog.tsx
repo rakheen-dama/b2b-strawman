@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@b2mash/ui/button";
 import { completeProject } from "@/app/(app)/org/[slug]/matters/actions";
-import { useTerminology } from "@/lib/terminology";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, AlertTriangle, CircleAlert } from "lucide-react";
 
@@ -36,7 +35,6 @@ export function CompleteProjectDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUnbilledConfirm, setShowUnbilledConfirm] = useState(false);
-  const { t } = useTerminology();
 
   async function handleComplete(acknowledgeUnbilledTime = false) {
     setError(null);
@@ -94,7 +92,7 @@ export function CompleteProjectDialog({
             </div>
           </div>
           <AlertDialogTitle className="text-center">
-            {showUnbilledConfirm ? "Unbilled Time Warning" : `Complete ${t("Project")}`}
+            {showUnbilledConfirm ? "Unbilled Time Warning" : "Complete Matter"}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-center">
             {showUnbilledConfirm ? (

@@ -2,10 +2,9 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { TerminologyProvider } from "@/lib/terminology";
 import { TerminologyText } from "@/components/terminology-text";
-import { MyWorkHeader } from "@/app/(app)/org/[slug]/my-work/my-work-header";
 import { CalendarPageClient } from "@/app/(app)/org/[slug]/calendar/calendar-page-client";
 
-// MyWorkHeader renders DateRangeSelector, which uses the app router.
+// CalendarPageClient uses the app router.
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
   usePathname: () => "/org/test-org/my-work",
@@ -51,20 +50,6 @@ describe("LZKC-003: TerminologyText {a term} article token", () => {
   it("still substitutes plain tokens without an article", () => {
     withProfile("legal-za", <TerminologyText template="No {proposals} yet" />);
     expect(screen.getByText("No engagement letters yet")).toBeTruthy();
-  });
-});
-
-// ---- LZKC-021: My Work subtitle ----
-
-describe("LZKC-021: My Work header terminology", () => {
-  it("legal-za subtitle reads 'action items ... across all matters'", () => {
-    withProfile("legal-za", <MyWorkHeader from="2026-07-01" to="2026-07-31" />);
-    expect(screen.getByText("Your action items and time tracking across all matters")).toBeTruthy();
-  });
-
-  it("default subtitle unchanged without a profile", () => {
-    withProfile(null, <MyWorkHeader from="2026-07-01" to="2026-07-31" />);
-    expect(screen.getByText("Your tasks and time tracking across all projects")).toBeTruthy();
   });
 });
 

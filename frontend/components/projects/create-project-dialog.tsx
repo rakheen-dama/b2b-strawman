@@ -29,7 +29,6 @@ import type { Client } from "@/lib/types";
 import { Plus, ShieldAlert } from "lucide-react";
 import { createMessages } from "@/lib/messages";
 import { scrollToFirstError } from "@/lib/error-handler";
-import { useTerminology } from "@/lib/terminology";
 import { useSubscription } from "@/lib/subscription-context";
 import { ModuleGate } from "@/components/module-gate";
 import { Badge } from "@b2mash/ui/badge";
@@ -42,18 +41,6 @@ interface CreateProjectDialogProps {
 }
 
 export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
-  const { t } = useTerminology();
-  // Map keys with dotted notation fall through to identity when no
-  // TerminologyProvider/vertical profile is mounted; substitute a
-  // generic English placeholder so the literal key never renders.
-  const namePlaceholder =
-    t("project.namePlaceholder") === "project.namePlaceholder"
-      ? "e.g. Q4 Roadmap"
-      : t("project.namePlaceholder");
-  const referencePlaceholder =
-    t("project.referencePlaceholder") === "project.referencePlaceholder"
-      ? "e.g. PRJ-2026-001"
-      : t("project.referencePlaceholder");
   const { isWriteEnabled } = useSubscription();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -128,7 +115,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
             <span tabIndex={0} className="inline-flex">
               <Button size="sm" disabled={!isWriteEnabled} onClick={() => setOpen(true)}>
                 <Plus className="mr-1.5 size-4" />
-                New {t("Project")}
+                New Matter
               </Button>
             </span>
           </TooltipTrigger>
@@ -141,8 +128,8 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
       </TooltipProvider>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Create {t("Project")}</DialogTitle>
-          <DialogDescription>Add a new {t("project")} to your organization.</DialogDescription>
+          <DialogTitle>Create Matter</DialogTitle>
+          <DialogDescription>Add a new matter to your organization.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -153,7 +140,12 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder={namePlaceholder} maxLength={255} autoFocus {...field} />
+                    <Input
+                      placeholder="e.g. Dlamini v Road Accident Fund"
+                      maxLength={255}
+                      autoFocus
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -170,7 +162,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                   </FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder={`A brief description of the ${t("project")}...`}
+                      placeholder="A brief description of the matter..."
                       maxLength={2000}
                       rows={3}
                       {...field}
@@ -201,8 +193,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    {t("Customer")}{" "}
-                    <span className="text-muted-foreground font-normal">(optional)</span>
+                    Client <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <select
@@ -232,7 +223,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                     <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder={referencePlaceholder} maxLength={100} {...field} />
+                    <Input placeholder="e.g. RAF-2026-001" maxLength={100} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -294,7 +285,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                   <Badge variant="neutral">Coming Soon</Badge>
                 </div>
                 <p className="text-muted-foreground mt-2 text-sm">
-                  Run a conflict of interest check before creating this {t("project")}.
+                  Run a conflict of interest check before creating this matter.
                 </p>
                 <Button type="button" variant="outline" size="sm" disabled className="mt-3">
                   Run Conflict Check
@@ -311,7 +302,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : `Create ${t("Project")}`}
+                {isSubmitting ? "Creating..." : "Create Matter"}
               </Button>
             </DialogFooter>
           </form>

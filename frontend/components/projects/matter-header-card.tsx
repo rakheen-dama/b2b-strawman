@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Badge } from "@b2mash/ui/badge";
 import { Card } from "@b2mash/ui/card";
-import { TerminologyText } from "@/components/terminology-text";
 import { MATTER_STATUS_BADGE } from "@/lib/constants/matter-status";
 import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";
 import { MatterClosureAction } from "@/components/projects/matter-closure-action";
@@ -80,9 +79,7 @@ export function MatterHeaderCard({
             </div>
           )}
           {customers.length === 0 && (
-            <div className="text-sm text-slate-500 dark:text-slate-400">
-              <TerminologyText template="Internal {Project}" />
-            </div>
+            <div className="text-sm text-slate-500 dark:text-slate-400">Internal Matter</div>
           )}
         </div>
 

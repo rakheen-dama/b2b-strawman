@@ -19,7 +19,6 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { fetchCustomers, linkCustomerToProject } from "@/app/(app)/org/[slug]/matters/[id]/actions";
-import { useTerminology } from "@/lib/terminology";
 import type { Client } from "@/lib/types";
 
 interface LinkCustomerDialogProps {
@@ -38,7 +37,6 @@ export function LinkCustomerDialog({
   const [open, setOpen] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
-  const { t } = useTerminology();
 
   const {
     data: allCustomers,
@@ -83,31 +81,26 @@ export function LinkCustomerDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-w-md p-0">
         <DialogHeader className="px-4 pt-4">
-          <DialogTitle>Link {t("Customer")}</DialogTitle>
-          <DialogDescription>
-            Search and select a {t("customer")} to link to this {t("project")}.
-          </DialogDescription>
+          <DialogTitle>Link Client</DialogTitle>
+          <DialogDescription>Search and select a client to link to this matter.</DialogDescription>
         </DialogHeader>
 
         <Command className="border-t">
-          <CommandInput
-            placeholder={`Search ${t("customers")}...`}
-            disabled={isLoading || isLinking}
-          />
+          <CommandInput placeholder="Search clients..." disabled={isLoading || isLinking} />
           <CommandList>
             {isLoading ? (
               <div className="text-muted-foreground py-6 text-center text-sm">
-                Loading {t("customers")}...
+                Loading clients...
               </div>
             ) : fetchError ? (
               <div className="text-destructive py-6 text-center text-sm">
-                Failed to load {t("customers")}.
+                Failed to load clients.
               </div>
             ) : availableCustomers.length === 0 ? (
               <CommandEmpty>
                 {!allCustomers || allCustomers.length === 0
-                  ? `No ${t("customers")} found.`
-                  : `All ${t("customers")} are already linked to this ${t("project")}.`}
+                  ? "No clients found."
+                  : "All clients are already linked to this matter."}
               </CommandEmpty>
             ) : (
               <CommandGroup>

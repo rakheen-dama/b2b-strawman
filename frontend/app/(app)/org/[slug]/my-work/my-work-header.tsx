@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { DateRangeSelector } from "@/components/dashboard/date-range-selector";
-import { useTerminology } from "@/lib/terminology";
 
 interface MyWorkHeaderProps {
   from: string;
@@ -15,7 +14,6 @@ function parseDateString(dateStr: string): Date {
 }
 
 export function MyWorkHeader({ from, to }: MyWorkHeaderProps) {
-  const { t } = useTerminology();
   const [dateRange, setDateRange] = useState({
     from: parseDateString(from),
     to: parseDateString(to),
@@ -26,7 +24,7 @@ export function MyWorkHeader({ from, to }: MyWorkHeaderProps) {
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">My Work</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Your {t("tasks")} and time tracking across all {t("projects")}
+          Your tasks and time tracking across all matters
         </p>
       </div>
       <DateRangeSelector value={dateRange} onChange={setDateRange} />

@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
-import { TerminologyProvider } from "@/lib/terminology";
 import { SUGGESTED_WORK_TYPES } from "@/lib/constants/work-types";
 import type { Matter } from "@/lib/types";
 
@@ -25,11 +24,7 @@ const PROJECT = {
 } as unknown as Matter;
 
 function renderDialog() {
-  return render(
-    <TerminologyProvider verticalProfile={null}>
-      <EditProjectDialog project={PROJECT} slug="acme" open onOpenChange={() => {}} />
-    </TerminologyProvider>
-  );
+  return render(<EditProjectDialog project={PROJECT} slug="acme" open onOpenChange={() => {}} />);
 }
 
 describe("EditProjectDialog work type", () => {

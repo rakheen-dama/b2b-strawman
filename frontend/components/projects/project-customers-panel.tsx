@@ -9,7 +9,6 @@ import { LinkCustomerDialog } from "@/components/projects/link-customer-dialog";
 import { unlinkCustomerFromProject } from "@/app/(app)/org/[slug]/matters/[id]/actions";
 import { formatDate } from "@/lib/format";
 import type { Client } from "@/lib/types";
-import { useTerminology } from "@/lib/terminology";
 import Link from "next/link";
 
 interface ProjectCustomersPanelProps {
@@ -28,7 +27,6 @@ export function ProjectCustomersPanel({
   const [isPending, startTransition] = useTransition();
   const [unlinkingCustomerId, setUnlinkingCustomerId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { t } = useTerminology();
 
   function handleUnlink(customerId: string) {
     setError(null);
@@ -51,14 +49,14 @@ export function ProjectCustomersPanel({
   const header = (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <h2 className="font-semibold text-slate-900 dark:text-slate-100">{t("Customers")}</h2>
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">Clients</h2>
         {customers.length > 0 && <Badge variant="neutral">{customers.length}</Badge>}
       </div>
       {canManage && (
         <LinkCustomerDialog slug={slug} projectId={projectId} existingCustomers={customers}>
           <Button size="sm" variant="outline">
             <Plus className="mr-1.5 size-4" />
-            {`Link ${t("Customer")}`}
+            Link Client
           </Button>
         </LinkCustomerDialog>
       )}
@@ -71,8 +69,8 @@ export function ProjectCustomersPanel({
         {header}
         <EmptyState
           icon={Users}
-          title={`No linked ${t("customers")}`}
-          description={`Link ${t("customers")} to this ${t("project")} to track client work`}
+          title="No linked clients"
+          description="Link clients to this matter to track client work"
         />
       </div>
     );
@@ -131,7 +129,7 @@ export function ProjectCustomersPanel({
                         className="size-8 p-0 text-slate-400 hover:text-red-600 dark:text-slate-600 dark:hover:text-red-400"
                         onClick={() => handleUnlink(customer.id)}
                         disabled={isUnlinking || isPending}
-                        title={`Unlink ${t("customer")}`}
+                        title="Unlink client"
                       >
                         <X className="size-4" />
                         <span className="sr-only">Unlink</span>

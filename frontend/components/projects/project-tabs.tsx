@@ -4,8 +4,6 @@ import { useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { Tabs as TabsPrimitive } from "radix-ui";
 import { useOrgProfile } from "@/lib/org-profile";
-import { useTerminology } from "@/lib/terminology";
-import { auditTabLabel } from "@b2mash/shared/terminology-map";
 import { useAuditTabVisible } from "@/components/audit/audit-timeline-tab";
 import { GroupedTabBar } from "@/components/shared/grouped-tab-bar";
 import { TAB_GROUPS } from "@/lib/constants/project-tab-groups";
@@ -116,7 +114,6 @@ export function ProjectTabs({
   const urlTab = tabParam && validTabIds.has(tabParam) ? (tabParam as TabId) : null;
   const [userTab, setUserTab] = useState<TabId | null>(null);
   const { isModuleEnabled } = useOrgProfile();
-  const { t } = useTerminology();
 
   const requestedTab = urlTab ?? userTab;
 
@@ -133,7 +130,7 @@ export function ProjectTabs({
   const auditVisible = useAuditTabVisible();
   const showAudit = !!auditPanel && auditVisible;
 
-  // Build visible groups from TAB_GROUPS with module-gating and terminology rewriting
+  // Build visible groups from TAB_GROUPS with module-gating and legal tab labels
   const visibleGroups = useMemo(() => {
     /** Per-tab visibility map — true means the tab should be shown */
     const tabVisibility: Record<string, boolean> = {
@@ -152,7 +149,7 @@ export function ProjectTabs({
       generated: !!generatedPanel,
       // Dedupe: when the legal-specific Disbursements tab is shown AND the
       // generic Expenses tab is present, their labels collide in legal-za
-      // (terminology maps "Expenses" → "Disbursements"). Prefer the legal
+      // (both tabs are labelled "Disbursements"). Prefer the legal
       // tab and hide the generic one. GAP-L-38.
       expenses: !!expensesPanel && !showDisbursements,
       budget: true,
@@ -173,13 +170,12 @@ export function ProjectTabs({
       ...group,
       visible: group.tabs.some((t) => tabVisibility[t.id] !== false),
       tabs: group.tabs.map((tab) => {
-        // Apply terminology rewriting to specific tab labels
+        // Legal labels for tabs whose canonical constant label differs (constants re-authored in 615E)
         let label = tab.label;
-        if (tab.id === "customers") label = t("Customers");
-        if (tab.id === "expenses") label = t("Expenses");
-        if (tab.id === "budget") label = t("Budget");
-        if (tab.id === "customer-comments") label = `${t("Client")} Comments`;
-        if (tab.id === "audit") label = auditTabLabel(t);
+        if (tab.id === "customers") label = "Clients";
+        if (tab.id === "expenses") label = "Disbursements";
+        if (tab.id === "budget") label = "Fee estimate";
+        if (tab.id === "audit") label = "Audit trail";
         // Note: "Tasks" stays literal — GAP-L-38
 
         return {
@@ -190,7 +186,6 @@ export function ProjectTabs({
       }),
     }));
   }, [
-    t,
     correspondencePanel,
     generatedPanel,
     expensesPanel,

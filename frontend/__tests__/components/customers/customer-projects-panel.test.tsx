@@ -73,16 +73,16 @@ describe("CustomerProjectsPanel", () => {
   it("renders empty state when no projects", () => {
     render(<CustomerProjectsPanel projects={[]} slug="acme" customerId="c1" canManage={false} />);
 
-    expect(screen.getByText("No linked projects")).toBeInTheDocument();
+    expect(screen.getByText("No linked matters")).toBeInTheDocument();
   });
 
-  it("shows Link Project button when canManage is true", () => {
+  it("shows Link Matter button when canManage is true", () => {
     render(<CustomerProjectsPanel projects={[]} slug="acme" customerId="c1" canManage={true} />);
 
-    expect(screen.getByText("Link Project")).toBeInTheDocument();
+    expect(screen.getByText("Link Matter")).toBeInTheDocument();
   });
 
-  it("hides Link Project button when canManage is false", () => {
+  it("hides Link Matter button when canManage is false", () => {
     render(
       <CustomerProjectsPanel
         projects={mockProjects}
@@ -92,7 +92,7 @@ describe("CustomerProjectsPanel", () => {
       />
     );
 
-    expect(screen.queryByText("Link Project")).not.toBeInTheDocument();
+    expect(screen.queryByText("Link Matter")).not.toBeInTheDocument();
   });
 
   it("shows unlink buttons when canManage is true", () => {
@@ -100,7 +100,7 @@ describe("CustomerProjectsPanel", () => {
       <CustomerProjectsPanel projects={mockProjects} slug="acme" customerId="c1" canManage={true} />
     );
 
-    const unlinkButtons = screen.getAllByTitle("Unlink project");
+    const unlinkButtons = screen.getAllByTitle("Unlink matter");
     expect(unlinkButtons).toHaveLength(2);
   });
 

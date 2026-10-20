@@ -3,7 +3,6 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 import { ProjectStatusFilter } from "@/components/projects/project-status-filter";
-import { TerminologyProvider } from "@/lib/terminology";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import type { Client } from "@/lib/types";
 
@@ -127,12 +126,10 @@ describe("CreateProjectDialog", () => {
     const user = userEvent.setup();
     render(
       <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
-        <TerminologyProvider verticalProfile={null}>
-          <CreateProjectDialog slug="acme" />
-        </TerminologyProvider>
+        <CreateProjectDialog slug="acme" />
       </OrgProfileProvider>
     );
-    await user.click(screen.getByText("New Project"));
+    await user.click(screen.getByText("New Matter"));
     await waitFor(() => {
       expect(screen.getByLabelText(/due date/i)).toBeInTheDocument();
     });
@@ -140,18 +137,16 @@ describe("CreateProjectDialog", () => {
     expect(dueDateInput).toHaveAttribute("type", "date");
   });
 
-  it("renders customer dropdown when dialog is opened", async () => {
+  it("renders client dropdown when dialog is opened", async () => {
     const user = userEvent.setup();
     render(
       <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
-        <TerminologyProvider verticalProfile={null}>
-          <CreateProjectDialog slug="acme" />
-        </TerminologyProvider>
+        <CreateProjectDialog slug="acme" />
       </OrgProfileProvider>
     );
-    await user.click(screen.getByText("New Project"));
+    await user.click(screen.getByText("New Matter"));
     await waitFor(() => {
-      expect(screen.getByLabelText(/customer/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/client/i)).toBeInTheDocument();
     });
     // Wait for customers to load
     await waitFor(() => {
@@ -165,12 +160,10 @@ describe("CreateProjectDialog", () => {
     const user = userEvent.setup();
     render(
       <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
-        <TerminologyProvider verticalProfile={null}>
-          <CreateProjectDialog slug="acme" />
-        </TerminologyProvider>
+        <CreateProjectDialog slug="acme" />
       </OrgProfileProvider>
     );
-    await user.click(screen.getByText("New Project"));
+    await user.click(screen.getByText("New Matter"));
     await waitFor(() => {
       expect(mockFetchActiveCustomers).toHaveBeenCalledOnce();
     });

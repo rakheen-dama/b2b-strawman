@@ -44,20 +44,6 @@ vi.mock("motion/react", () => ({
   },
 }));
 
-vi.mock("@/lib/terminology", () => ({
-  useTerminology: () => ({
-    t: (term: string) => term,
-    verticalProfile: null,
-  }),
-}));
-
-vi.mock("@b2mash/shared/terminology-map", () => ({
-  auditTabLabel: (t: (s: string) => string) => {
-    const v = t("audit.tab");
-    return v === "audit.tab" ? "Audit" : v;
-  },
-}));
-
 // ---------------------------------------------------------------------------
 // Import component AFTER mocks
 // ---------------------------------------------------------------------------

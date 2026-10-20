@@ -98,7 +98,7 @@ describe("CustomerInvoicesTab", () => {
       />
     );
 
-    expect(screen.getByText("Invoices")).toBeInTheDocument();
+    expect(screen.getByText("Fee notes")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument(); // count badge
     expect(screen.getByText("INV-2026-001")).toBeInTheDocument();
     // "Draft" appears both as invoice number placeholder and status badge
@@ -160,7 +160,7 @@ describe("CustomerInvoicesTab", () => {
       />
     );
 
-    expect(screen.getByText("No invoices yet")).toBeInTheDocument();
-    expect(screen.getByText("Generate invoice from unbilled time entries")).toBeInTheDocument();
+    expect(screen.getByText("No fee notes yet")).toBeInTheDocument();
+    expect(screen.getByText("Generate fee note from unbilled time entries")).toBeInTheDocument();
   });
 });

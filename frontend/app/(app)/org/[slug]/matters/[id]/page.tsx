@@ -88,7 +88,6 @@ import { ProjectAdversePartiesTab } from "@/components/legal/project-adverse-par
 import { ProjectDisbursementsTab } from "@/components/legal/project-disbursements-tab";
 import { ProjectStatementsTab } from "@/components/legal/project-statements-tab";
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
-import { TerminologyText } from "@/components/terminology-text";
 import { RecordRecentItem } from "@/components/record-recent-item";
 import { createSavedViewAction } from "./view-actions";
 import { PROMOTED_PROJECT_SLUGS, PROMOTED_TASK_SLUGS } from "@/lib/constants/promoted-field-slugs";
@@ -428,7 +427,7 @@ export default async function ProjectDetailPage({
           className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ArrowLeft className="mr-1.5 size-4" />
-          <TerminologyText template="Back to {Projects}" />
+          Back to Matters
         </Link>
         <OverflowActionsMenu
           slug={slug}

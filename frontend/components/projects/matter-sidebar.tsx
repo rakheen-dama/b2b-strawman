@@ -7,7 +7,6 @@ import { ExpandableText } from "@/components/ui/expandable-text";
 import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
 import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
 import { TagInput } from "@/components/tags/TagInput";
-import { TerminologyText } from "@/components/terminology-text";
 import { MATTER_STATUS_BADGE } from "@/lib/constants/matter-status";
 import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";
 import { MatterClosureAction } from "@/components/projects/matter-closure-action";
@@ -70,7 +69,7 @@ export function MatterSidebar({
                 {customers[0].name}
               </Link>
             ) : (
-              <TerminologyText template="Internal {Project}" />
+              "Internal Matter"
             )}
           </span>
         </div>

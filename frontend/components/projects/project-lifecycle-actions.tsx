@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CompleteProjectDialog } from "@/components/projects/complete-project-dialog";
 import { archiveProject, reopenProject } from "@/app/(app)/org/[slug]/matters/actions";
-import { useTerminology } from "@/lib/terminology";
 import type { MatterStatus } from "@/lib/types";
 
 interface ProjectLifecycleActionsProps {
@@ -29,7 +28,6 @@ export function ProjectLifecycleActions({
 }: ProjectLifecycleActionsProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const { t } = useTerminology();
 
   function handleArchive() {
     setError(null);
@@ -59,7 +57,7 @@ export function ProjectLifecycleActions({
           <CompleteProjectDialog slug={slug} projectId={projectId} projectName={projectName}>
             <Button size="sm" variant="soft" data-testid="complete-project-btn">
               <Check className="mr-1.5 size-4" />
-              Complete {t("Project")}
+              Complete Matter
             </Button>
           </CompleteProjectDialog>
           <DropdownMenu>
@@ -76,7 +74,7 @@ export function ProjectLifecycleActions({
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={handleArchive} disabled={isPending}>
                 <Archive className="mr-2 size-4" />
-                Archive {t("Project")}
+                Archive Matter
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -110,7 +108,7 @@ export function ProjectLifecycleActions({
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={handleReopen} disabled={isPending}>
                 <RotateCcw className="mr-2 size-4" />
-                Reopen {t("Project")}
+                Reopen Matter
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

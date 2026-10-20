@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@b2mash/ui/card";
-import { useTerminology } from "@/lib/terminology";
 import { HealthBadge } from "@/components/dashboard/health-badge";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
 import type { MatterHealth } from "@/lib/dashboard-types";
@@ -59,19 +58,18 @@ export function ProjectHealthWidget({ projects, orgSlug }: ProjectHealthWidgetPr
   const [sortField, setSortField] = useState<SortField>("health");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const router = useRouter();
-  const { t } = useTerminology();
 
   if (!projects || projects.length === 0) {
     return (
       <Card data-testid="project-health-panel">
         <CardHeader>
-          <CardTitle className="text-sm font-medium">{t("Project Health")}</CardTitle>
+          <CardTitle className="text-sm font-medium">Matter Health</CardTitle>
         </CardHeader>
         <CardContent>
           <EmptyState
             icon={HeartPulse}
-            title={`No ${t("projects")} yet`}
-            description={`Create a ${t("project")} to start tracking health status.`}
+            title="No matters yet"
+            description="Create a matter to start tracking health status."
           />
         </CardContent>
       </Card>
@@ -117,7 +115,7 @@ export function ProjectHealthWidget({ projects, orgSlug }: ProjectHealthWidgetPr
   return (
     <Card data-testid="project-health-panel">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium">{t("Project Health")}</CardTitle>
+        <CardTitle className="text-sm font-medium">Matter Health</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 pt-0">
         {/* Filter Tabs */}
@@ -145,12 +143,12 @@ export function ProjectHealthWidget({ projects, orgSlug }: ProjectHealthWidgetPr
             role="columnheader"
             onClick={() => handleSort("name")}
             className="flex min-w-0 flex-1 items-center gap-1"
-            aria-label={`Sort by ${t("project")} name`}
+            aria-label="Sort by matter name"
             aria-sort={
               sortField === "name" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"
             }
           >
-            {t("Project")}
+            Matter
             {sortField === "name" && <SortIcon className="size-3" />}
           </button>
           <button
@@ -177,7 +175,7 @@ export function ProjectHealthWidget({ projects, orgSlug }: ProjectHealthWidgetPr
 
         {/* Project Rows */}
         {visibleProjects.length === 0 ? (
-          <p className="py-2 text-center text-xs text-slate-500 italic">{`No matching ${t("projects")}`}</p>
+          <p className="py-2 text-center text-xs text-slate-500 italic">No matching matters</p>
         ) : (
           <div className="space-y-0">
             {visibleProjects.map((project) => (
@@ -222,7 +220,7 @@ export function ProjectHealthWidget({ projects, orgSlug }: ProjectHealthWidgetPr
           className="h-7 text-xs text-slate-500"
           onClick={() => router.push(`/org/${orgSlug}/matters`)}
         >
-          View all {t("projects")} &rarr;
+          View all matters &rarr;
         </Button>
       </CardFooter>
     </Card>

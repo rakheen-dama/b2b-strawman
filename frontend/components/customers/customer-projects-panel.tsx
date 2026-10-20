@@ -8,7 +8,6 @@ import { Button } from "@b2mash/ui/button";
 import { LinkProjectDialog } from "@/components/customers/link-project-dialog";
 import { unlinkProject } from "@/app/(app)/org/[slug]/clients/[id]/actions";
 import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
-import { useTerminology } from "@/lib/terminology";
 import type { Matter, MatterStatus } from "@/lib/types";
 import Link from "next/link";
 
@@ -38,7 +37,6 @@ export function CustomerProjectsPanel({
   const [isPending, startTransition] = useTransition();
   const [unlinkingProjectId, setUnlinkingProjectId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { t } = useTerminology();
 
   function handleUnlink(projectId: string) {
     setError(null);
@@ -61,7 +59,7 @@ export function CustomerProjectsPanel({
   const header = (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <h2 className="font-semibold text-slate-900 dark:text-slate-100">{t("Projects")}</h2>
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">Matters</h2>
         {projects.length > 0 && <Badge variant="neutral">{projects.length}</Badge>}
       </div>
       {canManage && (
@@ -69,13 +67,13 @@ export function CustomerProjectsPanel({
           <Button size="sm" variant="outline" asChild>
             <Link href={`/org/${slug}/matters?new=1&customerId=${customerId}`}>
               <LayoutTemplate className="mr-1.5 size-4" />
-              New {t("Project")}
+              New Matter
             </Link>
           </Button>
           <LinkProjectDialog slug={slug} customerId={customerId} existingProjects={projects}>
             <Button size="sm" variant="outline">
               <Plus className="mr-1.5 size-4" />
-              Link {t("Project")}
+              Link Matter
             </Button>
           </LinkProjectDialog>
         </div>
@@ -89,8 +87,8 @@ export function CustomerProjectsPanel({
         {header}
         <EmptyState
           icon={FolderKanban}
-          title={`No linked ${t("projects")}`}
-          description={`Link ${t("projects")} to this ${t("customer")} to track their work`}
+          title="No linked matters"
+          description="Link matters to this client to track their work"
         />
       </div>
     );
@@ -105,7 +103,7 @@ export function CustomerProjectsPanel({
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-800">
               <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                {t("Project")}
+                Matter
               </th>
               <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                 Status
@@ -189,7 +187,7 @@ export function CustomerProjectsPanel({
                         className="size-8 p-0 text-slate-400 hover:text-red-600 dark:text-slate-600 dark:hover:text-red-400"
                         onClick={() => handleUnlink(project.id)}
                         disabled={isUnlinking || isPending}
-                        title={`Unlink ${t("project")}`}
+                        title="Unlink matter"
                       >
                         <X className="size-4" />
                         <span className="sr-only">Unlink</span>

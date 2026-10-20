@@ -27,7 +27,6 @@ import { Loader2, Plus } from "lucide-react";
 import { createCustomer } from "@/app/(app)/org/[slug]/clients/actions";
 import { createMessages } from "@/lib/messages";
 import { scrollToFirstError } from "@/lib/error-handler";
-import { useTerminology, withIndefiniteArticle } from "@/lib/terminology";
 import { useSubscription } from "@/lib/subscription-context";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { fetchIntakeFields } from "@/app/(app)/org/[slug]/clients/intake-actions";
@@ -52,7 +51,6 @@ interface CreateCustomerDialogProps {
 
 export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
   const router = useRouter();
-  const { t } = useTerminology();
   const { isWriteEnabled } = useSubscription();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
@@ -282,7 +280,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
             <span tabIndex={0} className="inline-flex">
               <Button size="sm" disabled={!isWriteEnabled} onClick={() => setOpen(true)}>
                 <Plus className="mr-1.5 size-4" />
-                New {t("Customer")}
+                New Client
               </Button>
             </span>
           </TooltipTrigger>
@@ -295,10 +293,10 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
       </TooltipProvider>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{step === 1 ? t("Create Customer") : "Additional Information"}</DialogTitle>
+          <DialogTitle>{step === 1 ? "Create Client" : "Additional Information"}</DialogTitle>
           <DialogDescription>
             {step === 1
-              ? `Step 1 of 2 — Add a new ${t("customer")} to your organization.`
+              ? "Step 1 of 2 — Add a new client to your organization."
               : "Step 2 of 2 — Fill in any required intake fields."}
           </DialogDescription>
         </DialogHeader>
@@ -315,12 +313,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder={`${t("Customer")} name`}
-                          maxLength={255}
-                          autoFocus
-                          {...field}
-                        />
+                        <Input placeholder="Client name" maxLength={255} autoFocus {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -358,7 +351,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder={`${t("customer")}@example.com`}
+                          placeholder="client@example.com"
                           maxLength={255}
                           {...field}
                         />
@@ -397,7 +390,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                         <span className="text-muted-foreground font-normal">
                           {entityTypeValue === "INDIVIDUAL"
                             ? "(auto-filled from ID Number; editable)"
-                            : `(required to send ${withIndefiniteArticle(t("invoice"))}; collectable later)`}
+                            : "(required to send a fee note; collectable later)"}
                         </span>
                       </FormLabel>
                       <FormControl>
@@ -421,7 +414,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                       </FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder={`Any additional notes about this ${t("customer")}...`}
+                          placeholder="Any additional notes about this client..."
                           maxLength={2000}
                           rows={3}
                           {...field}
@@ -725,7 +718,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                 onClick={handleSubmit}
                 disabled={isSubmitting || isLoadingFields}
               >
-                {isSubmitting ? "Creating..." : t("Create Customer")}
+                {isSubmitting ? "Creating..." : "Create Client"}
               </Button>
             </>
           )}

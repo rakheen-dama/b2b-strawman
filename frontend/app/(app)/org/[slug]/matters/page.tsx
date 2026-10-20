@@ -29,7 +29,6 @@ import type { MatterStatus } from "@/lib/types";
 import { AlertTriangle, Calendar, FileText, FolderOpen, Users } from "lucide-react";
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
-import { TerminologyHeading } from "@/components/terminology-heading";
 import { TerminologyText } from "@/components/terminology-text";
 import { createMessages } from "@/lib/messages";
 
@@ -159,11 +158,9 @@ export default async function ProjectsPage({
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            <TerminologyHeading term="Projects" />
-          </h1>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Matters</h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            <TerminologyHeading count={projects.length} term="projects" singularTerm="project" />
+            {projects.length} {projects.length === 1 ? "matter" : "matters"}
           </p>
         </div>
         <RequiresCapability cap="PROJECT_MANAGEMENT">

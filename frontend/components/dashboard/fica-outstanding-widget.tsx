@@ -2,8 +2,11 @@ import Link from "next/link";
 import { Badge } from "@b2mash/ui/badge";
 import { Card, CardAction, CardContent, CardFooter, CardHeader, CardTitle } from "@b2mash/ui/card";
 import type { FicaOutstandingResponse, FicaOutstandingStatus } from "@/lib/dashboard-types";
-
-const LINK_CLASS = "text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100";
+import {
+  WIDGET_LINK_CLASS,
+  WidgetErrorLine,
+  WidgetHeadline,
+} from "@/components/dashboard/widget-parts";
 
 const STATUS_LABEL: Record<FicaOutstandingStatus, string> = {
   NOT_STARTED: "Not started",
@@ -28,27 +31,22 @@ export function FicaOutstandingWidget({ slug, data }: FicaOutstandingWidgetProps
         <CardTitle className="text-sm font-medium">FICA outstanding</CardTitle>
         <CardAction>
           {/* TODO(615C): /clients?view=system:fica-outstanding once CLIENT_SYSTEM_VIEWS land */}
-          <Link href={`/org/${slug}/compliance`} className={LINK_CLASS}>
+          <Link href={`/org/${slug}/compliance`} className={WIDGET_LINK_CLASS}>
             Open compliance
           </Link>
         </CardAction>
       </CardHeader>
       <CardContent className="space-y-3">
         {data === null ? (
-          <p className="text-muted-foreground text-sm italic">
-            FICA status could not be loaded. Refresh to try again.
-          </p>
+          <WidgetErrorLine subject="FICA status" />
         ) : data.outstandingCount === 0 ? (
           <p className="text-sm text-slate-400">Every active client has completed FICA.</p>
         ) : (
           <>
             <div>
-              <p
-                data-testid="fica-outstanding-headline"
-                className="font-mono text-2xl font-semibold text-slate-950 tabular-nums dark:text-slate-50"
-              >
+              <WidgetHeadline testId="fica-outstanding-headline">
                 {data.outstandingCount}
-              </p>
+              </WidgetHeadline>
               <p className="text-xs text-slate-500">
                 of {data.totalActiveClients} active{" "}
                 {data.totalActiveClients === 1 ? "client" : "clients"} without completed FICA
@@ -74,7 +72,7 @@ export function FicaOutstandingWidget({ slug, data }: FicaOutstandingWidgetProps
         )}
       </CardContent>
       <CardFooter>
-        <Link href={`/org/${slug}/clients?showIncomplete=true`} className={LINK_CLASS}>
+        <Link href={`/org/${slug}/clients?showIncomplete=true`} className={WIDGET_LINK_CLASS}>
           Incomplete profiles
         </Link>
       </CardFooter>

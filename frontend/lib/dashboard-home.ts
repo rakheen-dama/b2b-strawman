@@ -1,6 +1,6 @@
 // Legal-native Home (Phase 87 614B, arch §12.6.3 / §12.11.2): which widgets a caller sees, in which
 // rows, and therefore which reads the page fans out to. Pure — no directive, no I/O — so the
-// "use server" fan-out (lib/actions/dashboard.ts) and the page share one plan.
+// server-only fan-out (lib/dashboard-home-fetch.ts) and the page share one plan.
 
 /**
  * Audiences are capability bundles, not roles. The built-in `member` role carries VIEW_TRUST, so
@@ -106,6 +106,25 @@ export function buildHomePlan(caps: HomeCaps, enabledModules: readonly string[])
     sensitive: gates.sensitive,
     rows: dropEmptyRows(AUDIENCE_ROWS[audience].map((row) => row.filter((w) => gates[w]))),
   };
+}
+
+/**
+ * Widgets whose read came back `absent` (gate failed, or 403/404). Generic over the fan-out's
+ * result, which is keyed by widget name: any `WidgetResult` field drops out when absent, so a new
+ * gated widget can't be forgotten here. Non-WidgetResult fields (diary, activity) never match.
+ */
+export function absentWidgets(data: Partial<Record<HomeWidget, unknown>>): Set<HomeWidget> {
+  return new Set(
+    (Object.entries(data) as Array<[HomeWidget, unknown]>)
+      .filter(([, result]) => isAbsent(result))
+      .map(([widget]) => widget)
+  );
+}
+
+function isAbsent(result: unknown): boolean {
+  return (
+    typeof result === "object" && result !== null && "state" in result && result.state === "absent"
+  );
 }
 
 /**

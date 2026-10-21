@@ -20,9 +20,9 @@ export async function loadTodaysDiary(
   currentMemberId: string | null,
   options: { firmWide?: boolean } = {}
 ): Promise<TodaysDiaryEvents> {
-  const firmWide = options.firmWide === true;
-  if (!firmWide && !currentMemberId) return "unidentified";
-  const scope = firmWide || !currentMemberId ? {} : { feeEarnerId: currentMemberId };
+  // Firm-wide → no filter; otherwise the caller's own diary, or "unidentified" without a member.
+  const scope = options.firmWide ? {} : currentMemberId ? { feeEarnerId: currentMemberId } : null;
+  if (!scope) return "unidentified";
   try {
     const diary = await getDiary({ from: today, to: today, ...scope });
     return diary.events;

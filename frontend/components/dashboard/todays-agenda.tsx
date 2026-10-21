@@ -41,47 +41,50 @@ interface TodaysDiaryProps {
   /** Server "today" (yyyy-MM-dd) — the date the diary was fetched for. */
   today: string;
   diaryEvents: TodaysDiaryEvents;
-  /**
-   * `eyebrow` = the small label inside the My work agenda strip; `title` = a card title, for Home
-   * where the diary sits in its own Card.
-   */
-  headingStyle?: "eyebrow" | "title";
+}
+
+/** Today's diary on the Diary's Day view — the "Open diary" target on My work and Home. */
+export function todaysDiaryHref(slug: string): string {
+  return `/org/${slug}/diary?view=day`;
 }
 
 /**
- * Today's diary (613D): today's rows (≤ 5, then "+n more") plus an "N overdue" link for the
- * open-overdue band. Rendered inside the My work agenda and, on its own, on Home (614B).
+ * Today's diary (613D) as the My work agenda's first section: an eyebrow label + "Open diary",
+ * then the {@link TodaysDiaryList}. Home (614B) puts the same list in its own card instead.
  */
-export function TodaysDiary({
-  slug,
-  today,
-  diaryEvents,
-  headingStyle = "eyebrow",
-}: TodaysDiaryProps) {
-  // The backend returns today's rows plus the overdue band (dated < today).
-  const events = Array.isArray(diaryEvents) ? diaryEvents : [];
-  const todaysEvents = events.filter((e) => e.date === today);
-  const overdueCount = events.filter((e) => e.date < today).length;
-  const hiddenCount = todaysEvents.length - MAX_DIARY_ROWS;
-  const diaryHref = `/org/${slug}/diary?view=day`;
-
+export function TodaysDiary({ slug, today, diaryEvents }: TodaysDiaryProps) {
   return (
     <div data-testid="todays-diary" className="min-w-0">
       <div className="mb-2 flex items-baseline justify-between gap-2">
-        {headingStyle === "title" ? (
-          <h2 className="text-sm font-medium">Today&apos;s diary</h2>
-        ) : (
-          <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">
-            Today&apos;s diary
-          </p>
-        )}
+        <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">
+          Today&apos;s diary
+        </p>
         <Link
-          href={diaryHref}
+          href={todaysDiaryHref(slug)}
           className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
         >
           Open diary
         </Link>
       </div>
+      <TodaysDiaryList slug={slug} today={today} diaryEvents={diaryEvents} />
+    </div>
+  );
+}
+
+/**
+ * Today's rows (≤ 5, then "+n more") plus an "N overdue" link for the open-overdue band, or the
+ * unidentified / failed / empty line. No heading — the caller supplies it.
+ */
+export function TodaysDiaryList({ slug, today, diaryEvents }: TodaysDiaryProps) {
+  // The backend returns today's rows plus the overdue band (dated < today).
+  const events = Array.isArray(diaryEvents) ? diaryEvents : [];
+  const todaysEvents = events.filter((e) => e.date === today);
+  const overdueCount = events.filter((e) => e.date < today).length;
+  const hiddenCount = todaysEvents.length - MAX_DIARY_ROWS;
+  const diaryHref = todaysDiaryHref(slug);
+
+  return (
+    <>
       {diaryEvents === "unidentified" ? (
         <p className="text-sm text-slate-400">
           Couldn&apos;t identify your member profile.{" "}
@@ -126,7 +129,7 @@ export function TodaysDiary({
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }
 

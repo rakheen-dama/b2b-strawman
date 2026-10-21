@@ -3,8 +3,11 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@b2mash/ui
 import { MicroStackedBar } from "@/components/dashboard/micro-stacked-bar";
 import { formatCurrency } from "@/lib/format";
 import type { DebtorBuckets, PaginatedDebtorsResponse } from "@/lib/api/collections";
-
-const LINK_CLASS = "text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100";
+import {
+  WIDGET_LINK_CLASS,
+  WidgetErrorLine,
+  WidgetHeadline,
+} from "@/components/dashboard/widget-parts";
 
 /**
  * Aging buckets, oldest warmest. Existing palette only (no new tokens), and never colour alone:
@@ -39,27 +42,20 @@ export function DebtorsWidget({ slug, data }: DebtorsWidgetProps) {
       <CardHeader>
         <CardTitle className="text-sm font-medium">Debtors</CardTitle>
         <CardAction>
-          <Link href={`/org/${slug}/invoices/collections`} className={LINK_CLASS}>
+          <Link href={`/org/${slug}/invoices/collections`} className={WIDGET_LINK_CLASS}>
             Open collections
           </Link>
         </CardAction>
       </CardHeader>
       <CardContent className="space-y-3">
         {data === null ? (
-          <p className="text-muted-foreground text-sm italic">
-            Debtors could not be loaded. Refresh to try again.
-          </p>
+          <WidgetErrorLine subject="Debtors" />
         ) : count === 0 ? (
           <p className="text-sm text-slate-400">No client owes fees.</p>
         ) : (
           <>
             <div>
-              <p
-                data-testid="debtors-headline"
-                className="font-mono text-2xl font-semibold text-slate-950 tabular-nums dark:text-slate-50"
-              >
-                {count}
-              </p>
+              <WidgetHeadline testId="debtors-headline">{count}</WidgetHeadline>
               <p className="text-xs text-slate-500">
                 {count === 1 ? "client owes fees" : "clients owe fees"}
               </p>

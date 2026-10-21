@@ -182,27 +182,10 @@ describe("Dashboard Layout Components", () => {
     }
   });
 
-  it("Home no longer renders the KPI strip, team workload, admin stats or my-week widgets (Epic 614B)", async () => {
-    // Module-level proof (same shape as the Epic 596/599 tests): the widget files and their data
-    // sources are gone, and the page source no longer references them. Replaces the Epic 599
-    // "MetricsStrip renders no team-utilization tile" render test — MetricsStrip itself is deleted.
+  it("the KPI strip, team workload, admin stats and my-week widget files are deleted (Epic 614B)", async () => {
+    // File-deletion proof only; what Home does render per audience is pinned in home-matrix.test.tsx.
     const fs = await import("node:fs");
     const path = await import("node:path");
-    const pageSrc = fs.readFileSync(
-      path.resolve(process.cwd(), "app/(app)/org/[slug]/dashboard/page.tsx"),
-      "utf8"
-    );
-    for (const ref of [
-      "TeamWorkloadWidget",
-      "MetricsStrip",
-      "AdminStatsColumn",
-      "MyWeekColumn",
-      "team-workload",
-      "fetchDashboardKpis",
-      "UpcomingCourtDatesWidget",
-    ]) {
-      expect(pageSrc).not.toContain(ref);
-    }
     for (const f of [
       "components/dashboard/team-workload-widget.tsx",
       "components/dashboard/metrics-strip.tsx",
@@ -212,19 +195,6 @@ describe("Dashboard Layout Components", () => {
       "components/dashboard/project-health-widget.tsx",
     ]) {
       expect(fs.existsSync(path.resolve(process.cwd(), f))).toBe(false);
-    }
-    const actionsSrc = fs.readFileSync(
-      path.resolve(process.cwd(), "lib/actions/dashboard.ts"),
-      "utf8"
-    );
-    for (const fn of [
-      "fetchDashboardKpis",
-      "fetchTeamWorkload",
-      "fetchAggregatedCompleteness",
-      "fetchInformationRequestSummary",
-      "fetchAutomationSummary",
-    ]) {
-      expect(actionsSrc).not.toContain(fn);
     }
   });
 

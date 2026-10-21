@@ -52,7 +52,7 @@ vi.mock("next/navigation", () => ({
   },
 }));
 
-import { fetchHomeWidgets } from "@/lib/actions/dashboard";
+import { fetchHomeWidgets } from "@/lib/dashboard-home-fetch";
 import { buildHomePlan, type HomeCaps } from "@/lib/dashboard-home";
 
 const TODAY = "2026-10-21";
@@ -224,6 +224,37 @@ describe("fetchHomeWidgets — gate → call matrix", () => {
       "NEXT_REDIRECT"
     );
     expect(mockRedirectToReLogin).toHaveBeenCalledWith("/org/acme/dashboard", "expired");
+  });
+
+  it("activity and matter health: a 401 goes to the branded re-login", async () => {
+    routeGets({
+      "/api/dashboard/matter-health": () => {
+        throw new MockApiError(401, "Authentication session expired");
+      },
+    });
+
+    await expect(fetchHomeWidgets(buildHomePlan(OWNER, ALL_MODULES), TODAY)).rejects.toThrow(
+      "NEXT_REDIRECT"
+    );
+    expect(mockRedirectToReLogin).toHaveBeenCalledWith("/org/acme/dashboard", "expired");
+  });
+
+  it("activity and matter health: any other failure (incl. 403) → null, their error state", async () => {
+    routeGets({
+      "/api/dashboard/activity?limit=15": () => {
+        throw new MockApiError(500, "boom");
+      },
+      "/api/dashboard/matter-health": () => {
+        throw new MockApiError(403, "Forbidden");
+      },
+    });
+
+    const data = await fetchHomeWidgets(buildHomePlan(OWNER, ALL_MODULES), TODAY);
+
+    expect(data.activity).toBeNull();
+    expect(data.matterHealth).toBeNull();
+    expect(data.unbilledWip.state).toBe("ok");
+    expect(mockRedirectToReLogin).not.toHaveBeenCalled();
   });
 
   it("member whose profile can't be matched → 'unidentified' diary, never firm-wide", async () => {

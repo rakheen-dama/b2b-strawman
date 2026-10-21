@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  absentWidgets,
   buildHomePlan,
   resolveHomeAudience,
   rowSpanClass,
@@ -136,6 +137,22 @@ describe("withoutAbsent", () => {
       ["diary", "unbilledWip"],
       ["ficaOutstanding", "matterHealth", "activity", "sensitive"],
     ]);
+  });
+});
+
+describe("absentWidgets", () => {
+  it("collects every absent WidgetResult by widget name; ok, error and non-results stay", () => {
+    expect(
+      absentWidgets({
+        diary: [],
+        tasks: { state: "absent" },
+        unbilledWip: { state: "ok", data: {} },
+        debtors: { state: "error" },
+        trustPosition: { state: "absent" },
+        activity: null,
+        matterHealth: null,
+      })
+    ).toEqual(new Set(["tasks", "trustPosition"]));
   });
 });
 

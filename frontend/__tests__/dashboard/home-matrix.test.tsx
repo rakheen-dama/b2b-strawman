@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
-import type { HomeWidgetData } from "@/lib/actions/dashboard";
+import type { HomeWidgetData } from "@/lib/dashboard-home-fetch";
 import type { HomePlan } from "@/lib/dashboard-home";
 
 // Phase 87 614B — Home renders the §12.6.3 widget matrix per audience: fee earner, bookkeeper /
@@ -44,7 +44,7 @@ vi.mock("@/lib/api/audit-events", () => ({
   listFacetEventTypes: mockFacets,
   listAuditEvents: mockAudit,
 }));
-vi.mock("@/lib/actions/dashboard", () => ({ fetchHomeWidgets: mockFetchHome }));
+vi.mock("@/lib/dashboard-home-fetch", () => ({ fetchHomeWidgets: mockFetchHome }));
 vi.mock("@/components/auth/return-to-handler", () => ({ ReturnToHandler: () => null }));
 vi.mock("@/app/(app)/org/[slug]/dashboard/provisioning-pending-refresh", () => ({
   ProvisioningPendingRefresh: () => null,

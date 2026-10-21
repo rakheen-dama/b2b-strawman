@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { Loader2 } from "lucide-react";
-import { Card, CardContent } from "@b2mash/ui/card";
 import { fetchMyCapabilities, type MyCapabilitiesResponse } from "@/lib/api/capabilities";
 import { getOrgSettings } from "@/lib/api/settings";
 import { ApiError, handleApiError } from "@/lib/api";
@@ -10,8 +9,9 @@ import {
   type AuditEventResponse,
   type EventTypeFacet,
 } from "@/lib/api/audit-events";
-import { fetchHomeWidgets, type HomeWidgetData } from "@/lib/actions/dashboard";
+import { fetchHomeWidgets } from "@/lib/dashboard-home-fetch";
 import {
+  absentWidgets,
   buildHomePlan,
   rowSpanClass,
   withoutAbsent,
@@ -23,7 +23,7 @@ import { ProvisioningPendingRefresh } from "./provisioning-pending-refresh";
 import { DashboardHeader } from "./dashboard-header";
 import { ReturnToHandler } from "@/components/auth/return-to-handler";
 import { GettingStartedCard } from "@/components/dashboard/getting-started-card";
-import { TodaysDiary } from "@/components/dashboard/todays-agenda";
+import { HomeDiaryWidget } from "@/components/dashboard/home-diary-widget";
 import { MyTasksWidget } from "@/components/dashboard/my-tasks-widget";
 import { UnbilledWipWidget } from "@/components/dashboard/unbilled-wip-widget";
 import { DebtorsWidget } from "@/components/dashboard/debtors-widget";
@@ -39,18 +39,6 @@ const SENSITIVE_VIEW_ALL_LOOKBACK_DAYS = 30;
 /** `ok` → data, `error` → null (the card shows its quiet error line). Absent never renders. */
 function dataOf<T>(result: WidgetResult<T>): T | null {
   return result.state === "ok" ? result.data : null;
-}
-
-/** Widgets whose gated read came back 403/404 — they drop out of their row. */
-function absentWidgets(data: HomeWidgetData): Set<HomeWidget> {
-  const results: Array<[HomeWidget, WidgetResult<unknown>]> = [
-    ["tasks", data.tasks],
-    ["unbilledWip", data.unbilledWip],
-    ["debtors", data.debtors],
-    ["trustPosition", data.trustPosition],
-    ["ficaOutstanding", data.ficaOutstanding],
-  ];
-  return new Set(results.filter(([, r]) => r.state === "absent").map(([w]) => w));
 }
 
 /**
@@ -137,18 +125,7 @@ export default async function OrgDashboardPage({ params }: { params: Promise<{ s
   function renderWidget(widget: HomeWidget): ReactNode {
     switch (widget) {
       case "diary":
-        return (
-          <Card data-testid="home-diary-widget" className="gap-0">
-            <CardContent>
-              <TodaysDiary
-                slug={slug}
-                today={today}
-                diaryEvents={data.diary}
-                headingStyle="title"
-              />
-            </CardContent>
-          </Card>
-        );
+        return <HomeDiaryWidget slug={slug} today={today} diaryEvents={data.diary} />;
       case "tasks":
         return <MyTasksWidget slug={slug} today={today} data={dataOf(data.tasks)} />;
       case "unbilledWip":

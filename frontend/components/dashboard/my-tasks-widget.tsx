@@ -3,8 +3,11 @@ import { Badge } from "@b2mash/ui/badge";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { formatLocalDate } from "@/lib/format";
 import type { MyWorkTaskItem, MyWorkTasksResponse } from "@/lib/types";
-
-const LINK_CLASS = "text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100";
+import {
+  WIDGET_LINK_CLASS,
+  WidgetErrorLine,
+  WidgetHeadline,
+} from "@/components/dashboard/widget-parts";
 
 const MAX_ROWS = 5;
 
@@ -40,16 +43,14 @@ export function MyTasksWidget({ slug, today, data }: MyTasksWidgetProps) {
       <CardHeader>
         <CardTitle className="text-sm font-medium">My tasks</CardTitle>
         <CardAction>
-          <Link href={`/org/${slug}/my-work`} className={LINK_CLASS}>
+          <Link href={`/org/${slug}/my-work`} className={WIDGET_LINK_CLASS}>
             Open my work
           </Link>
         </CardAction>
       </CardHeader>
       <CardContent className="space-y-3">
         {data === null ? (
-          <p className="text-muted-foreground text-sm italic">
-            Your tasks could not be loaded. Refresh to try again.
-          </p>
+          <WidgetErrorLine subject="Your tasks" />
         ) : open.length === 0 ? (
           <p className="text-sm text-slate-400">
             Nothing assigned to you. Tasks assigned to you on a matter appear here.
@@ -57,12 +58,7 @@ export function MyTasksWidget({ slug, today, data }: MyTasksWidgetProps) {
         ) : (
           <>
             <div>
-              <p
-                data-testid="my-tasks-headline"
-                className="font-mono text-2xl font-semibold text-slate-950 tabular-nums dark:text-slate-50"
-              >
-                {open.length}
-              </p>
+              <WidgetHeadline testId="my-tasks-headline">{open.length}</WidgetHeadline>
               <p className="text-xs text-slate-500">
                 open {open.length === 1 ? "task" : "tasks"}
                 {overdueCount > 0 && `, ${overdueCount} overdue`}

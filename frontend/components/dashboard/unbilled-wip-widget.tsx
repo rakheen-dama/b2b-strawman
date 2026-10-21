@@ -2,8 +2,11 @@ import Link from "next/link";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { formatCurrency, formatDuration, formatLocalDate } from "@/lib/format";
 import type { UnbilledWipResponse } from "@/lib/dashboard-types";
-
-const LINK_CLASS = "text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100";
+import {
+  WIDGET_LINK_CLASS,
+  WidgetErrorLine,
+  WidgetHeadline,
+} from "@/components/dashboard/widget-parts";
 
 /** Fee earners listed before the card defers to the Unbilled work page. */
 const MAX_ROWS = 5;
@@ -39,28 +42,23 @@ function MyUnbilledTime({ slug, data }: { slug: string; data: UnbilledWipRespons
       <CardHeader>
         <CardTitle className="text-sm font-medium">My unbilled time</CardTitle>
         <CardAction>
-          <Link href={`/org/${slug}/my-work/timesheet`} className={LINK_CLASS}>
+          <Link href={`/org/${slug}/my-work/timesheet`} className={WIDGET_LINK_CLASS}>
             Open timesheet
           </Link>
         </CardAction>
       </CardHeader>
       <CardContent className="space-y-1">
         {data === null ? (
-          <p className="text-muted-foreground text-sm italic">
-            Your unbilled time could not be loaded. Refresh to try again.
-          </p>
+          <WidgetErrorLine subject="Your unbilled time" />
         ) : data.totalMinutes === 0 ? (
           <p className="text-sm text-slate-400">
             No unbilled time. Billable time you record stays here until it is on a fee note.
           </p>
         ) : (
           <>
-            <p
-              data-testid="unbilled-wip-headline"
-              className="font-mono text-2xl font-semibold text-slate-950 tabular-nums dark:text-slate-50"
-            >
+            <WidgetHeadline testId="unbilled-wip-headline">
               {formatDuration(data.totalMinutes)}
-            </p>
+            </WidgetHeadline>
             <p className="text-xs text-slate-500">
               Billable time not yet on a fee note
               {own?.oldestEntryDate && <>, oldest from {formatLocalDate(own.oldestEntryDate)}</>}
@@ -89,7 +87,7 @@ function FirmUnbilledWip({
         <CardTitle className="text-sm font-medium">Unbilled WIP</CardTitle>
         {showLink && (
           <CardAction>
-            <Link href={`/org/${slug}/invoices/unbilled`} className={LINK_CLASS}>
+            <Link href={`/org/${slug}/invoices/unbilled`} className={WIDGET_LINK_CLASS}>
               Open unbilled work
             </Link>
           </CardAction>
@@ -97,9 +95,7 @@ function FirmUnbilledWip({
       </CardHeader>
       <CardContent className="space-y-3">
         {data === null ? (
-          <p className="text-muted-foreground text-sm italic">
-            Unbilled WIP could not be loaded. Refresh to try again.
-          </p>
+          <WidgetErrorLine subject="Unbilled WIP" />
         ) : data.byFeeEarner.length === 0 && !data.unbilledDisbursementTotal ? (
           <p className="text-sm text-slate-400">
             Nothing unbilled. Billable time appears here until it is on a fee note.
@@ -107,12 +103,9 @@ function FirmUnbilledWip({
         ) : (
           <>
             <div>
-              <p
-                data-testid="unbilled-wip-headline"
-                className="font-mono text-2xl font-semibold text-slate-950 tabular-nums dark:text-slate-50"
-              >
+              <WidgetHeadline testId="unbilled-wip-headline">
                 {data.totalValue != null ? formatCurrency(data.totalValue, data.currency) : "–"}
-              </p>
+              </WidgetHeadline>
               <p className="text-xs text-slate-500">
                 {formatDuration(data.totalMinutes)} of unbilled time
               </p>

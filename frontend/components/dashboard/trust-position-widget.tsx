@@ -3,8 +3,11 @@ import { Badge } from "@b2mash/ui/badge";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type { TrustPositionResponse } from "@/lib/dashboard-types";
-
-const LINK_CLASS = "text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100";
+import {
+  WIDGET_LINK_CLASS,
+  WidgetErrorLine,
+  WidgetHeadline,
+} from "@/components/dashboard/widget-parts";
 
 interface TrustPositionWidgetProps {
   slug: string;
@@ -36,25 +39,20 @@ export function TrustPositionWidget({ slug, data }: TrustPositionWidgetProps) {
       <CardHeader>
         <CardTitle className="text-sm font-medium">Trust position</CardTitle>
         <CardAction>
-          <Link href={`/org/${slug}/trust-accounting/reconciliation`} className={LINK_CLASS}>
+          <Link href={`/org/${slug}/trust-accounting/reconciliation`} className={WIDGET_LINK_CLASS}>
             Open reconciliation
           </Link>
         </CardAction>
       </CardHeader>
       <CardContent className="space-y-3">
         {data === null ? (
-          <p className="text-muted-foreground text-sm italic">
-            The trust position could not be loaded. Refresh to try again.
-          </p>
+          <WidgetErrorLine subject="The trust position" />
         ) : (
           <>
             <div className="flex flex-wrap items-center gap-2">
-              <p
-                data-testid="trust-position-headline"
-                className="font-mono text-2xl font-semibold text-slate-950 tabular-nums dark:text-slate-50"
-              >
+              <WidgetHeadline testId="trust-position-headline">
                 {formatCurrency(balanced ? 0 : data.difference)}
-              </p>
+              </WidgetHeadline>
               {balanced ? (
                 <Badge variant="success">Balanced</Badge>
               ) : (

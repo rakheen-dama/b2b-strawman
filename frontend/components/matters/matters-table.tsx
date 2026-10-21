@@ -45,7 +45,10 @@ const MAX_TAG_CHIPS = 3;
  * container query, so the sidebar and the page's max width are accounted for). Thresholds follow
  * the measured column widths with the Matter/Client caps below: the other default columns plus
  * the row menu need ~66.5rem, Fee earner included; Work type and Opened add ~13rem. At 1440px the
- * container is ~70rem, so Fee earner shows and Work type/Opened wait for a wider container.
+ * container is ~70rem, so Fee earner shows. The shell's `max-w-7xl` caps the container at ~75rem
+ * (measured at 1920px), so on today's shell Work type and Opened never reach their threshold: on
+ * the default column set they render only as the active sort (Dormant sorts by Opened) or when a
+ * saved view picks them. Re-measure these thresholds if a column, a cap or the shell width changes.
  */
 const LOW_PRIORITY_COLUMN_CLASS: Partial<Record<MatterColumnId, string>> = {
   feeEarnerName: "hidden @min-[67rem]:table-cell",

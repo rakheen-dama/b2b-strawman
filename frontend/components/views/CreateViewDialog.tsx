@@ -33,6 +33,36 @@ interface CreateViewDialogProps {
   canCreateShared: boolean;
   onSave: (req: CreateSavedViewRequest) => Promise<{ success: boolean; error?: string }>;
   children: React.ReactNode;
+  /**
+   * Filters the new view starts from (615C F-4: "Save view" from a system view). Merged into the
+   * saved filters and shown read-only on step 1; survives a form reset.
+   */
+  initialFilters?: Record<string, unknown>;
+  /** Name of the view the initial filters come from ("Carried from …"). */
+  initialFiltersLabel?: string;
+}
+
+/** Read-only summary line for one carried filter. */
+export function describeCarriedFilter(key: string, value: unknown): string {
+  switch (key) {
+    case "status": {
+      const statuses = (Array.isArray(value) ? value : [value]).map((s) => {
+        const str = String(s).toLowerCase();
+        return str.charAt(0).toUpperCase() + str.slice(1);
+      });
+      return `Status: ${statuses.join(", ")}`;
+    }
+    case "mine":
+      return "Only matters I am on";
+    case "hasUnbilled":
+      return "Has unbilled time";
+    case "inactiveSince": {
+      const rel = typeof value === "string" ? /^-(\d+)d$/.exec(value) : null;
+      return rel ? `No activity in the last ${rel[1]} days` : `No activity since ${String(value)}`;
+    }
+    default:
+      return `${key}: ${Array.isArray(value) ? value.join(", ") : String(value)}`;
+  }
 }
 
 export function CreateViewDialog({
@@ -43,6 +73,8 @@ export function CreateViewDialog({
   canCreateShared,
   onSave,
   children,
+  initialFilters,
+  initialFiltersLabel,
 }: CreateViewDialogProps) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
@@ -76,6 +108,8 @@ export function CreateViewDialog({
   const [viewName, setViewName] = useState("");
   const [shared, setShared] = useState(false);
 
+  const carriedFilters = Object.entries(initialFilters ?? {});
+
   function resetForm() {
     setStep(1);
     setError(null);
@@ -89,7 +123,7 @@ export function CreateViewDialog({
   }
 
   function buildFilters(): Record<string, unknown> {
-    const filters: Record<string, unknown> = {};
+    const filters: Record<string, unknown> = { ...initialFilters };
     if (filterTags.length > 0) filters.tags = filterTags;
     if (Object.keys(filterCustomFields).length > 0) filters.customFields = filterCustomFields;
     if (filterDateRange.from || filterDateRange.to) filters.dateRange = filterDateRange;
@@ -159,6 +193,21 @@ export function CreateViewDialog({
           {/* Step 1: Filters */}
           {step === 1 && (
             <div className="space-y-4">
+              {carriedFilters.length > 0 && (
+                <div
+                  className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/50"
+                  data-testid="carried-filters"
+                >
+                  <p className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                    Carried from {initialFiltersLabel ?? "the current view"}
+                  </p>
+                  <ul className="mt-1 space-y-0.5 text-xs text-slate-600 dark:text-slate-400">
+                    {carriedFilters.map(([key, value]) => (
+                      <li key={key}>{describeCarriedFilter(key, value)}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <TagFilter value={filterTags} onChange={setFilterTags} allTags={allTags} />
               <CustomFieldFilter
                 value={filterCustomFields}

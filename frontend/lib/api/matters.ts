@@ -34,6 +34,7 @@ import type {
   FieldDefinitionResponse,
   LightweightBudgetStatus,
   Matter,
+  MatterListRow,
   MatterMember,
   MatterProfitabilityResponse,
   MatterSetupStatus,
@@ -75,6 +76,14 @@ export interface ListMattersParams {
   dueBefore?: string;
   customerId?: string;
   size?: number;
+  /** Caller is a member of the matter. */
+  mine?: boolean | string;
+  /** Unbilled billable minutes > 0 (disbursement-only matters excluded — 615A follow-up). */
+  hasUnbilled?: boolean | string;
+  /** ISO yyyy-MM-dd. Resolve relative tokens ("-90d") first — the backend 400s on them (R-3). */
+  inactiveSince?: string;
+  /** CSV of tag slugs; all must match. Ignored by the backend on the saved-view path. */
+  tags?: string;
   [customFieldFilter: string]: QueryValue;
 }
 
@@ -127,6 +136,14 @@ export interface UpdateMatterCommentRequest {
 
 export async function listMatters(params?: ListMattersParams): Promise<Matter[]> {
   return api.get<Matter[]>(`${MATTERS_PATH}${toQuery(params)}`);
+}
+
+/**
+ * Same endpoint as {@link listMatters}, typed as the dense list projection the Matters table
+ * renders (615A `MatterListRow`). `listMatters` keeps its `Matter[]` type for its other consumers.
+ */
+export async function listMatterRows(params?: ListMattersParams): Promise<MatterListRow[]> {
+  return api.get<MatterListRow[]>(`${MATTERS_PATH}${toQuery(params)}`);
 }
 
 export async function getMatter(matterId: string): Promise<Matter> {

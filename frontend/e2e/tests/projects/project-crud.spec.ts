@@ -155,7 +155,7 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
     await page.goto(`${BASE}/matters`);
     await expect(page.locator("h1").first()).toBeVisible({ timeout: 10000 });
 
-    // Navigate to the project we created (project list uses card links)
+    // Navigate to the project we created (matters list is a table; the name is a link) — Phase 87 S8 (ADR-344): comment only, 615C
     await page.getByText(PROJECT_WITH_CUSTOMER).first().click();
     await expect(page.getByText(PROJECT_WITH_CUSTOMER).first()).toBeVisible({ timeout: 10000 });
 

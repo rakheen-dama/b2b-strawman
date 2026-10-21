@@ -1,8 +1,8 @@
 import { Skeleton } from "@b2mash/ui/skeleton";
 
-export default function ProjectsLoading() {
+export default function MattersLoading() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -12,27 +12,41 @@ export default function ProjectsLoading() {
         <Skeleton className="h-9 w-32 rounded-full" />
       </div>
 
-      {/* Projects Grid */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, i) => (
+      {/* Toolbar: view tabs, then search + status pills + filters */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-6 w-24" />
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Skeleton className="h-9 w-64" />
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-7 w-20 rounded-full" />
+          ))}
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+        <div className="flex items-center gap-6 border-b border-slate-200 px-2 py-3 dark:border-slate-800">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-3 w-16" />
+          ))}
+        </div>
+        {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950"
+            className="flex items-center gap-6 border-b border-slate-100 px-2 py-3 last:border-0 dark:border-slate-900"
           >
-            {/* Name + badge */}
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-5 w-40" />
-              <Skeleton className="h-5 w-14 rounded-full" />
-            </div>
-            {/* Description */}
-            <Skeleton className="mt-3 h-4 w-full" />
-            <Skeleton className="mt-1 h-4 w-3/4" />
-            {/* Meta icons */}
-            <div className="mt-4 flex items-center gap-4">
-              <Skeleton className="h-4 w-10" />
-              <Skeleton className="h-4 w-10" />
-              <Skeleton className="h-4 w-20" />
-            </div>
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-5 w-16 rounded-full" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-24" />
           </div>
         ))}
       </div>

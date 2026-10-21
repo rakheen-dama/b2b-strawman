@@ -13,6 +13,11 @@ import type {
   FieldDefinitionResponse,
   CreateSavedViewRequest,
 } from "@/lib/types";
+import {
+  resolveViewSelection,
+  systemViewToFilters,
+  type SystemView,
+} from "@/lib/constants/system-views";
 
 interface ViewSelectorClientProps {
   entityType: EntityType;
@@ -23,6 +28,13 @@ interface ViewSelectorClientProps {
   allTags: TagResponse[];
   fieldDefinitions: FieldDefinitionResponse[];
   onSave: (req: CreateSavedViewRequest) => Promise<{ success: boolean; error?: string }>;
+  /**
+   * Code-defined system views (615C), listed before the saved views. Optional: callers that omit
+   * it keep the "All" tab behaviour unchanged.
+   */
+  systemViews?: readonly SystemView[];
+  /** The system view selected when the URL has no `view` param. */
+  defaultViewId?: string;
 }
 
 export function ViewSelectorClient({
@@ -34,6 +46,8 @@ export function ViewSelectorClient({
   allTags,
   fieldDefinitions,
   onSave,
+  systemViews,
+  defaultViewId,
 }: ViewSelectorClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -53,6 +67,20 @@ export function ViewSelectorClient({
     [router, searchParams]
   );
 
+  // F-4: "Save view" while a system view is selected starts from that view's params.
+  const selectedSystemView =
+    systemViews && systemViews.length > 0
+      ? (() => {
+          const selection = resolveViewSelection(
+            systemViews,
+            views,
+            currentViewId,
+            defaultViewId ?? systemViews[0].id
+          );
+          return selection.kind === "system" ? selection.view : null;
+        })()
+      : null;
+
   return (
     <div className="flex items-center gap-3">
       <SavedViewSelector
@@ -61,6 +89,8 @@ export function ViewSelectorClient({
         currentViewId={currentViewId}
         onViewChange={handleViewChange}
         canCreate={false}
+        systemViews={systemViews}
+        defaultViewId={defaultViewId}
       />
       {canCreate && (
         <CreateViewDialog
@@ -70,6 +100,8 @@ export function ViewSelectorClient({
           fieldDefinitions={fieldDefinitions}
           canCreateShared={canCreateShared}
           onSave={onSave}
+          initialFilters={selectedSystemView ? systemViewToFilters(selectedSystemView) : undefined}
+          initialFiltersLabel={selectedSystemView?.name}
         >
           <Button variant="outline" size="sm" className="h-7 gap-1 text-xs">
             <Plus className="size-3" />

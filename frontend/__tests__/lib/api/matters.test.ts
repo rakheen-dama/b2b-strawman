@@ -22,6 +22,7 @@ import {
   MATTERS_PATH,
   matterPath,
   listMatters,
+  listMatterRows,
   getMatter,
   createMatter,
   updateMatter,
@@ -76,6 +77,17 @@ describe("matters API module URL building", () => {
     expect(mockGet).toHaveBeenLastCalledWith("/api/matters");
     await listMatters({ view: "v1", status: "ACTIVE", customerId: undefined, size: 200 });
     expect(mockGet).toHaveBeenLastCalledWith("/api/matters?view=v1&status=ACTIVE&size=200");
+  });
+
+  it("listMatterRows: same endpoint, carries the 615A list params", async () => {
+    await listMatterRows({ status: "ACTIVE", mine: true, inactiveSince: "2026-07-23" });
+    expect(mockGet).toHaveBeenLastCalledWith(
+      "/api/matters?status=ACTIVE&mine=true&inactiveSince=2026-07-23"
+    );
+    await listMatterRows({ view: "v1", hasUnbilled: "true", tags: "vip,urgent" });
+    expect(mockGet).toHaveBeenLastCalledWith(
+      "/api/matters?view=v1&hasUnbilled=true&tags=vip%2Curgent"
+    );
   });
 
   it("core CRUD hits /api/matters[/{id}] with the right verbs", async () => {

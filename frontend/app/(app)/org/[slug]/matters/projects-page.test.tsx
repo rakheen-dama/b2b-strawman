@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import type { Matter } from "@/lib/types";
+import type { MatterListRow } from "@/lib/types";
 
 // Mock server-only before any imports that pull it in
 vi.mock("server-only", () => ({}));
@@ -56,6 +56,19 @@ vi.mock("@/lib/api/client", () => ({
 
 vi.mock("@/lib/api/templates", () => ({
   getProjectTemplates: vi.fn().mockResolvedValue([]),
+}));
+
+// 615C: the Trust column depends on the trust_accounting module check
+const mockIsModuleEnabled = vi.fn().mockResolvedValue(false);
+vi.mock("@/lib/api/settings", () => ({
+  isModuleEnabledServer: (...args: unknown[]) => mockIsModuleEnabled(...args),
+}));
+
+// 615C: the table row, search and filter sheet are client components using the router
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => "/org/acme/matters",
 }));
 
 // Mock fetchMyCapabilities (page now uses capabilities instead of orgRole)
@@ -126,22 +139,31 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-const makeProject = (overrides: Partial<Matter> = {}): Matter => ({
+// 615C: GET /api/matters returns the dense MatterListRow projection
+const makeProject = (overrides: Partial<MatterListRow> = {}): MatterListRow => ({
   id: "proj-1",
-  name: "Test Project",
-  description: "A test project",
+  name: "Test Matter",
+  description: "A test matter",
+  referenceNumber: null,
   status: "ACTIVE",
-  clientId: null,
+  workType: null,
+  priority: null,
   dueDate: null,
-  createdBy: "user-1",
-  createdByName: null,
   createdAt: "2026-01-15T10:00:00Z",
-  updatedAt: "2026-01-15T10:00:00Z",
-  completedAt: null,
-  completedBy: null,
-  completedByName: null,
-  archivedAt: null,
+  clientId: null,
+  clientName: null,
+  feeEarnerId: null,
+  feeEarnerName: null,
   matterRole: null,
+  unbilledMinutes: 0,
+  unbilledValue: null,
+  currency: "ZAR",
+  trustBalance: null,
+  nextDiaryDate: null,
+  nextDiaryKind: null,
+  openTaskCount: 0,
+  tags: [],
+  customFields: {},
   ...overrides,
 });
 
@@ -202,51 +224,116 @@ describe("ProjectsPage", () => {
     });
   });
 
-  describe("role badges on project cards", () => {
-    it("shows Lead badge when matterRole is lead", async () => {
+  // 615C (F-9): the card grid (and its Lead/Member role badges) became a dense table; the
+  // §12.6.4 column set has no role column. These assertions replace the card role-badge ones.
+  describe("matters table", () => {
+    const asMember = () =>
       mockAuth.mockResolvedValue({
         orgId: "org_1",
         orgSlug: "acme",
         userId: "user_1",
         orgRole: "org:member",
       });
-      mockApiGet.mockResolvedValue([makeProject({ matterRole: "lead" })]);
+
+    it("renders one table row per matter with the default column headers", async () => {
+      asMember();
+      mockApiGet.mockResolvedValue([
+        makeProject(),
+        makeProject({ id: "proj-2", name: "Second Matter" }),
+      ]);
 
       const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
-      expect(screen.getByText("Lead")).toBeInTheDocument();
+      expect(screen.getByRole("table")).toBeInTheDocument();
+      expect(screen.getAllByTestId("matter-row")).toHaveLength(2);
+      const headers = screen.getAllByRole("columnheader").map((h) => h.textContent?.trim());
+      expect(headers).toContain("Reference");
+      expect(headers).toContain("Client");
+      expect(headers).toContain("Fee earner");
+      expect(screen.getByTestId("matters-footer")).toHaveTextContent("Showing 2 matters");
     });
 
-    it("shows Member badge when matterRole is member", async () => {
-      mockAuth.mockResolvedValue({
-        orgId: "org_1",
-        orgSlug: "acme",
-        userId: "user_1",
-        orgRole: "org:member",
-      });
-      mockApiGet.mockResolvedValue([makeProject({ matterRole: "member" })]);
+    it("shows — for null financials and omits Trust when trust accounting is off", async () => {
+      asMember();
+      mockApiGet.mockResolvedValue([makeProject()]);
 
       const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
-      expect(screen.getByText("Member")).toBeInTheDocument();
+      const headers = screen.getAllByRole("columnheader").map((h) => h.textContent?.trim());
+      expect(headers).not.toContain("Trust");
+      expect(screen.getAllByText("—").length).toBeGreaterThan(0);
     });
 
-    it("shows no role badge when matterRole is null", async () => {
-      mockAuth.mockResolvedValue({
-        orgId: "org_1",
-        orgSlug: "acme",
-        userId: "user_1",
-        orgRole: "org:admin",
-      });
-      mockApiGet.mockResolvedValue([makeProject({ matterRole: null })]);
+    it("shows the Trust column when trust accounting is on", async () => {
+      asMember();
+      mockIsModuleEnabled.mockResolvedValueOnce(true);
+      mockApiGet.mockResolvedValue([makeProject({ trustBalance: null })]);
 
       const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
-      expect(screen.queryByText("Lead")).not.toBeInTheDocument();
-      expect(screen.queryByText("Member")).not.toBeInTheDocument();
+      const headers = screen.getAllByRole("columnheader").map((h) => h.textContent?.trim());
+      expect(headers).toContain("Trust");
+    });
+
+    it("requests the default Open matters view and makes no per-row budget calls", async () => {
+      asMember();
+      mockApiGet.mockResolvedValue([makeProject(), makeProject({ id: "proj-2" })]);
+
+      const jsx = await ProjectsPage({ params, searchParams });
+      render(jsx);
+
+      const urls = mockApiGet.mock.calls.map((c) => String(c[0]));
+      expect(urls).toContain("/api/matters?status=ACTIVE");
+      expect(urls.some((u) => u.includes("/budget"))).toBe(false);
+    });
+
+    it("forwards a system view's params and lets the URL status override it", async () => {
+      asMember();
+      mockApiGet.mockResolvedValue([makeProject()]);
+
+      const jsx = await ProjectsPage({
+        params,
+        searchParams: Promise.resolve({ view: "system:my-matters", status: "CLOSED" }),
+      });
+      render(jsx);
+
+      const urls = mockApiGet.mock.calls.map((c) => String(c[0]));
+      expect(urls).toContain("/api/matters?mine=true&status=CLOSED");
+    });
+
+    it("filters by ?search= and keeps the header count in step", async () => {
+      asMember();
+      mockApiGet.mockResolvedValue([
+        makeProject({ id: "a", name: "RAF claim" }),
+        makeProject({ id: "b", name: "Estate late Moroka" }),
+      ]);
+
+      const jsx = await ProjectsPage({
+        params,
+        searchParams: Promise.resolve({ search: "raf" }),
+      });
+      render(jsx);
+
+      expect(screen.getAllByTestId("matter-row")).toHaveLength(1);
+      expect(screen.getByText("RAF claim")).toBeInTheDocument();
+      expect(screen.getByText("1 matter")).toBeInTheDocument();
+    });
+
+    it("shows a no-match message (not the first-run empty state) when filters exclude everything", async () => {
+      asMember();
+      mockApiGet.mockResolvedValue([makeProject({ name: "RAF claim" })]);
+
+      const jsx = await ProjectsPage({
+        params,
+        searchParams: Promise.resolve({ search: "zzz" }),
+      });
+      render(jsx);
+
+      expect(screen.getByText("No matters match this view.")).toBeInTheDocument();
+      expect(screen.queryByText("No matters yet")).not.toBeInTheDocument();
     });
   });
 

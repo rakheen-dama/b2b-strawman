@@ -1,7 +1,7 @@
 {
-  "commit": "d340a824565fcc0731f9a5b428580a512cd66de8",
+  "commit": "a76f1bd5443ff913a71c57f9ff9e662072d48118",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-21T03:57:07+02:00",
-  "summary": "PR #1621 (Epic 613A: One Diary backend — GET /api/diary) head d340a8245 (orchestrator run, after CodeRabbit fix cycle): 5387 testcases / 0 failures / 0 errors / 26 skipped across 690 surefire reports (+38 vs 609F: DiaryServiceTest 23 + DiaryControllerIntegrationTest 15). Earlier run on 8b1a3c7e7: 5385/0/0/26. WireVocabularyContractTest + TenantScopeBindingTest + LayerDependencyRulesTest green. Log /tmp/mvn-613A-final.log."
+  "ts": "2026-10-21T08:18:36+02:00",
+  "summary": "PR #1625 (Epic 614A: legal-native home — unbilled WIP, FICA outstanding, trust position reads; FicaStatusProjector; team-workload deleted) head a76f1bd54 (orchestrator run, after CodeRabbit fix cycle): 5418 testcases / 0 failures / 0 errors / 26 skipped across 694 surefire reports (+31 vs 613A's 5387: FicaStatusProjectorTest 16 + DashboardServiceUnbilledWipTest 5 + TrustPositionIntegrationTest 7 + FicaOutstandingIntegrationTest 6, minus deleted team-workload tests). WireVocabularyContractTest green with empty ratchet baseline. Log /tmp/mvn-614A-final.log."
 }

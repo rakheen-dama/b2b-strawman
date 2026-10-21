@@ -408,17 +408,17 @@ public class DashboardService {
   }
 
   /**
-   * ONBOARDING/ACTIVE clients whose FICA status (batched through {@link FicaStatusProjector}) is
-   * not DONE, longest-outstanding first. {@code daysOutstanding} counts from the client's last
-   * lifecycle transition (or creation). {@code outstandingCount} counts all outstanding clients;
-   * {@code clients} holds the top {@code limit} (clamped to 1–50).
+   * Non-archived ONBOARDING/ACTIVE clients whose FICA status (batched through {@link
+   * FicaStatusProjector}) is not DONE, longest-outstanding first. {@code daysOutstanding} counts
+   * from the client's last lifecycle transition (or creation). {@code outstandingCount} counts all
+   * outstanding clients; {@code clients} holds the top {@code limit} (clamped to 1–50).
    */
   @Transactional(readOnly = true)
   public FicaOutstandingResponse getFicaOutstanding(int limit) {
     int clamped = Math.max(MIN_FICA_OUTSTANDING_LIMIT, Math.min(MAX_FICA_OUTSTANDING_LIMIT, limit));
     List<Customer> clients =
-        customerRepository.findByLifecycleStatusIn(
-            List.of(LifecycleStatus.ONBOARDING, LifecycleStatus.ACTIVE));
+        customerRepository.findByStatusAndLifecycleStatusIn(
+            "ACTIVE", List.of(LifecycleStatus.ONBOARDING, LifecycleStatus.ACTIVE));
     var statuses =
         informationRequestService.getFicaStatuses(clients.stream().map(Customer::getId).toList());
     LocalDate today = LocalDate.now(clock);

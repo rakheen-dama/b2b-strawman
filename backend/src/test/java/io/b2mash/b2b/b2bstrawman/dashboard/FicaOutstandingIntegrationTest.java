@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.dashboard;
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createCustomerWithStatus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -40,6 +41,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  *   <li>ACTIVE with a DRAFT FICA request → IN_PROGRESS
  *   <li>ACTIVE with a COMPLETED, all-accepted FICA request → DONE, excluded
  *   <li>PROSPECT and OFFBOARDED clients without FICA → out of scope, excluded
+ *   <li>Archived client re-activated via the lifecycle API (status ARCHIVED, lifecycle ACTIVE, no
+ *       FICA) → excluded and not counted
  * </ul>
  */
 @SpringBootTest
@@ -68,6 +71,7 @@ class FicaOutstandingIntegrationTest {
   private String doneId;
   private String prospectId;
   private String offboardedId;
+  private String archivedId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -85,6 +89,7 @@ class FicaOutstandingIntegrationTest {
     doneId = createClient("Charlie Active Done", LifecycleStatus.ACTIVE);
     prospectId = createClient("Delta Prospect", LifecycleStatus.PROSPECT);
     offboardedId = createClient("Echo Offboarded", LifecycleStatus.OFFBOARDED);
+    archivedId = createArchivedActiveClient("Foxtrot Archived Reactivated");
 
     // Clock start 10 days ago for the NOT_STARTED client → longest outstanding.
     jdbcTemplate.update(
@@ -129,7 +134,34 @@ class FicaOutstandingIntegrationTest {
             .getContentAsString();
 
     List<String> listed = JsonPath.read(body, "$.clients[*].clientId");
-    assertThat(listed).doesNotContain(doneId, prospectId, offboardedId);
+    assertThat(listed).doesNotContain(doneId, prospectId, offboardedId, archivedId);
+  }
+
+  @Test
+  void archivedClientInActiveLifecycleIsExcludedAndNotCounted() throws Exception {
+    // Precondition: the client really is archived yet in an in-scope lifecycle.
+    var row =
+        jdbcTemplate.queryForMap(
+            "SELECT status, lifecycle_status FROM \"%s\".customers WHERE id = ?::uuid"
+                .formatted(schema),
+            UUID.fromString(archivedId));
+    assertThat(row).containsEntry("status", "ARCHIVED").containsEntry("lifecycle_status", "ACTIVE");
+
+    String body =
+        mockMvc
+            .perform(
+                get("/api/dashboard/fica-outstanding")
+                    .param("limit", "50")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+            .andExpect(status().isOk())
+            // Only the three non-archived ONBOARDING/ACTIVE clients count.
+            .andExpect(jsonPath("$.totalActiveClients").value(3))
+            .andExpect(jsonPath("$.outstandingCount").value(2))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    List<String> listed = JsonPath.read(body, "$.clients[*].clientId");
+    assertThat(listed).doesNotContain(archivedId);
   }
 
   @Test
@@ -220,6 +252,31 @@ class FicaOutstandingIntegrationTest {
                                     lifecycleStatus))
                             .getId()
                             .toString()));
+  }
+
+  /**
+   * Real API path to an archived client in an in-scope lifecycle: archive (→ status ARCHIVED,
+   * lifecycle OFFBOARDED), then reactivate OFFBOARDED → ACTIVE via the lifecycle transition, which
+   * does not touch {@code status}.
+   */
+  private String createArchivedActiveClient(String name) throws Exception {
+    String id = createClient(name, LifecycleStatus.ONBOARDING);
+    var owner = TestJwtFactory.ownerJwt(ORG_ID, OWNER);
+    mockMvc
+        .perform(delete("/api/clients/{id}", id).with(owner))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("ARCHIVED"));
+    mockMvc
+        .perform(
+            post("/api/clients/{id}/transition", id)
+                .with(owner)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetStatus": "ACTIVE"}
+                    """))
+        .andExpect(status().isOk());
+    return id;
   }
 
   private String createPortalContact(String clientId, String email) {

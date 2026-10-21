@@ -153,9 +153,9 @@ describe("KPIDashboard", () => {
     const jsx = await KPIDashboard({ ...defaultProps, disbursementsEnabled: true });
     render(jsx);
 
-    const card = screen.getByTestId("metric-card-invoices");
-    expect(card).toBeInTheDocument();
-    expect(card).toHaveTextContent("Outstanding fee notes");
+    const link = screen.getByRole("link", { name: /Outstanding fee notes/i });
+    expect(link).toHaveAttribute("href", "?tab=statements");
+    expect(link).toContainElement(screen.getByTestId("metric-card-invoices"));
   });
 
   // Test 5: Renders upcoming deadlines list

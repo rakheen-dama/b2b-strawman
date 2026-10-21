@@ -1,17 +1,13 @@
 import type { EntityType } from "@/lib/types";
 import { MATTER_COLUMNS } from "@/lib/matters-list";
+import { CLIENT_COLUMNS } from "@/lib/clients-list";
 
 /** Standard (non-custom-field) columns per entity type, used by Create and Edit view dialogs. */
 export const STANDARD_COLUMNS: Record<EntityType, { value: string; label: string }[]> = {
   // The Matters table's own columns (615C) — single source in lib/matters-list.ts.
   PROJECT: MATTER_COLUMNS.map((c) => ({ value: c.id, label: c.label })),
-  CUSTOMER: [
-    { value: "name", label: "Name" },
-    { value: "email", label: "Email" },
-    { value: "phone", label: "Phone" },
-    { value: "status", label: "Status" },
-    { value: "createdAt", label: "Created At" },
-  ],
+  // The Clients table's own columns (615D) — single source in lib/clients-list.ts.
+  CUSTOMER: CLIENT_COLUMNS.map((c) => ({ value: c.id, label: c.label })),
   TASK: [
     { value: "title", label: "Title" },
     { value: "status", label: "Status" },

@@ -81,6 +81,10 @@ export const CLIENT_SYSTEM_VIEWS: readonly SystemView[] = [
 ];
 
 export const DEFAULT_MATTER_VIEW_ID = "system:open-matters";
+/**
+ * Not wired: 615D ruling D-1(B) defaults the Clients page to "All clients"
+ * (`ALL_CLIENTS_VIEW_ID` in lib/clients-list.ts). Kept for its 615C test pins.
+ */
 export const DEFAULT_CLIENT_VIEW_ID = "system:active";
 export const DORMANT_VIEW_ID = "system:dormant";
 

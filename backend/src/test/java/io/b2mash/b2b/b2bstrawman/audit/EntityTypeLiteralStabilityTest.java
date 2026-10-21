@@ -29,12 +29,12 @@ import org.junit.jupiter.api.Test;
  * "CUSTOMER"} literal at all — they are generic and the caller passes the key — so they are covered
  * ONLY by the negative "no {@code "MATTER"}/{@code "CLIENT"}" sweep over {@code tag/} and {@code
  * view/}; the positive pins for the keys they receive live at the caller sites ({@code
- * ProjectController}, {@code ProjectService}, {@code CustomerController}, {@code
- * ProjectTemplateService}, the context builders). {@code fielddefinition/} persists the {@link
- * EntityType} enum name, so it is covered by the enum check plus the same negative sweep. There is
- * deliberately NO global {@code "MATTER"} ban — {@code MatterClosureService} legitimately uses it
- * as a retention record type. A deliberate future rename must supersede ADR-342, ship the data
- * migration, and update this test consciously.
+ * ProjectController}, {@code ProjectService}, {@code CustomerController}, {@code CustomerService},
+ * {@code ProjectTemplateService}, the context builders). {@code fielddefinition/} persists the
+ * {@link EntityType} enum name, so it is covered by the enum check plus the same negative sweep.
+ * There is deliberately NO global {@code "MATTER"} ban — {@code MatterClosureService} legitimately
+ * uses it as a retention record type. A deliberate future rename must supersede ADR-342, ship the
+ * data migration, and update this test consciously.
  */
 class EntityTypeLiteralStabilityTest {
 
@@ -93,10 +93,16 @@ class EntityTypeLiteralStabilityTest {
         .as(WHY + "template-instantiated matters are tagged \"PROJECT\"")
         .containsPattern("new EntityTag\\(\\s*\\w+,\\s*\"PROJECT\"");
     assertThat(read("customer/CustomerController.java"))
-        .as(WHY + "CustomerController saved-view filter + tags are keyed \"CUSTOMER\"")
-        .containsPattern("\"CUSTOMER\",\\s*\"customers\"")
+        .as(WHY + "CustomerController tags are keyed \"CUSTOMER\"")
         .containsPattern("getEntityTags\\(\\s*\"CUSTOMER\"")
         .containsPattern("setEntityTags\\(\\s*\"CUSTOMER\"");
+    assertThat(read("customer/CustomerService.java"))
+        .as(
+            WHY
+                + "CustomerService saved-view filter + tag batch are keyed \"CUSTOMER\" (moved"
+                + " from CustomerController in Epic 615B)")
+        .containsPattern("\"CUSTOMER\",\\s*\"customers\"")
+        .containsPattern("getEntityTagsBatch\\(\\s*\"CUSTOMER\"");
     assertThat(read("view/CustomFieldFilterUtil.java"))
         .as(WHY + "promoted-slug map is keyed \"PROJECT\"/\"CUSTOMER\"")
         .containsPattern("\"PROJECT\",\\s*PROJECT_PROMOTED_SLUGS")
@@ -117,6 +123,7 @@ class EntityTypeLiteralStabilityTest {
             "project/ProjectService.java",
             "projecttemplate/ProjectTemplateService.java",
             "customer/CustomerController.java",
+            "customer/CustomerService.java",
             "task/TaskController.java",
             "template/ProjectContextBuilder.java",
             "template/CustomerContextBuilder.java")

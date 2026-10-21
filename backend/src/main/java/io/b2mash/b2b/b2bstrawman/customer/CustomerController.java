@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.LinkedMatterResponse;
 import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.TransitionRequest;
 import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.TransitionResponse;
 import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.UpdateClientRequest;
+import io.b2mash.b2b.b2bstrawman.customer.dto.ClientListRow;
 import io.b2mash.b2b.b2bstrawman.customer.dto.CollectionsExemptionRequest;
 import io.b2mash.b2b.b2bstrawman.customer.dto.CollectionsExemptionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
@@ -30,11 +31,8 @@ import io.b2mash.b2b.b2bstrawman.setupstatus.CustomerReadinessService;
 import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummary;
 import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummaryService;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
-import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
 import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
-import io.b2mash.b2b.b2bstrawman.view.CustomFieldFilterUtil;
-import io.b2mash.b2b.b2bstrawman.view.ViewFilterHelper;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.time.LocalDate;
@@ -61,7 +59,6 @@ public class CustomerController {
   private final CustomerProjectService customerProjectService;
   private final InvoiceService invoiceService;
   private final EntityTagService entityTagService;
-  private final ViewFilterHelper viewFilterHelper;
   private final CustomerLifecycleService customerLifecycleService;
   private final UnbilledTimeSummaryService unbilledTimeSummaryService;
   private final CustomerReadinessService customerReadinessService;
@@ -73,7 +70,6 @@ public class CustomerController {
       CustomerProjectService customerProjectService,
       InvoiceService invoiceService,
       EntityTagService entityTagService,
-      ViewFilterHelper viewFilterHelper,
       CustomerLifecycleService customerLifecycleService,
       UnbilledTimeSummaryService unbilledTimeSummaryService,
       CustomerReadinessService customerReadinessService,
@@ -83,7 +79,6 @@ public class CustomerController {
     this.customerProjectService = customerProjectService;
     this.invoiceService = invoiceService;
     this.entityTagService = entityTagService;
-    this.viewFilterHelper = viewFilterHelper;
     this.customerLifecycleService = customerLifecycleService;
     this.unbilledTimeSummaryService = unbilledTimeSummaryService;
     this.customerReadinessService = customerReadinessService;
@@ -92,78 +87,19 @@ public class CustomerController {
   }
 
   @GetMapping
-  public ResponseEntity<List<ClientResponse>> listCustomers(
+  public ResponseEntity<List<ClientListRow>> listCustomers(
       @RequestParam(required = false) UUID view,
       @RequestParam(required = false) LifecycleStatus lifecycleStatus,
-      @RequestParam(required = false) Map<String, String> allParams) {
-
-    // --- View-based filtering (server-side SQL) ---
-    if (view != null) {
-      List<Customer> filtered =
-          viewFilterHelper.applyViewFilter(
-              // ADR-342: storage key, do not rename
-              view, "CUSTOMER", "customers", Customer.class, null, null);
-
-      if (filtered != null) {
-        var customerIds = filtered.stream().map(Customer::getId).toList();
-        // ADR-342: storage key, do not rename
-        var tagsByEntityId = entityTagService.getEntityTagsBatch("CUSTOMER", customerIds);
-        var memberNames = customerService.resolveCustomerMemberNames(filtered);
-
-        var responses =
-            filtered.stream()
-                .map(
-                    c ->
-                        ClientResponse.from(
-                            c, tagsByEntityId.getOrDefault(c.getId(), List.of()), memberNames))
-                .toList();
-        return ResponseEntity.ok(responses);
-      }
-    }
-
-    // --- Fallback: existing in-memory filtering ---
-    var customerEntities =
-        lifecycleStatus != null
-            ? customerService.listCustomersByLifecycleStatus(lifecycleStatus)
-            : customerService.listCustomers();
-
-    // Batch-load tags for all customers (2 queries instead of 2N)
-    var customerIds = customerEntities.stream().map(Customer::getId).toList();
-    // ADR-342: storage key, do not rename
-    var tagsByEntityId = entityTagService.getEntityTagsBatch("CUSTOMER", customerIds);
-    var memberNames = customerService.resolveCustomerMemberNames(customerEntities);
-
-    var customers =
-        customerEntities.stream()
-            .map(
-                c ->
-                    ClientResponse.from(
-                        c, tagsByEntityId.getOrDefault(c.getId(), List.of()), memberNames))
-            .toList();
-
-    // Apply custom field filtering if present
-    Map<String, String> customFieldFilters =
-        CustomFieldFilterUtil.extractCustomFieldFilters(allParams);
-    if (!customFieldFilters.isEmpty()) {
-      customers =
-          customers.stream()
-              .filter(
-                  c ->
-                      CustomFieldFilterUtil.matchesCustomFieldFilters(
-                          c.customFields(), customFieldFilters))
-              .toList();
-    }
-
-    // Apply tag filtering if present
-    List<String> tagSlugs = TagFilterUtil.extractTagSlugs(allParams);
-    if (!tagSlugs.isEmpty()) {
-      customers =
-          customers.stream()
-              .filter(c -> TagFilterUtil.matchesTagFilter(c.tags(), tagSlugs))
-              .toList();
-    }
-
-    return ResponseEntity.ok(customers);
+      @RequestParam(required = false) String ficaStatus,
+      @RequestParam(defaultValue = "false") boolean hasTrustBalance,
+      @RequestParam(defaultValue = "false") boolean showIncomplete,
+      @RequestParam(required = false) Map<String, String> allParams,
+      ActorContext actor) {
+    return ResponseEntity.ok(
+        customerService.listClientRows(
+            new ClientListQuery(
+                view, lifecycleStatus, ficaStatus, hasTrustBalance, showIncomplete, allParams),
+            actor));
   }
 
   @GetMapping("/lifecycle-summary")

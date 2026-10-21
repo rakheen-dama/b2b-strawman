@@ -376,7 +376,8 @@ test.describe.serial("Day 60 — Interest Run & Investments", () => {
 
   test("Alice: Check profitability report", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/profitability`);
+    // Phase 87 S6a (ADR-344): route — /profitability 308s to /reports/profitability (612A)
+    await page.goto(`${BASE}/reports/profitability`);
 
     const mainVisible = await page
       .locator("main")

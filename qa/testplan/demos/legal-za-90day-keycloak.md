@@ -93,7 +93,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.21** Fill: First Name = **Thandi**, Last Name = **Mathebula**, Password = `SecureP@ss1`, Confirm Password = `SecureP@ss1`
 - [ ] **0.22** Submit → redirected back to the app → lands on `/org/mathebula-partners/dashboard` (or similar slug)
 - [ ] **0.23** Verify sidebar shows org name **Mathebula & Partners**, user avatar/name **Thandi Mathebula**
-- [ ] **0.24** Verify lifecycle profile is active: sidebar shows **Matters** (not "Projects"), **Clients** (not "Customers")
+- [ ] **0.24** Verify lifecycle profile is active: sidebar shows the six zones **Today · Matters · Clients · Fees · Trust · Firm** in that order (Today, Matters and Clients open; Fees, Trust and Firm collapsed), with **Matters** (not "Projects") and **Clients** (not "Customers") (Phase 87, ADR-344 — nav amendment, Epic 612C: six-zone sidebar per ADR-339)
 - [ ] **0.25** 📸 **Screenshot**: Dashboard with legal terminology + nav + org name
 
 ### Phase D: Team invites
@@ -176,7 +176,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **0.57** Navigate to **Settings > Features**
 - [ ] **0.58** Verify the page lists only the horizontal toggles (Bulk billing, Information requests). The legal modules `court_calendar`, `conflict_check`, `lssa_tariff`, `trust_accounting` are fixed by the `legal-za` profile and are not toggles here — confirm them via 0.59 (sidebar) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: legal modules are profile-fixed, Settings > Features lists horizontal modules only)
-- [ ] **0.59** **Sidebar check**: verify sidebar nav shows items for: Trust Accounting, Court Calendar, Conflict Check, Tariffs
+- [ ] **0.59** **Sidebar check**: verify sidebar nav shows items for: the **Trust** zone (expand → Overview, Transactions, Client ledgers, Reconciliation, Interest, Investments, Trust reports), **Court calendar** (Today zone), **Conflict check** (Matters zone), **Tariffs** (Fees zone — expand) (Phase 87, ADR-344 — nav amendment, Epic 612C: Trust Accounting is now the Trust zone and the items are regrouped into the six zones per ADR-339)
 - [ ] **0.60** **Cross-vertical leak check**: verify sidebar does NOT show any items like "Engagements", "Year-End Packs", "Campaigns", or other non-legal vertical terminology
 
 ### Phase J: Trust account setup
@@ -554,7 +554,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **90.1** **Terminology sweep**: walk sidebar, every settings page, every create dialog → zero occurrences of "Project" (should be "Matter"), "Customer" (should be "Client"), "Invoice" (should be "Fee Note"), or any agency/accounting leakage
 - [ ] **90.2** **Field promotion sweep**: reopen every create dialog (Client, Matter, Task, Fee Note) → verify no promoted slugs have regressed into the sidebar
-- [ ] **90.3** **Progressive disclosure sweep**: confirm all 4 legal modules still visible, no accounting/agency nav items leaked in
+- [ ] **90.3** **Progressive disclosure sweep**: confirm the six zones (Today · Matters · Clients · Fees · Trust · Firm) and all 4 legal modules (0.59: Trust zone, Court calendar, Conflict check, Tariffs) still visible, no accounting/agency nav items leaked in (Phase 87, ADR-344 — nav amendment, Epic 612C: six-zone sidebar per ADR-339)
 - [ ] **90.4** **Tier removal sweep**: navigate to Settings > Billing → confirm still flat, no tier UI
 - [ ] **90.5** **Console errors**: open browser devtools → navigate through every top-level nav item → confirm zero JS errors in console
 - [ ] **90.6** **Mailpit sweep**: verify no bounced/failed emails

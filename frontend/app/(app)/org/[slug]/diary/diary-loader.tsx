@@ -1,6 +1,8 @@
 import { unstable_rethrow } from "next/navigation";
 import { getCurrentUserEmail } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
+import { ApiError, resolveServerReturnTo } from "@/lib/api/client";
+import { redirectToReLogin } from "@/lib/auth/expiry";
 import { getDiary, getDiaryMatters, getDiaryMembers } from "./diary-actions";
 import { DiaryPageClient } from "./diary-page-client";
 import type { DiaryKind, DiaryView } from "./diary-types";
@@ -16,7 +18,7 @@ export interface DiaryLoaderProps {
 }
 
 /**
- * Fetches the week; members / matters / capabilities failures are non-fatal. Lives outside
+ * Fetches the week; failures other than an expired-session 401 are non-fatal. Lives outside
  * page.tsx because a Next.js page file may only export the page and route config.
  */
 export async function DiaryLoader({ slug, today, from, to, view, initialKinds }: DiaryLoaderProps) {
@@ -31,8 +33,21 @@ export async function DiaryLoader({ slug, today, from, to, view, initialKinds }:
   ]);
 
   // Framework control flow (the re-login redirect on an expired session) must not be swallowed.
-  for (const result of [diary, members, matters, caps, email]) {
+  const results = [diary, members, matters, caps, email];
+  for (const result of results) {
     if (result.status === "rejected") unstable_rethrow(result.reason);
+  }
+  // A backend 401 (incl. the manual-redirect 3xx mapped to 401) is an expired session, not a
+  // load failure: funnel to the branded re-login like apiRequest callers via handleApiError.
+  if (
+    results.some(
+      (result) =>
+        result.status === "rejected" &&
+        result.reason instanceof ApiError &&
+        result.reason.status === 401
+    )
+  ) {
+    redirectToReLogin(await resolveServerReturnTo(), "expired");
   }
   if (diary.status === "rejected") console.error("Failed to load the diary:", diary.reason);
   if (members.status === "rejected") console.error("Failed to load members:", members.reason);

@@ -8,13 +8,38 @@ import userEvent from "@testing-library/user-event";
 
 vi.mock("server-only", () => ({}));
 
-const { mockGetDiary, mockGetMembers, mockGetMatters, mockCaps, mockEmail } = vi.hoisted(() => ({
-  mockGetDiary: vi.fn(),
-  mockGetMembers: vi.fn(),
-  mockGetMatters: vi.fn(),
-  mockCaps: vi.fn(),
-  mockEmail: vi.fn(),
-}));
+const {
+  mockGetDiary,
+  mockGetMembers,
+  mockGetMatters,
+  mockCaps,
+  mockEmail,
+  mockRedirectToReLogin,
+  mockResolveReturnTo,
+  MockApiError,
+} = vi.hoisted(() => {
+  class MockApiError extends Error {
+    constructor(
+      public status: number,
+      message: string
+    ) {
+      super(message);
+      this.name = "ApiError";
+    }
+  }
+  return {
+    mockGetDiary: vi.fn(),
+    mockGetMembers: vi.fn(),
+    mockGetMatters: vi.fn(),
+    mockCaps: vi.fn(),
+    mockEmail: vi.fn(),
+    mockRedirectToReLogin: vi.fn(() => {
+      throw new Error("NEXT_REDIRECT");
+    }),
+    mockResolveReturnTo: vi.fn(),
+    MockApiError,
+  };
+});
 
 vi.mock("@/app/(app)/org/[slug]/diary/diary-actions", () => ({
   getDiary: mockGetDiary,
@@ -23,6 +48,11 @@ vi.mock("@/app/(app)/org/[slug]/diary/diary-actions", () => ({
 }));
 vi.mock("@/lib/api/capabilities", () => ({ fetchMyCapabilities: mockCaps }));
 vi.mock("@/lib/auth", () => ({ getCurrentUserEmail: mockEmail }));
+vi.mock("@/lib/api/client", () => ({
+  ApiError: MockApiError,
+  resolveServerReturnTo: mockResolveReturnTo,
+}));
+vi.mock("@/lib/auth/expiry", () => ({ redirectToReLogin: mockRedirectToReLogin }));
 vi.mock("@/components/legal/create-court-date-dialog", () => ({
   CreateCourtDateDialog: () => null,
 }));
@@ -76,6 +106,7 @@ describe("DiaryLoader (613B)", () => {
     mockGetMatters.mockResolvedValue([]);
     mockCaps.mockResolvedValue({ capabilities: [], role: "Owner", isAdmin: false, isOwner: true });
     mockEmail.mockResolvedValue("thandi@firm.test");
+    mockResolveReturnTo.mockResolvedValue("/org/acme/diary");
   });
 
   afterEach(() => {
@@ -124,6 +155,28 @@ describe("DiaryLoader (613B)", () => {
     mockGetDiary.mockRejectedValue(new Error("boom"));
     render(await DiaryLoader(PROPS));
     expect(screen.getByText("Unable to load the diary")).toBeInTheDocument();
+  });
+
+  it("renders the error state (no re-login) when the diary fails with a non-401 ApiError", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    mockGetDiary.mockRejectedValue(new MockApiError(500, "Internal Server Error"));
+    render(await DiaryLoader(PROPS));
+    expect(mockRedirectToReLogin).not.toHaveBeenCalled();
+    expect(screen.getByText("Unable to load the diary")).toBeInTheDocument();
+  });
+
+  it("routes an expired-session 401 from the diary to the re-login redirect", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    mockGetDiary.mockRejectedValue(new MockApiError(401, "Authentication session expired"));
+    await expect(DiaryLoader(PROPS)).rejects.toThrow("NEXT_REDIRECT");
+    expect(mockRedirectToReLogin).toHaveBeenCalledWith("/org/acme/diary", "expired");
+  });
+
+  it("routes a 401 from a secondary fetch (members / matters) to the re-login redirect", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    mockGetMatters.mockRejectedValue(new MockApiError(401, "Authentication session expired"));
+    await expect(DiaryLoader(PROPS)).rejects.toThrow("NEXT_REDIRECT");
+    expect(mockRedirectToReLogin).toHaveBeenCalledWith("/org/acme/diary", "expired");
   });
 
   it("does not swallow the re-login redirect", async () => {

@@ -1,7 +1,7 @@
 {
-  "commit": "a76f1bd5443ff913a71c57f9ff9e662072d48118",
+  "commit": "4de837f452049e8b5594f73164de391fa3601117",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-21T08:18:36+02:00",
-  "summary": "PR #1625 (Epic 614A: legal-native home — unbilled WIP, FICA outstanding, trust position reads; FicaStatusProjector; team-workload deleted) head a76f1bd54 (orchestrator run, after CodeRabbit fix cycle): 5418 testcases / 0 failures / 0 errors / 26 skipped across 694 surefire reports (+31 vs 613A's 5387: FicaStatusProjectorTest 16 + DashboardServiceUnbilledWipTest 5 + TrustPositionIntegrationTest 7 + FicaOutstandingIntegrationTest 6, minus deleted team-workload tests). WireVocabularyContractTest green with empty ratchet baseline. Log /tmp/mvn-614A-final.log."
+  "ts": "2026-10-21T19:13:25+02:00",
+  "summary": "PR #1627 (Epic 615A: MatterListRow dense matter list projection + mine/hasUnbilled/inactiveSince params) head 4de837f45 (orchestrator run, after 1 review fix cycle): 5430 testcases / 0 failures / 0 errors / 26 skipped across 695 surefire reports (+12 vs 614A's 5418: MatterListRowIntegrationTest 12 — statement count 7 for a 55-matter page, equal to 1-matter page). WireVocabularyContractTest green. Log /tmp/mvn-615A-final.log."
 }

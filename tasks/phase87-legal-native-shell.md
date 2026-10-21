@@ -29,7 +29,7 @@ Carried from §12.14. "Owner" is the epic whose builder must resolve or record t
 | 9 | AI reviews as fifth Matters item | Accepted (otherwise `/ai/reviews` is unreachable). | 612A | **Closed** |
 | 10 | `settings/billing` → Firm › Subscription; `settings/compliance` → Firm › Compliance | Accepted; ADR-341 aligned. | 616A | **Closed** |
 | 11 | Legacy `/legal/*` route prefix survives | Out of the two-noun rule; unchanged (breadcrumb `NON_ROUTABLE_PREFIXES` handles it since #1579). | — | Deferred |
-| 12 | Per-matter trust balance on `MatterListRow` is client-level | 615A confirms whether `trust_transactions.project_id` exists and is populated; column header reads "Client trust" until a follow-up. Record the finding in the PR body. | 615A | Open (confirm at build) |
+| 12 | Per-matter trust balance on `MatterListRow` is client-level | 615A confirms whether `trust_transactions.project_id` exists and is populated; column header reads "Client trust" until a follow-up. Record the finding in the PR body. **Finding (PR #1627):** `trust_transactions.project_id` exists (nullable FK → `projects`), populated only when a caller passes the optional `matterId` (deposit/payment/transfer/refund) or a fee transfer infers it; no per-matter balance exists, so `trustBalance` = `SUM(client_ledger_cards.balance)` for the matter's client. | 615A | **Closed** (client-level; per-matter is a follow-up) |
 | 13 | Remaining Phase 86 deferrals (stale `V<n>` comments, dead-code list, `PROFILE_FILTER_OPTIONS` bug, …) | Unchanged; tracked in `tasks/phase86-subtraction.md` §7.8. | — | Deferred |
 | 14 | `ProjectUpcomingDeadlinesService` keeps its own union beside `DiaryService` | Untouched here (607B renames DTO + path only); fold into `DiaryService` when `/api/calendar` is deleted. | — | Deferred |
 | 15 | Unbilled work page period — can `GET /api/invoices/unbilled-summary` take an open-ended period? | 612B confirms at build; if not, keep the 24-month default and say so in the page helper text. | 612B | **Closed** (612B, PR #1619) — not open-ended: `InvoiceController.java:86-93` requires `periodFrom`, `periodTo` (ISO dates, inclusive) and `currency` (400 otherwise); page keeps the 24-month default and its helper text says so. |
@@ -52,7 +52,7 @@ Carried from §12.14. "Owner" is the epic whose builder must resolve or record t
 | 612 | Navigation IA (Six Zones) + Palette `requiredModule` + Unbilled Work Page | Frontend | 611 | M | 612A, 612B, 612C | 612A **Done** (PR #1618), 612B **Done** (PR #1619), 612C **Done** (PR #1620) — **Epic 612 DONE** |
 | 613 | One Diary — `GET /api/diary` + `/diary` Page, Calendars Deleted | Backend + Frontend (split) | 612 | L | 613A, 613B, 613C, 613D || **Done** (PRs #1621, #1622, #1623, #1624) |
 | 614 | Legal-Native Home — Three Dashboard Reads + Widget Matrix | Backend + Frontend (split) | 613 | M | 614A, 614B, 614C | **Done** (PRs #1625, #1626; 614C = epic gate, no code) |
-| 615 | Dense Lists (`MatterListRow`/`ClientListRow`), System Views, Tab Groups, Disbursements | Backend + Frontend (split) | 614 | L | 615A, 615B, 615C, 615D, 615E | |
+| 615 | Dense Lists (`MatterListRow`/`ClientListRow`), System Views, Tab Groups, Disbursements | Backend + Frontend (split) | 614 | L | 615A, 615B, 615C, 615D, 615E | In progress — 615A **Done** (PR #1627) |
 | 616 | Settings Consolidation — Five Families, 44 → 17 Routes, 43 Redirects | Frontend | 615 | L | 616A, 616B, 616C, 616D, 616E, 616F | |
 | 617 | Portal Vocabulary + Nav, QA Capstone, Screenshots, Closure Report | Portal + QA/Process | 616 | M | 617A, 617B, 617C | |
 
@@ -154,7 +154,7 @@ FROZEN (never edited by any slice — the contract tests landed in 607A guard th
 
 | Epic | PR | What must be green before merge | Notes |
 |------|----|----------------------------------|-------|
-| 615 | `phase87/09-lists-tabs-disbursements` | BE-VERIFY (`MatterListRowIntegrationTest` query cap ≤ 7 for 50 matters, `ClientListRowIntegrationTest`); FE-GATE (`system-views.test.ts`, tab-group pins 7/21 and 6/14, table tests); E2E-LEGAL (`day-05-disbursements`, `day-30-billing` tab labels) | **Stop and re-spec** if either detail page needs more than relabelling + orphan removal. Open question #18 (expenses spec) decided in the PR body. |
+| 615 | `phase87/09-lists-tabs-disbursements` | BE-VERIFY (`MatterListRowIntegrationTest` query cap ≤ 7 for 50 matters, `ClientListRowIntegrationTest`); FE-GATE (`system-views.test.ts`, tab-group pins 7/21 and 6/14, table tests); E2E-LEGAL (`day-05-disbursements`, `day-30-billing` tab labels) | **Stop and re-spec** if either detail page needs more than relabelling + orphan removal. Open question #18 (expenses spec) decided in the PR body. 615A **Done** (PR #1627; BE-VERIFY 5430/0/0/26; `MatterListRowIntegrationTest` 7 statements / 55 matters). |
 
 ### Stage 5 — Settings: 616
 
@@ -684,7 +684,7 @@ PR rules restated from §12.12 (non-negotiable):
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **615A** | 615A.1–615A.3 | 1 new DTO + `ProjectService`/`ProjectController` + 4 repository methods + 1 native query + 1 new test | `MatterListRow` + params + query-count test. |
+| **615A** | 615A.1–615A.3 | 1 new DTO + `ProjectService`/`ProjectController` + 4 repository methods + 1 native query + 1 new test | `MatterListRow` + params + query-count test. **Done** (PR #1627) — 7 statements for a 55-matter page (= 1-matter page; one `LEFT JOIN LATERAL` aggregate statement replaces per-aggregate queries — orchestrator decision, literal plan was 10–11); `description` kept on the row so the pre-615C card grid + `link-project-dialog` keep working on `main`; next diary = live `DiaryService` (4 kinds, legal kinds gated `court_calendar` + `VIEW_LEGAL`, SQL binds `DiaryService`/`DiaryKind` constants); `inactiveSince` = `projects.updated_at`, task `updated_at`, `time_entries.date` all < date; `mine`/`hasUnbilled`/custom-field/tag filters in the service, `inactiveSince` in SQL; `ClientLedgerCardRepository.sumBalancesByCustomerIdIn` reusable by 615B. Follow-ups for 615C: no backend `sort` param (default order unchanged), `hasUnbilled` minutes-only (disbursement-only matters excluded), list still reads `customerId`. |
 | **615B** | 615B.1–615B.3 | 1 new DTO + `CustomerService`/`CustomerController` + 3 repository methods + 1 new test | `ClientListRow` + params + filtering moved into the service; BE-VERIFY. |
 | **615C** | 615C.1–615C.3 | `matters/page.tsx` + 2–3 components, `lib/constants/system-views.ts`, `components/views/{ViewSelectorClient,SavedViewSelector,constants}`, types, tests | Matters table + system views + `columns`. |
 | **615D** | 615D.1–615D.2 | `clients/page.tsx` + 1–2 components, types, tests | Clients table. |

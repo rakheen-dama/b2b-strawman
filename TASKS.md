@@ -697,7 +697,7 @@
 | 610 | Frontend + Portal TS Types, API Modules, Route Segments, Redirects | Frontend + Portal (split) | 609 | L | 610A, 610B, 610C, 610D, 610E, 610F, 610G | **Done** (PRs #1605, #1606, #1607, #1608, #1609, #1610, #1611) |
 | 611 | Terminology Layer Removal + Single-Vocabulary Lint | Frontend + Portal + packages (split) | 610 | L | 611A, 611B, 611C, 611D, 611E, 611F | **Done** (PRs #1612, #1613, #1614, #1615, #1616, #1617) — 611A.2 "Mandate accepted" badge DEFERRED (needs backend `templateCategory`; owner/re-spec pending) |
 | 612 | Navigation IA (Six Zones) + Palette `requiredModule` + Unbilled Work Page | Frontend | 611 | M | 612A, 612B, 612C | **Done** (PRs #1618, #1619, #1620) |
-| 613 | One Diary — `GET /api/diary` + `/diary` Page, Calendars Deleted | Backend + Frontend (split) | 612 | L | 613A, 613B, 613C, 613D || In progress — 613A **Done** (PR #1621), 613B **Done** (PR #1622), 613C **Done** (PR #1623) |
+| 613 | One Diary — `GET /api/diary` + `/diary` Page, Calendars Deleted | Backend + Frontend (split) | 612 | L | 613A, 613B, 613C, 613D || **Done** (PRs #1621, #1622, #1623, #1624) |
 | 614 | Legal-Native Home — Three Dashboard Reads + Widget Matrix | Backend + Frontend (split) | 613 | M | 614A, 614B, 614C | |
 | 615 | Dense Lists (`MatterListRow`/`ClientListRow`), System Views, Tab Groups, Disbursements | Backend + Frontend (split) | 614 | L | 615A, 615B, 615C, 615D, 615E | |
 | 616 | Settings Consolidation — Five Families, 44 → 17 Routes, 43 Redirects | Frontend | 615 | L | 616A, 616B, 616C, 616D, 616E, 616F | |

@@ -351,8 +351,13 @@ public class ProjectService {
   /**
    * {@code GET /api/matters} rows: the same base selection as {@link #listProjects(UUID, String,
    * LocalDate, UUID, Map, ActorContext)} (saved view, or accessible matters with status — default
-   * ACTIVE — / dueBefore / customerId), narrowed by {@code mine} / {@code inactiveSince} / {@code
-   * hasUnbilled}, then enriched by batched aggregates merged in Java.
+   * ACTIVE — / dueBefore / customerId), narrowed by the list params, then enriched by batched
+   * aggregates merged in Java. Every narrowing happens here in the service, never in the
+   * controller: {@code inactiveSince} is a SQL predicate (one statement over the surviving ids);
+   * {@code mine}, {@code hasUnbilled} and the custom-field/tag params filter the loaded rows in
+   * Java ({@code mine} on the base query's caller role, {@code hasUnbilled} on the aggregate
+   * statement's unbilled minutes, tags on the batched tag lookup). Cheap filters run before the
+   * aggregate fan-out; tags run last because they need the tag batch.
    *
    * <p>Statement budget on the default path (no view, no inactiveSince): base 1 + org settings 1 +
    * matter aggregates 1 + next diary 1 + trust 0–1 + tags 1–2 = at most 7, independent of page size
@@ -372,6 +377,21 @@ public class ProjectService {
     // mine: the caller has a project_members row (role resolved by the base query)
     if (q.mine()) {
       matters = matters.stream().filter(m -> m.matterRole() != null).toList();
+    }
+    // custom-field params (in-memory path only, exactly as listProjects): on the base rows'
+    // projects.custom_fields, before any aggregate work
+    Map<String, String> customFieldFilters =
+        base.viewApplied()
+            ? Map.of()
+            : CustomFieldFilterUtil.extractCustomFieldFilters(q.allParams());
+    if (!customFieldFilters.isEmpty()) {
+      matters =
+          matters.stream()
+              .filter(
+                  m ->
+                      CustomFieldFilterUtil.matchesCustomFieldFilters(
+                          customFieldsOf(m.matter()), customFieldFilters))
+              .toList();
     }
     // inactiveSince: SQL predicate over the surviving ids (+1 statement, only when present)
     if (q.inactiveSince() != null && !matters.isEmpty()) {
@@ -438,19 +458,8 @@ public class ProjectService {
                         seesTrust))
             .toList();
 
-    // custom-field + tag params: in-memory path only, exactly as listProjects does
+    // tag params: in-memory path only, exactly as listProjects does (needs the tag batch above)
     if (!base.viewApplied()) {
-      Map<String, String> customFieldFilters =
-          CustomFieldFilterUtil.extractCustomFieldFilters(q.allParams());
-      if (!customFieldFilters.isEmpty()) {
-        rows =
-            rows.stream()
-                .filter(
-                    r ->
-                        CustomFieldFilterUtil.matchesCustomFieldFilters(
-                            r.customFields(), customFieldFilters))
-                .toList();
-      }
       List<String> tagSlugs = TagFilterUtil.extractTagSlugs(q.allParams());
       if (!tagSlugs.isEmpty()) {
         rows =
@@ -578,7 +587,11 @@ public class ProjectService {
         next == null ? null : next.getNextKind(),
         agg == null || agg.getOpenTaskCount() == null ? 0 : agg.getOpenTaskCount().intValue(),
         tags,
-        p.getCustomFields() != null ? p.getCustomFields() : Map.of());
+        customFieldsOf(p));
+  }
+
+  private static Map<String, Object> customFieldsOf(Project p) {
+    return p.getCustomFields() != null ? p.getCustomFields() : Map.of();
   }
 
   @Transactional(readOnly = true)

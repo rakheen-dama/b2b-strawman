@@ -61,8 +61,10 @@ public class DiaryService {
   /** Lower bound of the overdue band: effectively unbounded, Postgres-date safe. */
   static final LocalDate OVERDUE_FLOOR = LocalDate.of(1900, 1, 1);
 
-  private static final List<String> OPEN_COURT_STATUSES = List.of("SCHEDULED", "POSTPONED");
-  private static final List<String> OPEN_PRESCRIPTION_STATUSES = List.of("RUNNING", "WARNED");
+  /** Open-event statuses; also bound into {@link NextDiaryDateRepository}'s Matters-list query. */
+  static final List<String> OPEN_COURT_STATUSES = List.of("SCHEDULED", "POSTPONED");
+
+  static final List<String> OPEN_PRESCRIPTION_STATUSES = List.of("RUNNING", "WARNED");
 
   /** §12.3.2 ordering: date, time (nulls last), kind rank, title; id for determinism. */
   static final Comparator<DiaryEventResponse> ORDER =

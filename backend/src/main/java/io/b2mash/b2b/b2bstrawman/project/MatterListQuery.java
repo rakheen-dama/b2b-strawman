@@ -9,6 +9,10 @@ import java.util.UUID;
  * customerId} keeps the legacy query-param name the frontend and regression script send today.
  * {@code allParams} carries the {@code customField[slug]=…} and {@code tags=…} filters.
  *
+ * <p>All filtering happens in {@code ProjectService.listMatterRows}, never in the controller:
+ * {@code inactiveSince} is a SQL predicate; {@code mine}, {@code hasUnbilled} and the
+ * custom-field/tag params filter the loaded rows in Java.
+ *
  * @param mine keep only matters the caller has a {@code project_members} row on
  * @param hasUnbilled keep only matters with unbilled billable minutes &gt; 0
  * @param inactiveSince keep only matters with no activity on or after this date (null = no filter)

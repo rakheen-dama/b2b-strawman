@@ -23,7 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { postponeCourtDateSchema, type PostponeCourtDateFormData } from "@/lib/schemas/legal";
-import { postponeCourtDate } from "@/app/(app)/org/[slug]/court-calendar/actions";
+import { postponeCourtDate } from "@/lib/actions/court-dates";
 
 interface PostponeDialogProps {
   slug: string;

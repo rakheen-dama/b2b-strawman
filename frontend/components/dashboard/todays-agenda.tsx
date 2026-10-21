@@ -1,11 +1,28 @@
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Badge } from "@b2mash/ui/badge";
 import { formatDuration } from "@/lib/format";
-import type { MyWorkTaskItem, MyWorkTimeEntryItem } from "@/lib/types";
+import { DiaryEventRow } from "@/components/diary/diary-event-row";
+import type { DiaryEventResponse } from "@/app/(app)/org/[slug]/diary/diary-types";
+import type { MyWorkTimeEntryItem } from "@/lib/types";
 import type { PersonalDeadline } from "@/lib/dashboard-types";
 
+/** Rows shown before "+n more" — the Diary owns the full day. */
+const MAX_DIARY_ROWS = 5;
+
+/**
+ * GET /api/diary?from=today&to=today for the current user (Phase 87 613D): today's rows plus the
+ * open-overdue band (rows dated before today). `"unidentified"` = the signed-in user couldn't be
+ * matched to a member, so there is no personal diary to show; `null` = the diary could not be
+ * loaded.
+ */
+export type TodaysDiaryEvents = DiaryEventResponse[] | "unidentified" | null;
+
 interface TodaysAgendaProps {
-  tasks: MyWorkTaskItem[];
+  slug: string;
+  /** Server "today" (yyyy-MM-dd) — the date the diary was fetched for. */
+  today: string;
+  diaryEvents: TodaysDiaryEvents;
   todayEntries: MyWorkTimeEntryItem[];
   upcomingDeadlines: PersonalDeadline[];
   weeklyCapacityHours?: number;
@@ -20,21 +37,21 @@ function getDaysRemaining(dueDate: string): number {
 }
 
 export function TodaysAgenda({
-  tasks,
+  slug,
+  today,
+  diaryEvents,
   todayEntries,
   upcomingDeadlines,
   weeklyCapacityHours = 40,
 }: TodaysAgendaProps) {
-  const today = new Date().toLocaleDateString("en-CA"); // "YYYY-MM-DD"
   const dailyTargetMinutes = (weeklyCapacityHours / 5) * 60; // e.g. 480 min = 8h
 
-  // Filter tasks to today/overdue
-  const urgentTasks = tasks
-    .filter((t) => {
-      if (!t.dueDate) return false;
-      return t.dueDate <= today;
-    })
-    .slice(0, 5);
+  // Today's diary: the backend returns today's rows plus the overdue band (dated < today).
+  const events = Array.isArray(diaryEvents) ? diaryEvents : [];
+  const todaysEvents = events.filter((e) => e.date === today);
+  const overdueCount = events.filter((e) => e.date < today).length;
+  const hiddenCount = todaysEvents.length - MAX_DIARY_ROWS;
+  const diaryHref = `/org/${slug}/diary?view=day`;
 
   // Today's logged minutes
   const loggedMinutes = todayEntries.reduce((sum, e) => sum + e.durationMinutes, 0);
@@ -46,28 +63,61 @@ export function TodaysAgenda({
   return (
     <div className="bg-card rounded-lg border p-4">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {/* Section 1: Today's Tasks */}
-        <div data-testid="todays-tasks">
-          <p className="mb-2 text-[11px] font-medium tracking-wider text-slate-500 uppercase">
-            Today&apos;s Tasks
-          </p>
-          {urgentTasks.length === 0 ? (
-            <p className="text-sm text-slate-400">No tasks due today</p>
+        {/* Section 1: Today's diary — court dates, prescriptions, matter and task due dates */}
+        <div data-testid="todays-diary" className="min-w-0">
+          <div className="mb-2 flex items-baseline justify-between gap-2">
+            <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">
+              Today&apos;s diary
+            </p>
+            <Link
+              href={diaryHref}
+              className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+            >
+              Open diary
+            </Link>
+          </div>
+          {diaryEvents === "unidentified" ? (
+            <p className="text-sm text-slate-400">
+              Couldn&apos;t identify your member profile.{" "}
+              <Link
+                href={`/org/${slug}/diary`}
+                className="underline hover:text-slate-900 dark:hover:text-slate-100"
+              >
+                Open the Diary
+              </Link>
+            </p>
+          ) : diaryEvents === null ? (
+            <p className="text-sm text-slate-400">Today&apos;s diary could not be loaded.</p>
+          ) : todaysEvents.length === 0 ? (
+            <p className="text-sm text-slate-400">Nothing in the diary today</p>
           ) : (
-            <div className="space-y-1">
-              {urgentTasks.map((task) => (
-                <div key={task.id} className="flex h-9 items-center gap-2 text-sm">
-                  <span className="flex-1 truncate font-medium text-slate-900">{task.title}</span>
-                  <Badge variant="member" className="shrink-0 text-[10px]">
-                    {task.matterName}
-                  </Badge>
-                  {task.totalTimeMinutes > 0 && (
-                    <span className="shrink-0 font-mono text-xs text-slate-500 tabular-nums">
-                      {formatDuration(task.totalTimeMinutes)}
-                    </span>
-                  )}
-                </div>
+            <ul className="space-y-0.5">
+              {todaysEvents.slice(0, MAX_DIARY_ROWS).map((event) => (
+                <li key={`${event.kind}:${event.id}`}>
+                  <DiaryEventRow event={event} slug={slug} />
+                </li>
               ))}
+            </ul>
+          )}
+          {(hiddenCount > 0 || overdueCount > 0) && (
+            <div className="mt-2 flex flex-wrap items-center gap-3">
+              {hiddenCount > 0 && (
+                <Link
+                  href={diaryHref}
+                  className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                >
+                  +{hiddenCount} more
+                </Link>
+              )}
+              {overdueCount > 0 && (
+                <Link
+                  href={diaryHref}
+                  data-testid="todays-diary-overdue"
+                  className="focus-visible:ring-ring rounded-full outline-none focus-visible:ring-2"
+                >
+                  <Badge variant="destructive">{overdueCount} overdue</Badge>
+                </Link>
+              )}
             </div>
           )}
         </div>

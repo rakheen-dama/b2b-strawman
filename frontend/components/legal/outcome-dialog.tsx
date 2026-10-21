@@ -22,7 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { outcomeSchema, type OutcomeFormData } from "@/lib/schemas/legal";
-import { recordOutcome } from "@/app/(app)/org/[slug]/court-calendar/actions";
+import { recordOutcome } from "@/lib/actions/court-dates";
 
 interface OutcomeDialogProps {
   slug: string;

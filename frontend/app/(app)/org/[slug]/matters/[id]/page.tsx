@@ -105,6 +105,8 @@ export default async function ProjectDetailPage({
 
   const isAdmin = caps.isAdmin || caps.isOwner;
   const isOwner = caps.isOwner;
+  // Court-date / prescription writes need MANAGE_LEGAL (backend @RequiresCapability).
+  const canManageLegal = isAdmin || caps.capabilities.includes("MANAGE_LEGAL");
 
   let project: Matter;
   try {
@@ -649,7 +651,9 @@ export default async function ProjectDetailPage({
             <ProjectCommentsSection projectId={id} orgSlug={slug} />
           ) : undefined
         }
-        courtDatesPanel={<ProjectCourtDatesTab projectId={id} slug={slug} />}
+        courtDatesPanel={
+          <ProjectCourtDatesTab projectId={id} slug={slug} canManageLegal={canManageLegal} />
+        }
         adversePartiesPanel={<ProjectAdversePartiesTab projectId={id} slug={slug} />}
         disbursementsPanel={
           <ProjectDisbursementsTab projectId={id} slug={slug} canManage={canManage} />

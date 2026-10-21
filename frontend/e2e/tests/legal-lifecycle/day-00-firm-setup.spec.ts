@@ -315,7 +315,8 @@ test.describe.serial("Day 0 — Firm Setup", () => {
     // Verify legal modules are accessible in navigation
     const modules = [
       { name: "Trust Accounting", pattern: /trust.?account/i },
-      { name: "Court Calendar", pattern: /court.?calendar/i },
+      // Phase 87 S6b (ADR-344): nav — Court calendar is the Diary (613D)
+      { name: "Diary", pattern: /diary/i },
       { name: "Conflict Check", pattern: /conflict.?check/i },
     ];
 

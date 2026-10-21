@@ -183,14 +183,15 @@ test.describe.serial("Day 7 — First Week of Work", () => {
   // ── Alice: Create court date for Sipho ────────────────────────────
   test("Alice: Create court date for Sipho (Motion, 30 days out)", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/court-calendar`);
+    // Phase 87 S6b (ADR-344): /court-calendar → /diary
+    await page.goto(`${BASE}/diary?types=COURT_DATE,PRESCRIPTION`);
 
     const mainVisible = await page
       .locator("main")
       .isVisible({ timeout: 10_000 })
       .catch(() => false);
     if (!mainVisible) {
-      test.skip(true, "Court calendar page not accessible — feature may not be implemented");
+      test.skip(true, "Diary page not accessible — feature may not be implemented");
       return;
     }
 

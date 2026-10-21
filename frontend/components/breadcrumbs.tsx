@@ -38,7 +38,6 @@ const SEGMENT_LABELS: Record<string, string> = {
   "my-work": "My Work",
   // Vertical module pages
   "trust-accounting": "Trust Accounting",
-  "court-calendar": "Court Calendar",
   "conflict-check": "Conflict Check",
   "client-ledgers": "Client Ledgers",
   invoices: "Fee notes",
@@ -47,6 +46,8 @@ const SEGMENT_LABELS: Record<string, string> = {
   unbilled: "Unbilled work",
   reports: "Reports",
   profitability: "Profitability",
+  // Phase 87 S6b (613D): one Diary replaces /calendar + /court-calendar.
+  diary: "Diary",
   legal: "Legal",
   "adverse-parties": "Adverse parties",
   disbursements: "Disbursements",

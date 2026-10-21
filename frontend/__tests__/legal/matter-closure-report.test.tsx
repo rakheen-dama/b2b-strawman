@@ -93,6 +93,12 @@ describe("MatterClosureReport", () => {
           }),
           gate({
             order: 4,
+            code: "NO_OPEN_PRESCRIPTIONS",
+            passed: false,
+            message: "prescriptions",
+          }),
+          gate({
+            order: 5,
             code: "ALL_TASKS_RESOLVED",
             passed: false,
             message: "tasks",
@@ -110,9 +116,15 @@ describe("MatterClosureReport", () => {
       "href",
       "/org/acme/invoices?projectId=p1"
     );
+    // Phase 87 613D: the court calendar is gone — court dates and prescription trackers both live
+    // in the matter's Court dates tab.
     expect(screen.getByTestId("matter-closure-gate-fix-NO_OPEN_COURT_DATES")).toHaveAttribute(
       "href",
-      "/org/acme/court-calendar?projectId=p1"
+      "/org/acme/matters/p1?tab=court-dates"
+    );
+    expect(screen.getByTestId("matter-closure-gate-fix-NO_OPEN_PRESCRIPTIONS")).toHaveAttribute(
+      "href",
+      "/org/acme/matters/p1?tab=court-dates"
     );
     expect(screen.getByTestId("matter-closure-gate-fix-ALL_TASKS_RESOLVED")).toHaveAttribute(
       "href",

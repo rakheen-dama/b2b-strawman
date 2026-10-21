@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { TodaysAgenda } from "@/components/dashboard/todays-agenda";
-import type { MyWorkTaskItem, MyWorkTimeEntryItem } from "@/lib/types";
+import type { DiaryEventResponse } from "@/app/(app)/org/[slug]/diary/diary-types";
+import type { MyWorkTimeEntryItem } from "@/lib/types";
 import type { PersonalDeadline } from "@/lib/dashboard-types";
 
 // Mock next/link
@@ -34,16 +35,17 @@ function daysFromNow(days: number): string {
   return `${y}-${m}-${dd}`;
 }
 
-function makeTask(overrides: Partial<MyWorkTaskItem> & { id: string }): MyWorkTaskItem {
+function makeEvent(o: Partial<DiaryEventResponse> & { id: string }): DiaryEventResponse {
   return {
-    matterId: "p1",
-    matterName: "Test Project",
-    title: `Task ${overrides.id}`,
-    status: "IN_PROGRESS",
-    priority: "MEDIUM",
-    dueDate: null,
-    totalTimeMinutes: 0,
-    ...overrides,
+    kind: "TASK_DUE",
+    date: today(),
+    title: `Event ${o.id}`,
+    status: "OPEN",
+    matterId: "m1",
+    matterName: "Ndlovu v RAF",
+    overdue: false,
+    href: `/matters/m1?taskId=${o.id}`,
+    ...o,
   };
 }
 
@@ -55,23 +57,158 @@ describe("TodaysAgenda", () => {
     cleanup();
   });
 
-  it("renders today's tasks section", () => {
-    const tasks = [
-      makeTask({ id: "t1", title: "Fix login bug", dueDate: today() }),
-      makeTask({
-        id: "t2",
-        title: "Review PR",
-        dueDate: daysFromNow(-1),
+  // Phase 87 613D: section 1 is "Today's diary", driven by GET /api/diary?from=today&to=today.
+  it("renders today's diary rows with kind labels and links to the matter", () => {
+    const events = [
+      makeEvent({
+        id: "cd1",
+        kind: "COURT_DATE",
+        title: "Pre-trial conference",
+        status: "SCHEDULED",
+        time: "09:30:00",
+        href: "/matters/m1?tab=court-dates&courtDateId=cd1",
       }),
+      makeEvent({ id: "t1", title: "File heads of argument" }),
     ];
 
     render(
-      <TodaysAgenda tasks={tasks} todayEntries={emptyEntries} upcomingDeadlines={emptyDeadlines} />
+      <TodaysAgenda
+        slug="acme"
+        today={today()}
+        diaryEvents={events}
+        todayEntries={emptyEntries}
+        upcomingDeadlines={emptyDeadlines}
+      />
     );
 
-    expect(screen.getByTestId("todays-tasks")).toBeInTheDocument();
-    expect(screen.getByText("Fix login bug")).toBeInTheDocument();
-    expect(screen.getByText("Review PR")).toBeInTheDocument();
+    const section = screen.getByTestId("todays-diary");
+    expect(within(section).getByText("Today's diary")).toBeInTheDocument();
+    expect(within(section).getByText("Pre-trial conference")).toBeInTheDocument();
+    expect(within(section).getByText("File heads of argument")).toBeInTheDocument();
+    expect(within(section).getByText("Court date")).toBeInTheDocument();
+    expect(within(section).getByText("Task due")).toBeInTheDocument();
+    expect(screen.getByTestId("diary-event-cd1")).toHaveAttribute(
+      "href",
+      "/org/acme/matters/m1?tab=court-dates&courtDateId=cd1"
+    );
+    expect(within(section).getByRole("link", { name: "Open diary" })).toHaveAttribute(
+      "href",
+      "/org/acme/diary?view=day"
+    );
+    // Read-only: no row actions outside the Diary page.
+    expect(screen.queryByTestId("diary-row-actions-cd1")).not.toBeInTheDocument();
+  });
+
+  it("shows the empty copy when only overdue rows came back", () => {
+    render(
+      <TodaysAgenda
+        slug="acme"
+        today={today()}
+        diaryEvents={[makeEvent({ id: "o1", date: daysFromNow(-3), overdue: true })]}
+        todayEntries={emptyEntries}
+        upcomingDeadlines={emptyDeadlines}
+      />
+    );
+
+    expect(screen.getByText("Nothing in the diary today")).toBeInTheDocument();
+    expect(screen.queryByText("Event o1")).not.toBeInTheDocument();
+  });
+
+  it("links the overdue band to the Diary's Day view", () => {
+    render(
+      <TodaysAgenda
+        slug="acme"
+        today={today()}
+        diaryEvents={[
+          makeEvent({ id: "o1", date: daysFromNow(-3), overdue: true }),
+          makeEvent({ id: "o2", date: daysFromNow(-1), overdue: true }),
+          makeEvent({ id: "t1" }),
+        ]}
+        todayEntries={emptyEntries}
+        upcomingDeadlines={emptyDeadlines}
+      />
+    );
+
+    const overdue = screen.getByTestId("todays-diary-overdue");
+    expect(overdue).toHaveTextContent("2 overdue");
+    expect(overdue).toHaveAttribute("href", "/org/acme/diary?view=day");
+  });
+
+  it("shows no overdue link when nothing is overdue", () => {
+    render(
+      <TodaysAgenda
+        slug="acme"
+        today={today()}
+        diaryEvents={[makeEvent({ id: "t1" })]}
+        todayEntries={emptyEntries}
+        upcomingDeadlines={emptyDeadlines}
+      />
+    );
+
+    expect(screen.queryByTestId("todays-diary-overdue")).not.toBeInTheDocument();
+  });
+
+  it("caps today's rows at five and links the rest to the Diary", () => {
+    const events = Array.from({ length: 7 }, (_, i) => makeEvent({ id: `t${i + 1}` }));
+
+    render(
+      <TodaysAgenda
+        slug="acme"
+        today={today()}
+        diaryEvents={events}
+        todayEntries={emptyEntries}
+        upcomingDeadlines={emptyDeadlines}
+      />
+    );
+
+    expect(screen.getByText("Event t5")).toBeInTheDocument();
+    expect(screen.queryByText("Event t6")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "+2 more" })).toHaveAttribute(
+      "href",
+      "/org/acme/diary?view=day"
+    );
+  });
+
+  it("fails soft when the diary could not be loaded", () => {
+    render(
+      <TodaysAgenda
+        slug="acme"
+        today={today()}
+        diaryEvents={null}
+        todayEntries={emptyEntries}
+        upcomingDeadlines={emptyDeadlines}
+      />
+    );
+
+    expect(screen.getByText("Today's diary could not be loaded.")).toBeInTheDocument();
+    expect(screen.queryByText(/identify your member profile/)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open diary" })).toBeInTheDocument();
+    expect(screen.getByTestId("time-progress-today")).toBeInTheDocument();
+    expect(screen.getByTestId("next-deadline")).toBeInTheDocument();
+  });
+
+  it("says the user couldn't be identified (not a load failure) and points to the Diary", () => {
+    render(
+      <TodaysAgenda
+        slug="acme"
+        today={today()}
+        diaryEvents="unidentified"
+        todayEntries={emptyEntries}
+        upcomingDeadlines={emptyDeadlines}
+      />
+    );
+
+    const section = screen.getByTestId("todays-diary");
+    expect(within(section).getByText(/Couldn't identify your member profile/)).toBeInTheDocument();
+    expect(
+      within(section).queryByText("Today's diary could not be loaded.")
+    ).not.toBeInTheDocument();
+    expect(within(section).queryByText("Nothing in the diary today")).not.toBeInTheDocument();
+    expect(within(section).getByRole("link", { name: "Open the Diary" })).toHaveAttribute(
+      "href",
+      "/org/acme/diary"
+    );
+    expect(within(section).queryByTestId("todays-diary-overdue")).not.toBeInTheDocument();
   });
 
   it("renders time progress bar", () => {
@@ -91,7 +228,9 @@ describe("TodaysAgenda", () => {
 
     render(
       <TodaysAgenda
-        tasks={[]}
+        slug="acme"
+        today={today()}
+        diaryEvents={[]}
         todayEntries={entries}
         upcomingDeadlines={emptyDeadlines}
         weeklyCapacityHours={40}
@@ -113,7 +252,15 @@ describe("TodaysAgenda", () => {
       },
     ];
 
-    render(<TodaysAgenda tasks={[]} todayEntries={emptyEntries} upcomingDeadlines={deadlines} />);
+    render(
+      <TodaysAgenda
+        slug="acme"
+        today={today()}
+        diaryEvents={[]}
+        todayEntries={emptyEntries}
+        upcomingDeadlines={deadlines}
+      />
+    );
 
     const deadlineSection = screen.getByTestId("next-deadline");
     expect(deadlineSection).toBeInTheDocument();
@@ -122,13 +269,19 @@ describe("TodaysAgenda", () => {
     expect(screen.getByText("5d remaining")).toBeInTheDocument();
   });
 
-  it("handles empty tasks without crashing", () => {
+  it("handles an empty diary without crashing", () => {
     render(
-      <TodaysAgenda tasks={[]} todayEntries={emptyEntries} upcomingDeadlines={emptyDeadlines} />
+      <TodaysAgenda
+        slug="acme"
+        today={today()}
+        diaryEvents={[]}
+        todayEntries={emptyEntries}
+        upcomingDeadlines={emptyDeadlines}
+      />
     );
 
-    expect(screen.getByTestId("todays-tasks")).toBeInTheDocument();
-    expect(screen.getByText("No tasks due today")).toBeInTheDocument();
+    expect(screen.getByTestId("todays-diary")).toBeInTheDocument();
+    expect(screen.getByText("Nothing in the diary today")).toBeInTheDocument();
     expect(screen.getByTestId("next-deadline")).toBeInTheDocument();
     expect(screen.getByText("No upcoming deadlines")).toBeInTheDocument();
   });

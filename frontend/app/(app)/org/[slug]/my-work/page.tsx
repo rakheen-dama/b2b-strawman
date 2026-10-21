@@ -30,11 +30,13 @@ import { WeeklyRhythmStripClient } from "./weekly-rhythm-strip-client";
 import { MyWorkHeader } from "./my-work-header";
 import { MyWorkTasksClient } from "./my-work-tasks-client";
 import { createMyWorkViewAction } from "./view-actions";
+import { loadTodaysDiary } from "./todays-diary";
 import { fetchPersonalDashboard } from "@/lib/actions/dashboard";
 import { getMyExpenses } from "@/lib/actions/expense-actions";
 import { ApiError } from "@/lib/api";
 import { EmptyState } from "@/components/empty-state";
 import { createMessages } from "@/lib/messages";
+import { findCurrentMemberId } from "@/lib/current-member";
 import { ClipboardList } from "lucide-react";
 import Link from "next/link";
 
@@ -138,17 +140,14 @@ export default async function MyWorkPage({
   }
 
   // Resolve current member ID and org members in a single fetch
-  let currentMemberId = "";
+  let currentMemberId: string | null = null;
   let members: { id: string; name: string; email: string }[] = [];
   try {
     const [email, orgMembers] = await Promise.all([
       getCurrentUserEmail(),
       api.get<OrgMember[]>("/api/members"),
     ]);
-    if (email) {
-      const match = orgMembers.find((m) => m.email === email);
-      if (match) currentMemberId = match.id;
-    }
+    currentMemberId = findCurrentMemberId(email, orgMembers);
     members = orgMembers.map((m) => ({
       id: m.id,
       name: m.name,
@@ -158,13 +157,12 @@ export default async function MyWorkPage({
     console.error("Failed to resolve current member:", e);
   }
 
-  // Saved views for TASK
-  let savedViews: SavedViewResponse[] = [];
-  try {
-    savedViews = await getViews("TASK");
-  } catch {
-    // Non-fatal
-  }
+  // Today's diary (Phase 87 613D): the current user's day + overdue band; fails soft. Fetched
+  // alongside the TASK saved views (non-fatal).
+  const [diaryEvents, savedViews] = await Promise.all([
+    loadTodaysDiary(today, currentMemberId),
+    getViews("TASK").catch((): SavedViewResponse[] => []),
+  ]);
 
   // Tags and field definitions for TASK
   let allTags: TagResponse[] = [];
@@ -224,7 +222,9 @@ export default async function MyWorkPage({
 
       {/* Hero: Today's Agenda */}
       <TodaysAgenda
-        tasks={tasksData.assigned}
+        slug={slug}
+        today={today}
+        diaryEvents={diaryEvents}
         todayEntries={todayEntries}
         upcomingDeadlines={personalDashboard?.upcomingDeadlines ?? []}
         weeklyCapacityHours={40}
@@ -253,7 +253,7 @@ export default async function MyWorkPage({
               isAdmin={isAdmin}
               canManage={canManage}
               canCreateShared={canCreateShared}
-              currentMemberId={currentMemberId}
+              currentMemberId={currentMemberId ?? ""}
               members={members}
               allTags={allTags}
               fieldDefinitions={fieldDefinitions}

@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 
 // --- Mocks (before component imports) ---
 
@@ -28,9 +28,8 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/court-calendar/actions", () => ({
+vi.mock("@/lib/actions/court-dates", () => ({
   fetchCourtDates: vi.fn().mockResolvedValue({ content: [], page: { totalElements: 0 } }),
-  fetchCourtDate: vi.fn(),
   createCourtDate: vi.fn().mockResolvedValue({ success: true }),
   updateCourtDate: vi.fn().mockResolvedValue({ success: true }),
   postponeCourtDate: vi.fn().mockResolvedValue({ success: true }),
@@ -81,7 +80,8 @@ import { UpcomingCourtDatesWidget } from "@/components/legal/upcoming-court-date
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { ModuleGate } from "@/components/module-gate";
 import { NAV_GROUPS } from "@/lib/nav-items";
-import type { CourtDate, AdversePartyLink } from "@/lib/types";
+import { fetchPrescriptionTrackers } from "@/lib/actions/court-dates";
+import type { CourtDate, AdversePartyLink, PrescriptionTracker } from "@/lib/types";
 
 afterEach(() => cleanup());
 beforeEach(() => vi.clearAllMocks());
@@ -110,6 +110,51 @@ function makeCourtDate(overrides: Partial<CourtDate> = {}): CourtDate {
     updatedAt: "2026-03-01T00:00:00Z",
     ...overrides,
   };
+}
+
+function makeTracker(overrides: Partial<PrescriptionTracker> = {}): PrescriptionTracker {
+  return {
+    id: "pt-1",
+    matterId: "proj-1",
+    matterName: "Smith v Jones",
+    clientId: "cust-1",
+    clientName: "John Smith",
+    causeOfActionDate: "2024-01-15",
+    prescriptionType: "GENERAL_3Y",
+    customYears: null,
+    prescriptionDate: "2027-01-15",
+    interruptionDate: null,
+    interruptionReason: null,
+    status: "RUNNING",
+    notes: null,
+    createdBy: "member-1",
+    createdAt: "2026-03-01T00:00:00Z",
+    updatedAt: "2026-03-01T00:00:00Z",
+    ...overrides,
+  };
+}
+
+/** Fetchers captured per SWR key, so a test can prove which action a key is wired to. */
+const swrFetchers = new Map<string, () => unknown>();
+
+/**
+ * The Court dates tab makes two SWR calls (court dates + prescription trackers, 613D): answer
+ * each by its key so the prescription list never receives court-date rows.
+ */
+function mockCourtDatesTabSWR(courtDates: CourtDate[], trackers: PrescriptionTracker[] = []) {
+  vi.mocked(useSWR).mockImplementation(((key: string, fetcher: () => unknown) => {
+    swrFetchers.set(String(key), fetcher);
+    return {
+      data: {
+        content: String(key).startsWith("project-prescription-trackers-") ? trackers : courtDates,
+        page: { totalElements: 0, totalPages: 1, size: 100, number: 0 },
+      },
+      error: undefined,
+      isLoading: false,
+      isValidating: false,
+      mutate: vi.fn(),
+    };
+  }) as unknown as typeof useSWR);
 }
 
 function makeAdversePartyLink(overrides: Partial<AdversePartyLink> = {}): AdversePartyLink {
@@ -152,18 +197,10 @@ function withNoModules(ui: React.ReactElement) {
 
 describe("ProjectCourtDatesTab", () => {
   it("shows court dates list when court_calendar is enabled", () => {
-    vi.mocked(useSWR).mockReturnValue({
-      data: {
-        content: [
-          makeCourtDate({ id: "cd-1" }),
-          makeCourtDate({ id: "cd-2", scheduledDate: "2026-04-20" }),
-        ],
-        page: { totalElements: 2, totalPages: 1, size: 100, number: 0 },
-      },
-      error: undefined,
-      isLoading: false,
-      mutate: vi.fn(),
-    } as ReturnType<typeof useSWR>);
+    mockCourtDatesTabSWR([
+      makeCourtDate({ id: "cd-1" }),
+      makeCourtDate({ id: "cd-2", scheduledDate: "2026-04-20" }),
+    ]);
 
     render(withLegalProfile(<ProjectCourtDatesTab projectId="proj-1" slug="acme" />));
 
@@ -173,6 +210,55 @@ describe("ProjectCourtDatesTab", () => {
     expect(screen.getByTestId("court-date-list")).toBeInTheDocument();
     // Both court dates share the same court name — verify at least one row rendered
     expect(screen.getAllByText("Johannesburg High Court").length).toBeGreaterThanOrEqual(1);
+  });
+
+  // Phase 87 613D (Open Question #17): prescription trackers moved here from the deleted
+  // court-calendar page's Prescriptions tab.
+  it("lists the matter's prescription trackers under Court dates", async () => {
+    mockCourtDatesTabSWR([makeCourtDate()], [makeTracker({ id: "pt-1", status: "WARNED" })]);
+
+    render(
+      withLegalProfile(<ProjectCourtDatesTab projectId="proj-1" slug="acme" canManageLegal />)
+    );
+
+    const list = screen.getByTestId("prescription-tracker-list");
+    expect(within(list).getByText("Prescription trackers")).toBeInTheDocument();
+    expect(within(list).getByTestId("prescription-tracker-row-pt-1")).toBeInTheDocument();
+    expect(within(list).getByText("Warned")).toBeInTheDocument();
+    expect(
+      within(list).getByRole("button", { name: "New prescription tracker" })
+    ).toBeInTheDocument();
+    expect(within(list).getByRole("button", { name: "Interrupt" })).toBeInTheDocument();
+    // Court-date rows are not fed to the prescription list.
+    expect(within(list).queryByText("Johannesburg High Court")).not.toBeInTheDocument();
+
+    // The trackers key is matter-scoped (?matterId=), not the firm-wide list.
+    await swrFetchers.get("project-prescription-trackers-proj-1")!();
+    expect(fetchPrescriptionTrackers).toHaveBeenCalledWith({ matterId: "proj-1" });
+  });
+
+  it("hides prescription writes without MANAGE_LEGAL (fail closed)", () => {
+    mockCourtDatesTabSWR([], [makeTracker({ id: "pt-1", status: "RUNNING" })]);
+
+    render(withLegalProfile(<ProjectCourtDatesTab projectId="proj-1" slug="acme" />));
+
+    const list = screen.getByTestId("prescription-tracker-list");
+    expect(within(list).getByTestId("prescription-tracker-row-pt-1")).toBeInTheDocument();
+    expect(within(list).getByText("Running")).toBeInTheDocument();
+    expect(
+      within(list).queryByRole("button", { name: "New prescription tracker" })
+    ).not.toBeInTheDocument();
+    expect(within(list).queryByRole("button", { name: "Interrupt" })).not.toBeInTheDocument();
+  });
+
+  it("shows the matter's empty prescription state", () => {
+    mockCourtDatesTabSWR([], []);
+
+    render(
+      withLegalProfile(<ProjectCourtDatesTab projectId="proj-1" slug="acme" canManageLegal />)
+    );
+
+    expect(screen.getByText("No prescription trackers on this matter.")).toBeInTheDocument();
   });
 
   it("is hidden when court_calendar module is disabled via ModuleGate", () => {
@@ -254,17 +340,18 @@ describe("UpcomingCourtDatesWidget", () => {
     expect(screen.getByText("Normal Matter")).toBeInTheDocument();
     // View All link
     const link = screen.getByRole("link", { name: /view all/i });
-    expect(link).toHaveAttribute("href", "/org/acme/court-calendar");
+    expect(link).toHaveAttribute("href", "/org/acme/diary?types=COURT_DATE,PRESCRIPTION");
   });
 });
 
 describe("Sidebar nav items", () => {
   it("legal nav items have correct requiredModule values", () => {
-    // Court Calendar
+    // Diary (613D) replaces Court calendar and is ungated — court-date / prescription kinds are
+    // gated server-side (X-Diary-Types).
     const todayZone = NAV_GROUPS.find((g) => g.id === "today");
-    const courtCalItem = todayZone?.items.find((i) => i.label === "Court calendar");
-    expect(courtCalItem).toBeDefined();
-    expect(courtCalItem?.requiredModule).toBe("court_calendar");
+    const diaryItem = todayZone?.items.find((i) => i.label === "Diary");
+    expect(diaryItem).toBeDefined();
+    expect(diaryItem?.requiredModule).toBeUndefined();
 
     // Conflict Check
     const mattersZone = NAV_GROUPS.find((g) => g.id === "matters");

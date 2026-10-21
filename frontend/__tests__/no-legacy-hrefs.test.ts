@@ -66,3 +66,34 @@ describe("no legacy /projects | /customers route hrefs (Phase 87 610E)", () => {
     expect(hits).toEqual([]);
   });
 });
+
+// Phase 87 S6b (613D, ADR-339): /calendar and /court-calendar are deleted — one Diary at /diary
+// (308 redirects in lib/legacy-redirects.ts). No source file links to either old route.
+const LEGACY_CALENDAR = /\/(calendar|court-calendar)(?=[/?#]|$)/;
+
+describe("no legacy /calendar | /court-calendar hrefs (Phase 87 613D)", () => {
+  it("detector: catches both routes, skips the Diary and module ids", () => {
+    const sample = [
+      'const mod = "court_calendar";',
+      "const diary = `/org/${slug}/diary?types=COURT_DATE,PRESCRIPTION`;",
+      'import { X } from "@/components/legal/court-calendar-view";',
+      "const a = `/org/${slug}/calendar`;",
+      "const b = `/org/${slug}/court-calendar?projectId=${id}`;",
+    ].join("\n");
+    expect(findLiterals("sample.tsx", sample, LEGACY_CALENDAR).map((h) => h.split(":")[1])).toEqual(
+      ["4", "5"]
+    );
+  });
+
+  it("the redirect table carries exactly the three calendar sources", () => {
+    const table = sourceFiles.find((f) => f.rel === "lib/legacy-redirects.ts")!;
+    expect(findLiterals(table.rel, table.text, LEGACY_CALENDAR)).toHaveLength(3);
+  });
+
+  it("zero calendar route segments outside lib/legacy-redirects.ts", () => {
+    const hits = sourceFiles
+      .filter((f) => !ALLOWED.has(f.rel))
+      .flatMap((f) => findLiterals(f.rel, f.text, LEGACY_CALENDAR));
+    expect(hits).toEqual([]);
+  });
+});

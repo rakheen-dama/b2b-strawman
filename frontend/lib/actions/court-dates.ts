@@ -1,5 +1,13 @@
 "use server";
 
+/**
+ * Court-date and prescription-tracker server actions (Phase 87 613D: moved from the deleted
+ * court-calendar route). Shared by the Diary (row actions + header buttons), the matter's Court
+ * dates tab, the retained court-date dialogs and the dashboard's upcoming-court-dates widget.
+ * Writes keep their endpoints (/api/court-dates/**, /api/prescription-trackers/**). Callers
+ * refresh their own view after a write (Diary: router.refresh(); matter tab: SWR mutate()).
+ */
+
 import { api, ApiError } from "@/lib/api";
 import { listMatters } from "@/lib/api/matters";
 import { revalidatePath } from "next/cache";
@@ -50,10 +58,6 @@ export async function fetchCourtDates(
   return api.get<PaginatedResponse<CourtDate>>(`/api/court-dates?${params.toString()}`);
 }
 
-export async function fetchCourtDate(id: string): Promise<CourtDate> {
-  return api.get<CourtDate>(`/api/court-dates/${id}`);
-}
-
 export async function createCourtDate(
   slug: string,
   data: {
@@ -70,7 +74,7 @@ export async function createCourtDate(
 ): Promise<ActionResult> {
   try {
     await api.post("/api/court-dates", data);
-    revalidatePath(`/org/${slug}/court-calendar`);
+    revalidatePath(`/org/${slug}/diary`);
     return { success: true };
   } catch (error) {
     const message = error instanceof ApiError ? error.message : "Failed to create court date";
@@ -85,7 +89,7 @@ export async function updateCourtDate(
 ): Promise<ActionResult> {
   try {
     await api.put(`/api/court-dates/${id}`, data);
-    revalidatePath(`/org/${slug}/court-calendar`);
+    revalidatePath(`/org/${slug}/diary`);
     return { success: true };
   } catch (error) {
     const message = error instanceof ApiError ? error.message : "Failed to update court date";
@@ -100,7 +104,7 @@ export async function postponeCourtDate(
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/court-dates/${id}/postpone`, data);
-    revalidatePath(`/org/${slug}/court-calendar`);
+    revalidatePath(`/org/${slug}/diary`);
     return { success: true };
   } catch (error) {
     const message = error instanceof ApiError ? error.message : "Failed to postpone court date";
@@ -115,7 +119,7 @@ export async function cancelCourtDate(
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/court-dates/${id}/cancel`, data);
-    revalidatePath(`/org/${slug}/court-calendar`);
+    revalidatePath(`/org/${slug}/diary`);
     return { success: true };
   } catch (error) {
     const message = error instanceof ApiError ? error.message : "Failed to cancel court date";
@@ -130,7 +134,7 @@ export async function recordOutcome(
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/court-dates/${id}/outcome`, data);
-    revalidatePath(`/org/${slug}/court-calendar`);
+    revalidatePath(`/org/${slug}/diary`);
     return { success: true };
   } catch (error) {
     const message = error instanceof ApiError ? error.message : "Failed to record outcome";
@@ -142,9 +146,11 @@ export async function recordOutcome(
 
 export async function fetchPrescriptionTrackers(filters?: {
   clientId?: string;
+  matterId?: string;
 }): Promise<PaginatedResponse<PrescriptionTracker>> {
   const params = new URLSearchParams();
   if (filters?.clientId) params.set("clientId", filters.clientId);
+  if (filters?.matterId) params.set("matterId", filters.matterId);
   params.set("size", "100");
 
   return api.get<PaginatedResponse<PrescriptionTracker>>(
@@ -164,7 +170,7 @@ export async function createPrescriptionTracker(
 ): Promise<ActionResult> {
   try {
     await api.post("/api/prescription-trackers", data);
-    revalidatePath(`/org/${slug}/court-calendar`);
+    revalidatePath(`/org/${slug}/diary`);
     return { success: true };
   } catch (error) {
     const message =
@@ -180,7 +186,7 @@ export async function interruptPrescription(
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/prescription-trackers/${id}/interrupt`, data);
-    revalidatePath(`/org/${slug}/court-calendar`);
+    revalidatePath(`/org/${slug}/diary`);
     return { success: true };
   } catch (error) {
     const message = error instanceof ApiError ? error.message : "Failed to interrupt prescription";

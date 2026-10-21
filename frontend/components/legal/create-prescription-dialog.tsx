@@ -27,13 +27,15 @@ import {
   createPrescriptionTrackerSchema,
   type CreatePrescriptionTrackerFormData,
 } from "@/lib/schemas/legal";
-import {
-  createPrescriptionTracker,
-  fetchProjects,
-} from "@/app/(app)/org/[slug]/court-calendar/actions";
+import { createPrescriptionTracker, fetchProjects } from "@/lib/actions/court-dates";
 
 interface CreatePrescriptionDialogProps {
   slug: string;
+  /**
+   * Fixes the tracker to this matter (the matter's Court dates tab): the matter selector defaults
+   * to it and is locked. Omitted (the Diary header) = firm-wide matter picker.
+   */
+  matterId?: string;
   onSuccess?: () => void;
   /** Trigger button text (default "Add Tracker"). */
   triggerLabel?: React.ReactNode;
@@ -52,6 +54,7 @@ const PRESCRIPTION_TYPES = [
 
 export function CreatePrescriptionDialog({
   slug,
+  matterId,
   onSuccess,
   triggerLabel = "Add Tracker",
   triggerVariant = "default",
@@ -68,7 +71,7 @@ export function CreatePrescriptionDialog({
   const form = useForm<CreatePrescriptionTrackerFormData>({
     resolver: zodResolver(createPrescriptionTrackerSchema),
     defaultValues: {
-      projectId: "",
+      projectId: matterId ?? "",
       causeOfActionDate: "",
       prescriptionType: "GENERAL_3Y",
       customYears: undefined,
@@ -180,7 +183,7 @@ export function CreatePrescriptionDialog({
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      disabled={projectsLoading}
+                      disabled={projectsLoading || !!matterId}
                       className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
                     >
                       <option value="">

@@ -2,7 +2,6 @@ import {
   House,
   ListChecks,
   CalendarDays,
-  Gavel,
   Scale,
   Plus,
   SearchCheck,
@@ -105,8 +104,7 @@ export function canAccessNavItem(
  * The attorney's week in six zones (Phase 87 S6a, ADR-339): Today · Matters · Clients · Fees ·
  * Trust · Firm. One level deep — a zone is the only grouping; ≤ 6 items per zone except Trust (7).
  * Labels are sentence case. AI has no zone: AI intake is "New matter", AI reviews sits in Matters.
- * Interim until later slices: Today carries Calendar + Court calendar (613D → one Diary item);
- * Firm › Audit trail / Settings point at the current settings routes (616 → settings families).
+ * Interim until 616: Firm › Audit trail / Settings point at the current settings routes.
  * Profitability's single entry is Firm › Reports.
  * Source of truth for the desktop sidebar, the mobile sheet and the command palette.
  */
@@ -124,19 +122,15 @@ export const NAV_GROUPS: NavGroup[] = [
         keywords: ["dashboard"],
       },
       { label: "My work", href: (slug) => `/org/${slug}/my-work`, icon: ListChecks, exact: true },
-      // Interim (Phase 87 S6a): Calendar + Court calendar are replaced by one "Diary" item in 613D.
       {
-        label: "Calendar",
-        href: (slug) => `/org/${slug}/calendar`,
+        // Phase 87 S6b (613D, ADR-339): one Diary replaces the interim Calendar + Court calendar.
+        // Ungated: tasks and matter due dates are served to everyone; court-date / prescription
+        // kinds are gated server-side (X-Diary-Types — module court_calendar + VIEW_LEGAL).
+        label: "Diary",
+        href: (slug) => `/org/${slug}/diary`,
         icon: CalendarDays,
         exact: true,
-      },
-      {
-        label: "Court calendar",
-        href: (slug) => `/org/${slug}/court-calendar`,
-        icon: Gavel,
-        exact: true,
-        requiredModule: "court_calendar",
+        keywords: ["calendar", "court calendar", "court dates", "prescriptions", "deadlines"],
       },
     ],
   },

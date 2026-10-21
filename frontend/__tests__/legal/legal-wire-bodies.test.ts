@@ -61,7 +61,7 @@ import {
   createPrescriptionTracker,
   fetchCourtDates,
   fetchPrescriptionTrackers,
-} from "@/app/(app)/org/[slug]/court-calendar/actions";
+} from "@/lib/actions/court-dates";
 import {
   fetchProjectAdverseParties,
   linkAdverseParty,
@@ -186,6 +186,14 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
     expect(url).toContain("/api/prescription-trackers?");
     expect(url).toContain(`clientId=${C}`);
     expect(url).not.toContain("customerId=");
+  });
+
+  it("fetchPrescriptionTrackers filters with ?matterId= (613D matter Court dates tab)", async () => {
+    await fetchPrescriptionTrackers({ matterId: M });
+    const url = mockGet.mock.calls[0][0] as string;
+    expect(url).toContain("/api/prescription-trackers?");
+    expect(url).toContain(`matterId=${M}`);
+    expect(url).not.toContain("projectId=");
   });
 
   it("fetchDisbursements filters with ?matterId=", async () => {

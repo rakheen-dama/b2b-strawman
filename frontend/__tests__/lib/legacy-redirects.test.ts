@@ -4,7 +4,7 @@ import path from "node:path";
 import nextConfig from "@/next.config";
 import { LEGACY_REDIRECTS } from "@/lib/legacy-redirects";
 
-// Widened row view so the guards typecheck before the first `has` row lands (613D).
+// Widened row view: rows differ in shape (only some carry `has`).
 type Row = {
   source: string;
   destination: string;
@@ -121,6 +121,43 @@ describe("LEGACY_REDIRECTS", () => {
     const page = fs.readFileSync(path.join(orgDir, "reports", "profitability", "page.tsx"), "utf8");
     expect(page).not.toMatch(/\bredirect\(/);
     expect(page).toContain("ProfitabilityContent");
+  });
+
+  it("redirects both calendars to the Diary, the ?tab=prescription row first (613D)", () => {
+    expect(ROWS).toContainEqual({
+      source: "/org/:slug/calendar",
+      destination: "/org/:slug/diary",
+      permanent: true,
+    });
+    const prescription = {
+      source: "/org/:slug/court-calendar",
+      has: [{ type: "query", key: "tab", value: "prescription" }],
+      destination: "/org/:slug/diary?types=PRESCRIPTION&view=list",
+      permanent: true,
+    };
+    const plain = {
+      source: "/org/:slug/court-calendar",
+      destination: "/org/:slug/diary?types=COURT_DATE,PRESCRIPTION",
+      permanent: true,
+    };
+    expect(ROWS).toContainEqual(prescription);
+    expect(ROWS).toContainEqual(plain);
+    const at = (row: Row) =>
+      ROWS.findIndex(
+        (r) =>
+          r.source === row.source &&
+          r.destination === row.destination &&
+          JSON.stringify(r.has ?? null) === JSON.stringify(row.has ?? null)
+      );
+    expect(at(prescription)).toBeGreaterThanOrEqual(0);
+    expect(at(prescription)).toBeLessThan(at(plain));
+  });
+
+  it("leaves the calendar routes without pages — the config redirect owns them (613D)", () => {
+    const orgDir = path.resolve(__dirname, "../../app/(app)/org/[slug]");
+    expect(fs.existsSync(path.join(orgDir, "calendar"))).toBe(false);
+    expect(fs.existsSync(path.join(orgDir, "court-calendar"))).toBe(false);
+    expect(fs.existsSync(path.join(orgDir, "diary", "page.tsx"))).toBe(true);
   });
 
   it("keeps the pre-Phase-87 /settings/team row", () => {

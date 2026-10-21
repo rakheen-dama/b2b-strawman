@@ -8,10 +8,22 @@ import type { PrescriptionTracker, PrescriptionStatus } from "@/lib/types";
 import { CreatePrescriptionDialog } from "./create-prescription-dialog";
 import { InterruptDialog } from "./interrupt-dialog";
 
-interface PrescriptionTabProps {
+/**
+ * One matter's prescription trackers (Phase 87 613D, Open Question #17): mounted in the matter's
+ * Court dates tab now that the court-calendar page — and its Prescriptions tab — is gone. Diary
+ * PRESCRIPTION rows link here (`/matters/{id}?tab=court-dates&prescriptionId=…`).
+ */
+interface PrescriptionTrackerListProps {
   trackers: PrescriptionTracker[];
   slug: string;
+  /** The matter these trackers belong to — new trackers are created on it (selector locked). */
+  matterId: string;
   onRefresh: () => void;
+  /**
+   * MANAGE_LEGAL (or admin / owner). Every prescription write (create, interrupt) needs it
+   * (backend @RequiresCapability), so the write affordances fail closed — hidden unless known.
+   */
+  canManageLegal?: boolean;
 }
 
 function statusBadge(status: PrescriptionStatus) {
@@ -59,22 +71,39 @@ function daysRemaining(prescriptionDate: string): number {
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
-export function PrescriptionTab({ trackers, slug, onRefresh }: PrescriptionTabProps) {
+const TH =
+  "px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400";
+
+export function PrescriptionTrackerList({
+  trackers,
+  slug,
+  matterId,
+  onRefresh,
+  canManageLegal = false,
+}: PrescriptionTrackerListProps) {
   const [interruptTarget, setInterruptTarget] = useState<string | null>(null);
 
   return (
-    <div data-testid="prescription-tab">
+    <div data-testid="prescription-tracker-list">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">
-          Prescription Trackers
+          Prescription trackers
         </h3>
-        <CreatePrescriptionDialog slug={slug} onSuccess={onRefresh} />
+        {canManageLegal && (
+          <CreatePrescriptionDialog
+            slug={slug}
+            matterId={matterId}
+            triggerLabel="New prescription tracker"
+            triggerVariant="outline"
+            onSuccess={onRefresh}
+          />
+        )}
       </div>
 
       {trackers.length === 0 ? (
         <div className="rounded-lg border border-slate-200 p-8 text-center dark:border-slate-800">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            No prescription trackers found.
+            No prescription trackers on this matter.
           </p>
         </div>
       ) : (
@@ -82,30 +111,12 @@ export function PrescriptionTab({ trackers, slug, onRefresh }: PrescriptionTabPr
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Matter
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Client
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Type
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Cause of Action
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Prescription Date
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Days Left
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Actions
-                </th>
+                <th className={TH}>Type</th>
+                <th className={TH}>Cause of action</th>
+                <th className={TH}>Prescription date</th>
+                <th className={TH}>Status</th>
+                <th className={cn(TH, "text-right")}>Days left</th>
+                {canManageLegal && <th className={cn(TH, "text-right")}>Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -116,14 +127,9 @@ export function PrescriptionTab({ trackers, slug, onRefresh }: PrescriptionTabPr
                 return (
                   <tr
                     key={tracker.id}
+                    data-testid={`prescription-tracker-row-${tracker.id}`}
                     className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
                   >
-                    <td className="px-4 py-3 text-sm font-medium text-slate-950 dark:text-slate-50">
-                      {tracker.matterName}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
-                      {tracker.clientName}
-                    </td>
                     <td className="px-4 py-3">
                       <Badge variant="outline">
                         {prescriptionTypeLabel(tracker.prescriptionType)}
@@ -147,20 +153,22 @@ export function PrescriptionTab({ trackers, slug, onRefresh }: PrescriptionTabPr
                               : "text-slate-600 dark:text-slate-400"
                         )}
                       >
-                        {remaining > 0 ? remaining : "\u2014"}
+                        {remaining > 0 ? remaining : "—"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      {canInterrupt && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setInterruptTarget(tracker.id)}
-                        >
-                          Interrupt
-                        </Button>
-                      )}
-                    </td>
+                    {canManageLegal && (
+                      <td className="px-4 py-3 text-right">
+                        {canInterrupt && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setInterruptTarget(tracker.id)}
+                          >
+                            Interrupt
+                          </Button>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 );
               })}
@@ -169,7 +177,7 @@ export function PrescriptionTab({ trackers, slug, onRefresh }: PrescriptionTabPr
         </div>
       )}
 
-      {interruptTarget && (
+      {canManageLegal && interruptTarget && (
         <InterruptDialog
           slug={slug}
           prescriptionId={interruptTarget}

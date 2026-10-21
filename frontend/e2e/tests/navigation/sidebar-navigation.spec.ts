@@ -9,7 +9,8 @@ const base = `/org/${ORG}`;
 const NAV_ITEMS = [
   { name: "Home", path: `${base}/dashboard` },
   { name: "My work", path: `${base}/my-work` },
-  { name: "Calendar", path: `${base}/calendar` },
+  // Phase 87 S6b (ADR-344): nav — one Diary replaces Calendar + Court calendar (613D)
+  { name: "Diary", path: `${base}/diary` },
   // Phase 87 S4 (ADR-344): route rename
   { name: "Matters", path: `${base}/matters` },
   // Phase 87 S4 (ADR-344): route rename
@@ -40,10 +41,10 @@ test.describe("NAV-01: Sidebar Navigation", () => {
 });
 
 // Phase 87 S6a (ADR-344): nav — six zones (ADR-339). Alice (owner) on the legal-za e2e org passes
-// every capability gate and has every legal-za module on, so she sees all 29 items. Fees, Trust and
+// every capability gate and has every legal-za module on, so she sees all 28 items. Fees, Trust and
 // Firm start collapsed and their items are not in the DOM until the zone header is clicked.
 const ZONES = [
-  { label: "Today", items: ["Home", "My work", "Calendar", "Court calendar"] },
+  { label: "Today", items: ["Home", "My work", "Diary"] },
   {
     label: "Matters",
     items: ["Matters", "New matter", "Conflict check", "Adverse parties", "AI reviews"],
@@ -69,7 +70,7 @@ const ZONES = [
 ];
 
 test.describe("NAV-02: Sidebar zones", () => {
-  test("six zones in order with 29 items in order", async ({ page }) => {
+  test("six zones in order with 28 items in order", async ({ page }) => {
     await loginAs(page, "alice");
     await page.goto(`${base}/dashboard`);
     const nav = page.getByRole("navigation", { name: "Main navigation" });
@@ -86,7 +87,7 @@ test.describe("NAV-02: Sidebar zones", () => {
     }
 
     const labels = ZONES.flatMap((z) => z.items);
-    expect(labels).toHaveLength(29);
+    expect(labels).toHaveLength(28);
     await expect(nav.getByRole("link")).toHaveText(labels);
   });
 });

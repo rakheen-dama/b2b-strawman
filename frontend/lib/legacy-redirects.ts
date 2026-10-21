@@ -64,4 +64,11 @@ export const LEGACY_REDIRECTS = [
     destination: "/org/:slug/diary?types=COURT_DATE,PRESCRIPTION",
     permanent: true,
   },
+  // Phase 87 S8 (615E, ADR-340): the standalone matter expenses page is deleted — one Disbursements tab.
+  // The old /projects/:id/expenses URL chains through the 610D /projects/:path* row first.
+  {
+    source: "/org/:slug/matters/:id/expenses",
+    destination: "/org/:slug/matters/:id?tab=disbursements",
+    permanent: true,
+  },
 ] satisfies readonly Redirect[];

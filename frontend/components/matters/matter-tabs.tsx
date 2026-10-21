@@ -6,23 +6,22 @@ import { Tabs as TabsPrimitive } from "radix-ui";
 import { useOrgProfile } from "@/lib/org-profile";
 import { useAuditTabVisible } from "@/components/audit/audit-timeline-tab";
 import { GroupedTabBar } from "@/components/shared/grouped-tab-bar";
-import { TAB_GROUPS } from "@/lib/constants/project-tab-groups";
+import { MATTER_TAB_GROUPS } from "@/lib/constants/matter-tab-groups";
+import { aliasLegacyTabId } from "@/lib/constants/legacy-tab-ids";
 
-interface ProjectTabsProps {
+interface MatterTabsProps {
   detailsPanel: ReactNode;
   fieldsPanel: ReactNode;
   overviewPanel: ReactNode;
   documentsPanel: ReactNode;
   correspondencePanel?: ReactNode;
-  membersPanel: ReactNode;
-  customersPanel: ReactNode;
+  clientsPanel: ReactNode;
   tasksPanel: ReactNode;
   timePanel: ReactNode;
   activityPanel: ReactNode;
   ratesPanel?: ReactNode;
   budgetPanel?: ReactNode;
   financialsPanel?: ReactNode;
-  expensesPanel?: ReactNode;
   generatedPanel?: ReactNode;
   requestsPanel?: ReactNode;
   customerCommentsPanel?: ReactNode;
@@ -40,11 +39,9 @@ type TabId =
   | "overview"
   | "documents"
   | "correspondence"
-  | "members"
-  | "customers"
+  | "clients"
   | "tasks"
   | "time"
-  | "expenses"
   | "budget"
   | "financials"
   | "activity"
@@ -59,16 +56,16 @@ type TabId =
   | "statements"
   | "audit";
 
+// The 21 tab ids of MATTER_TAB_GROUPS (pinned by __tests__/components/matters/matter-tabs.test.tsx).
 const validTabIds = new Set<string>([
   "details",
   "fields",
   "overview",
   "documents",
   "correspondence",
-  "customers",
+  "clients",
   "tasks",
   "time",
-  "expenses",
   "budget",
   "financials",
   "activity",
@@ -84,21 +81,19 @@ const validTabIds = new Set<string>([
   "audit",
 ]);
 
-export function ProjectTabs({
+export function MatterTabs({
   detailsPanel,
   fieldsPanel,
   overviewPanel,
   documentsPanel,
   correspondencePanel,
-  membersPanel,
-  customersPanel,
+  clientsPanel,
   tasksPanel,
   timePanel,
   activityPanel,
   ratesPanel,
   budgetPanel,
   financialsPanel,
-  expensesPanel,
   generatedPanel,
   requestsPanel,
   customerCommentsPanel,
@@ -108,9 +103,10 @@ export function ProjectTabs({
   disbursementsPanel,
   statementsPanel,
   auditPanel,
-}: ProjectTabsProps) {
+}: MatterTabsProps) {
   const searchParams = useSearchParams();
-  const tabParam = searchParams.get("tab");
+  // Old ?tab= ids (customers, expenses, …) resolve to their renamed tab (LEGACY_TAB_IDS, §12.6.5).
+  const tabParam = aliasLegacyTabId(searchParams.get("tab"));
   const urlTab = tabParam && validTabIds.has(tabParam) ? (tabParam as TabId) : null;
   const [userTab, setUserTab] = useState<TabId | null>(null);
   const { isModuleEnabled } = useOrgProfile();
@@ -130,7 +126,7 @@ export function ProjectTabs({
   const auditVisible = useAuditTabVisible();
   const showAudit = !!auditPanel && auditVisible;
 
-  // Build visible groups from TAB_GROUPS with module-gating and legal tab labels
+  // Build visible groups from MATTER_TAB_GROUPS with module-gating
   const visibleGroups = useMemo(() => {
     /** Per-tab visibility map — true means the tab should be shown */
     const tabVisibility: Record<string, boolean> = {
@@ -142,16 +138,11 @@ export function ProjectTabs({
       tasks: true,
       documents: true,
       time: true,
-      customers: true,
+      clients: true,
       activity: true,
       // Panel-gated tabs (visible only when the panel prop is provided)
       correspondence: !!correspondencePanel,
       generated: !!generatedPanel,
-      // Dedupe: when the legal-specific Disbursements tab is shown AND the
-      // generic Expenses tab is present, their labels collide in legal-za
-      // (both tabs are labelled "Disbursements"). Prefer the legal
-      // tab and hide the generic one. GAP-L-38.
-      expenses: !!expensesPanel && !showDisbursements,
       budget: true,
       rates: !!ratesPanel,
       financials: !!financialsPanel,
@@ -166,29 +157,18 @@ export function ProjectTabs({
       audit: showAudit,
     };
 
-    return TAB_GROUPS.map((group) => ({
+    // Labels come straight from MATTER_TAB_GROUPS (legal words; ADR-338).
+    return MATTER_TAB_GROUPS.map((group) => ({
       ...group,
       visible: group.tabs.some((t) => tabVisibility[t.id] !== false),
-      tabs: group.tabs.map((tab) => {
-        // Legal labels for tabs whose canonical constant label differs (constants re-authored in 615E)
-        let label = tab.label;
-        if (tab.id === "customers") label = "Clients";
-        if (tab.id === "expenses") label = "Disbursements";
-        if (tab.id === "budget") label = "Fee estimate";
-        if (tab.id === "audit") label = "Audit trail";
-        // Note: "Tasks" stays literal — GAP-L-38
-
-        return {
-          ...tab,
-          label,
-          visible: tabVisibility[tab.id] ?? true,
-        };
-      }),
+      tabs: group.tabs.map((tab) => ({
+        ...tab,
+        visible: tabVisibility[tab.id] ?? true,
+      })),
     }));
   }, [
     correspondencePanel,
     generatedPanel,
-    expensesPanel,
     ratesPanel,
     financialsPanel,
     requestsPanel,
@@ -223,7 +203,7 @@ export function ProjectTabs({
 
   return (
     <TabsPrimitive.Root value={activeTab}>
-      {/* GroupedTabBar replaces the flat TabsPrimitive.List — groups 21 sub-tabs into 6 top-level groups */}
+      {/* GroupedTabBar replaces the flat TabsPrimitive.List — groups 21 sub-tabs into 7 top-level groups */}
       <GroupedTabBar groups={visibleGroups} activeTab={activeTab} onTabChange={handleTabChange} />
 
       {/* Radix Content provides role="tabpanel" + aria-labelledby */}
@@ -244,11 +224,8 @@ export function ProjectTabs({
           {correspondencePanel}
         </TabsPrimitive.Content>
       )}
-      <TabsPrimitive.Content value="members" className="pt-6 outline-none">
-        {membersPanel}
-      </TabsPrimitive.Content>
-      <TabsPrimitive.Content value="customers" className="pt-6 outline-none">
-        {customersPanel}
+      <TabsPrimitive.Content value="clients" className="pt-6 outline-none">
+        {clientsPanel}
       </TabsPrimitive.Content>
       <TabsPrimitive.Content value="tasks" className="pt-6 outline-none">
         {tasksPanel}
@@ -256,11 +233,6 @@ export function ProjectTabs({
       <TabsPrimitive.Content value="time" className="pt-6 outline-none">
         {timePanel}
       </TabsPrimitive.Content>
-      {expensesPanel && (
-        <TabsPrimitive.Content value="expenses" className="pt-6 outline-none">
-          {expensesPanel}
-        </TabsPrimitive.Content>
-      )}
       <TabsPrimitive.Content value="budget" className="pt-6 outline-none">
         {budgetPanel}
       </TabsPrimitive.Content>

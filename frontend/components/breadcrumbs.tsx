@@ -41,7 +41,6 @@ const SEGMENT_LABELS: Record<string, string> = {
   "conflict-check": "Conflict Check",
   "client-ledgers": "Client Ledgers",
   invoices: "Fee notes",
-  expenses: "Disbursements",
   // Phase 87 S6a (612A): nav-zone pages
   unbilled: "Unbilled work",
   reports: "Reports",

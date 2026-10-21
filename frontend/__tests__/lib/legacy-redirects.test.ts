@@ -160,6 +160,28 @@ describe("LEGACY_REDIRECTS", () => {
     expect(fs.existsSync(path.join(orgDir, "diary", "page.tsx"))).toBe(true);
   });
 
+  it("redirects the deleted matter expenses page to the Disbursements tab (615E)", () => {
+    expect(LEGACY_REDIRECTS).toContainEqual({
+      source: "/org/:slug/matters/:id/expenses",
+      destination: "/org/:slug/matters/:id?tab=disbursements",
+      permanent: true,
+    });
+  });
+
+  it("chains the pre-610D /projects/:id/expenses URL through the route rename (615E)", () => {
+    // Hop 1: the 610D row owns /projects/** (first match in table order) → /org/x/matters/1/expenses.
+    expect(firstMatch("/org/x/projects/1/expenses")?.source).toBe("/org/:slug/projects/:path*");
+    // Hop 2: that destination is owned by the 615E row → the matter's Disbursements tab.
+    expect(firstMatch("/org/x/matters/1/expenses")?.destination).toBe(
+      "/org/:slug/matters/:id?tab=disbursements"
+    );
+  });
+
+  it("leaves matters/[id]/expenses without a page — the config redirect owns it (615E)", () => {
+    const orgDir = path.resolve(__dirname, "../../app/(app)/org/[slug]");
+    expect(fs.existsSync(path.join(orgDir, "matters", "[id]", "expenses"))).toBe(false);
+  });
+
   it("keeps the pre-Phase-87 /settings/team row", () => {
     expect(LEGACY_REDIRECTS).toContainEqual({
       source: "/org/:slug/settings/team",

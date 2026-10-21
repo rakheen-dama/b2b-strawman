@@ -57,6 +57,13 @@ export default async function ReportsProfitabilityPage({
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Team utilization, matter profitability, and client profitability across your organization
         </p>
+        {/* Phase 87 ADR-340 / OQ #1: the cost leg still reads Expense until the follow-up lands. */}
+        <p
+          data-testid="profitability-cost-note"
+          className="mt-1 text-xs text-slate-500 dark:text-slate-400"
+        >
+          Costs reflect logged expenses only; disbursements are shown as fee-note lines
+        </p>
       </div>
 
       {utilization.members.length === 0 && profitability.matters.length === 0 ? (

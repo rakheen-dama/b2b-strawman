@@ -191,8 +191,11 @@ test.describe.serial("PROJ-03: Time Entries", () => {
     await loginAs(page, "carol");
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${BASE}/matters/${projectId}`);
-    await page.getByRole("tab", { name: "Time" }).click();
-    await expect(page.getByRole("tabpanel", { name: "Time" })).toBeVisible({ timeout: 5000 });
+    // Phase 87 S8 (ADR-344): label — Time → Time recording (§12.6.5)
+    await page.getByRole("tab", { name: "Time recording" }).click();
+    await expect(page.getByRole("tabpanel", { name: "Time recording" })).toBeVisible({
+      timeout: 5000,
+    });
 
     // The time panel should show the entry (look for Carol or 3h / 180min)
     await expect(

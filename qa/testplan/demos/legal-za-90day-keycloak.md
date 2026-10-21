@@ -157,7 +157,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.47** Verify `legal-za-customer` field group is present with exactly: `id_passport_number`, `postal_address`, `preferred_correspondence`, `referred_by` (client type, physical address and registration number are native client fields, not pack fields) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: field list re-derived from field-packs/legal-za-customer.json)
 - [ ] **0.48** Verify `legal-za-project` (matter) field group is present with: `case_number`, `court_name`, `opposing_party`, `opposing_attorney`, `advocate_name`, `date_of_instruction`, `estimated_value` (matter type is the native **Work Type**, not a pack field) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: field list re-derived from field-packs/legal-za-project.json)
 - [ ] **0.49** **Field promotion checkpoint (customer)**: on a blank **New Client** dialog (open but don't submit), verify these promoted slugs render as native first-class inputs INLINE (not inside a generic "Other Fields" section): `client_type`, `physical_address`, `registration_number`, `tax_number`, `phone`, `primary_contact_name`, `primary_contact_email`
-- [ ] **0.50** **Field promotion checkpoint (customer negative)**: verify these promoted slugs do NOT appear again inside the CustomFieldSection on the **Fields** tab (`tab-group-details` → `tab-item-fields`): same list as 0.49
+- [ ] **0.50** **Field promotion checkpoint (customer negative)**: verify these promoted slugs do NOT appear again inside the CustomFieldSection on the **Custom fields** tab (`tab-group-details` → `tab-item-fields`): same list as 0.49 (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **0.51** **Field promotion checkpoint (matter)**: on a blank **New Matter** dialog, verify `matter_type` renders as a native inline form input (promoted project slug)
 - [ ] **0.52** Cancel both dialogs without saving
 
@@ -222,7 +222,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **1.8** Fill promoted fields (verify inline rendering): `client_type` = **INDIVIDUAL**, Address Line 1 = "42 Commissioner St", City = "Johannesburg", Postal Code = "2001", Country = **ZA**, `id_passport_number` = "8501015800083" (Address Line 1, City and Country are activation prerequisites — `StructuralPrerequisiteCheck`; INDIVIDUAL clients need no tax number)
 - [ ] **1.9** Save → verify client appears in list with status **PROSPECT**
 - [ ] **1.10** Click into client detail → verify lifecycle badge shows **PROSPECT** in the header card (`data-testid="client-header-card"`)
-- [ ] **1.11** Navigate to **Details** tab group → **Details** sub-tab (`tab-group-details` → `tab-item-details`). Verify promoted fields render on the Details tab, NOT in the CustomFieldSection on the Fields tab
+- [ ] **1.11** Navigate to **Details** tab group → **Details** sub-tab (`tab-group-details` → `tab-item-details`). Verify promoted fields render on the Details tab, NOT in the CustomFieldSection on the Custom fields tab (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 
 ### Day 1 (cont.) — removed (Phase 86)
 
@@ -231,9 +231,9 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 ### Day 2 — FICA/KYC onboarding
 
 - [ ] **2.1** On Sipho's client detail (header card, `data-testid="client-header-card"`), the lifecycle badge (`data-testid="lifecycle-badge"`) reads **PROSPECT**. Click the header's primary action **Start Onboarding** → confirm **Start Onboarding** in the alert dialog → badge reads **ONBOARDING** and the onboarding checklist is instantiated (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.3: the deleted Day 1 deal-win was the only PROSPECT→ONBOARDING step)
-- [ ] **2.2** Navigate to **Compliance** tab group → **Onboarding** sub-tab (`tab-group-compliance` → `tab-item-onboarding`) → verify the **Legal Individual Client Onboarding** checklist is auto-instantiated (pack `legal-za-individual-onboarding`)
+- [ ] **2.2** Navigate to **FICA & compliance** tab group → **FICA onboarding** sub-tab (`tab-group-compliance` → `tab-item-onboarding`) → verify the **Legal Individual Client Onboarding** checklist is auto-instantiated (pack `legal-za-individual-onboarding`) (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **2.3** Verify the checklist shows **9 items, 8 required**: Proof of Identity, Proof of Address, Beneficial Ownership Declaration, Source of Funds Declaration, Engagement Letter Signed, Conflict Check Performed, Power of Attorney Signed (optional), FICA Risk Assessment, Sanctions Screening. Six of them show "Requires document: …" (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: items re-derived from compliance-packs/legal-za-individual-onboarding/pack.json)
-- [ ] **2.4** Precondition for the document items: on the client's **Work** group → **Documents** sub-tab click **Upload Document** → upload one small PDF named "Sipho Dlamini — certified FICA pack.pdf" → row shows Uploaded
+- [ ] **2.4** Precondition for the document items: on the client's **Matters** group → **Documents** sub-tab click **Upload Document** → upload one small PDF named "Sipho Dlamini — certified FICA pack.pdf" → row shows Uploaded (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **2.5** Back on Compliance → Onboarding: for each of the 9 items in order click **Mark Complete**; where the row shows "Requires document", pick "Sipho Dlamini — certified FICA pack.pdf" in the document combobox; click **Confirm** → item reads **Completed**. Complete "Engagement Letter Signed" before "Power of Attorney Signed" (dependency). If a completed item still renders Pending, reload — `FIXME(depth-ii:checklist-stale-after-complete)`, intermittent
 - [ ] **2.6** Progress reads **9/9 completed**; checklist instance status COMPLETED
 - [ ] **2.7** When the last required item is confirmed the checklist instance completes and the client **auto-transitions to ACTIVE** (`checklist/ChecklistInstanceService.checkLifecycleAdvance`, provided the activation prerequisites Address Line 1 / City / Country (from 1.8) are on file — `StructuralPrerequisiteCheck.LIFECYCLE_ACTIVATION_FIELDS`) → lifecycle badge **ACTIVE**; the header primary action now reads **Edit**. If the badge still reads ONBOARDING, a `PREREQUISITE_BLOCKED_ACTIVATION` notification was raised — fill the missing field on the client and save; the save re-runs the check (`CustomerService.java:434` → `recheckLifecycleAdvance`) and usually flips the badge to ACTIVE by itself. Only if it still reads ONBOARDING after the save, click **Activate Customer** → ACTIVE
@@ -251,14 +251,14 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **3.7** Assign first task to Bob, second task to Carol
 - [ ] **3.8** Verify terminology: page heading says "Matter" (not "Project"), breadcrumb shows Clients > Sipho Dlamini > Matter > ...
 - [ ] **3.9** **Correspondence tab (Phase 81)**: on the matter detail, open **Work** tab group → **Correspondence** sub-tab (`tab-group-work` → `tab-item-correspondence`) → read-only list renders its empty state: "No correspondence yet" with the description that email is filed via the firm's own Claude using the Kazi MCP tools (there is no in-app compose/write path — `file_correspondence` is MCP-only)
-- [ ] **3.10** Verify the Work group dropdown lists **four** sub-tabs: Tasks, Documents, Correspondence, Generated Docs (Staffing removed — Epic 599 #1570)
+- [ ] **3.10** Verify the Work group dropdown lists **four** sub-tabs: Tasks, Documents, Correspondence, Generated documents (Staffing removed — Epic 599 #1570) (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 
 ### Day 4 — Engagement letter & first time entry
 
 - [ ] **4.1** Generate engagement letter from matter detail (Document Templates → Engagement Letter)
 - [ ] **4.2** Preview PDF → verify Mathebula letterhead + brand colour applied + client details filled from context
 - [ ] **4.3** Save generated document → verify it appears under matter's Documents tab
-- [ ] **4.3a** On the saved engagement letter (**Work** → **Generated Docs**) click **Send for Acceptance** → Recipient = Sipho Dlamini (portal contact), Expiry (days) = 7 → **Send** → acceptance status badge on the document reads **Awaiting Acceptance** (status SENT; becomes **Viewed** once the link is opened) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.5: ADR-336 replaces the deleted proposal flow with document + acceptance)
+- [ ] **4.3a** On the saved engagement letter (**Work** → **Generated documents**) click **Send for Acceptance** → Recipient = Sipho Dlamini (portal contact), Expiry (days) = 7 → **Send** → acceptance status badge on the document reads **Awaiting Acceptance** (status SENT; becomes **Viewed** once the link is opened) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.5: ADR-336 replaces the deleted proposal flow with document + acceptance) (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **4.3b** Mailpit → email to Sipho's address with subject `Mathebula & Partners -- Please review engagement letter for acceptance: <file name>` → open the link in an incognito context → public page http://localhost:3002/accept/<token> renders the PDF preview → type the full name "Sipho Dlamini" → click **I Accept** → accepted state with timestamp renders
 - [ ] **4.3c** Mailpit → `Confirmed: You have accepted <file name>`; close the incognito context and return to the firm context (Bob, :3000) → the document's acceptance badge reads **Accepted**; 📸 `day-04-engagement-letter-accepted.png`
 - [ ] **4.4** Log first time entry: Bob, 1.5 hours, "Drafting particulars of claim", billable = yes
@@ -269,7 +269,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **5.1** Navigate to Sipho's litigation matter detail page
 - [ ] **5.2** Verify all promoted fields visible inline at top (matter_type, case_number, court_name)
-- [ ] **5.3** Verify grouped tab bar renders and all key tabs load without errors: click **Work** group → **Tasks** sub-tab loads; click **Finance** group → **Time** sub-tab loads; click **Work** group → **Documents** sub-tab loads; click **Client** group → **Client Comments** sub-tab loads; click **Activity** group → **Activity** sub-tab loads
+- [ ] **5.3** Verify grouped tab bar renders and all key tabs load without errors: click **Work** group → **Tasks** sub-tab loads; click **Fees** group → **Time recording** sub-tab loads; click **Work** group → **Documents** sub-tab loads; click **Client** group → **Client comments** sub-tab loads; click **Activity** group → **Activity** sub-tab loads (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **5.4** 📸 **Screenshot**: Matter detail page with promoted fields + terminology + tabs visible
 
 #### Phase 67 — Disbursements (Epics 486–488)
@@ -283,7 +283,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **5.9** As Bob: create a **deeds-office fee disbursement** (`TRUST_ACCOUNT`): amount R1,250.00, description "Deeds office search fee", category = DEEDS_OFFICE_FEE; in the trust-link slot select an approved `DISBURSEMENT_PAYMENT` trust transaction → submit → status `SUBMITTED`
 - [ ] **5.10** As Thandi (Owner): navigate to the trust-linked disbursement detail → click **Approve** → status transitions to `APPROVED` (owner has `APPROVE_TRUST_PAYMENT`)
 - [ ] **5.11** As Bob: approve the sheriff-fee (office-account) disbursement → status transitions to `APPROVED`
-- [ ] **5.12** Navigate to Sipho's matter detail → click **Finance** group tab → click **Disbursements** sub-tab → verify unbilled summary shows **"Unbilled Disbursements: R2,000.00"** (sheriff + deeds office combined) (`data-testid="project-disbursements-tab"` is the content panel, still valid)
+- [ ] **5.12** Navigate to Sipho's matter detail → click **Fees** group tab → click **Disbursements** sub-tab → verify unbilled summary shows **"Unbilled Disbursements: R2,000.00"** (sheriff + deeds office combined) (`data-testid="project-disbursements-tab"` is the content panel, still valid) (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **5.13** Verify terminology throughout is **Disbursement** (never "Expense")
 - [ ] **5.14** 📸 **Screenshot**: Disbursement list view with mixed statuses + unbilled summary visible on matter detail
 
@@ -336,8 +336,8 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **14.2** As Thandi: create a new client **"Khumalo Property Holdings"** (type INDIVIDUAL; Address Line 1 = "12 Rivonia Road", City = "Sandton", Country = **ZA**) → **Start Onboarding** → complete the 9-item individual checklist (as Day 2, one uploaded client PDF linked where required) → auto-transitions to ACTIVE on the last required Confirm (else **Activate Customer**)
 - [ ] **14.3** Create a new matter using the **Property Transfer** template (Work Type **CONVEYANCING** inherited from the template, #1580) → matter title "Khumalo Property Holdings — Erf 1234 Sandton Transfer"
-- [ ] **14.4** On matter detail, navigate to **Details > Fields** tab, verify the **10 conveyancing custom fields** (from field pack `conveyancing_za_matter`) are all present (even if empty): `conveyancing_type`, `property_address`, `erf_number`, `deeds_office`, `lodgement_date`, `registration_date`, `deed_number`, `purchase_price`, `transfer_duty`, `bond_institution`
-- [ ] **14.5** On the Fields tab, fill the minimum Day 14 set: `property_address = "12 Rivonia Road, Sandton, 2196"`, `erf_number = "1234"`, `deeds_office = JOHANNESBURG` → save
+- [ ] **14.4** On matter detail, navigate to **Details > Custom fields** tab, verify the **10 conveyancing custom fields** (from field pack `conveyancing_za_matter`) are all present (even if empty): `conveyancing_type`, `property_address`, `erf_number`, `deeds_office`, `lodgement_date`, `registration_date`, `deed_number`, `purchase_price`, `transfer_duty`, `bond_institution` (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
+- [ ] **14.5** On the Custom fields tab, fill the minimum Day 14 set: `property_address = "12 Rivonia Road, Sandton, 2196"`, `erf_number = "1234"`, `deeds_office = JOHANNESBURG` → save (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **14.6** Verify promoted / inline fields re-render with new values
 - [ ] **14.7** Navigate to Document Templates from matter → select **Offer to Purchase** (key `offer-to-purchase`, `acceptanceEligible: true`) → generate document
 - [ ] **14.8** Verify generated OTP document contains the conveyancing clauses inserted from clause pack `conveyancing-za-clauses` (Phase 492 clause injection)
@@ -349,7 +349,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Day 15 — Budget check
 
-- [ ] **15.1** Navigate to Estate matter → Budget tab
+- [ ] **15.1** Navigate to Estate matter → **Fees** group → **Fee estimate** sub-tab (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **15.2** Set estate matter budget: 40 hours total, R80,000 cap (hours + currency mode)
 - [ ] **15.3** Verify current burn: ~5.5 hours, ~R11,000 (based on days 10–14 entries)
 - [ ] **15.4** Verify budget status indicator shows "on track" (< 50% consumed)
@@ -359,7 +359,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **16.1** Add 5 more time entries across the team (total accumulated ~18 hours)
 - [ ] **18.1** Upload additional documents: "Inventory draft", "Bank statements"
 - [ ] **20.1** Complete 2 more tasks from the template
-- [ ] **21.1** Verify budget tab now shows ~45% consumed, still on track
+- [ ] **21.1** Verify the Fee estimate sub-tab now shows ~45% consumed, still on track (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 
 ---
 
@@ -412,7 +412,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Thandi (Owner) or Bob (Admin).
 
-- [ ] **30.1** Navigate to the **oldest active matter** (Sipho's litigation) → click **Finance** group tab → click **Statements** sub-tab (`data-testid="project-statements-tab"` — content panel, still valid)
+- [ ] **30.1** Navigate to the **oldest active matter** (Sipho's litigation) → click **Fees** group tab → click **Statements of account** sub-tab (`data-testid="project-statements-tab"` — content panel, still valid) (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **30.2** Click **"Generate Statement of Account"** → dialog opens (`data-testid="statement-of-account-dialog"`)
 - [ ] **30.3** Fill period: start = matter-opened date (Day 3), end = today (Day 30) → click **Generate**
 - [ ] **30.4** Preview pane (`data-testid="statement-preview-container"`) renders HTML with: fees section (time entries from Days 4–7), disbursements section (sheriff fee + deeds-office fee from Day 5), trust activity section, and summary totals block

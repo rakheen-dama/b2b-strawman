@@ -58,7 +58,6 @@ import {
   getCustomerProfitability,
 } from "@/app/(app)/org/[slug]/profitability/actions";
 import { fetchProjectTimeSummary } from "@/app/(app)/org/[slug]/matters/[id]/time-summary-actions";
-import { deleteExpense } from "@/app/(app)/org/[slug]/matters/[id]/expense-actions";
 import { loadPreview } from "@/lib/api/billing-runs";
 
 const RATE = {
@@ -137,11 +136,6 @@ describe("finance wire bodies (Phase 87 S3)", () => {
   it("fetchProjectTimeSummary uses /api/matters/{id}/time-summary", async () => {
     await fetchProjectTimeSummary("m-1");
     expect(mockGet).toHaveBeenCalledWith("/api/matters/m-1/time-summary");
-  });
-
-  it("deleteExpense uses /api/matters/{id}/expenses/{expenseId}", async () => {
-    await deleteExpense("acme", "m-1", "e-1");
-    expect(apiMock.delete).toHaveBeenCalledWith("/api/matters/m-1/expenses/e-1");
   });
 
   // D4 (Phase 87): the backend param on /api/reports/profitability is still

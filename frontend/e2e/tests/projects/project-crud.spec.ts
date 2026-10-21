@@ -207,7 +207,8 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
     await expect(page.getByText(project.name).first()).toBeVisible({ timeout: 10000 });
 
     // Verify key tabs are visible and clickable
-    const tabNames = ["Tasks", "Time", "Documents", "Budget", "Activity"];
+    // Phase 87 S8 (ADR-344): label — Time → Time recording, Budget → Fee estimate (§12.6.5)
+    const tabNames = ["Tasks", "Time recording", "Documents", "Fee estimate", "Activity"];
     for (const tabName of tabNames) {
       const tab = page.getByRole("tab", { name: tabName });
       const hasTab = await tab.isVisible({ timeout: 3000 }).catch(() => false);
@@ -218,6 +219,32 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
     }
     // No assertion failure — just verifying tabs exist and are clickable
     await expect(page.locator("body")).not.toContainText("Something went wrong");
+  });
+
+  // Phase 87 S8 (ADR-340, ADR-344; OQ #18): the standalone matter expenses page is deleted — its URL (and the
+  // pre-610D /projects/:id/expenses URL, via the 610D row) 308s to the matter's Disbursements tab
+  // (lib/legacy-redirects.ts). Replaces the retired projects/project-expenses.spec.ts.
+  test("4b. Legacy expenses URL redirects to the Disbursements tab", async ({ page }) => {
+    const token = await getToken("alice");
+    // Phase 87 S1 (ADR-337): API path
+    const projects = (await apiGet("/api/matters", token)) as Array<{ id: string; name: string }>;
+    const project =
+      projects.find((p) => p.name === EDITED_NAME || p.name === PROJECT_WITH_CUSTOMER) ??
+      projects[0];
+    expect(project, "at least one matter exists").toBeDefined();
+
+    await loginAs(page, "alice");
+    for (const legacy of [
+      `${BASE}/matters/${project.id}/expenses`,
+      `${BASE}/projects/${project.id}/expenses`,
+    ]) {
+      await page.goto(legacy);
+      await expect(page).toHaveURL(new RegExp(`/matters/${project.id}\\?tab=disbursements$`));
+      // legal-za enables the disbursements module, so the Fees group (id `finance`) is the active group.
+      await expect(page.getByTestId("tab-group-finance")).toHaveAttribute("aria-selected", "true", {
+        timeout: 10000,
+      });
+    }
   });
 
   test("5. Archive project (Complete then Archive)", async ({ page }) => {

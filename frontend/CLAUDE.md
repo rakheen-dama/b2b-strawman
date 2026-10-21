@@ -296,7 +296,7 @@ Call site: `<EditCustomerDialog triggerLabel="Edit" triggerIcon={<Pencil />} cus
 </div>
 ```
 
-**Children-API dialogs are still acceptable when there is at most one `asChild` Trigger in the adjacency** (e.g., `LogExpenseDialog` placed next to a non-`Slot` sibling). The collision only fires with two adjacent `Slot` siblings; a single `Slot` at a row position is fine.
+**Children-API dialogs are still acceptable when there is at most one `asChild` Trigger in the adjacency** (e.g., `LogTimeDialog` — trigger passed as `children` into `<DialogTrigger asChild>` — placed next to a non-`Slot` sibling). The collision only fires with two adjacent `Slot` siblings; a single `Slot` at a row position is fine. Note: since `LogExpenseDialog` was deleted (Epic 615E), `dialog-family-ssr.snapshot.test.tsx` has no SSR snapshot representative of the children-API shape — adding one (e.g. `LogTimeDialog`) is a follow-up.
 
 Precedent: PR #1242 introduced the dialog-owns-button pattern (`EditCustomerDialog`, `ArchiveCustomerDialog`). PR #1263 propagated it to four more adjacency sites (`comments/`, `rates/customer-rates-tab.tsx`, `rates/project-rates-tab.tsx`, `expenses/`). PR #1262 removed a related dead `mountRoot` workaround that the same composition class had motivated.
 

@@ -364,7 +364,7 @@ export default async function CustomerDetailPage({
         {
           label: "Projects linked",
           complete: customerReadiness.hasLinkedMatters,
-          actionHref: `?tab=projects`,
+          actionHref: `?tab=matters`,
         },
         {
           label:
@@ -654,7 +654,7 @@ export default async function CustomerDetailPage({
             linkedProjectCount={linkedProjects.length}
           />
         }
-        projectsPanel={
+        mattersPanel={
           <CustomerProjectsPanel
             projects={linkedProjects}
             slug={slug}

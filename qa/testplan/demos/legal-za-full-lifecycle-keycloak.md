@@ -22,19 +22,20 @@ The story is deliberately realistic for an SA general-practice litigation firm: 
 
 ## Selector Reference (Grouped Tabs + Header Card)
 
-> **Phase 73 (Epics 532–536) moved to grouped tabs. A follow-up removed the sidebar — matter identity is now in a header card, description/tags on a Details tab, custom fields on a Fields tab.**
+> **Phase 73 (Epics 532–536) moved to grouped tabs. A follow-up removed the sidebar — matter identity is now in a header card, description/tags on a Details tab, custom fields on a Custom fields tab.** (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 >
 > **Tab navigation pattern:**
-> - Single-tab groups (Overview, Schedule): one click → `page.getByTestId('tab-group-overview')`
-> - Multi-tab groups (Details, Work, Finance, Client, Activity): two clicks:
->   1. `page.getByTestId('tab-group-finance').click()` — opens dropdown
+> - Single-tab groups (Overview, Diary — testid `tab-group-schedule`): one click → `page.getByTestId('tab-group-overview')` (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
+> - Multi-tab groups (Details, Work, Fees, Client, Activity): two clicks: (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
+>   1. `page.getByTestId('tab-group-finance').click()` (the **Fees** group) — opens dropdown (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 >   2. `page.getByTestId('tab-item-time').click()` — selects sub-tab
 >
 > **Group → Sub-tab mapping:**
 > - Details: details, fields
 > - Work: tasks, documents, correspondence, generated (correspondence added by Phase 81; staffing removed — Epic 599 #1570)
-> - Finance: time, expenses, disbursements, budget, rates, financials, statements, trust
-> - Client: customers, requests, customer-comments, adverse-parties
+> - Fees (`finance`): time, disbursements, budget, rates, financials, statements, trust (Phase 87, ADR-340 — structural amendment under ADR-344, Epic 615E, PR #1631: the generic Expenses tab is removed; Disbursements is the one cost tab)
+> - Client: clients, requests, customer-comments, adverse-parties (Phase 87, ADR-344 — structural amendment, Epic 615E, PR #1631: tab id `customers` → `clients`; the old `?tab=customers` still resolves via the LEGACY_TAB_IDS alias)
+> - Diary (`schedule`): court-dates (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 > - Activity: activity, audit
 >
 > **Action button locations:**
@@ -267,10 +268,10 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
   - Case number: (blank at intake; populated later)
   - Primary attorney: Bob Ndlovu
 - [ ] **3.4** Submit → matter created, redirected to matter detail
-- [ ] **3.5** Verify matter detail page shows the header card (`data-testid="matter-header-card"`) with name, status, work type, client, and the grouped tab bar (`data-testid="grouped-tab-bar"`) with 7 groups: **Details** (Details, Fields), **Overview** (standalone), **Work** (Tasks, Documents, Correspondence, Generated Docs — Correspondence added by Phase 81; Staffing removed — Epic 599 #1570), **Finance** (Time, Expenses, Disbursements, Budget/Fee Estimate, Rates, Financials, Statements, Trust), **Client** (Customers/Clients, Requests/Info Requests, Client Comments, Adverse Parties), **Schedule** (standalone — Court Dates), **Activity** (Activity sub-tab; Audit sub-tab if Team Oversight module enabled). The old "Fee Estimate" tab (legal-za term for budget) is now Finance > Budget (`?tab=budget`). Per OBS-302: no per-matter "Audit" tab in the flat list; matter audit history is in Activity group → Activity sub-tab or (if TEAM_OVERSIGHT enabled) Activity group → Audit sub-tab.
-- [ ] **3.6** Promoted fields (matter_type, court_name, case_number) render inline on Overview tab — **NOT** duplicated in the Fields tab
+- [ ] **3.5** Verify matter detail page shows the header card (`data-testid="matter-header-card"`) with name, status, work type, client, and the grouped tab bar (`data-testid="grouped-tab-bar"`) with 7 groups: **Details** (Details, Custom fields), **Overview** (standalone), **Work** (Tasks, Documents, Correspondence, Generated documents — Correspondence added by Phase 81; Staffing removed — Epic 599 #1570), **Fees** (Time recording, Disbursements, Fee estimate, Tariffs, Financials, Statements of account, Trust), **Client** (Clients, Information requests, Client comments, Adverse parties), **Diary** (standalone — Court dates), **Activity** (Activity sub-tab; Audit trail sub-tab if Team Oversight module enabled). The old "Fee Estimate" tab (legal-za term for budget) is now Fees > Fee estimate (`?tab=budget`). Per OBS-302: no per-matter "Audit" tab in the flat list; matter audit history is in Activity group → Activity sub-tab or (if TEAM_OVERSIGHT enabled) Activity group → Audit trail sub-tab. (Phase 87, ADR-340 — structural amendment under ADR-344, Epic 615E, PR #1631: the generic Expenses tab is removed; Disbursements is the one cost tab)
+- [ ] **3.6** Promoted fields (matter_type, court_name, case_number) render inline on Overview tab — **NOT** duplicated in the Custom fields tab (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **3.6a** **Correspondence tab (Phase 81)**: open **Work** group (`tab-group-work`) → **Correspondence** sub-tab (`tab-item-correspondence`) → read-only list renders its empty state "No correspondence yet" with the description that email is filed via the firm's own Claude using the Kazi MCP tools (no in-app compose path — `file_correspondence` is MCP-only)
-- [ ] **3.7** Navigate to matter detail → click **Client** group tab (`data-testid="tab-group-client"`) → click **Requests** sub-tab (`data-testid="tab-item-requests"`) → click **+ New Info Request**
+- [ ] **3.7** Navigate to matter detail → click **Client** group tab (`data-testid="tab-group-client"`) → click **Information requests** sub-tab (`data-testid="tab-item-requests"`) → click **+ New Info Request** (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **3.8** Select template: **FICA Onboarding Pack** (from `legal-za` request pack)
 - [ ] **3.9** Addressee: **Sipho Dlamini** (portal contact auto-populated from client record)
 - [ ] **3.10** Request items pre-filled from template: ID copy, Proof of residence (≤ 3 months), Bank statement (≤ 3 months)
@@ -328,13 +329,13 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Bob Ndlovu
 
-- [ ] **5.1** Navigate to matter RAF-2026-001 → click **Client** group tab (`data-testid="tab-group-client"`) → click **Requests** sub-tab (`data-testid="tab-item-requests"`) (URL param: `?tab=requests` — same as before; only the UI navigation changed from flat tab to grouped dropdown)
+- [ ] **5.1** Navigate to matter RAF-2026-001 → click **Client** group tab (`data-testid="tab-group-client"`) → click **Information requests** sub-tab (`data-testid="tab-item-requests"`) (URL param: `?tab=requests` — same as before; only the UI navigation changed from flat tab to grouped dropdown) (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **5.2** FICA Onboarding Pack row shows envelope status = **In Progress** (per OBS-403: there is no `SUBMITTED` envelope status; firm review is mandatory before closure) with `0/3 accepted` counter; clicking the row link in the table navigates to `/org/{slug}/information-requests/{id}` (NOT `/requests/{id}` — see OBS-501). Reach the request detail page and confirm 3 items render with `Submitted` per-item status and the 3 PDFs (`fica-id.pdf`, `fica-address.pdf`, `fica-bank.pdf`) attached.
 - [ ] **5.3** Verify each per-item **Download** button is operational (no console errors on click; headless Playwright won't persist the file but the handler is wired).
 - [ ] **5.4** Click **Accept** on each item in turn (per-item Accept replaces a separate envelope-level "Mark as Reviewed" — refines OBS-403 lifecycle understanding). Counter advances 0/3 → 1/3 → 2/3 → 3/3 accepted; on the third Accept, envelope status auto-transitions `In Progress → Completed` with a "Completed on …" stamp.
 - [ ] **5.5** Verify matter Overview shows FICA status — Activity feed renders the full audit trail (`REQ-0001 completed — all items accepted`, three accept events, three submit events). The matter Overview tab also renders a **FICA Status Card** (`<FicaStatusCard>`); confirm its "View request" link emits the canonical `/org/{slug}/information-requests/{requestId}` route — NOT `/requests/{id}` (OBS-501 verification).
 - [ ] **5.6** Mailpit → notification emails to Sipho during firm review: 3× per-item-accepted (`Item accepted — {name} (Mathebula & Partners)`) + 1× envelope-completed (`Request REQ-0001 completed (Mathebula & Partners)`).
-- [ ] **5.7** On Sipho's client detail the lifecycle badge (`data-testid="lifecycle-badge"`) reads **PROSPECT**. Click the header card's **Start Onboarding** → confirm in the alert dialog → badge **ONBOARDING**; **Compliance** group → **Onboarding** sub-tab shows **Legal Individual Client Onboarding**, 0/9 completed (9 items, 8 required; six show "Requires document") (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.2: the deleted Day 10 deal-win was the only scripted PROSPECT→ONBOARDING step)
+- [ ] **5.7** On Sipho's client detail the lifecycle badge (`data-testid="lifecycle-badge"`) reads **PROSPECT**. Click the header card's **Start Onboarding** → confirm in the alert dialog → badge **ONBOARDING**; **FICA & compliance** group → **FICA onboarding** sub-tab shows **Legal Individual Client Onboarding**, 0/9 completed (9 items, 8 required; six show "Requires document") (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.2: the deleted Day 10 deal-win was the only scripted PROSPECT→ONBOARDING step) (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 
 **Day 5 checkpoints**
 - [ ] Three uploaded documents retrievable firm-side
@@ -355,7 +356,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 **Actor**: Bob Ndlovu (login as Bob, port 3000)
 
 - [ ] **7.1** On matter RAF-2026-001 → **Generate Document** dropdown → **Engagement Letter — Litigation** → preview renders with Mathebula letterhead, brand colour and Sipho's details → **Save**
-- [ ] **7.2** **Work** group → **Generated Docs** sub-tab lists the engagement letter with today's date
+- [ ] **7.2** **Work** group → **Generated documents** sub-tab lists the engagement letter with today's date (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **7.3** On that row click **Send for Acceptance** → Recipient = Sipho Dlamini (`sipho.portal@example.com`), Expiry (days) = 7 → **Send** → acceptance badge **Awaiting Acceptance** (status SENT; **Viewed** once opened)
 - [ ] **7.4** Mailpit → email to `sipho.portal@example.com`, subject `Mathebula & Partners -- Please review engagement letter for acceptance: <file name>`, body link to `http://localhost:3002/accept/<token>`
 - [ ] **7.5** Matter activity feed shows "engagement letter generated" and "acceptance requested"
@@ -392,10 +393,10 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Phase A: Client activation + matter lifecycle
 
-- [ ] **10.1a** Sipho's client detail → **Work** group → **Documents** sub-tab → **Upload Document** → upload one small PDF named "Sipho Dlamini — certified FICA pack.pdf" (the checklist document picker lists client-level documents; always upload this file even if the Day 4 portal uploads appear in the picker, so the run is reproducible) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.2: Sipho must be ACTIVE for the Day 28 billing run; ONBOARDING→ACTIVE needs a complete checklist)
-- [ ] **10.1b** **Compliance** group → **Onboarding** sub-tab → for each of the 9 items in order: **Mark Complete** → where "Requires document" shows, pick the PDF from 10.1a → **Confirm** → **Completed**. Complete "Engagement Letter Signed" before "Power of Attorney Signed" (dependency). Progress reads **9/9 completed**. If a completed item still renders Pending, reload — `FIXME(depth-ii:checklist-stale-after-complete)`, intermittent
+- [ ] **10.1a** Sipho's client detail → **Matters** group → **Documents** sub-tab → **Upload Document** → upload one small PDF named "Sipho Dlamini — certified FICA pack.pdf" (the checklist document picker lists client-level documents; always upload this file even if the Day 4 portal uploads appear in the picker, so the run is reproducible) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.2: Sipho must be ACTIVE for the Day 28 billing run; ONBOARDING→ACTIVE needs a complete checklist) (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
+- [ ] **10.1b** **FICA & compliance** group → **FICA onboarding** sub-tab → for each of the 9 items in order: **Mark Complete** → where "Requires document" shows, pick the PDF from 10.1a → **Confirm** → **Completed**. Complete "Engagement Letter Signed" before "Power of Attorney Signed" (dependency). Progress reads **9/9 completed**. If a completed item still renders Pending, reload — `FIXME(depth-ii:checklist-stale-after-complete)`, intermittent (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **10.1c** When the last required item is confirmed the checklist instance completes and the client **auto-transitions to ACTIVE** (`checklist/ChecklistInstanceService.checkLifecycleAdvance`, provided the activation prerequisites Address Line 1 / City / Country (from 2.3) are on file — `StructuralPrerequisiteCheck.LIFECYCLE_ACTIVATION_FIELDS`) → lifecycle badge **ACTIVE**; the header primary action now reads **Edit**. If the badge still reads ONBOARDING, a `PREREQUISITE_BLOCKED_ACTIVATION` notification was raised — fill the missing field on the client and save; the save re-runs the check (`CustomerService.java:434` → `recheckLifecycleAdvance`) and usually flips the badge to ACTIVE by itself. Only if it still reads ONBOARDING after the save, click **Activate Customer** → ACTIVE
-- [ ] **10.1d** **Work** → **Generated Docs**: the engagement letter's acceptance badge reads **Accepted** (from Day 8)
+- [ ] **10.1d** **Work** → **Generated documents**: the engagement letter's acceptance badge reads **Accepted** (from Day 8) (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **10.2** Matter lifecycle: verify matter has auto-transitioned to **ACTIVE** (Phase 29 lifecycle), or transition manually per current UX
 
 ### Phase B: Trust deposit — bank statement import + deposit recording
@@ -411,7 +412,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **10.5** Submit → transaction enters approval queue (if dual-approval enabled) OR posts directly depending on trust account config
 - [ ] **10.6** If in approval queue: switch to Bob → navigate to Trust Accounting → Pending Approvals → approve the deposit
 - [ ] **10.7** Trust account balance reflects **R 50,000.00** with Sipho's client ledger card showing +R50,000.00
-- [ ] **10.8** Navigate to matter → click **Finance** group tab (`data-testid="tab-group-finance"`) → click **Trust** sub-tab (`data-testid="tab-item-trust"`) → verify matter-level trust balance = **R 50,000.00**
+- [ ] **10.8** Navigate to matter → click **Fees** group tab (`data-testid="tab-group-finance"`) → click **Trust** sub-tab (`data-testid="tab-item-trust"`) → verify matter-level trust balance = **R 50,000.00** (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **10.9** 📸 Optional: `day-10-firm-trust-deposit-recorded.png`
 
 **Day 10 checkpoints**
@@ -599,14 +600,14 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 ### Phase B: Disbursement (Phase 67)
 
-- [ ] **21.6** Navigate to matter → click **Finance** group tab (`data-testid="tab-group-finance"`) → click **Disbursements** sub-tab (`data-testid="tab-item-disbursements"`) → **+ New Disbursement**
+- [ ] **21.6** Navigate to matter → click **Fees** group tab (`data-testid="tab-group-finance"`) → click **Disbursements** sub-tab (`data-testid="tab-item-disbursements"`) → **+ New Disbursement** (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **21.7** Type: **Sheriff's fee**, Amount: **R 1,250.00**, Date: today, Description: "Sheriff service of summons on RAF"
 - [ ] **21.8** Mark as **recoverable** (client-rebillable)
 - [ ] **21.9** Submit → disbursement saved, appears in matter Disbursements tab with status **UNBILLED**
 
 ### Phase C: Court date
 
-- [ ] **21.10** Navigate to matter → click **Schedule** tab (`data-testid="tab-group-schedule"` — single-tab group, no dropdown) → **+ Add Court Date**
+- [ ] **21.10** Navigate to matter → click **Diary** tab (`data-testid="tab-group-schedule"` — single-tab group, no dropdown) → **+ Add Court Date** (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **21.11** Fill:
   - Court: Gauteng Division, Pretoria
   - Date: Day 35 (14 days from today)
@@ -728,7 +729,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **45.2** Mailpit → verify second magic-link email sent to Sipho
 - [ ] **45.3** Navigate to Trust Accounting → Mathebula Trust — Main → record / import a second deposit of **R 20,000** against Sipho / RAF-2026-001 (describe as "Top-up per engagement letter (accepted Day 8)")
 - [ ] **45.4** Approve (if dual-approval) → client ledger now shows trust balance **R 70,000** (R 50,000 Day 10 + R 20,000 Day 45 top-up) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.3: the cycle-18 R 71,000 recorded a prior-cycle verification deposit, not scripted behaviour; a fresh run reaches R 70,000)
-- [ ] **45.5** Matter Finance > Trust sub-tab shows balance **R 70,000** (navigate: Finance group → Trust sub-tab) (minus any fee-transfer-out if applied — in this script, none yet)
+- [ ] **45.5** Matter Fees > Trust sub-tab shows balance **R 70,000** (navigate: Fees group → Trust sub-tab) (minus any fee-transfer-out if applied — in this script, none yet) (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 
 **Day 45 checkpoints**
 - [ ] Second info request dispatched
@@ -791,7 +792,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 **A3: Resolve court date (clear Court Dates gate)**
 
-- [ ] **60.9** Navigate to matter RAF-2026-001 → Overview or the **Court Dates** tab → locate Pre-Trial court date scheduled Jun 4 2026 at Gauteng Division Pretoria (Phase 87, ADR-344 — nav amendment + ADR-339 One Diary structural move, Epic 613D, PR #1624: the Court Calendar page is gone; the matter's Court Dates tab lists its court dates and prescription trackers)
+- [ ] **60.9** Navigate to matter RAF-2026-001 → Overview or the **Diary** group's **Court dates** tab → locate Pre-Trial court date scheduled Jun 4 2026 at Gauteng Division Pretoria (Phase 87, ADR-344 — nav amendment + ADR-339 One Diary structural move, Epic 613D, PR #1624: the Court Calendar page is gone; the matter's Court Dates tab lists its court dates and prescription trackers) (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **60.10** Update court date status to COMPLETED or VACATED (whichever the product supports — the pre-trial has been held or is no longer required for the concluded matter)
 - [ ] **60.11** Verify court date no longer shows as an active/scheduled date blocking closure
 
@@ -932,7 +933,7 @@ This is the closing-demo wow moment: show the firm's 90-day activity feed on the
 ### Firm-side regression sweep
 
 - [ ] **90.1** `[FIRM]` Terminology sweep: walk sidebar, settings pages, every create dialog → zero occurrences of "Project" (must be "Matter"), "Customer" (must be "Client"), "Invoice" (must be "Fee Note"), "Task" where legal terminology applies. Zero accounting / consulting vocabulary leaks.
-- [ ] **90.2** `[FIRM]` Field promotion sweep: reopen every create dialog (Client, Matter, Task, Fee Note) → verify no promoted slugs have regressed into a generic Custom Fields section. On matter detail, promoted fields render on Overview tab, non-promoted fields are on the Details > Fields tab.
+- [ ] **90.2** `[FIRM]` Field promotion sweep: reopen every create dialog (Client, Matter, Task, Fee Note) → verify no promoted slugs have regressed into a generic Custom Fields section. On matter detail, promoted fields render on Overview tab, non-promoted fields are on the Details > Custom fields tab. (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **90.3** `[FIRM]` Progressive disclosure: six zones present (Today · Matters · Clients · Fees · Trust · Firm) and all 4 legal modules visible (Matters, Trust zone, Diary, Conflict check); no accounting / consulting nav items (Phase 87, ADR-344 — nav amendment, Epic 612C, PR #1620: six-zone sidebar per ADR-339) (Phase 87, ADR-344 — nav amendment, Epic 613D, PR #1624: Court calendar → Diary)
 - [ ] **90.4** `[FIRM]` Tier removal: Settings > Billing shows flat subscription state only, no tier UI
 - [ ] **90.5** `[FIRM]` Console errors: browser devtools open → click through every top-level nav → zero JS errors
@@ -987,10 +988,10 @@ This is the closing-demo wow moment: show the firm's 90-day activity feed on the
 > the E2E stack is running with the new layout. Mark each TODO complete with the filename and
 > date captured.
 
-- [ ] **B.1** `matter-detail-desktop-expanded.png` — Matter detail at 1440px viewport, sidebar expanded, Finance > Time tab visible
+- [ ] **B.1** `matter-detail-desktop-expanded.png` — Matter detail at 1440px viewport, sidebar expanded, Fees > Time recording tab visible (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **B.2** `matter-detail-desktop-collapsed.png` — Matter detail at 1440px viewport, sidebar collapsed (chevron visible in main area)
 - [ ] **B.3** `matter-detail-mobile-sheet-closed.png` — Matter detail at 375px viewport (iPhone), sidebar Sheet closed, PanelLeft trigger visible
 - [ ] **B.4** `matter-detail-mobile-sheet-open.png` — Matter detail at 375px viewport, sidebar Sheet slid in from left
 - [ ] **B.5** `matter-detail-overview-kpi.png` — Overview tab (KPI Dashboard) with metric cards visible
-- [ ] **B.6** `matter-detail-finance-dropdown-open.png` — Finance group tab with dropdown open, showing all sub-tabs
+- [ ] **B.6** `matter-detail-finance-dropdown-open.png` — Fees group tab with dropdown open, showing all sub-tabs (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **B.7** `matter-detail-overflow-menu-open.png` — Overflow actions menu open (MoreHorizontal trigger clicked)

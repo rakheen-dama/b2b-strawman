@@ -2,7 +2,7 @@
  * Shared tab-group types and utility functions.
  *
  * Entity-agnostic — no project/customer/matter-specific logic belongs here.
- * Entity-specific constants live in `project-tab-groups.ts`, `customer-tab-groups.ts`, etc.
+ * Entity-specific constants live in `matter-tab-groups.ts`, `client-tab-groups.ts`, etc.
  *
  * Architecture: Section 77.3.3, ADR-298.
  */

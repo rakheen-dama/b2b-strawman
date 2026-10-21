@@ -139,6 +139,25 @@ describe("KPIDashboard", () => {
     expect(screen.queryByTestId("metric-card-trust")).not.toBeInTheDocument();
   });
 
+  // Hides the outstanding fee notes card when disbursementsEnabled is false
+  it("hides outstanding fee notes card when disbursementsEnabled is false", async () => {
+    const jsx = await KPIDashboard({ ...defaultProps, disbursementsEnabled: false });
+    render(jsx);
+
+    expect(screen.queryByTestId("metric-card-invoices")).not.toBeInTheDocument();
+    expect(screen.queryByText("Outstanding fee notes")).not.toBeInTheDocument();
+  });
+
+  // Shows the outstanding fee notes card when disbursementsEnabled is true
+  it("shows outstanding fee notes card when disbursementsEnabled is true", async () => {
+    const jsx = await KPIDashboard({ ...defaultProps, disbursementsEnabled: true });
+    render(jsx);
+
+    const link = screen.getByRole("link", { name: /Outstanding fee notes/i });
+    expect(link).toHaveAttribute("href", "?tab=statements");
+    expect(link).toContainElement(screen.getByTestId("metric-card-invoices"));
+  });
+
   // Test 5: Renders upcoming deadlines list
   it("renders upcoming deadlines tile", async () => {
     const jsx = await KPIDashboard(defaultProps);

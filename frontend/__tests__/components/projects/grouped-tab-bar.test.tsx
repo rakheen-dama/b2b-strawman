@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { GroupedTabBar } from "@/components/shared/grouped-tab-bar";
-import { TAB_GROUPS } from "@/lib/constants/project-tab-groups";
+import { MATTER_TAB_GROUPS } from "@/lib/constants/matter-tab-groups";
 import { resolveTabFromUrl, type TabGroup } from "@/lib/constants/tab-group-types";
 
 // ---------------------------------------------------------------------------
@@ -20,7 +20,7 @@ vi.mock("motion/react", () => ({
 // ---------------------------------------------------------------------------
 
 function makeGroups(overrides?: Partial<Record<string, boolean>>): TabGroup[] {
-  return TAB_GROUPS.map((g) => ({
+  return MATTER_TAB_GROUPS.map((g) => ({
     ...g,
     visible: overrides?.[g.id] ?? true,
   }));
@@ -80,14 +80,14 @@ describe("GroupedTabBar", () => {
     expect(onTabChange).toHaveBeenCalledWith("overview");
   });
 
-  it('shows active sub-tab label in group trigger ("Finance · Time")', () => {
+  it('shows active sub-tab label in group trigger ("Fees · Time recording")', () => {
     const groups = makeGroups();
     render(<GroupedTabBar groups={groups} activeTab="time" onTabChange={() => {}} />);
 
     const financeTrigger = screen.getByTestId("tab-group-finance");
-    expect(financeTrigger.textContent).toContain("Finance");
+    expect(financeTrigger.textContent).toContain("Fees");
     expect(financeTrigger.textContent).toContain("·");
-    expect(financeTrigger.textContent).toContain("Time");
+    expect(financeTrigger.textContent).toContain("Time recording");
   });
 
   it("clicking group with multiple tabs and no active sub-tab navigates to first tab", () => {
@@ -126,29 +126,29 @@ describe("GroupedTabBar", () => {
 
 describe("resolveTabFromUrl", () => {
   it("returns overview for null param", () => {
-    const result = resolveTabFromUrl(null, TAB_GROUPS);
+    const result = resolveTabFromUrl(null, MATTER_TAB_GROUPS);
     expect(result).toEqual({ groupId: "overview", tabId: "overview" });
   });
 
   it("returns overview for unknown param (members redirect handled by caller)", () => {
     // Legacy ?tab=members has no redirect target (the staffing tab was removed in Epic 599),
     // so it falls through to the overview default.
-    const result = resolveTabFromUrl("members", TAB_GROUPS);
+    const result = resolveTabFromUrl("members", MATTER_TAB_GROUPS);
     expect(result).toEqual({ groupId: "overview", tabId: "overview" });
   });
 
   it("finds correct group for known tab id (time → finance)", () => {
-    const result = resolveTabFromUrl("time", TAB_GROUPS);
+    const result = resolveTabFromUrl("time", MATTER_TAB_GROUPS);
     expect(result).toEqual({ groupId: "finance", tabId: "time" });
   });
 
   it("handles group-level param → first sub-tab (finance → time)", () => {
-    const result = resolveTabFromUrl("finance", TAB_GROUPS);
+    const result = resolveTabFromUrl("finance", MATTER_TAB_GROUPS);
     expect(result).toEqual({ groupId: "finance", tabId: "time" });
   });
 
   it("returns overview for unknown param", () => {
-    const result = resolveTabFromUrl("nonexistent", TAB_GROUPS);
+    const result = resolveTabFromUrl("nonexistent", MATTER_TAB_GROUPS);
     expect(result).toEqual({ groupId: "overview", tabId: "overview" });
   });
 });

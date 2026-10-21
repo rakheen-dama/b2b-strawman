@@ -125,7 +125,8 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
     await expect(page.getByText(PROJECT_NAME).first()).toBeVisible({ timeout: 10000 });
 
     // Click Budget tab
-    const budgetTab = page.getByRole("tab", { name: "Budget" });
+    // Phase 87 S8 (ADR-344): label — Budget → Fee estimate (§12.6.5)
+    const budgetTab = page.getByRole("tab", { name: "Fee estimate" });
     const hasTab = await budgetTab.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (!hasTab) {
@@ -174,7 +175,8 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${BASE}/matters/${projectId}`);
 
-    const budgetTab = page.getByRole("tab", { name: "Budget" });
+    // Phase 87 S8 (ADR-344): label — Budget → Fee estimate (§12.6.5)
+    const budgetTab = page.getByRole("tab", { name: "Fee estimate" });
     const hasTab = await budgetTab.isVisible({ timeout: 5000 }).catch(() => false);
     if (hasTab) {
       await budgetTab.click();
@@ -214,7 +216,8 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${BASE}/matters/${projectId}`);
 
-    const budgetTab = page.getByRole("tab", { name: "Budget" });
+    // Phase 87 S8 (ADR-344): label — Budget → Fee estimate (§12.6.5)
+    const budgetTab = page.getByRole("tab", { name: "Fee estimate" });
     const hasTab = await budgetTab.isVisible({ timeout: 5000 }).catch(() => false);
     if (hasTab) {
       await budgetTab.click();

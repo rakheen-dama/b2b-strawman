@@ -205,7 +205,7 @@ function renderFullPage(options?: {
           />
         }
         overviewPanel={<ClientOverviewTab {...overviewBaseProps} />}
-        projectsPanel={<div data-testid="projects-panel">Projects</div>}
+        mattersPanel={<div data-testid="matters-panel">Matters</div>}
         documentsPanel={<div data-testid="documents-panel">Documents</div>}
       />
     </div>

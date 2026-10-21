@@ -105,6 +105,7 @@ function props(overrides: Partial<DiaryPageClientProps> = {}): DiaryPageClientPr
     ],
     currentMemberId: "fe-1",
     isAdminOrOwner: true,
+    canCompleteAnyTask: true,
     canManageLegal: true,
     ...overrides,
   };
@@ -190,6 +191,21 @@ describe("Diary range navigation (613C)", () => {
     await user.click(screen.getByRole("tab", { name: "Month" }));
     expect(mockPush).toHaveBeenCalledWith("/org/acme/diary?from=2026-10-01&view=month", PUSH_OPTS);
     expect(replaceState).not.toHaveBeenCalled();
+  });
+
+  it("moves focus between view tabs with the arrow keys and switches only on Enter", async () => {
+    const user = userEvent.setup();
+    render(<DiaryPageClient {...props()} />);
+    screen.getByRole("tab", { name: "Week" }).focus();
+    await user.keyboard("{ArrowRight}");
+    // Manual activation: arrowing must not navigate (a push would remount and drop focus).
+    expect(screen.getByRole("tab", { name: "Month" })).toHaveFocus();
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(replaceState).not.toHaveBeenCalled();
+    expect(screen.getByRole("tab", { name: "Week" })).toHaveAttribute("aria-selected", "true");
+
+    await user.keyboard("{Enter}");
+    expect(mockPush).toHaveBeenCalledWith("/org/acme/diary?from=2026-10-01&view=month", PUSH_OPTS);
   });
 
   it("anchors a view switch on today when it is in the window, else on the window start", async () => {

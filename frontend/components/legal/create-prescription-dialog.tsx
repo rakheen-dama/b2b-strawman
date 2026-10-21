@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@b2mash/ui/button";
@@ -57,6 +57,8 @@ export function CreatePrescriptionDialog({
   triggerVariant = "default",
 }: CreatePrescriptionDialogProps) {
   const [open, setOpen] = useState(false);
+  // Radix only tracks a DialogTrigger, so the owned button restores focus itself on close.
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
@@ -147,12 +149,21 @@ export function CreatePrescriptionDialog({
         size="sm"
         variant={triggerVariant}
         data-testid="create-prescription-trigger"
+        ref={triggerRef}
+        aria-haspopup="dialog"
+        aria-expanded={open}
         onClick={() => handleOpenChange(true)}
       >
         <Plus className="mr-1.5 size-4" />
         {triggerLabel}
       </Button>
-      <DialogContent data-testid="create-prescription-dialog">
+      <DialogContent
+        data-testid="create-prescription-dialog"
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          triggerRef.current?.focus();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Create Prescription Tracker</DialogTitle>
           <DialogDescription>Track prescription periods for a matter.</DialogDescription>

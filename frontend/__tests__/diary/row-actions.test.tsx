@@ -123,13 +123,13 @@ const matterDue = ev({
 
 const MEMBER: DiaryActionPermissions = {
   canManageLegal: false,
-  isAdminOrOwner: false,
+  canCompleteAnyTask: false,
   currentMemberId: "fe-1",
 };
 const LEGAL_MEMBER: DiaryActionPermissions = { ...MEMBER, canManageLegal: true };
 const OWNER: DiaryActionPermissions = {
   canManageLegal: true,
-  isAdminOrOwner: true,
+  canCompleteAnyTask: true,
   currentMemberId: "fe-9",
 };
 
@@ -254,6 +254,7 @@ function clientProps(overrides: Partial<DiaryPageClientProps> = {}): DiaryPageCl
     matters: [],
     currentMemberId: "fe-1",
     isAdminOrOwner: false,
+    canCompleteAnyTask: false,
     canManageLegal: true,
     ...overrides,
   };

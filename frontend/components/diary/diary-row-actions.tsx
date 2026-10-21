@@ -23,7 +23,8 @@ export const DIARY_ROW_ACTION_LABELS: Record<DiaryRowAction, string> = {
 export interface DiaryActionPermissions {
   /** Court-date / prescription writes need MANAGE_LEGAL (or admin / owner). */
   canManageLegal: boolean;
-  isAdminOrOwner: boolean;
+  /** Known admin / owner (fail-closed): may Mark done any fee earner's task. */
+  canCompleteAnyTask: boolean;
   currentMemberId: string | null;
 }
 
@@ -59,7 +60,7 @@ export function availableDiaryActions(
     const isOwnTask =
       permissions.currentMemberId !== null &&
       (event.feeEarnerId ?? null) === permissions.currentMemberId;
-    if (permissions.isAdminOrOwner || isOwnTask) return ["mark-done"];
+    if (permissions.canCompleteAnyTask || isOwnTask) return ["mark-done"];
   }
   return [];
 }

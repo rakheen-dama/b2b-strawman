@@ -91,9 +91,14 @@ export async function DiaryLoader({
   const currentEmail = email.status === "fulfilled" ? email.value?.toLowerCase() : null;
   const currentMemberId =
     (currentEmail && memberList.find((m) => m.email?.toLowerCase() === currentEmail)?.id) || null;
-  // Capabilities unknown → show everyone's events rather than silently narrowing to "Mine".
+  // Capabilities unknown → show everyone's events rather than silently narrowing to "Mine". This
+  // fail-open default seeds the filter only; it must never grant a write.
   const isAdminOrOwner =
     caps.status === "fulfilled" ? caps.value.isAdmin || caps.value.isOwner : true;
+  // Marking someone else's task done needs a known admin / owner (TaskService.completeTask), so
+  // it fails closed: without capabilities only the assignee's own tasks offer Mark done.
+  const canCompleteAnyTask =
+    caps.status === "fulfilled" && (caps.value.isAdmin || caps.value.isOwner);
   // Write affordances fail closed: court-date / prescription writes need MANAGE_LEGAL (backend
   // @RequiresCapability), so without known capabilities they are hidden.
   const canManageLegal =
@@ -121,6 +126,7 @@ export async function DiaryLoader({
       matters={matterList}
       currentMemberId={currentMemberId}
       isAdminOrOwner={isAdminOrOwner}
+      canCompleteAnyTask={canCompleteAnyTask}
       canManageLegal={canManageLegal}
       initialFeeEarner={validFeeEarner(initialFeeEarner, memberList, currentMemberId)}
       initialMatterId={validMatterId(initialMatterId, matterList)}

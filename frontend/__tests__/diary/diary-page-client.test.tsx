@@ -134,6 +134,7 @@ function clientProps(overrides: Partial<DiaryPageClientProps> = {}): DiaryPageCl
     matters: MATTERS,
     currentMemberId: "fe-1",
     isAdminOrOwner: true,
+    canCompleteAnyTask: true,
     canManageLegal: true,
     ...overrides,
   };

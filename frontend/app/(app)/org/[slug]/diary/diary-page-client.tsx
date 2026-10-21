@@ -66,7 +66,10 @@ export interface DiaryPageClientProps {
   members: DiaryMemberOption[];
   matters: DiaryMatterOption[];
   currentMemberId: string | null;
+  /** Admin / owner, or capabilities unknown (fail-open): only seeds the fee-earner default. */
   isAdminOrOwner: boolean;
+  /** Known admin / owner (fail-closed): may Mark done any fee earner's task. */
+  canCompleteAnyTask: boolean;
   /** MANAGE_LEGAL (or admin / owner): gates every court-date / prescription write affordance. */
   canManageLegal: boolean;
   /** Validated `?feeEarner=` (`mine` | `all` | member id); `null` = the role default. */
@@ -112,6 +115,7 @@ export function DiaryPageClient({
   matters,
   currentMemberId,
   isAdminOrOwner,
+  canCompleteAnyTask,
   canManageLegal,
   initialFeeEarner = null,
   initialMatterId = null,
@@ -323,7 +327,9 @@ export function DiaryPageClient({
   }
 
   return (
-    <Tabs value={view} onValueChange={handleViewChange} className="gap-4">
+    // Manual activation: arrow keys only move focus; a window-changing view switch navigates and
+    // remounts, which would drop focus mid-arrowing under the default automatic mode.
+    <Tabs value={view} onValueChange={handleViewChange} activationMode="manual" className="gap-4">
       <div className="flex flex-wrap items-center gap-3">
         <TabsList aria-label="Diary view">
           {DIARY_VIEWS.map((v) => (
@@ -412,7 +418,7 @@ export function DiaryPageClient({
 
       <TabsContent value={view}>
         <DiaryActionsProvider
-          value={{ canManageLegal, isAdminOrOwner, currentMemberId, onAction: handleAction }}
+          value={{ canManageLegal, canCompleteAnyTask, currentMemberId, onAction: handleAction }}
         >
           {body}
         </DiaryActionsProvider>

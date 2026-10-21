@@ -261,6 +261,36 @@ describe("DiaryLoader (613B)", () => {
       expect(mockRedirectToReLogin).not.toHaveBeenCalled();
     });
 
+    it("hides Mark done on someone else's task when capabilities cannot be loaded", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      const ownTask = { ...TASK, id: "t-own", title: "Draft particulars", status: "IN_PROGRESS" };
+      const othersTask = {
+        ...TASK,
+        id: "t-other",
+        title: "Index the trial bundle",
+        status: "IN_PROGRESS",
+        feeEarnerId: "fe-2",
+        feeEarnerName: "Pieter van Wyk",
+      };
+      mockGetDiary.mockResolvedValue({
+        events: [ownTask, othersTask],
+        typesServed: ["TASK_DUE", "MATTER_DUE"],
+      });
+      mockCaps.mockRejectedValue(new MockApiError(500, "Internal Server Error"));
+      render(await DiaryLoader(PROPS));
+      // The filter still fails open (everyone's events show), but the write fails closed.
+      expect(screen.getByRole("combobox", { name: "Fee earner" })).toHaveTextContent(
+        "All fee earners"
+      );
+      expect(screen.getByText("Index the trial bundle")).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: "Actions for Index the trial bundle" })
+      ).toBeNull();
+      expect(
+        screen.getByRole("button", { name: "Actions for Draft particulars" })
+      ).toBeInTheDocument();
+    });
+
     it("routes a 401 from the capabilities fetch to the re-login redirect", async () => {
       vi.spyOn(console, "error").mockImplementation(() => {});
       mockCaps.mockRejectedValue(new MockApiError(401, "Authentication session expired"));

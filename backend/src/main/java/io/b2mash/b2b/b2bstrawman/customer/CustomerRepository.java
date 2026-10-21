@@ -20,6 +20,8 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
 
   List<Customer> findByLifecycleStatus(LifecycleStatus lifecycleStatus);
 
+  List<Customer> findByLifecycleStatusIn(Collection<LifecycleStatus> lifecycleStatuses);
+
   @Query(
       "SELECT c.id FROM Customer c WHERE c.lifecycleStatus = :status AND c.offboardedAt < :before")
   List<UUID> findIdsByLifecycleStatusAndOffboardedAtBefore(

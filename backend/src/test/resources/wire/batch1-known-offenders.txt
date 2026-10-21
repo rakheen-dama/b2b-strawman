@@ -2,8 +2,7 @@
 # Each line is legacy project/customer vocabulary still on the wire anywhere under
 # io.b2mash.b2b.b2bstrawman outside the mcp package (scope list removed in 609F).
 # This file must only SHRINK — the test fails on stale lines and on any offender NOT listed here.
-# Remaining line(s) and owner: TeamWorkloadEntry#projects — 614A deletes team-workload.
+# Remaining line(s): none — baseline empty since 614A deleted team-workload.
 # Never add a line by hand to make the build green — rename the route/record instead.
 # Regenerate: ./mvnw test -Dtest=WireVocabularyContractTest -Dwire.contract.update=true
 # Format: "ROUTE <METHODS> <pattern>" | "DTO <class>" | "DTO <class>#<component>"
-DTO io.b2mash.b2b.b2bstrawman.dashboard.dto.TeamWorkloadEntry#projects

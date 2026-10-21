@@ -34,8 +34,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Integration tests for all company-level dashboard endpoints: KPIs, project health list, team
- * workload, and cross-project activity. Uses a dedicated org to avoid collisions with
+ * Integration tests for company-level dashboard endpoints: KPIs, project health list and
+ * cross-project activity. Uses a dedicated org to avoid collisions with
  * DashboardProjectIntegrationTest.
  */
 @SpringBootTest
@@ -378,41 +378,6 @@ class DashboardCompanyIntegrationTest {
         : "Admin should see more projects (%d) than member (%d)".formatted(adminCount, memberCount);
   }
 
-  // --- Team Workload Tests ---
-
-  @Test
-  void teamWorkloadReturnsAllMembersForAdmin() throws Exception {
-    mockMvc
-        .perform(
-            get("/api/dashboard/team-workload")
-                .param("from", thirtyDaysAgo.toString())
-                .param("to", today.toString())
-                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(3))))
-        .andExpect(jsonPath("$[0].memberId").isString())
-        .andExpect(jsonPath("$[0].memberName").isString())
-        .andExpect(jsonPath("$[0].totalHours").isNumber())
-        .andExpect(jsonPath("$[0].billableHours").isNumber())
-        .andExpect(jsonPath("$[0].projects").isArray());
-  }
-
-  @Test
-  void teamWorkloadReturnsOnlySelfForMember() throws Exception {
-    mockMvc
-        .perform(
-            get("/api/dashboard/team-workload")
-                .param("from", thirtyDaysAgo.toString())
-                .param("to", today.toString())
-                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cdash_member1")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$", hasSize(1)))
-        .andExpect(jsonPath("$[0].memberId").value(member1Id.toString()))
-        .andExpect(jsonPath("$[0].memberName").value("Member One"));
-  }
-
   // --- Cross-Project Activity Tests ---
 
   @Test
@@ -495,20 +460,6 @@ class DashboardCompanyIntegrationTest {
     mockMvc
         .perform(
             get("/api/dashboard/kpis")
-                .param("from", today.toString())
-                .param("to", thirtyDaysAgo.toString())
-                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.status").value(400))
-        .andExpect(jsonPath("$.title").value("Invalid Date Range"))
-        .andExpect(jsonPath("$.detail").value("'from' date must not be after 'to' date"));
-  }
-
-  @Test
-  void teamWorkloadRejectsInvertedDateRangeWithProblemDetail() throws Exception {
-    mockMvc
-        .perform(
-            get("/api/dashboard/team-workload")
                 .param("from", today.toString())
                 .param("to", thirtyDaysAgo.toString())
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))

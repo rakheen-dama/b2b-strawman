@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -46,6 +47,19 @@ public interface DisbursementRepository extends JpaRepository<LegalDisbursement,
       """)
   List<LegalDisbursement> findUnbilledBillableByCustomerId(
       @Param("customerId") UUID customerId, @Param("projectId") UUID projectId);
+
+  /**
+   * Firm-wide APPROVED + UNBILLED disbursement amount (ex-VAT) — same filter as {@link
+   * #findUnbilledBillableByCustomerId}, summed across all clients. Used by the dashboard
+   * unbilled-wip read (Phase 87, Epic 614A).
+   */
+  @Query(
+      """
+      SELECT COALESCE(SUM(d.amount), 0) FROM LegalDisbursement d
+      WHERE d.approvalStatus = 'APPROVED'
+        AND d.billingStatus = 'UNBILLED'
+      """)
+  BigDecimal sumApprovedUnbilledAmount();
 
   /**
    * Finds disbursements on the given project filtered by both approval status and billing status.

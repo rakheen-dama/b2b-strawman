@@ -1,15 +1,18 @@
 package io.b2mash.b2b.b2bstrawman.dashboard;
 
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.CrossMatterActivityItem;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.FicaOutstandingResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.MatterHealth;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.MatterHealthDetail;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.MemberHoursEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.PersonalDashboard;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TaskSummary;
-import io.b2mash.b2b.b2bstrawman.dashboard.dto.TeamWorkloadEntry;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.UnbilledWipResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -94,19 +97,6 @@ public class DashboardController {
   }
 
   /**
-   * Returns team workload data aggregating hours per member across projects. Admin/owner sees all
-   * members; regular members see only their own entry. Both date parameters are required.
-   */
-  @GetMapping("/api/dashboard/team-workload")
-  public ResponseEntity<List<TeamWorkloadEntry>> getTeamWorkload(
-      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-      ActorContext actor) {
-    return ResponseEntity.ok(
-        dashboardService.getTeamWorkload(RequestScopes.TENANT_ID.get(), actor, from, to));
-  }
-
-  /**
    * Returns recent cross-project activity events. Admin/owner sees all events; regular members see
    * only events from projects they belong to. Limit is optional (default 10, clamped to 1-50).
    */
@@ -115,6 +105,40 @@ public class DashboardController {
       @RequestParam(defaultValue = "10") int limit, ActorContext actor) {
     return ResponseEntity.ok(
         dashboardService.getCrossProjectActivity(RequestScopes.TENANT_ID.get(), actor, limit));
+  }
+
+  // --- Legal-native home reads (Phase 87, Epic 614A) ---
+
+  /**
+   * Returns unbilled WIP (billable, not yet invoiced time) by fee earner. Callers without
+   * FINANCIAL_VISIBILITY (and not admin/owner) receive their own row only, hours without values.
+   */
+  @GetMapping("/api/dashboard/unbilled-wip")
+  public ResponseEntity<UnbilledWipResponse> getUnbilledWip(ActorContext actor) {
+    return ResponseEntity.ok(dashboardService.getUnbilledWip(actor));
+  }
+
+  /**
+   * Returns ONBOARDING/ACTIVE clients whose FICA status is not DONE, longest-outstanding first.
+   * Limit is optional (default 10, clamped to 1-50).
+   */
+  @GetMapping("/api/dashboard/fica-outstanding")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
+  public ResponseEntity<FicaOutstandingResponse> getFicaOutstanding(
+      @RequestParam(defaultValue = "10") int limit) {
+    return ResponseEntity.ok(dashboardService.getFicaOutstanding(limit));
+  }
+
+  /**
+   * Returns the trust position for the primary (or requested) trust account: cashbook balance vs
+   * client-ledger total, latest reconciliation and pending approvals. Composes the existing trust
+   * reads, so it reveals nothing they do not.
+   */
+  @GetMapping("/api/dashboard/trust-position")
+  @RequiresCapability("VIEW_TRUST")
+  public ResponseEntity<TrustPositionResponse> getTrustPosition(
+      @RequestParam(required = false) UUID accountId) {
+    return ResponseEntity.ok(dashboardService.getTrustPosition(accountId));
   }
 
   // --- Personal dashboard endpoint (Epic 79A) ---

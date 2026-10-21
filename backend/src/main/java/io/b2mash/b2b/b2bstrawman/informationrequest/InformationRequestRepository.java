@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.informationrequest;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,6 +9,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface InformationRequestRepository extends JpaRepository<InformationRequest, UUID> {
 
   List<InformationRequest> findByCustomerId(UUID customerId);
+
+  /**
+   * Batch read for FICA status projection (Phase 87, Epic 614A): every request against the given
+   * templates whose status is not the given one (callers pass {@code CANCELLED}).
+   */
+  List<InformationRequest> findByRequestTemplateIdInAndStatusNot(
+      Collection<UUID> requestTemplateIds, RequestStatus status);
 
   List<InformationRequest> findByProjectId(UUID projectId);
 
@@ -35,5 +43,5 @@ public interface InformationRequestRepository extends JpaRepository<InformationR
    * closure gate {@code ALL_INFO_REQUESTS_CLOSED} (active statuses: SENT, IN_PROGRESS — DRAFT is
    * not yet "sent to client" and COMPLETED/CANCELLED are terminal).
    */
-  long countByProjectIdAndStatusIn(UUID projectId, java.util.Collection<RequestStatus> statuses);
+  long countByProjectIdAndStatusIn(UUID projectId, Collection<RequestStatus> statuses);
 }

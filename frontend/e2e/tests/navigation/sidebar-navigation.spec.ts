@@ -78,8 +78,11 @@ test.describe("NAV-02: Sidebar zones", () => {
 
     for (const zone of ZONES) {
       const header = nav.getByRole("button", { name: zone.label, exact: true });
-      if ((await header.getAttribute("aria-expanded")) === "false") await header.click();
-      await expect(header).toHaveAttribute("aria-expanded", "true");
+      // Retry the toggle: a click that lands before NavZone hydrates is dropped.
+      await expect(async () => {
+        if ((await header.getAttribute("aria-expanded")) === "false") await header.click();
+        await expect(header).toHaveAttribute("aria-expanded", "true", { timeout: 1000 });
+      }).toPass();
     }
 
     const labels = ZONES.flatMap((z) => z.items);

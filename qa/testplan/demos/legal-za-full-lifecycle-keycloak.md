@@ -174,8 +174,8 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.20** Fill: First Name = Thandi, Last Name = Mathebula, Password = `SecureP@ss1`, Confirm = `SecureP@ss1`
 - [ ] **0.21** Submit → redirected to app → lands on `/org/mathebula-partners/dashboard` (or equivalent slug)
 - [ ] **0.22** Sidebar shows org name **Mathebula & Partners**, user name **Thandi Mathebula**
-- [ ] **0.23** Legal terminology active: sidebar shows **Matters**, **Clients**, **Fee notes** (in the **Fees** zone — expand it) — NOT "Projects", "Customers", "Invoices" (Phase 87, ADR-344 — nav amendment, Epic 612C: Fee notes sits in the collapsed Fees zone of the six-zone sidebar, ADR-339)
-- [ ] **0.24** Legal module nav items visible: **Matters**, the **Trust** zone (expand → Overview … Trust reports, 7 items), **Court calendar** (Today zone), **Conflict check** (Matters zone); the sidebar shows the six zones **Today · Matters · Clients · Fees · Trust · Firm** (Phase 87, ADR-344 — nav amendment, Epic 612C: Trust Accounting is now the Trust zone; six zones per ADR-339)
+- [ ] **0.23** Legal terminology active: sidebar shows **Matters**, **Clients**, **Fee notes** (in the **Fees** zone — expand it) — NOT "Projects", "Customers", "Invoices" (Phase 87, ADR-344 — nav amendment, Epic 612C, PR #1620: Fee notes sits in the collapsed Fees zone of the six-zone sidebar, ADR-339)
+- [ ] **0.24** Legal module nav items visible: **Matters**, the **Trust** zone (expand → Overview … Trust reports, 7 items), **Court calendar** (Today zone), **Conflict check** (Matters zone); the sidebar shows the six zones **Today · Matters · Clients · Fees · Trust · Firm** (Phase 87, ADR-344 — nav amendment, Epic 612C, PR #1620: Trust Accounting is now the Trust zone; six zones per ADR-339)
 - [ ] **0.25** 📸 **Screenshot**: `day-00-firm-dashboard-legal.png` — dashboard with legal nav + terminology
 
 ### Phase D: Team invites
@@ -933,7 +933,7 @@ This is the closing-demo wow moment: show the firm's 90-day activity feed on the
 
 - [ ] **90.1** `[FIRM]` Terminology sweep: walk sidebar, settings pages, every create dialog → zero occurrences of "Project" (must be "Matter"), "Customer" (must be "Client"), "Invoice" (must be "Fee Note"), "Task" where legal terminology applies. Zero accounting / consulting vocabulary leaks.
 - [ ] **90.2** `[FIRM]` Field promotion sweep: reopen every create dialog (Client, Matter, Task, Fee Note) → verify no promoted slugs have regressed into a generic Custom Fields section. On matter detail, promoted fields render on Overview tab, non-promoted fields are on the Details > Fields tab.
-- [ ] **90.3** `[FIRM]` Progressive disclosure: six zones present (Today · Matters · Clients · Fees · Trust · Firm) and all 4 legal modules visible (Matters, Trust zone, Court calendar, Conflict check); no accounting / consulting nav items (Phase 87, ADR-344 — nav amendment, Epic 612C: six-zone sidebar per ADR-339)
+- [ ] **90.3** `[FIRM]` Progressive disclosure: six zones present (Today · Matters · Clients · Fees · Trust · Firm) and all 4 legal modules visible (Matters, Trust zone, Court calendar, Conflict check); no accounting / consulting nav items (Phase 87, ADR-344 — nav amendment, Epic 612C, PR #1620: six-zone sidebar per ADR-339)
 - [ ] **90.4** `[FIRM]` Tier removal: Settings > Billing shows flat subscription state only, no tier UI
 - [ ] **90.5** `[FIRM]` Console errors: browser devtools open → click through every top-level nav → zero JS errors
 - [ ] **90.6** `[FIRM]` Mailpit sweep: no bounced / failed emails across 90 days

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { CalendarDays, CalendarX2, ChevronLeft, ChevronRight, SearchX } from "lucide-react";
 import { toast } from "sonner";
@@ -159,6 +159,16 @@ export function DiaryPageClient({
   function syncUrl(next: Partial<UrlState>) {
     window.history.replaceState(null, "", buildUrl(next));
   }
+
+  // R-3: a hand-typed `?from=` (e.g. mid-month in Month view, or an invalid date) loads the snapped
+  // window; rewrite the URL to that window without navigating or refetching. An absent `from` stays
+  // absent so a bare /diary link keeps meaning "today". Mount-only: the loader keys this component on
+  // the window, and every in-app navigation already writes the snapped `from`.
+  useEffect(() => {
+    const rawFrom = new URLSearchParams(window.location.search).get("from");
+    if (rawFrom !== null && rawFrom !== from) syncUrl({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only canonicalization
+  }, []);
 
   function navigate(next: Partial<UrlState>) {
     router.push(buildUrl(next), { scroll: false });

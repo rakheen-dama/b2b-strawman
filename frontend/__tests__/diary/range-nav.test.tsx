@@ -117,6 +117,8 @@ const PUSH_OPTS = { scroll: false };
 describe("Diary range navigation (613C)", () => {
   let replaceState: ReturnType<typeof vi.spyOn>;
   beforeEach(() => {
+    // The spy calls through, so reset the jsdom URL a previous test's sync left behind.
+    window.history.replaceState(null, "", "/");
     replaceState = vi.spyOn(window.history, "replaceState");
     mockPush.mockClear();
   });
@@ -292,6 +294,8 @@ describe("Diary header buttons (613C)", () => {
 describe("Diary filters in the URL (613C)", () => {
   let replaceState: ReturnType<typeof vi.spyOn>;
   beforeEach(() => {
+    // The spy calls through, so reset the jsdom URL a previous test's sync left behind.
+    window.history.replaceState(null, "", "/");
     replaceState = vi.spyOn(window.history, "replaceState");
     mockPush.mockClear();
   });

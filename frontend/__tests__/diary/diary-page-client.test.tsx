@@ -143,9 +143,57 @@ function clientProps(overrides: Partial<DiaryPageClientProps> = {}): DiaryPageCl
 describe("DiaryPageClient", () => {
   let replaceState: ReturnType<typeof vi.spyOn>;
   beforeEach(() => {
+    // The spy calls through, so reset the jsdom URL a previous test's sync left behind.
+    window.history.replaceState(null, "", "/");
     replaceState = vi.spyOn(window.history, "replaceState");
     mockRefresh.mockClear();
     mockPush.mockClear();
+  });
+
+  it("canonicalizes a mid-month ?from= to the snapped month window on load (R-3)", () => {
+    window.history.replaceState(null, "", "/org/acme/diary?from=2026-10-21&view=month&matter=m-2");
+    replaceState.mockClear();
+    render(
+      <DiaryPageClient
+        {...clientProps({
+          from: "2026-10-01",
+          to: "2026-10-31",
+          initialView: "month",
+          initialMatterId: "m-2",
+        })}
+      />
+    );
+    expect(replaceState).toHaveBeenCalledTimes(1);
+    expect(replaceState).toHaveBeenCalledWith(
+      null,
+      "",
+      "/org/acme/diary?from=2026-10-01&view=month&matter=m-2"
+    );
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockRefresh).not.toHaveBeenCalled();
+  });
+
+  it("canonicalizes an invalid ?from= to the loaded window on load", () => {
+    window.history.replaceState(null, "", "/org/acme/diary?from=not-a-date");
+    replaceState.mockClear();
+    render(<DiaryPageClient {...clientProps()} />);
+    expect(replaceState).toHaveBeenCalledWith(null, "", "/org/acme/diary?from=2026-10-19");
+  });
+
+  it("leaves an already-snapped or absent ?from= untouched on load", () => {
+    window.history.replaceState(null, "", "/org/acme/diary?from=2026-10-01&view=month");
+    replaceState.mockClear();
+    render(
+      <DiaryPageClient
+        {...clientProps({ from: "2026-10-01", to: "2026-10-31", initialView: "month" })}
+      />
+    );
+    expect(replaceState).not.toHaveBeenCalled();
+    cleanup();
+    window.history.replaceState(null, "", "/org/acme/diary");
+    replaceState.mockClear();
+    render(<DiaryPageClient {...clientProps()} />);
+    expect(replaceState).not.toHaveBeenCalled();
   });
 
   it("shows every fee earner's events to an owner", () => {

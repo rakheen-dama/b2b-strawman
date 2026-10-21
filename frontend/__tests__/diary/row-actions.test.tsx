@@ -223,7 +223,10 @@ describe("DiaryRowActions", () => {
     const user = userEvent.setup();
     renderRow(scheduled);
     await user.click(screen.getByRole("button", { name: /Actions for Johannesburg/ }));
-    expect(screen.getByRole("menu")).toHaveClass("motion-reduce:animate-none");
+    // jsdom cannot evaluate media queries or the cascade, so this pins the class only. It must be
+    // the important variant: the base content's `data-[state=open]:animate-in` is a (0,2,0)
+    // selector that beats a plain `motion-reduce:animate-none` (verified in the built CSS).
+    expect(screen.getByRole("menu")).toHaveClass("motion-reduce:animate-none!");
   });
 
   it("sits in the List view's Actions column", () => {

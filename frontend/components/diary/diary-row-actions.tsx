@@ -88,7 +88,9 @@ export function DiaryRowActions({ event }: { event: DiaryEventResponse }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="motion-reduce:animate-none"
+        // `!`: the base content's `data-[state=open]:animate-in` / `data-[state=closed]:animate-out`
+        // are (0,2,0) selectors and would beat a plain (0,1,0) `motion-reduce:animate-none`.
+        className="motion-reduce:animate-none!"
         data-testid={`diary-row-actions-menu-${event.id}`}
       >
         {actions.map((action) => (

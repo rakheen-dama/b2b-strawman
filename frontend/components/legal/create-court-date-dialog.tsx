@@ -30,6 +30,8 @@ import { createCourtDate, fetchProjects } from "@/app/(app)/org/[slug]/court-cal
 interface CreateCourtDateDialogProps {
   slug: string;
   onSuccess?: () => void;
+  /** Trigger button text; defaults to "New Court Date". */
+  triggerLabel?: React.ReactNode;
 }
 
 const DATE_TYPES = [
@@ -44,7 +46,11 @@ const DATE_TYPES = [
   { value: "OTHER", label: "Other" },
 ] as const;
 
-export function CreateCourtDateDialog({ slug, onSuccess }: CreateCourtDateDialogProps) {
+export function CreateCourtDateDialog({
+  slug,
+  onSuccess,
+  triggerLabel = "New Court Date",
+}: CreateCourtDateDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -135,7 +141,7 @@ export function CreateCourtDateDialog({ slug, onSuccess }: CreateCourtDateDialog
       <DialogTrigger asChild>
         <Button size="sm" data-testid="create-court-date-trigger">
           <Plus className="mr-1.5 size-4" />
-          New Court Date
+          {triggerLabel}
         </Button>
       </DialogTrigger>
       <DialogContent data-testid="create-court-date-dialog">

@@ -35,7 +35,7 @@ export async function createRoleAction(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/settings/roles`);
+  revalidatePath(`/org/${slug}/settings/firm`);
   return { success: true };
 }
 
@@ -65,7 +65,7 @@ export async function updateRoleAction(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/settings/roles`);
+  revalidatePath(`/org/${slug}/settings/firm`);
   return { success: true };
 }
 
@@ -85,6 +85,6 @@ export async function deleteRoleAction(slug: string, id: string): Promise<Action
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/settings/roles`);
+  revalidatePath(`/org/${slug}/settings/firm`);
   return { success: true };
 }

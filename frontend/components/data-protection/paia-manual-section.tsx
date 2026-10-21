@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { FileText, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
-import { generatePaiaManual } from "@/app/(app)/org/[slug]/settings/data-protection/actions";
+import { generatePaiaManual } from "@/app/(app)/org/[slug]/settings/firm/_tabs/data-protection-actions";
 
 interface PaiaManualSectionProps {
   slug: string;

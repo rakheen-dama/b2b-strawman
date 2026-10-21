@@ -37,7 +37,7 @@ import {
   createProcessingActivity,
   updateProcessingActivity,
   deleteProcessingActivity,
-} from "@/app/(app)/org/[slug]/settings/data-protection/actions";
+} from "@/app/(app)/org/[slug]/settings/firm/_tabs/data-protection-actions";
 import {
   processingActivitySchema,
   type ProcessingActivityFormData,

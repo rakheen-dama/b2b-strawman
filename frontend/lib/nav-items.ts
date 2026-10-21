@@ -104,7 +104,7 @@ export function canAccessNavItem(
  * The attorney's week in six zones (Phase 87 S6a, ADR-339): Today · Matters · Clients · Fees ·
  * Trust · Firm. One level deep — a zone is the only grouping; ≤ 6 items per zone except Trust (7).
  * Labels are sentence case. AI has no zone: AI intake is "New matter", AI reviews sits in Matters.
- * Interim until 616: Firm › Audit trail / Settings point at the current settings routes.
+ * Firm › Audit trail / Settings point at the Firm settings family (616A, ADR-341).
  * Profitability's single entry is Firm › Reports.
  * Source of truth for the desktop sidebar, the mobile sheet and the command palette.
  */
@@ -332,17 +332,17 @@ export const NAV_GROUPS: NavGroup[] = [
         requiredCapability: "FINANCIAL_VISIBILITY",
       },
       {
-        // Interim (S6a): current route; 616 points it at /settings/firm?tab=audit-trail.
+        // Phase 87 S9 (616A, ADR-341): the Firm settings family's Audit trail tab.
         label: "Audit trail",
-        href: (slug) => `/org/${slug}/settings/audit-log`,
+        href: (slug) => `/org/${slug}/settings/firm?tab=audit-trail`,
         icon: ScrollText,
         adminOnly: true,
         keywords: ["audit log"],
       },
       {
-        // Interim (S6a): current settings index target; 616 points it at /settings/firm.
+        // Phase 87 S9 (616A, ADR-341): the Firm settings family (the settings index target).
         label: "Settings",
-        href: (slug) => `/org/${slug}/settings/general`,
+        href: (slug) => `/org/${slug}/settings/firm`,
         icon: Settings,
       },
     ],

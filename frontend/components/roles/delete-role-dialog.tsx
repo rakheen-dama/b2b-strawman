@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { deleteRoleAction } from "@/app/(app)/org/[slug]/settings/roles/actions";
+import { deleteRoleAction } from "@/app/(app)/org/[slug]/settings/firm/_tabs/roles-actions";
 import type { OrgRole } from "@/lib/api/org-roles";
 
 interface DeleteRoleDialogProps {

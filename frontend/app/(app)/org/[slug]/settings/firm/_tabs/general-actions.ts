@@ -28,7 +28,7 @@ export async function updateGeneralSettings(
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-  revalidatePath(`/org/${slug}/settings/general`);
+  revalidatePath(`/org/${slug}/settings/firm`);
   return { success: true };
 }
 
@@ -53,7 +53,7 @@ export async function updateGeneralTaxSettings(
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-  revalidatePath(`/org/${slug}/settings/general`);
+  revalidatePath(`/org/${slug}/settings/firm`);
   return { success: true };
 }
 
@@ -74,7 +74,7 @@ export async function uploadLogoAction(slug: string, formData: FormData): Promis
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-  revalidatePath(`/org/${slug}/settings/general`);
+  revalidatePath(`/org/${slug}/settings/firm`);
   return { success: true };
 }
 
@@ -87,6 +87,6 @@ export async function deleteLogoAction(slug: string): Promise<ActionResult> {
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-  revalidatePath(`/org/${slug}/settings/general`);
+  revalidatePath(`/org/${slug}/settings/firm`);
   return { success: true };
 }

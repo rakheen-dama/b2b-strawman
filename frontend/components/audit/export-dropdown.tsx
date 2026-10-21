@@ -13,7 +13,7 @@ import {
   countAuditEventsAction,
   exportAuditCsvAction,
   exportAuditPdfAction,
-} from "@/app/(app)/org/[slug]/settings/audit-log/actions";
+} from "@/app/(app)/org/[slug]/settings/firm/_tabs/audit-trail-actions";
 import type { AuditEventFilter } from "@/lib/api/audit-events";
 
 const PDF_CAP = 10_000;

@@ -8,7 +8,7 @@ const mockUpdateGeneralTaxSettings = vi.fn();
 const mockUploadLogoAction = vi.fn();
 const mockDeleteLogoAction = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/general/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/firm/_tabs/general-actions", () => ({
   updateGeneralSettings: (...args: unknown[]) => mockUpdateGeneralSettings(...args),
   updateGeneralTaxSettings: (...args: unknown[]) => mockUpdateGeneralTaxSettings(...args),
   uploadLogoAction: (...args: unknown[]) => mockUploadLogoAction(...args),

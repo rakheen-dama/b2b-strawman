@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { ChevronLeft, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { fetchOrgRoles } from "@/lib/api/org-roles";
 import { PermissionDenied } from "@/components/permission-denied";
@@ -8,11 +7,12 @@ import { CAPABILITIES } from "@/lib/capabilities";
 import { CustomRolesSection } from "@/components/roles/custom-roles-section";
 import { CapabilityReference } from "./capability-reference";
 import type { OrgRole } from "@/lib/api/org-roles";
+import type { FirmTabProps } from "./types";
 
 const ALL_CAPABILITIES = Object.values(CAPABILITIES);
 
-export default async function RolesSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+/** Firm › Roles tab (Phase 87 S9, ADR-341) — the former settings/roles page's loader. */
+export async function renderRolesTab({ slug }: FirmTabProps) {
   const capData = await fetchMyCapabilities();
 
   if (!capData.isAdmin && !capData.isOwner) {
@@ -48,14 +48,6 @@ export default async function RolesSettingsPage({ params }: { params: Promise<{ 
 
   return (
     <div className="space-y-8">
-      <Link
-        href={`/org/${slug}/settings`}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-      >
-        <ChevronLeft className="size-4" />
-        Settings
-      </Link>
-
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
           Roles & Permissions

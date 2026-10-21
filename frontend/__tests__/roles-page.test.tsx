@@ -34,7 +34,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 // Must import page AFTER vi.mock declarations
-import RolesSettingsPage from "@/app/(app)/org/[slug]/settings/roles/page";
+import { renderRolesTab } from "@/app/(app)/org/[slug]/settings/firm/_tabs/roles";
 import type { OrgRole } from "@/lib/api/org-roles";
 
 function makeSystemRole(name: string, memberCount: number, capabilities: string[] = []): OrgRole {
@@ -77,13 +77,11 @@ function defaultRoles(): OrgRole[] {
 
 async function renderPage(roles: OrgRole[] = defaultRoles()) {
   mockFetchOrgRoles.mockResolvedValue(roles);
-  const result = await RolesSettingsPage({
-    params: Promise.resolve({ slug: "acme" }),
-  });
+  const result = await renderRolesTab({ slug: "acme", searchParams: {} });
   render(result);
 }
 
-describe("RolesSettingsPage", () => {
+describe("Firm › Roles tab loader", () => {
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();

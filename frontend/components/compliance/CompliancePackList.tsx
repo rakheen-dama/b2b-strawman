@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { formatDate } from "@/lib/format";
-import { getCompliancePackDetail } from "@/app/(app)/org/[slug]/settings/compliance/actions";
+import { getCompliancePackDetail } from "@/app/(app)/org/[slug]/settings/firm/_tabs/compliance-actions";
 import type { CompliancePackEntry, CompliancePackDetail } from "@/lib/types";
 
 interface CompliancePackListProps {

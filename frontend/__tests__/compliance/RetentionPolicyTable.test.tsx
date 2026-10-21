@@ -5,7 +5,7 @@ import { RetentionPolicyTable } from "@/components/compliance/RetentionPolicyTab
 import type { RetentionPolicy } from "@/lib/types";
 
 // Mock server actions
-vi.mock("@/app/(app)/org/[slug]/settings/compliance/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/firm/_tabs/compliance-actions", () => ({
   createRetentionPolicy: vi.fn().mockResolvedValue({ success: true }),
   updateRetentionPolicy: vi.fn().mockResolvedValue({ success: true }),
   deleteRetentionPolicy: vi.fn().mockResolvedValue({ success: true }),

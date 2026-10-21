@@ -23,9 +23,9 @@ vi.mock("@/lib/api", () => ({
   api: { get: (...args: unknown[]) => mockGet(...args) },
 }));
 
-import GeneralSettingsPage from "@/app/(app)/org/[slug]/settings/general/page";
+import { renderGeneralTab } from "@/app/(app)/org/[slug]/settings/firm/_tabs/general";
 
-describe("GeneralSettingsPage — settings fetch failure", () => {
+describe("Firm › General tab loader — settings fetch failure", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -45,8 +45,6 @@ describe("GeneralSettingsPage — settings fetch failure", () => {
       return Promise.resolve(null);
     });
 
-    await expect(
-      GeneralSettingsPage({ params: Promise.resolve({ slug: "acme" }) })
-    ).rejects.toThrow("network");
+    await expect(renderGeneralTab({ slug: "acme", searchParams: {} })).rejects.toThrow("network");
   });
 });

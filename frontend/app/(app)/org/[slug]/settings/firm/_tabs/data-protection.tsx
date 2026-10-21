@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { JurisdictionSelectorSection } from "@/components/settings/jurisdiction-selector";
@@ -7,31 +6,22 @@ import { InformationOfficerSection } from "@/components/settings/information-off
 import { RetentionPoliciesTable } from "@/components/data-protection/retention-policies-table";
 import { ProcessingRegisterTable } from "@/components/data-protection/processing-register-table";
 import { PaiaManualSection } from "@/components/data-protection/paia-manual-section";
-import {
-  fetchRetentionPolicies,
-  fetchProcessingActivities,
-} from "@/app/(app)/org/[slug]/settings/data-protection/actions";
+import { fetchRetentionPolicies, fetchProcessingActivities } from "./data-protection-actions";
+import { settingsHref } from "@/lib/settings-nav";
 import type { OrgSettings } from "@/lib/types";
 import type { RetentionPolicyExtended, ProcessingActivity } from "@/lib/types/data-protection";
+import type { FirmTabProps } from "./types";
 
-export default async function DataProtectionSettingsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
+/**
+ * Firm › Data protection tab (Phase 87 S9, ADR-341) — the former settings/data-protection page's
+ * loader.
+ */
+export async function renderDataProtectionTab({ slug }: FirmTabProps) {
   const caps = await fetchMyCapabilities();
 
   if (!caps.isAdmin && !caps.isOwner) {
     return (
       <div className="space-y-8">
-        <Link
-          href={`/org/${slug}/settings`}
-          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-        >
-          <ChevronLeft className="size-4" />
-          Settings
-        </Link>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Data Protection</h1>
         <p className="text-slate-600 dark:text-slate-400">
           You do not have permission to manage data protection settings. Only admins and owners can
@@ -63,14 +53,6 @@ export default async function DataProtectionSettingsPage({
 
   return (
     <div className="space-y-8">
-      <Link
-        href={`/org/${slug}/settings`}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-      >
-        <ChevronLeft className="size-4" />
-        Settings
-      </Link>
-
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Data Protection</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
@@ -103,7 +85,7 @@ export default async function DataProtectionSettingsPage({
         </p>
         <div className="mt-4">
           <Link
-            href={`/org/${slug}/settings/data-protection/requests`}
+            href={settingsHref(slug, "firm", "data-requests")}
             className="text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
           >
             View DSAR Requests →

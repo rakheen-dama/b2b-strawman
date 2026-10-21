@@ -147,8 +147,10 @@ export function AuditLogClient({
   const entityTypeRef = useRef<HTMLInputElement | null>(null);
   const entityIdRef = useRef<HTMLInputElement | null>(null);
 
+  // Phase 87 S9 (616A, ADR-341): the audit trail is the `audit-trail` tab of the Firm settings
+  // family; `updateUrl` pins `tab=audit-trail` so filter changes stay on this tab.
   const buildPath = useCallback(
-    (qs: string) => `/org/${slug}/settings/audit-log${qs ? `?${qs}` : ""}`,
+    (qs: string) => `/org/${slug}/settings/firm${qs ? `?${qs}` : ""}`,
     [slug]
   );
 
@@ -165,6 +167,7 @@ export function AuditLogClient({
       const latest = searchParamsRef.current;
       const params = new URLSearchParams(latest?.toString() ?? "");
       mutator(params);
+      params.set("tab", "audit-trail");
       const qs = params.toString();
       startTransition(() => {
         router.push(buildPath(qs), { scroll: false });

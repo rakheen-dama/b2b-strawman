@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
-import { updateDsarStatus } from "@/app/(app)/org/[slug]/settings/data-protection/requests/actions";
+import { updateDsarStatus } from "@/app/(app)/org/[slug]/settings/firm/_tabs/data-requests-actions";
 import type { DsarRequest } from "@/lib/types/data-protection";
 
 // --- Types ---

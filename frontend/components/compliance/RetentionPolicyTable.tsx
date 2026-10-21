@@ -20,7 +20,7 @@ import {
   deleteRetentionPolicy,
   runRetentionCheck,
   executePurge,
-} from "@/app/(app)/org/[slug]/settings/compliance/actions";
+} from "@/app/(app)/org/[slug]/settings/firm/_tabs/compliance-actions";
 import type { RetentionPolicy, RetentionCheckResult } from "@/lib/types";
 
 const RECORD_TYPES = ["CUSTOMER", "AUDIT_EVENT", "DOCUMENT", "COMMENT"] as const;

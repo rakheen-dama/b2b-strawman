@@ -8,7 +8,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 const mockUpdateCadence = vi.fn();
-vi.mock("@/app/(app)/org/[slug]/settings/general/portal-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/firm/_tabs/general-portal-actions", () => ({
   updatePortalDigestCadence: (...args: unknown[]) => mockUpdateCadence(...args),
 }));
 

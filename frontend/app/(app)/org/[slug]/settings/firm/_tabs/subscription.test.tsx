@@ -1,9 +1,9 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import BillingPage from "./page";
+import { renderSubscriptionTab } from "./subscription";
 import type { BillingResponse } from "@/lib/internal-api";
-vi.mock("@/app/(app)/org/[slug]/settings/billing/actions", () => ({
+vi.mock("@/lib/actions/subscription", () => ({
   getSubscription: vi.fn(),
 }));
 
@@ -38,7 +38,7 @@ vi.mock("@b2mash/ui/card", () => ({
 
 afterEach(() => cleanup());
 
-const { getSubscription } = await import("@/app/(app)/org/[slug]/settings/billing/actions");
+const { getSubscription } = await import("@/lib/actions/subscription");
 const mockGetSubscription = getSubscription as ReturnType<typeof vi.fn>;
 
 function makeBilling(overrides: Partial<BillingResponse> = {}): BillingResponse {
@@ -57,11 +57,11 @@ function makeBilling(overrides: Partial<BillingResponse> = {}): BillingResponse 
 }
 
 async function renderPage() {
-  const page = await BillingPage({ params: Promise.resolve({ slug: "acme" }) });
+  const page = await renderSubscriptionTab();
   render(page);
 }
 
-describe("BillingPage (manual firm-level billing)", () => {
+describe("Firm › Subscription tab loader (manual firm-level billing)", () => {
   it("shows status badge, method badge and managed-account card for TRIALING", async () => {
     mockGetSubscription.mockResolvedValue(
       makeBilling({

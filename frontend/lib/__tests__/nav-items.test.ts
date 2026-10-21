@@ -187,10 +187,10 @@ describe("NAV_GROUPS — six zones around the attorney's week (ADR-339)", () => 
     ).toBe("/org/acme/reports");
   });
 
-  it("Firm › Audit trail and Settings point at the current settings routes (616 switches them)", () => {
-    expect(item("Audit trail")?.href("acme")).toBe("/org/acme/settings/audit-log");
+  it("Firm › Audit trail and Settings point at the Firm settings family (616A)", () => {
+    expect(item("Audit trail")?.href("acme")).toBe("/org/acme/settings/firm?tab=audit-trail");
     expect(item("Audit trail")?.adminOnly).toBe(true);
-    expect(item("Settings")?.href("acme")).toBe("/org/acme/settings/general");
+    expect(item("Settings")?.href("acme")).toBe("/org/acme/settings/firm");
     expect(zone("firm").items.map((i) => i.label)).toEqual([
       "Team",
       "Reports",

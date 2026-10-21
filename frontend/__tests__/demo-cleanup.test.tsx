@@ -34,7 +34,7 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/settings/billing/actions", () => ({
+vi.mock("@/lib/actions/subscription", () => ({
   getSubscription: vi.fn(),
 }));
 

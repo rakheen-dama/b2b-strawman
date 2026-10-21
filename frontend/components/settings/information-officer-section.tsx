@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Button } from "@b2mash/ui/button";
-import { updateDataProtectionSettings } from "@/app/(app)/org/[slug]/settings/data-protection/actions";
+import { updateDataProtectionSettings } from "@/app/(app)/org/[slug]/settings/firm/_tabs/data-protection-actions";
 import { informationOfficerSchema } from "@/lib/schemas/data-protection";
 
 interface InformationOfficerSectionProps {

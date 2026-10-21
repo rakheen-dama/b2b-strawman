@@ -49,7 +49,7 @@ export async function confirmOrgUpload(slug: string, documentId: string): Promis
     return { success: false, error: "Failed to confirm upload." };
   }
 
-  revalidatePath(`/org/${slug}/settings/general`);
+  revalidatePath(`/org/${slug}/settings/firm`);
 
   return { success: true };
 }

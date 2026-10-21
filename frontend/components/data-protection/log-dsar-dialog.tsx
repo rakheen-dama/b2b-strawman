@@ -23,7 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Loader2, Plus } from "lucide-react";
-import { createDsarRequest } from "@/app/(app)/org/[slug]/settings/data-protection/requests/actions";
+import { createDsarRequest } from "@/app/(app)/org/[slug]/settings/firm/_tabs/data-requests-actions";
 import { logDsarRequestSchema, type LogDsarRequestFormData } from "@/lib/schemas/data-protection";
 
 const REQUEST_TYPES = [

@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 
 vi.mock("server-only", () => ({}));
 
-vi.mock("@/app/(app)/org/[slug]/settings/audit-log/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/firm/_tabs/audit-trail-actions", () => ({
   exportAuditCsvAction: vi.fn(),
   exportAuditPdfAction: vi.fn(),
   countAuditEventsAction: vi.fn(),
@@ -15,7 +15,7 @@ import {
   countAuditEventsAction,
   exportAuditCsvAction,
   exportAuditPdfAction,
-} from "@/app/(app)/org/[slug]/settings/audit-log/actions";
+} from "@/app/(app)/org/[slug]/settings/firm/_tabs/audit-trail-actions";
 import { ExportDropdown } from "../export-dropdown";
 
 const mockCsv = exportAuditCsvAction as unknown as ReturnType<typeof vi.fn>;

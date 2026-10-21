@@ -143,6 +143,14 @@ export function parseDiaryKinds(csv: string | null | undefined): DiaryKind[] {
 }
 
 /**
+ * `?types=` → chip preselection. `null` when the param is absent (= every served kind);
+ * present-but-empty (`types=`, every chip turned off) → `[]` (= no kinds selected).
+ */
+export function parseDiaryKindsParam(value: string | null | undefined): DiaryKind[] | null {
+  return value === undefined || value === null ? null : parseDiaryKinds(value);
+}
+
+/**
  * X-Diary-Types → served kinds, in DIARY_KINDS order. DiaryController always sets the header;
  * an empty or missing header means no kinds were served. Unknown tokens are ignored.
  */

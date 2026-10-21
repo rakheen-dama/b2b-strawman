@@ -57,6 +57,7 @@ import {
   isValidIsoDate,
   mondayOf,
   parseDiaryKinds,
+  parseDiaryKindsParam,
   parseDiaryView,
   parseTypesHeader,
   partitionOverdueBand,
@@ -282,6 +283,13 @@ describe("diary-types helpers", () => {
     expect(parseDiaryKinds("")).toEqual([]);
     expect(parseDiaryKinds(undefined)).toEqual([]);
     expect(parseTypesHeader("TASK_DUE,,NOPE")).toEqual(["TASK_DUE"]);
+  });
+
+  it("parseDiaryKindsParam distinguishes an absent ?types= from an empty one", () => {
+    expect(parseDiaryKindsParam(undefined)).toBeNull();
+    expect(parseDiaryKindsParam(null)).toBeNull();
+    expect(parseDiaryKindsParam("")).toEqual([]);
+    expect(parseDiaryKindsParam("TASK_DUE,BOGUS")).toEqual(["TASK_DUE"]);
   });
 
   it("buildDiaryQuery omits an empty types list", () => {

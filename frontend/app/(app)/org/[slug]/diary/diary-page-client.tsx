@@ -34,8 +34,12 @@ export interface DiaryPageClientProps {
   /** Sunday of the loaded week. */
   to: string;
   initialView: DiaryView;
-  /** Kind chips preselected from `?types=` (empty = all served kinds). */
-  initialKinds: DiaryKind[];
+  /**
+   * Kind chips preselected from `?types=`: `null` = param absent (all served kinds); `[]` = present
+   * but empty (no kinds). Requested kinds the server did not serve are dropped; if none of a
+   * non-empty request was served, every served kind is selected.
+   */
+  initialKinds: DiaryKind[] | null;
   events: DiaryEventResponse[];
   typesServed: DiaryKind[];
   loadError: boolean;
@@ -81,12 +85,17 @@ export function DiaryPageClient({
   const router = useRouter();
   const pathname = usePathname();
 
-  const preselected = initialKinds.filter((k) => typesServed.includes(k));
   const allServed = typesServed;
   const showMine = currentMemberId !== null;
 
+  // Props seed state on mount only (the loader keys this component on `from`), so a refresh that
+  // re-reads view / types from the URL keeps the live selection.
   const [view, setView] = useState<DiaryView>(initialView);
-  const [kinds, setKinds] = useState<DiaryKind[]>(preselected.length > 0 ? preselected : allServed);
+  const [kinds, setKinds] = useState<DiaryKind[]>(() => {
+    if (initialKinds === null) return allServed;
+    const preselected = initialKinds.filter((k) => typesServed.includes(k));
+    return preselected.length > 0 || initialKinds.length === 0 ? preselected : allServed;
+  });
   const [feeEarner, setFeeEarner] = useState<string>(
     !isAdminOrOwner && currentMemberId ? FEE_EARNER_MINE : FEE_EARNER_ALL
   );

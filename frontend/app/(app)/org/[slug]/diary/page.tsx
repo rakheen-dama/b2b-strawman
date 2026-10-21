@@ -1,20 +1,14 @@
 import { Suspense } from "react";
-import { unstable_rethrow } from "next/navigation";
-import { getCurrentUserEmail } from "@/lib/auth";
-import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { DiaryListSkeleton } from "@/components/diary/diary-list-view";
 import { DiaryWeekSkeleton } from "@/components/diary/diary-week-view";
-import { getDiary, getDiaryMatters, getDiaryMembers } from "./diary-actions";
-import { DiaryPageClient } from "./diary-page-client";
+import { DiaryLoader } from "./diary-loader";
 import {
   addDays,
   isValidIsoDate,
   mondayOf,
-  parseDiaryKinds,
+  parseDiaryKindsParam,
   parseDiaryView,
   toIsoDate,
-  type DiaryKind,
-  type DiaryView,
 } from "./diary-types";
 
 /**
@@ -36,7 +30,7 @@ export default async function DiaryPage({
   const view = parseDiaryView(search.view);
   const from = mondayOf(isValidIsoDate(search.from) ? search.from : today);
   const to = addDays(from, 6);
-  const initialKinds = parseDiaryKinds(search.types);
+  const initialKinds = parseDiaryKindsParam(search.types);
 
   return (
     <div className="space-y-6">
@@ -60,64 +54,5 @@ export default async function DiaryPage({
         />
       </Suspense>
     </div>
-  );
-}
-
-interface DiaryLoaderProps {
-  slug: string;
-  today: string;
-  from: string;
-  to: string;
-  view: DiaryView;
-  initialKinds: DiaryKind[];
-}
-
-/** Fetches the week; members / matters / capabilities failures are non-fatal. */
-async function DiaryLoader({ slug, today, from, to, view, initialKinds }: DiaryLoaderProps) {
-  const [diary, members, matters, caps, email] = await Promise.allSettled([
-    // All kinds (no `types`): X-Diary-Types must report every kind this user may see; the
-    // `?types=` selection is applied client-side.
-    getDiary({ from, to }),
-    getDiaryMembers(),
-    getDiaryMatters(),
-    fetchMyCapabilities(),
-    getCurrentUserEmail(),
-  ]);
-
-  // Framework control flow (the re-login redirect on an expired session) must not be swallowed.
-  for (const result of [diary, members, matters, caps, email]) {
-    if (result.status === "rejected") unstable_rethrow(result.reason);
-  }
-  if (diary.status === "rejected") console.error("Failed to load the diary:", diary.reason);
-  if (members.status === "rejected") console.error("Failed to load members:", members.reason);
-  if (matters.status === "rejected") console.error("Failed to load matters:", matters.reason);
-  if (caps.status === "rejected") console.error("Failed to load capabilities:", caps.reason);
-  if (email.status === "rejected") console.error("Failed to resolve current user:", email.reason);
-
-  const memberList = members.status === "fulfilled" ? members.value : [];
-  const currentEmail = email.status === "fulfilled" ? email.value : null;
-  const currentMemberId =
-    (currentEmail && memberList.find((m) => m.email === currentEmail)?.id) || null;
-  // Capabilities unknown → show everyone's events rather than silently narrowing to "Mine".
-  const isAdminOrOwner =
-    caps.status === "fulfilled" ? caps.value.isAdmin || caps.value.isOwner : true;
-
-  return (
-    <DiaryPageClient
-      key={`${from}|${view}|${initialKinds.join(",")}`}
-      slug={slug}
-      today={today}
-      from={from}
-      to={to}
-      initialView={view}
-      initialKinds={initialKinds}
-      events={diary.status === "fulfilled" ? diary.value.events : []}
-      typesServed={diary.status === "fulfilled" ? diary.value.typesServed : []}
-      loadError={diary.status === "rejected"}
-      members={memberList}
-      matters={matters.status === "fulfilled" ? matters.value : []}
-      currentMemberId={currentMemberId}
-      isAdminOrOwner={isAdminOrOwner}
-    />
   );
 }

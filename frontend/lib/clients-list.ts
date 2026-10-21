@@ -7,11 +7,7 @@
  */
 import type { ClientListRow, ClientType, LifecycleStatus } from "@/lib/types";
 import { formatCurrency } from "@/lib/format";
-import {
-  CLIENT_SYSTEM_VIEWS,
-  type SystemView,
-  type ViewSelection,
-} from "@/lib/constants/system-views";
+import type { ViewSelection } from "@/lib/constants/system-views";
 
 /** Table column ids = sort keys = saved-view `columns` values (§12.6.4 order). */
 export const CLIENT_COLUMNS = [
@@ -49,26 +45,6 @@ export function isClientColumnId(value: string | null | undefined): value is Cli
 export function clientColumnLabel(id: ClientColumnId): string {
   return CLIENT_COLUMNS.find((c) => c.id === id)?.label ?? id;
 }
-
-/**
- * D-1(B): the default selection lists every client. A code-defined pseudo view with no params,
- * so the shared view selector highlights "All clients" (not "Active") when the URL has no view.
- * It never reaches the backend: system ids are translated to list params.
- */
-export const ALL_CLIENTS_VIEW_ID = "system:all-clients";
-export const ALL_CLIENTS_VIEW: SystemView = {
-  id: ALL_CLIENTS_VIEW_ID,
-  entityType: "CUSTOMER",
-  name: "All clients",
-  params: {},
-  system: true,
-};
-
-/** Selector entries for the Clients page: "All clients", then the §12.6.4 system views. */
-export const CLIENT_VIEW_OPTIONS: readonly SystemView[] = [
-  ALL_CLIENTS_VIEW,
-  ...CLIENT_SYSTEM_VIEWS,
-];
 
 export const CLIENT_TYPE_LABEL: Record<ClientType, string> = {
   INDIVIDUAL: "Individual",
@@ -196,6 +172,21 @@ const LEGACY_COLUMN_MAP: Readonly<Record<string, ClientColumnId | null>> = {
 };
 
 /**
+ * Maps pre-615D CUSTOMER column ids to current ones (`email` / `phone` → `contact`, `status`
+ * dropped) and removes duplicates, keeping the view's order. Other ids pass through unchanged.
+ * Shared by the table (`resolveClientColumns`) and the Edit view dialog, so both read a legacy
+ * view the same way.
+ */
+export function migrateLegacyClientColumns(columns: readonly string[]): string[] {
+  const migrated: string[] = [];
+  for (const raw of columns) {
+    const col = raw in LEGACY_COLUMN_MAP ? LEGACY_COLUMN_MAP[raw] : raw;
+    if (col !== null && !migrated.includes(col)) migrated.push(col);
+  }
+  return migrated;
+}
+
+/**
  * Saved-view `columns` → rendered column ids (ADR-055: column config is a frontend concern).
  * Legacy CUSTOMER ids map across (`email` / `phone` → Contact, `status` dropped). Keeps known ids
  * and `cf:<slug>` columns whose field exists, in the view's order, without duplicates. Drops the
@@ -210,9 +201,7 @@ export function resolveClientColumns(
   if (!columns || columns.length === 0) return fallback;
   const slugs = new Set(opts.customFieldSlugs);
   const resolved: string[] = [];
-  for (const raw of columns) {
-    const col = raw in LEGACY_COLUMN_MAP ? LEGACY_COLUMN_MAP[raw] : raw;
-    if (col === null || resolved.includes(col)) continue;
+  for (const col of migrateLegacyClientColumns(columns)) {
     if (isClientColumnId(col)) {
       if (col === "trustBalance" && !opts.trustVisible) continue;
       resolved.push(col);
@@ -339,4 +328,18 @@ export function savedViewLifecycle(selection: ViewSelection): LifecycleStatus | 
   const value = selection.view.filters?.lifecycleStatus;
   const status = typeof value === "string" ? value.trim().toUpperCase() : null;
   return isLifecycleStatus(status) ? status : null;
+}
+
+/**
+ * A saved view's stored lifecycle (`savedViewLifecycle`) applied to the fetched rows. The list
+ * endpoint's view path ignores it, so the page filters here. Other selections pass through
+ * unchanged. Returns a new array.
+ */
+export function applySavedViewLifecycle(
+  rows: readonly ClientListRow[],
+  selection: ViewSelection
+): ClientListRow[] {
+  // TODO(backend): saved-view path ignores lifecycleStatus (CustomerService.selectBase / ViewFilterService) — apply it server-side, then drop this filter.
+  const lifecycle = savedViewLifecycle(selection);
+  return lifecycle ? rows.filter((r) => r.lifecycleStatus === lifecycle) : [...rows];
 }

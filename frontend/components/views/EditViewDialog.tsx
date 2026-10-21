@@ -17,7 +17,7 @@ import { TagFilter } from "./TagFilter";
 import { CustomFieldFilter } from "./CustomFieldFilter";
 import { DateRangeFilter, type DateRangeValue } from "./DateRangeFilter";
 import { SearchInput } from "./SearchInput";
-import { STANDARD_COLUMNS } from "./constants";
+import { STANDARD_COLUMNS, normalizeViewColumns } from "./constants";
 import type {
   EntityType,
   TagResponse,
@@ -75,9 +75,11 @@ export function EditViewDialog({
       label: fd.name,
     })),
   ];
-  const [selectedColumns, setSelectedColumns] = useState<string[]>(
-    view.columns ?? standardCols.map((c) => c.value)
-  );
+  const initialColumns = () =>
+    view.columns
+      ? normalizeViewColumns(entityType, view.columns)
+      : standardCols.map((c) => c.value);
+  const [selectedColumns, setSelectedColumns] = useState<string[]>(initialColumns);
 
   const [viewName, setViewName] = useState(view.name);
 
@@ -94,7 +96,7 @@ export function EditViewDialog({
       to: (f.dateRange as { to?: string })?.to,
     });
     setFilterSearch((f.search as string) ?? "");
-    setSelectedColumns(view.columns ?? standardCols.map((c) => c.value));
+    setSelectedColumns(initialColumns());
     setViewName(view.name);
   }
 

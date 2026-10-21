@@ -135,7 +135,9 @@ describe("ClientsTable — columns", () => {
     expect(cellText("Trust balance")).toBe(formatCurrency(5000, "ZAR"));
     expect(cellText("Completeness")).toBe("80%");
     expect(cellText("Created")).toBe(formatDate("2026-05-01T08:00:00Z"));
-    expect(cellText("Contact")).toBe("sipho@example.com · +27 82 555 0101");
+    // Email and phone stack, each truncated with its full text in the title.
+    expect(within(cellUnder("Contact")).getByTitle("sipho@example.com")).toBeInTheDocument();
+    expect(within(cellUnder("Contact")).getByTitle("+27 82 555 0101")).toBeInTheDocument();
   });
 });
 
@@ -228,15 +230,29 @@ describe("ClientsTable — sorting", () => {
 });
 
 describe("ClientsTable — responsive columns (D-8)", () => {
-  it("hides low-priority columns in narrow containers", () => {
+  it("hides low-priority columns in narrow containers (Contact first, Completeness last)", () => {
     renderTable([row()]);
-    expect(headerCell("Open matters")).toHaveClass("hidden", "@4xl:table-cell");
-    expect(headerCell("Created")).toHaveClass("hidden", "@5xl:table-cell");
-    expect(headerCell("Contact")).toHaveClass("hidden", "@6xl:table-cell");
-    for (const label of ["Client", "Lifecycle", "FICA", "Outstanding fee notes", "Completeness"]) {
+    expect(headerCell("Completeness")).toHaveClass("hidden", "@min-[50rem]:table-cell");
+    expect(headerCell("Open matters")).toHaveClass("hidden", "@min-[55rem]:table-cell");
+    expect(headerCell("Created")).toHaveClass("hidden", "@min-[61rem]:table-cell");
+    expect(headerCell("Contact")).toHaveClass("hidden", "@min-[74rem]:table-cell");
+    for (const label of ["Client", "Lifecycle", "FICA", "Outstanding fee notes", "Trust balance"]) {
       expect(headerCell(label)).not.toHaveClass("hidden");
     }
     expect(cellUnder("Created")).toHaveClass("hidden");
+  });
+
+  it("lets the Client column take the spare width without adding to the minimum", () => {
+    renderTable([row()]);
+    expect(headerCell("Client")).toHaveClass("w-full", "max-w-0");
+    expect(cellUnder("Client")).toHaveClass("w-full", "max-w-0");
+  });
+
+  it("breaks a multi-word header after its first word, keeping its text", () => {
+    renderTable([row()]);
+    const header = headerCell("Outstanding fee notes")!;
+    expect(within(header).getByText("Outstanding")).toBeInTheDocument();
+    expect(within(header).getByText("fee notes")).toBeInTheDocument();
   });
 
   it("never hides the active sort column", () => {

@@ -14,15 +14,17 @@ import type {
   SavedViewResponse,
   TagResponse,
 } from "@/lib/types";
-import { resolveViewSelection } from "@/lib/constants/system-views";
 import {
   ALL_CLIENTS_VIEW_ID,
   CLIENT_VIEW_OPTIONS,
+  resolveViewSelection,
+} from "@/lib/constants/system-views";
+import {
+  applySavedViewLifecycle,
   buildClientListParams,
   isLifecycleStatus,
   parseClientSort,
   resolveClientColumns,
-  savedViewLifecycle,
   searchClientRows,
   sortClientRows,
 } from "@/lib/clients-list";
@@ -117,11 +119,7 @@ export default async function ClientsPage({
   // R-1 / D-7: the backend has no sort or search param; both run here over the full list.
   const search = param("search");
   const sort = parseClientSort(param("sortBy"), param("sortDir"));
-  // A saved view's stored lifecycle is not applied by the backend; apply it here.
-  const viewOnlyLifecycle = savedViewLifecycle(selection);
-  const viewRows = viewOnlyLifecycle
-    ? rows.filter((r) => r.lifecycleStatus === viewOnlyLifecycle)
-    : rows;
+  const viewRows = applySavedViewLifecycle(rows, selection);
   const visibleRows = sortClientRows(searchClientRows(viewRows, search), sort.key, sort.dir);
 
   const columns = resolveClientColumns(savedViewActive ? selection.view.columns : null, {

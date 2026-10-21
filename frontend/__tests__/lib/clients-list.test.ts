@@ -1,19 +1,24 @@
 import { describe, it, expect } from "vitest";
 import {
-  ALL_CLIENTS_VIEW_ID,
   CLIENT_COLUMNS,
-  CLIENT_VIEW_OPTIONS,
+  applySavedViewLifecycle,
   buildClientListParams,
   buildClientSortHref,
   defaultClientColumns,
   formatOutstanding,
+  migrateLegacyClientColumns,
   parseClientSort,
   resolveClientColumns,
   savedViewLifecycle,
   searchClientRows,
   sortClientRows,
 } from "@/lib/clients-list";
-import { resolveViewSelection, type ViewSelection } from "@/lib/constants/system-views";
+import {
+  ALL_CLIENTS_VIEW_ID,
+  CLIENT_VIEW_OPTIONS,
+  resolveViewSelection,
+  type ViewSelection,
+} from "@/lib/constants/system-views";
 import { STANDARD_COLUMNS } from "@/components/views/constants";
 import { describeCarriedFilter } from "@/components/views/CreateViewDialog";
 import { formatCurrency } from "@/lib/format";
@@ -299,6 +304,49 @@ describe("savedViewLifecycle", () => {
     const bad = savedView({ filters: { lifecycleStatus: "ALL" } });
     expect(savedViewLifecycle(select(bad.id, [bad]))).toBeNull();
     expect(savedViewLifecycle(select("system:active"))).toBeNull();
+  });
+});
+
+describe("applySavedViewLifecycle", () => {
+  const rows = [
+    row({ id: "a", lifecycleStatus: "ACTIVE" }),
+    row({ id: "p", lifecycleStatus: "PROSPECT" }),
+    row({ id: "b", lifecycleStatus: "ACTIVE" }),
+  ];
+
+  it("keeps only rows in a saved view's stored lifecycle, in order", () => {
+    const saved = savedView({ filters: { lifecycleStatus: "ACTIVE" } });
+    expect(ids(applySavedViewLifecycle(rows, select(saved.id, [saved])))).toEqual(["a", "b"]);
+  });
+
+  it("passes rows through for a saved view without a valid lifecycle and for system views", () => {
+    const none = savedView();
+    const bad = savedView({ filters: { lifecycleStatus: "ALL" } });
+    expect(ids(applySavedViewLifecycle(rows, select(none.id, [none])))).toEqual(["a", "p", "b"]);
+    expect(ids(applySavedViewLifecycle(rows, select(bad.id, [bad])))).toEqual(["a", "p", "b"]);
+    // A system view's lifecycle is a list param the backend applies; never re-filtered here.
+    expect(ids(applySavedViewLifecycle(rows, select("system:active")))).toEqual(["a", "p", "b"]);
+  });
+
+  it("returns a new array", () => {
+    const result = applySavedViewLifecycle(rows, select(null));
+    expect(result).not.toBe(rows);
+    expect(result).toEqual(rows);
+  });
+});
+
+describe("migrateLegacyClientColumns", () => {
+  it("maps email/phone to contact once, drops status, keeps order and other ids", () => {
+    expect(
+      migrateLegacyClientColumns(["name", "email", "phone", "status", "createdAt", "cf:vat"])
+    ).toEqual(["name", "contact", "createdAt", "cf:vat"]);
+  });
+
+  it("leaves current ids unchanged and removes duplicates", () => {
+    expect(migrateLegacyClientColumns(["name", "contact", "email", "name"])).toEqual([
+      "name",
+      "contact",
+    ]);
   });
 });
 

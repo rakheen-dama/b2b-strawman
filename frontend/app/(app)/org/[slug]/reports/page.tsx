@@ -25,7 +25,7 @@ function ReportCard({
         </CardHeader>
         <CardContent>
           <span className="text-sm font-medium text-teal-600 dark:text-teal-400">
-            Run Report &rarr;
+            Run report &rarr;
           </span>
         </CardContent>
       </Card>

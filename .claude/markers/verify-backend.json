@@ -1,7 +1,7 @@
 {
-  "commit": "935fc38e91d66937a8cc05b7ac6a531438482fbf",
+  "commit": "d340a824565fcc0731f9a5b428580a512cd66de8",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-20T09:56:00+02:00",
-  "summary": "PR #1603 (Epic 609F: portal API backend wire rename Batch 5 + WireVocabularyContractTest scope removed) head 935fc38e9 (orchestrator run): 5349 testcases / 0 failures / 0 errors / 26 skipped (+1 vs 609D: OrgSettingsIntegrationTest matterNamingPattern guard). WireVocabularyContractTest green with no scope list; McpToolContractTest unedited + green. Log /tmp/mvn-609F-final.log."
+  "ts": "2026-10-21T03:57:07+02:00",
+  "summary": "PR #1621 (Epic 613A: One Diary backend — GET /api/diary) head d340a8245 (orchestrator run, after CodeRabbit fix cycle): 5387 testcases / 0 failures / 0 errors / 26 skipped across 690 surefire reports (+38 vs 609F: DiaryServiceTest 23 + DiaryControllerIntegrationTest 15). Earlier run on 8b1a3c7e7: 5385/0/0/26. WireVocabularyContractTest + TenantScopeBindingTest + LayerDependencyRulesTest green. Log /tmp/mvn-613A-final.log."
 }

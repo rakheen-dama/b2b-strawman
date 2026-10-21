@@ -44,6 +44,43 @@ export interface Matter {
   tags?: TagResponse[];
 }
 
+/** One row of `GET /api/matters` (MatterListRow.java, Phase 87 615A, arch §12.2.6). Nulls are present, not omitted. */
+export interface MatterListRow {
+  id: string;
+  name: string;
+  description: string | null;
+  referenceNumber: string | null;
+  status: MatterStatus;
+  workType: string | null;
+  priority: MatterPriority | null;
+  /** yyyy-MM-dd */
+  dueDate: string | null;
+  /** ISO instant */
+  createdAt: string;
+  clientId: string | null;
+  clientName: string | null;
+  /** Lead fee earner (project_members role 'lead', first by created_at). */
+  feeEarnerId: string | null;
+  feeEarnerName: string | null;
+  /** Caller's role on this matter. */
+  matterRole: MatterRole | null;
+  /** Billable, uninvoiced. Never redacted. */
+  unbilledMinutes: number;
+  /** null without FINANCIAL_VISIBILITY (owner/admin always see it). Time value + approved unbilled disbursements. */
+  unbilledValue: number | null;
+  /** Org default currency. */
+  currency: string;
+  /** Client-level. null without VIEW_TRUST, with trust_accounting off, or when the matter has no client. */
+  trustBalance: number | null;
+  /** yyyy-MM-dd, on or after today */
+  nextDiaryDate: string | null;
+  /** DiaryKind name: "TASK_DUE" | "MATTER_DUE" | "COURT_DATE" | "PRESCRIPTION" */
+  nextDiaryKind: string | null;
+  openTaskCount: number;
+  tags: TagResponse[];
+  customFields: Record<string, unknown>;
+}
+
 export interface CreateMatterRequest {
   name: string;
   description?: string;

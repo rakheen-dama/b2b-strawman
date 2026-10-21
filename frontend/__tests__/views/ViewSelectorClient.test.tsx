@@ -3,6 +3,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
 import type { SavedViewResponse } from "@/lib/types";
+import { DEFAULT_MATTER_VIEW_ID, MATTER_SYSTEM_VIEWS } from "@/lib/constants/system-views";
 
 // Mock next/navigation
 const mockPush = vi.fn();
@@ -174,6 +175,126 @@ describe("ViewSelectorClient", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Configure Filters")).toBeInTheDocument();
+    });
+  });
+  // 615C: optional system views; callers that omit them keep the "All" tab (tested above).
+  describe("with system views", () => {
+    function renderWithSystem() {
+      return render(
+        <ViewSelectorClient
+          entityType="PROJECT"
+          views={views}
+          canCreate={true}
+          canCreateShared={false}
+          slug="acme"
+          allTags={[]}
+          fieldDefinitions={[]}
+          onSave={mockOnSave}
+          systemViews={MATTER_SYSTEM_VIEWS}
+          defaultViewId={DEFAULT_MATTER_VIEW_ID}
+        />
+      );
+    }
+
+    afterEach(() => {
+      mockSearchParams.delete("view");
+      mockSearchParams.delete("status");
+      mockSearchParams.delete("tags");
+    });
+
+    // F-3: the matters list ignores `tags` on the saved-view path and hides the filter there.
+    describe("clearOnSavedView", () => {
+      function renderClearing(clearOnSavedView?: readonly string[]) {
+        return render(
+          <ViewSelectorClient
+            entityType="PROJECT"
+            views={views}
+            canCreate={false}
+            canCreateShared={false}
+            slug="acme"
+            allTags={[]}
+            fieldDefinitions={[]}
+            onSave={mockOnSave}
+            systemViews={MATTER_SYSTEM_VIEWS}
+            defaultViewId={DEFAULT_MATTER_VIEW_ID}
+            clearOnSavedView={clearOnSavedView}
+          />
+        );
+      }
+
+      it("drops the listed params when switching to a saved view", async () => {
+        const user = userEvent.setup();
+        mockSearchParams.set("tags", "urgent");
+        mockSearchParams.set("status", "CLOSED");
+        renderClearing(["tags"]);
+
+        await user.click(screen.getByRole("tab", { name: "My View" }));
+
+        expect(mockPush).toHaveBeenCalledWith("?status=CLOSED&view=view-2");
+      });
+
+      it("keeps the listed params when switching to a system view", async () => {
+        const user = userEvent.setup();
+        mockSearchParams.set("tags", "urgent");
+        renderClearing(["tags"]);
+
+        await user.click(screen.getByRole("tab", { name: "Dormant" }));
+
+        expect(mockPush).toHaveBeenCalledWith("?tags=urgent&view=system%3Adormant");
+      });
+
+      it("keeps every param on a saved view when the prop is omitted (other callers)", async () => {
+        const user = userEvent.setup();
+        mockSearchParams.set("tags", "urgent");
+        renderClearing();
+
+        await user.click(screen.getByRole("tab", { name: "My View" }));
+
+        expect(mockPush).toHaveBeenCalledWith("?tags=urgent&view=view-2");
+      });
+    });
+
+    it("pushes ?view=system:<slug> when a system tab is clicked, keeping other params", async () => {
+      const user = userEvent.setup();
+      mockSearchParams.set("status", "CLOSED");
+      renderWithSystem();
+
+      await user.click(screen.getByRole("tab", { name: "Dormant" }));
+
+      expect(mockPush).toHaveBeenCalledWith("?status=CLOSED&view=system%3Adormant");
+    });
+
+    it("defaults to Open matters and has no All tab", () => {
+      renderWithSystem();
+      expect(screen.queryByText("All")).not.toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: "Open matters" })).toHaveAttribute(
+        "data-state",
+        "active"
+      );
+    });
+
+    it("Save View from a system view opens the dialog pre-filled with its params (F-4)", async () => {
+      const user = userEvent.setup();
+      mockSearchParams.set("view", "system:awaiting-fee-note");
+      renderWithSystem();
+
+      await user.click(screen.getByText("Save View"));
+
+      const carried = await screen.findByTestId("carried-filters");
+      expect(carried).toHaveTextContent("Carried from Awaiting fee note");
+      expect(carried).toHaveTextContent("Status: Active");
+      expect(carried).toHaveTextContent("Has unbilled time");
+    });
+
+    it("Save View from a saved view carries nothing", async () => {
+      const user = userEvent.setup();
+      mockSearchParams.set("view", "view-2");
+      renderWithSystem();
+
+      await user.click(screen.getByText("Save View"));
+
+      await screen.findByText("Configure Filters");
+      expect(screen.queryByTestId("carried-filters")).not.toBeInTheDocument();
     });
   });
 });

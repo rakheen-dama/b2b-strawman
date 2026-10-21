@@ -110,8 +110,9 @@ describe("CreateViewDialog", () => {
       expect(screen.getByText("Select Columns")).toBeInTheDocument();
     });
     expect(screen.getByText("Step 2 of 3")).toBeInTheDocument();
-    expect(screen.getByText("Name")).toBeInTheDocument();
-    expect(screen.getByText("Description")).toBeInTheDocument();
+    // 615C: PROJECT columns are the Matters table's columns (lib/matters-list.ts)
+    expect(screen.getByText("Matter")).toBeInTheDocument();
+    expect(screen.getByText("Reference")).toBeInTheDocument();
     // Custom field column
     expect(screen.getByText("Court")).toBeInTheDocument();
   });
@@ -317,5 +318,96 @@ describe("CreateViewDialog", () => {
     });
 
     expect(mockOnSave).not.toHaveBeenCalled();
+  });
+  describe("initialFilters (615C F-4: Save view from a system view)", () => {
+    async function reachStep3(user: ReturnType<typeof userEvent.setup>) {
+      await user.click(screen.getByText("Next"));
+      await waitFor(() => expect(screen.getByText("Select Columns")).toBeInTheDocument());
+      await user.click(screen.getByText("Next"));
+      await waitFor(() => expect(screen.getByText("Name Your View")).toBeInTheDocument());
+    }
+
+    it("shows the carried filters read-only and saves them with the view", async () => {
+      const user = userEvent.setup();
+      render(
+        <CreateViewDialog
+          slug="acme"
+          entityType="PROJECT"
+          allTags={allTags}
+          fieldDefinitions={fieldDefs}
+          canCreateShared={false}
+          onSave={mockOnSave}
+          initialFilters={{ status: ["ACTIVE"], inactiveSince: "-90d" }}
+          initialFiltersLabel="Dormant"
+        >
+          <button>Create View Carried</button>
+        </CreateViewDialog>
+      );
+
+      await user.click(screen.getByText("Create View Carried"));
+      const carried = await screen.findByTestId("carried-filters");
+      expect(carried).toHaveTextContent("Carried from Dormant");
+      expect(carried).toHaveTextContent("Status: Active");
+      expect(carried).toHaveTextContent("No activity in the last 90 days");
+
+      await reachStep3(user);
+      await user.type(screen.getByLabelText("View Name"), "Quiet matters");
+      await user.click(screen.getByRole("button", { name: /Save View/i }));
+
+      await waitFor(() => {
+        expect(mockOnSave).toHaveBeenCalledWith(
+          expect.objectContaining({
+            name: "Quiet matters",
+            filters: { status: ["ACTIVE"], inactiveSince: "-90d" },
+          })
+        );
+      });
+    });
+
+    it("carried filters survive a reset (reopening the dialog)", async () => {
+      const user = userEvent.setup();
+      render(
+        <CreateViewDialog
+          slug="acme"
+          entityType="PROJECT"
+          allTags={allTags}
+          fieldDefinitions={fieldDefs}
+          canCreateShared={false}
+          onSave={mockOnSave}
+          initialFilters={{ status: ["ACTIVE"], mine: "true" }}
+          initialFiltersLabel="My matters"
+        >
+          <button>Create View Reopen</button>
+        </CreateViewDialog>
+      );
+
+      await user.click(screen.getByText("Create View Reopen"));
+      await screen.findByTestId("carried-filters");
+      await user.keyboard("{Escape}");
+      await waitFor(() => expect(screen.queryByTestId("carried-filters")).not.toBeInTheDocument());
+      await user.click(screen.getByText("Create View Reopen"));
+      expect(await screen.findByTestId("carried-filters")).toHaveTextContent(
+        "Only matters I am on"
+      );
+    });
+
+    it("renders no carried section without initialFilters", async () => {
+      const user = userEvent.setup();
+      render(
+        <CreateViewDialog
+          slug="acme"
+          entityType="PROJECT"
+          allTags={allTags}
+          fieldDefinitions={fieldDefs}
+          canCreateShared={false}
+          onSave={mockOnSave}
+        >
+          <button>Create View Plain</button>
+        </CreateViewDialog>
+      );
+      await user.click(screen.getByText("Create View Plain"));
+      await screen.findByText("Configure Filters");
+      expect(screen.queryByTestId("carried-filters")).not.toBeInTheDocument();
+    });
   });
 });

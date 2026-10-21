@@ -45,6 +45,12 @@ spring:
 
   jpa:
     open-in-view: false
+    properties:
+      hibernate:
+        # MatterListRowIntegrationTest (615A) counts SQL statements via
+        # SessionFactory.getStatistics(). Set here (not @TestPropertySource) so every test class
+        # keeps the same Spring context-cache key (backend/CLAUDE.md).
+        generate_statistics: true
 
   flyway:
     enabled: false

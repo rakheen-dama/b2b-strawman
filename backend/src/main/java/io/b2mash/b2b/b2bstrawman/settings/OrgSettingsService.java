@@ -43,7 +43,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class OrgSettingsService {
 
   private static final Logger log = LoggerFactory.getLogger(OrgSettingsService.class);
-  private static final String DEFAULT_CURRENCY = "USD";
+  public static final String DEFAULT_CURRENCY = "USD";
   private static final Duration LOGO_URL_EXPIRY = Duration.ofHours(1);
   private static final long MAX_LOGO_SIZE = 2 * 1024 * 1024; // 2MB
   private static final java.util.Set<String> ALLOWED_LOGO_CONTENT_TYPES =

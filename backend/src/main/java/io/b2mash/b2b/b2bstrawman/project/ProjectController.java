@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
+import io.b2mash.b2b.b2bstrawman.project.dto.MatterListRow;
 import io.b2mash.b2b.b2bstrawman.project.dto.MatterResponse;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.setupstatus.MatterSetupStatus;
@@ -22,6 +23,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,15 +60,22 @@ public class ProjectController {
   }
 
   @GetMapping
-  public ResponseEntity<List<MatterResponse>> listProjects(
+  public ResponseEntity<List<MatterListRow>> listMatters(
       @RequestParam(required = false) UUID view,
       @RequestParam(required = false) String status,
       @RequestParam(required = false) LocalDate dueBefore,
       @RequestParam(required = false) UUID customerId,
+      @RequestParam(defaultValue = "false") boolean mine,
+      @RequestParam(defaultValue = "false") boolean hasUnbilled,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate inactiveSince,
       @RequestParam(required = false) Map<String, String> allParams,
       ActorContext actor) {
     return ResponseEntity.ok(
-        projectService.listProjects(view, status, dueBefore, customerId, allParams, actor));
+        projectService.listMatterRows(
+            new MatterListQuery(
+                view, status, dueBefore, customerId, mine, hasUnbilled, inactiveSince, allParams),
+            actor));
   }
 
   @GetMapping("/{matterId}")

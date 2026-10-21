@@ -48,10 +48,19 @@ import {
 } from "@/app/(app)/org/[slug]/diary/diary-actions";
 import {
   addDays,
+  addMonths,
   buildDiaryQuery,
   daysBetween,
+  diaryWindow,
   filterDiaryEvents,
+  firstOfMonth,
+  formatDiaryRangeLabel,
   formatDiaryTime,
+  lastOfMonth,
+  monthGridWeeks,
+  sameWindow,
+  stepDiaryWindow,
+  windowContains,
   groupByDate,
   humaniseSubtype,
   isValidIsoDate,
@@ -267,11 +276,13 @@ describe("diary-types helpers", () => {
     expect(isValidIsoDate(undefined)).toBe(false);
   });
 
-  it("parseDiaryView falls back to week for anything but list", () => {
-    expect(parseDiaryView("list")).toBe("list");
+  // 613C amendment (B-7): Day and Month are real views now; only junk falls back to week.
+  it("parseDiaryView accepts day, week, month and list and falls back to week", () => {
+    expect(parseDiaryView("day")).toBe("day");
     expect(parseDiaryView("week")).toBe("week");
-    expect(parseDiaryView("month")).toBe("week");
-    expect(parseDiaryView("day")).toBe("week");
+    expect(parseDiaryView("month")).toBe("month");
+    expect(parseDiaryView("list")).toBe("list");
+    expect(parseDiaryView("bogus")).toBe("week");
     expect(parseDiaryView(undefined)).toBe("week");
   });
 
@@ -359,5 +370,102 @@ describe("diary-types helpers", () => {
     expect(humaniseSubtype("CASE_MANAGEMENT")).toBe("Case management");
     expect(humaniseSubtype("HEARING")).toBe("Hearing");
     expect(humaniseSubtype(null)).toBeNull();
+  });
+});
+
+describe("diary window helpers (613C)", () => {
+  it("firstOfMonth, lastOfMonth and leap years", () => {
+    expect(firstOfMonth("2026-10-21")).toBe("2026-10-01");
+    expect(lastOfMonth("2026-10-21")).toBe("2026-10-31");
+    expect(lastOfMonth("2026-02-14")).toBe("2026-02-28");
+    expect(lastOfMonth("2028-02-01")).toBe("2028-02-29");
+  });
+
+  it("addMonths lands on the 1st and never overflows a short month", () => {
+    expect(addMonths("2026-01-31", 1)).toBe("2026-02-01");
+    expect(addMonths("2026-10-01", -1)).toBe("2026-09-01");
+    expect(addMonths("2026-12-15", 1)).toBe("2027-01-01");
+    expect(addMonths("2026-01-01", -1)).toBe("2025-12-01");
+  });
+
+  it("diaryWindow snaps per view", () => {
+    expect(diaryWindow("day", "2026-10-21")).toEqual({ from: "2026-10-21", to: "2026-10-21" });
+    expect(diaryWindow("week", "2026-11-01")).toEqual({ from: "2026-10-26", to: "2026-11-01" });
+    expect(diaryWindow("month", "2026-10-21")).toEqual({ from: "2026-10-01", to: "2026-10-31" });
+    expect(diaryWindow("list", "2026-02-14")).toEqual({ from: "2026-02-01", to: "2026-02-28" });
+  });
+
+  it("every window stays within the client-side fee-earner limit", () => {
+    for (const view of ["day", "week", "month", "list"] as const) {
+      const w = diaryWindow(view, "2026-12-31");
+      expect(shouldUseServerFeeEarnerFilter(w.from, w.to)).toBe(false);
+    }
+  });
+
+  it("stepDiaryWindow moves one day, week or month", () => {
+    expect(stepDiaryWindow("day", "2026-10-31", 1)).toEqual({
+      from: "2026-11-01",
+      to: "2026-11-01",
+    });
+    expect(stepDiaryWindow("week", "2026-10-19", 1)).toEqual({
+      from: "2026-10-26",
+      to: "2026-11-01",
+    });
+    expect(stepDiaryWindow("week", "2026-10-19", -1).from).toBe("2026-10-12");
+    expect(stepDiaryWindow("month", "2026-10-01", -1)).toEqual({
+      from: "2026-09-01",
+      to: "2026-09-30",
+    });
+    expect(stepDiaryWindow("list", "2026-12-01", 1).from).toBe("2027-01-01");
+  });
+
+  it("windowContains and sameWindow", () => {
+    const oct = { from: "2026-10-01", to: "2026-10-31" };
+    expect(windowContains(oct, "2026-10-01")).toBe(true);
+    expect(windowContains(oct, "2026-10-31")).toBe(true);
+    expect(windowContains(oct, "2026-11-01")).toBe(false);
+    expect(sameWindow(oct, diaryWindow("list", "2026-10-15"))).toBe(true);
+    expect(sameWindow(oct, diaryWindow("week", "2026-10-15"))).toBe(false);
+  });
+
+  it("monthGridWeeks lays October 2026 out as five Mon–Sun rows", () => {
+    const weeks = monthGridWeeks("2026-10-01");
+    expect(weeks).toHaveLength(5);
+    expect(weeks[0]).toEqual([
+      null,
+      null,
+      null,
+      "2026-10-01",
+      "2026-10-02",
+      "2026-10-03",
+      "2026-10-04",
+    ]);
+    expect(weeks[4]).toEqual([
+      "2026-10-26",
+      "2026-10-27",
+      "2026-10-28",
+      "2026-10-29",
+      "2026-10-30",
+      "2026-10-31",
+      null,
+    ]);
+    expect(weeks.flat().filter(Boolean)).toHaveLength(31);
+    // February 2027 starts on a Monday and has 28 days: exactly four full rows.
+    expect(monthGridWeeks("2027-02-10")).toHaveLength(4);
+  });
+
+  it("formatDiaryRangeLabel per view", () => {
+    expect(formatDiaryRangeLabel("day", { from: "2026-10-21", to: "2026-10-21" })).toBe(
+      "Wednesday 21 October 2026"
+    );
+    expect(formatDiaryRangeLabel("week", { from: "2026-10-19", to: "2026-10-25" })).toBe(
+      "19 October to 25 October 2026"
+    );
+    expect(formatDiaryRangeLabel("month", { from: "2026-10-01", to: "2026-10-31" })).toBe(
+      "October 2026"
+    );
+    expect(formatDiaryRangeLabel("list", { from: "2026-10-01", to: "2026-10-31" })).toBe(
+      "October 2026"
+    );
   });
 });

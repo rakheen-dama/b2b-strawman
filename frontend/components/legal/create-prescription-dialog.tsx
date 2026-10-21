@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@b2mash/ui/button";
@@ -11,7 +11,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@b2mash/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,6 +35,10 @@ import {
 interface CreatePrescriptionDialogProps {
   slug: string;
   onSuccess?: () => void;
+  /** Trigger button text (default "Add Tracker"). */
+  triggerLabel?: React.ReactNode;
+  /** Trigger button variant (default "default"). */
+  triggerVariant?: React.ComponentProps<typeof Button>["variant"];
 }
 
 const PRESCRIPTION_TYPES = [
@@ -47,8 +50,15 @@ const PRESCRIPTION_TYPES = [
   { value: "CUSTOM", label: "Custom" },
 ] as const;
 
-export function CreatePrescriptionDialog({ slug, onSuccess }: CreatePrescriptionDialogProps) {
+export function CreatePrescriptionDialog({
+  slug,
+  onSuccess,
+  triggerLabel = "Add Tracker",
+  triggerVariant = "default",
+}: CreatePrescriptionDialogProps) {
   const [open, setOpen] = useState(false);
+  // Radix only tracks a DialogTrigger, so the owned button restores focus itself on close.
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
@@ -132,13 +142,28 @@ export function CreatePrescriptionDialog({ slug, onSuccess }: CreatePrescription
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button size="sm" data-testid="create-prescription-trigger">
-          <Plus className="mr-1.5 size-4" />
-          Add Tracker
-        </Button>
-      </DialogTrigger>
-      <DialogContent data-testid="create-prescription-dialog">
+      {/* Dialog owns its button (frontend/CLAUDE.md "Dialog Trigger Composition"): safe next to
+          other dialog triggers, e.g. the Diary header. */}
+      <Button
+        type="button"
+        size="sm"
+        variant={triggerVariant}
+        data-testid="create-prescription-trigger"
+        ref={triggerRef}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => handleOpenChange(true)}
+      >
+        <Plus className="mr-1.5 size-4" />
+        {triggerLabel}
+      </Button>
+      <DialogContent
+        data-testid="create-prescription-dialog"
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          triggerRef.current?.focus();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Create Prescription Tracker</DialogTitle>
           <DialogDescription>Track prescription periods for a matter.</DialogDescription>

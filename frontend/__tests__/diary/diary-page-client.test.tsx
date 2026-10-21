@@ -19,14 +19,14 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-const mockRefresh = vi.fn();
+const { mockPush, mockRefresh } = vi.hoisted(() => ({ mockPush: vi.fn(), mockRefresh: vi.fn() }));
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: mockRefresh, prefetch: vi.fn() }),
+  useRouter: () => ({ push: mockPush, replace: vi.fn(), refresh: mockRefresh, prefetch: vi.fn() }),
   usePathname: () => "/org/acme/diary",
   useSearchParams: () => new URLSearchParams(),
 }));
 
-// The real dialog imports server actions; the empty state only needs its trigger.
+// The real dialogs import server actions; these tests only need their triggers.
 vi.mock("@/components/legal/create-court-date-dialog", () => ({
   CreateCourtDateDialog: ({ triggerLabel }: { triggerLabel?: React.ReactNode }) => (
     <button type="button" data-testid="create-court-date-trigger">
@@ -34,6 +34,21 @@ vi.mock("@/components/legal/create-court-date-dialog", () => ({
     </button>
   ),
 }));
+// 613C: the page client also mounts these (header button, row-action dialogs, Mark done).
+vi.mock("@/components/legal/create-prescription-dialog", () => ({
+  CreatePrescriptionDialog: ({ triggerLabel }: { triggerLabel?: React.ReactNode }) => (
+    <button type="button" data-testid="create-prescription-trigger">
+      {triggerLabel}
+    </button>
+  ),
+}));
+vi.mock("@/components/legal/postpone-dialog", () => ({ PostponeDialog: () => null }));
+vi.mock("@/components/legal/outcome-dialog", () => ({ OutcomeDialog: () => null }));
+vi.mock("@/components/legal/cancel-court-date-dialog", () => ({
+  CancelCourtDateDialog: () => null,
+}));
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/task-actions", () => ({ completeTask: vi.fn() }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 import {
   DiaryPageClient,
@@ -119,6 +134,8 @@ function clientProps(overrides: Partial<DiaryPageClientProps> = {}): DiaryPageCl
     matters: MATTERS,
     currentMemberId: "fe-1",
     isAdminOrOwner: true,
+    canCompleteAnyTask: true,
+    canManageLegal: true,
     ...overrides,
   };
 }
@@ -126,8 +143,57 @@ function clientProps(overrides: Partial<DiaryPageClientProps> = {}): DiaryPageCl
 describe("DiaryPageClient", () => {
   let replaceState: ReturnType<typeof vi.spyOn>;
   beforeEach(() => {
+    // The spy calls through, so reset the jsdom URL a previous test's sync left behind.
+    window.history.replaceState(null, "", "/");
     replaceState = vi.spyOn(window.history, "replaceState");
     mockRefresh.mockClear();
+    mockPush.mockClear();
+  });
+
+  it("canonicalizes a mid-month ?from= to the snapped month window on load (R-3)", () => {
+    window.history.replaceState(null, "", "/org/acme/diary?from=2026-10-21&view=month&matter=m-2");
+    replaceState.mockClear();
+    render(
+      <DiaryPageClient
+        {...clientProps({
+          from: "2026-10-01",
+          to: "2026-10-31",
+          initialView: "month",
+          initialMatterId: "m-2",
+        })}
+      />
+    );
+    expect(replaceState).toHaveBeenCalledTimes(1);
+    expect(replaceState).toHaveBeenCalledWith(
+      null,
+      "",
+      "/org/acme/diary?from=2026-10-01&view=month&matter=m-2"
+    );
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockRefresh).not.toHaveBeenCalled();
+  });
+
+  it("canonicalizes an invalid ?from= to the loaded window on load", () => {
+    window.history.replaceState(null, "", "/org/acme/diary?from=not-a-date");
+    replaceState.mockClear();
+    render(<DiaryPageClient {...clientProps()} />);
+    expect(replaceState).toHaveBeenCalledWith(null, "", "/org/acme/diary?from=2026-10-19");
+  });
+
+  it("leaves an already-snapped or absent ?from= untouched on load", () => {
+    window.history.replaceState(null, "", "/org/acme/diary?from=2026-10-01&view=month");
+    replaceState.mockClear();
+    render(
+      <DiaryPageClient
+        {...clientProps({ from: "2026-10-01", to: "2026-10-31", initialView: "month" })}
+      />
+    );
+    expect(replaceState).not.toHaveBeenCalled();
+    cleanup();
+    window.history.replaceState(null, "", "/org/acme/diary");
+    replaceState.mockClear();
+    render(<DiaryPageClient {...clientProps()} />);
+    expect(replaceState).not.toHaveBeenCalled();
   });
 
   it("shows every fee earner's events to an owner", () => {
@@ -237,18 +303,36 @@ describe("DiaryPageClient", () => {
     expect(mockRefresh).not.toHaveBeenCalled();
   });
 
-  it("switches to the List view and records view=list in the URL", async () => {
+  // 613C amendment (B-7, R-1/R-4): List loads the calendar month, so Week → List is a navigation
+  // to the month window (router.push), not a client-only switch.
+  it("switches to the List view by navigating to the month window", async () => {
     const user = userEvent.setup();
     render(<DiaryPageClient {...clientProps()} />);
     expect(screen.getByTestId("diary-week-grid")).toBeInTheDocument();
     await user.click(screen.getByRole("tab", { name: "List" }));
+    expect(mockPush).toHaveBeenCalledWith("/org/acme/diary?from=2026-10-01&view=list", {
+      scroll: false,
+    });
+    expect(replaceState).not.toHaveBeenCalled();
+  });
+
+  it("switches Month to List client-side when the window is the same", async () => {
+    const user = userEvent.setup();
+    render(
+      <DiaryPageClient
+        {...clientProps({ from: "2026-10-01", to: "2026-10-31", initialView: "month" })}
+      />
+    );
+    expect(screen.getByTestId("diary-month-grid")).toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: "List" }));
     expect(screen.getByTestId("diary-list")).toBeInTheDocument();
-    expect(screen.queryByTestId("diary-week-grid")).toBeNull();
+    expect(screen.queryByTestId("diary-month-grid")).toBeNull();
     expect(replaceState).toHaveBeenLastCalledWith(
       null,
       "",
-      "/org/acme/diary?from=2026-10-19&view=list"
+      "/org/acme/diary?from=2026-10-01&view=list"
     );
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it("opens on the List view when initialView is list", () => {
@@ -271,10 +355,41 @@ describe("DiaryPageClient", () => {
     expect(replaceState).toHaveBeenLastCalledWith(null, "", "/org/acme/diary?from=2026-10-19");
   });
 
+  // 613C amendment (B-7, R-8): the header's "New court date" shares the trigger testid, so the
+  // empty-state action is found by its accessible name.
   it("offers Add a court date on an empty week when court dates are served", () => {
     render(<DiaryPageClient {...clientProps({ events: [] })} />);
     expect(screen.getByText("Nothing in the diary for this week.")).toBeInTheDocument();
-    expect(screen.getByTestId("create-court-date-trigger")).toHaveTextContent("Add a court date");
+    expect(screen.getByRole("button", { name: "Add a court date" })).toBeInTheDocument();
+  });
+
+  it("hides Add a court date without MANAGE_LEGAL", () => {
+    render(<DiaryPageClient {...clientProps({ events: [], canManageLegal: false })} />);
+    expect(screen.getByText("Nothing in the diary for this week.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add a court date" })).toBeNull();
+  });
+
+  it("words the empty and no-match states for the view's range", () => {
+    render(
+      <DiaryPageClient
+        {...clientProps({ events: [], from: "2026-10-21", to: "2026-10-21", initialView: "day" })}
+      />
+    );
+    expect(screen.getByText("Nothing in the diary for this day.")).toBeInTheDocument();
+    cleanup();
+    render(
+      <DiaryPageClient
+        {...clientProps({
+          from: "2026-10-01",
+          to: "2026-10-31",
+          initialView: "list",
+          initialKinds: [],
+        })}
+      />
+    );
+    expect(
+      screen.getByText("Change the filters or clear them to see the whole month.")
+    ).toBeInTheDocument();
   });
 
   it("omits the court date action when court dates are not served", () => {

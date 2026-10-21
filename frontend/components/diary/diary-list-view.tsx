@@ -19,6 +19,7 @@ import {
   type DiaryEventResponse,
 } from "@/app/(app)/org/[slug]/diary/diary-types";
 import { DIARY_KIND_SINGULAR, DiaryKindIcon, kindRailClass } from "./diary-event-row";
+import { DiaryRowActions } from "./diary-row-actions";
 
 interface DiaryListViewProps {
   /** In-window events, already filtered, in server order. */
@@ -31,6 +32,8 @@ interface DiaryListViewProps {
 /** Sentence-case column heads (the shared TableHead defaults to tracked-out caps). */
 const HEAD = "normal-case tracking-normal";
 const COLUMNS = ["Time", "Event", "Matter", "Fee earner"] as const;
+/** Visible columns plus the trailing, visually unlabelled Actions column. */
+const COLUMN_COUNT = COLUMNS.length + 1;
 
 function GroupHeading({
   label,
@@ -43,7 +46,7 @@ function GroupHeading({
     <TableRow className="hover:bg-transparent">
       <TableHead
         scope="rowgroup"
-        colSpan={COLUMNS.length}
+        colSpan={COLUMN_COUNT}
         className={cn(
           HEAD,
           "bg-slate-50 text-sm font-semibold dark:bg-slate-900/50",
@@ -117,6 +120,9 @@ function EventRow({
       <TableCell className="text-muted-foreground align-top">
         {event.feeEarnerName ?? null}
       </TableCell>
+      <TableCell className="w-10 align-top">
+        <DiaryRowActions event={event} />
+      </TableCell>
     </TableRow>
   );
 }
@@ -130,6 +136,9 @@ function ListHeader() {
             {c}
           </TableHead>
         ))}
+        <TableHead scope="col" className={cn(HEAD, "w-10")}>
+          <span className="sr-only">Actions</span>
+        </TableHead>
       </TableRow>
     </TableHeader>
   );
@@ -163,7 +172,7 @@ export function DiaryListView({ events, band, slug }: DiaryListViewProps) {
   );
 }
 
-/** Loading shape for the List view: the same four columns with placeholder rows. */
+/** Loading shape for the List view: the same columns with placeholder rows. */
 export function DiaryListSkeleton() {
   return (
     <Table data-testid="diary-list-skeleton" aria-busy="true">
@@ -184,6 +193,7 @@ export function DiaryListSkeleton() {
             <TableCell>
               <Skeleton className="h-4 w-24" />
             </TableCell>
+            <TableCell className="w-10" />
           </TableRow>
         ))}
       </TableBody>

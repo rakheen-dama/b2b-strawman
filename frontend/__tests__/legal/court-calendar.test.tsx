@@ -272,6 +272,54 @@ describe("CreateCourtDateDialog", () => {
   });
 });
 
+describe("CreateCourtDateDialog focus return (613C)", () => {
+  // The dialog owns a plain Button (no DialogTrigger), so it must announce the popup and restore
+  // focus to that button itself when the dialog closes.
+  it("announces the dialog popup and its open state on the trigger", async () => {
+    const user = userEvent.setup();
+    render(<CreateCourtDateDialog slug="acme" />);
+    const trigger = screen.getByRole("button", { name: "New Court Date" });
+    expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("returns focus to the trigger when closed with Escape", async () => {
+    const user = userEvent.setup();
+    render(<CreateCourtDateDialog slug="acme" />);
+    const trigger = screen.getByTestId("create-court-date-trigger");
+    await user.click(trigger);
+    expect(screen.getByTestId("create-court-date-dialog")).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    await vi.waitFor(() => expect(screen.queryByTestId("create-court-date-dialog")).toBeNull());
+    expect(trigger).toHaveFocus();
+  });
+
+  it("returns focus to the trigger when closed with Cancel", async () => {
+    const user = userEvent.setup();
+    render(<CreateCourtDateDialog slug="acme" />);
+    const trigger = screen.getByTestId("create-court-date-trigger");
+    await user.click(trigger);
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    await vi.waitFor(() => expect(screen.queryByTestId("create-court-date-dialog")).toBeNull());
+    expect(trigger).toHaveFocus();
+  });
+});
+
+describe("CreatePrescriptionDialog focus return (613C)", () => {
+  it("returns focus to the trigger when closed with Cancel", async () => {
+    const user = userEvent.setup();
+    render(<CreatePrescriptionDialog slug="acme" />);
+    const trigger = screen.getByTestId("create-prescription-trigger");
+    expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
+    await user.click(trigger);
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    await vi.waitFor(() => expect(screen.queryByTestId("create-prescription-dialog")).toBeNull());
+    expect(trigger).toHaveFocus();
+  });
+});
+
 describe("CreatePrescriptionDialog", () => {
   it("shows customYears field only for CUSTOM type", async () => {
     const user = userEvent.setup();

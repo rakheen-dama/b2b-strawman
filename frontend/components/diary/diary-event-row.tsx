@@ -9,6 +9,7 @@ import {
   type DiaryEventResponse,
   type DiaryKind,
 } from "@/app/(app)/org/[slug]/diary/diary-types";
+import { DiaryRowActions } from "./diary-row-actions";
 
 /**
  * One Diary kind encoding (arch §12.6.2): court date = solid teal rail + gavel; prescription =
@@ -72,7 +73,10 @@ interface DiaryEventRowProps {
   showDate?: boolean;
 }
 
-/** Compact diary row used by the Week view (day cells and the Overdue strip). */
+/**
+ * Compact diary row used by the Day and Week views and the Overdue strip: the row link plus, as a
+ * sibling (a button cannot nest inside a link), the row's actions menu when it has any.
+ */
 export function DiaryEventRow({ event, slug, showDate = false }: DiaryEventRowProps) {
   const time = formatDiaryTime(event.time);
   const subtype = event.kind === "COURT_DATE" ? humaniseSubtype(event.subtype) : null;
@@ -81,42 +85,45 @@ export function DiaryEventRow({ event, slug, showDate = false }: DiaryEventRowPr
   const isTask = event.kind === "TASK_DUE";
 
   return (
-    <Link
-      href={`/org/${slug}${event.href}`}
-      data-kind={event.kind}
-      data-testid={`diary-event-${event.id}`}
-      className={cn(
-        "focus-visible:ring-ring flex items-start gap-2 rounded-md py-1.5 pr-2 pl-2 text-sm outline-none hover:bg-slate-50 focus-visible:ring-2 dark:hover:bg-slate-800/50",
-        kindRailClass(event.kind)
-      )}
-    >
-      <DiaryKindIcon kind={event.kind} className="mt-0.5" />
-      <span className="sr-only">{DIARY_KIND_SINGULAR[event.kind]}</span>
-      <span className="min-w-0 flex-1">
-        <span className="flex items-baseline gap-2">
-          {time && (
-            <span className="font-mono text-xs text-slate-600 tabular-nums dark:text-slate-400">
-              {time}
-            </span>
-          )}
-          <span
-            className={cn(
-              "truncate font-medium",
-              isTask ? "text-muted-foreground" : "text-slate-900 dark:text-slate-100"
+    <div className="flex items-start gap-1">
+      <Link
+        href={`/org/${slug}${event.href}`}
+        data-kind={event.kind}
+        data-testid={`diary-event-${event.id}`}
+        className={cn(
+          "focus-visible:ring-ring flex min-w-0 flex-1 items-start gap-2 rounded-md py-1.5 pr-2 pl-2 text-sm outline-none hover:bg-slate-50 focus-visible:ring-2 dark:hover:bg-slate-800/50",
+          kindRailClass(event.kind)
+        )}
+      >
+        <DiaryKindIcon kind={event.kind} className="mt-0.5" />
+        <span className="sr-only">{DIARY_KIND_SINGULAR[event.kind]}</span>
+        <span className="min-w-0 flex-1">
+          <span className="flex items-baseline gap-2">
+            {time && (
+              <span className="font-mono text-xs text-slate-600 tabular-nums dark:text-slate-400">
+                {time}
+              </span>
             )}
-          >
-            {event.title}
+            <span
+              className={cn(
+                "truncate font-medium",
+                isTask ? "text-muted-foreground" : "text-slate-900 dark:text-slate-100"
+              )}
+            >
+              {event.title}
+            </span>
+          </span>
+          <span className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+            {showDate && <span>{formatDiaryDay(event.date)}</span>}
+            {subtype && <span>{subtype}</span>}
+            <span className="truncate">{event.matterName}</span>
+            {reference && <span>{reference}</span>}
+            {feeEarner && <span>{feeEarner}</span>}
+            {event.overdue && <Badge variant="destructive">Overdue</Badge>}
           </span>
         </span>
-        <span className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-          {showDate && <span>{formatDiaryDay(event.date)}</span>}
-          {subtype && <span>{subtype}</span>}
-          <span className="truncate">{event.matterName}</span>
-          {reference && <span>{reference}</span>}
-          {feeEarner && <span>{feeEarner}</span>}
-          {event.overdue && <Badge variant="destructive">Overdue</Badge>}
-        </span>
-      </span>
-    </Link>
+      </Link>
+      <DiaryRowActions event={event} />
+    </div>
   );
 }

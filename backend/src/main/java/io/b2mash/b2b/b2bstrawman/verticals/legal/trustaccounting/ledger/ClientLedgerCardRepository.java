@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger;
 
 import jakarta.persistence.LockModeType;
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -33,4 +35,19 @@ public interface ClientLedgerCardRepository extends JpaRepository<ClientLedgerCa
   @Query(
       "SELECT COALESCE(SUM(c.balance), 0) FROM ClientLedgerCard c WHERE c.customerId = :customerId")
   BigDecimal sumBalancesForCustomer(@Param("customerId") UUID customerId);
+
+  /**
+   * Batch variant of {@link #sumBalancesForCustomer}: one row per customer that has at least one
+   * ledger card (absent customers have a zero balance). Used by the Matters list (Phase 87, Epic
+   * 615A) and reusable by the Clients list.
+   */
+  @Query(
+      """
+      SELECT c.customerId AS customerId, COALESCE(SUM(c.balance), 0) AS balance
+      FROM ClientLedgerCard c
+      WHERE c.customerId IN :customerIds
+      GROUP BY c.customerId
+      """)
+  List<ClientTrustBalanceProjection> sumBalancesByCustomerIdIn(
+      @Param("customerIds") Collection<UUID> customerIds);
 }

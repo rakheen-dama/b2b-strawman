@@ -8,6 +8,8 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerProjectLinkedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
+import io.b2mash.b2b.b2bstrawman.diary.NextDiaryDateProjection;
+import io.b2mash.b2b.b2bstrawman.diary.NextDiaryDateRepository;
 import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectReopenedEvent;
@@ -21,24 +23,35 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.dto.MatterListRow;
 import io.b2mash.b2b.b2bstrawman.project.dto.MatterResponse;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
 import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
+import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.view.CustomFieldFilterUtil;
 import io.b2mash.b2b.b2bstrawman.view.ViewFilterHelper;
 import io.b2mash.b2b.b2bstrawman.worktype.WorkTypes;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -54,6 +67,11 @@ public class ProjectService {
 
   private static final Logger log = LoggerFactory.getLogger(ProjectService.class);
 
+  // Module ids read by the Matters list projection (Epic 615A).
+  private static final String DISBURSEMENTS_MODULE = "disbursements";
+  private static final String TRUST_ACCOUNTING_MODULE = "trust_accounting";
+  private static final String COURT_CALENDAR_MODULE = "court_calendar";
+
   private final ProjectRepository repository;
   private final ProjectMemberRepository projectMemberRepository;
   private final ProjectAccessService projectAccessService;
@@ -68,6 +86,11 @@ public class ProjectService {
   private final OrgSettingsService orgSettingsService;
   private final EntityTagService entityTagService;
   private final ViewFilterHelper viewFilterHelper;
+  private final MatterListRowRepository matterListRowRepository;
+  private final NextDiaryDateRepository nextDiaryDateRepository;
+  private final ClientLedgerCardRepository clientLedgerCardRepository;
+  private final OrgSettingsRepository orgSettingsRepository;
+  private final Clock clock;
 
   public ProjectService(
       ProjectRepository repository,
@@ -83,7 +106,12 @@ public class ProjectService {
       CustomerProjectRepository customerProjectRepository,
       OrgSettingsService orgSettingsService,
       EntityTagService entityTagService,
-      ViewFilterHelper viewFilterHelper) {
+      ViewFilterHelper viewFilterHelper,
+      MatterListRowRepository matterListRowRepository,
+      NextDiaryDateRepository nextDiaryDateRepository,
+      ClientLedgerCardRepository clientLedgerCardRepository,
+      OrgSettingsRepository orgSettingsRepository,
+      Clock clock) {
     this.repository = repository;
     this.projectMemberRepository = projectMemberRepository;
     this.projectAccessService = projectAccessService;
@@ -98,6 +126,11 @@ public class ProjectService {
     this.orgSettingsService = orgSettingsService;
     this.entityTagService = entityTagService;
     this.viewFilterHelper = viewFilterHelper;
+    this.matterListRowRepository = matterListRowRepository;
+    this.nextDiaryDateRepository = nextDiaryDateRepository;
+    this.clientLedgerCardRepository = clientLedgerCardRepository;
+    this.orgSettingsRepository = orgSettingsRepository;
+    this.clock = clock;
   }
 
   /**
@@ -306,6 +339,259 @@ public class ProjectService {
               }
             })
         .toList();
+  }
+
+  // --- Matters list projection (Phase 87, Epic 615A — arch §12.2.6, §12.3.4) ---
+
+  /**
+   * Base rows plus whether a saved view produced them (custom-field/tag params apply otherwise).
+   */
+  private record BaseSelection(List<MatterWithRole> matters, boolean viewApplied) {}
+
+  /**
+   * {@code GET /api/matters} rows: the same base selection as {@link #listProjects(UUID, String,
+   * LocalDate, UUID, Map, ActorContext)} (saved view, or accessible matters with status — default
+   * ACTIVE — / dueBefore / customerId), narrowed by the list params, then enriched by batched
+   * aggregates merged in Java. Every narrowing happens here in the service, never in the
+   * controller: {@code inactiveSince} is a SQL predicate (one statement over the surviving ids);
+   * {@code mine}, {@code hasUnbilled} and the custom-field/tag params filter the loaded rows in
+   * Java ({@code mine} on the base query's caller role, {@code hasUnbilled} on the aggregate
+   * statement's unbilled minutes, tags on the batched tag lookup). Cheap filters run before the
+   * aggregate fan-out; tags run last because they need the tag batch.
+   *
+   * <p>Statement budget on the default path (no view, no inactiveSince): base 1 + org settings 1 +
+   * matter aggregates 1 + next diary 1 + trust 0–1 + tags 1–2 = at most 7, independent of page size
+   * (pinned by {@code MatterListRowIntegrationTest}). A saved view adds 1–2 (view lookup + caller
+   * roles); {@code inactiveSince} adds 1.
+   *
+   * <p>Redaction: {@code unbilledValue} needs FINANCIAL_VISIBILITY (owner/admin always — the 614A
+   * home rule); {@code trustBalance} needs VIEW_TRUST and the trust_accounting module. Minutes and
+   * counts are never redacted. Legal diary kinds (court dates, prescriptions) count only with the
+   * court_calendar module and VIEW_LEGAL — the One Diary gate.
+   */
+  @Transactional(readOnly = true)
+  public List<MatterListRow> listMatterRows(MatterListQuery q, ActorContext actor) {
+    BaseSelection base = selectBase(q, actor);
+    List<MatterWithRole> matters = base.matters();
+
+    // mine: the caller has a project_members row (role resolved by the base query)
+    if (q.mine()) {
+      matters = matters.stream().filter(m -> m.matterRole() != null).toList();
+    }
+    // custom-field params (in-memory path only, exactly as listProjects): on the base rows'
+    // projects.custom_fields, before any aggregate work
+    Map<String, String> customFieldFilters =
+        base.viewApplied()
+            ? Map.of()
+            : CustomFieldFilterUtil.extractCustomFieldFilters(q.allParams());
+    if (!customFieldFilters.isEmpty()) {
+      matters =
+          matters.stream()
+              .filter(
+                  m ->
+                      CustomFieldFilterUtil.matchesCustomFieldFilters(
+                          customFieldsOf(m.matter()), customFieldFilters))
+              .toList();
+    }
+    // inactiveSince: SQL predicate over the surviving ids (+1 statement, only when present)
+    if (q.inactiveSince() != null && !matters.isEmpty()) {
+      Set<UUID> inactive =
+          new HashSet<>(
+              matterListRowRepository.findInactiveSince(idsOf(matters), q.inactiveSince()));
+      matters = matters.stream().filter(m -> inactive.contains(m.matter().getId())).toList();
+    }
+    if (matters.isEmpty()) {
+      return List.of();
+    }
+
+    // ONE settings read for currency + module flags (getDefaultCurrency()/isModuleEnabled() each
+    // re-run the settings query).
+    Optional<OrgSettings> settings = orgSettingsRepository.findForCurrentTenant();
+    String currency =
+        settings.map(OrgSettings::getDefaultCurrency).orElse(OrgSettingsService.DEFAULT_CURRENCY);
+    Set<String> modules = settings.map(s -> Set.copyOf(s.getEnabledModules())).orElse(Set.of());
+    boolean seesValue =
+        actor.isOwnerOrAdmin() || RequestScopes.hasCapability("FINANCIAL_VISIBILITY");
+    boolean seesTrust =
+        modules.contains(TRUST_ACCOUNTING_MODULE) && RequestScopes.hasCapability("VIEW_TRUST");
+    boolean includeLegalKinds =
+        modules.contains(COURT_CALENDAR_MODULE) && RequestScopes.hasCapability("VIEW_LEGAL");
+
+    Map<UUID, MatterListAggregateProjection> aggregates = new HashMap<>();
+    for (var a :
+        matterListRowRepository.findAggregates(
+            idsOf(matters), currency, modules.contains(DISBURSEMENTS_MODULE))) {
+      aggregates.put(a.getMatterId(), a);
+    }
+    // hasUnbilled: unbilled billable minutes > 0 (computed by the aggregate statement)
+    if (q.hasUnbilled()) {
+      matters =
+          matters.stream().filter(m -> minutesOf(aggregates.get(m.matter().getId())) > 0).toList();
+      if (matters.isEmpty()) {
+        return List.of();
+      }
+    }
+
+    List<UUID> ids = idsOf(matters);
+    Map<UUID, NextDiaryDateProjection> nextDiary = new HashMap<>();
+    for (var n :
+        nextDiaryDateRepository.findNextByMatterIdIn(
+            ids, LocalDate.now(clock), includeLegalKinds)) {
+      nextDiary.put(n.getMatterId(), n);
+    }
+    Map<UUID, BigDecimal> trustByClient = seesTrust ? trustByClient(matters) : Map.of();
+    // ADR-342: storage key, do not rename
+    var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", ids);
+
+    List<MatterListRow> rows =
+        matters.stream()
+            .map(
+                m ->
+                    toRow(
+                        m,
+                        aggregates.get(m.matter().getId()),
+                        nextDiary.get(m.matter().getId()),
+                        trustByClient,
+                        tagsByEntityId.getOrDefault(m.matter().getId(), List.of()),
+                        currency,
+                        seesValue,
+                        seesTrust))
+            .toList();
+
+    // tag params: in-memory path only, exactly as listProjects does (needs the tag batch above)
+    if (!base.viewApplied()) {
+      List<String> tagSlugs = TagFilterUtil.extractTagSlugs(q.allParams());
+      if (!tagSlugs.isEmpty()) {
+        rows =
+            rows.stream().filter(r -> TagFilterUtil.matchesTagFilter(r.tags(), tagSlugs)).toList();
+      }
+    }
+    return rows;
+  }
+
+  /**
+   * Base selection with the same semantics as {@link #listProjects(UUID, String, LocalDate, UUID,
+   * Map, ActorContext)}: a saved view (ADR-055, ViewFilterHelper untouched) narrowed by customerId,
+   * else the actor's accessible matters with the status (default ACTIVE) / dueBefore / customerId
+   * filters. The view path resolves the caller's role per matter in one query, which is also the
+   * non-admin access set (the same rows as {@code findProjectsForMember}).
+   */
+  private BaseSelection selectBase(MatterListQuery q, ActorContext actor) {
+    if (q.view() != null) {
+      Map<UUID, String> callerRoles = new HashMap<>();
+      for (ProjectMember pm : projectMemberRepository.findByMemberId(actor.memberId())) {
+        callerRoles.put(pm.getProjectId(), pm.getProjectRole());
+      }
+      Set<UUID> accessibleIds = actor.isOwnerOrAdmin() ? null : callerRoles.keySet();
+      List<Project> filtered =
+          viewFilterHelper.applyViewFilter(
+              // ADR-342: storage key, do not rename
+              q.view(), "PROJECT", "projects", Project.class, accessibleIds, Project::getId);
+      if (filtered != null) {
+        return new BaseSelection(
+            filtered.stream()
+                .filter(p -> q.customerId() == null || q.customerId().equals(p.getCustomerId()))
+                .map(p -> new MatterWithRole(p, callerRoles.get(p.getId())))
+                .toList(),
+            true);
+      }
+    }
+
+    List<MatterWithRole> matters = listProjects(actor);
+    List<ProjectStatus> statusFilter = parseProjectStatuses(q.status());
+    LocalDate dueBefore = q.dueBefore();
+    UUID customerId = q.customerId();
+    return new BaseSelection(
+        matters.stream()
+            .filter(m -> statusFilter == null || statusFilter.contains(m.matter().getStatus()))
+            .filter(
+                m ->
+                    dueBefore == null
+                        || (m.matter().getDueDate() != null
+                            && m.matter().getDueDate().isBefore(dueBefore)))
+            .filter(m -> customerId == null || customerId.equals(m.matter().getCustomerId()))
+            .toList(),
+        false);
+  }
+
+  private static List<UUID> idsOf(List<MatterWithRole> matters) {
+    return matters.stream().map(m -> m.matter().getId()).toList();
+  }
+
+  private static int minutesOf(MatterListAggregateProjection a) {
+    return a == null || a.getUnbilledMinutes() == null ? 0 : a.getUnbilledMinutes().intValue();
+  }
+
+  private Map<UUID, BigDecimal> trustByClient(List<MatterWithRole> matters) {
+    Set<UUID> clientIds =
+        matters.stream()
+            .map(m -> m.matter().getCustomerId())
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+    if (clientIds.isEmpty()) {
+      return Map.of();
+    }
+    Map<UUID, BigDecimal> balances = new HashMap<>();
+    for (var row : clientLedgerCardRepository.sumBalancesByCustomerIdIn(clientIds)) {
+      balances.put(row.getCustomerId(), row.getBalance());
+    }
+    return balances;
+  }
+
+  private static MatterListRow toRow(
+      MatterWithRole mwr,
+      MatterListAggregateProjection agg,
+      NextDiaryDateProjection next,
+      Map<UUID, BigDecimal> trustByClient,
+      List<TagResponse> tags,
+      String currency,
+      boolean seesValue,
+      boolean seesTrust) {
+    Project p = mwr.matter();
+    BigDecimal value = null;
+    if (seesValue) {
+      BigDecimal time =
+          agg == null || agg.getUnbilledTimeValue() == null
+              ? BigDecimal.ZERO
+              : agg.getUnbilledTimeValue();
+      BigDecimal disbursements =
+          agg == null || agg.getUnbilledDisbursementAmount() == null
+              ? BigDecimal.ZERO
+              : agg.getUnbilledDisbursementAmount();
+      value = time.add(disbursements).setScale(2, RoundingMode.HALF_UP);
+    }
+    BigDecimal trust =
+        seesTrust && p.getCustomerId() != null
+            ? trustByClient.getOrDefault(p.getCustomerId(), BigDecimal.ZERO)
+            : null;
+    return new MatterListRow(
+        p.getId(),
+        p.getName(),
+        p.getDescription(),
+        p.getReferenceNumber(),
+        p.getStatus().name(),
+        p.getWorkType(),
+        p.getPriority(),
+        p.getDueDate(),
+        p.getCreatedAt(),
+        p.getCustomerId(),
+        agg == null ? null : agg.getClientName(),
+        agg == null ? null : agg.getFeeEarnerId(),
+        agg == null ? null : agg.getFeeEarnerName(),
+        mwr.matterRole(),
+        minutesOf(agg),
+        value,
+        currency,
+        trust,
+        next == null ? null : next.getNextDate(),
+        next == null ? null : next.getNextKind(),
+        agg == null || agg.getOpenTaskCount() == null ? 0 : agg.getOpenTaskCount().intValue(),
+        tags,
+        customFieldsOf(p));
+  }
+
+  private static Map<String, Object> customFieldsOf(Project p) {
+    return p.getCustomFields() != null ? p.getCustomFields() : Map.of();
   }
 
   @Transactional(readOnly = true)

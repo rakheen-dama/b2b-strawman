@@ -20,6 +20,10 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
 
   List<Customer> findByLifecycleStatus(LifecycleStatus lifecycleStatus);
 
+  /** {@code status} is the archive flag ("ACTIVE"/"ARCHIVED"), independent of lifecycle. */
+  List<Customer> findByStatusAndLifecycleStatusIn(
+      String status, Collection<LifecycleStatus> lifecycleStatuses);
+
   @Query(
       "SELECT c.id FROM Customer c WHERE c.lifecycleStatus = :status AND c.offboardedAt < :before")
   List<UUID> findIdsByLifecycleStatusAndOffboardedAtBefore(

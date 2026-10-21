@@ -308,34 +308,32 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
       @Param("granularity") String granularity,
       @Param("format") String format);
 
-  // --- Team workload aggregation query (Epic 76B) ---
+  // --- Unbilled WIP by fee earner (Phase 87, Epic 614A) ---
 
   /**
-   * Team workload query: aggregates hours per member per project for a date range. Returns flat
-   * rows to be post-processed (grouped by member, capped at 5 projects). Tenant isolation is
-   * provided by the dedicated schema (search_path).
+   * Unbilled WIP by fee earner for the legal-native home (arch §12.3.3). Unbilled = {@code billable
+   * AND invoice_id IS NULL} ({@link BillingStatus#UNBILLED}). Value uses the per-entry {@code
+   * billing_rate_snapshot}, never a live rate. Grouped by member and rate currency: entries with no
+   * rate snapshot form a null-currency row (value 0), so callers fold rows per member. No tasks
+   * join is needed. Tenant isolation is provided by the dedicated schema (search_path).
    */
   @Query(
       nativeQuery = true,
       value =
           """
       SELECT
-          m.id AS memberId,
+          te.member_id AS memberId,
           m.name AS memberName,
-          t.project_id AS projectId,
-          p.name AS projectName,
-          COALESCE(SUM(te.duration_minutes), 0) AS totalMinutes,
-          COALESCE(SUM(CASE WHEN te.billable THEN te.duration_minutes ELSE 0 END), 0) AS billableMinutes
+          te.billing_rate_currency AS currency,
+          COALESCE(SUM(te.duration_minutes), 0) AS minutes,
+          COALESCE(SUM(te.duration_minutes / 60.0 * COALESCE(te.billing_rate_snapshot, 0)), 0) AS value,
+          MIN(te.date) AS oldestEntryDate
       FROM time_entries te
-      JOIN tasks t ON te.task_id = t.id
       JOIN members m ON te.member_id = m.id
-      JOIN projects p ON t.project_id = p.id
-      WHERE te.date >= CAST(:fromDate AS DATE) AND te.date <= CAST(:toDate AS DATE)
-      GROUP BY m.id, m.name, t.project_id, p.name
-      ORDER BY SUM(te.duration_minutes) DESC
+      WHERE te.billable = true AND te.invoice_id IS NULL
+      GROUP BY te.member_id, m.name, te.billing_rate_currency
       """)
-  List<TeamWorkloadProjection> findTeamWorkload(
-      @Param("fromDate") LocalDate from, @Param("toDate") LocalDate to);
+  List<UnbilledWipByMemberProjection> findUnbilledWipByMember();
 
   // --- Personal dashboard trend query (Epic 79A) ---
 

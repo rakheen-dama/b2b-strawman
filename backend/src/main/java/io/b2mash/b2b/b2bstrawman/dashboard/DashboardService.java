@@ -6,39 +6,58 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.audit.CrossProjectActivityProjection;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudget;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudgetRepository;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.CrossMatterActivityItem;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.FicaOutstandingResponse;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.FicaOutstandingResponse.FicaOutstandingClient;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiValues;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.MatterBreakdownEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.MatterHealth;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.MatterHealthDetail;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.MatterHealthMetrics;
-import io.b2mash.b2b.b2bstrawman.dashboard.dto.MatterHoursEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.MemberHoursEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.PersonalDashboard;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TaskSummary;
-import io.b2mash.b2b.b2bstrawman.dashboard.dto.TeamWorkloadEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrendPoint;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse.TrustAccountRef;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.UnbilledWipResponse;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.UnbilledWipResponse.FeeEarnerWip;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.UpcomingDeadline;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.UtilizationSummary;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.informationrequest.FicaStatusProjector;
+import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.MatterWithRole;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectStatus;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
 import io.b2mash.b2b.b2bstrawman.timeentry.MemberTimeSummaryProjection;
 import io.b2mash.b2b.b2bstrawman.timeentry.MyWorkProjectTimeSummaryProjection;
-import io.b2mash.b2b.b2bstrawman.timeentry.TeamWorkloadProjection;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import io.b2mash.b2b.b2bstrawman.timeentry.UnbilledWipByMemberProjection;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliation;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -68,6 +87,14 @@ public class DashboardService {
   /** Upper bound for the activity-feed {@code limit} (clamped). */
   static final int MAX_ACTIVITY_LIMIT = 50;
 
+  /** Bounds for the fica-outstanding {@code limit} (clamped). */
+  static final int MIN_FICA_OUTSTANDING_LIMIT = 1;
+
+  static final int MAX_FICA_OUTSTANDING_LIMIT = 50;
+
+  private static final String DISBURSEMENTS_MODULE = "disbursements";
+  private static final String TRUST_ACCOUNTING_MODULE = "trust_accounting";
+
   private final TaskRepository taskRepository;
   private final TimeEntryRepository timeEntryRepository;
   private final AuditEventRepository auditEventRepository;
@@ -76,6 +103,15 @@ public class DashboardService {
   private final CustomerProjectRepository customerProjectRepository;
   private final CustomerRepository customerRepository;
   private final ProjectAccessService projectAccessService;
+  private final OrgSettingsService orgSettingsService;
+  private final VerticalModuleGuard moduleGuard;
+  private final InformationRequestService informationRequestService;
+  private final TrustAccountService trustAccountService;
+  private final TrustTransactionService trustTransactionService;
+  private final ClientLedgerService clientLedgerService;
+  private final TrustReconciliationRepository trustReconciliationRepository;
+  private final DisbursementRepository disbursementRepository;
+  private final Clock clock;
 
   private final Cache<String, Object> projectCache =
       Caffeine.newBuilder().maximumSize(5_000).expireAfterWrite(Duration.ofMinutes(1)).build();
@@ -91,7 +127,16 @@ public class DashboardService {
       ProjectRepository projectRepository,
       CustomerProjectRepository customerProjectRepository,
       CustomerRepository customerRepository,
-      ProjectAccessService projectAccessService) {
+      ProjectAccessService projectAccessService,
+      OrgSettingsService orgSettingsService,
+      VerticalModuleGuard moduleGuard,
+      InformationRequestService informationRequestService,
+      TrustAccountService trustAccountService,
+      TrustTransactionService trustTransactionService,
+      ClientLedgerService clientLedgerService,
+      TrustReconciliationRepository trustReconciliationRepository,
+      DisbursementRepository disbursementRepository,
+      Clock clock) {
     this.taskRepository = taskRepository;
     this.timeEntryRepository = timeEntryRepository;
     this.auditEventRepository = auditEventRepository;
@@ -100,6 +145,15 @@ public class DashboardService {
     this.customerProjectRepository = customerProjectRepository;
     this.customerRepository = customerRepository;
     this.projectAccessService = projectAccessService;
+    this.orgSettingsService = orgSettingsService;
+    this.moduleGuard = moduleGuard;
+    this.informationRequestService = informationRequestService;
+    this.trustAccountService = trustAccountService;
+    this.trustTransactionService = trustTransactionService;
+    this.clientLedgerService = clientLedgerService;
+    this.trustReconciliationRepository = trustReconciliationRepository;
+    this.disbursementRepository = disbursementRepository;
+    this.clock = clock;
   }
 
   // --- Project-scoped endpoints (Epic 75B) ---
@@ -223,38 +277,6 @@ public class DashboardService {
   // --- Org-level endpoints (Epic 76B) ---
 
   /**
-   * Returns team workload data aggregating hours per member across projects for a date range.
-   * Admin/owner sees all members; regular members see only their own entry. Results are cached in
-   * the org cache.
-   *
-   * @param tenantId the tenant schema for cache key isolation
-   * @param actor the authenticated actor for access filtering and visibility
-   * @param from start date of the workload period
-   * @param to end date of the workload period
-   * @return list of team workload entries with per-project breakdowns
-   */
-  @SuppressWarnings("unchecked")
-  @Transactional(readOnly = true)
-  public List<TeamWorkloadEntry> getTeamWorkload(
-      String tenantId, ActorContext actor, LocalDate from, LocalDate to) {
-    requireValidDateRange(from, to);
-
-    String cacheKey =
-        isAdminOrOwner(actor.orgRole())
-            ? tenantId + ":team-workload:all:" + from + "_" + to
-            : tenantId + ":team-workload:member:" + actor.memberId() + ":" + from + "_" + to;
-
-    List<TeamWorkloadEntry> cached = (List<TeamWorkloadEntry>) orgCache.getIfPresent(cacheKey);
-    if (cached != null) {
-      return cached;
-    }
-
-    List<TeamWorkloadEntry> result = computeTeamWorkload(actor, from, to);
-    orgCache.put(cacheKey, result);
-    return result;
-  }
-
-  /**
    * Returns recent cross-project activity events. Admin/owner sees all events; regular members see
    * only events from projects they belong to. Results are cached in the org cache.
    *
@@ -345,6 +367,193 @@ public class DashboardService {
     PersonalDashboard result = computePersonalDashboard(memberId, from, to);
     projectCache.put(key, result);
     return result;
+  }
+
+  // --- Legal-native home reads (Phase 87, Epic 614A — arch §12.3.3) ---
+
+  /**
+   * Unbilled WIP by fee earner. Callers with {@code FINANCIAL_VISIBILITY} (or admin/owner) see
+   * every fee earner with values; everyone else gets {@link
+   * UnbilledWipResponse#withFinancialsRedacted} — their own row, hours only. Value counts only time
+   * recorded in the org default currency; the disbursement total is null when the {@code
+   * disbursements} module is off. Not cached.
+   */
+  @Transactional(readOnly = true)
+  public UnbilledWipResponse getUnbilledWip(ActorContext actor) {
+    String currency = orgSettingsService.getDefaultCurrency();
+    List<FeeEarnerWip> rows =
+        foldUnbilledWipByMember(timeEntryRepository.findUnbilledWipByMember(), currency);
+    int totalMinutes = rows.stream().mapToInt(FeeEarnerWip::minutes).sum();
+    BigDecimal totalValue =
+        rows.stream()
+            .map(FeeEarnerWip::value)
+            .reduce(BigDecimal.ZERO, BigDecimal::add)
+            .setScale(2, RoundingMode.HALF_UP);
+    BigDecimal disbursementTotal =
+        moduleGuard.isModuleEnabled(DISBURSEMENTS_MODULE)
+            ? disbursementRepository.sumApprovedUnbilledAmount().setScale(2, RoundingMode.HALF_UP)
+            : null;
+    var full =
+        new UnbilledWipResponse(
+            LocalDate.now(clock),
+            currency,
+            totalMinutes,
+            totalValue,
+            disbursementTotal,
+            rows,
+            false);
+    boolean seesFinancials =
+        isAdminOrOwner(actor.orgRole()) || RequestScopes.hasCapability("FINANCIAL_VISIBILITY");
+    return seesFinancials ? full : full.withFinancialsRedacted(actor.memberId());
+  }
+
+  /**
+   * Non-archived ONBOARDING/ACTIVE clients whose FICA status (batched through {@link
+   * FicaStatusProjector}) is not DONE, longest-outstanding first. {@code daysOutstanding} counts
+   * from the client's last lifecycle transition (or creation). {@code outstandingCount} counts all
+   * outstanding clients; {@code clients} holds the top {@code limit} (clamped to 1–50).
+   */
+  @Transactional(readOnly = true)
+  public FicaOutstandingResponse getFicaOutstanding(int limit) {
+    int clamped = Math.max(MIN_FICA_OUTSTANDING_LIMIT, Math.min(MAX_FICA_OUTSTANDING_LIMIT, limit));
+    List<Customer> clients =
+        customerRepository.findByStatusAndLifecycleStatusIn(
+            "ACTIVE", List.of(LifecycleStatus.ONBOARDING, LifecycleStatus.ACTIVE));
+    var statuses =
+        informationRequestService.getFicaStatuses(clients.stream().map(Customer::getId).toList());
+    LocalDate today = LocalDate.now(clock);
+    List<FicaOutstandingClient> outstanding =
+        clients.stream()
+            .filter(c -> !FicaStatusProjector.DONE.equals(statuses.get(c.getId()).status()))
+            .map(
+                c -> {
+                  var fica = statuses.get(c.getId());
+                  Instant openedAt =
+                      c.getLifecycleStatusChangedAt() != null
+                          ? c.getLifecycleStatusChangedAt()
+                          : c.getCreatedAt();
+                  int days =
+                      (int)
+                          ChronoUnit.DAYS.between(
+                              LocalDate.ofInstant(openedAt, clock.getZone()), today);
+                  return new FicaOutstandingClient(
+                      c.getId(),
+                      c.getName(),
+                      c.getLifecycleStatus().name(),
+                      fica.status(),
+                      fica.requestId(),
+                      openedAt,
+                      days);
+                })
+            .sorted(
+                Comparator.comparingInt(FicaOutstandingClient::daysOutstanding)
+                    .reversed()
+                    .thenComparing(FicaOutstandingClient::clientName))
+            .toList();
+    return new FicaOutstandingResponse(
+        outstanding.size(), clients.size(), outstanding.stream().limit(clamped).toList(), clamped);
+  }
+
+  /**
+   * Trust position for {@code accountId}, or the primary GENERAL account (falling back to the first
+   * active account). Composes the services behind {@code /cashbook-balance}, {@code /total-balance}
+   * and {@code /pending-approvals}, so module-guard and 404 semantics match the parts; only the
+   * latest reconciliation is read from its repository. 404 when no trust account exists.
+   */
+  @Transactional(readOnly = true)
+  public TrustPositionResponse getTrustPosition(UUID accountId) {
+    moduleGuard.requireModule(TRUST_ACCOUNTING_MODULE);
+    var accounts = trustAccountService.listTrustAccounts();
+    var account =
+        accountId != null
+            ? trustAccountService.getTrustAccount(accountId)
+            : trustAccountService
+                .getPrimaryAccount()
+                .or(() -> accounts.stream().findFirst())
+                .orElseThrow(
+                    () ->
+                        ResourceNotFoundException.withDetail(
+                            "No trust account", "No trust account has been configured"));
+    BigDecimal cashbook = trustTransactionService.getCashbookBalance(account.id()).balance();
+    BigDecimal ledger = clientLedgerService.getTotalTrustBalance(account.id()).balance();
+    int pendingApprovals = trustTransactionService.getPendingApprovals(account.id()).size();
+    Optional<TrustReconciliation> latest =
+        trustReconciliationRepository.findFirstByTrustAccountIdOrderByPeriodEndDescCreatedAtDesc(
+            account.id());
+    LocalDate today = LocalDate.now(clock);
+    return new TrustPositionResponse(
+        account.id(),
+        account.accountName(),
+        account.bankName(),
+        cashbook,
+        ledger,
+        cashbook.subtract(ledger),
+        latest.map(TrustReconciliation::getPeriodEnd).orElse(null),
+        latest.map(r -> r.getStatus().name()).orElse(null),
+        latest.map(TrustReconciliation::isBalanced).orElse(null),
+        latest.map(r -> (int) ChronoUnit.DAYS.between(r.getPeriodEnd(), today)).orElse(null),
+        pendingApprovals,
+        accounts.stream()
+            .map(a -> new TrustAccountRef(a.id(), a.accountName(), a.isPrimary()))
+            .toList());
+  }
+
+  /**
+   * Folds the per-(member, currency) aggregate rows into one row per fee earner: minutes and oldest
+   * entry date over every row; value only from rows in {@code currency} (rows without a rate
+   * snapshot carry value 0). Sorted by value desc, then minutes desc, then name.
+   */
+  private static List<FeeEarnerWip> foldUnbilledWipByMember(
+      List<UnbilledWipByMemberProjection> rows, String currency) {
+    Map<UUID, FeeEarnerWip> byMember = new LinkedHashMap<>();
+    for (var row : rows) {
+      BigDecimal value =
+          currency.equals(row.getCurrency()) && row.getValue() != null
+              ? row.getValue()
+              : BigDecimal.ZERO;
+      var current =
+          new FeeEarnerWip(
+              row.getMemberId(),
+              row.getMemberName(),
+              row.getMinutes() != null ? row.getMinutes().intValue() : 0,
+              value,
+              row.getOldestEntryDate());
+      byMember.merge(
+          row.getMemberId(),
+          current,
+          (a, b) ->
+              new FeeEarnerWip(
+                  a.memberId(),
+                  a.memberName(),
+                  a.minutes() + b.minutes(),
+                  a.value().add(b.value()),
+                  earliest(a.oldestEntryDate(), b.oldestEntryDate())));
+    }
+    return byMember.values().stream()
+        .map(
+            r ->
+                new FeeEarnerWip(
+                    r.memberId(),
+                    r.memberName(),
+                    r.minutes(),
+                    r.value().setScale(2, RoundingMode.HALF_UP),
+                    r.oldestEntryDate()))
+        .sorted(
+            Comparator.comparing(FeeEarnerWip::value)
+                .reversed()
+                .thenComparing(Comparator.comparingInt(FeeEarnerWip::minutes).reversed())
+                .thenComparing(FeeEarnerWip::memberName))
+        .toList();
+  }
+
+  private static LocalDate earliest(LocalDate a, LocalDate b) {
+    if (a == null) {
+      return b;
+    }
+    if (b == null) {
+      return a;
+    }
+    return a.isBefore(b) ? a : b;
   }
 
   // --- Private: project-scoped computation ---
@@ -684,63 +893,6 @@ public class DashboardService {
                 .reversed()
                 .thenComparingDouble(MatterHealth::completionPercent))
         .toList();
-  }
-
-  private List<TeamWorkloadEntry> computeTeamWorkload(
-      ActorContext actor, LocalDate from, LocalDate to) {
-    List<TeamWorkloadProjection> rows = timeEntryRepository.findTeamWorkload(from, to);
-
-    // Group flat rows by member
-    Map<UUID, List<TeamWorkloadProjection>> byMember = new LinkedHashMap<>();
-    for (var row : rows) {
-      byMember.computeIfAbsent(row.getMemberId(), k -> new ArrayList<>()).add(row);
-    }
-
-    List<TeamWorkloadEntry> entries = new ArrayList<>();
-    for (var entry : byMember.entrySet()) {
-      UUID entryMemberId = entry.getKey();
-      List<TeamWorkloadProjection> memberRows = entry.getValue();
-
-      // For regular members, skip entries that are not their own
-      if (!isAdminOrOwner(actor.orgRole()) && !entryMemberId.equals(actor.memberId())) {
-        continue;
-      }
-
-      String memberName = memberRows.getFirst().getMemberName();
-
-      // Sum total and billable minutes across all projects
-      long totalMinutes = 0;
-      long billableMinutes = 0;
-      for (var row : memberRows) {
-        totalMinutes += row.getTotalMinutes();
-        billableMinutes += row.getBillableMinutes();
-      }
-
-      // Sort projects by hours DESC, cap at 5, aggregate rest as "Other"
-      memberRows.sort(Comparator.comparingLong(TeamWorkloadProjection::getTotalMinutes).reversed());
-
-      List<MatterHoursEntry> projects = new ArrayList<>();
-      long otherMinutes = 0;
-      for (int i = 0; i < memberRows.size(); i++) {
-        var row = memberRows.get(i);
-        if (i < 5) {
-          projects.add(
-              new MatterHoursEntry(
-                  row.getProjectId(), row.getProjectName(), row.getTotalMinutes() / 60.0));
-        } else {
-          otherMinutes += row.getTotalMinutes();
-        }
-      }
-      if (otherMinutes > 0) {
-        projects.add(new MatterHoursEntry(null, "Other", otherMinutes / 60.0));
-      }
-
-      entries.add(
-          new TeamWorkloadEntry(
-              entryMemberId, memberName, totalMinutes / 60.0, billableMinutes / 60.0, projects));
-    }
-
-    return entries;
   }
 
   private List<CrossMatterActivityItem> computeCrossProjectActivity(ActorContext actor, int limit) {

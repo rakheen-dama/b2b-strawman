@@ -110,15 +110,16 @@ class DashboardWithoutCapacityTest {
   }
 
   @Test
-  void teamWorkloadStillServed() throws Exception {
+  void teamWorkloadRouteIsGone() throws Exception {
+    // Was @GetMapping("/api/dashboard/team-workload") (DashboardController, Epic 76B) — deleted in
+    // Phase 87 Epic 614A (no legal consumer). With no handler the dispatcher answers 404.
     mockMvc
         .perform(
             get("/api/dashboard/team-workload")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$").isArray());
+        .andExpect(status().isNotFound());
   }
 
   @Test

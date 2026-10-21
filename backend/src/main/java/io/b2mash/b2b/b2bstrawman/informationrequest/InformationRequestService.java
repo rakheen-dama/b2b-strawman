@@ -28,13 +28,16 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -756,50 +759,77 @@ public class InformationRequestService {
    */
   @Transactional(readOnly = true)
   public FicaStatusResponse getFicaStatus(UUID customerId) {
-    // All active FICA templates (org may have duplicated the pack; we
-    // treat every request tied to any of them as "a FICA request").
-    var ficaTemplateIds =
-        templateRepository.findByPackId(FICA_ONBOARDING_PACK_ID).stream()
-            .map(RequestTemplate::getId)
-            .toList();
-    if (ficaTemplateIds.isEmpty()) {
-      return new FicaStatusResponse(customerId, "NOT_STARTED", null, null);
+    var ficaTemplateIds = ficaTemplateIds();
+    // No FICA template → NOT_STARTED without reading the client's requests.
+    List<InformationRequest> requests =
+        ficaTemplateIds.isEmpty() ? List.of() : requestRepository.findByCustomerId(customerId);
+    var projection =
+        FicaStatusProjector.project(ficaTemplateIds, requests, itemRepository::findByRequestId);
+    return toFicaStatusResponse(customerId, projection);
+  }
+
+  /**
+   * Batched FICA status for many clients in three queries (FICA template ids, their non-cancelled
+   * requests, the items of the COMPLETED ones) — the same rule as {@link #getFicaStatus(UUID)} via
+   * {@link FicaStatusProjector}. Returns one entry per requested id, in iteration order.
+   */
+  @Transactional(readOnly = true)
+  public Map<UUID, FicaStatusResponse> getFicaStatuses(Collection<UUID> customerIds) {
+    if (customerIds.isEmpty()) {
+      return Map.of();
     }
-
-    var customerRequests =
-        requestRepository.findByCustomerId(customerId).stream()
-            .filter(r -> r.getRequestTemplateId() != null)
-            .filter(r -> ficaTemplateIds.contains(r.getRequestTemplateId()))
-            // Ignore cancelled requests — they were never a live FICA pack.
-            .filter(r -> r.getStatus() != RequestStatus.CANCELLED)
-            .sorted(Comparator.comparing(InformationRequest::getCreatedAt).reversed())
-            .toList();
-
-    if (customerRequests.isEmpty()) {
-      return new FicaStatusResponse(customerId, "NOT_STARTED", null, null);
-    }
-
-    // Prefer the most-recent completed request; otherwise the most-recent
-    // live one. This lets a firm issue a second FICA pack without losing
-    // the earlier verification record while the new one is still open.
-    var completed =
-        customerRequests.stream().filter(r -> r.getStatus() == RequestStatus.COMPLETED).findFirst();
-    if (completed.isPresent()) {
-      var r = completed.get();
-      var items = itemRepository.findByRequestId(r.getId());
-      boolean allAccepted =
-          !items.isEmpty() && items.stream().allMatch(i -> i.getStatus() == ItemStatus.ACCEPTED);
-      if (allAccepted) {
-        return new FicaStatusResponse(customerId, "DONE", r.getCompletedAt(), r.getId());
+    var ficaTemplateIds = ficaTemplateIds();
+    Map<UUID, List<InformationRequest>> requestsByClient = Map.of();
+    Map<UUID, List<RequestItem>> itemsByRequest = Map.of();
+    if (!ficaTemplateIds.isEmpty()) {
+      var wanted = Set.copyOf(customerIds);
+      var requests =
+          requestRepository
+              .findByRequestTemplateIdInAndStatusNot(ficaTemplateIds, RequestStatus.CANCELLED)
+              .stream()
+              .filter(r -> wanted.contains(r.getCustomerId()))
+              .toList();
+      requestsByClient =
+          requests.stream().collect(Collectors.groupingBy(InformationRequest::getCustomerId));
+      // The rule only ever reads the items of a COMPLETED request.
+      var completedIds =
+          requests.stream()
+              .filter(r -> r.getStatus() == RequestStatus.COMPLETED)
+              .map(InformationRequest::getId)
+              .toList();
+      if (!completedIds.isEmpty()) {
+        itemsByRequest =
+            itemRepository.findByRequestIdIn(completedIds).stream()
+                .collect(Collectors.groupingBy(RequestItem::getRequestId));
       }
-      // COMPLETED in lifecycle but not every item ACCEPTED — treat as
-      // IN_PROGRESS so the UI prompts review rather than a green check.
-      return new FicaStatusResponse(customerId, "IN_PROGRESS", null, r.getId());
     }
+    var result = new LinkedHashMap<UUID, FicaStatusResponse>();
+    for (UUID customerId : customerIds) {
+      var items = itemsByRequest;
+      var projection =
+          FicaStatusProjector.project(
+              ficaTemplateIds,
+              requestsByClient.getOrDefault(customerId, List.of()),
+              requestId -> items.getOrDefault(requestId, List.of()));
+      result.put(customerId, toFicaStatusResponse(customerId, projection));
+    }
+    return result;
+  }
 
-    // No completed FICA request — pick the most-recent non-terminal one.
-    var live = customerRequests.get(0);
-    return new FicaStatusResponse(customerId, "IN_PROGRESS", null, live.getId());
+  /**
+   * Every template whose pack is the FICA onboarding pack. The org may have duplicated the pack;
+   * every request tied to any of them is "a FICA request" (no active filter).
+   */
+  private Set<UUID> ficaTemplateIds() {
+    return templateRepository.findByPackId(FICA_ONBOARDING_PACK_ID).stream()
+        .map(RequestTemplate::getId)
+        .collect(Collectors.toSet());
+  }
+
+  private static FicaStatusResponse toFicaStatusResponse(
+      UUID customerId, FicaStatusProjector.Projection projection) {
+    return new FicaStatusResponse(
+        customerId, projection.status(), projection.completedAt(), projection.requestId());
   }
 
   // ========== Dashboard Summary ==========

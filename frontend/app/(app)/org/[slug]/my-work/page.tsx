@@ -261,7 +261,7 @@ export default async function MyWorkPage({
       </div>
 
       {/* Extended widgets */}
-      <div data-testid="extended-widgets" className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div data-testid="extended-widgets" className="grid grid-cols-1 gap-4">
         <WeeklyTimeSummary initialSummary={timeSummary} initialFrom={from} />
       </div>
     </div>

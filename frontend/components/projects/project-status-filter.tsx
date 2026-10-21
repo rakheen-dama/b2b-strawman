@@ -21,7 +21,7 @@ export function ProjectStatusFilter({ slug }: ProjectStatusFilterProps) {
   const currentStatus = searchParams.get("status") ?? "ACTIVE";
 
   return (
-    <div className="flex items-center gap-2" data-testid="project-status-filter">
+    <div className="flex flex-wrap items-center gap-2" data-testid="project-status-filter">
       {FILTER_CHIPS.map((chip) => {
         const isActive = currentStatus === chip.key;
         const params = new URLSearchParams(searchParams.toString());

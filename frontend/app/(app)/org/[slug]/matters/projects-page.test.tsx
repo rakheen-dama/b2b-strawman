@@ -92,6 +92,7 @@ vi.mock("@/lib/capabilities", () => ({
 
 // Import page after mocks are set up
 import ProjectsPage from "./page";
+import { getViews } from "@/lib/api";
 
 // Mock NewFromTemplateDialog (client component with hooks)
 vi.mock("@/components/templates/NewFromTemplateDialog", () => ({
@@ -307,6 +308,55 @@ describe("ProjectsPage", () => {
 
       const urls = mockApiGet.mock.calls.map((c) => String(c[0]));
       expect(urls).toContain("/api/matters?mine=true&status=CLOSED");
+    });
+
+    const headerCell = (label: string) =>
+      screen.getAllByRole("columnheader").find((h) => h.textContent?.trim() === label);
+
+    it("drops low-priority columns in narrow containers on the default column set", async () => {
+      asMember();
+      mockApiGet.mockResolvedValue([makeProject()]);
+
+      const jsx = await ProjectsPage({ params, searchParams });
+      render(jsx);
+
+      expect(headerCell("Work type")).toHaveClass("hidden");
+      expect(headerCell("Opened")).toHaveClass("hidden");
+      expect(headerCell("Matter")).not.toHaveClass("hidden");
+    });
+
+    it("always renders the columns a saved view chose", async () => {
+      asMember();
+      vi.mocked(getViews).mockResolvedValueOnce([
+        {
+          id: "11111111-1111-1111-1111-111111111111",
+          entityType: "PROJECT",
+          name: "By work type",
+          filters: {},
+          columns: ["name", "workType", "createdAt"],
+          shared: false,
+          createdBy: "user_1",
+          sortOrder: 0,
+          createdAt: "2026-10-01T00:00:00Z",
+          updatedAt: "2026-10-01T00:00:00Z",
+        },
+      ]);
+      mockApiGet.mockResolvedValue([makeProject()]);
+
+      const jsx = await ProjectsPage({
+        params,
+        searchParams: Promise.resolve({ view: "11111111-1111-1111-1111-111111111111" }),
+      });
+      render(jsx);
+
+      expect(screen.getAllByRole("columnheader").map((h) => h.textContent?.trim())).toEqual([
+        "Matter",
+        "Work type",
+        "Opened",
+        "Actions",
+      ]);
+      expect(headerCell("Work type")).not.toHaveClass("hidden");
+      expect(headerCell("Opened")).not.toHaveClass("hidden");
     });
 
     it("has the view selector drop the backend-ignored tags param on saved views (F-3)", async () => {

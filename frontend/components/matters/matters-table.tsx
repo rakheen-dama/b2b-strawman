@@ -40,6 +40,19 @@ const NUMERIC_COLUMNS = new Set<string>(["unbilled", "trustBalance"]);
 
 const MAX_TAG_CHIPS = 3;
 
+/**
+ * Lower-priority columns, shown only when the table's own container is wide enough for them (a
+ * container query, so the sidebar and the page's max width are accounted for). Thresholds follow
+ * the measured column widths with the Matter/Client caps below: the other default columns plus
+ * the row menu need ~66.5rem, Fee earner included; Work type and Opened add ~13rem. At 1440px the
+ * container is ~70rem, so Fee earner shows and Work type/Opened wait for a wider container.
+ */
+const LOW_PRIORITY_COLUMN_CLASS: Partial<Record<MatterColumnId, string>> = {
+  feeEarnerName: "hidden @min-[67rem]:table-cell",
+  workType: "hidden @7xl:table-cell",
+  createdAt: "hidden @7xl:table-cell",
+};
+
 function isDiaryKind(value: string | null): value is DiaryKind {
   return value !== null && (DIARY_KINDS as readonly string[]).includes(value);
 }
@@ -58,6 +71,11 @@ interface MattersTableProps {
   query: Record<string, string>;
   /** Visually hidden table caption. */
   caption: string;
+  /**
+   * Hide lower-priority columns in narrow containers. Off for a saved view's own column choice;
+   * the active sort column is never hidden.
+   */
+  hideLowPriorityColumns?: boolean;
 }
 
 /**
@@ -72,8 +90,15 @@ export function MattersTable({
   sort,
   query,
   caption,
+  hideLowPriorityColumns = true,
 }: MattersTableProps) {
   const matterHref = (id: string) => `/org/${slug}/matters/${id}`;
+
+  function priorityClass(column: string): string | undefined {
+    if (!hideLowPriorityColumns || !isMatterColumnId(column) || sort.key === column)
+      return undefined;
+    return LOW_PRIORITY_COLUMN_CLASS[column];
+  }
 
   function renderCell(row: MatterListRow, column: MatterColumnId) {
     switch (column) {
@@ -90,10 +115,11 @@ export function MattersTable({
         );
       case "name":
         return (
-          <div className="flex min-w-0 items-center gap-2">
+          <div className="flex max-w-[14rem] min-w-0 items-center gap-2">
             <Link
               href={matterHref(row.id)}
               data-testid="matter-link"
+              title={row.name}
               className="truncate font-medium text-slate-950 hover:underline dark:text-slate-50"
             >
               {row.name}
@@ -123,7 +149,8 @@ export function MattersTable({
         return row.clientId && row.clientName ? (
           <Link
             href={`/org/${slug}/clients/${row.clientId}`}
-            className="text-slate-700 hover:text-slate-950 hover:underline dark:text-slate-300 dark:hover:text-slate-50"
+            title={row.clientName}
+            className="inline-block max-w-[10rem] truncate align-middle text-slate-700 hover:text-slate-950 hover:underline dark:text-slate-300 dark:hover:text-slate-50"
           >
             {row.clientName}
           </Link>
@@ -136,7 +163,9 @@ export function MattersTable({
         return row.feeEarnerName ? (
           <span className="inline-flex items-center gap-2">
             <AvatarCircle name={row.feeEarnerName} size={24} />
-            <span>{row.feeEarnerName}</span>
+            <span className="max-w-[8rem] truncate" title={row.feeEarnerName}>
+              {row.feeEarnerName}
+            </span>
           </span>
         ) : (
           EMPTY
@@ -176,69 +205,73 @@ export function MattersTable({
   }
 
   return (
-    <Table data-testid="matters-table">
-      <TableCaption className="sr-only">{caption}</TableCaption>
-      <TableHeader>
-        <TableRow className="hover:bg-transparent">
-          {columns.map((column) => {
-            if (!isMatterColumnId(column)) {
-              const fieldSlug = column.slice(CUSTOM_FIELD_COLUMN_PREFIX.length);
+    // `@container`: the low-priority column queries measure this box, and inline-size containment
+    // keeps the table's width from feeding back into the page layout.
+    <div className="@container">
+      <Table data-testid="matters-table">
+        <TableCaption className="sr-only">{caption}</TableCaption>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            {columns.map((column) => {
+              if (!isMatterColumnId(column)) {
+                const fieldSlug = column.slice(CUSTOM_FIELD_COLUMN_PREFIX.length);
+                return (
+                  <TableHead key={column} scope="col">
+                    {customFieldNames[fieldSlug] ?? fieldSlug}
+                  </TableHead>
+                );
+              }
+              const active = sort.key === column;
               return (
-                <TableHead key={column} scope="col">
-                  {customFieldNames[fieldSlug] ?? fieldSlug}
+                <TableHead
+                  key={column}
+                  scope="col"
+                  aria-sort={active ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
+                  className={cn(NUMERIC_COLUMNS.has(column) && "text-right", priorityClass(column))}
+                >
+                  <Link
+                    href={buildSortHref(slug, query, column, sort)}
+                    className={cn(
+                      "inline-flex items-center gap-1 hover:text-slate-950 dark:hover:text-slate-50",
+                      active && "text-slate-950 dark:text-slate-50"
+                    )}
+                  >
+                    {matterColumnLabel(column)}
+                    {active && <span aria-hidden="true">{sort.dir === "asc" ? "↑" : "↓"}</span>}
+                  </Link>
                 </TableHead>
               );
-            }
-            const active = sort.key === column;
-            return (
-              <TableHead
-                key={column}
-                scope="col"
-                aria-sort={active ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
-                className={cn(NUMERIC_COLUMNS.has(column) && "text-right")}
-              >
-                <Link
-                  href={buildSortHref(slug, query, column, sort)}
+            })}
+            <TableHead scope="col" className="w-10">
+              <span className="sr-only">Actions</span>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) => (
+            <MatterTableRow key={row.id} href={matterHref(row.id)}>
+              {columns.map((column) => (
+                <TableCell
+                  key={column}
                   className={cn(
-                    "inline-flex items-center gap-1 hover:text-slate-950 dark:hover:text-slate-50",
-                    active && "text-slate-950 dark:text-slate-50"
+                    NUMERIC_COLUMNS.has(column) && "text-right font-mono tabular-nums",
+                    priorityClass(column)
                   )}
                 >
-                  {matterColumnLabel(column)}
-                  {active && <span aria-hidden="true">{sort.dir === "asc" ? "↑" : "↓"}</span>}
-                </Link>
-              </TableHead>
-            );
-          })}
-          <TableHead scope="col" className="w-10">
-            <span className="sr-only">Actions</span>
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((row) => (
-          <MatterTableRow key={row.id} href={matterHref(row.id)}>
-            {columns.map((column) => (
-              <TableCell
-                key={column}
-                className={cn(
-                  NUMERIC_COLUMNS.has(column) && "text-right font-mono tabular-nums",
-                  column === "name" && "max-w-xs"
-                )}
-              >
-                {isMatterColumnId(column)
-                  ? renderCell(row, column)
-                  : formatCustomFieldCell(
-                      row.customFields?.[column.slice(CUSTOM_FIELD_COLUMN_PREFIX.length)]
-                    )}
+                  {isMatterColumnId(column)
+                    ? renderCell(row, column)
+                    : formatCustomFieldCell(
+                        row.customFields?.[column.slice(CUSTOM_FIELD_COLUMN_PREFIX.length)]
+                      )}
+                </TableCell>
+              ))}
+              <TableCell className="w-10 text-right">
+                <MatterRowActions slug={slug} matterId={row.id} clientId={row.clientId} />
               </TableCell>
-            ))}
-            <TableCell className="w-10 text-right">
-              <MatterRowActions slug={slug} matterId={row.id} clientId={row.clientId} />
-            </TableCell>
-          </MatterTableRow>
-        ))}
-      </TableBody>
-    </Table>
+            </MatterTableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

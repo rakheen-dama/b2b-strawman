@@ -67,7 +67,12 @@ const DEFAULT_SORT: MatterSort = { key: "nextDiaryDate", dir: "asc" };
 
 function renderTable(
   rows: MatterListRow[],
-  opts: { columns?: string[]; sort?: MatterSort; query?: Record<string, string> } = {}
+  opts: {
+    columns?: string[];
+    sort?: MatterSort;
+    query?: Record<string, string>;
+    hideLowPriorityColumns?: boolean;
+  } = {}
 ) {
   return render(
     <MattersTable
@@ -78,6 +83,7 @@ function renderTable(
       sort={opts.sort ?? DEFAULT_SORT}
       query={opts.query ?? {}}
       caption="Matters — Open matters"
+      hideLowPriorityColumns={opts.hideLowPriorityColumns}
     />
   );
 }
@@ -164,6 +170,76 @@ describe("MattersTable — columns", () => {
     expect(headers).toEqual(["Matter", "Status", "Court", "Actions"]);
     expect(screen.getByText("Durban High Court")).toBeInTheDocument();
     expect(screen.queryByText("LIT-0001")).not.toBeInTheDocument();
+  });
+});
+
+describe("MattersTable — fitting the container", () => {
+  const LOW_PRIORITY = ["Work type", "Fee earner", "Opened"];
+
+  function headerFor(label: string): HTMLElement {
+    const header = screen
+      .getAllByRole("columnheader")
+      .find((h) => h.textContent?.replace(/[↑↓]/g, "").trim() === label);
+    if (!header) throw new Error(`No "${label}" header`);
+    return header;
+  }
+
+  it("is its own size container, so column queries measure the table's box", () => {
+    renderTable([row()]);
+    expect(screen.getByTestId("matters-table").closest(".\\@container")).not.toBeNull();
+  });
+
+  it("hides Work type, Fee earner and Opened (header and cells) in narrow containers", () => {
+    renderTable([row()]);
+    expect(headerFor("Fee earner")).toHaveClass("hidden", "@min-[67rem]:table-cell");
+    expect(cellUnder("Fee earner")).toHaveClass("hidden", "@min-[67rem]:table-cell");
+    for (const label of ["Work type", "Opened"]) {
+      expect(headerFor(label), label).toHaveClass("hidden", "@7xl:table-cell");
+      expect(cellUnder(label), label).toHaveClass("hidden", "@7xl:table-cell");
+    }
+    for (const label of ["Reference", "Matter", "Client", "Status", "Unbilled", "Trust"]) {
+      expect(headerFor(label), label).not.toHaveClass("hidden");
+      expect(cellUnder(label), label).not.toHaveClass("hidden");
+    }
+    expect(headerFor("Actions")).not.toHaveClass("hidden");
+  });
+
+  it("never hides the active sort column (Dormant sorts by Opened)", () => {
+    renderTable([row()], { sort: { key: "createdAt", dir: "asc" } });
+    expect(headerFor("Opened")).not.toHaveClass("hidden");
+    expect(cellUnder("Opened")).not.toHaveClass("hidden");
+    expect(headerFor("Work type")).toHaveClass("hidden");
+  });
+
+  it("keeps every column of a saved view's own column choice", () => {
+    renderTable([row()], { hideLowPriorityColumns: false });
+    for (const label of LOW_PRIORITY) {
+      expect(headerFor(label), label).not.toHaveClass("hidden");
+      expect(cellUnder(label), label).not.toHaveClass("hidden");
+    }
+  });
+
+  it("caps long matter, client and fee-earner names to one truncated line with the full text as a title", () => {
+    const longName = "Khumalo Property Holdings — Erf 1234 Sandton Transfer mvihx3e91274";
+    renderTable([
+      row({
+        name: longName,
+        clientName: "Khumalo Property Holdings (Pty) Ltd",
+        feeEarnerName: "Nomvula Dlamini-Mokoena",
+      }),
+    ]);
+    const matterLink = screen.getByTestId("matter-link");
+    expect(matterLink).toHaveClass("truncate");
+    expect(matterLink).toHaveAttribute("title", longName);
+    expect(matterLink.parentElement).toHaveClass("max-w-[14rem]");
+
+    const clientLink = within(cellUnder("Client")).getByRole("link");
+    expect(clientLink).toHaveClass("truncate", "max-w-[10rem]");
+    expect(clientLink).toHaveAttribute("title", "Khumalo Property Holdings (Pty) Ltd");
+
+    const feeEarner = within(cellUnder("Fee earner")).getByText("Nomvula Dlamini-Mokoena");
+    expect(feeEarner).toHaveClass("truncate", "max-w-[8rem]");
+    expect(feeEarner).toHaveAttribute("title", "Nomvula Dlamini-Mokoena");
   });
 });
 

@@ -160,6 +160,8 @@ export default async function MattersPage({
     customFieldSlugs: fieldDefs.map((f) => f.slug),
   });
   const customFieldNames = Object.fromEntries(fieldDefs.map((f) => [f.slug, f.name]));
+  // Columns the user picked for a saved view always render; only the default set drops columns.
+  const explicitColumns = savedViewActive && (selection.view.columns?.length ?? 0) > 0;
 
   const query: Record<string, string> = {};
   for (const [key, value] of Object.entries(resolvedSearchParams)) {
@@ -181,9 +183,11 @@ export default async function MattersPage({
   const { t } = createMessages("empty-states");
 
   return (
-    <div className="space-y-6">
+    // Single minmax(0, 1fr) grid column: the page reports no min-content width, so the wide table
+    // scrolls inside its own container instead of widening the app shell.
+    <div className="grid grid-cols-1 gap-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Matters</h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
@@ -207,21 +211,24 @@ export default async function MattersPage({
 
       {/* Toolbar: views, search, status, filters */}
       <div className="space-y-3">
-        <Suspense fallback={null}>
-          <ViewSelectorClient
-            entityType="PROJECT"
-            views={views}
-            canCreate={true}
-            canCreateShared={isAdmin}
-            slug={slug}
-            allTags={allTags}
-            fieldDefinitions={fieldDefs}
-            onSave={handleCreateView}
-            systemViews={MATTER_SYSTEM_VIEWS}
-            defaultViewId={DEFAULT_MATTER_VIEW_ID}
-            clearOnSavedView={SAVED_VIEW_IGNORED_PARAMS}
-          />
-        </Suspense>
+        {/* The view tabs scroll sideways on narrow screens; pb-1 keeps the active underline in view. */}
+        <div className="overflow-x-auto pb-1">
+          <Suspense fallback={null}>
+            <ViewSelectorClient
+              entityType="PROJECT"
+              views={views}
+              canCreate={true}
+              canCreateShared={isAdmin}
+              slug={slug}
+              allTags={allTags}
+              fieldDefinitions={fieldDefs}
+              onSave={handleCreateView}
+              systemViews={MATTER_SYSTEM_VIEWS}
+              defaultViewId={DEFAULT_MATTER_VIEW_ID}
+              clearOnSavedView={SAVED_VIEW_IGNORED_PARAMS}
+            />
+          </Suspense>
+        </div>
         <div className="flex flex-wrap items-center gap-3">
           <Suspense fallback={null}>
             <MatterSearch />
@@ -273,6 +280,7 @@ export default async function MattersPage({
               sort={sort}
               query={query}
               caption={`Matters — ${selection.view.name}`}
+              hideLowPriorityColumns={!explicitColumns}
             />
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400" data-testid="matters-footer">

@@ -318,6 +318,15 @@ export function buildClientListParams(
 }
 
 /**
+ * Whether the selected saved view itself stores `showIncomplete: true`. The backend applies it on
+ * the view path, and a URL param cannot lift it, so the toolbar shows it as a fixed indicator
+ * rather than a toggle. False on system views (none carry it).
+ */
+export function savedViewShowIncomplete(selection: ViewSelection): boolean {
+  return selection.kind === "saved" && isTrue(selection.view.filters?.showIncomplete);
+}
+
+/**
  * A saved view's stored `lifecycleStatus` (a view saved from the "Active" system view carries
  * `{ lifecycleStatus: "ACTIVE" }`, F-4). Neither ADR-055 view execution nor the list endpoint's
  * view path applies it, so the page filters the rows with it. Null when absent or invalid, or on

@@ -281,6 +281,46 @@ describe("ClientsPage — table", () => {
   });
 });
 
+describe("ClientsPage — Show incomplete toggle", () => {
+  it("default: an inactive toggle link that turns the filter on", async () => {
+    await renderPage();
+    const toggle = screen.getByTestId("client-show-incomplete");
+    expect(toggle.tagName).toBe("A");
+    expect(toggle).not.toHaveAttribute("aria-current");
+    expect(toggle).toHaveAttribute("href", "/org/acme/clients?showIncomplete=true");
+  });
+
+  it("?showIncomplete=true: an active toggle link that turns the filter off", async () => {
+    await renderPage({ showIncomplete: "true" });
+    const toggle = screen.getByTestId("client-show-incomplete");
+    expect(toggle.tagName).toBe("A");
+    expect(toggle).toHaveAttribute("aria-current", "true");
+    expect(toggle).toHaveAttribute("href", "/org/acme/clients");
+  });
+
+  it("saved view without the stored filter: the URL param still toggles it", async () => {
+    mockGetViews.mockResolvedValue([savedView()]);
+    await renderPage({ view: SAVED_ID, showIncomplete: "true" });
+    expect(requestedUrls()).toEqual([`/api/clients?view=${SAVED_ID}&showIncomplete=true`]);
+    const toggle = screen.getByTestId("client-show-incomplete");
+    expect(toggle.tagName).toBe("A");
+    expect(toggle).toHaveAttribute("aria-current", "true");
+    expect(toggle).toHaveAttribute("href", `/org/acme/clients?view=${SAVED_ID}`);
+  });
+
+  it("saved view storing showIncomplete: an active, non-toggleable indicator", async () => {
+    mockGetViews.mockResolvedValue([savedView({ filters: { showIncomplete: true } })]);
+    mockApiGet.mockResolvedValue([]);
+    await renderPage({ view: SAVED_ID });
+    expect(requestedUrls()).toEqual([`/api/clients?view=${SAVED_ID}&showIncomplete=true`]);
+    const indicator = screen.getByTestId("client-show-incomplete");
+    expect(indicator.tagName).toBe("SPAN");
+    expect(indicator).toHaveAttribute("aria-current", "true");
+    expect(indicator).not.toHaveAttribute("href");
+    expect(screen.queryByRole("link", { name: "Show incomplete" })).not.toBeInTheDocument();
+  });
+});
+
 describe("ClientsPage — empty states", () => {
   it("no clients at all: first-run empty state with the create action for admins", async () => {
     mockApiGet.mockResolvedValue([]);

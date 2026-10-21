@@ -33,7 +33,14 @@ interface ClientLifecycleFilterProps {
    * saved-view path, so there they would filter nothing.
    */
   showLifecycle: boolean;
+  /** The effective "Show incomplete" filter (URL param or the saved view's stored filter). */
   showIncomplete: boolean;
+  /**
+   * The saved view stores `showIncomplete: true`, so the URL cannot lift it: render a static
+   * active indicator, not a toggle link. Unlike the lifecycle pills (hidden on saved views because
+   * they filter nothing there), this filter does narrow the list, so it stays visible.
+   */
+  showIncompleteLocked?: boolean;
 }
 
 function href(slug: string, query: Record<string, string>, set: Record<string, string | null>) {
@@ -58,6 +65,7 @@ export function ClientLifecycleFilter({
   viewLifecycle,
   showLifecycle,
   showIncomplete,
+  showIncompleteLocked = false,
 }: ClientLifecycleFilterProps) {
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -88,14 +96,25 @@ export function ClientLifecycleFilter({
           <span aria-hidden="true" className="mx-1 h-4 w-px bg-slate-300 dark:bg-slate-700" />
         </>
       )}
-      <Link
-        href={href(slug, query, { showIncomplete: showIncomplete ? null : "true" })}
-        aria-current={showIncomplete ? "true" : undefined}
-        data-testid="client-show-incomplete"
-        className={cn(PILL_CLASS, showIncomplete ? PILL_ACTIVE : PILL_IDLE)}
-      >
-        Show incomplete
-      </Link>
+      {showIncompleteLocked ? (
+        <span
+          aria-current="true"
+          title="Set by this saved view"
+          data-testid="client-show-incomplete"
+          className={cn(PILL_CLASS, PILL_ACTIVE)}
+        >
+          Show incomplete
+        </span>
+      ) : (
+        <Link
+          href={href(slug, query, { showIncomplete: showIncomplete ? null : "true" })}
+          aria-current={showIncomplete ? "true" : undefined}
+          data-testid="client-show-incomplete"
+          className={cn(PILL_CLASS, showIncomplete ? PILL_ACTIVE : PILL_IDLE)}
+        >
+          Show incomplete
+        </Link>
+      )}
     </div>
   );
 }

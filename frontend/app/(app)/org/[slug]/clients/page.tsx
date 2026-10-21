@@ -25,6 +25,7 @@ import {
   isLifecycleStatus,
   parseClientSort,
   resolveClientColumns,
+  savedViewShowIncomplete,
   searchClientRows,
   sortClientRows,
 } from "@/lib/clients-list";
@@ -142,7 +143,9 @@ export default async function ClientsPage({
   const activeLifecycle = isLifecycleStatus(listParams.lifecycleStatus)
     ? listParams.lifecycleStatus
     : null;
+  // The effective filter (URL or the saved view's stored filter); a stored one is not toggleable.
   const showIncomplete = listParams.showIncomplete === "true";
+  const showIncompleteLocked = savedViewShowIncomplete(selection);
 
   // Anything narrowing the list other than "Show incomplete" (F-3: URL tags count on system views
   // only, D-2: so does the URL lifecycle).
@@ -205,7 +208,8 @@ export default async function ClientsPage({
             activeLifecycle={activeLifecycle}
             viewLifecycle={viewLifecycle}
             showLifecycle={!savedViewActive}
-            showIncomplete={param("showIncomplete") === "true"}
+            showIncomplete={showIncomplete}
+            showIncompleteLocked={showIncompleteLocked}
           />
           {/* F-3: the backend ignores tags on the saved-view path, so the filter hides there. */}
           {!savedViewActive && allTags.length > 0 && (

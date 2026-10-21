@@ -10,6 +10,7 @@ import {
   parseClientSort,
   resolveClientColumns,
   savedViewLifecycle,
+  savedViewShowIncomplete,
   searchClientRows,
   sortClientRows,
 } from "@/lib/clients-list";
@@ -294,6 +295,18 @@ describe("buildClientListParams", () => {
     });
     const bad = savedView({ filters: { ficaStatus: "MAYBE", hasTrustBalance: "no" } });
     expect(buildClientListParams(select(bad.id, [bad]), {})).toEqual({ view: bad.id });
+  });
+});
+
+describe("savedViewShowIncomplete", () => {
+  it("true only for a saved view whose filters store showIncomplete true", () => {
+    const on = savedView({ filters: { showIncomplete: true } });
+    const onStr = savedView({ filters: { showIncomplete: "true" } });
+    const off = savedView({ filters: { showIncomplete: false } });
+    expect(savedViewShowIncomplete(select(on.id, [on]))).toBe(true);
+    expect(savedViewShowIncomplete(select(onStr.id, [onStr]))).toBe(true);
+    expect(savedViewShowIncomplete(select(off.id, [off]))).toBe(false);
+    expect(savedViewShowIncomplete(select(null))).toBe(false);
   });
 });
 

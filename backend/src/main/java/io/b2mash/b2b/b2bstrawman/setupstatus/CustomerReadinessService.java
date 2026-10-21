@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.setupstatus;
 
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
@@ -12,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -246,6 +248,18 @@ public class CustomerReadinessService {
     if (customerIds == null || customerIds.isEmpty()) {
       return Map.of();
     }
+    return computeCompleteness(customerRepository.findAllById(customerIds));
+  }
+
+  /**
+   * {@link #batchComputeCompleteness} for already-loaded customers — no reload (Clients list, Phase
+   * 87 Epic 615B). One statement: the required CUSTOMER field definitions.
+   */
+  @Transactional(readOnly = true)
+  public Map<UUID, CompletenessScore> computeCompleteness(Collection<Customer> customers) {
+    if (customers.isEmpty()) {
+      return Map.of();
+    }
 
     var requiredDefs =
         fieldDefinitionRepository
@@ -254,8 +268,6 @@ public class CustomerReadinessService {
             .filter(
                 fd -> fd.getRequiredForContexts() != null && !fd.getRequiredForContexts().isEmpty())
             .toList();
-
-    var customers = customerRepository.findAllById(customerIds);
 
     Map<UUID, CompletenessScore> result = new HashMap<>();
     for (var customer : customers) {

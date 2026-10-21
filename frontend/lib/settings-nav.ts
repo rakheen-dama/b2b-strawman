@@ -1,5 +1,5 @@
 import { Banknote, Building2, FileText, Plug, Scale, type LucideIcon } from "lucide-react";
-import type { NavAccess } from "@/lib/nav-items";
+import { canAccessNavItem, type NavAccess } from "@/lib/nav-items";
 
 /**
  * One settings navigation source (Phase 87 S9, ADR-341, architecture §12.7.3): five families,
@@ -25,7 +25,7 @@ export interface SettingsTab {
   requiredModule?: string;
   /** Admins and owners hold every capability (same rule as CapabilityProvider.hasCapability). */
   requiredCapability?: string;
-  keywords?: string[];
+  keywords?: readonly string[];
 }
 
 export interface SettingsFamily {
@@ -35,12 +35,14 @@ export interface SettingsFamily {
   icon: LucideIcon;
   /** True until the family's page.tsx exists (616B–616D); 616D removes the flag. */
   pending?: boolean;
-  tabs: SettingsTab[];
+  tabs: readonly SettingsTab[];
 }
 
 const familyHref = (id: SettingsFamilyId) => (slug: string) => `/org/${slug}/settings/${id}`;
 
-export const SETTINGS_FAMILIES: SettingsFamily[] = [
+// `as const` keeps every tab id a literal type, so SettingsTabId<F> is the exact id union a family
+// page's loader map must cover (components/settings/settings-family-page.tsx).
+const FAMILIES = [
   {
     id: "firm",
     label: "Firm",
@@ -286,7 +288,15 @@ export const SETTINGS_FAMILIES: SettingsFamily[] = [
       },
     ],
   },
-];
+] as const satisfies readonly SettingsFamily[];
+
+export const SETTINGS_FAMILIES: readonly SettingsFamily[] = FAMILIES;
+
+/** The literal `?tab=` id union of one family, e.g. SettingsTabId<"firm"> = "general" | "roles" | … */
+export type SettingsTabId<F extends SettingsFamilyId> = Extract<
+  (typeof FAMILIES)[number],
+  { id: F }
+>["tabs"][number]["id"];
 
 export function getSettingsFamily(id: SettingsFamilyId): SettingsFamily {
   const family = SETTINGS_FAMILIES.find((f) => f.id === id);
@@ -322,14 +332,14 @@ export function settingsAccessFrom(
 }
 
 /**
- * Same rule as canAccessNavItem (admin = isAdmin || isOwner) plus the module gate. 616E unifies
- * both in lib/nav-filter.ts.
+ * canAccessNavItem's admin/capability rule (admin = isAdmin || isOwner) plus the module gate. 616E
+ * moves both into lib/nav-filter.ts.
  */
 export function canAccessSettingsTab(tab: SettingsTab, access: SettingsAccess): boolean {
-  if (tab.adminOnly && !access.isAdmin && !access.isOwner) return false;
-  if (tab.requiredCapability && !access.hasCapability(tab.requiredCapability)) return false;
-  if (tab.requiredModule && !access.isModuleEnabled(tab.requiredModule)) return false;
-  return true;
+  return (
+    canAccessNavItem(tab, access) &&
+    (!tab.requiredModule || access.isModuleEnabled(tab.requiredModule))
+  );
 }
 
 export function visibleSettingsTabs(family: SettingsFamily, access: SettingsAccess): SettingsTab[] {

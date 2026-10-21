@@ -4,7 +4,7 @@ import { FeaturesSettingsForm } from "@/components/settings/features-settings-fo
 
 /**
  * Firm › Features tab (Phase 87 S9, ADR-341) — the former settings/features page's loader. Needs no
- * slug; it satisfies the FirmTabProps loader signature with no parameters.
+ * slug; it satisfies the SettingsTabProps loader signature with no parameters.
  */
 export async function renderFeaturesTab() {
   const [caps, modulesResponse] = await Promise.all([fetchMyCapabilities(), getModuleSettings()]);

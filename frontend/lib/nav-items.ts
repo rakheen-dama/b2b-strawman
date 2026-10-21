@@ -87,10 +87,12 @@ export interface NavAccess {
  * Whether the user may see a nav item: its capability gate (any-of when an array) and its
  * admin-only flag (admin = isAdmin || isOwner, same rule as the settings layout). The module gate
  * (`requiredModule`) is applied separately by the caller. Shared by the sidebar zones and the
- * command palette so both apply the same rule.
+ * command palette so both apply the same rule, and by canAccessSettingsTab (lib/settings-nav.ts),
+ * whose tabs gate on capability strings the nav's CapabilityName union does not list (e.g.
+ * INTEGRATION_MANAGE).
  */
 export function canAccessNavItem(
-  item: Pick<NavItem, "requiredCapability" | "adminOnly">,
+  item: { requiredCapability?: string | readonly string[]; adminOnly?: boolean },
   { hasCapability, isAdmin, isOwner }: NavAccess
 ): boolean {
   const required = item.requiredCapability;

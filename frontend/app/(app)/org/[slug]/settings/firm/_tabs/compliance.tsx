@@ -4,10 +4,10 @@ import { RetentionPolicyTable } from "@/components/compliance/RetentionPolicyTab
 import { ComplianceSettingsForm } from "@/components/compliance/ComplianceSettingsForm";
 import { CompliancePackList } from "@/components/compliance/CompliancePackList";
 import type { OrgSettings, RetentionPolicy } from "@/lib/types";
-import type { FirmTabProps } from "./types";
+import type { SettingsTabProps } from "@/components/settings/settings-family-page";
 
 /** Firm › Compliance tab (Phase 87 S9, ADR-341) — the former settings/compliance page's loader. */
-export async function renderComplianceTab({ slug }: FirmTabProps) {
+export async function renderComplianceTab({ slug }: SettingsTabProps) {
   const caps = await fetchMyCapabilities();
 
   if (!caps.isAdmin && !caps.isOwner) {

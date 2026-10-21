@@ -48,7 +48,7 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-import { renderAuditTrailTab } from "./audit-trail";
+import { renderAuditTrailTab } from "@/app/(app)/org/[slug]/settings/firm/_tabs/audit-trail";
 import { getAuditMetadata, listAuditEvents, type AuditEventResponse } from "@/lib/api/audit-events";
 import { ApiError } from "@/lib/api/client";
 

@@ -55,6 +55,13 @@ vi.mock("next/navigation", () => ({
 }));
 
 import FirmSettingsPage, { generateMetadata } from "@/app/(app)/org/[slug]/settings/firm/page";
+import { FIRM_TAB_LOADERS } from "@/app/(app)/org/[slug]/settings/firm/_tabs";
+import {
+  renderSettingsFamilyPage,
+  type SettingsSearchParams,
+  type SettingsTabLoaders,
+} from "@/components/settings/settings-family-page";
+import { getSettingsFamily } from "@/lib/settings-nav";
 
 const OWNER = { capabilities: [], role: "owner", isAdmin: false, isOwner: true };
 const ADMIN = { capabilities: [], role: "admin", isAdmin: true, isOwner: false };
@@ -71,7 +78,7 @@ const ALL_FIRM_TABS = [
   "Subscription",
 ];
 
-function props(searchParams: Record<string, string | string[]>) {
+function props(searchParams: SettingsSearchParams) {
   return {
     params: Promise.resolve({ slug: "acme" }),
     searchParams: Promise.resolve(searchParams),
@@ -203,10 +210,20 @@ describe("Firm settings family page", () => {
     expect(mockReplace).not.toHaveBeenCalled();
   });
 
-  it("still resolves tabs when GET /api/settings fails (module gates only)", async () => {
-    mockGetOrgSettings.mockRejectedValue(new Error("network"));
+  it("does not fetch org settings — Firm declares no module-gated tab", async () => {
     await renderFirm("compliance");
     expect(screen.getByText("compliance panel")).toBeInTheDocument();
+    expect(mockGetOrgSettings).not.toHaveBeenCalled();
+  });
+
+  it("declares exactly one loader per Firm tab in settings-nav", () => {
+    const tabIds = getSettingsFamily("firm").tabs.map((t) => t.id);
+    expect(Object.keys(FIRM_TAB_LOADERS).sort()).toEqual([...tabIds].sort());
+    for (const id of tabIds) {
+      expect(FIRM_TAB_LOADERS[id as keyof typeof FIRM_TAB_LOADERS]).toBe(
+        loaders[id as keyof typeof loaders]
+      );
+    }
   });
 
   describe("generateMetadata", () => {
@@ -222,6 +239,61 @@ describe("Firm settings family page", () => {
         title: "Firm — General · Settings",
       });
       expect(await generateMetadata(props({}))).toEqual({ title: "Firm — General · Settings" });
+    });
+  });
+
+  // The shared shell 616B–616D reuse, exercised with a module-gated family (Fees & Trust).
+  describe("renderSettingsFamilyPage with module-gated tabs", () => {
+    const feeLoaders: SettingsTabLoaders<"fees"> = {
+      tariffs: async () => "tariffs panel",
+      tax: async () => "tax panel",
+      "time-recording": async () => "time recording panel",
+      "fee-runs": async () => "fee runs panel",
+      collections: async () => "collections panel",
+      "trust-accounting": async () => "trust accounting panel",
+    };
+
+    async function renderFees(tab?: string) {
+      const page = await renderSettingsFamilyPage(
+        "fees",
+        feeLoaders,
+        props(tab === undefined ? {} : { tab })
+      );
+      render(page);
+    }
+
+    function feeTabNames() {
+      const list = screen.getByRole("tablist", { name: "Fees & Trust settings" });
+      return within(list)
+        .getAllByRole("tab")
+        .map((t) => t.textContent);
+    }
+
+    it("fetches org settings and shows only the tabs whose module is enabled", async () => {
+      mockGetOrgSettings.mockResolvedValue({
+        defaultCurrency: "ZAR",
+        enabledModules: ["trust_accounting"],
+      });
+      await renderFees("trust-accounting");
+      expect(mockGetOrgSettings).toHaveBeenCalledTimes(1);
+      expect(feeTabNames()).toEqual([
+        "Tariffs",
+        "Tax",
+        "Time recording",
+        "Collections",
+        "Trust accounting",
+      ]);
+      expect(screen.getByText("trust accounting panel")).toBeInTheDocument();
+    });
+
+    it("treats modules as disabled when GET /api/settings fails, and still renders", async () => {
+      mockGetOrgSettings.mockRejectedValue(new Error("network"));
+      await renderFees("trust-accounting");
+      expect(feeTabNames()).toEqual(["Tariffs", "Tax", "Time recording", "Collections"]);
+      expect(screen.getByText("tariffs panel")).toBeInTheDocument();
+      expect(screen.getByRole("status")).toHaveTextContent(
+        /don.t have access to Trust accounting — showing Tariffs instead/
+      );
     });
   });
 });

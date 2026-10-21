@@ -10,13 +10,13 @@ import { fetchRetentionPolicies, fetchProcessingActivities } from "./data-protec
 import { settingsHref } from "@/lib/settings-nav";
 import type { OrgSettings } from "@/lib/types";
 import type { RetentionPolicyExtended, ProcessingActivity } from "@/lib/types/data-protection";
-import type { FirmTabProps } from "./types";
+import type { SettingsTabProps } from "@/components/settings/settings-family-page";
 
 /**
  * Firm › Data protection tab (Phase 87 S9, ADR-341) — the former settings/data-protection page's
  * loader.
  */
-export async function renderDataProtectionTab({ slug }: FirmTabProps) {
+export async function renderDataProtectionTab({ slug }: SettingsTabProps) {
   const caps = await fetchMyCapabilities();
 
   if (!caps.isAdmin && !caps.isOwner) {

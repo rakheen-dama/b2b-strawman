@@ -9,7 +9,7 @@ import {
 } from "@/lib/api/audit-events";
 import { AuditLogClient } from "./audit-log-client";
 import { ExportDropdown } from "@/components/audit/export-dropdown";
-import type { FirmTabProps } from "./types";
+import type { SettingsTabProps } from "@/components/settings/settings-family-page";
 
 const PAGE_SIZE = 50;
 const VALID_SEVERITIES: ReadonlySet<AuditSeverity> = new Set([
@@ -58,7 +58,7 @@ function parseFilter(sp: SearchParams): AuditEventFilter {
  * filters ride on the family page's query string next to `tab=audit-trail` (repeated keys: first
  * value wins).
  */
-export async function renderAuditTrailTab({ slug, searchParams }: FirmTabProps) {
+export async function renderAuditTrailTab({ slug, searchParams }: SettingsTabProps) {
   const sp = Object.fromEntries(
     Object.entries(searchParams).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v])
   ) as SearchParams;

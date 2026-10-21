@@ -7,12 +7,12 @@ import { CAPABILITIES } from "@/lib/capabilities";
 import { CustomRolesSection } from "@/components/roles/custom-roles-section";
 import { CapabilityReference } from "./capability-reference";
 import type { OrgRole } from "@/lib/api/org-roles";
-import type { FirmTabProps } from "./types";
+import type { SettingsTabProps } from "@/components/settings/settings-family-page";
 
 const ALL_CAPABILITIES = Object.values(CAPABILITIES);
 
 /** Firm › Roles tab (Phase 87 S9, ADR-341) — the former settings/roles page's loader. */
-export async function renderRolesTab({ slug }: FirmTabProps) {
+export async function renderRolesTab({ slug }: SettingsTabProps) {
   const capData = await fetchMyCapabilities();
 
   if (!capData.isAdmin && !capData.isOwner) {

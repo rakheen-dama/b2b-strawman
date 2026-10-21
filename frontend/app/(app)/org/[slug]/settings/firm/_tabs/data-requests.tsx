@@ -2,13 +2,13 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { fetchDsarRequests } from "./data-requests-actions";
 import { DsarRequestsTable } from "@/components/data-protection/dsar-requests-table";
 import { LogDsarRequestDialog } from "@/components/data-protection/log-dsar-dialog";
-import type { FirmTabProps } from "./types";
+import type { SettingsTabProps } from "@/components/settings/settings-family-page";
 
 /**
  * Firm › Data requests tab (Phase 87 S9, ADR-341) — the former settings/data-protection/requests
  * page's loader.
  */
-export async function renderDataRequestsTab({ slug }: FirmTabProps) {
+export async function renderDataRequestsTab({ slug }: SettingsTabProps) {
   const caps = await fetchMyCapabilities();
 
   if (!caps.isAdmin && !caps.isOwner) {

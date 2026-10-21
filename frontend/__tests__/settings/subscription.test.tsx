@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { renderSubscriptionTab } from "./subscription";
+import { renderSubscriptionTab } from "@/app/(app)/org/[slug]/settings/firm/_tabs/subscription";
 import type { BillingResponse } from "@/lib/internal-api";
 vi.mock("@/lib/actions/subscription", () => ({
   getSubscription: vi.fn(),

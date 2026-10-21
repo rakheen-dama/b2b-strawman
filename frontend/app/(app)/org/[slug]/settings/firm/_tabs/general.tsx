@@ -5,10 +5,10 @@ import { HelpTip } from "@/components/help-tip";
 import { OrgDocumentsSection } from "@/components/settings/org-documents-section";
 import { PortalSettingsSection } from "@/components/settings/portal-settings-section";
 import type { Document, OrgSettings } from "@/lib/types";
-import type { FirmTabProps } from "./types";
+import type { SettingsTabProps } from "@/components/settings/settings-family-page";
 
 /** Firm › General tab (Phase 87 S9, ADR-341) — the former settings/general page's loader. */
-export async function renderGeneralTab({ slug }: FirmTabProps) {
+export async function renderGeneralTab({ slug }: SettingsTabProps) {
   const caps = await fetchMyCapabilities();
   const isAdmin = caps.isAdmin || caps.isOwner;
 

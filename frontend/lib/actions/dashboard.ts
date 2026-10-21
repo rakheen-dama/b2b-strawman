@@ -1,41 +1,26 @@
 "use server";
 
-import { api } from "@/lib/api";
-import { getAggregatedClientCompleteness } from "@/lib/api/clients";
+import { api, ApiError } from "@/lib/api/client";
+import { getDebtors, type PaginatedDebtorsResponse } from "@/lib/api/collections";
+import { getCurrentUserEmail } from "@/lib/auth";
+import { rethrowOnExpiredSession } from "@/lib/auth/expiry-server";
+import { findCurrentMemberId } from "@/lib/current-member";
+import { loadTodaysDiary } from "@/app/(app)/org/[slug]/my-work/todays-diary";
+import type { TodaysDiaryEvents } from "@/components/dashboard/todays-agenda";
+import type { HomePlan, WidgetResult } from "@/lib/dashboard-home";
 import type {
-  KpiResponse,
   MatterHealth,
-  TeamWorkloadEntry,
   CrossMatterActivityItem,
   PersonalDashboardResponse,
+  UnbilledWipResponse,
+  TrustPositionResponse,
+  FicaOutstandingResponse,
 } from "@/lib/dashboard-types";
-import type { AggregatedCompletenessResponse } from "@/lib/types";
-import type { InformationRequestSummary } from "@/lib/api/information-requests";
-import { listRules, listExecutions } from "@/lib/api/automations";
-import type { AutomationSummary } from "@/lib/api/automations";
-
-export async function fetchDashboardKpis(from: string, to: string): Promise<KpiResponse | null> {
-  try {
-    return await api.get<KpiResponse>(`/api/dashboard/kpis?from=${from}&to=${to}`);
-  } catch {
-    return null;
-  }
-}
+import type { MyWorkTasksResponse, OrgMember } from "@/lib/types";
 
 export async function fetchProjectHealth(): Promise<MatterHealth[] | null> {
   try {
     return await api.get<MatterHealth[]>("/api/dashboard/matter-health");
-  } catch {
-    return null;
-  }
-}
-
-export async function fetchTeamWorkload(
-  from: string,
-  to: string
-): Promise<TeamWorkloadEntry[] | null> {
-  try {
-    return await api.get<TeamWorkloadEntry[]>(`/api/dashboard/team-workload?from=${from}&to=${to}`);
   } catch {
     return null;
   }
@@ -46,14 +31,6 @@ export async function fetchDashboardActivity(
 ): Promise<CrossMatterActivityItem[] | null> {
   try {
     return await api.get<CrossMatterActivityItem[]>(`/api/dashboard/activity?limit=${limit}`);
-  } catch {
-    return null;
-  }
-}
-
-export async function fetchAggregatedCompleteness(): Promise<AggregatedCompletenessResponse | null> {
-  try {
-    return await getAggregatedClientCompleteness();
   } catch {
     return null;
   }
@@ -72,33 +49,100 @@ export async function fetchPersonalDashboard(
   }
 }
 
-export async function fetchInformationRequestSummary(): Promise<InformationRequestSummary | null> {
+// --- Legal-native Home fan-out (Phase 87 614B, arch §12.5.3) ---
+
+/** Everything the Home page renders, one entry per widget in the plan. */
+export interface HomeWidgetData {
+  /** Today's diary — always shown; `null` = could not load, `"unidentified"` = no member match. */
+  diary: TodaysDiaryEvents;
+  tasks: WidgetResult<MyWorkTasksResponse>;
+  unbilledWip: WidgetResult<UnbilledWipResponse>;
+  trustPosition: WidgetResult<TrustPositionResponse>;
+  ficaOutstanding: WidgetResult<FicaOutstandingResponse>;
+  debtors: WidgetResult<PaginatedDebtorsResponse>;
+  /** `null` = could not load (kept widgets keep their error convention). */
+  activity: CrossMatterActivityItem[] | null;
+  /** `null` = could not load, or not in the plan. */
+  matterHealth: MatterHealth[] | null;
+}
+
+const ABSENT = { state: "absent" } as const;
+
+/**
+ * One gated read. Not in the plan → absent without a request. A 403/404 → absent too (module off,
+ * capability missing, no trust account): the widget drops out rather than greying. An expired
+ * session (401) goes to the branded re-login. Anything else → a quiet error line in the card.
+ * Never handleApiError here: it notFound()s on a 404 and would take the whole Home down.
+ */
+async function settle<T>(
+  enabled: boolean,
+  label: string,
+  read: () => Promise<T>
+): Promise<WidgetResult<T>> {
+  if (!enabled) return ABSENT;
   try {
-    return await api.get<InformationRequestSummary>("/api/information-requests/summary");
-  } catch {
+    return { state: "ok", data: await read() };
+  } catch (error) {
+    await rethrowOnExpiredSession(error);
+    if (error instanceof ApiError && (error.status === 403 || error.status === 404)) {
+      return ABSENT;
+    }
+    console.error(`Failed to load ${label}:`, error);
+    return { state: "error" };
+  }
+}
+
+/** The signed-in user's member id (session email ↔ member list); `null` when unresolved. */
+async function resolveCurrentMemberId(): Promise<string | null> {
+  try {
+    const [email, members] = await Promise.all([
+      getCurrentUserEmail(),
+      api.get<OrgMember[]>("/api/members"),
+    ]);
+    return findCurrentMemberId(email, members);
+  } catch (error) {
+    await rethrowOnExpiredSession(error);
+    console.error("Failed to resolve current member:", error);
     return null;
   }
 }
 
-export async function fetchAutomationSummary(): Promise<AutomationSummary | null> {
-  try {
-    const [rules, executions] = await Promise.all([
-      listRules({ enabled: true }),
-      listExecutions({ size: 100 }),
+async function loadHomeDiary(plan: HomePlan, today: string): Promise<TodaysDiaryEvents> {
+  if (plan.diaryScope === "firm") return loadTodaysDiary(today, null, { firmWide: true });
+  return loadTodaysDiary(today, await resolveCurrentMemberId());
+}
+
+/**
+ * Home's parallel reads — each one only when its gate in `plan` passes (§12.5.3). Diary is the
+ * caller's own day for members (feeEarnerId = me) and the firm's day for admins and owners.
+ */
+export async function fetchHomeWidgets(plan: HomePlan, today: string): Promise<HomeWidgetData> {
+  const [diary, tasks, unbilledWip, trustPosition, ficaOutstanding, debtors, activity, health] =
+    await Promise.all([
+      loadHomeDiary(plan, today),
+      settle(plan.tasks, "my tasks", () => api.get<MyWorkTasksResponse>("/api/my-work/tasks")),
+      settle(plan.unbilledWip, "unbilled WIP", () =>
+        api.get<UnbilledWipResponse>("/api/dashboard/unbilled-wip")
+      ),
+      settle(plan.trustPosition, "trust position", () =>
+        api.get<TrustPositionResponse>("/api/dashboard/trust-position")
+      ),
+      settle(plan.ficaOutstanding, "FICA outstanding", () =>
+        api.get<FicaOutstandingResponse>("/api/dashboard/fica-outstanding?limit=5")
+      ),
+      settle(plan.debtors, "debtors", () => getDebtors({ size: 5 })),
+      plan.activity ? fetchDashboardActivity(15) : Promise.resolve(null),
+      plan.matterHealth ? fetchProjectHealth() : Promise.resolve(null),
     ]);
 
-    const todayStart = new Date();
-    todayStart.setUTCHours(0, 0, 0, 0);
-
-    const todayExecutions = executions.content.filter((e) => new Date(e.startedAt) >= todayStart);
-
-    return {
-      activeRulesCount: rules.length,
-      todayTotal: todayExecutions.length,
-      todaySucceeded: todayExecutions.filter((e) => e.status === "ACTIONS_COMPLETED").length,
-      todayFailed: todayExecutions.filter((e) => e.status === "ACTIONS_FAILED").length,
-    };
-  } catch {
-    return null;
-  }
+  return {
+    diary,
+    tasks,
+    unbilledWip,
+    trustPosition,
+    ficaOutstanding,
+    debtors,
+    activity,
+    matterHealth: health,
+  };
 }

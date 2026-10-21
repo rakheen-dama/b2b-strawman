@@ -77,6 +77,13 @@ describe("loadTodaysDiary", () => {
     expect(mockGetDiary).not.toHaveBeenCalled();
   });
 
+  it("firmWide (Home, admin/owner): fetches everyone's day without a fee-earner filter or member", async () => {
+    mockGetDiary.mockResolvedValue({ events: [EVENT], typesServed: ["TASK_DUE"] });
+
+    await expect(loadTodaysDiary(TODAY, null, { firmWide: true })).resolves.toEqual([EVENT]);
+    expect(mockGetDiary).toHaveBeenCalledWith({ from: TODAY, to: TODAY });
+  });
+
   it("fails soft (null) on a non-401 error", async () => {
     mockGetDiary.mockRejectedValue(new MockApiError(500, "boom"));
 

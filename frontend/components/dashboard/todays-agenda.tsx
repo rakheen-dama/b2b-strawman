@@ -36,6 +36,100 @@ function getDaysRemaining(dueDate: string): number {
   return Math.ceil((due.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24));
 }
 
+interface TodaysDiaryProps {
+  slug: string;
+  /** Server "today" (yyyy-MM-dd) — the date the diary was fetched for. */
+  today: string;
+  diaryEvents: TodaysDiaryEvents;
+  /**
+   * `eyebrow` = the small label inside the My work agenda strip; `title` = a card title, for Home
+   * where the diary sits in its own Card.
+   */
+  headingStyle?: "eyebrow" | "title";
+}
+
+/**
+ * Today's diary (613D): today's rows (≤ 5, then "+n more") plus an "N overdue" link for the
+ * open-overdue band. Rendered inside the My work agenda and, on its own, on Home (614B).
+ */
+export function TodaysDiary({
+  slug,
+  today,
+  diaryEvents,
+  headingStyle = "eyebrow",
+}: TodaysDiaryProps) {
+  // The backend returns today's rows plus the overdue band (dated < today).
+  const events = Array.isArray(diaryEvents) ? diaryEvents : [];
+  const todaysEvents = events.filter((e) => e.date === today);
+  const overdueCount = events.filter((e) => e.date < today).length;
+  const hiddenCount = todaysEvents.length - MAX_DIARY_ROWS;
+  const diaryHref = `/org/${slug}/diary?view=day`;
+
+  return (
+    <div data-testid="todays-diary" className="min-w-0">
+      <div className="mb-2 flex items-baseline justify-between gap-2">
+        {headingStyle === "title" ? (
+          <h2 className="text-sm font-medium">Today&apos;s diary</h2>
+        ) : (
+          <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">
+            Today&apos;s diary
+          </p>
+        )}
+        <Link
+          href={diaryHref}
+          className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+        >
+          Open diary
+        </Link>
+      </div>
+      {diaryEvents === "unidentified" ? (
+        <p className="text-sm text-slate-400">
+          Couldn&apos;t identify your member profile.{" "}
+          <Link
+            href={`/org/${slug}/diary`}
+            className="underline hover:text-slate-900 dark:hover:text-slate-100"
+          >
+            Open the Diary
+          </Link>
+        </p>
+      ) : diaryEvents === null ? (
+        <p className="text-sm text-slate-400">Today&apos;s diary could not be loaded.</p>
+      ) : todaysEvents.length === 0 ? (
+        <p className="text-sm text-slate-400">Nothing in the diary today</p>
+      ) : (
+        <ul className="space-y-0.5">
+          {todaysEvents.slice(0, MAX_DIARY_ROWS).map((event) => (
+            <li key={`${event.kind}:${event.id}`}>
+              <DiaryEventRow event={event} slug={slug} />
+            </li>
+          ))}
+        </ul>
+      )}
+      {(hiddenCount > 0 || overdueCount > 0) && (
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          {hiddenCount > 0 && (
+            <Link
+              href={diaryHref}
+              className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+            >
+              +{hiddenCount} more
+            </Link>
+          )}
+          {overdueCount > 0 && (
+            <Link
+              href={diaryHref}
+              data-testid="todays-diary-overdue"
+              className="focus-visible:ring-ring rounded-full outline-none focus-visible:ring-2"
+            >
+              <Badge variant="destructive">{overdueCount} overdue</Badge>
+            </Link>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function TodaysAgenda({
   slug,
   today,
@@ -45,13 +139,6 @@ export function TodaysAgenda({
   weeklyCapacityHours = 40,
 }: TodaysAgendaProps) {
   const dailyTargetMinutes = (weeklyCapacityHours / 5) * 60; // e.g. 480 min = 8h
-
-  // Today's diary: the backend returns today's rows plus the overdue band (dated < today).
-  const events = Array.isArray(diaryEvents) ? diaryEvents : [];
-  const todaysEvents = events.filter((e) => e.date === today);
-  const overdueCount = events.filter((e) => e.date < today).length;
-  const hiddenCount = todaysEvents.length - MAX_DIARY_ROWS;
-  const diaryHref = `/org/${slug}/diary?view=day`;
 
   // Today's logged minutes
   const loggedMinutes = todayEntries.reduce((sum, e) => sum + e.durationMinutes, 0);
@@ -64,63 +151,7 @@ export function TodaysAgenda({
     <div className="bg-card rounded-lg border p-4">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Section 1: Today's diary — court dates, prescriptions, matter and task due dates */}
-        <div data-testid="todays-diary" className="min-w-0">
-          <div className="mb-2 flex items-baseline justify-between gap-2">
-            <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">
-              Today&apos;s diary
-            </p>
-            <Link
-              href={diaryHref}
-              className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
-            >
-              Open diary
-            </Link>
-          </div>
-          {diaryEvents === "unidentified" ? (
-            <p className="text-sm text-slate-400">
-              Couldn&apos;t identify your member profile.{" "}
-              <Link
-                href={`/org/${slug}/diary`}
-                className="underline hover:text-slate-900 dark:hover:text-slate-100"
-              >
-                Open the Diary
-              </Link>
-            </p>
-          ) : diaryEvents === null ? (
-            <p className="text-sm text-slate-400">Today&apos;s diary could not be loaded.</p>
-          ) : todaysEvents.length === 0 ? (
-            <p className="text-sm text-slate-400">Nothing in the diary today</p>
-          ) : (
-            <ul className="space-y-0.5">
-              {todaysEvents.slice(0, MAX_DIARY_ROWS).map((event) => (
-                <li key={`${event.kind}:${event.id}`}>
-                  <DiaryEventRow event={event} slug={slug} />
-                </li>
-              ))}
-            </ul>
-          )}
-          {(hiddenCount > 0 || overdueCount > 0) && (
-            <div className="mt-2 flex flex-wrap items-center gap-3">
-              {hiddenCount > 0 && (
-                <Link
-                  href={diaryHref}
-                  className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
-                >
-                  +{hiddenCount} more
-                </Link>
-              )}
-              {overdueCount > 0 && (
-                <Link
-                  href={diaryHref}
-                  data-testid="todays-diary-overdue"
-                  className="focus-visible:ring-ring rounded-full outline-none focus-visible:ring-2"
-                >
-                  <Badge variant="destructive">{overdueCount} overdue</Badge>
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
+        <TodaysDiary slug={slug} today={today} diaryEvents={diaryEvents} />
 
         {/* Section 2: Time Logged Today */}
         <div data-testid="time-progress-today">

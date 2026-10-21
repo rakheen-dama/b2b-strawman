@@ -62,7 +62,8 @@ const ROUTES: ProbeRoute[] = [
     link: (p) =>
       p.locator(`aside a[href="${ORG}/dashboard"], nav a[href="${ORG}/dashboard"]`).first(),
     url: /\/dashboard$/,
-    marker: (p) => p.locator("#main-content h1", { hasText: /^\s*Dashboard\s*$/ }),
+    // Phase 87 614B: Home's h1 is "Home" (was "Dashboard") — locator only
+    marker: (p) => p.locator("#main-content h1", { hasText: /^\s*Home\s*$/ }),
   },
 ];
 

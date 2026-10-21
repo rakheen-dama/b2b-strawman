@@ -5,19 +5,6 @@ export interface TrendPoint {
   value: number;
 }
 
-export interface KpiValues {
-  activeMatterCount: number;
-  totalHoursLogged: number;
-  billablePercent: number | null;
-  overdueTaskCount: number;
-  averageMarginPercent: number | null;
-}
-
-export interface KpiResponse extends KpiValues {
-  trend: TrendPoint[];
-  previousPeriod: KpiValues;
-}
-
 export interface MatterHealth {
   matterId: string;
   matterName: string;
@@ -29,20 +16,6 @@ export interface MatterHealth {
   completionPercent: number;
   budgetConsumedPercent: number | null;
   hoursLogged: number;
-}
-
-export interface MatterWorkloadEntry {
-  matterId: string;
-  matterName: string;
-  hours: number;
-}
-
-export interface TeamWorkloadEntry {
-  memberId: string;
-  memberName: string;
-  totalHours: number;
-  billableHours: number;
-  projects: MatterWorkloadEntry[];
 }
 
 export interface CrossMatterActivityItem {
@@ -118,4 +91,78 @@ export interface MemberHoursEntry {
   memberName: string;
   totalHours: number;
   billableHours: number;
+}
+
+// Legal-native home reads (Phase 87 614A/614B, arch §12.2.6). Nulls are sent as JSON null.
+
+/** GET /api/dashboard/unbilled-wip — one fee earner's unbilled (billable, not invoiced) time. */
+export interface FeeEarnerWip {
+  memberId: string;
+  memberName: string;
+  minutes: number;
+  /** null when the response is redacted. */
+  value: number | null;
+  /** yyyy-MM-dd — oldest unbilled entry. */
+  oldestEntryDate: string;
+}
+
+export interface UnbilledWipResponse {
+  /** yyyy-MM-dd (server date). */
+  asOf: string;
+  /** Org default currency. */
+  currency: string;
+  /** Redacted: the caller's own minutes, never the firm total. */
+  totalMinutes: number;
+  totalValue: number | null;
+  /** null when redacted OR module `disbursements` off — hide the line. */
+  unbilledDisbursementTotal: number | null;
+  /** Value desc, minutes desc, name. Redacted: caller's own row only (may be empty). */
+  byFeeEarner: FeeEarnerWip[];
+  redacted: boolean;
+}
+
+export type FicaOutstandingStatus = "NOT_STARTED" | "IN_PROGRESS";
+
+export interface FicaOutstandingClient {
+  clientId: string;
+  clientName: string;
+  lifecycleStatus: "ONBOARDING" | "ACTIVE";
+  ficaStatus: FicaOutstandingStatus;
+  /** null when FICA has not been started. */
+  requestId: string | null;
+  /** ISO instant — lifecycleStatusChangedAt ?? createdAt. */
+  openedAt: string;
+  daysOutstanding: number;
+}
+
+/** GET /api/dashboard/fica-outstanding?limit= (CUSTOMER_MANAGEMENT). */
+export interface FicaOutstandingResponse {
+  outstandingCount: number;
+  totalActiveClients: number;
+  /** Top `limit` by daysOutstanding desc, then name. */
+  clients: FicaOutstandingClient[];
+  limit: number;
+}
+
+export interface TrustAccountRef {
+  id: string;
+  accountName: string;
+  isPrimary: boolean;
+}
+
+/** GET /api/dashboard/trust-position (VIEW_TRUST + module trust_accounting; 404 = no account). */
+export interface TrustPositionResponse {
+  trustAccountId: string;
+  accountName: string;
+  bankName: string;
+  cashbookBalance: number;
+  clientLedgerTotal: number;
+  /** cashbookBalance − clientLedgerTotal; 0 = balanced. */
+  difference: number;
+  lastReconciliationPeriodEnd: string | null;
+  lastReconciliationStatus: "DRAFT" | "COMPLETED" | null;
+  lastReconciliationBalanced: boolean | null;
+  daysSinceReconciliation: number | null;
+  pendingApprovalCount: number;
+  accounts: TrustAccountRef[];
 }

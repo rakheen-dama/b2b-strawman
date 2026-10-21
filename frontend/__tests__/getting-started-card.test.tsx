@@ -12,10 +12,11 @@ import { GettingStartedCard } from "@/components/dashboard/getting-started-card"
 
 const mockHook = vi.mocked(useOnboardingProgress);
 
+// No matter yet (CREATE_PROJECT open) — the card shows until the firm's first matter exists.
 const defaultSteps = [
-  { code: "CREATE_PROJECT", completed: true },
+  { code: "CREATE_PROJECT", completed: false },
   { code: "ADD_CUSTOMER", completed: true },
-  { code: "INVITE_MEMBER", completed: false },
+  { code: "INVITE_MEMBER", completed: true },
   { code: "LOG_TIME", completed: false },
   { code: "SETUP_RATES", completed: false },
   { code: "CREATE_INVOICE", completed: false },
@@ -84,16 +85,22 @@ describe("GettingStartedCard", () => {
     expect(screen.queryByTestId("getting-started-banner")).not.toBeInTheDocument();
   });
 
-  it("auto-hides when activeProjectCount > 3", () => {
-    mockProgress();
-    render(<GettingStartedCard activeProjectCount={5} />);
+  it("hides once the first matter exists (CREATE_PROJECT step complete)", () => {
+    mockProgress({
+      steps: defaultSteps.map((s) => (s.code === "CREATE_PROJECT" ? { ...s, completed: true } : s)),
+      completedCount: 3,
+    });
+    render(<GettingStartedCard />);
 
     expect(screen.queryByTestId("getting-started-banner")).not.toBeInTheDocument();
   });
 
-  it("shows when activeProjectCount <= 3", () => {
-    mockProgress();
-    render(<GettingStartedCard activeProjectCount={2} />);
+  it("shows until the first matter exists, even with other steps complete", () => {
+    mockProgress({
+      steps: defaultSteps.map((s) => (s.code === "CREATE_PROJECT" ? s : { ...s, completed: true })),
+      completedCount: 5,
+    });
+    render(<GettingStartedCard />);
 
     expect(screen.getByTestId("getting-started-banner")).toBeInTheDocument();
   });

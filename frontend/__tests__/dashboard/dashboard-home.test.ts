@@ -161,6 +161,6 @@ describe("rowSpanClass", () => {
     expect(rowSpanClass(1)).toBe("lg:col-span-12");
     expect(rowSpanClass(2)).toBe("lg:col-span-6");
     expect(rowSpanClass(3)).toBe("lg:col-span-4");
-    expect(rowSpanClass(4)).toBe("lg:col-span-6 xl:col-span-3");
+    expect(rowSpanClass(4)).toBe("lg:col-span-6"); // 4-up wraps 2×2, never quarter cells
   });
 });

@@ -144,13 +144,14 @@ function dropEmptyRows(rows: HomeWidget[][]): HomeWidget[][] {
 
 /**
  * 12-column span per present-widget count. Literal class strings so Tailwind sees them. Four-up
- * rows pair at `lg` and only go four-across at `xl`, where a quarter is wide enough for a table.
+ * rows wrap 2×2 at every breakpoint: the app content area is width-capped, so a quarter cell
+ * (~230–290px) can't hold the Matter health / FICA / activity tables without truncating them.
  */
 const ROW_SPAN: Record<number, string> = {
   1: "lg:col-span-12",
   2: "lg:col-span-6",
   3: "lg:col-span-4",
-  4: "lg:col-span-6 xl:col-span-3",
+  4: "lg:col-span-6",
 };
 
 export function rowSpanClass(count: number): string {

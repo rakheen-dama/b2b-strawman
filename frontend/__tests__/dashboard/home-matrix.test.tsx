@@ -266,7 +266,8 @@ describe("Home widget matrix (614B)", () => {
       ["ficaOutstanding", "matterHealth", "activity", "sensitive"],
     ]);
     expect(screen.getByTestId("home-cell-diary")).toHaveClass("lg:col-span-6");
-    expect(screen.getByTestId("home-cell-sensitive")).toHaveClass("xl:col-span-3");
+    expect(screen.getByTestId("home-cell-sensitive")).toHaveClass("lg:col-span-6");
+    expect(screen.getByTestId("home-cell-sensitive")).not.toHaveClass("xl:col-span-3");
     expect(screen.getByTestId("matter-health-panel")).toBeInTheDocument();
   });
 

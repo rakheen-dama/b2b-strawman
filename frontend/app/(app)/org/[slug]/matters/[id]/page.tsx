@@ -1,5 +1,6 @@
 import { getAuthContext, getCurrentUserEmail } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
+import { isModuleEnabledServer } from "@/lib/api/settings";
 import {
   api,
   handleApiError,
@@ -21,7 +22,6 @@ import {
   getMatterTimeSummaryByTask,
   listMatterClients,
   listMatterDocuments,
-  listMatterExpenses,
   listMatterMembers,
   listMatterTasks,
 } from "@/lib/api/matters";
@@ -46,9 +46,7 @@ import type {
   TagResponse,
   TemplateListResponse,
   SavedViewResponse,
-  PaginatedExpenseResponse,
 } from "@/lib/types";
-import { Button } from "@b2mash/ui/button";
 import { MatterHeaderCard } from "@/components/projects/matter-header-card";
 import { MatterDetailsTab } from "@/components/projects/matter-details-tab";
 import { MatterFieldsTab } from "@/components/projects/matter-fields-tab";
@@ -56,12 +54,11 @@ import { DocumentsPanel } from "@/components/documents/documents-panel";
 import { CorrespondenceList } from "@/components/correspondence/correspondence-list";
 import { getProjectCorrespondence } from "@/lib/api/correspondence";
 import type { CorrespondenceListItem } from "@/lib/api/correspondence";
-import { ProjectMembersPanel } from "@/components/projects/project-members-panel";
 import { TaskListPanel } from "@/components/tasks/task-list-panel";
 import { TimeSummaryPanel } from "@/components/projects/time-summary-panel";
 import { ActivityFeed } from "@/components/activity/activity-feed";
 import { ProjectCustomersPanel } from "@/components/projects/project-customers-panel";
-import { ProjectTabs } from "@/components/projects/project-tabs";
+import { MatterTabs } from "@/components/matters/matter-tabs";
 import { ProjectAuditTab } from "@/components/projects/project-audit-tab";
 import { ClosureHistorySection } from "@/components/projects/closure-history-section";
 import { ProjectRatesTab } from "@/components/rates/project-rates-tab";
@@ -70,8 +67,6 @@ import { ProjectFinancialsTab } from "@/components/profitability/project-financi
 import { OverviewTab } from "@/components/projects/overview-tab";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
 import { ProjectCommentsSection } from "@/components/projects/project-comments-section";
-import { ExpenseList } from "@/components/expenses/expense-list";
-import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
 import {
   getProjectRequests,
   type InformationRequestResponse,
@@ -91,7 +86,7 @@ import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { RecordRecentItem } from "@/components/record-recent-item";
 import { createSavedViewAction } from "./view-actions";
 import { PROMOTED_PROJECT_SLUGS, PROMOTED_TASK_SLUGS } from "@/lib/constants/promoted-field-slugs";
-import { ArrowLeft, Receipt } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default async function ProjectDetailPage({
@@ -100,7 +95,8 @@ export default async function ProjectDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { userId } = await getAuthContext();
+  // Auth guard (keycloak-bff re-login funnel); userId was only read by the removed members panel.
+  await getAuthContext();
   const caps = await fetchMyCapabilities();
 
   const isAdmin = caps.isAdmin || caps.isOwner;
@@ -134,7 +130,7 @@ export default async function ProjectDetailPage({
         {
           label: "Customer assigned",
           complete: setupStatus.clientAssigned,
-          actionHref: `?tab=customers`,
+          actionHref: `?tab=clients`,
         },
         {
           label: "Rate card configured",
@@ -263,16 +259,8 @@ export default async function ProjectDetailPage({
     // Non-fatal: show empty time summary if fetch fails
   }
 
-  // Fetch expenses for the "Expenses" tab
-  let expenseData: PaginatedExpenseResponse = {
-    content: [],
-    page: { totalElements: 0, totalPages: 0, size: 20, number: 0 },
-  };
-  try {
-    expenseData = await listMatterExpenses(id, { sort: "date,desc" });
-  } catch {
-    // Non-fatal: show empty expenses tab
-  }
+  // Disbursements module flag for the Overview KPI card (ADR-340: one Disbursements tab, module-derived)
+  const disbursementsEnabled = await isModuleEnabledServer("disbursements");
 
   // Billing rates + settings for the "Rates" tab (only fetched for users who can manage)
   let projectBillingRates: BillingRate[] = [];
@@ -466,7 +454,7 @@ export default async function ProjectDetailPage({
       />
 
       {/* Tabbed Content */}
-      <ProjectTabs
+      <MatterTabs
         detailsPanel={
           <MatterDetailsTab
             projectId={id}
@@ -510,7 +498,7 @@ export default async function ProjectDetailPage({
             retentionClockStartedAt={project.retentionClockStartedAt}
             retentionEndsOn={project.retentionEndsOn}
             trustEnabled={false} // TODO: derive from org module flags
-            disbursementsEnabled={false} // TODO: derive from org module flags
+            disbursementsEnabled={disbursementsEnabled}
             projectDueDate={project.dueDate ?? null}
           />
         }
@@ -530,22 +518,12 @@ export default async function ProjectDetailPage({
         correspondencePanel={
           <CorrespondenceList items={correspondence} slug={slug} projectId={id} />
         }
-        customersPanel={
+        clientsPanel={
           <ProjectCustomersPanel
             customers={customers}
             slug={slug}
             projectId={id}
             canManage={canManage}
-          />
-        }
-        membersPanel={
-          <ProjectMembersPanel
-            members={members}
-            slug={slug}
-            projectId={id}
-            canManage={canManage}
-            isCurrentLead={isCurrentLead}
-            currentUserId={userId ?? ""}
           />
         }
         tasksPanel={
@@ -595,31 +573,6 @@ export default async function ProjectDetailPage({
               defaultCurrency={defaultCurrency}
             />
           ) : undefined
-        }
-        expensesPanel={
-          <div className="space-y-6">
-            <div className="flex items-center justify-end">
-              <LogExpenseDialog
-                slug={slug}
-                projectId={id}
-                tasks={tasks.map((t) => ({ id: t.id, title: t.title }))}
-              >
-                <Button size="sm">
-                  <Receipt className="mr-1.5 size-4" />
-                  Log Expense
-                </Button>
-              </LogExpenseDialog>
-            </div>
-            <ExpenseList
-              expenses={expenseData.content}
-              slug={slug}
-              projectId={id}
-              tasks={tasks.map((t) => ({ id: t.id, title: t.title }))}
-              members={members.map((m) => ({ id: m.memberId, name: m.name }))}
-              currentMemberId={currentMemberId}
-              isAdmin={isAdmin}
-            />
-          </div>
         }
         generatedPanel={
           <GeneratedDocumentsList

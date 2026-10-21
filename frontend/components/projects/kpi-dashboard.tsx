@@ -206,7 +206,7 @@ export async function KPIDashboard({
     },
     {
       id: "invoices",
-      label: "Outstanding invoices",
+      label: "Outstanding fee notes",
       value: "--",
       linkTab: "statements",
       icon: <Receipt className="size-5" />,

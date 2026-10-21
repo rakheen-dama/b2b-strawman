@@ -171,7 +171,6 @@ describe("Breadcrumbs", () => {
 
   describe("legal labels (Phase 87 611B)", () => {
     const INVOICE_ID = "7d3f9e4a-5b6c-4d7e-8f90-a1b2c3d4e5f6";
-    const MATTER_ID = "8e4a0f5b-6c7d-4e8f-9a01-b2c3d4e5f6a7";
 
     function renderCrumbsAt(pathname: string) {
       mockUsePathname.mockReturnValue(pathname);
@@ -197,12 +196,6 @@ describe("Breadcrumbs", () => {
         "/org/acme/invoices"
       );
       expect(screen.getByText("Fee note").tagName).toBe("SPAN");
-    });
-
-    it("labels /matters/<id>/expenses as Disbursements (not the raw segment)", () => {
-      renderCrumbsAt(`/org/acme/matters/${MATTER_ID}/expenses`);
-      expect(screen.getByText("Disbursements").tagName).toBe("SPAN");
-      expect(screen.queryByText("expenses")).not.toBeInTheDocument();
     });
   });
 });

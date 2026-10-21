@@ -56,7 +56,7 @@ const baseProps = {
   fieldsPanel: <div>Fields</div>,
   tagsPanel: <div>Tags</div>,
   overviewPanel: <div>Overview</div>,
-  projectsPanel: <div>Projects</div>,
+  mattersPanel: <div>Matters panel</div>,
   documentsPanel: <div>Documents</div>,
 };
 
@@ -141,14 +141,33 @@ describe("CustomerGroupedTabs", () => {
     expect(financeGroup.getAttribute("aria-selected")).toBe("true");
   });
 
-  it("resolves group-level alias ?tab=work to projects", () => {
+  it("resolves group-level alias ?tab=work to matters", () => {
     mockSearchParams = new URLSearchParams("tab=work");
 
     render(<CustomerGroupedTabs {...allPanels} />);
 
-    // Work group should be active
+    // Work group (labelled "Matters") should be active
     const workGroup = screen.getByTestId("tab-group-work");
     expect(workGroup.getAttribute("aria-selected")).toBe("true");
+  });
+
+  // Phase 87 §12.6.5 (615E): the tab id `projects` was renamed to `matters`; LEGACY_TAB_IDS keeps
+  // old ?tab=projects deep links resolving.
+  it("resolves the legacy ?tab=projects deep link to the Matters tab", () => {
+    mockSearchParams = new URLSearchParams("tab=projects");
+
+    render(<CustomerGroupedTabs {...allPanels} />);
+
+    expect(screen.getByTestId("tab-group-work").getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByText("Matters panel")).toBeInTheDocument();
+  });
+
+  it("labels the groups with the legal words (615E)", () => {
+    render(<CustomerGroupedTabs {...allPanels} />);
+
+    expect(screen.getByTestId("tab-group-work").textContent).toContain("Matters");
+    expect(screen.getByTestId("tab-group-finance").textContent).toContain("Fees");
+    expect(screen.getByTestId("tab-group-compliance").textContent).toContain("FICA & compliance");
   });
 
   it("hides trust tab when trust_accounting disabled", () => {

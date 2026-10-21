@@ -55,7 +55,7 @@ const baseProps = {
   fieldsPanel: placeholder,
   tagsPanel: placeholder,
   overviewPanel: placeholder,
-  projectsPanel: placeholder,
+  mattersPanel: placeholder,
   documentsPanel: placeholder,
   auditPanel: <div data-testid="audit-panel">audit</div>,
 };

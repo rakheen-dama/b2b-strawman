@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 // --- Mocks (before component imports) ---
 
-// CustomerGroupedTabs/ProjectTabs now import useAuditTabVisible from
+// CustomerGroupedTabs/MatterTabs now import useAuditTabVisible from
 // @/components/audit/audit-timeline-tab, which transitively pulls a
 // `server-only` module via the audit data layer. Stub it for jsdom.
 vi.mock("server-only", () => ({}));
@@ -103,7 +103,7 @@ vi.mock("@/app/(app)/org/[slug]/clients/[id]/actions", () => ({
 
 import useSWR from "swr";
 import { OrgProfileProvider } from "@/lib/org-profile";
-import { ProjectTabs } from "@/components/projects/project-tabs";
+import { MatterTabs } from "@/components/matters/matter-tabs";
 import { CustomerGroupedTabs } from "@/components/customers/customer-grouped-tabs";
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { NAV_GROUPS, SETTINGS_ITEMS } from "@/lib/nav-items";
@@ -133,7 +133,7 @@ function withNoModules(ui: React.ReactElement) {
   );
 }
 
-// Minimal placeholder panels for required ProjectTabs props
+// Minimal placeholder panels for required MatterTabs props
 const placeholder = <div>placeholder</div>;
 
 // --- Tests ---
@@ -149,11 +149,10 @@ describe("Project detail Trust tab", () => {
 
     render(
       withTrustEnabled(
-        <ProjectTabs
+        <MatterTabs
           overviewPanel={placeholder}
           documentsPanel={placeholder}
-          membersPanel={placeholder}
-          customersPanel={placeholder}
+          clientsPanel={placeholder}
           tasksPanel={placeholder}
           timePanel={placeholder}
           activityPanel={placeholder}
@@ -170,11 +169,10 @@ describe("Project detail Trust tab", () => {
   it("hides Trust tab when trust_accounting module is disabled", () => {
     render(
       withNoModules(
-        <ProjectTabs
+        <MatterTabs
           overviewPanel={placeholder}
           documentsPanel={placeholder}
-          membersPanel={placeholder}
-          customersPanel={placeholder}
+          clientsPanel={placeholder}
           tasksPanel={placeholder}
           timePanel={placeholder}
           activityPanel={placeholder}
@@ -195,11 +193,10 @@ describe("Project detail Trust tab", () => {
 
     render(
       withNoModules(
-        <ProjectTabs
+        <MatterTabs
           overviewPanel={<div data-testid="overview-content">Overview</div>}
           documentsPanel={placeholder}
-          membersPanel={placeholder}
-          customersPanel={placeholder}
+          clientsPanel={placeholder}
           tasksPanel={placeholder}
           timePanel={placeholder}
           activityPanel={placeholder}
@@ -237,7 +234,7 @@ describe("Customer detail Trust tab", () => {
           fieldsPanel={placeholder}
           tagsPanel={placeholder}
           overviewPanel={placeholder}
-          projectsPanel={placeholder}
+          mattersPanel={placeholder}
           documentsPanel={placeholder}
           trustPanel={<TrustBalanceCard customerId="cust-1" slug="acme" showQuickActions={true} />}
         />

@@ -23,7 +23,7 @@ export interface GroupedTabBarProps {
 }
 
 // ---------------------------------------------------------------------------
-// Trigger style (mirrors project-tabs.tsx TabsPrimitive.Trigger)
+// Trigger style (mirrors matter-tabs.tsx TabsPrimitive.Trigger)
 // ---------------------------------------------------------------------------
 
 const triggerClassName = cn(

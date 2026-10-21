@@ -48,18 +48,20 @@ vi.mock("motion/react", () => ({
 // Import component AFTER mocks
 // ---------------------------------------------------------------------------
 
-import { ProjectTabs } from "@/components/projects/project-tabs";
+import { MatterTabs } from "@/components/matters/matter-tabs";
+import { MATTER_TAB_GROUPS } from "@/lib/constants/matter-tab-groups";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Minimal required props for ProjectTabs (all required panels provided) */
+/** Minimal required props for MatterTabs (all required panels provided) */
 const baseProps = {
+  detailsPanel: <div>Details panel</div>,
+  fieldsPanel: <div>Fields panel</div>,
   overviewPanel: <div>Overview</div>,
   documentsPanel: <div>Documents</div>,
-  membersPanel: <div>Members</div>,
-  customersPanel: <div>Customers</div>,
+  clientsPanel: <div>Clients panel</div>,
   tasksPanel: <div>Tasks</div>,
   timePanel: <div>Time</div>,
   activityPanel: <div>Activity</div>,
@@ -90,9 +92,9 @@ afterEach(() => {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("ProjectTabs with GroupedTabBar integration", () => {
+describe("MatterTabs with GroupedTabBar integration", () => {
   it("renders GroupedTabBar (not flat TabsPrimitive.List)", () => {
-    render(<ProjectTabs {...baseProps} />);
+    render(<MatterTabs {...baseProps} />);
 
     // GroupedTabBar should be present
     expect(screen.getByTestId("grouped-tab-bar")).toBeInTheDocument();
@@ -105,15 +107,10 @@ describe("ProjectTabs with GroupedTabBar integration", () => {
 
   it("hides trust tab in finance group when trust_accounting module is off", () => {
     render(
-      <ProjectTabs
-        {...baseProps}
-        trustPanel={<div>Trust</div>}
-        expensesPanel={<div>Expenses</div>}
-        ratesPanel={<div>Rates</div>}
-      />
+      <MatterTabs {...baseProps} trustPanel={<div>Trust</div>} ratesPanel={<div>Rates</div>} />
     );
 
-    // Finance group should still be visible (has other tabs like time, expenses)
+    // Finance group should still be visible (has other tabs like time, rates)
     const financeGroup = screen.getByTestId("tab-group-finance");
     expect(financeGroup).toBeInTheDocument();
 
@@ -136,7 +133,7 @@ describe("ProjectTabs with GroupedTabBar integration", () => {
       return enabled[moduleId] ?? false;
     });
 
-    render(<ProjectTabs {...baseProps} courtDatesPanel={<div>Court Dates</div>} />);
+    render(<MatterTabs {...baseProps} courtDatesPanel={<div>Court Dates</div>} />);
 
     // Schedule group should be completely hidden (court-dates is its only tab and it is gated off)
     expect(screen.queryByTestId("tab-group-schedule")).not.toBeInTheDocument();
@@ -146,7 +143,7 @@ describe("ProjectTabs with GroupedTabBar integration", () => {
     mockSearchParams = new URLSearchParams("tab=members");
 
     render(
-      <ProjectTabs
+      <MatterTabs
         {...baseProps}
         detailsPanel={<div>Details</div>}
         fieldsPanel={<div>Fields</div>}
@@ -165,7 +162,7 @@ describe("ProjectTabs with GroupedTabBar integration", () => {
     // Override: audit not visible
     mockUseAuditTabVisible.mockImplementation(() => false);
 
-    render(<ProjectTabs {...baseProps} auditPanel={<div>Audit</div>} />);
+    render(<MatterTabs {...baseProps} auditPanel={<div>Audit</div>} />);
 
     // Activity group should be present
     const activityGroup = screen.getByTestId("tab-group-activity");
@@ -174,5 +171,94 @@ describe("ProjectTabs with GroupedTabBar integration", () => {
     // Should render as standalone (no dropdown chevron) — only 'activity' tab visible
     expect(activityGroup.tagName).toBe("BUTTON");
     expect(activityGroup.querySelector("svg")).toBeNull();
+  });
+  // -------------------------------------------------------------------------
+  // Phase 87 §12.6.5 / ADR-340 (615E): relabelled groups, legacy ?tab= aliases, no Expenses tab
+  // -------------------------------------------------------------------------
+
+  it("labels the groups with the legal words (Fees, Diary)", () => {
+    render(<MatterTabs {...baseProps} courtDatesPanel={<div>Court dates panel</div>} />);
+
+    expect(screen.getByTestId("tab-group-finance").textContent).toContain("Fees");
+    expect(screen.getByTestId("tab-group-schedule").textContent).toContain("Diary");
+  });
+
+  it("resolves the legacy ?tab=customers deep link to the Clients tab", () => {
+    mockSearchParams = new URLSearchParams("tab=customers");
+
+    render(<MatterTabs {...baseProps} />);
+
+    expect(screen.getByTestId("tab-group-client")).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByText("Clients panel")).toBeInTheDocument();
+  });
+
+  it("resolves the legacy ?tab=expenses deep link to the Disbursements tab", () => {
+    mockSearchParams = new URLSearchParams("tab=expenses");
+
+    render(<MatterTabs {...baseProps} disbursementsPanel={<div>Disbursements panel</div>} />);
+
+    expect(screen.getByTestId("tab-group-finance")).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByText("Disbursements panel")).toBeInTheDocument();
+  });
+
+  it("falls back to Overview for ?tab=expenses when the disbursements module is off", () => {
+    mockIsModuleEnabled.mockImplementation(() => false);
+    mockSearchParams = new URLSearchParams("tab=expenses");
+
+    render(<MatterTabs {...baseProps} disbursementsPanel={<div>Disbursements panel</div>} />);
+
+    expect(screen.getByTestId("tab-group-overview")).toHaveAttribute("aria-selected", "true");
+    expect(screen.queryByText("Disbursements panel")).not.toBeInTheDocument();
+  });
+
+  it("offers Disbursements but no Expenses item in the Fees dropdown", () => {
+    mockSearchParams = new URLSearchParams("tab=time");
+
+    render(<MatterTabs {...baseProps} disbursementsPanel={<div>Disbursements panel</div>} />);
+
+    // Fees is the active group, so clicking its trigger opens the dropdown.
+    const feesGroup = screen.getByTestId("tab-group-finance");
+    fireEvent.pointerDown(feesGroup, { button: 0, pointerType: "mouse" });
+    fireEvent.click(feesGroup);
+
+    expect(screen.getByTestId("tab-item-disbursements")).toBeInTheDocument();
+    expect(screen.queryByTestId("tab-item-expenses")).not.toBeInTheDocument();
+  });
+
+  it("resolves every MATTER_TAB_GROUPS tab id from ?tab= (validTabIds == constants)", () => {
+    const allPanels = {
+      ...baseProps,
+      detailsPanel: <div>Details</div>,
+      fieldsPanel: <div>Fields</div>,
+      correspondencePanel: <div>Correspondence</div>,
+      ratesPanel: <div>Rates</div>,
+      budgetPanel: <div>Budget</div>,
+      financialsPanel: <div>Financials</div>,
+      generatedPanel: <div>Generated</div>,
+      requestsPanel: <div>Requests</div>,
+      customerCommentsPanel: <div>Comments</div>,
+      courtDatesPanel: <div>Court dates</div>,
+      adversePartiesPanel: <div>Adverse parties</div>,
+      trustPanel: <div>Trust</div>,
+      disbursementsPanel: <div>Disbursements</div>,
+      statementsPanel: <div>Statements</div>,
+      auditPanel: <div>Audit</div>,
+    };
+    mockIsModuleEnabled.mockImplementation(() => true);
+
+    const tabs = MATTER_TAB_GROUPS.flatMap((g) =>
+      g.tabs.map((t) => ({ groupId: g.id, tabId: t.id }))
+    );
+    expect(tabs).toHaveLength(21);
+
+    for (const { groupId, tabId } of tabs) {
+      mockSearchParams = new URLSearchParams(`tab=${tabId}`);
+      const { unmount } = render(<MatterTabs {...allPanels} />);
+      expect(screen.getByTestId(`tab-group-${groupId}`), tabId).toHaveAttribute(
+        "aria-selected",
+        "true"
+      );
+      unmount();
+    }
   });
 });

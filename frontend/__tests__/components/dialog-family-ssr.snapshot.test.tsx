@@ -7,10 +7,11 @@
  * change to a dialog's SSR shape — including the mount-gate regression
  * class that PR #1262 fixed — produces a loud diff in PR review.
  *
- * The harness covers three representative dialogs across both shapes:
+ * The harness covers two representative dialog-owns-button dialogs:
  * - `EditCustomerDialog` — dialog-owns-button (Dialog, PR #1242).
  * - `DeleteCommentDialog` — dialog-owns-button (AlertDialog, PR #1263).
- * - `LogExpenseDialog` — children-API (Dialog, audit-03 left-as-is).
+ * (The children-API representative, `LogExpenseDialog`, was deleted with the
+ * matter Expenses tab in Epic 615E / ADR-340.)
  *
  * To extend coverage to a new dialog: add a mock for any server-action
  * imports it has, build a fixture with its minimum-required props, and
@@ -31,24 +32,12 @@ vi.mock("@/app/(app)/org/[slug]/clients/actions", () => ({
 vi.mock("@/lib/actions/comments", () => ({
   deleteComment: vi.fn(),
 }));
-vi.mock("@/app/(app)/org/[slug]/matters/[id]/expense-actions", () => ({
-  createExpense: vi.fn(),
-  updateExpense: vi.fn(),
-  deleteExpense: vi.fn(),
-}));
-vi.mock("@/app/(app)/org/[slug]/matters/[id]/actions", () => ({
-  initiateUpload: vi.fn(),
-  confirmUpload: vi.fn(),
-  cancelUpload: vi.fn(),
-}));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }));
 
-import { Button } from "@b2mash/ui/button";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
 import { DeleteCommentDialog } from "@/components/comments/delete-comment-dialog";
-import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
 import type { Client } from "@/lib/types";
 
 // Minimal customer fixture — the SSR pass renders the trigger only; the
@@ -114,23 +103,6 @@ describe("Dialog family — SSR snapshot harness (audit-03 rec #4)", () => {
 
     expect(html).not.toBe("");
     expect(html).toContain("Delete");
-    expect(html).toMatchSnapshot();
-  });
-
-  it("LogExpenseDialog (children-API) renders Radix wrapper + trigger child in SSR", () => {
-    const html = renderDialogToSsr(
-      <LogExpenseDialog slug="legal-test" projectId="p-1" tasks={[]}>
-        <Button data-testid="ssr-log-expense-trigger">Log expense</Button>
-      </LogExpenseDialog>
-    );
-
-    expect(html).not.toBe("");
-    // Children-API contract: the consumer-supplied trigger must be in the
-    // SSR output, AND Radix's auto-injected `aria-controls` must appear on
-    // the trigger element (this is the load-bearing OBS-704 v3 contract —
-    // a mount-gate would strip both).
-    expect(html).toContain('data-testid="ssr-log-expense-trigger"');
-    expect(html).toMatch(/aria-controls="radix-[^"]+"/);
     expect(html).toMatchSnapshot();
   });
 });

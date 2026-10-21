@@ -10,7 +10,7 @@
  * app-shell (which has client-divergent nodes) SSR-stamped radix ids are a
  * hydration hazard, so dialogs mounted there should SSR an id-free bare
  * trigger (mount-gate), while dialogs on hydration-stable subtrees may
- * still SSR the full Radix wrapper (e.g. `LogExpenseDialog`).
+ * still SSR the full Radix wrapper.
  *
  * `renderDialogToSsr` runs a JSX element through `react-dom/server`'s
  * `renderToString`, then normalises non-deterministic IDs so the snapshot

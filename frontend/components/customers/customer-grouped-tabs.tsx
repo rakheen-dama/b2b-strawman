@@ -6,8 +6,9 @@ import { Tabs as TabsPrimitive } from "radix-ui";
 import { useOrgProfile } from "@/lib/org-profile";
 import { useAuditTabVisible } from "@/components/audit/audit-timeline-tab";
 import { GroupedTabBar } from "@/components/shared/grouped-tab-bar";
-import { CUSTOMER_TAB_GROUPS } from "@/lib/constants/customer-tab-groups";
+import { CLIENT_TAB_GROUPS } from "@/lib/constants/client-tab-groups";
 import { resolveTabFromUrl } from "@/lib/constants/tab-group-types";
+import { aliasLegacyTabId } from "@/lib/constants/legacy-tab-ids";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -20,16 +21,16 @@ interface CustomerGroupedTabsProps {
   tagsPanel: ReactNode;
   // Overview group
   overviewPanel: ReactNode;
-  // Work group
-  projectsPanel: ReactNode;
+  // Matters group
+  mattersPanel: ReactNode;
   documentsPanel: ReactNode;
   generatedPanel?: ReactNode;
-  // Finance group
+  // Fees group
   invoicesPanel?: ReactNode;
   ratesPanel?: ReactNode;
   financialsPanel?: ReactNode;
   trustPanel?: ReactNode;
-  // Compliance group
+  // FICA & compliance group
   onboardingPanel?: ReactNode;
   requestsPanel?: ReactNode;
   // Activity group
@@ -45,7 +46,7 @@ export function CustomerGroupedTabs({
   fieldsPanel,
   tagsPanel,
   overviewPanel,
-  projectsPanel,
+  mattersPanel,
   documentsPanel,
   generatedPanel,
   invoicesPanel,
@@ -58,7 +59,8 @@ export function CustomerGroupedTabs({
 }: CustomerGroupedTabsProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const tabParam = searchParams.get("tab");
+  // Old ?tab= ids (projects, …) resolve to their renamed tab (LEGACY_TAB_IDS, §12.6.5).
+  const tabParam = aliasLegacyTabId(searchParams.get("tab"));
   const { isModuleEnabled } = useOrgProfile();
 
   // Module-gated tabs
@@ -67,7 +69,7 @@ export function CustomerGroupedTabs({
   const auditVisible = useAuditTabVisible();
   const showAudit = !!auditPanel && auditVisible;
 
-  // Build visible groups from CUSTOMER_TAB_GROUPS with module-gating and legal tab labels
+  // Build visible groups from CLIENT_TAB_GROUPS with module-gating
   const visibleGroups = useMemo(() => {
     const tabVisibility: Record<string, boolean> = {
       // Details group — always visible
@@ -76,38 +78,30 @@ export function CustomerGroupedTabs({
       tags: true,
       // Overview — always visible
       overview: true,
-      // Work group
-      projects: true,
+      // Matters group
+      matters: true,
       documents: true,
       generated: !!generatedPanel,
-      // Finance group — panel-gated
+      // Fees group — panel-gated
       invoices: !!invoicesPanel,
       rates: !!ratesPanel,
       financials: !!financialsPanel,
       trust: showTrust,
-      // Compliance group — panel-gated
+      // FICA & compliance group — panel-gated
       onboarding: !!onboardingPanel,
       requests: !!requestsPanel,
       // Activity group — capability-gated
       audit: showAudit,
     };
 
-    return CUSTOMER_TAB_GROUPS.map((group) => ({
+    // Labels come straight from CLIENT_TAB_GROUPS (legal words; ADR-338).
+    return CLIENT_TAB_GROUPS.map((group) => ({
       ...group,
       visible: group.tabs.some((tab) => tabVisibility[tab.id] !== false),
-      tabs: group.tabs.map((tab) => {
-        // Legal labels for tabs whose canonical constant label differs (constants re-authored in 615E)
-        let label = tab.label;
-        if (tab.id === "projects") label = "Matters";
-        if (tab.id === "invoices") label = "Fee notes";
-        if (tab.id === "audit") label = "Audit trail";
-
-        return {
-          ...tab,
-          label,
-          visible: tabVisibility[tab.id] ?? true,
-        };
-      }),
+      tabs: group.tabs.map((tab) => ({
+        ...tab,
+        visible: tabVisibility[tab.id] ?? true,
+      })),
     }));
   }, [
     generatedPanel,
@@ -167,9 +161,9 @@ export function CustomerGroupedTabs({
         {overviewPanel}
       </TabsPrimitive.Content>
 
-      {/* Work group */}
-      <TabsPrimitive.Content value="projects" className="pt-6 outline-none">
-        {projectsPanel}
+      {/* Matters group */}
+      <TabsPrimitive.Content value="matters" className="pt-6 outline-none">
+        {mattersPanel}
       </TabsPrimitive.Content>
       <TabsPrimitive.Content value="documents" className="pt-6 outline-none">
         {documentsPanel}
@@ -180,7 +174,7 @@ export function CustomerGroupedTabs({
         </TabsPrimitive.Content>
       )}
 
-      {/* Finance group */}
+      {/* Fees group */}
       {invoicesPanel && (
         <TabsPrimitive.Content value="invoices" className="pt-6 outline-none">
           {invoicesPanel}
@@ -202,7 +196,7 @@ export function CustomerGroupedTabs({
         </TabsPrimitive.Content>
       )}
 
-      {/* Compliance group */}
+      {/* FICA & compliance group */}
       {onboardingPanel && (
         <TabsPrimitive.Content value="onboarding" className="pt-6 outline-none">
           {onboardingPanel}

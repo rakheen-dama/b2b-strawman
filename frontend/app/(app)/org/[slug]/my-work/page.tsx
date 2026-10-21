@@ -19,11 +19,9 @@ import type {
   FieldDefinitionResponse,
   FieldGroupResponse,
   FieldGroupMemberResponse,
-  ExpenseResponse,
 } from "@/lib/types";
 import { WeeklyTimeSummary } from "@/components/my-work/weekly-time-summary";
 import { TodayTimeEntries } from "@/components/my-work/today-time-entries";
-import { MyExpenses } from "@/components/my-work/my-expenses";
 import { TimeBreakdown } from "@/components/my-work/time-breakdown";
 import { TodaysAgenda } from "@/components/dashboard/todays-agenda";
 import { WeeklyRhythmStripClient } from "./weekly-rhythm-strip-client";
@@ -32,7 +30,6 @@ import { MyWorkTasksClient } from "./my-work-tasks-client";
 import { createMyWorkViewAction } from "./view-actions";
 import { loadTodaysDiary } from "./todays-diary";
 import { fetchPersonalDashboard } from "@/lib/actions/dashboard";
-import { getMyExpenses } from "@/lib/actions/expense-actions";
 import { ApiError } from "@/lib/api";
 import { EmptyState } from "@/components/empty-state";
 import { createMessages } from "@/lib/messages";
@@ -126,15 +123,6 @@ export default async function MyWorkPage({
     weekEntries = await api.get<MyWorkTimeEntryItem[]>(
       `/api/my-work/time-entries?from=${from}&to=${to}`
     );
-  } catch {
-    // Non-fatal
-  }
-
-  // Fetch user's recent expenses
-  let myExpenses: ExpenseResponse[] = [];
-  try {
-    const expenseResult = await getMyExpenses({ size: 10 });
-    myExpenses = expenseResult.content;
   } catch {
     // Non-fatal
   }
@@ -275,7 +263,6 @@ export default async function MyWorkPage({
       {/* Extended widgets */}
       <div data-testid="extended-widgets" className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <WeeklyTimeSummary initialSummary={timeSummary} initialFrom={from} />
-        <MyExpenses expenses={myExpenses} />
       </div>
     </div>
   );

@@ -53,9 +53,24 @@ vi.mock("@/lib/api/client", () => ({
   resolveServerReturnTo: mockResolveReturnTo,
 }));
 vi.mock("@/lib/auth/expiry", () => ({ redirectToReLogin: mockRedirectToReLogin }));
+// 613C: the create dialogs render their trigger label so header-button gating is observable.
 vi.mock("@/components/legal/create-court-date-dialog", () => ({
-  CreateCourtDateDialog: () => null,
+  CreateCourtDateDialog: ({ triggerLabel }: { triggerLabel?: React.ReactNode }) => (
+    <button type="button">{triggerLabel}</button>
+  ),
 }));
+vi.mock("@/components/legal/create-prescription-dialog", () => ({
+  CreatePrescriptionDialog: ({ triggerLabel }: { triggerLabel?: React.ReactNode }) => (
+    <button type="button">{triggerLabel}</button>
+  ),
+}));
+vi.mock("@/components/legal/postpone-dialog", () => ({ PostponeDialog: () => null }));
+vi.mock("@/components/legal/outcome-dialog", () => ({ OutcomeDialog: () => null }));
+vi.mock("@/components/legal/cancel-court-date-dialog", () => ({
+  CancelCourtDateDialog: () => null,
+}));
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/task-actions", () => ({ completeTask: vi.fn() }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("next/navigation", () => ({
   unstable_rethrow: (error: unknown) => {
     if (error instanceof Error && error.message === "NEXT_REDIRECT") throw error;
@@ -209,5 +224,81 @@ describe("DiaryLoader (613B)", () => {
       "Dlamini v Road Accident Fund"
     );
     expect(screen.getByText("Collect medical reports")).toBeInTheDocument();
+  });
+
+  describe("613C", () => {
+    const ALL_SERVED = ["COURT_DATE", "PRESCRIPTION", "MATTER_DUE", "TASK_DUE"];
+    const MEMBER_CAPS = { role: "Member", isAdmin: false, isOwner: false };
+
+    it("shows the create buttons to an owner when court dates and prescriptions are served", async () => {
+      mockGetDiary.mockResolvedValue({ events: [], typesServed: ALL_SERVED });
+      render(await DiaryLoader(PROPS));
+      expect(screen.getByRole("button", { name: "New court date" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "New prescription tracker" })).toBeInTheDocument();
+    });
+
+    it("shows the create buttons to a member holding MANAGE_LEGAL", async () => {
+      mockGetDiary.mockResolvedValue({ events: [], typesServed: ALL_SERVED });
+      mockCaps.mockResolvedValue({ ...MEMBER_CAPS, capabilities: ["VIEW_LEGAL", "MANAGE_LEGAL"] });
+      render(await DiaryLoader(PROPS));
+      expect(screen.getByRole("button", { name: "New court date" })).toBeInTheDocument();
+    });
+
+    it("hides every write affordance from a VIEW_LEGAL-only member", async () => {
+      mockGetDiary.mockResolvedValue({ events: [], typesServed: ALL_SERVED });
+      mockCaps.mockResolvedValue({ ...MEMBER_CAPS, capabilities: ["VIEW_LEGAL"] });
+      render(await DiaryLoader(PROPS));
+      expect(screen.queryByRole("button", { name: "New court date" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "Add a court date" })).toBeNull();
+    });
+
+    it("fails closed when capabilities cannot be loaded", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      mockGetDiary.mockResolvedValue({ events: [], typesServed: ALL_SERVED });
+      mockCaps.mockRejectedValue(new MockApiError(500, "Internal Server Error"));
+      render(await DiaryLoader(PROPS));
+      expect(screen.queryByRole("button", { name: "New court date" })).toBeNull();
+      expect(mockRedirectToReLogin).not.toHaveBeenCalled();
+    });
+
+    it("routes a 401 from the capabilities fetch to the re-login redirect", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      mockCaps.mockRejectedValue(new MockApiError(401, "Authentication session expired"));
+      await expect(DiaryLoader(PROPS)).rejects.toThrow("NEXT_REDIRECT");
+      expect(mockRedirectToReLogin).toHaveBeenCalledWith("/org/acme/diary", "expired");
+    });
+
+    it("keys the client on the whole window so Week to Day on a Monday remounts", async () => {
+      mockGetDiary.mockResolvedValue({ events: [TASK], typesServed: ["TASK_DUE", "MATTER_DUE"] });
+      const { rerender } = render(await DiaryLoader(PROPS));
+      expect(screen.getByTestId("diary-week-grid")).toBeInTheDocument();
+      rerender(await DiaryLoader({ ...PROPS, to: "2026-10-19", view: "day" }));
+      expect(screen.queryByTestId("diary-week-grid")).toBeNull();
+      expect(screen.getByRole("tab", { name: "Day" })).toHaveAttribute("aria-selected", "true");
+    });
+
+    it("seeds valid ?feeEarner= / ?matter= and drops unknown ones", async () => {
+      mockGetMembers.mockResolvedValue([
+        { id: "fe-1", name: "Thandi Nkosi", email: "thandi@firm.test" },
+        { id: "fe-2", name: "Pieter van Wyk", email: "pieter@firm.test" },
+      ]);
+      mockGetMatters.mockResolvedValue([
+        { id: "m-1", name: "Dlamini v Road Accident Fund", referenceNumber: "LIT-001" },
+      ]);
+      render(await DiaryLoader({ ...PROPS, initialFeeEarner: "fe-2", initialMatterId: "m-1" }));
+      expect(screen.getByRole("combobox", { name: "Fee earner" })).toHaveTextContent(
+        "Pieter van Wyk"
+      );
+      expect(screen.getByRole("combobox", { name: "Matter" })).toHaveTextContent(
+        "Dlamini v Road Accident Fund"
+      );
+      cleanup();
+
+      mockCaps.mockResolvedValue({ ...MEMBER_CAPS, capabilities: [] });
+      render(await DiaryLoader({ ...PROPS, initialFeeEarner: "fe-404", initialMatterId: "m-404" }));
+      // Unknown member → the role default (Mine for a member); unknown matter → all matters.
+      expect(screen.getByRole("combobox", { name: "Fee earner" })).toHaveTextContent("Mine");
+      expect(screen.getByRole("combobox", { name: "Matter" })).toHaveTextContent("All matters");
+    });
   });
 });

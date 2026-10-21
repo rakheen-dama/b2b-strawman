@@ -1,6 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 vi.mock("next/link", () => ({
   default: ({
@@ -181,6 +182,82 @@ describe("DiaryWeekView", () => {
   it("omits the overdue strip when the band is empty", () => {
     renderWeek();
     expect(screen.queryByRole("region", { name: "Overdue" })).toBeNull();
+  });
+});
+
+describe("DiaryWeekView grid (613C a11y)", () => {
+  it("is a one-row grid of seven day cells labelled by their headings", () => {
+    renderWeek([]);
+    const grid = screen.getByRole("grid", { name: "Week of 19 October 2026" });
+    expect(within(grid).getAllByRole("row")).toHaveLength(1);
+    const cells = within(grid).getAllByRole("gridcell");
+    expect(cells).toHaveLength(7);
+    expect(screen.getByRole("gridcell", { name: "Wed 21 Oct" })).toBe(
+      screen.getByTestId("diary-day-2026-10-21")
+    );
+  });
+
+  it("has a single tab stop on today and roves it with the arrow keys, Home and End", async () => {
+    const user = userEvent.setup();
+    renderWeek([]);
+    const cells = screen.getAllByRole("gridcell");
+    expect(cells.filter((c) => c.getAttribute("tabindex") === "0")).toHaveLength(1);
+    const wed = screen.getByTestId("diary-day-2026-10-21");
+    expect(wed).toHaveAttribute("tabindex", "0");
+
+    wed.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(document.activeElement).toBe(screen.getByTestId("diary-day-2026-10-22"));
+    expect(screen.getByTestId("diary-day-2026-10-22")).toHaveAttribute("tabindex", "0");
+    expect(wed).toHaveAttribute("tabindex", "-1");
+    await user.keyboard("{End}");
+    expect(document.activeElement).toBe(screen.getByTestId("diary-day-2026-10-25"));
+    await user.keyboard("{ArrowRight}");
+    expect(document.activeElement).toBe(screen.getByTestId("diary-day-2026-10-25"));
+    await user.keyboard("{Home}");
+    expect(document.activeElement).toBe(screen.getByTestId("diary-day-2026-10-19"));
+    await user.keyboard("{ArrowLeft}{ArrowDown}");
+    expect(document.activeElement).toBe(screen.getByTestId("diary-day-2026-10-19"));
+  });
+
+  it("starts the tab stop on Monday when today is outside the week", () => {
+    render(
+      <DiaryWeekView events={[]} band={[]} from="2026-10-26" today="2026-10-21" slug="acme" />
+    );
+    expect(screen.getByTestId("diary-day-2026-10-26")).toHaveAttribute("tabindex", "0");
+  });
+
+  it("opens the focused day with Enter", async () => {
+    const user = userEvent.setup();
+    const onSelectDay = vi.fn();
+    render(
+      <DiaryWeekView
+        events={[]}
+        band={[]}
+        from="2026-10-19"
+        today="2026-10-21"
+        slug="acme"
+        onSelectDay={onSelectDay}
+      />
+    );
+    screen.getByTestId("diary-day-2026-10-21").focus();
+    await user.keyboard("{ArrowLeft}{Enter}");
+    expect(onSelectDay).toHaveBeenCalledWith("2026-10-20");
+  });
+
+  it("keeps event links in the native tab order and leaves their keys alone", async () => {
+    const user = userEvent.setup();
+    renderWeek();
+    const link = screen.getByTestId("diary-event-cd-1");
+    expect(link).not.toHaveAttribute("tabindex");
+    link.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(document.activeElement).toBe(link);
+  });
+
+  it("shows a visible focus ring on day cells", () => {
+    renderWeek([]);
+    expect(screen.getByTestId("diary-day-2026-10-21").className).toContain("focus-visible:ring-2");
   });
 });
 

@@ -63,8 +63,31 @@ export interface DiaryQueryParams {
   includeOverdue?: boolean;
 }
 
-/** 613B ships Week + List; Day and Month arrive in 613C. */
-export type DiaryView = "week" | "list";
+/** Diary views (613B Week + List; 613C Day + Month). Tab order = this order. */
+export type DiaryView = "day" | "week" | "month" | "list";
+
+export const DIARY_VIEWS: readonly DiaryView[] = ["day", "week", "month", "list"];
+
+export const DIARY_VIEW_LABELS: Record<DiaryView, string> = {
+  day: "Day",
+  week: "Week",
+  month: "Month",
+  list: "List",
+};
+
+/** The range unit a view steps by — copy and aria ("Previous month", "…for this month."). */
+export const DIARY_VIEW_UNIT: Record<DiaryView, "day" | "week" | "month"> = {
+  day: "day",
+  week: "week",
+  month: "month",
+  list: "month",
+};
+
+/** A loaded date window, inclusive (yyyy-MM-dd). */
+export interface DiaryWindow {
+  from: string;
+  to: string;
+}
 
 export interface DiaryMemberOption {
   id: string;
@@ -131,9 +154,84 @@ export function daysBetween(from: string, to: string): number {
   return Math.round((Date.UTC(ty, tm - 1, td) - Date.UTC(fy, fm - 1, fd)) / 86_400_000);
 }
 
-/** 613B ships Week + List; day/month (613C) and junk fall back to week. */
+/** `?view=` → a known view; absent or junk falls back to week. */
 export function parseDiaryView(value: string | null | undefined): DiaryView {
-  return value === "list" ? "list" : "week";
+  return DIARY_VIEWS.includes(value as DiaryView) ? (value as DiaryView) : "week";
+}
+
+export function firstOfMonth(iso: string): string {
+  return `${iso.slice(0, 7)}-01`;
+}
+
+export function lastOfMonth(iso: string): string {
+  const d = parseIsoDate(firstOfMonth(iso));
+  d.setMonth(d.getMonth() + 1, 0);
+  return toIsoDate(d);
+}
+
+/** The 1st of the month `months` away (never overflows: 31 Jan + 1 → 1 Feb, not 3 Mar). */
+export function addMonths(iso: string, months: number): string {
+  const d = parseIsoDate(firstOfMonth(iso));
+  d.setMonth(d.getMonth() + months, 1);
+  return toIsoDate(d);
+}
+
+/**
+ * The window a view loads around `anchor`: day = the date itself, week = Mon–Sun, month and list
+ * = the calendar month (1st to last). Every window is ≤ 31 days, so the fee earner stays a
+ * client-side filter (§12.6.2).
+ */
+export function diaryWindow(view: DiaryView, anchor: string): DiaryWindow {
+  switch (view) {
+    case "day":
+      return { from: anchor, to: anchor };
+    case "week": {
+      const from = mondayOf(anchor);
+      return { from, to: addDays(from, 6) };
+    }
+    case "month":
+    case "list":
+      return { from: firstOfMonth(anchor), to: lastOfMonth(anchor) };
+  }
+}
+
+/** The previous (-1) or next (1) window of the view, from the current window's `from`. */
+export function stepDiaryWindow(view: DiaryView, from: string, direction: -1 | 1): DiaryWindow {
+  const unit = DIARY_VIEW_UNIT[view];
+  const anchor =
+    unit === "day"
+      ? addDays(from, direction)
+      : unit === "week"
+        ? addDays(from, 7 * direction)
+        : addMonths(from, direction);
+  return diaryWindow(view, anchor);
+}
+
+export function windowContains(window: DiaryWindow, iso: string): boolean {
+  return iso >= window.from && iso <= window.to;
+}
+
+export function sameWindow(a: DiaryWindow, b: DiaryWindow): boolean {
+  return a.from === b.from && a.to === b.to;
+}
+
+/** The seven dates of the Mon–Sun week starting `monday`. */
+export function weekDays(monday: string): string[] {
+  return Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+}
+
+/**
+ * Mon–Sun rows covering the month of `iso`; `null` marks a leading / trailing cell outside the
+ * month. October 2026 (1 Oct is a Thursday) → 5 rows from Mon 28 Sep to Sun 1 Nov.
+ */
+export function monthGridWeeks(iso: string): (string | null)[][] {
+  const first = firstOfMonth(iso);
+  const last = lastOfMonth(iso);
+  const weeks: (string | null)[][] = [];
+  for (let start = mondayOf(first); start <= last; start = addDays(start, 7)) {
+    weeks.push(weekDays(start).map((day) => (day >= first && day <= last ? day : null)));
+  }
+  return weeks;
 }
 
 /** `?types=` CSV → known kinds in DIARY_KINDS order; unknown tokens dropped; [] when none. */
@@ -238,4 +336,39 @@ export function formatDiaryDay(iso: string, style: "short" | "long" = "short"): 
       : { day: "numeric", month: "long", year: "numeric" }
   );
   return `${weekday} ${rest}`;
+}
+
+/** "19 October 2026". */
+export function formatDiaryDate(iso: string): string {
+  return parseIsoDate(iso).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+/** "October 2026". */
+export function formatDiaryMonth(iso: string): string {
+  return parseIsoDate(iso).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+}
+
+/** "19 October to 25 October 2026". */
+export function formatDiaryWeekRange(from: string, to: string): string {
+  const start = parseIsoDate(from).toLocaleDateString("en-GB", { day: "numeric", month: "long" });
+  return `${start} to ${formatDiaryDate(to)}`;
+}
+
+/**
+ * Range label for the toolbar: day "Wednesday 21 October 2026", week "19 October to 25 October
+ * 2026", month / list "October 2026".
+ */
+export function formatDiaryRangeLabel(view: DiaryView, window: DiaryWindow): string {
+  switch (DIARY_VIEW_UNIT[view]) {
+    case "day":
+      return formatDiaryDay(window.from, "long");
+    case "week":
+      return formatDiaryWeekRange(window.from, window.to);
+    case "month":
+      return formatDiaryMonth(window.from);
+  }
 }

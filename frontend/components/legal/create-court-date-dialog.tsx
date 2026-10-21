@@ -11,7 +11,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@b2mash/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,6 +31,8 @@ interface CreateCourtDateDialogProps {
   onSuccess?: () => void;
   /** Trigger button text; defaults to "New Court Date". */
   triggerLabel?: React.ReactNode;
+  /** Trigger button variant (default "default"). */
+  triggerVariant?: React.ComponentProps<typeof Button>["variant"];
 }
 
 const DATE_TYPES = [
@@ -50,6 +51,7 @@ export function CreateCourtDateDialog({
   slug,
   onSuccess,
   triggerLabel = "New Court Date",
+  triggerVariant = "default",
 }: CreateCourtDateDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -138,12 +140,18 @@ export function CreateCourtDateDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button size="sm" data-testid="create-court-date-trigger">
-          <Plus className="mr-1.5 size-4" />
-          {triggerLabel}
-        </Button>
-      </DialogTrigger>
+      {/* Dialog owns its button (frontend/CLAUDE.md "Dialog Trigger Composition"): safe next to
+          other dialog triggers, e.g. the Diary header. */}
+      <Button
+        type="button"
+        size="sm"
+        variant={triggerVariant}
+        data-testid="create-court-date-trigger"
+        onClick={() => handleOpenChange(true)}
+      >
+        <Plus className="mr-1.5 size-4" />
+        {triggerLabel}
+      </Button>
       <DialogContent data-testid="create-court-date-dialog">
         <DialogHeader>
           <DialogTitle>Schedule Court Date</DialogTitle>

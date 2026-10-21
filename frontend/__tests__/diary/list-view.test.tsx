@@ -61,7 +61,8 @@ const inWindow = [
 ];
 
 describe("DiaryListView", () => {
-  it("renders four column headers and an sr-only caption", () => {
+  // 613C amendment (B-7): a fifth, visually hidden Actions column holds the row menu.
+  it("renders four column headers, an sr-only Actions header and an sr-only caption", () => {
     const { container } = render(<DiaryListView events={inWindow} band={band} slug="acme" />);
     const cols = container.querySelectorAll('th[scope="col"]');
     expect([...cols].map((th) => th.textContent)).toEqual([
@@ -69,7 +70,9 @@ describe("DiaryListView", () => {
       "Event",
       "Matter",
       "Fee earner",
+      "Actions",
     ]);
+    expect(within(cols[4] as HTMLElement).getByText("Actions")).toHaveClass("sr-only");
     expect(screen.getByText("Diary events")).toHaveClass("sr-only");
   });
 
@@ -133,9 +136,10 @@ describe("DiaryListView", () => {
 });
 
 describe("DiaryListSkeleton", () => {
-  it("renders the four-column shape with six placeholder rows", () => {
+  // 613C amendment (B-7): the skeleton carries the Actions column too.
+  it("renders the five-column shape with six placeholder rows", () => {
     const { container } = render(<DiaryListSkeleton />);
-    expect(container.querySelectorAll('th[scope="col"]')).toHaveLength(4);
+    expect(container.querySelectorAll('th[scope="col"]')).toHaveLength(5);
     expect(container.querySelectorAll("tbody tr")).toHaveLength(6);
   });
 });

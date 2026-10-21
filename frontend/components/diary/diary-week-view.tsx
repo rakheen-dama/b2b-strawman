@@ -1,13 +1,18 @@
+"use client";
+
 import { Card } from "@b2mash/ui/card";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
-  addDays,
+  formatDiaryDate,
   formatDiaryDay,
   groupByDate,
+  weekDays,
   type DiaryEventResponse,
 } from "@/app/(app)/org/[slug]/diary/diary-types";
 import { DiaryEventRow } from "./diary-event-row";
+import { DiaryOverdueStrip } from "./diary-overdue-strip";
+import { useDiaryGridNav } from "./use-diary-grid-nav";
 
 interface DiaryWeekViewProps {
   /** In-window events, already filtered, in server order. */
@@ -18,70 +23,79 @@ interface DiaryWeekViewProps {
   from: string;
   today: string;
   slug: string;
-}
-
-function weekDays(from: string): string[] {
-  return Array.from({ length: 7 }, (_, i) => addDays(from, i));
+  /** Enter / Space on a focused day cell — open that day. */
+  onSelectDay?: (iso: string) => void;
 }
 
 const WEEK_GRID = "grid grid-cols-1 gap-2 md:grid-cols-7";
 const DAY_CARD = "gap-0 py-0 md:min-h-24";
 
-/** Week view — Mon–Sun day cells, with an Overdue strip above when the band has rows. */
-export function DiaryWeekView({ events, band, from, today, slug }: DiaryWeekViewProps) {
+/**
+ * Week view — Mon–Sun day cells as a one-row `role="grid"` with a roving tab stop (Arrow keys,
+ * Home / End), and an Overdue strip above when the band has rows.
+ */
+export function DiaryWeekView({
+  events,
+  band,
+  from,
+  today,
+  slug,
+  onSelectDay,
+}: DiaryWeekViewProps) {
   const byDate = groupByDate(events);
+  const days = weekDays(from);
+  const { cellProps } = useDiaryGridNav({
+    cells: days,
+    columns: 7,
+    initial: today,
+    onActivate: onSelectDay,
+  });
 
   return (
     <div className="space-y-4">
-      {band.length > 0 && (
-        <section aria-labelledby="diary-overdue-week">
-          <Card className="gap-0 py-0">
-            <h2
-              id="diary-overdue-week"
-              className="text-destructive border-b border-slate-200/80 px-3 py-2 text-sm font-semibold dark:border-slate-800/80"
-            >
-              Overdue
-            </h2>
-            <div className="grid grid-cols-1 gap-x-4 gap-y-1 p-2 md:grid-cols-2 xl:grid-cols-3">
-              {band.map((event) => (
-                <DiaryEventRow key={event.id} event={event} slug={slug} showDate />
-              ))}
-            </div>
-          </Card>
-        </section>
-      )}
+      <DiaryOverdueStrip band={band} slug={slug} />
 
-      <div className={WEEK_GRID} data-testid="diary-week-grid">
-        {weekDays(from).map((iso) => {
-          const isToday = iso === today;
-          const dayEvents = byDate.get(iso) ?? [];
-          return (
-            <Card
-              key={iso}
-              data-testid={`diary-day-${iso}`}
-              aria-current={isToday ? "date" : undefined}
-              className={DAY_CARD}
-            >
-              <h2
+      <div role="grid" aria-label={`Week of ${formatDiaryDate(from)}`}>
+        <div role="row" className={WEEK_GRID} data-testid="diary-week-grid">
+          {days.map((iso) => {
+            const isToday = iso === today;
+            const dayEvents = byDate.get(iso) ?? [];
+            const headingId = `diary-week-day-${iso}`;
+            return (
+              <Card
+                key={iso}
+                role="gridcell"
+                aria-labelledby={headingId}
+                data-testid={`diary-day-${iso}`}
+                aria-current={isToday ? "date" : undefined}
                 className={cn(
-                  "border-b border-slate-200/80 px-3 py-2 text-sm dark:border-slate-800/80",
-                  isToday
-                    ? "font-semibold text-teal-600"
-                    : "font-medium text-slate-700 dark:text-slate-300"
+                  DAY_CARD,
+                  "focus-visible:ring-ring outline-none focus-visible:ring-2"
                 )}
+                {...cellProps(iso)}
               >
-                {formatDiaryDay(iso)}
-              </h2>
-              {dayEvents.length > 0 && (
-                <div className="flex flex-col gap-1 p-1.5">
-                  {dayEvents.map((event) => (
-                    <DiaryEventRow key={event.id} event={event} slug={slug} />
-                  ))}
-                </div>
-              )}
-            </Card>
-          );
-        })}
+                <h2
+                  id={headingId}
+                  className={cn(
+                    "border-b border-slate-200/80 px-3 py-2 text-sm dark:border-slate-800/80",
+                    isToday
+                      ? "font-semibold text-teal-600"
+                      : "font-medium text-slate-700 dark:text-slate-300"
+                  )}
+                >
+                  {formatDiaryDay(iso)}
+                </h2>
+                {dayEvents.length > 0 && (
+                  <div className="flex flex-col gap-1 p-1.5">
+                    {dayEvents.map((event) => (
+                      <DiaryEventRow key={event.id} event={event} slug={slug} />
+                    ))}
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

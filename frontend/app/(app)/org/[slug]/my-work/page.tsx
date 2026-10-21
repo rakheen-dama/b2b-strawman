@@ -30,6 +30,7 @@ import { WeeklyRhythmStripClient } from "./weekly-rhythm-strip-client";
 import { MyWorkHeader } from "./my-work-header";
 import { MyWorkTasksClient } from "./my-work-tasks-client";
 import { createMyWorkViewAction } from "./view-actions";
+import { loadTodaysDiary } from "./todays-diary";
 import { fetchPersonalDashboard } from "@/lib/actions/dashboard";
 import { getMyExpenses } from "@/lib/actions/expense-actions";
 import { ApiError } from "@/lib/api";
@@ -158,6 +159,9 @@ export default async function MyWorkPage({
     console.error("Failed to resolve current member:", e);
   }
 
+  // Today's diary (Phase 87 613D): the current user's day + overdue band; fails soft.
+  const diaryEvents = await loadTodaysDiary(today, currentMemberId);
+
   // Saved views for TASK
   let savedViews: SavedViewResponse[] = [];
   try {
@@ -224,7 +228,9 @@ export default async function MyWorkPage({
 
       {/* Hero: Today's Agenda */}
       <TodaysAgenda
-        tasks={tasksData.assigned}
+        slug={slug}
+        today={today}
+        diaryEvents={diaryEvents}
         todayEntries={todayEntries}
         upcomingDeadlines={personalDashboard?.upcomingDeadlines ?? []}
         weeklyCapacityHours={40}

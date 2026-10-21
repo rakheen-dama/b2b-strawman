@@ -26,7 +26,7 @@ import {
   interruptPrescriptionSchema,
   type InterruptPrescriptionFormData,
 } from "@/lib/schemas/legal";
-import { interruptPrescription } from "@/app/(app)/org/[slug]/court-calendar/actions";
+import { interruptPrescription } from "@/lib/actions/court-dates";
 
 interface InterruptDialogProps {
   slug: string;

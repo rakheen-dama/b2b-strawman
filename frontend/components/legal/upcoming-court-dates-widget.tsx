@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@b2mash/ui
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { cn } from "@/lib/utils";
-import { fetchUpcoming } from "@/app/(app)/org/[slug]/court-calendar/actions";
+import { fetchUpcoming } from "@/lib/actions/court-dates";
 import type { CourtDate } from "@/lib/types";
 
 interface UpcomingCourtDatesWidgetProps {
@@ -136,7 +136,7 @@ export function UpcomingCourtDatesWidget({ orgSlug }: UpcomingCourtDatesWidgetPr
       </CardContent>
       <CardFooter className="pt-0">
         <Button variant="ghost" size="sm" className="h-7 text-xs text-slate-500" asChild>
-          <Link href={`/org/${orgSlug}/court-calendar`}>View All &rarr;</Link>
+          <Link href={`/org/${orgSlug}/diary?types=COURT_DATE,PRESCRIPTION`}>View All &rarr;</Link>
         </Button>
       </CardFooter>
     </Card>

@@ -23,10 +23,10 @@ vi.mock("next/link", () => ({
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
-  usePathname: () => "/org/acme/court-calendar",
+  usePathname: () => "/org/acme/diary",
 }));
 
-vi.mock("@/app/(app)/org/[slug]/court-calendar/actions", () => ({
+vi.mock("@/lib/actions/court-dates", () => ({
   fetchCourtDates: vi.fn().mockResolvedValue({ content: [], page: { totalElements: 0 } }),
   fetchCourtDate: vi.fn(),
   createCourtDate: vi.fn().mockResolvedValue({ success: true }),
@@ -60,13 +60,9 @@ vi.mock("@/lib/api", () => ({
 // --- Imports after mocks ---
 
 import { CourtDateListView } from "@/components/legal/court-date-list-view";
-import { CourtCalendarView } from "@/components/legal/court-calendar-view";
-import { PrescriptionTab } from "@/components/legal/prescription-tab";
+import { PrescriptionTrackerList } from "@/components/legal/prescription-tracker-list";
 import { CreateCourtDateDialog } from "@/components/legal/create-court-date-dialog";
 import { CreatePrescriptionDialog } from "@/components/legal/create-prescription-dialog";
-import { OrgProfileProvider } from "@/lib/org-profile";
-import { ModuleGate } from "@/components/module-gate";
-import { NAV_GROUPS } from "@/lib/nav-items";
 import type { CourtDate, PrescriptionTracker } from "@/lib/types";
 
 afterEach(() => cleanup());
@@ -166,27 +162,9 @@ describe("CourtDateListView", () => {
   });
 });
 
-describe("CourtCalendarView", () => {
-  it("renders month grid with weekday headers", () => {
-    render(
-      <CourtCalendarView
-        courtDates={[makeCourtDate({ scheduledDate: "2026-04-15" })]}
-        year={2026}
-        month={4}
-      />
-    );
-
-    const calendar = screen.getByTestId("court-calendar-view");
-    expect(calendar).toBeInTheDocument();
-    expect(screen.getByText("Sun")).toBeInTheDocument();
-    expect(screen.getByText("Mon")).toBeInTheDocument();
-    expect(screen.getByText("Sat")).toBeInTheDocument();
-    // Day 15 should have a status dot
-    expect(screen.getByText("15")).toBeInTheDocument();
-  });
-});
-
-describe("PrescriptionTab", () => {
+// Phase 87 613D: the court calendar's Prescriptions tab became the matter-scoped
+// PrescriptionTrackerList mounted in the matter's Court dates tab.
+describe("PrescriptionTrackerList", () => {
   it("renders tracker list with status badges and days remaining", () => {
     const trackers: PrescriptionTracker[] = [
       makeTracker({ id: "pt-1", status: "RUNNING" }),
@@ -198,21 +176,22 @@ describe("PrescriptionTab", () => {
       makeTracker({ id: "pt-3", status: "EXPIRED" }),
     ];
 
-    render(<PrescriptionTab trackers={trackers} slug="acme" onRefresh={vi.fn()} />);
+    render(
+      <PrescriptionTrackerList trackers={trackers} slug="acme" onRefresh={vi.fn()} canManageLegal />
+    );
 
-    const tab = screen.getByTestId("prescription-tab");
-    expect(tab).toBeInTheDocument();
+    const list = screen.getByTestId("prescription-tracker-list");
+    expect(list).toBeInTheDocument();
     expect(screen.getByText("Running")).toBeInTheDocument();
     expect(screen.getByText("Warned")).toBeInTheDocument();
     expect(screen.getByText("Expired")).toBeInTheDocument();
-    // "Add Tracker" button
-    expect(screen.getByText("Add Tracker")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "New prescription tracker" })).toBeInTheDocument();
   });
 
   it("shows empty state when no trackers", () => {
-    render(<PrescriptionTab trackers={[]} slug="acme" onRefresh={vi.fn()} />);
+    render(<PrescriptionTrackerList trackers={[]} slug="acme" onRefresh={vi.fn()} />);
 
-    expect(screen.getByText("No prescription trackers found.")).toBeInTheDocument();
+    expect(screen.getByText("No prescription trackers on this matter.")).toBeInTheDocument();
   });
 });
 
@@ -234,7 +213,7 @@ describe("CreateCourtDateDialog", () => {
   });
 
   it("populates matter dropdown with projects", async () => {
-    const { fetchProjects } = await import("@/app/(app)/org/[slug]/court-calendar/actions");
+    const { fetchProjects } = await import("@/lib/actions/court-dates");
     vi.mocked(fetchProjects).mockResolvedValueOnce([
       { id: "p-1", name: "Smith v Jones" },
       { id: "p-2", name: "Doe v City" },
@@ -258,7 +237,7 @@ describe("CreateCourtDateDialog", () => {
   });
 
   it("shows error message when fetchProjects fails", async () => {
-    const { fetchProjects } = await import("@/app/(app)/org/[slug]/court-calendar/actions");
+    const { fetchProjects } = await import("@/lib/actions/court-dates");
     vi.mocked(fetchProjects).mockRejectedValueOnce(new Error("Network error"));
 
     const user = userEvent.setup();
@@ -340,44 +319,6 @@ describe("CreatePrescriptionDialog", () => {
 
     // Custom years field should now appear
     expect(screen.getByTestId("custom-years-field")).toBeInTheDocument();
-  });
-});
-
-describe("Nav items", () => {
-  it("court-calendar nav item has requiredModule and no requiredCapability", () => {
-    const todayZone = NAV_GROUPS.find((g) => g.id === "today");
-    const courtCalItem = todayZone?.items.find((i) => i.label === "Court calendar");
-    expect(courtCalItem).toBeDefined();
-    expect(courtCalItem?.requiredModule).toBe("court_calendar");
-    expect(courtCalItem?.requiredCapability).toBeUndefined();
-  });
-
-  it("court-calendar is hidden when module is disabled", () => {
-    render(
-      <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
-        <ModuleGate module="court_calendar">
-          <span>Court Calendar Content</span>
-        </ModuleGate>
-      </OrgProfileProvider>
-    );
-
-    expect(screen.queryByText("Court Calendar Content")).not.toBeInTheDocument();
-  });
-
-  it("court-calendar is visible when module is enabled", () => {
-    render(
-      <OrgProfileProvider
-        verticalProfile="legal-za"
-        enabledModules={["court_calendar"]}
-        terminologyNamespace={null}
-      >
-        <ModuleGate module="court_calendar">
-          <span>Court Calendar Content</span>
-        </ModuleGate>
-      </OrgProfileProvider>
-    );
-
-    expect(screen.getByText("Court Calendar Content")).toBeInTheDocument();
   });
 });
 

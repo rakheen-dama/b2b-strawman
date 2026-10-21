@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Plus } from "lucide-react";
 import { createCourtDateSchema, type CreateCourtDateFormData } from "@/lib/schemas/legal";
-import { createCourtDate, fetchProjects } from "@/app/(app)/org/[slug]/court-calendar/actions";
+import { createCourtDate, fetchProjects } from "@/lib/actions/court-dates";
 
 interface CreateCourtDateDialogProps {
   slug: string;

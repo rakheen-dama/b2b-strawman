@@ -1,3 +1,5 @@
+import type { NextConfig } from "next";
+
 /**
  * Legacy URL → canonical URL redirects: ONE committed table (Phase 87 §12.7.4 / §12.10.5).
  *
@@ -7,16 +9,18 @@
  * twin; 615E expenses; 616 settings). Rows stay for one release after Phase 87 ships.
  *
  * `permanent: true` → Next.js answers HTTP 308 (method-preserving). `:path*` matches zero
- * or more segments and query strings are carried over. Config redirects run before the
- * auth middleware (`proxy.ts`).
+ * or more segments. The request's query string is carried over and merged UNDER a
+ * destination's own query (destination keys win). Config redirects run before the auth
+ * middleware (`proxy.ts`).
  *
- * Dependency-free on purpose: `next.config.ts` imports it by relative path.
+ * Dependency-free on purpose: `next.config.ts` imports it by relative path (the `next` import
+ * above is type-only and erased).
  *
- * Typing note: `as const` turns a future `has: [...]` array into a readonly tuple, which
- * Next's mutable `Redirect[]` rejects. The slice adding the first `has` row (613D) must
- * adapt the typing, e.g. `satisfies readonly Redirect[]` here plus a mutable copy of
- * `has` in `next.config.ts` `redirects()`.
+ * Typing: `satisfies readonly Redirect[]`, not `as const` — a const `has` tuple is readonly,
+ * which Next's mutable `Redirect.has: RouteHas[]` rejects (TS2322 in next.config.ts).
  */
+type Redirect = Awaited<ReturnType<NonNullable<NextConfig["redirects"]>>>[number];
+
 export const LEGACY_REDIRECTS = [
   // GAP-Doc-Drift-26: legacy bookmarks and QA scenario docs reference
   // /org/:slug/settings/team; the canonical route is /org/:slug/team.
@@ -42,4 +46,22 @@ export const LEGACY_REDIRECTS = [
     destination: "/org/:slug/reports/profitability",
     permanent: true,
   },
-] as const;
+  // Phase 87 S6b (613D, ADR-339): the two calendars are one Diary.
+  {
+    source: "/org/:slug/calendar",
+    destination: "/org/:slug/diary",
+    permanent: true,
+  },
+  // The court calendar's Prescriptions deep link — must precede the plain /court-calendar row.
+  {
+    source: "/org/:slug/court-calendar",
+    has: [{ type: "query", key: "tab", value: "prescription" }],
+    destination: "/org/:slug/diary?types=PRESCRIPTION&view=list",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/court-calendar",
+    destination: "/org/:slug/diary?types=COURT_DATE,PRESCRIPTION",
+    permanent: true,
+  },
+] satisfies readonly Redirect[];

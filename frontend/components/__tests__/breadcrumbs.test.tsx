@@ -92,6 +92,12 @@ describe("Breadcrumbs", () => {
       expect(screen.getByText("Profitability").tagName).toBe("SPAN");
     });
 
+    // Phase 87 S6b (613D): the Diary replaces both calendars.
+    it("labels the Diary on /diary", () => {
+      renderAt("/org/acme/diary");
+      expect(screen.getByText("Diary").tagName).toBe("SPAN");
+    });
+
     it("renders Legal as plain text and Tariffs last on /legal/tariffs", () => {
       renderAt("/org/acme/legal/tariffs");
       expect(screen.getByText("Legal").tagName).toBe("SPAN");

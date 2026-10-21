@@ -21,10 +21,10 @@ function fixHrefFor(code: string, slug: string, projectId: string): string | nul
       return `/org/${slug}/matters/${projectId}?tab=disbursements`;
     case "FINAL_BILL_ISSUED":
       return `/org/${slug}/invoices?projectId=${projectId}`;
+    // Phase 87 613D: court dates and prescription trackers live in the matter's Court dates tab.
     case "NO_OPEN_COURT_DATES":
-      return `/org/${slug}/court-calendar?projectId=${projectId}`;
     case "NO_OPEN_PRESCRIPTIONS":
-      return `/org/${slug}/court-calendar?projectId=${projectId}&view=prescriptions`;
+      return `/org/${slug}/matters/${projectId}?tab=court-dates`;
     case "ALL_TASKS_RESOLVED":
       return `/org/${slug}/matters/${projectId}?tab=tasks`;
     case "ALL_INFO_REQUESTS_CLOSED":

@@ -31,7 +31,7 @@ function DiarySkeleton({ view }: { view: DiaryView }) {
  * dates. `?view=day|week|month|list` (default week); `?from=` snaps to the view's window (day =
  * as-is, week = Monday, month / list = the 1st); `?types=` (chip preselection), `?feeEarner=`
  * (`mine` | `all` | member id) and `?matter=` are client-side filters seeded from the URL.
- * Reachable by URL only until 613D adds the nav item.
+ * Nav: Today zone › Diary (613D), which replaced /calendar and /court-calendar (308 redirects).
  */
 export default async function DiaryPage({
   params,

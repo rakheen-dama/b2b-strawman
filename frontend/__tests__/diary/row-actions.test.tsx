@@ -36,7 +36,7 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/org/acme/diary",
   useSearchParams: () => new URLSearchParams(),
 }));
-vi.mock("@/app/(app)/org/[slug]/court-calendar/actions", () => ({
+vi.mock("@/lib/actions/court-dates", () => ({
   postponeCourtDate: mockPostpone,
   cancelCourtDate: vi.fn().mockResolvedValue({ success: true }),
   recordOutcome: vi.fn().mockResolvedValue({ success: true }),

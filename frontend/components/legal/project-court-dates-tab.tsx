@@ -8,15 +8,25 @@ import { PostponeDialog } from "@/components/legal/postpone-dialog";
 import { CancelCourtDateDialog } from "@/components/legal/cancel-court-date-dialog";
 import { OutcomeDialog } from "@/components/legal/outcome-dialog";
 import { CreateCourtDateDialog } from "@/components/legal/create-court-date-dialog";
-import { fetchCourtDates } from "@/app/(app)/org/[slug]/court-calendar/actions";
+import { PrescriptionTrackerList } from "@/components/legal/prescription-tracker-list";
+import { fetchCourtDates, fetchPrescriptionTrackers } from "@/lib/actions/court-dates";
 import type { CourtDate } from "@/lib/types";
 
 interface ProjectCourtDatesTabProps {
   projectId: string;
   slug: string;
+  /**
+   * MANAGE_LEGAL (or admin / owner) — gates the prescription-tracker writes (fail closed). The
+   * court-date writes on this tab keep their pre-613D (ungated) behaviour.
+   */
+  canManageLegal?: boolean;
 }
 
-export function ProjectCourtDatesTab({ projectId, slug }: ProjectCourtDatesTabProps) {
+export function ProjectCourtDatesTab({
+  projectId,
+  slug,
+  canManageLegal = false,
+}: ProjectCourtDatesTabProps) {
   const [editTarget, setEditTarget] = useState<CourtDate | null>(null);
   const [postponeTarget, setPostponeTarget] = useState<CourtDate | null>(null);
   const [cancelTarget, setCancelTarget] = useState<CourtDate | null>(null);
@@ -29,6 +39,19 @@ export function ProjectCourtDatesTab({ projectId, slug }: ProjectCourtDatesTabPr
   );
 
   const courtDates = data?.content ?? [];
+
+  // Phase 87 613D (Open Question #17): the matter's prescription trackers live here now that the
+  // court-calendar page is gone; Diary PRESCRIPTION rows deep-link to ?tab=court-dates.
+  const {
+    data: trackerData,
+    isLoading: trackersLoading,
+    mutate: mutateTrackers,
+  } = useSWR(
+    `project-prescription-trackers-${projectId}`,
+    () => fetchPrescriptionTrackers({ matterId: projectId }),
+    { dedupingInterval: 2000 }
+  );
+  const trackers = trackerData?.content ?? [];
 
   return (
     <div data-testid="project-court-dates-tab" className="space-y-4">
@@ -49,6 +72,19 @@ export function ProjectCourtDatesTab({ projectId, slug }: ProjectCourtDatesTabPr
           onSelect={() => {}}
         />
       )}
+
+      <div className="pt-4">
+        {trackersLoading ? (
+          <p className="text-xs text-slate-500 italic">Loading prescription trackers&hellip;</p>
+        ) : (
+          <PrescriptionTrackerList
+            trackers={trackers}
+            slug={slug}
+            canManageLegal={canManageLegal}
+            onRefresh={() => mutateTrackers()}
+          />
+        )}
+      </div>
 
       {editTarget && (
         <EditCourtDateDialog

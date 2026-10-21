@@ -23,7 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { editCourtDateSchema, type EditCourtDateFormData } from "@/lib/schemas/legal";
-import { updateCourtDate } from "@/app/(app)/org/[slug]/court-calendar/actions";
+import { updateCourtDate } from "@/lib/actions/court-dates";
 import type { CourtDate } from "@/lib/types";
 
 interface EditCourtDateDialogProps {

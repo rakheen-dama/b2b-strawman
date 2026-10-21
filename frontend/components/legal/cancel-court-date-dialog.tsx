@@ -22,7 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { cancelCourtDateSchema, type CancelCourtDateFormData } from "@/lib/schemas/legal";
-import { cancelCourtDate } from "@/app/(app)/org/[slug]/court-calendar/actions";
+import { cancelCourtDate } from "@/lib/actions/court-dates";
 
 interface CancelCourtDateDialogProps {
   slug: string;

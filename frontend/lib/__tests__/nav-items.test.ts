@@ -15,12 +15,11 @@ const ALL_ITEMS = NAV_GROUPS.flatMap((g) => g.items);
 const zone = (id: string) => NAV_GROUPS.find((g) => g.id === id)!;
 const item = (label: string) => ALL_ITEMS.find((i) => i.label === label);
 
-// Phase 87 S6a (612A/612B, ADR-339 §12.6.1). After 612B there are 29 items: Today carries the
-// interim Calendar + Court calendar pair (613D replaces both with one Diary item → Today 3) and
-// Fees has 6 (612B added "Unbilled work" together with its /invoices/unbilled page); after 613D
-// the spec's final 28 = 3 + 5 + 3 + 6 + 7 + 4.
+// Phase 87 S6a/S6b (612A/612B/613D, ADR-339 §12.6.1): 28 items = 3 + 5 + 3 + 6 + 7 + 4. Today is
+// Home, My work, Diary (613D replaced the interim Calendar + Court calendar pair); Fees has 6
+// (612B added "Unbilled work").
 const ZONE_SIZES: Record<string, number> = {
-  today: 4,
+  today: 3,
   matters: 5,
   clients: 3,
   fees: 6,
@@ -54,9 +53,9 @@ describe("NAV_GROUPS — six zones around the attorney's week (ADR-339)", () => 
     ]);
   });
 
-  it("has 29 items with the expected per-zone sizes", () => {
+  it("has 28 items with the expected per-zone sizes", () => {
     expect(Object.fromEntries(NAV_GROUPS.map((g) => [g.id, g.items.length]))).toEqual(ZONE_SIZES);
-    expect(ALL_ITEMS).toHaveLength(29);
+    expect(ALL_ITEMS).toHaveLength(28);
   });
 
   it("keeps every zone at ≤ 6 items except trust (≤ 7)", () => {
@@ -119,8 +118,7 @@ describe("NAV_GROUPS — six zones around the attorney's week (ADR-339)", () => 
   it.each([
     ["Home", undefined, undefined],
     ["My work", undefined, undefined],
-    ["Calendar", undefined, undefined],
-    ["Court calendar", undefined, "court_calendar"],
+    ["Diary", undefined, undefined],
     ["Matters", undefined, undefined],
     ["New matter", ["PROJECT_MANAGEMENT", "AI_EXECUTE"], undefined],
     ["Conflict check", undefined, "conflict_check"],
@@ -203,13 +201,16 @@ describe("NAV_GROUPS — six zones around the attorney's week (ADR-339)", () => 
     expect(ALL_ITEMS.filter((i) => i.adminOnly).map((i) => i.label)).toEqual(["Audit trail"]);
   });
 
-  it("Today carries the interim Calendar + Court calendar items until 613D", () => {
+  it("Today is Home, My work, Diary — Diary is ungated and replaces both calendars (613D)", () => {
     expect(zone("today").items.map((i) => i.href("acme"))).toEqual([
       "/org/acme/dashboard",
       "/org/acme/my-work",
-      "/org/acme/calendar",
-      "/org/acme/court-calendar",
+      "/org/acme/diary",
     ]);
+    expect(item("Diary")?.requiredModule).toBeUndefined();
+    expect(item("Diary")?.requiredCapability).toBeUndefined();
+    const hrefs = ALL_ITEMS.map((i) => i.href("acme"));
+    expect(hrefs.filter((h) => /\/(court-)?calendar(\/|$)/.test(h))).toEqual([]);
   });
 
   it("has no AI zone; AI intake = New matter, AI reviews = fifth Matters item", () => {

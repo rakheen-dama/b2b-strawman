@@ -213,7 +213,9 @@ describe("My Work page renders new layout components", () => {
     render(
       <>
         <TodaysAgenda
-          tasks={[]}
+          slug="acme"
+          today="2026-10-21"
+          diaryEvents={[]}
           todayEntries={[]}
           upcomingDeadlines={[]}
           weeklyCapacityHours={40}
@@ -228,7 +230,7 @@ describe("My Work page renders new layout components", () => {
     );
 
     // New components present
-    expect(screen.getByTestId("todays-tasks")).toBeInTheDocument();
+    expect(screen.getByTestId("todays-diary")).toBeInTheDocument();
     expect(screen.getByTestId("time-progress-today")).toBeInTheDocument();
     expect(screen.getByTestId("next-deadline")).toBeInTheDocument();
     expect(screen.getByTestId("weekly-rhythm-strip")).toBeInTheDocument();

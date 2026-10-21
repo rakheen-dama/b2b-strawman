@@ -176,7 +176,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **0.57** Navigate to **Settings > Features**
 - [ ] **0.58** Verify the page lists only the horizontal toggles (Bulk billing, Information requests). The legal modules `court_calendar`, `conflict_check`, `lssa_tariff`, `trust_accounting` are fixed by the `legal-za` profile and are not toggles here — confirm them via 0.59 (sidebar) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: legal modules are profile-fixed, Settings > Features lists horizontal modules only)
-- [ ] **0.59** **Sidebar check**: verify sidebar nav shows items for: the **Trust** zone (expand → Overview, Transactions, Client ledgers, Reconciliation, Interest, Investments, Trust reports), **Court calendar** (Today zone), **Conflict check** (Matters zone), **Tariffs** (Fees zone — expand) (Phase 87, ADR-344 — nav amendment, Epic 612C, PR #1620: Trust Accounting is now the Trust zone and the items are regrouped into the six zones per ADR-339)
+- [ ] **0.59** **Sidebar check**: verify sidebar nav shows items for: the **Trust** zone (expand → Overview, Transactions, Client ledgers, Reconciliation, Interest, Investments, Trust reports), **Diary** (Today zone), **Conflict check** (Matters zone), **Tariffs** (Fees zone — expand) (Phase 87, ADR-344 — nav amendment, Epic 612C, PR #1620: Trust Accounting is now the Trust zone and the items are regrouped into the six zones per ADR-339) (Phase 87, ADR-344 — Epic 613D: the interim Calendar + Court calendar items are one **Diary** item per ADR-339; court dates and prescriptions are Diary kinds while the court_calendar module is on)
 - [ ] **0.60** **Cross-vertical leak check**: verify sidebar does NOT show any items like "Engagements", "Year-End Packs", "Campaigns", or other non-legal vertical terminology
 
 ### Phase J: Trust account setup
@@ -365,7 +365,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ## Days 22–35 — Third client: Lerato Mthembu (RAF claim)
 
-### Day 22 — RAF client onboarding (full flow with court calendar)
+### Day 22 — RAF client onboarding (full flow with a Diary court date) (Phase 87, ADR-344 — Epic 613D: court calendar → Diary)
 
 **Actor**: Bob (Admin)
 
@@ -375,14 +375,14 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **22.4** Create matter from template **Litigation (Road Accident Fund -- RAF)** → Work Type **LITIGATION** (the RAF template carries LITIGATION; "Road Accident Fund" is the template, not a work type), case_number = "RAF/2026/0042" (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: expected value changed by #1580/#1581)
 - [ ] **22.5** Matter title: "Lerato Mthembu — RAF Claim (MVA 2025-11-03)"
 
-### Day 23 — Adverse party registry & court calendar
+### Day 23 — Adverse party registry & Diary court date (Phase 87, ADR-344 — Epic 613D: court calendar → Diary)
 
 - [ ] **23.1** Add adverse party: "Road Accident Fund" (entity type = Government)
-- [ ] **23.2** Navigate to **Court Calendar**
+- [ ] **23.2** Navigate to **Diary** (Today zone) (Phase 87, ADR-344 — Epic 613D: /court-calendar is now /diary; "New court date" opens the same court-date dialog)
 - [ ] **23.3** Create court event: Matter = RAF claim, Type = "Case Management Conference", Date = Day 45 from today, Court = "Gauteng High Court"
-- [ ] **23.4** Verify event appears on the court calendar view
+- [ ] **23.4** Verify event appears in the **Diary** — switch to **Month** (or **List**) and step to the event's month; the row carries the court-date marker (teal rail + gavel) (Phase 87, ADR-344 — Epic 613D: the court calendar view is the Diary)
 - [ ] **23.5** Verify the event also appears on the matter detail Activity group → Activity sub-tab
-- [ ] **23.6** 📸 **Screenshot**: Court calendar with the RAF event highlighted
+- [ ] **23.6** 📸 **Screenshot**: Diary (Month or List view) with the RAF court date (Phase 87, ADR-344 — Epic 613D)
 
 ### Days 24–35 — RAF claim work
 
@@ -554,7 +554,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **90.1** **Terminology sweep**: walk sidebar, every settings page, every create dialog → zero occurrences of "Project" (should be "Matter"), "Customer" (should be "Client"), "Invoice" (should be "Fee Note"), or any agency/accounting leakage
 - [ ] **90.2** **Field promotion sweep**: reopen every create dialog (Client, Matter, Task, Fee Note) → verify no promoted slugs have regressed into the sidebar
-- [ ] **90.3** **Progressive disclosure sweep**: confirm the six zones (Today · Matters · Clients · Fees · Trust · Firm) and all 4 legal modules (0.59: Trust zone, Court calendar, Conflict check, Tariffs) still visible, no accounting/agency nav items leaked in (Phase 87, ADR-344 — nav amendment, Epic 612C, PR #1620: six-zone sidebar per ADR-339)
+- [ ] **90.3** **Progressive disclosure sweep**: confirm the six zones (Today · Matters · Clients · Fees · Trust · Firm) and all 4 legal modules (0.59: Trust zone, Diary, Conflict check, Tariffs) still visible, no accounting/agency nav items leaked in (Phase 87, ADR-344 — nav amendment, Epic 612C, PR #1620: six-zone sidebar per ADR-339) (Phase 87, ADR-344 — Epic 613D: Court calendar → Diary)
 - [ ] **90.4** **Tier removal sweep**: navigate to Settings > Billing → confirm still flat, no tier UI
 - [ ] **90.5** **Console errors**: open browser devtools → navigate through every top-level nav item → confirm zero JS errors in console
 - [ ] **90.6** **Mailpit sweep**: verify no bounced/failed emails

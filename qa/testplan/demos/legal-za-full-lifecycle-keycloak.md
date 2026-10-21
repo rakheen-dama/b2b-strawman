@@ -175,7 +175,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.21** Submit → redirected to app → lands on `/org/mathebula-partners/dashboard` (or equivalent slug)
 - [ ] **0.22** Sidebar shows org name **Mathebula & Partners**, user name **Thandi Mathebula**
 - [ ] **0.23** Legal terminology active: sidebar shows **Matters**, **Clients**, **Fee notes** (in the **Fees** zone — expand it) — NOT "Projects", "Customers", "Invoices" (Phase 87, ADR-344 — nav amendment, Epic 612C, PR #1620: Fee notes sits in the collapsed Fees zone of the six-zone sidebar, ADR-339)
-- [ ] **0.24** Legal module nav items visible: **Matters**, the **Trust** zone (expand → Overview … Trust reports, 7 items), **Court calendar** (Today zone), **Conflict check** (Matters zone); the sidebar shows the six zones **Today · Matters · Clients · Fees · Trust · Firm** (Phase 87, ADR-344 — nav amendment, Epic 612C, PR #1620: Trust Accounting is now the Trust zone; six zones per ADR-339)
+- [ ] **0.24** Legal module nav items visible: **Matters**, the **Trust** zone (expand → Overview … Trust reports, 7 items), **Diary** (Today zone), **Conflict check** (Matters zone); the sidebar shows the six zones **Today · Matters · Clients · Fees · Trust · Firm** (Phase 87, ADR-344 — nav amendment, Epic 612C, PR #1620: Trust Accounting is now the Trust zone; six zones per ADR-339) (Phase 87, ADR-344 — Epic 613D: Calendar + Court calendar are one **Diary** item per ADR-339)
 - [ ] **0.25** 📸 **Screenshot**: `day-00-firm-dashboard-legal.png` — dashboard with legal nav + terminology
 
 ### Phase D: Team invites
@@ -612,12 +612,12 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
   - Date: Day 35 (14 days from today)
   - Type: Pre-trial conference
   - Attorney attending: Bob Ndlovu
-- [ ] **21.12** Submit → court event saved, appears on firm-side **Court Calendar** page and matter Overview
+- [ ] **21.12** Submit → court event saved, appears in the firm-side **Diary** (Today zone) and matter Overview (Phase 87, ADR-344 — Epic 613D: the Court Calendar page is the Diary)
 
 **Day 21 checkpoints**
 - [ ] Time entries post (non-tariff path — duration + member-rate snapshot OR yellow `No rate card found` warning) — OBS-2101 WONT_FIX
 - [ ] Disbursement recorded with recoverable flag (feeds Day 28 fee note)
-- [ ] Court date added, visible on calendar + matter
+- [ ] Court date added, visible in the Diary + matter (Phase 87, ADR-344 — Epic 613D)
 
 ---
 
@@ -791,7 +791,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 **A3: Resolve court date (clear Court Dates gate)**
 
-- [ ] **60.9** Navigate to matter RAF-2026-001 → Overview or Court Calendar → locate Pre-Trial court date scheduled Jun 4 2026 at Gauteng Division Pretoria
+- [ ] **60.9** Navigate to matter RAF-2026-001 → Overview or the **Court Dates** tab → locate Pre-Trial court date scheduled Jun 4 2026 at Gauteng Division Pretoria (Phase 87, ADR-344 — Epic 613D: the Court Calendar page is gone; the matter's Court Dates tab lists its court dates and prescription trackers)
 - [ ] **60.10** Update court date status to COMPLETED or VACATED (whichever the product supports — the pre-trial has been held or is no longer required for the concluded matter)
 - [ ] **60.11** Verify court date no longer shows as an active/scheduled date blocking closure
 
@@ -933,7 +933,7 @@ This is the closing-demo wow moment: show the firm's 90-day activity feed on the
 
 - [ ] **90.1** `[FIRM]` Terminology sweep: walk sidebar, settings pages, every create dialog → zero occurrences of "Project" (must be "Matter"), "Customer" (must be "Client"), "Invoice" (must be "Fee Note"), "Task" where legal terminology applies. Zero accounting / consulting vocabulary leaks.
 - [ ] **90.2** `[FIRM]` Field promotion sweep: reopen every create dialog (Client, Matter, Task, Fee Note) → verify no promoted slugs have regressed into a generic Custom Fields section. On matter detail, promoted fields render on Overview tab, non-promoted fields are on the Details > Fields tab.
-- [ ] **90.3** `[FIRM]` Progressive disclosure: six zones present (Today · Matters · Clients · Fees · Trust · Firm) and all 4 legal modules visible (Matters, Trust zone, Court calendar, Conflict check); no accounting / consulting nav items (Phase 87, ADR-344 — nav amendment, Epic 612C, PR #1620: six-zone sidebar per ADR-339)
+- [ ] **90.3** `[FIRM]` Progressive disclosure: six zones present (Today · Matters · Clients · Fees · Trust · Firm) and all 4 legal modules visible (Matters, Trust zone, Diary, Conflict check); no accounting / consulting nav items (Phase 87, ADR-344 — nav amendment, Epic 612C, PR #1620: six-zone sidebar per ADR-339) (Phase 87, ADR-344 — Epic 613D: Court calendar → Diary)
 - [ ] **90.4** `[FIRM]` Tier removal: Settings > Billing shows flat subscription state only, no tier UI
 - [ ] **90.5** `[FIRM]` Console errors: browser devtools open → click through every top-level nav → zero JS errors
 - [ ] **90.6** `[FIRM]` Mailpit sweep: no bounced / failed emails across 90 days

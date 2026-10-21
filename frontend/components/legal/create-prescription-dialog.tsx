@@ -27,10 +27,7 @@ import {
   createPrescriptionTrackerSchema,
   type CreatePrescriptionTrackerFormData,
 } from "@/lib/schemas/legal";
-import {
-  createPrescriptionTracker,
-  fetchProjects,
-} from "@/app/(app)/org/[slug]/court-calendar/actions";
+import { createPrescriptionTracker, fetchProjects } from "@/lib/actions/court-dates";
 
 interface CreatePrescriptionDialogProps {
   slug: string;

@@ -41,8 +41,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -291,6 +294,17 @@ class DiaryServiceTest {
     assertThat(byId(events, yesterday.getId()).overdue()).isTrue();
     assertThat(byId(events, today.getId()).overdue()).isFalse();
     assertThat(byId(events, tomorrow.getId()).overdue()).isFalse();
+  }
+
+  @Test
+  void query_dropsNullTypeElements_andDefaultsToAllWhenOnlyNulls() {
+    var withNull = new HashSet<>(Arrays.asList(DiaryKind.TASK_DUE, null));
+    assertThat(new DiaryQuery(TODAY, TODAY, withNull, null, null, true).types())
+        .containsExactly(DiaryKind.TASK_DUE);
+
+    var onlyNull = new HashSet<DiaryKind>(Collections.singleton(null));
+    assertThat(new DiaryQuery(TODAY, TODAY, onlyNull, null, null, true).types())
+        .containsExactlyElementsOf(EnumSet.allOf(DiaryKind.class));
   }
 
   @Test

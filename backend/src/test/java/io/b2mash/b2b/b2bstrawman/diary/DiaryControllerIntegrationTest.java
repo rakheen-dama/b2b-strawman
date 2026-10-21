@@ -404,6 +404,27 @@ class DiaryControllerIntegrationTest {
         .andExpect(jsonPath("$[*].id", hasItems(courtTen.toString(), prescription.toString())));
   }
 
+  @Test
+  void typesParam_emptyElements_areIgnoredNotServerError() throws Exception {
+    mockMvc
+        .perform(
+            diary(d(0), d(14))
+                .param("types", "TASK_DUE,")
+                .with(TestJwtFactory.adminJwt(ORG_ID, ADMIN)))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Diary-Types", "TASK_DUE"))
+        .andExpect(jsonPath("$[*].kind", everyItem(in(List.of("TASK_DUE")))));
+
+    mockMvc
+        .perform(
+            diary(d(0), d(14))
+                .param("types", "TASK_DUE,,COURT_DATE")
+                .with(TestJwtFactory.adminJwt(ORG_ID, ADMIN)))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Diary-Types", "TASK_DUE,COURT_DATE"))
+        .andExpect(jsonPath("$[*].kind", everyItem(in(List.of("TASK_DUE", "COURT_DATE")))));
+  }
+
   // ------------------------------------------------------------ fee earner
 
   @Test

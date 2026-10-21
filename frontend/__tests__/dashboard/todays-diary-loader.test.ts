@@ -72,8 +72,8 @@ describe("loadTodaysDiary", () => {
     });
   });
 
-  it("returns null without fetching when the current member is unknown (no firm-wide fallback)", async () => {
-    await expect(loadTodaysDiary(TODAY, "")).resolves.toBeNull();
+  it('returns "unidentified" without fetching when the current member is unknown (no firm-wide fallback)', async () => {
+    await expect(loadTodaysDiary(TODAY, null)).resolves.toBe("unidentified");
     expect(mockGetDiary).not.toHaveBeenCalled();
   });
 

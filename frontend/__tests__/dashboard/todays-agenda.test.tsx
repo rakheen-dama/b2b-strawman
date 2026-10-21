@@ -181,9 +181,34 @@ describe("TodaysAgenda", () => {
     );
 
     expect(screen.getByText("Today's diary could not be loaded.")).toBeInTheDocument();
+    expect(screen.queryByText(/identify your member profile/)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open diary" })).toBeInTheDocument();
     expect(screen.getByTestId("time-progress-today")).toBeInTheDocument();
     expect(screen.getByTestId("next-deadline")).toBeInTheDocument();
+  });
+
+  it("says the user couldn't be identified (not a load failure) and points to the Diary", () => {
+    render(
+      <TodaysAgenda
+        slug="acme"
+        today={today()}
+        diaryEvents="unidentified"
+        todayEntries={emptyEntries}
+        upcomingDeadlines={emptyDeadlines}
+      />
+    );
+
+    const section = screen.getByTestId("todays-diary");
+    expect(within(section).getByText(/Couldn't identify your member profile/)).toBeInTheDocument();
+    expect(
+      within(section).queryByText("Today's diary could not be loaded.")
+    ).not.toBeInTheDocument();
+    expect(within(section).queryByText("Nothing in the diary today")).not.toBeInTheDocument();
+    expect(within(section).getByRole("link", { name: "Open the Diary" })).toHaveAttribute(
+      "href",
+      "/org/acme/diary"
+    );
+    expect(within(section).queryByTestId("todays-diary-overdue")).not.toBeInTheDocument();
   });
 
   it("renders time progress bar", () => {

@@ -1,8 +1,7 @@
-import { unstable_rethrow } from "next/navigation";
 import { getCurrentUserEmail } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { ApiError, resolveServerReturnTo } from "@/lib/api/client";
-import { redirectToReLogin } from "@/lib/auth/expiry";
+import { rethrowOnExpiredSession } from "@/lib/auth/expiry-server";
+import { findCurrentMemberId } from "@/lib/current-member";
 import { getDiary, getDiaryMatters, getDiaryMembers } from "./diary-actions";
 import { DiaryPageClient } from "./diary-page-client";
 import type { DiaryKind, DiaryMatterOption, DiaryMemberOption, DiaryView } from "./diary-types";
@@ -64,23 +63,13 @@ export async function DiaryLoader({
     getCurrentUserEmail(),
   ]);
 
-  // Framework control flow (the re-login redirect on an expired session) must not be swallowed.
-  const results = [diary, members, matters, caps, email];
-  for (const result of results) {
-    if (result.status === "rejected") unstable_rethrow(result.reason);
-  }
-  // A backend 401 (incl. the manual-redirect 3xx mapped to 401) is an expired session, not a
-  // load failure: funnel to the branded re-login like apiRequest callers via handleApiError.
-  if (
-    results.some(
-      (result) =>
-        result.status === "rejected" &&
-        result.reason instanceof ApiError &&
-        result.reason.status === 401
+  // Framework control flow (the re-login redirect) must not be swallowed, and a backend 401 is an
+  // expired session, not a load failure: funnel to the branded re-login.
+  await rethrowOnExpiredSession(
+    ...[diary, members, matters, caps, email].flatMap((result) =>
+      result.status === "rejected" ? [result.reason] : []
     )
-  ) {
-    redirectToReLogin(await resolveServerReturnTo(), "expired");
-  }
+  );
   if (diary.status === "rejected") console.error("Failed to load the diary:", diary.reason);
   if (members.status === "rejected") console.error("Failed to load members:", members.reason);
   if (matters.status === "rejected") console.error("Failed to load matters:", matters.reason);
@@ -88,9 +77,10 @@ export async function DiaryLoader({
   if (email.status === "rejected") console.error("Failed to resolve current user:", email.reason);
 
   const memberList = members.status === "fulfilled" ? members.value : [];
-  const currentEmail = email.status === "fulfilled" ? email.value?.toLowerCase() : null;
-  const currentMemberId =
-    (currentEmail && memberList.find((m) => m.email?.toLowerCase() === currentEmail)?.id) || null;
+  const currentMemberId = findCurrentMemberId(
+    email.status === "fulfilled" ? email.value : null,
+    memberList
+  );
   // Capabilities unknown → show everyone's events rather than silently narrowing to "Mine". This
   // fail-open default seeds the filter only; it must never grant a write.
   const isAdminOrOwner =

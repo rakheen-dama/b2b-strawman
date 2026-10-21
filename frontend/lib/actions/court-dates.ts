@@ -58,10 +58,6 @@ export async function fetchCourtDates(
   return api.get<PaginatedResponse<CourtDate>>(`/api/court-dates?${params.toString()}`);
 }
 
-export async function fetchCourtDate(id: string): Promise<CourtDate> {
-  return api.get<CourtDate>(`/api/court-dates/${id}`);
-}
-
 export async function createCourtDate(
   slug: string,
   data: {

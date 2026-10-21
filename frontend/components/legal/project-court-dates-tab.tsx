@@ -80,6 +80,7 @@ export function ProjectCourtDatesTab({
           <PrescriptionTrackerList
             trackers={trackers}
             slug={slug}
+            matterId={projectId}
             canManageLegal={canManageLegal}
             onRefresh={() => mutateTrackers()}
           />

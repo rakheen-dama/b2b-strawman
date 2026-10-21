@@ -10,15 +10,19 @@ import type { PersonalDeadline } from "@/lib/dashboard-types";
 /** Rows shown before "+n more" — the Diary owns the full day. */
 const MAX_DIARY_ROWS = 5;
 
+/**
+ * GET /api/diary?from=today&to=today for the current user (Phase 87 613D): today's rows plus the
+ * open-overdue band (rows dated before today). `"unidentified"` = the signed-in user couldn't be
+ * matched to a member, so there is no personal diary to show; `null` = the diary could not be
+ * loaded.
+ */
+export type TodaysDiaryEvents = DiaryEventResponse[] | "unidentified" | null;
+
 interface TodaysAgendaProps {
   slug: string;
   /** Server "today" (yyyy-MM-dd) — the date the diary was fetched for. */
   today: string;
-  /**
-   * GET /api/diary?from=today&to=today for the current user (Phase 87 613D): today's rows plus
-   * the open-overdue band (rows dated before today). `null` = the diary could not be loaded.
-   */
-  diaryEvents: DiaryEventResponse[] | null;
+  diaryEvents: TodaysDiaryEvents;
   todayEntries: MyWorkTimeEntryItem[];
   upcomingDeadlines: PersonalDeadline[];
   weeklyCapacityHours?: number;
@@ -43,7 +47,7 @@ export function TodaysAgenda({
   const dailyTargetMinutes = (weeklyCapacityHours / 5) * 60; // e.g. 480 min = 8h
 
   // Today's diary: the backend returns today's rows plus the overdue band (dated < today).
-  const events = diaryEvents ?? [];
+  const events = Array.isArray(diaryEvents) ? diaryEvents : [];
   const todaysEvents = events.filter((e) => e.date === today);
   const overdueCount = events.filter((e) => e.date < today).length;
   const hiddenCount = todaysEvents.length - MAX_DIARY_ROWS;
@@ -72,7 +76,17 @@ export function TodaysAgenda({
               Open diary
             </Link>
           </div>
-          {diaryEvents === null ? (
+          {diaryEvents === "unidentified" ? (
+            <p className="text-sm text-slate-400">
+              Couldn&apos;t identify your member profile.{" "}
+              <Link
+                href={`/org/${slug}/diary`}
+                className="underline hover:text-slate-900 dark:hover:text-slate-100"
+              >
+                Open the Diary
+              </Link>
+            </p>
+          ) : diaryEvents === null ? (
             <p className="text-sm text-slate-400">Today&apos;s diary could not be loaded.</p>
           ) : todaysEvents.length === 0 ? (
             <p className="text-sm text-slate-400">Nothing in the diary today</p>

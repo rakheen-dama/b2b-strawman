@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // --- Mocks (before component imports) ---
@@ -28,7 +28,6 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/lib/actions/court-dates", () => ({
   fetchCourtDates: vi.fn().mockResolvedValue({ content: [], page: { totalElements: 0 } }),
-  fetchCourtDate: vi.fn(),
   createCourtDate: vi.fn().mockResolvedValue({ success: true }),
   updateCourtDate: vi.fn().mockResolvedValue({ success: true }),
   postponeCourtDate: vi.fn().mockResolvedValue({ success: true }),
@@ -63,6 +62,8 @@ import { CourtDateListView } from "@/components/legal/court-date-list-view";
 import { PrescriptionTrackerList } from "@/components/legal/prescription-tracker-list";
 import { CreateCourtDateDialog } from "@/components/legal/create-court-date-dialog";
 import { CreatePrescriptionDialog } from "@/components/legal/create-prescription-dialog";
+import { ProjectCourtDatesTab } from "@/components/legal/project-court-dates-tab";
+import { createPrescriptionTracker, fetchProjects } from "@/lib/actions/court-dates";
 import type { CourtDate, PrescriptionTracker } from "@/lib/types";
 
 afterEach(() => cleanup());
@@ -177,7 +178,13 @@ describe("PrescriptionTrackerList", () => {
     ];
 
     render(
-      <PrescriptionTrackerList trackers={trackers} slug="acme" onRefresh={vi.fn()} canManageLegal />
+      <PrescriptionTrackerList
+        trackers={trackers}
+        slug="acme"
+        matterId="m-1"
+        onRefresh={vi.fn()}
+        canManageLegal
+      />
     );
 
     const list = screen.getByTestId("prescription-tracker-list");
@@ -189,9 +196,41 @@ describe("PrescriptionTrackerList", () => {
   });
 
   it("shows empty state when no trackers", () => {
-    render(<PrescriptionTrackerList trackers={[]} slug="acme" onRefresh={vi.fn()} />);
+    render(
+      <PrescriptionTrackerList trackers={[]} slug="acme" matterId="m-1" onRefresh={vi.fn()} />
+    );
 
     expect(screen.getByText("No prescription trackers on this matter.")).toBeInTheDocument();
+  });
+
+  // PR #1624 CodeRabbit: from a matter's Court dates tab a new tracker must land on that matter —
+  // a firm-wide picker let it be created elsewhere and "disappear" from this matter-scoped list.
+  it("creates a tracker on this matter only: the matter selector is locked to it", async () => {
+    const MATTER_ID = "11111111-1111-4111-8111-111111111111";
+    vi.mocked(fetchProjects).mockResolvedValueOnce([
+      { id: MATTER_ID, name: "Ndlovu v RAF" },
+      { id: "22222222-2222-4222-8222-222222222222", name: "Other matter" },
+    ]);
+    const user = userEvent.setup();
+    render(<ProjectCourtDatesTab projectId={MATTER_ID} slug="acme" canManageLegal />);
+
+    await user.click(await screen.findByRole("button", { name: "New prescription tracker" }));
+    const matterSelect = screen.getByLabelText("Matter");
+    await screen.findByRole("option", { name: "Ndlovu v RAF" });
+    expect(matterSelect).toBeDisabled();
+    expect(matterSelect).toHaveValue(MATTER_ID);
+
+    fireEvent.change(screen.getByLabelText("Cause of Action Date"), {
+      target: { value: "2026-01-15" },
+    });
+    await user.click(screen.getByRole("button", { name: "Create Tracker" }));
+
+    await vi.waitFor(() =>
+      expect(createPrescriptionTracker).toHaveBeenCalledWith(
+        "acme",
+        expect.objectContaining({ matterId: MATTER_ID, causeOfActionDate: "2026-01-15" })
+      )
+    );
   });
 });
 
@@ -309,6 +348,9 @@ describe("CreatePrescriptionDialog", () => {
 
     const dialog = screen.getByTestId("create-prescription-dialog");
     expect(dialog).toBeInTheDocument();
+    // No fixed matter (the Diary header): the firm-wide matter picker stays open.
+    await vi.waitFor(() => expect(screen.getByLabelText("Matter")).toBeEnabled());
+    expect(screen.getByLabelText("Matter")).toHaveValue("");
 
     // Custom years should not be visible initially (GENERAL_3Y is default)
     expect(screen.queryByTestId("custom-years-field")).not.toBeInTheDocument();

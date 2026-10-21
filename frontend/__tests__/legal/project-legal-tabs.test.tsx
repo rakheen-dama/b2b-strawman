@@ -30,7 +30,6 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/lib/actions/court-dates", () => ({
   fetchCourtDates: vi.fn().mockResolvedValue({ content: [], page: { totalElements: 0 } }),
-  fetchCourtDate: vi.fn(),
   createCourtDate: vi.fn().mockResolvedValue({ success: true }),
   updateCourtDate: vi.fn().mockResolvedValue({ success: true }),
   postponeCourtDate: vi.fn().mockResolvedValue({ success: true }),

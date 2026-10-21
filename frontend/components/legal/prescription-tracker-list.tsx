@@ -16,6 +16,8 @@ import { InterruptDialog } from "./interrupt-dialog";
 interface PrescriptionTrackerListProps {
   trackers: PrescriptionTracker[];
   slug: string;
+  /** The matter these trackers belong to — new trackers are created on it (selector locked). */
+  matterId: string;
   onRefresh: () => void;
   /**
    * MANAGE_LEGAL (or admin / owner). Every prescription write (create, interrupt) needs it
@@ -75,6 +77,7 @@ const TH =
 export function PrescriptionTrackerList({
   trackers,
   slug,
+  matterId,
   onRefresh,
   canManageLegal = false,
 }: PrescriptionTrackerListProps) {
@@ -89,6 +92,7 @@ export function PrescriptionTrackerList({
         {canManageLegal && (
           <CreatePrescriptionDialog
             slug={slug}
+            matterId={matterId}
             triggerLabel="New prescription tracker"
             triggerVariant="outline"
             onSuccess={onRefresh}

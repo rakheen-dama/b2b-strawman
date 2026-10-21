@@ -1,11 +1,12 @@
 "use client";
 
+import { Fragment } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@b2mash/ui/button";
 import { Eye, Plus } from "lucide-react";
 import { HelpTip } from "@/components/help-tip";
 import type { EntityType, SavedViewResponse } from "@/lib/types";
-import { selectedViewId, type SystemView } from "@/lib/constants/system-views";
+import { mergeViews, selectedViewId, type SystemView } from "@/lib/constants/system-views";
 
 interface SavedViewSelectorProps {
   entityType: EntityType;
@@ -23,6 +24,19 @@ interface SavedViewSelectorProps {
   systemViews?: readonly SystemView[];
   /** Selected when `currentViewId` is absent or unknown. Defaults to the first system view. */
   defaultViewId?: string;
+}
+
+function SavedViewTab({ view }: { view: SavedViewResponse }) {
+  return (
+    <TabsTrigger value={view.id}>
+      {view.name}
+      {view.shared && (
+        <span className="ml-1 text-xs text-slate-400" title="Shared view">
+          (shared)
+        </span>
+      )}
+    </TabsTrigger>
+  );
 }
 
 export function SavedViewSelector({
@@ -51,33 +65,33 @@ export function SavedViewSelector({
       >
         <TabsList variant="line">
           {hasSystemViews ? (
-            <>
-              {systemViews.map((view) => (
+            // System views first (fixed order), a separator, then saved views (API order).
+            mergeViews(systemViews, views).map((view, i, merged) =>
+              view.system ? (
                 <TabsTrigger key={view.id} value={view.id} data-system-view="true">
                   {view.name}
                 </TabsTrigger>
-              ))}
-              {views.length > 0 && (
-                <span
-                  aria-hidden="true"
-                  data-testid="view-selector-separator"
-                  className="mx-1 h-4 w-px self-center bg-slate-200 dark:bg-slate-700"
-                />
-              )}
-            </>
+              ) : (
+                <Fragment key={view.id}>
+                  {merged[i - 1]?.system && (
+                    <span
+                      aria-hidden="true"
+                      data-testid="view-selector-separator"
+                      className="mx-1 h-4 w-px self-center bg-slate-200 dark:bg-slate-700"
+                    />
+                  )}
+                  <SavedViewTab view={view} />
+                </Fragment>
+              )
+            )
           ) : (
-            <TabsTrigger value="all">All</TabsTrigger>
+            <>
+              <TabsTrigger value="all">All</TabsTrigger>
+              {views.map((view) => (
+                <SavedViewTab key={view.id} view={view} />
+              ))}
+            </>
           )}
-          {views.map((view) => (
-            <TabsTrigger key={view.id} value={view.id}>
-              {view.name}
-              {view.shared && (
-                <span className="ml-1 text-xs text-slate-400" title="Shared view">
-                  (shared)
-                </span>
-              )}
-            </TabsTrigger>
-          ))}
         </TabsList>
       </Tabs>
 

@@ -42,6 +42,9 @@ import { EmptyState } from "@/components/empty-state";
 import { createMessages } from "@/lib/messages";
 import { createSavedViewAction } from "./view-actions";
 
+/** Params the backend ignores on the saved-view path; switching to a saved view drops them. */
+const SAVED_VIEW_IGNORED_PARAMS = ["tags"] as const;
+
 function matterCount(n: number): string {
   return `${n} ${n === 1 ? "matter" : "matters"}`;
 }
@@ -163,9 +166,10 @@ export default async function MattersPage({
     if (typeof value === "string") query[key] = value;
   }
 
+  // F-3: URL `tags` filters system views only; on a saved view it is ignored, so it does not count.
   const filtered =
     !!search?.trim() ||
-    !!param("tags") ||
+    (!savedViewActive && !!param("tags")) ||
     !!param("status") ||
     selection.view.id !== DEFAULT_MATTER_VIEW_ID;
 
@@ -215,6 +219,7 @@ export default async function MattersPage({
             onSave={handleCreateView}
             systemViews={MATTER_SYSTEM_VIEWS}
             defaultViewId={DEFAULT_MATTER_VIEW_ID}
+            clearOnSavedView={SAVED_VIEW_IGNORED_PARAMS}
           />
         </Suspense>
         <div className="flex flex-wrap items-center gap-3">

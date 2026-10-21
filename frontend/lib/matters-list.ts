@@ -65,6 +65,14 @@ function sortValue(row: MatterListRow, key: MatterColumnId): SortValue {
       return row.unbilledMinutes;
     case "trustBalance":
       return row.trustBalance;
+    // ISO dates/instants compare as epoch millis: string order breaks when fractional-second
+    // precision varies ("…00.5Z" vs "…00.123456Z"). Unparseable → null (sorts last).
+    case "createdAt":
+    case "nextDiaryDate": {
+      const v = row[key];
+      const ms = v ? Date.parse(v) : NaN;
+      return Number.isNaN(ms) ? null : ms;
+    }
     default: {
       const v = row[key];
       return typeof v === "string" && v.trim() !== "" ? v : null;

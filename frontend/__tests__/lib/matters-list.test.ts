@@ -112,6 +112,39 @@ describe("sortMatterRows (R-1)", () => {
     expect(ids(sortMatterRows(r, "createdAt", "asc"))).toEqual(["old", "new"]);
   });
 
+  it("createdAt compares instants, not strings, across fractional-second precisions", () => {
+    const r = [
+      row({ id: "half", createdAt: "2026-10-01T10:00:00.5Z" }),
+      row({ id: "micro", createdAt: "2026-10-01T10:00:00.123456Z" }),
+      row({ id: "whole", createdAt: "2026-10-01T10:00:00Z" }),
+      row({ id: "earlier", createdAt: "2026-10-01T09:59:59.999999Z" }),
+    ];
+    expect(ids(sortMatterRows(r, "createdAt", "asc"))).toEqual([
+      "earlier",
+      "whole",
+      "micro",
+      "half",
+    ]);
+    expect(ids(sortMatterRows(r, "createdAt", "desc"))).toEqual([
+      "half",
+      "micro",
+      "whole",
+      "earlier",
+    ]);
+  });
+
+  it("nextDiaryDate keeps nulls (and unparseable dates) last; equal instants tie-break on name", () => {
+    const r = [
+      row({ id: "z", name: "Zulu", nextDiaryDate: "2026-11-01" }),
+      row({ id: "n", name: "None", nextDiaryDate: null }),
+      row({ id: "a", name: "Alpha", nextDiaryDate: "2026-11-01" }),
+      row({ id: "bad", name: "Bad", nextDiaryDate: "not-a-date" }),
+      row({ id: "e", name: "Echo", nextDiaryDate: "2026-10-30" }),
+    ];
+    expect(ids(sortMatterRows(r, "nextDiaryDate", "asc"))).toEqual(["e", "a", "z", "bad", "n"]);
+    expect(ids(sortMatterRows(r, "nextDiaryDate", "desc"))).toEqual(["a", "z", "e", "bad", "n"]);
+  });
+
   it("unbilled sorts by minutes (never by the redactable value)", () => {
     const r = [
       row({ id: "x", unbilledMinutes: 60, unbilledValue: 9999 }),

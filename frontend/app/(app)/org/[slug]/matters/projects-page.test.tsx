@@ -100,7 +100,12 @@ vi.mock("@/components/templates/NewFromTemplateDialog", () => ({
 
 // Mock ViewSelectorClient (client component with hooks)
 vi.mock("@/components/views/ViewSelectorClient", () => ({
-  ViewSelectorClient: () => <div data-testid="view-selector-client" />,
+  ViewSelectorClient: ({ clearOnSavedView }: { clearOnSavedView?: readonly string[] }) => (
+    <div
+      data-testid="view-selector-client"
+      data-clear-on-saved-view={clearOnSavedView?.join(",")}
+    />
+  ),
 }));
 
 // Mock ProjectStatusFilter (client component with useSearchParams)
@@ -302,6 +307,19 @@ describe("ProjectsPage", () => {
 
       const urls = mockApiGet.mock.calls.map((c) => String(c[0]));
       expect(urls).toContain("/api/matters?mine=true&status=CLOSED");
+    });
+
+    it("has the view selector drop the backend-ignored tags param on saved views (F-3)", async () => {
+      asMember();
+      mockApiGet.mockResolvedValue([makeProject()]);
+
+      const jsx = await ProjectsPage({ params, searchParams });
+      render(jsx);
+
+      expect(screen.getByTestId("view-selector-client")).toHaveAttribute(
+        "data-clear-on-saved-view",
+        "tags"
+      );
     });
 
     it("filters by ?search= and keeps the header count in step", async () => {

@@ -199,6 +199,59 @@ describe("ViewSelectorClient", () => {
     afterEach(() => {
       mockSearchParams.delete("view");
       mockSearchParams.delete("status");
+      mockSearchParams.delete("tags");
+    });
+
+    // F-3: the matters list ignores `tags` on the saved-view path and hides the filter there.
+    describe("clearOnSavedView", () => {
+      function renderClearing(clearOnSavedView?: readonly string[]) {
+        return render(
+          <ViewSelectorClient
+            entityType="PROJECT"
+            views={views}
+            canCreate={false}
+            canCreateShared={false}
+            slug="acme"
+            allTags={[]}
+            fieldDefinitions={[]}
+            onSave={mockOnSave}
+            systemViews={MATTER_SYSTEM_VIEWS}
+            defaultViewId={DEFAULT_MATTER_VIEW_ID}
+            clearOnSavedView={clearOnSavedView}
+          />
+        );
+      }
+
+      it("drops the listed params when switching to a saved view", async () => {
+        const user = userEvent.setup();
+        mockSearchParams.set("tags", "urgent");
+        mockSearchParams.set("status", "CLOSED");
+        renderClearing(["tags"]);
+
+        await user.click(screen.getByRole("tab", { name: "My View" }));
+
+        expect(mockPush).toHaveBeenCalledWith("?status=CLOSED&view=view-2");
+      });
+
+      it("keeps the listed params when switching to a system view", async () => {
+        const user = userEvent.setup();
+        mockSearchParams.set("tags", "urgent");
+        renderClearing(["tags"]);
+
+        await user.click(screen.getByRole("tab", { name: "Dormant" }));
+
+        expect(mockPush).toHaveBeenCalledWith("?tags=urgent&view=system%3Adormant");
+      });
+
+      it("keeps every param on a saved view when the prop is omitted (other callers)", async () => {
+        const user = userEvent.setup();
+        mockSearchParams.set("tags", "urgent");
+        renderClearing();
+
+        await user.click(screen.getByRole("tab", { name: "My View" }));
+
+        expect(mockPush).toHaveBeenCalledWith("?tags=urgent&view=view-2");
+      });
     });
 
     it("pushes ?view=system:<slug> when a system tab is clicked, keeping other params", async () => {

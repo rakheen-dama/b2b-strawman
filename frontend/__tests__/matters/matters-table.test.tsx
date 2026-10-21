@@ -85,6 +85,21 @@ function renderTable(
 beforeEach(() => vi.clearAllMocks());
 afterEach(() => cleanup());
 
+/**
+ * The first body row's cell under the column headed `label`. Located via the header index, so
+ * reordering columns does not break the assertions.
+ */
+function cellUnder(label: string): HTMLElement {
+  const headers = screen
+    .getAllByRole("columnheader")
+    .map((h) => h.textContent?.replace(/[↑↓]/g, "").trim());
+  const index = headers.indexOf(label);
+  if (index === -1) throw new Error(`No "${label}" column; headers: ${headers.join(", ")}`);
+  return within(screen.getAllByTestId("matter-row")[0]).getAllByRole("cell")[index];
+}
+
+const cellText = (label: string) => cellUnder(label).textContent?.trim();
+
 describe("MattersTable — columns", () => {
   it("renders a visually hidden caption and scope=col headers in §12.6.4 order", () => {
     renderTable([row()]);
@@ -169,31 +184,39 @@ describe("MattersTable — redaction and nulls", () => {
         workType: null,
       }),
     ]);
-    const cells = within(screen.getByTestId("matter-row")).getAllByRole("cell");
-    const text = cells.map((c) => c.textContent?.trim());
-    // Reference, Client, Work type, Fee earner, Trust, Next in diary → "—"
-    expect(text[0]).toBe("—");
-    expect(text[2]).toBe("—");
-    expect(text[3]).toBe("—");
-    expect(text[4]).toBe("—");
-    expect(text[7]).toBe("1h 30m");
-    expect(text[8]).toBe("—");
-    expect(text[9]).toBe("—");
+    for (const label of [
+      "Reference",
+      "Client",
+      "Work type",
+      "Fee earner",
+      "Trust",
+      "Next in diary",
+    ]) {
+      expect(cellText(label), label).toBe("—");
+    }
+    expect(cellText("Unbilled")).toBe("1h 30m");
     // Only the matter link remains
     expect(within(screen.getByTestId("matter-row")).getAllByRole("link")).toHaveLength(1);
   });
 
+  it("value redacted → hours only under a reordered saved-view column set too", () => {
+    renderTable([row({ unbilledMinutes: 90, unbilledValue: null, trustBalance: null })], {
+      columns: ["unbilled", "trustBalance", "name"],
+    });
+    expect(cellText("Unbilled")).toBe("1h 30m");
+    expect(cellText("Trust")).toBe("—");
+  });
+
   it("nothing unbilled → —", () => {
     renderTable([row({ unbilledMinutes: 0, unbilledValue: 0 })]);
-    const cells = within(screen.getByTestId("matter-row")).getAllByRole("cell");
-    expect(cells[7].textContent?.trim()).toBe("—");
+    expect(cellText("Unbilled")).toBe("—");
   });
 
   it("an unknown diary kind renders the date without a marker", () => {
     renderTable([row({ nextDiaryKind: "SOMETHING_NEW" })]);
-    const cells = within(screen.getByTestId("matter-row")).getAllByRole("cell");
-    expect(cells[9].querySelector("svg")).toBeNull();
-    expect(cells[9].textContent).toMatch(/2026/);
+    const diary = cellUnder("Next in diary");
+    expect(diary.querySelector("svg")).toBeNull();
+    expect(diary.textContent).toMatch(/2026/);
   });
 });
 

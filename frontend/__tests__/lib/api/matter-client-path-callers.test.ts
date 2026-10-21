@@ -45,7 +45,9 @@ import {
 } from "@/lib/actions/comments";
 import { fetchProjectActivity } from "@/lib/actions/activity";
 import { fetchPortalContacts } from "@/lib/actions/acceptance-actions";
-import { fetchAggregatedCompleteness } from "@/lib/actions/dashboard";
+// 614B: the dashboard wrapper fetchAggregatedCompleteness was deleted with the admin stats
+// column; the call site it wrapped keeps its characterization.
+import { getAggregatedClientCompleteness } from "@/lib/api/clients";
 import { getOnboardingPipelineData } from "@/lib/compliance-api";
 import { getCustomerChecklists, instantiateChecklist } from "@/lib/checklist-api";
 import { getProjectCorrespondence, getCustomerCorrespondence } from "@/lib/api/correspondence";
@@ -107,7 +109,7 @@ describe("lib/actions callers", () => {
     await fetchPortalContacts("c1");
     expect(mockGet).toHaveBeenLastCalledWith("/api/clients/c1/portal-contacts");
     mockGet.mockResolvedValueOnce({});
-    await fetchAggregatedCompleteness();
+    await getAggregatedClientCompleteness();
     expect(mockGet).toHaveBeenLastCalledWith("/api/clients/completeness-summary/aggregated");
     await getOnboardingPipelineData();
     expect(mockGet).toHaveBeenLastCalledWith("/api/clients?lifecycleStatus=ONBOARDING");

@@ -1,35 +1,11 @@
-"use client";
-
-import { useState } from "react";
-import { DateRangeSelector } from "@/components/dashboard/date-range-selector";
-
-interface DashboardHeaderProps {
-  from: string;
-  to: string;
-}
-
-function parseDateString(dateStr: string): Date {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  return new Date(y, m - 1, d);
-}
-
-export function DashboardHeader({ from, to }: DashboardHeaderProps) {
-  const [dateRange, setDateRange] = useState({
-    from: parseDateString(from),
-    to: parseDateString(to),
-  });
-
+/** Home page header (614B): nothing on Home is date-ranged any more, so no range selector. */
+export function DashboardHeader() {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 className="font-display text-3xl tracking-tight text-slate-950 dark:text-slate-50">
-          Dashboard
-        </h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Company overview and matter health
-        </p>
-      </div>
-      <DateRangeSelector value={dateRange} onChange={setDateRange} />
+    <div>
+      <h1 className="font-display text-3xl tracking-tight text-slate-950 dark:text-slate-50">
+        Home
+      </h1>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">What needs you today</p>
     </div>
   );
 }

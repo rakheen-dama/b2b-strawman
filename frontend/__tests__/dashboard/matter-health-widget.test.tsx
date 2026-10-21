@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, fireEvent } from "@testing-library/react";
-import { ProjectHealthWidget } from "@/components/dashboard/project-health-widget";
+import { MatterHealthWidget } from "@/components/dashboard/matter-health-widget";
 import type { MatterHealth } from "@/lib/dashboard-types";
 
 // Mock next/navigation
@@ -49,24 +49,24 @@ const mockProjects: MatterHealth[] = [
   },
 ];
 
-describe("ProjectHealthWidget", () => {
+describe("MatterHealthWidget", () => {
   afterEach(() => {
     cleanup();
     mockPush.mockClear();
   });
 
   it("renders empty state when projects is null", () => {
-    render(<ProjectHealthWidget projects={null} orgSlug="acme" />);
+    render(<MatterHealthWidget matters={null} orgSlug="acme" />);
     expect(screen.getByText("No matters yet")).toBeInTheDocument();
   });
 
   it("renders empty state when projects is empty", () => {
-    render(<ProjectHealthWidget projects={[]} orgSlug="acme" />);
+    render(<MatterHealthWidget matters={[]} orgSlug="acme" />);
     expect(screen.getByText("No matters yet")).toBeInTheDocument();
   });
 
   it("renders all projects by default", () => {
-    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+    render(<MatterHealthWidget matters={mockProjects} orgSlug="acme" />);
 
     expect(screen.getByText("Website Redesign")).toBeInTheDocument();
     expect(screen.getByText("Mobile App")).toBeInTheDocument();
@@ -74,14 +74,14 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("shows customer names when available", () => {
-    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+    render(<MatterHealthWidget matters={mockProjects} orgSlug="acme" />);
 
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
     expect(screen.getByText("Beta Inc")).toBeInTheDocument();
   });
 
   it("shows task ratio and hours in dense row", () => {
-    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+    render(<MatterHealthWidget matters={mockProjects} orgSlug="acme" />);
 
     // Task ratios shown as X/Y
     expect(screen.getByText("20/40")).toBeInTheDocument();
@@ -90,7 +90,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("filters to at-risk and critical projects when At Risk tab clicked", () => {
-    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+    render(<MatterHealthWidget matters={mockProjects} orgSlug="acme" />);
 
     fireEvent.click(screen.getByRole("button", { name: "At Risk" }));
 
@@ -101,7 +101,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("filters to over-budget projects when Over Budget tab clicked", () => {
-    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+    render(<MatterHealthWidget matters={mockProjects} orgSlug="acme" />);
 
     fireEvent.click(screen.getByRole("button", { name: "Over Budget" }));
 
@@ -112,7 +112,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("navigates to project detail on row click", () => {
-    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+    render(<MatterHealthWidget matters={mockProjects} orgSlug="acme" />);
 
     fireEvent.click(screen.getByText("Website Redesign"));
 
@@ -120,7 +120,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("navigates to projects page when 'View all matters' clicked", () => {
-    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+    render(<MatterHealthWidget matters={mockProjects} orgSlug="acme" />);
 
     fireEvent.click(screen.getByText(/View all matters/));
 
@@ -128,7 +128,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("renders filter tabs", () => {
-    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+    render(<MatterHealthWidget matters={mockProjects} orgSlug="acme" />);
 
     expect(screen.getByRole("button", { name: "All" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "At Risk" })).toBeInTheDocument();
@@ -151,16 +151,16 @@ describe("ProjectHealthWidget", () => {
       },
     ];
 
-    render(<ProjectHealthWidget projects={healthyOnly} orgSlug="acme" />);
+    render(<MatterHealthWidget matters={healthyOnly} orgSlug="acme" />);
 
     fireEvent.click(screen.getByRole("button", { name: "Over Budget" }));
 
     expect(screen.getByText("No matching matters")).toBeInTheDocument();
   });
 
-  it("renders project-health-panel data-testid", () => {
-    render(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
+  it("renders matter-health-panel data-testid", () => {
+    render(<MatterHealthWidget matters={mockProjects} orgSlug="acme" />);
 
-    expect(screen.getByTestId("project-health-panel")).toBeInTheDocument();
+    expect(screen.getByTestId("matter-health-panel")).toBeInTheDocument();
   });
 });

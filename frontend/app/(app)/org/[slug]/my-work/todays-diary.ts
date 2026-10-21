@@ -9,16 +9,22 @@ import type { TodaysDiaryEvents } from "@/components/dashboard/todays-agenda";
  * "me" to scope to, so it returns `"unidentified"` (the agenda says so) rather than the firm's
  * diary.
  *
+ * Home (614B) reuses it with `firmWide: true` for admins and owners — everyone's day, no fee-earner
+ * filter, no member needed. Members never get the firm-wide fallback.
+ *
  * Every failure is non-fatal (`null`) except an expired session: a 401 goes to the branded
  * re-login exactly like the Diary's loader, and getDiary's own re-login redirect propagates.
  */
 export async function loadTodaysDiary(
   today: string,
-  currentMemberId: string | null
+  currentMemberId: string | null,
+  options: { firmWide?: boolean } = {}
 ): Promise<TodaysDiaryEvents> {
-  if (!currentMemberId) return "unidentified";
+  // Firm-wide → no filter; otherwise the caller's own diary, or "unidentified" without a member.
+  const scope = options.firmWide ? {} : currentMemberId ? { feeEarnerId: currentMemberId } : null;
+  if (!scope) return "unidentified";
   try {
-    const diary = await getDiary({ from: today, to: today, feeEarnerId: currentMemberId });
+    const diary = await getDiary({ from: today, to: today, ...scope });
     return diary.events;
   } catch (error) {
     await rethrowOnExpiredSession(error);

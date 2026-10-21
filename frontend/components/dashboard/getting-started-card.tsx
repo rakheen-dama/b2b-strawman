@@ -11,21 +11,26 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 
 const { t } = createMessages("getting-started");
 
-interface GettingStartedCardProps {
-  activeProjectCount?: number;
-}
+/** Onboarding step completed once the firm has opened its first matter. */
+const FIRST_MATTER_STEP = "CREATE_PROJECT";
 
-export function GettingStartedCard({ activeProjectCount }: GettingStartedCardProps) {
-  const { completedCount, totalCount, percentComplete, allComplete, dismissed, loading, dismiss } =
-    useOnboardingProgress();
+/** Shown until the firm's first matter exists (arch §12.6.3), unless dismissed or all done. */
+export function GettingStartedCard() {
+  const {
+    steps,
+    completedCount,
+    totalCount,
+    percentComplete,
+    allComplete,
+    dismissed,
+    loading,
+    dismiss,
+  } = useOnboardingProgress();
   const [dismissOpen, setDismissOpen] = useState(false);
 
-  if (
-    loading ||
-    dismissed ||
-    allComplete ||
-    (activeProjectCount != null && activeProjectCount > 3)
-  ) {
+  const hasFirstMatter = steps.some((s) => s.code === FIRST_MATTER_STEP && s.completed);
+
+  if (loading || dismissed || allComplete || hasFirstMatter) {
     return null;
   }
 

@@ -12,8 +12,8 @@ import { HealthBadge } from "@/components/dashboard/health-badge";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
 import type { MatterHealth } from "@/lib/dashboard-types";
 
-interface ProjectHealthWidgetProps {
-  projects: MatterHealth[] | null;
+interface MatterHealthWidgetProps {
+  matters: MatterHealth[] | null;
   orgSlug: string;
 }
 
@@ -53,7 +53,7 @@ function formatHours(hours: number): string {
   return `${hours.toFixed(1)}h`;
 }
 
-export function ProjectHealthWidget({ projects, orgSlug }: ProjectHealthWidgetProps) {
+export function MatterHealthWidget({ matters: projects, orgSlug }: MatterHealthWidgetProps) {
   const [activeFilter, setActiveFilter] = useState<FilterTab>("ALL");
   const [sortField, setSortField] = useState<SortField>("health");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
@@ -61,7 +61,7 @@ export function ProjectHealthWidget({ projects, orgSlug }: ProjectHealthWidgetPr
 
   if (!projects || projects.length === 0) {
     return (
-      <Card data-testid="project-health-panel">
+      <Card data-testid="matter-health-panel">
         <CardHeader>
           <CardTitle className="text-sm font-medium">Matter Health</CardTitle>
         </CardHeader>
@@ -113,7 +113,7 @@ export function ProjectHealthWidget({ projects, orgSlug }: ProjectHealthWidgetPr
   const SortIcon = sortDirection === "asc" ? ArrowUp : ArrowDown;
 
   return (
-    <Card data-testid="project-health-panel">
+    <Card data-testid="matter-health-panel">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium">Matter Health</CardTitle>
       </CardHeader>

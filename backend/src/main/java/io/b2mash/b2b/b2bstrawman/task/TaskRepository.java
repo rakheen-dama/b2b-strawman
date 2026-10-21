@@ -175,4 +175,24 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
   long countByProjectIdAndStatusNotIn(
       @Param("projectId") UUID projectId,
       @Param("excludedStatuses") List<TaskStatus> excludedStatuses);
+
+  /**
+   * One Diary (Phase 87, §12.3.2): open tasks due in [from, to], optionally narrowed to one matter
+   * and/or to the matters a member belongs to (null memberId = owner/admin, no restriction). The
+   * membership subquery is the same access rule CalendarService applies.
+   */
+  @Query(
+      """
+      SELECT t FROM Task t
+      WHERE t.dueDate BETWEEN :from AND :to
+        AND t.status NOT IN ('DONE', 'CANCELLED')
+        AND (:projectId IS NULL OR t.projectId = :projectId)
+        AND (:memberId IS NULL OR t.projectId IN (
+              SELECT pm.projectId FROM ProjectMember pm WHERE pm.memberId = :memberId))
+      """)
+  List<Task> findOpenDueBetweenForDiary(
+      @Param("from") LocalDate from,
+      @Param("to") LocalDate to,
+      @Param("projectId") UUID projectId,
+      @Param("memberId") UUID memberId);
 }

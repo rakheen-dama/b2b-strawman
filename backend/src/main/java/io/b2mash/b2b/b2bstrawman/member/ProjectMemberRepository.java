@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,4 +32,13 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, UU
       ORDER BY pm.createdAt ASC
       """)
   List<ProjectMemberInfo> findProjectMembersWithDetails(@Param("projectId") UUID projectId);
+
+  /** Lead rows for many matters in one query, oldest first (callers keep the first per matter). */
+  @Query(
+      """
+      SELECT pm FROM ProjectMember pm
+      WHERE pm.projectId IN :projectIds AND pm.projectRole = 'lead'
+      ORDER BY pm.createdAt ASC
+      """)
+  List<ProjectMember> findLeadsByProjectIdIn(@Param("projectIds") Collection<UUID> projectIds);
 }

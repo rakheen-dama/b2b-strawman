@@ -105,4 +105,23 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
       @Param("name") String name,
       @Param("threshold") double threshold,
       @Param("maxResults") int maxResults);
+
+  /**
+   * One Diary (Phase 87, §12.3.2): ACTIVE matters due in [from, to], optionally narrowed to one
+   * matter and/or to the matters a member belongs to (null memberId = owner/admin, no restriction).
+   */
+  @Query(
+      """
+      SELECT p FROM Project p
+      WHERE p.dueDate BETWEEN :from AND :to
+        AND p.status = 'ACTIVE'
+        AND (:projectId IS NULL OR p.id = :projectId)
+        AND (:memberId IS NULL OR p.id IN (
+              SELECT pm.projectId FROM ProjectMember pm WHERE pm.memberId = :memberId))
+      """)
+  List<Project> findActiveDueBetweenForDiary(
+      @Param("from") LocalDate from,
+      @Param("to") LocalDate to,
+      @Param("projectId") UUID projectId,
+      @Param("memberId") UUID memberId);
 }

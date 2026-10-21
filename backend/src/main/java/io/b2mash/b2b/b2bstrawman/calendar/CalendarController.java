@@ -11,6 +11,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Legacy calendar read ({@code GET /api/calendar}). Superseded by {@code GET /api/diary} ({@link
+ * io.b2mash.b2b.b2bstrawman.diary.DiaryController}); no frontend caller after Phase 87 S6b; delete
+ * in the first phase after 87 (architecture §12.14 #2).
+ *
+ * @deprecated since Phase 87 — use {@code GET /api/diary}; removal scheduled for the first phase
+ *     after 87.
+ */
+@Deprecated(since = "Phase 87", forRemoval = true)
 @RestController
 @RequestMapping("/api/calendar")
 public class CalendarController {

@@ -1,7 +1,7 @@
 {
-  "commit": "4de837f452049e8b5594f73164de391fa3601117",
+  "commit": "43bb21a947eea3376bf0e06731044a22860139d4",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-21T19:13:25+02:00",
-  "summary": "PR #1627 (Epic 615A: MatterListRow dense matter list projection + mine/hasUnbilled/inactiveSince params) head 4de837f45 (orchestrator run, after 1 review fix cycle): 5430 testcases / 0 failures / 0 errors / 26 skipped across 695 surefire reports (+12 vs 614A's 5418: MatterListRowIntegrationTest 12 — statement count 7 for a 55-matter page, equal to 1-matter page). WireVocabularyContractTest green. Log /tmp/mvn-615A-final.log."
+  "ts": "2026-10-21T20:16:53+02:00",
+  "summary": "PR #1628 (Epic 615B: ClientListRow dense client list projection + ficaStatus/hasTrustBalance/showIncomplete params, filtering moved into CustomerService) head 43bb21a94 (orchestrator run, 0 fix cycles): 5444 testcases / 0 failures / 0 errors / 26 skipped across 696 surefire reports (+14 vs 615A's 5430: ClientListRowIntegrationTest 14 — 10 statements for a 54-client page, equal to 1-client page). Log /tmp/mvn-615B-final.log."
 }

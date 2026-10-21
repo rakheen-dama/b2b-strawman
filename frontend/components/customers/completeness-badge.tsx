@@ -1,13 +1,16 @@
 import { Badge } from "@b2mash/ui/badge";
 import type { CompletenessScore } from "@/lib/types";
 
-interface CompletenessBadgeProps {
-  score: CompletenessScore;
-  className?: string;
-}
+type CompletenessBadgeProps = { className?: string } & (
+  | { score: CompletenessScore; percentage?: never }
+  /** A bare percentage (e.g. `ClientListRow.completenessPercent`); null = no required field (N/A). */
+  | { percentage: number | null; score?: never }
+);
 
-export function CompletenessBadge({ score, className }: CompletenessBadgeProps) {
-  if (score.totalRequired === 0) {
+export function CompletenessBadge({ score, percentage, className }: CompletenessBadgeProps) {
+  const value = score ? (score.totalRequired === 0 ? null : score.percentage) : percentage;
+
+  if (value == null) {
     return (
       <Badge variant="neutral" className={className}>
         N/A
@@ -15,12 +18,11 @@ export function CompletenessBadge({ score, className }: CompletenessBadgeProps) 
     );
   }
 
-  const variant =
-    score.percentage === 100 ? "success" : score.percentage >= 50 ? "warning" : "destructive";
+  const variant = value === 100 ? "success" : value >= 50 ? "warning" : "destructive";
 
   return (
     <Badge variant={variant} className={className}>
-      {score.percentage}%
+      {value}%
     </Badge>
   );
 }

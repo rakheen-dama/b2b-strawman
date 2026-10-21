@@ -46,4 +46,21 @@ describe("CompletenessBadge", () => {
     expect(badge).toBeInTheDocument();
     expect(badge.getAttribute("data-variant")).toBe("neutral");
   });
+
+  describe("percentage variant (ClientListRow.completenessPercent)", () => {
+    it.each([
+      [100, "success"],
+      [50, "warning"],
+      [49, "destructive"],
+      [0, "destructive"],
+    ])("renders %i%% with the %s variant", (percentage, variant) => {
+      render(<CompletenessBadge percentage={percentage} />);
+      expect(screen.getByText(`${percentage}%`).getAttribute("data-variant")).toBe(variant);
+    });
+
+    it("renders N/A with neutral variant for a null percentage", () => {
+      render(<CompletenessBadge percentage={null} />);
+      expect(screen.getByText("N/A").getAttribute("data-variant")).toBe("neutral");
+    });
+  });
 });

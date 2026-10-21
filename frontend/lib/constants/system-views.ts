@@ -53,8 +53,8 @@ export const MATTER_SYSTEM_VIEWS: readonly SystemView[] = [
 ];
 
 /**
- * Defined and tested now (R-2), wired into the clients page in 615D. Params match the 615B
- * `GET /api/clients` contract.
+ * The Clients page's system views (R-2, 615C), offered in its view selector after "All clients"
+ * (`CLIENT_VIEW_OPTIONS`). Params match the 615B `GET /api/clients` contract.
  */
 export const CLIENT_SYSTEM_VIEWS: readonly SystemView[] = [
   {
@@ -80,7 +80,31 @@ export const CLIENT_SYSTEM_VIEWS: readonly SystemView[] = [
   },
 ];
 
+/**
+ * D-1(B) (615D): the Clients page's default selection lists every client. A code-defined pseudo
+ * view with no params, so the shared view selector highlights "All clients" (not "Active") when
+ * the URL has no view. It never reaches the backend: system ids are translated to list params.
+ */
+export const ALL_CLIENTS_VIEW_ID = "system:all-clients";
+export const ALL_CLIENTS_VIEW: SystemView = {
+  id: ALL_CLIENTS_VIEW_ID,
+  entityType: "CUSTOMER",
+  name: "All clients",
+  params: {},
+  system: true,
+};
+
+/** Selector entries for the Clients page: "All clients", then the §12.6.4 system views. */
+export const CLIENT_VIEW_OPTIONS: readonly SystemView[] = [
+  ALL_CLIENTS_VIEW,
+  ...CLIENT_SYSTEM_VIEWS,
+];
+
 export const DEFAULT_MATTER_VIEW_ID = "system:open-matters";
+/**
+ * Not wired: 615D ruling D-1(B) defaults the Clients page to "All clients"
+ * (`ALL_CLIENTS_VIEW_ID` above). Kept for its 615C test pins.
+ */
 export const DEFAULT_CLIENT_VIEW_ID = "system:active";
 export const DORMANT_VIEW_ID = "system:dormant";
 

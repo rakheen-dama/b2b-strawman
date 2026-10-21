@@ -60,6 +60,15 @@ export function describeCarriedFilter(key: string, value: unknown): string {
       const rel = typeof value === "string" ? /^-(\d+)d$/.exec(value) : null;
       return rel ? `No activity in the last ${rel[1]} days` : `No activity since ${String(value)}`;
     }
+    // Client system views (615D)
+    case "lifecycleStatus": {
+      const str = String(value).toLowerCase();
+      return `Lifecycle: ${str.charAt(0).toUpperCase()}${str.slice(1)}`;
+    }
+    case "ficaStatus":
+      return String(value).toUpperCase() === "DONE" ? "FICA done" : "FICA outstanding";
+    case "hasTrustBalance":
+      return "Has a trust balance";
     default:
       return `${key}: ${Array.isArray(value) ? value.join(", ") : String(value)}`;
   }

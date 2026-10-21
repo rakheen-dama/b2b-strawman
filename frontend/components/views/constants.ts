@@ -1,17 +1,13 @@
 import type { EntityType } from "@/lib/types";
 import { MATTER_COLUMNS } from "@/lib/matters-list";
+import { CLIENT_COLUMNS, migrateLegacyClientColumns } from "@/lib/clients-list";
 
 /** Standard (non-custom-field) columns per entity type, used by Create and Edit view dialogs. */
 export const STANDARD_COLUMNS: Record<EntityType, { value: string; label: string }[]> = {
   // The Matters table's own columns (615C) — single source in lib/matters-list.ts.
   PROJECT: MATTER_COLUMNS.map((c) => ({ value: c.id, label: c.label })),
-  CUSTOMER: [
-    { value: "name", label: "Name" },
-    { value: "email", label: "Email" },
-    { value: "phone", label: "Phone" },
-    { value: "status", label: "Status" },
-    { value: "createdAt", label: "Created At" },
-  ],
+  // The Clients table's own columns (615D) — single source in lib/clients-list.ts.
+  CUSTOMER: CLIENT_COLUMNS.map((c) => ({ value: c.id, label: c.label })),
   TASK: [
     { value: "title", label: "Title" },
     { value: "status", label: "Status" },
@@ -30,3 +26,12 @@ export const STANDARD_COLUMNS: Record<EntityType, { value: string; label: string
     { value: "createdAt", label: "Created At" },
   ],
 };
+
+/**
+ * A saved view's stored `columns` as the dialogs should show them: CUSTOMER views saved before
+ * 615D carry `email` / `phone` / `status`, which map to the Clients table's ids (the same mapping
+ * the table renders with). Other entity types are unchanged.
+ */
+export function normalizeViewColumns(entityType: EntityType, columns: readonly string[]): string[] {
+  return entityType === "CUSTOMER" ? migrateLegacyClientColumns(columns) : [...columns];
+}

@@ -24,6 +24,7 @@ import type {
   AnonymizationPreview,
   AnonymizeClientRequest,
   Client,
+  ClientListRow,
   ClientMatter,
   ClientProfitabilityResponse,
   ClientReadiness,
@@ -58,8 +59,18 @@ export { CLIENTS_PATH, clientPath } from "./paths";
 export interface ListClientsParams {
   view?: string;
   lifecycleStatus?: LifecycleStatus;
+  /** Ignored by the backend (615B). */
   status?: string;
+  /** Ignored by the backend (615B). */
   size?: number;
+  /** OUTSTANDING = NOT_STARTED or IN_PROGRESS; DONE. Anything else → 400. Applies on the view path too. */
+  ficaStatus?: "OUTSTANDING" | "DONE";
+  /** Trust balance > 0. Returns [] when the caller cannot see trust. Applies on the view path too. */
+  hasTrustBalance?: boolean | string;
+  /** Required fields apply and completeness < 100. Applies on the view path too. */
+  showIncomplete?: boolean | string;
+  /** CSV of tag slugs; all must match. Ignored by the backend on the saved-view path. */
+  tags?: string;
   [filter: string]: QueryValue;
 }
 
@@ -72,6 +83,14 @@ export interface ClientDateRange {
 
 export async function listClients(params?: ListClientsParams): Promise<Client[]> {
   return api.get<Client[]>(`${CLIENTS_PATH}${toQuery(params)}`);
+}
+
+/**
+ * Same endpoint as {@link listClients}, typed as the dense list projection the Clients table
+ * renders (615B `ClientListRow`). `listClients` keeps its `Client[]` type for its other consumers.
+ */
+export async function listClientRows(params?: ListClientsParams): Promise<ClientListRow[]> {
+  return api.get<ClientListRow[]>(`${CLIENTS_PATH}${toQuery(params)}`);
 }
 
 export async function getClient(clientId: string): Promise<Client> {

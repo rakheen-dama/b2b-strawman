@@ -20,6 +20,7 @@ import {
   CLIENTS_PATH,
   clientPath,
   listClients,
+  listClientRows,
   getClient,
   createClient,
   updateClient,
@@ -67,6 +68,22 @@ describe("clients API module URL building", () => {
     expect(mockGet).toHaveBeenLastCalledWith("/api/clients?status=ACTIVE");
     await listClients({ lifecycleStatus: "ONBOARDING" });
     expect(mockGet).toHaveBeenLastCalledWith("/api/clients?lifecycleStatus=ONBOARDING");
+  });
+
+  it("listClientRows: same endpoint, carries the 615B list params", async () => {
+    await listClientRows({ lifecycleStatus: "ACTIVE", showIncomplete: true });
+    expect(mockGet).toHaveBeenLastCalledWith(
+      "/api/clients?lifecycleStatus=ACTIVE&showIncomplete=true"
+    );
+    await listClientRows({
+      view: "v1",
+      ficaStatus: "OUTSTANDING",
+      hasTrustBalance: "true",
+      tags: "vip,urgent",
+    });
+    expect(mockGet).toHaveBeenLastCalledWith(
+      "/api/clients?view=v1&ficaStatus=OUTSTANDING&hasTrustBalance=true&tags=vip%2Curgent"
+    );
   });
 
   it("core CRUD + archive/unarchive", async () => {

@@ -1,6 +1,7 @@
 // ---- Customers (from CustomerController.java) ----
 
 import type { TagResponse } from "./common";
+import type { FicaOnboardingStatus } from "./fica";
 
 export type ClientStatus = "ACTIVE" | "ARCHIVED";
 
@@ -50,6 +51,43 @@ export interface Client {
   // Collections exemption (Phase 83, Epic 588C). Optional so the UI tolerates an
   // older backend that doesn't yet expose the flag.
   collectionsExempt?: boolean;
+}
+
+/**
+ * One row of `GET /api/clients` (`ClientListRow.java`, Phase 87 615B, arch §12.2.6): the dense
+ * projection the Clients table renders. Nulls are serialized, not omitted. `Client` stays the
+ * type for the endpoint's other consumers (`listClients`).
+ */
+export interface ClientListRow {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  clientType: ClientType | null;
+  lifecycleStatus: LifecycleStatus | null;
+  status: ClientStatus;
+  /** ISO instant */
+  createdAt: string;
+  /** ISO instant; carried for consumers that read it (compliance dashboard). */
+  lifecycleStatusChangedAt: string | null;
+  /** Never null (no FICA request → NOT_STARTED). */
+  ficaStatus: FicaOnboardingStatus;
+  /** ISO instant; set when DONE. */
+  ficaLastVerifiedAt: string | null;
+  /** SENT fee notes with a due date. null without FINANCIAL_VISIBILITY (owner/admin always see it). */
+  outstandingFeeNoteTotal: number | null;
+  /** Never redacted. */
+  outstandingFeeNoteCount: number;
+  /** Fee-note currency group (org currency when none). Never redacted. */
+  currency: string;
+  /** Client-level SUM of ledger cards. null without VIEW_TRUST or with trust_accounting off. */
+  trustBalance: number | null;
+  /** ACTIVE matters. */
+  openMatterCount: number;
+  /** null when no required field applies (N/A). */
+  completenessPercent: number | null;
+  tags: TagResponse[];
+  customFields: Record<string, unknown>;
 }
 
 export interface TransitionResponse {

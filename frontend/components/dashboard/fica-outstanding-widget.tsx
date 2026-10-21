@@ -29,8 +29,15 @@ export function FicaOutstandingWidget({ slug, data }: FicaOutstandingWidgetProps
     <Card data-testid="fica-outstanding-widget" className="gap-4">
       <CardHeader>
         <CardTitle className="text-sm font-medium">FICA outstanding</CardTitle>
-        <CardAction>
-          {/* TODO(615C): /clients?view=system:fica-outstanding once CLIENT_SYSTEM_VIEWS land */}
+        <CardAction className="flex items-center gap-3">
+          {/* 615D: the Clients "FICA outstanding" system view (all lifecycles, so its count can
+              differ from this widget's onboarding + active headline). */}
+          <Link
+            href={`/org/${slug}/clients?view=system:fica-outstanding`}
+            className={WIDGET_LINK_CLASS}
+          >
+            View all
+          </Link>
           <Link href={`/org/${slug}/compliance`} className={WIDGET_LINK_CLASS}>
             Open compliance
           </Link>

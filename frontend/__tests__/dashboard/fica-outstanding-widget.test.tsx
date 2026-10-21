@@ -63,8 +63,14 @@ describe("FicaOutstandingWidget", () => {
     expect(screen.getByText("1 day")).toBeInTheDocument();
   });
 
-  it("headline link goes to compliance (system view lands in 615C); footer links incomplete profiles", () => {
+  it("header links the FICA outstanding client view and compliance; footer links incomplete profiles", () => {
     render(<FicaOutstandingWidget slug="acme" data={DATA} />);
+
+    // 615D (D-4): the Clients system view landed
+    expect(screen.getByRole("link", { name: "View all" })).toHaveAttribute(
+      "href",
+      "/org/acme/clients?view=system:fica-outstanding"
+    );
 
     expect(screen.getByRole("link", { name: "Open compliance" })).toHaveAttribute(
       "href",

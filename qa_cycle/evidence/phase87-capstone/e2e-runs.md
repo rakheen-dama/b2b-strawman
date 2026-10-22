@@ -30,16 +30,28 @@ PLAYWRIGHT_BASE_URL=http://localhost:3001 NODE_OPTIONS="" $P test:e2e -- custome
 KGOSI_EMAIL=contact@acme.example.com PLAYWRIGHT_BASE_URL=http://localhost:3001 NODE_OPTIONS="" $P test:e2e -- portal
 # stack 2
 cd $WT && bash compose/scripts/e2e-down.sh && SHELL=/bin/bash bash compose/scripts/e2e-up.sh
-cd $WT/frontend   # same env as run 1
+cd $WT/frontend
+export E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001 MAILPIT_URL=http://localhost:8026 NODE_OPTIONS=""   # run 2: exported once, same values as run 1
 $P test:e2e:legal-lifecycle ; $P test:e2e:legal-depth-ii                                  # run 2
 PLAYWRIGHT_BASE_URL=http://localhost:3001 NODE_OPTIONS="" $P test:e2e -- e2e/tests/projects/    # corrected filter
 PLAYWRIGHT_BASE_URL=http://localhost:3001 NODE_OPTIONS="" $P test:e2e -- e2e/tests/customers/   # re-run on clean order
-# stack 3 / stack 4 (portal, each on its own fresh stack), from $WT/portal
+# stack 3 (portal 90-day), on its own fresh stack
+cd $WT && bash compose/scripts/e2e-down.sh && SHELL=/bin/bash bash compose/scripts/e2e-up.sh
+cd $WT/portal
 export NODE_OPTIONS="" NEXT_PUBLIC_PORTAL_API_URL=http://localhost:8081 BACKEND_URL=http://localhost:8081 \
        PORTAL_ORG_SLUG=e2e-test-org PORTAL_CONTACT_EMAIL=contact@acme.example.com PLAYWRIGHT_BASE_URL=http://localhost:3002
-$P test:e2e:portal-client-90day --reporter=list,json --update-snapshots                                         # stack 3
-$P exec playwright test --config=playwright.portal.config.ts --project=chromium --reporter=list,json --update-snapshots  # stack 4
+PLAYWRIGHT_JSON_OUTPUT_NAME=/tmp/617c-e2e-portal-90day.json \
+  $P test:e2e:portal-client-90day --reporter=list,json --update-snapshots
+# stack 4 (portal responsive), on its own fresh stack, same portal env as stack 3
+cd $WT && bash compose/scripts/e2e-down.sh && SHELL=/bin/bash bash compose/scripts/e2e-up.sh
+cd $WT/portal
+export NODE_OPTIONS="" NEXT_PUBLIC_PORTAL_API_URL=http://localhost:8081 BACKEND_URL=http://localhost:8081 \
+       PORTAL_ORG_SLUG=e2e-test-org PORTAL_CONTACT_EMAIL=contact@acme.example.com PLAYWRIGHT_BASE_URL=http://localhost:3002
+PLAYWRIGHT_JSON_OUTPUT_NAME=/tmp/617c-e2e-portal-responsive.json \
+  $P exec playwright test --config=playwright.portal.config.ts --project=chromium --reporter=list,json --update-snapshots
 ```
+
+The agent ran each stack's `e2e-down` → `e2e-up` → suite chain as one detached `nohup bash -c '…'` job, with output going to `/tmp/617c-e2e-*.log`. The block above shows the same commands without that wrapper. Playwright log headers do not print env, so the run-2 env is recorded from the agent's command transcript. The configs default `baseURL` to `http://localhost:3000`, and :3000 was free. So a run without the env could not have reached the app, but run 2 passed 63 + 28 tests.
 
 ## Results — legal configs (run 1 = stack 1, run 2 = stack 2)
 

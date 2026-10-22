@@ -133,26 +133,28 @@ test.describe
   test("Day 60 [legal-za]: Client downloads SoA or financial statement", async ({
     page,
   }) => {
-    await page.goto("/projects");
+    // Phase 87 S10 (ADR-344): route rename
+    await page.goto("/matters");
     await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(500);
 
     const main = page.locator("main");
     if (!(await main.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "/projects not rendered");
+      test.skip(true, "/matters not rendered");
       return;
     }
 
-    // Click into the first project/matter
-    const projectLink = page
-      .getByRole("link", { name: /project|matter|engagement/i })
-      .first();
-    if (!(await projectLink.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "No project rendered to drill into");
+    // Click into the first matter card. Scoped to <main> and selected by
+    // href: the rail's "Matters" link (href "/matters") precedes <main>, and a
+    // MatterCard's accessible name is its whole text (name + description +
+    // doc count), so a name regex only matches by accident of seed wording.
+    const matterLink = main.locator('a[href^="/matters/"]').first();
+    if (!(await matterLink.isVisible({ timeout: 5000 }).catch(() => false))) {
+      test.skip(true, "No matter rendered to drill into");
       return;
     }
 
-    await projectLink.click();
+    await matterLink.click();
     await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(800);
 

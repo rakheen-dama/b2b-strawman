@@ -1,0 +1,34 @@
+# 617C.4 closure — targeted vitest guards (worktree, HEAD dac048f12, 2026-10-22)
+# frontend: NODE_OPTIONS="" pnpm exec vitest run __tests__/no-terminology-remnants.test.ts __tests__/no-legacy-hrefs.test.ts lib/__tests__/nav-items.test.ts lib/__tests__/settings-nav.test.ts __tests__/lib/legacy-redirects.test.ts __tests__/lib/constants/matter-tab-groups.test.ts __tests__/lib/constants/client-tab-groups.test.ts
+# full logs (ephemeral): /tmp/617c-fe-guards.log, /tmp/617c-fe-guards-verbose.log, /tmp/617c-portal-guards.log
+## frontend summary
+ Test Files  7 passed (7)
+      Tests  132 passed (132)
+   Duration  2.05s (transform 1.18s, setup 818ms, import 1.86s, tests 1.11s, environment 2.27s)
+## frontend passing tests per file (verbose reporter)
+   6 __tests__/lib/constants/client-tab-groups.test.ts
+   9 __tests__/lib/constants/matter-tab-groups.test.ts
+  34 __tests__/lib/legacy-redirects.test.ts
+   7 __tests__/no-legacy-hrefs.test.ts
+   5 __tests__/no-terminology-remnants.test.ts
+  46 lib/__tests__/nav-items.test.ts
+  25 lib/__tests__/settings-nav.test.ts
+## frontend failing tests
+0
+## frontend pinned counts
+53:    expect(ALL_ITEMS).toHaveLength(28);
+100:    expect(SETTINGS_FAMILIES.flatMap((f) => f.tabs)).toHaveLength(31);
+162:    expect(Object.keys(TAB_GATES)).toHaveLength(31);
+  it("has 7 groups and 21 tabs", () => {
+    expect(MATTER_TAB_GROUPS).toHaveLength(7);
+    expect(allTabs).toHaveLength(21);
+  it("has 6 groups and 14 tabs", () => {
+    expect(CLIENT_TAB_GROUPS).toHaveLength(6);
+    expect(allTabs).toHaveLength(14);
+465:    expect(settingsRows).toHaveLength(43);
+466:    expect(settingsRows.filter((r) => r.destination.includes("?tab="))).toHaveLength(32);
+467:    expect(settingsRows.filter((r) => !r.destination.includes("?tab="))).toHaveLength(11);
+## portal: NODE_OPTIONS="" pnpm exec vitest run __tests__/no-terminology-remnants.test.ts
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Duration  306ms (transform 24ms, setup 49ms, import 16ms, tests 4ms, environment 139ms)

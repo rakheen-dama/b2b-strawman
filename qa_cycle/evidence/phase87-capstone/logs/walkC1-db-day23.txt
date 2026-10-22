@@ -1,0 +1,4 @@
+# Day 23 adverse party + court date (2026-10-22T16:05:28Z)
+adverse_party|f4d005ab-7605-4771-aec2-fc8453c976eb|Road Accident Fund|OTHER
+adverse_party_link|787625d9-8700-4d36-b630-b921d491bd2b|a31bde33-836a-4555-a2ec-a8d3e380ae0d|32d5764d-0965-4cf6-9daf-7e51c190ee71|OPPOSING_PARTY
+court_date|3ed25641-0d09-4fa7-823d-2ae2975651fc|a31bde33-836a-4555-a2ec-a8d3e380ae0d|CASE_MANAGEMENT|2026-12-06|10:00:00|Gauteng High Court|SCHEDULED

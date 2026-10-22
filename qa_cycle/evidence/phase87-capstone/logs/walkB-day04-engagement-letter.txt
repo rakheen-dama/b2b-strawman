@@ -1,0 +1,40 @@
+# walkB Day 4 read-only SELECTs 2026-10-22T15:36:31Z
+                  id                  |                                    file_name                                    |             document_id              |         generated_at          
+--------------------------------------+---------------------------------------------------------------------------------+--------------------------------------+-------------------------------
+ e8c23d6f-8e69-43be-8e54-91f356f94b61 | engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-22.pdf |                                      | 2026-10-22 15:34:36.718623+00
+ 9c8491ef-1c45-4bf5-84d7-f21c9bc565a7 | engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-22.pdf | fc4dc97a-1165-423e-a4b9-83f7fa3483a7 | 2026-10-22 15:34:49.370268+00
+(2 rows)
+
+                  id                  |        generated_document_id         |  status  |            sent_at            |           viewed_at           |          accepted_at          | acceptor_name |          expires_at           
+--------------------------------------+--------------------------------------+----------+-------------------------------+-------------------------------+-------------------------------+---------------+-------------------------------
+ 858d721a-fc74-42d3-bff5-56c77a7bb8a7 | 9c8491ef-1c45-4bf5-84d7-f21c9bc565a7 | ACCEPTED | 2026-10-22 15:35:22.582148+00 | 2026-10-22 15:35:39.310065+00 | 2026-10-22 15:35:54.875299+00 | Sipho Dlamini | 2026-10-29 15:35:22.321808+00
+(1 row)
+
+                  id                  |           email           | display_name  |  role   | status |             customer_id              
+--------------------------------------+---------------------------+---------------+---------+--------+--------------------------------------
+ ac43d200-cffd-4a30-91b8-f0796db96383 | sipho.dlamini@email.co.za | Sipho Dlamini | GENERAL | ACTIVE | ce83c576-9bd9-4c7a-80b9-39100ade80d7
+(1 row)
+
+# PDF inspection of preview 'Download PDF' (Engagement-Letter-—-Litigation.pdf, 4.7 KB): embedded images = 0; fill colours = 0.114 grey, 0.2 grey, 0.102/0.102/0.180 (#1a1a2e); brand #1B3A4B (0.106/0.227/0.294) absent
+# portal console on /accept/<token>: [ERROR] Refused to display 'http://localhost:8080/' in a frame because it set 'X-Frame-Options' to 'deny'. iframe src = http://localhost:8080/api/portal/acceptance/<token>/pdf (GET 200)
+            event_type            |    entity_type     |   actor_type   |  source  |          occurred_at          
+----------------------------------+--------------------+----------------+----------+-------------------------------
+ project.created_from_template    | project            | USER           | API      | 2026-10-22 15:32:06.097863+00
+ project.updated                  | project            | USER           | API      | 2026-10-22 15:32:24.375702+00
+ document.generated               | generated_document | USER           | API      | 2026-10-22 15:34:36.720809+00
+ document.generated_with_clauses  | generated_document | USER           | API      | 2026-10-22 15:34:36.721095+00
+ document.generated               | generated_document | USER           | API      | 2026-10-22 15:34:49.371153+00
+ document.generated_with_clauses  | generated_document | USER           | API      | 2026-10-22 15:34:49.371315+00
+ acceptance.created               | acceptance_request | USER           | API      | 2026-10-22 15:35:22.325732+00
+ acceptance.sent                  | acceptance_request | USER           | API      | 2026-10-22 15:35:22.582369+00
+ acceptance.viewed                | acceptance_request | PORTAL_CONTACT | PORTAL   | 2026-10-22 15:35:39.310351+00
+ acceptance.accepted              | acceptance_request | PORTAL_CONTACT | PORTAL   | 2026-10-22 15:35:54.875486+00
+ acceptance.certificate_generated | acceptance_request | SYSTEM         | INTERNAL | 2026-10-22 15:35:54.98652+00
+ time_entry.created               | time_entry         | USER           | API      | 2026-10-22 15:36:45.595115+00
+(12 rows)
+
+              title               |    name    | duration_minutes | billable | billing_rate_snapshot | billing_rate_currency |          description          
+----------------------------------+------------+------------------+----------+-----------------------+-----------------------+-------------------------------
+ Issue summons / combined summons | Bob Ndlovu |               90 | t        |               1200.00 | ZAR                   | Drafting particulars of claim
+(1 row)
+

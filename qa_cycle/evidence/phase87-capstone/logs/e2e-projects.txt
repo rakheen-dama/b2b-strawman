@@ -1,0 +1,14 @@
+# projects, filter e2e/tests/projects/ (stack 2) — source: /tmp/617c-e2e-projects.log (ephemeral)
+## summary
+  2 failed
+  1 skipped
+  12 did not run
+  10 passed (30.8s)
+## failing titles (line numbers stripped)
+[chromium] › e2e/tests/projects/project-tasks.spec.ts › PROJ-02: Project Tasks › 1. Create task on project via UI
+[chromium] › e2e/tests/projects/project-time.spec.ts › PROJ-03: Time Entries › 1. Log time on task via UI
+## first error line per failure (with line numbers)
+1) [chromium] › e2e/tests/projects/project-tasks.spec.ts:119:7 › PROJ-02: Project Tasks › 1. Create task on project via UI 
+          Test timeout of 30000ms exceeded.
+2) [chromium] › e2e/tests/projects/project-time.spec.ts:131:7 › PROJ-03: Time Entries › 1. Log time on task via UI 
+          Test timeout of 30000ms exceeded.

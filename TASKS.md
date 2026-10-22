@@ -701,7 +701,7 @@
 | 614 | Legal-Native Home — Three Dashboard Reads + Widget Matrix | Backend + Frontend (split) | 613 | M | 614A, 614B, 614C | **Done** — 614A **Done** (PR #1625), 614B **Done** (PR #1626), 614C **Done** (epic gate, no code) |
 | 615 | Dense Lists (`MatterListRow`/`ClientListRow`), System Views, Tab Groups, Disbursements | Backend + Frontend (split) | 614 | L | 615A, 615B, 615C, 615D, 615E | **Done** (PRs #1627, #1628, #1629, #1630, #1631) |
 | 616 | Settings Consolidation — Five Families, 44 → 17 Routes, 43 Redirects | Frontend | 615 | L | 616A, 616B, 616C, 616D, 616E, 616F | **Done** (PRs #1632, #1634, #1635, #1636, #1637, #1638) |
-| 617 | Portal Vocabulary + Nav, QA Capstone, Screenshots, Closure Report | Portal + QA/Process | 616 | M | 617A, 617B, 617C | **Done** (PRs #1639, #1640, #1641) — 617A **Done** (PR #1639), 617B **Done** (PR #1640), 617C **Done** (PR #1641; Keycloak capstone observed, not demo-ready; closure report) |
+| 617 | Portal Vocabulary + Nav, QA Capstone, Screenshots, Closure Report | Portal + QA/Process | 616 | M | 617A, 617B, 617C | **Done** (PRs #1639, #1640, #1641) — 617A **Done** (PR #1639), 617B **Done** (PR #1640), 617C **Done** (PR #1641; Keycloak capstone observed: 228 PASS / 53 FAIL / 24 DEFERRED / 2 N/A of 307 after the review reclassified 10 substituted-pre-state PASS rows; not demo-ready; 59 gaps — 5 HIGH · 24 MEDIUM · 30 LOW; 0 of 5 HIGH Phase-87-introduced; Phase-87-introduced: 6 gaps in three classes — list/Home aggregates G-D11/G-D21, shell labels G-A2/G-D17/G-D18, Diary G-D20; closure report in `tasks/phase87-legal-native-shell.md`) |
 
 
 ---

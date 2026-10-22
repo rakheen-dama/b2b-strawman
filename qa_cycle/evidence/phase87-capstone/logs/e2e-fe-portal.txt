@@ -1,0 +1,5 @@
+# frontend portal (portal-data-isolation, KGOSI_EMAIL) (stack 1) — source: /tmp/617c-e2e-fe-portal.log (ephemeral)
+## summary
+  2 passed (477ms)
+## failing titles (line numbers stripped)
+## first error line per failure (with line numbers)

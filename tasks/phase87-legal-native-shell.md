@@ -22,7 +22,7 @@ Carried from §12.14. "Owner" is the epic whose builder must resolve or record t
 | 2 | `/api/calendar` retirement — retained one release | 613A adds `@Deprecated(since = "Phase 87", forRemoval = true)` + javadoc "delete in the first phase after 87" on `calendar/CalendarController`; package deletion is a follow-up. | 613A | **Annotated** (PR #1621) — package deletion still a follow-up (first phase after 87) |
 | 3 | Phase 84 take-on settings placement | Recommend Matters → `take-on` tab (`settings/matters?tab=take-on`); route count stays 17. Decided at Phase 84 `/architecture`. | — (Phase 84) | Deferred |
 | 4 | Stale "next free V2" notes in `TASKS.md:5`, `backend/db/BASELINE.md` §5, `requirements/claude-code-prompt-phase84.md:14` | Corrected to tenant V4 / global V2 in 607A's docs commit. | 607A | **Closed** (607A, PR #1588) — verified at closure: `TASKS.md:5`, `backend/db/BASELINE.md:70`, `requirements/claude-code-prompt-phase84.md:14` all say tenant V4 / global V2 |
-| 5 | Portal `/acceptance` nav item points at a page that does not exist | Drop the item; Home's pending-acceptance rows link to `/accept/{token}`; heading "Engagement letters" (ADR-336 "mandate" wording). | 617A | Decided (build) |
+| 5 | Portal `/acceptance` nav item points at a page that does not exist | Drop the item; Home's pending-acceptance rows link to `/accept/{token}`; heading "Engagement letters" (ADR-336 "mandate" wording). | 617A | **Built** (617A #1639): item dropped; Home tile "Engagement letters" → `/matters#engagement-letters`. D-2 accepted-state wording **DEFERRED** (same blocker as 611A.2: needs backend `templateCategory`) |
 | 6 | `legal-za.json` orphan `"deadlines"` module id | Leave as is (portal "Diary dates" depends on it); follow-up registers it or folds it into `court_calendar`. | — | Deferred |
 | 7 | Inherited 606C DEFERRED items — **seven failing spec locations in five files**: `legal-lifecycle/day-00-firm-setup.spec.ts:326`, `day-30-billing.spec.ts:32` and `:159`, `day-45-recon-prescription.spec.ts:41`, `day-90-review.spec.ts:61` and `:177`; `legal-depth-ii/day-05-disbursements.spec.ts:51`; plus AI-core walk (needs a human-funded key), uncommitted screenshot baselines, `frontend/test-results/` tracked (9 files) | Carried, never fixed by spec edit (reproduce-before-fix, one fix per PR). Every IA PR names them in its body and shows by run log the failing set did not grow. `day-00:326` / `day-30:32` may resolve as side-effects of 616 / 612+615 — confirm by running. `frontend/test-results/` untracked in 610E. | every IA epic; 617C reports | **Carried — six, not seven** (617C closure C.8): four titles fail in run 2, and `day-30:159` / `day-90:179` fail when reached (run 1; serial-skipped in run 2); `depth-ii/day-05:51` was resolved by #1582 before Phase 87 (passes at `:156`); no Phase 87 slice resolved any as a side effect. AI walk DEFERRED; `frontend/test-results/` untracked in 610E |
 | 8 | Fees zone width | Six items; Profitability under Firm → Reports; nav test "≤ 6 per zone except Trust (7)". | 612A | **Closed** |
@@ -54,7 +54,7 @@ Carried from §12.14. "Owner" is the epic whose builder must resolve or record t
 | 614 | Legal-Native Home — Three Dashboard Reads + Widget Matrix | Backend + Frontend (split) | 613 | M | 614A, 614B, 614C | **Done** (PRs #1625, #1626; 614C = epic gate, no code) |
 | 615 | Dense Lists (`MatterListRow`/`ClientListRow`), System Views, Tab Groups, Disbursements | Backend + Frontend (split) | 614 | L | 615A, 615B, 615C, 615D, 615E | **Done** (PRs #1627, #1628, #1629, #1630, #1631) |
 | 616 | Settings Consolidation — Five Families, 44 → 17 Routes, 43 Redirects | Frontend | 615 | L | 616A, 616B, 616C, 616D, 616E, 616F | **Done** — 616A (PR #1632), 616B (PR #1634), 616C (PR #1635), 616D (PR #1636), 616E (PR #1637), 616F (PR #1638) |
-| 617 | Portal Vocabulary + Nav, QA Capstone, Screenshots, Closure Report | Portal + QA/Process | 616 | M | 617A, 617B, 617C | **Done** (PRs #1639, #1640, #1641) — 617C capstone observed end to end (238 PASS / 53 FAIL / 14 DEFERRED / 2 N/A of 307; not demo-ready); closure report below |
+| 617 | Portal Vocabulary + Nav, QA Capstone, Screenshots, Closure Report | Portal + QA/Process | 616 | M | 617A, 617B, 617C | **Done** (PRs #1639, #1640, #1641) — 617C capstone observed end to end (228 PASS / 53 FAIL / 24 DEFERRED / 2 N/A of 307, after the 617C review reclassified 10 substituted-pre-state PASS rows to DEFERRED; not demo-ready; 59 gaps, 5 HIGH; 0 of 5 HIGH Phase-87-introduced; Phase-87-introduced: 6 gaps (2 MEDIUM, 4 LOW) in three classes — list/Home aggregates G-D11 + G-D21, shell labels G-A2 / G-D17 / G-D18, Diary title truncation G-D20; 1 undetermined (G-D15)); closure report below |
 
 **Slice count: 54** (eleven architecture slices expanded by layer and by the ≤ 8–12-files / ≤ ~800-lines rule; rename slices exceed the file cap only where every change is a mechanical IDE substitution and say so).
 
@@ -166,7 +166,7 @@ FROZEN (never edited by any slice — the contract tests landed in 607A guard th
 
 | Epic | PR | What must be green before merge | Notes |
 |------|----|----------------------------------|-------|
-| 617 | `phase87/11-portal-capstone` | PORTAL-GATE; portal `test:e2e:portal-client-90day` + `responsive` on the e2e stack; `frontend/e2e/tests/portal/portal-data-isolation.spec.ts`; capstone **observed** on the Keycloak stack (`svc.sh start all`) via Playwright MCP; closure report with evidence paths; both legal Playwright configs re-run on :3001 | PASS only when run end-to-end (CLAUDE.md §3). Seven carried locations reported with file:line and run-log evidence. 617A **Done** (PR #1639), 617B **Done** (PR #1640; portal e2e observed 90-day 5/3/1/3 data-limited, responsive 21/21), 617C **Done** (PR #1641; Keycloak capstone observed, not demo-ready; legal configs = 616F failing set, six carried; closure report). **Epic 617 Done.** |
+| 617 | `phase87/11-portal-capstone` | PORTAL-GATE; portal `test:e2e:portal-client-90day` + `responsive` on the e2e stack; `frontend/e2e/tests/portal/portal-data-isolation.spec.ts`; capstone **observed** on the Keycloak stack (`svc.sh start all`) via Playwright MCP; closure report with evidence paths; both legal Playwright configs re-run on :3001 | PASS only when run end-to-end (CLAUDE.md §3). Seven carried locations reported with file:line and run-log evidence. 617A **Done** (PR #1639), 617B **Done** (PR #1640; portal e2e observed 90-day 5/3/1/3 data-limited, responsive 21/21), 617C **Done** (PR #1641; Keycloak capstone observed, 228 PASS / 53 FAIL / 24 DEFERRED / 2 N/A of 307, not demo-ready; 59 gaps, 5 HIGH, 0 of 5 HIGH Phase-87-introduced; legal configs = 616F failing set, six carried; closure report). **Epic 617 Done.** |
 
 ### Merge-conflict hotspots and PR rules
 
@@ -809,7 +809,7 @@ PR rules restated from §12.12 (non-negotiable):
 |-------|-------|---------------|---------|
 | **617A** | 617A.1–617A.3 | `nav-items.ts`, `portal-sidebar.tsx`, 2 route dirs `git mv`, `next.config.ts`, `home/page.tsx`, ~5 page headings, 2 tests | Portal labels, routes, redirect, acceptance gap; PORTAL-GATE. **Done** (PR #1639) — 24 portal files; D-1 Home tile kept its shape, retitled "Engagement letters" → `/matters#engagement-letters` (the per-row `/accept/{token}` list lives on `/matters`, not Home); D-2 accepted-state wording "Engagement letter — mandate accepted on {date}" DEFERRED (no accepted state in the named list; no template category reaches the portal — same blocker as 611A.2); D-3 internal links → `/matters` directly (incl. post-login target); D-4 redirect unit test; D-5 leftover wording ("Failed to load projects", Home "Upcoming deadlines", profile "Customer") + backend `PortalDocumentNotificationHandler.java:300` `/projects/` email link = follow-ups (redirect covers it). No Playwright spec edits (none break; URL sweep stays 617B). |
 | **617B** | 617B.1–617B.2 | 4 + 1 + 1 portal specs, 3 scenario docs | Portal Playwright + scenario sweep; portal e2e run. **Done** (PR #1640) — specs on `/matters` + labels (3 spec files; `day-00-07`/`day-14-30`/`day-85-90` needed no edit), responsive `/acceptance` row dropped (page never existed; 33 tests); scenario sweep 36 annotated nav/URL/label hunks (90day 12 · full-lifecycle 20 · portal 4, incl. 612C's 19 Tier B steps + the vacuous `/portal/projects` probes); **0 stale "Pipeline" refs** (#1586 already removed them); OQ #19 actual count = 4 portal 90-day spec files. **Finding: the portal Playwright helper had never authenticated** (wrote `portal-token` keys the portal never reads; exchange missing `orgId`) — every prior portal run screenshotted the login page; orchestrator ruled the helper fix in-slice (same-bug-class with `portal-data-isolation` `getPortalJwt`): new `portal/e2e/helpers/global-setup.ts` exchanges one magic link per run (3-per-5-min cap) and fails fast; Day-60 matter link by `/matters/` href. 617B.2 **OBSERVED, not green**: 90-day 5 passed / 3 failed / 1 skipped / 3 did not run — all data prerequisites (e2e seed = Acme Corp + 1 matter, weekly cadence); responsive 21/21; frontend isolation 2/2 (with `KGOSI_EMAIL`). Scenario items flagged not edited (need product authorisation): matter "Billing tab" 36.1/45.1, portal post-login `/home`, `/accept/[token]` magic-link wording, "Work > Info Requests", portal three-tenant wording, `regression-test-suite.md:282,542`. Follow-ups: portal lifecycle e2e seed, serial-block masking, screenshot path comments (`lg-*.png` vs `lg/`). |
-| **617C** | 617C.1–617C.4 | Keycloak stack run, screenshots, `exec-deck.html`, closure report, `TASKS.md` | Observed capstone + evidence + closure. **Done** (PR #1641) — 90-day Keycloak walk OBSERVED end to end (238 PASS / 53 FAIL / 14 DEFERRED / 2 N/A of 307; E.1/E.2/E.3/E.8/E.9 FAIL → not demo-ready; 52 gaps, 5 HIGH, none Phase-87-introduced by code archaeology); legal configs on :3001 = 616F failing set (six carried); 13 deck screenshots + 3 slides; closure report below; evidence `qa_cycle/evidence/phase87-capstone/`. |
+| **617C** | 617C.1–617C.4 | Keycloak stack run, screenshots, `exec-deck.html`, closure report, `TASKS.md` | Observed capstone + evidence + closure. **Done** (PR #1641) — 90-day Keycloak walk OBSERVED end to end (228 PASS / 53 FAIL / 24 DEFERRED / 2 N/A of 307; the 617C review reclassified 10 PASS rows that ran on walker-substituted pre-state to DEFERRED; E.1/E.2/E.3/E.8/E.9 FAIL → not demo-ready; 59 gaps — 0 BLOCKER · 5 HIGH · 24 MEDIUM · 30 LOW; by code archaeology 0 of 5 HIGH Phase-87-introduced; Phase-87-introduced: 6 gaps (2 MEDIUM, 4 LOW) in three classes — list/Home aggregates G-D11 + G-D21, shell labels G-A2 / G-D17 / G-D18, Diary title truncation G-D20; 1 undetermined (G-D15)); legal configs on :3001 = 616F failing set (six carried); 13 deck screenshots + 3 slides; closure report below; evidence `qa_cycle/evidence/phase87-capstone/`. |
 
 ### Tasks
 
@@ -864,20 +864,20 @@ S10 (617C.4) must produce a closure report containing, with evidence paths for e
 
 **Date:** 2026-10-22. **Measured on:** worktree branch `epic-617C/capstone-closure` at `dac048f12`. Its product code is identical to main `dac048f12`; the 617C diff touches only `tasks/`, `TASKS.md`, `architecture/ARCHITECTURE.md` (one line), `marketing/decks/` and `qa_cycle/evidence/phase87-capstone/`. **Baseline:** `41cb211fb` (2026-10-18, §12.1). Note that `41cb211fb..HEAD` also holds 9 pre-607A Phase 86 tail commits (#1582–#1587, listed in `logs/closure-attribution.txt`); the Phase 87 slices start at `b0b234ae0` (#1588).
 
-Status vocabulary follows root `CLAUDE.md` §3. VERIFIED / PASS = observed. Anything not observed is DEFERRED. There is no PASS-with-note. All evidence paths below are relative to `qa_cycle/evidence/phase87-capstone/` unless they start with a repo directory. `/tmp/617c-*` paths are ephemeral (as in Phase 86 §7.4); the tracked excerpts under `logs/` are the durable evidence.
+Status vocabulary follows root `CLAUDE.md` §3. VERIFIED / PASS = observed behaviour. PARTIAL = some of the part was observed working and some was observed failing. Anything not observed is DEFERRED. There is no PASS-with-note. All evidence paths below are relative to `qa_cycle/evidence/phase87-capstone/` unless they start with a repo directory. `/tmp/617c-*` paths are ephemeral (as in Phase 86 §7.4); the tracked excerpts under `logs/` are the durable evidence.
 
 ### C.1 Overall status
 
 | Part | Status | Evidence |
 |---|---|---|
 | Wire rename (607–609) | **VERIFIED** | `WireVocabularyContractTest` 2/2, DTO and ROUTE offenders 0, ratchet baseline file empty (`logs/closure-contract-tests.txt`); legacy literal files 23 → 0 (`logs/closure-metrics.txt`); per-PR markers (C.7) |
-| Terminology removal (611) | **VERIFIED** | remnant scans 73 / 10 / 2 → 0 / 0 / 0; guard tests green (`logs/closure-metrics.txt`, `logs/closure-vitest-guards.txt`) |
-| Shell: nav, Diary, Home, lists, settings (612–616) | **VERIFIED** at code/test level; walk found one Phase-87-introduced defect class (C.9.4) | route counts and pins (C.2); FE-GATE markers (C.7); redirect probes (C.5) |
-| Portal vocabulary + nav (617A/617B) | **VERIFIED** (routes, labels, `/projects` 308 observed); portal 90-day e2e **observed, not green** (5/3/1/3, data prerequisites) | C.5, C.8 |
-| Capstone walk (617C.1) | **OBSERVED end to end** on the Keycloak stack: **238 PASS · 53 FAIL · 14 DEFERRED · 2 N/A of 307** checkbox lines. Exit verdict **not demo-ready** (E.1/E.2/E.3/E.8/E.9 FAIL) | C.9 |
+| Terminology removal (611) | **VERIFIED for the mechanism** (removal observed by scans and guard-test runs). User-visible legacy copy still leaks: E.8 FAIL, 90.1 FAIL; those strings were literals at the baseline (C.4, C.9.4) | remnant scans 73 / 10 / 2 → 0 / 0 / 0; guard tests green (`logs/closure-metrics.txt`, `logs/closure-vitest-guards.txt`) |
+| Shell: nav, Diary, Home, lists, settings (612–616) | **PARTIAL.** Observed working: six-zone nav (90.3 PASS), Diary create/find (23.2–23.4, 23.6 PASS), Reports/Profitability (33.1–33.5, 80.1–80.3 PASS), settings families + tier-free subscription (90.4, E.4–E.6 PASS), redirect probes (C.5), FE-GATE and E2E evidence (C.7, C.8; legal failing set = 616F, navigation 16/16). Observed failing on shell surfaces: 80.5 FAIL (My work misses court dates, G-D5, pre-existing), 90.1 FAIL (breadcrumbs incl. G-A2), G-D11 / G-D21 (Matters / Clients / Home aggregates), G-D17 / G-D18 (settings tab labels), G-D15 (settings overflow), G-D20 (Diary title truncation), G-B14 (tab pinning, pre-existing). Phase-87-introduced: G-A2, G-D11, G-D17, G-D18, G-D20, G-D21 (C.9.4) | route counts and pins (C.2); FE-GATE markers (C.7); redirect probes (C.5); `qa_cycle/evidence/phase87-capstone/gaps.md` |
+| Portal vocabulary + nav (617A/617B) | **PARTIAL.** Observed working: rail labels and `/matters` routes in the browser (screenshot `portal-matters.png`), `/projects` 308 (C.5), portal responsive 21/21. Observed failing or not observed: capstone 68.1 FAIL (bare `/login`, G-D1, pre-existing), 68.2 DEFERRED (ran via the `?orgId=` shim), portal matter card has no status (G-D19, pre-existing), portal 90-day e2e **observed, not green** (5/3/1/3, data prerequisites) | C.5, C.8, C.9 |
+| Capstone walk (617C.1) | **OBSERVED end to end** on the Keycloak stack: **228 PASS · 53 FAIL · 24 DEFERRED · 2 N/A of 307** checkbox lines (10 PASS rows that ran on walker-substituted pre-state reclassified to DEFERRED by the 617C review). Exit verdict **not demo-ready** (E.1/E.2/E.3/E.8/E.9 FAIL) | C.9 |
 | Legal Playwright (617C.2) | **DEFERRED, not green.** The six carried failures remain; the failing set did not grow vs 616F | C.8 |
 | AI-core walk | **DEFERRED, needs the user** (funded Anthropic key) | C.9.6 |
-| **Phase 87 overall** | **Build scope VERIFIED; capstone PARTIAL. Not ALL_GREEN.** It stays that way until the carried six and the capstone gaps are fixed, or the user explicitly accepts them as deferred (ADR-344 Negative) | — |
+| **Phase 87 overall** | **Wire rename and terminology mechanism VERIFIED; shell and portal PARTIAL; capstone PARTIAL. Not ALL_GREEN.** It stays that way until the carried six and the capstone gaps are fixed, or the user explicitly accepts them as deferred (ADR-344 Negative) | — |
 
 ### C.2 Before / After (checklist 1)
 
@@ -959,7 +959,7 @@ Wire counts (`logs/closure-metrics.txt`):
 - Squash SHAs: `git log --grep="(#N)"` for N = 1588…1640. All match the table below.
 - Marker commits: all 50 named below appear in `git log 41cb211fb..HEAD -- .claude/markers/verify-*.json`. That log has 53 commits; the other three (`611cf107b`, `aa19b3313`, `e889ee77a`) are pre-607A Phase 86 tail commits.
 - CodeRabbit: `gh pr view N --json body` shows a `## CodeRabbit:` line on **52/52** Phase 87 PR bodies (#1633 is a tooling PR, `fix(epic_v2)`, not a Phase 87 slice). The bodies of #1608, #1610, #1636 and #1639 read "DEFERRED — not arrived after full review cycle; superpowers reviews are the merge gate".
-- The per-PR CodeRabbit finding summaries below come from the scout's cache of PR bodies (`/tmp/617c-scout/pr*.md`, ephemeral). The closure agent re-checked only the DEFERRED rows.
+- The per-PR CodeRabbit summaries below were first taken from the scout's cache of PR bodies (`/tmp/617c-scout/pr*.md`, ephemeral). **The 617C review re-verified all 52** on 2026-10-22 with `gh pr view N --json body --jq .body | grep -E '## CodeRabbit:'`: every body has the line, every row below matches its body's status and finding count, and the DEFERRED set is exactly #1608, #1610, #1636, #1639. Durable excerpt: `qa_cycle/evidence/phase87-capstone/logs/closure-coderabbit-lines.txt`. This re-verifies what each PR body *says*; it does not re-read the CodeRabbit threads.
 
 **Current markers vs HEAD:**
 - backend `43bb21a94` (PR #1628): 5444 testcases / 0 F / 0 E / 26 skipped.
@@ -967,7 +967,7 @@ Wire counts (`logs/closure-metrics.txt`):
 - portal `ba3063ea4` (PR #1640): vitest 42 files / 193 passed.
 - `git diff 43bb21a94..HEAD -- backend`, `git diff 26fa65ef2..HEAD -- frontend packages` and `git diff ba3063ea4..HEAD -- portal packages` are **all empty** (closure re-check). HEAD's code is therefore byte-identical to the code those markers verified. The marker commits are pre-squash branch heads, not ancestors of HEAD.
 
-| Slice | PR | Squash | Marker commit (area) | CodeRabbit |
+| Slice | PR | Squash | Marker commit (area) | CodeRabbit (PR body `## CodeRabbit:` line; re-verified for all 52) |
 |---|---|---|---|---|
 | 607A | #1588 | b0b234ae0 | 2db3e1c7b (backend) | REVIEWED — 3 findings, addressed |
 | 607B | #1589 | 82ae45da1 | cc0c5089b (backend) | REVIEWED — no actionable |
@@ -1100,21 +1100,19 @@ The same PIDs were RUNNING/HEALTHY at the start and end of Walkers B, C1 and C2.
 
 #### C.9.2 Per-day evidence table
 
-Each day file has one row per checkbox line: Step | Result | Evidence | Mailpit ID | Screenshot | Gap. The doc has **307** checkbox lines (`grep -c -- '- \[ \]'`); the brief's "302" undercounts. Totals are normalised as in `index.md`: Walker B's 0.50 back-ref row closes 0.50/CP0.5 as PASS, and Walker B's two BLOCKED rows (5.10 ← G-B11, 6.4 ← G-B3) count as DEFERRED.
+Each day file has one row per checkbox line: Step | Result | Evidence | Mailpit ID | Screenshot | Gap. The doc has **307** checkbox lines (`grep -c -- '- \[ \]'`); the brief's "302" undercounts.
 
-| Section | Doc lines | PASS | FAIL | DEFERRED | N/A | Evidence file | Log excerpts |
-|---|---|---|---|---|---|---|---|
-| Session 0 | 43–51 | 2 | 0 | 0 | 0 | `session-0.md` | `logs/walkA-backend-startup.txt`, `logs/walkA-backend-provisioning.txt` |
-| Day 0 (Phases A–K) | 52–208 | 80 | 1 | 0 | 0 | `day-00.md` | `logs/walkA-db-*.txt` |
-| Days 1–7 | 209–302 | 43 | 14 | 2 | 0 | `days-01-07.md` | `logs/walkB-day04-engagement-letter.txt`, `logs/walkB-db-day0{2,3,5,6}*.txt`, `logs/walkB-db-sipho-client.txt` |
-| Days 8–21 | 303–365 | 31 | 8 | 0 | 0 | `days-08-21.md` | `logs/walkB-db-day{08,09,10-14,14,15-21}*.txt` |
-| Days 22–35 (incl. Day 33) | 366–410 | 19 | 3 | 1 | 0 | `days-22-35.md` | `logs/walkC1-db-day22-lerato.txt`, `logs/walkC1-db-day23.txt`, `logs/walkC1-db-days24-35.txt` |
-| Days 36–60 (incl. Day 30 SoA) | 411–474 | 21 | 9 | 5 | 0 | `days-36-60.md` | `logs/walkC1-day30-soa.txt`, `logs/walkC1-db-day{36-38,45-47}.txt`, `logs/walkC1-db-days50-58.txt` |
-| Days 61–75 (incl. Day 75 closure) | 475–506 | 15 | 4 | 0 | 0 | `days-61-75.md` | `logs/walkC2-db-days6{1-62,5-75}.txt`, `logs/walkC2-62.1-carol-403.txt` |
-| Days 76–90 | 507–564 | 22 | 9 | 1 | 1 | `days-76-90.md` | `logs/walkC2-80.4-export.txt`, `logs/walkC2-85-closure-actions.txt`, `logs/walkC2-day90-sweeps.txt`, `logs/walkC2-db-days80-90.txt` |
-| **Walk subtotal** | 43–564 | **233** | **48** | **9** | **1** | 291 rows | |
-| Exit checkpoints E.1–E.11 | 565–584 | 5 | 5 | 5 | 1 | `exit-checkpoints.md` | — |
-| **Grand total** | | **238** | **53** | **14** | **2** | **307** | |
+**The per-section table (raw and normalised counts, doc lines, files, arithmetic) lives only in `qa_cycle/evidence/phase87-capstone/index.md` § "Sections"**, so the two cannot drift. Grand totals, normalised as defined there:
+
+| | PASS | FAIL | DEFERRED | N/A | Rows |
+|---|---|---|---|---|---|
+| Walk subtotal (Session 0 → Day 90) | **223** | **48** | **19** | **1** | 291 |
+| Exit checkpoints E.1–E.11 | 5 | 5 | 5 | 1 | 16 |
+| **Grand total** | **228** | **53** | **24** | **2** | **307** |
+
+Normalisations (index.md): n1 Walker B's 0.50 back-ref row closes 0.50/CP0.5 as PASS; n2 Walker B's two BLOCKED rows (5.10 ← G-B11, 6.4 ← G-B3) count as DEFERRED; **n3 (617C review)** ten PASS rows that ran on walker-substituted pre-state are DEFERRED — 62.1 (G-B3, Carol made matter lead), 68.2 (G-D1, `?orgId=` shim), 75.3–75.9 and 75.11 (G-C9, sheriff disbursement billed on INV-0004 instead of written off). Before n3 the totals read 238 / 53 / 14 / 2.
+
+Log excerpts per file are listed in each day file's Evidence/Gap columns (`logs/walk*-*.txt`).
 
 Other evidence:
 - Screenshots: `screens/` holds 105 PNGs, covering every 📸 step and every FAIL/DEFERRED state, named `<step>-<slug>.png` (e.g. `screens/0.25-home-owner.png`, `screens/4.3c-day-04-engagement-letter-accepted.png`, `screens/33.5-profitability-3-matters.png`, `screens/88.3-moroka-activity-feed.png`).
@@ -1125,9 +1123,9 @@ Other evidence:
 
 | Checkpoint | Result | One line |
 |---|---|---|
-| E.1 every step checked | **FAIL** | 48 FAIL + 9 DEFERRED walk rows |
+| E.1 every step checked | **FAIL** | 48 FAIL + 19 DEFERRED walk rows (incl. the 10 reclassified by the 617C review) |
 | E.2 7 wow moments | **FAIL** | 5.4 (promoted fields not inline, G-B9) and 88.3 (raw keys, no trust events, G-B8/G-D9) fail. Behind the passing 4.3c capture, step 4.3b FAILED (portal PDF not shown, G-B7). 47.3 passed as a capture, but the PDF lacks brand colour, letterhead and bank details (G-C7) |
-| E.3 gap register | **FAIL** | 52 gaps (G-A1…A7, G-B1…B19, G-C1…C12, G-D1…D14): 0 BLOCKER · **5 HIGH** · 22 MEDIUM · 25 LOW. Kept in `gaps.md`, not `qa/gap-reports/demo-readiness-{DATE}/legal-za.md` (617C may not create scenario-side files; same content) |
+| E.3 gap register | **FAIL** | 59 gaps (G-A1…A7, G-B1…B19, G-C1…C12, G-D1…D21; G-D15…D21 added by the 617C review from `screenshots.md`): 0 BLOCKER · **5 HIGH** · 24 MEDIUM · 30 LOW. Kept in `gaps.md`, not `qa/gap-reports/demo-readiness-{DATE}/legal-za.md` (617C may not create scenario-side files; same content) |
 | E.4 tier removal | PASS | subscription flat, team invite has no seat gate, member count has no limit |
 | E.5 field promotion on create dialogs | PASS | Client / Matter / Task / Fee note dialogs |
 | E.6 progressive disclosure | PASS | Trust 7, Diary, Conflict check, Tariffs; no cross-vertical items |
@@ -1141,27 +1139,30 @@ Other evidence:
 
 #### C.9.4 Gaps and their Phase 87 attribution
 
-The capstone logged **52 gaps** (`gaps.md`): 0 BLOCKER, 5 HIGH, 22 MEDIUM, 25 LOW. The closure agent classified each HIGH gap, and each MEDIUM gap that touches something Phase 87 changed, as Phase-87-introduced, pre-existing or undetermined.
+The capstone logged **59 gaps** (`gaps.md`): 0 BLOCKER, 5 HIGH, 24 MEDIUM, 30 LOW. 52 came from the walkers; the 617C review added G-D15…G-D21 from the screenshot agent's observations (2 MEDIUM, 5 LOW). **All 59 are classified** as Phase-87-introduced, pre-existing or undetermined. Phase 87 changed 1 033 frontend/portal files, so nearly every UI gap sits in a changed file; the review therefore classified every gap rather than a subset.
 
-**Method: code archaeology, not observed on the baseline stack.** The agent compared `41cb211fb` with HEAD (`git show` / `git diff` / `git log -S`) and ran read-only SELECTs on `tenant_5039f2d497cf`. Full table: `gaps.md` § "Phase 87 attribution". Raw output: `logs/closure-attribution.txt`.
+**Method: code archaeology, not observed on the baseline stack.** Compare `41cb211fb` with HEAD (`git show` / `git diff` / `git log -S`) and run read-only SELECTs on `tenant_5039f2d497cf`. No baseline stack was started. Copy/terminology clusters (G-A4, G-A5, G-B1, G-C3, G-D10) were classified by **sampling** their strings, not string by string. Full table with the basis for each gap: `gaps.md` § "Phase 87 attribution". Raw output: `logs/closure-attribution.txt`.
 
 | Gap | Sev | What | Class |
 |---|---|---|---|
-| G-B3 | HIGH | No UI to add matter members; Carol (Member) is locked out of template matters | **Pre-existing** (Epic 599, #1570, Phase 86: `members` left the tab groups; 615E only deleted the orphan mount) |
+| G-B3 | HIGH | No UI to add matter members; Carol (Member) is locked out of template matters | **Pre-existing** (Epic 599, #1570, Phase 86: `members` left the tab groups; at the baseline the mounted `ProjectMembersPanel` was unreachable — `members` not in `validTabIds` or `TAB_GROUPS`, `project-tabs.tsx:64-85,221-223`; 615E only deleted the orphan mount) |
 | G-B7 | HIGH | Portal `/accept/<token>` PDF iframe refused (X-Frame-Options DENY) | **Pre-existing** (no frame-options config at the baseline or HEAD; Phase 87 change is formatting only) |
 | G-C9 | HIGH | No disbursement Write Off action in the UI | **Pre-existing** (baseline shows the reason only; FIXME from #1582) |
 | G-C10 | HIGH | Fee-note lines use the task title, not the time-entry narrative | **Pre-existing** (`InvoiceCreationService.java:1180` unchanged since Epic 82A) |
 | G-D1 | HIGH | Portal bare `/login` cannot resolve the firm; client emails carry no `orgId` | **Pre-existing** (GAP-L-66 short-circuit and link builders at the baseline) |
-| G-C5 | MED | SoA save emails the client a `/projects/<id>` link | **Pre-existing**; since 617A the link is redirect-covered (308 observed, C.5) |
-| G-C2 | MED | Adverse-party "Link to Matter" crash | **Pre-existing** (flat list read as `.content` at the baseline; known 610B D1 FIXME) |
-| G-D6 | MED | Audit filter needs `project`, not "matter" | **Pre-existing** mechanism (Epic 506A free text; ADR-342 keeps the stored literal) |
-| G-D11 a | MED | Matters "Fee earner —" | **Phase-87-introduced** (615A `project_role = 'lead'` vs template-written `LEAD`, a pre-existing data inconsistency; hypothesis-strength) |
-| G-D11 b + Home Debtors | MED | Clients "Outstanding —" and Home "No client owes fees." with 2 SENT fee notes | **Phase-87-introduced surfaces** (615B, 614B) on the pre-existing debtor rule `SENT AND due_date IS NOT NULL`, which excludes no-due-date fee notes by design (tested); every walk fee note has `due_date` NULL |
-| G-D11 c (+ G-B10) | MED | Clients / Home FICA "Not started" for COMPLETED checklists | **Pre-existing** rule (information-request projection), shown on new Phase 87 surfaces |
-| Settings › Documents overflow at 1440 px (`screenshots.md` #11) | — | page wider than the viewport | **Undetermined** (content moved unchanged; container new in 616A; needs a baseline A/B) |
+| G-D11 | MED | Matters "Fee earner —", Clients "Outstanding —" / FICA "Not started" | **Phase-87-introduced** (615A `project_role = 'lead'` vs template-written `LEAD`; 615B surface on the pre-existing debtor rule `SENT AND due_date IS NOT NULL`; the FICA part is a pre-existing rule) |
+| G-D21 | MED | Home Debtors "No client owes fees." with 2 SENT fee notes; Home FICA "5 of 5 Not started" | **Phase-87-introduced surface** (614B) on the same pre-existing rules as G-D11 |
+| G-A2 | LOW | Home breadcrumb still "Dashboard" | **Phase-87-introduced** (612A/614B renamed nav + page to Home; `breadcrumbs.tsx:9` kept "Dashboard"; consistent at the baseline) |
+| G-D17 | LOW | Settings "Tariffs" tab shows the hourly-rates page | **Phase-87-introduced** by architecture naming ("Tariffs (ex Rates)", 616A/616C) |
+| G-D18 | LOW | Settings "Xero" tab shows the whole Integrations page | **Phase-87-introduced** (616A label, 616D content move) |
+| G-D20 | LOW | Diary week card title cut to "G…" at 1440 px | **Phase-87-introduced** (new 613 surface) |
+| G-D15 | MED | Settings › Documents overflows at 1440 px (1519 px) | **Undetermined** (content moved unchanged; container new in 616A; needs a baseline A/B) |
+| G-B4, G-B14, G-D2, G-D5 (named by the review) | LOW / MED | Matter breadcrumb "Matter"; `?tab=` pins the panel; COMPLETED matter offers no Close; My work misses court dates | **Pre-existing** (same generic crumb via `t()` at the baseline; `urlTab ?? userTab` at the baseline `project-tabs.tsx:121`; ACTIVE-only guard at the baseline `matter-header-card.tsx:91`; task-only deadlines at the baseline `DashboardService.java:501`) |
+| G-C5, G-C2, G-D6 | MED | SoA email `/projects/` link; adverse-party Link crash; audit filter needs `project` | **Pre-existing** (as before; C.5 shows the 308 covering G-C5) |
+| the other 40 | various | see `gaps.md` | **Pre-existing** (unchanged files, FIXMEs recorded by #1582 before 607A, backend packages with rename-only Phase 87 commits, or literals at the baseline) |
 | e2e PROJ-02/03, CUST-02 | — | no-baseline e2e failures | **Pre-existing** |
 
-**Result: none of the 5 HIGH gaps was introduced by Phase 87.** Phase 87 introduced one defect class: the dense-list and Home aggregates that read empty for real data. That class rests on older rules or data.
+**Result: of all 59 gaps classified, 0 of the 5 HIGH were introduced by Phase 87.** Phase 87 introduced **6 gaps (2 MEDIUM, 4 LOW) in three classes**: the list/Home aggregates that read empty for real data (G-D11, G-D21; both rest on older rules or data), shell labels that do not match their page (G-A2, G-D17, G-D18), and a Diary layout truncation (G-D20). One gap is undetermined (G-D15); the other 52 are pre-existing.
 
 #### C.9.5 E.11 (test-suite gate) handling
 
@@ -1179,11 +1180,12 @@ These are **observed runs at byte-identical trees, not re-runs at HEAD**. No ful
 #### C.9.6 Deferred and deviations
 
 - **AI-core walk: DEFERRED, needs the user.** `qa/testplan/demos/ai-core-verification-keycloak.md` was not walked. Step V1 needs a human to enter a funded Anthropic key in `SetApiKeyDialog` (there is no env-var path), and V11.1 overwrites the key. The 90-day doc itself has no AI-execution step. Precedent: `tasks/phase86-subtraction.md` §7.5. On the Connections screenshot, AI is "Not Configured".
-- **Walker-made state, for honest reading of the totals** (`index.md`):
+- **Walker-made state.** The rows that ran on it are **DEFERRED** in the totals (617C review, `index.md` n3: 62.1, 68.2, 75.3–75.9, 75.11); the observed behaviour stays in their Evidence cells:
   - Sipho's sheriff disbursement was billed on INV-0004 instead of written off (G-C9), so the Day-75 happy path could hold.
   - Carol was made lead of the new collections matter so the Member could log time (G-B3).
   - Sipho's matter was Completed → Reopened → Closed (G-D2).
-  - Portal 68.1 used the `?orgId=mathebula-partners` driver shim after the doc's bare-`/login` path FAILED (G-D1). The step is recorded as FAIL.
+  - Portal 68.1 used the `?orgId=mathebula-partners` driver shim after the doc's bare-`/login` path FAILED (G-D1). 68.1 is FAIL; 68.2, which ran in the shim session, is DEFERRED.
+  - 61.1 keeps PASS: the doc names no matter lead, so choosing Carol is an input value (like Walker B's made-up client emails) and the step's outcome does not depend on it.
 - **REST-phrased steps:** 0.17, 45.7 and 85.9 were proven through the UI, the network panel or a read-only SELECT, or marked DEFERRED. No `/api/*` curl was used.
 - **Scenario text vs product:** these are recorded as FAIL or observations; **no scenario doc was edited** (CLAUDE.md §6). They are listed in C.12 (b).
 
@@ -1213,10 +1215,12 @@ Deck changes:
 - Render check (`screenshots.md` § "Deck render check"): 13/13 images loaded and nothing overflows at 1440 × 900 or 1920 × 1080. Verification shots are in `/tmp/617c-deck-check/` (ephemeral).
 
 **Gaps visible in the shots are left visible:**
-- Debtors reads "No client owes fees." and FICA reads "Not started" on Home and the Clients table (G-D11).
-- Matters shows "Fee earner —".
-- The Documents settings page overflows horizontally.
-- The portal matter card has no Closed status.
+- Debtors reads "No client owes fees." and FICA reads "Not started" on Home (G-D21) and the Clients table (G-D11).
+- Matters shows "Fee earner —" (G-D11).
+- The Documents settings page overflows horizontally (G-D15).
+- The portal matter card has no Closed status (G-D19).
+- Also logged from the shots: G-D16 ("PRO" badge), G-D17 ("Tariffs" tab = rates), G-D18 ("Xero" tab = Integrations page), G-D20 (Diary title truncation).
+- The slides show the product truthfully, defects included. Re-shoot them after the G-D11 / G-D21 fix (C.12 a).
 
 At deck scale (283–382 px per thumbnail) the text is not readable.
 
@@ -1258,7 +1262,7 @@ Each of these needs its own one-fix PR or an explicit user decision. 617C fixed 
   - **G-C9:** disbursement Write Off action and dialog. The API exists.
   - **G-C10:** fee-note line description should carry the time-entry narrative.
   - **G-D1:** the portal must resolve the firm without the `?orgId=` shim (resolve by email, or put `orgId` in every client email link).
-- **MEDIUM (22):**
+- **MEDIUM (24):**
   - Matter pages: G-A6 (New Matter "Conflict Check — Coming Soon"), G-B9 (promoted fields not inline), G-B14 (`?tab=` pins the panel).
   - Documents and rendering: G-B5 (engagement-letter branding), G-B18 (OTP clauses), G-C4 (SoA preview unbounded width), G-C7 (fee-note letterhead / brand / bank details).
   - Activity feed: G-B8 (acceptance events missing, raw keys), G-D9 (trust events missing).
@@ -1269,21 +1273,20 @@ Each of these needs its own one-fix PR or an explicit user decision. 617C fixed 
   - Matter closure: G-D2 (COMPLETED → Close not offered), G-D3 (retention end date), G-D7 (admin offered the closure override).
   - Reports and My work: G-D4 (report CSV/PDF export fails), G-D5 (My work misses court dates).
   - Audit: G-D6 (audit filter needs raw keys).
-  - **G-D11 (Phase-87-introduced lists/Home aggregates):**
+  - Settings layout: G-D15 (Documents page overflows at 1440 px; attribution undetermined).
+  - **G-D11 + G-D21 (Phase-87-introduced lists/Home aggregates):**
     - Fee earner: `MatterListRowRepository.java:46` and `ProjectMemberRepository.java:40` compare `'lead'`, but template instantiation writes `"LEAD"` (`ProjectTemplateService.java:569,739`). Fix the data/compare at the root; G-D13 has the same suspected cause.
-    - Outstanding / Debtors: SENT fee notes without a due date read as "no debt".
+    - Outstanding / Debtors (Clients table, Home Debtors G-D21): SENT fee notes without a due date read as "no debt".
     - FICA: computed from information requests, not checklists (also G-B10).
-- **LOW (25), as fix PRs:**
-  - Terminology and label copy: G-A2, G-A4, G-A5, G-B1, G-C3, G-D10 (one same-class cluster; needs authorisation to bundle), G-A7, G-C12, G-B4.
-  - Visual: G-A3 (sidebar brand contrast).
+- **LOW (30), as fix PRs:**
+  - Terminology and label copy: G-A4, G-A5, G-B1, G-C3, G-D10 (one same-class cluster; needs authorisation to bundle), G-A7, G-C12, G-B4.
+  - Visual: G-A3 (sidebar brand contrast), G-D20 (Diary week title truncation, Phase-87-introduced).
+  - Shell labels (Phase-87-introduced): G-A2 (Home breadcrumb), G-D17 ("Tariffs" tab shows rates; architecture naming, needs a wording decision), G-D18 ("Xero" tab shows the whole Integrations page).
+  - Tier remnant: G-D16 ("PRO" badge on the AI Assistant card).
+  - Portal: G-D19 (matter card has no status).
   - Behaviour: G-B2, G-B6, G-B10 (FICA card; same root as G-D11 FICA), G-B13, G-B16, G-C6, G-D12, G-D13.
   - The remaining LOW gaps (G-A1, G-B15, G-B17, G-B19, G-C1, G-C8, G-D8) are product decisions, listed in (b).
-- **Not yet in `gaps.md`** (observations from `screenshots.md`; each needs a gap row and a severity):
-  - Settings › Documents overflows at 1440 px (Undetermined attribution).
-  - "PRO" badge on the AI Assistant card (no plan tiers exist).
-  - The Fees › "Tariffs" tab renders the hourly-rates page.
-  - The portal matter card has no Closed status.
-  - The Diary event title is cut to "G…" at 1440 px.
+- **Deck re-shoot:** re-shoot `home-*.png`, `matters-table.png`, `clients-table.png` after the G-D11 fix; current shots show 'No client owes fees.' / 'Fee earner —'. (617C.3 required real-data shots, so the current slides show the product as it is.)
 - **E2E:**
   - The six carried legal-lifecycle failures (C.8), one fix PR each.
   - `settings/packs.spec.ts:94` PACK-01 (strict mode).
@@ -1378,4 +1381,6 @@ New entries are in `tasks/lessons.md` under "Phase 87 closure lessons (617C, 202
   - the main checkout's stale `backend/target`;
   - the Keycloak two-step login;
   - dense-list aggregates need a real-data walk;
-  - code-archaeology attribution.
+  - code-archaeology attribution;
+  - workarounds make downstream PASS rows unearned (617C review);
+  - attribution scope must match the claim (617C review).

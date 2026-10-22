@@ -1,0 +1,14 @@
+# customers, filter e2e/tests/customers/ (stack 2) — source: /tmp/617c-e2e-customers-stack2.log (ephemeral)
+## summary
+  2 failed
+  2 skipped
+  12 did not run
+  4 passed (31.8s)
+## failing titles (line numbers stripped)
+[chromium] › e2e/tests/customers/customer-crud.spec.ts › CUST-01: Customer CRUD › Create customer with required fields
+[chromium] › e2e/tests/customers/customer-lifecycle.spec.ts › CUST-02: Customer Lifecycle › PROSPECT -> ONBOARDING
+## first error line per failure (with line numbers)
+1) [chromium] › e2e/tests/customers/customer-crud.spec.ts:47:7 › CUST-01: Customer CRUD › Create customer with required fields 
+          Error: locator.fill: Error: strict mode violation: getByLabel('Name') resolved to 2 elements:
+2) [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:99:7 › CUST-02: Customer Lifecycle › PROSPECT -> ONBOARDING 
+          Test timeout of 30000ms exceeded.

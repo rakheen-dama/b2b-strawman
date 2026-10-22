@@ -1,0 +1,52 @@
+# Walker C2 — Day 90 sweeps (Playwright MCP, logged in as Thandi, 2026-10-22 ~16:45Z)
+# Method: browser_run_code_unsafe navigated each URL, waited 2.2 s, read body innerText, regex
+#   \b(Projects?|projects?|Customers?|customers?|Invoices?|invoices?)\b on each visible line; console 'error' + pageerror listeners attached.
+
+## 90.3 sidebar (all six zones expanded) — 28 links
+TODAY: Home /dashboard · My work /my-work · Diary /diary
+MATTERS: Matters · New matter · Conflict check · Adverse parties · AI reviews
+CLIENTS: Clients · FICA & compliance · Data requests
+FEES: Unbilled work · Fee notes · Fee runs · Debtors · Disbursements · Tariffs
+TRUST: Overview · Transactions · Client ledgers · Reconciliation · Interest · Investments · Trust reports (7)
+FIRM: Team · Reports · Audit trail · Settings
+Zone buttons: TODAY MATTERS CLIENTS FEES TRUST FIRM. No Projects/Customers/Invoices/Engagements/Pipeline/Retainers items.
+
+## 90.1 / 90.5 top-level nav pages (28) — console errors: 0 (no 'error' console entries, no pageerror)
+Leaks (visible text):
+- /dashboard (Home): Recent activity "Thandi Mathebula performed invoice.sent", "... performed project.reopened", "... performed project.completed"; breadcrumb "Dashboard"
+- /my-work: section heading "By Project"
+- /reports: "Invoice Aging Report — Outstanding invoices grouped by age bucket", section "Project", "Project Profitability Report — Revenue vs. cost per project", "Timesheet Report — Time entries grouped by member, project, or date"
+- /settings/firm?tab=audit-trail: entity column "project <id>", "invoice <id>", "customer <id>"; labels "Invoice", "Project Reopened", "Project Completed", "Project Created From Template", "Customer Lifecycle Transitioned" (15 lines)
+Breadcrumb raw segments: "Matters › new", "Compliance › requests", "Fee notes › billing-runs", "Trust Accounting › transactions / reconciliation / interest / investments" (lower-case route slugs)
+Heading/nav mismatches: nav "Fee runs" → h1 "Fee notes"; nav "Debtors" → h1 "Collections"; Trust zone "Overview" → h1 "Trust Accounting"
+All other 22 pages: 0 leak lines.
+
+## 90.1 settings: 31 tabs across 5 families (firm 8, matters 7, documents 4, fees 6, connections 6). 15 tabs with leak lines (incl. audit-trail), console errors 0:
+- firm?tab=compliance: "Customers inactive for this many days will be flagged as dormant."
+- firm?tab=features: "Customer document-request workflows…", "Batch invoice generation across multiple customers…"
+- matters?tab=naming: "new projects will be automatically named…", "{name} — The project name…", "{customer.name} — The linked customer's name"
+- matters?tab=custom-fields: "Project category or type", "(projects with matter_type …)", "matter (project) entities", "Project Info", "Common project metadata fields"
+- matters?tab=tags: "Manage tags for projects, tasks, and customers."
+- matters?tab=checklists: "…used during customer onboarding."
+- documents?tab=templates: "Invoice Cover Letter", "Cover letter for invoices", "Project Summary", "Project Summary Report"
+- fees?tab=tariffs: "Existing entries and invoices retain their original snapshots"
+- fees?tab=tax: "Label shown on invoices…", "tax rates applied to invoice line items"
+- fees?tab=fee-runs: "Customer count above which batch generation runs asynchronously"
+- fees?tab=collections: "overdue-invoice reminder stages", "Overdue-Invoice Reminders", "overdue invoices"
+- connections?tab=xero: "invoice sync", "Accept online payments from customers", "sync invoices and contacts"
+- connections?tab=notifications: "Project Completed", "Project Archived", "Invoice Approved/Sent/Paid/Voided"
+- connections?tab=automations: "Customer Status", "Notifies project owner…", "Project Status", "project budget threshold", "Overdue Invoice Reminder", "Sends email to customer when invoice becomes overdue…"
+- (audit-trail as above)
+
+## 90.2 create dialogs
+- New Client (step 1): Name, Type, Email, Phone, Tax Number, Notes, Address block, Country, Contact block, Business Details — promoted fields native; step 2 "SA Legal — Client Details" holds only non-promoted fields (ID/Passport, Postal Address, Preferred Correspondence, Referred By). 0 leaks.
+- New Matter (/matters/new page + template dialog): Client, Description, Template, Matter Name, Reference Number, Priority, Work Type native. 0 leaks.
+- New Task: Title, Description, Priority, Type, Due Date, Estimated Hours, Recurrence, Assign to. Leak: subtitle "Add a new task to this project."
+- New fee note: "Generate fee note — Create a new fee note for Lerato Mthembu from unbilled time entries and expenses", From/To date, Currency. 0 leaks.
+
+## 90.4 tier removal
+- /settings/firm?tab=subscription: "Billing · Trial · Manual · Managed Account — Your account is managed by your administrator." No tier/upgrade text.
+- /team: "3 members", inline invite form (Email, Role Member/Admin, Send Invite), no seat limit; header "5 members (2 pending)" and Pending Invitations still lists carol@ and bob@ (both registered) — G-D12.
+
+## 90.6 Mailpit sweep (dev :8025 API)
+total 19; search subject:"Undelivered" → 0; from:mailer-daemon → 0; backend.log MailSendException/"Failed to send" lines → 0; tenant email_delivery_log: SENT 6 (no FAILED/BOUNCED rows).

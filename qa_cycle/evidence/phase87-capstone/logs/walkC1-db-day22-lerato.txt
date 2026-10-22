@@ -1,0 +1,22 @@
+# Walker C1 — Day 22 Lerato client + checklist (read-only SELECTs, 2026-10-22T16:00:44Z)
+customer|32d5764d-0965-4cf6-9daf-7e51c190ee71|ACTIVE|3 Church Square|Pretoria|ZA|{"id_passport_number": "9203150123087"}
+checklist_instance|3b1ab7d4-a5e4-4637-983f-4d91924e8a46|COMPLETED|2026-10-22 16:00:32.152509+00
+audit|customer.lifecycle.transitioned|2026-10-22 16:00:32.161451+00
+audit|checklist.instance.completed|2026-10-22 16:00:32.152621+00
+audit|customer.lifecycle.transitioned|2026-10-22 15:59:19.364288+00
+audit|customer.created|2026-10-22 15:59:09.751493+00
+audit|checklist.instance.completed|2026-10-22 15:51:03.413013+00
+audit|checklist.instance.completed|2026-10-22 15:45:35.630398+00
+
+# Day 22 RAF matter (2026-10-22T16:01:22Z)
+project|a31bde33-836a-4555-a2ec-a8d3e380ae0d|Lerato Mthembu — RAF Claim (MVA 2025-11-03)|ACTIVE|LITIGATION|32d5764d-0965-4cf6-9daf-7e51c190ee71|{"court_name": "Gauteng High Court", "case_number": "RAF/2026/0042"}
+member|Bob Ndlovu|LEAD
+task|3873fc4f-f6cb-4220-ad9d-b7c655db4cf7|Initial RAF claim assessment & instructions|OPEN|Bob Ndlovu
+task|6d81b03b-e4bf-44bd-b254-598fec7ee793|File RAF1 claim form + supporting documents (within 3-year prescription)|OPEN|Bob Ndlovu
+task|fc0f6ddd-5172-4633-8f3d-66bab66248a5|Statutory medical reports & assessments|OPEN|Bob Ndlovu
+task|f96567c3-8a7d-40ff-83f4-c7d0db2ca17e|Insurer correspondence -- RAF tariff schedule|OPEN|unassigned
+task|f0f9dd24-9de9-46a6-a167-64ce0be49042|Settlement negotiation with RAF|OPEN|Bob Ndlovu
+task|219799c0-2548-48fe-bd85-99cc9f5cbeea|Court action if no settlement (Section 24 RAF Act)|OPEN|Bob Ndlovu
+task|ced0b109-2b2d-4932-8271-37d8e932fa4b|Trial / hearing attendance|OPEN|Bob Ndlovu
+task|1fc4bea8-f20c-44a0-9f31-62c70481c20b|Settlement / judgment payout & costs|OPEN|Bob Ndlovu
+task|01070521-8a2e-4869-beba-d13c0930ffd3|Prescription monitoring (3-year claim, 5-year for damages)|OPEN|unassigned

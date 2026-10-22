@@ -1,0 +1,5 @@
+# Day 30 SoA (2026-10-22T16:12:11Z)
+generated_document|19a6ac83-7399-4adf-998f-e3b05f827f05|statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-22.pdf|21d5cb99-b5f0-4569-bfbc-ed025d08efaa|2026-10-22 16:10:33.233815+00
+statement-preview-container width (px) observed 2 s apart: 23690 -> 58250 -> 75578 -> 346922; statement-download-btn x=335729 -> 347249 (element never stable)
+Diagnostic DOM-dispatched click on statement-download-btn -> /tmp/617c-c1/statement-of-account-Sipho-Dlamini-v.-Standard-Bank-(civil).pdf 4.5 KB, 2 pages: fees R1 800,00 + VAT R270,00 = R2 070,00; disbursements SHERIFF_FEES R750,00; trust R0,00; closing balance owing R2 820,00; VAT Reg / File reference / Payment Instructions empty
+

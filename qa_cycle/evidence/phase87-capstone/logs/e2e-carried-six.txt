@@ -1,0 +1,26 @@
+# carried-six — current lines (grep by title at dac048f12)
+frontend/e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:282:  test("Alice: Trust account settings page loads", async ({ page }) => {
+frontend/e2e/tests/legal-lifecycle/day-30-billing.spec.ts:32:  test("Alice: Create fee note for Sipho Ndlovu (hourly + tariff + disbursement)", async 
+frontend/e2e/tests/legal-lifecycle/day-30-billing.spec.ts:159:  test("Alice: Create fee note for Apex Holdings (fixed fee R35,000 + VAT)", async ({ pa
+frontend/e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:41:  test("Alice: Start new bank reconciliation", async ({ page }) => {
+frontend/e2e/tests/legal-lifecycle/day-90-review.spec.ts:63:  test("Alice: Fee notes list shows multiple fee notes", async ({ page }) => {
+frontend/e2e/tests/legal-lifecycle/day-90-review.spec.ts:179:  test("Alice: Profitability dashboard — revenue, costs, margins for 4 clients", async ({
+frontend/e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:156:  test("Bob: Create sheriff-fee OFFICE_ACCOUNT disbursement + submit", async ({ pag
+
+# run 1 per-test status (✘ failed, - skipped/did-not-run, ✓ passed)
+  ✘  13 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:282:7 › Day 0 — Firm Setup › Alice: Trust account settings page loads
+  ✘  47 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:32:7 › Day 30 — First Billing Cycle › Alice: Create fee note for Sipho Ndlovu (hourly + tariff + disbursement)
+  ✘  48 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:159:7 › Day 30 — First Billing Cycle › Alice: Create fee note for Apex Holdings (fixed fee R35,000 + VAT)
+  ✘  54 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:41:7 › Day 45 — Reconciliation & Prescription › Alice: Start new bank reconciliation
+  ✘  77 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:63:7 › Day 90 — Quarter Review › Alice: Fee notes list shows multiple fee notes
+  ✘  82 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:179:7 › Day 90 — Quarter Review › Alice: Profitability dashboard — revenue, costs, margins for 4 clients
+  ✘   4 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:156:7 › Day 5 — Disbursements (Phase 67) › Bob: Create sheriff-fee OFFICE_ACCOUNT disbursement + submit
+
+# run 2 per-test status (✘ failed, - skipped/did-not-run, ✓ passed)
+  ✘  13 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:282:7 › Day 0 — Firm Setup › Alice: Trust account settings page loads
+  ✘  47 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:32:7 › Day 30 — First Billing Cycle › Alice: Create fee note for Sipho Ndlovu (hourly + tariff + disbursement)
+  -  48 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:159:7 › Day 30 — First Billing Cycle › Alice: Create fee note for Apex Holdings (fixed fee R35,000 + VAT)
+  ✘  54 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:41:7 › Day 45 — Reconciliation & Prescription › Alice: Start new bank reconciliation
+  ✘  77 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:63:7 › Day 90 — Quarter Review › Alice: Fee notes list shows multiple fee notes
+  -  82 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:179:7 › Day 90 — Quarter Review › Alice: Profitability dashboard — revenue, costs, margins for 4 clients
+  ✓   4 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:156:7 › Day 5 — Disbursements (Phase 67) › Bob: Create sheriff-fee OFFICE_ACCOUNT disbursement + submit

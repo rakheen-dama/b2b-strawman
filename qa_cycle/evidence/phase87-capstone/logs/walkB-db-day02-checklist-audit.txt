@@ -1,0 +1,46 @@
+# walkB Day 2 read-only SELECTs 2026-10-22T15:31:08Z
+                  id                  |  status   |         completed_at          | lifecycle_status 
+--------------------------------------+-----------+-------------------------------+------------------
+ 6eafdf75-1c91-444f-be52-8f9e5a67b12a | COMPLETED | 2026-10-22 15:30:56.760724+00 | ACTIVE
+(1 row)
+
+ERROR:  column "created_at" does not exist
+LINE 1: SELECT event_type, entity_type, created_at FROM tenant_5039f...
+                                        ^
+# audit_events (last 15 min)
+           event_type            |       entity_type       |          occurred_at          
+---------------------------------+-------------------------+-------------------------------
+ invitation.created              | pending_invitation      | 2026-10-22 15:16:50.327719+00
+ invitation.created              | pending_invitation      | 2026-10-22 15:16:56.561428+00
+ org_settings.updated            | org_settings            | 2026-10-22 15:19:11.701983+00
+ org_settings.tax_configured     | org_settings            | 2026-10-22 15:19:11.826473+00
+ org_settings.logo_uploaded      | org_settings            | 2026-10-22 15:19:18.335687+00
+ org_settings.updated            | org_settings            | 2026-10-22 15:19:28.386415+00
+ org_settings.tax_configured     | org_settings            | 2026-10-22 15:19:28.472586+00
+ billing_rate.created            | billing_rate            | 2026-10-22 15:19:52.269243+00
+ billing_rate.created            | billing_rate            | 2026-10-22 15:19:53.964991+00
+ billing_rate.created            | billing_rate            | 2026-10-22 15:19:55.153402+00
+ cost_rate.created               | cost_rate               | 2026-10-22 15:20:41.853235+00
+ cost_rate.created               | cost_rate               | 2026-10-22 15:20:43.055439+00
+ cost_rate.created               | cost_rate               | 2026-10-22 15:20:44.169083+00
+ trust_account.created           | trust_account           | 2026-10-22 15:23:49.371471+00
+ lpff_rate.created               | lpff_rate               | 2026-10-22 15:24:03.611086+00
+ conflict_check.performed        | conflict_check          | 2026-10-22 15:28:09.251089+00
+ customer.created                | customer                | 2026-10-22 15:28:41.949834+00
+ checklist.instance.created      | checklist_instance      | 2026-10-22 15:29:40.116536+00
+ customer.lifecycle.transitioned | customer                | 2026-10-22 15:29:40.117764+00
+ document.created                | document                | 2026-10-22 15:30:14.069071+00
+ document.uploaded               | document                | 2026-10-22 15:30:14.139266+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-22 15:30:29.619386+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-22 15:30:41.340325+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-22 15:30:43.618352+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-22 15:30:45.926863+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-22 15:30:48.251327+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-22 15:30:50.327969+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-22 15:30:52.619447+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-22 15:30:54.689065+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-22 15:30:56.758348+00
+ checklist.instance.completed    | checklist_instance      | 2026-10-22 15:30:56.7609+00
+ customer.lifecycle.transitioned | customer                | 2026-10-22 15:30:56.768806+00
+(32 rows)
+

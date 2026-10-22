@@ -1,0 +1,6 @@
+# legal-depth-ii run 2 (stack 2) — source: /tmp/617c-e2e-depth-run2.log (ephemeral)
+## summary
+  15 skipped
+  28 passed (1.3m)
+## failing titles (line numbers stripped)
+## first error line per failure (with line numbers)

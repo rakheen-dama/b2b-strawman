@@ -1,0 +1,52 @@
+# legal-depth-ii run 1 (stack 1) — source: /tmp/617c-e2e-depth-run1.log (ephemeral)
+## summary
+  15 failed
+  15 skipped
+  13 passed (1.5m)
+## failing titles (line numbers stripped)
+[chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts › Day 5 — Disbursements (Phase 67) › Alice: Sipho's matter Finance → Disbursements tab lists the disbursements
+[chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts › Day 5 — Disbursements (Phase 67) › Bob: Create sheriff-fee OFFICE_ACCOUNT disbursement + submit
+[chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts › Day 5 — Disbursements (Phase 67) › Bob: Navigate to Legal → Disbursements list page
+[chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Create matter using Property Transfer template
+[chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Fill property_address, erf_number, deeds_office
+[chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Generate Offer to Purchase document and save it to the matter
+[chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Send OTP for Acceptance via Phase 28 flow
+[chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Verify 10 conveyancing custom fields present on matter detail
+[chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice (Thandi): Open Statements tab on oldest matter
+[chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Save Statement — listed on the matter, PDF downloadable from the Documents tab
+[chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts › Day 75-85 — Matter Closure (Phase 67) › Alice (Thandi): Open Close Matter dialog on clean matter
+[chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts › Day 75-85 — Matter Closure (Phase 67) › Alice (Thandi): Override close with justification ≥20 chars
+[chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts › Day 75-85 — Matter Closure (Phase 67) › Alice: Advance to Step 2 + confirm close with CONCLUDED reason
+[chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts › Day 75-85 — Matter Closure (Phase 67) › Alice: Step 1 gate report renders all-green (happy path)
+[chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts › Day 75-85 — Matter Closure (Phase 67) › Alice: Verify override audit event captures override_used=true + justification
+## first error line per failure (with line numbers)
+1) [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:140:7 › Day 5 — Disbursements (Phase 67) › Bob: Navigate to Legal → Disbursements list page 
+          Error: A snapshot doesn't exist at frontend/e2e/screenshots/legal-depth-ii/day-05-disbursements-list-empty.png, writing actual.
+2) [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:156:7 › Day 5 — Disbursements (Phase 67) › Bob: Create sheriff-fee OFFICE_ACCOUNT disbursement + submit 
+          Error: A snapshot doesn't exist at frontend/e2e/screenshots/legal-depth-ii/day-05-disbursement-sheriff-fee-created.png, writing actual.
+3) [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:422:7 › Day 5 — Disbursements (Phase 67) › Alice: Sipho's matter Finance → Disbursements tab lists the disbursements 
+          Error: A snapshot doesn't exist at frontend/e2e/screenshots/legal-depth-ii/day-05-matter-unbilled-disbursements-summary.png, writing actual.
+4) [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:176:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Create matter using Property Transfer template 
+          Error: A snapshot doesn't exist at frontend/e2e/screenshots/legal-depth-ii/day-14-conveyancing-matter-created.png, writing actual.
+5) [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:234:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Verify 10 conveyancing custom fields present on matter detail 
+          Error: A snapshot doesn't exist at frontend/e2e/screenshots/legal-depth-ii/day-14-conveyancing-matter-custom-fields.png, writing actual.
+6) [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:272:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Fill property_address, erf_number, deeds_office 
+          Error: A snapshot doesn't exist at frontend/e2e/screenshots/legal-depth-ii/day-14-conveyancing-fields-populated.png, writing actual.
+7) [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:297:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Generate Offer to Purchase document and save it to the matter 
+          Error: A snapshot doesn't exist at frontend/e2e/screenshots/legal-depth-ii/day-14-otp-document-generated.png, writing actual.
+8) [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:360:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Send OTP for Acceptance via Phase 28 flow 
+          Error: A snapshot doesn't exist at frontend/e2e/screenshots/legal-depth-ii/day-14-otp-acceptance-request-sent.png, writing actual.
+9) [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:192:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice (Thandi): Open Statements tab on oldest matter 
+          Error: A snapshot doesn't exist at frontend/e2e/screenshots/legal-depth-ii/day-30-matter-statements-tab.png, writing actual.
+10) [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:233:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Save Statement — listed on the matter, PDF downloadable from the Documents tab 
+          Error: A snapshot doesn't exist at frontend/e2e/screenshots/legal-depth-ii/day-30-statement-saved-list.png, writing actual.
+11) [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:223:7 › Day 75-85 — Matter Closure (Phase 67) › Alice (Thandi): Open Close Matter dialog on clean matter 
+          Error: A snapshot doesn't exist at frontend/e2e/screenshots/legal-depth-ii/day-75-closure-dialog-opened.png, writing actual.
+12) [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:233:7 › Day 75-85 — Matter Closure (Phase 67) › Alice: Step 1 gate report renders all-green (happy path) 
+          Error: A snapshot doesn't exist at frontend/e2e/screenshots/legal-depth-ii/day-75-closure-gate-report-all-green.png, writing actual.
+13) [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:256:7 › Day 75-85 — Matter Closure (Phase 67) › Alice: Advance to Step 2 + confirm close with CONCLUDED reason 
+          Error: A snapshot doesn't exist at frontend/e2e/screenshots/legal-depth-ii/day-75-matter-closed-success.png, writing actual.
+14) [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:352:7 › Day 75-85 — Matter Closure (Phase 67) › Alice (Thandi): Override close with justification ≥20 chars 
+          Error: A snapshot doesn't exist at frontend/e2e/screenshots/legal-depth-ii/day-85-override-justification-entered.png, writing actual.
+15) [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:384:7 › Day 75-85 — Matter Closure (Phase 67) › Alice: Verify override audit event captures override_used=true + justification 
+          Error: A snapshot doesn't exist at frontend/e2e/screenshots/legal-depth-ii/day-85-audit-log-override-event.png, writing actual.

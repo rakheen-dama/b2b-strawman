@@ -1,0 +1,10 @@
+2026-10-22T15:15:18.066411Z INFO TenantProvisioningService - Provisioning tenant schema tenant_5039f2d497cf for org mathebula-partners on shard primary
+2026-10-22T15:15:18.072712Z INFO TenantProvisioningService - Created schema tenant_5039f2d497cf
+2026-10-22T15:15:19.184461Z INFO TenantProvisioningService - Ran tenant migrations for schema tenant_5039f2d497cf
+2026-10-22T15:15:19.674754Z INFO TenantProvisioningService - Created mapping mathebula-partners -> tenant_5039f2d497cf on shard primary
+2026-10-22T15:15:19.678428Z INFO TenantProvisioningService - Successfully provisioned tenant tenant_5039f2d497cf for org mathebula-partners
+2026-10-22T15:15:19.678698Z INFO AccessRequestApprovalService - Provisioned tenant schema for org 2c4034d3-f76d-4323-a172-7eabd018657d (slug=mathebula-partners)
+2026-10-22T15:15:20.002363Z INFO AccessRequestApprovalService - Sent invitation to thandi@mathebula-test.local for org 2c4034d3-f76d-4323-a172-7eabd018657d
+2026-10-22T15:15:20.033006Z WARN KeycloakProvisioningClient - Could not find Keycloak user for email thandi@mathebula-test.local to set as org creator
+2026-10-22T15:15:20.043580Z WARN KeycloakProvisioningClient - Cannot set password — no Keycloak user found for email thandi@mathebula-test.local
+--- read-only: SELECT vertical_profile, default_currency FROM tenant_5039f2d497cf.org_settings => legal-za|ZAR

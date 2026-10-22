@@ -1,0 +1,3 @@
+# read-only SELECTs, tenant_5039f2d497cf, 2026-10-22 ~15:24Z
+trust_accounts: b53ed14e-1944-4941-bb63-dfa18d8d138a|Mathebula & Partners Trust Account|Standard Bank|GENERAL|primary=t|ACTIVE
+lpff_rates: 5820ebdf-0dea-4eaf-9893-26c5b3378ac0|account b53ed14e-…|2026-10-22|rate 0.0650|lpff_share 0.0000|Test rate (90-day demo)

@@ -1,0 +1,33 @@
+# Walker C2 — Days 80–90 (read-only SELECTs, 2026-10-22T16:49:43Z)
+               actor_id               |   actor_type   | count 
+--------------------------------------+----------------+-------
+ 26ee05c9-159c-4fb8-8939-f53a72bb514c | USER           |   153
+ cf661689-f653-4dfb-8953-4a5203ef3fc6 | USER           |    74
+ 26ee05c9-159c-4fb8-8939-f53a72bb514c | SYSTEM         |     6
+                                      | SYSTEM         |     6
+ e627a33b-0af0-481f-bed1-a3776419c105 | USER           |     6
+                                      | PORTAL_CONTACT |     3
+(6 rows)
+
+ entity_type | count 
+-------------+-------
+ project     |    12
+(1 row)
+
+          occurred_at          |          event_type          |  entity_type   |                                                                                                                           details                                                                                                                           
+-------------------------------+------------------------------+----------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-10-22 16:37:28.230119+00 | matter_closure.closed        | project        | {"reason": "CONCLUDED", "actor_name": "Thandi Mathebula", "project_id": "458bc331-d51e-4a94-99d8-32ecad3de00e", "override_used": false, "closure_log_id": "772f5cc9-ad5d-4505-8d36-32a989e46ed8"}
+ 2026-10-22 16:43:04.577028+00 | matter_closure.closed        | project        | {"reason": "CONCLUDED", "actor_name": "Thandi Mathebula", "project_id": "bb2ce7c7-17d1-4121-8ac1-ee907863a7be", "override_used": true, "closure_log_id": "9c590df9-2f4a-4013-bdb9-517027c89cf3"}
+ 2026-10-22 16:43:04.577454+00 | matter.closure.override_used | matter_closure | {"reason": "CONCLUDED", "actor_name": "Thandi Mathebula", "project_id": "bb2ce7c7-17d1-4121-8ac1-ee907863a7be", "justification": "Trust remainder of R12,000 earmarked for final Section 35 payout pending master approval — closing under owner override"}
+(3 rows)
+
+              min              |              max              | count 
+-------------------------------+-------------------------------+-------
+ 2026-10-22 15:15:19.252989+00 | 2026-10-22 16:43:04.879468+00 |   248
+(1 row)
+
+ status | count 
+--------+-------
+ SENT   |     6
+(1 row)
+

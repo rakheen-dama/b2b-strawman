@@ -1,0 +1,55 @@
+# 617C review fix (2026-10-22): '## CodeRabbit:' line from every Phase 87 PR body
+# Command: for n in 1588..1640 (skip 1633, tooling PR): gh pr view $n --json body --jq .body | grep -E '## CodeRabbit:' | head -1 | cut -c1-230
+#1588 | ## CodeRabbit: REVIEWED — 3 findings, addressed in fixer pass
+#1589 | ## CodeRabbit: REVIEWED — no actionable findings
+#1590 | ## CodeRabbit: REVIEWED — 8 findings, all frontend callers still on old paths/fields (activity, budget, comments, dashboard health/project-health, team-workload `matterName`, document list + upload-init, tasks). Not addressed in t
+#1591 | ## CodeRabbit: REVIEWED — 1 finding, addressed by deferral to a dedicated bugfix PR (pre-existing `.content`-on-flat-list bug in `legal/adverse-parties/actions.ts:136`; this PR only changed the path literal; one-fix-per-PR per CLA
+#1592 | ## CodeRabbit: REVIEWED — 1 finding, deferred with rationale (pre-existing tautological lifecycle-guard assertions in `customer-lifecycle.spec.ts`; out of rename-slice scope per CLAUDE.md §7, not observable until 607F reseeds; tra
+#1593 | ## CodeRabbit: REVIEWED — 1 findings, addressed in fixer pass
+#1594 | ## CodeRabbit: REVIEWED — 1 finding, triaged in fixer pass (no code change: by-design, owned by 608C/608D)
+#1595 | ## CodeRabbit: REVIEWED — 1 finding (minor, pre-existing, outside diff), triaged as follow-up — no code change
+#1596 | ## CodeRabbit: REVIEWED — no actionable findings
+#1597 | ## CodeRabbit: REVIEWED — 1 findings, addressed in fixer pass
+#1598 | ## CodeRabbit: REVIEWED — 4 findings, addressed in fixer pass
+#1599 | ## CodeRabbit: REVIEWED — 1 finding (trivial nitpick), triaged: deferred with backstop
+#1600 | ## CodeRabbit: REVIEWED — no actionable findings
+#1601 | ## CodeRabbit: REVIEWED — 15 findings (13 inline + 2 nitpicks); 2 addressed in fixer pass, 13 triaged
+#1602 | ## CodeRabbit: REVIEWED — 1 finding, triaged: out of scope (pre-existing backend gap), tracked as follow-up
+#1603 | ## CodeRabbit: REVIEWED — 3 findings, all the planned 609F→609G portal-caller cutover (PortalProjectController routes, PortalAuthController exchange `clientId/clientName`, PortalProfileController `/portal/me` `clientName`) already
+#1604 | ## CodeRabbit: REVIEWED — 1 finding, triaged (pre-existing, out of scope)
+#1605 | ## CodeRabbit: REVIEWED — no actionable findings
+#1606 | ## CodeRabbit: REVIEWED — no actionable findings
+#1607 | ## CodeRabbit: REVIEWED — no actionable findings
+#1608 | ## CodeRabbit: DEFERRED — not arrived after full review cycle; superpowers reviews are the merge gate
+#1609 | ## CodeRabbit: REVIEWED — no actionable findings
+#1610 | ## CodeRabbit: DEFERRED — not arrived after full review cycle; superpowers reviews are the merge gate (CodeRabbit posted "Review limit reached" — on-demand review of 71 billable files ($17.75) not triggered)
+#1611 | ## CodeRabbit: REVIEWED — no actionable findings
+#1612 | ## CodeRabbit: REVIEWED — no actionable findings
+#1613 | ## CodeRabbit: REVIEWED — 1 findings, addressed in fixer pass
+#1614 | ## CodeRabbit: REVIEWED — 2 findings, addressed in fixer pass
+#1615 | ## CodeRabbit: REVIEWED — 2 findings, addressed in fixer pass
+#1616 | ## CodeRabbit: REVIEWED — no actionable findings
+#1617 | ## CodeRabbit: REVIEWED — no actionable findings
+#1618 | ## CodeRabbit: REVIEWED — 1 finding (Minor: palette page filter ignores `requiredModule`), deferred to 612B.1 by orchestrator scope ruling; rationale replied on the thread
+#1619 | ## CodeRabbit: REVIEWED — 1 findings, addressed in fixer pass
+#1620 | ## CodeRabbit: REVIEWED — no actionable findings
+#1621 | ## CodeRabbit: REVIEWED — 2 findings (1 Minor fixed in d340a8245 after reproducing the 500; 1 Trivial nitpick — SQL-side matter scoping for court dates/prescriptions — deferred to follow-up with reply, spec 613A.1 prescribes the e
+#1622 | ## CodeRabbit: REVIEWED — 1 findings, addressed in fixer pass
+#1623 | ## CodeRabbit: REVIEWED — 2 findings, addressed in fixer pass
+#1624 | ## CodeRabbit: REVIEWED — 3 findings, addressed in fixer pass
+#1625 | ## CodeRabbit: REVIEWED — 1 findings, addressed in fixer pass
+#1626 | ## CodeRabbit: REVIEWED — no actionable findings
+#1627 | ## CodeRabbit: REVIEWED — no actionable findings
+#1628 | ## CodeRabbit: REVIEWED — no actionable findings
+#1629 | ## CodeRabbit: REVIEWED — 1 finding (Minor) on eb05e6583, declined with evidence; CodeRabbit withdrew it
+#1630 | ## CodeRabbit: REVIEWED — 1 findings, addressed in fixer pass
+#1631 | ## CodeRabbit: REVIEWED — 1 findings, addressed in fixer pass
+#1632 | ## CodeRabbit: REVIEWED — 2 findings (Minor): 1 fixed in 4e3c00b3e, 1 outside-diff declined with evidence (pre-existing, D15)
+#1634 | ## CodeRabbit: REVIEWED — no actionable findings
+#1635 | ## CodeRabbit: REVIEWED — no actionable findings
+#1636 | ## CodeRabbit: DEFERRED — not arrived after full review cycle; superpowers reviews are the merge gate
+#1637 | ## CodeRabbit: REVIEWED — 1 findings, addressed in fixer pass
+#1638 | ## CodeRabbit: REVIEWED — no actionable findings
+#1639 | ## CodeRabbit: DEFERRED — not arrived after full review cycle; superpowers reviews are the merge gate
+#1640 | ## CodeRabbit: REVIEWED — 3 findings, addressed in fixer pass
+# lines: 52 of 52; DEFERRED: 1610 1608 1639 1636 

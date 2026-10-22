@@ -1,0 +1,25 @@
+# 617C.4 closure — targeted contract tests (worktree backend, HEAD dac048f12) — run finished 2026-10-22T19:28:57+0200
+# command: cd backend && ./mvnw test -Dtest='WireVocabularyContractTest,EntityTypeLiteralStabilityTest,McpToolContractTest,BaselineSchemaParityTest,AuditEventTypeRegistryTest' -Dsurefire.failIfNoSpecifiedTests=false -q
+# full log (ephemeral): /tmp/617c-contract-tests.log ; marker: EXIT=0
+## log lines
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.diffplug.spotless.java.ModuleHelper (file:/Users/rakheendama/.m2/repository/com/diffplug/spotless/spotless-lib/4.3.0/spotless-lib-4.3.0.jar)
+WARNING: Please consider reporting this to the maintainers of class com.diffplug.spotless.java.ModuleHelper
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+19:28:42.162 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/worktree-epic-617C/backend/target/test-classes/archunit.properties
+19:28:42.280 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.provisioning.BaselineSchemaParityTest]: BaselineSchemaParityTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+19:28:42.423 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.provisioning.BaselineSchemaParityTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[WireVocabularyContractTest] DTO offenders in scope io.b2mash.b2b.b2bstrawman (excluding .mcp): 0
+[WireVocabularyContractTest] ROUTE offenders in scope io.b2mash.b2b.b2bstrawman (excluding .mcp): 0
+## surefire XML per class (<testcase> count, failure/error/skipped elements)
+TEST-io.b2mash.b2b.b2bstrawman.project.WireVocabularyContractTest.xml: tests="2" errors="0" skipped="0" failures="0" | testcase=2 failure=0 error=0 skipped=0
+TEST-io.b2mash.b2b.b2bstrawman.audit.EntityTypeLiteralStabilityTest.xml: tests="3" errors="0" skipped="0" failures="0" | testcase=3 failure=0 error=0 skipped=0
+TEST-io.b2mash.b2b.b2bstrawman.mcp.McpToolContractTest.xml: tests="1" errors="0" skipped="0" failures="0" | testcase=1 failure=0 error=0 skipped=0
+TEST-io.b2mash.b2b.b2bstrawman.provisioning.BaselineSchemaParityTest.xml: tests="5" errors="0" skipped="0" failures="0" | testcase=5 failure=0 error=0 skipped=0
+TEST-io.b2mash.b2b.b2bstrawman.audit.AuditEventTypeRegistryTest.xml: tests="13" errors="0" skipped="0" failures="0" | testcase=13 failure=0 error=0 skipped=0

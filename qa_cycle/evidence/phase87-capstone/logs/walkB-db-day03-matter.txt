@@ -1,0 +1,10 @@
+                  id                  |                  name                  | work_type  |             customer_id              |                                     custom_fields                                     | status 
+--------------------------------------+----------------------------------------+------------+--------------------------------------+---------------------------------------------------------------------------------------+--------
+ 458bc331-d51e-4a94-99d8-32ecad3de00e | Sipho Dlamini v. Standard Bank (civil) | LITIGATION | ce83c576-9bd9-4c7a-80b9-39100ade80d7 | {"court_name": "Gauteng High Court, Johannesburg", "case_number": "JHB/CIV/2026/001"} | ACTIVE
+(1 row)
+
+ member_rows 
+-------------
+           0
+(1 row)
+

@@ -1,0 +1,13 @@
+# 617C.4 closure redirect probe — 2026-10-22T17:29:49Z — e2e stack :3001 (built from worktree dac048f12, stack 4 of 617C.2)
+projects/x -> HTTP/1.1 308 Permanent Redirect location: /org/e2e-test-org/matters/x 
+customers/x -> HTTP/1.1 308 Permanent Redirect location: /org/e2e-test-org/clients/x 
+calendar -> HTTP/1.1 308 Permanent Redirect location: /org/e2e-test-org/diary 
+court-calendar?tab=prescription -> HTTP/1.1 308 Permanent Redirect location: /org/e2e-test-org/diary?tab=prescription&types=PRESCRIPTION&view=list 
+settings/general -> HTTP/1.1 308 Permanent Redirect location: /org/e2e-test-org/settings/firm?tab=general 
+settings/project-templates/x -> HTTP/1.1 308 Permanent Redirect location: /org/e2e-test-org/settings/matters/templates/x 
+
+# portal redirect probe — 2026-10-22T17:30:05Z — worktree portal dev server :3002 (dac048f12), started for this probe and stopped after
+/projects -> HTTP/1.1 308 Permanent Redirect location: /matters 
+/projects/abc-123 -> HTTP/1.1 308 Permanent Redirect location: /matters/abc-123 
+# portal dev server: started from worktree portal/ with 'pnpm dev' (NODE_OPTIONS=""), probed, then killed; portal/next-env.d.ts restored with git checkout. Full dev log (ephemeral): /tmp/617c-closure/portal-dev.log
+# config redirects() run before the auth proxy, so no login was needed for either probe.

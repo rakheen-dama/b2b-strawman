@@ -1,0 +1,6 @@
+# walkB 1.9/1.10 read-only SELECT (tenant_5039f2d497cf.customers) 2026-10-22T15:29:21Z
+                  id                  |     name      |           email           |      phone      | customer_type | lifecycle_status | status |   address_line1    |     city     | postal_code | country | tax_number |              custom_fields              
+--------------------------------------+---------------+---------------------------+-----------------+---------------+------------------+--------+--------------------+--------------+-------------+---------+------------+-----------------------------------------
+ ce83c576-9bd9-4c7a-80b9-39100ade80d7 | Sipho Dlamini | sipho.dlamini@email.co.za | +27-82-555-0101 | INDIVIDUAL    | PROSPECT         | ACTIVE | 42 Commissioner St | Johannesburg | 2001        | ZA      |            | {"id_passport_number": "8501015800083"}
+(1 row)
+

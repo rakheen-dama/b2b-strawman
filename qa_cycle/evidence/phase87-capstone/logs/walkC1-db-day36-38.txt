@@ -1,0 +1,11 @@
+# Day 36-38 Sipho fee note (2026-10-22T16:15:50Z)
+invoice|00939152-e774-464f-874f-c18c3a92fa1a|INV-0001|SENT|1800.00|270.00|2070.00|2026-10-22
+audit|invoice.created|USER|2026-10-22 16:13:25.644367+00
+audit|invoice.approved|USER|2026-10-22 16:14:05.191631+00
+audit|payment.session.created|SYSTEM|2026-10-22 16:14:11.396592+00
+audit|invoice.sent|USER|2026-10-22 16:14:11.401816+00
+generated_document|33e41ab1-0d1c-4580-890c-5437b35ee088|fee-note-inv-0001-2026-10-22.pdf|(no document_id)|2026-10-22 16:14:11.503731+00
+generated_document|681dd127-03b8-4b9f-a27d-3583189203cd|fee-note-inv-0001-2026-10-22.pdf|e7b05d1a-4a4c-4051-83da-3e30e0975f61|2026-10-22 16:15:03.362908+00
+customer_tax_number|Sipho Dlamini|(null)
+Mailpit UW24krGpDaMZqBUcWuyipR 'Fee Note INV-0001 from Mathebula & Partners' to sipho.dlamini@ — Amount Due ZAR 2070.00, Due Date N/A, Pay Now (mock), attachment INV-0001.pdf
+Mailpit H73QLPFcGTG7iuZdomittW 'Document ready: statement-of-account-…pdf' to sipho.dlamini@ at 16:10:33 (SoA Preview & Save) — link http://localhost:3002/projects/458bc331-…

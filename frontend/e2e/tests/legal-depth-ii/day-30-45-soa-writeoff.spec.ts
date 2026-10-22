@@ -285,7 +285,7 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
 
   // FIXME(depth-ii:e2e-s3-presigner-unreachable) E2E ENVIRONMENT LIMITATION — not a product
   // bug. The Statements-tab "Download" button calls downloadGeneratedDocumentAction
-  // (settings/templates/template-generation-actions.ts), a server action that fetches
+  // (settings/documents/_tabs/template-generation-actions.ts), a server action that fetches
   // GET /api/generated-documents/{id}/download with `redirect: "follow"` from inside the
   // frontend container. The backend answers 302 to the S3 presigned URL, whose host is
   // AWS_S3_PRESIGNER_ENDPOINT=http://localhost:4567 (compose/docker-compose.e2e.yml) — the
@@ -339,7 +339,8 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
   // action above (no write-off event can be produced).
   test.fixme("Alice: Verify write-off audit event present in audit log", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/audit-log`);
+    // Phase 87 S9 (ADR-344): /settings/audit-log → /settings/firm?tab=audit-trail
+    await page.goto(`${BASE}/settings/firm?tab=audit-trail`);
     await page.waitForLoadState("networkidle");
     const eventType = page.locator("#audit-filter-event-type");
     await eventType.fill("disbursement.written_off");

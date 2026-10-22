@@ -20,7 +20,8 @@ test.describe("ROLE-01: Roles & Capabilities", () => {
   });
 
   test("View roles list", async ({ page }) => {
-    await page.goto(`${base}/settings/roles`);
+    // Phase 87 S9 (ADR-344): /settings/roles → /settings/firm?tab=roles
+    await page.goto(`${base}/settings/firm?tab=roles`);
     const body = page.locator("body");
     const bodyText = await body.textContent();
 
@@ -38,7 +39,8 @@ test.describe("ROLE-01: Roles & Capabilities", () => {
   });
 
   test("View role capabilities", async ({ page }) => {
-    await page.goto(`${base}/settings/roles`);
+    // Phase 87 S9 (ADR-344): /settings/roles → /settings/firm?tab=roles
+    await page.goto(`${base}/settings/firm?tab=roles`);
     const bodyText = await page.locator("body").textContent();
 
     if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
@@ -71,7 +73,8 @@ test.describe("ROLE-01: Roles & Capabilities", () => {
   });
 
   test("Edit role capability", async ({ page }) => {
-    await page.goto(`${base}/settings/roles`);
+    // Phase 87 S9 (ADR-344): /settings/roles → /settings/firm?tab=roles
+    await page.goto(`${base}/settings/firm?tab=roles`);
     const bodyText = await page.locator("body").textContent();
 
     if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {

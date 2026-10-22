@@ -20,7 +20,8 @@ test.describe("TAG-01: Tags", () => {
   });
 
   test("View tags", async ({ page }) => {
-    await page.goto(`${base}/settings/tags`);
+    // Phase 87 S9 (ADR-344): /settings/tags → /settings/matters?tab=tags
+    await page.goto(`${base}/settings/matters?tab=tags`);
     const body = page.locator("body");
     const bodyText = await body.textContent();
 
@@ -35,7 +36,8 @@ test.describe("TAG-01: Tags", () => {
   });
 
   test("Create tag", async ({ page }) => {
-    await page.goto(`${base}/settings/tags`);
+    // Phase 87 S9 (ADR-344): /settings/tags → /settings/matters?tab=tags
+    await page.goto(`${base}/settings/matters?tab=tags`);
     const bodyText = await page.locator("body").textContent();
 
     if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {

@@ -6,7 +6,8 @@ const ORG = "e2e-test-org";
 test.describe("SET-02: Rate Cards", () => {
   test("Rates page loads without crash (AvatarCircle regression)", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`/org/${ORG}/settings/rates`);
+    // Phase 87 S9 (ADR-344): /settings/rates → /settings/fees?tab=tariffs
+    await page.goto(`/org/${ORG}/settings/fees?tab=tariffs`);
     // This was BUG-REG-001: TypeError on null name.length in AvatarCircle
     await expect(page.locator("body")).not.toContainText("Something went wrong");
     await expect(page.locator("body")).not.toContainText("TypeError");
@@ -16,13 +17,15 @@ test.describe("SET-02: Rate Cards", () => {
 
   test("Rates page loads for Admin", async ({ page }) => {
     await loginAs(page, "bob");
-    await page.goto(`/org/${ORG}/settings/rates`);
+    // Phase 87 S9 (ADR-344): /settings/rates → /settings/fees?tab=tariffs
+    await page.goto(`/org/${ORG}/settings/fees?tab=tariffs`);
     await expect(page.locator("body")).not.toContainText("Something went wrong");
   });
 
   test("Member sees permission denied on rates", async ({ page }) => {
     await loginAs(page, "carol");
-    await page.goto(`/org/${ORG}/settings/rates`);
+    // Phase 87 S9 (ADR-344): /settings/rates → /settings/fees?tab=tariffs
+    await page.goto(`/org/${ORG}/settings/fees?tab=tariffs`);
     await expect(page.locator("body")).toContainText(/don.t have access|permission/i);
   });
 });

@@ -23,13 +23,16 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/org/acme/dashboard",
 }));
 
-import { NAV_GROUPS, SETTINGS_ITEMS } from "@/lib/nav-items";
-import { SETTINGS_NAV_GROUPS } from "@/components/settings/settings-nav-groups";
+import { NAV_GROUPS } from "@/lib/nav-items";
+import { SETTINGS_FAMILIES, getSettingsFamily, settingsHref } from "@/lib/settings-nav";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { ModuleGate } from "@/components/module-gate";
 import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
 afterEach(() => cleanup());
+
+const settingsTab = (family: Parameters<typeof getSettingsFamily>[0], id: string) =>
+  getSettingsFamily(family).tabs.find((t) => t.id === id);
 
 describe("Nav items - resource planning removed (Epic 599)", () => {
   it("no nav item or settings entry references the resource_planning module", () => {
@@ -37,7 +40,11 @@ describe("Nav items - resource planning removed (Epic 599)", () => {
     expect(navItems.find((i) => i.label === "Resources")).toBeUndefined();
     expect(navItems.find((i) => i.label === "Utilization")).toBeUndefined();
     expect(navItems.some((i) => i.requiredModule === "resource_planning")).toBe(false);
-    expect(SETTINGS_ITEMS.some((i) => i.title === "Capacity")).toBe(false);
+    expect(
+      SETTINGS_FAMILIES.flatMap((f) => f.tabs).some(
+        (t) => t.label === "Capacity" || t.requiredModule === "resource_planning"
+      )
+    ).toBe(false);
   });
 });
 
@@ -49,43 +56,30 @@ describe("Nav items - bulk billing gating", () => {
     expect(billingRunsItem?.requiredModule).toBe("bulk_billing");
   });
 
-  it("Batch Billing settings entry has requiredModule: bulk_billing", () => {
-    const batchBilling = SETTINGS_ITEMS.find((i) => i.title === "Batch Billing");
-    expect(batchBilling?.requiredModule).toBe("bulk_billing");
+  it("Fees & Trust › Fee runs settings tab has requiredModule: bulk_billing", () => {
+    expect(settingsTab("fees", "fee-runs")?.requiredModule).toBe("bulk_billing");
   });
 });
 
 // Phase 86 (ADR-334): the automation_builder module was removed — the automations admin page is
-// always on (admin-only), so neither nav entry carries a module gate.
-describe("Settings nav groups - automations always on", () => {
-  it("Automations item in work group has no requiredModule", () => {
-    const workGroup = SETTINGS_NAV_GROUPS.find((g) => g.id === "work");
-    const automations = workGroup?.items.find((i) => i.label === "Automations");
+// always on (admin-only, D24), so the Connections › Automations tab carries no module gate.
+describe("Settings nav source - automations always on", () => {
+  it("Connections › Automations tab has no requiredModule and is admin-only", () => {
+    const automations = settingsTab("connections", "automations");
     expect(automations).toBeDefined();
     expect(automations?.requiredModule).toBeUndefined();
-  });
-
-  it("Automations entry in SETTINGS_ITEMS has no requiredModule", () => {
-    const automations = SETTINGS_ITEMS.find((i) => i.title === "Automations");
-    expect(automations).toBeDefined();
-    expect(automations?.requiredModule).toBeUndefined();
+    expect(automations?.adminOnly).toBe(true);
   });
 });
 
-describe("Settings nav groups - features group", () => {
-  it("Features group exists with Features and Packs items", () => {
-    const featuresGroup = SETTINGS_NAV_GROUPS.find((g) => g.id === "features");
-    expect(featuresGroup).toBeDefined();
-    expect(featuresGroup?.items).toHaveLength(2);
-    expect(featuresGroup?.items[0]?.href).toBe("features");
-    expect(featuresGroup?.items[1]?.href).toBe("packs");
-    expect(featuresGroup?.items[1]?.adminOnly).toBe(true);
+describe("Settings nav source - features and packs", () => {
+  it("Firm › Features and Connections › Packs are admin-only tabs", () => {
+    expect(settingsTab("firm", "features")?.adminOnly).toBe(true);
+    expect(settingsTab("connections", "packs")?.adminOnly).toBe(true);
   });
 
-  it("Features entry exists in SETTINGS_ITEMS", () => {
-    const features = SETTINGS_ITEMS.find((i) => i.title === "Features");
-    expect(features).toBeDefined();
-    expect(features?.href("acme")).toBe("/org/acme/settings/features");
+  it("Firm › Features links to its ?tab= URL", () => {
+    expect(settingsHref("acme", "firm", "features")).toBe("/org/acme/settings/firm?tab=features");
   });
 });
 

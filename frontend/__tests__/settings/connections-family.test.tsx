@@ -181,6 +181,20 @@ describe("Connections settings family page", () => {
     });
   });
 
+  // 616E.2 (§12.7.4): Radix Tabs roles; the focus behaviour is pinned once in firm-family.
+  it("names the tablist, marks aria-selected and labels the tabpanel by the active tab (616E.2)", async () => {
+    await renderConnections("notifications");
+    expect(screen.getByRole("tablist", { name: "Connections settings" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Notifications" })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+    expect(screen.getByRole("tab", { name: "Xero" })).toHaveAttribute("aria-selected", "false");
+    expect(screen.getByRole("tabpanel", { name: "Notifications" })).toHaveTextContent(
+      "notifications panel"
+    );
+  });
+
   it("declares exactly one loader per Connections tab in settings-nav", () => {
     const tabIds = getSettingsFamily("connections").tabs.map((t) => t.id);
     expect(Object.keys(CONNECTIONS_TAB_LOADERS).sort()).toEqual([...tabIds].sort());

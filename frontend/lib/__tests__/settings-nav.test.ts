@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, it, expect } from "vitest";
-import { SETTINGS_NAV_GROUPS } from "@/components/settings/settings-nav-groups";
 import { LEGACY_REDIRECTS } from "@/lib/legacy-redirects";
 import {
   SETTINGS_FAMILIES,
@@ -12,103 +11,53 @@ import {
   type SettingsTab,
 } from "../settings-nav";
 
-// Frozen copy of SETTINGS_NAV_GROUPS (components/settings/settings-nav-groups.ts at b2161bfc2) —
-// the flag source for ADR-341's "flags reproduce one-to-one". 616E deletes settings-nav-groups.ts
-// together with the `matches the live groups` assertion and this frozen copy (616A.1).
-const FROZEN_NAV_ITEMS: { href: string; adminOnly?: boolean; requiredModule?: string }[] = [
-  { href: "general" },
-  { href: "billing" },
-  { href: "notifications" },
-  { href: "email", adminOnly: true },
-  // { href: "", comingSoon: true } — "Security": dropped, no page
-  { href: "time-tracking" },
-  { href: "project-templates" },
-  { href: "project-naming" },
-  { href: "automations", adminOnly: true },
-  { href: "templates" },
-  { href: "clauses" },
-  { href: "checklists" },
-  { href: "acceptance" },
-  { href: "rates" },
-  { href: "tax" },
-  { href: "batch-billing", adminOnly: true, requiredModule: "bulk_billing" },
-  { href: "collections", adminOnly: true },
-  { href: "trust-accounting", adminOnly: true, requiredModule: "trust_accounting" },
-  { href: "custom-fields" },
-  { href: "tags" },
-  { href: "request-templates" },
-  { href: "request-settings" },
-  { href: "compliance" },
-  { href: "data-protection", adminOnly: true },
-  { href: "features", adminOnly: true },
-  { href: "packs", adminOnly: true },
-  { href: "roles", adminOnly: true },
-  { href: "audit-log", adminOnly: true },
-  { href: "integrations" },
-  { href: "ai", adminOnly: true },
-];
-
-// Old settings page (SETTINGS_NAV_GROUPS href) → [family, tab id] — §12.7.1 / §12.7.2.
-const OLD_TO_TAB: Record<string, [string, string]> = {
-  general: ["firm", "general"],
-  billing: ["firm", "subscription"],
-  roles: ["firm", "roles"],
-  "audit-log": ["firm", "audit-trail"],
-  "data-protection": ["firm", "data-protection"],
-  compliance: ["firm", "compliance"],
-  features: ["firm", "features"],
-  "project-templates": ["matters", "templates"],
-  "project-naming": ["matters", "naming"],
-  "custom-fields": ["matters", "custom-fields"],
-  tags: ["matters", "tags"],
-  checklists: ["matters", "checklists"],
-  "request-templates": ["matters", "request-templates"],
-  "request-settings": ["matters", "request-settings"],
-  templates: ["documents", "templates"],
-  clauses: ["documents", "clauses"],
-  acceptance: ["documents", "acceptance"],
-  email: ["documents", "email"],
-  rates: ["fees", "tariffs"],
-  tax: ["fees", "tax"],
-  "time-tracking": ["fees", "time-recording"],
-  "batch-billing": ["fees", "fee-runs"],
-  collections: ["fees", "collections"],
-  "trust-accounting": ["fees", "trust-accounting"],
-  integrations: ["connections", "xero"],
-  ai: ["connections", "ai"],
-  notifications: ["connections", "notifications"],
-  packs: ["connections", "packs"],
-  automations: ["connections", "automations"],
-};
-
 type Flags = Pick<SettingsTab, "adminOnly" | "requiredModule" | "requiredCapability">;
 
-// Named, orchestrator-ruled exceptions to the one-to-one flags (616A rulings D5/D6) — the flags
-// the tab carries instead of the frozen entry's.
-const RULED_EXCEPTIONS: Record<string, Flags> = {
+// Every tab's gate — 616E replaces 616A's frozen copy of the old settings-rail groups, deleted with
+// the old rail and palette lists (this file is now the only pin). Orchestrator rulings are named
+// where a gate differs from the old settings nav.
+const TAB_GATES: Record<string, Flags> = {
+  "firm/general": {},
+  "firm/roles": { adminOnly: true },
   // D5: the backend gate is @RequiresCapability("TEAM_OVERSIGHT") (AuditEventController) and the
-  // old page had no frontend role check; a non-admin member with FINANCIAL_VISIBILITY +
-  // TEAM_OVERSIGHT sees the Home "Sensitive events" widget (lib/dashboard-home.ts) whose links land
-  // here — adminOnly would have regressed them.
-  "firm/audit-trail": { adminOnly: false, requiredCapability: "TEAM_OVERSIGHT" },
+  // old page had no frontend role check; a member holding it sees the Home "Sensitive events"
+  // widget (lib/dashboard-home.ts) whose links land here — adminOnly would have regressed them.
+  "firm/audit-trail": { requiredCapability: "TEAM_OVERSIGHT" },
+  "firm/data-protection": { adminOnly: true },
+  "firm/data-requests": { adminOnly: true }, // D7: former page gate (isAdmin || isOwner)
   // D6: the old page denied non-admins; a member-visible tab whose only content is a denial is
   // the "disabled tab" §12.7.4 forbids (§12.11.4 also lists it admin-only).
   "firm/compliance": { adminOnly: true },
-  // D18 (616B, D6 rule): the former pages denied non-admins; member-visible tabs holding only a
-  // denial message are the "disabled tab" §12.7.4 forbids. Templates and Tags stay ungated (their
-  // former pages rendered read-only for members).
+  "firm/features": { adminOnly: true },
+  "firm/subscription": {}, // D6: GET /api/billing/subscription is ungated (ADR-335)
+  // D18 (616B, D6 rule): the former naming, custom-fields, checklists, request-templates and
+  // request-settings pages denied non-admins. Templates and Tags stay ungated (their former pages
+  // rendered read-only for members).
+  "matters/templates": {},
   "matters/naming": { adminOnly: true },
   "matters/custom-fields": { adminOnly: true },
+  "matters/tags": {},
   "matters/checklists": { adminOnly: true },
   "matters/request-templates": { adminOnly: true },
   "matters/request-settings": { adminOnly: true },
-  // D19 (616C, D6/D18 rule): the former acceptance, tax and time-tracking pages denied non-admins;
-  // member-visible tabs holding only a denial message are the "disabled tab" §12.7.4 forbids.
-  // Tariffs stays ungated (D20): it is the Fees family's first tab and its former page let
-  // FINANCIAL_VISIBILITY holders in, so its loader keeps the in-page capability denial.
-  "documents/acceptance": { adminOnly: true },
-  "fees/tax": { adminOnly: true },
-  "fees/time-recording": { adminOnly: true },
+  "documents/templates": {},
+  "documents/clauses": {},
+  "documents/acceptance": { adminOnly: true }, // D19 (616C, D6/D18 rule)
+  "documents/email": { adminOnly: true },
+  // D20 (616C): Tariffs is the Fees family's first tab and its former page let FINANCIAL_VISIBILITY
+  // holders in, so it stays ungated and its loader keeps the in-page capability denial.
+  "fees/tariffs": {},
+  "fees/tax": { adminOnly: true }, // D19
+  "fees/time-recording": { adminOnly: true }, // D19
+  "fees/fee-runs": { adminOnly: true, requiredModule: "bulk_billing" },
+  "fees/collections": { adminOnly: true },
+  "fees/trust-accounting": { adminOnly: true, requiredModule: "trust_accounting" },
+  "connections/xero": {},
+  "connections/mcp": { requiredCapability: "INTEGRATION_MANAGE" }, // D7: integrations/mcp page gate
+  "connections/ai": { adminOnly: true }, // D24 (616D)
+  "connections/notifications": {},
+  "connections/packs": { adminOnly: true },
+  "connections/automations": { adminOnly: true }, // D24 (616D)
 };
 
 const tabKey = (familyId: string, tabId: string) => `${familyId}/${tabId}`;
@@ -203,38 +152,15 @@ describe("SETTINGS_FAMILIES", () => {
     }
   });
 
-  it("keeps the frozen copy honest against the live SETTINGS_NAV_GROUPS (616E deletes both)", () => {
-    const live = SETTINGS_NAV_GROUPS.flatMap((g) => g.items)
-      .filter((i) => !i.comingSoon)
-      .map((i) => ({
-        href: i.href,
-        ...(i.adminOnly ? { adminOnly: true } : {}),
-        ...(i.requiredModule ? { requiredModule: i.requiredModule } : {}),
-      }));
-    expect(live).toEqual(FROZEN_NAV_ITEMS);
-  });
-
-  it("reproduces each frozen entry's flags on exactly one tab, except the named ruled exceptions", () => {
-    const mapped = new Set<string>();
-    for (const entry of FROZEN_NAV_ITEMS) {
-      const target = OLD_TO_TAB[entry.href];
-      expect(target, entry.href).toBeDefined();
-      const [familyId, tabId] = target;
-      const tab = findTab(familyId, tabId);
-      expect(tab, `${entry.href} → ${familyId}/${tabId}`).toBeDefined();
-      const key = tabKey(familyId, tabId);
-      expect(mapped.has(key), key).toBe(false);
-      mapped.add(key);
-      const expected = RULED_EXCEPTIONS[key] ?? { ...entry, requiredCapability: undefined };
-      expect(normalised(tab!), `${entry.href} → ${key}`).toEqual(normalised(expected));
-    }
-    expect(mapped.size).toBe(29);
-    const unmapped = SETTINGS_FAMILIES.flatMap((f) => f.tabs.map((t) => tabKey(f.id, t.id))).filter(
-      (k) => !mapped.has(k)
+  it("pins every tab's gate — 31 rows (rulings D5–D7, D18–D20, D24)", () => {
+    const actual = Object.fromEntries(
+      SETTINGS_FAMILIES.flatMap((f) => f.tabs.map((t) => [tabKey(f.id, t.id), normalised(t)]))
     );
-    expect(unmapped).toEqual(["firm/data-requests", "connections/mcp"]);
-    // Every ruled exception names a real, mapped tab.
-    for (const key of Object.keys(RULED_EXCEPTIONS)) expect(mapped.has(key), key).toBe(true);
+    const expected = Object.fromEntries(
+      Object.entries(TAB_GATES).map(([key, flags]) => [key, normalised(flags)])
+    );
+    expect(Object.keys(TAB_GATES)).toHaveLength(31);
+    expect(actual).toEqual(expected);
   });
 
   it("gates the two tabs without an old nav entry like their former pages (D7)", () => {
@@ -319,28 +245,6 @@ describe("resolveSettingsTab", () => {
   });
 });
 
-describe("Firm redirect rows", () => {
-  it("land every /settings/firm?tab= destination on a declared Firm tab (precursor of 616E)", () => {
-    const firmIds = getSettingsFamily("firm").tabs.map((t) => t.id);
-    const tabs = LEGACY_REDIRECTS.filter((r) =>
-      r.destination.startsWith("/org/:slug/settings/firm?tab=")
-    ).map((r) => new URLSearchParams(r.destination.split("?")[1]).get("tab"));
-    expect(tabs).toHaveLength(8);
-    for (const tab of tabs) expect(firmIds).toContain(tab);
-  });
-});
-
-describe("Matters redirect rows", () => {
-  it("land every /settings/matters?tab= destination on a declared Matters tab (precursor of 616E)", () => {
-    const mattersIds = getSettingsFamily("matters").tabs.map((t) => t.id);
-    const tabs = LEGACY_REDIRECTS.filter((r) =>
-      r.destination.startsWith("/org/:slug/settings/matters?tab=")
-    ).map((r) => new URLSearchParams(r.destination.split("?")[1]).get("tab"));
-    expect(tabs).toHaveLength(7);
-    expect([...tabs].sort()).toEqual([...mattersIds].sort());
-  });
-});
-
 describe("Matters tab gating (D18)", () => {
   it("falls a member back to Templates for an admin-only Matters tab", () => {
     const matters = getSettingsFamily("matters");
@@ -357,28 +261,6 @@ describe("Matters tab gating (D18)", () => {
     });
     for (const t of matters.tabs)
       expect(resolveSettingsTab(matters, t.id, OWNER).tab.id).toBe(t.id);
-  });
-});
-
-describe("Documents redirect rows", () => {
-  it("land every /settings/documents?tab= destination on a declared Documents tab (precursor of 616E)", () => {
-    const ids = getSettingsFamily("documents").tabs.map((t) => t.id);
-    const tabs = LEGACY_REDIRECTS.filter((r) =>
-      r.destination.startsWith("/org/:slug/settings/documents?tab=")
-    ).map((r) => new URLSearchParams(r.destination.split("?")[1]).get("tab"));
-    expect(tabs).toHaveLength(4);
-    expect([...tabs].sort()).toEqual([...ids].sort());
-  });
-});
-
-describe("Fees & Trust redirect rows", () => {
-  it("land every /settings/fees?tab= destination on a declared Fees tab (precursor of 616E)", () => {
-    const ids = getSettingsFamily("fees").tabs.map((t) => t.id);
-    const tabs = LEGACY_REDIRECTS.filter((r) =>
-      r.destination.startsWith("/org/:slug/settings/fees?tab=")
-    ).map((r) => new URLSearchParams(r.destination.split("?")[1]).get("tab"));
-    expect(tabs).toHaveLength(6);
-    expect([...tabs].sort()).toEqual([...ids].sort());
   });
 });
 
@@ -399,19 +281,6 @@ describe("Documents + Fees tab gating (D19/D20)", () => {
 
   it("keeps Tariffs (the Fees first tab) open to members", () => {
     expect(resolveSettingsTab(getSettingsFamily("fees"), "tariffs", MEMBER).forbidden).toBeNull();
-  });
-});
-
-describe("Connections redirect rows", () => {
-  it("land every /settings/connections?tab= destination on a declared Connections tab (precursor of 616E)", () => {
-    const ids = getSettingsFamily("connections").tabs.map((t) => t.id);
-    const tabs = LEGACY_REDIRECTS.filter((r) =>
-      r.destination.startsWith("/org/:slug/settings/connections?tab=")
-    ).map((r) => new URLSearchParams(r.destination.split("?")[1]).get("tab"));
-    // integrations and integrations/xero both land on xero (§12.7.1).
-    expect(tabs).toHaveLength(7);
-    expect(tabs.filter((t) => t === "xero")).toHaveLength(2);
-    expect([...new Set(tabs)].sort()).toEqual([...ids].sort());
   });
 });
 
@@ -445,5 +314,57 @@ describe("Connections tab gating (D7/D24)", () => {
     });
     for (const t of connections.tabs)
       expect(resolveSettingsTab(connections, t.id, OWNER).tab.id).toBe(t.id);
+  });
+});
+
+describe("settings redirect rows ↔ SETTINGS_FAMILIES (616E, §12.7.3)", () => {
+  const SETTINGS = "/org/:slug/settings/";
+  const settingsDir = path.resolve(__dirname, "../../app/(app)/org/[slug]/settings");
+  // Scoped to settings rows (sources under /org/:slug/settings/) so the 610D/612A/613D/615E rows
+  // cannot fail it.
+  const settingsRows = LEGACY_REDIRECTS.filter((r) => r.source.startsWith(SETTINGS));
+
+  it("resolves every settings row to a declared family tab or a kept route under that tab", () => {
+    const rows = settingsRows.filter((r) => r.destination.startsWith(SETTINGS));
+    expect(rows).toHaveLength(43);
+    for (const r of rows) {
+      const [target, query] = r.destination.slice(SETTINGS.length).split("?");
+      const [familyId, ...rest] = target.split("/");
+      const family = SETTINGS_FAMILIES.find((f) => f.id === familyId);
+      expect(family, r.source).toBeDefined();
+      const tabIds = family!.tabs.map((t) => t.id);
+      if (query !== undefined) {
+        expect(rest, r.source).toEqual([]);
+        expect(tabIds, r.source).toContain(new URLSearchParams(query).get("tab"));
+      } else {
+        // A kept editor/log route: lives under the tab its first segment names (the settings rail
+        // relies on this to mark the tab current on a sub-route) and has a page.tsx.
+        expect(tabIds, r.source).toContain(rest[0]);
+        const dir = target.replace(/:([A-Za-z]+)/g, "[$1]");
+        expect(fs.existsSync(path.join(settingsDir, dir, "page.tsx")), r.source).toBe(true);
+      }
+    }
+  });
+
+  it("gives every declared tab at least one redirect row", () => {
+    const tabTargets = new Set(
+      settingsRows
+        .filter((r) => r.destination.includes("?tab="))
+        .map((r) => {
+          const [target, query] = r.destination.slice(SETTINGS.length).split("?");
+          return tabKey(target, new URLSearchParams(query).get("tab")!);
+        })
+    );
+    expect([...tabTargets].sort()).toEqual(
+      SETTINGS_FAMILIES.flatMap((f) => f.tabs.map((t) => tabKey(f.id, t.id))).sort()
+    );
+  });
+
+  it("leaves settings only through the pre-Phase-87 /settings/team row", () => {
+    expect(
+      settingsRows
+        .filter((r) => !r.destination.startsWith(SETTINGS))
+        .map((r) => [r.source, r.destination])
+    ).toEqual([["/org/:slug/settings/team", "/org/:slug/team"]]);
   });
 });

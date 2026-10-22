@@ -200,6 +200,15 @@ describe("Fees & Trust settings family page", () => {
     });
   });
 
+  // 616E.2 (§12.7.4): Radix Tabs roles; the focus behaviour is pinned once in firm-family.
+  it("names the tablist, marks aria-selected and labels the tabpanel by the active tab (616E.2)", async () => {
+    await renderFees("tax");
+    expect(screen.getByRole("tablist", { name: "Fees & Trust settings" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Tax" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Tariffs" })).toHaveAttribute("aria-selected", "false");
+    expect(screen.getByRole("tabpanel", { name: "Tax" })).toHaveTextContent("tax panel");
+  });
+
   it("declares exactly one loader per Fees tab in settings-nav", () => {
     const tabIds = getSettingsFamily("fees").tabs.map((t) => t.id);
     expect(Object.keys(FEES_TAB_LOADERS).sort()).toEqual([...tabIds].sort());

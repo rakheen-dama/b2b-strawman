@@ -1,14 +1,14 @@
 import { Banknote, Building2, FileText, Plug, Scale, type LucideIcon } from "lucide-react";
-import { canAccessNavItem, type NavAccess } from "@/lib/nav-items";
+import { isNavEntryVisible, type NavFilterAccess } from "@/lib/nav-filter";
 
 /**
  * One settings navigation source (Phase 87 S9, ADR-341, architecture §12.7.3): five families,
- * 31 tabs addressed by `?tab=<id>`. The family pages' tab strips read it from 616A; the settings
- * rail and the command palette switch to it in 616E (which deletes SETTINGS_ITEMS and
- * components/settings/settings-nav-groups.ts). `adminOnly` / `requiredModule` /
- * `requiredCapability` reproduce the old SETTINGS_NAV_GROUPS flags one-to-one, except the named,
- * orchestrator-ruled exceptions marked below — pinned against a frozen copy by
- * lib/__tests__/settings-nav.test.ts. `Security` (comingSoon, no page) is dropped.
+ * 31 tabs addressed by `?tab=<id>`. It is the only source: the family pages' tab strips, the
+ * settings rail (components/settings/settings-sidebar.tsx) and the command palette all read it, and
+ * all gate through the one rule in lib/nav-filter.ts, so a tab cannot exist in one and not the
+ * others. Every tab's `adminOnly` / `requiredModule` / `requiredCapability` is pinned by a gate
+ * table in lib/__tests__/settings-nav.test.ts, with the orchestrator-ruled differences from the old
+ * settings nav marked below. `Security` (comingSoon, no page) is dropped.
  */
 
 export type SettingsFamilyId = "firm" | "matters" | "documents" | "fees" | "connections";
@@ -338,10 +338,8 @@ export function settingsHref(slug: string, family: SettingsFamilyId, tab?: strin
   return tab ? `${base}?tab=${encodeURIComponent(tab)}` : base;
 }
 
-/** NavAccess (capability/role facts) plus the org's enabled modules. */
-export interface SettingsAccess extends NavAccess {
-  isModuleEnabled: (moduleId: string) => boolean;
-}
+/** NavAccess (capability/role facts) plus the org's enabled modules (lib/nav-filter.ts). */
+export type SettingsAccess = NavFilterAccess;
 
 /** Build SettingsAccess on the server from GET /api/me/capabilities + the org's enabled modules. */
 export function settingsAccessFrom(
@@ -360,14 +358,11 @@ export function settingsAccessFrom(
 }
 
 /**
- * canAccessNavItem's admin/capability rule (admin = isAdmin || isOwner) plus the module gate. 616E
- * moves both into lib/nav-filter.ts.
+ * The one nav access rule (lib/nav-filter.ts): capability + admin-only (admin = isAdmin || isOwner)
+ * + module — the same rule the sidebar zones and the command palette apply.
  */
 export function canAccessSettingsTab(tab: SettingsTab, access: SettingsAccess): boolean {
-  return (
-    canAccessNavItem(tab, access) &&
-    (!tab.requiredModule || access.isModuleEnabled(tab.requiredModule))
-  );
+  return isNavEntryVisible(tab, access);
 }
 
 export function visibleSettingsTabs(family: SettingsFamily, access: SettingsAccess): SettingsTab[] {

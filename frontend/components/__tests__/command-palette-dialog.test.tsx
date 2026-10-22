@@ -127,21 +127,6 @@ describe("CommandPaletteDialog", () => {
     expect(screen.queryByText("Security")).not.toBeInTheDocument();
   });
 
-  it("omits adminOnly settings items for non-admin — Batch Billing not visible to member", () => {
-    renderDialog({
-      capabilities: ALL_CAPABILITIES,
-      isAdmin: false,
-      isOwner: false,
-      role: "member",
-    });
-    expect(screen.queryByText("Batch Billing")).not.toBeInTheDocument();
-  });
-
-  it("shows adminOnly settings items to an owner who is not flagged admin (same rule as pages)", () => {
-    renderDialog({ capabilities: ALL_CAPABILITIES, isAdmin: false, isOwner: true });
-    expect(screen.getByText("Roles & Permissions")).toBeInTheDocument();
-  });
-
   it("shows Recent group heading when recentItems is non-empty", () => {
     vi.mocked(useRecentItems).mockReturnValue({
       items: [{ href: "/org/test-org/matters/abc", label: "Alpha Project" }],
@@ -174,5 +159,123 @@ describe("CommandPaletteDialog", () => {
     renderDialog({ enabledModules: ["disbursements", "trust_accounting"] });
     expect(screen.getByText("Disbursements")).toBeInTheDocument();
     expect(screen.getByText("Trust reports")).toBeInTheDocument();
+  });
+
+  // Phase 87 S9 (616E, ADR-341 §12.7.3): the Settings group is SETTINGS_FAMILIES × tabs, filtered
+  // by the same rule as the family pages and the settings rail (lib/nav-filter.ts).
+  describe("Settings entries — one nav source (616E)", () => {
+    const settingsEntries = () =>
+      screen
+        .getAllByRole("option")
+        .map((o) => o.textContent ?? "")
+        .filter((t) => t.startsWith("Settings › "));
+
+    it("labels each entry Settings › {Family} › {Tab}; an owner with no modules sees 29", () => {
+      renderDialog({ capabilities: [], isAdmin: false, isOwner: true, enabledModules: [] });
+      const entries = settingsEntries();
+      expect(entries).toHaveLength(29);
+      expect(entries[0]).toBe("Settings › Firm › General");
+      expect(entries).toContain("Settings › Firm › Roles");
+      expect(entries).not.toContain("Settings › Fees & Trust › Fee runs");
+      expect(entries).not.toContain("Settings › Fees & Trust › Trust accounting");
+    });
+
+    it("shows the module-gated tabs to an owner with bulk_billing + trust_accounting (31)", () => {
+      renderDialog({
+        capabilities: [],
+        isAdmin: false,
+        isOwner: true,
+        enabledModules: ["bulk_billing", "trust_accounting"],
+      });
+      const entries = settingsEntries();
+      expect(entries).toHaveLength(31);
+      expect(entries).toContain("Settings › Fees & Trust › Fee runs");
+      expect(entries).toContain("Settings › Fees & Trust › Trust accounting");
+    });
+
+    it("shows a plain member exactly the 9 ungated tabs, in family/tab order", () => {
+      renderDialog({
+        capabilities: [],
+        isAdmin: false,
+        isOwner: false,
+        role: "member",
+        enabledModules: ["bulk_billing", "trust_accounting"],
+      });
+      expect(settingsEntries()).toEqual([
+        "Settings › Firm › General",
+        "Settings › Firm › Subscription",
+        "Settings › Matters › Templates",
+        "Settings › Matters › Tags",
+        "Settings › Documents › Templates",
+        "Settings › Documents › Clauses",
+        "Settings › Fees & Trust › Tariffs",
+        "Settings › Connections › Xero",
+        "Settings › Connections › Notifications",
+      ]);
+    });
+
+    it("hides admin-only Fee runs from a member even with bulk_billing on (owner sees it)", () => {
+      renderDialog({
+        capabilities: ALL_CAPABILITIES,
+        isAdmin: false,
+        isOwner: false,
+        role: "member",
+        enabledModules: ["bulk_billing"],
+      });
+      expect(screen.queryByText("Settings › Fees & Trust › Fee runs")).not.toBeInTheDocument();
+      cleanup();
+      renderDialog({ isAdmin: false, isOwner: true, enabledModules: ["bulk_billing"] });
+      expect(screen.getByText("Settings › Fees & Trust › Fee runs")).toBeInTheDocument();
+    });
+
+    it("shows admin-only tabs to an owner who is not flagged admin — Settings › Firm › Roles", () => {
+      renderDialog({ capabilities: ALL_CAPABILITIES, isAdmin: false, isOwner: true });
+      expect(screen.getByText("Settings › Firm › Roles")).toBeInTheDocument();
+    });
+
+    it("shows Settings › Firm › Audit trail to a member holding TEAM_OVERSIGHT (D5)", () => {
+      renderDialog({
+        capabilities: ["TEAM_OVERSIGHT"],
+        isAdmin: false,
+        isOwner: false,
+        role: "member",
+      });
+      expect(screen.getByText("Settings › Firm › Audit trail")).toBeInTheDocument();
+      cleanup();
+      renderDialog({ capabilities: [], isAdmin: false, isOwner: false, role: "member" });
+      expect(screen.queryByText("Settings › Firm › Audit trail")).not.toBeInTheDocument();
+    });
+
+    it("navigates an entry to its family ?tab= URL", async () => {
+      const settingsMockPush = vi.fn();
+      vi.mocked(useRouter).mockReturnValue({ push: settingsMockPush } as unknown as ReturnType<
+        typeof useRouter
+      >);
+      renderDialog();
+      await userEvent.setup().click(screen.getByText("Settings › Fees & Trust › Tariffs"));
+      expect(settingsMockPush).toHaveBeenCalledWith("/org/test-org/settings/fees?tab=tariffs");
+    });
+
+    it("disambiguates the two Templates tabs by family", async () => {
+      const templatesMockPush = vi.fn();
+      vi.mocked(useRouter).mockReturnValue({ push: templatesMockPush } as unknown as ReturnType<
+        typeof useRouter
+      >);
+      renderDialog();
+      const user = userEvent.setup();
+      await user.click(screen.getByText("Settings › Matters › Templates"));
+      expect(templatesMockPush).toHaveBeenLastCalledWith(
+        "/org/test-org/settings/matters?tab=templates"
+      );
+      await user.click(screen.getByText("Settings › Documents › Templates"));
+      expect(templatesMockPush).toHaveBeenLastCalledWith(
+        "/org/test-org/settings/documents?tab=templates"
+      );
+    });
+
+    it("never lists Security or a Coming soon entry", () => {
+      renderDialog({ enabledModules: ["bulk_billing", "trust_accounting"] });
+      expect(settingsEntries().some((t) => /security|coming soon/i.test(t))).toBe(false);
+    });
   });
 });

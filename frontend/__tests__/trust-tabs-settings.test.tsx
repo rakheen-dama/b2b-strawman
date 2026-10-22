@@ -106,7 +106,8 @@ import { OrgProfileProvider } from "@/lib/org-profile";
 import { MatterTabs } from "@/components/matters/matter-tabs";
 import { CustomerGroupedTabs } from "@/components/customers/customer-grouped-tabs";
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
-import { NAV_GROUPS, SETTINGS_ITEMS } from "@/lib/nav-items";
+import { NAV_GROUPS } from "@/lib/nav-items";
+import { getSettingsFamily, settingsHref } from "@/lib/settings-nav";
 
 afterEach(() => cleanup());
 beforeEach(() => vi.clearAllMocks());
@@ -247,13 +248,15 @@ describe("Customer detail Trust tab", () => {
 });
 
 describe("Trust settings page", () => {
-  it("has a settings entry in SETTINGS_ITEMS with module gating", () => {
-    const trustSetting = SETTINGS_ITEMS.find((s) => s.title === "Trust Accounting");
-    expect(trustSetting).toBeDefined();
-    expect(trustSetting!.adminOnly).toBe(true);
-    expect(trustSetting!.requiredModule).toBe("trust_accounting");
-    expect(trustSetting!.href("acme")).toBe("/org/acme/settings/trust-accounting");
-    expect(trustSetting!.description).toContain("trust accounts");
+  it("is the Fees & Trust › Trust accounting tab with module gating", () => {
+    const trustTab = getSettingsFamily("fees").tabs.find((t) => t.id === "trust-accounting");
+    expect(trustTab).toBeDefined();
+    expect(trustTab!.adminOnly).toBe(true);
+    expect(trustTab!.requiredModule).toBe("trust_accounting");
+    expect(settingsHref("acme", "fees", "trust-accounting")).toBe(
+      "/org/acme/settings/fees?tab=trust-accounting"
+    );
+    expect(trustTab!.description).toContain("trust accounts");
   });
 });
 

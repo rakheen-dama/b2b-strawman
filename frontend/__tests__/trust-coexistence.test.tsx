@@ -81,7 +81,8 @@ import useSWR from "swr";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { ModuleGate } from "@/components/module-gate";
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
-import { NAV_GROUPS, SETTINGS_ITEMS } from "@/lib/nav-items";
+import { NAV_GROUPS } from "@/lib/nav-items";
+import { SETTINGS_FAMILIES } from "@/lib/settings-nav";
 
 afterEach(() => cleanup());
 beforeEach(() => vi.clearAllMocks());
@@ -145,14 +146,16 @@ describe("Trust coexistence -- nav visibility", () => {
   });
 
   it("trust settings item hidden for non-trust-enabled org", () => {
-    const trustSettingsItem = SETTINGS_ITEMS.find((item) => item.requiredModule === TRUST_MODULE);
+    const trustSettingsTab = SETTINGS_FAMILIES.flatMap((f) => f.tabs).find(
+      (tab) => tab.requiredModule === TRUST_MODULE
+    );
 
-    expect(trustSettingsItem).toBeDefined();
+    expect(trustSettingsTab).toBeDefined();
 
     render(
       withTrustDisabled(
-        <ModuleGate module={trustSettingsItem!.requiredModule!}>
-          <span data-testid="trust-settings-coex">{trustSettingsItem!.title}</span>
+        <ModuleGate module={trustSettingsTab!.requiredModule!}>
+          <span data-testid="trust-settings-coex">{trustSettingsTab!.label}</span>
         </ModuleGate>
       )
     );

@@ -61,6 +61,7 @@ import {
   type SettingsSearchParams,
   type SettingsTabLoaders,
 } from "@/components/settings/settings-family-page";
+import { SettingsFamilyTabs } from "@/components/settings/settings-family-tabs";
 import { getSettingsFamily } from "@/lib/settings-nav";
 
 const OWNER = { capabilities: [], role: "owner", isAdmin: false, isOwner: true };
@@ -304,5 +305,91 @@ describe("Firm settings family page", () => {
         /don.t have access to Trust accounting — showing Tariffs instead/
       );
     });
+  });
+});
+
+// 616E.2 (§12.7.4): Radix Tabs roles + focus on user-initiated tab change only. Pinned once here —
+// SettingsFamilyTabs is the one strip all five family pages render.
+describe("616E.2 a11y — SettingsFamilyTabs (shared by all five families)", () => {
+  const TWO_TABS = [
+    { id: "general", label: "General" },
+    { id: "roles", label: "Roles" },
+  ];
+
+  function strip(activeTab: string, panel: React.ReactNode) {
+    return (
+      <SettingsFamilyTabs label="Firm settings" tabs={TWO_TABS} activeTab={activeTab}>
+        {panel}
+      </SettingsFamilyTabs>
+    );
+  }
+
+  const generalPanel = <button type="button">Save general</button>;
+  const rolesPanel = (
+    <>
+      <h1>Roles</h1>
+      <input aria-label="Role name" />
+    </>
+  );
+
+  beforeEach(() => {
+    mockCaps.mockResolvedValue(OWNER);
+    mockGetOrgSettings.mockResolvedValue({ defaultCurrency: "ZAR", enabledModules: [] });
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
+  it("names the tablist, marks aria-selected and labels the tabpanel by the active tab", async () => {
+    await renderFirm("roles");
+    expect(screen.getByRole("tablist", { name: "Firm settings" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Roles" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "General" })).toHaveAttribute("aria-selected", "false");
+    expect(screen.getByRole("tabpanel", { name: "Roles" })).toHaveTextContent("roles panel");
+  });
+
+  it("does not move focus into the panel on load", () => {
+    render(strip("general", generalPanel));
+    expect(screen.getByRole("button", { name: "Save general" })).not.toHaveFocus();
+    expect(document.body).toHaveFocus();
+  });
+
+  it("focuses the new panel's first control once a clicked tab commits", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(strip("general", generalPanel));
+    await user.click(screen.getByRole("tab", { name: "Roles" }));
+    expect(mockReplace).toHaveBeenCalledWith("/org/acme/settings/firm?tab=roles", {
+      scroll: false,
+    });
+    rerender(strip("roles", rolesPanel));
+    expect(screen.getByRole("textbox", { name: "Role name" })).toHaveFocus();
+  });
+
+  it("focuses the new panel's first control after a keyboard selection (arrow + Enter)", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(strip("general", generalPanel));
+    await user.click(screen.getByRole("tab", { name: "General" }));
+    await user.keyboard("{ArrowRight}");
+    await user.keyboard("{Enter}");
+    rerender(strip("roles", rolesPanel));
+    expect(screen.getByRole("textbox", { name: "Role name" })).toHaveFocus();
+  });
+
+  it("focuses the panel itself when it has no focusable control", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(strip("general", generalPanel));
+    await user.click(screen.getByRole("tab", { name: "Roles" }));
+    rerender(strip("roles", <p>No roles yet</p>));
+    expect(screen.getByRole("tabpanel", { name: "Roles" })).toHaveFocus();
+  });
+
+  it("does not move focus on a URL-driven change (back/forward, rail link, ?tab= link)", () => {
+    const { rerender } = render(strip("general", generalPanel));
+    rerender(strip("roles", rolesPanel));
+    expect(screen.getByRole("tab", { name: "Roles" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("textbox", { name: "Role name" })).not.toHaveFocus();
+    expect(document.body).toHaveFocus();
   });
 });

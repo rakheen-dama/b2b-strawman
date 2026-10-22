@@ -4,40 +4,31 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
-const SEGMENT_LABELS: Record<string, string> = {
+export const SEGMENT_LABELS: Record<string, string> = {
   // Core nav
   dashboard: "Dashboard",
   matters: "Matters",
   team: "Team",
   settings: "Settings",
-  // Settings sub-segments
-  // Phase 87 S9 (ADR-341): settings family labels (616A–616D).
+  // Settings families (Phase 87 S9, ADR-341; 616A–616D). `matters` is labelled above.
   firm: "Firm",
   documents: "Documents",
   fees: "Fees & Trust",
   connections: "Connections",
-  billing: "Billing",
-  notifications: "Notifications",
-  rates: "Rates & Currency",
-  tax: "Tax",
-  "time-tracking": "Time Tracking",
-  collections: "Collections",
-  "custom-fields": "Custom Fields",
-  tags: "Tags",
+  // Kept settings sub-route segments (§12.7.1). Labels for deleted settings routes are pruned —
+  // components/__tests__/breadcrumbs-routes.test.ts fails on a label with no segment on disk.
   templates: "Templates",
-  clauses: "Clauses",
   checklists: "Checklists",
-  acceptance: "Document Acceptance",
-  compliance: "Compliance",
-  "project-templates": "Matter Templates",
-  "project-naming": "Matter Naming",
   "request-templates": "Request Templates",
-  "request-settings": "Request Settings",
-  "batch-billing": "Batch Billing",
-  email: "Email",
+  xero: "Xero",
+  "sync-log": "Sync log",
+  history: "History",
   automations: "Automations",
-  roles: "Roles & Permissions",
-  integrations: "Integrations",
+  executions: "Executions",
+  // Other live segments (/notifications, /invoices/collections, /compliance).
+  notifications: "Notifications",
+  collections: "Collections",
+  compliance: "Compliance",
   // Additional segments
   clients: "Clients",
   "my-work": "My Work",

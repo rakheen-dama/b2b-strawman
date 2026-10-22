@@ -144,11 +144,11 @@ test.describe
       return;
     }
 
-    // Click into the first matter. Scoped to <main>: the rail's "Matters"
-    // link precedes <main> in the DOM and would otherwise match first.
-    const matterLink = main
-      .getByRole("link", { name: /project|matter|engagement/i })
-      .first();
+    // Click into the first matter card. Scoped to <main> and selected by
+    // href: the rail's "Matters" link (href "/matters") precedes <main>, and a
+    // MatterCard's accessible name is its whole text (name + description +
+    // doc count), so a name regex only matches by accident of seed wording.
+    const matterLink = main.locator('a[href^="/matters/"]').first();
     if (!(await matterLink.isVisible({ timeout: 5000 }).catch(() => false))) {
       test.skip(true, "No matter rendered to drill into");
       return;

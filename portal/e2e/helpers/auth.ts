@@ -92,7 +92,8 @@ export async function exchangePortalSession(
     };
   } catch {
     // Network failures (DNS, timeout, connection refused) should not escape —
-    // the contract is Promise<string | null> and callers gate on `if (!jwt)`.
+    // the contract is Promise<PortalSession | null>; callers handle null
+    // (getPortalJwt returns null, global-setup.ts throws).
     return null;
   }
 }

@@ -183,7 +183,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Thandi (Owner, logged in)
 
-- [ ] **0.26** Navigate to **Team** via the sidebar's **Firm** zone → **Team** (`/org/{slug}/team`). (Team is a Firm-zone nav item, not a Settings sub-page; OBS-002 closed.) (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #1640: Team group → Firm zone (612A); mirrors 90day 0.26 (616F S-1))
+- [ ] **0.26** Navigate to **Team** via the sidebar's **Firm** zone → **Team** (`/org/{slug}/team`). (Team is a Firm-zone nav item, not a Settings sub-page; OBS-002 closed.) (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #1640: Team group → Firm zone (612A); mirrors 90-day 0.26 (616F S-1))
 - [ ] **0.27** Thandi listed as Owner. Confirm no "Upgrade to Pro" gate exists anywhere on the invite flow
 - [ ] **0.28** Invite `bob@mathebula-test.local` as **Admin** → Send
 - [ ] **0.29** Invite `carol@mathebula-test.local` as **Member** → Send

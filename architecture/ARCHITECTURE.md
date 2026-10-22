@@ -4,6 +4,8 @@
 
 > **Phase 86 (2026-10):** Kazi is legal-only (`legal-za`). The horizontal platform — schedules, retainers, proposals, capacity, the in-app/specialist AI assistants, accounting/consulting profiles and deadlines, PayFast subscriptions, the docs site, CRM — was removed and archived at git tag `horizontal-platform-final` (mirror: https://github.com/rakheen-dama/kazi-horizontal-archive). See [Section 11 — `phase86-subtraction-legal-only.md`](phase86-subtraction-legal-only.md) and [ADR-330](../adr/ADR-330-archive-tag-not-fork.md).
 
+> **Phase 87 (2026-10):** legal-native shell — matter/client wire vocabulary, one Diary, five settings families. See [Section 12 — `phase87-legal-native-shell.md`](phase87-legal-native-shell.md) and ADR-337..344; closure report in `tasks/phase87-legal-native-shell.md` § Closure report.
+
 ## 1. Overview
 
 A reusable SaaS starter platform supporting multi-tenant B2B products with schema-per-tenant isolation. The reference implementation is **DocTeams** — a team-based document hub where organizations manage projects and upload documents.

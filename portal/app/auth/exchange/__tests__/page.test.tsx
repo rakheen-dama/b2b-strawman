@@ -44,7 +44,7 @@ describe("ExchangePage", () => {
     cleanup();
   });
 
-  it("redirects to /projects on successful exchange", async () => {
+  it("redirects to /matters on successful exchange", async () => {
     mockPublicFetch.mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -66,7 +66,7 @@ describe("ExchangePage", () => {
         email: "alice@testcorp.com",
         orgId: "org_xyz",
       });
-      expect(mockPush).toHaveBeenCalledWith("/projects");
+      expect(mockPush).toHaveBeenCalledWith("/matters");
     });
   });
 
@@ -160,7 +160,7 @@ describe("ExchangePage", () => {
     render(<ExchangePage />);
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/projects");
+      expect(mockPush).toHaveBeenCalledWith("/matters");
     });
     // Even on rejection, the key is consumed to avoid lingering attack vectors.
     expect(sessionStorage.getItem("portal_post_login_redirect")).toBeNull();

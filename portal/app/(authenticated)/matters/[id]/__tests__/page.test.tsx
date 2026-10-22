@@ -4,7 +4,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
-  usePathname: () => "/projects/proj-1",
+  usePathname: () => "/matters/proj-1",
   useParams: () => ({ id: "proj-1" }),
 }));
 
@@ -60,7 +60,7 @@ vi.mock("@/hooks/use-branding", () => ({
   }),
 }));
 
-import ProjectDetailPage from "@/app/(authenticated)/projects/[id]/page";
+import ProjectDetailPage from "@/app/(authenticated)/matters/[id]/page";
 
 const mockProject = {
   id: "proj-1",

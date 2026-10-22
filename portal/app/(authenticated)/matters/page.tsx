@@ -73,7 +73,7 @@ export default function ProjectsPage() {
       <PendingAcceptancesList />
 
       <h1 className="font-display mb-6 text-2xl font-semibold text-slate-900">
-        Your Matters
+        Your matters
       </h1>
 
       {!isLoading && !error && projects.length > 0 && (

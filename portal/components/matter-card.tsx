@@ -32,7 +32,7 @@ function formatRelativeTime(dateString: string): string {
 
 export function MatterCard({ matter }: MatterCardProps) {
   return (
-    <Link href={`/projects/${matter.id}`} className="block">
+    <Link href={`/matters/${matter.id}`} className="block">
       <Card className="transition-shadow hover:shadow-md">
         <CardHeader>
           <CardTitle className="text-base">{matter.name}</CardTitle>

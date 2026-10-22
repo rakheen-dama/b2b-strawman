@@ -50,7 +50,7 @@ export default function RequestsPage() {
   return (
     <div>
       <h1 className="font-display mb-6 text-2xl font-semibold text-slate-900">
-        Information requests
+        Documents & requests
       </h1>
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">

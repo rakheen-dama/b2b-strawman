@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/projects",
+  usePathname: () => "/matters",
 }));
 
 vi.mock("next/link", () => ({
@@ -73,24 +73,43 @@ describe("PortalSidebar (desktop)", () => {
     cleanup();
   });
 
-  // Phase 87 611E: labels render directly (no t() pass). These are today's legal labels —
-  // "Fee Notes" is what legal-za tenants already saw via t("Invoices"). 617A re-authors them.
-  it("renders all 8 nav items for legal-za with all modules enabled", () => {
+  // Phase 87 S10 (617A, arch §12.8): legal-native labels; Acceptance dropped (no page).
+  it("renders the 7 nav items for legal-za with all modules enabled", () => {
     render(<PortalSidebar />);
     for (const label of [
       "Home",
       "Matters",
-      "Trust",
-      "Deadlines",
-      "Fee Notes",
-      "Requests",
-      "Acceptance",
+      "Trust statement",
+      "Diary dates",
+      "Fee notes",
+      "Documents & requests",
       "Activity",
     ]) {
       expect(screen.getByText(label)).toBeInTheDocument();
     }
-    expect(screen.queryByText("Invoices")).not.toBeInTheDocument();
-    expect(screen.queryByText("Projects")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("link")).toHaveLength(7 + 1); // + footer Profile link
+    for (const gone of [
+      "Acceptance",
+      "Invoices",
+      "Projects",
+      "Fee Notes",
+      "Trust",
+      "Deadlines",
+      "Requests",
+    ]) {
+      expect(screen.queryByText(gone)).not.toBeInTheDocument();
+    }
+  });
+
+  it("links Matters to /matters", () => {
+    render(<PortalSidebar />);
+    expect(screen.getByText("Matters").closest("a")).toHaveAttribute(
+      "href",
+      "/matters",
+    );
+    expect(
+      document.querySelector('a[href="/acceptance"]'),
+    ).not.toBeInTheDocument();
   });
 
   it("does not render a Documents link (GAP-P-07: route not implemented)", () => {
@@ -100,7 +119,7 @@ describe("PortalSidebar (desktop)", () => {
 
   it("renders the active-route indicator on the current route only", () => {
     render(<PortalSidebar />);
-    // pathname mock = /projects → the "Matters" link is the only active item.
+    // pathname mock = /matters → the "Matters" link is the only active item.
     const indicators = screen.getAllByTestId("nav-active-indicator");
     expect(indicators).toHaveLength(1);
   });

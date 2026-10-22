@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
-  usePathname: () => "/projects/proj-1",
+  usePathname: () => "/matters/proj-1",
 }));
 
 // Mock api-client

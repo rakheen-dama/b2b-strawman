@@ -10,8 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   createChecklistTemplate,
   type CreateChecklistTemplateInput,
-} from "@/app/(app)/org/[slug]/settings/checklists/actions";
+} from "@/app/(app)/org/[slug]/settings/matters/_tabs/checklists-actions";
 import type { ClientType } from "@/lib/types";
+import { settingsHref } from "@/lib/settings-nav";
 
 const CUSTOMER_TYPES: { value: ClientType; label: string }[] = [
   { value: "INDIVIDUAL", label: "Individual" },
@@ -96,7 +97,7 @@ export function CreateChecklistTemplateForm({ slug }: CreateChecklistTemplateFor
     try {
       const result = await createChecklistTemplate(slug, input);
       if (result.success) {
-        router.push(`/org/${slug}/settings/checklists`);
+        router.push(settingsHref(slug, "matters", "checklists"));
       } else {
         setError(result.error ?? "Failed to create checklist template.");
       }
@@ -270,7 +271,10 @@ export function CreateChecklistTemplateForm({ slug }: CreateChecklistTemplateFor
       {error && <p className="text-destructive text-sm">{error}</p>}
 
       <div className="flex justify-end gap-3">
-        <Button variant="soft" onClick={() => router.push(`/org/${slug}/settings/checklists`)}>
+        <Button
+          variant="soft"
+          onClick={() => router.push(settingsHref(slug, "matters", "checklists"))}
+        >
           Cancel
         </Button>
         <Button onClick={handleCreate} disabled={isCreating || !name.trim()}>

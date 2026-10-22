@@ -6,7 +6,7 @@ import {
   updateFieldDefinitionAction,
   fetchFieldUsageAction,
   type FieldUsageInfo,
-} from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
+} from "@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-actions";
 import type { EntityType, FieldType, FieldDefinitionResponse } from "@/lib/types";
 import type { PrerequisiteContext } from "@/components/prerequisite/types";
 import type { ConditionOperator } from "./field-definition-constants";

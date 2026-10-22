@@ -7,7 +7,7 @@ import type { FieldDefinitionResponse, FieldGroupResponse } from "@/lib/types";
 const mockCreateFieldGroup = vi.fn();
 const mockUpdateFieldGroup = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-actions", () => ({
   createFieldGroupAction: (...args: unknown[]) => mockCreateFieldGroup(...args),
   updateFieldGroupAction: (...args: unknown[]) => mockUpdateFieldGroup(...args),
 }));

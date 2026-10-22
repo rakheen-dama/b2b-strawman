@@ -7,7 +7,7 @@ import { SUGGESTED_WORK_TYPES } from "@/lib/constants/work-types";
 const mockInstantiateTemplate = vi.fn();
 const mockRouterPush = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/project-templates/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/templates-actions", () => ({
   instantiateTemplateAction: (...args: unknown[]) => mockInstantiateTemplate(...args),
 }));
 

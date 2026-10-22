@@ -21,9 +21,10 @@ import {
   createProjectTemplateAction,
   updateProjectTemplateAction,
   updateRequiredCustomerFieldsAction,
-} from "@/app/(app)/org/[slug]/settings/project-templates/actions";
+} from "@/app/(app)/org/[slug]/settings/matters/_tabs/templates-actions";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { TagResponse, FieldDefinitionResponse } from "@/lib/types";
+import { settingsHref } from "@/lib/settings-nav";
 
 interface TemplateEditorProps {
   slug: string;
@@ -281,7 +282,7 @@ export function TemplateEditor({
       } else {
         const result = await createProjectTemplateAction(slug, payload);
         if (result.success) {
-          router.push(`/org/${slug}/settings/project-templates`);
+          router.push(settingsHref(slug, "matters", "templates"));
         } else {
           setError(result.error ?? "Failed to create template.");
         }
@@ -685,7 +686,7 @@ export function TemplateEditor({
         <Button
           variant="soft"
           type="button"
-          onClick={() => router.push(`/org/${slug}/settings/project-templates`)}
+          onClick={() => router.push(settingsHref(slug, "matters", "templates"))}
         >
           Cancel
         </Button>

@@ -19,7 +19,7 @@ import {
 import {
   deleteTemplateAction,
   duplicateTemplateAction,
-} from "@/app/(app)/org/[slug]/settings/project-templates/actions";
+} from "@/app/(app)/org/[slug]/settings/matters/_tabs/templates-actions";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 
 interface TemplateListProps {
@@ -135,7 +135,7 @@ export function TemplateList({ slug, templates, canManage }: TemplateListProps) 
               {canManage && (
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <Link href={`/org/${slug}/settings/project-templates/${template.id}`}>
+                    <Link href={`/org/${slug}/settings/matters/templates/${template.id}`}>
                       <Button variant="ghost" size="sm" title="Edit template">
                         <Pencil className="size-4" />
                         <span className="sr-only">Edit {template.name}</span>

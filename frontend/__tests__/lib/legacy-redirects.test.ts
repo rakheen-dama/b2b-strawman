@@ -219,6 +219,86 @@ describe("LEGACY_REDIRECTS", () => {
     expect(fs.existsSync(path.join(settingsDir, "firm", "page.tsx"))).toBe(true);
   });
 
+  // Phase 87 S9 (616B, ADR-341): old Matters settings page → its /settings/matters tab id …
+  const MATTERS_TAB_ROWS: [string, string][] = [
+    ["project-templates", "templates"],
+    ["project-naming", "naming"],
+    ["custom-fields", "custom-fields"],
+    ["tags", "tags"],
+    ["checklists", "checklists"],
+    ["request-templates", "request-templates"],
+    ["request-settings", "request-settings"],
+  ];
+  // … and old editor route → its route under /settings/matters (same param names).
+  const MATTERS_ROUTE_ROWS: [string, string][] = [
+    ["project-templates/:id", "matters/templates/:id"],
+    ["checklists/new", "matters/checklists/new"],
+    ["checklists/:id", "matters/checklists/:id"],
+    ["checklists/:id/edit", "matters/checklists/:id/edit"],
+    ["request-templates/new", "matters/request-templates/new"],
+    ["request-templates/:id", "matters/request-templates/:id"],
+  ];
+
+  it("redirects the seven Matters settings pages to their /settings/matters tabs (616B)", () => {
+    for (const [old, tab] of MATTERS_TAB_ROWS) {
+      expect(LEGACY_REDIRECTS).toContainEqual({
+        source: `/org/:slug/settings/${old}`,
+        destination: `/org/:slug/settings/matters?tab=${tab}`,
+        permanent: true,
+      });
+    }
+  });
+
+  it("redirects the six Matters editor routes to their routes under /settings/matters (616B)", () => {
+    for (const [old, next] of MATTERS_ROUTE_ROWS) {
+      expect(LEGACY_REDIRECTS).toContainEqual({
+        source: `/org/:slug/settings/${old}`,
+        destination: `/org/:slug/settings/${next}`,
+        permanent: true,
+      });
+    }
+  });
+
+  it("routes each old Matters URL to the right row — :id never swallows /new or /edit (616B)", () => {
+    expect(firstMatch("/org/x/settings/checklists")?.destination).toBe(
+      "/org/:slug/settings/matters?tab=checklists"
+    );
+    expect(firstMatch("/org/x/settings/checklists/new")?.destination).toBe(
+      "/org/:slug/settings/matters/checklists/new"
+    );
+    expect(firstMatch("/org/x/settings/checklists/1")?.destination).toBe(
+      "/org/:slug/settings/matters/checklists/:id"
+    );
+    expect(firstMatch("/org/x/settings/checklists/1/edit")?.destination).toBe(
+      "/org/:slug/settings/matters/checklists/:id/edit"
+    );
+    expect(firstMatch("/org/x/settings/request-templates/new")?.destination).toBe(
+      "/org/:slug/settings/matters/request-templates/new"
+    );
+    expect(firstMatch("/org/x/settings/project-templates/new")?.destination).toBe(
+      "/org/:slug/settings/matters/templates/:id"
+    );
+    // The new family page and its editor routes are not redirect sources.
+    expect(firstMatch("/org/x/settings/matters")).toBeUndefined();
+    expect(firstMatch("/org/x/settings/matters/checklists/1/edit")).toBeUndefined();
+  });
+
+  it("leaves the seven Matters pages deleted and serves /settings/matters + its editors (616B)", () => {
+    const settingsDir = path.resolve(__dirname, "../../app/(app)/org/[slug]/settings");
+    for (const [old] of MATTERS_TAB_ROWS) {
+      expect(fs.existsSync(path.join(settingsDir, old, "page.tsx")), old).toBe(false);
+    }
+    expect(fs.existsSync(path.join(settingsDir, "matters", "page.tsx"))).toBe(true);
+    for (const [, next] of MATTERS_ROUTE_ROWS) {
+      const dir = next.replace(/:id/g, "[id]");
+      expect(fs.existsSync(path.join(settingsDir, dir, "page.tsx")), next).toBe(true);
+    }
+    for (const [old] of MATTERS_ROUTE_ROWS) {
+      const dir = old.replace(/:id/g, "[id]");
+      expect(fs.existsSync(path.join(settingsDir, dir, "page.tsx")), old).toBe(false);
+    }
+  });
+
   it("keeps the pre-Phase-87 /settings/team row", () => {
     expect(LEGACY_REDIRECTS).toContainEqual({
       source: "/org/:slug/settings/team",

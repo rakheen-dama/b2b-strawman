@@ -2,7 +2,7 @@
 
 import { ChevronRight } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import type { FieldUsageInfo } from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
+import type { FieldUsageInfo } from "@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-actions";
 
 interface FieldUsageSectionProps {
   fieldUsage: FieldUsageInfo;

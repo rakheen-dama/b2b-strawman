@@ -119,7 +119,6 @@ const FAMILIES = [
     label: "Matters",
     href: familyHref("matters"),
     icon: Scale,
-    pending: true,
     tabs: [
       {
         id: "templates",
@@ -131,12 +130,20 @@ const FAMILIES = [
         id: "naming",
         label: "Naming",
         description: "Configure auto-naming patterns for new matters",
+        // Ruled exception (D18, 616B — D6 rule): old nav had no flag, but the former page denied
+        // non-admins; a member-visible tab holding only a denial message is the "disabled tab"
+        // §12.7.4 forbids.
+        adminOnly: true,
         keywords: ["matter naming"],
       },
       {
         id: "custom-fields",
         label: "Custom fields",
         description: "Define custom fields and groups for matters, tasks, and clients",
+        // Ruled exception (D18, 616B — D6 rule): old nav had no flag, but the former page denied
+        // non-admins; a member-visible tab holding only a denial message is the "disabled tab"
+        // §12.7.4 forbids.
+        adminOnly: true,
       },
       {
         id: "tags",
@@ -147,16 +154,28 @@ const FAMILIES = [
         id: "checklists",
         label: "Checklists",
         description: "Manage checklist templates for client onboarding",
+        // Ruled exception (D18, 616B — D6 rule): old nav had no flag, but the former page denied
+        // non-admins; a member-visible tab holding only a denial message is the "disabled tab"
+        // §12.7.4 forbids.
+        adminOnly: true,
       },
       {
         id: "request-templates",
         label: "Request templates",
         description: "Create and manage reusable information request templates",
+        // Ruled exception (D18, 616B — D6 rule): old nav had no flag, but the former page denied
+        // non-admins; a member-visible tab holding only a denial message is the "disabled tab"
+        // §12.7.4 forbids.
+        adminOnly: true,
       },
       {
         id: "request-settings",
         label: "Request settings",
         description: "Configure the default reminder interval for information requests",
+        // Ruled exception (D18, 616B — D6 rule): old nav had no flag, but the former page denied
+        // non-admins; a member-visible tab holding only a denial message is the "disabled tab"
+        // §12.7.4 forbids.
+        adminOnly: true,
       },
     ],
   },

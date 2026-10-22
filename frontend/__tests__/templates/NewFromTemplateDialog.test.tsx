@@ -10,7 +10,7 @@ const mockInstantiateTemplate = vi.fn();
 const mockCheckEngagement = vi.fn();
 const mockRouterPush = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/project-templates/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/templates-actions", () => ({
   saveAsTemplateAction: vi.fn(),
   deleteTemplateAction: vi.fn(),
   duplicateTemplateAction: vi.fn(),

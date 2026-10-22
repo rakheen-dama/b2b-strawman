@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { deleteFieldDefinitionAction } from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
+import { deleteFieldDefinitionAction } from "@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-actions";
 
 interface DeleteFieldDialogProps {
   slug: string;

@@ -18,7 +18,7 @@ import { WORK_TYPE_PLACEHOLDER } from "@/lib/constants/work-types";
 import { Label } from "@b2mash/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { TemplatePicker } from "@/components/templates/TemplatePicker";
-import { instantiateTemplateAction } from "@/app/(app)/org/[slug]/settings/project-templates/actions";
+import { instantiateTemplateAction } from "@/app/(app)/org/[slug]/settings/matters/_tabs/templates-actions";
 import { checkEngagementPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
 import { toast } from "sonner";
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";

@@ -7,7 +7,7 @@ import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Save, Loader2, ListChecks } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
-import { updateEntityCustomFieldsAction } from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
+import { updateEntityCustomFieldsAction } from "@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-actions";
 import type {
   EntityType,
   FieldDefinitionResponse,
@@ -15,6 +15,7 @@ import type {
   FieldGroupMemberResponse,
 } from "@/lib/types";
 import { formatDate, formatCurrency } from "@/lib/format";
+import { settingsHref } from "@/lib/settings-nav";
 
 interface CustomFieldSectionProps {
   entityType: EntityType;
@@ -528,7 +529,7 @@ export function CustomFieldSection({
         title="No custom fields configured"
         description="Custom fields let you track additional information specific to your workflow."
         actionLabel="Configure Fields"
-        actionHref={`/org/${slug}/settings/custom-fields`}
+        actionHref={settingsHref(slug, "matters", "custom-fields")}
       />
     );
   }

@@ -1,0 +1,260 @@
+"use server";
+
+import { api, ApiError, entityApiPrefix, setEntityFieldGroups } from "@/lib/api";
+import { revalidatePath } from "next/cache";
+import type {
+  CreateFieldDefinitionRequest,
+  UpdateFieldDefinitionRequest,
+  CreateFieldGroupRequest,
+  UpdateFieldGroupRequest,
+  EntityType,
+} from "@/lib/types";
+
+/**
+ * Route segment of an entity's pages (Phase 87 610E). 610D moved /projects → /matters and
+ * /customers → /clients; other entity types keep the pluralised lowercase type. Deliberately
+ * NOT `entityApiPrefix` — that is the wire path, this is the app route.
+ */
+function entityRouteSegment(entityType: EntityType): string {
+  if (entityType === "PROJECT") return "matters";
+  if (entityType === "CUSTOMER") return "clients";
+  return entityType.toLowerCase() + "s";
+}
+
+interface ActionResult {
+  success: boolean;
+  error?: string;
+}
+
+export async function createFieldDefinitionAction(
+  slug: string,
+  req: CreateFieldDefinitionRequest
+): Promise<ActionResult> {
+  try {
+    await api.post("/api/field-definitions", req);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return {
+          success: false,
+          error: "You do not have permission to create field definitions.",
+        };
+      }
+      if (error.status === 409) {
+        return {
+          success: false,
+          error: "A field definition with this slug already exists.",
+        };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/settings/matters`);
+  return { success: true };
+}
+
+export async function updateFieldDefinitionAction(
+  slug: string,
+  id: string,
+  req: UpdateFieldDefinitionRequest
+): Promise<ActionResult> {
+  try {
+    await api.put(`/api/field-definitions/${id}`, req);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return {
+          success: false,
+          error: "You do not have permission to update field definitions.",
+        };
+      }
+      if (error.status === 409) {
+        return {
+          success: false,
+          error: "A field definition with this slug already exists.",
+        };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/settings/matters`);
+  return { success: true };
+}
+
+export async function deleteFieldDefinitionAction(slug: string, id: string): Promise<ActionResult> {
+  try {
+    await api.delete(`/api/field-definitions/${id}`);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return {
+          success: false,
+          error: "You do not have permission to delete field definitions.",
+        };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/settings/matters`);
+  return { success: true };
+}
+
+export async function createFieldGroupAction(
+  slug: string,
+  req: CreateFieldGroupRequest
+): Promise<ActionResult> {
+  try {
+    await api.post("/api/field-groups", req);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return {
+          success: false,
+          error: "You do not have permission to create field groups.",
+        };
+      }
+      if (error.status === 409) {
+        return {
+          success: false,
+          error: "A field group with this slug already exists.",
+        };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/settings/matters`);
+  return { success: true };
+}
+
+export async function updateFieldGroupAction(
+  slug: string,
+  id: string,
+  req: UpdateFieldGroupRequest
+): Promise<ActionResult> {
+  try {
+    await api.put(`/api/field-groups/${id}`, req);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return {
+          success: false,
+          error: "You do not have permission to update field groups.",
+        };
+      }
+      if (error.status === 409) {
+        return {
+          success: false,
+          error: "A field group with this slug already exists.",
+        };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/settings/matters`);
+  return { success: true };
+}
+
+export async function deleteFieldGroupAction(slug: string, id: string): Promise<ActionResult> {
+  try {
+    await api.delete(`/api/field-groups/${id}`);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return {
+          success: false,
+          error: "You do not have permission to delete field groups.",
+        };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/settings/matters`);
+  return { success: true };
+}
+
+// ---- Field Usage ----
+
+export interface FieldUsageInfo {
+  templates: Array<{ id: string; name: string; category: string }>;
+  clauses: Array<{ id: string; title: string }>;
+}
+
+export async function fetchFieldUsageAction(fieldId: string): Promise<FieldUsageInfo | null> {
+  try {
+    return await api.get<FieldUsageInfo>(`/api/field-definitions/${fieldId}/usage`);
+  } catch {
+    return null;
+  }
+}
+
+// ---- Entity Custom Field Value Actions ----
+
+export async function updateEntityCustomFieldsAction(
+  slug: string,
+  entityType: EntityType,
+  entityId: string,
+  customFields: Record<string, unknown>
+): Promise<ActionResult> {
+  const prefix = entityRouteSegment(entityType);
+  const apiPrefix = entityApiPrefix(entityType);
+  try {
+    if (entityType === "INVOICE") {
+      // Invoices have a dedicated custom-fields endpoint; PUT /api/invoices/{id}
+      // only accepts UpdateInvoiceRequest (4 fields) and would reject the full entity.
+      await api.put(`/api/${apiPrefix}/${entityId}/custom-fields`, { customFields });
+    } else {
+      // For other entity types: fetch the current entity first so we can send a
+      // full PUT body. The backend PUT endpoints require all required fields (e.g. name).
+      const current = await api.get<Record<string, unknown>>(`/api/${apiPrefix}/${entityId}`);
+      await api.put(`/api/${apiPrefix}/${entityId}`, { ...current, customFields });
+    }
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return { success: false, error: "You do not have permission to update custom fields." };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/${prefix}/${entityId}`);
+  revalidatePath(`/org/${slug}/${prefix}`);
+  return { success: true };
+}
+
+export async function setEntityFieldGroupsAction(
+  slug: string,
+  entityType: EntityType,
+  entityId: string,
+  appliedFieldGroups: string[]
+): Promise<ActionResult> {
+  const prefix = entityRouteSegment(entityType);
+  try {
+    await setEntityFieldGroups(entityType, entityId, appliedFieldGroups);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return { success: false, error: "You do not have permission to manage field groups." };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/${prefix}/${entityId}`);
+  revalidatePath(`/org/${slug}/${prefix}`);
+  return { success: true };
+}

@@ -7,7 +7,7 @@ import { Button } from "@b2mash/ui/button";
 import {
   duplicateTemplateAction,
   deactivateTemplateAction,
-} from "@/app/(app)/org/[slug]/settings/request-templates/actions";
+} from "@/app/(app)/org/[slug]/settings/matters/_tabs/request-templates-actions";
 
 interface RequestTemplateActionsProps {
   slug: string;
@@ -61,7 +61,7 @@ export function RequestTemplateActions({
     <div className="space-y-1">
       <div className="flex items-center justify-end gap-1">
         {source === "CUSTOM" && (
-          <Link href={`/org/${slug}/settings/request-templates/${templateId}`}>
+          <Link href={`/org/${slug}/settings/matters/request-templates/${templateId}`}>
             <Button variant="ghost" size="sm">
               <Pencil className="size-4" />
               <span className="sr-only">Edit {templateName}</span>

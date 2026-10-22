@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { deleteTagAction } from "@/app/(app)/org/[slug]/settings/tags/actions";
+import { deleteTagAction } from "@/app/(app)/org/[slug]/settings/matters/_tabs/tags-actions";
 
 interface DeleteTagDialogProps {
   slug: string;

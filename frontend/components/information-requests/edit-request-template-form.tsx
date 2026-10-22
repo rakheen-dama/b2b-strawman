@@ -11,11 +11,12 @@ import { ResponseTypeBadge } from "@/components/information-requests/response-ty
 import {
   updateTemplateAction,
   duplicateTemplateAction,
-} from "@/app/(app)/org/[slug]/settings/request-templates/actions";
+} from "@/app/(app)/org/[slug]/settings/matters/_tabs/request-templates-actions";
 import type {
   RequestTemplateResponse,
   UpdateRequestTemplateRequest,
 } from "@/lib/api/information-requests";
+import { settingsHref } from "@/lib/settings-nav";
 
 type ResponseType = "FILE_UPLOAD" | "TEXT_RESPONSE";
 
@@ -114,7 +115,7 @@ export function EditRequestTemplateForm({ slug, template }: EditRequestTemplateF
     try {
       const result = await updateTemplateAction(slug, template.id, input);
       if (result.success) {
-        router.push(`/org/${slug}/settings/request-templates`);
+        router.push(settingsHref(slug, "matters", "request-templates"));
       } else {
         setError(result.error ?? "Failed to update request template.");
       }
@@ -131,7 +132,7 @@ export function EditRequestTemplateForm({ slug, template }: EditRequestTemplateF
     try {
       const result = await duplicateTemplateAction(slug, template.id);
       if (result.success && result.data) {
-        router.push(`/org/${slug}/settings/request-templates/${result.data.id}`);
+        router.push(`/org/${slug}/settings/matters/request-templates/${result.data.id}`);
       } else {
         setError(result.error ?? "Failed to duplicate template.");
       }
@@ -214,7 +215,7 @@ export function EditRequestTemplateForm({ slug, template }: EditRequestTemplateF
         <div className="flex justify-end gap-3">
           <Button
             variant="soft"
-            onClick={() => router.push(`/org/${slug}/settings/request-templates`)}
+            onClick={() => router.push(settingsHref(slug, "matters", "request-templates"))}
           >
             Back
           </Button>
@@ -386,7 +387,7 @@ export function EditRequestTemplateForm({ slug, template }: EditRequestTemplateF
       <div className="flex justify-end gap-3">
         <Button
           variant="soft"
-          onClick={() => router.push(`/org/${slug}/settings/request-templates`)}
+          onClick={() => router.push(settingsHref(slug, "matters", "request-templates"))}
         >
           Cancel
         </Button>

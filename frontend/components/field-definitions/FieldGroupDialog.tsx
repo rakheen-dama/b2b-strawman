@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 import {
   createFieldGroupAction,
   updateFieldGroupAction,
-} from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
+} from "@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-actions";
 import type { EntityType, FieldGroupResponse, FieldDefinitionResponse } from "@/lib/types";
 
 const ENTITY_TYPES: { value: EntityType; label: string }[] = [

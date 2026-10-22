@@ -5,7 +5,7 @@ import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Loader2 } from "lucide-react";
-import { updateProjectNamingPattern } from "@/app/(app)/org/[slug]/settings/project-naming/actions";
+import { updateProjectNamingPattern } from "@/app/(app)/org/[slug]/settings/matters/_tabs/naming-actions";
 
 interface ProjectNamingSettingsProps {
   slug: string;

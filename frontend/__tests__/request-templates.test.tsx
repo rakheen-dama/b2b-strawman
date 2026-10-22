@@ -18,7 +18,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/settings/request-templates/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/request-templates-actions", () => ({
   createTemplateAction: (...args: unknown[]) => mockCreateTemplateAction(...args),
   updateTemplateAction: (...args: unknown[]) => mockUpdateTemplateAction(...args),
   deactivateTemplateAction: (...args: unknown[]) => mockDeactivateTemplateAction(...args),
@@ -213,7 +213,7 @@ describe("RequestTemplates", () => {
     });
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/org/acme/settings/request-templates/t3");
+      expect(mockPush).toHaveBeenCalledWith("/org/acme/settings/matters/request-templates/t3");
     });
   });
 

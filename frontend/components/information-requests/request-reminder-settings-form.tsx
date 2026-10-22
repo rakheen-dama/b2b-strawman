@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Loader2 } from "lucide-react";
-import { updateRequestReminderSettings } from "@/app/(app)/org/[slug]/settings/request-settings/actions";
+import { updateRequestReminderSettings } from "@/app/(app)/org/[slug]/settings/matters/_tabs/request-settings-actions";
 
 interface RequestReminderSettingsFormProps {
   slug: string;

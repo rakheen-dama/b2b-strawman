@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   updateChecklistTemplate,
   type UpdateChecklistTemplateInput,
-} from "@/app/(app)/org/[slug]/settings/checklists/actions";
+} from "@/app/(app)/org/[slug]/settings/matters/_tabs/checklists-actions";
 import type { ChecklistTemplateResponse, ClientType } from "@/lib/types";
 
 const CUSTOMER_TYPES: { value: ClientType; label: string }[] = [
@@ -113,7 +113,7 @@ export function EditChecklistTemplateForm({ slug, template }: EditChecklistTempl
     try {
       const result = await updateChecklistTemplate(slug, template.id, input);
       if (result.success) {
-        router.push(`/org/${slug}/settings/checklists/${template.id}`);
+        router.push(`/org/${slug}/settings/matters/checklists/${template.id}`);
       } else {
         setError(result.error ?? "Failed to update checklist template.");
       }
@@ -289,7 +289,7 @@ export function EditChecklistTemplateForm({ slug, template }: EditChecklistTempl
       <div className="flex justify-end gap-3">
         <Button
           variant="soft"
-          onClick={() => router.push(`/org/${slug}/settings/checklists/${template.id}`)}
+          onClick={() => router.push(`/org/${slug}/settings/matters/checklists/${template.id}`)}
         >
           Cancel
         </Button>

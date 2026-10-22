@@ -82,6 +82,11 @@ export const NON_ROUTABLE_PREFIXES: readonly string[] = [
   "ai",
   "information-requests",
   "legal",
+  // Phase 87 S9 (616B, ADR-341): Matters settings editor sub-routes have no list page of their
+  // own — the list is a ?tab= of /settings/matters.
+  "settings/matters/checklists",
+  "settings/matters/request-templates",
+  "settings/matters/templates",
   "settings/templates/[id]",
 ];
 

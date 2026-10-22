@@ -7,7 +7,7 @@ import type { TagResponse } from "@/lib/types";
 const mockCreateTag = vi.fn();
 const mockSetEntityTags = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/tags/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/tags-actions", () => ({
   createTagAction: (...args: unknown[]) => mockCreateTag(...args),
   setEntityTagsAction: (...args: unknown[]) => mockSetEntityTags(...args),
 }));

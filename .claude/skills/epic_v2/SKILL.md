@@ -621,8 +621,11 @@ For EACH finding, report one of:
 
 ### 4.4 — Re-review after fix (max 2 cycles)
 
-After the fixer pushes, re-dispatch ONLY Agent A (bug/quality) on the new diff to confirm no
-regressions. Do NOT re-dispatch Agent B unless Agent A flags an architectural regression.
+After the fixer pushes, first refresh the diff file (`gh pr diff {PR_NUMBER} > /tmp/pr-{PR_NUMBER}.diff`),
+then re-dispatch Agent A (bug/quality) on it to confirm no regressions. Agent B's full re-review is
+needed only if Agent A flags an architectural regression, but both verdicts must still be re-bound to
+the final head before merge (Step 4.5): batch all fixes first, then dispatch a fresh A and B in
+parallel on the final SHA.
 
 If Agent A returns Critical or High findings on the second pass, run ONE more fix cycle (max 2
 fix cycles total). If findings persist after 2 cycles, note them in the PR description and STOP
@@ -649,7 +652,7 @@ reviews actually ran. **Without this step, merge will be rejected.** Append a `#
 section to the PR body containing:
 - Agent A (bug/quality) **final** verdict block (after fix cycles) — must contain a verdict line **bound to the commit the reviewer read**: `## Verdict: APPROVE @<sha>` where `<sha>` is ≥7 hex chars of the PR head at review time. If the reviewer wrote a bare `## Verdict: APPROVE`, append ` @<sha>` yourself with the SHA you gave the reviewer. A `REQUEST_CHANGES` must be followed by a fresh review of the fixed commit and a new bound APPROVE — "Critical/High resolved" prose no longer satisfies the gate.
 - Agent B (architecture) **final** verdict block — same rule.
-- **Any push after the reviews invalidates them**: the hook compares the verdict SHA to the current head. Re-review the new head with a **fresh foreground reviewer dispatch** (same Agent A/B template, prior findings + new SHA pasted in) and re-record. Do not `SendMessage` the earlier reviewer: in auto-merge mode a resumed agent does not keep the session alive.
+- **Any push after the reviews invalidates them**: the hook compares the verdict SHA to the current head. Re-review the new head with a **fresh foreground reviewer dispatch** of BOTH Agent A and Agent B (same templates, in parallel): first regenerate `/tmp/pr-{PR_NUMBER}.diff` with `gh pr diff {PR_NUMBER}` (the templates read that file; a stale one lets a reviewer approve a commit it never saw), and paste the prior findings, the new SHA and `git diff <reviewed-sha>..<new-sha>` as the focus. Then re-record. Do not `SendMessage` the earlier reviewer: in auto-merge mode a resumed agent does not keep the session alive.
 - The CodeRabbit status line from Step 4.2b (`## CodeRabbit: REVIEWED ...` or `## CodeRabbit: DEFERRED ...`).
 
 ```bash

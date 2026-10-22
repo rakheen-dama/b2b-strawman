@@ -31,7 +31,7 @@ export async function toggleRuleAction(slug: string, ruleId: string): Promise<Ac
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/settings/automations`);
+  revalidatePath(`/org/${slug}/settings/connections`);
   return { success: true };
 }
 

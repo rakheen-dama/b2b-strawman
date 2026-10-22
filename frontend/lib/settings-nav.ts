@@ -33,8 +33,6 @@ export interface SettingsFamily {
   label: string;
   href: (slug: string) => string;
   icon: LucideIcon;
-  /** True until the family's page.tsx exists (616B–616D); 616D removes the flag. */
-  pending?: boolean;
   tabs: readonly SettingsTab[];
 }
 
@@ -277,7 +275,6 @@ const FAMILIES = [
     label: "Connections",
     href: familyHref("connections"),
     icon: Plug,
-    pending: true,
     tabs: [
       {
         id: "xero",

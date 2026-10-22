@@ -25,7 +25,7 @@ import { SyncEntryStateBadge } from "@/components/integrations/SyncEntryStateBad
 import {
   retrySyncEntryAction,
   reconcileSyncEntryAction,
-} from "@/app/(app)/org/[slug]/settings/integrations/xero/sync-log/actions";
+} from "@/app/(app)/org/[slug]/settings/connections/xero/sync-log/actions";
 import type { SyncEntryResponse } from "@/lib/types";
 
 interface SyncLogTableProps {

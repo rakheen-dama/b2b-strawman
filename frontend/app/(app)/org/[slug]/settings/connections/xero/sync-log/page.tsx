@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft, Activity } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
+import { settingsHref } from "@/lib/settings-nav";
 import { getSyncEntries } from "@/lib/api/integrations";
 import { SyncLogTable } from "@/components/integrations/SyncLogTable";
 import { SyncLogFilters } from "./sync-log-filters";
@@ -29,7 +30,7 @@ export default async function SyncLogPage({
     return (
       <div className="space-y-8">
         <Link
-          href={`/org/${slug}/settings/integrations/xero`}
+          href={settingsHref(slug, "connections", "xero")}
           className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ChevronLeft className="size-4" />
@@ -88,7 +89,7 @@ export default async function SyncLogPage({
   return (
     <div className="space-y-8">
       <Link
-        href={`/org/${slug}/settings/integrations/xero`}
+        href={settingsHref(slug, "connections", "xero")}
         className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
       >
         <ChevronLeft className="size-4" />

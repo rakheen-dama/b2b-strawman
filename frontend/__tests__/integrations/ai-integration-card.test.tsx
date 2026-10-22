@@ -9,7 +9,7 @@ const mockToggleIntegrationAction = vi.fn().mockResolvedValue({ success: true })
 const mockDeleteApiKeyAction = vi.fn().mockResolvedValue({ success: true });
 const mockFetchAiModels = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/integrations/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/connections/_tabs/integrations-actions", () => ({
   upsertIntegrationAction: (...args: unknown[]) => mockUpsertIntegrationAction(...args),
   toggleIntegrationAction: (...args: unknown[]) => mockToggleIntegrationAction(...args),
   deleteApiKeyAction: (...args: unknown[]) => mockDeleteApiKeyAction(...args),

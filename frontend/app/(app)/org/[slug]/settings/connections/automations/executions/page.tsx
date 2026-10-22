@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
+import { settingsHref } from "@/lib/settings-nav";
 import { redirect } from "next/navigation";
 import { listExecutions, listRules } from "@/lib/api/automations";
 import type {
@@ -24,7 +25,7 @@ export default async function ExecutionLogPage({
   const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin) {
-    redirect(`/org/${slug}/settings/automations`);
+    redirect(settingsHref(slug, "connections", "automations"));
   }
 
   let executions: PaginatedResponse<AutomationExecutionResponse> = {
@@ -51,7 +52,7 @@ export default async function ExecutionLogPage({
   return (
     <div className="space-y-8">
       <Link
-        href={`/org/${slug}/settings/automations`}
+        href={settingsHref(slug, "connections", "automations")}
         className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
       >
         <ChevronLeft className="size-4" />

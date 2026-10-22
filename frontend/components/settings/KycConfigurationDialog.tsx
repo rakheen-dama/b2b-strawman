@@ -24,7 +24,7 @@ import {
   upsertIntegrationAction,
   setApiKeyAction,
   testConnectionAction,
-} from "@/app/(app)/org/[slug]/settings/integrations/actions";
+} from "@/app/(app)/org/[slug]/settings/connections/_tabs/integrations-actions";
 
 interface KycConfigurationDialogProps {
   open: boolean;

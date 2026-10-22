@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { formatDateTime } from "@/lib/format";
-import { enableMcpAction, revokeMcpAction } from "./actions";
+import { enableMcpAction, revokeMcpAction } from "./mcp-actions";
 import { MCP_CONSENT_VERSION, type McpStatus } from "@/lib/types";
 
 interface McpConnectorCardProps {

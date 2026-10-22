@@ -50,7 +50,7 @@ export async function installPackAction(
 ): Promise<ActionResult<PackInstallResponse>> {
   try {
     const result = await installPack(packId);
-    revalidatePath(`/org/${slug}/settings/packs`);
+    revalidatePath(`/org/${slug}/settings/connections`);
     return { success: true, data: result };
   } catch (error) {
     console.error("[installPackAction] Failed to install pack:", packId, error);
@@ -98,6 +98,6 @@ export async function uninstallPackAction(slug: string, packId: string): Promise
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/settings/packs`);
+  revalidatePath(`/org/${slug}/settings/connections`);
   return { success: true };
 }

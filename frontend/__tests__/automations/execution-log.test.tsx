@@ -7,7 +7,7 @@ import type { AutomationExecutionResponse, PaginatedResponse } from "@/lib/api/a
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
-  usePathname: () => "/org/acme/settings/automations/executions",
+  usePathname: () => "/org/acme/settings/connections/automations/executions",
 }));
 
 const mockFetchExecutions = vi.fn().mockResolvedValue({
@@ -15,7 +15,7 @@ const mockFetchExecutions = vi.fn().mockResolvedValue({
   page: { totalElements: 0, totalPages: 0, size: 20, number: 0 },
 });
 
-vi.mock("@/app/(app)/org/[slug]/settings/automations/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/connections/_tabs/automations-actions", () => ({
   fetchExecutionsAction: (...args: unknown[]) => mockFetchExecutions(...args),
 }));
 

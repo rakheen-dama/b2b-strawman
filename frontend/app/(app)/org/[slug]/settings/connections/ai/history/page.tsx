@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
+import { settingsHref } from "@/lib/settings-nav";
 import { getAiExecutions } from "@/lib/api/ai";
 import type { AiExecutionListItem } from "@/lib/api/ai";
 import { ExecutionHistoryClient } from "./history-client";
@@ -21,7 +22,7 @@ export default async function ExecutionHistoryPage({
     return (
       <div className="space-y-8">
         <Link
-          href={`/org/${slug}/settings/ai`}
+          href={settingsHref(slug, "connections", "ai")}
           className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ChevronLeft className="size-4" />
@@ -61,7 +62,7 @@ export default async function ExecutionHistoryPage({
   return (
     <div className="space-y-6">
       <Link
-        href={`/org/${slug}/settings/ai`}
+        href={settingsHref(slug, "connections", "ai")}
         className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
       >
         <ChevronLeft className="size-4" />

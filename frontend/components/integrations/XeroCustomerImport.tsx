@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Upload, CheckCircle2 } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@b2mash/ui/card";
-import { importXeroCustomersAction } from "@/app/(app)/org/[slug]/settings/integrations/xero/actions";
+import { importXeroCustomersAction } from "@/app/(app)/org/[slug]/settings/connections/_tabs/xero-actions";
 import type { XeroClientImportResult } from "@/lib/types";
 
 interface XeroCustomerImportProps {

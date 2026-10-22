@@ -384,6 +384,97 @@ describe("LEGACY_REDIRECTS", () => {
     }
   });
 
+  // Phase 87 S9 (616D, ADR-341): old Connections settings page → its /settings/connections tab id …
+  const CONNECTIONS_TAB_ROWS: [string, string][] = [
+    ["integrations", "xero"],
+    ["integrations/xero", "xero"],
+    ["integrations/mcp", "mcp"],
+    ["ai", "ai"],
+    ["notifications", "notifications"],
+    ["packs", "packs"],
+    ["automations", "automations"],
+  ];
+  // … and old log route → its route under /settings/connections.
+  const CONNECTIONS_ROUTE_ROWS: [string, string][] = [
+    ["integrations/xero/sync-log", "connections/xero/sync-log"],
+    ["ai/history", "connections/ai/history"],
+    ["automations/executions", "connections/automations/executions"],
+  ];
+
+  it("redirects the seven Connections settings pages to their /settings/connections tabs (616D)", () => {
+    for (const [old, tab] of CONNECTIONS_TAB_ROWS) {
+      expect(LEGACY_REDIRECTS).toContainEqual({
+        source: `/org/:slug/settings/${old}`,
+        destination: `/org/:slug/settings/connections?tab=${tab}`,
+        permanent: true,
+      });
+    }
+  });
+
+  it("redirects the three Connections log routes under /settings/connections (616D)", () => {
+    for (const [old, next] of CONNECTIONS_ROUTE_ROWS) {
+      expect(LEGACY_REDIRECTS).toContainEqual({
+        source: `/org/:slug/settings/${old}`,
+        destination: `/org/:slug/settings/${next}`,
+        permanent: true,
+      });
+    }
+  });
+
+  it("routes each old Connections URL to the right row (616D)", () => {
+    // Whole-path matching: /settings/integrations does not swallow its former child pages.
+    expect(firstMatch("/org/x/settings/integrations")?.destination).toBe(
+      "/org/:slug/settings/connections?tab=xero"
+    );
+    expect(firstMatch("/org/x/settings/integrations/xero")?.destination).toBe(
+      "/org/:slug/settings/connections?tab=xero"
+    );
+    expect(firstMatch("/org/x/settings/integrations/xero/sync-log")?.destination).toBe(
+      "/org/:slug/settings/connections/xero/sync-log"
+    );
+    expect(firstMatch("/org/x/settings/ai/history")?.destination).toBe(
+      "/org/:slug/settings/connections/ai/history"
+    );
+    expect(firstMatch("/org/x/settings/automations/executions")?.destination).toBe(
+      "/org/:slug/settings/connections/automations/executions"
+    );
+    // The new family page and its kept routes are not redirect sources.
+    expect(firstMatch("/org/x/settings/connections")).toBeUndefined();
+    expect(firstMatch("/org/x/settings/connections/xero/sync-log")).toBeUndefined();
+    expect(firstMatch("/org/x/settings/connections/ai/history")).toBeUndefined();
+    expect(firstMatch("/org/x/settings/connections/automations/executions")).toBeUndefined();
+  });
+
+  it("leaves the seven Connections pages deleted and serves the family + its three routes (616D)", () => {
+    const settingsDir = path.resolve(__dirname, "../../app/(app)/org/[slug]/settings");
+    for (const dir of ["integrations", "ai", "notifications", "packs", "automations"]) {
+      expect(fs.existsSync(path.join(settingsDir, dir)), dir).toBe(false);
+    }
+    expect(fs.existsSync(path.join(settingsDir, "connections", "page.tsx"))).toBe(true);
+    for (const [, next] of CONNECTIONS_ROUTE_ROWS) {
+      expect(fs.existsSync(path.join(settingsDir, next, "page.tsx")), next).toBe(true);
+    }
+  });
+
+  it("holds the 43 Phase 87 settings rows — 32 tab + 11 route (616D, §12.7.2)", () => {
+    const settingsRows = ROWS.filter(
+      (r) =>
+        r.source.startsWith("/org/:slug/settings/") &&
+        r.destination.startsWith("/org/:slug/settings/")
+    );
+    expect(settingsRows).toHaveLength(43);
+    expect(settingsRows.filter((r) => r.destination.includes("?tab="))).toHaveLength(32);
+    expect(settingsRows.filter((r) => !r.destination.includes("?tab="))).toHaveLength(11);
+  });
+
+  it("leaves exactly 17 settings page.tsx — 5 families + 11 sub-routes + index (616D, §12.7.2)", () => {
+    const settingsDir = path.resolve(__dirname, "../../app/(app)/org/[slug]/settings");
+    const pages = fs
+      .readdirSync(settingsDir, { recursive: true, encoding: "utf8" })
+      .filter((entry) => path.basename(entry) === "page.tsx");
+    expect(pages).toHaveLength(17);
+  });
+
   it("keeps the pre-Phase-87 /settings/team row", () => {
     expect(LEGACY_REDIRECTS).toContainEqual({
       source: "/org/:slug/settings/team",

@@ -1,16 +1,10 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { listPackCatalog, listInstalledPacks } from "@/lib/api/packs";
 import { PacksPageClient } from "./packs-page-client";
+import type { SettingsTabProps } from "@/components/settings/settings-family-page";
 
-export const metadata: Metadata = {
-  title: "Packs",
-};
-
-export default async function PacksSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+/** Connections › Packs tab (Phase 87 S9, ADR-341) — the former packs settings page's loader. */
+export async function renderPacksTab({ slug }: SettingsTabProps) {
   const [caps, catalog, installed] = await Promise.all([
     fetchMyCapabilities(),
     listPackCatalog(),
@@ -21,14 +15,6 @@ export default async function PacksSettingsPage({ params }: { params: Promise<{ 
 
   return (
     <div className="space-y-8">
-      <Link
-        href={`/org/${slug}/settings`}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-      >
-        <ChevronLeft className="size-4" />
-        Settings
-      </Link>
-
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Packs</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">

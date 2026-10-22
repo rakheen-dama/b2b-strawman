@@ -1,17 +1,13 @@
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { HelpTip } from "@/components/help-tip";
 import { fetchNotificationPreferences } from "@/lib/actions/notifications";
 import type { PreferencesResponse } from "@/lib/actions/notifications";
 import { NotificationPreferencesForm } from "@/components/notifications/notification-preferences-form";
 
-export default async function NotificationPreferencesPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-
+/**
+ * Connections › Notifications tab (Phase 87 S9, ADR-341) — the former notification preferences
+ * settings page's loader.
+ */
+export async function renderNotificationsTab() {
   let initialPreferences: PreferencesResponse = { preferences: [] };
   try {
     initialPreferences = await fetchNotificationPreferences();
@@ -21,15 +17,6 @@ export default async function NotificationPreferencesPage({
 
   return (
     <div className="space-y-8">
-      {/* Back link */}
-      <Link
-        href={`/org/${slug}/settings`}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-      >
-        <ChevronLeft className="size-4" />
-        Settings
-      </Link>
-
       {/* Page header */}
       <div>
         <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">

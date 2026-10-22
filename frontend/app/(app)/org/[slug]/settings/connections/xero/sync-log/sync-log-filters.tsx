@@ -63,7 +63,7 @@ export function SyncLogFilters({
   );
 
   const clearFilters = useCallback(() => {
-    router.push(`/org/${slug}/settings/integrations/xero/sync-log`);
+    router.push(`/org/${slug}/settings/connections/xero/sync-log`);
   }, [router, slug]);
 
   const hasFilters = currentState || currentEntityType || currentDirection;

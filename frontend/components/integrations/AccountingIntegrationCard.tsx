@@ -3,6 +3,7 @@ import { Calculator, ExternalLink } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@b2mash/ui/card";
+import { settingsHref } from "@/lib/settings-nav";
 import type { XeroConnectionStatus } from "@/lib/types";
 
 interface AccountingIntegrationCardProps {
@@ -49,7 +50,7 @@ export function AccountingIntegrationCard({
       </CardHeader>
       <CardContent>
         <Button variant="outline" size="sm" asChild>
-          <Link href={`/org/${slug}/settings/integrations/xero`}>
+          <Link href={`${settingsHref(slug, "connections", "xero")}#xero`}>
             <ExternalLink className="mr-2 size-4" />
             Configure Xero
           </Link>

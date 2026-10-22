@@ -23,8 +23,7 @@ export async function enableMcpAction(
 ): Promise<ActionResult<McpStatus>> {
   try {
     await enableMcp(consentVersion);
-    revalidatePath(`/org/${slug}/settings/integrations/mcp`);
-    revalidatePath(`/org/${slug}/settings/integrations`);
+    revalidatePath(`/org/${slug}/settings/connections`);
     const status = await getMcpStatus();
     return { success: true, data: status };
   } catch (error) {
@@ -45,8 +44,7 @@ export async function enableMcpAction(
 export async function revokeMcpAction(slug: string): Promise<ActionResult<McpStatus>> {
   try {
     await revokeMcp();
-    revalidatePath(`/org/${slug}/settings/integrations/mcp`);
-    revalidatePath(`/org/${slug}/settings/integrations`);
+    revalidatePath(`/org/${slug}/settings/connections`);
     const status = await getMcpStatus();
     return { success: true, data: status };
   } catch (error) {

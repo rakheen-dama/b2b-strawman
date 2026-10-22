@@ -32,6 +32,6 @@ export async function updateAiProfileAction(
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-  revalidatePath(`/org/${slug}/settings/ai`);
+  revalidatePath(`/org/${slug}/settings/connections`);
   return { success: true };
 }

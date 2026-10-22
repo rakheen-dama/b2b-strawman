@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getAiProfile, getAiCostSummary } from "@/lib/api/ai";
 import { AiProfileForm } from "@/components/ai/ai-profile-form";
 import { AiCostSummary } from "@/components/ai/ai-cost-summary";
 import type { AiProfileResponse, AiCostSummaryResponse } from "@/lib/api/ai";
+import { settingsHref } from "@/lib/settings-nav";
+import type { SettingsTabProps } from "@/components/settings/settings-family-page";
 
 const DEFAULT_PROFILE = {
   practiceAreas: [],
@@ -18,21 +19,14 @@ const DEFAULT_PROFILE = {
   coldStartCompleted: false,
 };
 
-export default async function AiSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+/** Connections › AI tab (Phase 87 S9, ADR-341) — the former AI settings page's loader. */
+export async function renderAiTab({ slug }: SettingsTabProps) {
   const caps = await fetchMyCapabilities();
   const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin && !caps.capabilities.includes("AI_MANAGE")) {
     return (
       <div className="space-y-8">
-        <Link
-          href={`/org/${slug}/settings`}
-          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-        >
-          <ChevronLeft className="size-4" />
-          Settings
-        </Link>
         <div>
           <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
             AI Configuration
@@ -76,14 +70,6 @@ export default async function AiSettingsPage({ params }: { params: Promise<{ slu
 
   return (
     <div className="space-y-8">
-      <Link
-        href={`/org/${slug}/settings`}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-      >
-        <ChevronLeft className="size-4" />
-        Settings
-      </Link>
-
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
           {profile?.coldStartCompleted ? "AI Configuration" : "Set Up AI"}
@@ -109,7 +95,7 @@ export default async function AiSettingsPage({ params }: { params: Promise<{ slu
               View all AI skill executions, costs, and outcomes.
             </p>
             <Link
-              href={`/org/${slug}/settings/ai/history`}
+              href={`/org/${slug}/settings/connections/ai/history`}
               className="mt-3 inline-block text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
             >
               View execution history →
@@ -125,7 +111,7 @@ export default async function AiSettingsPage({ params }: { params: Promise<{ slu
               API keys and provider settings are managed in the Integrations page.
             </p>
             <Link
-              href={`/org/${slug}/settings/integrations`}
+              href={settingsHref(slug, "connections", "xero")}
               className="mt-3 inline-block text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
             >
               Manage integrations →

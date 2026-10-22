@@ -20,7 +20,7 @@ import {
   upsertIntegrationAction,
   toggleIntegrationAction,
   deleteApiKeyAction,
-} from "@/app/(app)/org/[slug]/settings/integrations/actions";
+} from "@/app/(app)/org/[slug]/settings/connections/_tabs/integrations-actions";
 import type { OrgIntegration, StripePaymentConfig, PayFastPaymentConfig } from "@/lib/types";
 
 const PROVIDER_LABELS: Record<string, string> = {

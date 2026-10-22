@@ -94,7 +94,7 @@ export async function getInvoiceSyncStatusAction(
 export async function retrySyncEntryAction(slug: string, entryId: string): Promise<ActionResult> {
   try {
     await retrySyncEntry(entryId);
-    revalidatePath(`/org/${slug}/settings/integrations/xero/sync-log`);
+    revalidatePath(`/org/${slug}/settings/connections/xero/sync-log`);
     return { success: true };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -113,7 +113,7 @@ export async function reconcileSyncEntryAction(
 ): Promise<ActionResult> {
   try {
     await reconcileSyncEntry(entryId);
-    revalidatePath(`/org/${slug}/settings/integrations/xero/sync-log`);
+    revalidatePath(`/org/${slug}/settings/connections/xero/sync-log`);
     return { success: true };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -132,7 +132,7 @@ export async function forceResyncInvoiceAction(
 ): Promise<ActionResult> {
   try {
     await forceResyncInvoice(invoiceId);
-    revalidatePath(`/org/${slug}/settings/integrations/xero/sync-log`);
+    revalidatePath(`/org/${slug}/settings/connections/xero/sync-log`);
     return { success: true };
   } catch (error) {
     if (error instanceof ApiError) {

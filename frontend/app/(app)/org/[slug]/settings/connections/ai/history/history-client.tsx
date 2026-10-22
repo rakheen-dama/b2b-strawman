@@ -71,7 +71,7 @@ export function ExecutionHistoryClient({
     if (page > 0) params.set("page", String(page));
     const qs = params.toString();
     startTransition(() => {
-      router.push(`/org/${slug}/settings/ai/history${qs ? `?${qs}` : ""}`);
+      router.push(`/org/${slug}/settings/connections/ai/history${qs ? `?${qs}` : ""}`);
     });
   }
 

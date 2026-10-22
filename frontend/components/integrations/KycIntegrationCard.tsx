@@ -11,7 +11,7 @@ import {
   deleteApiKeyAction,
   toggleIntegrationAction,
   upsertIntegrationAction,
-} from "@/app/(app)/org/[slug]/settings/integrations/actions";
+} from "@/app/(app)/org/[slug]/settings/connections/_tabs/integrations-actions";
 import type { OrgIntegration } from "@/lib/types";
 
 const PROVIDER_LABELS: Record<string, string> = {

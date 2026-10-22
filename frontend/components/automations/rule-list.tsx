@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { TriggerTypeBadge } from "@/components/automations/trigger-type-badge";
-import { toggleRuleAction } from "@/app/(app)/org/[slug]/settings/automations/actions";
+import { toggleRuleAction } from "@/app/(app)/org/[slug]/settings/connections/_tabs/automations-actions";
 import { toast } from "sonner";
 import { RelativeDate } from "@/components/ui/relative-date";
 import { Zap } from "lucide-react";
@@ -125,7 +125,7 @@ export function RuleList({ slug, rules, canManage }: RuleListProps) {
           {canManage && (
             <div className="flex justify-end">
               <Link
-                href={`/org/${slug}/settings/automations/executions`}
+                href={`/org/${slug}/settings/connections/automations/executions`}
                 className="text-sm text-teal-600 underline-offset-4 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
               >
                 View Execution Log &rarr;

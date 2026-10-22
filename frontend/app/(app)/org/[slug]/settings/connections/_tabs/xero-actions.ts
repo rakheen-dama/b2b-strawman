@@ -47,8 +47,7 @@ export async function initiateXeroConnectAction(
 export async function disconnectXeroAction(slug: string): Promise<ActionResult> {
   try {
     await disconnectXero();
-    revalidatePath(`/org/${slug}/settings/integrations/xero`);
-    revalidatePath(`/org/${slug}/settings/integrations`);
+    revalidatePath(`/org/${slug}/settings/connections`);
     return { success: true };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -85,7 +84,7 @@ export async function updateXeroTaxMappingAction(
 ): Promise<ActionResult<XeroTaxMapping>> {
   try {
     const mapping = await updateXeroTaxMapping(id, data);
-    revalidatePath(`/org/${slug}/settings/integrations/xero`);
+    revalidatePath(`/org/${slug}/settings/connections`);
     return { success: true, data: mapping };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -101,7 +100,7 @@ export async function updateXeroTaxMappingAction(
 export async function resetXeroTaxMappingsAction(slug: string): Promise<ActionResult> {
   try {
     await resetXeroTaxMappings();
-    revalidatePath(`/org/${slug}/settings/integrations/xero`);
+    revalidatePath(`/org/${slug}/settings/connections`);
     return { success: true };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -119,7 +118,7 @@ export async function importXeroCustomersAction(
 ): Promise<ActionResult<XeroClientImportResult>> {
   try {
     const result = await importXeroCustomers();
-    revalidatePath(`/org/${slug}/settings/integrations/xero`);
+    revalidatePath(`/org/${slug}/settings/connections`);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -141,7 +140,7 @@ export async function updateXeroSettingsAction(
 ): Promise<ActionResult<XeroSettingsResponse>> {
   try {
     const settings = await updateXeroSettings(data);
-    revalidatePath(`/org/${slug}/settings/integrations/xero`);
+    revalidatePath(`/org/${slug}/settings/connections`);
     return { success: true, data: settings };
   } catch (error) {
     if (error instanceof ApiError) {

@@ -15,7 +15,7 @@ import {
   fetchUninstallCheckAction,
   installPackAction,
   uninstallPackAction,
-} from "./actions";
+} from "./packs-actions";
 
 interface PacksPageClientProps {
   initialCatalog: PackCatalogEntry[];

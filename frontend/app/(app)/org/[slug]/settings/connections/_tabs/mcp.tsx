@@ -1,24 +1,16 @@
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { McpConnectorCard } from "./mcp-connector-card";
-import { getMcpStatusAction } from "./actions";
+import { getMcpStatusAction } from "./mcp-actions";
+import type { SettingsTabProps } from "@/components/settings/settings-family-page";
 
-export default async function McpSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+/** Connections › MCP tab (Phase 87 S9, ADR-341) — the former MCP connector settings page's loader. */
+export async function renderMcpTab({ slug }: SettingsTabProps) {
   const caps = await fetchMyCapabilities();
   const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin && !caps.capabilities.includes("INTEGRATION_MANAGE")) {
     return (
       <div className="space-y-8">
-        <Link
-          href={`/org/${slug}/settings/integrations`}
-          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-        >
-          <ChevronLeft className="size-4" />
-          Integrations
-        </Link>
         <div>
           <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
             Claude / MCP Connector
@@ -40,14 +32,6 @@ export default async function McpSettingsPage({ params }: { params: Promise<{ sl
 
   return (
     <div className="space-y-8">
-      <Link
-        href={`/org/${slug}/settings/integrations`}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-      >
-        <ChevronLeft className="size-4" />
-        Integrations
-      </Link>
-
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
           Claude / MCP Connector

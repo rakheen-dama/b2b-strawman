@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
-import { setApiKeyAction } from "@/app/(app)/org/[slug]/settings/integrations/actions";
+import { setApiKeyAction } from "@/app/(app)/org/[slug]/settings/connections/_tabs/integrations-actions";
 import type { IntegrationDomain } from "@/lib/types";
 
 interface SetApiKeyDialogProps {

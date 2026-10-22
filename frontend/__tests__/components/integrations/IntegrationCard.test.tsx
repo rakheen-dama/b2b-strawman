@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { IntegrationCard } from "@/components/integrations/IntegrationCard";
 import type { OrgIntegration } from "@/lib/types";
 
-vi.mock("@/app/(app)/org/[slug]/settings/integrations/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/connections/_tabs/integrations-actions", () => ({
   upsertIntegrationAction: vi.fn().mockResolvedValue({ success: true }),
   setApiKeyAction: vi.fn().mockResolvedValue({ success: true }),
   deleteApiKeyAction: vi.fn().mockResolvedValue({ success: true }),

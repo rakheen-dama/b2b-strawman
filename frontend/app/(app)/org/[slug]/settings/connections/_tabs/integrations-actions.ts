@@ -41,7 +41,7 @@ export async function upsertIntegrationAction(
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-  revalidatePath(`/org/${slug}/settings/integrations`);
+  revalidatePath(`/org/${slug}/settings/connections`);
   return { success: true };
 }
 
@@ -61,7 +61,7 @@ export async function setApiKeyAction(
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-  revalidatePath(`/org/${slug}/settings/integrations`);
+  revalidatePath(`/org/${slug}/settings/connections`);
   return { success: true };
 }
 
@@ -80,7 +80,7 @@ export async function deleteApiKeyAction(
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-  revalidatePath(`/org/${slug}/settings/integrations`);
+  revalidatePath(`/org/${slug}/settings/connections`);
   return { success: true };
 }
 
@@ -100,7 +100,7 @@ export async function toggleIntegrationAction(
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-  revalidatePath(`/org/${slug}/settings/integrations`);
+  revalidatePath(`/org/${slug}/settings/connections`);
   return { success: true };
 }
 

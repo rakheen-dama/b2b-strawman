@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@b2mash/ui/button";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
-import { testConnectionAction } from "@/app/(app)/org/[slug]/settings/integrations/actions";
+import { testConnectionAction } from "@/app/(app)/org/[slug]/settings/connections/_tabs/integrations-actions";
 import type { IntegrationDomain } from "@/lib/types";
 
 interface ConnectionTestButtonProps {

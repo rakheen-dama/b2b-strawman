@@ -23,7 +23,7 @@ import { ExecutionDetail } from "@/components/automations/execution-detail";
 import { computeDuration } from "@/lib/format";
 import { RelativeDate } from "@/components/ui/relative-date";
 import { Check, X, RefreshCw } from "lucide-react";
-import { fetchExecutionsAction } from "@/app/(app)/org/[slug]/settings/automations/actions";
+import { fetchExecutionsAction } from "@/app/(app)/org/[slug]/settings/connections/_tabs/automations-actions";
 import type {
   AutomationExecutionResponse,
   ExecutionStatus,

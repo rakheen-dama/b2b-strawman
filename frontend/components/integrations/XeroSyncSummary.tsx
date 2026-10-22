@@ -4,7 +4,7 @@ import useSWR from "swr";
 import Link from "next/link";
 import { RefreshCw, Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
-import { fetchSyncSummaryAction } from "@/app/(app)/org/[slug]/settings/integrations/xero/sync-log/actions";
+import { fetchSyncSummaryAction } from "@/app/(app)/org/[slug]/settings/connections/xero/sync-log/actions";
 import { formatDate } from "@/lib/format";
 import { defaultSWROptions } from "@/lib/swr/fetcher";
 import { cn } from "@/lib/utils";
@@ -52,7 +52,7 @@ export function XeroSyncSummary({ slug }: XeroSyncSummaryProps) {
 
   if (!summary) return null;
 
-  const basePath = `/org/${slug}/settings/integrations/xero/sync-log`;
+  const basePath = `/org/${slug}/settings/connections/xero/sync-log`;
 
   const items: SummaryItem[] = [
     {

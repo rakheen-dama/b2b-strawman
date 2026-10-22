@@ -53,7 +53,7 @@ Carried from §12.14. "Owner" is the epic whose builder must resolve or record t
 | 613 | One Diary — `GET /api/diary` + `/diary` Page, Calendars Deleted | Backend + Frontend (split) | 612 | L | 613A, 613B, 613C, 613D || **Done** (PRs #1621, #1622, #1623, #1624) |
 | 614 | Legal-Native Home — Three Dashboard Reads + Widget Matrix | Backend + Frontend (split) | 613 | M | 614A, 614B, 614C | **Done** (PRs #1625, #1626; 614C = epic gate, no code) |
 | 615 | Dense Lists (`MatterListRow`/`ClientListRow`), System Views, Tab Groups, Disbursements | Backend + Frontend (split) | 614 | L | 615A, 615B, 615C, 615D, 615E | **Done** (PRs #1627, #1628, #1629, #1630, #1631) |
-| 616 | Settings Consolidation — Five Families, 44 → 17 Routes, 43 Redirects | Frontend | 615 | L | 616A, 616B, 616C, 616D, 616E, 616F | |
+| 616 | Settings Consolidation — Five Families, 44 → 17 Routes, 43 Redirects | Frontend | 615 | L | 616A, 616B, 616C, 616D, 616E, 616F | In progress — 616A **Done** (PR #1632) |
 | 617 | Portal Vocabulary + Nav, QA Capstone, Screenshots, Closure Report | Portal + QA/Process | 616 | M | 617A, 617B, 617C | |
 
 **Slice count: 54** (eleven architecture slices expanded by layer and by the ≤ 8–12-files / ≤ ~800-lines rule; rename slices exceed the file cap only where every change is a mechanical IDE substitution and say so).
@@ -160,7 +160,7 @@ FROZEN (never edited by any slice — the contract tests landed in 607A guard th
 
 | Epic | PR | What must be green before merge | Notes |
 |------|----|----------------------------------|-------|
-| 616 | `phase87/10-settings-five-families` | FE-GATE (`settings-nav.test.ts`, `settings-sidebar.test.tsx`, `breadcrumbs-routes.test.ts`); `find $FA/settings -name page.tsx \| wc -l` = **17**; 43 settings rows in `legacy-redirects.ts`; E2E-LEGAL + `settings/*.spec.ts` (8) + `day-00-firm-setup` | Controls stay, pages go. Each family slice appends its own redirect rows so the old sidebar still resolves mid-branch. |
+| 616 | `phase87/10-settings-five-families` | FE-GATE (`settings-nav.test.ts`, `settings-sidebar.test.tsx`, `breadcrumbs-routes.test.ts`); `find $FA/settings -name page.tsx \| wc -l` = **17**; 43 settings rows in `legacy-redirects.ts`; E2E-LEGAL + `settings/*.spec.ts` (8) + `day-00-firm-setup` | Controls stay, pages go. Each family slice appends its own redirect rows so the old sidebar still resolves mid-branch. 616A **Done** (PR #1632; FE-GATE 399 files / 2896 passed; settings `page.tsx` 44 → 37; 8 redirect rows; E2E-LEGAL fresh stack 65/15/12 + 13/15/15, non-snapshot failures = six carried; browser-observed tab-strip overflow fixed — 1024px Firm tabs = main parity). |
 
 ### Stage 6 — Portal + capstone: 617
 
@@ -746,7 +746,7 @@ PR rules restated from §12.12 (non-negotiable):
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **616A** | 616A.1–616A.3 | NEW `lib/settings-nav.ts` + Firm `page.tsx` + 8 tab loaders; 8 old pages deleted; 8 redirect rows; `settings/page.tsx` index | Nav source + Firm family. |
+| **616A** | 616A.1–616A.3 | NEW `lib/settings-nav.ts` + Firm `page.tsx` + 8 tab loaders; 8 old pages deleted; 8 redirect rows; `settings/page.tsx` index | Nav source + Firm family. **Done** (PR #1632, squash fde264c08) — `lib/settings-nav.ts` (5 families, 31 tabs; `as const satisfies` keeps tab ids literal, `SettingsTabId<F>`); shared server seam `components/settings/settings-family-page.tsx` (`renderSettingsFamilyPage` / `generateSettingsFamilyMetadata`, React `cache()` access resolution, typed `SettingsTabLoaders<F>` — a missing/extra loader is a compile error; 616B–D add only `_tabs/index.ts` + a thin `page.tsx`); client `SettingsFamilyTabs` (URL is the source of truth, `router.replace` + `useOptimistic`, manual activation); only the active tab's loader runs; unknown `?tab=` → first permitted tab, known-forbidden → fallback + `role="status"` notice; admin-only tabs absent; 8 old pages → `firm/_tabs/` (settings `page.tsx` 44 → 37), 8 `/settings/firm?tab=` redirect rows (query merged); Firm › Audit trail / Settings hrefs moved here (D1). CodeRabbit: `nav-zone.tsx` active href now honours an href's query (Audit trail active on its tab, Settings on the others). Browser-found before merge: the `w-max` strip widened every Firm tab to 1250px at 1024 (shell has no `min-w-0`) — fixed with `@container` on the strip box; 1024 widths now equal main's old pages. CodeRabbit outside-diff `entity-cell` dead DSAR link declined (pre-existing, D15). Follow-ups: shell `min-w-0` (615C) should re-check this `@container`; M2 loaders re-fetch capabilities; M4 `pending` accessor (616D removes); D14 redirect-safe hrefs; D15 dead entity-cell links; pre-existing `packs.spec:94` strict-mode + `audit-log-smoke` cold-wave networkidle flake (both reproduce on main). FE-GATE 399 files / 2896 passed; E2E-LEGAL = baseline, six carried. |
 | **616B** | 616B.1–616B.2 | Matters `page.tsx` + 7 tabs; 6 sub-routes `git mv`; 7 old pages deleted; 13 redirect rows | Matters family. |
 | **616C** | 616C.1–616C.3 | Documents `page.tsx` + 4 tabs + 2 sub-routes; Fees & Trust `page.tsx` + 6 tabs; 10 old pages deleted; 12 redirect rows | Documents + Fees & Trust families. |
 | **616D** | 616D.1–616D.2 | Connections `page.tsx` + 6 tabs + 3 sub-routes; 9 old pages deleted; 10 redirect rows | Connections family; route count = 17. |

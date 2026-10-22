@@ -30,7 +30,7 @@ export default async function SyncLogPage({
     return (
       <div className="space-y-8">
         <Link
-          href={settingsHref(slug, "connections", "xero")}
+          href={`${settingsHref(slug, "connections", "xero")}#xero`}
           className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ChevronLeft className="size-4" />
@@ -89,7 +89,7 @@ export default async function SyncLogPage({
   return (
     <div className="space-y-8">
       <Link
-        href={settingsHref(slug, "connections", "xero")}
+        href={`${settingsHref(slug, "connections", "xero")}#xero`}
         className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
       >
         <ChevronLeft className="size-4" />

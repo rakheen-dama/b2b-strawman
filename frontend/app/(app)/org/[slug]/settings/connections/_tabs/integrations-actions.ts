@@ -1,5 +1,11 @@
 "use server";
 
+/**
+ * Server actions for the integrations-hub half of the merged Connections › Xero tab (Phase 87
+ * 616D, ruling D23: the xero tab absorbs the former integrations hub, so this file keeps its
+ * hub name rather than the `<tab>-actions.ts` convention). The Xero-section actions live in
+ * xero-actions.ts.
+ */
 import { ApiError } from "@/lib/api";
 import {
   upsertIntegration,

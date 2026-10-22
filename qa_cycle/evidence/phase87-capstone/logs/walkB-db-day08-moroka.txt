@@ -1,0 +1,16 @@
+# walkB Day 8 read-only SELECTs 2026-10-22T15:45:45Z
+                  id                  |        name         | customer_type | lifecycle_status | registration_number | tax_number | address_line1 |     city     | country |          email           
+--------------------------------------+---------------------+---------------+------------------+---------------------+------------+---------------+--------------+---------+--------------------------
+ 24b98ee9-f65e-47bb-ba8e-55acae27ec34 | Moroka Family Trust | TRUST         | ACTIVE           | IT000456/2018       | 9123456789 | 8 Rissik St   | Johannesburg | ZA      | moroka.trust@email.co.za
+(1 row)
+
+             name              |  status   |         completed_at          
+-------------------------------+-----------+-------------------------------
+ Legal Trust Client Onboarding | COMPLETED | 2026-10-22 15:45:35.630246+00
+(1 row)
+
+               name               |  status   |                           notes                            
+----------------------------------+-----------+------------------------------------------------------------
+ Beneficial Ownership Declaration | COMPLETED | Beneficial owners: Grace Moroka, James Moroka, Ruth Moroka
+(1 row)
+

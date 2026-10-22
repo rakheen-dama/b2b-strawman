@@ -1,0 +1,3 @@
+# read-only: SELECT enabled_modules, brand_color, logo_s3_key, terminology_namespace FROM tenant_5039f2d497cf.org_settings (15:24Z)
+["court_calendar", "conflict_check", "lssa_tariff", "trust_accounting", "disbursements", "matter_closure", "deadlines", "information_requests", "bulk_billing"]|#1B3A4B|org/tenant_5039f2d497cf/branding/logo.png|en-ZA-legal
+# read-only: public.subscriptions row for the new org: status TRIALING, trial ends 2026-11-05 15:15:19Z, billing method MANUAL

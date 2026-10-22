@@ -1,0 +1,25 @@
+# walkB Day 9 read-only SELECTs 2026-10-22T15:46:48Z
+                  id                  |                  name                  | work_type  |       client        
+--------------------------------------+----------------------------------------+------------+---------------------
+ 458bc331-d51e-4a94-99d8-32ecad3de00e | Sipho Dlamini v. Standard Bank (civil) | LITIGATION | Sipho Dlamini
+ bb2ce7c7-17d1-4121-8ac1-ee907863a7be | Estate Late Peter Moroka               | ESTATES    | Moroka Family Trust
+(2 rows)
+
+          matter          |      member      | project_role 
+--------------------------+------------------+--------------
+ Estate Late Peter Moroka | Thandi Mathebula | LEAD
+(1 row)
+
+                        title                        |     assignee     
+-----------------------------------------------------+------------------
+ Obtain death certificate & will                     | Thandi Mathebula
+ Report estate to Master of High Court               | Thandi Mathebula
+ Obtain Letters of Executorship                      | Thandi Mathebula
+ Advertise for creditors (Gazette + local newspaper) | Thandi Mathebula
+ Inventory of assets & liabilities                   | Thandi Mathebula
+ Open estate bank account                            | 
+ Prepare Liquidation & Distribution account          | Thandi Mathebula
+ Lodge L&D account with Master                       | Thandi Mathebula
+ Distribute estate & file final account              | Thandi Mathebula
+(9 rows)
+

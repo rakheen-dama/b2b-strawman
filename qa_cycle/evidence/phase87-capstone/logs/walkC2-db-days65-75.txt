@@ -1,0 +1,48 @@
+# Walker C2 — Days 65–75 (read-only SELECTs, 2026-10-22T16:49:42Z)
+ invoice_number | status |  total   |             customer_id              |            paid_at            
+----------------+--------+----------+--------------------------------------+-------------------------------
+ INV-0001       | PAID   |  2070.00 | ce83c576-9bd9-4c7a-80b9-39100ade80d7 | 2026-10-22 16:21:09.610741+00
+ INV-0002       | SENT   | 42182.00 | 24b98ee9-f65e-47bb-ba8e-55acae27ec34 | 
+                | DRAFT  |  9660.00 | 32d5764d-0965-4cf6-9daf-7e51c190ee71 | 
+ INV-0003       | SENT   |  7058.13 | f12280ca-9882-4446-abb0-13086c42138d | 
+ INV-0004       | PAID   |   750.00 | ce83c576-9bd9-4c7a-80b9-39100ade80d7 | 2026-10-22 16:37:02.06825+00
+(5 rows)
+
+                  id                  | transaction_type |  amount  |  status  |           reference           
+--------------------------------------+------------------+----------+----------+-------------------------------
+ aff6ea56-411a-4226-a3e2-8f5b9178387b | DEPOSIT          | 50000.00 | RECORDED | Initial fund for estate admin
+ 41453484-aa0b-4a44-96b5-d69c13de2cc0 | PAYMENT          | 12000.00 | APPROVED | PAY/2026/001
+(2 rows)
+
+ magic_link_tokens 
+-------------------
+                 1
+(1 row)
+
+                  id                  |                         name                          | status | completed_at |           closed_at           | retention_clock_started_at 
+--------------------------------------+-------------------------------------------------------+--------+--------------+-------------------------------+----------------------------
+ 458bc331-d51e-4a94-99d8-32ecad3de00e | Sipho Dlamini v. Standard Bank (civil)                | CLOSED |              | 2026-10-22 16:37:28.224713+00 | 2026-10-22 16:34:39.638451
+ bb2ce7c7-17d1-4121-8ac1-ee907863a7be | Estate Late Peter Moroka                              | CLOSED |              | 2026-10-22 16:43:04.558249+00 | 2026-10-22 16:43:04.558249
+ 0d9bf92c-d6b0-4993-bcf6-5dcbf2ffe547 | Khumalo Property Holdings — Erf 1234 Sandton Transfer | ACTIVE |              |                               | 
+ a31bde33-836a-4555-a2ec-a8d3e380ae0d | Lerato Mthembu — RAF Claim (MVA 2025-11-03)           | ACTIVE |              |                               | 
+ a4c1324e-1f43-4e50-b280-04f09b58bd35 | Nomvula Khoza — Debt Recovery (Mokoena Traders)       | ACTIVE |              |                               | 
+(5 rows)
+
+              project_id              |           closed_at           |  reason   | override_used |                                                 override_justification                                                  |      closure_letter_document_id      | all_passed 
+--------------------------------------+-------------------------------+-----------+---------------+-------------------------------------------------------------------------------------------------------------------------+--------------------------------------+------------
+ 458bc331-d51e-4a94-99d8-32ecad3de00e | 2026-10-22 16:37:28.224713+00 | CONCLUDED | f             |                                                                                                                         | d24634a5-cdf1-4a0f-b762-3c2ffcb0f31b | true
+ bb2ce7c7-17d1-4121-8ac1-ee907863a7be | 2026-10-22 16:43:04.558249+00 | CONCLUDED | t             | Trust remainder of R12,000 earmarked for final Section 35 payout pending master approval — closing under owner override | ffd91999-495b-42ad-ae1a-3378d4bfabfc | false
+(2 rows)
+
+ record_type | retention_days |    trigger_event    | action  |          created_at           
+-------------+----------------+---------------------+---------+-------------------------------
+ CUSTOMER    |           1825 | CUSTOMER_OFFBOARDED | FLAG    | 2026-10-22 15:15:19.486436+00
+ AUDIT_EVENT |           2555 | RECORD_CREATED      | FLAG    | 2026-10-22 15:15:19.500022+00
+ MATTER      |           1825 | MATTER_CLOSED       | ARCHIVE | 2026-10-22 16:37:28.203005+00
+(3 rows)
+
+ billing_status | approval_status 
+----------------+-----------------
+ BILLED         | APPROVED
+(1 row)
+

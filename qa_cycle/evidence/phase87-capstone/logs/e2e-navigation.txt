@@ -1,0 +1,5 @@
+# navigation (stack 1) — source: /tmp/617c-e2e-navigation.log (ephemeral)
+## summary
+  16 passed (5.1s)
+## failing titles (line numbers stripped)
+## first error line per failure (with line numbers)

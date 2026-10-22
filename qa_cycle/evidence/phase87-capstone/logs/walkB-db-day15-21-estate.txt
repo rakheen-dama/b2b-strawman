@@ -1,0 +1,32 @@
+# walkB Days 15-21 read-only SELECTs 2026-10-22T15:55:21Z
+                        title                        |      member      | duration_minutes | billing_rate_snapshot |                     description                      
+-----------------------------------------------------+------------------+------------------+-----------------------+------------------------------------------------------
+ Obtain death certificate & will                     | Thandi Mathebula |              180 |               2500.00 | Initial consultation with heirs + document gathering
+ Report estate to Master of High Court               | Bob Ndlovu       |               90 |               1200.00 | Master of High Court filing preparation
+ Report estate to Master of High Court               | Thandi Mathebula |              180 |               2500.00 | Reporting estate to the Master — J294 + inventory
+ Obtain Letters of Executorship                      | Thandi Mathebula |              150 |               2500.00 | Letters of Executorship application
+ Inventory of assets & liabilities                   | Thandi Mathebula |              150 |               2500.00 | Drafting inventory of assets & liabilities
+ Advertise for creditors (Gazette + local newspaper) | Bob Ndlovu       |              180 |               1200.00 | Section 29 notice — Gazette + newspaper placement
+ Open estate bank account                            | Bob Ndlovu       |              150 |               1200.00 | Estate bank account opening documents
+(7 rows)
+
+        hours        |         value          
+---------------------+------------------------
+ 18.0000000000000000 | 35900.0000000000000000
+(1 row)
+
+                 title                 | status 
+---------------------------------------+--------
+ Obtain death certificate & will       | DONE
+ Report estate to Master of High Court | DONE
+ Obtain Letters of Executorship        | DONE
+(3 rows)
+
+              file_name               |  status  
+--------------------------------------+----------
+ Trust Deed — Moroka Family Trust.pdf | UPLOADED
+ Master's appointment.pdf             | UPLOADED
+ Inventory draft.pdf                  | UPLOADED
+ Bank statements.pdf                  | UPLOADED
+(4 rows)
+

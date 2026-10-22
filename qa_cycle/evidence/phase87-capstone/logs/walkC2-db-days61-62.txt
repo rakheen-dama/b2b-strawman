@@ -1,0 +1,29 @@
+# Walker C2 — Day 61/62 (read-only SELECTs, 2026-10-22T16:28:07Z)
+                  id                  |     name      | customer_type | lifecycle_status |              custom_fields              
+--------------------------------------+---------------+---------------+------------------+-----------------------------------------
+ f12280ca-9882-4446-abb0-13086c42138d | Nomvula Khoza | INDIVIDUAL    | ACTIVE           | {"id_passport_number": "8807120456082"}
+(1 row)
+
+                  id                  |  status   |         completed_at          
+--------------------------------------+-----------+-------------------------------
+ 5c088eb5-8dff-4b18-942a-7ed5b5c51a78 | COMPLETED | 2026-10-22 16:26:18.992828+00
+(1 row)
+
+                  id                  |                      name                       | status |  work_type  | reference_number 
+--------------------------------------+-------------------------------------------------+--------+-------------+------------------
+ a4c1324e-1f43-4e50-b280-04f09b58bd35 | Nomvula Khoza — Debt Recovery (Mokoena Traders) | ACTIVE | COLLECTIONS | COL-2026-001
+(1 row)
+
+ project_role |     name      
+--------------+---------------
+ LEAD         | Carol Mokoena
+(1 row)
+
+                  id                  |       name       | duration_minutes | billable | billing_rate_snapshot |                      description                       
+--------------------------------------+------------------+------------------+----------+-----------------------+--------------------------------------------------------
+ be596a86-cd15-4e8c-acad-d5cdc0f4f7e5 | Thandi Mathebula |               60 | t        |               2500.00 | Reviewed debtor account and settled s129 demand letter
+ d2b65549-c111-4618-b942-a4213872c1d4 | Bob Ndlovu       |              120 | t        |               1200.00 | Drafted summons and particulars for debt claim
+ 4e2cc30d-f15b-4a77-91d6-3d5225fb7312 | Carol Mokoena    |               90 | t        |                550.00 | Prepared default judgment application
+ d4a9d462-f021-47e5-8b0d-0117e2969070 | Carol Mokoena    |               45 | t        |                550.00 | Researched debtor assets for attachment
+(4 rows)
+

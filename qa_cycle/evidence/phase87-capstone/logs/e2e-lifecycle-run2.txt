@@ -1,0 +1,20 @@
+# legal-lifecycle run 2 (stack 2) — source: /tmp/617c-e2e-lifecycle-run2.log (ephemeral)
+## summary
+  4 failed
+  6 skipped
+  19 did not run
+  63 passed (1.9m)
+## failing titles (line numbers stripped)
+[chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts › Day 0 — Firm Setup › Alice: Trust account settings page loads
+[chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts › Day 30 — First Billing Cycle › Alice: Create fee note for Sipho Ndlovu (hourly + tariff + disbursement)
+[chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts › Day 45 — Reconciliation & Prescription › Alice: Start new bank reconciliation
+[chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts › Day 90 — Quarter Review › Alice: Fee notes list shows multiple fee notes
+## first error line per failure (with line numbers)
+1) [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:282:7 › Day 0 — Firm Setup › Alice: Trust account settings page loads 
+          Error: locator.fill: Error: Element is not an <input>, <textarea>, <select> or [contenteditable] and does not have a role allowing [aria-readonly]
+2) [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:32:7 › Day 30 — First Billing Cycle › Alice: Create fee note for Sipho Ndlovu (hourly + tariff + disbursement) 
+          Error: expect(received).toBeTruthy()
+3) [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:41:7 › Day 45 — Reconciliation & Prescription › Alice: Start new bank reconciliation 
+          Error: expect(received).toBeTruthy()
+4) [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:63:7 › Day 90 — Quarter Review › Alice: Fee notes list shows multiple fee notes 
+          Error: expect(received).toBeGreaterThanOrEqual(expected)

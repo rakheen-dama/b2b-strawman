@@ -1,0 +1,9 @@
+# Walker C2 — 85.x closure attempts (frontend server-action log)
+2261:  └─ ƒ evaluateClosureAction("458bc331-d51e-4a94-99d8-32ecad3de00e") in 168ms app/(app)/org/[slug]/matters/[id]/matter-closure-actions.ts
+2294:  └─ ƒ evaluateClosureAction("458bc331-d51e-4a94-99d8-32ecad3de00e") in 102ms app/(app)/org/[slug]/matters/[id]/matter-closure-actions.ts
+2296:  └─ ƒ closeMatterAction("mathebula-partners", "458bc331-d51e-4a94-99d8-32ecad3de00e", {"generateClosureLetter":true,"generateStatementOfAccount":true,"override":false,"...":"1 item not stringified"}) in 453ms app/(app)/org/[slug]/matters/[id]/matter-clos
+2393:  └─ ƒ evaluateClosureAction("bb2ce7c7-17d1-4121-8ac1-ee907863a7be") in 73ms app/(app)/org/[slug]/matters/[id]/matter-closure-actions.ts
+2395:  └─ ƒ closeMatterAction("mathebula-partners", "bb2ce7c7-17d1-4121-8ac1-ee907863a7be", {"generateClosureLetter":true,"generateStatementOfAccount":true,"override":false,"...":"1 item not stringified"}) in 131ms app/(app)/org/[slug]/matters/[id]/matter-clos
+2399:  └─ ƒ closeMatterAction("mathebula-partners", "bb2ce7c7-17d1-4121-8ac1-ee907863a7be", {"generateClosureLetter":true,"generateStatementOfAccount":true,"override":true,"...":"2 items not stringified"}) in 84ms app/(app)/org/[slug]/matters/[id]/matter-closu
+2412:  └─ ƒ evaluateClosureAction("bb2ce7c7-17d1-4121-8ac1-ee907863a7be") in 75ms app/(app)/org/[slug]/matters/[id]/matter-closure-actions.ts
+2414:  └─ ƒ closeMatterAction("mathebula-partners", "bb2ce7c7-17d1-4121-8ac1-ee907863a7be", {"generateClosureLetter":true,"generateStatementOfAccount":true,"override":true,"...":"2 items not stringified"}) in 434ms app/(app)/org/[slug]/matters/[id]/matter-clos

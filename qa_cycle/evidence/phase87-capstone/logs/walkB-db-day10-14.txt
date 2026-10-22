@@ -1,0 +1,18 @@
+# walkB Days 10-14 read-only SELECTs 2026-10-22T15:49:45Z
+                 matter                 |                 title                 |      member      | duration_minutes | billing_rate_snapshot |                     description                      |          created_at           
+----------------------------------------+---------------------------------------+------------------+------------------+-----------------------+------------------------------------------------------+-------------------------------
+ Sipho Dlamini v. Standard Bank (civil) | Issue summons / combined summons      | Bob Ndlovu       |               90 |               1200.00 | Drafting particulars of claim                        | 2026-10-22 15:36:45.5819+00
+ Estate Late Peter Moroka               | Obtain death certificate & will       | Thandi Mathebula |              180 |               2500.00 | Initial consultation with heirs + document gathering | 2026-10-22 15:46:59.015701+00
+ Estate Late Peter Moroka               | Report estate to Master of High Court | Bob Ndlovu       |               90 |               1200.00 | Master of High Court filing preparation              | 2026-10-22 15:49:20.93811+00
+(3 rows)
+
+              title              | status 
+---------------------------------+--------
+ Obtain death certificate & will | DONE
+(1 row)
+
+                  id                  | transaction_type |  amount  |           reference           |                           description                            |  status  | transaction_date 
+--------------------------------------+------------------+----------+-------------------------------+------------------------------------------------------------------+----------+------------------
+ aff6ea56-411a-4226-a3e2-8f5b9178387b | DEPOSIT          | 50000.00 | Initial fund for estate admin | Deposit for estate admin. Source: Moroka Trust operating account | RECORDED | 2026-10-22
+(1 row)
+

@@ -1,0 +1,13 @@
+# Days 50-58 (2026-10-22T16:21:32Z)
+invoice|00939152-e774-464f-874f-c18c3a92fa1a|INV-0001|PAID|2070.00|2026-10-22 16:21:09.610741+00|EFT — Sipho Dlamini — INV-0001
+invoice|3f8888c9-4b2a-4891-af9c-eb1a2a13b858|INV-0002|SENT|42182.00||
+invoice|b9d00357-f68b-4dbf-b185-ea2b8b9d698f||DRAFT|9660.00||
+invoice_line|Issue summons / combined summons -- 2026-10-22 -- Bob Ndlovu|1.5000|Drafting particulars of claim
+invoice_line|Statutory medical reports & assessments -- 2026-10-22 -- Bob Ndlovu|4.0000|Medical records collation
+invoice_line|Statutory medical reports & assessments -- 2026-10-22 -- Bob Ndlovu|3.0000|Expert witness statements
+audit|invoice.created|USER|2026-10-22 16:13:25.644367+00
+audit|invoice.approved|USER|2026-10-22 16:14:05.191631+00
+audit|payment.session.created|SYSTEM|2026-10-22 16:14:11.396592+00
+audit|invoice.sent|USER|2026-10-22 16:14:11.401816+00
+audit|payment.session.cancelled|SYSTEM|2026-10-22 16:21:09.609631+00
+audit|invoice.paid|USER|2026-10-22 16:21:09.612896+00

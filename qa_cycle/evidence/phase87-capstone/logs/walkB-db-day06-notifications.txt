@@ -1,0 +1,10 @@
+         type         |    recipient     |                                                   title                                                    | reference_entity_type |          created_at           
+----------------------+------------------+------------------------------------------------------------------------------------------------------------+-----------------------+-------------------------------
+ AUTOMATION           | Thandi Mathebula | Complete onboarding: Sipho Dlamini                                                                         | AutomationRule        | 2026-10-22 15:29:40.148011+00
+ AUTOMATION           | Bob Ndlovu       | Complete onboarding: Sipho Dlamini                                                                         | AutomationRule        | 2026-10-22 15:29:40.155115+00
+ ACCEPTANCE_COMPLETED | Bob Ndlovu       | Sipho Dlamini has accepted engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-22.pdf | ACCEPTANCE_REQUEST    | 2026-10-22 15:35:55.027472+00
+ COMMENT_ADDED        | Carol Mokoena    | Bob Ndlovu commented on task "Initial consultation & case assessment"                                      | TASK                  | 2026-10-22 15:41:45.435398+00
+ AUTOMATION           | Thandi Mathebula | Document accepted: Particulars of Claim — draft v1.pdf                                                     | AutomationRule        | 2026-10-22 15:42:28.97739+00
+ AUTOMATION           | Bob Ndlovu       | Document accepted: Particulars of Claim — draft v1.pdf                                                     | AutomationRule        | 2026-10-22 15:42:28.981262+00
+(6 rows)
+

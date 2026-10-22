@@ -1,0 +1,8 @@
+# read-only: SELECT g.entity_type, g.slug, g.name, members FROM tenant_5039f2d497cf.field_groups ... (pack_id: legal_za_client=legal-za-customer, legal_za_matter=legal-za-project, conveyancing_za_matter=conveyancing-za-project, project_info=common-project, fica_compliance=sa-fica-individual, company_fica_details=sa-fica-company, task_info=common-task)
+CUSTOMER|company_fica_details|Company FICA Details|company_registration_number,entity_type
+CUSTOMER|fica_compliance|FICA Compliance|sa_id_number,passport_number,risk_rating
+CUSTOMER|legal_za_client|SA Legal — Client Details|id_passport_number,postal_address,preferred_correspondence,referred_by
+PROJECT|conveyancing_za_matter|SA Conveyancing — Matter Details|conveyancing_type,property_address,erf_number,deeds_office,lodgement_date,registration_date,deed_number,purchase_price,transfer_duty,bond_institution
+PROJECT|legal_za_matter|SA Legal — Matter Details|case_number,court_name,opposing_party,opposing_attorney,advocate_name,date_of_instruction,estimated_value
+PROJECT|project_info|Project Info|category
+TASK|task_info|Task Info|category

@@ -1,0 +1,5 @@
+# portal responsive chromium (stack 4) — source: /tmp/617c-e2e-portal-responsive.log (ephemeral)
+## summary
+  21 passed (27.6s)
+## failing titles (line numbers stripped)
+## first error line per failure (with line numbers)

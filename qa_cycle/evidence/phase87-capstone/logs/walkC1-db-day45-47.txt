@@ -1,0 +1,10 @@
+# Day 45-47 Moroka fee note + write-off (2026-10-22T16:19:11Z)
+invoice|3f8888c9-4b2a-4891-af9c-eb1a2a13b858|INV-0002|SENT|36680.00|5502.00|42182.00
+tariff_line|3(a) - Letters written (per folio)|4.0000|195.00|TARIFF
+tariff_schedule|LSSA 2024/2025 High Court Party-and-Party|PARTY_AND_PARTY|HIGH_COURT|LSSA Gazette 2024
+disbursement|a5aafdc4-20be-4bc8-a940-e77172002cca|SHERIFF_FEES|750.00|APPROVED|UNBILLED
+org_settings|#1B3A4B|(null)
+generated_document|92be3c6e-1bb9-47d9-9eeb-f494ff03285b|fee-note-inv-0002-2026-10-22.pdf|(no document_id)|2026-10-22 16:17:14.41904+00
+generated_document|551d927d-a583-44dc-9105-899e3a965a83|fee-note-inv-0002-2026-10-22.pdf|828c15f3-dcc9-4ed7-8ac7-ab33cf9bc931|2026-10-22 16:17:31.891557+00
+Mailpit gc8Rz8JiYAbVVt8XSdbisH 'Fee Note INV-0002 from Mathebula & Partners' to moroka.trust@ 16:17:14Z
+Downloaded saved PDF /tmp/617c-c1/moroka-fee-note-inv-0002-2026-10-22.pdf (ephemeral): logo yes; no brand colour; no firm address; client name + VAT number only; 8 lines incl. '3(a) - Letters written (per folio) 4 x R195,00'; Subtotal R36 680,00, VAT R5 502,00, Total Due R42 182,00; Payment Details = 'Banking details are available on request…' (no bank account)

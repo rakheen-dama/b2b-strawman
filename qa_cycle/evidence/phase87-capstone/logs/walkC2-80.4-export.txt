@@ -1,0 +1,8 @@
+# Walker C2 — 80.4 report export failure (frontend + backend log excerpts)
+## frontend.log (server actions)
+2344:  └─ ƒ executeReportAction("timesheet", {"dateFrom":"2026-07-24","dateTo":"2026-10-22","groupBy":"member","...":"2 items not stringified"}, 0, 25) in 63ms app/(app)/org/[slug]/reports/[reportSlug]/actions.ts
+2346:  └─ ƒ exportReportCsvAction("timesheet", {"dateFrom":"2026-07-24","dateTo":"2026-10-22","groupBy":"member","...":"2 items not stringified"}) in 25ms app/(app)/org/[slug]/reports/[reportSlug]/actions.ts
+2348:  └─ ƒ exportReportCsvAction("timesheet", {"dateFrom":"2026-07-24","dateTo":"2026-10-22","groupBy":"member","...":"2 items not stringified"}) in 2ms app/(app)/org/[slug]/reports/[reportSlug]/actions.ts
+2350:  └─ ƒ exportReportPdfAction("timesheet", {"dateFrom":"2026-07-24","dateTo":"2026-10-22","groupBy":"member","...":"2 items not stringified"}) in 2ms app/(app)/org/[slug]/reports/[reportSlug]/actions.ts
+## backend.log: lines mentioning report-definitions/export (expect none = request never reached backend)
+0

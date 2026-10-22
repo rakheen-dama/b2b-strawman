@@ -1,0 +1,291 @@
+# 617C.4 closure — Phase 87 attribution of capstone gaps — CODE ARCHAEOLOGY (+ read-only DB SELECTs), NOT observed on a baseline stack
+# baseline 41cb211fb (2026-10-18; Phase 87 baseline per §12.1). NOTE: 41cb211fb..HEAD also contains 9 pre-607A commits (Phase 86 tail: #1582-#1587); Phase 87 slices start at b0b234ae0 (#1588).
+b0b234ae0 Epic 607A: Phase 87 contract tests — wire-vocabulary ratchet, MCP tool contract, ADR-342 l
+2766552c6 chore(merge-gate): require CI checks green on every PR; allow-list gh pr merge for agents 
+eb0100614 docs(qa): post-Phase-86 behaviour-coherence amendments to the legal-za lifecycle plans (#1
+4cfa0917e phase 87 _ post 86 findings
+e889ee77a docs: blank-matter fixed via Next patch (#1585); frontend/portal markers
+36460b269 fix(frontend): patch Next router race that left pages blank after navigating into a loadin
+aa19b3313 docs: page-transition-remount fixed (#1584); blank-matter re-scoped; frontend marker
+6ac202dc2 fix(frontend): page transitions no longer remount the new route (actions lost right after 
+611cf107b docs: record #1582/#1583 outcomes and depth-ii tracked product bugs; frontend marker
+761c39b81 test(e2e): legal-depth-ii specs drive the real UI (native selects, required fields, hard a
+556933448 fix(frontend): create-matter dialog scrolls on short viewports; keep work-type datalists o
+
+## G-B3 (no matter-members UI)
+- members tab left the tab groups in Epic 599 (Phase 86):
+  9c3d9ec6a 2026-10-17 Epic 599: Remove capacity (Phase 38) + Resources/Utilization UI (#1570)
+- base project-tab-groups.ts lines mentioning 'members': 0
+- base still mounted the orphan panel (unreachable):
+41cb211fb:frontend/app/(app)/org/[slug]/projects/[id]/page.tsx:43:import { ProjectMembersPanel } from "@/components/projects/project-members
+41cb211fb:frontend/app/(app)/org/[slug]/projects/[id]/page.tsx:531:          <ProjectMembersPanel
+- 615E (#1631, 806bbac37) deleted the orphan mount; HEAD comment:
+98:  // Auth guard (keycloak-bff re-login funnel); userId was only read by the removed members panel.
+- 613D row follow-up already recorded 'matter members tab unreachable (not in project-tab-groups.ts, pre-existing)'
+
+## G-B7 (portal acceptance PDF X-Frame-Options DENY)
+- frameOptions/X-Frame/frame-ancestors config in backend main, base: 0, HEAD: 0 (Spring Security default DENY applies at both)
+- base iframe: 41cb211fb:portal/app/accept/[token]/acceptance-page.tsx:212:        <iframe
+- Phase 87 commits touching acceptance-page.tsx:
+aa519fa53 Epic 610F: Portal type names (PortalMatter*, MatterCard) + prettier format:check (#1610)
+  (diff is prettier formatting only)
+- backend security/ + PortalAcceptanceController changes 41cb211fb..HEAD: 0 lines of stat
+
+## G-C9 (no disbursement write-off UI)
+- base detail-client.tsx write-off references (display only):
+41cb211fb:frontend/app/(app)/org/[slug]/legal/disbursements/[id]/detail-client.tsx:222:            {disbursement.writeOffReason && (
+41cb211fb:frontend/app/(app)/org/[slug]/legal/disbursements/[id]/detail-client.tsx:223:              <Row label="Write-off reason" value={di
+- FIXME(depth-ii:no-write-off-action) added by #1582 (pre-607A):
+  761c39b81 2026-10-18 test(e2e): legal-depth-ii specs drive the real UI (native selects, required fields, har
+
+## G-C10 (fee-note line = task title, not entry narrative)
+1180:    return taskTitle + " -- " + timeEntry.getDate() + " -- " + memberName;
+- same line at base: 1180:    return taskTitle + " -- " + timeEntry.getDate() + " -- " + memberName;
+- introduced:
+  a79657cf7 2026-02-14 Epic 82A: Invoice CRUD & Controller (#169)
+
+## G-D1 (portal bare /login cannot resolve org)
+- base GAP-L-66 short-circuit: 101:          "We couldn't determine which organization to sign you into. " +
+- Phase 87 commits on portal/app/login/page.tsx:
+aa519fa53 Epic 610F: Portal type names (PortalMatter*, MatterCard) + prettier format:check (#1610)
+  (diff is prettier formatting only)
+- email link builders (no orgId), unchanged since base:
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/portal/PortalDocumentNotificationHandler.java:300:    context.put("documentUrl", portalBaseUrl + "/projects/" + 
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/invoice/InvoiceEmailService.java:80:      context.put("portalUrl", portalBaseUrl + "/invoices/" + invoice.getId(
+
+## G-C5 (portal email link /projects/<id>)
+- base: 300:    context.put("documentUrl", portalBaseUrl + "/projects/" + ctx.project().getId());
+- base portal route existed: portal/app/(authenticated)/projects/[id]/page.tsx
+- HEAD portal route: portal/app/(authenticated)/matters/[id]/page.tsx; portal redirect /projects/:path* -> /matters/:path* (617A #1639), 308 observed (closure-redirects.txt)
+- Phase 87 commits on PortalDocumentNotificationHandler.java: 0
+- also firm-app email links still /projects/ (redirect-covered by 610D): 
+252:                    + "/projects/"
+276:                ? orgAppUrl + "/projects/" + notification.getReferenceEntityId()
+
+## G-D6 (audit filter needs raw 'project')
+- base filter = free-text inputs (actorId/entityType refs):
+145:  const actorIdRef = useRef<HTMLInputElement | null>(null);
+147:  const entityTypeRef = useRef<HTMLInputElement | null>(null);
+- Phase 87 change = move to settings/firm?tab=audit-trail (616A) only:
++  // Phase 87 S9 (616A, ADR-341): the audit trail is the `audit-trail` tab of the Firm settings
++  // family; `updateUrl` pins `tab=audit-trail` so filter changes stay on this tab.
+-    (qs: string) => `/org/${slug}/settings/audit-log${qs ? `?${qs}` : ""}`,
++    (qs: string) => `/org/${slug}/settings/firm${qs ? `?${qs}` : ""}`,
++      params.set("tab", "audit-trail");
+- the stored literal 'project' is pinned on purpose (ADR-342, EntityTypeLiteralStabilityTest green)
+
+## G-D11 (list-row aggregates) + Home Debtors widget
+- read-only DB: fee notes and due dates (tenant_5039f2d497cf):
+  (draft)|DRAFT|NULL
+  INV-0001|PAID|NULL
+  INV-0002|SENT|NULL
+  INV-0003|SENT|NULL
+  INV-0004|PAID|NULL
+- debtor-book rule SENT AND due_date IS NOT NULL pre-dates Phase 87:
+41cb211fb:backend/src/main/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsReadService.java:82:        AND i.due_date IS NOT NULL
+41cb211fb:backend/src/main/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsReadService.java:104:            AND i.due_date IS NOT NULL
+41cb211fb:backend/src/main/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsReadService.java:121:        AND i.due_date IS NOT NULL
+- Phase 87 surfaces reuse it: ClientListRowRepository (615B) and Home Debtors (614B → collections/debtors):
+55:            AND i.due_date IS NOT NULL
+- read-only DB: project_members roles:
+  LEAD|4
+- template instantiation writes "LEAD" (pre-existing, also at base):
+569:          new ProjectMember(project.getId(), request.matterLeadMemberId(), "LEAD", memberId));
+739:          new ProjectMember(project.getId(), projectLeadMemberId, "LEAD", actingMemberId));
+41cb211fb:backend/src/main/java/io/b2mash/b2b/b2bstrawman/projecttemplate/ProjectTemplateService.java:569:          new ProjectMember(project.getId(),
+41cb211fb:backend/src/main/java/io/b2mash/b2b/b2bstrawman/projecttemplate/ProjectTemplateService.java:737:          new ProjectMember(project.getId(),
+- Roles.PROJECT_LEAD = 18:  public static final String PROJECT_LEAD = "lead";
+- Phase 87 queries compare to lowercase 'lead':
+19: * DisbursementRepository.sumApprovedUnbilledAmount}); lead = oldest {@code project_role = 'lead'}
+46:          WHERE pm.project_id = p.id AND pm.project_role = 'lead'
+40:      WHERE pm.projectId IN :projectIds AND pm.projectRole = 'lead'
+  introduced: 53bfd09db Epic 615A: MatterListRow — dense matter list projection + list params 
+- FICA status source = information requests (pre-existing GAP-L-46 projection), not checklists:
+41cb211fb:backend/src/main/java/io/b2mash/b2b/b2bstrawman/informationrequest/InformationRequestService.java:758:  public FicaStatusResponse 
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/dashboard/DashboardService.java:423:        informationRequestService.getFicaStatuses(client
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/customer/CustomerService.java:224:    Map<UUID, FicaStatusResponse> fica = informationReques
+
+## Settings › Documents › Templates overflow (screenshots.md #11)
+- templates content moved by 616C with no layout-class change:
+  className-changed lines: 0
+- container (settings family seam) is new in 616A; 616B/616C rows attribute overflow at 1024 px to the pre-existing shell min-w-0
+
+## e2e F-1/F-2 (PROJ-02/03, CUST-02)
+- grouped-tab-bar role=tab trigger + DropdownMenuItem at base:
+110:              role="tab"
+141:                role="tab"
+172:                <DropdownMenuItem
+- LifecycleTransitionDropdown importers in app/components, base: 0, HEAD: 0
+- G-C2: base adverse-parties fetchProjects:
+export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
+  const result =
+    await api.get<PaginatedResponse<{ id: string; name: string }>>("/api/projects?size=200");
+  return result.content;
+}
+export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
+  // FIXME(607D follow-up): /api/matters is a flat list; .content is undefined (pre-existing bug, not fixed in 610B).
+  const result = (await listMatters({ size: 200 })) as unknown as PaginatedResponse<{
+    id: string;
+    name: string;
+  }>;
+  return result.content;
+  @GetMapping
+  public ResponseEntity<List<ProjectResponse>> listProjects(
+- list-row tests' seed paths:
+69: *   <li><b>Matter A</b> (client "MLR Client", owner = lead; member/fin/trust added): open task due
+259:    projectMemberService.transferLead(matterB, ownerId, memberId);
+ *   <li><b>A</b> (ACTIVE): FICA DONE; SENT fee notes 1,000.00 + 500.00 in the org currency, a large
+ *       SENT one in a foreign currency (not the reported group), a SENT one WITHOUT a due date and
+ *       a DRAFT one (both excluded); 15,000.00 in trust; two ACTIVE matters + one ARCHIVED; a tag.
+
+############################################################
+# 617C review fix (2026-10-22): extra archaeology. Same method: git show/grep at 41cb211fb vs dac048f12. Code archaeology, not observed on the baseline stack.
+############################################################
+
+## G-B3 guard: why ProjectMembersPanel was unreachable at the baseline
+- page.tsx passes it as membersPanel (41cb211fb:frontend/app/(app)/org/[slug]/projects/[id]/page.tsx:530-539):
+        membersPanel={
+          <ProjectMembersPanel
+            members={members}
+            slug={slug}
+            projectId={id}
+            canManage={canManage}
+            isCurrentLead={isCurrentLead}
+            currentUserId={userId ?? ""}
+          />
+        }
+- ProjectTabs renders it only as Tabs content value="members" (41cb211fb:frontend/components/projects/project-tabs.tsx:252-253):
+      <TabsPrimitive.Content value="members" className="pt-6 outline-none">
+        {membersPanel}
+- "members" is NOT in validTabIds (41cb211fb:frontend/components/projects/project-tabs.tsx:64-85), so ?tab=members is ignored:
+const validTabIds = new Set<string>([ "details", "fields", "overview", "documents", "correspondence", "customers", "tasks", "time", "expenses", "budget", "financials", "activity", "rates", "generated", "requests", "customer-comments", "court-dates", "adverse-parties", "trust", "disbursements", "statements",
+- URL/user tab must also be a visible group tab (41cb211fb:frontend/components/projects/project-tabs.tsx:116,121,221-223):
+  const urlTab = tabParam && validTabIds.has(tabParam) ? (tabParam as TabId) : null;
+  const requestedTab = urlTab ?? userTab;
+  // Validate activeTab is in the visible tabs; fall back to "overview" if not
+  const activeTab: TabId =
+    requestedTab && visibleTabIds.has(requestedTab) ? requestedTab : "overview";
+- TAB_GROUPS ids at 41cb211fb (frontend/lib/constants/project-tab-groups.ts) - no 'members':
+id: "details" id: "details" id: "fields" id: "overview" id: "overview" id: "work" id: "tasks" id: "documents" id: "correspondence" id: "generated" id: "finance" id: "time" id: "expenses" id: "disbursements" id: "budget" id: "rates" id: "financials" id: "statements" id: "trust" id: "client" id: "customers" id: "requests" id: "customer-comments" id: "adverse-parties" id: "schedule" id: "court-dates" id: "activity" id: "activity" id: "audit" 
+=> no route, link or tab could activate value="members" at the baseline: the panel was mounted but unreachable. Pre-existing stands.
+
+## G-A2 (Home breadcrumb 'Dashboard') - Phase-87-introduced
+41cb211fb:frontend/components/breadcrumbs.tsx:10:  dashboard: "Dashboard",
+dac048f12:frontend/components/breadcrumbs.tsx:9:  dashboard: "Dashboard",
+41cb211fb:frontend/lib/nav-items.ts:79:        label: "Dashboard",
+dac048f12:frontend/lib/nav-items.ts:84:        label: "Home",
+- nav label Dashboard -> Home by:
+955055a5d Epic 612A: Navigation IA — six zones, footer dedupe, /profitability redirect (#1618)
+- Phase 87 commits on breadcrumbs.tsx (none changed the dashboard label):
+5524c7d8a Epic 616E: Settings — one nav source wired everywhere (rail, palette, Firm zone, breadcrumbs) (#1637)
+7ed5cc350 Epic 616D: Settings Connections family (6 tabs, 3 sub-routes, 10 redirects) (#1636)
+f57329b79 feat(epic-616C): settings Documents + Fees & Trust families (10 tabs, 2 sub-routes, 12 redirects) (#1635)
+f64bd3ef8 feat(epic-616B): settings Matters family (7 tabs, 6 sub-routes, 13 redirects) (#1634)
+fde264c08 Epic 616A: Settings nav source + Firm family (8 tabs, 8 redirects) (#1632)
+806bbac37 Epic 615E: Matter/client tab groups, Disbursements tab, expenses page retired + specs (#1631)
+d364b64aa Epic 613D: One Diary — calendars deleted, Diary nav + redirects, agenda, prescriptions in Court dates tab (#1624)
+955055a5d Epic 612A: Navigation IA — six zones, footer dedupe, /profitability redirect (#1618)
+854be8ba0 Epic 611B: Terminology call sites group 2 — literal legal copy (finance, trust, legal, settings, nav) (#1613)
+ba055edd7 Epic 610E: Hrefs + navigation plumbing (matters/clients) + no-legacy-hrefs scan (#1609)
+
+## G-B4 (matter breadcrumb 'Matters > Matter') - pre-existing
+50:  projects: "Project",
+119:            ? (PARENT_SEGMENT_FALLBACKS[parentSegment] ?? segment)
+124:        const label = prefixMatch ? `${t(prefixMatch[1])} ${prefixMatch[2]}` : t(rawLabel);
+  (baseline label went through t(): Project -> Matter in legal-za)
+58:  matters: "Matter",
+
+## G-B14 (?tab= pins the panel) - pre-existing
+121:  const requestedTab = urlTab ?? userTab;
+114:  const requestedTab = urlTab ?? userTab;
+
+## G-D5 (My work: no upcoming court events) - pre-existing
+41cb211fb:backend/src/main/java/io/b2mash/b2b/b2bstrawman/dashboard/DashboardService.java:492:        taskRepository.findUpcomingByAssignee(memberId, today).stream().limit(5).toList();
+dac048f12:backend/src/main/java/io/b2mash/b2b/b2bstrawman/dashboard/DashboardService.java:701:        taskRepository.findUpcomingByAssignee(memberId, today).stream().limit(5).toList();
+  (Next deadline = task due dates only at both; 613D Today's diary is today + overdue by design)
+
+## G-D2 (COMPLETED matter has no Close action; sidebar-lifecycle-action absent) - pre-existing
+41cb211fb:frontend/components/projects/matter-header-card.tsx:91:          {projectStatus === "ACTIVE" && (
+dac048f12:frontend/components/projects/matter-header-card.tsx:88:          {projectStatus === "ACTIVE" && (
+41cb211fb:frontend/components/projects/matter-sidebar.tsx:210:        <div data-testid="sidebar-lifecycle-action" className="flex w-full flex-col gap-2">
+  MatterSidebar is not mounted by the matter page at either commit:
+  41cb211fb page: 0
+  dac048f12 page: 0
+
+## FIXME(depth-ii:*) gaps G-B11 G-B12 G-B18 G-C4 G-D3 G-D7 - pre-existing (recorded by #1582 before 607A)
+  trust-link-payment-type: 761c39b81 test(e2e): legal-depth-ii specs drive the real UI (native selects, required fields, hard assertions) (#1582)
+  matter-unbilled-disbursements-summary: 761c39b81 test(e2e): legal-depth-ii specs drive the real UI (native selects, required fields, hard assertions) (#1582)
+  otp-clause-associations: 761c39b81 test(e2e): legal-depth-ii specs drive the real UI (native selects, required fields, hard assertions) (#1582)
+  soa-preview-unbounded-scale: 761c39b81 test(e2e): legal-depth-ii specs drive the real UI (native selects, required fields, hard assertions) (#1582)
+  retention-period-unconfigurable: 761c39b81 test(e2e): legal-depth-ii specs drive the real UI (native selects, required fields, hard assertions) (#1582)
+  admin-offered-closure-override: 761c39b81 test(e2e): legal-depth-ii specs drive the real UI (native selects, required fields, hard assertions) (#1582)
+
+## Backend paths behind backend-side gaps: Phase 87 commits 41cb211fb..dac048f12
+  resources/template-packs: 0 commits 
+  resources/automation-packs: 0 commits 
+  resources/field-packs: 0 commits 
+  resources/clause-packs: 0 commits 
+  java/io/b2mash/b2b/b2bstrawman/template: 1 commits b0b234ae0 
+  java/io/b2mash/b2b/b2bstrawman/activity: 1 commits afd1f8040 
+  java/io/b2mash/b2b/b2bstrawman/verticals/legal/closure: 2 commits 065e3cfbc b0b234ae0 
+  java/io/b2mash/b2b/b2bstrawman/acceptance: 1 commits 5dd132ffa 
+  java/io/b2mash/b2b/b2bstrawman/invoice: 1 commits b070dfae5 
+  java/io/b2mash/b2b/b2bstrawman/reporting: 0 commits 
+  java/io/b2mash/b2b/b2bstrawman/portal/notification: 0 commits 
+  java/io/b2mash/b2b/b2bstrawman/member/ProjectAccessService.java: 0 commits 
+  (b0b234ae0 = 607A annotations; afd1f8040/b070dfae5/065e3cfbc/5dd132ffa = wire renames)
+
+## Literal strings present at the baseline (sampled; terminology clusters G-A4 G-A5 G-B1 G-C3 G-D10 and other copy/behaviour gaps)
+  [Label shown on invoices] 41cb211fb:frontend/components/settings/TaxSettingsForm.tsx:111:            Label shown on invoices and documents (e.g. &quot;VAT&quot;, &quot;GST&quot;).
+  [Batch invoice generation] 41cb211fb:backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/VerticalModuleRegistry.java:103:            "Batch invoice generation across multiple customers in a s
+  [Common project metadata] 41cb211fb:backend/src/main/resources/field-packs/common-project.json:8:    "description": "Common project metadata fields",
+  [Coming Soon] 41cb211fb:frontend/components/projects/create-project-dialog.tsx:294:                  <Badge variant="neutral">Coming Soon</Badge>
+  [linkedProjectCount === 1 ? "engagement"] 41cb211fb:frontend/components/customers/client-header-card.tsx:148:            {linkedProjectCount} {linkedProjectCount === 1 ? "engagement" : "engagements"}
+  [Move this customer to Onboarding] 41cb211fb:frontend/app/(app)/org/[slug]/customers/[id]/page.tsx:433:            description: "Move this customer to Onboarding to begin compliance checklists.",
+  [No customer documents yet] 41cb211fb:frontend/components/documents/customer-documents-panel.tsx:85:          title="No customer documents yet"
+  [No adverse parties linked to this project] 41cb211fb:frontend/components/legal/project-adverse-parties-tab.tsx:100:            No adverse parties linked to this project.
+  [Add a new task to this project] 41cb211fb:frontend/components/tasks/create-task-dialog.tsx:102:          <DialogDescription>Add a new task to this project.</DialogDescription>
+  [Project has %d open task(s)] 41cb211fb:backend/src/main/java/io/b2mash/b2b/b2bstrawman/project/ProjectService.java:670:          "Project has %d open task(s). Complete or cancel all tasks before comp
+  [By Project] 41cb211fb:frontend/components/my-work/weekly-time-summary.tsx:143:          {/* By Project Breakdown */}
+  [%s performed %s on %s] 41cb211fb:backend/src/main/java/io/b2mash/b2b/b2bstrawman/activity/ActivityMessageFormatter.java:153:      default -> "%s performed %s on %s".formatted(actorName, eventTy
+  ["invoice.*", "Invoice"] 41cb211fb:backend/src/main/java/io/b2mash/b2b/b2bstrawman/audit/AuditEventTypeRegistry.java:110:                "invoice.*", "Invoice", AuditSeverity.INFO, AuditEventGrou
+  [Please review engagement letter for acceptance:] 41cb211fb:backend/src/main/java/io/b2mash/b2b/b2bstrawman/acceptance/AcceptanceNotificationService.java:105:            orgName + " -- Please review engagement letter for
+  [Payment Reference (optional)] 41cb211fb:frontend/components/invoices/invoice-status-sections.tsx:85:            Payment Reference (optional)
+  [Per-member time breakdown is restricted] 41cb211fb:backend/src/main/java/io/b2mash/b2b/b2bstrawman/timeentry/TimeEntryService.java:430:          "Per-member time breakdown is restricted to project leads, org adm
+  [Roles.PROJECT_LEAD.equals(pm.getProjectRole())] 41cb211fb:backend/src/main/java/io/b2mash/b2b/b2bstrawman/member/ProjectAccessService.java:47:              boolean isLead = Roles.PROJECT_LEAD.equals(pm.getProjectRole()
+  [Badge variant="neutral">Manual] 41cb211fb:frontend/components/integrations/PaymentIntegrationCard.tsx:91:      return <Badge variant="neutral">Manual Payments Only</Badge>;
+  [color: "var(--brand-color)"] 41cb211fb:frontend/components/desktop-sidebar.tsx:76:          style={{ color: "var(--brand-color)" }}
+  [tier !== "PRO" && <Badge variant="pro">PRO] 41cb211fb:frontend/components/integrations/IntegrationCard.tsx:182:            {domain === "AI" && tier !== "PRO" && <Badge variant="pro">PRO</Badge>}
+  [Failed to export CSV.] 41cb211fb:frontend/app/(app)/org/[slug]/reports/[reportSlug]/actions.ts:45:    return { data: null, error: "Failed to export CSV." };
+  [Banking details are available] 41cb211fb:backend/src/main/resources/template-packs/legal-za/fee-note-za.json:165:        { "type": "text", "text": "Please use the fee note number as your payment refere
+  611 converted the t()-wrapped call sites (e.g. 41cb211fb general-settings-form.tsx:237 'Label shown on {t("invoices")}' -> HEAD :235 'fee notes'); the strings above were literals at the baseline, so the leaks pre-date Phase 87.
+
+## Unchanged frontend files behind gaps (commit count 41cb211fb..dac048f12)
+  frontend/components/access-request/access-requests-table.tsx: 0
+  frontend/components/comments/add-comment-form.tsx: 0
+  frontend/components/invoices/invoice-status-sections.tsx: 0
+  frontend/lib/api/reports.ts: 0
+  frontend/components/integrations/IntegrationCard.tsx: 1
+  frontend/components/team: 0
+  frontend/app/(app)/org/[slug]/team: 0
+  reports/[reportSlug]/actions.ts: only fetchEntityOptionsAction changed (listMatters/listClients); export actions identical
+
+## New gaps from screenshots.md (G-D15..G-D21)
+- G-D16 PRO badge: IntegrationCard.tsx:182 identical at both:
+41cb211fb:frontend/components/integrations/IntegrationCard.tsx:182:            {domain === "AI" && tier !== "PRO" && <Badge variant="pro">PRO</Badge>}
+dac048f12:frontend/components/integrations/IntegrationCard.tsx:182:            {domain === "AI" && tier !== "PRO" && <Badge variant="pro">PRO</Badge>}
+- G-D17 Tariffs tab = rates page; G-D18 Xero tab = whole Integrations page. settings-nav.ts absent at baseline:
+  absent at 41cb211fb
+fde264c08 Epic 616A: Settings nav source + Firm family (8 tabs, 8 redirects) (#1632)
+dac048f12:frontend/app/(app)/org/[slug]/settings/connections/_tabs/xero.tsx:45:    label: "AI Assistant",
+7ed5cc350 Epic 616D: Settings Connections family (6 tabs, 3 sub-routes, 10 redirects) (#1636)
+f57329b79 feat(epic-616C): settings Documents + Fees & Trust families (10 tabs, 2 sub-routes, 12 redirects) (#1635)
+  architecture/phase87-legal-native-shell.md:932 names the tab 'Tariffs (ex Rates)' (by design)
+- G-D19 portal matter card has no status at either commit:
+  41cb211fb portal/components/project-card.tsx status hits: 0
+  dac048f12 portal/components/matter-card.tsx status hits: 0
+- G-D20 Diary week view: /diary did not exist at the baseline:
+0
+- G-D21 Home Debtors: Home widget matrix added by 614B (840369c21); debtor rule at baseline CollectionsReadService (see G-D11 b above)
+  [G-A7 exact] 41cb211fb:frontend/components/templates/TemplateList.tsx:119:                  <Badge variant="neutral">Manual</Badge> (else-branch of template.source === "FROM_PROJECT" at :116; SEEDER falls through to Manual)
+  IntegrationCard.tsx: 1 commit 7ed5cc350 Epic 616D: Settings Connections family (6 tabs, 3 sub-routes, 10 redir,  1 file changed, 1 insertion(+), 1 deletion(-); :182 PRO badge line identical

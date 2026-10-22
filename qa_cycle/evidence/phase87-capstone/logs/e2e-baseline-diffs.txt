@@ -1,0 +1,20 @@
+# failing-title diffs vs baselines (line numbers stripped; empty diff = IDENTICAL)
+## lifecycle-run1  (/private/tmp/e2e-616F-lifecycle-run1.log vs /tmp/617c-e2e-lifecycle-run1.log)
+IDENTICAL
+## lifecycle-run2  (/private/tmp/e2e-616F-lifecycle-run2.log vs /tmp/617c-e2e-lifecycle-run2.log)
+IDENTICAL
+## depth-run1  (/private/tmp/e2e-616F-depth-run1.log vs /tmp/617c-e2e-depth-run1.log)
+IDENTICAL
+## depth-run2  (/private/tmp/e2e-616F-depth-run2.log vs /tmp/617c-e2e-depth-run2.log)
+IDENTICAL
+## settings  (/private/tmp/e2e-616F-settings-run1.log vs /tmp/617c-e2e-settings.log)
+IDENTICAL
+## settings(616F run2)  (/private/tmp/e2e-616F-settings-run2.log vs /tmp/617c-e2e-settings.log)
+IDENTICAL
+## portal-90day  (/private/tmp/617b-90day.log vs /tmp/617c-e2e-portal-90day.log)
+IDENTICAL
+## portal-responsive  (/private/tmp/617b-responsive.log vs /tmp/617c-e2e-portal-responsive.log)
+IDENTICAL
+## customers(615D, different file set)  (/private/tmp/pw-615d-customers.log vs /tmp/617c-e2e-customers-stack2.log)
+1a2
+> [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts › CUST-02: Customer Lifecycle › PROSPECT -> ONBOARDING

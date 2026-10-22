@@ -1,0 +1,17 @@
+# Days 24-35 RAF work (2026-10-22T16:08:59Z)
+time|b690c310-7a93-4c1a-b6d4-77bbd0da1ff9|Bob Ndlovu|240|Medical records collation|1200.00|500.00
+time|e35ea964-d771-43a4-9263-999925883e17|Bob Ndlovu|180|Expert witness statements|1200.00|500.00
+document|RAF medical report — Dr Naidoo.pdf|619|UPLOADED
+document|RAF medical report — hospital records.pdf|632|UPLOADED
+notification|AUTOMATION|Thandi Mathebula|Complete onboarding: Lerato Mthembu
+notification|AUTOMATION|Bob Ndlovu|Complete onboarding: Lerato Mthembu
+notification|AUTOMATION|Thandi Mathebula|Document accepted: RAF medical report — Dr Naidoo.pdf
+notification|AUTOMATION|Bob Ndlovu|Document accepted: RAF medical report — Dr Naidoo.pdf
+notification|AUTOMATION|Thandi Mathebula|Document accepted: RAF medical report — hospital records.pdf
+notification|AUTOMATION|Bob Ndlovu|Document accepted: RAF medical report — hospital records.pdf
+notification|COMMENT_ADDED|Bob Ndlovu|Thandi Mathebula commented on task "Court action if no settlement (Section 24 RAF Act)"
+comment|f89e2210-14a6-4878-83e8-6f76441dfdaa|Ready for summons @Bob|INTERNAL
+task|File RAF1 claim form + supporting documents (within 3-year prescription)|DONE
+task|Statutory medical reports & assessments|DONE
+task|Insurer correspondence -- RAF tariff schedule|DONE
+task|Initial RAF claim assessment & instructions|DONE

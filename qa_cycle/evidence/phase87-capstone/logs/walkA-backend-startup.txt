@@ -1,0 +1,4 @@
+105 2026-10-22T15:12:48.870986Z BackendApplication - Started BackendApplication in 10.669 seconds (process running for 10.861)
+125 2026-10-22T15:12:49.057080Z DbMigrate - Successfully applied 2 migrations to schema "tenant_56399d06a773", now at version v3 (execution time 00:00.031s)
+126 2026-10-22T15:12:49.058898Z TenantMigrationRunner - Migrated schema tenant_56399d06a773 — 2 migrations applied
+127 2026-10-22T15:12:49.059011Z TenantMigrationRunner - Tenant migration runner completed

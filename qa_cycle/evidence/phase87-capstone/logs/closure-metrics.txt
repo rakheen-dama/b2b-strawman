@@ -1,0 +1,72 @@
+# 617C.4 closure — metrics (brief D.2 commands), worktree /Users/rakheendama/Projects/2026/worktree-epic-617C, HEAD dac048f12, baseline 41cb211fb, 2026-10-22T17:35:45Z
+== 41cb211fb
+frontend page.tsx: 100
+  under org/[slug]: 86
+  settings: 44
+portal page.tsx: 18
+backend top-level packages: 62
+@RestController files: 121
+@Entity files: 103
+Capability constants: 27
+ModuleDefinition count: 8
+legacy wire literal files ("/api/(projects|customers)|"/portal/projects): 23
+controller files mapping /projects|/customers (PCRE \b): 24
+terminology files fe/portal/shared: 73 / 12 (non-test 10) / 2
+tenant migrations: V1__baseline.sql V2__add_project_template_work_type.sql V3__normalise_work_types.sql 
+global migrations: V1__baseline.sql 
+== HEAD
+frontend page.tsx: 71
+  under org/[slug]: 57
+  settings: 17
+portal page.tsx: 18
+backend top-level packages: 63
+@RestController files: 122
+@Entity files: 103
+Capability constants: 27
+ModuleDefinition count: 8
+legacy wire literal files ("/api/(projects|customers)|"/portal/projects): 0
+controller files mapping /projects|/customers (PCRE \b): 0
+terminology files fe/portal/shared: 0 / 0 (non-test 0) / 0
+tenant migrations: V1__baseline.sql V2__add_project_template_work_type.sql V3__normalise_work_types.sql 
+global migrations: V1__baseline.sql 
+== baseline pins
+6:    expect(NAV_GROUPS).toHaveLength(6);
+22:    expect(total).toBe(25);
+base: frontend/components/settings/settings-nav-groups.ts exists
+41cb211fb:frontend/lib/nav-items.ts:315:export const SETTINGS_ITEMS: SettingsItem[] = [
+base redirects() rows in frontend/next.config.ts: 1
+== HEAD extras
+diff of top-level packages (base vs HEAD):
+23a24
+> backend/src/main/java/io/b2mash/b2b/b2bstrawman/diary
+working-tree grep legacy wire literals: 0
+22:@Deprecated(since = "Phase 87", forRemoval = true)
+24:@RequestMapping("/api/calendar")
+tool-contract.json history:
+b0b234ae0 Epic 607A: Phase 87 contract tests — wire-vocabulary ratchet, MCP tool contract, ADR-342 literal pins (#1588)
+tool-contract keys: {'outputRecords': 29, 'resourceTemplates': 2, 'resources': 1, 'tools': 21}
+ratchet baseline entries (non-comment) in backend/src/test/resources/wire/batch1-known-offenders.txt: 0
+terminology working-tree grep: 0
+ESLint ban:
+frontend/eslint.config.mjs
+portal/eslint.config.mjs
+180:**Single vocabulary.** Kazi is legal-only. Write the legal word in the sourc
+LEGACY_REDIRECTS rows: 51
+portal next.config.ts redirect rows: 1
+audit catalogue pins:
+84:    assertThat(registry.entries()).hasSize(29);
+131:    assertThat(registry.entriesMatching(Set.of())).hasSize(29);
+132:    assertThat(registry.entriesMatching(null)).hasSize(29);
+settings nav source: ls: frontend/components/settings/settings-nav-groups.ts: No such file or directory
+SETTINGS_ITEMS in nav-items.ts: 0
+321:export const SETTINGS_FAMILIES: readonly SettingsFamily[] = FAMILIES;
+migration commits 41cb211fb..HEAD: 0
+OQ#4:
+5:> Migration baseline: see [`backend/db/BASELINE.md`](backe
+backend/db/BASELINE.md:70:- Add the next free version — tenant **V4**, global **V2** as of Phase 87 (confirm with `for s
+requirements/claude-code-prompt-phase84.md:14:> - **Migrations:** after the Phase 86 squash (ADR-331) the latest tenant 
+OQ#16:
+frontend/lib/api/client.ts
+frontend/lib/api/clients.ts
+ls: frontend/lib/api/http-client.ts: No such file or directory
+capstone checkbox lines: 307

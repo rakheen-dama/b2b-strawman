@@ -1,0 +1,42 @@
+# walkB Day 14 read-only SELECTs 2026-10-22T15:52:56Z
+                  id                  |           name            | customer_type | lifecycle_status |  address_line1  |  city   | country |            email             
+--------------------------------------+---------------------------+---------------+------------------+-----------------+---------+---------+------------------------------
+ e1229036-88c4-49ae-9ade-9d773d0f72fc | Khumalo Property Holdings | INDIVIDUAL    | ACTIVE           | 12 Rivonia Road | Sandton | ZA      | khumalo.holdings@email.co.za
+(1 row)
+
+  status   |         completed_at          
+-----------+-------------------------------
+ COMPLETED | 2026-10-22 15:51:03.412904+00
+(1 row)
+
+                  id                  |                         name                          |  work_type   |                                                custom_fields                                                 
+--------------------------------------+-------------------------------------------------------+--------------+--------------------------------------------------------------------------------------------------------------
+ 0d9bf92c-d6b0-4993-bcf6-5dcbf2ffe547 | Khumalo Property Holdings — Erf 1234 Sandton Transfer | CONVEYANCING | {"erf_number": "1234", "deeds_office": "JOHANNESBURG", "property_address": "12 Rivonia Road, Sandton, 2196"}
+(1 row)
+
+          grp           |       slug        |                    visibility_condition                     
+------------------------+-------------------+-------------------------------------------------------------
+ conveyancing_za_matter | conveyancing_type | 
+ conveyancing_za_matter | property_address  | 
+ conveyancing_za_matter | erf_number        | 
+ conveyancing_za_matter | deeds_office      | 
+ conveyancing_za_matter | lodgement_date    | 
+ conveyancing_za_matter | registration_date | {"operator": "isSet", "dependsOnSlug": "lodgement_date"}
+ conveyancing_za_matter | deed_number       | {"operator": "isSet", "dependsOnSlug": "registration_date"}
+ conveyancing_za_matter | purchase_price    | 
+ conveyancing_za_matter | transfer_duty     | 
+ conveyancing_za_matter | bond_institution  | 
+(10 rows)
+
+                  id                  |                                      file_name                                       |            acceptance_id             | status |           viewed_at           
+--------------------------------------+--------------------------------------------------------------------------------------+--------------------------------------+--------+-------------------------------
+ e2ab5daa-4569-4cbb-b0da-5b62b704f6f8 | offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-2026-10-22.pdf | ce2f21b7-946a-4271-8189-9f56ecfd3722 | VIEWED | 2026-10-22 15:52:27.145538+00
+(1 row)
+
+                  id                  |            email             |       display_name        | status 
+--------------------------------------+------------------------------+---------------------------+--------
+ ac43d200-cffd-4a30-91b8-f0796db96383 | sipho.dlamini@email.co.za    | Sipho Dlamini             | ACTIVE
+ 7d49d818-3e9e-4cce-94b4-cc1326734ad6 | moroka.trust@email.co.za     | Moroka Family Trust       | ACTIVE
+ ca957639-a8ad-4172-b725-c16181572c70 | khumalo.holdings@email.co.za | Khumalo Property Holdings | ACTIVE
+(3 rows)
+

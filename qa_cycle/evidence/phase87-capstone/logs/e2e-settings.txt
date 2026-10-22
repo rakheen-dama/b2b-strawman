@@ -1,0 +1,11 @@
+# settings (stack 1) — source: /tmp/617c-e2e-settings.log (ephemeral)
+## summary
+  1 failed
+  15 skipped
+  1 did not run
+  13 passed (21.1s)
+## failing titles (line numbers stripped)
+[chromium] › e2e/tests/settings/packs.spec.ts › PACK-01: Pack Lifecycle › Seeded legal-za pack is installed and its templates are present
+## first error line per failure (with line numbers)
+1) [chromium] › e2e/tests/settings/packs.spec.ts:94:7 › PACK-01: Pack Lifecycle › Seeded legal-za pack is installed and its templates are present 
+          Error: expect(locator).toBeVisible() failed

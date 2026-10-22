@@ -69,7 +69,8 @@ const CLOSURE_GATES = [
 ];
 
 async function openAuditLogFilteredBy(page: Page, eventType: string) {
-  await page.goto(`${BASE}/settings/audit-log`);
+  // Phase 87 S9 (ADR-344): /settings/audit-log → /settings/firm?tab=audit-trail
+  await page.goto(`${BASE}/settings/firm?tab=audit-trail`);
   await page.waitForLoadState("networkidle");
   const filter = page.locator("#audit-filter-event-type");
   await expect(filter).toBeVisible({ timeout: 15_000 });

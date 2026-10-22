@@ -8,11 +8,36 @@
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
  *   2. Seed data present
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 
 const ORG = "e2e-test-org";
 const base = `/org/${ORG}`;
+
+/**
+ * Phase 87 S9 (616F, ADR-344 — spec-body fix handed off by 616E): set the data-protection
+ * jurisdiction to South Africa through the real control. JurisdictionSelectorSection
+ * (components/settings/jurisdiction-selector.tsx) is a Radix Select that saves on selection — it
+ * has no Save button — and the FIRST selection opens the "Set Data Protection Jurisdiction"
+ * AlertDialog, which must be confirmed. The e2e tenant starts without a jurisdiction. Idempotent:
+ * when South Africa is already selected it leaves the control alone. Persistence oracle:
+ * PaiaManualSection gets the jurisdiction from the server render, so "Generate PAIA Manual" only
+ * turns enabled once the save + router.refresh() have landed.
+ */
+async function setJurisdictionToSouthAfrica(page: Page) {
+  const trigger = page
+    .getByRole("combobox")
+    .filter({ hasText: /Select a jurisdiction|South Africa/ });
+  await expect(trigger).toBeVisible({ timeout: 10_000 });
+  if (!/South Africa/.test((await trigger.textContent()) ?? "")) {
+    await trigger.click();
+    await page.getByRole("option", { name: /South Africa/ }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "Confirm" }).click();
+  }
+  await expect(page.getByRole("button", { name: "Generate PAIA Manual" })).toBeEnabled({
+    timeout: 15_000,
+  });
+}
 
 test.describe("DP-02: Data Protection Settings", () => {
   test.beforeEach(async ({ page }) => {
@@ -20,13 +45,15 @@ test.describe("DP-02: Data Protection Settings", () => {
   });
 
   test("View data protection tab", async ({ page }) => {
-    await page.goto(`${base}/settings/data-protection`);
+    // Phase 87 S9 (ADR-344): /settings/data-protection → /settings/firm?tab=data-protection
+    await page.goto(`${base}/settings/firm?tab=data-protection`);
     const body = page.locator("body");
     const bodyText = await body.textContent();
 
     if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
       // Try settings page with data protection tab
-      await page.goto(`${base}/settings`);
+      // Phase 87 S9 (ADR-344): fallback lands on the Firm family; its rail/tab label is "Data protection" (sentence case)
+      await page.goto(`${base}/settings/firm`);
       await expect(body).not.toContainText("Something went wrong");
 
       const dpTab = page.getByRole("tab", { name: /data.*protection|privacy|POPIA/i }).first();
@@ -48,13 +75,15 @@ test.describe("DP-02: Data Protection Settings", () => {
   });
 
   test("Set jurisdiction to South Africa", async ({ page }) => {
-    await page.goto(`${base}/settings/data-protection`);
+    // Phase 87 S9 (ADR-344): /settings/data-protection → /settings/firm?tab=data-protection
+    await page.goto(`${base}/settings/firm?tab=data-protection`);
     const bodyText = await page.locator("body").textContent();
 
     if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      await page.goto(`${base}/settings`);
+      // Phase 87 S9 (ADR-344): fallback lands on the Firm family; its rail/tab label is "Data protection" (sentence case)
+      await page.goto(`${base}/settings/firm`);
       const dpTab = page
-        .locator('[role="tab"]:has-text("Data Protection"), a:has-text("Data Protection")')
+        .locator('[role="tab"]:has-text("Data protection"), a:has-text("Data protection")')
         .first();
       if (await dpTab.isVisible().catch(() => false)) {
         await dpTab.click();
@@ -65,42 +94,23 @@ test.describe("DP-02: Data Protection Settings", () => {
       }
     }
 
-    // Look for jurisdiction selector
-    const jurisdictionSelect = page
-      .locator('select[name*="jurisdiction"], [data-testid="jurisdiction-select"]')
-      .first();
-    const jurisdictionCombo = page.getByRole("combobox").first();
-
-    if (await jurisdictionSelect.isVisible().catch(() => false)) {
-      await jurisdictionSelect.selectOption({ label: /south.?africa|ZA/i });
-    } else if (await jurisdictionCombo.isVisible().catch(() => false)) {
-      await jurisdictionCombo.click();
-      await page.waitForTimeout(500);
-      const zaOption = page.getByRole("option", { name: /south.?africa|ZA/i }).first();
-      if (await zaOption.isVisible().catch(() => false)) {
-        await zaOption.click();
-      }
-    } else {
-      test.skip(true, "Jurisdiction selector not found");
-      return;
-    }
-
-    // Save
-    const saveBtn = page.getByRole("button", { name: /save|update/i }).first();
-    if (await saveBtn.isVisible().catch(() => false)) {
-      await saveBtn.click();
-      await page.waitForTimeout(1000);
-    }
+    // Phase 87 S9 (616F, ADR-344): the jurisdiction control saves on selection (no Save button) and
+    // its first selection must be confirmed in an AlertDialog. The old generic combobox + "save"
+    // click never confirmed it, and once a jurisdiction exists it clicked the Information Officer's
+    // disabled Save instead (30 s timeout on a re-run).
+    await setJurisdictionToSouthAfrica(page);
   });
 
   test("Set information officer", async ({ page }) => {
-    await page.goto(`${base}/settings/data-protection`);
+    // Phase 87 S9 (ADR-344): /settings/data-protection → /settings/firm?tab=data-protection
+    await page.goto(`${base}/settings/firm?tab=data-protection`);
     const bodyText = await page.locator("body").textContent();
 
     if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      await page.goto(`${base}/settings`);
+      // Phase 87 S9 (ADR-344): fallback lands on the Firm family; its rail/tab label is "Data protection" (sentence case)
+      await page.goto(`${base}/settings/firm`);
       const dpTab = page
-        .locator('[role="tab"]:has-text("Data Protection"), a:has-text("Data Protection")')
+        .locator('[role="tab"]:has-text("Data protection"), a:has-text("Data protection")')
         .first();
       if (await dpTab.isVisible().catch(() => false)) {
         await dpTab.click();
@@ -111,43 +121,33 @@ test.describe("DP-02: Data Protection Settings", () => {
       }
     }
 
-    // Look for information officer fields
-    const nameInput = page
-      .locator('input[name*="officer" i][name*="name" i], input[placeholder*="officer" i]')
-      .first();
-    const emailInput = page.locator('input[name*="officer" i][name*="email" i]').first();
+    // Phase 87 S9 (616F, ADR-344 — spec-body fix handed off by 616E): InformationOfficerSection
+    // (components/settings/information-officer-section.tsx) renders #officer-name / #officer-email
+    // (no name attribute) and its own "Save", disabled until a value differs from the saved one.
+    // The unique suffix keeps a re-run against the same stack dirty.
+    const nameInput = page.locator("#officer-name");
+    const emailInput = page.locator("#officer-email");
+    await expect(nameInput).toBeVisible({ timeout: 10_000 });
+    await nameInput.fill(`Test Officer ${Date.now().toString(36).slice(-4)}`);
+    await emailInput.fill("officer@test.com");
 
-    if (!(await nameInput.isVisible().catch(() => false))) {
-      // Try looking for a labeled field
-      const officerSection = page.locator("text=/information.?officer/i").first();
-      if (!(await officerSection.isVisible().catch(() => false))) {
-        test.skip(true, "Information officer fields not found");
-        return;
-      }
-    }
-
-    if (await nameInput.isVisible().catch(() => false)) {
-      await nameInput.fill("Test Officer");
-    }
-    if (await emailInput.isVisible().catch(() => false)) {
-      await emailInput.fill("officer@test.com");
-    }
-
-    const saveBtn = page.getByRole("button", { name: /save|update/i }).first();
-    if (await saveBtn.isVisible().catch(() => false)) {
-      await saveBtn.click();
-      await page.waitForTimeout(1000);
-    }
+    // exact: the retention rows' icon buttons are named "Save {TYPE} policy"
+    const saveBtn = page.getByRole("button", { name: "Save", exact: true });
+    await saveBtn.click();
+    // Phase 87 S9 (616F, ADR-344 — D-3): outcome observed on the e2e stack before asserting it
+    await expect(page.getByText("Saved successfully.")).toBeVisible({ timeout: 10_000 });
   });
 
   test("View retention policies", async ({ page }) => {
-    await page.goto(`${base}/settings/data-protection`);
+    // Phase 87 S9 (ADR-344): /settings/data-protection → /settings/firm?tab=data-protection
+    await page.goto(`${base}/settings/firm?tab=data-protection`);
     const bodyText = await page.locator("body").textContent();
 
     if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      await page.goto(`${base}/settings`);
+      // Phase 87 S9 (ADR-344): fallback lands on the Firm family; its rail/tab label is "Data protection" (sentence case)
+      await page.goto(`${base}/settings/firm`);
       const dpTab = page
-        .locator('[role="tab"]:has-text("Data Protection"), a:has-text("Data Protection")')
+        .locator('[role="tab"]:has-text("Data protection"), a:has-text("Data protection")')
         .first();
       if (await dpTab.isVisible().catch(() => false)) {
         await dpTab.click();
@@ -178,13 +178,15 @@ test.describe("DP-02: Data Protection Settings", () => {
   });
 
   test("Edit retention period", async ({ page }) => {
-    await page.goto(`${base}/settings/data-protection`);
+    // Phase 87 S9 (ADR-344): /settings/data-protection → /settings/firm?tab=data-protection
+    await page.goto(`${base}/settings/firm?tab=data-protection`);
     const bodyText = await page.locator("body").textContent();
 
     if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      await page.goto(`${base}/settings`);
+      // Phase 87 S9 (ADR-344): fallback lands on the Firm family; its rail/tab label is "Data protection" (sentence case)
+      await page.goto(`${base}/settings/firm`);
       const dpTab = page
-        .locator('[role="tab"]:has-text("Data Protection"), a:has-text("Data Protection")')
+        .locator('[role="tab"]:has-text("Data protection"), a:has-text("Data protection")')
         .first();
       if (await dpTab.isVisible().catch(() => false)) {
         await dpTab.click();
@@ -222,13 +224,15 @@ test.describe("DP-02: Data Protection Settings", () => {
   });
 
   test("View processing register", async ({ page }) => {
-    await page.goto(`${base}/settings/data-protection`);
+    // Phase 87 S9 (ADR-344): /settings/data-protection → /settings/firm?tab=data-protection
+    await page.goto(`${base}/settings/firm?tab=data-protection`);
     const bodyText = await page.locator("body").textContent();
 
     if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      await page.goto(`${base}/settings`);
+      // Phase 87 S9 (ADR-344): fallback lands on the Firm family; its rail/tab label is "Data protection" (sentence case)
+      await page.goto(`${base}/settings/firm`);
       const dpTab = page
-        .locator('[role="tab"]:has-text("Data Protection"), a:has-text("Data Protection")')
+        .locator('[role="tab"]:has-text("Data protection"), a:has-text("Data protection")')
         .first();
       if (await dpTab.isVisible().catch(() => false)) {
         await dpTab.click();
@@ -260,13 +264,15 @@ test.describe("DP-02: Data Protection Settings", () => {
   });
 
   test("Generate PAIA manual", async ({ page }) => {
-    await page.goto(`${base}/settings/data-protection`);
+    // Phase 87 S9 (ADR-344): /settings/data-protection → /settings/firm?tab=data-protection
+    await page.goto(`${base}/settings/firm?tab=data-protection`);
     const bodyText = await page.locator("body").textContent();
 
     if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      await page.goto(`${base}/settings`);
+      // Phase 87 S9 (ADR-344): fallback lands on the Firm family; its rail/tab label is "Data protection" (sentence case)
+      await page.goto(`${base}/settings/firm`);
       const dpTab = page
-        .locator('[role="tab"]:has-text("Data Protection"), a:has-text("Data Protection")')
+        .locator('[role="tab"]:has-text("Data protection"), a:has-text("Data protection")')
         .first();
       if (await dpTab.isVisible().catch(() => false)) {
         await dpTab.click();
@@ -277,35 +283,27 @@ test.describe("DP-02: Data Protection Settings", () => {
       }
     }
 
-    // Look for PAIA manual generation button
-    const paiaBtn = page.getByRole("button", { name: /PAIA|generate.*manual|manual/i }).first();
-    if (!(await paiaBtn.isVisible().catch(() => false))) {
-      // May be under a tab
-      const paiaTab = page.locator('[role="tab"]:has-text("PAIA"), a:has-text("PAIA")').first();
-      if (await paiaTab.isVisible().catch(() => false)) {
-        await paiaTab.click();
-        await page.waitForTimeout(1000);
-      } else {
-        test.skip(true, "PAIA manual generation not found");
-        return;
-      }
-    }
-
-    const generateBtn = page.getByRole("button", { name: /generate|create|download/i }).first();
-    if (await generateBtn.isVisible().catch(() => false)) {
-      await generateBtn.click();
-      await page.waitForTimeout(2000);
-    }
+    // Phase 87 S9 (616F, ADR-344 — spec-body fix handed off by 616E): "Generate PAIA Manual" is
+    // disabled until a data-protection jurisdiction is set (components/data-protection/
+    // paia-manual-section.tsx:53) and the e2e tenant starts without one — set it first
+    // (idempotent), then generate.
+    await setJurisdictionToSouthAfrica(page);
+    const generateBtn = page.getByRole("button", { name: "Generate PAIA Manual" });
+    await generateBtn.click();
+    // Phase 87 S9 (616F, ADR-344 — D-3): outcome observed on the e2e stack before asserting it
+    await expect(page.getByText(/PAIA manual generated:/)).toBeVisible({ timeout: 15_000 });
   });
 
   test("View DSAR list", async ({ page }) => {
-    await page.goto(`${base}/settings/data-protection`);
+    // Phase 87 S9 (ADR-344): /settings/data-protection → /settings/firm?tab=data-protection
+    await page.goto(`${base}/settings/firm?tab=data-protection`);
     const bodyText = await page.locator("body").textContent();
 
     if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      await page.goto(`${base}/settings`);
+      // Phase 87 S9 (ADR-344): fallback lands on the Firm family; its rail/tab label is "Data protection" (sentence case)
+      await page.goto(`${base}/settings/firm`);
       const dpTab = page
-        .locator('[role="tab"]:has-text("Data Protection"), a:has-text("Data Protection")')
+        .locator('[role="tab"]:has-text("Data protection"), a:has-text("Data protection")')
         .first();
       if (await dpTab.isVisible().catch(() => false)) {
         await dpTab.click();
@@ -337,13 +335,15 @@ test.describe("DP-02: Data Protection Settings", () => {
   });
 
   test("Create DSAR", async ({ page }) => {
-    await page.goto(`${base}/settings/data-protection`);
+    // Phase 87 S9 (ADR-344): /settings/data-protection → /settings/firm?tab=data-protection
+    await page.goto(`${base}/settings/firm?tab=data-protection`);
     const bodyText = await page.locator("body").textContent();
 
     if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      await page.goto(`${base}/settings`);
+      // Phase 87 S9 (ADR-344): fallback lands on the Firm family; its rail/tab label is "Data protection" (sentence case)
+      await page.goto(`${base}/settings/firm`);
       const dpTab = page
-        .locator('[role="tab"]:has-text("Data Protection"), a:has-text("Data Protection")')
+        .locator('[role="tab"]:has-text("Data protection"), a:has-text("Data protection")')
         .first();
       if (await dpTab.isVisible().catch(() => false)) {
         await dpTab.click();

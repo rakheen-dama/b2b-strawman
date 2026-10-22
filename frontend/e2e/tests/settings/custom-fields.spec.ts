@@ -20,7 +20,8 @@ test.describe("CF-01: Custom Fields", () => {
   });
 
   test("View custom field definitions", async ({ page }) => {
-    await page.goto(`${base}/settings/custom-fields`);
+    // Phase 87 S9 (ADR-344): /settings/custom-fields → /settings/matters?tab=custom-fields
+    await page.goto(`${base}/settings/matters?tab=custom-fields`);
     const body = page.locator("body");
     const bodyText = await body.textContent();
 
@@ -37,7 +38,8 @@ test.describe("CF-01: Custom Fields", () => {
   });
 
   test("Create text custom field", async ({ page }) => {
-    await page.goto(`${base}/settings/custom-fields`);
+    // Phase 87 S9 (ADR-344): /settings/custom-fields → /settings/matters?tab=custom-fields
+    await page.goto(`${base}/settings/matters?tab=custom-fields`);
     const bodyText = await page.locator("body").textContent();
 
     if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {

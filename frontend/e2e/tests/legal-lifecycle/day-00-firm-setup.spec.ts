@@ -55,14 +55,16 @@ test.describe.serial("Day 0 — Firm Setup", () => {
   // ── 0.4-0.6: Currency ZAR, brand colour ──────────────────────────
   test("Alice: Settings — currency is ZAR", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/general`);
+    // Phase 87 S9 (ADR-344): /settings/general → /settings/firm?tab=general
+    await page.goto(`${BASE}/settings/firm?tab=general`);
     await expect(page.locator("main")).toBeVisible();
     await expect(page.getByText(/ZAR/)).toBeVisible();
   });
 
   test("Alice: Settings — set brand colour #1B3A4B", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/general`);
+    // Phase 87 S9 (ADR-344): /settings/general → /settings/firm?tab=general
+    await page.goto(`${BASE}/settings/firm?tab=general`);
     await expect(page.locator("main")).toBeVisible();
 
     // Look for brand colour/color input
@@ -90,13 +92,15 @@ test.describe.serial("Day 0 — Firm Setup", () => {
   // ── 0.7-0.13: Billing rates and cost rates ───────────────────────
   test("Alice: Settings — rate cards page loads", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/rates`);
+    // Phase 87 S9 (ADR-344): /settings/rates → /settings/fees?tab=tariffs
+    await page.goto(`${BASE}/settings/fees?tab=tariffs`);
     await expect(page.locator("main")).toBeVisible();
   });
 
   test("Alice: Settings — verify billing rate creation flow", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/rates`);
+    // Phase 87 S9 (ADR-344): /settings/rates → /settings/fees?tab=tariffs
+    await page.goto(`${BASE}/settings/fees?tab=tariffs`);
     await expect(page.locator("main")).toBeVisible();
 
     // Look for a "New Rate" or "Add Rate" button
@@ -147,7 +151,8 @@ test.describe.serial("Day 0 — Firm Setup", () => {
     page,
   }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/rates`);
+    // Phase 87 S9 (ADR-344): /settings/rates → /settings/fees?tab=tariffs
+    await page.goto(`${BASE}/settings/fees?tab=tariffs`);
     await expect(page.locator("main")).toBeVisible();
 
     // Cost rates may be on the same page or a separate tab
@@ -165,13 +170,15 @@ test.describe.serial("Day 0 — Firm Setup", () => {
   // ── 0.14-0.15: VAT 15% ───────────────────────────────────────────
   test("Alice: Settings — tax rates page loads", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/tax`);
+    // Phase 87 S9 (ADR-344): /settings/tax → /settings/fees?tab=tax
+    await page.goto(`${BASE}/settings/fees?tab=tax`);
     await expect(page.locator("main")).toBeVisible();
   });
 
   test("Alice: Settings — create VAT 15%", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/tax`);
+    // Phase 87 S9 (ADR-344): /settings/tax → /settings/fees?tab=tax
+    await page.goto(`${BASE}/settings/fees?tab=tax`);
     await expect(page.locator("main")).toBeVisible();
 
     const addTaxBtn = page.getByRole("button", { name: /new.*tax|add.*tax|create.*tax/i }).first();
@@ -226,7 +233,8 @@ test.describe.serial("Day 0 — Firm Setup", () => {
   // ── 0.17: Custom fields — legal field packs loaded ────────────────
   test("Alice: Custom fields — legal field packs loaded", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/custom-fields`);
+    // Phase 87 S9 (ADR-344): /settings/custom-fields → /settings/matters?tab=custom-fields
+    await page.goto(`${BASE}/settings/matters?tab=custom-fields`);
     await expect(page.locator("main")).toBeVisible();
 
     // Verify legal custom fields are present
@@ -249,7 +257,8 @@ test.describe.serial("Day 0 — Firm Setup", () => {
   // ── 0.18: Matter templates ────────────────────────────────────────
   test("Alice: 4 matter templates listed", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/project-templates`);
+    // Phase 87 S9 (ADR-344): /settings/project-templates → /settings/matters?tab=templates
+    await page.goto(`${BASE}/settings/matters?tab=templates`);
     await expect(page.locator("main")).toBeVisible();
 
     // Look for the 4 legal matter templates
@@ -272,7 +281,8 @@ test.describe.serial("Day 0 — Firm Setup", () => {
   // ── 0.19-0.21: Trust account creation, LPFF rate ─────────────────
   test("Alice: Trust account settings page loads", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/trust-accounting`);
+    // Phase 87 S9 (ADR-344): /settings/trust-accounting → /settings/fees?tab=trust-accounting
+    await page.goto(`${BASE}/settings/fees?tab=trust-accounting`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
     // Try to create a trust account if the UI has a create button

@@ -330,7 +330,8 @@ test.describe.serial("Day 90 — Role-Based Access", () => {
   // ── 90.34-90.36: Carol (Member) — blocked from sensitive areas ────
   test("Carol: Blocked from rate card settings", async ({ page }) => {
     await loginAs(page, "carol");
-    await page.goto(`${BASE}/settings/rates`);
+    // Phase 87 S9 (ADR-344): /settings/rates → /settings/fees?tab=tariffs
+    await page.goto(`${BASE}/settings/fees?tab=tariffs`);
 
     // Carol (Member) should be blocked or see restricted view
     const mainVisible = await page
@@ -355,7 +356,8 @@ test.describe.serial("Day 90 — Role-Based Access", () => {
 
   test("Carol: Blocked from trust account configuration", async ({ page }) => {
     await loginAs(page, "carol");
-    await page.goto(`${BASE}/settings/trust-accounting`);
+    // Phase 87 S9 (ADR-344): /settings/trust-accounting → /settings/fees?tab=trust-accounting
+    await page.goto(`${BASE}/settings/fees?tab=trust-accounting`);
 
     const mainVisible2 = await page
       .locator("main")
@@ -398,7 +400,8 @@ test.describe.serial("Day 90 — Role-Based Access", () => {
   // ── 90.37-90.38: Bob (Admin) — has admin access ──────────────────
   test("Bob: Has admin access to rate cards", async ({ page }) => {
     await loginAs(page, "bob");
-    await page.goto(`${BASE}/settings/rates`);
+    // Phase 87 S9 (ADR-344): /settings/rates → /settings/fees?tab=tariffs
+    await page.goto(`${BASE}/settings/fees?tab=tariffs`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
     await expect(page.locator("body")).not.toContainText("Something went wrong");
   });
@@ -422,13 +425,15 @@ test.describe.serial("Day 90 — Role-Based Access", () => {
   // ── 90.39-90.40: Alice (Owner) — full access + comparison ────────
   test("Alice: Has full owner access to all areas", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/rates`);
+    // Phase 87 S9 (ADR-344): /settings/rates → /settings/fees?tab=tariffs
+    await page.goto(`${BASE}/settings/fees?tab=tariffs`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
     await page.goto(`${BASE}/trust-accounting`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
-    await page.goto(`${BASE}/settings/trust-accounting`);
+    // Phase 87 S9 (ADR-344): /settings/trust-accounting → /settings/fees?tab=trust-accounting
+    await page.goto(`${BASE}/settings/fees?tab=trust-accounting`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
     // Screenshot: role comparison

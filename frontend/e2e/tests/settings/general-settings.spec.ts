@@ -20,8 +20,8 @@ test.describe("SET-01: General Settings", () => {
   });
 
   test("View org name and currency", async ({ page }) => {
-    // Settings page at /settings redirects to /settings/general
-    await page.goto(`${base}/settings/general`);
+    // Phase 87 S9 (ADR-344): /settings/general → /settings/firm?tab=general (General is the Firm family's first tab; /settings redirects to /settings/firm)
+    await page.goto(`${base}/settings/firm?tab=general`);
     await page.waitForLoadState("networkidle");
     await expect(page.locator("body")).not.toContainText("Something went wrong");
 
@@ -35,7 +35,8 @@ test.describe("SET-01: General Settings", () => {
   });
 
   test("Update brand colour", async ({ page }) => {
-    await page.goto(`${base}/settings/general`);
+    // Phase 87 S9 (ADR-344): /settings/general → /settings/firm?tab=general
+    await page.goto(`${base}/settings/firm?tab=general`);
     await expect(page.locator("body")).not.toContainText("Something went wrong");
 
     // Look for "Brand Color" label in the Branding section
@@ -64,7 +65,8 @@ test.describe("SET-01: General Settings", () => {
   });
 
   test("Update document footer", async ({ page }) => {
-    await page.goto(`${base}/settings/general`);
+    // Phase 87 S9 (ADR-344): /settings/general → /settings/firm?tab=general
+    await page.goto(`${base}/settings/firm?tab=general`);
     await expect(page.locator("body")).not.toContainText("Something went wrong");
 
     // Look for "Document Footer Text" label (textarea with id="footer-text")

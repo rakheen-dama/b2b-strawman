@@ -100,7 +100,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Thandi (Owner, logged in)
 
-- [ ] **0.26** Navigate to **Settings > Team** (`/settings/team`)
+- [ ] **0.26** Navigate to **Team** (Firm zone → **Team**, `/team`) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: Team is a Firm-zone page, not a settings tab; `/settings/team` 308s to `/team`)
 - [ ] **0.27** Verify Thandi is listed as Owner. Confirm **no "Upgrade to Pro" gate** exists when inviting members
 - [ ] **0.28** Click **Invite Member** → Email = `bob@mathebula-test.local`, Role = **Admin** → Send
 - [ ] **0.29** Click **Invite Member** → Email = `carol@mathebula-test.local`, Role = **Member** → Send
@@ -132,14 +132,14 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Phase E: General settings & branding
 
-- [ ] **0.37** Navigate to **Settings > General**
+- [ ] **0.37** Navigate to **Settings › Firm › General** (`/settings/firm?tab=general`) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
 - [ ] **0.38** Verify default currency is **ZAR** (pre-seeded from `legal-za` profile)
 - [ ] **0.39** Set brand colour to **#1B3A4B** (dark teal) → Save → verify chip updates and persists on reload
 - [ ] **0.40** Upload firm logo (any PNG under 500KB) → Save → verify preview renders
 
 ### Phase F: Rates & tax
 
-- [ ] **0.41** Navigate to **Settings > Rates**
+- [ ] **0.41** Navigate to **Settings › Fees & Trust › Tariffs** (`/settings/fees?tab=tariffs`; panel heading "Rates & Currency") (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
 - [ ] **0.42** Verify rate cards section renders. If not pre-seeded, create org-level billing rates:
   - Thandi (Senior Partner): **R2,500/hr** (ZAR)
   - Bob (Associate): **R1,200/hr**
@@ -148,12 +148,12 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
   - Thandi: **R1,000/hr**
   - Bob: **R500/hr**
   - Carol: **R200/hr**
-- [ ] **0.44** Navigate to **Settings > Tax**
+- [ ] **0.44** Navigate to **Settings › Fees & Trust › Tax** (`/settings/fees?tab=tax`) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
 - [ ] **0.45** Verify VAT 15% is pre-seeded; if not, create: Name = **VAT**, Rate = **15%**, Active = yes
 
 ### Phase G: Custom fields (field promotion check)
 
-- [ ] **0.46** Navigate to **Settings > Custom Fields**
+- [ ] **0.46** Navigate to **Settings › Matters › Custom fields** (`/settings/matters?tab=custom-fields`) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
 - [ ] **0.47** Verify `legal-za-customer` field group is present with exactly: `id_passport_number`, `postal_address`, `preferred_correspondence`, `referred_by` (client type, physical address and registration number are native client fields, not pack fields) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: field list re-derived from field-packs/legal-za-customer.json)
 - [ ] **0.48** Verify `legal-za-project` (matter) field group is present with: `case_number`, `court_name`, `opposing_party`, `opposing_attorney`, `advocate_name`, `date_of_instruction`, `estimated_value` (matter type is the native **Work Type**, not a pack field) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: field list re-derived from field-packs/legal-za-project.json)
 - [ ] **0.49** **Field promotion checkpoint (customer)**: on a blank **New Client** dialog (open but don't submit), verify these promoted slugs render as native first-class inputs INLINE (not inside a generic "Other Fields" section): `client_type`, `physical_address`, `registration_number`, `tax_number`, `phone`, `primary_contact_name`, `primary_contact_email`
@@ -163,9 +163,9 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Phase H: Templates & automations
 
-- [ ] **0.53** Navigate to **Settings > Templates**
+- [ ] **0.53** Navigate to **Settings › Matters › Templates** (`/settings/matters?tab=templates`) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab; 0.54 checks matter templates, which live under Matters — document templates are Settings › Documents › Templates)
 - [ ] **0.54** Verify 4+ matter templates are listed from `legal-za` pack: "Litigation (Personal Injury / General)", "Deceased Estate Administration", "Collections (Debt Recovery)", "Commercial (Corporate & Contract)"
-- [ ] **0.55** Navigate to **Settings > Automations**
+- [ ] **0.55** Navigate to **Settings › Connections › Automations** (`/settings/connections?tab=automations`) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
 - [ ] **0.56** Verify legal-za automation rules are listed (may be zero — legal profile has no automation pack today; if the list is empty, confirm no JS errors in console)
 
 ### Phase H2 — removed (Phase 86)
@@ -174,24 +174,24 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Phase I: Progressive disclosure check
 
-- [ ] **0.57** Navigate to **Settings > Features**
+- [ ] **0.57** Navigate to **Settings › Firm › Features** (`/settings/firm?tab=features`) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
 - [ ] **0.58** Verify the page lists only the horizontal toggles (Bulk billing, Information requests). The legal modules `court_calendar`, `conflict_check`, `lssa_tariff`, `trust_accounting` are fixed by the `legal-za` profile and are not toggles here — confirm them via 0.59 (sidebar) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: legal modules are profile-fixed, Settings > Features lists horizontal modules only)
 - [ ] **0.59** **Sidebar check**: verify sidebar nav shows items for: the **Trust** zone (expand → Overview, Transactions, Client ledgers, Reconciliation, Interest, Investments, Trust reports), **Diary** (Today zone), **Conflict check** (Matters zone), **Tariffs** (Fees zone — expand) (Phase 87, ADR-344 — nav amendment, Epic 612C, PR #1620: Trust Accounting is now the Trust zone and the items are regrouped into the six zones per ADR-339) (Phase 87, ADR-344 — nav amendment, Epic 613D, PR #1624: the interim Calendar + Court calendar items are one **Diary** item per ADR-339; court dates and prescriptions are Diary kinds while the court_calendar module is on)
 - [ ] **0.60** **Cross-vertical leak check**: verify sidebar does NOT show any items like "Engagements", "Year-End Packs", "Campaigns", or other non-legal vertical terminology
 
 ### Phase J: Trust account setup
 
-- [ ] **0.61** Navigate to **Trust Accounting** (or `Settings > Trust Accounts`)
+- [ ] **0.61** Navigate to **Trust Accounting** (or **Settings › Fees & Trust › Trust accounting**, `/settings/fees?tab=trust-accounting`) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
 - [ ] **0.62** Create trust account: Name = **Mathebula & Partners Trust Account**, Type = **GENERAL**, Bank = **Standard Bank**
 - [ ] **0.63** Set LPFF rate to **6.5%** (test rate)
 - [ ] **0.64** Verify trust account dashboard renders with zero balance
 
 ### Phase K: Billing page (tier removal check)
 
-- [ ] **0.65** Navigate to **Settings > Billing**
+- [ ] **0.65** Navigate to **Settings › Firm › Subscription** (`/settings/firm?tab=subscription`; panel heading "Billing") (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab; billing → Firm › Subscription per ADR-335)
 - [ ] **0.66** **Tier removal checkpoint**: page shows **flat subscription model** — no Starter/Pro/Business tier picker, no "Upgrade" button, no plan-gated CTA
 - [ ] **0.67** Verify page shows the subscription status badge (TRIALING or ACTIVE) and the "Managed Account" card; no member count, monthly amount, tier or PayFast self-service UI (tenant subscription billing removed — Epic 602 #1574)
-- [ ] **0.68** 📸 **Screenshot**: Settings > Billing showing flat subscription UI with no tier selector
+- [ ] **0.68** 📸 **Screenshot**: Settings › Firm › Subscription showing flat subscription UI with no tier selector (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
 
 **Day 0 complete checkpoints**
 - [ ] Currency ZAR, brand colour + logo set
@@ -555,7 +555,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **90.1** **Terminology sweep**: walk sidebar, every settings page, every create dialog → zero occurrences of "Project" (should be "Matter"), "Customer" (should be "Client"), "Invoice" (should be "Fee Note"), or any agency/accounting leakage
 - [ ] **90.2** **Field promotion sweep**: reopen every create dialog (Client, Matter, Task, Fee Note) → verify no promoted slugs have regressed into the sidebar
 - [ ] **90.3** **Progressive disclosure sweep**: confirm the six zones (Today · Matters · Clients · Fees · Trust · Firm) and all 4 legal modules (0.59: Trust zone, Diary, Conflict check, Tariffs) still visible, no accounting/agency nav items leaked in (Phase 87, ADR-344 — nav amendment, Epic 612C, PR #1620: six-zone sidebar per ADR-339) (Phase 87, ADR-344 — nav amendment, Epic 613D, PR #1624: Court calendar → Diary)
-- [ ] **90.4** **Tier removal sweep**: navigate to Settings > Billing → confirm still flat, no tier UI
+- [ ] **90.4** **Tier removal sweep**: navigate to Settings › Firm › Subscription → confirm still flat, no tier UI (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
 - [ ] **90.5** **Console errors**: open browser devtools → navigate through every top-level nav item → confirm zero JS errors in console
 - [ ] **90.6** **Mailpit sweep**: verify no bounced/failed emails
 - [ ] **90.7** Removed — Epic 596 (#1565), ADR-336 (Pipeline RBAC negative).
@@ -567,7 +567,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **E.1** Every step above is checked
 - [ ] **E.2** All 7 📸 wow moments captured without visual regression
 - [ ] **E.3** Zero BLOCKER or HIGH items in gap report (`qa/gap-reports/demo-readiness-{DATE}/legal-za.md`)
-- [ ] **E.4** **Tier removal** verified on 3+ screens (Settings > Billing, team invite flow, member count page)
+- [ ] **E.4** **Tier removal** verified on 3+ screens (Settings › Firm › Subscription, team invite flow, member count page) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
 - [ ] **E.5** **Field promotion** verified on Client, Matter, Task create dialogs
 - [ ] **E.6** **Progressive disclosure** verified — all 4 legal modules present, no cross-vertical leaks
 - [ ] **E.7** Keycloak flow end-to-end — from `/request-access` → approval → owner register → team invites → logged-in org dashboard, no mock IDP used

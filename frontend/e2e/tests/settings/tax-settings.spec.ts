@@ -20,14 +20,16 @@ test.describe("SET-03: Tax Settings", () => {
   });
 
   test("View tax rates", async ({ page }) => {
-    await page.goto(`${base}/settings/tax`);
+    // Phase 87 S9 (ADR-344): /settings/tax → /settings/fees?tab=tax
+    await page.goto(`${base}/settings/fees?tab=tax`);
     const body = page.locator("body");
 
-    // Page might be at /settings/tax or /settings with a tax tab
+    // Phase 87 S9 (ADR-344): the page is Settings › Fees & Trust › Tax (/settings/fees?tab=tax)
     const hasError = await body.textContent().then((t) => t?.includes("Something went wrong"));
     if (hasError) {
       // Try settings page directly — tax might be a tab
-      await page.goto(`${base}/settings`);
+      // Phase 87 S9 (ADR-344): fallback lands on the Fees & Trust family
+      await page.goto(`${base}/settings/fees`);
       await expect(body).not.toContainText("Something went wrong");
     }
 
@@ -44,7 +46,8 @@ test.describe("SET-03: Tax Settings", () => {
   });
 
   test("Create tax rate", async ({ page }) => {
-    await page.goto(`${base}/settings/tax`);
+    // Phase 87 S9 (ADR-344): /settings/tax → /settings/fees?tab=tax
+    await page.goto(`${base}/settings/fees?tab=tax`);
     const body = page.locator("body");
 
     const is404 = await body

@@ -93,7 +93,8 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
   // ---- Test 1: Seeded pack is installed and its templates exist ----
   test("Seeded legal-za pack is installed and its templates are present", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/packs`);
+    // Phase 87 S9 (ADR-344): /settings/packs → /settings/connections?tab=packs
+    await page.goto(`${BASE}/settings/connections?tab=packs`);
 
     // Verify packs page loads
     const heading = page.locator("h1").filter({ hasText: "Packs" });
@@ -110,7 +111,8 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
     await expect(installedCard.locator("h3")).toContainText(TARGET_PACK_NAME);
 
     // Templates page shows a legal-za pack template
-    await page.goto(`${BASE}/settings/templates`);
+    // Phase 87 S9 (ADR-344): /settings/templates → /settings/documents?tab=templates
+    await page.goto(`${BASE}/settings/documents?tab=templates`);
     await expect(page.locator("h1").filter({ hasText: "Templates" })).toBeVisible({
       timeout: 10000,
     });
@@ -146,7 +148,8 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
     expect(updateRes.ok).toBeTruthy();
 
     // Step 2: Packs page > Installed tab shows Uninstall disabled with the "edited" reason
-    await page.goto(`${BASE}/settings/packs`);
+    // Phase 87 S9 (ADR-344): /settings/packs → /settings/connections?tab=packs
+    await page.goto(`${BASE}/settings/connections?tab=packs`);
     await page.getByRole("tab", { name: /Installed/i }).click();
 
     const installedCard = page.locator(`[data-testid="pack-card-${TARGET_PACK_ID}"]`);
@@ -177,7 +180,8 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
     const check = await fetchUninstallCheck(token);
     expect(check.blockingReason ?? "").not.toMatch(/edited/i);
 
-    await page.goto(`${BASE}/settings/packs`);
+    // Phase 87 S9 (ADR-344): /settings/packs → /settings/connections?tab=packs
+    await page.goto(`${BASE}/settings/connections?tab=packs`);
     await page.getByRole("tab", { name: /Installed/i }).click();
     await expect(
       page.locator(`[data-testid="pack-card-${TARGET_PACK_ID}"]`).locator("h3")

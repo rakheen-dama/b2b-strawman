@@ -92,6 +92,14 @@ const RULED_EXCEPTIONS: Record<string, Flags> = {
   // D6: the old page denied non-admins; a member-visible tab whose only content is a denial is
   // the "disabled tab" §12.7.4 forbids (§12.11.4 also lists it admin-only).
   "firm/compliance": { adminOnly: true },
+  // D18 (616B, D6 rule): the former pages denied non-admins; member-visible tabs holding only a
+  // denial message are the "disabled tab" §12.7.4 forbids. Templates and Tags stay ungated (their
+  // former pages rendered read-only for members).
+  "matters/naming": { adminOnly: true },
+  "matters/custom-fields": { adminOnly: true },
+  "matters/checklists": { adminOnly: true },
+  "matters/request-templates": { adminOnly: true },
+  "matters/request-settings": { adminOnly: true },
 };
 
 const tabKey = (familyId: string, tabId: string) => `${familyId}/${tabId}`;
@@ -234,9 +242,8 @@ describe("SETTINGS_FAMILIES", () => {
     }
   });
 
-  it("marks every family but Firm pending until its page exists", () => {
+  it("marks every family without a page yet pending (Firm 616A and Matters 616B have pages)", () => {
     expect(SETTINGS_FAMILIES.filter((f) => f.pending).map((f) => f.id)).toEqual([
-      "matters",
       "documents",
       "fees",
       "connections",
@@ -311,5 +318,35 @@ describe("Firm redirect rows", () => {
     ).map((r) => new URLSearchParams(r.destination.split("?")[1]).get("tab"));
     expect(tabs).toHaveLength(8);
     for (const tab of tabs) expect(firmIds).toContain(tab);
+  });
+});
+
+describe("Matters redirect rows", () => {
+  it("land every /settings/matters?tab= destination on a declared Matters tab (precursor of 616E)", () => {
+    const mattersIds = getSettingsFamily("matters").tabs.map((t) => t.id);
+    const tabs = LEGACY_REDIRECTS.filter((r) =>
+      r.destination.startsWith("/org/:slug/settings/matters?tab=")
+    ).map((r) => new URLSearchParams(r.destination.split("?")[1]).get("tab"));
+    expect(tabs).toHaveLength(7);
+    expect([...tabs].sort()).toEqual([...mattersIds].sort());
+  });
+});
+
+describe("Matters tab gating (D18)", () => {
+  it("falls a member back to Templates for an admin-only Matters tab", () => {
+    const matters = getSettingsFamily("matters");
+    const { tab, forbidden } = resolveSettingsTab(matters, "naming", MEMBER);
+    expect(tab.id).toBe("templates");
+    expect(forbidden?.id).toBe("naming");
+  });
+
+  it("lets a member open Tags and an owner open every Matters tab", () => {
+    const matters = getSettingsFamily("matters");
+    expect(resolveSettingsTab(matters, "tags", MEMBER)).toEqual({
+      tab: findTab("matters", "tags"),
+      forbidden: null,
+    });
+    for (const t of matters.tabs)
+      expect(resolveSettingsTab(matters, t.id, OWNER).tab.id).toBe(t.id);
   });
 });

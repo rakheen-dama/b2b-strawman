@@ -45,12 +45,12 @@ vi.mock("@/lib/actions/comments", () => ({
 const mockSetEntityTags = vi.fn();
 const mockUpdateEntityCustomFields = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/tags/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/tags-actions", () => ({
   createTagAction: vi.fn(),
   setEntityTagsAction: (...args: unknown[]) => mockSetEntityTags(...args),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-actions", () => ({
   updateEntityCustomFieldsAction: (...args: unknown[]) => mockUpdateEntityCustomFields(...args),
 }));
 

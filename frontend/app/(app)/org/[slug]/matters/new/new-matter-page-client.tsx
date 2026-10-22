@@ -10,7 +10,7 @@ import { WORK_TYPE_PLACEHOLDER } from "@/lib/constants/work-types";
 import { Label } from "@b2mash/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MatterIntakePanel } from "@/components/ai/matter-intake-panel";
-import { instantiateTemplateAction } from "@/app/(app)/org/[slug]/settings/project-templates/actions";
+import { instantiateTemplateAction } from "@/app/(app)/org/[slug]/settings/matters/_tabs/templates-actions";
 import { toast } from "sonner";
 import { nativeSelectClassName } from "@/lib/styles/native-select";
 import { ArrowLeft } from "lucide-react";

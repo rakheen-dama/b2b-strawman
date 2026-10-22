@@ -6,7 +6,7 @@ import type { Task, TagResponse } from "@/lib/types";
 
 const mockSaveAsTemplate = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/project-templates/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/templates-actions", () => ({
   saveAsTemplateAction: (...args: unknown[]) => mockSaveAsTemplate(...args),
   deleteTemplateAction: vi.fn(),
   duplicateTemplateAction: vi.fn(),

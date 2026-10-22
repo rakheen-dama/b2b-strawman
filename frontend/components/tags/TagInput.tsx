@@ -12,7 +12,10 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Plus, X, Loader2 } from "lucide-react";
-import { createTagAction, setEntityTagsAction } from "@/app/(app)/org/[slug]/settings/tags/actions";
+import {
+  createTagAction,
+  setEntityTagsAction,
+} from "@/app/(app)/org/[slug]/settings/matters/_tabs/tags-actions";
 import type { EntityType, TagResponse } from "@/lib/types";
 
 function getContrastColor(hexColor: string): string {

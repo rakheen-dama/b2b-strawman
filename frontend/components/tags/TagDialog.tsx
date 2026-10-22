@@ -13,7 +13,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
-import { createTagAction, updateTagAction } from "@/app/(app)/org/[slug]/settings/tags/actions";
+import {
+  createTagAction,
+  updateTagAction,
+} from "@/app/(app)/org/[slug]/settings/matters/_tabs/tags-actions";
 import type { TagResponse } from "@/lib/types";
 
 interface TagDialogProps {

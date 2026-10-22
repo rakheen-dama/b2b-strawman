@@ -25,11 +25,11 @@ vi.mock("@/lib/api", () => ({
   setEntityFieldGroups: vi.fn().mockResolvedValue(undefined),
 }));
 
-import { setEntityTagsAction } from "@/app/(app)/org/[slug]/settings/tags/actions";
+import { setEntityTagsAction } from "@/app/(app)/org/[slug]/settings/matters/_tabs/tags-actions";
 import {
   updateEntityCustomFieldsAction,
   setEntityFieldGroupsAction,
-} from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
+} from "@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-actions";
 import type { EntityType } from "@/lib/types";
 
 const CASES: [EntityType, string][] = [

@@ -12,7 +12,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Plus, X, Loader2 } from "lucide-react";
-import { setEntityFieldGroupsAction } from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
+import { setEntityFieldGroupsAction } from "@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-actions";
 import type { EntityType, FieldGroupResponse } from "@/lib/types";
 
 interface FieldGroupSelectorProps {

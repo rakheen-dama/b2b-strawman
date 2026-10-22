@@ -10,7 +10,7 @@ import type {
 
 const mockUpdateEntityCustomFields = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-actions", () => ({
   updateEntityCustomFieldsAction: (...args: unknown[]) => mockUpdateEntityCustomFields(...args),
 }));
 
@@ -252,7 +252,7 @@ describe("CustomFieldSection", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Configure Fields" })).toHaveAttribute(
       "href",
-      "/org/acme/settings/custom-fields"
+      "/org/acme/settings/matters?tab=custom-fields"
     );
   });
 

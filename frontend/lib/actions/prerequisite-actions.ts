@@ -35,7 +35,7 @@ export async function checkEngagementPrerequisitesAction(
 
 // Wrapper for custom-fields action — "use server" files cannot re-export,
 // only async function declarations are allowed.
-import { updateEntityCustomFieldsAction as _updateEntityCustomFields } from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
+import { updateEntityCustomFieldsAction as _updateEntityCustomFields } from "@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-actions";
 
 export async function updateEntityCustomFieldsAction(
   slug: string,

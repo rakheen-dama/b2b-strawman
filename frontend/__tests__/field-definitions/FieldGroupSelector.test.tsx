@@ -6,7 +6,7 @@ import type { FieldGroupResponse } from "@/lib/types";
 
 const mockSetEntityFieldGroups = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-actions", () => ({
   setEntityFieldGroupsAction: (...args: unknown[]) => mockSetEntityFieldGroups(...args),
 }));
 

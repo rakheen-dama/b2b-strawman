@@ -7,7 +7,7 @@ import { Button } from "@b2mash/ui/button";
 import {
   cloneChecklistTemplate,
   deactivateChecklistTemplate,
-} from "@/app/(app)/org/[slug]/settings/checklists/actions";
+} from "@/app/(app)/org/[slug]/settings/matters/_tabs/checklists-actions";
 
 interface ChecklistTemplateActionsProps {
   slug: string;
@@ -47,7 +47,7 @@ export function ChecklistTemplateActions({
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-end gap-1">
-        <Link href={`/org/${slug}/settings/checklists/${templateId}`}>
+        <Link href={`/org/${slug}/settings/matters/checklists/${templateId}`}>
           <Button variant="ghost" size="sm">
             <Eye className="size-4" />
             <span className="sr-only">View {templateName}</span>

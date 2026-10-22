@@ -6,7 +6,8 @@ import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { createTemplateAction } from "@/app/(app)/org/[slug]/settings/request-templates/actions";
+import { createTemplateAction } from "@/app/(app)/org/[slug]/settings/matters/_tabs/request-templates-actions";
+import { settingsHref } from "@/lib/settings-nav";
 
 interface CreateRequestTemplateFormProps {
   slug: string;
@@ -31,7 +32,7 @@ export function CreateRequestTemplateForm({ slug }: CreateRequestTemplateFormPro
         description: description.trim() || undefined,
       });
       if (result.success && result.data) {
-        router.push(`/org/${slug}/settings/request-templates/${result.data.id}`);
+        router.push(`/org/${slug}/settings/matters/request-templates/${result.data.id}`);
       } else {
         setError(result.error ?? "Failed to create request template.");
       }
@@ -70,7 +71,7 @@ export function CreateRequestTemplateForm({ slug }: CreateRequestTemplateFormPro
       <div className="flex justify-end gap-3">
         <Button
           variant="soft"
-          onClick={() => router.push(`/org/${slug}/settings/request-templates`)}
+          onClick={() => router.push(settingsHref(slug, "matters", "request-templates"))}
         >
           Cancel
         </Button>

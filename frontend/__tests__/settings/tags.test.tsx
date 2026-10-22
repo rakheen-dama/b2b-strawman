@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { TagsContent } from "@/app/(app)/org/[slug]/settings/tags/tags-content";
+import { TagsContent } from "@/app/(app)/org/[slug]/settings/matters/_tabs/tags-content";
 import type { TagResponse } from "@/lib/types";
 
 const mockCreateTag = vi.fn();
 const mockUpdateTag = vi.fn();
 const mockDeleteTag = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/tags/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/tags-actions", () => ({
   createTagAction: (...args: unknown[]) => mockCreateTag(...args),
   updateTagAction: (...args: unknown[]) => mockUpdateTag(...args),
   deleteTagAction: (...args: unknown[]) => mockDeleteTag(...args),

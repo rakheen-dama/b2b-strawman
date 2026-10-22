@@ -11,7 +11,7 @@ const mockUpdateTemplate = vi.fn();
 const mockUpdateRequiredFields = vi.fn();
 const mockRouterPush = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/project-templates/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/templates-actions", () => ({
   deleteTemplateAction: vi.fn(),
   duplicateTemplateAction: vi.fn(),
   createProjectTemplateAction: (...args: unknown[]) => mockCreateTemplate(...args),

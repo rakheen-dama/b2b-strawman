@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { CustomFieldsContent } from "@/app/(app)/org/[slug]/settings/custom-fields/custom-fields-content";
+import { CustomFieldsContent } from "@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-content";
 import type { EntityType, FieldDefinitionResponse, FieldGroupResponse } from "@/lib/types";
 
 const mockCreateFieldDefinition = vi.fn();
@@ -11,7 +11,7 @@ const mockCreateFieldGroup = vi.fn();
 const mockUpdateFieldGroup = vi.fn();
 const mockDeleteFieldGroup = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-actions", () => ({
   createFieldDefinitionAction: (...args: unknown[]) => mockCreateFieldDefinition(...args),
   updateFieldDefinitionAction: (...args: unknown[]) => mockUpdateFieldDefinition(...args),
   deleteFieldDefinitionAction: (...args: unknown[]) => mockDeleteFieldDefinition(...args),

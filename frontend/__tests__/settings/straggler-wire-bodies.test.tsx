@@ -65,7 +65,7 @@ vi.mock("@/lib/actions/notifications", () => ({
   markNotificationRead: vi.fn().mockResolvedValue({ success: true }),
 }));
 
-import { updateProjectNamingPattern } from "@/app/(app)/org/[slug]/settings/project-naming/actions";
+import { updateProjectNamingPattern } from "@/app/(app)/org/[slug]/settings/matters/_tabs/naming-actions";
 import { verifyKycAction } from "@/app/(app)/org/[slug]/clients/[id]/kyc-actions";
 import {
   invokeFicaVerification,

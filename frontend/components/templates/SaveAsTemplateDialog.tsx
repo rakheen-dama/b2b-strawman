@@ -14,7 +14,7 @@ import {
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { saveAsTemplateAction } from "@/app/(app)/org/[slug]/settings/project-templates/actions";
+import { saveAsTemplateAction } from "@/app/(app)/org/[slug]/settings/matters/_tabs/templates-actions";
 import { resolveNameTokens } from "@/lib/name-token-resolver";
 import type { Task, TagResponse } from "@/lib/types";
 import Link from "next/link";
@@ -159,7 +159,7 @@ export function SaveAsTemplateDialog({
               Template &ldquo;{name}&rdquo; saved successfully.
             </p>
             <div className="flex gap-2">
-              <Link href={`/org/${slug}/settings/project-templates/${successTemplateId}`}>
+              <Link href={`/org/${slug}/settings/matters/templates/${successTemplateId}`}>
                 <Button variant="outline" size="sm">
                   Open Template Editor
                 </Button>

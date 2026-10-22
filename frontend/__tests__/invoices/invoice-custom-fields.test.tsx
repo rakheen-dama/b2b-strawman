@@ -9,7 +9,7 @@ import type {
 } from "@/lib/types";
 
 // Mock server actions (both components import from this module)
-vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-actions", () => ({
   updateEntityCustomFieldsAction: vi.fn().mockResolvedValue({ success: true }),
   setEntityFieldGroupsAction: vi.fn().mockResolvedValue({ success: true }),
 }));

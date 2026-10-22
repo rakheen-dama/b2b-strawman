@@ -7,7 +7,7 @@ import type { FieldDefinitionResponse } from "@/lib/types";
 const mockCreateFieldDefinition = vi.fn();
 const mockUpdateFieldDefinition = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-actions", () => ({
   createFieldDefinitionAction: (...args: unknown[]) => mockCreateFieldDefinition(...args),
   updateFieldDefinitionAction: (...args: unknown[]) => mockUpdateFieldDefinition(...args),
   fetchFieldUsageAction: () => Promise.resolve({ templates: [], clauses: [] }),

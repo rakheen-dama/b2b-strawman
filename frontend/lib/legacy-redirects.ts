@@ -112,4 +112,71 @@ export const LEGACY_REDIRECTS = [
     destination: "/org/:slug/settings/firm?tab=subscription",
     permanent: true,
   },
+  // Phase 87 S9 (616B, ADR-341): the Matters family — seven former pages are ?tab= tabs of
+  // /settings/matters; the template, checklist and request-template editors move under it.
+  {
+    source: "/org/:slug/settings/project-templates",
+    destination: "/org/:slug/settings/matters?tab=templates",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/project-naming",
+    destination: "/org/:slug/settings/matters?tab=naming",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/custom-fields",
+    destination: "/org/:slug/settings/matters?tab=custom-fields",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/tags",
+    destination: "/org/:slug/settings/matters?tab=tags",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/checklists",
+    destination: "/org/:slug/settings/matters?tab=checklists",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/request-templates",
+    destination: "/org/:slug/settings/matters?tab=request-templates",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/request-settings",
+    destination: "/org/:slug/settings/matters?tab=request-settings",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/project-templates/:id",
+    destination: "/org/:slug/settings/matters/templates/:id",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/checklists/new",
+    destination: "/org/:slug/settings/matters/checklists/new",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/checklists/:id",
+    destination: "/org/:slug/settings/matters/checklists/:id",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/checklists/:id/edit",
+    destination: "/org/:slug/settings/matters/checklists/:id/edit",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/request-templates/new",
+    destination: "/org/:slug/settings/matters/request-templates/new",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/request-templates/:id",
+    destination: "/org/:slug/settings/matters/request-templates/:id",
+    permanent: true,
+  },
 ] satisfies readonly Redirect[];

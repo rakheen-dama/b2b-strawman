@@ -7,7 +7,7 @@ import type { ProjectTemplateResponse } from "@/lib/api/templates";
 const mockDeleteTemplate = vi.fn();
 const mockDuplicateTemplate = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/project-templates/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/templates-actions", () => ({
   deleteTemplateAction: (...args: unknown[]) => mockDeleteTemplate(...args),
   duplicateTemplateAction: (...args: unknown[]) => mockDuplicateTemplate(...args),
   createProjectTemplateAction: vi.fn(),

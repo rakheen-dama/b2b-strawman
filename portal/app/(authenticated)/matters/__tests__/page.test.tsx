@@ -10,7 +10,7 @@ import {
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
-  usePathname: () => "/projects",
+  usePathname: () => "/matters",
 }));
 
 // Mock next/link
@@ -63,7 +63,7 @@ vi.mock("@/hooks/use-branding", () => ({
   }),
 }));
 
-import ProjectsPage from "@/app/(authenticated)/projects/page";
+import ProjectsPage from "@/app/(authenticated)/matters/page";
 
 describe("ProjectsPage", () => {
   beforeEach(() => {
@@ -94,7 +94,7 @@ describe("ProjectsPage", () => {
 
     render(<ProjectsPage />);
 
-    expect(screen.getByText("Your Matters")).toBeInTheDocument();
+    expect(screen.getByText("Your matters")).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText("Website Redesign")).toBeInTheDocument();

@@ -123,7 +123,7 @@ export default function ProjectDetailPage() {
             Try again
           </button>
           <Link
-            href="/projects"
+            href="/matters"
             className="inline-flex min-h-11 items-center text-sm text-teal-600 hover:underline"
           >
             Back to matters
@@ -141,7 +141,7 @@ export default function ProjectDetailPage() {
     <div className="space-y-8">
       {/* Back link */}
       <Link
-        href="/projects"
+        href="/matters"
         className="inline-flex min-h-11 items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
       >
         <ArrowLeft className="size-4" />

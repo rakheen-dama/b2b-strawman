@@ -123,7 +123,7 @@ export default function DeadlinesPage() {
     return (
       <div>
         <h1 className="font-display mb-6 text-2xl font-semibold text-slate-900">
-          Deadlines
+          Diary dates
         </h1>
         <div className="space-y-3" data-testid="deadlines-context-loading">
           <Skeleton className="h-14 w-full" />
@@ -137,7 +137,7 @@ export default function DeadlinesPage() {
   return (
     <div>
       <h1 className="font-display mb-6 text-2xl font-semibold text-slate-900">
-        Deadlines
+        Diary dates
       </h1>
       <DeadlineList
         deadlines={deadlines}

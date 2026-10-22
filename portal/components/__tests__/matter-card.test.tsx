@@ -4,7 +4,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
-  usePathname: () => "/projects",
+  usePathname: () => "/matters",
 }));
 
 // Mock next/link
@@ -65,7 +65,7 @@ describe("MatterCard", () => {
     );
 
     const link = screen.getByRole("link");
-    expect(link).toHaveAttribute("href", "/projects/proj-42");
+    expect(link).toHaveAttribute("href", "/matters/proj-42");
     expect(screen.getByText("1 document")).toBeInTheDocument();
   });
 });

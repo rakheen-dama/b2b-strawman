@@ -102,7 +102,7 @@ describe("InvoicesPage", () => {
 
     render(<InvoicesPage />);
 
-    expect(screen.getByText("Fee Notes")).toBeInTheDocument();
+    expect(screen.getByText("Fee notes")).toBeInTheDocument();
 
     // Mobile cards and desktop table both render (CSS toggles visibility).
     await waitFor(() => {

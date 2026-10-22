@@ -25,7 +25,6 @@ function NavList({ onItemClick }: { onItemClick?: () => void }) {
   const { brandColor } = useBranding();
   const ctx = usePortalContext();
   const items = filterNavItems(PORTAL_NAV_ITEMS, {
-    tenantProfile: ctx?.tenantProfile ?? undefined,
     enabledModules: ctx?.enabledModules ?? [],
   });
 

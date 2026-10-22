@@ -5,7 +5,6 @@ import {
   CalendarClock,
   Receipt,
   MessageSquare,
-  FileCheck,
   Activity,
   type LucideIcon,
 } from "lucide-react";
@@ -16,22 +15,21 @@ export interface PortalNavItem {
   labelKey: string;
   icon: LucideIcon;
   /**
-   * If set, the item is only shown when `tenantProfile` is one of the listed values.
-   * If unset/empty, the item is profile-agnostic.
-   */
-  profiles?: string[];
-  /**
    * If set, every module in this array must be present in `enabledModules` for the
    * item to be shown. If unset/empty, the item does not require any module.
    */
   modules?: string[];
 }
 
+// Phase 87 S10 (617A, arch §12.8): legal labels; Matters lives at /matters (the /projects
+// segment redirects permanently, next.config.ts). The `acceptance` item is dropped — there is no
+// /acceptance page; each pending engagement letter links to its own /accept/{token}. The
+// `profiles: ["legal-za"]` gate is gone (legal-za is the only profile); module gates stay.
 export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { id: "home", href: "/home", labelKey: "portal.nav.home", icon: Home },
   {
-    id: "projects",
-    href: "/projects",
+    id: "matters",
+    href: "/matters",
     labelKey: "portal.nav.matters",
     icon: FolderOpen,
   },
@@ -40,15 +38,14 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
     href: "/trust",
     labelKey: "portal.nav.trust",
     icon: Scale,
-    profiles: ["legal-za"],
     modules: ["trust_accounting"],
   },
   {
+    // Path kept: `deadline` is not one of the two nouns (backend MODULE_ID = "deadlines").
     id: "deadlines",
     href: "/deadlines",
     labelKey: "portal.nav.deadlines",
     icon: CalendarClock,
-    profiles: ["legal-za"],
     modules: ["deadlines"],
   },
   {
@@ -63,13 +60,6 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
     labelKey: "portal.nav.requests",
     icon: MessageSquare,
     modules: ["information_requests"],
-  },
-  {
-    id: "acceptance",
-    href: "/acceptance",
-    labelKey: "portal.nav.acceptance",
-    icon: FileCheck,
-    modules: ["document_acceptance"],
   },
   {
     id: "activity",
@@ -90,39 +80,26 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
 export const PORTAL_NAV_LABELS: Record<string, string> = {
   "portal.nav.home": "Home",
   "portal.nav.matters": "Matters",
-  "portal.nav.trust": "Trust",
-  "portal.nav.deadlines": "Deadlines",
-  "portal.nav.invoices": "Fee Notes",
-  "portal.nav.requests": "Requests",
-  "portal.nav.acceptance": "Acceptance",
+  "portal.nav.trust": "Trust statement",
+  "portal.nav.deadlines": "Diary dates",
+  "portal.nav.invoices": "Fee notes",
+  "portal.nav.requests": "Documents & requests",
   "portal.nav.activity": "Activity",
 };
 
 /**
  * Pure filter: returns the subset of `items` that should be visible given the
- * current tenant profile and enabled modules.
- *
- * - If an item declares `profiles`, the ctx `tenantProfile` must be defined and
- *   match one of them.
- * - If an item declares `modules`, every entry in that list must also appear in
- *   `ctx.enabledModules`.
- * - Items without any gates are always visible.
+ * enabled modules. If an item declares `modules`, every entry in that list must
+ * appear in `ctx.enabledModules`; items without a module gate are always visible.
  */
 export function filterNavItems(
   items: PortalNavItem[],
-  ctx: { tenantProfile?: string; enabledModules: string[] },
+  ctx: { enabledModules: string[] },
 ): PortalNavItem[] {
-  return items.filter((item) => {
-    if (item.profiles && item.profiles.length > 0) {
-      if (!ctx.tenantProfile || !item.profiles.includes(ctx.tenantProfile)) {
-        return false;
-      }
-    }
-    if (item.modules && item.modules.length > 0) {
-      if (!item.modules.every((m) => ctx.enabledModules.includes(m))) {
-        return false;
-      }
-    }
-    return true;
-  });
+  return items.filter(
+    (item) =>
+      !item.modules ||
+      item.modules.length === 0 ||
+      item.modules.every((m) => ctx.enabledModules.includes(m)),
+  );
 }

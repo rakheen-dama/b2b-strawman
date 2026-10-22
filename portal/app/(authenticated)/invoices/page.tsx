@@ -57,7 +57,7 @@ export default function InvoicesPage() {
   return (
     <div>
       <h1 className="font-display mb-6 text-2xl font-semibold text-slate-900">
-        Fee Notes
+        Fee notes
       </h1>
 
       {isLoading && <TableSkeleton />}

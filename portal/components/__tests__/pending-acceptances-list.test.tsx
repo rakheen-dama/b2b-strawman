@@ -4,7 +4,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
-  usePathname: () => "/projects",
+  usePathname: () => "/matters",
 }));
 
 // Mock next/link
@@ -95,7 +95,12 @@ describe("PendingAcceptancesList", () => {
       expect(screen.getByText("NDA - Project Alpha")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Pending Acceptances")).toBeInTheDocument();
+    // Phase 87 S10 (617A, OQ #5): the list is headed "Engagement letters" and is the
+    // anchor target of the Home tile (/matters#engagement-letters).
+    expect(screen.getByText("Engagement letters")).toBeInTheDocument();
+    expect(
+      screen.getByText("Engagement letters").closest("#engagement-letters"),
+    ).not.toBeNull();
     expect(screen.getAllByText("Review & Accept")).toHaveLength(2);
   });
 

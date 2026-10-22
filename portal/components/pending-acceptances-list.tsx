@@ -63,9 +63,9 @@ export function PendingAcceptancesList() {
 
   if (isLoading) {
     return (
-      <div className="mb-8">
+      <div id="engagement-letters" className="mb-8">
         <h2 className="font-display mb-4 text-lg font-semibold text-slate-900">
-          Pending Acceptances
+          Engagement letters
         </h2>
         <div className="flex flex-col gap-3">
           {Array.from({ length: 2 }).map((_, i) => (
@@ -78,7 +78,7 @@ export function PendingAcceptancesList() {
 
   if (error) {
     return (
-      <div className="mb-8">
+      <div id="engagement-letters" className="mb-8">
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           {error}
         </div>
@@ -92,11 +92,11 @@ export function PendingAcceptancesList() {
   }
 
   return (
-    <div className="mb-8">
+    <div id="engagement-letters" className="mb-8">
       <div className="mb-4 flex items-center gap-2">
         <FileCheck className="size-5 text-teal-600" />
         <h2 className="font-display text-lg font-semibold text-slate-900">
-          Pending Acceptances
+          Engagement letters
         </h2>
       </div>
       <div className="flex flex-col gap-3">

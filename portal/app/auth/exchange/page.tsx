@@ -71,7 +71,7 @@ function ExchangeHandler() {
           // user arrived via a deep-link redirect) so post-exchange routing
           // returns the user to the originally-requested page. Open-redirect
           // guard: only honour same-origin paths (must start with "/").
-          let target = "/projects";
+          let target = "/matters";
           if (typeof window !== "undefined") {
             const redirect = sessionStorage.getItem(
               "portal_post_login_redirect",

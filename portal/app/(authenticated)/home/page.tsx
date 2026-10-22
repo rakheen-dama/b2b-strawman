@@ -113,15 +113,17 @@ function AcceptancesCard() {
       cancelled = true;
     };
   }, []);
+  // Phase 87 S10 (617A, OQ #5): there is no /acceptance page — the tile opens the
+  // engagement-letters list on /matters, whose rows link to their own /accept/{token}.
   return (
     <Link
-      href="/acceptance"
+      href="/matters#engagement-letters"
       className="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
     >
       <Card className="transition hover:shadow-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-slate-600">
-            <FileCheck className="size-4" /> Pending acceptances
+            <FileCheck className="size-4" /> Engagement letters
           </CardTitle>
         </CardHeader>
         <CardContent>

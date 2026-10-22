@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -12,17 +12,30 @@ import { canAccessNavItem, type NavGroup, type NavItem } from "@/lib/nav-items";
 
 /**
  * The href of the single active item in a zone: the longest href among the visible items that
- * matches the pathname (exact equality when `item.exact`, else equality or a `/`-segment prefix).
- * Longest-match keeps parent/child pairs in one zone unambiguous — `/matters/new` highlights only
- * "New matter", `/invoices/billing-runs/x` only "Fee runs", `/invoices/abc` only "Fee notes" — so
- * at most one active indicator mounts per zone.
+ * matches the location. An href's path matches the pathname (exact equality when `item.exact`,
+ * else equality or a `/`-segment prefix); an href with a query string also needs every one of its
+ * params to equal the current one. Longest-match keeps parent/child pairs in one zone unambiguous —
+ * `/matters/new` highlights only "New matter", `/invoices/billing-runs/x` only "Fee runs",
+ * `/settings/firm?tab=audit-trail` only "Audit trail" (not "Settings", `/settings/firm`) — so at
+ * most one active indicator mounts per zone.
  */
-function findActiveHref(items: NavItem[], slug: string, pathname: string): string | null {
+function findActiveHref(
+  items: NavItem[],
+  slug: string,
+  pathname: string,
+  searchParams: URLSearchParams
+): string | null {
   let active: string | null = null;
   for (const item of items) {
     const href = item.href(slug);
-    const matches = pathname === href || (!item.exact && pathname.startsWith(`${href}/`));
-    if (matches && (active === null || href.length > active.length)) active = href;
+    const [path, query] = href.split("?");
+    const pathMatches = pathname === path || (!item.exact && pathname.startsWith(`${path}/`));
+    const queryMatches =
+      !query ||
+      [...new URLSearchParams(query)].every(([key, value]) => searchParams.get(key) === value);
+    if (pathMatches && queryMatches && (active === null || href.length > active.length)) {
+      active = href;
+    }
   }
   return active;
 }
@@ -36,6 +49,7 @@ export interface NavZoneProps {
 export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
   const [expanded, setExpanded] = useState(zone.defaultExpanded ?? true);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const access = useCapabilities();
   const { isModuleEnabled } = useOrgProfile();
 
@@ -47,7 +61,7 @@ export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
 
   if (visibleItems.length === 0) return null;
 
-  const activeHref = findActiveHref(visibleItems, slug, pathname);
+  const activeHref = findActiveHref(visibleItems, slug, pathname, searchParams);
 
   return (
     <div>

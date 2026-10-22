@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   usePathname: vi.fn(() => "/org/test-org/dashboard"),
+  useSearchParams: vi.fn(() => new URLSearchParams()),
 }));
 
 // Mock motion/react — avoid animation issues in tests
@@ -15,7 +16,7 @@ vi.mock("motion/react", () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { CapabilityProvider } from "@/lib/capabilities";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { NavZone } from "@/components/nav-zone";
@@ -23,6 +24,7 @@ import { NAV_GROUPS, type NavGroup } from "@/lib/nav-items";
 import { LayoutDashboard, FolderOpen, Receipt, Scale, ScrollText, Plus } from "lucide-react";
 
 const mockUsePathname = vi.mocked(usePathname);
+const mockUseSearchParams = vi.mocked(useSearchParams);
 
 afterEach(() => {
   cleanup();
@@ -369,5 +371,53 @@ describe("NavZone longest-match active item (Phase 87 612A)", () => {
   it("does not prefix-match a sibling route that merely shares the href's leading characters", () => {
     renderZone("matters", "/org/test-org/matters-archive");
     expect(activeLinks()).toEqual([]);
+  });
+});
+
+// 616A (CodeRabbit): Audit trail (`/settings/firm?tab=audit-trail`) and Settings (`/settings/firm`)
+// share a pathname — an href's query must match too, and the more specific sibling wins.
+describe("NavZone active item for hrefs with a query string (616A)", () => {
+  function activeLinks(): string[] {
+    return screen
+      .getAllByRole("link")
+      .filter((link) => link.classList.contains("bg-white/5"))
+      .map((link) => link.textContent ?? "");
+  }
+
+  function renderFirmZone(search: string) {
+    mockUsePathname.mockReturnValue("/org/test-org/settings/firm");
+    mockUseSearchParams.mockReturnValue(
+      new URLSearchParams(search) as unknown as ReturnType<typeof useSearchParams>
+    );
+    const zone = NAV_GROUPS.find((g) => g.id === "firm")!;
+    renderWithProviders(<NavZone zone={{ ...zone, defaultExpanded: true }} slug="test-org" />, {
+      isAdmin: true,
+    });
+  }
+
+  afterEach(() => {
+    mockUseSearchParams.mockReturnValue(
+      new URLSearchParams() as unknown as ReturnType<typeof useSearchParams>
+    );
+  });
+
+  it("highlights only Audit trail on ?tab=audit-trail", () => {
+    renderFirmZone("tab=audit-trail");
+    expect(activeLinks()).toEqual(["Audit trail"]);
+  });
+
+  it("highlights only Audit trail when other params ride along (audit filters)", () => {
+    renderFirmZone("tab=audit-trail&severities=CRITICAL");
+    expect(activeLinks()).toEqual(["Audit trail"]);
+  });
+
+  it("highlights only Settings on another Firm tab", () => {
+    renderFirmZone("tab=general");
+    expect(activeLinks()).toEqual(["Settings"]);
+  });
+
+  it("highlights only Settings with no ?tab=", () => {
+    renderFirmZone("");
+    expect(activeLinks()).toEqual(["Settings"]);
   });
 });

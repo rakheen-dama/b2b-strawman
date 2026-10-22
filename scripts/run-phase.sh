@@ -209,7 +209,7 @@ if [[ "$DRY_RUN" == true ]]; then
   done
   echo ""
   echo "Command per slice:"
-  echo "  claude -p \"/epic_v2 {SLICE} auto-merge\" --dangerously-skip-permissions --model opus"
+  echo "  CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 claude -p \"/epic_v2 {SLICE} auto-merge\" --dangerously-skip-permissions --model opus"
   exit 0
 fi
 
@@ -236,8 +236,11 @@ for i in "${!SLICES_TO_RUN[@]}"; do
   SLICE_START=$(date +%s)
   SLICE_TIMEOUT=12000
 
-  # Unset CLAUDECODE to avoid nested session detection
-  if timeout "${SLICE_TIMEOUT}" env CLAUDECODE="" claude -p "/epic_v2 ${slice} auto-merge" \
+  # Unset CLAUDECODE to avoid nested session detection.
+  # CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0: without it, -p stops background subagents 10 min
+  # after the orchestrator's last turn and exits 0 mid-slice (614B). SLICE_TIMEOUT still bounds hangs.
+  if timeout "${SLICE_TIMEOUT}" env CLAUDECODE="" CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 \
+    claude -p "/epic_v2 ${slice} auto-merge" \
     --dangerously-skip-permissions \
     --model opus \
     >> "$LOG_FILE" 2>&1; then

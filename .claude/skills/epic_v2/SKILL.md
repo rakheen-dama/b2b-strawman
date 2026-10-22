@@ -35,6 +35,16 @@ Append `auto-merge` to skip merge confirmation (e.g., `/epic_v2 450 auto-merge`)
 If the user's prompt contains the word **`auto-merge`**:
 - **Step 5 (Merge)** proceeds immediately after review passes — no user confirmation
 - If review returns `REQUEST_CHANGES` after the fix cycle, **stop and report** (do not force-merge)
+- **Liveness (print mode)**: `run-phase.sh` runs this skill under `claude -p`, which exits as soon as
+  the orchestrator's turn ends with nothing of its own still running. A subagent's own background job
+  does not count, and neither does a subagent resumed with `SendMessage` once it yields. Slices 614B and
+  616A died mid-slice this way (exit 0, slice not Done, half-finished fixer work left uncommitted). So:
+  - Dispatch the scout, the builder and every fixer in the **foreground** (`run_in_background: false`).
+    "Blocking" in Steps 2, 3 and 4.3 is mandatory in this mode, not a preference.
+  - For another fix pass (e.g. CodeRabbit findings after the superpowers fix), dispatch a **new**
+    foreground fixer. Do not `SendMessage` an earlier fixer.
+  - The orchestrator's own long jobs (Step 4.6 verify, the CodeRabbit poll, E2E runs) may stay
+    `run_in_background` Bash: main-thread background shells keep the session alive.
 - All other steps remain identical
 
 Without `auto-merge` in the prompt, behavior is identical to `/epic` — asks user before merging.
@@ -92,6 +102,12 @@ Your job: explore the codebase thoroughly and write a SELF-CONTAINED brief to:
 
 The brief must give an implementer EVERYTHING they need to build this epic correctly
 WITHOUT reading any other files. Include actual code — not summaries.
+
+## Execution Rule
+Never end your turn while a command or agent you started is still running: the parent session
+can exit and orphan it. Run commands in the foreground (Bash `timeout` up to 600000 ms); if one
+can run past 10 min, `nohup` it writing a done-marker file and poll for the marker in the
+foreground. Do NOT use `run_in_background`, and do not dispatch agents in the background.
 
 ## Research Steps (in this order)
 
@@ -269,6 +285,12 @@ Read: /Users/rakheendama/Projects/2026/worktree-epic-{ID}/.epic-brief.md
 This file contains EVERYTHING you need: tasks, file plan, code patterns, conventions,
 build commands, and integration points. Do NOT read ARCHITECTURE.md, TASKS.md, or
 CLAUDE.md files — the brief already contains the relevant extracts.
+
+## Execution Rule
+Never end your turn while a command or agent you started is still running: the parent session
+can exit and orphan it. Run commands in the foreground (Bash `timeout` up to 600000 ms); if one
+can run past 10 min, `nohup` it writing a done-marker file and poll for the marker in the
+foreground. Do NOT use `run_in_background`, and do not dispatch agents in the background.
 
 ## Workflow
 
@@ -574,6 +596,12 @@ Read: /Users/rakheendama/Projects/2026/worktree-epic-{ID}/.epic-brief.md
 5. Commit: git commit -m "fix: address review findings for Epic {ID}"
 6. Push: git push
 
+## Execution Rule
+Never end your turn while a command or agent you started is still running: the parent session
+can exit and orphan it. Run commands in the foreground (Bash `timeout` up to 600000 ms); if one
+can run past 10 min, `nohup` it writing a done-marker file and poll for the marker in the
+foreground. Do NOT use `run_in_background`, and do not dispatch agents in the background.
+
 ## Report Format
 For EACH finding, report one of:
 - ✅ FIXED — {what you changed}
@@ -753,6 +781,7 @@ In **full-epic mode**, you must update ALL slices (e.g., both 450A and 450B) in 
 - **Tier split is non-negotiable**: subagents (builder + fixers) stop at Tier 2; the orchestrator runs the single Tier 3 (Step 4.6) once on the final commit. No subagent runs `mvn clean verify`.
 - **PR early, on Tier-2 green**: the builder opens the PR as soon as targeted tests pass, so Backend CI runs in parallel with reviews + the orchestrator verify (not as tail latency). Do NOT open it on "it compiles" — Tier 2 must be green first.
 - **Merge gate = local full verify AND Backend CI both green** (plus reviews + audit trail). Fix-on-either: if local verify OR CI reports a real failure, fix (Tier-2 only), push, both re-run.
+- **No orphanable work**: no subagent ends its turn with a job still running (every template carries the Execution Rule), and in auto-merge mode every subagent dispatch is foreground (see Auto-Merge Mode → Liveness).
 - **No duplicate work**: Check `git branch -a` and `gh pr list` before starting
 - **Scope boundary**: If uncertain (and not in auto-merge mode), STOP and ask the user
 

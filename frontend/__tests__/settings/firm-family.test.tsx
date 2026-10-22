@@ -123,6 +123,15 @@ describe("Firm settings family page", () => {
     expect(loaders.general).toHaveBeenCalledTimes(1);
   });
 
+  // Browser-found (1024px: document 1250px wide): the w-max strip must scroll inside an
+  // inline-size-contained box, or its width widens the whole page. jsdom has no layout, so this
+  // pins the containment class.
+  it("keeps the tab strip in its own inline-size-contained scroll box", async () => {
+    await renderFirm();
+    const box = screen.getByRole("tablist", { name: "Firm settings" }).parentElement!;
+    expect(box).toHaveClass("@container", "overflow-x-auto");
+  });
+
   it("gives an admin the same eight tabs", async () => {
     mockCaps.mockResolvedValue(ADMIN);
     await renderFirm();

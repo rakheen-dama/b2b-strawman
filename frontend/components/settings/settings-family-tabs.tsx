@@ -48,8 +48,11 @@ export function SettingsFamilyTabs({ label, tabs, activeTab, children }: Setting
     // fire one server navigation per tab — and a click navigates once, not on mousedown + focus.
     <Tabs value={shownTab} onValueChange={handleValueChange} activationMode="manual">
       {/* The strip scrolls on its own at narrow widths: the rail's mobile pill row never renders
-          (settings/layout.tsx wraps the rail in `hidden md:block`). */}
-      <div className="-mx-1 overflow-x-auto px-1 pb-1">
+          (settings/layout.tsx wraps the rail in `hidden md:block`). `@container` (inline-size
+          containment) keeps the `w-max` strip's width out of the page's min-content width — the
+          app shell's flex column has no `min-w-0`, so without it the strip widened the whole page
+          (1024px viewport: document 1250px wide) instead of scrolling in its own box. */}
+      <div className="@container -mx-1 overflow-x-auto px-1 pb-1">
         <TabsList aria-label={label} className="w-max">
           {tabs.map((tab) => (
             <TabsTrigger key={tab.id} value={tab.id}>

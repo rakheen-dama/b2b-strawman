@@ -41,10 +41,14 @@ If the user's prompt contains the word **`auto-merge`**:
   616A died mid-slice this way (exit 0, slice not Done, half-finished fixer work left uncommitted). So:
   - Dispatch the scout, the builder and every fixer in the **foreground** (`run_in_background: false`).
     "Blocking" in Steps 2, 3 and 4.3 is mandatory in this mode, not a preference.
-  - For another fix pass (e.g. CodeRabbit findings after the superpowers fix), dispatch a **new**
-    foreground fixer. Do not `SendMessage` an earlier fixer.
+  - Never `SendMessage` an earlier subagent (fixer or reviewer). For another fix pass or a re-review,
+    dispatch a **new** foreground agent from the same template with the prior findings and the new SHA.
   - The orchestrator's own long jobs (Step 4.6 verify, the CodeRabbit poll, E2E runs) may stay
-    `run_in_background` Bash: main-thread background shells keep the session alive.
+    `run_in_background` Bash, which keeps the session alive, but **always pass `timeout: 7200000`**:
+    in `-p` a background command without one is stopped after 10 min (a full verify takes ~25).
+  - Never end a turn waiting only on external state (CI checks, CodeRabbit). Wait with a foreground
+    `gh pr checks {n} --watch` (Bash `timeout: 600000`, repeat until done) or a background poll loop
+    with `timeout: 7200000`.
 - All other steps remain identical
 
 Without `auto-merge` in the prompt, behavior is identical to `/epic` — asks user before merging.
@@ -105,9 +109,11 @@ WITHOUT reading any other files. Include actual code — not summaries.
 
 ## Execution Rule
 Never end your turn while a command or agent you started is still running: the parent session
-can exit and orphan it. Run commands in the foreground (Bash `timeout` up to 600000 ms); if one
-can run past 10 min, `nohup` it writing a done-marker file and poll for the marker in the
-foreground. Do NOT use `run_in_background`, and do not dispatch agents in the background.
+can exit and orphan it. Run every build/test command in the foreground with an explicit Bash
+`timeout` (up to 600000 ms; without one it is moved to the background after 2 min). If a command
+can run past 10 min, `nohup` it writing a done-marker file, then poll in bounded loops that finish
+inside the timeout (e.g. `for i in $(seq 1 16); do [ -f "$M" ] && break; sleep 30; done`) and repeat
+until the marker appears. Do NOT use `run_in_background`, and do not dispatch agents in the background.
 
 ## Research Steps (in this order)
 
@@ -288,9 +294,11 @@ CLAUDE.md files — the brief already contains the relevant extracts.
 
 ## Execution Rule
 Never end your turn while a command or agent you started is still running: the parent session
-can exit and orphan it. Run commands in the foreground (Bash `timeout` up to 600000 ms); if one
-can run past 10 min, `nohup` it writing a done-marker file and poll for the marker in the
-foreground. Do NOT use `run_in_background`, and do not dispatch agents in the background.
+can exit and orphan it. Run every build/test command in the foreground with an explicit Bash
+`timeout` (up to 600000 ms; without one it is moved to the background after 2 min). If a command
+can run past 10 min, `nohup` it writing a done-marker file, then poll in bounded loops that finish
+inside the timeout (e.g. `for i in $(seq 1 16); do [ -f "$M" ] && break; sleep 30; done`) and repeat
+until the marker appears. Do NOT use `run_in_background`, and do not dispatch agents in the background.
 
 ## Workflow
 
@@ -493,7 +501,7 @@ CodeRabbit runs asynchronously after PR creation. The strategy is to let it run 
 the superpowers reviews and fix cycles, then collect its findings before the final merge decision.
 
 **Step 4.2a — Immediately after dispatching superpowers reviews (Step 4.1), start a background
-CodeRabbit poll** using Bash `run_in_background`. This runs concurrently with the superpowers
+CodeRabbit poll** using Bash `run_in_background` (with `timeout: 7200000` — see Auto-Merge Mode → Liveness). This runs concurrently with the superpowers
 reviews and any fix cycles, giving CodeRabbit the full duration of Steps 4.1–4.4 to complete
 (typically 10–40+ minutes of wall-clock time):
 
@@ -598,9 +606,11 @@ Read: /Users/rakheendama/Projects/2026/worktree-epic-{ID}/.epic-brief.md
 
 ## Execution Rule
 Never end your turn while a command or agent you started is still running: the parent session
-can exit and orphan it. Run commands in the foreground (Bash `timeout` up to 600000 ms); if one
-can run past 10 min, `nohup` it writing a done-marker file and poll for the marker in the
-foreground. Do NOT use `run_in_background`, and do not dispatch agents in the background.
+can exit and orphan it. Run every build/test command in the foreground with an explicit Bash
+`timeout` (up to 600000 ms; without one it is moved to the background after 2 min). If a command
+can run past 10 min, `nohup` it writing a done-marker file, then poll in bounded loops that finish
+inside the timeout (e.g. `for i in $(seq 1 16); do [ -f "$M" ] && break; sleep 30; done`) and repeat
+until the marker appears. Do NOT use `run_in_background`, and do not dispatch agents in the background.
 
 ## Report Format
 For EACH finding, report one of:
@@ -639,7 +649,7 @@ reviews actually ran. **Without this step, merge will be rejected.** Append a `#
 section to the PR body containing:
 - Agent A (bug/quality) **final** verdict block (after fix cycles) — must contain a verdict line **bound to the commit the reviewer read**: `## Verdict: APPROVE @<sha>` where `<sha>` is ≥7 hex chars of the PR head at review time. If the reviewer wrote a bare `## Verdict: APPROVE`, append ` @<sha>` yourself with the SHA you gave the reviewer. A `REQUEST_CHANGES` must be followed by a fresh review of the fixed commit and a new bound APPROVE — "Critical/High resolved" prose no longer satisfies the gate.
 - Agent B (architecture) **final** verdict block — same rule.
-- **Any push after the reviews invalidates them**: the hook compares the verdict SHA to the current head. Re-review the new head (a focused re-verification message to the same reviewer is enough) and re-record.
+- **Any push after the reviews invalidates them**: the hook compares the verdict SHA to the current head. Re-review the new head with a **fresh foreground reviewer dispatch** (same Agent A/B template, prior findings + new SHA pasted in) and re-record. Do not `SendMessage` the earlier reviewer: in auto-merge mode a resumed agent does not keep the session alive.
 - The CodeRabbit status line from Step 4.2b (`## CodeRabbit: REVIEWED ...` or `## CodeRabbit: DEFERRED ...`).
 
 ```bash
@@ -689,7 +699,8 @@ cannot be killed by a turn ending mid-run, and so it overlaps with the re-review
 ```bash
 # Clear any stale JVMs first (prevents the exit-143 fork crash), then verify in the background.
 pkill -9 -f 'worktree-epic-{ID}' 2>/dev/null; pgrep -f surefire | xargs kill -9 2>/dev/null; sleep 3
-# Run as run_in_background:true — you are notified on completion; do not poll-block on it.
+# Run as run_in_background:true WITH timeout:7200000 (the -p default stops it at 10 min) —
+# you are notified on completion; do not poll-block on it.
 cd /Users/rakheendama/Projects/2026/worktree-epic-{ID}/backend && ./mvnw clean verify -q > /tmp/mvn-{ID}-final.log 2>&1; MVN_EXIT=$?; if [ $MVN_EXIT -eq 0 ]; then echo "FULL BUILD SUCCESS"; grep 'Tests run:' /tmp/mvn-{ID}-final.log | tail -1; else echo "FULL BUILD FAILED (exit $MVN_EXIT)"; FAILED=$(grep -rl 'failures="[1-9]\|errors="[1-9]' target/surefire-reports/TEST-*.xml target/failsafe-reports/TEST-*.xml 2>/dev/null | sed 's|.*/TEST-||;s|\.xml||' | paste -sd,); if [ -n "$FAILED" ]; then echo "REAL FAILED TESTS: $FAILED"; else echo "NO NAMED TEST FAILURES — env/fork crash (143); re-kill zombies + re-run once"; fi; fi
 ```
 
@@ -781,7 +792,7 @@ In **full-epic mode**, you must update ALL slices (e.g., both 450A and 450B) in 
 - **Tier split is non-negotiable**: subagents (builder + fixers) stop at Tier 2; the orchestrator runs the single Tier 3 (Step 4.6) once on the final commit. No subagent runs `mvn clean verify`.
 - **PR early, on Tier-2 green**: the builder opens the PR as soon as targeted tests pass, so Backend CI runs in parallel with reviews + the orchestrator verify (not as tail latency). Do NOT open it on "it compiles" — Tier 2 must be green first.
 - **Merge gate = local full verify AND Backend CI both green** (plus reviews + audit trail). Fix-on-either: if local verify OR CI reports a real failure, fix (Tier-2 only), push, both re-run.
-- **No orphanable work**: no subagent ends its turn with a job still running (every template carries the Execution Rule), and in auto-merge mode every subagent dispatch is foreground (see Auto-Merge Mode → Liveness).
+- **No orphanable work**: the scout, builder and fixer templates carry the Execution Rule (no subagent ends its turn with a job still running); in auto-merge mode every subagent dispatch is foreground, no subagent is resumed with `SendMessage`, and every orchestrator `run_in_background` passes `timeout: 7200000` (see Auto-Merge Mode → Liveness).
 - **No duplicate work**: Check `git branch -a` and `gh pr list` before starting
 - **Scope boundary**: If uncertain (and not in auto-merge mode), STOP and ask the user
 
@@ -789,7 +800,7 @@ In **full-epic mode**, you must update ALL slices (e.g., both 450A and 450B) in 
 
 If the builder fails:
 1. Check its output summary for error details
-2. If fixable: dispatch a new `general-purpose` agent with the same brief path + the error context
+2. If fixable: dispatch a new **foreground** `general-purpose` agent using the Builder Prompt Template (it carries the Execution Rule), with the error context appended
 3. If the brief was insufficient: re-run the scout with additional guidance (e.g., "also extract the auth filter pattern")
 4. If worktree is broken:
 ```bash

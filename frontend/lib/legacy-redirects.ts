@@ -179,4 +179,68 @@ export const LEGACY_REDIRECTS = [
     destination: "/org/:slug/settings/matters/request-templates/:id",
     permanent: true,
   },
+  // Phase 87 S9 (616C, ADR-341): the Documents family — four former pages are ?tab= tabs of
+  // /settings/documents; the document-template editors move under it.
+  {
+    source: "/org/:slug/settings/templates",
+    destination: "/org/:slug/settings/documents?tab=templates",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/clauses",
+    destination: "/org/:slug/settings/documents?tab=clauses",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/acceptance",
+    destination: "/org/:slug/settings/documents?tab=acceptance",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/email",
+    destination: "/org/:slug/settings/documents?tab=email",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/templates/new",
+    destination: "/org/:slug/settings/documents/templates/new",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/templates/:id/edit",
+    destination: "/org/:slug/settings/documents/templates/:id/edit",
+    permanent: true,
+  },
+  // Phase 87 S9 (616C, ADR-341): the Fees & Trust family — six former pages are ?tab= tabs of
+  // /settings/fees (rates → Tariffs, time-tracking → Time recording, batch-billing → Fee runs).
+  {
+    source: "/org/:slug/settings/rates",
+    destination: "/org/:slug/settings/fees?tab=tariffs",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/tax",
+    destination: "/org/:slug/settings/fees?tab=tax",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/time-tracking",
+    destination: "/org/:slug/settings/fees?tab=time-recording",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/batch-billing",
+    destination: "/org/:slug/settings/fees?tab=fee-runs",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/collections",
+    destination: "/org/:slug/settings/fees?tab=collections",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/trust-accounting",
+    destination: "/org/:slug/settings/fees?tab=trust-accounting",
+    permanent: true,
+  },
 ] satisfies readonly Redirect[];

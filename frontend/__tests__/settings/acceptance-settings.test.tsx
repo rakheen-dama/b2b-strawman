@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { AcceptanceSettingsForm } from "@/components/acceptance/AcceptanceSettingsForm";
 
 // Mock server actions
-vi.mock("@/app/(app)/org/[slug]/settings/acceptance/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/documents/_tabs/acceptance-actions", () => ({
   updateAcceptanceSettings: vi.fn().mockResolvedValue({ success: true }),
 }));
 
@@ -24,7 +24,7 @@ describe("AcceptanceSettingsForm", () => {
 
   it("saves updated expiry days", async () => {
     const { updateAcceptanceSettings } =
-      await import("@/app/(app)/org/[slug]/settings/acceptance/actions");
+      await import("@/app/(app)/org/[slug]/settings/documents/_tabs/acceptance-actions");
     const user = userEvent.setup();
     render(<AcceptanceSettingsForm slug="acme" acceptanceExpiryDays={30} />);
     await user.click(screen.getByRole("button", { name: /Save Settings/i }));

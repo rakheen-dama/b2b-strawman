@@ -21,7 +21,7 @@ vi.mock("@/lib/api/capabilities", () => ({
   }),
 }));
 
-import TaxSettingsPage from "@/app/(app)/org/[slug]/settings/tax/page";
+import { renderTaxTab } from "@/app/(app)/org/[slug]/settings/fees/_tabs/tax";
 
 vi.mock("@/lib/api", () => ({
   api: {
@@ -47,11 +47,11 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
-vi.mock("@/app/(app)/org/[slug]/settings/tax/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/fees/_tabs/tax-actions", () => ({
   updateTaxSettings: vi.fn().mockResolvedValue({ success: true }),
 }));
 
-describe("TaxSettingsPage", () => {
+describe("Fees & Trust › Tax tab loader", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -60,17 +60,13 @@ describe("TaxSettingsPage", () => {
   });
 
   it("renders page heading", async () => {
-    const page = await TaxSettingsPage({
-      params: Promise.resolve({ slug: "acme" }),
-    });
+    const page = await renderTaxTab({ slug: "acme", searchParams: {} });
     render(page);
     expect(screen.getByText("Tax Settings")).toBeInTheDocument();
   });
 
   it("renders tax configuration form fields", async () => {
-    const page = await TaxSettingsPage({
-      params: Promise.resolve({ slug: "acme" }),
-    });
+    const page = await renderTaxTab({ slug: "acme", searchParams: {} });
     render(page);
     expect(screen.getByLabelText("Tax Registration Number")).toBeInTheDocument();
     expect(screen.getByLabelText("Registration Label")).toBeInTheDocument();
@@ -78,11 +74,9 @@ describe("TaxSettingsPage", () => {
     expect(screen.getByLabelText("Tax-inclusive pricing")).toBeInTheDocument();
   });
 
-  it("renders back link to settings", async () => {
-    const page = await TaxSettingsPage({
-      params: Promise.resolve({ slug: "acme" }),
-    });
+  it("drops the former ← Settings back link (616A D12)", async () => {
+    const page = await renderTaxTab({ slug: "acme", searchParams: {} });
     render(page);
-    expect(screen.getByText("Settings")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Settings/ })).not.toBeInTheDocument();
   });
 });

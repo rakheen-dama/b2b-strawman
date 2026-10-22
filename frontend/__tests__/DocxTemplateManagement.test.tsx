@@ -1,20 +1,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { TemplatesContent } from "@/app/(app)/org/[slug]/settings/templates/templates-content";
+import { TemplatesContent } from "@/app/(app)/org/[slug]/settings/documents/_tabs/templates-content";
 import type { TemplateListResponse } from "@/lib/types";
 
 const mockCloneTemplate = vi.fn();
 const mockDeactivateTemplate = vi.fn();
 const mockResetTemplate = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/templates/template-crud-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/documents/_tabs/template-crud-actions", () => ({
   cloneTemplateAction: (...args: unknown[]) => mockCloneTemplate(...args),
   deactivateTemplateAction: (...args: unknown[]) => mockDeactivateTemplate(...args),
   resetTemplateAction: (...args: unknown[]) => mockResetTemplate(...args),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/settings/templates/template-support-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/documents/_tabs/template-support-actions", () => ({
   uploadLogoAction: vi.fn(),
   deleteLogoAction: vi.fn(),
   saveBrandingAction: vi.fn(),

@@ -16,11 +16,11 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/org/acme/projects/proj-1",
 }));
 
-vi.mock("@/app/(app)/org/[slug]/settings/templates/template-crud-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/documents/_tabs/template-crud-actions", () => ({
   previewTemplateAction: (...args: unknown[]) => mockPreviewTemplate(...args),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/settings/templates/template-generation-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/documents/_tabs/template-generation-actions", () => ({
   generateDocumentAction: (...args: unknown[]) => mockGenerateDocument(...args),
 }));
 

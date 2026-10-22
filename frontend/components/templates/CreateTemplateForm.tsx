@@ -7,8 +7,9 @@ import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DocumentEditor } from "@/components/editor/DocumentEditor";
-import { createTemplateAction } from "@/app/(app)/org/[slug]/settings/templates/template-crud-actions";
+import { createTemplateAction } from "@/app/(app)/org/[slug]/settings/documents/_tabs/template-crud-actions";
 import type { TemplateCategory, TemplateEntityType } from "@/lib/types";
+import { settingsHref } from "@/lib/settings-nav";
 
 const CATEGORIES: { value: TemplateCategory; label: string }[] = [
   { value: "ENGAGEMENT_LETTER", label: "Engagement Letter" },
@@ -63,7 +64,7 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
       });
 
       if (result.success && result.data) {
-        router.push(`/org/${slug}/settings/templates/${result.data.id}/edit`);
+        router.push(`/org/${slug}/settings/documents/templates/${result.data.id}/edit`);
       } else {
         setError(result.error ?? "Failed to create template.");
       }
@@ -161,7 +162,10 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
           {error && <p className="text-destructive text-sm">{error}</p>}
 
           <div className="flex justify-end gap-3">
-            <Button variant="soft" onClick={() => router.push(`/org/${slug}/settings/templates`)}>
+            <Button
+              variant="soft"
+              onClick={() => router.push(settingsHref(slug, "documents", "templates"))}
+            >
               Cancel
             </Button>
             {/* Only name is required — empty content is valid (user fills it in the editor page) */}

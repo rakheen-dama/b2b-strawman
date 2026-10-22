@@ -299,6 +299,91 @@ describe("LEGACY_REDIRECTS", () => {
     }
   });
 
+  // Phase 87 S9 (616C, ADR-341): old Documents settings page → its /settings/documents tab id …
+  const DOCUMENTS_TAB_ROWS: [string, string][] = [
+    ["templates", "templates"],
+    ["clauses", "clauses"],
+    ["acceptance", "acceptance"],
+    ["email", "email"],
+  ];
+  // … and old document-template editor route → its route under /settings/documents.
+  const DOCUMENTS_ROUTE_ROWS: [string, string][] = [
+    ["templates/new", "documents/templates/new"],
+    ["templates/:id/edit", "documents/templates/:id/edit"],
+  ];
+  // Old Fees & Trust settings page → its /settings/fees tab id.
+  const FEES_TAB_ROWS: [string, string][] = [
+    ["rates", "tariffs"],
+    ["tax", "tax"],
+    ["time-tracking", "time-recording"],
+    ["batch-billing", "fee-runs"],
+    ["collections", "collections"],
+    ["trust-accounting", "trust-accounting"],
+  ];
+
+  it("redirects the four Documents settings pages to their /settings/documents tabs (616C)", () => {
+    for (const [old, tab] of DOCUMENTS_TAB_ROWS) {
+      expect(LEGACY_REDIRECTS).toContainEqual({
+        source: `/org/:slug/settings/${old}`,
+        destination: `/org/:slug/settings/documents?tab=${tab}`,
+        permanent: true,
+      });
+    }
+  });
+
+  it("redirects the two document-template editor routes under /settings/documents (616C)", () => {
+    for (const [old, next] of DOCUMENTS_ROUTE_ROWS) {
+      expect(LEGACY_REDIRECTS).toContainEqual({
+        source: `/org/:slug/settings/${old}`,
+        destination: `/org/:slug/settings/${next}`,
+        permanent: true,
+      });
+    }
+  });
+
+  it("redirects the six Fees & Trust settings pages to their /settings/fees tabs (616C)", () => {
+    for (const [old, tab] of FEES_TAB_ROWS) {
+      expect(LEGACY_REDIRECTS).toContainEqual({
+        source: `/org/:slug/settings/${old}`,
+        destination: `/org/:slug/settings/fees?tab=${tab}`,
+        permanent: true,
+      });
+    }
+  });
+
+  it("routes each old Documents URL to the right row (616C)", () => {
+    expect(firstMatch("/org/x/settings/templates")?.destination).toBe(
+      "/org/:slug/settings/documents?tab=templates"
+    );
+    expect(firstMatch("/org/x/settings/templates/new")?.destination).toBe(
+      "/org/:slug/settings/documents/templates/new"
+    );
+    expect(firstMatch("/org/x/settings/templates/1/edit")?.destination).toBe(
+      "/org/:slug/settings/documents/templates/:id/edit"
+    );
+    // /settings/templates/:id never had a page — still no row (404 as before).
+    expect(firstMatch("/org/x/settings/templates/1")).toBeUndefined();
+    // The new family pages and editor routes are not redirect sources; Matters' templates editor
+    // (/settings/matters/templates/:id) is untouched by the Documents rows.
+    expect(firstMatch("/org/x/settings/documents")).toBeUndefined();
+    expect(firstMatch("/org/x/settings/documents/templates/1/edit")).toBeUndefined();
+    expect(firstMatch("/org/x/settings/matters/templates/1")).toBeUndefined();
+    expect(firstMatch("/org/x/settings/fees")).toBeUndefined();
+  });
+
+  it("leaves the ten Documents/Fees pages deleted and serves both families + the editors (616C)", () => {
+    const settingsDir = path.resolve(__dirname, "../../app/(app)/org/[slug]/settings");
+    for (const [old] of [...DOCUMENTS_TAB_ROWS, ...FEES_TAB_ROWS]) {
+      expect(fs.existsSync(path.join(settingsDir, old)), old).toBe(false);
+    }
+    expect(fs.existsSync(path.join(settingsDir, "documents", "page.tsx"))).toBe(true);
+    expect(fs.existsSync(path.join(settingsDir, "fees", "page.tsx"))).toBe(true);
+    for (const [, next] of DOCUMENTS_ROUTE_ROWS) {
+      const dir = next.replace(/:id/g, "[id]");
+      expect(fs.existsSync(path.join(settingsDir, dir, "page.tsx")), next).toBe(true);
+    }
+  });
+
   it("keeps the pre-Phase-87 /settings/team row", () => {
     expect(LEGACY_REDIRECTS).toContainEqual({
       source: "/org/:slug/settings/team",

@@ -34,7 +34,7 @@ import {
   generateStatementAction,
   listStatementsAction,
 } from "@/app/(app)/org/[slug]/matters/[id]/statement-actions";
-import { downloadGeneratedDocumentAction } from "@/app/(app)/org/[slug]/settings/templates/template-generation-actions";
+import { downloadGeneratedDocumentAction } from "@/app/(app)/org/[slug]/settings/documents/_tabs/template-generation-actions";
 import type { StatementResponse } from "@/lib/api/statement-of-account";
 
 interface StatementOfAccountDialogProps {

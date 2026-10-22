@@ -54,6 +54,18 @@ describe("Breadcrumbs", () => {
     expect(firmSpan).toHaveClass("font-medium");
   });
 
+  it("labels the Fees & Trust settings family Settings > Fees & Trust (616C)", () => {
+    mockUsePathname.mockReturnValue("/org/acme/settings/fees");
+    render(<Breadcrumbs slug="acme" />);
+    expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute(
+      "href",
+      "/org/acme/settings"
+    );
+    const span = screen.getByText("Fees & Trust");
+    expect(span.tagName).toBe("SPAN");
+    expect(span).toHaveClass("font-medium");
+  });
+
   it("renders Settings > Billing two-level path correctly", () => {
     mockUsePathname.mockReturnValue("/org/acme/settings/billing");
     render(<Breadcrumbs slug="acme" />);
@@ -119,18 +131,19 @@ describe("Breadcrumbs", () => {
       expect(last).toHaveClass("font-medium");
     });
 
-    it("renders the template id as plain text on /settings/templates/<id>/edit", () => {
-      renderAt(`/org/acme/settings/templates/${TEMPLATE_ID}/edit`);
+    it("renders the template id as plain text on /settings/documents/templates/<id>/edit", () => {
+      renderAt(`/org/acme/settings/documents/templates/${TEMPLATE_ID}/edit`);
       expect(screen.getByText(TEMPLATE_ID).closest("a")).toBeNull();
-      // Routable ancestors stay linked
+      // Routable ancestors stay linked; the pageless templates segment does not.
       expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute(
         "href",
         "/org/acme/settings"
       );
-      expect(screen.getByRole("link", { name: "Templates" })).toHaveAttribute(
+      expect(screen.getByRole("link", { name: "Documents" })).toHaveAttribute(
         "href",
-        "/org/acme/settings/templates"
+        "/org/acme/settings/documents"
       );
+      expect(screen.getByText("Templates").closest("a")).toBeNull();
     });
 
     it("still links intermediate segments that have a page", () => {

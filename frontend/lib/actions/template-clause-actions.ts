@@ -44,7 +44,7 @@ export async function setTemplateClauses(
   try {
     await api.put(`/api/templates/${templateId}/clauses`, { clauses });
     if (slug) {
-      revalidatePath(`/org/${slug}/settings/templates/${templateId}/edit`);
+      revalidatePath(`/org/${slug}/settings/documents/templates/${templateId}/edit`);
     }
     return { success: true };
   } catch (error) {
@@ -73,7 +73,7 @@ export async function addClauseToTemplate(
       required,
     });
     if (slug) {
-      revalidatePath(`/org/${slug}/settings/templates/${templateId}/edit`);
+      revalidatePath(`/org/${slug}/settings/documents/templates/${templateId}/edit`);
     }
     return { success: true };
   } catch (error) {
@@ -104,7 +104,7 @@ export async function removeClauseFromTemplate(
   try {
     await api.delete(`/api/templates/${templateId}/clauses/${clauseId}`);
     if (slug) {
-      revalidatePath(`/org/${slug}/settings/templates/${templateId}/edit`);
+      revalidatePath(`/org/${slug}/settings/documents/templates/${templateId}/edit`);
     }
     return { success: true };
   } catch (error) {

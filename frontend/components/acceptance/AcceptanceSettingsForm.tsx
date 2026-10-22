@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Loader2 } from "lucide-react";
-import { updateAcceptanceSettings } from "@/app/(app)/org/[slug]/settings/acceptance/actions";
+import { updateAcceptanceSettings } from "@/app/(app)/org/[slug]/settings/documents/_tabs/acceptance-actions";
 
 interface AcceptanceSettingsFormProps {
   slug: string;

@@ -184,7 +184,6 @@ const FAMILIES = [
     label: "Documents",
     href: familyHref("documents"),
     icon: FileText,
-    pending: true,
     tabs: [
       {
         id: "templates",
@@ -201,6 +200,10 @@ const FAMILIES = [
         label: "Acceptance",
         description: "Configure the default expiry period for document acceptance requests",
         keywords: ["document acceptance", "engagement letter"],
+        // Ruled exception (D19, 616C — D6 rule): old nav had no flag, but the former page denied
+        // non-admins; a member-visible tab holding only a denial message is the "disabled tab"
+        // §12.7.4 forbids.
+        adminOnly: true,
       },
       {
         id: "email",
@@ -215,25 +218,34 @@ const FAMILIES = [
     label: "Fees & Trust",
     href: familyHref("fees"),
     icon: Banknote,
-    pending: true,
     tabs: [
       {
         id: "tariffs",
         label: "Tariffs",
         description: "Manage billing rates, cost rates, and default currency",
         keywords: ["rates", "rates & currency"],
+        // Ungated by ruling (D20, 616C): the family's first tab must stay ungated; the loader keeps
+        // the former page's in-page FINANCIAL_VISIBILITY denial.
       },
       {
         id: "tax",
         label: "Tax",
         description: "Configure tax registration, labels, and inclusive pricing",
         keywords: ["vat"],
+        // Ruled exception (D19, 616C — D6 rule): old nav had no flag, but the former page denied
+        // non-admins; a member-visible tab holding only a denial message is the "disabled tab"
+        // §12.7.4 forbids.
+        adminOnly: true,
       },
       {
         id: "time-recording",
         label: "Time recording",
         description: "Configure time reminders and the default markup",
         keywords: ["time tracking"],
+        // Ruled exception (D19, 616C — D6 rule): old nav had no flag, but the former page denied
+        // non-admins; a member-visible tab holding only a denial message is the "disabled tab"
+        // §12.7.4 forbids.
+        adminOnly: true,
       },
       {
         id: "fee-runs",

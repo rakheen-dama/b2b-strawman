@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { formatFileSize } from "@/lib/format";
-import { FieldDiscoveryResults } from "@/app/(app)/org/[slug]/settings/templates/FieldDiscoveryResults";
+import { FieldDiscoveryResults } from "@/app/(app)/org/[slug]/settings/documents/_tabs/FieldDiscoveryResults";
 import type { TemplateDetailResponse } from "@/lib/types";
 import type { VariableMetadataResponse } from "@/components/editor/actions";
 

@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { TaxRateTable } from "@/app/(app)/org/[slug]/settings/tax/tax-rate-table";
+import { TaxRateTable } from "@/app/(app)/org/[slug]/settings/fees/_tabs/tax-rate-table";
 import type { TaxRateResponse } from "@/lib/types";
 
 const mockCreateTaxRate = vi.fn();
 const mockUpdateTaxRate = vi.fn();
 const mockDeactivateTaxRate = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/tax/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/fees/_tabs/tax-actions", () => ({
   createTaxRate: (...args: unknown[]) => mockCreateTaxRate(...args),
   updateTaxRate: (...args: unknown[]) => mockUpdateTaxRate(...args),
   deactivateTaxRate: (...args: unknown[]) => mockDeactivateTaxRate(...args),

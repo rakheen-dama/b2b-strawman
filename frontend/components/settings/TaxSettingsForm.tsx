@@ -5,7 +5,7 @@ import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
-import { updateTaxSettings } from "@/app/(app)/org/[slug]/settings/tax/actions";
+import { updateTaxSettings } from "@/app/(app)/org/[slug]/settings/fees/_tabs/tax-actions";
 
 interface TaxSettingsFormProps {
   slug: string;

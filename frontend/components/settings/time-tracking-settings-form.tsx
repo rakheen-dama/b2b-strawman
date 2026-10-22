@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@b2mash/ui/label";
 import { Loader2 } from "lucide-react";
-import { updateTimeTrackingSettings } from "@/app/(app)/org/[slug]/settings/time-tracking/actions";
+import { updateTimeTrackingSettings } from "@/app/(app)/org/[slug]/settings/fees/_tabs/time-recording-actions";
 
 const DAYS_OF_WEEK = [
   { key: "MON", label: "Mon" },

@@ -1,7 +1,7 @@
 {
-  "commit": "92a81e6ff43ccabd631d4ef879e50ca5e76ef38a",
-  "command": "cd frontend && pnpm install --frozen-lockfile && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build; E2E-LEGAL: two fresh stacks (compose/scripts/e2e-down.sh && e2e-up.sh built from worktree-epic-616F @92a81e6ff) each running E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-lifecycle && pnpm test:e2e:legal-depth-ii && pnpm test:e2e -- settings && pnpm test:e2e -- settings/data-protection (same-stack re-run)",
+  "commit": "26fa65ef2fe1fc13aa5004c8d3b0c6f7b9f78e8b",
+  "command": "pnpm install --frozen-lockfile && cd frontend && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test",
   "exit": 0,
-  "ts": "2026-10-22T17:40:00+02:00",
-  "summary": "PR #1638 (Epic 616F: settings Playwright specs + scenario docs on five-family URLs; DP spec-body fixes :50/:96/:262) head 92a81e6ff: lint 0 errors / 92 warnings (= main); prettier clean; vitest 406 files, 3008 passed | 2 skipped; clean build OK. CI Frontend + qodana pass. E2E-LEGAL fresh run1 failing-title set identical to 616E run1 (lifecycle 65p/15f/6s/6dnr; depth-ii 13p/15f/15s); fresh run2 identical to 616E run2 (lifecycle 63p/4f carried: day-00 'Trust account settings page loads' (now :282, not resolved by relabel), day-30:32, day-45:41, day-90:63; depth-ii 28p/0f). settings suite both stacks 13p/1f/15s/1dnr — only packs.spec:94 (pre-existing on main); data-protection 6p/3s on both runs + same-stack re-run (616E's :96/:262 unmasked failures resolved). Logs /tmp/e2e-616F-{lifecycle,depth,settings,dp-rerun}-run{1,2}.log, /tmp/test-epic-616F.log, /tmp/build-epic-616F.log."
+  "ts": "2026-10-22T16:35:49+0200",
+  "summary": "PR #1640 (617B) on 26fa65ef2 (orchestrator run in worktree; fix commit ba3063ea4 touches no frontend/ file): lint 0 errors / 92 warnings; format:check clean; build OK; vitest 406 files / 3008 passed / 2 skipped. Only frontend change = e2e/tests/portal/portal-data-isolation.spec.ts (labels + in-file getPortalJwt fix); observed 2 passed vs e2e backend with KGOSI_EMAIL=contact@acme.example.com (as-is: 1 failed / 1 vacuous pass). No legal spec touched → carried legal set unchanged."
 }

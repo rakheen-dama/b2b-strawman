@@ -73,7 +73,7 @@ export async function getClause(id: string): Promise<Clause | null> {
 export async function createClause(slug: string, data: CreateClauseData): Promise<ActionResult> {
   try {
     await api.post("/api/clauses", data);
-    revalidatePath(`/org/${slug}/settings/clauses`);
+    revalidatePath(`/org/${slug}/settings/documents`);
     return { success: true };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -96,7 +96,7 @@ export async function updateClause(
 ): Promise<ActionResult> {
   try {
     await api.put(`/api/clauses/${id}`, data);
-    revalidatePath(`/org/${slug}/settings/clauses`);
+    revalidatePath(`/org/${slug}/settings/documents`);
     return { success: true };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -115,7 +115,7 @@ export async function updateClause(
 export async function deleteClause(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.delete(`/api/clauses/${id}`);
-    revalidatePath(`/org/${slug}/settings/clauses`);
+    revalidatePath(`/org/${slug}/settings/documents`);
     return { success: true };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -140,7 +140,7 @@ export async function deleteClause(slug: string, id: string): Promise<ActionResu
 export async function deactivateClause(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.post(`/api/clauses/${id}/deactivate`);
-    revalidatePath(`/org/${slug}/settings/clauses`);
+    revalidatePath(`/org/${slug}/settings/documents`);
     return { success: true };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -159,7 +159,7 @@ export async function deactivateClause(slug: string, id: string): Promise<Action
 export async function cloneClause(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.post(`/api/clauses/${id}/clone`);
-    revalidatePath(`/org/${slug}/settings/clauses`);
+    revalidatePath(`/org/${slug}/settings/documents`);
     return { success: true };
   } catch (error) {
     if (error instanceof ApiError) {

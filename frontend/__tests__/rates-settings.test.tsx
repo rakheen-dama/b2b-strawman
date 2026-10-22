@@ -12,7 +12,7 @@ const mockUpdateCostRate = vi.fn();
 const mockDeleteBillingRate = vi.fn();
 const mockDeleteCostRate = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/rates/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/fees/_tabs/tariffs-actions", () => ({
   updateDefaultCurrency: (...args: unknown[]) => mockUpdateDefaultCurrency(...args),
   createBillingRate: (...args: unknown[]) => mockCreateBillingRate(...args),
   updateBillingRate: (...args: unknown[]) => mockUpdateBillingRate(...args),

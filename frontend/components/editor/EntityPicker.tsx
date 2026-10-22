@@ -18,7 +18,7 @@ import {
   fetchProjectsForPicker,
   fetchCustomersForPicker,
   fetchInvoicesForPicker,
-} from "@/app/(app)/org/[slug]/settings/templates/template-support-actions";
+} from "@/app/(app)/org/[slug]/settings/documents/_tabs/template-support-actions";
 import type { TemplateEntityType, Matter, Client, InvoiceResponse } from "@/lib/types";
 
 interface PickerItem {

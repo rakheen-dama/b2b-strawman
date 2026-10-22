@@ -14,7 +14,7 @@ import {
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { updateTaxRate } from "@/app/(app)/org/[slug]/settings/tax/actions";
+import { updateTaxRate } from "@/app/(app)/org/[slug]/settings/fees/_tabs/tax-actions";
 import type { TaxRateResponse } from "@/lib/types";
 
 interface EditTaxRateDialogProps {

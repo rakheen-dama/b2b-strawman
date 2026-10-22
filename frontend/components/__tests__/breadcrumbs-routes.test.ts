@@ -60,8 +60,13 @@ describe("breadcrumb prefixes vs app/(app)/org/[slug] routes", () => {
 
   it("matches dynamic pattern segments against concrete ids", () => {
     expect(
-      isLinkableBreadcrumbPrefix(["settings", "templates", "3f1c2a4b-5d6e-4f70-8a9b-0c1d2e3f4a5b"])
+      isLinkableBreadcrumbPrefix([
+        "settings",
+        "documents",
+        "templates",
+        "3f1c2a4b-5d6e-4f70-8a9b-0c1d2e3f4a5b",
+      ])
     ).toBe(false);
-    expect(isLinkableBreadcrumbPrefix(["settings", "templates"])).toBe(true);
+    expect(isLinkableBreadcrumbPrefix(["settings", "documents"])).toBe(true);
   });
 });

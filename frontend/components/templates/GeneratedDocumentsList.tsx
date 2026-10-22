@@ -27,7 +27,7 @@ import {
   deleteGeneratedDocumentAction,
   downloadGeneratedDocumentAction,
   downloadDocxGeneratedDocumentAction,
-} from "@/app/(app)/org/[slug]/settings/templates/template-generation-actions";
+} from "@/app/(app)/org/[slug]/settings/documents/_tabs/template-generation-actions";
 import { formatDate } from "@/lib/format";
 import type { TemplateEntityType, GeneratedDocumentListResponse } from "@/lib/types";
 import { getAcceptanceRequests } from "@/lib/actions/acceptance-actions";

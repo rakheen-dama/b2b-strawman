@@ -19,7 +19,7 @@ import { AddRateDialog } from "@/components/rates/add-rate-dialog";
 import { EditRateDialog } from "@/components/rates/edit-rate-dialog";
 import { DeleteRateDialog } from "@/components/rates/delete-rate-dialog";
 import { HelpTip } from "@/components/help-tip";
-import { updateDefaultCurrency } from "@/app/(app)/org/[slug]/settings/rates/actions";
+import { updateDefaultCurrency } from "@/app/(app)/org/[slug]/settings/fees/_tabs/tariffs-actions";
 import { createMessages } from "@/lib/messages";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { OrgMember, BillingRate, CostRate } from "@/lib/types";

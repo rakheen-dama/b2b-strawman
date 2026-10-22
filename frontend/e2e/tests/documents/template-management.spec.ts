@@ -89,8 +89,8 @@ test.describe("DOC-01: Template Management", () => {
     await newTemplateLink.click();
     await page.waitForLoadState("networkidle");
 
-    // Should navigate to /settings/templates/new
-    await expect(page).toHaveURL(new RegExp(`${BASE}/settings/templates/new`));
+    // Should navigate to /settings/documents/templates/new
+    await expect(page).toHaveURL(new RegExp(`${BASE}/settings/documents/templates/new`));
 
     // Verify the new template form loads
     await expect(page.locator("body")).not.toContainText("Something went wrong");
@@ -190,7 +190,7 @@ test.describe("DOC-01: Template Management", () => {
     await page.waitForLoadState("networkidle");
 
     // Click on the first template name link to open editor
-    // Template names in the table are links to /settings/templates/{id}/edit
+    // Template names in the table are links to /settings/documents/templates/{id}/edit
     // Scope to within a table to avoid matching sidebar links
     const table = page.getByRole("table").first();
     const templateLink = table.getByRole("link").first();
@@ -205,7 +205,7 @@ test.describe("DOC-01: Template Management", () => {
     await page.waitForLoadState("networkidle");
 
     // Should navigate to the template editor page
-    await expect(page).toHaveURL(/\/settings\/templates\/.*\/edit/);
+    await expect(page).toHaveURL(/\/settings\/documents\/templates\/.*\/edit/);
 
     // Verify the editor page loads
     await expect(page.locator("body")).not.toContainText("Something went wrong");

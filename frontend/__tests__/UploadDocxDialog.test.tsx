@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { UploadDocxDialog } from "@/app/(app)/org/[slug]/settings/templates/UploadDocxDialog";
+import { UploadDocxDialog } from "@/app/(app)/org/[slug]/settings/documents/_tabs/UploadDocxDialog";
 
 const mockUploadDocxTemplate = vi.fn();
 const mockPush = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/templates/template-crud-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/documents/_tabs/template-crud-actions", () => ({
   createTemplateAction: vi.fn(),
   updateTemplateAction: vi.fn(),
   cloneTemplateAction: vi.fn(),
@@ -15,7 +15,7 @@ vi.mock("@/app/(app)/org/[slug]/settings/templates/template-crud-actions", () =>
   previewTemplateAction: vi.fn(),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/settings/templates/template-support-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/documents/_tabs/template-support-actions", () => ({
   uploadDocxTemplateAction: (...args: unknown[]) => mockUploadDocxTemplate(...args),
   uploadLogoAction: vi.fn(),
   deleteLogoAction: vi.fn(),
@@ -30,7 +30,7 @@ vi.mock("@/app/(app)/org/[slug]/settings/templates/template-support-actions", ()
   replaceDocxFileAction: vi.fn(),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/settings/templates/template-generation-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/documents/_tabs/template-generation-actions", () => ({
   generateDocumentAction: vi.fn(),
   fetchGeneratedDocumentsAction: vi.fn(),
   deleteGeneratedDocumentAction: vi.fn(),
@@ -152,7 +152,9 @@ describe("UploadDocxDialog", () => {
 
     // Should redirect to edit page
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/org/test-org/settings/templates/tmpl-123/edit");
+      expect(mockPush).toHaveBeenCalledWith(
+        "/org/test-org/settings/documents/templates/tmpl-123/edit"
+      );
     });
   });
 

@@ -6,7 +6,7 @@ import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
-import { updateCollectionsSettings } from "@/app/(app)/org/[slug]/settings/collections/actions";
+import { updateCollectionsSettings } from "@/app/(app)/org/[slug]/settings/fees/_tabs/collections-actions";
 
 interface CollectionsSettingsFormProps {
   slug: string;

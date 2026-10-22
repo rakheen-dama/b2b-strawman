@@ -8,7 +8,7 @@ const mockDeleteGeneratedDocument = vi.fn();
 const mockDownloadGeneratedDocument = vi.fn();
 const mockDownloadDocxGeneratedDocument = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/templates/template-generation-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/documents/_tabs/template-generation-actions", () => ({
   fetchGeneratedDocumentsAction: (...args: unknown[]) => mockFetchGeneratedDocuments(...args),
   deleteGeneratedDocumentAction: (...args: unknown[]) => mockDeleteGeneratedDocument(...args),
   downloadGeneratedDocumentAction: (...args: unknown[]) => mockDownloadGeneratedDocument(...args),

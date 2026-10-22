@@ -20,12 +20,12 @@ import {
 } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { previewTemplateAction } from "@/app/(app)/org/[slug]/settings/templates/template-crud-actions";
+import { previewTemplateAction } from "@/app/(app)/org/[slug]/settings/documents/_tabs/template-crud-actions";
 import {
   fetchProjectsForPicker,
   fetchCustomersForPicker,
   fetchInvoicesForPicker,
-} from "@/app/(app)/org/[slug]/settings/templates/template-support-actions";
+} from "@/app/(app)/org/[slug]/settings/documents/_tabs/template-support-actions";
 import type { TemplateEntityType, Matter, Client, InvoiceResponse } from "@/lib/types";
 import { A4PreviewWrapper } from "@/components/documents/a4-preview-wrapper";
 

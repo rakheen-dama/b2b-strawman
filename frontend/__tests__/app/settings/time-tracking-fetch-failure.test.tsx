@@ -22,9 +22,9 @@ vi.mock("@/lib/api", () => ({
   api: { get: (...args: unknown[]) => mockGet(...args) },
 }));
 
-import TimeTrackingSettingsPage from "@/app/(app)/org/[slug]/settings/time-tracking/page";
+import { renderTimeRecordingTab } from "@/app/(app)/org/[slug]/settings/fees/_tabs/time-recording";
 
-describe("TimeTrackingSettingsPage — settings fetch failure", () => {
+describe("Fees & Trust › Time recording tab loader — settings fetch failure", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -40,10 +40,10 @@ describe("TimeTrackingSettingsPage — settings fetch failure", () => {
       return Promise.resolve(null);
     });
 
-    // The page render (a server component invocation) must reject so the settings
+    // The tab loader render (a server component invocation) must reject so the settings
     // error boundary takes over — it must NOT resolve to an editable form.
-    await expect(
-      TimeTrackingSettingsPage({ params: Promise.resolve({ slug: "acme" }) })
-    ).rejects.toThrow("network");
+    await expect(renderTimeRecordingTab({ slug: "acme", searchParams: {} })).rejects.toThrow(
+      "network"
+    );
   });
 });

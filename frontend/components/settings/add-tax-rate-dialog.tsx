@@ -14,7 +14,7 @@ import {
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { createTaxRate } from "@/app/(app)/org/[slug]/settings/tax/actions";
+import { createTaxRate } from "@/app/(app)/org/[slug]/settings/fees/_tabs/tax-actions";
 
 interface AddTaxRateDialogProps {
   slug: string;

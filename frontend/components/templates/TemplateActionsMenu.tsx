@@ -14,7 +14,7 @@ import { ResetTemplateDialog } from "@/components/templates/ResetTemplateDialog"
 import {
   cloneTemplateAction,
   deactivateTemplateAction,
-} from "@/app/(app)/org/[slug]/settings/templates/template-crud-actions";
+} from "@/app/(app)/org/[slug]/settings/documents/_tabs/template-crud-actions";
 import type { TemplateListResponse } from "@/lib/types";
 
 interface TemplateActionsMenuProps {
@@ -33,7 +33,7 @@ export function TemplateActionsMenu({ slug, template }: TemplateActionsMenuProps
     try {
       const result = await cloneTemplateAction(slug, template.id);
       if (result.success && result.data) {
-        router.push(`/org/${slug}/settings/templates/${result.data.id}/edit`);
+        router.push(`/org/${slug}/settings/documents/templates/${result.data.id}/edit`);
       } else if (!result.success) {
         setError(result.error ?? "Failed to clone template.");
       }
@@ -75,7 +75,9 @@ export function TemplateActionsMenu({ slug, template }: TemplateActionsMenuProps
         <DropdownMenuContent align="end">
           {isCustom && (
             <DropdownMenuItem
-              onClick={() => router.push(`/org/${slug}/settings/templates/${template.id}/edit`)}
+              onClick={() =>
+                router.push(`/org/${slug}/settings/documents/templates/${template.id}/edit`)
+              }
             >
               <Pencil className="mr-2 size-4" />
               Edit
@@ -84,7 +86,9 @@ export function TemplateActionsMenu({ slug, template }: TemplateActionsMenuProps
 
           {isPlatform && (
             <DropdownMenuItem
-              onClick={() => router.push(`/org/${slug}/settings/templates/${template.id}/edit`)}
+              onClick={() =>
+                router.push(`/org/${slug}/settings/documents/templates/${template.id}/edit`)
+              }
             >
               <Eye className="mr-2 size-4" />
               View

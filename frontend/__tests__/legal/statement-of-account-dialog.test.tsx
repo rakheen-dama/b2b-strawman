@@ -42,7 +42,7 @@ vi.mock("@/app/(app)/org/[slug]/matters/[id]/statement-actions", () => ({
 
 const mockDownload = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/templates/template-generation-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/documents/_tabs/template-generation-actions", () => ({
   downloadGeneratedDocumentAction: (...args: unknown[]) => mockDownload(...args),
   downloadDocxGeneratedDocumentAction: vi.fn(),
   fetchGeneratedDocumentsAction: vi.fn(),

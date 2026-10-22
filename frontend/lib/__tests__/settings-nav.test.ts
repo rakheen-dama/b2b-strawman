@@ -100,6 +100,13 @@ const RULED_EXCEPTIONS: Record<string, Flags> = {
   "matters/checklists": { adminOnly: true },
   "matters/request-templates": { adminOnly: true },
   "matters/request-settings": { adminOnly: true },
+  // D19 (616C, D6/D18 rule): the former acceptance, tax and time-tracking pages denied non-admins;
+  // member-visible tabs holding only a denial message are the "disabled tab" §12.7.4 forbids.
+  // Tariffs stays ungated (D20): it is the Fees family's first tab and its former page let
+  // FINANCIAL_VISIBILITY holders in, so its loader keeps the in-page capability denial.
+  "documents/acceptance": { adminOnly: true },
+  "fees/tax": { adminOnly: true },
+  "fees/time-recording": { adminOnly: true },
 };
 
 const tabKey = (familyId: string, tabId: string) => `${familyId}/${tabId}`;
@@ -242,12 +249,8 @@ describe("SETTINGS_FAMILIES", () => {
     }
   });
 
-  it("marks every family without a page yet pending (Firm 616A and Matters 616B have pages)", () => {
-    expect(SETTINGS_FAMILIES.filter((f) => f.pending).map((f) => f.id)).toEqual([
-      "documents",
-      "fees",
-      "connections",
-    ]);
+  it("marks every family without a page yet pending (Firm 616A, Matters 616B, Documents and Fees & Trust 616C have pages)", () => {
+    expect(SETTINGS_FAMILIES.filter((f) => f.pending).map((f) => f.id)).toEqual(["connections"]);
   });
 });
 
@@ -348,5 +351,47 @@ describe("Matters tab gating (D18)", () => {
     });
     for (const t of matters.tabs)
       expect(resolveSettingsTab(matters, t.id, OWNER).tab.id).toBe(t.id);
+  });
+});
+
+describe("Documents redirect rows", () => {
+  it("land every /settings/documents?tab= destination on a declared Documents tab (precursor of 616E)", () => {
+    const ids = getSettingsFamily("documents").tabs.map((t) => t.id);
+    const tabs = LEGACY_REDIRECTS.filter((r) =>
+      r.destination.startsWith("/org/:slug/settings/documents?tab=")
+    ).map((r) => new URLSearchParams(r.destination.split("?")[1]).get("tab"));
+    expect(tabs).toHaveLength(4);
+    expect([...tabs].sort()).toEqual([...ids].sort());
+  });
+});
+
+describe("Fees & Trust redirect rows", () => {
+  it("land every /settings/fees?tab= destination on a declared Fees tab (precursor of 616E)", () => {
+    const ids = getSettingsFamily("fees").tabs.map((t) => t.id);
+    const tabs = LEGACY_REDIRECTS.filter((r) =>
+      r.destination.startsWith("/org/:slug/settings/fees?tab=")
+    ).map((r) => new URLSearchParams(r.destination.split("?")[1]).get("tab"));
+    expect(tabs).toHaveLength(6);
+    expect([...tabs].sort()).toEqual([...ids].sort());
+  });
+});
+
+describe("Documents + Fees tab gating (D19/D20)", () => {
+  it("falls a member back to the first tab for the admin-only Documents/Fees tabs", () => {
+    for (const [familyId, tabId, first] of [
+      ["documents", "acceptance", "templates"],
+      ["documents", "email", "templates"],
+      ["fees", "tax", "tariffs"],
+      ["fees", "time-recording", "tariffs"],
+      ["fees", "collections", "tariffs"],
+    ] as const) {
+      const { tab, forbidden } = resolveSettingsTab(getSettingsFamily(familyId), tabId, MEMBER);
+      expect(tab.id, `${familyId}/${tabId}`).toBe(first);
+      expect(forbidden?.id, `${familyId}/${tabId}`).toBe(tabId);
+    }
+  });
+
+  it("keeps Tariffs (the Fees first tab) open to members", () => {
+    expect(resolveSettingsTab(getSettingsFamily("fees"), "tariffs", MEMBER).forbidden).toBeNull();
   });
 });

@@ -11,8 +11,10 @@ const SEGMENT_LABELS: Record<string, string> = {
   team: "Team",
   settings: "Settings",
   // Settings sub-segments
-  // Phase 87 S9 (616A, ADR-341): the Firm settings family; 616E adds the other families.
+  // Phase 87 S9 (ADR-341): settings family labels — 616A–616C families; 616E adds Connections.
   firm: "Firm",
+  documents: "Documents",
+  fees: "Fees & Trust",
   billing: "Billing",
   notifications: "Notifications",
   rates: "Rates & Currency",
@@ -82,12 +84,13 @@ export const NON_ROUTABLE_PREFIXES: readonly string[] = [
   "ai",
   "information-requests",
   "legal",
-  // Phase 87 S9 (616B, ADR-341): Matters settings editor sub-routes have no list page of their
-  // own — the list is a ?tab= of /settings/matters.
+  // Phase 87 S9 (ADR-341): Matters and Documents settings editor sub-routes have no list page of
+  // their own — the list is a ?tab= of their family page (616B/616C).
+  "settings/documents/templates",
+  "settings/documents/templates/[id]",
   "settings/matters/checklists",
   "settings/matters/request-templates",
   "settings/matters/templates",
-  "settings/templates/[id]",
 ];
 
 function matchesRoutePattern(segments: string[], pattern: string): boolean {

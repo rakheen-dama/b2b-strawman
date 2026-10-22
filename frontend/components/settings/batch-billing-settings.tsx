@@ -5,7 +5,7 @@ import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Loader2 } from "lucide-react";
-import { updateBatchBillingSettings } from "@/app/(app)/org/[slug]/settings/batch-billing/actions";
+import { updateBatchBillingSettings } from "@/app/(app)/org/[slug]/settings/fees/_tabs/fee-runs-actions";
 
 interface BatchBillingSettingsProps {
   slug: string;

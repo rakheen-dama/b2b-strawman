@@ -34,16 +34,17 @@ import {
 } from "@/components/editor";
 import type { TiptapNode } from "@/components/editor";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { updateTemplateAction } from "@/app/(app)/org/[slug]/settings/templates/template-crud-actions";
+import { updateTemplateAction } from "@/app/(app)/org/[slug]/settings/documents/_tabs/template-crud-actions";
 import {
   fetchRequiredFieldPacksAction,
   replaceDocxFileAction,
   downloadDocxTemplateAction,
   fetchVariableMetadataAction,
-} from "@/app/(app)/org/[slug]/settings/templates/template-support-actions";
-import type { FieldPackStatus } from "@/app/(app)/org/[slug]/settings/templates/template-support-actions";
+} from "@/app/(app)/org/[slug]/settings/documents/_tabs/template-support-actions";
+import type { FieldPackStatus } from "@/app/(app)/org/[slug]/settings/documents/_tabs/template-support-actions";
 import type { VariableMetadataResponse } from "@/components/editor/actions";
 import { getClause } from "@/lib/actions/clause-actions";
+import { settingsHref } from "@/lib/settings-nav";
 import { TemplateEditorSettings } from "@/components/templates/template-editor-settings";
 import {
   DocxFileInfoPanel,
@@ -194,7 +195,7 @@ export function TemplateEditorClient({ slug, template, readOnly }: TemplateEdito
       <div className="flex items-center justify-between border-b border-slate-200 pb-4 dark:border-slate-800">
         <div className="flex items-center gap-4">
           <Link
-            href={`/org/${slug}/settings/templates`}
+            href={settingsHref(slug, "documents", "templates")}
             className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
           >
             <ChevronLeft className="size-4" />

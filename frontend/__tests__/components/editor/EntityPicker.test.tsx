@@ -8,7 +8,7 @@ const mockFetchProjects = vi.fn();
 const mockFetchCustomers = vi.fn();
 const mockFetchInvoices = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/templates/template-support-actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/documents/_tabs/template-support-actions", () => ({
   fetchProjectsForPicker: (...args: unknown[]) => mockFetchProjects(...args),
   fetchCustomersForPicker: (...args: unknown[]) => mockFetchCustomers(...args),
   fetchInvoicesForPicker: (...args: unknown[]) => mockFetchInvoices(...args),

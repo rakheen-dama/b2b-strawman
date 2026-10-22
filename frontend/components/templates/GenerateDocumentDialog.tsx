@@ -10,8 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { previewTemplateAction } from "@/app/(app)/org/[slug]/settings/templates/template-crud-actions";
-import { generateDocumentAction } from "@/app/(app)/org/[slug]/settings/templates/template-generation-actions";
+import { previewTemplateAction } from "@/app/(app)/org/[slug]/settings/documents/_tabs/template-crud-actions";
+import { generateDocumentAction } from "@/app/(app)/org/[slug]/settings/documents/_tabs/template-generation-actions";
 import { getTemplateClauses } from "@/lib/actions/template-clause-actions";
 import type { TemplateClauseDetail } from "@/lib/actions/template-clause-actions";
 import { GenerationClauseStep } from "@/components/templates/generation-clause-step";

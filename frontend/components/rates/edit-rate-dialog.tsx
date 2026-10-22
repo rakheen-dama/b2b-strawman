@@ -14,7 +14,10 @@ import {
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { CurrencySelector } from "@/components/rates/currency-selector";
-import { updateBillingRate, updateCostRate } from "@/app/(app)/org/[slug]/settings/rates/actions";
+import {
+  updateBillingRate,
+  updateCostRate,
+} from "@/app/(app)/org/[slug]/settings/fees/_tabs/tariffs-actions";
 import type { BillingRate, CostRate } from "@/lib/types";
 
 interface EditBillingRateDialogProps {

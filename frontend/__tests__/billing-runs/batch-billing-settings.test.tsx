@@ -4,7 +4,7 @@ import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/re
 import { BatchBillingSettings } from "@/components/settings/batch-billing-settings";
 
 const mockUpdateBatchBillingSettings = vi.fn();
-vi.mock("@/app/(app)/org/[slug]/settings/batch-billing/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/fees/_tabs/fee-runs-actions", () => ({
   updateBatchBillingSettings: (...args: unknown[]) => mockUpdateBatchBillingSettings(...args),
 }));
 

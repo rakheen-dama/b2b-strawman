@@ -20,7 +20,7 @@ import {
 import {
   initiateXeroConnectAction,
   disconnectXeroAction,
-} from "@/app/(app)/org/[slug]/settings/integrations/xero/actions";
+} from "@/app/(app)/org/[slug]/settings/connections/_tabs/xero-actions";
 import type { XeroConnectionResponse, XeroConnectionStatus } from "@/lib/types";
 
 interface XeroConnectionCardProps {

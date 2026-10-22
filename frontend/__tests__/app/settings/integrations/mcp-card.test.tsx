@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { McpConnectorCard } from "@/app/(app)/org/[slug]/settings/integrations/mcp/mcp-connector-card";
+import { McpConnectorCard } from "@/app/(app)/org/[slug]/settings/connections/_tabs/mcp-connector-card";
 import type { McpStatus } from "@/lib/types";
 
 const mockEnableMcpAction = vi.fn();
 const mockRevokeMcpAction = vi.fn();
 const mockRefresh = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/integrations/mcp/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/connections/_tabs/mcp-actions", () => ({
   enableMcpAction: (...args: unknown[]) => mockEnableMcpAction(...args),
   revokeMcpAction: (...args: unknown[]) => mockRevokeMcpAction(...args),
   getMcpStatusAction: vi.fn(),

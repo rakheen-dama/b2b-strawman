@@ -37,7 +37,7 @@ import {
   fetchXeroTaxRatesAction,
   updateXeroTaxMappingAction,
   resetXeroTaxMappingsAction,
-} from "@/app/(app)/org/[slug]/settings/integrations/xero/actions";
+} from "@/app/(app)/org/[slug]/settings/connections/_tabs/xero-actions";
 import type { XeroTaxMapping, XeroTaxRate } from "@/lib/types";
 
 interface XeroTaxMappingEditorProps {

@@ -30,7 +30,7 @@ import {
   toggleIntegrationAction,
   deleteApiKeyAction,
   fetchAiModels,
-} from "@/app/(app)/org/[slug]/settings/integrations/actions";
+} from "@/app/(app)/org/[slug]/settings/connections/_tabs/integrations-actions";
 import type { IntegrationDomain, OrgIntegration } from "@/lib/types";
 
 const DOMAIN_ICONS: Record<IntegrationDomain, React.ComponentType<{ className?: string }>> = {

@@ -64,25 +64,25 @@ vi.mock("@/components/ai/ai-profile-form", () => ({
 vi.mock("@/components/ai/ai-cost-summary", () => ({
   AiCostSummary: () => <div data-testid="ai-cost-summary" />,
 }));
-vi.mock("@/app/(app)/org/[slug]/settings/ai/history/history-client", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/connections/ai/history/history-client", () => ({
   ExecutionHistoryClient: () => <div data-testid="execution-history-client" />,
 }));
 vi.mock("@/app/(app)/org/[slug]/ai/reviews/reviews-client", () => ({
   AiReviewsClient: () => <div data-testid="ai-reviews-client" />,
 }));
-vi.mock("@/app/(app)/org/[slug]/settings/integrations/mcp/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/connections/_tabs/mcp-actions", () => ({
   getMcpStatusAction: vi.fn(async () => null),
   enableMcpAction: vi.fn(),
   revokeMcpAction: vi.fn(),
 }));
-vi.mock("@/app/(app)/org/[slug]/settings/integrations/mcp/mcp-connector-card", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/connections/_tabs/mcp-connector-card", () => ({
   McpConnectorCard: () => <div data-testid="mcp-connector-card" />,
 }));
 
-import AiSettingsPage from "@/app/(app)/org/[slug]/settings/ai/page";
-import ExecutionHistoryPage from "@/app/(app)/org/[slug]/settings/ai/history/page";
+import { renderAiTab } from "@/app/(app)/org/[slug]/settings/connections/_tabs/ai";
+import ExecutionHistoryPage from "@/app/(app)/org/[slug]/settings/connections/ai/history/page";
 import AiReviewsPage from "@/app/(app)/org/[slug]/ai/reviews/page";
-import McpSettingsPage from "@/app/(app)/org/[slug]/settings/integrations/mcp/page";
+import { renderMcpTab } from "@/app/(app)/org/[slug]/settings/connections/_tabs/mcp";
 
 const params = Promise.resolve({ slug: "acme" });
 
@@ -92,10 +92,19 @@ afterEach(() => {
 
 describe("AI surfaces kept after the assistant removal (Epic 601)", () => {
   it("renders Settings → AI", async () => {
-    render(await AiSettingsPage({ params }));
+    render(await renderAiTab({ slug: "acme", searchParams: {} }));
     expect(screen.getByRole("heading", { level: 1, name: "AI Configuration" })).toBeInTheDocument();
     expect(screen.getByTestId("ai-profile-form")).toBeInTheDocument();
     expect(screen.getByTestId("ai-cost-summary")).toBeInTheDocument();
+    // Phase 87 S9 (616D): in-panel links target the Connections family routes.
+    expect(screen.getByRole("link", { name: /View execution history/ })).toHaveAttribute(
+      "href",
+      "/org/acme/settings/connections/ai/history"
+    );
+    expect(screen.getByRole("link", { name: /Manage integrations/ })).toHaveAttribute(
+      "href",
+      "/org/acme/settings/connections?tab=xero"
+    );
   });
 
   it("renders Settings → AI → Execution History", async () => {
@@ -104,6 +113,10 @@ describe("AI surfaces kept after the assistant removal (Epic 601)", () => {
       screen.getByRole("heading", { level: 1, name: "Execution History" })
     ).toBeInTheDocument();
     expect(screen.getByTestId("execution-history-client")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /AI Configuration/ })).toHaveAttribute(
+      "href",
+      "/org/acme/settings/connections?tab=ai"
+    );
   });
 
   it("renders AI Reviews", async () => {
@@ -112,8 +125,8 @@ describe("AI surfaces kept after the assistant removal (Epic 601)", () => {
     expect(screen.getByTestId("ai-reviews-client")).toBeInTheDocument();
   });
 
-  it("renders Settings → Integrations → Claude / MCP Connector", async () => {
-    render(await McpSettingsPage({ params }));
+  it("renders Settings → Connections → MCP (Claude / MCP Connector)", async () => {
+    render(await renderMcpTab({ slug: "acme", searchParams: {} }));
     expect(
       screen.getByRole("heading", { level: 1, name: "Claude / MCP Connector" })
     ).toBeInTheDocument();

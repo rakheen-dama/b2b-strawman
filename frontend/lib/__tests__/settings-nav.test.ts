@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { describe, it, expect } from "vitest";
 import { SETTINGS_NAV_GROUPS } from "@/components/settings/settings-nav-groups";
 import { LEGACY_REDIRECTS } from "@/lib/legacy-redirects";
@@ -249,8 +251,12 @@ describe("SETTINGS_FAMILIES", () => {
     }
   });
 
-  it("marks every family without a page yet pending (Firm 616A, Matters 616B, Documents and Fees & Trust 616C have pages)", () => {
-    expect(SETTINGS_FAMILIES.filter((f) => f.pending).map((f) => f.id)).toEqual(["connections"]);
+  it("has a page.tsx for every family (616D removed the pending flag)", () => {
+    const settingsDir = path.resolve(__dirname, "../../app/(app)/org/[slug]/settings");
+    for (const f of SETTINGS_FAMILIES) {
+      expect(fs.existsSync(path.join(settingsDir, f.id, "page.tsx")), f.id).toBe(true);
+      expect(f).not.toHaveProperty("pending");
+    }
   });
 });
 
@@ -393,5 +399,51 @@ describe("Documents + Fees tab gating (D19/D20)", () => {
 
   it("keeps Tariffs (the Fees first tab) open to members", () => {
     expect(resolveSettingsTab(getSettingsFamily("fees"), "tariffs", MEMBER).forbidden).toBeNull();
+  });
+});
+
+describe("Connections redirect rows", () => {
+  it("land every /settings/connections?tab= destination on a declared Connections tab (precursor of 616E)", () => {
+    const ids = getSettingsFamily("connections").tabs.map((t) => t.id);
+    const tabs = LEGACY_REDIRECTS.filter((r) =>
+      r.destination.startsWith("/org/:slug/settings/connections?tab=")
+    ).map((r) => new URLSearchParams(r.destination.split("?")[1]).get("tab"));
+    // integrations and integrations/xero both land on xero (§12.7.1).
+    expect(tabs).toHaveLength(7);
+    expect(tabs.filter((t) => t === "xero")).toHaveLength(2);
+    expect([...new Set(tabs)].sort()).toEqual([...ids].sort());
+  });
+});
+
+describe("Connections tab gating (D7/D24)", () => {
+  const connections = getSettingsFamily("connections");
+
+  it("falls a member back to Xero for the gated Connections tabs", () => {
+    for (const tabId of ["mcp", "ai", "packs", "automations"]) {
+      const { tab, forbidden } = resolveSettingsTab(connections, tabId, MEMBER);
+      expect(tab.id, tabId).toBe("xero");
+      expect(forbidden?.id, tabId).toBe(tabId);
+    }
+  });
+
+  it("keeps Xero (the Connections first tab) and Notifications open to members", () => {
+    expect(resolveSettingsTab(connections, "xero", MEMBER).forbidden).toBeNull();
+    expect(resolveSettingsTab(connections, "notifications", MEMBER)).toEqual({
+      tab: findTab("connections", "notifications"),
+      forbidden: null,
+    });
+  });
+
+  it("opens MCP to an INTEGRATION_MANAGE holder and every tab to an owner", () => {
+    const integrationManager = settingsAccessFrom(
+      { capabilities: ["INTEGRATION_MANAGE"], isAdmin: false, isOwner: false },
+      []
+    );
+    expect(resolveSettingsTab(connections, "mcp", integrationManager)).toEqual({
+      tab: findTab("connections", "mcp"),
+      forbidden: null,
+    });
+    for (const t of connections.tabs)
+      expect(resolveSettingsTab(connections, t.id, OWNER).tab.id).toBe(t.id);
   });
 });

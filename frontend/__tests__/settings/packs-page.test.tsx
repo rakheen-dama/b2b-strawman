@@ -24,7 +24,7 @@ const mockFetchCatalogAction = vi.fn();
 const mockFetchUninstallCheckAction = vi.fn();
 const mockInstallPackAction = vi.fn();
 const mockUninstallPackAction = vi.fn();
-vi.mock("@/app/(app)/org/[slug]/settings/packs/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/connections/_tabs/packs-actions", () => ({
   fetchCatalogAction: (...args: unknown[]) => mockFetchCatalogAction(...args),
   fetchUninstallCheckAction: (...args: unknown[]) => mockFetchUninstallCheckAction(...args),
   installPackAction: (...args: unknown[]) => mockInstallPackAction(...args),
@@ -32,7 +32,7 @@ vi.mock("@/app/(app)/org/[slug]/settings/packs/actions", () => ({
 }));
 
 import type { PackCatalogEntry } from "@/lib/api/packs";
-import { PacksPageClient } from "@/app/(app)/org/[slug]/settings/packs/packs-page-client";
+import { PacksPageClient } from "@/app/(app)/org/[slug]/settings/connections/_tabs/packs-page-client";
 
 const CATALOG: PackCatalogEntry[] = [
   {

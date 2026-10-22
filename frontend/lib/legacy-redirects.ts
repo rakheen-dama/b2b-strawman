@@ -243,4 +243,57 @@ export const LEGACY_REDIRECTS = [
     destination: "/org/:slug/settings/fees?tab=trust-accounting",
     permanent: true,
   },
+  // Phase 87 S9 (616D, ADR-341): the Connections family — seven former pages are six ?tab= tabs of
+  // /settings/connections (integrations and integrations/xero both → xero); the Xero sync log, the
+  // AI execution history and the automation execution log move under it.
+  {
+    source: "/org/:slug/settings/integrations",
+    destination: "/org/:slug/settings/connections?tab=xero",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/integrations/xero",
+    destination: "/org/:slug/settings/connections?tab=xero",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/integrations/mcp",
+    destination: "/org/:slug/settings/connections?tab=mcp",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/ai",
+    destination: "/org/:slug/settings/connections?tab=ai",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/notifications",
+    destination: "/org/:slug/settings/connections?tab=notifications",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/packs",
+    destination: "/org/:slug/settings/connections?tab=packs",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/automations",
+    destination: "/org/:slug/settings/connections?tab=automations",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/integrations/xero/sync-log",
+    destination: "/org/:slug/settings/connections/xero/sync-log",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/ai/history",
+    destination: "/org/:slug/settings/connections/ai/history",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/automations/executions",
+    destination: "/org/:slug/settings/connections/automations/executions",
+    permanent: true,
+  },
 ] satisfies readonly Redirect[];

@@ -27,7 +27,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@b2mash/ui/label";
 import { xeroSettingsSchema } from "@/lib/schemas/xero-settings";
-import { updateXeroSettingsAction } from "@/app/(app)/org/[slug]/settings/integrations/xero/actions";
+import { updateXeroSettingsAction } from "@/app/(app)/org/[slug]/settings/connections/_tabs/xero-actions";
 import type { XeroSettingsFormData } from "@/lib/schemas/xero-settings";
 import type { XeroSettingsResponse } from "@/lib/types";
 

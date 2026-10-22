@@ -11,7 +11,7 @@ import {
   retrySyncEntryAction,
   reconcileSyncEntryAction,
   forceResyncInvoiceAction,
-} from "@/app/(app)/org/[slug]/settings/integrations/xero/sync-log/actions";
+} from "@/app/(app)/org/[slug]/settings/connections/xero/sync-log/actions";
 import { defaultSWROptions } from "@/lib/swr/fetcher";
 import type { SyncEntryResponse } from "@/lib/types";
 

@@ -28,7 +28,7 @@ import { Label } from "@b2mash/ui/label";
 import { Loader2, X } from "lucide-react";
 import { aiProfileSchema, type AiProfileFormData } from "@/lib/schemas/ai-profile";
 import { interpretBudgetInput, BUDGET_INVALID_MESSAGE } from "@/lib/ai-budget-input";
-import { updateAiProfileAction } from "@/app/(app)/org/[slug]/settings/ai/actions";
+import { updateAiProfileAction } from "@/app/(app)/org/[slug]/settings/connections/_tabs/ai-actions";
 
 const ZA_PROVINCES = [
   { value: "ZA-GP", label: "Gauteng" },

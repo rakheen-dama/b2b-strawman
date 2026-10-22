@@ -66,6 +66,18 @@ describe("Breadcrumbs", () => {
     expect(span).toHaveClass("font-medium");
   });
 
+  it("labels the Connections settings family Settings > Connections (616D)", () => {
+    mockUsePathname.mockReturnValue("/org/acme/settings/connections");
+    render(<Breadcrumbs slug="acme" />);
+    expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute(
+      "href",
+      "/org/acme/settings"
+    );
+    const span = screen.getByText("Connections");
+    expect(span.tagName).toBe("SPAN");
+    expect(span).toHaveClass("font-medium");
+  });
+
   it("renders Settings > Billing two-level path correctly", () => {
     mockUsePathname.mockReturnValue("/org/acme/settings/billing");
     render(<Breadcrumbs slug="acme" />);
@@ -144,6 +156,16 @@ describe("Breadcrumbs", () => {
         "/org/acme/settings/documents"
       );
       expect(screen.getByText("Templates").closest("a")).toBeNull();
+    });
+
+    it("renders AI as plain text on /settings/connections/ai/history (616D)", () => {
+      renderAt("/org/acme/settings/connections/ai/history");
+      expect(screen.getByRole("link", { name: "Connections" })).toHaveAttribute(
+        "href",
+        "/org/acme/settings/connections"
+      );
+      expect(screen.getByText("AI").closest("a")).toBeNull();
+      expect(screen.queryByRole("link", { name: "AI" })).not.toBeInTheDocument();
     });
 
     it("still links intermediate segments that have a page", () => {

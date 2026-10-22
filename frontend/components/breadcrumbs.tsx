@@ -11,10 +11,11 @@ const SEGMENT_LABELS: Record<string, string> = {
   team: "Team",
   settings: "Settings",
   // Settings sub-segments
-  // Phase 87 S9 (ADR-341): settings family labels — 616A–616C families; 616E adds Connections.
+  // Phase 87 S9 (ADR-341): settings family labels (616A–616D).
   firm: "Firm",
   documents: "Documents",
   fees: "Fees & Trust",
+  connections: "Connections",
   billing: "Billing",
   notifications: "Notifications",
   rates: "Rates & Currency",
@@ -84,8 +85,11 @@ export const NON_ROUTABLE_PREFIXES: readonly string[] = [
   "ai",
   "information-requests",
   "legal",
-  // Phase 87 S9 (ADR-341): Matters and Documents settings editor sub-routes have no list page of
-  // their own — the list is a ?tab= of their family page (616B/616C).
+  // Phase 87 S9 (ADR-341): Matters, Documents and Connections settings sub-routes have no list page
+  // of their own — the list is a ?tab= of their family page (616B–616D).
+  "settings/connections/ai",
+  "settings/connections/automations",
+  "settings/connections/xero",
   "settings/documents/templates",
   "settings/documents/templates/[id]",
   "settings/matters/checklists",

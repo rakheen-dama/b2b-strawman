@@ -6,12 +6,12 @@ import type { AutomationRuleResponse } from "@/lib/api/automations";
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
-  usePathname: () => "/org/acme/settings/automations",
+  usePathname: () => "/org/acme/settings/connections",
 }));
 
 const mockToggleRule = vi.fn().mockResolvedValue({ success: true });
 
-vi.mock("@/app/(app)/org/[slug]/settings/automations/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/connections/_tabs/automations-actions", () => ({
   toggleRuleAction: (...args: unknown[]) => mockToggleRule(...args),
 }));
 

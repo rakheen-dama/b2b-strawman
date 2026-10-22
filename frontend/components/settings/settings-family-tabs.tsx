@@ -45,14 +45,22 @@ export function SettingsFamilyTabs({ label, tabs, activeTab, children }: Setting
 
   // The new panel arrives with the server render, not with the click, so focus moves when the
   // selected `activeTab` commits (not in the handler, while the old panel is still mounted). A fast
-  // second selection overwrites the ref, so the first one's commit does not steal focus.
+  // second selection overwrites the ref, so the first one's commit does not steal focus. The
+  // transition covers `router.replace` until its render commits, so a selection still unmatched
+  // once it settles (`!isPending`) never committed (aborted, or superseded by a URL-driven change)
+  // and is dropped — a later URL-driven change to that tab must not move focus.
   useEffect(() => {
-    if (focusOnCommitRef.current !== activeTab) return;
+    const selected = focusOnCommitRef.current;
+    if (selected === null) return;
+    if (selected !== activeTab) {
+      if (!isPending) focusOnCommitRef.current = null;
+      return;
+    }
     focusOnCommitRef.current = null;
     const panel = panelRef.current;
     if (!panel) return;
     (panel.querySelector<HTMLElement>(FOCUSABLE) ?? panel).focus();
-  }, [activeTab]);
+  }, [activeTab, isPending]);
 
   function handleValueChange(next: string) {
     if (next === shownTab) return;

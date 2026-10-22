@@ -203,11 +203,11 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Thandi (logged in)
 
-- [ ] **1.1** Navigate to **Settings › Firm › General** (`/settings/firm?tab=general`) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #NNNN: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab; the old "Organization" label was already stale) → upload firm logo (any ≤ 200 KB PNG) → set brand colour to Mathebula navy `#1B3358` → Save
+- [ ] **1.1** Navigate to **Settings › Firm › General** (`/settings/firm?tab=general`) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab; the old "Organization" label was already stale) → upload firm logo (any ≤ 200 KB PNG) → set brand colour to Mathebula navy `#1B3358` → Save
 - [ ] **1.2** Refresh → verify brand colour applied to sidebar accent + logo renders at top of sidebar
 - [ ] **1.3** Navigate to **Tariffs** via the main sidebar's **Finance** group → "Tariffs" entry (`/org/{slug}/legal/tariffs`). Verify LSSA tariff rates pre-seeded (from `legal-za` rate pack, Phase 55). (Tariffs is a Finance-group module nav item, not a Settings sub-page; OBS-101 closed.)
 - [ ] **1.4** Verify at least one tariff entry: section 4 of the LSSA 2024/2025 High Court Party-and-Party schedule contains **4(c) "Waiting time at court (per hour)" — R 780.00** OR **4(a) "Attendance at court (per day)" — R 7800.00**. All values in ZAR. LSSA tariffs are revised every 2–3 years; the latest published schedule will appear here.
-- [ ] **1.5** Navigate to **Settings › Fees & Trust › Trust accounting** (settings rail: **Fees & Trust** → **Trust accounting**; route `/org/{slug}/settings/fees?tab=trust-accounting`) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #NNNN: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab) → click **Add Account** → fill the trust account form:
+- [ ] **1.5** Navigate to **Settings › Fees & Trust › Trust accounting** (settings rail: **Fees & Trust** → **Trust accounting**; route `/org/{slug}/settings/fees?tab=trust-accounting`) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab) → click **Add Account** → fill the trust account form:
   - Name: **Mathebula Trust — Main**
   - Bank: **Standard Bank**
   - Branch Code: **051001** (real Standard Bank universal branch code; required field)
@@ -935,7 +935,7 @@ This is the closing-demo wow moment: show the firm's 90-day activity feed on the
 - [ ] **90.1** `[FIRM]` Terminology sweep: walk sidebar, settings pages, every create dialog → zero occurrences of "Project" (must be "Matter"), "Customer" (must be "Client"), "Invoice" (must be "Fee Note"), "Task" where legal terminology applies. Zero accounting / consulting vocabulary leaks.
 - [ ] **90.2** `[FIRM]` Field promotion sweep: reopen every create dialog (Client, Matter, Task, Fee Note) → verify no promoted slugs have regressed into a generic Custom Fields section. On matter detail, promoted fields render on Overview tab, non-promoted fields are on the Details > Custom fields tab. (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **90.3** `[FIRM]` Progressive disclosure: six zones present (Today · Matters · Clients · Fees · Trust · Firm) and all 4 legal modules visible (Matters, Trust zone, Diary, Conflict check); no accounting / consulting nav items (Phase 87, ADR-344 — nav amendment, Epic 612C, PR #1620: six-zone sidebar per ADR-339) (Phase 87, ADR-344 — nav amendment, Epic 613D, PR #1624: Court calendar → Diary)
-- [ ] **90.4** `[FIRM]` Tier removal: Settings › Firm › Subscription shows flat subscription state only, no tier UI (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #NNNN: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
+- [ ] **90.4** `[FIRM]` Tier removal: Settings › Firm › Subscription shows flat subscription state only, no tier UI (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
 - [ ] **90.5** `[FIRM]` Console errors: browser devtools open → click through every top-level nav → zero JS errors
 - [ ] **90.6** `[FIRM]` Mailpit sweep: no bounced / failed emails across 90 days
 
@@ -958,7 +958,7 @@ This is the closing-demo wow moment: show the firm's 90-day activity feed on the
 - [ ] **E.1** Every step above is checked; where a step is conditionally skipped (e.g., KYC adapter not configured) the skip is explicitly logged to the gap report with rationale
 - [ ] **E.2** All 7 📸 wow moments captured without visual regression against existing Playwright baselines (from Phase 68 Epic 500B)
 - [ ] **E.3** Zero BLOCKER or HIGH items in gap report (`qa/gap-reports/legal-za-full-lifecycle-{YYYY-MM-DD}.md`)
-- [ ] **E.4** **Tier removal** verified on 3+ screens (Settings › Firm › Subscription, team invite flow, member count page) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #NNNN: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
+- [ ] **E.4** **Tier removal** verified on 3+ screens (Settings › Firm › Subscription, team invite flow, member count page) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
 - [ ] **E.5** **Field promotion** verified on Client, Matter, Task, Fee Note create dialogs — no duplication in CustomFieldSection
 - [ ] **E.6** **Progressive disclosure** — all 4 legal modules present, no cross-vertical leaks in sidebar, breadcrumbs, settings
 - [ ] **E.7** **Keycloak flow** end-to-end — from `/request-access` → approval → owner register → team invites → logged-in firm dashboard, zero mock IDP usage

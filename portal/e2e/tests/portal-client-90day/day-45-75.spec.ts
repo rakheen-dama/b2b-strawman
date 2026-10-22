@@ -144,8 +144,9 @@ test.describe
       return;
     }
 
-    // Click into the first matter
-    const matterLink = page
+    // Click into the first matter. Scoped to <main>: the rail's "Matters"
+    // link precedes <main> in the DOM and would otherwise match first.
+    const matterLink = main
       .getByRole("link", { name: /project|matter|engagement/i })
       .first();
     if (!(await matterLink.isVisible({ timeout: 5000 }).catch(() => false))) {

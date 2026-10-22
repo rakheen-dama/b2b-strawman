@@ -40,6 +40,8 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   snapshotPathTemplate:
     "{testDir}/../../screenshots/portal-v2/{projectName}/{arg}{ext}",
+  // Epic 617B: one magic-link exchange per run (see e2e/helpers/global-setup.ts).
+  globalSetup: "./e2e/helpers/global-setup.ts",
   globalTimeout: 600_000,
   timeout: 30_000,
   retries: process.env.CI ? 1 : 0,

@@ -10,15 +10,20 @@ async function getPortalJwt(email: string): Promise<string | null> {
     body: JSON.stringify({ email, orgId: ORG_SLUG }),
   });
   if (!linkRes.ok) return null;
-  const { token } = await linkRes.json();
+  // MagicLinkResponse(message, magicLink) — magicLink is
+  // "/auth/exchange?token=…&orgId=…" (dev/test/e2e profiles only).
+  const { magicLink } = await linkRes.json();
+  const token = magicLink?.split("token=").pop()?.split("&")[0];
+  if (!token) return null;
   const exchangeRes = await fetch(`${BACKEND_URL}/portal/auth/exchange`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token }),
+    body: JSON.stringify({ token, orgId: ORG_SLUG }),
   });
   if (!exchangeRes.ok) return null;
+  // PortalTokenResponse(token, clientId, clientName)
   const data = await exchangeRes.json();
-  return data.accessToken || data.access_token || null;
+  return data.token || null;
 }
 
 // These emails must match the E2E seed data

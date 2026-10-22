@@ -7,6 +7,7 @@ import type { Document } from "@/lib/types";
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),
   usePathname: () => "/org/test-org/settings/general",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // Mock motion/react to avoid animation issues in tests

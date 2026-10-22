@@ -1,24 +1,19 @@
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { fetchDsarRequests } from "./actions";
+import { fetchDsarRequests } from "./data-requests-actions";
 import { DsarRequestsTable } from "@/components/data-protection/dsar-requests-table";
 import { LogDsarRequestDialog } from "@/components/data-protection/log-dsar-dialog";
+import type { SettingsTabProps } from "@/components/settings/settings-family-page";
 
-export default async function DsarRequestsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+/**
+ * Firm › Data requests tab (Phase 87 S9, ADR-341) — the former settings/data-protection/requests
+ * page's loader.
+ */
+export async function renderDataRequestsTab({ slug }: SettingsTabProps) {
   const caps = await fetchMyCapabilities();
 
   if (!caps.isAdmin && !caps.isOwner) {
     return (
       <div className="space-y-8">
-        <Link
-          href={`/org/${slug}/settings/data-protection`}
-          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-        >
-          <ChevronLeft className="size-4" />
-          Data Protection
-        </Link>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">DSAR Requests</h1>
         <p className="text-slate-600 dark:text-slate-400">
           You do not have permission to manage DSAR requests. Only admins and owners can access this
@@ -39,14 +34,6 @@ export default async function DsarRequestsPage({ params }: { params: Promise<{ s
 
   return (
     <div className="space-y-8">
-      <Link
-        href={`/org/${slug}/settings/data-protection`}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-      >
-        <ChevronLeft className="size-4" />
-        Data Protection
-      </Link>
-
       <div className="flex items-start justify-between">
         <div>
           <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">DSAR Requests</h1>

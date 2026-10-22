@@ -14,7 +14,10 @@ import {
 import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { createRoleAction, updateRoleAction } from "@/app/(app)/org/[slug]/settings/roles/actions";
+import {
+  createRoleAction,
+  updateRoleAction,
+} from "@/app/(app)/org/[slug]/settings/firm/_tabs/roles-actions";
 import { CAPABILITY_META } from "@/lib/capabilities";
 import type { OrgRole } from "@/lib/api/org-roles";
 

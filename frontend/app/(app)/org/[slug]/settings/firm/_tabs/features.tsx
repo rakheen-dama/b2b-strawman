@@ -1,29 +1,18 @@
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getModuleSettings } from "@/lib/actions/module-settings";
 import { FeaturesSettingsForm } from "@/components/settings/features-settings-form";
 
-export default async function FeaturesSettingsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
+/**
+ * Firm › Features tab (Phase 87 S9, ADR-341) — the former settings/features page's loader. Needs no
+ * slug; it satisfies the SettingsTabProps loader signature with no parameters.
+ */
+export async function renderFeaturesTab() {
   const [caps, modulesResponse] = await Promise.all([fetchMyCapabilities(), getModuleSettings()]);
 
   const canManage = caps.isAdmin || caps.isOwner;
 
   return (
     <div className="space-y-8">
-      <Link
-        href={`/org/${slug}/settings`}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-      >
-        <ChevronLeft className="size-4" />
-        Settings
-      </Link>
-
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Features</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">

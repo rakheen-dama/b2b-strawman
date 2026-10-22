@@ -1,10 +1,9 @@
-import Link from "next/link";
-import { ChevronLeft, Info, Lock } from "lucide-react";
+import { Info, Lock } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { HelpTip } from "@/components/help-tip";
 import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { MethodBadge } from "@/components/billing/method-badge";
-import { getSubscription } from "@/app/(app)/org/[slug]/settings/billing/actions";
+import { getSubscription } from "@/lib/actions/subscription";
 
 type BadgeVariant = "neutral" | "success" | "warning" | "destructive";
 
@@ -51,24 +50,15 @@ function statusLabel(status: string): string {
 }
 
 /**
- * Billing settings page. Manual firm-level billing is the only model (ADR-335): every tenant is
- * admin-managed, so the page shows the billing method and subscription status only.
+ * Firm › Subscription tab (Phase 87 S9, ADR-341) — the former settings/billing page's loader.
+ * Manual firm-level billing is the only model (ADR-335): every tenant is admin-managed, so the tab
+ * shows the billing method and subscription status only. Needs no slug.
  */
-export default async function BillingPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export async function renderSubscriptionTab() {
   const billing = await getSubscription();
 
   return (
     <div className="space-y-8">
-      {/* Back link */}
-      <Link
-        href={`/org/${slug}/settings`}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-      >
-        <ChevronLeft className="size-4" />
-        Settings
-      </Link>
-
       {/* Page header */}
       <div className="flex items-center gap-3">
         <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">

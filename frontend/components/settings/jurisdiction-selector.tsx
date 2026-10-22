@@ -19,7 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@b2mash/ui/button";
-import { updateDataProtectionSettings } from "@/app/(app)/org/[slug]/settings/data-protection/actions";
+import { updateDataProtectionSettings } from "@/app/(app)/org/[slug]/settings/firm/_tabs/data-protection-actions";
 
 const JURISDICTIONS = [
   { value: "ZA", label: "South Africa (POPIA)", disabled: false },

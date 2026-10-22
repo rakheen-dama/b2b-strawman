@@ -71,4 +71,45 @@ export const LEGACY_REDIRECTS = [
     destination: "/org/:slug/matters/:id?tab=disbursements",
     permanent: true,
   },
+  // Phase 87 S9 (616A, ADR-341): the Firm family — eight former pages are ?tab= tabs of /settings/firm.
+  {
+    source: "/org/:slug/settings/general",
+    destination: "/org/:slug/settings/firm?tab=general",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/features",
+    destination: "/org/:slug/settings/firm?tab=features",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/roles",
+    destination: "/org/:slug/settings/firm?tab=roles",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/audit-log",
+    destination: "/org/:slug/settings/firm?tab=audit-trail",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/data-protection",
+    destination: "/org/:slug/settings/firm?tab=data-protection",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/data-protection/requests",
+    destination: "/org/:slug/settings/firm?tab=data-requests",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/compliance",
+    destination: "/org/:slug/settings/firm?tab=compliance",
+    permanent: true,
+  },
+  {
+    source: "/org/:slug/settings/billing",
+    destination: "/org/:slug/settings/firm?tab=subscription",
+    permanent: true,
+  },
 ] satisfies readonly Redirect[];

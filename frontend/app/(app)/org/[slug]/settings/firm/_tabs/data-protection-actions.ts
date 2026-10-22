@@ -36,7 +36,7 @@ export async function updateDataProtectionSettings(
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-  revalidatePath(`/org/${slug}/settings/data-protection`);
+  revalidatePath(`/org/${slug}/settings/firm`);
   return { success: true };
 }
 
@@ -77,7 +77,7 @@ export async function updateRetentionPolicy(
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-  revalidatePath(`/org/${slug}/settings/data-protection`);
+  revalidatePath(`/org/${slug}/settings/firm`);
   return { success: true };
 }
 
@@ -110,7 +110,7 @@ export async function executeRetentionPurge(
     const result = await api.post<RetentionExecuteResult>(
       "/api/settings/retention-policies/execute"
     );
-    revalidatePath(`/org/${slug}/settings/data-protection`);
+    revalidatePath(`/org/${slug}/settings/firm`);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -158,7 +158,7 @@ export async function createProcessingActivity(
 ): Promise<ActionResult<ProcessingActivity>> {
   try {
     const result = await api.post<ProcessingActivity>("/api/settings/processing-activities", data);
-    revalidatePath(`/org/${slug}/settings/data-protection`);
+    revalidatePath(`/org/${slug}/settings/firm`);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -184,7 +184,7 @@ export async function updateProcessingActivity(
       `/api/settings/processing-activities/${id}`,
       data
     );
-    revalidatePath(`/org/${slug}/settings/data-protection`);
+    revalidatePath(`/org/${slug}/settings/firm`);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -215,7 +215,7 @@ export async function deleteProcessingActivity(slug: string, id: string): Promis
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-  revalidatePath(`/org/${slug}/settings/data-protection`);
+  revalidatePath(`/org/${slug}/settings/firm`);
   return { success: true };
 }
 

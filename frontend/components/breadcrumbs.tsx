@@ -11,6 +11,8 @@ const SEGMENT_LABELS: Record<string, string> = {
   team: "Team",
   settings: "Settings",
   // Settings sub-segments
+  // Phase 87 S9 (616A, ADR-341): the Firm settings family; 616E adds the other families.
+  firm: "Firm",
   billing: "Billing",
   notifications: "Notifications",
   rates: "Rates & Currency",

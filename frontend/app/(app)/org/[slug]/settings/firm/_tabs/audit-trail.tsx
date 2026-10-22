@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { ApiError } from "@/lib/api/client";
 import {
   getAuditMetadata,
@@ -11,6 +9,7 @@ import {
 } from "@/lib/api/audit-events";
 import { AuditLogClient } from "./audit-log-client";
 import { ExportDropdown } from "@/components/audit/export-dropdown";
+import type { SettingsTabProps } from "@/components/settings/settings-family-page";
 
 const PAGE_SIZE = 50;
 const VALID_SEVERITIES: ReadonlySet<AuditSeverity> = new Set([
@@ -54,26 +53,16 @@ function parseFilter(sp: SearchParams): AuditEventFilter {
   };
 }
 
-export default async function AuditLogPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ slug: string }>;
-  searchParams: Promise<SearchParams>;
-}) {
-  const { slug } = await params;
-  const sp = await searchParams;
+/**
+ * Firm › Audit trail tab (Phase 87 S9, ADR-341) — the former settings/audit-log page's loader. The
+ * filters ride on the family page's query string next to `tab=audit-trail` (repeated keys: first
+ * value wins).
+ */
+export async function renderAuditTrailTab({ slug, searchParams }: SettingsTabProps) {
+  const sp = Object.fromEntries(
+    Object.entries(searchParams).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v])
+  ) as SearchParams;
   const filter = parseFilter(sp);
-
-  const backLink = (
-    <Link
-      href={`/org/${slug}/settings`}
-      className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-    >
-      <ChevronLeft className="size-4" />
-      Settings
-    </Link>
-  );
 
   // Epic 506B: fetch metadata server-side so client-side preset resolution can
   // map `group=COMPLIANCE` / `group=SECURITY` to event-type lists without an
@@ -90,7 +79,6 @@ export default async function AuditLogPage({
     if (error instanceof ApiError && error.status === 403) {
       return (
         <div className="space-y-8">
-          {backLink}
           <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Audit log</h1>
           <p className="text-slate-600 dark:text-slate-400">
             Not authorised. The audit log is only visible to members with the{" "}
@@ -104,8 +92,6 @@ export default async function AuditLogPage({
 
   return (
     <div className="space-y-8">
-      {backLink}
-
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Audit log</h1>

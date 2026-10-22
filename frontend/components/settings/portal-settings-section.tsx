@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@b2mash/ui/label";
-import { updatePortalDigestCadence } from "@/app/(app)/org/[slug]/settings/general/portal-actions";
+import { updatePortalDigestCadence } from "@/app/(app)/org/[slug]/settings/firm/_tabs/general-portal-actions";
 import type { PortalDigestCadence } from "@/lib/types/settings";
 
 const CADENCE_OPTIONS: { value: PortalDigestCadence; label: string }[] = [

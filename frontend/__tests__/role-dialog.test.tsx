@@ -20,7 +20,7 @@ const mockCreateRoleAction = vi.fn();
 const mockUpdateRoleAction = vi.fn();
 const mockDeleteRoleAction = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/roles/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/firm/_tabs/roles-actions", () => ({
   createRoleAction: (...args: unknown[]) => mockCreateRoleAction(...args),
   updateRoleAction: (...args: unknown[]) => mockUpdateRoleAction(...args),
   deleteRoleAction: (...args: unknown[]) => mockDeleteRoleAction(...args),

@@ -28,7 +28,7 @@ vi.mock("next/navigation", () => ({
     forward: vi.fn(),
     prefetch: vi.fn(),
   }),
-  usePathname: () => "/org/acme/settings/audit-log",
+  usePathname: () => "/org/acme/settings/firm",
   useSearchParams: () => useSearchParamsMock(),
 }));
 
@@ -48,7 +48,7 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-import AuditLogPage from "./page";
+import { renderAuditTrailTab } from "@/app/(app)/org/[slug]/settings/firm/_tabs/audit-trail";
 import { getAuditMetadata, listAuditEvents, type AuditEventResponse } from "@/lib/api/audit-events";
 import { ApiError } from "@/lib/api/client";
 
@@ -84,7 +84,7 @@ afterEach(() => {
   useSearchParamsMock.mockReturnValue(new URLSearchParams());
 });
 
-describe("AuditLogPage (server shell)", () => {
+describe("Firm › Audit trail tab loader (server shell)", () => {
   beforeEach(() => {
     mockListAuditEvents.mockReset();
     mockGetAuditMetadata.mockReset();
@@ -97,13 +97,13 @@ describe("AuditLogPage (server shell)", () => {
       page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
     });
 
-    const page = await AuditLogPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({
+    const page = await renderAuditTrailTab({
+      slug: "acme",
+      searchParams: {
         severities: "CRITICAL,WARNING",
         actorId: "actor-xyz",
         entityType: "customer",
-      }),
+      },
     });
     render(page);
 
@@ -129,9 +129,9 @@ describe("AuditLogPage (server shell)", () => {
       })
     );
 
-    const page = await AuditLogPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({}),
+    const page = await renderAuditTrailTab({
+      slug: "acme",
+      searchParams: {},
     });
     render(page);
 
@@ -145,9 +145,9 @@ describe("AuditLogPage (server shell)", () => {
       page: { totalElements: 0, totalPages: 0, size: 50, number: 0 },
     });
 
-    const page = await AuditLogPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({}),
+    const page = await renderAuditTrailTab({
+      slug: "acme",
+      searchParams: {},
     });
     render(page);
 
@@ -167,9 +167,9 @@ describe("AuditLogPage (server shell)", () => {
       page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
     });
 
-    const page = await AuditLogPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({}),
+    const page = await renderAuditTrailTab({
+      slug: "acme",
+      searchParams: {},
     });
     render(page);
 
@@ -198,9 +198,9 @@ describe("AuditLogPage (server shell)", () => {
       page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
     });
 
-    const page = await AuditLogPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({}),
+    const page = await renderAuditTrailTab({
+      slug: "acme",
+      searchParams: {},
     });
     render(page);
 
@@ -221,9 +221,9 @@ describe("AuditLogPage (server shell)", () => {
       page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
     });
 
-    const page = await AuditLogPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({}),
+    const page = await renderAuditTrailTab({
+      slug: "acme",
+      searchParams: {},
     });
     render(page);
 
@@ -238,9 +238,9 @@ describe("AuditLogPage (server shell)", () => {
       page: { totalElements: 0, totalPages: 0, size: 50, number: 0 },
     });
 
-    const page = await AuditLogPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({}),
+    const page = await renderAuditTrailTab({
+      slug: "acme",
+      searchParams: {},
     });
     render(page);
 
@@ -250,7 +250,8 @@ describe("AuditLogPage (server shell)", () => {
     await waitFor(() => expect(pushMock).toHaveBeenCalled());
     const urlPushed = pushMock.mock.calls[0]?.[0] as string;
     expect(urlPushed).toContain("severities=CRITICAL");
-    expect(urlPushed).toContain("/org/acme/settings/audit-log");
+    expect(urlPushed).toContain("/org/acme/settings/firm");
+    expect(urlPushed).toContain("tab=audit-trail");
   });
 
   it("selecting Sensitive preset pushes URL with severities=WARNING,CRITICAL and from", async () => {
@@ -259,9 +260,9 @@ describe("AuditLogPage (server shell)", () => {
       page: { totalElements: 0, totalPages: 0, size: 50, number: 0 },
     });
 
-    const page = await AuditLogPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({}),
+    const page = await renderAuditTrailTab({
+      slug: "acme",
+      searchParams: {},
     });
     render(page);
 
@@ -274,7 +275,8 @@ describe("AuditLogPage (server shell)", () => {
     // URLSearchParams encodes commas as %2C
     expect(decodeURIComponent(urlPushed)).toContain("severities=WARNING,CRITICAL");
     expect(urlPushed).toMatch(/from=\d{4}-\d{2}-\d{2}T/);
-    expect(urlPushed).toContain("/org/acme/settings/audit-log");
+    expect(urlPushed).toContain("/org/acme/settings/firm");
+    expect(urlPushed).toContain("tab=audit-trail");
     // Sensitive is severity-only — no eventType sentinel and no banner.
     expect(urlPushed).not.toContain("eventType=");
     expect(screen.queryByTestId("audit-preset-multi-event-banner")).not.toBeInTheDocument();
@@ -286,9 +288,9 @@ describe("AuditLogPage (server shell)", () => {
       page: { totalElements: 0, totalPages: 0, size: 50, number: 0 },
     });
 
-    const page = await AuditLogPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({}),
+    const page = await renderAuditTrailTab({
+      slug: "acme",
+      searchParams: {},
     });
     render(page);
 
@@ -317,9 +319,9 @@ describe("AuditLogPage (server shell)", () => {
       page: { totalElements: 0, totalPages: 0, size: 50, number: 0 },
     });
 
-    const page = await AuditLogPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({}),
+    const page = await renderAuditTrailTab({
+      slug: "acme",
+      searchParams: {},
     });
     render(page);
 
@@ -342,9 +344,9 @@ describe("AuditLogPage (server shell)", () => {
       page: { totalElements: 0, totalPages: 0, size: 50, number: 0 },
     });
 
-    const page = await AuditLogPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({ entityType: "customer" }),
+    const page = await renderAuditTrailTab({
+      slug: "acme",
+      searchParams: { entityType: "customer" },
     });
     render(page);
 
@@ -356,6 +358,7 @@ describe("AuditLogPage (server shell)", () => {
     const urlPushed = pushMock.mock.calls[0]?.[0] as string;
     expect(urlPushed).toContain("actorId=actor-xyz");
     expect(urlPushed).toContain("entityType=customer");
-    expect(urlPushed).toContain("/org/acme/settings/audit-log");
+    expect(urlPushed).toContain("/org/acme/settings/firm");
+    expect(urlPushed).toContain("tab=audit-trail");
   });
 });

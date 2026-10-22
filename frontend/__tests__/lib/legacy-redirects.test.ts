@@ -182,6 +182,43 @@ describe("LEGACY_REDIRECTS", () => {
     expect(fs.existsSync(path.join(orgDir, "matters", "[id]", "expenses"))).toBe(false);
   });
 
+  // Phase 87 S9 (616A, ADR-341): old Firm settings page → its /settings/firm tab id.
+  const FIRM_ROWS: [string, string][] = [
+    ["general", "general"],
+    ["features", "features"],
+    ["roles", "roles"],
+    ["audit-log", "audit-trail"],
+    ["data-protection", "data-protection"],
+    ["data-protection/requests", "data-requests"],
+    ["compliance", "compliance"],
+    ["billing", "subscription"],
+  ];
+
+  it("redirects the eight Firm settings pages to their /settings/firm tabs (616A)", () => {
+    for (const [old, tab] of FIRM_ROWS) {
+      expect(LEGACY_REDIRECTS).toContainEqual({
+        source: `/org/:slug/settings/${old}`,
+        destination: `/org/:slug/settings/firm?tab=${tab}`,
+        permanent: true,
+      });
+    }
+  });
+
+  it("does not let /settings/data-protection swallow /settings/data-protection/requests (616A)", () => {
+    expect(firstMatch("/org/x/settings/data-protection/requests")?.destination).toBe(
+      "/org/:slug/settings/firm?tab=data-requests"
+    );
+    expect(firstMatch("/org/x/settings/firm")).toBeUndefined();
+  });
+
+  it("leaves the eight Firm pages deleted and serves /settings/firm (616A)", () => {
+    const settingsDir = path.resolve(__dirname, "../../app/(app)/org/[slug]/settings");
+    for (const [old] of FIRM_ROWS) {
+      expect(fs.existsSync(path.join(settingsDir, old, "page.tsx")), old).toBe(false);
+    }
+    expect(fs.existsSync(path.join(settingsDir, "firm", "page.tsx"))).toBe(true);
+  });
+
   it("keeps the pre-Phase-87 /settings/team row", () => {
     expect(LEGACY_REDIRECTS).toContainEqual({
       source: "/org/:slug/settings/team",

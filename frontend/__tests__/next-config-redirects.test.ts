@@ -32,18 +32,14 @@ describe("next.config redirects", () => {
     expect(canonicalRedirect).toBeUndefined();
   });
 
-  it("does not redirect unrelated /org/:slug/settings/* paths", async () => {
+  it("does not blanket-redirect the settings index or every settings path", async () => {
+    // Phase 87 S9 (616A, ADR-341): individual settings pages now carry their own rows in
+    // lib/legacy-redirects.ts (e.g. /settings/billing → /settings/firm?tab=subscription); the
+    // settings index (→ firm, a page redirect) and a catch-all must never be config-redirected.
     const redirects = await nextConfig.redirects!();
-
-    // Only the /settings/team subpath should be redirected. Other settings
-    // children (e.g. /settings/billing) must remain untouched.
-    const otherSettings = redirects.find(
-      (r) =>
-        r.source === "/org/:slug/settings" ||
-        r.source === "/org/:slug/settings/:path*" ||
-        r.source === "/org/:slug/settings/billing"
+    const blanket = redirects.find(
+      (r) => r.source === "/org/:slug/settings" || r.source === "/org/:slug/settings/:path*"
     );
-
-    expect(otherSettings).toBeUndefined();
+    expect(blanket).toBeUndefined();
   });
 });

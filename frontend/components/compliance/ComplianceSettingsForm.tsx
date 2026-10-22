@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Loader2 } from "lucide-react";
-import { updateComplianceSettings } from "@/app/(app)/org/[slug]/settings/compliance/actions";
+import { updateComplianceSettings } from "@/app/(app)/org/[slug]/settings/firm/_tabs/compliance-actions";
 
 interface ComplianceSettingsFormProps {
   slug: string;

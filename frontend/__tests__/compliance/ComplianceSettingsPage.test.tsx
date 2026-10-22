@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { ComplianceSettingsForm } from "@/components/compliance/ComplianceSettingsForm";
 
 // Mock server actions
-vi.mock("@/app/(app)/org/[slug]/settings/compliance/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/firm/_tabs/compliance-actions", () => ({
   updateComplianceSettings: vi.fn().mockResolvedValue({ success: true }),
 }));
 
@@ -39,7 +39,7 @@ describe("ComplianceSettingsForm", () => {
 
   it("calls updateComplianceSettings when save is clicked", async () => {
     const { updateComplianceSettings } =
-      await import("@/app/(app)/org/[slug]/settings/compliance/actions");
+      await import("@/app/(app)/org/[slug]/settings/firm/_tabs/compliance-actions");
     const user = userEvent.setup();
     render(
       <ComplianceSettingsForm

@@ -42,6 +42,18 @@ describe("Breadcrumbs", () => {
     expect(screen.getByText("Matter Naming")).toBeInTheDocument();
   });
 
+  it("labels the Firm settings family Settings > Firm (616A)", () => {
+    mockUsePathname.mockReturnValue("/org/acme/settings/firm");
+    render(<Breadcrumbs slug="acme" />);
+    expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute(
+      "href",
+      "/org/acme/settings"
+    );
+    const firmSpan = screen.getByText("Firm");
+    expect(firmSpan.tagName).toBe("SPAN");
+    expect(firmSpan).toHaveClass("font-medium");
+  });
+
   it("renders Settings > Billing two-level path correctly", () => {
     mockUsePathname.mockReturnValue("/org/acme/settings/billing");
     render(<Breadcrumbs slug="acme" />);

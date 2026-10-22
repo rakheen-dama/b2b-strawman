@@ -19,7 +19,7 @@ import {
   updateGeneralTaxSettings,
   uploadLogoAction,
   deleteLogoAction,
-} from "@/app/(app)/org/[slug]/settings/general/actions";
+} from "@/app/(app)/org/[slug]/settings/firm/_tabs/general-actions";
 
 const CURRENCIES = [
   { value: "ZAR", label: "ZAR — South African Rand" },

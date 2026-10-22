@@ -32,6 +32,6 @@ export async function updatePortalDigestCadence(
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-  revalidatePath(`/org/${slug}/settings/general`);
+  revalidatePath(`/org/${slug}/settings/firm`);
   return { success: true };
 }

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getAuthContext, getCurrentUserInfo } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getOrgSettings } from "@/lib/api/settings";
-import { getSubscription } from "@/app/(app)/org/[slug]/settings/billing/actions";
+import { getSubscription } from "@/lib/actions/subscription";
 import { DesktopSidebar } from "@/components/desktop-sidebar";
 import { MobileSidebar } from "@/components/mobile-sidebar";
 import { Breadcrumbs } from "@/components/breadcrumbs";

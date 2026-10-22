@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   usePathname: vi.fn(() => "/org/test-org/dashboard"),
+  useSearchParams: () => new URLSearchParams(),
   useRouter: vi.fn(() => ({ push: vi.fn() })),
 }));
 
@@ -124,7 +125,7 @@ describe("DesktopSidebar", () => {
     expect(screen.getAllByRole("link", { name: "Settings" })).toHaveLength(1);
     expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute(
       "href",
-      "/org/test-org/settings/general"
+      "/org/test-org/settings/firm"
     );
   });
 

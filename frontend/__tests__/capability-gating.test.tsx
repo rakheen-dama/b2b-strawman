@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   usePathname: () => "/org/test-org/dashboard",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // Mock motion/react to avoid animation issues in tests

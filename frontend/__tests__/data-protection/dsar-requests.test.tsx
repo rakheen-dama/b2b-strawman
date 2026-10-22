@@ -13,7 +13,7 @@ vi.mock("next/navigation", () => ({
 // Mock server actions
 const mockUpdateDsarStatus = vi.fn();
 const mockCreateDsarRequest = vi.fn();
-vi.mock("@/app/(app)/org/[slug]/settings/data-protection/requests/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/firm/_tabs/data-requests-actions", () => ({
   updateDsarStatus: (...args: unknown[]) => mockUpdateDsarStatus(...args),
   createDsarRequest: (...args: unknown[]) => mockCreateDsarRequest(...args),
   fetchDsarRequests: vi.fn().mockResolvedValue([]),

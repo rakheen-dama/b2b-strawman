@@ -38,7 +38,7 @@ export async function createDsarRequest(
 ): Promise<ActionResult<DsarRequest>> {
   try {
     const result = await api.post<DsarRequest>("/api/data-requests", data);
-    revalidatePath(`/org/${slug}/settings/data-protection/requests`);
+    revalidatePath(`/org/${slug}/settings/firm`);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -65,7 +65,7 @@ export async function updateDsarStatus(
       action,
       reason: reason ?? null,
     });
-    revalidatePath(`/org/${slug}/settings/data-protection/requests`);
+    revalidatePath(`/org/${slug}/settings/firm`);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof ApiError) {

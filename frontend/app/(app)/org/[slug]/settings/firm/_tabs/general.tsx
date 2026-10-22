@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { GeneralSettingsForm } from "@/components/settings/general-settings-form";
@@ -7,13 +5,10 @@ import { HelpTip } from "@/components/help-tip";
 import { OrgDocumentsSection } from "@/components/settings/org-documents-section";
 import { PortalSettingsSection } from "@/components/settings/portal-settings-section";
 import type { Document, OrgSettings } from "@/lib/types";
+import type { SettingsTabProps } from "@/components/settings/settings-family-page";
 
-export default async function GeneralSettingsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
+/** Firm › General tab (Phase 87 S9, ADR-341) — the former settings/general page's loader. */
+export async function renderGeneralTab({ slug }: SettingsTabProps) {
   const caps = await fetchMyCapabilities();
   const isAdmin = caps.isAdmin || caps.isOwner;
 
@@ -27,13 +22,6 @@ export default async function GeneralSettingsPage({
   if (!isAdmin) {
     return (
       <div className="space-y-8">
-        <Link
-          href={`/org/${slug}/settings`}
-          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-        >
-          <ChevronLeft className="size-4" />
-          Settings
-        </Link>
         <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           General
           <HelpTip code="org.general" />
@@ -48,14 +36,6 @@ export default async function GeneralSettingsPage({
 
   return (
     <div className="space-y-8">
-      <Link
-        href={`/org/${slug}/settings`}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-      >
-        <ChevronLeft className="size-4" />
-        Settings
-      </Link>
-
       <div>
         <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           General

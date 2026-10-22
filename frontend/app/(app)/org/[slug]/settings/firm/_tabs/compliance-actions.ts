@@ -43,7 +43,7 @@ export async function updateComplianceSettings(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/settings/compliance`);
+  revalidatePath(`/org/${slug}/settings/firm`);
   return { success: true };
 }
 
@@ -66,7 +66,7 @@ export async function createRetentionPolicy(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/settings/compliance`);
+  revalidatePath(`/org/${slug}/settings/firm`);
   return { success: true };
 }
 
@@ -90,7 +90,7 @@ export async function updateRetentionPolicy(
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/settings/compliance`);
+  revalidatePath(`/org/${slug}/settings/firm`);
   return { success: true };
 }
 
@@ -110,7 +110,7 @@ export async function deleteRetentionPolicy(slug: string, id: string): Promise<A
     return { success: false, error: "An unexpected error occurred." };
   }
 
-  revalidatePath(`/org/${slug}/settings/compliance`);
+  revalidatePath(`/org/${slug}/settings/firm`);
   return { success: true };
 }
 
@@ -146,7 +146,7 @@ export async function executePurge(
       recordType,
       recordIds,
     });
-    revalidatePath(`/org/${slug}/settings/compliance`);
+    revalidatePath(`/org/${slug}/settings/firm`);
     return { success: true, result };
   } catch (error) {
     if (error instanceof ApiError) {

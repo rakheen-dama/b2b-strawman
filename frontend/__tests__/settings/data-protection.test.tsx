@@ -11,7 +11,7 @@ vi.mock("next/navigation", () => ({
 
 // Mock server actions
 const mockUpdateDataProtection = vi.fn();
-vi.mock("@/app/(app)/org/[slug]/settings/data-protection/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/firm/_tabs/data-protection-actions", () => ({
   updateDataProtectionSettings: (...args: unknown[]) => mockUpdateDataProtection(...args),
 }));
 

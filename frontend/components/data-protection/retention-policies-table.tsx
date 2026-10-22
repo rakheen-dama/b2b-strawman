@@ -17,7 +17,7 @@ import {
   updateRetentionPolicy,
   evaluateRetentionPolicies,
   executeRetentionPurge,
-} from "@/app/(app)/org/[slug]/settings/data-protection/actions";
+} from "@/app/(app)/org/[slug]/settings/firm/_tabs/data-protection-actions";
 import type { RetentionPolicyExtended } from "@/lib/types/data-protection";
 
 const ACTIONS = ["ANONYMIZE", "FLAG"] as const;

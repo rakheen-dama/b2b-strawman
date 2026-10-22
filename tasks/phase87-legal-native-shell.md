@@ -1185,7 +1185,7 @@ These are **observed runs at byte-identical trees, not re-runs at HEAD**. No ful
   - Carol was made lead of the new collections matter so the Member could log time (G-B3).
   - Sipho's matter was Completed → Reopened → Closed (G-D2).
   - Portal 68.1 used the `?orgId=mathebula-partners` driver shim after the doc's bare-`/login` path FAILED (G-D1). 68.1 is FAIL; 68.2, which ran in the shim session, is DEFERRED.
-  - 61.1 keeps PASS: the doc names no matter lead, so choosing Carol is an input value (like Walker B's made-up client emails) and the step's outcome does not depend on it.
+  - 61.1 keeps PASS: choosing Carol as lead was a G-B3 workaround, but 61.1's own observed outcome (client, FICA, matter from template) does not depend on it; the dependent 62.1 is DEFERRED.
 - **REST-phrased steps:** 0.17, 45.7 and 85.9 were proven through the UI, the network panel or a read-only SELECT, or marked DEFERRED. No `/api/*` curl was used.
 - **Scenario text vs product:** these are recorded as FAIL or observations; **no scenario doc was edited** (CLAUDE.md §6). They are listed in C.12 (b).
 
@@ -1286,7 +1286,7 @@ Each of these needs its own one-fix PR or an explicit user decision. 617C fixed 
   - Portal: G-D19 (matter card has no status).
   - Behaviour: G-B2, G-B6, G-B10 (FICA card; same root as G-D11 FICA), G-B13, G-B16, G-C6, G-D12, G-D13.
   - The remaining LOW gaps (G-A1, G-B15, G-B17, G-B19, G-C1, G-C8, G-D8) are product decisions, listed in (b).
-- **Deck re-shoot:** re-shoot `home-*.png`, `matters-table.png`, `clients-table.png` after the G-D11 fix; current shots show 'No client owes fees.' / 'Fee earner —'. (617C.3 required real-data shots, so the current slides show the product as it is.)
+- **Deck re-shoot:** re-shoot `home-*.png`, `matters-table.png`, `clients-table.png` after the G-D11 / G-D21 fixes; current shots show 'No client owes fees.' / 'Fee earner —'. (617C.3 required real-data shots, so the current slides show the product as it is.)
 - **E2E:**
   - The six carried legal-lifecycle failures (C.8), one fix PR each.
   - `settings/packs.spec.ts:94` PACK-01 (strict mode).

@@ -30,7 +30,7 @@
 
 ## Demo wow moments (capture 📸 on clean pass)
 
-1. **Day 0** — Firm dashboard with legal nav (Matters, Trust Accounting, Court Calendar, Conflict Check) + Mathebula brand colour applied
+1. **Day 0** — Firm Home with the six-zone legal nav (Matters, Trust, Diary, Conflict check) + Mathebula brand colour applied (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #<n>: dashboard → Home, Trust Accounting → Trust zone, Court Calendar → Diary (ADR-339))
 2. **Day 4** — Engagement letter generated from the matter, sent for acceptance, and accepted by Sipho on the client portal (ADR-336 mandate flow) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.1: replaces the deleted Pipeline wow moment, Epic 596 #1565)
 3. **Day 2** — Conflict check "CLEAR" result with the SA legal green confirmation state
 4. **Day 5** — Matter detail page for a RAF claim, with promoted fields (matter_type, court_name, case_number) rendered inline + vertical terminology ("Matter" not "Project")
@@ -181,7 +181,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Phase J: Trust account setup
 
-- [ ] **0.61** Navigate to **Trust Accounting** (or **Settings › Fees & Trust › Trust accounting**, `/settings/fees?tab=trust-accounting`) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
+- [ ] **0.61** Navigate to the **Trust** zone → **Overview** (`/trust-accounting`) (or **Settings › Fees & Trust › Trust accounting**, `/settings/fees?tab=trust-accounting`) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab) (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #<n>: the Trust Accounting item is the Trust zone's Overview; completes 616F S-3)
 - [ ] **0.62** Create trust account: Name = **Mathebula & Partners Trust Account**, Type = **GENERAL**, Bank = **Standard Bank**
 - [ ] **0.63** Set LPFF rate to **6.5%** (test rate)
 - [ ] **0.64** Verify trust account dashboard renders with zero balance
@@ -213,7 +213,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 **Actor**: Bob Ndlovu (Admin)
 
 - [ ] **1.1** Login as Bob
-- [ ] **1.2** Navigate to **Conflict Check** page
+- [ ] **1.2** Navigate to **Conflict check** (Matters zone) (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #<n>: Conflict check moved to the Matters zone (612A), sentence-case label)
 - [ ] **1.3** Search for **"Sipho Dlamini"** → verify result is **CLEAR** (green — no existing matches)
 - [ ] **1.4** 📸 **Screenshot**: Conflict check clear result
 - [ ] **1.5** Navigate to **Clients** list
@@ -276,7 +276,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Bob (Admin) creates + submits; Thandi (Owner) approves the trust-linked disbursement.
 
-- [ ] **5.5** Navigate to **Legal → Disbursements** (`/org/{slug}/legal/disbursements`) → verify list page loads (module-gated on `enabledModules` including `"disbursements"`)
+- [ ] **5.5** Navigate to **Fees** zone → **Disbursements** (`/org/{slug}/legal/disbursements`) → verify list page loads (module-gated on `enabledModules` including `"disbursements"`) (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #<n>: Disbursements is a Fees-zone item (612A); URL unchanged)
 - [ ] **5.6** As Bob: click **"New Disbursement"** → dialog opens (`data-testid="create-disbursement-dialog"`)
 - [ ] **5.7** Create a **sheriff fee disbursement** (`OFFICE_ACCOUNT`): amount R750.00, description "Sheriff fee — service of process", category = SHERIFF_FEE, linked to Sipho's litigation matter → submit (no trust link)
 - [ ] **5.8** Verify disbursement appears in list with status `DRAFT` → click row → detail page → click **Submit** → status transitions to `SUBMITTED`
@@ -398,7 +398,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ## Day 33 — 📸 Profitability wow moment (mid-month cross-matter view)
 
-- [ ] **33.1** As Thandi, navigate to **Reports > Profitability** (or Profitability nav item)
+- [ ] **33.1** As Thandi, navigate to **Firm** zone → **Reports** → **Profitability** (`/reports/profitability`) (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #<n>: the Profitability nav item moved into Reports (612A); /profitability 308s)
 - [ ] **33.2** Verify all three matters are listed with their billed hours, cost, revenue, margin
 - [ ] **33.3** Verify ZAR currency formatting throughout
 - [ ] **33.4** Verify each matter has non-zero values (no "N/A" or "–" because rate snapshots should exist)
@@ -424,7 +424,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Thandi
 
-- [ ] **36.1** Navigate to Sipho's matter → Billing tab (or Invoicing nav → New Fee Note)
+- [ ] **36.1** Navigate to Sipho's matter → Billing tab (or **Fees** zone → **Fee notes** → **New fee note**) (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #<n>: Invoicing nav → Fees zone › Fee notes; "Billing tab" half not amended (pre-existing, flagged))
 - [ ] **36.2** Create fee note from unbilled time entries → verify all billable entries from days 4–7 are selectable
 - [ ] **36.3** Select all entries → preview fee note
 - [ ] **36.4** Verify fee note line items show: date, attorney, description, hours, rate, amount
@@ -449,11 +449,11 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Thandi (Owner — has `WRITE_OFF_DISBURSEMENTS` capability).
 
-- [ ] **45.5** Navigate to **Legal → Disbursements** → select one `APPROVED`/`UNBILLED` disbursement from Sipho's matter (pre-state from Day 5 flow) → open detail page (`data-testid="disbursement-detail"`)
+- [ ] **45.5** Navigate to **Fees** zone → **Disbursements** → select one `APPROVED`/`UNBILLED` disbursement from Sipho's matter (pre-state from Day 5 flow) → open detail page (`data-testid="disbursement-detail"`) (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #<n>: Disbursements is a Fees-zone item (612A); URL unchanged)
 - [ ] **45.6** Click **Write Off** action → dialog prompts for reason → enter "Client dispute — unable to recover from third party, firm absorbing the cost"
 - [ ] **45.7** Submit → backend `POST /api/legal/disbursements/{id}/write-off` returns 200 → `billing_status` transitions `UNBILLED → WRITTEN_OFF`
 - [ ] **45.8** Verify status badge on detail page shows **WRITTEN_OFF** and `writeOffReason` text renders inline
-- [ ] **45.9** Navigate to **Audit Log** → filter by entity = disbursement, action = WRITE_OFF → verify event recorded with the reason string in the details JSON
+- [ ] **45.9** Navigate to **Firm** zone → **Audit trail** (`/settings/firm?tab=audit-trail`) → filter by entity = disbursement, action = WRITE_OFF → verify event recorded with the reason string in the details JSON (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #<n>: Audit Log is the Firm-zone Audit trail (612A/616A))
 - [ ] **45.10** Navigate to Sipho's matter → open a **new fee note draft** from unbilled items → verify the written-off disbursement is **NOT** present in the selectable items list (excluded from next invoice draft)
 - [ ] **45.11** Verify terminology: write-off reason displayed as "Disbursement written off" (never "Expense written off")
 
@@ -507,15 +507,15 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Day 80 — Reports & dashboards
 
-- [ ] **80.1** Navigate to **Reports** (or Company Dashboard)
+- [ ] **80.1** Navigate to **Firm** zone → **Reports** (or **Home**) (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #<n>: Reports moved to the Firm zone; the dashboard is Home (614B))
 - [ ] **80.2** Verify cross-matter/cross-client dashboard loads with 90 days of data
 - [ ] **80.3** Verify utilization metrics (billable % per team member) render
 - [ ] **80.4** Export a report to CSV → verify file downloads with expected columns
-- [ ] **80.5** Navigate to **My Work** (as Bob) → verify Bob's assigned tasks, time summary, and upcoming court events render
+- [ ] **80.5** Navigate to **My work** (Today zone) (as Bob) → verify Bob's assigned tasks, time summary, and upcoming court events render (Phase 87, ADR-344 — label amendment, Epic 617B, PR #<n>: sentence-case, Today zone (612A))
 
 ### Day 85 — Audit log sweep
 
-- [ ] **85.1** Navigate to **Audit Log** (platform or org level)
+- [ ] **85.1** Navigate to **Firm** zone → **Audit trail** (`/settings/firm?tab=audit-trail`) (platform or org level) (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #<n>: Audit Log is the Firm-zone Audit trail (612A/616A))
 - [ ] **85.2** Filter by actor = Thandi → verify all Thandi's actions over 90 days are listed
 - [ ] **85.3** Filter by entity type = Matter → verify matter CRUD events render
 - [ ] **85.4** Verify audit entries include: timestamp, actor, action, entity, details (JSONB expandable)
@@ -541,7 +541,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **85.14** Enter override justification ≥ 20 chars: "Trust remainder of R12,000 earmarked for final Section 35 payout pending master approval — closing under owner override" (≥ 20 chars)
 - [ ] **85.15** Click **Confirm Close** → success toast
 - [ ] **85.16** Verify matter status transitions to **CLOSED**
-- [ ] **85.17** Navigate to **Audit Log** → filter by entity = matter, action = CLOSE → verify event includes `override_used = true` and the justification text verbatim in the details JSON
+- [ ] **85.17** Navigate to **Firm** zone → **Audit trail** (`/settings/firm?tab=audit-trail`) → filter by entity = matter, action = CLOSE → verify event includes `override_used = true` and the justification text verbatim in the details JSON (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #<n>: Audit Log is the Firm-zone Audit trail (612A/616A))
 - [ ] **85.18** 📸 **Screenshot**: Matter closure dialog with gate report failing + override toggle + justification input visible
 
 ### Day 88 — 📸 Activity feed wow moment

@@ -45,7 +45,7 @@
 1. **Day 0** — Portal home populated with pending info requests for a newly onboarded client (`/home`)
 2. **Day 21** — Trust balance card showing first deposit (`/trust`) `[legal-za only]`
 3. **Day 45** — Pay-invoice success state (`/invoices/[id]` → Pay → receipt)
-4. **Day 60** — Generated document download (`/deadlines` or `/projects` → open doc) `[legal-za SoA]`
+4. **Day 60** — Generated document download (`/deadlines` or `/matters` → open doc) `[legal-za SoA]` (Phase 87, ADR-344 — URL amendment, Epic 617B, PR #<n>: portal route /matters (617A))
 5. **Day 90** — Final digest + activity trail of the quarter
 
 ---
@@ -106,7 +106,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ---
 
-## Day 7 — First weekly digest, click through to Deadlines  `[legal-za]`
+## Day 7 — First weekly digest, click through to Diary dates (`/deadlines`)  `[legal-za]` (Phase 87, ADR-344 — label amendment, Epic 617B, PR #<n>: portal nav label Deadlines → Diary dates, path kept (617A))
 
 **Actor**: Sipho Dlamini — portal contact on a legal-za tenant
 
@@ -143,7 +143,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Day 21 checkpoints**
 - [ ] `/trust` route renders only for a legal-za client with trust ledger entries — other profiles should 404 or show empty state
-- [ ] Amount shown matches firm-side Trust Accounting page for the same matter
+- [ ] Amount shown matches the firm-side **Trust** zone (**Overview**) for the same matter (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #<n>: firm Trust Accounting → Trust zone (612A))
 - [ ] Currency is ZAR (legal-za default)
 
 ---
@@ -174,7 +174,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **60.1** Firm-side has generated:
   - `[legal-za]` Statement of Account (Phase 67 Epic 487) for Sipho's matter
-- [ ] **60.2** Navigate to `/projects/[matterId]` (legal) → Documents tab
+- [ ] **60.2** Navigate to `/matters/[matterId]` (legal) → Documents tab (Phase 87, ADR-344 — URL amendment, Epic 617B, PR #<n>: portal route /matters (617A))
 - [ ] **60.3** Verify the generated document appears in the document list with correct title, date, size
 - [ ] **60.4** Click **Download** → verify PDF downloads successfully and opens without error
 - [ ] **60.5** Open the downloaded PDF → verify it contains:

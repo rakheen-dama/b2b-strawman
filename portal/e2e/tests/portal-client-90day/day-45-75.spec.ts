@@ -133,26 +133,27 @@ test.describe
   test("Day 60 [legal-za]: Client downloads SoA or financial statement", async ({
     page,
   }) => {
-    await page.goto("/projects");
+    // Phase 87 S10 (ADR-344): route rename
+    await page.goto("/matters");
     await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(500);
 
     const main = page.locator("main");
     if (!(await main.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "/projects not rendered");
+      test.skip(true, "/matters not rendered");
       return;
     }
 
-    // Click into the first project/matter
-    const projectLink = page
+    // Click into the first matter
+    const matterLink = page
       .getByRole("link", { name: /project|matter|engagement/i })
       .first();
-    if (!(await projectLink.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "No project rendered to drill into");
+    if (!(await matterLink.isVisible({ timeout: 5000 }).catch(() => false))) {
+      test.skip(true, "No matter rendered to drill into");
       return;
     }
 
-    await projectLink.click();
+    await matterLink.click();
     await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(800);
 

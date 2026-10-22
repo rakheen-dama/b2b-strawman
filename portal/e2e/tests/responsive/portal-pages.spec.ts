@@ -4,8 +4,8 @@ import { getPortalJwt, loginAsPortalContact } from "../../helpers/auth";
 /**
  * Epic 499B — Portal visual baselines at sm / md / lg.
  *
- * Iterates over 10 representative portal routes and captures `toHaveScreenshot`
- * snapshots at three viewport sizes — producing 30 baselines under
+ * Iterates over 7 representative portal routes and captures `toHaveScreenshot`
+ * snapshots at three viewport sizes — producing 21 baselines under
  *   portal/e2e/screenshots/portal-v2/{projectName}/{sm,md,lg}/<name>.png
  * (the snapshotPathTemplate in playwright.portal.config.ts maps the first
  * `toHaveScreenshot` arg to that path).
@@ -35,19 +35,20 @@ const BREAKPOINTS: Breakpoint[] = [
 ];
 
 /**
- * 8 representative portal pages. Detail routes that need a seeded id
+ * 7 representative portal pages. Detail routes that need a seeded id
  * (trust matter, invoice) are resolved at runtime via
  * `beforeAll` — see the stub below; supply real ids via env when available.
  */
+// Phase 87 S10 (ADR-344): /acceptance row dropped — the page never existed; the engagement-letters list is on /matters (617A, OQ #5)
 const PAGES: Array<{ path: string; name: string }> = [
   { path: "/home", name: "home-populated" },
   { path: "/trust", name: "trust-matter-list" },
   { path: "/deadlines", name: "deadlines-list" },
   { path: "/invoices", name: "invoices-list" },
-  { path: "/projects", name: "projects-list" },
+  // Phase 87 S10 (ADR-344): route rename
+  { path: "/matters", name: "matters-list" },
   { path: "/settings/notifications", name: "settings-notifications" },
   { path: "/profile", name: "profile" },
-  { path: "/acceptance", name: "acceptance-list" },
 ];
 
 test.describe.configure({ mode: "serial" });

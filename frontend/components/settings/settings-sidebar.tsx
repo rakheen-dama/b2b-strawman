@@ -1,110 +1,101 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Badge } from "@b2mash/ui/badge";
+import { useCapabilities } from "@/lib/capabilities";
 import { useOrgProfile } from "@/lib/org-profile";
-import { SETTINGS_NAV_GROUPS } from "./settings-nav-groups";
+import type { NavFilterAccess } from "@/lib/nav-filter";
+import {
+  SETTINGS_FAMILIES,
+  resolveSettingsTab,
+  settingsHref,
+  visibleSettingsTabs,
+} from "@/lib/settings-nav";
 
 interface SettingsSidebarProps {
   slug: string;
-  isAdmin: boolean;
 }
 
-export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
+/**
+ * Settings rail (Phase 87 S9, ADR-341 §12.7, §12.7.3–§12.7.4): the five families and, under the
+ * active family, its permitted tabs — the same SETTINGS_FAMILIES entries filtered by the same rule
+ * (lib/nav-filter.ts via visibleSettingsTabs) as the family page's tab strip, so a tab cannot be in
+ * one and not the other. Desktop only: settings/layout.tsx hides the rail below `md`, where the
+ * family page's own tab strip scrolls horizontally. Links only — no `role="tab"`, no headings.
+ */
+export function SettingsSidebar({ slug }: SettingsSidebarProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { hasCapability, isAdmin, isOwner } = useCapabilities();
   const { isModuleEnabled } = useOrgProfile();
+  const access: NavFilterAccess = { hasCapability, isAdmin, isOwner, isModuleEnabled };
 
-  // Flatten all visible items for mobile tab row (exclude comingSoon)
-  const allVisibleItems = SETTINGS_NAV_GROUPS.flatMap((group) =>
-    group.items.filter(
-      (item) =>
-        (!item.adminOnly || isAdmin) &&
-        !item.comingSoon &&
-        (!item.requiredModule || isModuleEnabled(item.requiredModule))
-    )
-  );
+  // /org/{slug}/settings/{family}[/{sub-route}/…] → [family, sub-route]
+  const prefix = `/org/${slug}/settings/`;
+  const [activeFamilyId, subRoute] = pathname.startsWith(prefix)
+    ? pathname.slice(prefix.length).split("/")
+    : [];
 
   return (
-    <>
-      {/* Mobile: horizontal scrollable pill tabs */}
-      <div className="mb-4 md:hidden">
-        <div className="flex gap-1 overflow-x-auto pb-2">
-          {allVisibleItems.map((item) => {
-            const isActive = pathname === `/org/${slug}/settings/${item.href}`;
-            return (
+    <nav
+      aria-label="Settings navigation"
+      className="sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto py-4"
+    >
+      <ul className="space-y-0.5">
+        {SETTINGS_FAMILIES.map((family) => {
+          const tabs = visibleSettingsTabs(family, access);
+          if (tabs.length === 0) return null; // never today: every first tab is ungated
+          const isActive = family.id === activeFamilyId;
+          // Family page: the tab the page renders (?tab= resolved exactly as the server does).
+          // Kept sub-route (e.g. matters/checklists/[id]/edit): its first segment is its tab id.
+          const activeTabId = !isActive
+            ? null
+            : subRoute
+              ? (tabs.find((t) => t.id === subRoute)?.id ?? null)
+              : resolveSettingsTab(family, searchParams.get("tab") ?? undefined, access).tab.id;
+          return (
+            <li key={family.id}>
               <Link
-                key={item.href}
-                href={`/org/${slug}/settings/${item.href}`}
+                href={family.href(slug)}
+                aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "shrink-0 rounded-full px-3 py-1.5 text-sm whitespace-nowrap transition-colors",
+                  "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors",
                   isActive
-                    ? "bg-teal-600 text-white"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    ? "font-medium text-slate-900 dark:text-white"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
                 )}
               >
-                {item.label}
+                <family.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                {family.label}
               </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Desktop: grouped nav */}
-      <nav
-        aria-label="Settings navigation"
-        className="sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto py-4"
-      >
-        {SETTINGS_NAV_GROUPS.map((group, index) => {
-          const visibleItems = group.items.filter(
-            (item) =>
-              (!item.adminOnly || isAdmin) &&
-              (!item.requiredModule || isModuleEnabled(item.requiredModule))
-          );
-          if (visibleItems.length === 0) return null;
-
-          return (
-            <div key={group.id}>
-              {index > 0 && <div className="my-2 border-t border-slate-100" />}
-              <div className="px-3 pt-3 pb-1 text-[11px] font-medium tracking-widest text-slate-400 uppercase dark:text-slate-500">
-                {group.label}
-              </div>
-              {visibleItems.map((item) => {
-                const isActive = pathname === `/org/${slug}/settings/${item.href}`;
-                if (item.comingSoon) {
-                  return (
-                    <span
-                      key={item.href || item.label}
-                      aria-disabled="true"
-                      className="flex cursor-not-allowed items-center rounded-r-md border-l-2 border-transparent py-1.5 pl-3 text-sm text-slate-600 opacity-50"
-                    >
-                      {item.label}
-                      <Badge variant="neutral" className="ml-auto py-0 text-[10px]">
-                        Coming soon
-                      </Badge>
-                    </span>
-                  );
-                }
-                return (
-                  <Link
-                    key={item.href}
-                    href={`/org/${slug}/settings/${item.href}`}
-                    className={cn(
-                      "flex items-center rounded-r-md py-1.5 pl-3 text-sm transition-colors",
-                      isActive
-                        ? "border-l-2 border-teal-600 bg-teal-50 font-medium text-slate-900"
-                        : "border-l-2 border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
+              {isActive && (
+                <ul className="mt-0.5 mb-2 space-y-0.5">
+                  {tabs.map((tab) => {
+                    const isCurrent = tab.id === activeTabId;
+                    return (
+                      <li key={tab.id}>
+                        <Link
+                          href={settingsHref(slug, family.id, tab.id)}
+                          aria-current={isCurrent ? "true" : undefined}
+                          className={cn(
+                            "block rounded-r-md border-l-2 py-1.5 pr-3 pl-9 text-sm transition-colors",
+                            isCurrent
+                              ? "border-teal-600 bg-teal-50 font-medium text-slate-900 dark:bg-slate-800 dark:text-white"
+                              : "border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                          )}
+                        >
+                          {tab.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </li>
           );
         })}
-      </nav>
-    </>
+      </ul>
+    </nav>
   );
 }

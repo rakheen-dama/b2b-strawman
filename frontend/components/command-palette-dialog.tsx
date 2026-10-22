@@ -10,7 +10,9 @@ import {
   CommandGroup,
   CommandItem,
 } from "@/components/ui/command";
-import { NAV_GROUPS, UTILITY_ITEMS, SETTINGS_ITEMS, canAccessNavItem } from "@/lib/nav-items";
+import { NAV_GROUPS, UTILITY_ITEMS } from "@/lib/nav-items";
+import { isNavEntryVisible, type NavFilterAccess } from "@/lib/nav-filter";
+import { SETTINGS_FAMILIES, settingsHref, visibleSettingsTabs } from "@/lib/settings-nav";
 import { useCapabilities } from "@/lib/capabilities";
 import { useOrgProfile } from "@/lib/org-profile";
 import { useRecentItems } from "@/components/recent-items-provider";
@@ -23,23 +25,26 @@ interface CommandPaletteDialogProps {
 
 export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPaletteDialogProps) {
   const router = useRouter();
-  const access = useCapabilities();
+  const { hasCapability, isAdmin, isOwner } = useCapabilities();
   const { isModuleEnabled } = useOrgProfile();
   const { items: recentItems } = useRecentItems();
+  const access: NavFilterAccess = { hasCapability, isAdmin, isOwner, isModuleEnabled };
 
-  // Same gates as the sidebar (nav-zone.tsx): capability/adminOnly + module (Phase 87 612B.1).
-  const pages = [...NAV_GROUPS.flatMap((g) => g.items), ...UTILITY_ITEMS].filter(
-    (item) =>
-      canAccessNavItem(item, access) &&
-      (!item.requiredModule || isModuleEnabled(item.requiredModule))
+  // Same gates as the sidebar zones (lib/nav-filter.ts, shared with nav-zone.tsx — 612B.1, 616E).
+  const pages = [...NAV_GROUPS.flatMap((g) => g.items), ...UTILITY_ITEMS].filter((item) =>
+    isNavEntryVisible(item, access)
   );
 
-  const settings = SETTINGS_ITEMS.filter(
-    (item) =>
-      !item.comingSoon &&
-      // Same admin rule as the pages (admin = isAdmin || isOwner, as in the settings layout).
-      canAccessNavItem(item, access) &&
-      (!item.requiredModule || isModuleEnabled(item.requiredModule))
+  // One settings nav source (616E, ADR-341 §12.7.3): exactly the tabs the family pages and the
+  // settings rail show this user, as "Settings › {Family} › {Tab}" → /settings/{family}?tab={tab}.
+  // Keywords are the tab's own (old palette titles); descriptions stay out of the search index.
+  const settings = SETTINGS_FAMILIES.flatMap((family) =>
+    visibleSettingsTabs(family, access).map((tab) => ({
+      key: `${family.id}/${tab.id}`,
+      label: `Settings › ${family.label} › ${tab.label}`,
+      href: settingsHref(slug, family.id, tab.id),
+      keywords: tab.keywords ? [...tab.keywords] : undefined,
+    }))
   );
 
   const navigate = (href: string) => {
@@ -84,10 +89,15 @@ export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPalett
           ))}
         </CommandGroup>
         <CommandGroup heading="Settings">
-          {settings.map((item) => (
-            <CommandItem key={item.title} onSelect={() => navigate(item.href(slug))}>
+          {settings.map((entry) => (
+            <CommandItem
+              key={entry.key}
+              value={entry.label}
+              keywords={entry.keywords}
+              onSelect={() => navigate(entry.href)}
+            >
               <Settings className="h-4 w-4" />
-              {item.title}
+              {entry.label}
             </CommandItem>
           ))}
         </CommandGroup>

@@ -17,29 +17,52 @@ afterEach(() => {
 
 describe("Breadcrumbs", () => {
   it("renders Settings as a link segment when on settings subpage", () => {
-    mockUsePathname.mockReturnValue("/org/acme/settings/billing");
+    mockUsePathname.mockReturnValue("/org/acme/settings/documents");
     render(<Breadcrumbs slug="acme" />);
     const settingsLink = screen.getByRole("link", { name: "Settings" });
     expect(settingsLink).toBeInTheDocument();
     expect(settingsLink).toHaveAttribute("href", "/org/acme/settings");
   });
 
-  it('renders correct label for rates segment ("Rates & Currency")', () => {
-    mockUsePathname.mockReturnValue("/org/acme/settings/rates");
+  // Kept settings sub-routes (616E): labelled segments; pageless tab segments stay plain text.
+  it("labels /settings/connections/xero/sync-log as Connections > Xero > Sync log (616E)", () => {
+    mockUsePathname.mockReturnValue("/org/acme/settings/connections/xero/sync-log");
     render(<Breadcrumbs slug="acme" />);
-    expect(screen.getByText("Rates & Currency")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute(
+      "href",
+      "/org/acme/settings"
+    );
+    expect(screen.getByRole("link", { name: "Connections" })).toHaveAttribute(
+      "href",
+      "/org/acme/settings/connections"
+    );
+    const xero = screen.getByText("Xero");
+    expect(xero.tagName).toBe("SPAN");
+    expect(xero.closest("a")).toBeNull();
+    const last = screen.getByText("Sync log");
+    expect(last.tagName).toBe("SPAN");
+    expect(last).toHaveClass("font-medium");
   });
 
-  it('renders correct label for custom-fields segment ("Custom Fields")', () => {
-    mockUsePathname.mockReturnValue("/org/acme/settings/custom-fields");
+  it("labels /settings/matters/checklists/<id>/edit with a linked Matters family (616E)", () => {
+    mockUsePathname.mockReturnValue(
+      "/org/acme/settings/matters/checklists/2a7b9c1d-3e4f-4a5b-8c6d-7e8f9a0b1c2d/edit"
+    );
     render(<Breadcrumbs slug="acme" />);
-    expect(screen.getByText("Custom Fields")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Matters" })).toHaveAttribute(
+      "href",
+      "/org/acme/settings/matters"
+    );
+    expect(screen.getByText("Checklists").closest("a")).toBeNull();
   });
 
-  it('renders correct label for project-naming segment ("Matter Naming")', () => {
-    mockUsePathname.mockReturnValue("/org/acme/settings/project-naming");
+  it("labels /settings/connections/automations/executions as Automations > Executions (616E)", () => {
+    mockUsePathname.mockReturnValue("/org/acme/settings/connections/automations/executions");
     render(<Breadcrumbs slug="acme" />);
-    expect(screen.getByText("Matter Naming")).toBeInTheDocument();
+    expect(screen.getByText("Automations").closest("a")).toBeNull();
+    const last = screen.getByText("Executions");
+    expect(last.tagName).toBe("SPAN");
+    expect(last).toHaveClass("font-medium");
   });
 
   it("labels the Firm settings family Settings > Firm (616A)", () => {
@@ -78,16 +101,16 @@ describe("Breadcrumbs", () => {
     expect(span).toHaveClass("font-medium");
   });
 
-  it("renders Settings > Billing two-level path correctly", () => {
-    mockUsePathname.mockReturnValue("/org/acme/settings/billing");
+  it("renders Settings > Matters two-level path correctly", () => {
+    mockUsePathname.mockReturnValue("/org/acme/settings/matters");
     render(<Breadcrumbs slug="acme" />);
     // "Settings" should be a link (intermediate)
     const settingsLink = screen.getByRole("link", { name: "Settings" });
     expect(settingsLink).toBeInTheDocument();
-    // "Billing" is the last segment — renders as a <span> with font-medium
-    const billingSpan = screen.getByText("Billing");
-    expect(billingSpan.tagName).toBe("SPAN");
-    expect(billingSpan).toHaveClass("font-medium");
+    // "Matters" is the last segment — renders as a <span> with font-medium
+    const mattersSpan = screen.getByText("Matters");
+    expect(mattersSpan.tagName).toBe("SPAN");
+    expect(mattersSpan).toHaveClass("font-medium");
   });
 
   describe("intermediate segments without a page", () => {
@@ -169,7 +192,7 @@ describe("Breadcrumbs", () => {
     });
 
     it("still links intermediate segments that have a page", () => {
-      renderAt("/org/acme/settings/rates");
+      renderAt("/org/acme/settings/fees");
       expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute(
         "href",
         "/org/acme/settings"
@@ -224,10 +247,14 @@ describe("Breadcrumbs", () => {
       render(<Breadcrumbs slug="acme" />);
     }
 
-    it("labels /settings/project-templates as Matter Templates", () => {
-      renderCrumbsAt("/org/acme/settings/project-templates");
-      expect(screen.getByText("Matter Templates")).toBeInTheDocument();
-      expect(screen.queryByText("Project Templates")).not.toBeInTheDocument();
+    it("labels /settings/matters/templates/<id> as Settings > Matters > Templates (616E)", () => {
+      renderCrumbsAt("/org/acme/settings/matters/templates/8e4fa05b-6c7d-4e8f-9a01-b2c3d4e5f607");
+      expect(screen.getByRole("link", { name: "Matters" })).toHaveAttribute(
+        "href",
+        "/org/acme/settings/matters"
+      );
+      expect(screen.getByText("Templates").closest("a")).toBeNull();
+      expect(screen.queryByText(/Project/)).not.toBeInTheDocument();
     });
 
     it("labels the /invoices list page Fee notes", () => {

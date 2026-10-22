@@ -1,7 +1,11 @@
 import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
-import { NON_ROUTABLE_PREFIXES, isLinkableBreadcrumbPrefix } from "@/components/breadcrumbs";
+import {
+  NON_ROUTABLE_PREFIXES,
+  SEGMENT_LABELS,
+  isLinkableBreadcrumbPrefix,
+} from "@/components/breadcrumbs";
 
 // Guard: breadcrumbs link every intermediate path segment, so every intermediate
 // prefix under /org/[slug]/ must either have a page.tsx or be listed in
@@ -37,6 +41,11 @@ const intermediatePrefixes = new Set(
   })
 );
 
+// Every literal (non-dynamic) segment of a route that has a page.tsx.
+const segmentsOnDisk = new Set(
+  [...routePatterns].flatMap((p) => p.split("/")).filter((s) => !s.startsWith("["))
+);
+
 const pagelessPrefixes = [...intermediatePrefixes].filter((p) => !routePatterns.has(p)).sort();
 const routablePrefixes = [...intermediatePrefixes].filter((p) => routePatterns.has(p)).sort();
 
@@ -68,5 +77,22 @@ describe("breadcrumb prefixes vs app/(app)/org/[slug] routes", () => {
       ])
     ).toBe(false);
     expect(isLinkableBreadcrumbPrefix(["settings", "documents"])).toBe(true);
+  });
+});
+
+describe("SEGMENT_LABELS vs app/(app)/org/[slug] routes (616E)", () => {
+  it("labels only segments that exist on disk — no orphans for deleted routes", () => {
+    expect(Object.keys(SEGMENT_LABELS).filter((k) => !segmentsOnDisk.has(k))).toEqual([]);
+  });
+
+  it("labels every settings family and kept settings sub-route segment", () => {
+    const settingsSegments = new Set(
+      [...routePatterns]
+        .filter((p) => p === "settings" || p.startsWith("settings/"))
+        .flatMap((p) => p.split("/"))
+        .filter((s) => !s.startsWith("[") && s !== "new" && s !== "edit")
+    );
+    expect(settingsSegments.size).toBeGreaterThan(5);
+    for (const s of settingsSegments) expect(SEGMENT_LABELS[s], s).toBeDefined();
   });
 });

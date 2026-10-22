@@ -8,7 +8,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useCapabilities } from "@/lib/capabilities";
 import { useOrgProfile } from "@/lib/org-profile";
-import { canAccessNavItem, type NavGroup, type NavItem } from "@/lib/nav-items";
+import { isNavEntryVisible } from "@/lib/nav-filter";
+import type { NavGroup, NavItem } from "@/lib/nav-items";
 
 /**
  * The href of the single active item in a zone: the longest href among the visible items that
@@ -50,14 +51,13 @@ export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
   const [expanded, setExpanded] = useState(zone.defaultExpanded ?? true);
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const access = useCapabilities();
+  const { hasCapability, isAdmin, isOwner } = useCapabilities();
   const { isModuleEnabled } = useOrgProfile();
+  const access = { hasCapability, isAdmin, isOwner, isModuleEnabled };
 
-  const visibleItems = zone.items.filter(
-    (item) =>
-      canAccessNavItem(item, access) &&
-      (!item.requiredModule || isModuleEnabled(item.requiredModule))
-  );
+  // One access rule for every nav surface (lib/nav-filter.ts — shared with the palette and the
+  // settings rail).
+  const visibleItems = zone.items.filter((item) => isNavEntryVisible(item, access));
 
   if (visibleItems.length === 0) return null;
 

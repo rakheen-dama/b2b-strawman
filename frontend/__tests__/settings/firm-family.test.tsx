@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { Suspense, startTransition, use, useEffect, useState, type ReactNode } from "react";
+import { act, cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("server-only", () => ({}));
@@ -61,6 +62,7 @@ import {
   type SettingsSearchParams,
   type SettingsTabLoaders,
 } from "@/components/settings/settings-family-page";
+import { SettingsFamilyTabs } from "@/components/settings/settings-family-tabs";
 import { getSettingsFamily } from "@/lib/settings-nav";
 
 const OWNER = { capabilities: [], role: "owner", isAdmin: false, isOwner: true };
@@ -304,5 +306,161 @@ describe("Firm settings family page", () => {
         /don.t have access to Trust accounting — showing Tariffs instead/
       );
     });
+  });
+});
+
+// 616E.2 (§12.7.4): Radix Tabs roles + focus on user-initiated tab change only. Pinned once here —
+// SettingsFamilyTabs is the one strip all five family pages render.
+describe("616E.2 a11y — SettingsFamilyTabs (shared by all five families)", () => {
+  const TABS = [
+    { id: "general", label: "General" },
+    { id: "roles", label: "Roles" },
+    { id: "audit-trail", label: "Audit trail" },
+  ];
+
+  const PANELS: Record<string, ReactNode> = {
+    general: <button type="button">Save general</button>,
+    roles: (
+      <>
+        <h1>Roles</h1>
+        <input aria-label="Role name" />
+      </>
+    ),
+    "audit-trail": <input aria-label="Audit filter" />,
+  };
+
+  // Models Next's App Router (app-router-instance `dispatchAction` + `useActionQueue`): the active
+  // tab lives in router state; router.replace puts a pending promise there inside a nested
+  // startTransition and the page reads it with `use()`, so the strip's useTransition stays pending
+  // until the navigation settles — `settle(tab)` commits that tab (or the old one, for an aborted
+  // or superseded navigation). Back/forward is a synchronous router-state update: `urlChange`.
+  let setRouterState: ((state: string | Promise<string>) => void) | null = null;
+  let navigations: Array<(tab: string) => void> = [];
+
+  function Page({ initialTab, panels }: { initialTab: string; panels: Record<string, ReactNode> }) {
+    const [state, setState] = useState<string | Promise<string>>(initialTab);
+    useEffect(() => {
+      setRouterState = setState;
+    }, []);
+    const tab = typeof state === "string" ? state : use(state);
+    return (
+      <SettingsFamilyTabs label="Firm settings" tabs={TABS} activeTab={tab}>
+        {panels[tab]}
+      </SettingsFamilyTabs>
+    );
+  }
+
+  function renderStrip(initialTab: string, panels: Record<string, ReactNode> = PANELS) {
+    render(
+      <Suspense fallback={null}>
+        <Page initialTab={initialTab} panels={panels} />
+      </Suspense>
+    );
+  }
+
+  /** Settles the oldest pending navigation by committing `tab`. */
+  async function settle(tab: string) {
+    const resolve = navigations.shift();
+    await act(async () => resolve?.(tab));
+  }
+
+  function urlChange(tab: string) {
+    act(() => setRouterState?.(tab));
+  }
+
+  beforeEach(() => {
+    mockCaps.mockResolvedValue(OWNER);
+    mockGetOrgSettings.mockResolvedValue({ defaultCurrency: "ZAR", enabledModules: [] });
+    mockReplace.mockImplementation(() => {
+      const navigation = new Promise<string>((resolve) => navigations.push(resolve));
+      startTransition(() => setRouterState?.(navigation));
+    });
+  });
+
+  afterEach(() => {
+    cleanup();
+    mockReplace.mockReset();
+    vi.clearAllMocks();
+    setRouterState = null;
+    navigations = [];
+  });
+
+  it("names the tablist, marks aria-selected and labels the tabpanel by the active tab", async () => {
+    await renderFirm("roles");
+    expect(screen.getByRole("tablist", { name: "Firm settings" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Roles" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "General" })).toHaveAttribute("aria-selected", "false");
+    expect(screen.getByRole("tabpanel", { name: "Roles" })).toHaveTextContent("roles panel");
+  });
+
+  it("does not move focus into the panel on load", () => {
+    renderStrip("general");
+    expect(screen.getByRole("button", { name: "Save general" })).not.toHaveFocus();
+    expect(document.body).toHaveFocus();
+  });
+
+  it("focuses the new panel's first control once a clicked tab commits", async () => {
+    const user = userEvent.setup();
+    renderStrip("general");
+    await user.click(screen.getByRole("tab", { name: "Roles" }));
+    expect(mockReplace).toHaveBeenCalledWith("/org/acme/settings/firm?tab=roles", {
+      scroll: false,
+    });
+    await settle("roles");
+    expect(screen.getByRole("textbox", { name: "Role name" })).toHaveFocus();
+  });
+
+  it("focuses the new panel's first control after a keyboard selection (arrow + Enter)", async () => {
+    const user = userEvent.setup();
+    renderStrip("general");
+    await user.click(screen.getByRole("tab", { name: "General" }));
+    await user.keyboard("{ArrowRight}");
+    // Awaited act: a transition that suspends inside user-event's synchronous keydown act() scope
+    // is otherwise dropped by React's act queue ("suspended inside an `act` scope…not awaited").
+    await act(async () => {
+      await user.keyboard("{Enter}");
+    });
+    await settle("roles");
+    expect(screen.getByRole("textbox", { name: "Role name" })).toHaveFocus();
+  });
+
+  it("focuses the panel itself when it has no focusable control", async () => {
+    const user = userEvent.setup();
+    renderStrip("general", { ...PANELS, roles: <p>No roles yet</p> });
+    await user.click(screen.getByRole("tab", { name: "Roles" }));
+    await settle("roles");
+    expect(screen.getByRole("tabpanel", { name: "Roles" })).toHaveFocus();
+  });
+
+  it("does not move focus on a URL-driven change (back/forward, rail link, ?tab= link)", () => {
+    renderStrip("general");
+    urlChange("roles");
+    expect(screen.getByRole("tab", { name: "Roles" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("textbox", { name: "Role name" })).not.toHaveFocus();
+    expect(document.body).toHaveFocus();
+  });
+
+  it("on a fast second selection, focuses only when the second tab commits", async () => {
+    const user = userEvent.setup();
+    renderStrip("general");
+    await user.click(screen.getByRole("tab", { name: "Roles" }));
+    await user.click(screen.getByRole("tab", { name: "Audit trail" }));
+    await settle("roles");
+    expect(screen.getByRole("tabpanel", { name: "General" })).toBeInTheDocument();
+    await settle("audit-trail");
+    expect(screen.getByRole("textbox", { name: "Audit filter" })).toHaveFocus();
+  });
+
+  it("drops a selection whose navigation settles without committing it", async () => {
+    const user = userEvent.setup();
+    renderStrip("general");
+    await user.click(screen.getByRole("tab", { name: "Roles" }));
+    // Aborted/superseded: the navigation settles with General still the active tab.
+    await settle("general");
+    expect(screen.getByRole("tab", { name: "General" })).toHaveAttribute("aria-selected", "true");
+    // A later URL-driven change to Roles (back/forward, rail, ?tab= link) must not move focus.
+    urlChange("roles");
+    expect(screen.getByRole("tab", { name: "Roles" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("textbox", { name: "Role name" })).not.toHaveFocus();
   });
 });

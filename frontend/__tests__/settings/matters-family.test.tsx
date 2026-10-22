@@ -188,6 +188,18 @@ describe("Matters settings family page", () => {
     expect(mockGetOrgSettings).not.toHaveBeenCalled();
   });
 
+  // 616E.2 (§12.7.4): Radix Tabs roles; the focus behaviour is pinned once in firm-family.
+  it("names the tablist, marks aria-selected and labels the tabpanel by the active tab (616E.2)", async () => {
+    await renderMatters("tags");
+    expect(screen.getByRole("tablist", { name: "Matters settings" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Tags" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Templates" })).toHaveAttribute(
+      "aria-selected",
+      "false"
+    );
+    expect(screen.getByRole("tabpanel", { name: "Tags" })).toHaveTextContent("tags panel");
+  });
+
   it("declares exactly one loader per Matters tab in settings-nav", () => {
     const tabIds = getSettingsFamily("matters").tabs.map((t) => t.id);
     expect(Object.keys(MATTERS_TAB_LOADERS).sort()).toEqual([...tabIds].sort());

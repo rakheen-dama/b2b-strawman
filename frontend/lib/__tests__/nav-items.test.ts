@@ -1,13 +1,8 @@
 import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
-import {
-  NAV_GROUPS,
-  UTILITY_ITEMS,
-  SETTINGS_ITEMS,
-  canAccessNavItem,
-  type NavAccess,
-} from "../nav-items";
+import { NAV_GROUPS, UTILITY_ITEMS } from "../nav-items";
+import { canAccessNavItem, type NavAccess } from "../nav-filter";
 
 // Same resolution as components/__tests__/breadcrumbs-routes.test.ts.
 const ORG_ROUTES_DIR = path.resolve(__dirname, "../../app/(app)/org/[slug]");
@@ -249,85 +244,10 @@ describe("AIVERIFY-011 — New matter any-of gate (Phase 87 OI-2)", () => {
   });
 });
 
-describe("canAccessNavItem", () => {
-  it("allows ungated items to everyone", () => {
-    expect(canAccessNavItem({}, member([]))).toBe(true);
-  });
-
-  it("checks a single capability", () => {
-    expect(canAccessNavItem({ requiredCapability: "INVOICING" }, member(["INVOICING"]))).toBe(true);
-    expect(canAccessNavItem({ requiredCapability: "INVOICING" }, member([]))).toBe(false);
-  });
-
-  it("treats an array as any-of", () => {
-    const gate = { requiredCapability: ["PROJECT_MANAGEMENT", "AI_EXECUTE"] as const };
-    expect(canAccessNavItem(gate, member(["AI_EXECUTE"]))).toBe(true);
-    expect(canAccessNavItem(gate, member(["PROJECT_MANAGEMENT"]))).toBe(true);
-    expect(canAccessNavItem(gate, member(["INVOICING"]))).toBe(false);
-  });
-
-  it("shows adminOnly items to admins and owners only", () => {
-    const gate = { adminOnly: true };
-    expect(canAccessNavItem(gate, member(["INVOICING"]))).toBe(false);
-    expect(canAccessNavItem(gate, { ...member([]), isAdmin: true })).toBe(true);
-    expect(canAccessNavItem(gate, { ...member([]), isOwner: true })).toBe(true);
-  });
-});
-
 describe("UTILITY_ITEMS", () => {
   it("is Notifications only — Settings lives in the Firm zone (ADR-339)", () => {
     expect(UTILITY_ITEMS.map((i) => i.label)).toEqual(["Notifications"]);
     expect(UTILITY_ITEMS[0].href("my-org")).toBe("/org/my-org/notifications");
-  });
-});
-
-describe("SETTINGS_ITEMS", () => {
-  it("has exactly 28 entries", () => {
-    expect(SETTINGS_ITEMS).toHaveLength(28);
-  });
-
-  it("all entries have title, description, and href function", () => {
-    for (const item of SETTINGS_ITEMS) {
-      expect(item.title).toBeTruthy();
-      expect(item.description).toBeTruthy();
-      expect(typeof item.href).toBe("function");
-    }
-  });
-
-  it("describes Billing as method and status only (manual firm-level billing)", () => {
-    expect(SETTINGS_ITEMS.find((i) => i.title === "Billing")?.description).toBe(
-      "View your billing method and status"
-    );
-  });
-
-  it("adminOnly items are flagged correctly", () => {
-    const adminItems = SETTINGS_ITEMS.filter((i) => i.adminOnly);
-    const adminTitles = adminItems.map((i) => i.title).sort();
-    expect(adminTitles).toEqual([
-      "AI Configuration",
-      "Audit log",
-      "Automations",
-      "Batch Billing",
-      "Collections",
-      "Email",
-      "Features",
-      "Roles & Permissions",
-      "Trust Accounting",
-    ]);
-  });
-
-  it("comingSoon items are flagged correctly", () => {
-    const comingSoonItems = SETTINGS_ITEMS.filter((i) => i.comingSoon);
-    const titles = comingSoonItems.map((i) => i.title).sort();
-    expect(titles).toEqual(["Security"]);
-  });
-
-  it("all non-comingSoon items have valid href functions returning a path", () => {
-    const activeItems = SETTINGS_ITEMS.filter((i) => !i.comingSoon);
-    for (const item of activeItems) {
-      const href = item.href("test-org");
-      expect(href).toContain("/org/test-org/settings/");
-    }
   });
 });
 

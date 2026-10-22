@@ -54,7 +54,7 @@ Carried from §12.14. "Owner" is the epic whose builder must resolve or record t
 | 614 | Legal-Native Home — Three Dashboard Reads + Widget Matrix | Backend + Frontend (split) | 613 | M | 614A, 614B, 614C | **Done** (PRs #1625, #1626; 614C = epic gate, no code) |
 | 615 | Dense Lists (`MatterListRow`/`ClientListRow`), System Views, Tab Groups, Disbursements | Backend + Frontend (split) | 614 | L | 615A, 615B, 615C, 615D, 615E | **Done** (PRs #1627, #1628, #1629, #1630, #1631) |
 | 616 | Settings Consolidation — Five Families, 44 → 17 Routes, 43 Redirects | Frontend | 615 | L | 616A, 616B, 616C, 616D, 616E, 616F | **Done** — 616A (PR #1632), 616B (PR #1634), 616C (PR #1635), 616D (PR #1636), 616E (PR #1637), 616F (PR #1638) |
-| 617 | Portal Vocabulary + Nav, QA Capstone, Screenshots, Closure Report | Portal + QA/Process | 616 | M | 617A, 617B, 617C | |
+| 617 | Portal Vocabulary + Nav, QA Capstone, Screenshots, Closure Report | Portal + QA/Process | 616 | M | 617A, 617B, 617C | In progress — 617A **Done** (PR #1639) |
 
 **Slice count: 54** (eleven architecture slices expanded by layer and by the ≤ 8–12-files / ≤ ~800-lines rule; rename slices exceed the file cap only where every change is a mechanical IDE substitution and say so).
 
@@ -807,7 +807,7 @@ PR rules restated from §12.12 (non-negotiable):
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **617A** | 617A.1–617A.3 | `nav-items.ts`, `portal-sidebar.tsx`, 2 route dirs `git mv`, `next.config.ts`, `home/page.tsx`, ~5 page headings, 2 tests | Portal labels, routes, redirect, acceptance gap; PORTAL-GATE. |
+| **617A** | 617A.1–617A.3 | `nav-items.ts`, `portal-sidebar.tsx`, 2 route dirs `git mv`, `next.config.ts`, `home/page.tsx`, ~5 page headings, 2 tests | Portal labels, routes, redirect, acceptance gap; PORTAL-GATE. **Done** (PR #1639) — 24 portal files; D-1 Home tile kept its shape, retitled "Engagement letters" → `/matters#engagement-letters` (the per-row `/accept/{token}` list lives on `/matters`, not Home); D-2 accepted-state wording "Engagement letter — mandate accepted on {date}" DEFERRED (no accepted state in the named list; no template category reaches the portal — same blocker as 611A.2); D-3 internal links → `/matters` directly (incl. post-login target); D-4 redirect unit test; D-5 leftover wording ("Failed to load projects", Home "Upcoming deadlines", profile "Customer") + backend `PortalDocumentNotificationHandler.java:300` `/projects/` email link = follow-ups (redirect covers it). No Playwright spec edits (none break; URL sweep stays 617B). |
 | **617B** | 617B.1–617B.2 | 4 + 1 + 1 portal specs, 3 scenario docs | Portal Playwright + scenario sweep; portal e2e run. |
 | **617C** | 617C.1–617C.4 | Keycloak stack run, screenshots, `exec-deck.html`, closure report, `TASKS.md` | Observed capstone + evidence + closure. |
 

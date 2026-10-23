@@ -15,6 +15,7 @@
 import { test, expect } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { captureScreenshot } from "../../helpers/screenshot";
+import { openGroupedTab, openMatter } from "../../helpers/legal-depth-ii";
 
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
@@ -329,6 +330,27 @@ test.describe.serial("Day 1 — Sipho Ndlovu Onboarding", () => {
       await captureScreenshot(page, "day-01-litigation-template-items-loaded");
       await captureScreenshot(page, "litigation-template-action-items", { curated: true });
     }
+  });
+
+  // ── 3.7 (Phase 88 619E, ADR-346): the lead adds Carol to the matter team ──
+  // Org Members see only matters they are on. Without this step Carol's Day 7
+  // time-recording test found no Sipho matter and skipped (OQ #11).
+  test("Alice: Add Carol to the Sipho matter team (Team tab)", async ({ page }) => {
+    await loginAs(page, "alice");
+    await openMatter(page, `Ndlovu v RAF ${RUN_ID}`);
+    await openGroupedTab(page, "details", "team");
+    const panel = page.getByTestId("matter-team-panel");
+    await expect(panel.first()).toBeVisible({ timeout: 15_000 });
+
+    await panel.getByRole("button", { name: "Add Member" }).click();
+    const addDialog = page.getByRole("dialog", { name: "Add Member" });
+    await expect(addDialog).toBeVisible();
+    await addDialog.getByRole("option", { name: /Carol Member/ }).click();
+    await expect(addDialog).toBeHidden({ timeout: 15_000 });
+    // The row lands with the revalidated RSC, which can trail the dialog by >5 s (619D N1)
+    await expect(panel.getByRole("row", { name: /Carol Member/ }).first()).toBeVisible({
+      timeout: 30_000,
+    });
   });
 });
 

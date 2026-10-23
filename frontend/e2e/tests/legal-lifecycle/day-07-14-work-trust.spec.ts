@@ -38,23 +38,14 @@ test.describe.serial("Day 7 — First Week of Work", () => {
     await page.goto(`${BASE}/matters`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
-    // Navigate to the first matter (Sipho's litigation)
+    // Navigate to Sipho's litigation matter. Carol (Member) sees it because Day 1 added her to
+    // its team (Phase 88 619E, ADR-346: Members see only matters they are on).
     const matterLink = page.getByRole("link", { name: /Ndlovu|Sipho|RAF/i }).first();
-    const hasMatter = await matterLink.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (!hasMatter) {
-      // Try clicking first project row
-      const firstRow = page.locator('table tbody tr, [data-testid*="project-row"]').first();
-      const hasRow = await firstRow.isVisible({ timeout: 5000 }).catch(() => false);
-      if (hasRow) {
-        await firstRow.click();
-      } else {
-        test.skip(true, "No matters found to log time against");
-        return;
-      }
-    } else {
-      await matterLink.click();
-    }
+    await expect(
+      matterLink,
+      "Carol should see the Sipho matter she was added to on Day 1"
+    ).toBeVisible({ timeout: 15_000 });
+    await matterLink.click();
 
     await page.waitForTimeout(2000);
 

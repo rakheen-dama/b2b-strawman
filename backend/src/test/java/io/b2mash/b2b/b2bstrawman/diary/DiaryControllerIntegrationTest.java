@@ -169,8 +169,8 @@ class DiaryControllerIntegrationTest {
             .createProject(
                 "Diary Matter A", "desc", adminId, null, null, clientId, today.plusDays(10))
             .getId();
-    projectMemberService.addMember(matterA, leadId, adminId);
-    projectMemberService.addMember(matterA, assigneeId, adminId);
+    projectMemberService.addMemberAsSystem(matterA, leadId, adminId);
+    projectMemberService.addMemberAsSystem(matterA, assigneeId, adminId);
     projectMemberService.transferLead(matterA, actor, leadId);
 
     // Matter NoLead: no project_members rows at all.

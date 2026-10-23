@@ -122,8 +122,8 @@ class DashboardPersonalIntegrationTest {
     projectBId = projectB.getId();
 
     // --- Add member1 to both projects ---
-    projectMemberService.addMember(projectAId, member1Id, adminMemberId);
-    projectMemberService.addMember(projectBId, member1Id, adminMemberId);
+    projectMemberService.addMemberAsSystem(projectAId, member1Id, adminMemberId);
+    projectMemberService.addMemberAsSystem(projectBId, member1Id, adminMemberId);
 
     // --- Create tasks in project A ---
     // Task A1: assigned to member1, no due date

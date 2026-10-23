@@ -130,8 +130,8 @@ class DashboardServiceUnbilledWipTest {
   private void seedTimeAndDisbursements() {
     var admin = new ActorContext(adminId, "admin");
     var matter = projectService.createProject("WIP Matter", "Unbilled WIP fixture", adminId);
-    projectMemberService.addMember(matter.getId(), member1Id, adminId);
-    projectMemberService.addMember(matter.getId(), member2Id, adminId);
+    projectMemberService.addMemberAsSystem(matter.getId(), member1Id, adminId);
+    projectMemberService.addMemberAsSystem(matter.getId(), member2Id, adminId);
     var task =
         taskService.createTask(matter.getId(), "WIP Task", null, "MEDIUM", "TASK", null, admin);
 

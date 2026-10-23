@@ -115,7 +115,7 @@ class BudgetAlertNotificationTest {
               taskId = task.getId();
 
               // Add member to project so they can create time entries
-              projectMemberService.addMember(projectId, memberIdMember, memberIdOwner);
+              projectMemberService.addMemberAsSystem(projectId, memberIdMember, memberIdOwner);
 
               // Create billing rate for member: $100/hour USD
               billingRateService.createRate(

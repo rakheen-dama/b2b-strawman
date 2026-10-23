@@ -63,16 +63,19 @@ public class ProjectMemberService {
   @Transactional
   public ProjectMember addMember(UUID projectId, UUID memberId, ActorContext actor) {
     requireCanManage(projectId, actor);
-    return addMember(projectId, memberId, actor.memberId());
+    return addMemberAsSystem(projectId, memberId, actor.memberId());
   }
 
   /**
-   * System path (automation executors, test setup): NOT gated — callers own authorisation. Runs
-   * without a member scope (e.g. the delayed-action job). HTTP callers must use {@link
-   * #addMember(UUID, UUID, ActorContext)}.
+   * System path for trusted internal callers only (the automation {@code
+   * AssignMemberActionExecutor}, including runs from the delayed-action job, and test setup).
+   * Performs NO access check — callers own authorisation, and it may run without a member scope.
+   * Deliberately not an overload of {@link #addMember(UUID, UUID, ActorContext)}: a UUID from
+   * {@code RequestScopes.requireMemberId()} must never silently bind to the ungated path. HTTP and
+   * MCP callers must use {@link #addMember(UUID, UUID, ActorContext)}.
    */
   @Transactional
-  public ProjectMember addMember(UUID projectId, UUID memberId, UUID addedBy) {
+  public ProjectMember addMemberAsSystem(UUID projectId, UUID memberId, UUID addedBy) {
     if (!memberRepository.existsById(memberId)) {
       throw new ResourceNotFoundException("Member", memberId);
     }

@@ -489,6 +489,37 @@ class ProjectMemberIntegrationTest {
   }
 
   @Test
+  void adminNotOnMatterCanAddMember() throws Exception {
+    // Owner creates the matter (owner = lead); the admin is NOT on it
+    var projectId =
+        createProject(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), "RBAC Admin Add");
+
+    mockMvc
+        .perform(
+            post("/api/matters/" + projectId + "/members")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"memberId\": \"%s\"}".formatted(extraMemberId)))
+        .andExpect(status().isCreated())
+        .andExpect(
+            header().string("Location", "/api/matters/" + projectId + "/members/" + extraMemberId))
+        .andExpect(content().string(""));
+
+    // The added member is on the team; the admin did not join as a side effect
+    mockMvc
+        .perform(
+            get("/api/matters/" + projectId + "/members")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(2)))
+        .andExpect(
+            jsonPath("$[?(@.memberId == '%s')].matterRole".formatted(ownerMemberId)).value("lead"))
+        .andExpect(
+            jsonPath("$[?(@.memberId == '%s')].matterRole".formatted(extraMemberId))
+                .value("member"));
+  }
+
+  @Test
   void ownerOnMatterAsMemberCanTransferLeadToSelf() throws Exception {
     // Admin creates the matter (admin = lead) and adds the owner as a plain member. The owner's own
     // row is loaded by the gate first, so this pins the demote-flush-promote ordering (no 500).

@@ -3,7 +3,8 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { listClients } from "@/lib/api/clients";
 import { getOrgSettings } from "@/lib/api/settings";
-import type { InvoiceResponse, InvoiceStatus } from "@/lib/types";
+import type { InvoiceResponse, InvoiceStatus, OutstandingSummary } from "@/lib/types";
+import { hasCapability, type WidgetResult } from "@/lib/dashboard-home";
 import { StatusBadge } from "@/components/invoices/status-badge";
 import { CreateInvoiceButton } from "@/components/invoices/create-invoice-button";
 import { EmptyState } from "@/components/empty-state";
@@ -12,32 +13,22 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { Receipt, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { HelpTip } from "@/components/help-tip";
+import { fetchOutstandingSummaryAction } from "./invoice-crud-actions";
 
-function computeSummary(invoices: InvoiceResponse[], fallbackCurrency: string) {
+/**
+ * "Paid This Month" — the one tile still computed from the list. The debtor-book tiles read
+ * GET /api/invoices/outstanding-summary (Phase 88 U3, ADR-347), never a client-side sum.
+ */
+function computePaidThisMonth(invoices: InvoiceResponse[], fallbackCurrency: string) {
   const now = new Date();
-  const todayStr = now.toLocaleDateString("en-CA"); // YYYY-MM-DD
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
   // Use the first invoice's currency as the default, falling back to the org's
   // configured default currency (ZAR for legal-za tenants) instead of USD.
-  const defaultCurrency = invoices.length > 0 ? invoices[0].currency : fallbackCurrency;
-
-  let outstanding = 0;
-  let overdue = 0;
+  let paidCurrency = invoices.length > 0 ? invoices[0].currency : fallbackCurrency;
   let paidThisMonth = 0;
-  let outstandingCurrency = defaultCurrency;
-  let overdueCurrency = defaultCurrency;
-  let paidCurrency = defaultCurrency;
 
   for (const inv of invoices) {
-    if (inv.status === "APPROVED" || inv.status === "SENT") {
-      outstanding += inv.total;
-      outstandingCurrency = inv.currency;
-      if (inv.dueDate && inv.dueDate < todayStr) {
-        overdue += inv.total;
-        overdueCurrency = inv.currency;
-      }
-    }
     if (inv.status === "PAID" && inv.paidAt) {
       const paidDate = new Date(inv.paidAt);
       if (paidDate >= monthStart) {
@@ -47,14 +38,30 @@ function computeSummary(invoices: InvoiceResponse[], fallbackCurrency: string) {
     }
   }
 
-  return {
-    outstanding,
-    outstandingCurrency,
-    overdue,
-    overdueCurrency,
-    paidThisMonth,
-    paidCurrency,
-  };
+  return { paidThisMonth, paidCurrency };
+}
+
+const DASH = "\u2014";
+
+function SummaryTile({
+  label,
+  value,
+  valueClassName,
+  testId,
+}: {
+  label: string;
+  value: string;
+  valueClassName: string;
+  testId: string;
+}) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{label}</p>
+      <p data-testid={testId} className={`mt-1 text-2xl font-semibold ${valueClassName}`}>
+        {value}
+      </p>
+    </div>
+  );
 }
 
 export default async function InvoicesPage({
@@ -72,40 +79,64 @@ export default async function InvoicesPage({
     notFound();
   }
 
-  let invoices: InvoiceResponse[] = [];
-  try {
-    const queryParams = new URLSearchParams();
-    if (search.status) queryParams.set("status", search.status);
-    if (search.customerId) queryParams.set("clientId", search.customerId);
-    const qs = queryParams.toString();
-    invoices = await api.get<InvoiceResponse[]>(`/api/invoices${qs ? `?${qs}` : ""}`);
-  } catch {
-    // Non-fatal: show empty state
-  }
+  // The debtor-book summary needs FINANCIAL_VISIBILITY (admin/owner inherit it); the page only
+  // needs INVOICING. Without it the tiles are absent — no request, no guaranteed 403.
+  const summaryRead: Promise<WidgetResult<OutstandingSummary>> = hasCapability(
+    capData,
+    "FINANCIAL_VISIBILITY"
+  )
+    ? fetchOutstandingSummaryAction()
+    : Promise.resolve({ state: "absent" });
 
-  // Fetch active customers for "New Invoice" button
-  let customers: { id: string; name: string }[] = [];
-  try {
-    const raw = await listClients();
-    customers = (Array.isArray(raw) ? raw : [])
-      .filter((c) => c.status === "ACTIVE")
-      .map((c) => ({ id: c.id, name: c.name }));
-  } catch {
-    // Non-fatal — button will be hidden if no customers
-  }
+  // All four reads run concurrently. Each list read swallows its own failure; the summary never
+  // rejects either (it settles to absent/error) except on an expired session → re-login.
+  const [summaryResult, invoices, customers, fallbackCurrency] = await Promise.all([
+    summaryRead,
+    (async (): Promise<InvoiceResponse[]> => {
+      try {
+        const queryParams = new URLSearchParams();
+        if (search.status) queryParams.set("status", search.status);
+        if (search.customerId) queryParams.set("clientId", search.customerId);
+        const qs = queryParams.toString();
+        return await api.get<InvoiceResponse[]>(`/api/invoices${qs ? `?${qs}` : ""}`);
+      } catch {
+        // Non-fatal: show empty state
+        return [];
+      }
+    })(),
+    // Active customers for the "New Invoice" button
+    (async (): Promise<{ id: string; name: string }[]> => {
+      try {
+        const raw = await listClients();
+        return (Array.isArray(raw) ? raw : [])
+          .filter((c) => c.status === "ACTIVE")
+          .map((c) => ({ id: c.id, name: c.name }));
+      } catch {
+        // Non-fatal — button will be hidden if no customers
+        return [];
+      }
+    })(),
+    // The org's configured default currency, so empty-state KPIs display using the tenant's
+    // currency (e.g. ZAR) rather than a hardcoded USD fallback.
+    (async (): Promise<string> => {
+      try {
+        const orgSettings = await getOrgSettings();
+        return orgSettings.defaultCurrency ?? "USD";
+      } catch {
+        // Non-fatal — fall through to USD.
+        return "USD";
+      }
+    })(),
+  ]);
 
-  // Resolve the org's configured default currency so empty-state KPIs display
-  // using the tenant's currency (e.g. ZAR) rather than a hardcoded USD fallback.
-  let fallbackCurrency = "USD";
-  try {
-    const orgSettings = await getOrgSettings();
-    fallbackCurrency = orgSettings.defaultCurrency ?? "USD";
-  } catch {
-    // Non-fatal — fall through to USD.
-  }
+  // "Paid This Month" from the listed fee notes (when no filter applied, or from filtered set)
+  const paid = computePaidThisMonth(invoices, fallbackCurrency);
+  const summaryMoney = (pick: (summary: OutstandingSummary) => number) =>
+    summaryResult.state === "ok"
+      ? formatCurrency(pick(summaryResult.data), summaryResult.data.currency)
+      : DASH;
 
-  // Compute summary from all invoices (when no filter applied, or from filtered set)
-  const summary = computeSummary(invoices, fallbackCurrency);
+  const showSummaryTiles = summaryResult.state !== "absent";
 
   const { t } = createMessages("empty-states");
 
@@ -150,28 +181,41 @@ export default async function InvoicesPage({
         </Link>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-            Total Outstanding
-          </p>
-          <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-            {formatCurrency(summary.outstanding, summary.outstandingCurrency)}
-          </p>
-        </div>
-        <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Overdue</p>
-          <p className="mt-1 text-2xl font-semibold text-red-600 dark:text-red-400">
-            {formatCurrency(summary.overdue, summary.overdueCurrency)}
-          </p>
-        </div>
-        <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Paid This Month</p>
-          <p className="mt-1 text-2xl font-semibold text-green-600 dark:text-green-400">
-            {formatCurrency(summary.paidThisMonth, summary.paidCurrency)}
-          </p>
-        </div>
+      {/* Summary Cards — debtor-book tiles from GET /api/invoices/outstanding-summary (ADR-347).
+          Without them "Paid This Month" stands alone at a card's width, not a quarter of a row. */}
+      <div
+        className={
+          showSummaryTiles ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-4" : "grid gap-4 sm:max-w-xs"
+        }
+      >
+        {showSummaryTiles && (
+          <>
+            <SummaryTile
+              label="Total outstanding"
+              testId="fee-notes-total-outstanding"
+              value={summaryMoney((summary) => summary.outstandingTotal)}
+              valueClassName="text-slate-900 dark:text-slate-100"
+            />
+            <SummaryTile
+              label="Overdue"
+              testId="fee-notes-overdue"
+              value={summaryMoney((summary) => summary.overdueTotal)}
+              valueClassName="text-red-600 dark:text-red-400"
+            />
+            <SummaryTile
+              label="Approved, not sent"
+              testId="fee-notes-approved-unsent"
+              value={summaryMoney((summary) => summary.approvedUnsentTotal)}
+              valueClassName="text-slate-900 dark:text-slate-100"
+            />
+          </>
+        )}
+        <SummaryTile
+          label="Paid This Month"
+          testId="fee-notes-paid-this-month"
+          value={formatCurrency(paid.paidThisMonth, paid.paidCurrency)}
+          valueClassName="text-green-600 dark:text-green-400"
+        />
       </div>
 
       {/* Filter Bar */}

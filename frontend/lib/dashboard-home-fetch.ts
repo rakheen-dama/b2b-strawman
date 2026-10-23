@@ -1,10 +1,11 @@
 import "server-only";
 
-import { api, ApiError } from "@/lib/api/client";
+import { api } from "@/lib/api/client";
 import { getDebtors, type PaginatedDebtorsResponse } from "@/lib/api/collections";
 import { getCurrentUserEmail } from "@/lib/auth";
 import { rethrowOnExpiredSession } from "@/lib/auth/expiry-server";
 import { findCurrentMemberId } from "@/lib/current-member";
+import { settle } from "@/lib/settle";
 import { loadTodaysDiary } from "@/app/(app)/org/[slug]/my-work/todays-diary";
 import type { TodaysDiaryEvents } from "@/components/dashboard/todays-agenda";
 import type { HomePlan, HomeWidget, WidgetResult } from "@/lib/dashboard-home";
@@ -37,32 +38,6 @@ export interface HomeWidgetData {
   activity: CrossMatterActivityItem[] | null;
   /** `null` = could not load, or not in the plan. */
   matterHealth: MatterHealth[] | null;
-}
-
-const ABSENT = { state: "absent" } as const;
-
-/**
- * One gated read. Not in the plan → absent without a request. A 403/404 → absent too (module off,
- * capability missing, no trust account): the widget drops out rather than greying. An expired
- * session (401) goes to the branded re-login. Anything else → a quiet error line in the card.
- * Never handleApiError here: it notFound()s on a 404 and would take the whole Home down.
- */
-async function settle<T>(
-  enabled: boolean,
-  label: string,
-  read: () => Promise<T>
-): Promise<WidgetResult<T>> {
-  if (!enabled) return ABSENT;
-  try {
-    return { state: "ok", data: await read() };
-  } catch (error) {
-    await rethrowOnExpiredSession(error);
-    if (error instanceof ApiError && (error.status === 403 || error.status === 404)) {
-      return ABSENT;
-    }
-    console.error(`Failed to load ${label}:`, error);
-    return { state: "error" };
-  }
 }
 
 /**

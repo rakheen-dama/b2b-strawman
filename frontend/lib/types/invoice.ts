@@ -237,3 +237,19 @@ export interface ValidationCheck {
   passed: boolean;
   message: string;
 }
+
+// ---- Outstanding summary (GET /api/invoices/outstanding-summary, Phase 88 U3, ADR-347) ----
+
+/**
+ * Fee notes page tiles on the debtor-book definition (backend `OutstandingSummaryResponse`).
+ * Amounts are in `currency`, the org default currency — fee notes in other currencies are excluded.
+ */
+export interface OutstandingSummary {
+  currency: string;
+  outstandingTotal: number;
+  outstandingCount: number;
+  overdueTotal: number;
+  overdueCount: number;
+  approvedUnsentTotal: number;
+  approvedUnsentCount: number;
+}

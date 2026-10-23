@@ -252,7 +252,7 @@ const FAMILIES = [
           "Configure async thresholds, email rate limits, and the default billing currency",
         adminOnly: true,
         requiredModule: "bulk_billing",
-        keywords: ["batch billing"],
+        keywords: ["batch billing", "payment terms", "due date"],
       },
       {
         id: "collections",

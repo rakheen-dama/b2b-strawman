@@ -2,9 +2,12 @@
 
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
+import { settle } from "@/lib/settle";
+import type { WidgetResult } from "@/lib/dashboard-home";
 import { revalidatePath } from "next/cache";
 import type {
   InvoiceResponse,
+  OutstandingSummary,
   UpdateInvoiceRequest,
   AddLineItemRequest,
   UpdateLineItemRequest,
@@ -73,6 +76,18 @@ export async function fetchInvoices(
         : createMessages("errors").t(classifyError(error).messageCode);
     return { success: false, error: message };
   }
+}
+
+/**
+ * Fee notes page tiles (Phase 88 U3, §13.4.3): the debtor-book definition, in the org default
+ * currency. The summary is gated on FINANCIAL_VISIBILITY while the page is gated on INVOICING, so a
+ * 403 (or 404) is "absent", not an error — the page drops the tiles instead of crashing. Same
+ * `settle` as Home's widgets: 401 → branded re-login, anything else → "error".
+ */
+export async function fetchOutstandingSummaryAction(): Promise<WidgetResult<OutstandingSummary>> {
+  return settle(true, "outstanding summary", () =>
+    api.get<OutstandingSummary>("/api/invoices/outstanding-summary")
+  );
 }
 
 export async function updateInvoice(

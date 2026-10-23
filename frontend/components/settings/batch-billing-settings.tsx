@@ -6,23 +6,33 @@ import { Input } from "@b2mash/ui/input";
 import { Label } from "@b2mash/ui/label";
 import { Loader2 } from "lucide-react";
 import { updateBatchBillingSettings } from "@/app/(app)/org/[slug]/settings/fees/_tabs/fee-runs-actions";
+import { paymentTermsDaysSchema } from "@/lib/schemas";
 
 interface BatchBillingSettingsProps {
   slug: string;
   billingBatchAsyncThreshold: number;
   billingEmailRateLimit: number;
   defaultBillingRunCurrency: string | null;
+  defaultPaymentTermsDays: number;
 }
 
+// Saved through the batch-billing endpoint, which also carries the firm-wide fee-note payment-terms
+// default (620A contract) — hence the "Fee note defaults" card here.
 export function BatchBillingSettings({
   slug,
   billingBatchAsyncThreshold,
   billingEmailRateLimit,
   defaultBillingRunCurrency,
+  defaultPaymentTermsDays,
 }: BatchBillingSettingsProps) {
   const [asyncThreshold, setAsyncThreshold] = useState(billingBatchAsyncThreshold);
   const [emailRateLimit, setEmailRateLimit] = useState(billingEmailRateLimit);
   const [currency, setCurrency] = useState(defaultBillingRunCurrency ?? "");
+  // Kept as the raw string (not clamped like the two fields below) so out-of-range or cleared input
+  // is reported on save instead of silently corrected.
+  const [termsDays, setTermsDays] = useState(String(defaultPaymentTermsDays));
+  // The field's own error, rendered under it; `message` stays the shared save result.
+  const [termsError, setTermsError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
@@ -31,6 +41,7 @@ export function BatchBillingSettings({
     setSaving(true);
     setMessage(null);
     setIsError(false);
+    setTermsError(null);
 
     if (!Number.isFinite(asyncThreshold) || asyncThreshold < 1 || asyncThreshold > 1000) {
       setMessage("Async threshold must be between 1 and 1000.");
@@ -54,12 +65,24 @@ export function BatchBillingSettings({
       return;
     }
 
+    const terms = paymentTermsDaysSchema.safeParse(
+      termsDays.trim() === "" ? Number.NaN : Number(termsDays)
+    );
+    if (!terms.success) {
+      setTermsError(
+        terms.error.issues[0]?.message ?? "Payment terms must be between 0 and 365 days."
+      );
+      setSaving(false);
+      return;
+    }
+
     try {
       const result = await updateBatchBillingSettings(slug, {
         billingBatchAsyncThreshold: asyncThreshold,
         billingEmailRateLimit: emailRateLimit,
         defaultBillingRunCurrency:
           trimmedCurrency.length === 3 ? trimmedCurrency.toUpperCase() : null,
+        defaultPaymentTermsDays: terms.data,
       });
 
       if (result.success) {
@@ -79,6 +102,46 @@ export function BatchBillingSettings({
 
   return (
     <div className="space-y-6">
+      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
+        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
+          Fee note defaults
+        </h2>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          Applies to every fee note you approve, not only batch billing runs.
+        </p>
+
+        <div className="mt-4 space-y-4">
+          <div className="max-w-xs space-y-2">
+            <Label htmlFor="default-payment-terms-days">Default payment terms (days)</Label>
+            <Input
+              id="default-payment-terms-days"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={365}
+              step={1}
+              value={termsDays}
+              onChange={(e) => setTermsDays(e.target.value)}
+              aria-invalid={termsError ? true : undefined}
+              aria-describedby={termsError ? "default-payment-terms-days-error" : undefined}
+            />
+            {termsError && (
+              <p
+                id="default-payment-terms-days-error"
+                role="alert"
+                className="text-sm text-red-600 dark:text-red-400"
+              >
+                {termsError}
+              </p>
+            )}
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              A fee note approved without a due date is due this many days after its issue date. A
+              due date typed on the draft is kept.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
         <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
           Batch Billing Configuration

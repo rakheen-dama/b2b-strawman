@@ -79,3 +79,5 @@ export type { XeroSettingsFormData } from "./xero-settings";
 
 export { confidenceEnum, variableFillSchema, draftingVariableFillsSchema } from "./drafting";
 export type { VariableFillFormData, DraftingVariableFillsFormData } from "./drafting";
+
+export { paymentTermsDaysSchema } from "./settings";

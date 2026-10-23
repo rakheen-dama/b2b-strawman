@@ -36,6 +36,8 @@ export interface OrgSettings {
   billingBatchAsyncThreshold?: number;
   billingEmailRateLimit?: number;
   defaultBillingRunCurrency?: string | null;
+  // firm default payment terms in days (Phase 88 U3, ADR-347) — approve stamps issue date + this
+  defaultPaymentTermsDays?: number;
   // project naming
   matterNamingPattern?: string | null;
   // vertical profile for terminology overrides
@@ -62,6 +64,7 @@ export interface UpdateBatchBillingSettingsRequest {
   billingBatchAsyncThreshold: number;
   billingEmailRateLimit: number;
   defaultBillingRunCurrency?: string | null;
+  defaultPaymentTermsDays: number;
 }
 
 export interface UpdateTaxSettingsRequest {

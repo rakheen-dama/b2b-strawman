@@ -3,6 +3,10 @@ import { LEGACY_REDIRECTS } from "./lib/legacy-redirects";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Next 16.3 `next dev` writes/upserts AGENTS.md + CLAUDE.md in the app dir when it
+  // detects an AI agent. Our agent docs are curated (frontend/CLAUDE.md); keep dev
+  // runs from touching tracked files.
+  agentRules: false,
   transpilePackages: ["@b2mash/ui", "@b2mash/shared"],
   experimental: {
     // Next 16.3 defaults this to true, which runs `tsc` over the whole tsconfig project

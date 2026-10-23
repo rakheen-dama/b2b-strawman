@@ -256,7 +256,7 @@ class MatterListRowIntegrationTest {
             .createProject("MLR Matter B", "d", ownerId, null, null, clientId, null)
             .getId();
     projectMemberService.addMember(matterB, memberId, ownerId);
-    projectMemberService.transferLead(matterB, ownerId, memberId);
+    projectMemberService.transferLead(matterB, owner, memberId);
 
     // --- Orphan: no client, no project_members rows → owner's matterRole is null ---
     orphan =

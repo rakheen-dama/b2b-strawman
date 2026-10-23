@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMember;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
+import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -32,7 +33,9 @@ import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -272,12 +275,130 @@ class InstantiateTemplateIntegrationTest {
                   "Lead Project", null, leadMemberId, null, null, null, null);
           var project = templateService.instantiateTemplate(template.getId(), request, memberId);
 
-          var members = projectMemberRepository.findByProjectId(project.getId());
-          assertThat(members).hasSize(1);
-          assertThat(members.get(0).getMemberId()).isEqualTo(leadMemberId);
-          assertThat(members.get(0).getProjectRole()).isEqualTo(Roles.PROJECT_LEAD);
+          // ADR-346: the chosen lead is lead; the creator is auto-added as member.
+          assertThat(rolesByMember(project.getId()))
+              .containsExactlyInAnyOrderEntriesOf(
+                  Map.of(leadMemberId, Roles.PROJECT_LEAD, memberId, Roles.PROJECT_MEMBER));
         });
   }
+
+  // --- 619.7 creator auto-add (ADR-346) ---
+
+  @Test
+  void instantiate_noLeadChosen_creatorAutoAddedAsLead() {
+    runInTenant(
+        () -> {
+          var template = saveTemplate("Creator Lead Template");
+          var request =
+              new InstantiateTemplateRequest(
+                  "Creator Lead Project", null, null, null, null, null, null);
+          var project = templateService.instantiateTemplate(template.getId(), request, memberId);
+
+          assertThat(rolesByMember(project.getId()))
+              .containsExactlyInAnyOrderEntriesOf(Map.of(memberId, Roles.PROJECT_LEAD));
+        });
+  }
+
+  @Test
+  void instantiate_leadChosen_creatorAutoAddedAsMember() {
+    runInTenant(
+        () -> {
+          var template = saveTemplate("Creator Member Template");
+          var request =
+              new InstantiateTemplateRequest(
+                  "Creator Member Project", null, leadMemberId, null, null, null, null);
+          var project = templateService.instantiateTemplate(template.getId(), request, memberId);
+
+          assertThat(rolesByMember(project.getId()))
+              .containsExactlyInAnyOrderEntriesOf(
+                  Map.of(leadMemberId, Roles.PROJECT_LEAD, memberId, Roles.PROJECT_MEMBER));
+        });
+  }
+
+  @Test
+  void instantiate_creatorIsChosenLead_notDuplicated() {
+    runInTenant(
+        () -> {
+          var template = saveTemplate("Creator Is Lead Template");
+          var request =
+              new InstantiateTemplateRequest(
+                  "Creator Is Lead Project", null, leadMemberId, null, null, null, null);
+          var project =
+              templateService.instantiateTemplate(template.getId(), request, leadMemberId);
+
+          assertThat(rolesByMember(project.getId()))
+              .containsExactlyInAnyOrderEntriesOf(Map.of(leadMemberId, Roles.PROJECT_LEAD));
+        });
+  }
+
+  @Test
+  void instantiate_creatorAutoAdd_emitsNoProjectMemberAddedAudit() {
+    runInTenant(
+        () -> {
+          var template = saveTemplate("Creator No Audit Template");
+          var request =
+              new InstantiateTemplateRequest(
+                  "Creator No Audit Project", null, leadMemberId, null, null, null, null);
+          var project = templateService.instantiateTemplate(template.getId(), request, memberId);
+
+          // Direct row writes, like ProjectService.createProject: no project_member.added audit.
+          var feed =
+              auditEventRepository.findByProjectId(
+                  project.getId().toString(), null, null, PageRequest.of(0, 50));
+          assertThat(feed.getContent())
+              .extracting(AuditEvent::getEventType)
+              .contains("project.created_from_template")
+              .doesNotContain("project_member.added");
+        });
+  }
+
+  @Test
+  void instantiateFromTemplate_noLead_creatorAutoAddedAsLead() {
+    runInTenant(
+        () -> {
+          var template = saveTemplate("Scheduler Creator Lead Template");
+          var project =
+              transactionTemplate.execute(
+                  tx ->
+                      templateService.instantiateFromTemplate(
+                          templateRepository.findById(template.getId()).orElseThrow(),
+                          "Scheduler Creator Lead Project",
+                          /* customer */ null,
+                          /* projectLeadMemberId */ null,
+                          /* actingMemberId */ memberId,
+                          tenantSchema,
+                          ORG_ID));
+
+          assertThat(rolesByMember(project.getId()))
+              .containsExactlyInAnyOrderEntriesOf(Map.of(memberId, Roles.PROJECT_LEAD));
+        });
+  }
+
+  @Test
+  void instantiateFromTemplate_leadChosen_creatorAutoAddedAsMember() {
+    runInTenant(
+        () -> {
+          var template = saveTemplate("Scheduler Creator Member Template");
+          var project =
+              transactionTemplate.execute(
+                  tx ->
+                      templateService.instantiateFromTemplate(
+                          templateRepository.findById(template.getId()).orElseThrow(),
+                          "Scheduler Creator Member Project",
+                          /* customer */ null,
+                          /* projectLeadMemberId */ leadMemberId,
+                          /* actingMemberId */ memberId,
+                          tenantSchema,
+                          ORG_ID));
+
+          assertThat(rolesByMember(project.getId()))
+              .containsExactlyInAnyOrderEntriesOf(
+                  Map.of(leadMemberId, Roles.PROJECT_LEAD, memberId, Roles.PROJECT_MEMBER));
+        });
+  }
+
+  // NO null-acting-member test: projects.created_by is `uuid NOT NULL` (+ FK) in tenant V1, so a
+  // null creator fails on the project insert before the creator step; the guard is defensive only.
 
   @Test
   void instantiate_tasksCreated_titlesMatchTemplateTaskNames() {
@@ -541,6 +662,19 @@ class InstantiateTemplateIntegrationTest {
 
           assertThat(project.getDescription()).isEqualTo("Override Desc");
         });
+  }
+
+  private ProjectTemplate saveTemplate(String name) {
+    return transactionTemplate.execute(
+        tx ->
+            templateRepository.saveAndFlush(
+                new ProjectTemplate(name, "{customer}", null, true, "MANUAL", null, memberId)));
+  }
+
+  /** memberId → projectRole for one matter (id-scoped on the fresh matter, no global count). */
+  private Map<UUID, String> rolesByMember(UUID projectId) {
+    return projectMemberRepository.findByProjectId(projectId).stream()
+        .collect(Collectors.toMap(ProjectMember::getMemberId, ProjectMember::getProjectRole));
   }
 
   private void runInTenant(Runnable action) {

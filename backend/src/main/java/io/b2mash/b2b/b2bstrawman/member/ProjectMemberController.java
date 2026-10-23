@@ -1,6 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
@@ -38,10 +38,10 @@ public class ProjectMemberController {
 
   @PostMapping
   public ResponseEntity<Void> addMember(
-      @PathVariable UUID matterId, @Valid @RequestBody AddMemberRequest request) {
-    UUID addedBy = RequestScopes.requireMemberId();
-
-    var projectMember = projectMemberService.addMember(matterId, request.memberId(), addedBy);
+      @PathVariable UUID matterId,
+      @Valid @RequestBody AddMemberRequest request,
+      ActorContext actor) {
+    var projectMember = projectMemberService.addMember(matterId, request.memberId(), actor);
     return ResponseEntity.created(
             URI.create("/api/matters/" + matterId + "/members/" + projectMember.getMemberId()))
         .build();
@@ -49,11 +49,8 @@ public class ProjectMemberController {
 
   @DeleteMapping("/{memberId}")
   public ResponseEntity<Void> removeMember(
-      @PathVariable UUID matterId, @PathVariable UUID memberId) {
-    UUID requestedBy = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
-
-    projectMemberService.removeMember(matterId, memberId, requestedBy, orgRole);
+      @PathVariable UUID matterId, @PathVariable UUID memberId, ActorContext actor) {
+    projectMemberService.removeMember(matterId, memberId, actor);
     return ResponseEntity.noContent().build();
   }
 
@@ -61,10 +58,9 @@ public class ProjectMemberController {
   public ResponseEntity<Void> transferLead(
       @PathVariable UUID matterId,
       @PathVariable UUID memberId,
-      @Valid @RequestBody TransferLeadRequest request) {
-    UUID currentLeadId = RequestScopes.requireMemberId();
-
-    projectMemberService.transferLead(matterId, currentLeadId, memberId);
+      @Valid @RequestBody TransferLeadRequest request,
+      ActorContext actor) {
+    projectMemberService.transferLead(matterId, actor, memberId);
     return ResponseEntity.noContent().build();
   }
 

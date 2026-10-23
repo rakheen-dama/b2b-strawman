@@ -148,6 +148,31 @@ describe("DisbursementWriteOffDialog", () => {
     expect(screen.getByTestId("disbursement-write-off-dialog")).toBeInTheDocument();
     expect(onWrittenOff).not.toHaveBeenCalled();
   });
+
+  it("ignores Escape while submitting and shows a late failure in the still-open dialog", async () => {
+    const user = userEvent.setup();
+    let resolveAction!: (value: { success: boolean; error?: string }) => void;
+    mockWriteOff.mockReturnValue(
+      new Promise((resolve) => {
+        resolveAction = resolve;
+      })
+    );
+    render(<DisbursementWriteOffDialog slug="test-org" disbursement={makeDisbursement()} />);
+
+    await user.click(screen.getByTestId("disbursement-write-off-button"));
+    await user.type(await screen.findByTestId("disbursement-write-off-reason-input"), "Absorbed");
+    await user.click(screen.getByTestId("disbursement-write-off-confirm-button"));
+    await waitFor(() => expect(mockWriteOff).toHaveBeenCalled());
+    expect(screen.getByRole("button", { name: /cancel/i })).toBeDisabled();
+
+    await user.keyboard("{Escape}");
+    expect(screen.getByTestId("disbursement-write-off-dialog")).toBeInTheDocument();
+
+    resolveAction({ success: false, error: "Cannot write off disbursement" });
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Cannot write off disbursement");
+    expect(screen.getByTestId("disbursement-write-off-dialog")).toBeInTheDocument();
+  });
 });
 
 describe("canOfferWriteOff (A14 — the billing axis only)", () => {

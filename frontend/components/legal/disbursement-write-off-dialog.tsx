@@ -63,11 +63,18 @@ export function DisbursementWriteOffFormDialog({
     defaultValues: { reason: "" },
   });
 
+  function closeAndReset() {
+    onOpenChange(false);
+    form.reset({ reason: "" });
+    setError(null);
+  }
+
   function handleOpenChange(newOpen: boolean) {
-    onOpenChange(newOpen);
-    if (!newOpen) {
-      form.reset({ reason: "" });
-      setError(null);
+    if (newOpen) {
+      onOpenChange(true);
+    } else if (!isSubmitting) {
+      // Ignore Escape / outside-click while in flight — a late error must land on an open dialog.
+      closeAndReset();
     }
   }
 
@@ -77,7 +84,8 @@ export function DisbursementWriteOffFormDialog({
     try {
       const result = await writeOffDisbursementAction(slug, disbursement.id, values.reason);
       if (result.success && result.data) {
-        handleOpenChange(false);
+        // Not handleOpenChange: its captured isSubmitting is still true here.
+        closeAndReset();
         onWrittenOff?.(result.data);
       } else {
         setError(result.error ?? "Failed to write off disbursement");

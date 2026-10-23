@@ -5,6 +5,7 @@ import {
   CheckCircle,
   AlertTriangle,
   XCircle,
+  ExternalLink,
   FileText,
   Loader2,
 } from "lucide-react";
@@ -205,12 +206,25 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
           </CardHeader>
         </Card>
 
-        {/* PDF Viewer */}
-        <iframe
-          src={pdfUrl}
-          className="h-[70vh] w-full rounded-lg border border-slate-200 md:h-[600px]"
-          title="Document PDF"
-        />
+        {/* PDF Viewer — iframe is the primary view; the link is a fallback (ADR-352) */}
+        <div className="space-y-2">
+          <iframe
+            src={pdfUrl}
+            className="h-[70vh] w-full rounded-lg border border-slate-200 md:h-[600px]"
+            title="Document PDF"
+          />
+          <div className="flex justify-end">
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-md text-sm font-medium text-teal-600 hover:text-teal-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+            >
+              <ExternalLink className="size-4" aria-hidden="true" />
+              Open in new tab
+            </a>
+          </div>
+        </div>
 
         {/* Status-Specific Content */}
         {pageState === "EXPIRED" && (

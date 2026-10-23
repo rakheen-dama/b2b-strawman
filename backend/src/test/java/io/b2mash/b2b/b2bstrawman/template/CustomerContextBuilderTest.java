@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -183,13 +184,13 @@ class CustomerContextBuilderTest {
     var sentInvoice =
         new Invoice(customerId, "ZAR", "Invoice Customer", null, null, "Org", memberId);
     sentInvoice.recalculateTotals(new BigDecimal("1000.00"), false, BigDecimal.ZERO, false);
-    sentInvoice.approve("INV-001", memberId);
+    sentInvoice.approve("INV-001", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
     sentInvoice.markSent();
 
     var paidInvoice =
         new Invoice(customerId, "ZAR", "Invoice Customer", null, null, "Org", memberId);
     paidInvoice.recalculateTotals(new BigDecimal("500.00"), false, BigDecimal.ZERO, false);
-    paidInvoice.approve("INV-002", memberId);
+    paidInvoice.approve("INV-002", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
     paidInvoice.markSent();
     paidInvoice.recordPayment("PAY-001");
 

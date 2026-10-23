@@ -8,11 +8,14 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfileRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
@@ -48,6 +51,7 @@ class LegalDemoDataSeederTest {
   private final TrustTransactionRepository trustTransactionRepository;
   private final ChecklistInstanceRepository checklistInstanceRepository;
   private final AiFirmProfileRepository aiFirmProfileRepository;
+  private final InvoiceRepository invoiceRepository;
 
   private String schemaName;
   private UUID orgId;
@@ -65,7 +69,8 @@ class LegalDemoDataSeederTest {
       TrustAccountRepository trustAccountRepository,
       TrustTransactionRepository trustTransactionRepository,
       ChecklistInstanceRepository checklistInstanceRepository,
-      AiFirmProfileRepository aiFirmProfileRepository) {
+      AiFirmProfileRepository aiFirmProfileRepository,
+      InvoiceRepository invoiceRepository) {
     this.legalDemoDataSeeder = legalDemoDataSeeder;
     this.tenantProvisioningService = tenantProvisioningService;
     this.tenantTransactionHelper = tenantTransactionHelper;
@@ -78,6 +83,7 @@ class LegalDemoDataSeederTest {
     this.trustTransactionRepository = trustTransactionRepository;
     this.checklistInstanceRepository = checklistInstanceRepository;
     this.aiFirmProfileRepository = aiFirmProfileRepository;
+    this.invoiceRepository = invoiceRepository;
   }
 
   @BeforeAll
@@ -239,6 +245,38 @@ class LegalDemoDataSeederTest {
                 timeEntryRepository.findAll().stream().anyMatch(e -> e.getInvoiceId() == null)));
     assertTrue(
         hasUnbilled.get(), "Seeder must leave unbilled time entries for the fee-note-run skill");
+  }
+
+  // Phase 88 OQ #5 (ADR-347): the seeder approves its fee notes like any other, so every non-DRAFT
+  // one carries a due date of issue + firm terms (30 on a fresh tenant) and joins the debtor book.
+  // The schema is private to this class, so findAll cannot bleed.
+  @Test
+  void seeder_stampsDueDateOnEveryApprovedFeeNote() {
+    var nonDraftCount = new AtomicReference<Long>();
+    var allStamped = new AtomicReference<Boolean>();
+    tenantTransactionHelper.executeInTenantTransaction(
+        schemaName,
+        orgId.toString(),
+        t -> {
+          var nonDraft =
+              invoiceRepository.findAll().stream()
+                  .filter(i -> i.getStatus() != InvoiceStatus.DRAFT)
+                  .toList();
+          nonDraftCount.set((long) nonDraft.size());
+          allStamped.set(
+              nonDraft.stream()
+                  .allMatch(
+                      i ->
+                          i.getIssueDate() != null
+                              && i.getDueDate() != null
+                              && i.getDueDate()
+                                  .equals(
+                                      i.getIssueDate()
+                                          .plusDays(BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS))));
+        });
+    assertTrue(nonDraftCount.get() >= 1, "Seeder must create at least one non-DRAFT fee note");
+    assertTrue(
+        allStamped.get(), "Every non-DRAFT seeded fee note must carry due date = issue date + 30");
   }
 
   @Test

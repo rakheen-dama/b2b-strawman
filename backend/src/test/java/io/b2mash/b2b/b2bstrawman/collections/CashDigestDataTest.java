@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
@@ -171,7 +172,10 @@ class CashDigestDataTest {
         new Invoice(customer.getId(), "ZAR", name, "x@test.com", null, "Test Org", memberId);
     invoice.updateDraft(dueDate, null, null, BigDecimal.ZERO);
     invoice.recalculateTotals(BigDecimal.valueOf(total), false, BigDecimal.ZERO, false);
-    invoice.approve("INV-" + UUID.randomUUID().toString().substring(0, 8), memberId);
+    invoice.approve(
+        "INV-" + UUID.randomUUID().toString().substring(0, 8),
+        memberId,
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
     invoice.markSent();
     if (paid) {
       invoice.recordPayment("ref-" + name);

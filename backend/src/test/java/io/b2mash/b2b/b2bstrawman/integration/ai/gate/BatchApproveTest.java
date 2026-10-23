@@ -22,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.GreenMailTestSupport;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
@@ -135,7 +136,7 @@ class BatchApproveTest {
                   savedCustomer.getId(), "ZAR", name, email, null, "Batch Org", ownerMemberId);
           invoice.updateDraft(LocalDate.now().minusDays(daysOverdue), null, null, BigDecimal.ZERO);
           invoice.recalculateTotals(BigDecimal.valueOf(1500), false, BigDecimal.ZERO, false);
-          invoice.approve(invoiceNumber, ownerMemberId);
+          invoice.approve(invoiceNumber, ownerMemberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
           invoice.markSent();
           holder[0] = invoiceRepository.save(invoice).getId();
         });

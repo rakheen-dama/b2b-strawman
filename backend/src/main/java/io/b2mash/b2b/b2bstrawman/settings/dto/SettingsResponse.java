@@ -34,6 +34,7 @@ public record SettingsResponse(
     Integer billingBatchAsyncThreshold,
     Integer billingEmailRateLimit,
     String defaultBillingRunCurrency,
+    Integer defaultPaymentTermsDays,
     String matterNamingPattern,
     String verticalProfile,
     List<String> enabledModules,

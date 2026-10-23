@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
@@ -102,7 +103,8 @@ class InvoiceCoverLetterRenderIntegrationTest {
                               memberId);
                       invoice.recalculateTotals(
                           new BigDecimal("1250.00"), false, BigDecimal.ZERO, false);
-                      invoice.approve("INV-9001", memberId);
+                      invoice.approve(
+                          "INV-9001", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
                       invoice = invoiceRepository.save(invoice);
 
                       var template =
@@ -158,7 +160,8 @@ class InvoiceCoverLetterRenderIntegrationTest {
                               memberId);
                       invoice.recalculateTotals(
                           new BigDecimal("900.00"), false, BigDecimal.ZERO, false);
-                      invoice.approve("INV-9002", memberId);
+                      invoice.approve(
+                          "INV-9002", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
                       invoice = invoiceRepository.save(invoice);
 
                       var template =

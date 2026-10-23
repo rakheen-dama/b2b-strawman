@@ -44,3 +44,26 @@ BEGIN
       ADD CONSTRAINT chk_project_members_role CHECK (project_role IN ('lead', 'member'));
   END IF;
 END $$;
+
+-- ---------- §2 U3: firm payment terms + due-date backfill ---------------------------
+ALTER TABLE org_settings ADD COLUMN IF NOT EXISTS default_payment_terms_days integer NOT NULL DEFAULT 30;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint c JOIN pg_namespace n ON n.oid = c.connamespace
+                 WHERE c.conname = 'chk_org_settings_payment_terms' AND n.nspname = current_schema()) THEN
+    ALTER TABLE org_settings ADD CONSTRAINT chk_org_settings_payment_terms
+      CHECK (default_payment_terms_days BETWEEN 0 AND 365);
+  END IF;
+END $$;
+
+-- Fee notes approved/sent before a due date was ever computed: issue date + firm terms.
+-- The debtor book, aging, cash digest and dunning scan all predicate on due_date IS NOT NULL,
+-- so without this the walked tenant shows "No client owes fees." for every fee note it sent.
+-- COALESCE sits OUTSIDE the scalar subquery (authorised deviation from §13.7.1): a schema with no
+-- org_settings row makes the subquery yield NULL, and date + NULL would leave due_date NULL; the
+-- outer COALESCE still backfills with 30 there. Identical result whenever the row exists.
+UPDATE invoices i
+SET due_date = COALESCE(i.issue_date, (i.created_at AT TIME ZONE 'UTC')::date)
+               + COALESCE((SELECT s.default_payment_terms_days FROM org_settings s LIMIT 1), 30)
+WHERE i.status IN ('APPROVED', 'SENT')
+  AND i.due_date IS NULL;

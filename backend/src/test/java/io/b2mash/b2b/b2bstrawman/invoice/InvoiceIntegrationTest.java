@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -236,7 +237,8 @@ class InvoiceIntegrationTest {
                           memberIdOwner);
                   invoice = invoiceRepository.save(invoice);
 
-                  invoice.approve("INV-0001", memberIdOwner);
+                  invoice.approve(
+                      "INV-0001", memberIdOwner, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
                   invoice = invoiceRepository.save(invoice);
 
                   var found = invoiceRepository.findById(invoice.getId());
@@ -268,7 +270,8 @@ class InvoiceIntegrationTest {
                           memberIdOwner);
                   invoice = invoiceRepository.save(invoice);
 
-                  invoice.approve("INV-0002", memberIdOwner);
+                  invoice.approve(
+                      "INV-0002", memberIdOwner, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
                   invoice = invoiceRepository.save(invoice);
 
                   invoice.voidInvoice();
@@ -300,7 +303,8 @@ class InvoiceIntegrationTest {
                           memberIdOwner);
                   invoice = invoiceRepository.save(invoice);
 
-                  invoice.approve("INV-0003", memberIdOwner);
+                  invoice.approve(
+                      "INV-0003", memberIdOwner, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
                   invoice = invoiceRepository.save(invoice);
 
                   final var approvedInvoice = invoice;

@@ -25,6 +25,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
@@ -139,7 +140,10 @@ class AccountingPaymentPollIntegrationTest {
     invoiceLineRepository.save(line);
 
     // Transition: DRAFT -> APPROVED -> SENT
-    savedInvoice.approve("INV-POLL-" + savedInvoice.getId().toString().substring(0, 6), memberId);
+    savedInvoice.approve(
+        "INV-POLL-" + savedInvoice.getId().toString().substring(0, 6),
+        memberId,
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
     savedInvoice.markSent();
     savedInvoice = invoiceRepository.save(savedInvoice);
 

@@ -6,7 +6,9 @@ import jakarta.persistence.Embeddable;
 /**
  * Billing-run configuration settings group (Wave 3.4 embeddable refactor). Holds the batch-billing
  * async threshold (member count above which a billing run is processed asynchronously), the per-run
- * email rate limit, and the optional default currency override applied to generated billing runs.
+ * email rate limit, the optional default currency override applied to generated billing runs, and
+ * the firm's default payment terms in days (Phase 88 U3, ADR-347) stamped onto a fee note at
+ * approve when the draft carries no due date.
  *
  * <p>Note: the org's BASE currency ({@code default_currency}, NOT NULL) remains top-level on {@link
  * OrgSettings} as org identity — it is used pervasively for invoice/quote/expense currency
@@ -16,17 +18,24 @@ import jakarta.persistence.Embeddable;
  *
  * <p>Persisted inline on the {@code org_settings} table via {@code @Embedded} +
  * {@code @AttributeOverride} on {@link OrgSettings}. Column names, types, and nullability are
- * UNCHANGED from when these fields lived directly on the entity (zero schema change — see {@code
- * OrgSettingsSchemaSnapshotTest}). {@code billing_batch_async_threshold} and {@code
+ * UNCHANGED from when the original three fields lived directly on the entity (zero schema change —
+ * see {@code OrgSettingsSchemaSnapshotTest}). {@code billing_batch_async_threshold} and {@code
  * billing_email_rate_limit} are NOT NULL; their constructor defaults (50 and 5) are reproduced via
  * field initialisers so a fresh embeddable persists the same non-null values the entity constructor
- * used to set.
+ * used to set. The fourth column, {@code default_payment_terms_days} (NOT NULL DEFAULT 30, CHECK
+ * 0..365), comes from tenant {@code V4__phase88_demo_ready.sql} §2 and likewise has a field
+ * initialiser of 30.
  *
  * <p>Field-level setters here intentionally do NOT bump {@code OrgSettings.updatedAt}; Hibernate
  * dirty-checks the embedded columns and persists changes regardless.
  */
 @Embeddable
 public class BillingSettings {
+
+  /**
+   * Firm default payment terms (days) stamped onto a fee note at approve (Phase 88 U3, ADR-347).
+   */
+  public static final int DEFAULT_PAYMENT_TERMS_DAYS = 30;
 
   @Column(name = "billing_batch_async_threshold")
   private Integer billingBatchAsyncThreshold = 50;
@@ -36,6 +45,11 @@ public class BillingSettings {
 
   @Column(name = "default_billing_run_currency", length = 3)
   private String defaultBillingRunCurrency;
+
+  // NOT NULL DEFAULT 30 + CHECK 0..365 (tenant V4 §2); the initialiser makes a fresh embeddable
+  // persist 30.
+  @Column(name = "default_payment_terms_days")
+  private Integer defaultPaymentTermsDays = DEFAULT_PAYMENT_TERMS_DAYS;
 
   protected BillingSettings() {}
 
@@ -61,5 +75,13 @@ public class BillingSettings {
 
   public void setDefaultBillingRunCurrency(String defaultBillingRunCurrency) {
     this.defaultBillingRunCurrency = defaultBillingRunCurrency;
+  }
+
+  public Integer getDefaultPaymentTermsDays() {
+    return defaultPaymentTermsDays;
+  }
+
+  public void setDefaultPaymentTermsDays(Integer defaultPaymentTermsDays) {
+    this.defaultPaymentTermsDays = defaultPaymentTermsDays;
   }
 }

@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustBalanceFactory;
@@ -242,7 +243,7 @@ class CollectionsTriageServiceTest {
   private UUID seedSentInvoice(
       UUID customerId, String name, String invoiceNumber, int daysOverdue) {
     Invoice invoice = draftInvoice(customerId, name, LocalDate.now().minusDays(daysOverdue));
-    invoice.approve(invoiceNumber, ownerMemberId);
+    invoice.approve(invoiceNumber, ownerMemberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
     invoice.markSent();
     return invoiceRepository.save(invoice).getId();
   }
@@ -254,7 +255,7 @@ class CollectionsTriageServiceTest {
    */
   private void seedPaidInvoice(UUID customerId, String name, String invoiceNumber, int daysToPay) {
     Invoice invoice = draftInvoice(customerId, name, LocalDate.now().minusDays(daysToPay));
-    invoice.approve(invoiceNumber, ownerMemberId);
+    invoice.approve(invoiceNumber, ownerMemberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
     invoice.markSent();
     invoice.recordPayment("PAY-" + invoiceNumber);
     invoiceRepository.save(invoice);

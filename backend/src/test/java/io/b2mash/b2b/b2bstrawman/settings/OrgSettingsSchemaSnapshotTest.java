@@ -74,6 +74,9 @@ class OrgSettingsSchemaSnapshotTest {
   // drift.
   // Phase 86 squash (Epic 605B): series collapsed into tenant V1__baseline.sql; files above are
   // archived at tag horizontal-platform-final. Pin unchanged.
+  // Tenant V4 §2 (Phase 88 / Epic 620A, ADR-347): default_payment_terms_days (integer NOT NULL
+  // DEFAULT 30) added — deliberate, authorised pin update (BillingSettings.defaultPaymentTermsDays
+  // + V4__phase88_demo_ready.sql §2), not drift.
   private static final String EXPECTED_SNAPSHOT =
       """
       acceptance_expiry_days | integer | YES
@@ -96,6 +99,7 @@ class OrgSettingsSchemaSnapshotTest {
       default_billing_run_currency | character varying(3) | YES
       default_currency | character varying(3) | NO
       default_expense_markup_percent | numeric(5,2) | YES
+      default_payment_terms_days | integer | NO
       default_request_reminder_days | integer | YES
       default_retention_months | integer | YES
       digest_last_sent_at | timestamp with time zone | YES

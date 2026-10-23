@@ -72,6 +72,17 @@ export const CAPABILITY_META = [
   },
 ] as const;
 
+// ---- Owner-only capabilities ----
+// Must stay in sync with Capability.OWNER_ONLY (backend orgrole/Capability.java) — pinned by
+// __tests__/capabilities.test.tsx, which reads Capability.java at test time (ADR-355).
+// The backend gives an admin every capability EXCEPT these (OrgRoleService.resolveCapabilities);
+// the client mirror must never be wider than the backend.
+export const OWNER_ONLY_CAPABILITIES: ReadonlySet<string> = new Set([
+  "MANAGE_COMPLIANCE_DESTRUCTIVE",
+  "OVERRIDE_MATTER_CLOSURE",
+  "FINANCIAL_RECONCILE",
+]);
+
 // ---- Context Types ----
 
 interface CapabilityContextValue {
@@ -116,9 +127,11 @@ export function CapabilityProvider({
       isAdmin,
       isOwner,
       isLoading: false,
-      // Defense-in-depth: backend resolves all capabilities for admin/owner,
-      // but we short-circuit here too to avoid UI flicker on gated components
-      hasCapability: (cap: string) => isAdmin || isOwner || capSet.has(cap),
+      // Mirrors the backend (owner = all, admin = all − OWNER_ONLY) so gated UI renders without
+      // waiting on the capability set (no flicker) — but never wider than the backend: admins are
+      // denied the owner-only capabilities unless explicitly granted (ADR-355).
+      hasCapability: (cap: string) =>
+        isOwner || (isAdmin && !OWNER_ONLY_CAPABILITIES.has(cap)) || capSet.has(cap),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [capKey, role, isAdmin, isOwner]);

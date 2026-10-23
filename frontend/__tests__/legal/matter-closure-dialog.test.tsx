@@ -236,6 +236,75 @@ describe("MatterClosureDialog", () => {
     expect(screen.queryByTestId("matter-closure-override-toggle")).not.toBeInTheDocument();
   });
 
+  it("step 3: admin with failing gates cannot override — lands on step 3, no toggle (G-D7)", async () => {
+    const user = userEvent.setup();
+    mockEvaluate.mockResolvedValue({
+      success: true,
+      report: makeReport({
+        allPassed: false,
+        gates: [makeGate({ code: "TRUST_BALANCE_ZERO", passed: false, message: "trust" })],
+      }),
+    });
+
+    render(
+      withProviders(
+        <MatterClosureDialog
+          slug="acme"
+          projectId="p1"
+          projectName="Smith v Jones"
+          open={true}
+          onOpenChange={vi.fn()}
+        />,
+        // Backend: admin = ALL − OWNER_ONLY, so the real set never carries OVERRIDE_MATTER_CLOSURE
+        { isAdmin: true, role: "admin", capabilities: ["CLOSE_MATTER"] }
+      )
+    );
+
+    await waitFor(() => expect(screen.getByTestId("matter-closure-step-1")).toBeInTheDocument());
+    await user.click(screen.getByTestId("matter-closure-next-btn"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("matter-closure-step-3")).toBeInTheDocument();
+      expect(screen.queryByTestId("matter-closure-step-2")).not.toBeInTheDocument();
+    });
+    expect(screen.getByText("Cannot close — resolve gates")).toBeInTheDocument();
+    expect(screen.queryByTestId("matter-closure-override-toggle")).not.toBeInTheDocument();
+  });
+
+  it("owner with failing gates still gets the override toggle on step 2", async () => {
+    const user = userEvent.setup();
+    mockEvaluate.mockResolvedValue({
+      success: true,
+      report: makeReport({
+        allPassed: false,
+        gates: [makeGate({ code: "TRUST_BALANCE_ZERO", passed: false, message: "trust" })],
+      }),
+    });
+
+    render(
+      withProviders(
+        <MatterClosureDialog
+          slug="acme"
+          projectId="p1"
+          projectName="Smith v Jones"
+          open={true}
+          onOpenChange={vi.fn()}
+        />,
+        // Owner holds OVERRIDE_MATTER_CLOSURE via the owner short-circuit, not the capability set
+        { isOwner: true, role: "owner", capabilities: ["CLOSE_MATTER"] }
+      )
+    );
+
+    await waitFor(() => expect(screen.getByTestId("matter-closure-step-1")).toBeInTheDocument());
+    await user.click(screen.getByTestId("matter-closure-next-btn"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("matter-closure-step-2")).toBeInTheDocument();
+      expect(screen.queryByTestId("matter-closure-step-3")).not.toBeInTheDocument();
+    });
+    expect(screen.getByTestId("matter-closure-override-toggle")).toBeInTheDocument();
+  });
+
   it("override toggle visible when user has OVERRIDE_MATTER_CLOSURE — blocks submit if justification < 20 chars", async () => {
     const user = userEvent.setup();
     const failingReport = makeReport({

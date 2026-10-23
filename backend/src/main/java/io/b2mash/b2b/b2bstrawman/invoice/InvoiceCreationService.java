@@ -1206,7 +1206,7 @@ public class InvoiceCreationService {
 
   /**
    * Caps {@code value} at {@code max} chars including a trailing "…"; never splits a surrogate
-   * pair.
+   * pair. Surrogate-safe sibling of {@code DeadlinePortalSyncService.truncate}.
    */
   private static String truncateWithEllipsis(String value, int max) {
     if (value.length() <= max) {

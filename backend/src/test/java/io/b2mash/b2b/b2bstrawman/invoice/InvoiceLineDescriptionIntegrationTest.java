@@ -19,15 +19,19 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -50,6 +54,10 @@ import org.springframework.transaction.support.TransactionTemplate;
  * <p>The ACTIVE customer, matter, client link, task and time entries are saved via repositories
  * (the API creates PROSPECT customers, and time entries need an explicit date, narrative and
  * billing-rate snapshot — beyond what {@code TestEntityHelper} covers).
+ *
+ * <p>The tenant is provisioned {@code legal-za} so the seeded {@code fee-note-za} template is
+ * available: the narrative line is also rendered to a real PDF through the same {@link
+ * GeneratedDocumentService} call the invoice-email listener and Generate Document use.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -74,6 +82,7 @@ class InvoiceLineDescriptionIntegrationTest {
   @Autowired private TimeEntryRepository timeEntryRepository;
   @Autowired private InvoiceLineRepository invoiceLineRepository;
   @Autowired private InvoiceCreationService invoiceCreationService;
+  @Autowired private GeneratedDocumentService generatedDocumentService;
 
   private String tenantSchema;
   private UUID memberIdBob;
@@ -82,7 +91,7 @@ class InvoiceLineDescriptionIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Line Desc Firm", null);
+    provisioningService.provisionTenant(ORG_ID, "Line Desc Firm", "legal-za");
     memberIdBob =
         UUID.fromString(
             TestMemberHelper.syncMember(
@@ -229,6 +238,41 @@ class InvoiceLineDescriptionIntegrationTest {
     assertThat(lineFor(te2).getDescription())
         .isEqualTo(PREFIX + "Telephone call with opposing attorney");
     assertThat(lineFor(te3).getDescription()).isEqualTo(PREFIX + "Pleadings");
+  }
+
+  /**
+   * 622A regression: the line text is HTML-escaped by {@code HtmlUtils.htmlEscape}, which turns the
+   * "·" separator into {@code &middot;} and "é" into {@code &eacute;}. OpenHTMLToPDF's XML parser
+   * only knows the five XML entities, so before the sanitizer fix the fee-note PDF render threw
+   * ("The entity "middot" was referenced, but not declared") and Send produced no PDF / no email.
+   */
+  @Test
+  void feeNotePdf_rendersNarrativeLineWithMiddotAndNonAsciiChars() throws IOException {
+    UUID teId = seedTimeEntry("Consultation with José", 60);
+    var invoice = createDraft(List.of(teId));
+
+    var pdf = new AtomicReference<byte[]>();
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var template =
+                      generatedDocumentService.resolveDefaultInvoiceTemplate().orElseThrow();
+                  pdf.set(
+                      generatedDocumentService
+                          .generateDocument(
+                              template.getId(), invoice.id(), false, true, List.of(), memberIdBob)
+                          .pdfResult()
+                          .pdfBytes());
+                }));
+
+    assertThat(pdf.get()).isNotEmpty();
+    assertThat(new String(pdf.get(), 0, 4)).isEqualTo("%PDF");
+    String text;
+    try (var doc = Loader.loadPDF(pdf.get())) {
+      text = new PDFTextStripper().getText(doc).replaceAll("\\s+", " ");
+    }
+    assertThat(text).contains(PREFIX + "Consultation with José");
   }
 
   // --- helpers ---

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSWRConfig } from "swr";
 import { ArrowLeft, Pencil, RotateCcw, Send, Upload } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
@@ -26,7 +25,7 @@ import {
   DisbursementWriteOffDialog,
   canOfferWriteOff,
 } from "@/components/legal/disbursement-write-off-dialog";
-import { unbilledDisbursementsSummaryKey } from "@/components/legal/unbilled-disbursements-summary";
+import { useUnbilledDisbursementsSummaryCache } from "@/components/legal/unbilled-disbursements-summary";
 import { formatCurrency } from "@/lib/format";
 import {
   restoreDisbursementAction,
@@ -80,12 +79,13 @@ export function DisbursementDetailClient({
     (target === "restore" ? restoreButtonRef : writeOffTriggerRef).current?.focus();
   }, [disbursement.billingStatus]);
 
-  // Approve / write-off / restore move the matter's unbilled total. The strip is not on this page,
-  // but invalidating its shared key makes it refetch when the matter tab / firm list mounts it.
-  const { mutate: globalMutate } = useSWRConfig();
+  // Approve / write-off / restore move the matter's unbilled total. The strip is not mounted on
+  // this page, so evict its cached total: the matter tab / firm list then refetch on mount instead
+  // of painting the old figure.
+  const { evict: evictUnbilledSummary } = useUnbilledDisbursementsSummaryCache();
   const refreshUnbilled = useCallback(
-    () => void globalMutate(unbilledDisbursementsSummaryKey(disbursement.matterId)),
-    [globalMutate, disbursement.matterId]
+    () => evictUnbilledSummary(disbursement.matterId),
+    [evictUnbilledSummary, disbursement.matterId]
   );
 
   const editable =

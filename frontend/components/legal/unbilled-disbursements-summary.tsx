@@ -1,18 +1,43 @@
 "use client";
 
-import useSWR from "swr";
+import { useMemo } from "react";
+import useSWR, { useSWRConfig } from "swr";
 import { fetchUnbilledDisbursementsAction } from "@/app/(app)/org/[slug]/legal/disbursements/actions";
 import { formatCurrency } from "@/lib/format";
 import type { UnbilledDisbursementsResponse } from "@/lib/api/legal-disbursements";
 
 /**
- * SWR key of a matter's unbilled-disbursement totals. Revalidate it with
- * `useSWRConfig().mutate(unbilledDisbursementsSummaryKey(matterId))` after approve / write-off /
- * restore. Distinct from the invoice picker's `unbilled-disbursements-${id}` key on purpose: that
- * fetcher has its own null→error semantics.
+ * SWR key of a matter's unbilled-disbursement totals. Distinct from the invoice picker's
+ * `unbilled-disbursements-${id}` key on purpose: that fetcher has its own null→error semantics.
+ * Callers that move the total use `useUnbilledDisbursementsSummaryCache()` rather than this key.
  */
 export function unbilledDisbursementsSummaryKey(matterId: string): string {
   return `unbilled-disbursements-summary-${matterId}`;
+}
+
+/**
+ * Keeps the strip in step after approve / write-off / restore / create / edit move a matter's
+ * unbilled total. Null / empty matter ids are ignored.
+ * - `refresh` — the strip is mounted on this page: revalidate it in place.
+ * - `evict` — the strip is NOT mounted here (disbursement detail): SWR's `mutate(key)` only
+ *   revalidates mounted hooks and would leave the old total cached, so the strip would paint it
+ *   when the user navigates back. Drop the cached data instead; the strip refetches on mount.
+ */
+export function useUnbilledDisbursementsSummaryCache() {
+  const { mutate } = useSWRConfig();
+  return useMemo(
+    () => ({
+      refresh(matterId: string | null | undefined) {
+        if (matterId) void mutate(unbilledDisbursementsSummaryKey(matterId));
+      },
+      evict(matterId: string | null | undefined) {
+        if (matterId) {
+          void mutate(unbilledDisbursementsSummaryKey(matterId), undefined, { revalidate: false });
+        }
+      },
+    }),
+    [mutate]
+  );
 }
 
 interface UnbilledDisbursementsSummaryProps {

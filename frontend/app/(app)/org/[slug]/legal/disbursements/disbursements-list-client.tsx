@@ -2,14 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useSWRConfig } from "swr";
 import { ModuleGate } from "@/components/module-gate";
 import { DisbursementListView } from "@/components/legal/disbursement-list-view";
 import { useDisbursementWriteOff } from "@/components/legal/use-disbursement-write-off";
 import { CreateDisbursementDialog } from "@/components/legal/create-disbursement-dialog";
 import {
   UnbilledDisbursementsSummary,
-  unbilledDisbursementsSummaryKey,
+  useUnbilledDisbursementsSummaryCache,
 } from "@/components/legal/unbilled-disbursements-summary";
 import { Input } from "@b2mash/ui/input";
 import { fetchDisbursements } from "./actions";
@@ -78,13 +77,13 @@ export function DisbursementsListClient({
     });
   };
 
-  const { mutate: globalMutate } = useSWRConfig();
+  const unbilledSummary = useUnbilledDisbursementsSummaryCache();
   const writeOff = useDisbursementWriteOff({
     slug,
     onChanged: () => {
       refetch();
       // Write-off / undo moves the matter's unbilled total (strip shown only when filtered).
-      if (projectFilter) void globalMutate(unbilledDisbursementsSummaryKey(projectFilter));
+      unbilledSummary.refresh(projectFilter);
     },
   });
 

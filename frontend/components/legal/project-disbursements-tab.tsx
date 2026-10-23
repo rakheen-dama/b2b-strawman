@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import useSWR, { useSWRConfig } from "swr";
+import useSWR from "swr";
 import { ModuleGate } from "@/components/module-gate";
 import { CreateDisbursementDialog } from "@/components/legal/create-disbursement-dialog";
 import { EditDisbursementDialog } from "@/components/legal/edit-disbursement-dialog";
@@ -10,7 +10,7 @@ import { DisbursementListView } from "@/components/legal/disbursement-list-view"
 import { useDisbursementWriteOff } from "@/components/legal/use-disbursement-write-off";
 import {
   UnbilledDisbursementsSummary,
-  unbilledDisbursementsSummaryKey,
+  useUnbilledDisbursementsSummaryCache,
 } from "@/components/legal/unbilled-disbursements-summary";
 import { fetchDisbursements } from "@/app/(app)/org/[slug]/legal/disbursements/actions";
 import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
@@ -41,11 +41,11 @@ export function ProjectDisbursementsTab({
   const totalElements = data?.page.totalElements ?? disbursements.length;
   const hasMore = totalElements > disbursements.length;
 
-  const { mutate: globalMutate } = useSWRConfig();
+  const unbilledSummary = useUnbilledDisbursementsSummaryCache();
   // The list and the unbilled strip move together: write-off / undo / edit / create refresh both.
   function refresh() {
     void mutate();
-    void globalMutate(unbilledDisbursementsSummaryKey(projectId));
+    unbilledSummary.refresh(projectId);
   }
 
   const writeOff = useDisbursementWriteOff({ slug, onChanged: refresh });

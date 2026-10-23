@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { useSWRConfig } from "swr";
 import { SWRTestProvider } from "@/lib/swr/test-utils";
 
 const mockFetchUnbilled = vi.fn();
@@ -12,7 +11,7 @@ vi.mock("@/app/(app)/org/[slug]/legal/disbursements/actions", () => ({
 
 import {
   UnbilledDisbursementsSummary,
-  unbilledDisbursementsSummaryKey,
+  useUnbilledDisbursementsSummaryCache,
 } from "@/components/legal/unbilled-disbursements-summary";
 import type { UnbilledDisbursementsResponse } from "@/lib/api/legal-disbursements";
 
@@ -50,11 +49,11 @@ function makeResponse(
   };
 }
 
-// Fires the same global mutate the matter tab / firm list / detail page use.
+// Fires the same in-place refresh the matter tab / firm list use.
 function Revalidate({ matterId }: { matterId: string }) {
-  const { mutate } = useSWRConfig();
+  const { refresh } = useUnbilledDisbursementsSummaryCache();
   return (
-    <button type="button" onClick={() => mutate(unbilledDisbursementsSummaryKey(matterId))}>
+    <button type="button" onClick={() => refresh(matterId)}>
       revalidate-unbilled
     </button>
   );

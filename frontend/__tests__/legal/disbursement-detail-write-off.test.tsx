@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SWRTestProvider } from "@/lib/swr/test-utils";
+import { SWRConfig, type Cache } from "swr";
 
 // Mock server actions BEFORE importing the component under test.
 const mockWriteOff = vi.fn();
@@ -22,8 +22,15 @@ vi.mock("@/app/(app)/org/[slug]/legal/disbursements/actions", () => ({
 vi.mock("@/app/(app)/org/[slug]/matters/[id]/actions", () => ({ getDownloadUrl: vi.fn() }));
 
 import { DisbursementDetailClient } from "@/app/(app)/org/[slug]/legal/disbursements/[id]/detail-client";
-import { UnbilledDisbursementsSummary } from "@/components/legal/unbilled-disbursements-summary";
-import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
+import {
+  UnbilledDisbursementsSummary,
+  unbilledDisbursementsSummaryKey,
+} from "@/components/legal/unbilled-disbursements-summary";
+import { formatCurrency } from "@/lib/format";
+import type {
+  DisbursementResponse,
+  UnbilledDisbursementsResponse,
+} from "@/lib/api/legal-disbursements";
 
 function makeDisbursement(overrides: Partial<DisbursementResponse> = {}): DisbursementResponse {
   return {
@@ -133,40 +140,96 @@ describe("DisbursementDetailClient write-off / undo", () => {
     expect(screen.getByTestId("disbursement-restore-button")).toBeEnabled();
   });
 
-  describe("revalidates the matter's unbilled strip (Phase 88 621C)", () => {
-    // The strip lives on the matter tab / firm list, not here — but a mutation on this page must
-    // invalidate its shared SWR key so the strip is fresh when the user navigates back. Mounting
-    // it alongside makes the revalidation observable.
-    function renderWithStrip(disbursement: DisbursementResponse, canApprove = false) {
-      mockFetchUnbilled.mockResolvedValue({
+  describe("evicts the matter's cached unbilled strip (Phase 88 621C)", () => {
+    // Production shape: the strip is NOT mounted on the detail page. It lives on the matter tab /
+    // firm list and its last total sits in the shared SWR cache. A mutation here must evict that
+    // entry, or the strip paints the stale total when the user navigates back (observed on :3001:
+    // approve → back → R 150,00 then R 2 150,00).
+    const key = unbilledDisbursementsSummaryKey("p1");
+
+    function summary(totalAmount: number): UnbilledDisbursementsResponse {
+      return {
         matterId: "p1",
         currency: "ZAR",
-        items: [],
-        totalAmount: 0,
+        items: [
+          {
+            id: "d1",
+            incurredDate: "2026-10-01",
+            category: "SHERIFF_FEES",
+            description: "Sheriff fee",
+            amount: totalAmount,
+            vatTreatment: "ZERO_RATED_PASS_THROUGH",
+            vatAmount: 0,
+            supplierName: "Sheriff",
+          },
+        ],
+        totalAmount,
         totalVat: 0,
-      });
-      render(
-        <SWRTestProvider>
-          <DisbursementDetailClient
-            slug="test-org"
-            disbursement={disbursement}
-            canApprove={canApprove}
-            canWriteOff={true}
-          />
-          <UnbilledDisbursementsSummary matterId="p1" />
-        </SWRTestProvider>
+      };
+    }
+    const STALE = summary(150);
+    const FRESH = summary(2150);
+
+    function Harness({
+      cache,
+      disbursement,
+      canApprove,
+      page,
+    }: {
+      cache: Map<string, unknown>;
+      disbursement: DisbursementResponse;
+      canApprove: boolean;
+      page: "matter-tab" | "detail";
+    }) {
+      return (
+        <SWRConfig value={{ provider: () => cache as Cache, dedupingInterval: 0 }}>
+          {page === "matter-tab" ? (
+            <UnbilledDisbursementsSummary matterId="p1" />
+          ) : (
+            <DisbursementDetailClient
+              slug="test-org"
+              disbursement={disbursement}
+              canApprove={canApprove}
+              canWriteOff={true}
+            />
+          )}
+        </SWRConfig>
       );
     }
 
-    async function stripLoaded() {
-      await screen.findByTestId("unbilled-disbursements-summary");
+    const totalText = () => screen.queryByTestId("unbilled-disbursements-total")?.textContent;
+
+    /** Matter tab paints STALE into the shared cache, then the user opens the detail page. */
+    async function openDetailAfterStripCached(
+      disbursement: DisbursementResponse,
+      canApprove = false
+    ) {
+      const cache = new Map<string, unknown>();
+      mockFetchUnbilled.mockResolvedValueOnce(STALE).mockResolvedValue(FRESH);
+      const props = { cache, disbursement, canApprove };
+      const view = render(<Harness {...props} page="matter-tab" />);
+      await waitFor(() => expect(totalText()).toBe(formatCurrency(STALE.totalAmount, "ZAR")));
+      view.rerender(<Harness {...props} page="detail" />);
+      await screen.findByTestId("disbursement-detail");
+      mockFetchUnbilled.mockClear();
+      // Browser back to the matter tab, sharing the same SWR cache.
+      const navigateBack = () => view.rerender(<Harness {...props} page="matter-tab" />);
+      return { cache, navigateBack };
+    }
+
+    async function expectStripNeverStale(navigateBack: () => void) {
+      navigateBack();
+      // First paint after navigating back: no stale total (the evicted entry has no data).
+      expect(totalText()).toBeUndefined();
+      await waitFor(() => expect(totalText()).toBe(formatCurrency(FRESH.totalAmount, "ZAR")));
       expect(mockFetchUnbilled).toHaveBeenCalledTimes(1);
+      expect(mockFetchUnbilled).toHaveBeenCalledWith("p1");
     }
 
     it("after approve", async () => {
       const user = userEvent.setup();
       mockApprove.mockResolvedValue({ success: true, data: makeDisbursement() });
-      renderWithStrip(
+      const { cache, navigateBack } = await openDetailAfterStripCached(
         makeDisbursement({
           approvalStatus: "PENDING_APPROVAL",
           approvedBy: null,
@@ -174,28 +237,28 @@ describe("DisbursementDetailClient write-off / undo", () => {
         }),
         true
       );
-      await stripLoaded();
 
       await user.click(screen.getByTestId("disbursement-approve-button"));
       await user.click(await screen.findByTestId("disbursement-confirm-approve-button"));
 
       await waitFor(() => expect(mockApprove).toHaveBeenCalled());
-      await waitFor(() => expect(mockFetchUnbilled).toHaveBeenCalledTimes(2));
-      expect(mockFetchUnbilled).toHaveBeenLastCalledWith("p1");
+      await waitFor(() => expect(cacheData(cache)).toBeUndefined());
+      expect(mockFetchUnbilled).not.toHaveBeenCalled();
+      await expectStripNeverStale(navigateBack);
     });
 
     it("after write-off", async () => {
       const user = userEvent.setup();
       mockWriteOff.mockResolvedValue({ success: true, data: writtenOff });
-      renderWithStrip(makeDisbursement());
-      await stripLoaded();
+      const { cache, navigateBack } = await openDetailAfterStripCached(makeDisbursement());
 
       await user.click(screen.getByTestId("disbursement-write-off-button"));
       await user.type(await screen.findByRole("textbox", { name: /reason/i }), "Client dispute");
       await user.click(screen.getByTestId("disbursement-write-off-confirm-button"));
 
       await screen.findByTestId("disbursement-restore-button");
-      await waitFor(() => expect(mockFetchUnbilled).toHaveBeenCalledTimes(2));
+      await waitFor(() => expect(cacheData(cache)).toBeUndefined());
+      await expectStripNeverStale(navigateBack);
     });
 
     it("after restore, but not after a failed restore", async () => {
@@ -203,16 +266,20 @@ describe("DisbursementDetailClient write-off / undo", () => {
       mockRestore
         .mockResolvedValueOnce({ success: false, error: "Disbursement is not written off" })
         .mockResolvedValueOnce({ success: true, data: makeDisbursement() });
-      renderWithStrip(writtenOff);
-      await stripLoaded();
+      const { cache, navigateBack } = await openDetailAfterStripCached(writtenOff);
 
       await user.click(screen.getByTestId("disbursement-restore-button"));
       await screen.findByRole("alert");
-      expect(mockFetchUnbilled).toHaveBeenCalledTimes(1);
+      expect(cacheData(cache)).toEqual(STALE);
 
       await user.click(screen.getByTestId("disbursement-restore-button"));
       await screen.findByTestId("disbursement-write-off-button");
-      await waitFor(() => expect(mockFetchUnbilled).toHaveBeenCalledTimes(2));
+      await waitFor(() => expect(cacheData(cache)).toBeUndefined());
+      await expectStripNeverStale(navigateBack);
     });
+
+    function cacheData(cache: Map<string, unknown>): unknown {
+      return (cache.get(key) as { data?: unknown } | undefined)?.data;
+    }
   });
 });

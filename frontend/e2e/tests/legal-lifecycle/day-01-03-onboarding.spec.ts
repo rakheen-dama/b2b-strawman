@@ -332,10 +332,11 @@ test.describe.serial("Day 1 — Sipho Ndlovu Onboarding", () => {
     }
   });
 
-  // ── 3.7 (Phase 88 619E, ADR-346): the lead adds Carol to the matter team ──
+  // ── Day 1 team setup (Phase 88 619E, ADR-346): the lead adds Carol to the matter team ──
   // Org Members see only matters they are on. Without this step Carol's Day 7
   // time-recording test found no Sipho matter and skipped (OQ #11).
   test("Alice: Add Carol to the Sipho matter team (Team tab)", async ({ page }) => {
+    test.setTimeout(60_000);
     await loginAs(page, "alice");
     await openMatter(page, `Ndlovu v RAF ${RUN_ID}`);
     await openGroupedTab(page, "details", "team");
@@ -347,9 +348,11 @@ test.describe.serial("Day 1 — Sipho Ndlovu Onboarding", () => {
     await expect(addDialog).toBeVisible();
     await addDialog.getByRole("option", { name: /Carol Member/ }).click();
     await expect(addDialog).toBeHidden({ timeout: 15_000 });
-    // The row lands with the revalidated RSC, which can trail the dialog by >5 s (619D N1)
+    // The row commits with the revalidated RSC. 15 s stays deliberately below the 30 s
+    // bell poll: a stall here means the next@16.2.6 lost-ping regression is back
+    // (fixed by next 16.3.8, #1651).
     await expect(panel.getByRole("row", { name: /Carol Member/ }).first()).toBeVisible({
-      timeout: 30_000,
+      timeout: 15_000,
     });
   });
 });

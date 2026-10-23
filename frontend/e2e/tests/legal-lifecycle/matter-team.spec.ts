@@ -37,14 +37,19 @@ function memberRow(panel: Locator, name: string): Locator {
   return panel.getByRole("row", { name: new RegExp(escapeRegExp(name)) });
 }
 
-/** Adds an org member through the Add Member dialog and waits for their row (619D N1: >5 s). */
+/**
+ * Adds an org member through the Add Member dialog and waits for their row.
+ * Row changes commit with the revalidated RSC. The 15 s waits in this file stay
+ * deliberately below the 30 s bell poll: a stall means the next@16.2.6 lost-ping
+ * regression is back (fixed by next 16.3.8, #1651).
+ */
 async function addMember(page: Page, panel: Locator, name: string): Promise<void> {
   await panel.getByRole("button", { name: "Add Member" }).click();
   const dialog = page.getByRole("dialog", { name: "Add Member" });
   await expect(dialog).toBeVisible();
   await dialog.getByRole("option", { name: new RegExp(escapeRegExp(name)) }).click();
   await expect(dialog).toBeHidden({ timeout: 15_000 });
-  await expect(memberRow(panel, name).first()).toBeVisible({ timeout: 30_000 });
+  await expect(memberRow(panel, name).first()).toBeVisible({ timeout: 15_000 });
 }
 
 test.describe.serial("Matter team — Team tab (add, transfer, remove)", () => {
@@ -110,7 +115,7 @@ test.describe.serial("Matter team — Team tab (add, transfer, remove)", () => {
     await expect(confirm).toBeHidden({ timeout: 15_000 });
 
     await expect(carolRow.getByText("Lead", { exact: true }).first()).toBeVisible({
-      timeout: 30_000,
+      timeout: 15_000,
     });
     await expect(carolRow.getByRole("button", { name: "Open menu" })).toHaveCount(0);
     await expect(
@@ -130,7 +135,7 @@ test.describe.serial("Matter team — Team tab (add, transfer, remove)", () => {
 
     await memberRow(panel, "Bob Admin").getByRole("button", { name: "Open menu" }).click();
     await page.getByRole("menuitem", { name: "Remove", exact: true }).click();
-    await expect(memberRow(panel, "Bob Admin")).toHaveCount(0, { timeout: 30_000 });
+    await expect(memberRow(panel, "Bob Admin")).toHaveCount(0, { timeout: 15_000 });
     await expect(memberRow(panel, "Carol Member").first()).toBeVisible();
     await expect(memberRow(panel, "Alice Owner").first()).toBeVisible();
   });

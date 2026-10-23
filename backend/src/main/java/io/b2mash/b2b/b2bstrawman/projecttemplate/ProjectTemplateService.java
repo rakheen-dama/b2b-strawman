@@ -563,12 +563,13 @@ public class ProjectTemplateService {
       publishCustomerProjectLinked(customer.getId(), project.getId(), null, null);
     }
 
-    // 7. Set project lead
+    // 7. Set project lead, then auto-add the creator (ADR-346)
     if (request.matterLeadMemberId() != null) {
       projectMemberRepository.save(
           new ProjectMember(
               project.getId(), request.matterLeadMemberId(), Roles.PROJECT_LEAD, memberId));
     }
+    addCreatorToTeam(project.getId(), memberId, request.matterLeadMemberId());
 
     // 8. Create tasks from template (snapshot — no live references)
     // TemplateTask.getName() maps to Task.title (different field names!)
@@ -680,7 +681,9 @@ public class ProjectTemplateService {
    * @param resolvedName the already-resolved project name
    * @param customer the customer to link (may be null)
    * @param projectLeadMemberId the project lead member ID (may be null)
-   * @param actingMemberId the member ID to use as createdBy (may be null for system-created)
+   * @param actingMemberId the member ID to use as createdBy; also auto-added to the matter team
+   *     (lead when no lead is chosen, member otherwise — ADR-346). {@code projects.created_by} is
+   *     NOT NULL, so this must be a real member
    * @param tenantIdOverride explicit tenant schema id for the linked event; null = use
    *     RequestScopes
    * @param orgIdOverride explicit Clerk org id for the linked event; null = use RequestScopes
@@ -734,12 +737,13 @@ public class ProjectTemplateService {
           customer.getId(), project.getId(), tenantIdOverride, orgIdOverride);
     }
 
-    // 3. Set project lead
+    // 3. Set project lead, then auto-add the creator (ADR-346)
     if (projectLeadMemberId != null) {
       projectMemberRepository.save(
           new ProjectMember(
               project.getId(), projectLeadMemberId, Roles.PROJECT_LEAD, actingMemberId));
     }
+    addCreatorToTeam(project.getId(), actingMemberId, projectLeadMemberId);
 
     // 4. Create tasks from template (snapshot)
     var templateTasks = templateTaskRepository.findByTemplateIdOrderBySortOrder(template.getId());
@@ -955,6 +959,20 @@ public class ProjectTemplateService {
     if (requestTemplateId != null && !requestTemplateRepository.existsById(requestTemplateId)) {
       throw new ResourceNotFoundException("RequestTemplate", requestTemplateId);
     }
+  }
+
+  /**
+   * ADR-346: the creator is always on a template-created matter — as lead when no lead was chosen,
+   * as member otherwise; skipped when the creator is the chosen lead, or when there is no creator.
+   * Mirrors {@code ProjectService.createProject}: a direct row write, so no {@code
+   * project_member.added} audit and no {@code MemberAddedToProjectEvent} (as for the lead row).
+   */
+  private void addCreatorToTeam(UUID projectId, UUID creatorId, UUID chosenLeadId) {
+    if (creatorId == null || creatorId.equals(chosenLeadId)) {
+      return;
+    }
+    String role = chosenLeadId == null ? Roles.PROJECT_LEAD : Roles.PROJECT_MEMBER;
+    projectMemberRepository.save(new ProjectMember(projectId, creatorId, role, null));
   }
 
   private UUID resolveAssignee(String assigneeRole, UUID projectLeadMemberId) {

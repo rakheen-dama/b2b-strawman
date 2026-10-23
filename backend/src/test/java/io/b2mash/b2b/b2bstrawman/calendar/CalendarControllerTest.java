@@ -88,7 +88,7 @@ class CalendarControllerTest {
             null,
             LocalDate.now().plusDays(10));
     project1Id = project1.getId();
-    projectMemberService.addMember(project1Id, member1Id, adminMemberId);
+    projectMemberService.addMemberAsSystem(project1Id, member1Id, adminMemberId);
 
     // Project 2: due in 20 days, member2 is a member (NOT member1)
     var project2 =
@@ -101,7 +101,7 @@ class CalendarControllerTest {
             null,
             LocalDate.now().plusDays(20));
     project2Id = project2.getId();
-    projectMemberService.addMember(project2Id, member2Id, adminMemberId);
+    projectMemberService.addMemberAsSystem(project2Id, member2Id, adminMemberId);
 
     // Task 1: in project 1, due in 5 days, assigned to member1
     var task1 =

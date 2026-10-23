@@ -5,6 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -32,6 +34,9 @@ import org.springframework.test.web.servlet.MockMvc;
 class ProjectMemberIntegrationTest {
   private static final String ORG_ID = "org_pm_test";
   private static final String ORG_B_ID = "org_pm_test_b";
+  private static final String CANNOT_MANAGE_TITLE = "Cannot manage matter team";
+  private static final String CANNOT_MANAGE_DETAIL =
+      "Only the matter lead or a firm admin can manage the team";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -298,21 +303,26 @@ class ProjectMemberIntegrationTest {
   // --- RBAC ---
 
   @Test
-  void memberCanListProjectMembers() throws Exception {
+  void memberOnMatterCanListProjectMembers() throws Exception {
     var projectId =
         createProject(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), "RBAC List Test");
+    addToMatter(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), projectId, memberMemberId);
 
     mockMvc
         .perform(
             get("/api/matters/" + projectId + "/members")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_pm_member")))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(2)));
   }
 
+  // --- 619.8 canManage gates (ADR-346) ---
+
   @Test
-  void memberCanAddMemberToProject() throws Exception {
+  void memberNotLeadCannotAddMember_returns403() throws Exception {
     var projectId =
         createProject(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), "RBAC Add Test");
+    addToMatter(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), projectId, memberMemberId);
 
     mockMvc
         .perform(
@@ -320,7 +330,239 @@ class ProjectMemberIntegrationTest {
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_pm_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(extraMemberId)))
-        .andExpect(status().isCreated());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value(CANNOT_MANAGE_TITLE))
+        .andExpect(jsonPath("$.detail").value(CANNOT_MANAGE_DETAIL));
+
+    // Team unchanged: owner (lead) + member, extra not added
+    mockMvc
+        .perform(
+            get("/api/matters/" + projectId + "/members")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(2)))
+        .andExpect(jsonPath("$[?(@.memberId == '%s')]".formatted(extraMemberId), hasSize(0)));
+  }
+
+  @Test
+  void memberNotOnMatterCannotAddMember_returns404() throws Exception {
+    var projectId =
+        createProject(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), "RBAC Add Not On Matter");
+
+    mockMvc
+        .perform(
+            post("/api/matters/" + projectId + "/members")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pm_member"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"memberId\": \"%s\"}".formatted(extraMemberId)))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").value("Project not found"))
+        .andExpect(jsonPath("$.detail").value("No project found with id " + projectId));
+  }
+
+  @Test
+  void leadCanAddAndRemoveMember() throws Exception {
+    var projectId =
+        createProject(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), "RBAC Lead Add Test");
+    addToMatter(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), projectId, memberMemberId);
+    // Owner makes the org Member the matter lead
+    mockMvc
+        .perform(
+            put("/api/matters/" + projectId + "/members/" + memberMemberId + "/role")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"role\": \"lead\"}"))
+        .andExpect(status().isNoContent());
+
+    // The lead (org role member) can add: 201 + Location, no body
+    mockMvc
+        .perform(
+            post("/api/matters/" + projectId + "/members")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pm_member"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"memberId\": \"%s\"}".formatted(extraMemberId)))
+        .andExpect(status().isCreated())
+        .andExpect(
+            header().string("Location", "/api/matters/" + projectId + "/members/" + extraMemberId))
+        .andExpect(content().string(""));
+
+    // ...and remove a non-lead
+    mockMvc
+        .perform(
+            delete("/api/matters/" + projectId + "/members/" + extraMemberId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pm_member")))
+        .andExpect(status().isNoContent());
+
+    mockMvc
+        .perform(
+            get("/api/matters/" + projectId + "/members")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pm_member")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(2)))
+        .andExpect(
+            jsonPath("$[?(@.memberId == '%s')].matterRole".formatted(memberMemberId))
+                .value("lead"));
+  }
+
+  @Test
+  void memberNotLeadCannotRemoveMember_returns403() throws Exception {
+    var projectId =
+        createProject(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), "RBAC Remove Test");
+    addToMatter(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), projectId, memberMemberId);
+    addToMatter(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), projectId, extraMemberId);
+
+    mockMvc
+        .perform(
+            delete("/api/matters/" + projectId + "/members/" + extraMemberId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pm_member")))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value(CANNOT_MANAGE_TITLE))
+        .andExpect(jsonPath("$.detail").value(CANNOT_MANAGE_DETAIL));
+
+    mockMvc
+        .perform(
+            get("/api/matters/" + projectId + "/members")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(3)));
+  }
+
+  @Test
+  void memberNotLeadCannotTransferLead_returns403() throws Exception {
+    var projectId =
+        createProject(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), "RBAC Transfer Test");
+    addToMatter(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), projectId, memberMemberId);
+
+    mockMvc
+        .perform(
+            put("/api/matters/" + projectId + "/members/" + memberMemberId + "/role")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pm_member"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"role\": \"lead\"}"))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value(CANNOT_MANAGE_TITLE))
+        .andExpect(jsonPath("$.detail").value(CANNOT_MANAGE_DETAIL));
+
+    // Lead unchanged
+    mockMvc
+        .perform(
+            get("/api/matters/" + projectId + "/members")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner")))
+        .andExpect(
+            jsonPath("$[?(@.memberId == '%s')].matterRole".formatted(ownerMemberId)).value("lead"))
+        .andExpect(
+            jsonPath("$[?(@.memberId == '%s')].matterRole".formatted(memberMemberId))
+                .value("member"));
+  }
+
+  @Test
+  void adminCanTransferLeadWithoutBeingLead() throws Exception {
+    // Owner creates the matter (owner = lead); the admin is NOT on it
+    var projectId =
+        createProject(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), "RBAC Admin Transfer");
+    addToMatter(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), projectId, memberMemberId);
+
+    mockMvc
+        .perform(
+            put("/api/matters/" + projectId + "/members/" + memberMemberId + "/role")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"role\": \"lead\"}"))
+        .andExpect(status().isNoContent());
+
+    mockMvc
+        .perform(
+            get("/api/matters/" + projectId + "/members")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(2)))
+        .andExpect(
+            jsonPath("$[?(@.memberId == '%s')].matterRole".formatted(ownerMemberId))
+                .value("member"))
+        .andExpect(
+            jsonPath("$[?(@.memberId == '%s')].matterRole".formatted(memberMemberId))
+                .value("lead"));
+  }
+
+  @Test
+  void adminNotOnMatterCanAddMember() throws Exception {
+    // Owner creates the matter (owner = lead); the admin is NOT on it
+    var projectId =
+        createProject(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), "RBAC Admin Add");
+
+    mockMvc
+        .perform(
+            post("/api/matters/" + projectId + "/members")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"memberId\": \"%s\"}".formatted(extraMemberId)))
+        .andExpect(status().isCreated())
+        .andExpect(
+            header().string("Location", "/api/matters/" + projectId + "/members/" + extraMemberId))
+        .andExpect(content().string(""));
+
+    // The added member is on the team; the admin did not join as a side effect
+    mockMvc
+        .perform(
+            get("/api/matters/" + projectId + "/members")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(2)))
+        .andExpect(
+            jsonPath("$[?(@.memberId == '%s')].matterRole".formatted(ownerMemberId)).value("lead"))
+        .andExpect(
+            jsonPath("$[?(@.memberId == '%s')].matterRole".formatted(extraMemberId))
+                .value("member"));
+  }
+
+  @Test
+  void ownerOnMatterAsMemberCanTransferLeadToSelf() throws Exception {
+    // Admin creates the matter (admin = lead) and adds the owner as a plain member. The owner's own
+    // row is loaded by the gate first, so this pins the demote-flush-promote ordering (no 500).
+    var projectId =
+        createProject(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"), "RBAC Owner Self Transfer");
+    addToMatter(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"), projectId, ownerMemberId);
+
+    mockMvc
+        .perform(
+            put("/api/matters/" + projectId + "/members/" + ownerMemberId + "/role")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"role\": \"lead\"}"))
+        .andExpect(status().isNoContent());
+
+    mockMvc
+        .perform(
+            get("/api/matters/" + projectId + "/members")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(2)))
+        .andExpect(
+            jsonPath("$[?(@.memberId == '%s')].matterRole".formatted(ownerMemberId)).value("lead"))
+        .andExpect(
+            jsonPath("$[?(@.memberId == '%s')].matterRole".formatted(adminMemberId))
+                .value("member"));
+  }
+
+  @Test
+  void removeLeadStill400EvenForOwnerNotLead() throws Exception {
+    var projectId =
+        createProject(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"), "RBAC Owner Remove Lead");
+
+    mockMvc
+        .perform(
+            delete("/api/matters/" + projectId + "/members/" + adminMemberId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Cannot remove project lead"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value("Transfer lead role to another member before removing the current lead"));
   }
 
   @Test
@@ -357,6 +599,17 @@ class ProjectMemberIntegrationTest {
   }
 
   // --- Helpers ---
+
+  private void addToMatter(JwtRequestPostProcessor jwt, String projectId, String memberId)
+      throws Exception {
+    mockMvc
+        .perform(
+            post("/api/matters/" + projectId + "/members")
+                .with(jwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"memberId\": \"%s\"}".formatted(memberId)))
+        .andExpect(status().isCreated());
+  }
 
   private String createProject(JwtRequestPostProcessor jwt, String name) throws Exception {
     var result =

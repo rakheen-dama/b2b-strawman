@@ -302,7 +302,7 @@ class TemplateCreatedMatterReadPathIntegrationTest {
         ownerId,
         "owner",
         Capability.ALL_NAMES,
-        () -> projectMemberService.addMember(matterId, claimantId, ownerId));
+        () -> projectMemberService.addMemberAsSystem(matterId, claimantId, ownerId));
     // Real service: commits, then NotificationEventHandler.onTaskClaimed (AFTER_COMMIT) ->
     // NotificationService.handleTaskClaimed -> leads via findByProjectIdAndProjectRole(lead).
     TenantTestSupport.runAsActor(
@@ -344,13 +344,13 @@ class TemplateCreatedMatterReadPathIntegrationTest {
                     automationContext(),
                     UUID.randomUUID()));
     // PINS CURRENT BEHAVIOUR: PROJECT_OWNER resolves the lead, who is already on the team, so
-    // addMember always conflicts. This always-conflict outcome is a pre-existing executor oddity
-    // (recorded in PR #1647, not changed here); when the executor is fixed, flip this test to an
-    // ActionSuccess assertion with assignedMemberId == leadId.
+    // addMemberAsSystem always conflicts. This always-conflict outcome is a pre-existing executor
+    // oddity (recorded in PR #1647, not changed here); when the executor is fixed, flip this test
+    // to an ActionSuccess assertion with assignedMemberId == leadId.
     // Discriminator: an unresolved lead (the pre-ADR-345 symptom) fails earlier with the
-    // executor's own "could not resolve member" message and never reaches addMember. Reaching
-    // addMember's ResourceConflictException, whose ProblemDetail detail embeds the resolved
-    // member id, proves the lead was the member PROJECT_OWNER resolved to.
+    // executor's own "could not resolve member" message and never reaches addMemberAsSystem.
+    // Reaching addMemberAsSystem's ResourceConflictException, whose ProblemDetail detail embeds
+    // the resolved member id, proves the lead was the member PROJECT_OWNER resolved to.
     assertThat(result).isInstanceOf(ActionFailure.class);
     var failure = (ActionFailure) result;
     assertThat(failure.errorMessage())

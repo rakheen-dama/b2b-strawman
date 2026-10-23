@@ -189,10 +189,10 @@ class MatterListRowIntegrationTest {
                 clientId,
                 today.plusDays(30))
             .getId();
-    projectMemberService.addMember(matterA, memberId, ownerId);
-    projectMemberService.addMember(matterA, finId, ownerId);
-    projectMemberService.addMember(matterA, trustId, ownerId);
-    projectMemberService.addMember(matterA, bareId, ownerId);
+    projectMemberService.addMemberAsSystem(matterA, memberId, ownerId);
+    projectMemberService.addMemberAsSystem(matterA, finId, ownerId);
+    projectMemberService.addMemberAsSystem(matterA, trustId, ownerId);
+    projectMemberService.addMemberAsSystem(matterA, bareId, ownerId);
     var dueSameDayAsCourt =
         taskService.createTask(
             matterA, "Open due +3", "d", "MEDIUM", "GENERAL", today.plusDays(3), owner);
@@ -255,8 +255,8 @@ class MatterListRowIntegrationTest {
         projectService
             .createProject("MLR Matter B", "d", ownerId, null, null, clientId, null)
             .getId();
-    projectMemberService.addMember(matterB, memberId, ownerId);
-    projectMemberService.transferLead(matterB, ownerId, memberId);
+    projectMemberService.addMemberAsSystem(matterB, memberId, ownerId);
+    projectMemberService.transferLead(matterB, owner, memberId);
 
     // --- Orphan: no client, no project_members rows → owner's matterRole is null ---
     orphan =

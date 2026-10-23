@@ -116,7 +116,8 @@ class DashboardProjectIntegrationTest {
               projectWithTasks = p1.getId();
 
               // Add member to this project
-              projectMemberService.addMember(projectWithTasks, memberIdMember, memberIdOwner);
+              projectMemberService.addMemberAsSystem(
+                  projectWithTasks, memberIdMember, memberIdOwner);
 
               // Create tasks: 2 OPEN, 2 IN_PROGRESS, 1 DONE, 1 overdue
               taskService.createTask(

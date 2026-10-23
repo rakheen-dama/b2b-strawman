@@ -126,8 +126,8 @@ class DashboardCompanyIntegrationTest {
     projectCId = projectC.getId();
 
     // --- Add members to projects ---
-    projectMemberService.addMember(projectAId, member1Id, adminMemberId);
-    projectMemberService.addMember(projectBId, member2Id, adminMemberId);
+    projectMemberService.addMemberAsSystem(projectAId, member1Id, adminMemberId);
+    projectMemberService.addMemberAsSystem(projectBId, member2Id, adminMemberId);
 
     // --- Create tasks ---
     // Project A: 2 open tasks (1 overdue), 1 done

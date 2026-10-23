@@ -67,7 +67,7 @@ public class AssignMemberActionExecutor implements ActionExecutor {
       if (actorId == null) {
         return new ActionFailure("No actor ID available in automation context", null);
       }
-      projectMemberService.addMember(projectId, memberId, actorId);
+      projectMemberService.addMemberAsSystem(projectId, memberId, actorId);
 
       log.info("Automation assigned member {} to project {}", memberId, projectId);
       return new ActionSuccess(Map.of("assignedMemberId", memberId.toString()));

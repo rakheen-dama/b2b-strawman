@@ -272,23 +272,20 @@ export async function restoreDisbursementAction(
 }
 
 /**
- * Fetches APPROVED trust transactions of type DISBURSEMENT_PAYMENT for a given project.
+ * Fetches APPROVED trust PAYMENT transactions on a matter that no disbursement links yet —
+ * the rows of the disbursement trust-link picker (Phase 88 621C, G-B11).
  *
- * Phase 60 exposes trust transactions via the account-scoped endpoint
- * `GET /api/trust-accounts/{accountId}/transactions?...`. There is no flat
- * `/api/trust-transactions?matterId=...` endpoint yet, and the current
- * controller ignores matterId/status/type query params, so we:
- *   1. Walk all trust accounts for the org and page through every page of
- *      transactions per account.
- *   2. Apply client-side filtering to keep only APPROVED DISBURSEMENT_PAYMENT
- *      transactions belonging to the requested projectId.
+ * The ledger has no DISBURSEMENT_PAYMENT type (chk_trust_txn_type): a trust payment made for a
+ * disbursement is a PAYMENT, which is exactly what DisbursementService.validateTrustLink accepts
+ * (EXPECTED_TRUST_TRANSACTION_TYPE = "PAYMENT"). Since 621A the account-scoped
+ * `GET /api/trust-accounts/{accountId}/transactions` honours matterId/type/status/excludeLinked;
+ * `excludeLinked=true` hides payments already referenced by a disbursement
+ * (legal_disbursements.trust_transaction_id) so a used payment is never offered twice (A14).
+ * We walk every trust account (the matter's payments may sit in any of them) and page through.
+ * The client-side filter is a cheap belt-and-braces re-check of matter/status/type.
  *
- * The query params are kept (harmless today, honoured by a future backend
- * enhancement) and a defensive client-side filter guarantees correctness.
- *
- * Errors from the outer accounts call are rethrown so the caller's SWR `error`
- * state fires. Per-account errors are logged and skipped — one bad account
- * must not hide usable transactions from the others.
+ * Errors from the outer accounts call are rethrown so the caller's SWR `error` state fires.
+ * Per-account errors are logged and skipped — one bad account must not hide usable payments.
  */
 export async function fetchApprovedTrustDisbursementPayments(
   projectId: string
@@ -310,7 +307,8 @@ export async function fetchApprovedTrustDisbursementPayments(
           const search = new URLSearchParams();
           search.set("matterId", projectId);
           search.set("status", "APPROVED");
-          search.set("type", "DISBURSEMENT_PAYMENT");
+          search.set("type", "PAYMENT");
+          search.set("excludeLinked", "true");
           search.set("size", String(PAGE_SIZE));
           search.set("page", String(page));
           const result = await api.get<
@@ -339,15 +337,11 @@ export async function fetchApprovedTrustDisbursementPayments(
     })
   );
 
-  // Defensive client-side filter — the backend controller currently ignores
-  // matterId/status/type params, so we must verify each row matches.
+  // Belt-and-braces: the server already filtered on matter/status/type.
   return transactionsPerAccount
     .flat()
     .filter(
-      (t) =>
-        t.matterId === projectId &&
-        t.status === "APPROVED" &&
-        t.transactionType === "DISBURSEMENT_PAYMENT"
+      (t) => t.matterId === projectId && t.status === "APPROVED" && t.transactionType === "PAYMENT"
     );
 }
 

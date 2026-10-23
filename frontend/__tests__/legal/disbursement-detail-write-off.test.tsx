@@ -1,10 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { SWRTestProvider } from "@/lib/swr/test-utils";
 
 // Mock server actions BEFORE importing the component under test.
 const mockWriteOff = vi.fn();
 const mockRestore = vi.fn();
+const mockApprove = vi.fn();
+const mockFetchUnbilled = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/legal/disbursements/actions", () => ({
   writeOffDisbursementAction: (...args: unknown[]) => mockWriteOff(...args),
@@ -12,12 +15,14 @@ vi.mock("@/app/(app)/org/[slug]/legal/disbursements/actions", () => ({
   submitForApprovalAction: vi.fn(),
   uploadReceiptAction: vi.fn(),
   updateDisbursementAction: vi.fn(),
-  approveDisbursementAction: vi.fn(),
+  approveDisbursementAction: (...args: unknown[]) => mockApprove(...args),
   rejectDisbursementAction: vi.fn(),
+  fetchUnbilledDisbursementsAction: (...args: unknown[]) => mockFetchUnbilled(...args),
 }));
 vi.mock("@/app/(app)/org/[slug]/matters/[id]/actions", () => ({ getDownloadUrl: vi.fn() }));
 
 import { DisbursementDetailClient } from "@/app/(app)/org/[slug]/legal/disbursements/[id]/detail-client";
+import { UnbilledDisbursementsSummary } from "@/components/legal/unbilled-disbursements-summary";
 import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
 
 function makeDisbursement(overrides: Partial<DisbursementResponse> = {}): DisbursementResponse {
@@ -126,5 +131,88 @@ describe("DisbursementDetailClient write-off / undo", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Disbursement is not written off");
     expect(within(detail).getByText("Written off", { exact: true })).toBeInTheDocument();
     expect(screen.getByTestId("disbursement-restore-button")).toBeEnabled();
+  });
+
+  describe("revalidates the matter's unbilled strip (Phase 88 621C)", () => {
+    // The strip lives on the matter tab / firm list, not here — but a mutation on this page must
+    // invalidate its shared SWR key so the strip is fresh when the user navigates back. Mounting
+    // it alongside makes the revalidation observable.
+    function renderWithStrip(disbursement: DisbursementResponse, canApprove = false) {
+      mockFetchUnbilled.mockResolvedValue({
+        matterId: "p1",
+        currency: "ZAR",
+        items: [],
+        totalAmount: 0,
+        totalVat: 0,
+      });
+      render(
+        <SWRTestProvider>
+          <DisbursementDetailClient
+            slug="test-org"
+            disbursement={disbursement}
+            canApprove={canApprove}
+            canWriteOff={true}
+          />
+          <UnbilledDisbursementsSummary matterId="p1" />
+        </SWRTestProvider>
+      );
+    }
+
+    async function stripLoaded() {
+      await screen.findByTestId("unbilled-disbursements-summary");
+      expect(mockFetchUnbilled).toHaveBeenCalledTimes(1);
+    }
+
+    it("after approve", async () => {
+      const user = userEvent.setup();
+      mockApprove.mockResolvedValue({ success: true, data: makeDisbursement() });
+      renderWithStrip(
+        makeDisbursement({
+          approvalStatus: "PENDING_APPROVAL",
+          approvedBy: null,
+          approvedAt: null,
+        }),
+        true
+      );
+      await stripLoaded();
+
+      await user.click(screen.getByTestId("disbursement-approve-button"));
+      await user.click(await screen.findByTestId("disbursement-confirm-approve-button"));
+
+      await waitFor(() => expect(mockApprove).toHaveBeenCalled());
+      await waitFor(() => expect(mockFetchUnbilled).toHaveBeenCalledTimes(2));
+      expect(mockFetchUnbilled).toHaveBeenLastCalledWith("p1");
+    });
+
+    it("after write-off", async () => {
+      const user = userEvent.setup();
+      mockWriteOff.mockResolvedValue({ success: true, data: writtenOff });
+      renderWithStrip(makeDisbursement());
+      await stripLoaded();
+
+      await user.click(screen.getByTestId("disbursement-write-off-button"));
+      await user.type(await screen.findByRole("textbox", { name: /reason/i }), "Client dispute");
+      await user.click(screen.getByTestId("disbursement-write-off-confirm-button"));
+
+      await screen.findByTestId("disbursement-restore-button");
+      await waitFor(() => expect(mockFetchUnbilled).toHaveBeenCalledTimes(2));
+    });
+
+    it("after restore, but not after a failed restore", async () => {
+      const user = userEvent.setup();
+      mockRestore
+        .mockResolvedValueOnce({ success: false, error: "Disbursement is not written off" })
+        .mockResolvedValueOnce({ success: true, data: makeDisbursement() });
+      renderWithStrip(writtenOff);
+      await stripLoaded();
+
+      await user.click(screen.getByTestId("disbursement-restore-button"));
+      await screen.findByRole("alert");
+      expect(mockFetchUnbilled).toHaveBeenCalledTimes(1);
+
+      await user.click(screen.getByTestId("disbursement-restore-button"));
+      await screen.findByTestId("disbursement-write-off-button");
+      await waitFor(() => expect(mockFetchUnbilled).toHaveBeenCalledTimes(2));
+    });
   });
 });

@@ -2,10 +2,15 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useSWRConfig } from "swr";
 import { ModuleGate } from "@/components/module-gate";
 import { DisbursementListView } from "@/components/legal/disbursement-list-view";
 import { useDisbursementWriteOff } from "@/components/legal/use-disbursement-write-off";
 import { CreateDisbursementDialog } from "@/components/legal/create-disbursement-dialog";
+import {
+  UnbilledDisbursementsSummary,
+  unbilledDisbursementsSummaryKey,
+} from "@/components/legal/unbilled-disbursements-summary";
 import { Input } from "@b2mash/ui/input";
 import { fetchDisbursements } from "./actions";
 import type {
@@ -73,7 +78,15 @@ export function DisbursementsListClient({
     });
   };
 
-  const writeOff = useDisbursementWriteOff({ slug, onChanged: () => refetch() });
+  const { mutate: globalMutate } = useSWRConfig();
+  const writeOff = useDisbursementWriteOff({
+    slug,
+    onChanged: () => {
+      refetch();
+      // Write-off / undo moves the matter's unbilled total (strip shown only when filtered).
+      if (projectFilter) void globalMutate(unbilledDisbursementsSummaryKey(projectFilter));
+    },
+  });
 
   const isInitialMount = useRef(true);
   const refetchRef = useRef(refetch);
@@ -176,6 +189,8 @@ export function DisbursementsListClient({
             <CreateDisbursementDialog slug={slug} onSuccess={refetch} />
           </div>
         </div>
+
+        {projectFilter && <UnbilledDisbursementsSummary matterId={projectFilter} />}
 
         <div className="text-sm text-slate-500 dark:text-slate-400">
           {total} disbursement{total !== 1 ? "s" : ""}

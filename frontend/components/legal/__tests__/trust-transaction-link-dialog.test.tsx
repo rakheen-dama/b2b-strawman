@@ -23,7 +23,8 @@ function makeTx(overrides: Partial<TrustTransaction> = {}): TrustTransaction {
   return {
     id: "tx1",
     trustAccountId: "ta1",
-    transactionType: "DISBURSEMENT_PAYMENT",
+    // The ledger has no DISBURSEMENT_PAYMENT type — a disbursement is paid from trust by a PAYMENT.
+    transactionType: "PAYMENT",
     amount: 1500,
     clientId: "c1",
     matterId: "p1",
@@ -52,13 +53,15 @@ function makeTx(overrides: Partial<TrustTransaction> = {}): TrustTransaction {
 describe("TrustTransactionLinkDialog", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Drop queued *Once results so a failing case can't leak them into the next one.
+    mockFetchApproved.mockReset();
   });
 
   afterEach(() => {
     cleanup();
   });
 
-  it("lists approved DISBURSEMENT_PAYMENT transactions for the project", async () => {
+  it("lists approved PAYMENT transactions for the matter", async () => {
     mockFetchApproved.mockResolvedValue([
       makeTx({ id: "tx1", reference: "REF-001", amount: 1500 }),
       makeTx({ id: "tx2", reference: "REF-002", amount: 2500 }),
@@ -100,6 +103,101 @@ describe("TrustTransactionLinkDialog", () => {
     await waitFor(() => {
       expect(screen.getByTestId("trust-tx-empty")).toBeInTheDocument();
     });
+    expect(screen.getByTestId("trust-tx-empty")).toHaveTextContent(
+      /No approved trust payments on this matter yet/
+    );
+    expect(
+      screen.getByText("Select an approved trust payment on this matter.")
+    ).toBeInTheDocument();
+  });
+
+  it("re-open shows the fresh list, never the cached one (a just-linked payment is not offered)", async () => {
+    const tx = makeTx({ id: "tx1", reference: "REF-001", amount: 1500 });
+    mockFetchApproved.mockResolvedValueOnce([tx]);
+
+    // One cache shared across the close / re-open, like the app-wide SWR cache, with SWR's default
+    // 2 s dedupe window (a quick re-open must still fetch).
+    const cache = new Map();
+    const withCache = (open: boolean) => (
+      <SWRConfig value={{ provider: () => cache }}>
+        <TrustTransactionLinkDialog
+          open={open}
+          onOpenChange={() => {}}
+          projectId="p1"
+          onSelect={() => {}}
+        />
+      </SWRConfig>
+    );
+
+    const { rerender } = render(withCache(true));
+    await waitFor(() => {
+      expect(screen.getByTestId("trust-tx-row-tx1")).toBeInTheDocument();
+    });
+
+    rerender(withCache(false));
+    await waitFor(() => {
+      expect(screen.queryByTestId("trust-transaction-link-dialog")).not.toBeInTheDocument();
+    });
+
+    // tx1 has since been linked to a disbursement — the server no longer returns it.
+    let resolveFresh: (rows: TrustTransaction[]) => void = () => {};
+    mockFetchApproved.mockReturnValueOnce(
+      new Promise<TrustTransaction[]>((resolve) => {
+        resolveFresh = resolve;
+      })
+    );
+
+    rerender(withCache(true));
+    // While the fresh list is in flight the stale cached row must not be offered.
+    expect(screen.getByTestId("trust-tx-loading")).toBeInTheDocument();
+    expect(screen.queryByTestId("trust-tx-row-tx1")).not.toBeInTheDocument();
+    expect(mockFetchApproved).toHaveBeenCalledTimes(2);
+
+    resolveFresh([]);
+    await waitFor(() => {
+      expect(screen.getByTestId("trust-tx-empty")).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId("trust-tx-row-tx1")).not.toBeInTheDocument();
+  });
+
+  it("a new dialog instance (the next Create Disbursement session) fetches fresh too", async () => {
+    const tx = makeTx({ id: "tx1", reference: "REF-001", amount: 1500 });
+    mockFetchApproved.mockResolvedValueOnce([tx]);
+
+    // The create dialog unmounts the link dialog with its own content; the app-wide cache stays.
+    const cache = new Map();
+    const first = render(
+      <SWRConfig value={{ provider: () => cache }}>
+        <TrustTransactionLinkDialog
+          open={true}
+          onOpenChange={() => {}}
+          projectId="p1"
+          onSelect={() => {}}
+        />
+      </SWRConfig>
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId("trust-tx-row-tx1")).toBeInTheDocument();
+    });
+    first.unmount();
+
+    mockFetchApproved.mockResolvedValueOnce([]);
+    render(
+      <SWRConfig value={{ provider: () => cache }}>
+        <TrustTransactionLinkDialog
+          open={true}
+          onOpenChange={() => {}}
+          projectId="p1"
+          onSelect={() => {}}
+        />
+      </SWRConfig>
+    );
+    expect(screen.getByTestId("trust-tx-loading")).toBeInTheDocument();
+    expect(screen.queryByTestId("trust-tx-row-tx1")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId("trust-tx-empty")).toBeInTheDocument();
+    });
+    expect(mockFetchApproved).toHaveBeenCalledTimes(2);
   });
 
   it("invokes onSelect with the chosen transaction when user clicks Link Transaction", async () => {

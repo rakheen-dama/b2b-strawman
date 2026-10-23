@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSWRConfig } from "swr";
 import { ArrowLeft, Pencil, RotateCcw, Send, Upload } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
@@ -25,6 +26,7 @@ import {
   DisbursementWriteOffDialog,
   canOfferWriteOff,
 } from "@/components/legal/disbursement-write-off-dialog";
+import { unbilledDisbursementsSummaryKey } from "@/components/legal/unbilled-disbursements-summary";
 import { formatCurrency } from "@/lib/format";
 import {
   restoreDisbursementAction,
@@ -78,6 +80,14 @@ export function DisbursementDetailClient({
     (target === "restore" ? restoreButtonRef : writeOffTriggerRef).current?.focus();
   }, [disbursement.billingStatus]);
 
+  // Approve / write-off / restore move the matter's unbilled total. The strip is not on this page,
+  // but invalidating its shared key makes it refetch when the matter tab / firm list mounts it.
+  const { mutate: globalMutate } = useSWRConfig();
+  const refreshUnbilled = useCallback(
+    () => void globalMutate(unbilledDisbursementsSummaryKey(disbursement.matterId)),
+    [globalMutate, disbursement.matterId]
+  );
+
   const editable =
     disbursement.approvalStatus === "DRAFT" || disbursement.approvalStatus === "PENDING_APPROVAL";
 
@@ -127,6 +137,7 @@ export function DisbursementDetailClient({
       if (result.success && result.data) {
         focusAfterSwap.current = "write-off";
         setDisbursement(result.data);
+        refreshUnbilled();
       } else {
         setSubmitError(result.error ?? "Failed to undo write-off.");
       }
@@ -135,7 +146,7 @@ export function DisbursementDetailClient({
     } finally {
       setIsRestoring(false);
     }
-  }, [slug, disbursement.id]);
+  }, [slug, disbursement.id, refreshUnbilled]);
 
   const handleDownloadReceipt = useCallback(async () => {
     if (!disbursement.receiptDocumentId) return;
@@ -218,6 +229,7 @@ export function DisbursementDetailClient({
               onWrittenOff={(updated) => {
                 focusAfterSwap.current = "restore";
                 setDisbursement(updated);
+                refreshUnbilled();
               }}
             />
           )}
@@ -322,7 +334,10 @@ export function DisbursementDetailClient({
         slug={slug}
         disbursement={disbursement}
         canApprove={canApprove}
-        onApproved={(updated) => setDisbursement(updated)}
+        onApproved={(updated) => {
+          setDisbursement(updated);
+          refreshUnbilled();
+        }}
         onRejected={(updated) => setDisbursement(updated)}
       />
 

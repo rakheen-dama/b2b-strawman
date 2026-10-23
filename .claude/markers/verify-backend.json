@@ -1,7 +1,7 @@
 {
-  "commit": "a81e5fe39381acb385ef91d1d845bfe2dbff1f4d",
-  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
+  "commit": "037fe46a750c6771ecde0278376be2e884d42936",
+  "command": "cd backend && ./mvnw spotless:apply && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-23T02:27:41+02:00",
-  "summary": "PR #1643 (Epic 618A: acceptance PDF frame-ancestors, scoped frame headers on @Order(2) chain + PortalOrigin) head a81e5fe39 (orchestrator run, 1 CodeRabbit fix cycle): 5464 testcases / 0 failures / 0 errors / 26 skipped across 698 surefire reports (+20 vs 615B's 5444: FrameHeadersIntegrationTest 4 + PortalOriginTest 16). Log /tmp/mvn-618A-final.log. Backend CI pass 16m14s."
+  "ts": "2026-10-23T02:47:32Z",
+  "summary": "Epic 618D gate (no code) on main 037fe46a7 (618A+618B+618C merged; orchestrator run in worktree-epic-618D): 5464 testcases / 0 failures / 0 errors / 26 skipped across 698 surefire reports (= 618A baseline), 13:49 wall. spotless:apply no diff. Log /tmp/mvn-618D-final.log."
 }

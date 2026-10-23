@@ -1,7 +1,7 @@
 {
-  "commit": "a599a6767fc4adee761ad4aaefff69968269aa8e",
+  "commit": "037fe46a750c6771ecde0278376be2e884d42936",
   "command": "pnpm install --frozen-lockfile && cd portal && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-23T02:38:34+0200",
-  "summary": "PR #1644 (618B; portal acceptance page 'Open in new tab' link reusing the iframe pdfUrl, rel=noopener noreferrer) on a599a6767 (orchestrator run in worktree): lint 0 errors / 5 warnings (main 6; unused mockAcceptedPageData now used); format:check clean; vitest 42 files / 195 passed (+2); build OK (/accept/[token]). Observed on :3002 (worktree portal dev → e2e backend :8081, 618A token): PDF renders inline in the iframe, link right-aligned beneath it, click opens a new tab on http://localhost:8081/api/portal/acceptance/<token>/pdf (contentType application/pdf, window.opener null, referrer empty); console only favicon 404 (pre-existing)."
+  "ts": "2026-10-23T02:34:15Z",
+  "summary": "Epic 618D gate (no code) on main 037fe46a7 (orchestrator run in worktree-epic-618D): lint 0 errors / 5 warnings (= 618B); format:check clean; vitest 42 files / 195 passed (= 618B); build OK."
 }

@@ -1,7 +1,7 @@
 {
-  "commit": "00d1bd42d4f2c5680da3718f0406144a07da52f2",
-  "command": "pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test",
+  "commit": "037fe46a750c6771ecde0278376be2e884d42936",
+  "command": "pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-23T03:45:13+0200",
-  "summary": "PR #1645 (618C) on 00d1bd42d (orchestrator re-run in worktree, independent of builder's run): lint 0 errors / 92 warnings (= 617B baseline); format:check clean; build OK; vitest 407 files / 3018 passed / 2 skipped (main 406 / 3008 / 2; +1 file matter-closure-actions.test.ts, +10 tests). E2E: legal-depth-ii config on :3001 rebuilt from worktree → 29 passed / 0 failed / 14 skipped (ref 28/0/15; delta = un-fixme'd day-75-85-closure Bob Step 3 test). G-D7 reproduced before fix (Bob override → 'Insufficient permissions' toast, backend 'Access denied ... /closure/close reason=insufficient_role') and observed fixed (Bob → Step 3, Alice still sees toggle, 0 Access denied lines)."
+  "ts": "2026-10-23T02:36:25Z",
+  "summary": "Epic 618D gate (no code) on main 037fe46a7 (orchestrator run in worktree-epic-618D): lint 0 errors / 92 warnings (= 618C); format:check clean; vitest 407 files / 3018 passed / 2 skipped (= 618C); build OK. E2E-LEGAL: see task file 618D row."
 }

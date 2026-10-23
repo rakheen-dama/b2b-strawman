@@ -24,11 +24,23 @@ vi.mock("@/components/projects/transfer-lead-dialog", () => ({
   TransferLeadDialog: ({
     children,
     targetMemberName,
+    actorIsLead,
+    targetIsSelf,
+    currentLeadName,
   }: {
     children: React.ReactNode;
     targetMemberName: string;
+    actorIsLead?: boolean;
+    targetIsSelf?: boolean;
+    currentLeadName?: string | null;
   }) => (
-    <div data-testid="transfer-lead-dialog" data-target={targetMemberName}>
+    <div
+      data-testid="transfer-lead-dialog"
+      data-target={targetMemberName}
+      data-actor-is-lead={String(actorIsLead)}
+      data-target-is-self={String(targetIsSelf)}
+      data-current-lead-name={String(currentLeadName)}
+    >
       {children}
     </div>
   ),
@@ -146,10 +158,23 @@ describe("ProjectMembersPanel", () => {
       expect(actionButtons).toHaveLength(1);
     });
 
-    it("hides all action menus when cannot manage", () => {
-      render(<ProjectMembersPanel {...defaultProps} members={mockMembers} canManage={false} />);
+    it("gives a non-lead member (canManage=false) the list but no Add Member and no row menus", () => {
+      render(
+        <ProjectMembersPanel
+          {...defaultProps}
+          members={mockMembers}
+          canManage={false}
+          isCurrentLead={false}
+          currentUserId="user2" // Bob is on the matter as a plain member
+        />
+      );
 
+      expect(screen.getByTestId("matter-team-panel")).toBeInTheDocument();
+      expect(screen.getAllByText("Alice Lead").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Bob Member").length).toBeGreaterThanOrEqual(1);
+      expect(screen.queryByTestId("add-member-dialog")).not.toBeInTheDocument();
       expect(screen.queryByRole("button", { name: /open menu/i })).not.toBeInTheDocument();
+      expect(screen.queryByTestId("transfer-lead-dialog")).not.toBeInTheDocument();
     });
   });
 
@@ -189,11 +214,13 @@ describe("ProjectMembersPanel", () => {
       const actionButton = screen.getByRole("button", { name: /open menu/i });
       await user.click(actionButton);
 
-      expect(screen.getByTestId("transfer-lead-dialog")).toBeInTheDocument();
+      const dialog = screen.getByTestId("transfer-lead-dialog");
+      expect(dialog).toHaveAttribute("data-actor-is-lead", "true");
+      expect(dialog).toHaveAttribute("data-target-is-self", "false");
       expect(screen.getByText("Transfer Lead")).toBeInTheDocument();
     });
 
-    it("hides Transfer Lead option when not current lead", async () => {
+    it("shows Transfer Lead to an Owner/Admin who is not the lead (canManage, !isCurrentLead) — ADR-346", async () => {
       const user = userEvent.setup();
 
       render(
@@ -202,13 +229,40 @@ describe("ProjectMembersPanel", () => {
           members={mockMembers}
           canManage={true}
           isCurrentLead={false}
+          currentUserId="user3" // Owner/Admin who is not on the matter
         />
       );
 
-      const actionButton = screen.getByRole("button", { name: /open menu/i });
-      await user.click(actionButton);
+      await user.click(screen.getByRole("button", { name: /open menu/i }));
 
-      expect(screen.queryByTestId("transfer-lead-dialog")).not.toBeInTheDocument();
+      const dialog = screen.getByTestId("transfer-lead-dialog");
+      expect(dialog).toHaveAttribute("data-target", "Bob Member");
+      expect(dialog).toHaveAttribute("data-actor-is-lead", "false");
+      expect(dialog).toHaveAttribute("data-target-is-self", "false");
+      // The dialog names the lead who will be demoted (the caller is not the lead).
+      expect(dialog).toHaveAttribute("data-current-lead-name", "Alice Lead");
+      expect(screen.getByText("Transfer Lead")).toBeInTheDocument();
+    });
+
+    it("passes targetIsSelf for an Owner/Admin's own row when they are a plain member of the matter", async () => {
+      const user = userEvent.setup();
+
+      render(
+        <ProjectMembersPanel
+          {...defaultProps}
+          members={mockMembers}
+          canManage={true}
+          isCurrentLead={false}
+          currentUserId="user2" // Bob's own row — backend allows self-transfer for Owner/Admin
+        />
+      );
+
+      await user.click(screen.getByRole("button", { name: /open menu/i }));
+
+      expect(screen.getByTestId("transfer-lead-dialog")).toHaveAttribute(
+        "data-target-is-self",
+        "true"
+      );
     });
   });
 

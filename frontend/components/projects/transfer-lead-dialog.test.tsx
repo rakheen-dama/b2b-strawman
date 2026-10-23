@@ -40,6 +40,67 @@ describe("TransferLeadDialog", () => {
     expect(screen.getByText(/You will become a regular member/)).toBeInTheDocument();
   });
 
+  it("names the current lead, not the caller, when an Owner/Admin who is not the lead transfers", async () => {
+    mockTransferLead.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+
+    render(
+      <TransferLeadDialog {...defaultProps} actorIsLead={false} currentLeadName="Alice Lead">
+        <button>Open Admin Transfer</button>
+      </TransferLeadDialog>
+    );
+
+    await user.click(screen.getByText("Open Admin Transfer"));
+
+    expect(screen.getByText("Bob Member")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Alice Lead, the current lead, will become a regular member/)
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/You will become a regular member/)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /^transfer$/i }));
+
+    expect(mockTransferLead).toHaveBeenCalledWith("acme", "proj1", "user2");
+  });
+
+  it("falls back to 'The current lead' when the lead's name is unknown", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TransferLeadDialog {...defaultProps} actorIsLead={false}>
+        <button>Open Unnamed Transfer</button>
+      </TransferLeadDialog>
+    );
+
+    await user.click(screen.getByText("Open Unnamed Transfer"));
+
+    expect(screen.getByText(/The current lead will become a regular member/)).toBeInTheDocument();
+    expect(screen.queryByText(/You will become a regular member/)).not.toBeInTheDocument();
+  });
+
+  it("asks an Owner/Admin to make themselves lead when the target is self", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TransferLeadDialog
+        {...defaultProps}
+        actorIsLead={false}
+        targetIsSelf={true}
+        currentLeadName="Alice Lead"
+      >
+        <button>Open Self Transfer</button>
+      </TransferLeadDialog>
+    );
+
+    await user.click(screen.getByText("Open Self Transfer"));
+
+    expect(screen.getByText(/Make yourself the lead on this matter\?/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Alice Lead, the current lead, will become a regular member/)
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/You will become a regular member/)).not.toBeInTheDocument();
+  });
+
   it("calls transferLead when confirmed", async () => {
     mockTransferLead.mockResolvedValue({ success: true });
     const user = userEvent.setup();

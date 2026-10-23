@@ -139,23 +139,25 @@ describe("MatterTabs with GroupedTabBar integration", () => {
     expect(screen.queryByTestId("tab-group-schedule")).not.toBeInTheDocument();
   });
 
-  it("does not redirect ?tab=members and renders no staffing tab (Epic 599)", () => {
+  it("resolves the legacy ?tab=members link to Details › Team (ADR-346) and renders no staffing tab", () => {
     mockSearchParams = new URLSearchParams("tab=members");
 
-    render(
-      <MatterTabs
-        {...baseProps}
-        detailsPanel={<div>Details</div>}
-        fieldsPanel={<div>Fields</div>}
-        budgetPanel={<div>Budget</div>}
-      />
-    );
+    render(<MatterTabs {...baseProps} teamPanel={<div>Team panel</div>} />);
 
-    // The staffing tab (and its ?tab=members redirect) was removed with resource planning;
-    // an unknown ?tab=members now falls through to the overview default.
+    // members is an alias of team (legacy-tab-ids.ts) — the old setup-step link and bookmarks
+    // land on the Team tab without a router redirect. The Epic 599 staffing tab stays gone.
     expect(mockReplace).not.toHaveBeenCalled();
+    expect(screen.getByTestId("tab-group-details")).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByText("Team panel")).toBeInTheDocument();
     expect(screen.queryByTestId("tab-item-staffing")).not.toBeInTheDocument();
-    expect(screen.getByTestId("tab-group-overview")).toBeInTheDocument();
+  });
+
+  it("falls back to Overview for ?tab=team when no team panel is provided", () => {
+    mockSearchParams = new URLSearchParams("tab=team");
+
+    render(<MatterTabs {...baseProps} />);
+
+    expect(screen.getByTestId("tab-group-overview")).toHaveAttribute("aria-selected", "true");
   });
 
   it("renders activity group as standalone tab when audit is hidden", () => {
@@ -230,6 +232,7 @@ describe("MatterTabs with GroupedTabBar integration", () => {
       ...baseProps,
       detailsPanel: <div>Details</div>,
       fieldsPanel: <div>Fields</div>,
+      teamPanel: <div>Team</div>,
       correspondencePanel: <div>Correspondence</div>,
       ratesPanel: <div>Rates</div>,
       budgetPanel: <div>Budget</div>,
@@ -249,7 +252,7 @@ describe("MatterTabs with GroupedTabBar integration", () => {
     const tabs = MATTER_TAB_GROUPS.flatMap((g) =>
       g.tabs.map((t) => ({ groupId: g.id, tabId: t.id }))
     );
-    expect(tabs).toHaveLength(21);
+    expect(tabs).toHaveLength(22);
 
     for (const { groupId, tabId } of tabs) {
       mockSearchParams = new URLSearchParams(`tab=${tabId}`);

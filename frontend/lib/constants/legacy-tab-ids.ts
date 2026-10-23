@@ -6,11 +6,15 @@
  * caller BEFORE tab resolution (`tab-group-types.ts` stays entity-agnostic). One shared map: an alias
  * whose target is not a tab on the current page simply falls through to Overview, exactly as the
  * un-aliased id would.
+ *
+ * `members` → `team` (Phase 88, ADR-346): the old "Team members added" setup-step link and bookmarks
+ * open the matter Team tab. On a client page `team` is not a tab, so it still falls to Overview.
  */
 export const LEGACY_TAB_IDS = {
   customers: "clients",
   projects: "matters",
   expenses: "disbursements",
+  members: "team",
 } as const satisfies Readonly<Record<string, string>>;
 
 /** Map a raw `?tab=` value through {@link LEGACY_TAB_IDS}; unknown values pass through unchanged. */

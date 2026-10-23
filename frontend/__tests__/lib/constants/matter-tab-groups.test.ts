@@ -3,14 +3,15 @@ import { MATTER_TAB_GROUPS, MATTER_TAB_ID_TO_GROUP_MAP } from "@/lib/constants/m
 import { LEGACY_TAB_IDS, aliasLegacyTabId } from "@/lib/constants/legacy-tab-ids";
 import { resolveTabFromUrl } from "@/lib/constants/tab-group-types";
 
-// Phase 87 §12.6.5 (615E): 7 groups / 21 tabs, legal labels, stable group + deep-link ids.
+// Phase 87 §12.6.5 (615E): 7 groups / 22 tabs (Team added Phase 88 §13.3.4, ADR-346), legal labels,
+// stable group + deep-link ids.
 
 const allTabs = MATTER_TAB_GROUPS.flatMap((g) => g.tabs);
 
 describe("MATTER_TAB_GROUPS", () => {
-  it("has 7 groups and 21 tabs", () => {
+  it("has 7 groups and 22 tabs", () => {
     expect(MATTER_TAB_GROUPS).toHaveLength(7);
-    expect(allTabs).toHaveLength(21);
+    expect(allTabs).toHaveLength(22);
   });
 
   it("keeps the group ids stable, in order", () => {
@@ -42,6 +43,7 @@ describe("MATTER_TAB_GROUPS", () => {
       [
         ["details", "Details"],
         ["fields", "Custom fields"],
+        ["team", "Team"],
       ],
       [["overview", "Overview"]],
       [
@@ -81,6 +83,7 @@ describe("MATTER_TAB_GROUPS", () => {
     expect(MATTER_TAB_ID_TO_GROUP_MAP.time).toBe("finance");
     expect(MATTER_TAB_ID_TO_GROUP_MAP.documents).toBe("work");
     expect(MATTER_TAB_ID_TO_GROUP_MAP.clients).toBe("client");
+    expect(MATTER_TAB_ID_TO_GROUP_MAP.team).toBe("details");
   });
 
   it("has no expenses, customers or members tab and unique tab ids", () => {
@@ -93,11 +96,12 @@ describe("MATTER_TAB_GROUPS", () => {
 });
 
 describe("LEGACY_TAB_IDS / aliasLegacyTabId", () => {
-  it("maps the two renamed ids and the removed Expenses tab", () => {
+  it("maps the renamed ids, the removed Expenses tab and the members alias", () => {
     expect(LEGACY_TAB_IDS).toEqual({
       customers: "clients",
       projects: "matters",
       expenses: "disbursements",
+      members: "team",
     });
   });
 
@@ -105,6 +109,7 @@ describe("LEGACY_TAB_IDS / aliasLegacyTabId", () => {
     expect(aliasLegacyTabId("customers")).toBe("clients");
     expect(aliasLegacyTabId("expenses")).toBe("disbursements");
     expect(aliasLegacyTabId("projects")).toBe("matters");
+    expect(aliasLegacyTabId("members")).toBe("team");
     expect(aliasLegacyTabId("time")).toBe("time");
     expect(aliasLegacyTabId(null)).toBeNull();
     // Own-property check — prototype keys are not aliases.
@@ -120,6 +125,11 @@ describe("LEGACY_TAB_IDS / aliasLegacyTabId", () => {
     expect(resolveTabFromUrl(aliasLegacyTabId("expenses"), MATTER_TAB_GROUPS)).toEqual({
       groupId: "finance",
       tabId: "disbursements",
+    });
+    // The old "Team members added" setup-step link and bookmarks (ADR-346).
+    expect(resolveTabFromUrl(aliasLegacyTabId("members"), MATTER_TAB_GROUPS)).toEqual({
+      groupId: "details",
+      tabId: "team",
     });
   });
 });

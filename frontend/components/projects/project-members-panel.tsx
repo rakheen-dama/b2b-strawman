@@ -103,6 +103,9 @@ export function ProjectMembersPanel({
     });
   }
 
+  // Named in the transfer dialog when the caller is an Owner/Admin rather than the lead (ADR-346).
+  const currentLeadName = members.find((m) => m.matterRole === "lead")?.name ?? null;
+
   const header = (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -122,7 +125,7 @@ export function ProjectMembersPanel({
 
   if (members.length === 0) {
     return (
-      <div className="space-y-4">
+      <div data-testid="matter-team-panel" className="space-y-4">
         {header}
         <EmptyState
           icon={Users}
@@ -134,7 +137,7 @@ export function ProjectMembersPanel({
   }
 
   return (
-    <div className="space-y-4">
+    <div data-testid="matter-team-panel" className="space-y-4">
       {header}
       {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
       <div className="rounded-lg border border-slate-200 dark:border-slate-800">
@@ -213,18 +216,21 @@ export function ProjectMembersPanel({
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            {isCurrentLead && member.memberId !== currentUserId && (
-                              <TransferLeadDialog
-                                slug={slug}
-                                projectId={projectId}
-                                targetMemberId={member.memberId}
-                                targetMemberName={member.name}
-                              >
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                  Transfer Lead
-                                </DropdownMenuItem>
-                              </TransferLeadDialog>
-                            )}
+                            {/* ADR-346: Owner, Admin or the current lead may transfer (backend
+                                619C). The target must already be on the matter — every row is. */}
+                            <TransferLeadDialog
+                              slug={slug}
+                              projectId={projectId}
+                              targetMemberId={member.memberId}
+                              targetMemberName={member.name}
+                              actorIsLead={isCurrentLead}
+                              targetIsSelf={member.memberId === currentUserId}
+                              currentLeadName={currentLeadName}
+                            >
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                Transfer Lead
+                              </DropdownMenuItem>
+                            </TransferLeadDialog>
                             <DropdownMenuItem
                               className="text-red-600 dark:text-red-400"
                               onClick={() => handleRemoveMember(member.memberId)}

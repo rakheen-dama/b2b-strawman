@@ -2,9 +2,12 @@
 
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
+import { rethrowOnExpiredSession } from "@/lib/auth/expiry-server";
 import { revalidatePath } from "next/cache";
 import type {
   InvoiceResponse,
+  OutstandingSummary,
+  OutstandingSummaryResult,
   UpdateInvoiceRequest,
   AddLineItemRequest,
   UpdateLineItemRequest,
@@ -72,6 +75,27 @@ export async function fetchInvoices(
         ? error.message
         : createMessages("errors").t(classifyError(error).messageCode);
     return { success: false, error: message };
+  }
+}
+
+/**
+ * Fee notes page tiles (Phase 88 U3, §13.4.3): the debtor-book definition, in the org default
+ * currency. The summary is gated on FINANCIAL_VISIBILITY while the page is gated on INVOICING, so a
+ * 403 (or 404) is "absent", not an error — the page drops the tiles instead of crashing (mirrors
+ * Home's `settle`). A 401 goes to the branded re-login. Never handleApiError here: it notFound()s
+ * on a 404 and would take the page down.
+ */
+export async function fetchOutstandingSummaryAction(): Promise<OutstandingSummaryResult> {
+  try {
+    const summary = await api.get<OutstandingSummary>("/api/invoices/outstanding-summary");
+    return { state: "ok", summary };
+  } catch (error) {
+    await rethrowOnExpiredSession(error);
+    if (error instanceof ApiError && (error.status === 403 || error.status === 404)) {
+      return { state: "absent" };
+    }
+    console.error("Failed to load outstanding summary:", error);
+    return { state: "error" };
   }
 }
 

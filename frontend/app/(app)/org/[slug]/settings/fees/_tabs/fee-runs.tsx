@@ -27,8 +27,8 @@ export async function renderFeeRunsTab({ slug }: SettingsTabProps) {
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Batch Billing</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure async thresholds, email rate limits, and default billing currency for batch
-          billing runs.
+          Set the default payment terms for fee notes, and configure async thresholds, email rate
+          limits, and default billing currency for batch billing runs.
         </p>
       </div>
 
@@ -37,6 +37,7 @@ export async function renderFeeRunsTab({ slug }: SettingsTabProps) {
         billingBatchAsyncThreshold={settings.billingBatchAsyncThreshold ?? 50}
         billingEmailRateLimit={settings.billingEmailRateLimit ?? 5}
         defaultBillingRunCurrency={settings.defaultBillingRunCurrency ?? null}
+        defaultPaymentTermsDays={settings.defaultPaymentTermsDays ?? 30}
       />
     </div>
   );

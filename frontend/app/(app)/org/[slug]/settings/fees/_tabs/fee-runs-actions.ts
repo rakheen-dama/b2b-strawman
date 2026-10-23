@@ -5,6 +5,7 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type { UpdateBatchBillingSettingsRequest } from "@/lib/types";
+import { paymentTermsDaysSchema } from "@/lib/schemas";
 
 interface ActionResult {
   success: boolean;
@@ -59,6 +60,15 @@ export async function updateBatchBillingSettings(
     return {
       success: false,
       error: "Currency must be exactly 3 characters or empty.",
+    };
+  }
+
+  // Same 0–365 whole-days rule as the form (Phase 88 U3, ADR-347).
+  const terms = paymentTermsDaysSchema.safeParse(data.defaultPaymentTermsDays);
+  if (!terms.success) {
+    return {
+      success: false,
+      error: terms.error.issues[0]?.message ?? "Payment terms must be between 0 and 365 days.",
     };
   }
 

@@ -23,6 +23,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailTerminology;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
@@ -356,7 +357,9 @@ public class NotificationService {
     }
 
     // Project leads
-    var leads = projectMemberRepository.findByProjectIdAndProjectRole(event.projectId(), "LEAD");
+    var leads =
+        projectMemberRepository.findByProjectIdAndProjectRole(
+            event.projectId(), Roles.PROJECT_LEAD);
     for (var lead : leads) {
       recipients.add(lead.getMemberId());
     }
@@ -509,7 +512,9 @@ public class NotificationService {
     var recipients = new HashSet<UUID>();
 
     // Project leads
-    var leads = projectMemberRepository.findByProjectIdAndProjectRole(event.projectId(), "LEAD");
+    var leads =
+        projectMemberRepository.findByProjectIdAndProjectRole(
+            event.projectId(), Roles.PROJECT_LEAD);
     for (var lead : leads) {
       recipients.add(lead.getMemberId());
     }
@@ -612,7 +617,9 @@ public class NotificationService {
 
     if (event.primaryEntityType() == TemplateEntityType.PROJECT && event.projectId() != null) {
       // Notify project leads
-      var leads = projectMemberRepository.findByProjectIdAndProjectRole(event.projectId(), "LEAD");
+      var leads =
+          projectMemberRepository.findByProjectIdAndProjectRole(
+              event.projectId(), Roles.PROJECT_LEAD);
       for (var lead : leads) {
         recipients.add(lead.getMemberId());
       }

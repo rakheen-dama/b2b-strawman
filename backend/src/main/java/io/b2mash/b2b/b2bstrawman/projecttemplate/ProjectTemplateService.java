@@ -566,7 +566,8 @@ public class ProjectTemplateService {
     // 7. Set project lead
     if (request.matterLeadMemberId() != null) {
       projectMemberRepository.save(
-          new ProjectMember(project.getId(), request.matterLeadMemberId(), "LEAD", memberId));
+          new ProjectMember(
+              project.getId(), request.matterLeadMemberId(), Roles.PROJECT_LEAD, memberId));
     }
 
     // 8. Create tasks from template (snapshot — no live references)
@@ -736,7 +737,8 @@ public class ProjectTemplateService {
     // 3. Set project lead
     if (projectLeadMemberId != null) {
       projectMemberRepository.save(
-          new ProjectMember(project.getId(), projectLeadMemberId, "LEAD", actingMemberId));
+          new ProjectMember(
+              project.getId(), projectLeadMemberId, Roles.PROJECT_LEAD, actingMemberId));
     }
 
     // 4. Create tasks from template (snapshot)

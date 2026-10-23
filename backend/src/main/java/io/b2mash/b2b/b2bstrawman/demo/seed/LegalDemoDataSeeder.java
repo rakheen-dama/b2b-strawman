@@ -21,6 +21,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
@@ -145,10 +146,11 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
     // 3. Projects (linked to ACTIVE customers)
     List<ProjectInfo> projects = createProjects(customers, primaryMemberId, rand);
 
-    // 4. ProjectMembers (all 4 members on each project)
+    // 4. ProjectMembers (all 4 members on each project; the primary member leads)
     for (ProjectInfo project : projects) {
       for (UUID memberId : allMemberIds) {
-        var pm = new ProjectMember(project.id(), memberId, "CONTRIBUTOR", primaryMemberId);
+        String role = memberId.equals(primaryMemberId) ? Roles.PROJECT_LEAD : Roles.PROJECT_MEMBER;
+        var pm = new ProjectMember(project.id(), memberId, role, primaryMemberId);
         projectMemberRepository.save(pm);
       }
     }

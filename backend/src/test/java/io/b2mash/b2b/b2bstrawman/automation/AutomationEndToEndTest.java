@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.time.Instant;
@@ -99,7 +100,8 @@ class AutomationEndToEndTest {
               projectRepository.save(project);
               projectId = project.getId();
 
-              var pm = new ProjectMember(projectId, actorMemberId, "LEAD", actorMemberId);
+              var pm =
+                  new ProjectMember(projectId, actorMemberId, Roles.PROJECT_LEAD, actorMemberId);
               projectMemberRepository.save(pm);
             });
   }

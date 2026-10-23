@@ -1,5 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.security;
 
+import java.util.Locale;
+import java.util.Set;
+
 /**
  * Centralized role constants used across authentication, authorization, and access control.
  *
@@ -18,8 +21,24 @@ public final class Roles {
   public static final String PROJECT_LEAD = "lead";
   public static final String PROJECT_MEMBER = "member";
 
+  /** The only values {@code project_members.project_role} may hold (ADR-345). */
+  public static final Set<String> PROJECT_ROLES = Set.of(PROJECT_LEAD, PROJECT_MEMBER);
+
   // Spring Security granted authority for internal API authentication
   public static final String AUTHORITY_INTERNAL = "ROLE_INTERNAL_SERVICE";
 
   private Roles() {}
+
+  /**
+   * Canonical form of a project role: trimmed and lower-cased with {@link Locale#ROOT}; anything
+   * outside {@link #PROJECT_ROLES} (null, blank, {@code "CONTRIBUTOR"}) becomes {@link
+   * #PROJECT_MEMBER}.
+   */
+  public static String normaliseProjectRole(String role) {
+    if (role == null || role.isBlank()) {
+      return PROJECT_MEMBER;
+    }
+    var v = role.trim().toLowerCase(Locale.ROOT);
+    return PROJECT_ROLES.contains(v) ? v : PROJECT_MEMBER;
+  }
 }

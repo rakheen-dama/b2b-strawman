@@ -4,7 +4,7 @@
  * Exercises the disbursement lifecycle on the legal-za profile:
  *   - Bob (Admin) creates a sheriff-fee OFFICE_ACCOUNT disbursement + submits
  *   - Bob creates a deeds-office TRUST_ACCOUNT disbursement linked to an approved
- *     DISBURSEMENT_PAYMENT trust transaction + submits
+ *     PAYMENT trust transaction + submits
  *   - Thandi (Owner, alice fixture) approves the trust-linked one (needs
  *     APPROVE_TRUST_PAYMENT capability)
  *   - Bob approves the office-account one (APPROVE_DISBURSEMENT)

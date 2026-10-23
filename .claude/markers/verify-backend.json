@@ -1,7 +1,7 @@
 {
-  "commit": "24db61722408b24b9119df3a9da312ac644a444c",
+  "commit": "eb988d2a32a0933501eb7db19859a3542f6e6824",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-23T16:25:00Z",
-  "summary": "Slice 620D PR #1655 head 24db61722 (orchestrator run in worktree-epic-620D): 5544 testcases / 0 failures / 0 errors / 26 skipped across 703 reports (= 5534 after 620B + 10 new: CustomerFicaStatusIntegrationTest real-path 3, FicaStatusProjectorTest checklist cases, FicaOutstanding/ClientListRow checklist fixtures). Backend CI pass (16m39s). Log /tmp/mvn-620D-final.log."
+  "ts": "2026-10-23T18:10:00Z",
+  "summary": "Slice 621A PR #1657 head eb988d2a3 (orchestrator run in worktree-epic-621A): 5554 testcases / 0 failures / 0 errors / 26 skipped across 703 reports (= 5544 after 620D + 10 new: DisbursementControllerIntegrationTest restore 200/409/403, DisbursementServiceTest restore_*, TrustTransactionControllerTest filters + excludeLinked, AuditEventTypeRegistryTest 29→30). Backend CI pass (14m54s). Log /tmp/mvn-621A-final.log."
 }

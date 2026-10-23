@@ -44,7 +44,7 @@ Reproduce-first items from §13.12 (HYPOTHESIS in the register — resolved in t
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 618 | Security Seams — Acceptance PDF `frame-ancestors` + Owner-Only Capabilities Client-Side (U12, U18) | Backend + Portal + Frontend (split) | Phase 87 merged (done) | S | 618A, 618B, 618C, 618D | |
+| 618 | Security Seams — Acceptance PDF `frame-ancestors` + Owner-Only Capabilities Client-Side (U12, U18) | Backend + Portal + Frontend (split) | Phase 87 merged (done) | S | 618A, 618B, 618C, 618D | In progress — 618A **Done** (PR #1643) |
 | 619 | Matter Team — Canonical Project Roles (tenant V4 §1) + Creator Auto-Add + Team Tab + `canManage` Gates (U1 → U2) | Backend + Frontend + E2E (split) | 618 (618A/618C may run while 619A–619C are queued — V4 file naming agreed) | L | 619A, 619B, 619C, 619D, 619E | |
 | 620 | Fee-Note Truth — Payment Terms + Due Date at Approve (V4 §2) + Outstanding Summary + Checklist-First FICA (U3, U4) | Backend + Frontend (split) | 619 (V4 file exists) | M | 620A, 620B, 620C, 620D, 620E | |
 | 621 | Disbursements — Write-Off + Restore UI, PAYMENT Trust Link, Unbilled Strip (U14) | Backend + Frontend + E2E (split) | 620 | M | 621A, 621B, 621C, 621D | |
@@ -237,7 +237,7 @@ PR rules restated (non-negotiable):
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **618A** | 618.1–618.3 | `SecurityConfig` + 1 small origin resolver + `application*.yml` (local/e2e portal-base-url confirmed) + 1 new test | Reproduce G-B7 (`curl -I` + Chrome console), scoped header writers, `FrameHeadersIntegrationTest`, observed PASS. |
+| **618A** | 618.1–618.3 | `SecurityConfig` + 1 small origin resolver + `application*.yml` (local/e2e portal-base-url confirmed) + 1 new test | Reproduce G-B7 (`curl -I` + Chrome console), scoped header writers, `FrameHeadersIntegrationTest`, observed PASS. **Done** (PR #1643): G-B7 reproduced on e2e (GET `…/pdf` → `X-Frame-Options: DENY`, Chrome "Refused to display … in a frame"); fixed via two `DelegatingRequestMatcherHeaderWriter`s on the `@Order(2)` chain + `PortalOrigin` (`@Value` idiom reused — no yml change, every profile resolves `http://localhost:3002`; CodeRabbit fix: host must match the CSP host-source grammar, IPv6 literal / trailing dot fail startup). Observed PASS: PDF → CSP `frame-ancestors http://localhost:3002`, no XFO; JSON sibling, `/api/matters`, `/portal/matters` → DENY; `:3002/accept/<token>` renders the PDF inline, console clean. **Matcher is GET-only (orchestrator decision): `curl -I` (HEAD) still shows DENY — observe with `curl -sS -o /dev/null -D -`.** BE-VERIFY 5464/0/0/26 (+20). Both reviewers APPROVE @a81e5fe39, 1 CodeRabbit fix cycle. |
 | **618B** | 618.4–618.5 | `acceptance-page.tsx` + its test | "Open in new tab" link beside the iframe; PORTAL-GATE. |
 | **618C** | 618.6–618.8 | `lib/capabilities.tsx`, `matter-closure-actions.ts`, `matter-closure-dialog.tsx` + 2 tests + 1 spec un-fixme | Reproduce G-D7 as Bob, `OWNER_ONLY_CAPABILITIES` mirror + drift pin, admin Step 3, observed PASS. |
 | **618D** | 618.9 | — | BE-VERIFY, PORTAL-GATE, FE-GATE, E2E-LEGAL depth-ii, MARKERS. |

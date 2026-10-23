@@ -1,7 +1,7 @@
 {
-  "commit": "43bb21a947eea3376bf0e06731044a22860139d4",
+  "commit": "a81e5fe39381acb385ef91d1d845bfe2dbff1f4d",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-21T20:16:53+02:00",
-  "summary": "PR #1628 (Epic 615B: ClientListRow dense client list projection + ficaStatus/hasTrustBalance/showIncomplete params, filtering moved into CustomerService) head 43bb21a94 (orchestrator run, 0 fix cycles): 5444 testcases / 0 failures / 0 errors / 26 skipped across 696 surefire reports (+14 vs 615A's 5430: ClientListRowIntegrationTest 14 — 10 statements for a 54-client page, equal to 1-client page). Log /tmp/mvn-615B-final.log."
+  "ts": "2026-10-23T02:27:41+02:00",
+  "summary": "PR #1643 (Epic 618A: acceptance PDF frame-ancestors, scoped frame headers on @Order(2) chain + PortalOrigin) head a81e5fe39 (orchestrator run, 1 CodeRabbit fix cycle): 5464 testcases / 0 failures / 0 errors / 26 skipped across 698 surefire reports (+20 vs 615B's 5444: FrameHeadersIntegrationTest 4 + PortalOriginTest 16). Log /tmp/mvn-618A-final.log. Backend CI pass 16m14s."
 }

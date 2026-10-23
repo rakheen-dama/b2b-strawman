@@ -141,6 +141,12 @@ public class InvoiceCreationService {
   /** Warning code surfaced on draft creation when the customer has no tax number (GAP-L-62). */
   public static final String WARNING_TAX_NUMBER_MISSING = "tax_number_missing";
 
+  /** Separator between the date, fee earner and narrative on a time-entry fee-note line. */
+  private static final String TIME_LINE_SEPARATOR = " \u00B7 ";
+
+  /** Maximum length of the narrative segment of a time-entry line, including the ellipsis. */
+  private static final int MAX_TIME_LINE_NARRATIVE_LENGTH = 500;
+
   @Transactional
   public InvoiceResponse createDraft(CreateInvoiceRequest request, UUID createdBy) {
     var customer = validateInvoicePrerequisites(request.clientId());
@@ -849,9 +855,11 @@ public class InvoiceCreationService {
       }
 
       UUID projectId = null;
+      String taskTitle = null;
       var task = taskRepository.findById(timeEntry.getTaskId());
       if (task.isPresent()) {
         projectId = task.get().getProjectId();
+        taskTitle = task.get().getTitle();
         if (!customerProjectRepository.existsByCustomerIdAndProjectId(customerId, projectId)) {
           throw new InvalidStateException(
               "Time entry not linked to customer",
@@ -862,7 +870,7 @@ public class InvoiceCreationService {
         }
       }
 
-      String description = buildTimeEntryDescription(timeEntry);
+      String description = buildTimeEntryDescription(timeEntry, taskTitle);
 
       BigDecimal quantity =
           BigDecimal.valueOf(timeEntry.getDurationMinutes())
@@ -1163,20 +1171,51 @@ public class InvoiceCreationService {
     }
   }
 
+  /**
+   * Builds the fee-note line description for a time entry (Phase 88 U15, G-C10, architecture
+   * §13.3.8): {@code "{yyyy-MM-dd} · {fee earner} · {narrative}"}. The narrative is the time
+   * entry's own description; the task title is only the fallback when that is blank (it is a
+   * category, not a description, so it is never appended to a narrative). The narrative is capped
+   * at {@link #MAX_TIME_LINE_NARRATIVE_LENGTH} characters including a trailing "…". One line per
+   * time entry; {@code invoice_lines.time_entry_id} remains the audit link. Preview, PDF, email,
+   * portal and accounting sync all read {@link InvoiceLine#getDescription()}.
+   */
   private String buildTimeEntryDescription(
-      io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry timeEntry) {
-    String taskTitle = "Untitled";
-    String memberName = "Unknown";
-
-    if (timeEntry.getTaskId() != null) {
-      taskTitle =
-          taskRepository.findById(timeEntry.getTaskId()).map(t -> t.getTitle()).orElse("Untitled");
+      io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry timeEntry, String taskTitle) {
+    String feeEarner =
+        timeEntry.getMemberId() != null
+            ? memberNameResolver.resolveName(timeEntry.getMemberId())
+            : "Unknown";
+    String narrative = blankToNull(timeEntry.getDescription());
+    if (narrative == null) {
+      narrative = blankToNull(taskTitle);
     }
-
-    if (timeEntry.getMemberId() != null) {
-      memberName = memberNameResolver.resolveName(timeEntry.getMemberId());
+    if (narrative == null) {
+      narrative = "Untitled";
     }
+    return timeEntry.getDate()
+        + TIME_LINE_SEPARATOR
+        + feeEarner
+        + TIME_LINE_SEPARATOR
+        + truncateWithEllipsis(narrative, MAX_TIME_LINE_NARRATIVE_LENGTH);
+  }
 
-    return taskTitle + " -- " + timeEntry.getDate() + " -- " + memberName;
+  private static String blankToNull(String value) {
+    return value == null || value.isBlank() ? null : value.strip();
+  }
+
+  /**
+   * Caps {@code value} at {@code max} chars including a trailing "…"; never splits a surrogate
+   * pair. Surrogate-safe sibling of {@code DeadlinePortalSyncService.truncate}.
+   */
+  private static String truncateWithEllipsis(String value, int max) {
+    if (value.length() <= max) {
+      return value;
+    }
+    int end = max - 1;
+    if (Character.isHighSurrogate(value.charAt(end - 1))) {
+      end--;
+    }
+    return value.substring(0, end) + "\u2026";
   }
 }

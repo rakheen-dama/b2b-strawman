@@ -115,6 +115,12 @@ public class InvoiceValidationService {
    * without an override while the gap stays visible. Returns a PASSED check when the customer
    * cannot be found — the customer-required-fields check already covers that case with a clearer
    * message.
+   *
+   * <p>G-C6 (Phase 88 U15, architecture §13.3.8): the failure copy says what send will do for this
+   * client — an INDIVIDUAL is never blocked (warning copy), a COMPANY/TRUST is blocked at send
+   * (blocking copy). The copy is keyed on the client type rather than on the check's severity
+   * because the draft-time check is WARNING for every type and must not tell a company's fee note
+   * that it "will be sent".
    */
   private ValidationCheck checkCustomerTaxNumber(UUID customerId, Severity severity) {
     var customerOpt = customerRepository.findById(customerId);
@@ -123,31 +129,39 @@ public class InvoiceValidationService {
     }
     var customer = customerOpt.get();
     // LZKC-008: INDIVIDUAL customers are never hard-blocked on tax number — cap at WARNING.
-    var effectiveSeverity =
-        customer.getCustomerType() == CustomerType.INDIVIDUAL ? Severity.WARNING : severity;
+    boolean individual = customer.getCustomerType() == CustomerType.INDIVIDUAL;
+    var effectiveSeverity = individual ? Severity.WARNING : severity;
     boolean missing = StructuralPrerequisiteCheck.isTaxNumberMissing(customer);
     return new ValidationCheck(
         "customer_tax_number",
         effectiveSeverity,
         !missing,
-        missing
-            ? "Tax Number is required to send " + invoiceNounWithArticle()
-            : "Customer tax number is set");
+        missing ? missingTaxNumberMessage(individual) : "Customer tax number is set");
+  }
+
+  private String missingTaxNumberMessage(boolean individual) {
+    String noun = invoiceNoun();
+    return individual
+        ? "Client has no tax number \u2014 the "
+            + noun
+            + " will be sent without a client VAT number"
+        : "A tax number is required before "
+            + EmailTerminology.withIndefiniteArticle(noun)
+            + " can be sent to a company or trust";
   }
 
   /**
-   * LZKC-009 (site 2): resolves the tenant's lowercase invoice noun with its indefinite article —
-   * "an invoice" by default, "a fee note" on legal-za — so validation copy matches the vocabulary
-   * shown across the rest of the firm UI.
+   * LZKC-009 (site 2): resolves the tenant's lowercase invoice noun — "invoice" by default, "fee
+   * note" on legal-za — so validation copy matches the vocabulary shown across the rest of the firm
+   * UI.
    */
-  private String invoiceNounWithArticle() {
+  private String invoiceNoun() {
     String profile =
         orgSettingsRepository
             .findForCurrentTenant()
             .map(OrgSettings::getVerticalProfile)
             .orElse(null);
-    String noun = emailTerminology.resolve(profile).getOrDefault("invoice", "invoice");
-    return EmailTerminology.withIndefiniteArticle(noun);
+    return emailTerminology.resolve(profile).getOrDefault("invoice", "invoice");
   }
 
   private ValidationCheck checkOrgBranding(Severity severity) {

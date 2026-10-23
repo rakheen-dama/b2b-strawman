@@ -11,8 +11,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.jsoup.nodes.Entities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,6 +33,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class PdfRenderingService {
 
   private static final Logger log = LoggerFactory.getLogger(PdfRenderingService.class);
+
+  /** A named character reference, e.g. {@code &middot;} — group 1 is the entity name. */
+  private static final Pattern NAMED_ENTITY = Pattern.compile("&([A-Za-z][A-Za-z0-9]*);");
+
+  private static final Set<String> XML_PREDEFINED_ENTITIES =
+      Set.of("amp", "lt", "gt", "quot", "apos");
 
   private final DocumentTemplateRepository documentTemplateRepository;
   private final List<TemplateContextBuilder> contextBuilders;
@@ -254,22 +265,37 @@ public class PdfRenderingService {
   }
 
   /**
-   * Replaces HTML5 named entities with numeric equivalents for OpenHTMLToPDF's XHTML parser. XML
-   * predefined entities (&amp;, &lt;, &gt;, &quot;, &apos;) are left untouched.
+   * Replaces HTML named character references with numeric equivalents for OpenHTMLToPDF's XHTML
+   * (XML) parser, which only declares the five XML predefined entities. Rendered text is escaped by
+   * {@code HtmlUtils.htmlEscape}, which emits HTML4 named entities for any non-ASCII character it
+   * knows ({@code &middot;}, {@code &eacute;}, {@code &times;}, ...); left as-is, the parser throws
+   * "The entity ... was referenced, but not declared" and the whole PDF render fails.
+   *
+   * <p>XML predefined entities ({@code &amp;}, {@code &lt;}, {@code &gt;}, {@code &quot;}, {@code
+   * &apos;}), numeric references and names jsoup does not recognise are left untouched.
    */
   String sanitizeForXhtml(String html) {
     if (html == null) {
       return null;
     }
-    return html.replace("&mdash;", "&#8212;")
-        .replace("&ndash;", "&#8211;")
-        .replace("&nbsp;", "&#160;")
-        .replace("&hellip;", "&#8230;")
-        .replace("&bull;", "&#8226;")
-        .replace("&lsquo;", "&#8216;")
-        .replace("&rsquo;", "&#8217;")
-        .replace("&ldquo;", "&#8220;")
-        .replace("&rdquo;", "&#8221;");
+    return NAMED_ENTITY.matcher(html).replaceAll(PdfRenderingService::toNumericReference);
+  }
+
+  private static String toNumericReference(MatchResult match) {
+    String name = match.group(1);
+    if (XML_PREDEFINED_ENTITIES.contains(name) || !Entities.isNamedEntity(name)) {
+      return Matcher.quoteReplacement(match.group());
+    }
+    int[] codepoints = new int[2];
+    int count = Entities.codepointsForName(name, codepoints);
+    if (count == 0) {
+      return Matcher.quoteReplacement(match.group());
+    }
+    var numeric = new StringBuilder();
+    for (int i = 0; i < count; i++) {
+      numeric.append("&#").append(codepoints[i]).append(';');
+    }
+    return Matcher.quoteReplacement(numeric.toString());
   }
 
   String generateFilename(

@@ -261,6 +261,47 @@ class PdfRenderingServiceTest {
                 }));
   }
 
+  // --- sanitizeForXhtml (622A middot regression: HtmlUtils.htmlEscape emits HTML4 named entities
+  // such as &middot; / &eacute; that OpenHTMLToPDF's XML parser does not declare) ---
+
+  @Test
+  void sanitizeForXhtml_convertsMiddotAndAccentedEntitiesToNumericRefs() {
+    assertThat(pdfRenderingService.sanitizeForXhtml("a &middot; b")).isEqualTo("a &#183; b");
+    assertThat(pdfRenderingService.sanitizeForXhtml("Jos&eacute;")).isEqualTo("Jos&#233;");
+    assertThat(pdfRenderingService.sanitizeForXhtml("M&uuml;ller &times; &copy;"))
+        .isEqualTo("M&#252;ller &#215; &#169;");
+  }
+
+  @Test
+  void sanitizeForXhtml_previouslyMappedEntitiesKeepTheirNumericOutput() {
+    assertThat(
+            pdfRenderingService.sanitizeForXhtml(
+                "&mdash;&ndash;&nbsp;&hellip;&bull;&lsquo;&rsquo;&ldquo;&rdquo;"))
+        .isEqualTo("&#8212;&#8211;&#160;&#8230;&#8226;&#8216;&#8217;&#8220;&#8221;");
+  }
+
+  @Test
+  void sanitizeForXhtml_leavesXmlPredefinedNumericAndUnknownEntitiesUntouched() {
+    String xmlPredefined = "&amp; &lt; &gt; &quot; &apos;";
+    assertThat(pdfRenderingService.sanitizeForXhtml(xmlPredefined)).isEqualTo(xmlPredefined);
+    assertThat(pdfRenderingService.sanitizeForXhtml("&#183; &#x00B7;"))
+        .isEqualTo("&#183; &#x00B7;");
+    assertThat(pdfRenderingService.sanitizeForXhtml("&notarealentity;"))
+        .isEqualTo("&notarealentity;");
+    assertThat(pdfRenderingService.sanitizeForXhtml(null)).isNull();
+  }
+
+  @Test
+  void htmlToPdf_rendersHtmlEscapedMiddotAndAccentWithoutThrowing() {
+    byte[] pdf =
+        pdfRenderingService.htmlToPdf(
+            "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"/></head><body>"
+                + "<p>2026-10-24 &middot; Jos&eacute; &middot; Drafting</p></body></html>");
+
+    assertThat(pdf).isNotEmpty();
+    assertThat(new String(pdf, 0, 4)).isEqualTo("%PDF");
+  }
+
   // --- Helpers ---
 
   private void runInTenant(Runnable action) {

@@ -1,7 +1,7 @@
 {
-  "commit": "b4d747701814edaf699c3d4cecd5f23e3d347c77",
+  "commit": "24db61722408b24b9119df3a9da312ac644a444c",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-23T15:20:00Z",
-  "summary": "Slice 620B PR #1653 head b4d747701 (orchestrator run in worktree-epic-620B): 5534 testcases / 0 failures / 0 errors / 26 skipped across 703 reports (= 5526 after 620A + 8 new: CollectionsSqlSourceScanTest 5, CollectionsReadApiTest real-path + 2x 403). Backend CI pass (19m35s). Log /tmp/mvn-620B-final.log."
+  "ts": "2026-10-23T16:25:00Z",
+  "summary": "Slice 620D PR #1655 head 24db61722 (orchestrator run in worktree-epic-620D): 5544 testcases / 0 failures / 0 errors / 26 skipped across 703 reports (= 5534 after 620B + 10 new: CustomerFicaStatusIntegrationTest real-path 3, FicaStatusProjectorTest checklist cases, FicaOutstanding/ClientListRow checklist fixtures). Backend CI pass (16m39s). Log /tmp/mvn-620D-final.log."
 }

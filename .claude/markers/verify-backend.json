@@ -1,7 +1,7 @@
 {
-  "commit": "eb988d2a32a0933501eb7db19859a3542f6e6824",
+  "commit": "d981903cae8642dc53624aa5a487ddc499df5efa",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-23T18:10:00Z",
-  "summary": "Slice 621A PR #1657 head eb988d2a3 (orchestrator run in worktree-epic-621A): 5554 testcases / 0 failures / 0 errors / 26 skipped across 703 reports (= 5544 after 620D + 10 new: DisbursementControllerIntegrationTest restore 200/409/403, DisbursementServiceTest restore_*, TrustTransactionControllerTest filters + excludeLinked, AuditEventTypeRegistryTest 29→30). Backend CI pass (14m54s). Log /tmp/mvn-621A-final.log."
+  "ts": "2026-10-23T22:57:00Z",
+  "summary": "Slice 622A PR #1661 head d981903ca (orchestrator run in worktree-epic-622A): 5569 testcases / 0 failures / 0 errors / 26 skipped across 704 reports (= 5554 after 621A + 15 new: InvoiceLineDescriptionIntegrationTest 8, PdfRenderingServiceTest +4, InvoiceGenerationValidationIntegrationTest TRUST + company-generation cases, InvoiceTerminologyLegalZaTest legal-za COMPANY case). Backend CI pass (14m35s). Log /tmp/mvn-622A-final.log."
 }

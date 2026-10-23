@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.informationrequest;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstance;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceRepository;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
@@ -62,6 +64,7 @@ public class InformationRequestService {
   private final ApplicationEventPublisher eventPublisher;
   private final AuditService auditService;
   private final MemberRepository memberRepository;
+  private final ChecklistInstanceRepository checklistInstanceRepository;
 
   public InformationRequestService(
       InformationRequestRepository requestRepository,
@@ -75,7 +78,8 @@ public class InformationRequestService {
       DocumentRepository documentRepository,
       ApplicationEventPublisher eventPublisher,
       AuditService auditService,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      ChecklistInstanceRepository checklistInstanceRepository) {
     this.requestRepository = requestRepository;
     this.itemRepository = itemRepository;
     this.requestNumberService = requestNumberService;
@@ -88,6 +92,7 @@ public class InformationRequestService {
     this.eventPublisher = eventPublisher;
     this.auditService = auditService;
     this.memberRepository = memberRepository;
+    this.checklistInstanceRepository = checklistInstanceRepository;
   }
 
   private String resolveActorName() {
@@ -745,91 +750,81 @@ public class InformationRequestService {
     return toResponseList(requestRepository.findByProjectId(projectId));
   }
 
-  // ========== FICA Status Projection (GAP-L-46) ==========
+  // ========== FICA Status Projection (GAP-L-46; checklist-first, ADR-348) ==========
 
   /** Pack identifier for the FICA onboarding request template (legal-ZA). */
   public static final String FICA_ONBOARDING_PACK_ID = "fica-onboarding-pack";
 
   /**
-   * Projects the FICA onboarding status for a customer from the customer's information requests
-   * backed by the {@link #FICA_ONBOARDING_PACK_ID} template. Info-request-only signal —
-   * intentionally does NOT couple to any KYC-adapter output or beneficial-owner coverage. Designed
-   * so those two concerns can be folded into the same DTO later without a schema change (tracked
-   * under a separate phase).
+   * FICA onboarding status for one client — the batch with a single id, so the single read and the
+   * batch can never disagree (ADR-348). Onboarding checklist instances first, the client's {@link
+   * #FICA_ONBOARDING_PACK_ID} information requests as fallback. Intentionally does NOT couple to
+   * any KYC-adapter output or beneficial-owner coverage.
    */
   @Transactional(readOnly = true)
   public FicaStatusResponse getFicaStatus(UUID customerId) {
-    var ficaTemplateIds = ficaTemplateIds();
-    // No FICA template → NOT_STARTED without reading the client's requests.
-    List<InformationRequest> requests =
-        ficaTemplateIds.isEmpty() ? List.of() : requestRepository.findByCustomerId(customerId);
-    var projection =
-        FicaStatusProjector.project(ficaTemplateIds, requests, itemRepository::findByRequestId);
-    return toFicaStatusResponse(customerId, projection);
+    return getFicaStatuses(List.of(customerId)).get(customerId);
   }
 
   /**
-   * Batched FICA status for many clients in three queries (FICA template ids, their non-cancelled
-   * requests, the items of the COMPLETED ones) — the same rule as {@link #getFicaStatus(UUID)} via
-   * {@link FicaStatusProjector}. Returns one entry per requested id, in iteration order.
+   * Batched FICA status in at most three statements, independent of how many clients are asked for
+   * (the Clients list's 10-statement cap depends on it): (1) the clients' onboarding checklist
+   * instances (template {@code auto_instantiate = true} folded in as a subquery), (2) their
+   * non-cancelled requests on a FICA-pack template (pack lookup folded in as a subquery), (3) the
+   * items of the COMPLETED ones (only when there are any). One entry per requested id, in iteration
+   * order; the rule is {@link FicaStatusProjector}.
    */
   @Transactional(readOnly = true)
   public Map<UUID, FicaStatusResponse> getFicaStatuses(Collection<UUID> customerIds) {
     if (customerIds.isEmpty()) {
       return Map.of();
     }
-    var ficaTemplateIds = ficaTemplateIds();
-    Map<UUID, List<InformationRequest>> requestsByClient = Map.of();
-    Map<UUID, List<RequestItem>> itemsByRequest = Map.of();
-    if (!ficaTemplateIds.isEmpty()) {
-      var wanted = Set.copyOf(customerIds);
-      var requests =
-          requestRepository
-              .findByRequestTemplateIdInAndStatusNot(ficaTemplateIds, RequestStatus.CANCELLED)
-              .stream()
-              .filter(r -> wanted.contains(r.getCustomerId()))
-              .toList();
-      requestsByClient =
-          requests.stream().collect(Collectors.groupingBy(InformationRequest::getCustomerId));
-      // The rule only ever reads the items of a COMPLETED request.
-      var completedIds =
-          requests.stream()
-              .filter(r -> r.getStatus() == RequestStatus.COMPLETED)
-              .map(InformationRequest::getId)
-              .toList();
-      if (!completedIds.isEmpty()) {
-        itemsByRequest =
-            itemRepository.findByRequestIdIn(completedIds).stream()
+    Map<UUID, List<ChecklistInstance>> instancesByClient =
+        checklistInstanceRepository.findOnboardingByCustomerIdIn(customerIds).stream()
+            .collect(Collectors.groupingBy(ChecklistInstance::getCustomerId));
+    var requests =
+        requestRepository.findFicaRequestsForClients(
+            customerIds, FICA_ONBOARDING_PACK_ID, RequestStatus.CANCELLED);
+    // Every request returned sits on a FICA-pack template, so their template ids are exactly the
+    // FICA templates the fallback rule needs to recognise (an empty set <=> no FICA request <=>
+    // NOT_STARTED, same as before).
+    Set<UUID> ficaTemplateIds =
+        requests.stream().map(InformationRequest::getRequestTemplateId).collect(Collectors.toSet());
+    Map<UUID, List<InformationRequest>> requestsByClient =
+        requests.stream().collect(Collectors.groupingBy(InformationRequest::getCustomerId));
+    // The rule only ever reads the items of a COMPLETED request.
+    var completedIds =
+        requests.stream()
+            .filter(r -> r.getStatus() == RequestStatus.COMPLETED)
+            .map(InformationRequest::getId)
+            .toList();
+    Map<UUID, List<RequestItem>> itemsByRequest =
+        completedIds.isEmpty()
+            ? Map.of()
+            : itemRepository.findByRequestIdIn(completedIds).stream()
                 .collect(Collectors.groupingBy(RequestItem::getRequestId));
-      }
-    }
+
     var result = new LinkedHashMap<UUID, FicaStatusResponse>();
     for (UUID customerId : customerIds) {
-      var items = itemsByRequest;
       var projection =
           FicaStatusProjector.project(
+              instancesByClient.getOrDefault(customerId, List.of()),
               ficaTemplateIds,
               requestsByClient.getOrDefault(customerId, List.of()),
-              requestId -> items.getOrDefault(requestId, List.of()));
+              requestId -> itemsByRequest.getOrDefault(requestId, List.of()));
       result.put(customerId, toFicaStatusResponse(customerId, projection));
     }
     return result;
   }
 
-  /**
-   * Every template whose pack is the FICA onboarding pack. The org may have duplicated the pack;
-   * every request tied to any of them is "a FICA request" (no active filter).
-   */
-  private Set<UUID> ficaTemplateIds() {
-    return templateRepository.findByPackId(FICA_ONBOARDING_PACK_ID).stream()
-        .map(RequestTemplate::getId)
-        .collect(Collectors.toSet());
-  }
-
   private static FicaStatusResponse toFicaStatusResponse(
       UUID customerId, FicaStatusProjector.Projection projection) {
     return new FicaStatusResponse(
-        customerId, projection.status(), projection.completedAt(), projection.requestId());
+        customerId,
+        projection.status(),
+        projection.completedAt(),
+        projection.requestId(),
+        projection.checklistInstanceId());
   }
 
   // ========== Dashboard Summary ==========

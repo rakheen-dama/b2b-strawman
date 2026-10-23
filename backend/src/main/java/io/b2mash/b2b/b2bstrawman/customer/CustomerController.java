@@ -255,10 +255,11 @@ public class CustomerController {
   }
 
   /**
-   * FICA onboarding status projection for a customer (GAP-L-46). Derived from the customer's {@code
-   * fica-onboarding-pack} information requests. Returns {@code {status:
-   * NOT_STARTED|IN_PROGRESS|DONE, lastVerifiedAt, requestId}}. Info-request-only signal — no
-   * KYC-adapter coupling.
+   * FICA onboarding status projection for a customer (GAP-L-46). Derived from the customer's
+   * onboarding checklist instances first, its {@code fica-onboarding-pack} information requests as
+   * fallback (ADR-348). Returns {@code {status: NOT_STARTED|IN_PROGRESS|DONE, lastVerifiedAt,
+   * requestId, checklistInstanceId}} — {@code checklistInstanceId} when the checklist decided,
+   * {@code requestId} when a request did. No KYC-adapter coupling.
    */
   @GetMapping("/{clientId}/fica-status")
   public ResponseEntity<FicaStatusResponse> getFicaStatus(@PathVariable UUID clientId) {

@@ -21,6 +21,67 @@ public final class TestChecklistHelper {
   private TestChecklistHelper() {}
 
   /**
+   * Creates a firm-authored onboarding checklist template (auto-instantiated on Start Onboarding,
+   * ADR-348 A1) whose items need no document, so {@link #completeChecklistItems} completes it.
+   * Returns the template id. The slug derives from {@code name} and is unique per tenant — call
+   * once per tenant.
+   */
+  public static String createOnboardingTemplate(
+      MockMvc mockMvc, JwtRequestPostProcessor jwt, String name) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/checklist-templates")
+                    .with(jwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "name": "%s",
+                          "description": "Firm onboarding (FICA) checklist",
+                          "clientType": "ANY",
+                          "autoInstantiate": true,
+                          "items": [
+                            {"name": "Verify identity", "sortOrder": 1, "required": true, "requiresDocument": false},
+                            {"name": "FICA risk assessment", "sortOrder": 2, "required": true, "requiresDocument": false}
+                          ]
+                        }
+                        """
+                            .formatted(name)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+  }
+
+  /** Start Onboarding: PROSPECT → ONBOARDING, which auto-instantiates the onboarding checklists. */
+  public static void startOnboarding(
+      MockMvc mockMvc, String customerId, JwtRequestPostProcessor jwt) throws Exception {
+    mockMvc
+        .perform(
+            post("/api/clients/" + customerId + "/transition")
+                .with(jwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetStatus": "ONBOARDING"}
+                    """))
+        .andExpect(status().isOk());
+  }
+
+  /**
+   * The customer's checklist instance ids, as {@code GET /api/clients/{id}/checklists} lists them.
+   */
+  public static List<String> checklistInstanceIds(
+      MockMvc mockMvc, String customerId, JwtRequestPostProcessor jwt) throws Exception {
+    var result =
+        mockMvc
+            .perform(get("/api/clients/" + customerId + "/checklists").with(jwt))
+            .andExpect(status().isOk())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$[*].id");
+  }
+
+  /**
    * Transitions a customer from ONBOARDING to ACTIVE. Completes any auto-instantiated checklist
    * items first, then fills the structural prerequisite fields required by LIFECYCLE_ACTIVATION
    * (added in Epic 461B) so the transition isn't blocked. If no checklists exist (e.g.,

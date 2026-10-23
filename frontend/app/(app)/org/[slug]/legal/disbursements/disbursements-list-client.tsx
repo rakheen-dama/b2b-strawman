@@ -80,10 +80,16 @@ export function DisbursementsListClient({
   const unbilledSummary = useUnbilledDisbursementsSummaryCache();
   const writeOff = useDisbursementWriteOff({
     slug,
-    onChanged: () => {
+    onChanged: (matterId) => {
       refetch();
-      // Write-off / undo moves the matter's unbilled total (strip shown only when filtered).
-      unbilledSummary.refresh(projectFilter);
+      // Write-off / undo moves the changed matter's unbilled total. The strip is mounted only when
+      // the list is filtered to that matter — revalidate it in place. Otherwise (All Matters or
+      // another matter) evict the cached total so the matter tab / filter can't paint it stale.
+      if (matterId === projectFilter) {
+        unbilledSummary.refresh(matterId);
+      } else {
+        unbilledSummary.evict(matterId);
+      }
     },
   });
 

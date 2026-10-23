@@ -23,7 +23,7 @@ interface TrustTransactionLinkDialogProps {
   onSelect: (transaction: TrustTransaction) => void;
 }
 
-// One SWR cache per open: DialogContent mounts its children on each open, so the picker always
+// One SWR cache per open: the picker mounts only while `open` (below), so it always
 // starts from the loading state and a fresh fetch. A shared cache could still hold a payment linked
 // since the last open, and SWR would paint it (revalidating cached data is deferred a frame and
 // deduped for 2 s). The backend does not reject a second link, so a used payment must never be
@@ -44,13 +44,17 @@ export function TrustTransactionLinkDialog({
           <DialogDescription>Select an approved trust payment on this matter.</DialogDescription>
         </DialogHeader>
 
-        <SWRConfig value={freshCachePerOpen}>
-          <TrustTransactionPicker
-            projectId={projectId}
-            onSelect={onSelect}
-            onCancel={() => onOpenChange(false)}
-          />
-        </SWRConfig>
+        {/* Mounted only while open: if an exit animation keeps DialogContent mounted, an
+            immediate re-open must still start a fresh cache rather than reuse the last one. */}
+        {open && (
+          <SWRConfig value={freshCachePerOpen}>
+            <TrustTransactionPicker
+              projectId={projectId}
+              onSelect={onSelect}
+              onCancel={() => onOpenChange(false)}
+            />
+          </SWRConfig>
+        )}
       </DialogContent>
     </Dialog>
   );

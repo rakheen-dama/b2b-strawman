@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SWRConfig } from "swr";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 const mockFetchApproved = vi.fn();
 
@@ -228,5 +228,46 @@ describe("TrustTransactionLinkDialog", () => {
 
     await user.click(confirmBtn);
     expect(onSelect).toHaveBeenCalledWith(tx);
+  });
+
+  it("unmounts the picker while closed, even if an exit animation keeps the content mounted", async () => {
+    // Simulate Radix retaining DialogContent during its exit animation: the stand-in primitives
+    // always render their children, whatever `open` is.
+    vi.resetModules();
+    vi.doMock("@/components/ui/dialog", () => {
+      const Pass = ({ children }: { children?: ReactNode }) => <>{children}</>;
+      return {
+        Dialog: Pass,
+        DialogContent: ({ children }: { children?: ReactNode }) => (
+          <div data-testid="trust-transaction-link-dialog">{children}</div>
+        ),
+        DialogHeader: Pass,
+        DialogFooter: Pass,
+        DialogTitle: Pass,
+        DialogDescription: Pass,
+      };
+    });
+    try {
+      const { TrustTransactionLinkDialog: RetainedDialog } =
+        await import("@/components/legal/trust-transaction-link-dialog");
+      mockFetchApproved.mockResolvedValueOnce([makeTx({ id: "tx1" })]);
+      const props = { onOpenChange: () => {}, projectId: "p1", onSelect: () => {} };
+
+      const { rerender } = render(<RetainedDialog open={true} {...props} />);
+      expect(await screen.findByTestId("trust-tx-row-tx1")).toBeInTheDocument();
+
+      rerender(<RetainedDialog open={false} {...props} />);
+      expect(screen.queryByTestId("trust-tx-row-tx1")).not.toBeInTheDocument();
+
+      // Immediate re-open: a fresh picker + cache, never the previous open's rows.
+      mockFetchApproved.mockReturnValueOnce(new Promise<TrustTransaction[]>(() => {}));
+      rerender(<RetainedDialog open={true} {...props} />);
+      expect(screen.getByTestId("trust-tx-loading")).toBeInTheDocument();
+      expect(screen.queryByTestId("trust-tx-row-tx1")).not.toBeInTheDocument();
+      expect(mockFetchApproved).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.doUnmock("@/components/ui/dialog");
+      vi.resetModules();
+    }
   });
 });

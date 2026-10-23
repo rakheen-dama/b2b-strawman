@@ -51,7 +51,13 @@ function makeDisbursement(overrides: Partial<DisbursementResponse> = {}): Disbur
   };
 }
 
-function Harness({ rows, onChanged }: { rows: DisbursementResponse[]; onChanged: () => void }) {
+function Harness({
+  rows,
+  onChanged,
+}: {
+  rows: DisbursementResponse[];
+  onChanged: (matterId: string) => void;
+}) {
   const writeOff = useDisbursementWriteOff({ slug: "test-org", onChanged });
   return (
     <>
@@ -121,6 +127,8 @@ describe("useDisbursementWriteOff (row-menu write-off / undo)", () => {
     await user.click(screen.getByTestId("disbursement-write-off-confirm-button"));
 
     await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1));
+    // The changed row's matter id, so the firm list can refresh / evict that matter's strip.
+    expect(onChanged).toHaveBeenCalledWith("p1");
     expect(mockWriteOff).toHaveBeenCalledWith("test-org", "d-ok", "Client dispute");
     expect(mockToastSuccess).toHaveBeenCalledWith("Disbursement written off");
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
@@ -141,6 +149,7 @@ describe("useDisbursementWriteOff (row-menu write-off / undo)", () => {
     await waitFor(() => expect(mockToastSuccess).toHaveBeenCalledWith("Write-off undone"));
     expect(mockRestore).toHaveBeenCalledWith("test-org", "d-ro");
     expect(onChanged).toHaveBeenCalledTimes(1);
+    expect(onChanged).toHaveBeenCalledWith("p1");
   });
 
   it("Undo write-off surfaces the action error without refetching", async () => {

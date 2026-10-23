@@ -55,6 +55,7 @@ vi.mock("@/lib/api/capabilities", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { performConflictCheck } from "@/app/(app)/org/[slug]/conflict-check/actions";
 import {
   createCourtDate,
@@ -340,6 +341,32 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
     expect(mockPost).toHaveBeenCalledWith("/api/legal/disbursements/d1/restore");
     expect(result.success).toBe(true);
   });
+
+  it.each([
+    [
+      "writeOffDisbursementAction",
+      () => writeOffDisbursementAction("acme", "d1", "Client dispute"),
+      "You do not have permission to write off disbursements.",
+    ],
+    [
+      "restoreDisbursementAction",
+      () => restoreDisbursementAction("acme", "d1"),
+      "You do not have permission to undo a write-off.",
+    ],
+  ] as const)(
+    "%s refuses without WRITE_OFF_DISBURSEMENTS (non-admin) and never calls the API",
+    async (_name, call, error) => {
+      vi.mocked(fetchMyCapabilities).mockResolvedValueOnce({
+        isAdmin: false,
+        isOwner: false,
+        role: "member",
+        capabilities: ["APPROVE_DISBURSEMENTS"],
+      });
+      const result = await call();
+      expect(mockPost).not.toHaveBeenCalled();
+      expect(result).toEqual({ success: false, error });
+    }
+  );
 
   it("placeInvestment sends clientId (never customerId) and a decimal rate", async () => {
     await placeInvestment("ta-1", {

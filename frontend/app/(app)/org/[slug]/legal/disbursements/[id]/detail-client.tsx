@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Pencil, RotateCcw, Send, Upload } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
@@ -66,6 +66,17 @@ export function DisbursementDetailClient({
   const [isSubmittingForApproval, setIsSubmittingForApproval] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isRestoring, setIsRestoring] = useState(false);
+  // Write off ↔ Undo swap buttons on success, which would drop focus to <body>; move it to the
+  // button that replaced the one the user just used.
+  const writeOffTriggerRef = useRef<HTMLButtonElement>(null);
+  const restoreButtonRef = useRef<HTMLButtonElement>(null);
+  const focusAfterSwap = useRef<"write-off" | "restore" | null>(null);
+  useEffect(() => {
+    const target = focusAfterSwap.current;
+    if (!target) return;
+    focusAfterSwap.current = null;
+    (target === "restore" ? restoreButtonRef : writeOffTriggerRef).current?.focus();
+  }, [disbursement.billingStatus]);
 
   const editable =
     disbursement.approvalStatus === "DRAFT" || disbursement.approvalStatus === "PENDING_APPROVAL";
@@ -114,6 +125,7 @@ export function DisbursementDetailClient({
     try {
       const result = await restoreDisbursementAction(slug, disbursement.id);
       if (result.success && result.data) {
+        focusAfterSwap.current = "write-off";
         setDisbursement(result.data);
       } else {
         setSubmitError(result.error ?? "Failed to undo write-off.");
@@ -202,13 +214,18 @@ export function DisbursementDetailClient({
             <DisbursementWriteOffDialog
               slug={slug}
               disbursement={disbursement}
-              onWrittenOff={(updated) => setDisbursement(updated)}
+              triggerRef={writeOffTriggerRef}
+              onWrittenOff={(updated) => {
+                focusAfterSwap.current = "restore";
+                setDisbursement(updated);
+              }}
             />
           )}
           {canWriteOff && disbursement.billingStatus === "WRITTEN_OFF" && (
             <Button
               variant="outline"
               size="sm"
+              ref={restoreButtonRef}
               onClick={handleRestore}
               disabled={isRestoring}
               data-testid="disbursement-restore-button"

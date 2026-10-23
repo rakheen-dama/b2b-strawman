@@ -41,7 +41,7 @@ interface DisbursementWriteOffFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onWrittenOff?: (updated: DisbursementResponse) => void;
-  /** Element to refocus on close (the owned trigger). Omitted → Radix default focus return. */
+  /** Element to refocus on close (the owned trigger). Omitted → whatever had focus on open. */
   returnFocusRef?: RefObject<HTMLElement | null>;
 }
 
@@ -56,6 +56,7 @@ export function DisbursementWriteOffFormDialog({
 }: DisbursementWriteOffFormDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
 
   const form = useForm<WriteOffDisbursementFormData>({
     resolver: zodResolver(writeOffDisbursementSchema),
@@ -95,11 +96,18 @@ export function DisbursementWriteOffFormDialog({
       <DialogContent
         className="sm:max-w-md"
         data-testid="disbursement-write-off-dialog"
+        onOpenAutoFocus={() => {
+          // e.g. the row's "…" trigger when opened from a row menu (after the menu has closed).
+          openerRef.current =
+            document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        }}
         onCloseAutoFocus={(event) => {
-          // Radix only tracks a DialogTrigger; an owned button restores focus itself.
-          if (returnFocusRef?.current) {
+          // Radix only returns focus to a DialogTrigger, and there is none here. Skip a target
+          // that left the DOM (the detail page swaps the trigger for Undo and focuses that).
+          const target = returnFocusRef?.current ?? openerRef.current;
+          if (target?.isConnected) {
             event.preventDefault();
-            returnFocusRef.current.focus();
+            target.focus();
           }
         }}
       >
@@ -178,6 +186,8 @@ interface DisbursementWriteOffDialogProps {
   triggerVariant?: ComponentProps<typeof Button>["variant"];
   triggerSize?: ComponentProps<typeof Button>["size"];
   triggerClassName?: string;
+  /** Lets the host focus the owned trigger (e.g. after an undo swaps it back in). */
+  triggerRef?: RefObject<HTMLButtonElement | null>;
 }
 
 /** Dialog owns its button (frontend/CLAUDE.md "Dialog Trigger Composition") — detail page. */
@@ -189,9 +199,11 @@ export function DisbursementWriteOffDialog({
   triggerVariant = "outline",
   triggerSize = "sm",
   triggerClassName,
+  triggerRef: hostTriggerRef,
 }: DisbursementWriteOffDialogProps) {
   const [open, setOpen] = useState(false);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const ownTriggerRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = hostTriggerRef ?? ownTriggerRef;
 
   return (
     <>

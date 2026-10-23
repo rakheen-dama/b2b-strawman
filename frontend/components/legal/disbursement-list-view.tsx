@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
@@ -84,6 +84,11 @@ export function DisbursementListView({
 }: DisbursementListViewProps) {
   const [sortField, setSortField] = useState<SortField>("incurredDate");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  // A row-menu action that opens a dialog runs only once the menu has fully closed (its
+  // onCloseAutoFocus): opening the dialog while the menu is still exiting leaves Radix's
+  // body `pointer-events: none` behind on a quick Escape, and the dialog would record the
+  // vanishing menu item — not the "…" trigger — as its focus-return target.
+  const afterMenuClose = useRef<(() => void) | null>(null);
 
   function toggleSort(field: SortField) {
     if (sortField === field) {
@@ -233,7 +238,14 @@ export function DisbursementListView({
                           <span className="sr-only">Actions</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent
+                        align="end"
+                        onCloseAutoFocus={() => {
+                          const run = afterMenuClose.current;
+                          afterMenuClose.current = null;
+                          run?.();
+                        }}
+                      >
                         {edit && (
                           <DropdownMenuItem
                             onClick={(e) => {
@@ -257,9 +269,9 @@ export function DisbursementListView({
                         {writeOff && (
                           <DropdownMenuItem
                             data-testid={`disbursement-write-off-item-${d.id}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              writeOff(d);
+                            onClick={(e) => e.stopPropagation()}
+                            onSelect={() => {
+                              afterMenuClose.current = () => writeOff(d);
                             }}
                           >
                             Write off

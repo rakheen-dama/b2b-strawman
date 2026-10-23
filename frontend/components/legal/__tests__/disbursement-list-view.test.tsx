@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DisbursementListView } from "@/components/legal/disbursement-list-view";
 import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
@@ -122,7 +122,10 @@ describe("DisbursementListView", () => {
     expect(screen.queryByRole("menuitem", { name: "Undo write-off" })).not.toBeInTheDocument();
     await user.click(screen.getByTestId("disbursement-write-off-item-d-wo"));
 
-    expect(onWriteOff).toHaveBeenCalledWith(approved);
+    // Deferred until the menu has fully closed (its onCloseAutoFocus), then focus is back on "…".
+    await waitFor(() => expect(onWriteOff).toHaveBeenCalledWith(approved));
+    expect(onWriteOff).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId("disbursement-actions-d-wo")).toHaveFocus();
     expect(onSelect).not.toHaveBeenCalled();
   });
 

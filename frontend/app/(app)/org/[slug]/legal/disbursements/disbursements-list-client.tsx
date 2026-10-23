@@ -2,14 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { ModuleGate } from "@/components/module-gate";
 import { DisbursementListView } from "@/components/legal/disbursement-list-view";
-import { DisbursementWriteOffFormDialog } from "@/components/legal/disbursement-write-off-dialog";
+import { useDisbursementWriteOff } from "@/components/legal/use-disbursement-write-off";
 import { CreateDisbursementDialog } from "@/components/legal/create-disbursement-dialog";
 import { Input } from "@b2mash/ui/input";
-import { fetchDisbursements, restoreDisbursementAction } from "./actions";
-import { useCapabilities } from "@/lib/capabilities";
+import { fetchDisbursements } from "./actions";
 import type {
   DisbursementApprovalStatus,
   DisbursementBillingStatus,
@@ -40,10 +38,6 @@ export function DisbursementsListClient({
   const [total, setTotal] = useState(initialTotal);
   const [isPending, startTransition] = useTransition();
   const projectNames = initialProjectNames;
-  const [writeOffTarget, setWriteOffTarget] = useState<DisbursementResponse | null>(null);
-  // Write-off / undo need WRITE_OFF_DISBURSEMENTS (backend @RequiresCapability).
-  const { hasCapability } = useCapabilities();
-  const canWriteOff = hasCapability("WRITE_OFF_DISBURSEMENTS");
 
   const [projectFilter, setProjectFilter] = useState<string>("");
   const [categoryFilter, setCategoryFilter] = useState<DisbursementCategory | "">("");
@@ -79,15 +73,7 @@ export function DisbursementsListClient({
     });
   };
 
-  async function handleRestore(d: DisbursementResponse) {
-    const result = await restoreDisbursementAction(slug, d.id);
-    if (result.success) {
-      toast.success("Write-off undone");
-      refetch();
-    } else {
-      toast.error(result.error ?? "Failed to undo write-off");
-    }
-  }
+  const writeOff = useDisbursementWriteOff({ slug, onChanged: () => refetch() });
 
   const isInitialMount = useRef(true);
   const refetchRef = useRef(refetch);
@@ -203,22 +189,11 @@ export function DisbursementsListClient({
           disbursements={visibleDisbursements}
           projectNames={projectNames}
           onSelect={(d) => router.push(`/org/${slug}/legal/disbursements/${d.id}`)}
-          onWriteOff={canWriteOff ? setWriteOffTarget : undefined}
-          onRestore={canWriteOff ? handleRestore : undefined}
+          onWriteOff={writeOff.onWriteOff}
+          onRestore={writeOff.onRestore}
         />
 
-        {writeOffTarget && (
-          <DisbursementWriteOffFormDialog
-            slug={slug}
-            disbursement={writeOffTarget}
-            open={!!writeOffTarget}
-            onOpenChange={(open) => !open && setWriteOffTarget(null)}
-            onWrittenOff={() => {
-              setWriteOffTarget(null);
-              refetch();
-            }}
-          />
-        )}
+        {writeOff.dialog}
       </div>
     </ModuleGate>
   );

@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.automation.config.AssignTo;
 import io.b2mash.b2b.b2bstrawman.automation.config.CreateTaskActionConfig;
 import io.b2mash.b2b.b2bstrawman.automation.executor.AssignMemberActionExecutor;
 import io.b2mash.b2b.b2bstrawman.automation.executor.CreateTaskActionExecutor;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
@@ -43,9 +44,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * Phase 88 U1 (ADR-345): a matter created through the REAL template write path ({@link
- * ProjectTemplateService#instantiateTemplate}) with a chosen lead must surface that lead on every
- * reader the capstone found empty — Matters list fee earner, the lead's edit access, lead
+ * Phase 88 U1 (ADR-345): a matter created through the REAL template write paths ({@link
+ * ProjectTemplateService#instantiateTemplate}, and the scheduler/recurring {@link
+ * ProjectTemplateService#instantiateFromTemplate}) with a chosen lead must surface that lead on
+ * every reader the capstone found empty — Matters list fee earner, the lead's edit access, lead
  * notifications, and automation PROJECT_OWNER. {@code MatterListRowIntegrationTest} stayed green
  * while template matters showed "Fee earner —" because it never instantiated a template.
  *
@@ -62,7 +64,9 @@ class TemplateCreatedMatterReadPathIntegrationTest {
   private static final String OWNER = "user_trp_owner";
   private static final String LEAD = "user_trp_lead";
   private static final String CLAIMANT = "user_trp_claimant";
+  private static final String SCHEDULER_LEAD = "user_trp_scheduler_lead";
   private static final String LEAD_NAME = "TRP Lead";
+  private static final String SCHEDULER_LEAD_NAME = "TRP Scheduler Lead";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -84,6 +88,8 @@ class TemplateCreatedMatterReadPathIntegrationTest {
   private UUID ownerId;
   private UUID leadId;
   private UUID claimantId;
+  private UUID schedulerLeadId;
+  private UUID templateId;
   private UUID matterId;
   private UUID openTaskId;
 
@@ -104,6 +110,15 @@ class TemplateCreatedMatterReadPathIntegrationTest {
         UUID.fromString(
             TestMemberHelper.syncMember(
                 mockMvc, ORG_ID, CLAIMANT, "trp_claimant@test.com", "TRP Claimant", "member"));
+    schedulerLeadId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                SCHEDULER_LEAD,
+                "trp_scheduler_lead@test.com",
+                SCHEDULER_LEAD_NAME,
+                "member"));
 
     UUID[] ids =
         TenantTestSupport.callAsActor(
@@ -113,7 +128,7 @@ class TemplateCreatedMatterReadPathIntegrationTest {
             "owner",
             Capability.ALL_NAMES,
             () -> {
-              UUID templateId =
+              UUID tplId =
                   transactionTemplate.execute(
                       tx -> {
                         var template =
@@ -141,13 +156,13 @@ class TemplateCreatedMatterReadPathIntegrationTest {
               var request =
                   new InstantiateTemplateRequest(
                       "TRP Template Matter", null, leadId, null, null, null, null);
-              UUID matter =
-                  templateService.instantiateTemplate(templateId, request, ownerId).getId();
+              UUID matter = templateService.instantiateTemplate(tplId, request, ownerId).getId();
               UUID task = taskRepository.findByProjectId(matter).getFirst().getId();
-              return new UUID[] {matter, task};
+              return new UUID[] {tplId, matter, task};
             });
-    matterId = ids[0];
-    openTaskId = ids[1];
+    templateId = ids[0];
+    matterId = ids[1];
+    openTaskId = ids[2];
   }
 
   @Test
@@ -161,6 +176,60 @@ class TemplateCreatedMatterReadPathIntegrationTest {
                     .map(ProjectMember::getProjectRole)
                     .orElse(null));
     assertThat(role).isEqualTo(Roles.PROJECT_LEAD);
+  }
+
+  // ADR-345's second LEAD writer: the scheduler/recurring path, driven through its real signature.
+  @Test
+  void schedulerPathInstantiateFromTemplateWritesTheCanonicalLeadAndFeeEarner() throws Exception {
+    UUID schedulerMatterId =
+        TenantTestSupport.callAsActor(
+            tenantSchema,
+            ORG_ID,
+            ownerId,
+            "owner",
+            Capability.ALL_NAMES,
+            () ->
+                transactionTemplate.execute(
+                    tx ->
+                        templateService
+                            .instantiateFromTemplate(
+                                templateRepository.findById(templateId).orElseThrow(),
+                                "TRP Scheduler Matter",
+                                /* customer */ null,
+                                /* projectLeadMemberId */ schedulerLeadId,
+                                /* actingMemberId */ ownerId,
+                                tenantSchema,
+                                ORG_ID)
+                            .getId()));
+
+    var role =
+        TenantTestSupport.callInTenant(
+            tenantSchema,
+            () ->
+                projectMemberRepository
+                    .findByProjectIdAndMemberId(schedulerMatterId, schedulerLeadId)
+                    .map(ProjectMember::getProjectRole)
+                    .orElse(null));
+    assertThat(role).isEqualTo(Roles.PROJECT_LEAD);
+
+    var ownerRows =
+        TenantTestSupport.callAsActor(
+            tenantSchema,
+            ORG_ID,
+            ownerId,
+            "owner",
+            Capability.ALL_NAMES,
+            () ->
+                projectService.listMatterRows(
+                    defaultQuery(false), new ActorContext(ownerId, "owner")));
+    assertThat(ownerRows)
+        .filteredOn(r -> r.id().equals(schedulerMatterId))
+        .singleElement()
+        .satisfies(
+            r -> {
+              assertThat(r.feeEarnerId()).isEqualTo(schedulerLeadId);
+              assertThat(r.feeEarnerName()).isEqualTo(SCHEDULER_LEAD_NAME);
+            });
   }
 
   // (1) G-D11 a — Matters list "Fee earner"
@@ -274,14 +343,20 @@ class TemplateCreatedMatterReadPathIntegrationTest {
                     new AssignMemberActionConfig(AssignTo.PROJECT_OWNER, null, null),
                     automationContext(),
                     UUID.randomUUID()));
-    // PROJECT_OWNER resolved the lead, who is already on the team, so addMember's 409 names them.
-    // An unresolved lead (the pre-ADR-345 symptom) fails earlier with "could not resolve member".
-    // The always-conflict outcome is pre-existing executor behaviour, recorded, not changed here.
+    // PINS CURRENT BEHAVIOUR: PROJECT_OWNER resolves the lead, who is already on the team, so
+    // addMember always conflicts. This always-conflict outcome is a pre-existing executor oddity
+    // (recorded in PR #1647, not changed here); when the executor is fixed, flip this test to an
+    // ActionSuccess assertion with assignedMemberId == leadId.
+    // Discriminator: an unresolved lead (the pre-ADR-345 symptom) fails earlier with the
+    // executor's own "could not resolve member" message and never reaches addMember. Reaching
+    // addMember's ResourceConflictException, whose ProblemDetail detail embeds the resolved
+    // member id, proves the lead was the member PROJECT_OWNER resolved to.
     assertThat(result).isInstanceOf(ActionFailure.class);
-    assertThat(((ActionFailure) result).errorMessage())
+    var failure = (ActionFailure) result;
+    assertThat(failure.errorMessage())
         .doesNotContain("could not resolve member")
-        .contains(leadId.toString())
-        .contains("already a member");
+        .contains(leadId.toString());
+    assertThat(failure.errorDetail()).startsWith(ResourceConflictException.class.getName());
   }
 
   // (4b) same PROJECT_OWNER reader, positive path: CREATE_TASK assigns the template lead

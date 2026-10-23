@@ -34,8 +34,8 @@ import org.springframework.test.context.ActiveProfiles;
  * duplicate leads case-insensitively keeping the earliest (created_at, id), then lower-case — and
  * adds {@code chk_project_members_role}. A scratch schema is migrated to V3, seeded with the
  * mixed-case duplicate-lead shape (an older 'lead' and a newer 'LEAD' on one matter, which the
- * lowercase-only partial unique index would reject if lower-cased first), a 'CONTRIBUTOR' and a
- * 'MEMBER' row, then migrated to V4.
+ * lowercase-only partial unique index would reject if lower-cased first), the reverse shape (an
+ * older 'LEAD' and a newer 'lead'), a 'CONTRIBUTOR' and a 'MEMBER' row, then migrated to V4.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -57,6 +57,10 @@ class V4ProjectRoleMigrationTest {
   private static final String TIE_HIGH_ID = "00000000-0000-0000-0000-0000000000d2"; // 'Lead'
   private static final String LONE_UPPER_LEAD = "00000000-0000-0000-0000-0000000000e1";
   private static final String CANONICAL_MEMBER = "00000000-0000-0000-0000-0000000000e2";
+  private static final String REVERSE_OLDER_UPPER =
+      "00000000-0000-0000-0000-0000000000f1"; // 'LEAD'
+  private static final String REVERSE_NEWER_LOWER =
+      "00000000-0000-0000-0000-0000000000f2"; // 'lead'
 
   private final DataSource migrationDataSource;
   private final Map<String, String> roleById = new HashMap<>();
@@ -95,6 +99,8 @@ class V4ProjectRoleMigrationTest {
           ('00000000-0000-0000-0000-0000000000b2', 'v4 tie on created_at',
            '00000000-0000-0000-0000-0000000000a1'),
           ('00000000-0000-0000-0000-0000000000b3', 'v4 template-only lead',
+           '00000000-0000-0000-0000-0000000000a1'),
+          ('00000000-0000-0000-0000-0000000000b4', 'v4 reverse mixed duplicate lead',
            '00000000-0000-0000-0000-0000000000a1')
         """);
     exec(
@@ -119,7 +125,12 @@ class V4ProjectRoleMigrationTest {
           ('00000000-0000-0000-0000-0000000000e1', '00000000-0000-0000-0000-0000000000b3',
            '00000000-0000-0000-0000-0000000000a1', 'LEAD', TIMESTAMPTZ '2026-01-01 00:00:00+00'),
           ('00000000-0000-0000-0000-0000000000e2', '00000000-0000-0000-0000-0000000000b3',
-           '00000000-0000-0000-0000-0000000000a2', 'member', TIMESTAMPTZ '2026-01-01 00:00:00+00')
+           '00000000-0000-0000-0000-0000000000a2', 'member', TIMESTAMPTZ '2026-01-01 00:00:00+00'),
+          -- reverse shape: older uppercase lead + newer lowercase lead on one matter
+          ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000b4',
+           '00000000-0000-0000-0000-0000000000a1', 'LEAD', TIMESTAMPTZ '2026-01-01 00:00:00+00'),
+          ('00000000-0000-0000-0000-0000000000f2', '00000000-0000-0000-0000-0000000000b4',
+           '00000000-0000-0000-0000-0000000000a2', 'lead', TIMESTAMPTZ '2026-01-02 00:00:00+00')
         """);
 
     xminBefore = rowVersions();
@@ -149,6 +160,13 @@ class V4ProjectRoleMigrationTest {
   }
 
   @Test
+  void olderUppercaseLeadStaysTheOnlyLeadAndTheNewerLowercaseLeadIsDemoted() {
+    assertThat(roleById)
+        .containsEntry(REVERSE_OLDER_UPPER, "lead")
+        .containsEntry(REVERSE_NEWER_LOWER, "member");
+  }
+
+  @Test
   void contributorAndUppercaseMemberBecomeMember() {
     assertThat(roleById).containsEntry(CONTRIBUTOR, "member").containsEntry(UPPER_MEMBER, "member");
   }
@@ -171,11 +189,11 @@ class V4ProjectRoleMigrationTest {
   // The scratch schema is private to this class, so an exact count cannot bleed.
   @Test
   void everyRowIsCanonicalAndEachMatterHasAtMostOneLead() {
-    assertThat(roleById).hasSize(8);
+    assertThat(roleById).hasSize(10);
     assertThat(roleById.values()).allMatch(r -> r.equals("lead") || r.equals("member"));
     assertThat(roleById.values()).allMatch(r -> r.equals(r.toLowerCase(Locale.ROOT)));
-    // one lead per matter, three matters
-    assertThat(roleById.values().stream().filter("lead"::equals).count()).isEqualTo(3);
+    // one lead per matter, four matters
+    assertThat(roleById.values().stream().filter("lead"::equals).count()).isEqualTo(4);
   }
 
   @Test

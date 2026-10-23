@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authorization.method.AuthorizationInterceptorsOrder;
 import org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -28,6 +29,13 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.DelegatingRequestMatcherHeaderWriter;
+import org.springframework.security.web.header.writers.StaticHeadersWriter;
+import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
+import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter.XFrameOptionsMode;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -48,6 +56,7 @@ public class SecurityConfig {
   private final AuditAuthenticationEntryPoint auditAuthEntryPoint;
   private final McpSessionAuditListener mcpSessionAuditListener;
   private final Environment environment;
+  private final PortalOrigin portalOrigin;
 
   /**
    * RFC 9728 protected-resource-metadata claims for the MCP server (ADR-303). Spring Security 7
@@ -72,6 +81,7 @@ public class SecurityConfig {
       AuditAuthenticationEntryPoint auditAuthEntryPoint,
       McpSessionAuditListener mcpSessionAuditListener,
       Environment environment,
+      PortalOrigin portalOrigin,
       @Value("${kazi.mcp.resource-url:http://localhost:8080/mcp}") String mcpResourceUrl,
       @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri:}") String jwtIssuerUri) {
     this.jwtAuthConverter = jwtAuthConverter;
@@ -85,6 +95,7 @@ public class SecurityConfig {
     this.auditAuthEntryPoint = auditAuthEntryPoint;
     this.mcpSessionAuditListener = mcpSessionAuditListener;
     this.environment = environment;
+    this.portalOrigin = portalOrigin;
     this.mcpResourceUrl = mcpResourceUrl;
     this.jwtIssuerUri = jwtIssuerUri;
   }
@@ -128,8 +139,30 @@ public class SecurityConfig {
   @Bean
   @Order(2)
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    // ADR-352 / G-B7: the acceptance PDF is the only response Kazi intends to be framed, and only
+    // by the portal. Everything else on this chain keeps X-Frame-Options: DENY (Spring's default,
+    // now written explicitly). The /portal/** chain (@Order(1)) keeps Spring's defaults untouched.
+    RequestMatcher acceptancePdf =
+        PathPatternRequestMatcher.withDefaults()
+            .matcher(HttpMethod.GET, "/api/portal/acceptance/*/pdf");
+    RequestMatcher notAcceptancePdf = new NegatedRequestMatcher(acceptancePdf);
+
     http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf(csrf -> csrf.disable())
+        .headers(
+            headers ->
+                headers
+                    .frameOptions(frameOptions -> frameOptions.disable())
+                    .addHeaderWriter(
+                        new DelegatingRequestMatcherHeaderWriter(
+                            notAcceptancePdf,
+                            new XFrameOptionsHeaderWriter(XFrameOptionsMode.DENY)))
+                    .addHeaderWriter(
+                        new DelegatingRequestMatcherHeaderWriter(
+                            acceptancePdf,
+                            new StaticHeadersWriter(
+                                "Content-Security-Policy",
+                                "frame-ancestors " + portalOrigin.value()))))
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(

@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.security;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
+import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,12 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class PortalOrigin {
+
+  /**
+   * CSP3 host-source host-part without wildcards: dot-separated labels of ALPHA / DIGIT / "-".
+   * Rejects hosts {@link URI} accepts but CSP cannot express (bracketed IPv6, trailing dot).
+   */
+  private static final Pattern CSP_HOST = Pattern.compile("[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*");
 
   private final String value;
 
@@ -52,6 +59,10 @@ public class PortalOrigin {
         || uri.getRawUserInfo() != null) {
       throw new IllegalStateException(
           "docteams.app.portal-base-url must be an absolute http(s) URL with a host: " + raw);
+    }
+    if (!CSP_HOST.matcher(host).matches()) {
+      throw new IllegalStateException(
+          "docteams.app.portal-base-url host cannot be a CSP frame-ancestors source: " + raw);
     }
     int port = uri.getPort();
     return scheme.toLowerCase(Locale.ROOT)

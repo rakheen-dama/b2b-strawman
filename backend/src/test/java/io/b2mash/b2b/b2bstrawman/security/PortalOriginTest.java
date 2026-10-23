@@ -30,6 +30,11 @@ class PortalOriginTest {
         .isEqualTo("https://portal.example.com:8443");
   }
 
+  @Test
+  void parse_ipv4Host_isAccepted() {
+    assertThat(PortalOrigin.parse("http://127.0.0.1:3002")).isEqualTo("http://127.0.0.1:3002");
+  }
+
   // ── malformed ─────────────────────────────────────────────────────────
 
   @ParameterizedTest
@@ -43,6 +48,8 @@ class PortalOriginTest {
         "ftp://x.com",
         "http://a;b.com",
         "https://user@x.com",
+        "http://[::1]:3002",
+        "http://example.com.:3002",
         "/relative/path"
       })
   void parse_malformed_throwsIllegalStateException(String raw) {

@@ -2,6 +2,7 @@ import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BatchBillingSettings } from "@/components/settings/batch-billing-settings";
+import { paymentTermsDaysSchema } from "@/lib/schemas";
 
 const mockUpdateBatchBillingSettings = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/settings/fees/_tabs/fee-runs-actions", () => ({
@@ -127,6 +128,23 @@ describe("BatchBillingSettings", () => {
       });
     });
 
+    it("allows the upper bound 365", async () => {
+      mockUpdateBatchBillingSettings.mockResolvedValue({ success: true });
+      renderForm();
+
+      setTerms("365");
+
+      await waitFor(() => {
+        expect(mockUpdateBatchBillingSettings).toHaveBeenCalledWith(
+          "acme",
+          expect.objectContaining({ defaultPaymentTermsDays: 365 })
+        );
+      });
+      expect(screen.getByLabelText("Default payment terms (days)")).not.toHaveAttribute(
+        "aria-invalid"
+      );
+    });
+
     it.each([
       ["-1", "Payment terms must be between 0 and 365 days."],
       ["366", "Payment terms must be between 0 and 365 days."],
@@ -137,10 +155,40 @@ describe("BatchBillingSettings", () => {
 
       setTerms(value);
 
-      await waitFor(() => {
-        expect(screen.getByText(error)).toBeInTheDocument();
-      });
+      const alert = await screen.findByRole("alert");
+      expect(alert).toHaveTextContent(error);
+      // The error sits under the field and is wired to it.
+      const input = screen.getByLabelText("Default payment terms (days)");
+      expect(input).toHaveAttribute("aria-invalid", "true");
+      expect(input).toHaveAttribute("aria-describedby", alert.id);
+      expect(input).toHaveAccessibleDescription(error);
       expect(mockUpdateBatchBillingSettings).not.toHaveBeenCalled();
     });
+
+    it("clears the field error once a valid value is saved", async () => {
+      mockUpdateBatchBillingSettings.mockResolvedValue({ success: true });
+      renderForm();
+
+      setTerms("366");
+      await screen.findByRole("alert");
+
+      setTerms("30");
+      await waitFor(() => expect(mockUpdateBatchBillingSettings).toHaveBeenCalledTimes(1));
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(screen.getByLabelText("Default payment terms (days)")).not.toHaveAttribute(
+        "aria-invalid"
+      );
+      expect(await screen.findByText("Batch billing settings updated.")).toBeInTheDocument();
+    });
+  });
+});
+
+describe("paymentTermsDaysSchema", () => {
+  it.each([0, 1, 30, 365])("accepts %d", (days) => {
+    expect(paymentTermsDaysSchema.safeParse(days).success).toBe(true);
+  });
+
+  it.each([-1, 366, 14.5, Number.NaN])("rejects %d", (days) => {
+    expect(paymentTermsDaysSchema.safeParse(days).success).toBe(false);
   });
 });

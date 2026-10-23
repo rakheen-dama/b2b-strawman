@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Phase 88 620C (U3, ADR-347): fetchOutstandingSummaryAction maps the summary read to a
-// discriminated result. 403/404 → "absent" (forbidden or absent: the page drops the tiles),
+// WidgetResult via the shared `settle` (lib/settle.ts, same as Home). 403/404 → "absent" (forbidden or absent: the page drops the tiles),
 // 401 → the branded re-login, anything else → "error" (the tiles show "—").
 
 vi.mock("server-only", () => ({}));
@@ -28,6 +28,8 @@ vi.mock("@/lib/api", () => ({
   api: { get: mockGet, post: vi.fn(), put: vi.fn(), patch: vi.fn(), delete: vi.fn() },
   ApiError: MockApiError,
 }));
+// lib/settle.ts (shared with Home) checks ApiError from the client module directly.
+vi.mock("@/lib/api/client", () => ({ ApiError: MockApiError }));
 vi.mock("@/lib/api/capabilities", () => ({ fetchMyCapabilities: vi.fn() }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/auth/expiry-server", () => ({ rethrowOnExpiredSession: mockRethrow }));
@@ -59,7 +61,7 @@ describe("fetchOutstandingSummaryAction (Phase 88 620C)", () => {
 
     await expect(fetchOutstandingSummaryAction()).resolves.toEqual({
       state: "ok",
-      summary: SUMMARY,
+      data: SUMMARY,
     });
     expect(mockGet).toHaveBeenCalledWith("/api/invoices/outstanding-summary");
   });
@@ -80,6 +82,10 @@ describe("fetchOutstandingSummaryAction (Phase 88 620C)", () => {
     mockGet.mockRejectedValue(new MockApiError(500, "Boom"));
 
     await expect(fetchOutstandingSummaryAction()).resolves.toEqual({ state: "error" });
+    expect(console.error).toHaveBeenCalledWith(
+      "Failed to load outstanding summary:",
+      expect.any(MockApiError)
+    );
   });
 
   it("network failure → error", async () => {

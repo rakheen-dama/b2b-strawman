@@ -3,12 +3,8 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { listClients } from "@/lib/api/clients";
 import { getOrgSettings } from "@/lib/api/settings";
-import type {
-  InvoiceResponse,
-  InvoiceStatus,
-  OutstandingSummary,
-  OutstandingSummaryResult,
-} from "@/lib/types";
+import type { InvoiceResponse, InvoiceStatus, OutstandingSummary } from "@/lib/types";
+import { hasCapability, type WidgetResult } from "@/lib/dashboard-home";
 import { StatusBadge } from "@/components/invoices/status-badge";
 import { CreateInvoiceButton } from "@/components/invoices/create-invoice-button";
 import { EmptyState } from "@/components/empty-state";
@@ -85,50 +81,62 @@ export default async function InvoicesPage({
 
   // The debtor-book summary needs FINANCIAL_VISIBILITY (admin/owner inherit it); the page only
   // needs INVOICING. Without it the tiles are absent — no request, no guaranteed 403.
-  const canViewFinancials =
-    capData.isAdmin || capData.isOwner || capData.capabilities.includes("FINANCIAL_VISIBILITY");
-  const summaryResult: OutstandingSummaryResult = canViewFinancials
-    ? await fetchOutstandingSummaryAction()
-    : { state: "absent" };
+  const summaryRead: Promise<WidgetResult<OutstandingSummary>> = hasCapability(
+    capData,
+    "FINANCIAL_VISIBILITY"
+  )
+    ? fetchOutstandingSummaryAction()
+    : Promise.resolve({ state: "absent" });
 
-  let invoices: InvoiceResponse[] = [];
-  try {
-    const queryParams = new URLSearchParams();
-    if (search.status) queryParams.set("status", search.status);
-    if (search.customerId) queryParams.set("clientId", search.customerId);
-    const qs = queryParams.toString();
-    invoices = await api.get<InvoiceResponse[]>(`/api/invoices${qs ? `?${qs}` : ""}`);
-  } catch {
-    // Non-fatal: show empty state
-  }
-
-  // Fetch active customers for "New Invoice" button
-  let customers: { id: string; name: string }[] = [];
-  try {
-    const raw = await listClients();
-    customers = (Array.isArray(raw) ? raw : [])
-      .filter((c) => c.status === "ACTIVE")
-      .map((c) => ({ id: c.id, name: c.name }));
-  } catch {
-    // Non-fatal — button will be hidden if no customers
-  }
-
-  // Resolve the org's configured default currency so empty-state KPIs display
-  // using the tenant's currency (e.g. ZAR) rather than a hardcoded USD fallback.
-  let fallbackCurrency = "USD";
-  try {
-    const orgSettings = await getOrgSettings();
-    fallbackCurrency = orgSettings.defaultCurrency ?? "USD";
-  } catch {
-    // Non-fatal — fall through to USD.
-  }
+  // All four reads run concurrently. Each list read swallows its own failure; the summary never
+  // rejects either (it settles to absent/error) except on an expired session → re-login.
+  const [summaryResult, invoices, customers, fallbackCurrency] = await Promise.all([
+    summaryRead,
+    (async (): Promise<InvoiceResponse[]> => {
+      try {
+        const queryParams = new URLSearchParams();
+        if (search.status) queryParams.set("status", search.status);
+        if (search.customerId) queryParams.set("clientId", search.customerId);
+        const qs = queryParams.toString();
+        return await api.get<InvoiceResponse[]>(`/api/invoices${qs ? `?${qs}` : ""}`);
+      } catch {
+        // Non-fatal: show empty state
+        return [];
+      }
+    })(),
+    // Active customers for the "New Invoice" button
+    (async (): Promise<{ id: string; name: string }[]> => {
+      try {
+        const raw = await listClients();
+        return (Array.isArray(raw) ? raw : [])
+          .filter((c) => c.status === "ACTIVE")
+          .map((c) => ({ id: c.id, name: c.name }));
+      } catch {
+        // Non-fatal — button will be hidden if no customers
+        return [];
+      }
+    })(),
+    // The org's configured default currency, so empty-state KPIs display using the tenant's
+    // currency (e.g. ZAR) rather than a hardcoded USD fallback.
+    (async (): Promise<string> => {
+      try {
+        const orgSettings = await getOrgSettings();
+        return orgSettings.defaultCurrency ?? "USD";
+      } catch {
+        // Non-fatal — fall through to USD.
+        return "USD";
+      }
+    })(),
+  ]);
 
   // "Paid This Month" from the listed fee notes (when no filter applied, or from filtered set)
   const paid = computePaidThisMonth(invoices, fallbackCurrency);
   const summaryMoney = (pick: (summary: OutstandingSummary) => number) =>
     summaryResult.state === "ok"
-      ? formatCurrency(pick(summaryResult.summary), summaryResult.summary.currency)
+      ? formatCurrency(pick(summaryResult.data), summaryResult.data.currency)
       : DASH;
+
+  const showSummaryTiles = summaryResult.state !== "absent";
 
   const { t } = createMessages("empty-states");
 
@@ -173,9 +181,14 @@ export default async function InvoicesPage({
         </Link>
       </div>
 
-      {/* Summary Cards — debtor-book tiles from GET /api/invoices/outstanding-summary (ADR-347) */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {summaryResult.state !== "absent" && (
+      {/* Summary Cards — debtor-book tiles from GET /api/invoices/outstanding-summary (ADR-347).
+          Without them "Paid This Month" stands alone at a card's width, not a quarter of a row. */}
+      <div
+        className={
+          showSummaryTiles ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-4" : "grid gap-4 sm:max-w-xs"
+        }
+      >
+        {showSummaryTiles && (
           <>
             <SummaryTile
               label="Total outstanding"

@@ -16,6 +16,8 @@ interface BatchBillingSettingsProps {
   defaultPaymentTermsDays: number;
 }
 
+// Saved through the batch-billing endpoint, which also carries the firm-wide fee-note payment-terms
+// default (620A contract) — hence the "Fee note defaults" card here.
 export function BatchBillingSettings({
   slug,
   billingBatchAsyncThreshold,
@@ -29,6 +31,8 @@ export function BatchBillingSettings({
   // Kept as the raw string (not clamped like the two fields below) so out-of-range or cleared input
   // is reported on save instead of silently corrected.
   const [termsDays, setTermsDays] = useState(String(defaultPaymentTermsDays));
+  // The field's own error, rendered under it; `message` stays the shared save result.
+  const [termsError, setTermsError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
@@ -37,6 +41,7 @@ export function BatchBillingSettings({
     setSaving(true);
     setMessage(null);
     setIsError(false);
+    setTermsError(null);
 
     if (!Number.isFinite(asyncThreshold) || asyncThreshold < 1 || asyncThreshold > 1000) {
       setMessage("Async threshold must be between 1 and 1000.");
@@ -64,8 +69,9 @@ export function BatchBillingSettings({
       termsDays.trim() === "" ? Number.NaN : Number(termsDays)
     );
     if (!terms.success) {
-      setMessage(terms.error.issues[0]?.message ?? "Payment terms must be between 0 and 365 days.");
-      setIsError(true);
+      setTermsError(
+        terms.error.issues[0]?.message ?? "Payment terms must be between 0 and 365 days."
+      );
       setSaving(false);
       return;
     }
@@ -116,7 +122,18 @@ export function BatchBillingSettings({
               step={1}
               value={termsDays}
               onChange={(e) => setTermsDays(e.target.value)}
+              aria-invalid={termsError ? true : undefined}
+              aria-describedby={termsError ? "default-payment-terms-days-error" : undefined}
             />
+            {termsError && (
+              <p
+                id="default-payment-terms-days-error"
+                role="alert"
+                className="text-sm text-red-600 dark:text-red-400"
+              >
+                {termsError}
+              </p>
+            )}
             <p className="text-xs text-slate-500 dark:text-slate-400">
               A fee note approved without a due date is due this many days after its issue date. A
               due date typed on the draft is kept.

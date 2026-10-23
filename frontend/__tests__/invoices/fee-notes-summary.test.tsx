@@ -161,7 +161,7 @@ describe("Fee notes summary tiles (Phase 88 620C)", () => {
     ]);
     mockListClients.mockResolvedValue([]);
     mockGetOrgSettings.mockResolvedValue({ defaultCurrency: "ZAR" });
-    mockFetchSummary.mockResolvedValue({ state: "ok", summary: SUMMARY });
+    mockFetchSummary.mockResolvedValue({ state: "ok", data: SUMMARY });
   });
 
   afterEach(() => {
@@ -195,6 +195,27 @@ describe("Fee notes summary tiles (Phase 88 620C)", () => {
     await renderPage();
 
     expect(mockFetchSummary).toHaveBeenCalledTimes(1);
+    expectSummaryTiles();
+  });
+
+  it("runs the summary read concurrently with the list, clients and settings reads", async () => {
+    let resolveSummary: (value: unknown) => void = () => {};
+    mockFetchSummary.mockReturnValue(new Promise((resolve) => (resolveSummary = resolve)));
+    const page = InvoicesPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+
+    // The summary is still pending, yet the other three reads have already started.
+    await vi.waitFor(() => {
+      expect(mockFetchSummary).toHaveBeenCalledTimes(1);
+      expect(mockApiGet).toHaveBeenCalledTimes(1);
+      expect(mockListClients).toHaveBeenCalledTimes(1);
+      expect(mockGetOrgSettings).toHaveBeenCalledTimes(1);
+    });
+
+    resolveSummary({ state: "ok", data: SUMMARY });
+    render(await page);
     expectSummaryTiles();
   });
 

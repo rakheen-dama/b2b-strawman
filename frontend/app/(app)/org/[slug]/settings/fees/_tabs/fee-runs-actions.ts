@@ -12,6 +12,7 @@ interface ActionResult {
   error?: string;
 }
 
+// The batch-billing endpoint also carries the firm-wide fee-note payment-terms default (620A contract).
 export async function updateBatchBillingSettings(
   slug: string,
   data: UpdateBatchBillingSettingsRequest

@@ -253,12 +253,3 @@ export interface OutstandingSummary {
   approvedUnsentTotal: number;
   approvedUnsentCount: number;
 }
-
-/**
- * `absent` = forbidden or absent (403/404, no FINANCIAL_VISIBILITY) → the tiles are not shown;
- * `error` → the tiles show "—". Same states as Home's widget results.
- */
-export type OutstandingSummaryResult =
-  | { state: "ok"; summary: OutstandingSummary }
-  | { state: "absent" }
-  | { state: "error" };

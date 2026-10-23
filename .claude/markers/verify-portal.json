@@ -1,7 +1,7 @@
 {
-  "commit": "037fe46a750c6771ecde0278376be2e884d42936",
+  "commit": "c524efc8c159c1d00be54a6a18dedb8a57a7b30e",
   "command": "pnpm install --frozen-lockfile && cd portal && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-23T02:34:15Z",
-  "summary": "Epic 618D gate (no code) on main 037fe46a7 (orchestrator run in worktree-epic-618D): lint 0 errors / 5 warnings (= 618B); format:check clean; vitest 42 files / 195 passed (= 618B); build OK."
+  "ts": "2026-10-23T11:56:00Z",
+  "summary": "next 16.2.6 -> 16.3.8 PORTAL-GATE on phase88/02E-next-16-3-8-react-ping head c524efc8c: lint 0 errors / 5 warnings (= 618B); format:check clean; vitest 42 files / 195 passed (= baseline); next build 16.3.8 OK. Portal Playwright on fresh :3001 stacks (portal dev 16.3.8 on :3002): portal-client-90day 5/3/1/3 (failing titles = 617B/617C data-prerequisite trio), responsive 21 passed, frontend portal-data-isolation 2 passed."
 }

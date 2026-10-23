@@ -1,8 +1,8 @@
 diff --git a/dist/client/components/layout-router.js b/dist/client/components/layout-router.js
-index 06b68cc92862992b485d8f3edf0a937e0af2847a..97b4f6cfb6736dc9698d56b85bb69c7976ae2027 100644
+index 46e87784d63ce67f831b5a8491a58276b49e1cbd..60647d91e7a2c17dbfd78f7669eeb7f5b6a966ac 100644
 --- a/dist/client/components/layout-router.js
 +++ b/dist/client/components/layout-router.js
-@@ -337,7 +337,24 @@ function ScrollAndMaybeFocusHandler({ children, cacheNode }) {
+@@ -399,7 +399,24 @@ function ScrollAndMaybeFocusHandler({ children, cacheNode }) {
          if (rsc === null) {
              (0, _react.use)(_unresolvedthenable.unresolvedThenable);
          }
@@ -29,10 +29,10 @@ index 06b68cc92862992b485d8f3edf0a937e0af2847a..97b4f6cfb6736dc9698d56b85bb69c79
      // In dev, we create a NavigationPromisesContext containing the instrumented promises that provide
      // `useSelectedLayoutSegment` and `useSelectedLayoutSegments`.
 diff --git a/dist/esm/client/components/layout-router.js b/dist/esm/client/components/layout-router.js
-index 25e44ba48e03b6ae3eb6de3ddacfdcc8f43f185d..5f62428927c01644d9369430b0cf5710ad399ace 100644
+index fadc689a52ca23d110fecd0af97a960ab0b5304c..968f4e49a6711a54ee08a85abfa39296dd1a61b7 100644
 --- a/dist/esm/client/components/layout-router.js
 +++ b/dist/esm/client/components/layout-router.js
-@@ -310,7 +310,24 @@ function ScrollAndMaybeFocusHandler({ children, cacheNode }) {
+@@ -372,7 +372,24 @@ function ScrollAndMaybeFocusHandler({ children, cacheNode }) {
          if (rsc === null) {
              use(unresolvedThenable);
          }

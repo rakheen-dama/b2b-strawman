@@ -1,7 +1,7 @@
 {
-  "commit": "7233ffae7c8928d71f2bf8390eb6d5727e20376e",
+  "commit": "4e05ce60ea096ec8e28d054e10c108852ad0ff82",
   "command": "pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-23T20:05:00Z",
-  "summary": "Slice 621B FE-GATE on phase88/04B-write-off-restore-ui head 7233ffae7: lint 0 errors / 92 warnings (= baseline); format:check clean; vitest 414 files / 3092 passed / 2 skipped (+3 files, +30 tests vs 411/3062/2); next build OK; CI Frontend pass. Observed 621.5 on e2e :3001 rebuilt from the branch: write-off (reason required) -> Written off badge + reason row + disbursement.written_off audit; next fee-note draft excludes it; Undo -> UNBILLED + disbursement.restored; firm list + matter tab round trips; member gated. depth-ii day-05/day-30-45/day-75-85 22/0/9 on head 7233ffae7 (functional, --update-snapshots=all; baselines uncommitted). Merged as df5e79dcf (PR #1658)."
+  "ts": "2026-10-23T21:00:00Z",
+  "summary": "Slice 621C FE-GATE on phase88/04C-payment-link-unbilled-strip head 4e05ce60e: lint 0 errors / 92 warnings (= baseline); format:check clean; vitest 417 files / 3106 passed / 2 skipped (+3 files, +14 tests vs 414/3092/2); next build OK; CI Frontend pass. Reproduced G-B11/G-B12 on :3001; observed 621.7 Day 5 on e2e :3001 rebuilt from the branch (heads 234fc3f22, ac4bd412f, 4e05ce60e): trust-link dialog lists only unlinked APPROVED PAYMENTs (type=PAYMENT&status=APPROVED&excludeLinked=true), empty copy 'No approved trust payments on this matter yet.', strip 'Unbilled Disbursements R 2 150,00 · VAT R 0,00' after deposit -> deeds-office PAYMENT -> approve -> linked disbursement approve; second disbursement no longer offers the used payment; no stale strip paint after detail-page or All-Matters firm-list changes. depth-ii day-05/30-45/75-85 22/0/9 (functional, --update-snapshots=all). Merged as b1df9c850 (PR #1659)."
 }

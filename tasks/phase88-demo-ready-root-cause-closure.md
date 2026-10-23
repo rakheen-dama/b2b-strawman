@@ -47,7 +47,7 @@ Reproduce-first items from §13.12 (HYPOTHESIS in the register — resolved in t
 | 618 | Security Seams — Acceptance PDF `frame-ancestors` + Owner-Only Capabilities Client-Side (U12, U18) | Backend + Portal + Frontend (split) | Phase 87 merged (done) | S | 618A, 618B, 618C, 618D | **Done** (PRs #1643, #1644, #1645; 618D = epic gate, no code) |
 | 619 | Matter Team — Canonical Project Roles (tenant V4 §1) + Creator Auto-Add + Team Tab + `canManage` Gates (U1 → U2) | Backend + Frontend + E2E (split) | 618 (618A/618C may run while 619A–619C are queued — V4 file naming agreed) | L | 619A, 619B, 619C, 619D, 619E | **Done** — 619A (PR #1646), 619B (PR #1647), 619C (PR #1648), 619D (PR #1649), 619E (PR #1650) |
 | 620 | Fee-Note Truth — Payment Terms + Due Date at Approve (V4 §2) + Outstanding Summary + Checklist-First FICA (U3, U4) | Backend + Frontend (split) | 619 (V4 file exists) | M | 620A, 620B, 620C, 620D, 620E | **Done** — 620A (PR #1652), 620B (PR #1653), 620C (PR #1654), 620D (PR #1655), 620E (PR #1656) |
-| 621 | Disbursements — Write-Off + Restore UI, PAYMENT Trust Link, Unbilled Strip (U14) | Backend + Frontend + E2E (split) | 620 | M | 621A, 621B, 621C, 621D || In progress — 621A (PR #1657), 621B (PR #1658) |
+| 621 | Disbursements — Write-Off + Restore UI, PAYMENT Trust Link, Unbilled Strip (U14) | Backend + Frontend + E2E (split) | 620 | M | 621A, 621B, 621C, 621D || In progress — 621A (PR #1657), 621B (PR #1658), 621C (PR #1659) |
 | 622 | Fee-Note Lines and Payments — Narrative Lines, Balance Model + `PARTIALLY_PAID` (V4 §3 or V5), Every Source Posts Its Amount, Pre-Check Copy (U15) | Backend + Frontend + E2E (split) | 620, 621 | L | 622A, 622B, 622C, 622D, 622E, 622F | |
 | 623 | Mid-Phase Re-Walk — Days 1–7, 36–47, 61–75 on Keycloak (gate epic, no product code) | QA / Process | 622 | M | 623A, 623B, 623C | |
 | 624 | Portal — Contact Directory (global V2) + Email-Only Sign-In + Link Builder Sweep + Client Notification Intent + Decline (U11 → U13, U23) | Backend + Frontend + Portal + E2E (split) | 622 (code), 623 (V-number decision) — 624A–624D may be queued after 620 | L | 624A, 624B, 624C, 624D, 624E, 624F, 624G, 624H, 624I | |
@@ -157,7 +157,7 @@ FROZEN (never edited by any slice — the Phase 87 contract tests guard them):
 | Epic | PR | What must be green before merge | Notes |
 |------|----|----------------------------------|-------|
 | 620 | `phase88/03A-payment-terms-due-date`, `03B-outstanding-summary-collections-sql`, `03C-fee-notes-tiles-terms-field`, `03D-fica-checklist-first`, `03E-fica-card-deck-gate` | BE-VERIFY (`InvoiceLifecycleIntegrationTest` due-date cases; `V4InvoiceDueDateBackfillTest`; `CollectionsReadApiTest` real-path debtor row; `CollectionsSqlSourceScanTest`; `FicaStatusProjectorTest` +5; `FicaOutstandingIntegrationTest` / `CustomerFicaStatusIntegrationTest` via `TestChecklistHelper`; `ClientListRowIntegrationTest` cap ≤ 10 and `MatterListRowIntegrationTest` ≤ 7 re-counted; `OrgSettingsSchemaSnapshotTest` re-pinned deliberately); FE-GATE; E2E-LEGAL = baseline; observed: Fee notes "Total Outstanding" equals Home Debtors; Day 2 checklist → FICA "Complete" on four surfaces | 620A appends §2 to V4 (OQ #9). OQ #5 SELECT on a demo tenant before touching the seeder. Deck re-shoots → `marketing/decks/screens/phase88/`. 620A **Done** (PR #1652). 620B **Done** (PR #1653). 620C **Done** (PR #1654). 620D **Done** (PR #1655). 620E **Done** (PR #1656). **Epic 620 Done.** |
-| 621 | `phase88/04A-restore-endpoint-trust-filters`, `04B-write-off-restore-ui`, `04C-payment-link-unbilled-strip`, `04D-depth-ii-unfixme-gate` | BE-VERIFY (`DisbursementControllerIntegrationTest.restore_*`, `DisbursementServiceTest.restore_*`, trust transaction filter test; `AuditEventTypeRegistryTest` 29 → **30**); FE-GATE (`disbursement-write-off-dialog.test.tsx`, `trust-transaction-link-dialog.test.tsx` PAYMENT, `unbilled-disbursements-summary.test.tsx`); E2E-LEGAL with `day-30-45-soa-writeoff.spec.ts:311,338,360` + `day-05-disbursements.spec.ts:270,323,457` un-fixme'd and green | Write-off offered for any UNBILLED row (A14). `DISBURSEMENT_PAYMENT` is not a ledger value — the dialog is wrong, not the ledger. Day 5 spec follows the §5-authorised step reorder (OQ #15). 621A **Done** (PR #1657). 621B **Done** (PR #1658). |
+| 621 | `phase88/04A-restore-endpoint-trust-filters`, `04B-write-off-restore-ui`, `04C-payment-link-unbilled-strip`, `04D-depth-ii-unfixme-gate` | BE-VERIFY (`DisbursementControllerIntegrationTest.restore_*`, `DisbursementServiceTest.restore_*`, trust transaction filter test; `AuditEventTypeRegistryTest` 29 → **30**); FE-GATE (`disbursement-write-off-dialog.test.tsx`, `trust-transaction-link-dialog.test.tsx` PAYMENT, `unbilled-disbursements-summary.test.tsx`); E2E-LEGAL with `day-30-45-soa-writeoff.spec.ts:311,338,360` + `day-05-disbursements.spec.ts:270,323,457` un-fixme'd and green | Write-off offered for any UNBILLED row (A14). `DISBURSEMENT_PAYMENT` is not a ledger value — the dialog is wrong, not the ledger. Day 5 spec follows the §5-authorised step reorder (OQ #15). 621A **Done** (PR #1657). 621B **Done** (PR #1658). 621C **Done** (PR #1659). |
 
 ### Stage 3 — Payments + mid-phase re-walk: 622 → 623
 
@@ -406,7 +406,7 @@ PR rules restated (non-negotiable):
 
 **Estimated Effort**: M
 
-**Status**: In progress — 621A **Done** (PR #1657), 621B **Done** (PR #1658)
+**Status**: In progress — 621A **Done** (PR #1657), 621B **Done** (PR #1658), 621C **Done** (PR #1659)
 
 ### Slices
 
@@ -414,7 +414,7 @@ PR rules restated (non-negotiable):
 |-------|-------|---------------|---------|
 | **621A** | 621.1–621.3 | `DisbursementController`, `DisbursementService`, `LegalDisbursement` (if `restore()` needs a reason clear), `AuditEventTypeRegistry`, `TrustTransactionController`/`Service`/`Repository` + 3 tests | Reproduce; restore endpoint + audit; honoured trust filters; registry 29 → 30; BE-VERIFY. **Done** (PR #1657) |
 | **621B** | 621.4–621.5 | `actions.ts`, NEW write-off dialog, `lib/schemas/legal.ts`, `lib/api/legal-disbursements.ts`, `detail-client.tsx`, `disbursement-list-view.tsx`, `project-disbursements-tab.tsx` + 1 test | Write off + Undo on three surfaces; observed Day 45. **Done** (PR #1658) |
-| **621C** | 621.6–621.7 | `trust-transaction-link-dialog.tsx`, `actions.ts`, NEW `unbilled-disbursements-summary.tsx`, `project-disbursements-tab.tsx`, `disbursements-list-client.tsx` + 2 tests | PAYMENT filter + excludeLinked + empty copy; strip; observed Day 5. |
+| **621C** | 621.6–621.7 | `trust-transaction-link-dialog.tsx`, `actions.ts`, NEW `unbilled-disbursements-summary.tsx`, `project-disbursements-tab.tsx`, `disbursements-list-client.tsx` + 2 tests | PAYMENT filter + excludeLinked + empty copy; strip; observed Day 5. **Done** (PR #1659) |
 | **621D** | 621.8–621.9 | 6 `fixme` lines in 2 depth-ii specs | Un-fixme; FE-GATE + E2E-LEGAL; epic gate. |
 
 ### Tasks

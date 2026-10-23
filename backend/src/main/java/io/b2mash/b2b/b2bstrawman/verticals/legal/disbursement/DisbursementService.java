@@ -349,6 +349,34 @@ public class DisbursementService {
   }
 
   /**
+   * Undoes a write-off: {@code WRITTEN_OFF} → {@code UNBILLED}, write-off reason cleared (entity
+   * {@link LegalDisbursement#restore()}). A disbursement in any other billing state is a 409 —
+   * mirrors {@link #writeOff(UUID, String)}.
+   */
+  @Transactional
+  public DisbursementResponse restore(UUID id) {
+    moduleGuard.requireModule(MODULE_ID);
+    var entity = requireDisbursement(id);
+    try {
+      entity.restore();
+    } catch (IllegalStateException e) {
+      throw new ResourceConflictException("Cannot restore disbursement", e.getMessage());
+    }
+    var saved = disbursementRepository.save(entity);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            // ADR-342: storage key, do not rename
+            .eventType("disbursement.restored")
+            .entityType("legal_disbursement")
+            .entityId(saved.getId())
+            .details(Map.of("project_id", saved.getProjectId().toString()))
+            .build());
+
+    return DisbursementResponse.from(saved);
+  }
+
+  /**
    * Marks a disbursement as BILLED. Internal — no controller endpoint; called by 487B's {@code
    * InvoiceCreationService} when an invoice line is generated against this disbursement. Publishes
    * {@link DisbursementBilledEvent} on success.

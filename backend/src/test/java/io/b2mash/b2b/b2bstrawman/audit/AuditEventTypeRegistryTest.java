@@ -77,11 +77,12 @@ class AuditEventTypeRegistryTest {
     // Epic 601, D2)
     // + 5 mcp.write.* entries (4 exact + 1 prefix, Epic 582A)
     // + 2 ai.gate.* entries (1 exact + 1 prefix, Epic 585)
-    // + 5 collections.* entries (5 exact, Epic 588B) = 29. Default fallback is synthesised
-    // inside resolve() and must NOT appear in entries(). (Phase 86 slice 2 / Epic 596B removed
-    // the 5 deal.* SALES entries; Phase 86 slice 3 / Epic 597B removed proposal.*; Phase 86
-    // slice 7 / Epic 601 removed six ai.specialist.* entries.)
-    assertThat(registry.entries()).hasSize(29);
+    // + 5 collections.* entries (5 exact, Epic 588B)
+    // + 1 disbursement.restored (exact, Phase 88 Epic 621A — additive ADR-342 key, OQ #10) = 30.
+    // Default fallback is synthesised inside resolve() and must NOT appear in entries().
+    // (Phase 86 slice 2 / Epic 596B removed the 5 deal.* SALES entries; Phase 86 slice 3 / Epic
+    // 597B removed proposal.*; Phase 86 slice 7 / Epic 601 removed six ai.specialist.* entries.)
+    assertThat(registry.entries()).hasSize(30);
     assertThat(registry.entries())
         .extracting(AuditEventTypeMetadata::eventType)
         .doesNotContain("(default fallback)")
@@ -96,7 +97,8 @@ class AuditEventTypeRegistryTest {
             "ai.gate.*",
             "collections.policy.updated",
             "collections.reminder.sent",
-            "ai.specialist.failed")
+            "ai.specialist.failed",
+            "disbursement.restored")
         .doesNotContain(
             "ai.specialist.*",
             "ai.specialist.invoked",
@@ -128,8 +130,19 @@ class AuditEventTypeRegistryTest {
 
   @Test
   void entriesMatchingWithEmptyOrNullReturnsAll() {
-    assertThat(registry.entriesMatching(Set.of())).hasSize(29);
-    assertThat(registry.entriesMatching(null)).hasSize(29);
+    assertThat(registry.entriesMatching(Set.of())).hasSize(30);
+    assertThat(registry.entriesMatching(null)).hasSize(30);
+  }
+
+  @Test
+  void disbursementRestoredExactEntry() {
+    // Phase 88 Epic 621A — additive stored key (ADR-342). Same INFO/STANDARD classification the
+    // unregistered disbursement.* siblings resolve to; only the label is explicit.
+    var resolved = registry.resolve("disbursement.restored");
+    assertThat(resolved.eventType()).isEqualTo("disbursement.restored");
+    assertThat(resolved.label()).isEqualTo("Disbursement restored");
+    assertThat(resolved.severity()).isEqualTo(AuditSeverity.INFO);
+    assertThat(resolved.group()).isEqualTo(AuditEventGroup.STANDARD);
   }
 
   @Test

@@ -108,6 +108,12 @@ public class DisbursementController {
     return ResponseEntity.ok(disbursementService.writeOff(id, request.reason()));
   }
 
+  @PostMapping("/{id}/restore")
+  @RequiresCapability("WRITE_OFF_DISBURSEMENTS")
+  public ResponseEntity<DisbursementResponse> restore(@PathVariable UUID id) {
+    return ResponseEntity.ok(disbursementService.restore(id));
+  }
+
   @PostMapping(value = "/{id}/receipt", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @RequiresCapability("MANAGE_DISBURSEMENTS")
   public ResponseEntity<DisbursementResponse> attachReceipt(

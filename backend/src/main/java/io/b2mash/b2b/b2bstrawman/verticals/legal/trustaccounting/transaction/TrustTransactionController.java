@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -38,8 +39,15 @@ public class TrustTransactionController {
   @GetMapping("/api/trust-accounts/{accountId}/transactions")
   @RequiresCapability("VIEW_TRUST")
   public ResponseEntity<Page<TrustTransactionResponse>> listTransactions(
-      @PathVariable UUID accountId, Pageable pageable) {
-    return ResponseEntity.ok(trustTransactionService.listTransactions(accountId, pageable));
+      @PathVariable UUID accountId,
+      @RequestParam(required = false) UUID matterId,
+      @RequestParam(required = false) String type,
+      @RequestParam(required = false) String status,
+      @RequestParam(defaultValue = "false") boolean excludeLinked,
+      Pageable pageable) {
+    return ResponseEntity.ok(
+        trustTransactionService.listTransactions(
+            accountId, matterId, type, status, excludeLinked, pageable));
   }
 
   @GetMapping("/api/trust-accounts/{accountId}/transactions/{id}")

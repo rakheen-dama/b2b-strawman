@@ -422,6 +422,74 @@ class DisbursementControllerIntegrationTest {
   }
 
   // ==========================================================================
+  // Restore (undo write-off) — Phase 88 Epic 621A
+  // ==========================================================================
+
+  @Test
+  void restore_fromWrittenOff_returnsUnbilled() throws Exception {
+    var id = createOfficeDisbursement("Restore happy path");
+    writeOffViaApi(id, "Client insolvent");
+
+    mockMvc
+        .perform(
+            post("/api/legal/disbursements/" + id + "/restore")
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(id))
+        .andExpect(jsonPath("$.billingStatus").value("UNBILLED"))
+        .andExpect(jsonPath("$.writeOffReason").doesNotExist());
+
+    // Re-read — the transition persisted.
+    mockMvc
+        .perform(
+            get("/api/legal/disbursements/" + id)
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.billingStatus").value("UNBILLED"))
+        .andExpect(jsonPath("$.writeOffReason").doesNotExist());
+  }
+
+  @Test
+  void restore_fromUnbilled_409() throws Exception {
+    var id = createOfficeDisbursement("Restore without a write-off");
+
+    mockMvc
+        .perform(
+            post("/api/legal/disbursements/" + id + "/restore")
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_ctrl_owner")))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.status").value(409))
+        .andExpect(jsonPath("$.title").value("Cannot restore disbursement"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value("Cannot restore: disbursement is not WRITTEN_OFF (current=UNBILLED)"));
+  }
+
+  @Test
+  void restore_withoutCapability_403() throws Exception {
+    var id = createOfficeDisbursement("Restore attempted by a member");
+    writeOffViaApi(id, "Uncollectable");
+
+    // Default Member role does NOT carry WRITE_OFF_DISBURSEMENTS (owner/admin only).
+    mockMvc
+        .perform(
+            post("/api/legal/disbursements/" + id + "/restore")
+                .with(TestJwtFactory.memberJwt(LEGAL_ORG_ID, "user_disb_ctrl_member")))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
+
+    // Still written off.
+    mockMvc
+        .perform(
+            get("/api/legal/disbursements/" + id)
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.billingStatus").value("WRITTEN_OFF"))
+        .andExpect(jsonPath("$.writeOffReason").value("Uncollectable"));
+  }
+
+  // ==========================================================================
   // Helpers
   // ==========================================================================
 
@@ -441,6 +509,17 @@ class DisbursementControllerIntegrationTest {
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+  }
+
+  private void writeOffViaApi(String id, String reason) throws Exception {
+    mockMvc
+        .perform(
+            post("/api/legal/disbursements/" + id + "/write-off")
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\": \"%s\"}".formatted(reason)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.billingStatus").value("WRITTEN_OFF"));
   }
 
   private String createBody(UUID pid, String description, String amount, String category) {

@@ -18,6 +18,36 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
   Page<TrustTransaction> findByTrustAccountIdOrderByTransactionDateDesc(
       UUID trustAccountId, Pageable pageable);
 
+  /**
+   * Account-scoped transaction list with optional filters (Phase 88 Epic 621A). Every filter is
+   * optional — {@code null} (or {@code excludeLinked=false}) disables its predicate, so a call with
+   * no filters returns exactly what {@link #findByTrustAccountIdOrderByTransactionDateDesc} does.
+   * {@code projectId} is the matter (wire {@code matterId}). {@code excludeLinked} hides trust
+   * transactions already referenced by a disbursement ({@code legal_disbursements
+   * .trust_transaction_id}, index {@code idx_legal_disbursements_trust_tx}) so the disbursement
+   * trust-link picker cannot offer a used payment. JPQL (not native) so the callers' Pageable
+   * {@code sort=transactionDate,desc} resolves against the entity property.
+   */
+  @Query(
+      """
+      SELECT t FROM TrustTransaction t
+      WHERE t.trustAccountId = :trustAccountId
+        AND (:projectId IS NULL OR t.projectId = :projectId)
+        AND (:transactionType IS NULL OR t.transactionType = :transactionType)
+        AND (:status IS NULL OR t.status = :status)
+        AND (:excludeLinked = false
+             OR NOT EXISTS (
+               SELECT d.id FROM LegalDisbursement d WHERE d.trustTransactionId = t.id))
+      ORDER BY t.transactionDate DESC
+      """)
+  Page<TrustTransaction> findFiltered(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("projectId") UUID projectId,
+      @Param("transactionType") String transactionType,
+      @Param("status") String status,
+      @Param("excludeLinked") boolean excludeLinked,
+      Pageable pageable);
+
   List<TrustTransaction> findByCustomerIdAndTrustAccountIdOrderByTransactionDateDesc(
       UUID customerId, UUID trustAccountId);
 

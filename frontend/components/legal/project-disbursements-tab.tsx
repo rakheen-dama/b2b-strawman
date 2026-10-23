@@ -7,6 +7,7 @@ import { ModuleGate } from "@/components/module-gate";
 import { CreateDisbursementDialog } from "@/components/legal/create-disbursement-dialog";
 import { EditDisbursementDialog } from "@/components/legal/edit-disbursement-dialog";
 import { DisbursementListView } from "@/components/legal/disbursement-list-view";
+import { useDisbursementWriteOff } from "@/components/legal/use-disbursement-write-off";
 import { fetchDisbursements } from "@/app/(app)/org/[slug]/legal/disbursements/actions";
 import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
 
@@ -35,6 +36,8 @@ export function ProjectDisbursementsTab({
   const disbursements = data?.content ?? [];
   const totalElements = data?.page.totalElements ?? disbursements.length;
   const hasMore = totalElements > disbursements.length;
+
+  const writeOff = useDisbursementWriteOff({ slug, onChanged: () => mutate() });
 
   return (
     <ModuleGate module="disbursements">
@@ -71,6 +74,8 @@ export function ProjectDisbursementsTab({
             disbursements={disbursements}
             onSelect={(d) => router.push(`/org/${slug}/legal/disbursements/${d.id}`)}
             onEdit={setEditTarget}
+            onWriteOff={writeOff.onWriteOff}
+            onRestore={writeOff.onRestore}
           />
         )}
 
@@ -86,6 +91,8 @@ export function ProjectDisbursementsTab({
             }}
           />
         )}
+
+        {writeOff.dialog}
       </div>
     </ModuleGate>
   );

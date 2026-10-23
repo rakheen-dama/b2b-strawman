@@ -55,6 +55,7 @@ vi.mock("@/lib/api/capabilities", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { performConflictCheck } from "@/app/(app)/org/[slug]/conflict-check/actions";
 import {
   createCourtDate,
@@ -71,6 +72,8 @@ import {
   fetchApprovedTrustDisbursementPayments,
   fetchDisbursements,
   fetchUnbilledDisbursementsAction,
+  restoreDisbursementAction,
+  writeOffDisbursementAction,
 } from "@/app/(app)/org/[slug]/legal/disbursements/actions";
 import {
   recordDeposit,
@@ -316,6 +319,54 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
     await fetchUnbilledDisbursementsAction(M);
     expect(mockGet).toHaveBeenCalledWith(`/api/legal/disbursements/unbilled?matterId=${M}`);
   });
+
+  it("writeOffDisbursementAction POSTs /write-off with the trimmed reason", async () => {
+    mockPost.mockResolvedValue({ id: "d1", matterId: M, billingStatus: "WRITTEN_OFF" });
+    const result = await writeOffDisbursementAction("acme", "d1", "  Client dispute  ");
+    const [path, body] = lastPost();
+    expect(path).toBe("/api/legal/disbursements/d1/write-off");
+    expect(body).toEqual({ reason: "Client dispute" });
+    expect(result.success).toBe(true);
+  });
+
+  it("writeOffDisbursementAction rejects a blank reason without calling the API", async () => {
+    const result = await writeOffDisbursementAction("acme", "d1", "   ");
+    expect(mockPost).not.toHaveBeenCalled();
+    expect(result).toEqual({ success: false, error: "A write-off reason is required" });
+  });
+
+  it("restoreDisbursementAction POSTs /restore", async () => {
+    mockPost.mockResolvedValue({ id: "d1", matterId: M, billingStatus: "UNBILLED" });
+    const result = await restoreDisbursementAction("acme", "d1");
+    expect(mockPost).toHaveBeenCalledWith("/api/legal/disbursements/d1/restore");
+    expect(result.success).toBe(true);
+  });
+
+  it.each([
+    [
+      "writeOffDisbursementAction",
+      () => writeOffDisbursementAction("acme", "d1", "Client dispute"),
+      "You do not have permission to write off disbursements.",
+    ],
+    [
+      "restoreDisbursementAction",
+      () => restoreDisbursementAction("acme", "d1"),
+      "You do not have permission to undo a write-off.",
+    ],
+  ] as const)(
+    "%s refuses without WRITE_OFF_DISBURSEMENTS (non-admin) and never calls the API",
+    async (_name, call, error) => {
+      vi.mocked(fetchMyCapabilities).mockResolvedValueOnce({
+        isAdmin: false,
+        isOwner: false,
+        role: "member",
+        capabilities: ["APPROVE_DISBURSEMENTS"],
+      });
+      const result = await call();
+      expect(mockPost).not.toHaveBeenCalled();
+      expect(result).toEqual({ success: false, error });
+    }
+  );
 
   it("placeInvestment sends clientId (never customerId) and a decimal rate", async () => {
     await placeInvestment("ta-1", {

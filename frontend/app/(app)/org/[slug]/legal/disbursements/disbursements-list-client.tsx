@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ModuleGate } from "@/components/module-gate";
 import { DisbursementListView } from "@/components/legal/disbursement-list-view";
+import { useDisbursementWriteOff } from "@/components/legal/use-disbursement-write-off";
 import { CreateDisbursementDialog } from "@/components/legal/create-disbursement-dialog";
 import { Input } from "@b2mash/ui/input";
 import { fetchDisbursements } from "./actions";
@@ -71,6 +72,8 @@ export function DisbursementsListClient({
       }
     });
   };
+
+  const writeOff = useDisbursementWriteOff({ slug, onChanged: () => refetch() });
 
   const isInitialMount = useRef(true);
   const refetchRef = useRef(refetch);
@@ -186,7 +189,11 @@ export function DisbursementsListClient({
           disbursements={visibleDisbursements}
           projectNames={projectNames}
           onSelect={(d) => router.push(`/org/${slug}/legal/disbursements/${d.id}`)}
+          onWriteOff={writeOff.onWriteOff}
+          onRestore={writeOff.onRestore}
         />
+
+        {writeOff.dialog}
       </div>
     </ModuleGate>
   );

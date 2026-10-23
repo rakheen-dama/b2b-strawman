@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Pencil, Send, Upload } from "lucide-react";
+import { ArrowLeft, Pencil, RotateCcw, Send, Upload } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import {
@@ -21,8 +21,13 @@ import {
 } from "@/components/legal/disbursement-list-view";
 import { DisbursementApprovalPanel } from "@/components/legal/disbursement-approval-panel";
 import { EditDisbursementDialog } from "@/components/legal/edit-disbursement-dialog";
+import {
+  DisbursementWriteOffDialog,
+  canOfferWriteOff,
+} from "@/components/legal/disbursement-write-off-dialog";
 import { formatCurrency } from "@/lib/format";
 import {
+  restoreDisbursementAction,
   submitForApprovalAction,
   uploadReceiptAction,
 } from "@/app/(app)/org/[slug]/legal/disbursements/actions";
@@ -33,6 +38,7 @@ interface DisbursementDetailClientProps {
   slug: string;
   disbursement: DisbursementResponse;
   canApprove: boolean;
+  canWriteOff: boolean;
 }
 
 const VAT_TREATMENT_LABEL: Record<DisbursementResponse["vatTreatment"], string> = {
@@ -50,6 +56,7 @@ export function DisbursementDetailClient({
   slug,
   disbursement: initial,
   canApprove,
+  canWriteOff,
 }: DisbursementDetailClientProps) {
   const [disbursement, setDisbursement] = useState(initial);
   const [editOpen, setEditOpen] = useState(false);
@@ -58,6 +65,18 @@ export function DisbursementDetailClient({
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmittingForApproval, setIsSubmittingForApproval] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isRestoring, setIsRestoring] = useState(false);
+  // Write off ↔ Undo swap buttons on success, which would drop focus to <body>; move it to the
+  // button that replaced the one the user just used.
+  const writeOffTriggerRef = useRef<HTMLButtonElement>(null);
+  const restoreButtonRef = useRef<HTMLButtonElement>(null);
+  const focusAfterSwap = useRef<"write-off" | "restore" | null>(null);
+  useEffect(() => {
+    const target = focusAfterSwap.current;
+    if (!target) return;
+    focusAfterSwap.current = null;
+    (target === "restore" ? restoreButtonRef : writeOffTriggerRef).current?.focus();
+  }, [disbursement.billingStatus]);
 
   const editable =
     disbursement.approvalStatus === "DRAFT" || disbursement.approvalStatus === "PENDING_APPROVAL";
@@ -97,6 +116,24 @@ export function DisbursementDetailClient({
       setSubmitError("An unexpected error occurred while submitting for approval.");
     } finally {
       setIsSubmittingForApproval(false);
+    }
+  }, [slug, disbursement.id]);
+
+  const handleRestore = useCallback(async () => {
+    setSubmitError(null);
+    setIsRestoring(true);
+    try {
+      const result = await restoreDisbursementAction(slug, disbursement.id);
+      if (result.success && result.data) {
+        focusAfterSwap.current = "write-off";
+        setDisbursement(result.data);
+      } else {
+        setSubmitError(result.error ?? "Failed to undo write-off.");
+      }
+    } catch {
+      setSubmitError("An unexpected error occurred while undoing the write-off.");
+    } finally {
+      setIsRestoring(false);
     }
   }, [slug, disbursement.id]);
 
@@ -172,6 +209,30 @@ export function DisbursementDetailClient({
                 Edit
               </Button>
             </>
+          )}
+          {canWriteOff && canOfferWriteOff(disbursement) && (
+            <DisbursementWriteOffDialog
+              slug={slug}
+              disbursement={disbursement}
+              triggerRef={writeOffTriggerRef}
+              onWrittenOff={(updated) => {
+                focusAfterSwap.current = "restore";
+                setDisbursement(updated);
+              }}
+            />
+          )}
+          {canWriteOff && disbursement.billingStatus === "WRITTEN_OFF" && (
+            <Button
+              variant="outline"
+              size="sm"
+              ref={restoreButtonRef}
+              onClick={handleRestore}
+              disabled={isRestoring}
+              data-testid="disbursement-restore-button"
+            >
+              <RotateCcw className="mr-1.5 size-4" />
+              {isRestoring ? "Undoing..." : "Undo write-off"}
+            </Button>
           )}
         </div>
       </div>

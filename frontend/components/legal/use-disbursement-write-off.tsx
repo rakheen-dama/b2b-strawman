@@ -9,8 +9,11 @@ import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
 
 interface UseDisbursementWriteOffOptions {
   slug: string;
-  /** Called after a successful write-off or undo — refetch the list here. */
-  onChanged: () => void;
+  /**
+   * Called after a successful write-off or undo with the changed row's matter id — refetch the
+   * list and refresh / evict that matter's unbilled strip here.
+   */
+  onChanged: (matterId: string) => void;
 }
 
 interface UseDisbursementWriteOff {
@@ -42,7 +45,7 @@ export function useDisbursementWriteOff({
       const result = await restoreDisbursementAction(slug, disbursement.id);
       if (result.success) {
         toast.success("Write-off undone");
-        onChanged();
+        onChanged(disbursement.matterId);
       } else {
         toast.error(result.error ?? "Failed to undo write-off");
       }
@@ -59,7 +62,7 @@ export function useDisbursementWriteOff({
       onOpenChange={(open) => setTarget((current) => current && { ...current, open })}
       onWrittenOff={() => {
         toast.success("Disbursement written off");
-        onChanged();
+        onChanged(target.disbursement.matterId);
       }}
     />
   ) : null;

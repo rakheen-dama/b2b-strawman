@@ -8,6 +8,10 @@ import { CreateDisbursementDialog } from "@/components/legal/create-disbursement
 import { EditDisbursementDialog } from "@/components/legal/edit-disbursement-dialog";
 import { DisbursementListView } from "@/components/legal/disbursement-list-view";
 import { useDisbursementWriteOff } from "@/components/legal/use-disbursement-write-off";
+import {
+  UnbilledDisbursementsSummary,
+  useUnbilledDisbursementsSummaryCache,
+} from "@/components/legal/unbilled-disbursements-summary";
 import { fetchDisbursements } from "@/app/(app)/org/[slug]/legal/disbursements/actions";
 import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
 
@@ -37,19 +41,24 @@ export function ProjectDisbursementsTab({
   const totalElements = data?.page.totalElements ?? disbursements.length;
   const hasMore = totalElements > disbursements.length;
 
-  const writeOff = useDisbursementWriteOff({ slug, onChanged: () => mutate() });
+  const unbilledSummary = useUnbilledDisbursementsSummaryCache();
+  // The list and the unbilled strip move together: write-off / undo / edit / create refresh both.
+  function refresh() {
+    void mutate();
+    unbilledSummary.refresh(projectId);
+  }
+
+  const writeOff = useDisbursementWriteOff({ slug, onChanged: refresh });
 
   return (
     <ModuleGate module="disbursements">
       <div data-testid="project-disbursements-tab" className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Disbursements</h3>
-          <CreateDisbursementDialog
-            slug={slug}
-            defaultProjectId={projectId}
-            onSuccess={() => mutate()}
-          />
+          <CreateDisbursementDialog slug={slug} defaultProjectId={projectId} onSuccess={refresh} />
         </div>
+
+        <UnbilledDisbursementsSummary matterId={projectId} />
 
         {hasMore && (
           <div
@@ -87,7 +96,7 @@ export function ProjectDisbursementsTab({
             onOpenChange={(open) => !open && setEditTarget(null)}
             onSuccess={() => {
               setEditTarget(null);
-              mutate();
+              refresh();
             }}
           />
         )}

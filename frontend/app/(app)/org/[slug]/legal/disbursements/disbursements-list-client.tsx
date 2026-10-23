@@ -6,6 +6,10 @@ import { ModuleGate } from "@/components/module-gate";
 import { DisbursementListView } from "@/components/legal/disbursement-list-view";
 import { useDisbursementWriteOff } from "@/components/legal/use-disbursement-write-off";
 import { CreateDisbursementDialog } from "@/components/legal/create-disbursement-dialog";
+import {
+  UnbilledDisbursementsSummary,
+  useUnbilledDisbursementsSummaryCache,
+} from "@/components/legal/unbilled-disbursements-summary";
 import { Input } from "@b2mash/ui/input";
 import { fetchDisbursements } from "./actions";
 import type {
@@ -73,7 +77,21 @@ export function DisbursementsListClient({
     });
   };
 
-  const writeOff = useDisbursementWriteOff({ slug, onChanged: () => refetch() });
+  const unbilledSummary = useUnbilledDisbursementsSummaryCache();
+  const writeOff = useDisbursementWriteOff({
+    slug,
+    onChanged: (matterId) => {
+      refetch();
+      // Write-off / undo moves the changed matter's unbilled total. The strip is mounted only when
+      // the list is filtered to that matter — revalidate it in place. Otherwise (All Matters or
+      // another matter) evict the cached total so the matter tab / filter can't paint it stale.
+      if (matterId === projectFilter) {
+        unbilledSummary.refresh(matterId);
+      } else {
+        unbilledSummary.evict(matterId);
+      }
+    },
+  });
 
   const isInitialMount = useRef(true);
   const refetchRef = useRef(refetch);
@@ -176,6 +194,8 @@ export function DisbursementsListClient({
             <CreateDisbursementDialog slug={slug} onSuccess={refetch} />
           </div>
         </div>
+
+        {projectFilter && <UnbilledDisbursementsSummary matterId={projectFilter} />}
 
         <div className="text-sm text-slate-500 dark:text-slate-400">
           {total} disbursement{total !== 1 ? "s" : ""}

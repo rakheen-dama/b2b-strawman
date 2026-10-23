@@ -207,29 +207,31 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
     expect(url).not.toContain("projectId=");
   });
 
-  it("fetchApprovedTrustDisbursementPayments keeps rows whose matterId matches", async () => {
+  it("fetchApprovedTrustDisbursementPayments asks for unlinked APPROVED PAYMENTs on the matter", async () => {
     mockGet.mockImplementation(async (url: string) => {
       if (url === "/api/trust-accounts") return [{ id: "ta-1" }];
       return {
         content: [
-          {
-            id: "tx-mine",
-            matterId: M,
-            status: "APPROVED",
-            transactionType: "DISBURSEMENT_PAYMENT",
-          },
-          {
-            id: "tx-other",
-            matterId: "other",
-            status: "APPROVED",
-            transactionType: "DISBURSEMENT_PAYMENT",
-          },
+          { id: "tx-mine", matterId: M, status: "APPROVED", transactionType: "PAYMENT" },
+          { id: "tx-other", matterId: "other", status: "APPROVED", transactionType: "PAYMENT" },
+          { id: "tx-deposit", matterId: M, status: "APPROVED", transactionType: "DEPOSIT" },
         ],
         page: { totalPages: 1 },
       };
     });
     const rows = await fetchApprovedTrustDisbursementPayments(M);
     expect(rows.map((r) => r.id)).toEqual(["tx-mine"]);
+    const url = mockGet.mock.calls.find(([u]) =>
+      (u as string).startsWith("/api/trust-accounts/ta-1/transactions?")
+    )![0] as string;
+    const params = new URL(url, "http://x").searchParams;
+    expect(params.get("matterId")).toBe(M);
+    // The ledger has no DISBURSEMENT_PAYMENT type — a disbursement is paid by a PAYMENT (G-B11).
+    expect(params.get("type")).toBe("PAYMENT");
+    expect(params.get("status")).toBe("APPROVED");
+    // Server hides payments already linked to a disbursement so one is never offered twice (A14).
+    expect(params.get("excludeLinked")).toBe("true");
+    expect(url).not.toContain("DISBURSEMENT_PAYMENT");
   });
 
   it("fetchClientLedgers search filters on clientName", async () => {

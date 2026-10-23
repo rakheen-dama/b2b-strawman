@@ -200,7 +200,12 @@ public class Invoice {
     this.updatedAt = Instant.now();
   }
 
-  public void approve(String invoiceNumber, UUID approvedBy) {
+  /**
+   * DRAFT → APPROVED: allocates the number, stamps {@code issueDate} (today when unset) and — when
+   * the draft carries no due date — {@code dueDate = issueDate + defaultTermsDays} from the firm's
+   * payment terms (Phase 88 U3, ADR-347). A due date typed on the draft is never overwritten.
+   */
+  public void approve(String invoiceNumber, UUID approvedBy, int defaultTermsDays) {
     if (this.status != InvoiceStatus.DRAFT) {
       throw new IllegalStateException("Only draft invoices can be approved");
     }
@@ -210,12 +215,17 @@ public class Invoice {
     if (this.issueDate == null) {
       this.issueDate = LocalDate.now();
     }
+    if (this.dueDate == null) {
+      this.dueDate = this.issueDate.plusDays(defaultTermsDays);
+    }
     this.updatedAt = Instant.now();
   }
 
   /**
    * Applies default due date and payment terms to an APPROVED invoice that is missing them. Used by
-   * batch send to fill in defaults before sending.
+   * batch send to fill in defaults before sending. Since ADR-347 every fee note approved through
+   * {@link #approve} already carries a due date, so {@code defaultDueDate} is a no-op for those; a
+   * null {@code paymentTerms} is still filled.
    */
   public void applyDefaults(LocalDate defaultDueDate, String defaultPaymentTerms) {
     if (this.status != InvoiceStatus.APPROVED) {

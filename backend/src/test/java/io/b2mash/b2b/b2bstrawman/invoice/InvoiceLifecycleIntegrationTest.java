@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -18,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
@@ -243,6 +245,77 @@ class InvoiceLifecycleIntegrationTest {
         .andExpect(jsonPath("$.invoiceNumber").isNotEmpty())
         .andExpect(jsonPath("$.approvedBy").isNotEmpty())
         .andExpect(jsonPath("$.issueDate").isNotEmpty());
+  }
+
+  // Phase 88 U3 (ADR-347): approve stamps dueDate = issueDate + the firm's payment terms when the
+  // draft has none. Terms set to 14 so a hard-coded 30 cannot pass; restored afterwards (shared
+  // PER_CLASS tenant — no other case reads the setting).
+  @Test
+  void approveWithoutDueDateStampsIssuePlusTerms() throws Exception {
+    setPaymentTerms(14);
+    try {
+      String invoiceId = createDraftWithManualLine();
+      var json =
+          mockMvc
+              .perform(
+                  post("/api/invoices/" + invoiceId + "/approve")
+                      .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$.status").value("APPROVED"))
+              .andReturn()
+              .getResponse()
+              .getContentAsString();
+      String dueDate = JsonPath.read(json, "$.dueDate");
+      assertThat(dueDate).as("approve must stamp a due date when the draft has none").isNotNull();
+      LocalDate issue = LocalDate.parse(JsonPath.read(json, "$.issueDate"));
+      assertThat(LocalDate.parse(dueDate)).isEqualTo(issue.plusDays(14));
+
+      // The stamped date travels unchanged onto the SENT fee note.
+      mockMvc
+          .perform(
+              post("/api/invoices/" + invoiceId + "/send")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.status").value("SENT"))
+          .andExpect(jsonPath("$.dueDate").value(dueDate));
+    } finally {
+      setPaymentTerms(BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    }
+  }
+
+  // A due date typed on the draft is never overwritten by approve (ADR-347).
+  @Test
+  void typedDueDatePreserved() throws Exception {
+    String invoiceId = createDraftWithManualLine();
+    mockMvc
+        .perform(
+            put("/api/invoices/" + invoiceId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"dueDate": "2027-01-15"}
+                    """))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("APPROVED"))
+        .andExpect(jsonPath("$.dueDate").value("2027-01-15"));
+  }
+
+  private void setPaymentTerms(int days) throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/batch-billing")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"defaultPaymentTermsDays\": %d}".formatted(days)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.defaultPaymentTermsDays").value(days));
   }
 
   // --- Test 2: approve fails if no lines ---

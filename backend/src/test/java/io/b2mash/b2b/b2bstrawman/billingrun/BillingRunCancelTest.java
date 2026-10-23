@@ -20,6 +20,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
@@ -390,7 +391,10 @@ class BillingRunCancelTest {
 
                       // Approve the first invoice
                       var firstInvoice = draftInvoices.getFirst();
-                      firstInvoice.approve("INV-CANCEL-001", memberIdOwner);
+                      firstInvoice.approve(
+                          "INV-CANCEL-001",
+                          memberIdOwner,
+                          BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
                       invoiceRepository.save(firstInvoice);
                     }));
 

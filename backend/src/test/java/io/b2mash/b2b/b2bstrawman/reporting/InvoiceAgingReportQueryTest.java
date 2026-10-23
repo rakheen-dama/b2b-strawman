@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
@@ -333,7 +334,7 @@ class InvoiceAgingReportQueryTest {
     var invoice = new Invoice(customerId, "ZAR", customerName, null, null, "Test Org", memberId);
     invoice.updateDraft(dueDate, null, null, BigDecimal.ZERO);
     invoice.recalculateTotals(subtotal, false, BigDecimal.ZERO, false);
-    invoice.approve(invoiceNumber, memberId);
+    invoice.approve(invoiceNumber, memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
     invoice.markSent();
     return invoiceRepository.save(invoice);
   }

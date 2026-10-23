@@ -24,6 +24,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.Capability;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
@@ -71,8 +72,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  *
  * <ul>
  *   <li><b>A</b> (ACTIVE): FICA DONE; SENT fee notes 1,000.00 + 500.00 in the org currency, a large
- *       SENT one in a foreign currency (not the reported group), a SENT one WITHOUT a due date and
- *       a DRAFT one (both excluded); 15,000.00 in trust; two ACTIVE matters + one ARCHIVED; a tag.
+ *       SENT one in a foreign currency (not the reported group), a legacy SENT one whose due date
+ *       is nulled after approve (pre-V4 shape) and a DRAFT one (both excluded); 15,000.00 in trust;
+ *       two ACTIVE matters + one ARCHIVED; a tag.
  *   <li><b>B</b> (ACTIVE): FICA IN_PROGRESS (unsent request); nothing else.
  *   <li><b>C</b> (PROSPECT): FICA NOT_STARTED; one SENT fee note in the foreign currency only.
  *   <li><b>D</b> (DORMANT, the only DORMANT client): both fixture-defined required CUSTOMER fields
@@ -122,6 +124,7 @@ class ClientListRowIntegrationTest {
   private UUID ownerId;
   private UUID tagId;
   private UUID clientA;
+  private UUID legacyNoDueDateInvoiceId;
   private UUID clientB;
   private UUID clientC;
   private UUID clientD;
@@ -200,7 +203,8 @@ class ClientListRowIntegrationTest {
           seedSentInvoice(clientA, 1000, currency, today.plusDays(10));
           seedSentInvoice(clientA, 500, currency, today.minusDays(5));
           seedSentInvoice(clientA, 9999, foreignCurrency, today.plusDays(10));
-          seedSentInvoice(clientA, 777, currency, null); // SENT without a due date
+          legacyNoDueDateInvoiceId =
+              seedSentInvoice(clientA, 777, currency, null); // legacy SENT, no due date
           invoiceRepository.save(newInvoice(clientA, 4242, currency, today.plusDays(10))); // DRAFT
           // C: foreign currency only → the row reports that group.
           seedSentInvoice(clientC, 250, foreignCurrency, today.plusDays(3));
@@ -220,6 +224,12 @@ class ClientListRowIntegrationTest {
           saveMatter("CLR Matter A2", clientA, false);
           saveMatter("CLR Matter A3 archived", clientA, true);
         });
+    // Legacy pre-V4 row: approved before approve() stamped a due date (ADR-347). The debtor-book
+    // guard (due_date IS NOT NULL) must still exclude it. Runs after the seeding transaction
+    // commits (a separate pooled connection would otherwise block on the uncommitted row).
+    jdbcTemplate.update(
+        "UPDATE \"%s\".invoices SET due_date = NULL WHERE id = ?::uuid".formatted(schema),
+        legacyNoDueDateInvoiceId.toString());
     // ADR-342: storage key, do not rename
     entityTagService.setEntityTags("CUSTOMER", clientA, List.of(tagId));
     // ADR-342: storage key, do not rename
@@ -570,11 +580,11 @@ class ClientListRowIntegrationTest {
     return invoice;
   }
 
-  private void seedSentInvoice(UUID clientId, long amount, String invoiceCurrency, LocalDate due) {
+  private UUID seedSentInvoice(UUID clientId, long amount, String invoiceCurrency, LocalDate due) {
     var invoice = newInvoice(clientId, amount, invoiceCurrency, due);
-    invoice.approve("CLR-" + (++invoiceSeq), ownerId);
+    invoice.approve("CLR-" + (++invoiceSeq), ownerId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
     invoice.markSent();
-    invoiceRepository.save(invoice);
+    return invoiceRepository.save(invoice).getId();
   }
 
   private void setTrustModule(boolean enabled) {

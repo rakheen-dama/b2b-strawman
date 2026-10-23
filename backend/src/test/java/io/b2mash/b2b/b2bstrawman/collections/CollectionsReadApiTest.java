@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
@@ -186,7 +187,7 @@ class CollectionsReadApiTest {
             customerId, currency, name, name + "@test.com", null, "Read Org", ownerMemberId);
     invoice.updateDraft(dueDate, null, null, BigDecimal.ZERO);
     invoice.recalculateTotals(BigDecimal.valueOf(amount), false, BigDecimal.ZERO, false);
-    invoice.approve(invoiceNumber, ownerMemberId);
+    invoice.approve(invoiceNumber, ownerMemberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
     invoice.markSent();
     return invoiceRepository.save(invoice).getId();
   }

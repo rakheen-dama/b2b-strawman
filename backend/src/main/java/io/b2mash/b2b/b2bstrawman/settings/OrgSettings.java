@@ -201,12 +201,12 @@ public class OrgSettings {
 
   /**
    * Billing-run configuration group (Wave 3.4): batch async threshold, per-run email rate limit,
-   * and the optional default billing-run currency override. Persisted inline on {@code
-   * org_settings} via {@code @Embedded} — column names pinned by {@code @AttributeOverride} for
-   * zero schema change. Initialised non-null so a fresh entity and an all-null DB row never NPE on
-   * {@link #getBilling()}; the embeddable's field initialisers reproduce the constructor defaults
-   * (threshold 50, rate limit 5). NOTE: the org base currency ({@code default_currency}) stays
-   * top-level — see {@link BillingSettings}.
+   * the optional default billing-run currency override, and the firm default payment terms in days
+   * (Phase 88 U3, tenant V4 §2). Persisted inline on {@code org_settings} via {@code @Embedded} —
+   * column names pinned by {@code @AttributeOverride}. Initialised non-null so a fresh entity and
+   * an all-null DB row never NPE on {@link #getBilling()}; the embeddable's field initialisers
+   * reproduce the constructor defaults (threshold 50, rate limit 5, payment terms 30). NOTE: the
+   * org base currency ({@code default_currency}) stays top-level — see {@link BillingSettings}.
    */
   @Embedded
   @AttributeOverride(
@@ -218,6 +218,9 @@ public class OrgSettings {
   @AttributeOverride(
       name = "defaultBillingRunCurrency",
       column = @Column(name = "default_billing_run_currency", length = 3))
+  @AttributeOverride(
+      name = "defaultPaymentTermsDays",
+      column = @Column(name = "default_payment_terms_days"))
   private BillingSettings billing = new BillingSettings();
 
   @Column(name = "project_naming_pattern", length = 500)

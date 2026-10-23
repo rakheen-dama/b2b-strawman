@@ -20,6 +20,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
@@ -375,7 +376,10 @@ class InvoiceControllerIntegrationTest {
                               "Invoice Ctrl Test Org",
                               memberIdOwner);
                       invoice = invoiceRepository.save(invoice);
-                      invoice.approve("INV-TEST-001", memberIdOwner);
+                      invoice.approve(
+                          "INV-TEST-001",
+                          memberIdOwner,
+                          BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
                       invoice = invoiceRepository.save(invoice);
                       invoiceIdHolder[0] = invoice.getId().toString();
                     }));
@@ -601,7 +605,10 @@ class InvoiceControllerIntegrationTest {
                               "Invoice Ctrl Test Org",
                               memberIdOwner);
                       invoice = invoiceRepository.save(invoice);
-                      invoice.approve("INV-TEST-002", memberIdOwner);
+                      invoice.approve(
+                          "INV-TEST-002",
+                          memberIdOwner,
+                          BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
                       invoice = invoiceRepository.save(invoice);
                       invoiceIdHolder[0] = invoice.getId().toString();
                     }));

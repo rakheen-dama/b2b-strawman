@@ -128,6 +128,7 @@ public class OrgSettingsService {
                 50, // billingBatchAsyncThreshold
                 5, // billingEmailRateLimit
                 null, // defaultBillingRunCurrency
+                BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS, // defaultPaymentTermsDays
                 null, // projectNamingPattern
                 null, // verticalProfile
                 List.of(), // enabledModules
@@ -336,6 +337,7 @@ public class OrgSettingsService {
         settings.getBilling().getBillingBatchAsyncThreshold(),
         settings.getBilling().getBillingEmailRateLimit(),
         settings.getBilling().getDefaultBillingRunCurrency(),
+        settings.getBilling().getDefaultPaymentTermsDays(),
         settings.getProjectNamingPattern(),
         settings.getVerticalProfile(),
         settings.getEnabledModules(),
@@ -864,18 +866,20 @@ public class OrgSettingsService {
         c.getEscalateDaysOverdue());
   }
 
-  /** Updates batch billing settings. */
+  /** Updates billing settings (batch-billing tuning + firm default payment terms). */
   @Transactional
   public SettingsResponse updateBatchBillingSettings(
       Integer billingBatchAsyncThreshold,
       Integer billingEmailRateLimit,
       String defaultBillingRunCurrency,
+      Integer defaultPaymentTermsDays,
       ActorContext actor) {
     requireAdminOrOwner(actor.orgRole());
 
     if (billingBatchAsyncThreshold == null
         && billingEmailRateLimit == null
-        && defaultBillingRunCurrency == null) {
+        && defaultBillingRunCurrency == null
+        && defaultPaymentTermsDays == null) {
       return getSettingsWithBranding();
     }
 
@@ -897,14 +901,19 @@ public class OrgSettingsService {
     if (defaultBillingRunCurrency != null) {
       settings.getBilling().setDefaultBillingRunCurrency(defaultBillingRunCurrency);
     }
+    if (defaultPaymentTermsDays != null) {
+      settings.getBilling().setDefaultPaymentTermsDays(defaultPaymentTermsDays);
+    }
     settings.touchUpdatedAt();
     settings = orgSettingsRepository.save(settings);
 
     log.info(
-        "Updated batch billing settings: asyncThreshold={}, rateLimit={}, currency={}",
+        "Updated batch billing settings: asyncThreshold={}, rateLimit={}, currency={},"
+            + " paymentTermsDays={}",
         billingBatchAsyncThreshold,
         billingEmailRateLimit,
-        defaultBillingRunCurrency);
+        defaultBillingRunCurrency,
+        defaultPaymentTermsDays);
 
     var auditDetails = new java.util.HashMap<String, Object>();
     if (billingBatchAsyncThreshold != null) {
@@ -915,6 +924,9 @@ public class OrgSettingsService {
     }
     if (defaultBillingRunCurrency != null) {
       auditDetails.put("default_billing_run_currency", defaultBillingRunCurrency);
+    }
+    if (defaultPaymentTermsDays != null) {
+      auditDetails.put("default_payment_terms_days", defaultPaymentTermsDays);
     }
     auditService.log(
         AuditEventBuilder.builder()

@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.GreenMailTestSupport;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
@@ -161,7 +162,7 @@ class SendCollectionReminderExecutorTest {
               new Invoice(savedCustomer.getId(), "ZAR", name, email, null, "Test Org", member);
           invoice.updateDraft(LocalDate.now().minusDays(10), null, null, BigDecimal.ZERO);
           invoice.recalculateTotals(BigDecimal.valueOf(1500), false, BigDecimal.ZERO, false);
-          invoice.approve(invoiceNumber, member);
+          invoice.approve(invoiceNumber, member, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
           invoice.markSent();
           holder[0] = invoiceRepository.save(invoice).getId();
         });

@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
@@ -261,7 +262,7 @@ class BillingRunBatchOperationsTest {
 
   @Test
   @Order(5)
-  void batchSend_appliesDefaultDueDate() throws Exception {
+  void batchSend_keepsApproveStampedDueDateAndAppliesDefaultTerms() throws Exception {
     seedUnbilledEntries("send_due_date");
     String runId = createAndGenerateBillingRun("Send Due Date Run");
 
@@ -287,7 +288,9 @@ class BillingRunBatchOperationsTest {
                     """))
         .andExpect(status().isOk());
 
-    // Verify invoices have due date set
+    // ADR-347 / §13.3.5: approve stamps the due date (issue + firm terms); batch-send
+    // defaultDueDate only fills a null and is a no-op for run-approved fee notes. A null
+    // paymentTerms is still filled from defaultPaymentTerms.
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, memberIdOwner)
@@ -299,8 +302,13 @@ class BillingRunBatchOperationsTest {
                       var sentInvoices =
                           invoiceRepository.findByBillingRunIdAndStatus(
                               UUID.fromString(runId), InvoiceStatus.SENT);
+                      assertThat(sentInvoices).isNotEmpty();
                       for (var invoice : sentInvoices) {
-                        assertThat(invoice.getDueDate()).isEqualTo(LocalDate.of(2026, 4, 30));
+                        assertThat(invoice.getDueDate())
+                            .isEqualTo(
+                                invoice
+                                    .getIssueDate()
+                                    .plusDays(BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS));
                         assertThat(invoice.getPaymentTerms()).isEqualTo("Net 30");
                       }
                     }));

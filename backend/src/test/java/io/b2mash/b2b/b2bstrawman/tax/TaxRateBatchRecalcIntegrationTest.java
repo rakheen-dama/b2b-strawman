@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tax.dto.UpdateTaxRateRequest;
@@ -187,7 +188,7 @@ class TaxRateBatchRecalcIntegrationTest {
 
                   invoice.recalculateTotals(
                       new BigDecimal("1000.00"), true, new BigDecimal("150.00"), false);
-                  invoice.approve("INV-001", memberId);
+                  invoice.approve("INV-001", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
                   invoiceRepository.save(invoice);
                 }));
 

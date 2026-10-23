@@ -23,6 +23,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.SendInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tax.TaxCalculationService;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
@@ -123,8 +124,14 @@ public class InvoiceTransitionService {
 
     String invoiceNumber = invoiceNumberService.assignNumber();
 
+    int defaultTermsDays =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .map(s -> s.getBilling().getDefaultPaymentTermsDays())
+            .orElse(BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+
     try {
-      invoice.approve(invoiceNumber, approvedBy);
+      invoice.approve(invoiceNumber, approvedBy, defaultTermsDays);
     } catch (IllegalStateException e) {
       throw new ResourceConflictException("Invalid status transition", e.getMessage());
     }

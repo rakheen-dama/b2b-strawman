@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -919,6 +920,131 @@ class OrgSettingsIntegrationTest {
                 .content("{}"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.billingBatchAsyncThreshold").value(75));
+  }
+
+  // --- Firm default payment terms (Phase 88 U3, ADR-347) — via the existing batch-billing PATCH
+  // ---
+  // Every case that changes the terms restores 30 so sibling cases see the default.
+
+  @Test
+  void getSettings_exposesDefaultPaymentTermsOf30() throws Exception {
+    mockMvc
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.defaultPaymentTermsDays").value(30));
+  }
+
+  @Test
+  void patchBatchBilling_paymentTermsRoundTrip() throws Exception {
+    var before =
+        mockMvc
+            .perform(
+                get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    Integer threshold = JsonPath.read(before, "$.billingBatchAsyncThreshold");
+    try {
+      mockMvc
+          .perform(
+              patch("/api/settings/batch-billing")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      """
+                      {"defaultPaymentTermsDays": 14}
+                      """))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.defaultPaymentTermsDays").value(14))
+          // partial update: the other billing fields are untouched
+          .andExpect(jsonPath("$.billingBatchAsyncThreshold").value(threshold));
+
+      mockMvc
+          .perform(
+              get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.defaultPaymentTermsDays").value(14));
+
+      // 0 is valid: due on issue.
+      mockMvc
+          .perform(
+              patch("/api/settings/batch-billing")
+                  .with(TestJwtFactory.adminJwt(ORG_ID, "user_settings_admin"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      """
+                      {"defaultPaymentTermsDays": 0}
+                      """))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.defaultPaymentTermsDays").value(0));
+    } finally {
+      mockMvc
+          .perform(
+              patch("/api/settings/batch-billing")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      """
+                      {"defaultPaymentTermsDays": 30}
+                      """))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.defaultPaymentTermsDays").value(30));
+    }
+  }
+
+  @Test
+  void patchBatchBilling_rejectsPaymentTermsAbove365() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/batch-billing")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"defaultPaymentTermsDays": 366}
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("defaultPaymentTermsDays"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message")
+                .value("defaultPaymentTermsDays must be at most 365"));
+  }
+
+  @Test
+  void patchBatchBilling_rejectsNegativePaymentTerms() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/batch-billing")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"defaultPaymentTermsDays": -1}
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("defaultPaymentTermsDays"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message")
+                .value("defaultPaymentTermsDays must be at least 0"));
+  }
+
+  @Test
+  void patchBatchBilling_paymentTermsForbiddenForMember() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/batch-billing")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_settings_member"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"defaultPaymentTermsDays": 14}
+                    """))
+        .andExpect(status().isForbidden());
   }
 
   // --- Helpers ---

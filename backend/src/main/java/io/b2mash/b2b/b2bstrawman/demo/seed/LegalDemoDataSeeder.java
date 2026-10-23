@@ -22,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
@@ -610,7 +611,9 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
                 .orElseThrow(() -> new IllegalStateException("Invoice not found: " + invoiceId));
 
         // All non-DRAFT statuses need approval first
-        invoice.approve(invoiceNumber, createdBy);
+        // A freshly provisioned demo tenant's firm terms are the column default (30), so the
+        // seeded fee notes carry a due date like any approved one (ADR-347, Phase 88 OQ #5).
+        invoice.approve(invoiceNumber, createdBy, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
 
         switch (targetStatus) {
           case "SENT" -> invoice.markSent();

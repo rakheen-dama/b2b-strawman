@@ -46,6 +46,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.PaymentReconciliationService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
@@ -227,7 +228,10 @@ class CollectionsPaymentCancellationTest {
                   ownerMemberId);
           invoice.updateDraft(LocalDate.now().minusDays(10), null, null, BigDecimal.ZERO);
           invoice.recalculateTotals(BigDecimal.valueOf(1500), false, BigDecimal.ZERO, false);
-          invoice.approve("INV-" + UUID.randomUUID().toString().substring(0, 6), ownerMemberId);
+          invoice.approve(
+              "INV-" + UUID.randomUUID().toString().substring(0, 6),
+              ownerMemberId,
+              BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
           invoice.markSent();
           var saved = invoiceRepository.save(invoice);
           holder[0] = saved.getId();
@@ -332,7 +336,9 @@ class CollectionsPaymentCancellationTest {
                   savedInvoice.getId(), null, null, "Test service", BigDecimal.ONE, amount, 0);
           invoiceLineRepository.save(line);
           savedInvoice.approve(
-              "INV-XPULL-" + savedInvoice.getId().toString().substring(0, 6), ownerMemberId);
+              "INV-XPULL-" + savedInvoice.getId().toString().substring(0, 6),
+              ownerMemberId,
+              BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
           savedInvoice.markSent();
           savedInvoice = invoiceRepository.save(savedInvoice);
           var pushEntry =

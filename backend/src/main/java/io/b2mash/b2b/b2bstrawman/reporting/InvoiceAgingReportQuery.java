@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.reporting;
 
+import io.b2mash.b2b.b2bstrawman.collections.CollectionsSql;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
@@ -66,18 +67,20 @@ public class InvoiceAgingReportQuery implements ReportQuery {
             i.customer_name AS customer_name,
             i.issue_date AS issue_date,
             i.due_date AS due_date,
-            i.total AS amount,
+            %2$s AS amount,
             i.currency AS currency,
             i.status AS status,
             CAST(:asOfDate AS DATE) - i.due_date AS days_overdue,
-            %s AS age_bucket
+            %1$s AS age_bucket
         FROM invoices i
-        WHERE i.status = 'SENT'
-          AND i.due_date IS NOT NULL
+        WHERE %3$s
           AND (CAST(:customerId AS UUID) IS NULL OR i.customer_id = CAST(:customerId AS UUID))
         ORDER BY days_overdue DESC
         """
-            .formatted(AgingBuckets.reportCaseSql("CAST(:asOfDate AS DATE) - i.due_date"));
+            .formatted(
+                AgingBuckets.reportCaseSql("CAST(:asOfDate AS DATE) - i.due_date"),
+                CollectionsSql.OUTSTANDING_AMOUNT,
+                CollectionsSql.OUTSTANDING_PREDICATE);
 
     var query = entityManager.createNativeQuery(sql, Tuple.class);
     query.setParameter("asOfDate", asOfDate);

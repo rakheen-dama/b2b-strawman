@@ -92,7 +92,9 @@ public class CollectionsTriageService {
     Long median = medianDaysToPay(invoices);
     long oldestCurrentDaysOverdue = oldestCurrentDaysOverdue(invoices, today);
     List<Invoice> outstanding =
-        invoices.stream().filter(i -> i.getStatus() == InvoiceStatus.SENT).toList();
+        invoices.stream()
+            .filter(i -> CollectionsSql.OUTSTANDING_STATUSES.contains(i.getStatus()))
+            .toList();
 
     List<String> signals = new ArrayList<>();
     if (median != null && oldestCurrentDaysOverdue > median + DRIFTING_MARGIN_DAYS) {
@@ -183,10 +185,13 @@ public class CollectionsTriageService {
     return daysToPay.get(daysToPay.size() / 2);
   }
 
-  /** Max {@code today - due_date} over outstanding (SENT), past-due invoices; 0 when none. */
+  /**
+   * Max {@code today - due_date} over outstanding ({@link CollectionsSql#OUTSTANDING_STATUSES}),
+   * past-due invoices; 0 when none.
+   */
   private static long oldestCurrentDaysOverdue(List<Invoice> invoices, LocalDate today) {
     return invoices.stream()
-        .filter(i -> i.getStatus() == InvoiceStatus.SENT)
+        .filter(i -> CollectionsSql.OUTSTANDING_STATUSES.contains(i.getStatus()))
         .filter(i -> i.getDueDate() != null && i.getDueDate().isBefore(today))
         .mapToLong(i -> ChronoUnit.DAYS.between(i.getDueDate(), today))
         .max()

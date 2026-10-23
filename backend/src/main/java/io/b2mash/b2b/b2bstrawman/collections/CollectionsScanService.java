@@ -55,11 +55,12 @@ public class CollectionsScanService {
              (CURRENT_DATE - i.due_date) AS days_overdue
       FROM   invoices i
       JOIN   customers c ON c.id = i.customer_id
-      WHERE  i.status = 'SENT'
+      WHERE  %s
         AND  i.due_date < CURRENT_DATE
         AND  c.collections_exempt = false
       ORDER  BY i.due_date
-      """;
+      """
+          .formatted(CollectionsSql.OUTSTANDING_PREDICATE);
 
   private final EntityManager entityManager;
   private final OrgSettingsRepository orgSettingsRepository;

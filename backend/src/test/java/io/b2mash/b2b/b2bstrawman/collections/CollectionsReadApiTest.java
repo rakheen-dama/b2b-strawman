@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -9,11 +10,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
@@ -24,6 +30,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRep
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -32,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -40,7 +48,9 @@ import org.springframework.test.web.servlet.MockMvc;
  * days overdue, the 4-bucket §4.1 split, the {@code collectionsExempt} flag surfacing, the {@code
  * current} bucket including not-yet-overdue SENT invoices), the per-customer drill-in (outstanding
  * invoices + paged activities), the per-invoice activity ledger exposing {@code status}+{@code
- * reason} verbatim (591A.4), and the invoice-area guard mirror (plain member → 403).
+ * reason} verbatim (591A.4), and the invoice-area guard mirror (plain member → 403). 620.6 adds a
+ * real-write-path case (create → approve → send through the API, in a dedicated tenant) asserting
+ * the debtor-book row and {@code GET /api/invoices/outstanding-summary}, plus its 403 gates.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -50,6 +60,14 @@ import org.springframework.test.web.servlet.MockMvc;
 class CollectionsReadApiTest {
 
   private static final String ORG_ID = "org_collections_read_test";
+
+  /**
+   * Dedicated tenant for the real-write-path case (620.6). The shared seeded book ({@link #ORG_ID})
+   * pins exact debtor counts/order, so a fee note sent through the API must not land there; only
+   * {@link #realPath_feeNoteApprovedAndSentAppearsInDebtorBookAndSummary} writes to this tenant, so
+   * its exact totals are safe (no count-bleed). Country "ZA" → org default currency ZAR.
+   */
+  private static final String RP_ORG_ID = "org_collections_read_realpath";
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -61,6 +79,9 @@ class CollectionsReadApiTest {
   @Autowired private CollectionActivityRepository activityRepository;
   @Autowired private TrustAccountRepository trustAccountRepository;
   @Autowired private ClientLedgerCardRepository clientLedgerCardRepository;
+  @Autowired private MemberRepository memberRepository;
+  @Autowired private ProjectRepository projectRepository;
+  @Autowired private CustomerProjectRepository customerProjectRepository;
 
   private String tenantSchema;
   private UUID ownerMemberId;
@@ -69,6 +90,11 @@ class CollectionsReadApiTest {
   private UUID invA3;
   private UUID custDelta;
   private UUID custEcho;
+
+  private String rpSchema;
+  private UUID rpOwnerId;
+  private UUID rpClientId;
+  private UUID rpMatterId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -131,6 +157,50 @@ class CollectionsReadApiTest {
                   20,
                   "provider_failure"));
         });
+
+    // D8 (620B): a plain member granted +INVOICING (debtor book access) but NOT
+    // FINANCIAL_VISIBILITY — the outstanding summary must still deny it.
+    UUID invoicerId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_read_invoicer",
+                "read_invoicer@test.com",
+                "Invoicer",
+                "member"));
+    runInTenant(
+        () -> {
+          var invoicer = memberRepository.findById(invoicerId).orElseThrow();
+          invoicer.setCapabilityOverrides(Set.of("+INVOICING"));
+          memberRepository.save(invoicer);
+        });
+
+    provisioningService.provisionTenant(RP_ORG_ID, "Collections Real Path Org", null, "ZA");
+    rpOwnerId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, RP_ORG_ID, "user_rp_owner", "rp_owner@test.com", "RP Owner", "owner"));
+    rpSchema = orgSchemaMappingRepository.findByClerkOrgId(RP_ORG_ID).orElseThrow().getSchemaName();
+    ScopedValue.where(RequestScopes.TENANT_ID, rpSchema)
+        .where(RequestScopes.ORG_ID, RP_ORG_ID)
+        .where(RequestScopes.MEMBER_ID, rpOwnerId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              rpClientId =
+                  customerRepository
+                      .save(
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
+                              "Real Path Client", "realpath@test.com", rpOwnerId))
+                      .getId();
+              rpMatterId =
+                  projectRepository
+                      .save(new Project("Real Path Matter", "620.6 real-path debtor", rpOwnerId))
+                      .getId();
+              customerProjectRepository.save(
+                  new CustomerProject(rpClientId, rpMatterId, rpOwnerId));
+            });
   }
 
   private void runInTenant(Runnable body) {
@@ -190,6 +260,53 @@ class CollectionsReadApiTest {
     invoice.approve(invoiceNumber, ownerMemberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
     invoice.markSent();
     return invoiceRepository.save(invoice).getId();
+  }
+
+  /** POST /api/invoices (→ InvoiceCreationService.createDraft) + one manual line on the matter. */
+  private String rpCreateDraftWithLine(LocalDate dueDate) throws Exception {
+    String body =
+        dueDate == null
+            ? "{\"clientId\": \"%s\", \"currency\": \"ZAR\"}".formatted(rpClientId)
+            : "{\"clientId\": \"%s\", \"currency\": \"ZAR\", \"dueDate\": \"%s\"}"
+                .formatted(rpClientId, dueDate);
+    String id =
+        objectMapper
+            .readTree(
+                mockMvc
+                    .perform(
+                        post("/api/invoices")
+                            .with(TestJwtFactory.ownerJwt(RP_ORG_ID, "user_rp_owner"))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(status().isCreated())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString())
+            .get("id")
+            .asText();
+    mockMvc
+        .perform(
+            post("/api/invoices/" + id + "/lines")
+                .with(TestJwtFactory.ownerJwt(RP_ORG_ID, "user_rp_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"matterId": "%s", "description": "Consultation", "quantity": 1.0000,
+                     "unitPrice": 5000.00, "sortOrder": 0}
+                    """
+                        .formatted(rpMatterId)))
+        .andExpect(status().isCreated());
+    return id;
+  }
+
+  private JsonNode rpPost(String path) throws Exception {
+    return objectMapper.readTree(
+        mockMvc
+            .perform(post(path).with(TestJwtFactory.ownerJwt(RP_ORG_ID, "user_rp_owner")))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString());
   }
 
   @Test
@@ -409,6 +526,107 @@ class CollectionsReadApiTest {
             get("/api/collections/activities")
                 .param("invoiceId", invA3.toString())
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_read_member")))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
+  }
+
+  // 620.6 (ADR-347): a fee note created → approved → sent through the REAL write path (no entity
+  // markSent, no hand-set due date) lands in the debtor book and the outstanding summary. Approve
+  // stamps due = issue + 30 (current bucket); a draft-typed past due date is preserved (overdue);
+  // an APPROVED-unsent fee note and a DRAFT stay out of the debtor book.
+  @Test
+  void realPath_feeNoteApprovedAndSentAppearsInDebtorBookAndSummary() throws Exception {
+    String current = rpCreateDraftWithLine(null);
+    rpPost("/api/invoices/" + current + "/approve");
+    JsonNode currentSent = rpPost("/api/invoices/" + current + "/send");
+
+    String overdue = rpCreateDraftWithLine(LocalDate.now().minusDays(10));
+    rpPost("/api/invoices/" + overdue + "/approve");
+    JsonNode overdueSent = rpPost("/api/invoices/" + overdue + "/send");
+
+    JsonNode approvedOnly = rpPost("/api/invoices/" + rpCreateDraftWithLine(null) + "/approve");
+    rpCreateDraftWithLine(null); // DRAFT — excluded everywhere
+
+    assertThat(currentSent.get("status").asText()).isEqualTo("SENT");
+    assertThat(currentSent.hasNonNull("dueDate")).as("approve stamped a due date").isTrue();
+    assertThat(LocalDate.parse(currentSent.get("dueDate").asText())).isAfter(LocalDate.now());
+    BigDecimal currentTotal = currentSent.get("total").decimalValue();
+    BigDecimal overdueTotal = overdueSent.get("total").decimalValue();
+    BigDecimal approvedTotal = approvedOnly.get("total").decimalValue();
+
+    // Debtor book: one row for the client, both SENT fee notes, bucketed by the stamped/typed date.
+    JsonNode debtors =
+        objectMapper.readTree(
+            mockMvc
+                .perform(
+                    get("/api/collections/debtors")
+                        .with(TestJwtFactory.ownerJwt(RP_ORG_ID, "user_rp_owner")))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+    JsonNode row = null;
+    for (JsonNode r : debtors.get("content")) {
+      if (rpClientId.toString().equals(r.get("clientId").asText())) {
+        row = r;
+      }
+    }
+    assertThat(row).as("real-path client in the debtor book").isNotNull();
+    assertThat(row.get("currency").asText()).isEqualTo("ZAR");
+    assertThat(row.get("invoiceCount").asInt()).isEqualTo(2);
+    assertThat(row.get("outstandingTotal").decimalValue())
+        .isEqualByComparingTo(currentTotal.add(overdueTotal));
+    assertThat(row.get("buckets").get("current").decimalValue()).isEqualByComparingTo(currentTotal);
+    assertThat(row.get("buckets").get("d30").decimalValue()).isEqualByComparingTo(overdueTotal);
+
+    // Outstanding summary: same definition, plus approved-unsent reported separately.
+    mockMvc
+        .perform(
+            get("/api/invoices/outstanding-summary")
+                .with(TestJwtFactory.ownerJwt(RP_ORG_ID, "user_rp_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.currency").value("ZAR"))
+        .andExpect(jsonPath("$.outstandingCount").value(2))
+        .andExpect(jsonPath("$.overdueCount").value(1))
+        .andExpect(jsonPath("$.approvedUnsentCount").value(1))
+        .andDo(
+            r -> {
+              JsonNode s = objectMapper.readTree(r.getResponse().getContentAsString());
+              assertThat(s.get("outstandingTotal").decimalValue())
+                  .isEqualByComparingTo(currentTotal.add(overdueTotal));
+              assertThat(s.get("overdueTotal").decimalValue()).isEqualByComparingTo(overdueTotal);
+              assertThat(s.get("approvedUnsentTotal").decimalValue())
+                  .isEqualByComparingTo(approvedTotal);
+            });
+  }
+
+  @Test
+  void outstandingSummary_forbiddenForPlainMember() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/invoices/outstanding-summary")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_read_member")))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
+  }
+
+  @Test
+  void outstandingSummary_forbiddenForInvoicingOnlyMember() throws Exception {
+    // The override grants the debtor book (INVOICING) — proves the member is otherwise authorised…
+    mockMvc
+        .perform(
+            get("/api/collections/debtors")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_read_invoicer")))
+        .andExpect(status().isOk());
+    // …but the summary is gated on FINANCIAL_VISIBILITY (§13.9.3), which the member lacks.
+    mockMvc
+        .perform(
+            get("/api/invoices/outstanding-summary")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_read_invoicer")))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.status").value(403))
         .andExpect(jsonPath("$.title").value("Access denied"))

@@ -224,9 +224,11 @@ class ClientListRowIntegrationTest {
           saveMatter("CLR Matter A2", clientA, false);
           saveMatter("CLR Matter A3 archived", clientA, true);
         });
-    // Legacy pre-V4 row: approved before approve() stamped a due date (ADR-347). The debtor-book
-    // guard (due_date IS NOT NULL) must still exclude it. Runs after the seeding transaction
-    // commits (a separate pooled connection would otherwise block on the uncommitted row).
+    // Legacy pre-V4 row: approved before approve() stamped a due date (ADR-347), shaped here by
+    // nulling the stamped date. The debtor-book guard (CollectionsSql.OUTSTANDING_PREDICATE, 620B)
+    // must still exclude it — this fixture documents the legacy guard. Runs after the seeding
+    // transaction commits (a separate pooled connection would otherwise block on the uncommitted
+    // row).
     jdbcTemplate.update(
         "UPDATE \"%s\".invoices SET due_date = NULL WHERE id = ?::uuid".formatted(schema),
         legacyNoDueDateInvoiceId.toString());

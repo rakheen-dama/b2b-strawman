@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos;
+import io.b2mash.b2b.b2bstrawman.collections.CollectionsReadService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceValidationService.ValidationCheck;
@@ -8,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.AddDisbursementLinesRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.AddLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceResponse;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.OutstandingSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.PaymentEventResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.RecordPaymentRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.SendInvoiceRequest;
@@ -40,11 +42,15 @@ public class InvoiceController {
 
   private final InvoiceService invoiceService;
   private final InvoiceCreationService invoiceCreationService;
+  private final CollectionsReadService collectionsReadService;
 
   public InvoiceController(
-      InvoiceService invoiceService, InvoiceCreationService invoiceCreationService) {
+      InvoiceService invoiceService,
+      InvoiceCreationService invoiceCreationService,
+      CollectionsReadService collectionsReadService) {
     this.invoiceService = invoiceService;
     this.invoiceCreationService = invoiceCreationService;
+    this.collectionsReadService = collectionsReadService;
   }
 
   @PostMapping
@@ -90,6 +96,16 @@ public class InvoiceController {
       @RequestParam LocalDate periodTo,
       @RequestParam String currency) {
     return ResponseEntity.ok(invoiceService.getUnbilledSummary(periodFrom, periodTo, currency));
+  }
+
+  /**
+   * Fee notes page tiles on the debtor-book definition (Phase 88 U3, §13.4.3). Gated like the Home
+   * debtor book audience (§13.9.3).
+   */
+  @GetMapping("/outstanding-summary")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
+  public ResponseEntity<OutstandingSummaryResponse> getOutstandingSummary() {
+    return ResponseEntity.ok(collectionsReadService.outstandingSummary());
   }
 
   @GetMapping

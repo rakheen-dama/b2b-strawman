@@ -1,10 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
@@ -37,7 +40,7 @@ public class ProjectMember {
   public ProjectMember(UUID projectId, UUID memberId, String projectRole, UUID addedBy) {
     this.projectId = projectId;
     this.memberId = memberId;
-    this.projectRole = projectRole;
+    this.projectRole = Roles.normaliseProjectRole(projectRole);
     this.addedBy = addedBy;
     this.createdAt = Instant.now();
   }
@@ -59,7 +62,16 @@ public class ProjectMember {
   }
 
   public void setProjectRole(String projectRole) {
-    this.projectRole = projectRole;
+    this.projectRole = Roles.normaliseProjectRole(projectRole);
+  }
+
+  /**
+   * Last line of defence before flush: a writer that bypassed the setter still stores lead/member.
+   */
+  @PrePersist
+  @PreUpdate
+  void guardRole() {
+    this.projectRole = Roles.normaliseProjectRole(this.projectRole);
   }
 
   public UUID getAddedBy() {

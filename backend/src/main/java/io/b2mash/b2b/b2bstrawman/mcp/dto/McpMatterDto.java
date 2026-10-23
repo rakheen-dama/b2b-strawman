@@ -11,8 +11,9 @@ import java.util.UUID;
  *
  * <p>DRIFT note (vs §11.4): no {@code customerName}/{@code startDate} on {@code Project} — we carry
  * {@code customerId} and use {@code createdAt} for the start-ish timestamp (see {@link
- * McpMatterListItem}). {@code projectRole} is the caller's role on this matter (LEAD/MEMBER/…),
- * supplied by {@code MatterWithRole}.
+ * McpMatterListItem}). {@code projectRole} is the caller's role on this matter ({@code lead} or
+ * {@code member}, per {@code Roles.PROJECT_LEAD}/{@code PROJECT_MEMBER}; {@code null} when an
+ * owner/admin caller is not on the matter), supplied by {@code MatterWithRole}.
  */
 public record McpMatterDto(
     UUID id,

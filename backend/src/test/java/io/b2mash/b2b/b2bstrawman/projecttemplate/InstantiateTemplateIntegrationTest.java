@@ -25,6 +25,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagRepository;
 import io.b2mash.b2b.b2bstrawman.tag.Tag;
 import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
@@ -274,7 +275,7 @@ class InstantiateTemplateIntegrationTest {
           var members = projectMemberRepository.findByProjectId(project.getId());
           assertThat(members).hasSize(1);
           assertThat(members.get(0).getMemberId()).isEqualTo(leadMemberId);
-          assertThat(members.get(0).getProjectRole()).isEqualTo("LEAD");
+          assertThat(members.get(0).getProjectRole()).isEqualTo(Roles.PROJECT_LEAD);
         });
   }
 

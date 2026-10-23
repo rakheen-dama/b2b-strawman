@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.automation.config.AssignTo;
 import io.b2mash.b2b.b2bstrawman.automation.config.CreateTaskActionConfig;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import java.util.Map;
@@ -102,7 +103,8 @@ public class CreateTaskActionExecutor implements ActionExecutor {
     return switch (assignTo) {
       case TRIGGER_ACTOR -> resolveActorId(context);
       case PROJECT_OWNER -> {
-        var leads = projectMemberRepository.findByProjectIdAndProjectRole(projectId, "LEAD");
+        var leads =
+            projectMemberRepository.findByProjectIdAndProjectRole(projectId, Roles.PROJECT_LEAD);
         yield leads.isEmpty() ? null : leads.getFirst().getMemberId();
       }
       case SPECIFIC_MEMBER -> specificMemberId;

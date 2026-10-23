@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -402,10 +403,10 @@ class NotificationServiceIntegrationTest {
               // Add B and C to project
               var pmB =
                   new io.b2mash.b2b.b2bstrawman.member.ProjectMember(
-                      project.getId(), memberIdB, "MEMBER", memberIdA);
+                      project.getId(), memberIdB, Roles.PROJECT_MEMBER, memberIdA);
               var pmC =
                   new io.b2mash.b2b.b2bstrawman.member.ProjectMember(
-                      project.getId(), memberIdC, "MEMBER", memberIdA);
+                      project.getId(), memberIdC, Roles.PROJECT_MEMBER, memberIdA);
               projectMemberRepository.save(pmB);
               projectMemberRepository.save(pmC);
 

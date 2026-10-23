@@ -94,20 +94,21 @@ public class CashDigestService {
   private static final String TOTALS_SQL =
       """
       SELECT
-          COALESCE(SUM(i.total), 0) AS outstanding_total,
-          COALESCE(SUM(i.total) FILTER (WHERE %1$s), 0) AS bucket_current,
-          COALESCE(SUM(i.total) FILTER (WHERE %2$s), 0) AS bucket_d30,
-          COALESCE(SUM(i.total) FILTER (WHERE %3$s), 0) AS bucket_d60,
-          COALESCE(SUM(i.total) FILTER (WHERE %4$s), 0) AS bucket_d90plus
+          COALESCE(SUM(%5$s), 0) AS outstanding_total,
+          COALESCE(SUM(%5$s) FILTER (WHERE %1$s), 0) AS bucket_current,
+          COALESCE(SUM(%5$s) FILTER (WHERE %2$s), 0) AS bucket_d30,
+          COALESCE(SUM(%5$s) FILTER (WHERE %3$s), 0) AS bucket_d60,
+          COALESCE(SUM(%5$s) FILTER (WHERE %4$s), 0) AS bucket_d90plus
       FROM invoices i
-      WHERE i.status = 'SENT'
-        AND i.due_date IS NOT NULL
+      WHERE %6$s
       """
           .formatted(
               AgingBuckets.currentPredicate(AGE_EXPR),
               AgingBuckets.d30Predicate(AGE_EXPR),
               AgingBuckets.d60Predicate(AGE_EXPR),
-              AgingBuckets.d90PlusPredicate(AGE_EXPR));
+              AgingBuckets.d90PlusPredicate(AGE_EXPR),
+              CollectionsSql.OUTSTANDING_AMOUNT,
+              CollectionsSql.OUTSTANDING_PREDICATE);
 
   // billed = issued-and-sent in the trailing window (issue_date, status SENT|PAID); collected =
   // paid in the trailing window (paid_at). paid_at is set by all three payment routes (manual /

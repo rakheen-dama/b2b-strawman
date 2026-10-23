@@ -4,10 +4,15 @@ import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.OutstandingSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.reporting.AgingBuckets;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -30,13 +35,15 @@ import org.springframework.transaction.annotation.Transactional;
  * audit.
  *
  * <p>Tenant isolation is by {@code search_path} (schema-per-tenant); the native queries carry no
- * {@code tenant_id} predicate. The debtor book aggregates outstanding ({@code status = 'SENT'})
- * invoices per {@code (customer, currency)} pair — invoice currency is per-invoice and a customer
- * with mixed-currency invoices surfaces as one row per currency, each carrying a single {@code
- * currency} — using the 4-bucket §4.1 aging split ({@code current} ≤ 0 days, {@code d30} = 1–30,
- * {@code d60} = 31–60, {@code d90plus} = 61+). Unlike the collections SCAN, the debtor book
- * INCLUDES {@code collections_exempt} customers (surfacing the flag) and INCLUDES not-yet-overdue
- * SENT invoices (they land in the {@code current} bucket).
+ * {@code tenant_id} predicate. The debtor book aggregates outstanding invoices (the shared
+ * debtor-book predicate and amount in {@link CollectionsSql}, Phase 88 620B; also read by the
+ * outstanding summary, the client list, the cash digest, the aging report and the dunning scan) per
+ * {@code (customer, currency)} pair — invoice currency is per-invoice and a customer with
+ * mixed-currency invoices surfaces as one row per currency, each carrying a single {@code currency}
+ * — using the 4-bucket §4.1 aging split ({@code current} ≤ 0 days, {@code d30} = 1–30, {@code d60}
+ * = 31–60, {@code d90plus} = 61+). Unlike the collections SCAN, the debtor book INCLUDES {@code
+ * collections_exempt} customers (surfacing the flag) and INCLUDES not-yet-overdue SENT invoices
+ * (they land in the {@code current} bucket).
  *
  * <p>The four-way bucket boundaries are shared with the aging report and cash digest via {@link
  * AgingBuckets} (extracted 593A). {@code signals} is populated by {@link CollectionsTriageService}
@@ -58,14 +65,14 @@ public class CollectionsReadService {
           i.customer_id AS customer_id,
           MAX(c.name) AS customer_name,
           bool_or(c.collections_exempt) AS collections_exempt,
-          SUM(i.total) AS outstanding_total,
+          SUM(%5$s) AS outstanding_total,
           i.currency AS currency,
           COUNT(*) AS invoice_count,
           MAX(CURRENT_DATE - i.due_date) AS oldest_days_overdue,
-          COALESCE(SUM(i.total) FILTER (WHERE %1$s), 0) AS bucket_current,
-          COALESCE(SUM(i.total) FILTER (WHERE %2$s), 0) AS bucket_d30,
-          COALESCE(SUM(i.total) FILTER (WHERE %3$s), 0) AS bucket_d60,
-          COALESCE(SUM(i.total) FILTER (WHERE %4$s), 0) AS bucket_d90plus,
+          COALESCE(SUM(%5$s) FILTER (WHERE %1$s), 0) AS bucket_current,
+          COALESCE(SUM(%5$s) FILTER (WHERE %2$s), 0) AS bucket_d30,
+          COALESCE(SUM(%5$s) FILTER (WHERE %3$s), 0) AS bucket_d60,
+          COALESCE(SUM(%5$s) FILTER (WHERE %4$s), 0) AS bucket_d90plus,
           MAX(la.stage) AS last_stage,
           MAX(la.status) AS last_status,
           MAX(la.at) AS last_at
@@ -78,8 +85,7 @@ public class CollectionsReadService {
           ORDER BY a.created_at DESC, a.id DESC
           LIMIT 1
       ) la ON true
-      WHERE i.status = 'SENT'
-        AND i.due_date IS NOT NULL
+      WHERE %6$s
       GROUP BY i.customer_id, i.currency
       ORDER BY outstanding_total DESC, i.customer_id, i.currency
       LIMIT :limit OFFSET :offset
@@ -88,7 +94,9 @@ public class CollectionsReadService {
               AgingBuckets.currentPredicate(AGE_EXPR),
               AgingBuckets.d30Predicate(AGE_EXPR),
               AgingBuckets.d60Predicate(AGE_EXPR),
-              AgingBuckets.d90PlusPredicate(AGE_EXPR));
+              AgingBuckets.d90PlusPredicate(AGE_EXPR),
+              CollectionsSql.OUTSTANDING_AMOUNT,
+              CollectionsSql.OUTSTANDING_PREDICATE);
 
   /**
    * Counts debtor-book groups (one per {@code (customer_id, currency)} pair) for the {@link Page}
@@ -100,11 +108,11 @@ public class CollectionsReadService {
       SELECT COUNT(*) FROM (
           SELECT 1
           FROM invoices i
-          WHERE i.status = 'SENT'
-            AND i.due_date IS NOT NULL
+          WHERE %s
           GROUP BY i.customer_id, i.currency
       ) grouped
-      """;
+      """
+          .formatted(CollectionsSql.OUTSTANDING_PREDICATE);
 
   private static final String OUTSTANDING_INVOICES_SQL =
       """
@@ -117,28 +125,51 @@ public class CollectionsReadService {
           (CURRENT_DATE - i.due_date) AS days_overdue
       FROM invoices i
       WHERE i.customer_id = CAST(:customerId AS UUID)
-        AND i.status = 'SENT'
-        AND i.due_date IS NOT NULL
+        AND %s
       ORDER BY i.due_date
-      """;
+      """
+          .formatted(CollectionsSql.OUTSTANDING_PREDICATE);
+
+  /**
+   * The Fee notes page summary (Phase 88 U3, §13.4.3): one statement, org default currency only.
+   * Outstanding = the debtor-book definition; overdue = outstanding with {@code due_date <
+   * CURRENT_DATE} (the same DB clock as the debtor book's {@code current} bucket, so overdue equals
+   * the d30 + d60 + d90plus bucket sum); approved-unsent = APPROVED (no payments can exist yet).
+   */
+  private static final String OUTSTANDING_SUMMARY_SQL =
+      """
+      SELECT
+          COALESCE(SUM(%1$s) FILTER (WHERE %2$s), 0) AS outstanding_total,
+          COUNT(*) FILTER (WHERE %2$s) AS outstanding_count,
+          COALESCE(SUM(%1$s) FILTER (WHERE %2$s AND i.due_date < CURRENT_DATE), 0) AS overdue_total,
+          COUNT(*) FILTER (WHERE %2$s AND i.due_date < CURRENT_DATE) AS overdue_count,
+          COALESCE(SUM(i.total) FILTER (WHERE i.status = 'APPROVED'), 0) AS approved_unsent_total,
+          COUNT(*) FILTER (WHERE i.status = 'APPROVED') AS approved_unsent_count
+      FROM invoices i
+      WHERE i.currency = :currency
+      """
+          .formatted(CollectionsSql.OUTSTANDING_AMOUNT, CollectionsSql.OUTSTANDING_PREDICATE);
 
   private final EntityManager entityManager;
   private final CustomerRepository customerRepository;
   private final CollectionActivityRepository activityRepository;
   private final InvoiceRepository invoiceRepository;
   private final CollectionsTriageService triageService;
+  private final OrgSettingsRepository orgSettingsRepository;
 
   public CollectionsReadService(
       EntityManager entityManager,
       CustomerRepository customerRepository,
       CollectionActivityRepository activityRepository,
       InvoiceRepository invoiceRepository,
-      CollectionsTriageService triageService) {
+      CollectionsTriageService triageService,
+      OrgSettingsRepository orgSettingsRepository) {
     this.entityManager = entityManager;
     this.customerRepository = customerRepository;
     this.activityRepository = activityRepository;
     this.invoiceRepository = invoiceRepository;
     this.triageService = triageService;
+    this.orgSettingsRepository = orgSettingsRepository;
   }
 
   /**
@@ -188,6 +219,32 @@ public class CollectionsReadService {
             })
         .map(this::toActivity)
         .toList();
+  }
+
+  /**
+   * Fee notes page tiles (Phase 88 U3, §13.4.3) on the debtor-book definition so the page, Home and
+   * the client list cannot disagree. Org default currency only — fee notes in other currencies are
+   * excluded (the debtor book lists them as separate per-currency rows). No actor scoping,
+   * mirroring {@link #getDebtors}: the capability gate on the endpoint is the whole authorization.
+   */
+  @Transactional(readOnly = true)
+  public OutstandingSummaryResponse outstandingSummary() {
+    String currency =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .map(OrgSettings::getDefaultCurrency)
+            .orElse(OrgSettingsService.DEFAULT_CURRENCY);
+    var query = entityManager.createNativeQuery(OUTSTANDING_SUMMARY_SQL, Tuple.class);
+    query.setParameter("currency", currency);
+    Tuple t = (Tuple) query.getSingleResult();
+    return new OutstandingSummaryResponse(
+        currency,
+        money(t.get("outstanding_total")),
+        toInt(t.get("outstanding_count")),
+        money(t.get("overdue_total")),
+        toInt(t.get("overdue_count")),
+        money(t.get("approved_unsent_total")),
+        toInt(t.get("approved_unsent_count")));
   }
 
   private long countDebtorRows() {
@@ -288,6 +345,10 @@ public class CollectionsReadService {
       return new BigDecimal(n.toString());
     }
     return new BigDecimal(value.toString());
+  }
+
+  private static BigDecimal money(Object value) {
+    return toBigDecimal(value).setScale(2, RoundingMode.HALF_UP);
   }
 
   private static int toInt(Object value) {

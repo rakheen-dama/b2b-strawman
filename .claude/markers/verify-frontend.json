@@ -1,7 +1,7 @@
 {
-  "commit": "26fa65ef2fe1fc13aa5004c8d3b0c6f7b9f78e8b",
-  "command": "pnpm install --frozen-lockfile && cd frontend && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test",
+  "commit": "00d1bd42d4f2c5680da3718f0406144a07da52f2",
+  "command": "pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test",
   "exit": 0,
-  "ts": "2026-10-22T16:35:49+0200",
-  "summary": "PR #1640 (617B) on 26fa65ef2 (orchestrator run in worktree; fix commit ba3063ea4 touches no frontend/ file): lint 0 errors / 92 warnings; format:check clean; build OK; vitest 406 files / 3008 passed / 2 skipped. Only frontend change = e2e/tests/portal/portal-data-isolation.spec.ts (labels + in-file getPortalJwt fix); observed 2 passed vs e2e backend with KGOSI_EMAIL=contact@acme.example.com (as-is: 1 failed / 1 vacuous pass). No legal spec touched → carried legal set unchanged."
+  "ts": "2026-10-23T03:45:13+0200",
+  "summary": "PR #1645 (618C) on 00d1bd42d (orchestrator re-run in worktree, independent of builder's run): lint 0 errors / 92 warnings (= 617B baseline); format:check clean; build OK; vitest 407 files / 3018 passed / 2 skipped (main 406 / 3008 / 2; +1 file matter-closure-actions.test.ts, +10 tests). E2E: legal-depth-ii config on :3001 rebuilt from worktree → 29 passed / 0 failed / 14 skipped (ref 28/0/15; delta = un-fixme'd day-75-85-closure Bob Step 3 test). G-D7 reproduced before fix (Bob override → 'Insufficient permissions' toast, backend 'Access denied ... /closure/close reason=insufficient_role') and observed fixed (Bob → Step 3, Alice still sees toggle, 0 Access denied lines)."
 }

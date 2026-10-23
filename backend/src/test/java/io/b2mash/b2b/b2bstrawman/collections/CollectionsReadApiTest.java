@@ -61,6 +61,14 @@ class CollectionsReadApiTest {
 
   private static final String ORG_ID = "org_collections_read_test";
 
+  /**
+   * Dedicated tenant for the real-write-path case (620.6). The shared seeded book ({@link #ORG_ID})
+   * pins exact debtor counts/order, so a fee note sent through the API must not land there; only
+   * {@link #realPath_feeNoteApprovedAndSentAppearsInDebtorBookAndSummary} writes to this tenant, so
+   * its exact totals are safe (no count-bleed). Country "ZA" → org default currency ZAR.
+   */
+  private static final String RP_ORG_ID = "org_collections_read_realpath";
+
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Autowired private MockMvc mockMvc;
@@ -72,22 +80,8 @@ class CollectionsReadApiTest {
   @Autowired private TrustAccountRepository trustAccountRepository;
   @Autowired private ClientLedgerCardRepository clientLedgerCardRepository;
   @Autowired private MemberRepository memberRepository;
-
-  /**
-   * Dedicated tenant for the real-write-path case (620.6). The shared seeded book above pins exact
-   * debtor counts/order, so a fee note sent through the API must not land there; only {@link
-   * #realPath_feeNoteApprovedAndSentAppearsInDebtorBookAndSummary} writes to this tenant, so its
-   * exact totals are safe (no count-bleed). Country "ZA" → org default currency ZAR.
-   */
-  private static final String RP_ORG_ID = "org_collections_read_realpath";
-
   @Autowired private ProjectRepository projectRepository;
   @Autowired private CustomerProjectRepository customerProjectRepository;
-
-  private String rpSchema;
-  private UUID rpOwnerId;
-  private UUID rpClientId;
-  private UUID rpMatterId;
 
   private String tenantSchema;
   private UUID ownerMemberId;
@@ -96,6 +90,11 @@ class CollectionsReadApiTest {
   private UUID invA3;
   private UUID custDelta;
   private UUID custEcho;
+
+  private String rpSchema;
+  private UUID rpOwnerId;
+  private UUID rpClientId;
+  private UUID rpMatterId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -261,6 +260,53 @@ class CollectionsReadApiTest {
     invoice.approve(invoiceNumber, ownerMemberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
     invoice.markSent();
     return invoiceRepository.save(invoice).getId();
+  }
+
+  /** POST /api/invoices (→ InvoiceCreationService.createDraft) + one manual line on the matter. */
+  private String rpCreateDraftWithLine(LocalDate dueDate) throws Exception {
+    String body =
+        dueDate == null
+            ? "{\"clientId\": \"%s\", \"currency\": \"ZAR\"}".formatted(rpClientId)
+            : "{\"clientId\": \"%s\", \"currency\": \"ZAR\", \"dueDate\": \"%s\"}"
+                .formatted(rpClientId, dueDate);
+    String id =
+        objectMapper
+            .readTree(
+                mockMvc
+                    .perform(
+                        post("/api/invoices")
+                            .with(TestJwtFactory.ownerJwt(RP_ORG_ID, "user_rp_owner"))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(status().isCreated())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString())
+            .get("id")
+            .asText();
+    mockMvc
+        .perform(
+            post("/api/invoices/" + id + "/lines")
+                .with(TestJwtFactory.ownerJwt(RP_ORG_ID, "user_rp_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"matterId": "%s", "description": "Consultation", "quantity": 1.0000,
+                     "unitPrice": 5000.00, "sortOrder": 0}
+                    """
+                        .formatted(rpMatterId)))
+        .andExpect(status().isCreated());
+    return id;
+  }
+
+  private JsonNode rpPost(String path) throws Exception {
+    return objectMapper.readTree(
+        mockMvc
+            .perform(post(path).with(TestJwtFactory.ownerJwt(RP_ORG_ID, "user_rp_owner")))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString());
   }
 
   @Test
@@ -566,53 +612,6 @@ class CollectionsReadApiTest {
         .andExpect(jsonPath("$.status").value(403))
         .andExpect(jsonPath("$.title").value("Access denied"))
         .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
-  }
-
-  /** POST /api/invoices (→ InvoiceCreationService.createDraft) + one manual line on the matter. */
-  private String rpCreateDraftWithLine(LocalDate dueDate) throws Exception {
-    String body =
-        dueDate == null
-            ? "{\"clientId\": \"%s\", \"currency\": \"ZAR\"}".formatted(rpClientId)
-            : "{\"clientId\": \"%s\", \"currency\": \"ZAR\", \"dueDate\": \"%s\"}"
-                .formatted(rpClientId, dueDate);
-    String id =
-        objectMapper
-            .readTree(
-                mockMvc
-                    .perform(
-                        post("/api/invoices")
-                            .with(TestJwtFactory.ownerJwt(RP_ORG_ID, "user_rp_owner"))
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(body))
-                    .andExpect(status().isCreated())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString())
-            .get("id")
-            .asText();
-    mockMvc
-        .perform(
-            post("/api/invoices/" + id + "/lines")
-                .with(TestJwtFactory.ownerJwt(RP_ORG_ID, "user_rp_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"matterId": "%s", "description": "Consultation", "quantity": 1.0000,
-                     "unitPrice": 5000.00, "sortOrder": 0}
-                    """
-                        .formatted(rpMatterId)))
-        .andExpect(status().isCreated());
-    return id;
-  }
-
-  private JsonNode rpPost(String path) throws Exception {
-    return objectMapper.readTree(
-        mockMvc
-            .perform(post(path).with(TestJwtFactory.ownerJwt(RP_ORG_ID, "user_rp_owner")))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse()
-            .getContentAsString());
   }
 
   @Test

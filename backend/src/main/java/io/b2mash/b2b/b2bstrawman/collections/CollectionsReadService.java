@@ -226,6 +226,10 @@ public class CollectionsReadService {
    * the client list cannot disagree. Org default currency only — fee notes in other currencies are
    * excluded (the debtor book lists them as separate per-currency rows). No actor scoping,
    * mirroring {@link #getDebtors}: the capability gate on the endpoint is the whole authorization.
+   * The gates are NOT the same capability, though (decision D8): the debtor-book endpoints ({@code
+   * CollectionsController}, incl. {@code getDebtors}) require {@code INVOICING}, while {@code GET
+   * /api/invoices/outstanding-summary} requires {@code FINANCIAL_VISIBILITY} (§13.9.3) — a custom
+   * role with INVOICING alone sees the debtor book but gets 403 here.
    */
   @Transactional(readOnly = true)
   public OutstandingSummaryResponse outstandingSummary() {

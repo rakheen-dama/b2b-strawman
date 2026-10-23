@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.event.InvoiceSyncEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.TaxContext;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceApprovedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoicePaidEvent;
+import io.b2mash.b2b.b2bstrawman.event.InvoicePartiallyPaidEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoicePaymentPartiallyReversedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoicePaymentReversedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
@@ -27,8 +28,14 @@ import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tax.TaxCalculationService;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -314,130 +321,216 @@ public class InvoiceTransitionService {
     return invoiceRenderingService.buildResponse(invoice);
   }
 
+  /** Statuses that can take a payment (ADR-347). */
+  private static final Set<InvoiceStatus> PAYABLE =
+      Set.of(InvoiceStatus.SENT, InvoiceStatus.PARTIALLY_PAID);
+
+  /** Statuses a payment can be reversed from (ADR-347 rationale 4). */
+  private static final Set<InvoiceStatus> REVERSIBLE =
+      Set.of(InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.PAID);
+
+  /**
+   * The one internal payment entry point (Phase 88 U15, ADR-347, architecture §13.3.8). Posts the
+   * real amount: SENT/PARTIALLY_PAID only; an excess is refused (409) for manual entries and capped
+   * at PAID + {@code invoice.payment_excess} for CARD/XERO/TRUST_TRANSFER sources.
+   */
   @Transactional
-  public InvoiceResponse recordPayment(UUID invoiceId, String paymentReference) {
+  public InvoiceResponse postPayment(UUID invoiceId, PaymentPosting posting) {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+    try {
+      invoice.requireStatus(PAYABLE, "take a payment");
+    } catch (IllegalStateException e) {
+      throw new ResourceConflictException("Invalid status transition", e.getMessage());
+    }
 
-    if (invoice.getStatus() != InvoiceStatus.SENT) {
+    // The excess check precedes every side effect, so a refused payment changes nothing.
+    var balanceBefore = invoice.getBalanceDue();
+    var excess = posting.amount().subtract(balanceBefore);
+    if (excess.signum() > 0 && posting.refusesExcess()) {
       throw new ResourceConflictException(
-          "Invalid status transition", "Only sent invoices can be paid");
+          "Payment exceeds balance due",
+          "Balance due is " + formatMoney(balanceBefore, invoice.getCurrency()));
     }
 
-    if (invoice.getPaymentSessionId() != null) {
-      paymentLinkService.cancelActiveSession(invoice);
+    var effective = posting;
+    if (posting.isManualEntry()) {
+      // Manual-path side effects carried over from the pre-U15 recordPayment(UUID, String).
+      if (invoice.getPaymentSessionId() != null) {
+        paymentLinkService.cancelActiveSession(invoice);
+      }
+      var paymentResult =
+          resolvePaymentGateway()
+              .recordManualPayment(
+                  new PaymentRequest(
+                      invoiceId,
+                      posting.amount(),
+                      invoice.getCurrency(),
+                      "Payment for invoice " + invoice.getInvoiceNumber()));
+      if (!paymentResult.success()) {
+        throw new InvalidStateException("Payment failed", paymentResult.errorMessage());
+      }
+      if (posting.reference() == null) {
+        effective = posting.withReference(paymentResult.paymentReference());
+      }
     }
 
-    var gateway = resolvePaymentGateway();
-    var paymentRequest =
-        new PaymentRequest(
-            invoiceId,
-            invoice.getTotal(),
-            invoice.getCurrency(),
-            "Payment for invoice " + invoice.getInvoiceNumber());
-    var paymentResult = gateway.recordManualPayment(paymentRequest);
+    // The event always records the real amount (an external overpayment included).
+    paymentEventRepository.save(
+        PaymentEvent.completed(
+            invoiceId, invoice.getCurrency(), invoice.getPaymentDestination(), effective));
 
-    if (!paymentResult.success()) {
-      throw new InvalidStateException("Payment failed", paymentResult.errorMessage());
-    }
-
-    String effectiveReference =
-        paymentReference != null ? paymentReference : paymentResult.paymentReference();
-
-    invoice.recordPayment(effectiveReference);
-
+    invoice.applyPayment(effective.amount(), effective.reference());
     invoice = invoiceRepository.save(invoice);
+    boolean paid = invoice.getStatus() == InvoiceStatus.PAID;
 
-    var manualEvent =
-        new PaymentEvent(
-            invoiceId,
-            "manual",
-            null,
-            PaymentEventStatus.COMPLETED,
-            invoice.getTotal(),
-            invoice.getCurrency(),
-            invoice.getPaymentDestination());
-    if (effectiveReference != null) {
-      manualEvent.setPaymentReference(effectiveReference);
-    }
-    paymentEventRepository.save(manualEvent);
-
-    log.info("Recorded payment for invoice {} with reference {}", invoiceId, effectiveReference);
+    log.info(
+        "Posted {} {} payment on invoice {} (balance due {}, status {})",
+        effective.method(),
+        effective.amount(),
+        invoiceId,
+        invoice.getBalanceDue(),
+        invoice.getStatus());
 
     UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
+    UUID projectId = inferProjectIdFromInvoice(invoiceId);
+    String reference = effective.reference() != null ? effective.reference() : "";
+
+    var details = new LinkedHashMap<String, Object>();
+    details.put("invoice_number", invoice.getInvoiceNumber());
+    details.put("payment_reference", reference);
+    details.put("amount", effective.amount().toPlainString());
+    details.put("payment_method", effective.method().name());
+    details.put("balance_due", invoice.getBalanceDue().toPlainString());
+    details.put("total", invoice.getTotal().toString());
+    if (paid) {
+      details.put("paid_at", invoice.getPaidAt().toString());
+    }
+    if (projectId != null) {
+      details.put("project_id", projectId.toString());
+    }
     auditService.log(
         AuditEventBuilder.builder()
-            .eventType("invoice.paid")
+            // ADR-342: storage key, do not rename (invoice.paid pre-existing;
+            // invoice.partially_paid
+            // is the additive Phase 88 key)
+            .eventType(paid ? "invoice.paid" : "invoice.partially_paid")
             .entityType("invoice")
             .entityId(invoice.getId())
-            .details(
-                Map.of(
-                    "invoice_number",
-                    invoice.getInvoiceNumber(),
-                    "payment_reference",
-                    effectiveReference,
-                    "total",
-                    invoice.getTotal().toString(),
-                    "paid_at",
-                    invoice.getPaidAt().toString()))
+            .details(details)
             .build());
+
+    if (excess.signum() > 0) { // only reachable for CARD / XERO / TRUST_TRANSFER sources
+      var excessDetails = new LinkedHashMap<String, Object>();
+      excessDetails.put("invoice_number", invoice.getInvoiceNumber());
+      excessDetails.put("amount", effective.amount().toPlainString());
+      excessDetails.put("excess", excess.toPlainString());
+      excessDetails.put("payment_method", effective.method().name());
+      excessDetails.put("payment_reference", reference);
+      if (projectId != null) {
+        excessDetails.put("project_id", projectId.toString());
+      }
+      auditService.log(
+          AuditEventBuilder.builder()
+              // ADR-342: storage key, do not rename
+              .eventType("invoice.payment_excess")
+              .entityType("invoice")
+              .entityId(invoice.getId())
+              .details(excessDetails)
+              .build());
+    }
 
     String tenantIdForEvent = RequestScopes.getTenantIdOrNull();
     String orgIdForEvent = RequestScopes.getOrgIdOrNull();
-    eventPublisher.publishEvent(
-        new InvoicePaidEvent(
-            "invoice.paid",
-            "invoice",
-            invoice.getId(),
-            null,
-            actorId,
-            resolveActorName(actorId),
-            tenantIdForEvent,
-            orgIdForEvent,
-            Instant.now(),
-            Map.of(
-                "invoice_number",
-                invoice.getInvoiceNumber(),
-                "customer_name",
-                invoice.getCustomerName(),
-                "payment_reference",
-                effectiveReference,
-                "total",
-                invoice.getTotal().toString()),
-            invoice.getCreatedBy(),
-            invoice.getInvoiceNumber(),
-            invoice.getCustomerName(),
-            effectiveReference));
-
-    eventPublisher.publishEvent(
-        new InvoiceSyncEvent(
-            invoice.getId(),
-            invoice.getCustomerId(),
-            invoice.getInvoiceNumber(),
-            "PAID",
-            invoice.getIssueDate(),
-            invoice.getDueDate(),
-            invoice.getSubtotal(),
-            invoice.getTaxAmount(),
-            invoice.getTotal(),
-            invoice.getCurrency(),
-            invoice.getNotes(),
-            invoice.getPaymentUrl(),
-            invoice.getPaymentSessionId(),
-            orgIdForEvent,
-            tenantIdForEvent,
-            null));
+    if (paid) {
+      eventPublisher.publishEvent(
+          new InvoicePaidEvent(
+              "invoice.paid",
+              "invoice",
+              invoice.getId(),
+              null,
+              actorId,
+              resolveActorName(actorId),
+              tenantIdForEvent,
+              orgIdForEvent,
+              Instant.now(),
+              Map.of(
+                  "invoice_number",
+                  invoice.getInvoiceNumber(),
+                  "customer_name",
+                  invoice.getCustomerName(),
+                  "payment_reference",
+                  reference,
+                  "total",
+                  invoice.getTotal().toString()),
+              invoice.getCreatedBy(),
+              invoice.getInvoiceNumber(),
+              invoice.getCustomerName(),
+              effective.reference()));
+    } else {
+      eventPublisher.publishEvent(
+          new InvoicePartiallyPaidEvent(
+              "invoice.partially_paid",
+              "invoice",
+              invoice.getId(),
+              projectId,
+              actorId,
+              resolveActorName(actorId),
+              tenantIdForEvent,
+              orgIdForEvent,
+              Instant.now(),
+              Map.of(
+                  "invoice_number",
+                  invoice.getInvoiceNumber(),
+                  "customer_name",
+                  invoice.getCustomerName(),
+                  "payment_reference",
+                  reference,
+                  "amount",
+                  effective.amount().toPlainString(),
+                  "balance_due",
+                  invoice.getBalanceDue().toPlainString()),
+              invoice.getCreatedBy(),
+              invoice.getInvoiceNumber(),
+              invoice.getCustomerName(),
+              effective.reference(),
+              effective.amount(),
+              invoice.getAmountPaid(),
+              invoice.getBalanceDue()));
+    }
+    publishSync(invoice, orgIdForEvent, tenantIdForEvent);
 
     return invoiceRenderingService.buildResponse(invoice);
   }
 
+  /**
+   * Settles the remaining balance in full through {@link #postPayment} (manual source) — the
+   * automation "mark PAID" action, the legacy reference-only Record Payment body and {@code
+   * InvoiceService.recordPayment(UUID, String)}.
+   */
+  @Transactional
+  public InvoiceResponse settleBalance(UUID invoiceId, PaymentMethod method, String reference) {
+    var invoice =
+        invoiceRepository
+            .findById(invoiceId)
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+    return postPayment(
+        invoiceId, PaymentPosting.manual(invoice.getBalanceDue(), method, reference));
+  }
+
+  /**
+   * INTERIM (until 622C): full settlement for the three external callers — trust fee-transfer
+   * approval, pay-now webhook reconciliation, Xero sync — which save their own PaymentEvent, so
+   * this path saves none (no double count). 622C re-points them to {@link #postPayment} with their
+   * real amounts (N-5) and deletes this overload.
+   */
   @Transactional
   public InvoiceResponse recordPayment(
       UUID invoiceId, String paymentReference, boolean fromWebhook) {
     if (!fromWebhook) {
-      return recordPayment(invoiceId, paymentReference);
+      return settleBalance(invoiceId, PaymentMethod.OTHER, paymentReference);
     }
 
     var invoice =
@@ -449,12 +542,12 @@ public class InvoiceTransitionService {
       return invoiceRenderingService.buildResponse(invoice);
     }
 
-    if (invoice.getStatus() != InvoiceStatus.SENT) {
-      throw new ResourceConflictException(
-          "Invalid status transition", "Only sent invoices can be paid");
+    try {
+      // Settles the remaining balance → PAID, amount_paid = total (SENT or PARTIALLY_PAID).
+      invoice.recordPayment(paymentReference);
+    } catch (IllegalStateException e) {
+      throw new ResourceConflictException("Invalid status transition", e.getMessage());
     }
-
-    invoice.recordPayment(paymentReference);
     invoice = invoiceRepository.save(invoice);
 
     log.info(
@@ -507,12 +600,19 @@ public class InvoiceTransitionService {
             invoice.getCustomerName(),
             paymentReference));
 
+    publishSync(invoice, orgIdForEvent, tenantIdForEvent);
+
+    return invoiceRenderingService.buildResponse(invoice);
+  }
+
+  /** Portal sync with the invoice's current status ({@code amountPaid} on the event is 622C's). */
+  private void publishSync(Invoice invoice, String orgId, String tenantId) {
     eventPublisher.publishEvent(
         new InvoiceSyncEvent(
             invoice.getId(),
             invoice.getCustomerId(),
             invoice.getInvoiceNumber(),
-            "PAID",
+            invoice.getStatus().name(),
             invoice.getIssueDate(),
             invoice.getDueDate(),
             invoice.getSubtotal(),
@@ -522,11 +622,18 @@ public class InvoiceTransitionService {
             invoice.getNotes(),
             invoice.getPaymentUrl(),
             invoice.getPaymentSessionId(),
-            orgIdForEvent,
-            tenantIdForEvent,
+            orgId,
+            tenantId,
             null));
+  }
 
-    return invoiceRenderingService.buildResponse(invoice);
+  /** "R 37 182,00" for ZAR — fixed symbols, stable across JDK locale data. */
+  private static String formatMoney(BigDecimal amount, String currency) {
+    var symbols = new DecimalFormatSymbols(Locale.ENGLISH);
+    symbols.setGroupingSeparator(' ');
+    symbols.setDecimalSeparator(',');
+    var formatted = new DecimalFormat("#,##0.00", symbols).format(amount);
+    return (currency == null || "ZAR".equals(currency) ? "R" : currency) + " " + formatted;
   }
 
   @Transactional
@@ -551,9 +658,9 @@ public class InvoiceTransitionService {
    * ({@code TrustTransactionService.reverseTransaction}) when a FEE_TRANSFER linked to this invoice
    * is reversed.
    *
-   * <p>Inverse of {@link #recordPayment(UUID, String)} for the manual-payment path: deletes the
-   * named payment_event row, then either flips the invoice {@code PAID → SENT} (no other COMPLETED
-   * payments remain) or keeps it {@code PAID} (multi-payment partial reversal).
+   * <p>Inverse of {@link #postPayment}: deletes the named payment_event row, then recomputes {@code
+   * amount_paid = LEAST(total, Σ remaining COMPLETED)} (Phase 88 U15, ADR-347 rationale 4) — SENT
+   * at zero, PAID while still fully covered ({@code paidAt} kept), otherwise PARTIALLY_PAID.
    *
    * <p>Audit-event types: {@code invoice.payment_reversed} (full) or {@code
    * invoice.payment_partially_reversed} (partial). These are referenced by the portal /activity
@@ -563,8 +670,9 @@ public class InvoiceTransitionService {
    * joins the caller's transaction — trust ledger and invoice changes commit atomically or not at
    * all.
    *
-   * @throws InvalidStateException when the invoice is not PAID, the payment event doesn't belong to
-   *     the invoice, or the payment event is not in COMPLETED status (idempotency guard).
+   * @throws InvalidStateException when the invoice is not PAID/PARTIALLY_PAID, the payment event
+   *     doesn't belong to the invoice, or the payment event is not in COMPLETED status (idempotency
+   *     guard).
    * @throws ResourceNotFoundException when the invoice or payment event cannot be found.
    */
   @Transactional
@@ -574,10 +682,10 @@ public class InvoiceTransitionService {
             .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
-    if (invoice.getStatus() != InvoiceStatus.PAID) {
+    if (!REVERSIBLE.contains(invoice.getStatus())) {
       throw new InvalidStateException(
           "Invalid status for payment reversal",
-          "Only paid invoices can have a payment reversed (current status: "
+          "Only paid or partially paid invoices can have a payment reversed (current status: "
               + invoice.getStatus()
               + ")");
     }
@@ -607,6 +715,17 @@ public class InvoiceTransitionService {
 
     var remainingCompleted =
         paymentEventRepository.findByInvoiceIdAndStatus(invoiceId, PaymentEventStatus.COMPLETED);
+    var remainingSum =
+        remainingCompleted.stream()
+            .map(PaymentEvent::getAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    var statusBefore = invoice.getStatus();
+    try {
+      invoice.reapplyPayments(remainingSum); // amount_paid = LEAST(total, Σ remaining)
+    } catch (IllegalStateException e) {
+      throw new ResourceConflictException("Invalid status transition", e.getMessage());
+    }
+    invoice = invoiceRepository.save(invoice);
 
     UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
     String tenantIdForEvent = RequestScopes.getTenantIdOrNull();
@@ -614,17 +733,11 @@ public class InvoiceTransitionService {
     UUID projectId = inferProjectIdFromInvoice(invoiceId);
 
     if (remainingCompleted.isEmpty()) {
-      try {
-        invoice.reversePayment();
-      } catch (IllegalStateException e) {
-        throw new ResourceConflictException("Invalid status transition", e.getMessage());
-      }
-      invoice = invoiceRepository.save(invoice);
-
       log.info(
-          "Reversed payment {} on invoice {} — flipping PAID -> SENT (no other completed payments)",
+          "Reversed payment {} on invoice {} — {} -> SENT (no other completed payments)",
           paymentEventId,
-          invoiceId);
+          invoiceId,
+          statusBefore);
 
       auditService.log(
           AuditEventBuilder.builder()
@@ -661,29 +774,14 @@ public class InvoiceTransitionService {
               paymentEventId,
               amount));
 
-      eventPublisher.publishEvent(
-          new InvoiceSyncEvent(
-              invoice.getId(),
-              invoice.getCustomerId(),
-              invoice.getInvoiceNumber(),
-              "SENT",
-              invoice.getIssueDate(),
-              invoice.getDueDate(),
-              invoice.getSubtotal(),
-              invoice.getTaxAmount(),
-              invoice.getTotal(),
-              invoice.getCurrency(),
-              invoice.getNotes(),
-              invoice.getPaymentUrl(),
-              invoice.getPaymentSessionId(),
-              orgIdForEvent,
-              tenantIdForEvent,
-              null));
+      publishSync(invoice, orgIdForEvent, tenantIdForEvent);
     } else {
       log.info(
-          "Reversed payment {} on invoice {} — invoice stays PAID ({} other completed payments remain)",
+          "Reversed payment {} on invoice {} — {} -> {} ({} other completed payments remain)",
           paymentEventId,
           invoiceId,
+          statusBefore,
+          invoice.getStatus(),
           remainingCompleted.size());
 
       auditService.log(
@@ -722,22 +820,23 @@ public class InvoiceTransitionService {
               invoice.getCustomerId(),
               paymentEventId,
               amount));
+      if (invoice.getStatus() != statusBefore) {
+        publishSync(invoice, orgIdForEvent, tenantIdForEvent);
+      }
     }
   }
 
   private Map<String, Object> buildReversalAuditDetails(
-      Invoice invoice,
-      UUID paymentEventId,
-      UUID projectId,
-      java.math.BigDecimal amount,
-      boolean partial) {
-    var details = new java.util.LinkedHashMap<String, Object>();
+      Invoice invoice, UUID paymentEventId, UUID projectId, BigDecimal amount, boolean partial) {
+    var details = new LinkedHashMap<String, Object>();
     details.put(
         "invoice_number", invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "");
     details.put("customer_id", invoice.getCustomerId().toString());
     details.put("payment_event_id", paymentEventId.toString());
     details.put("amount", amount.toString());
     details.put("partial", String.valueOf(partial));
+    details.put("amount_paid", invoice.getAmountPaid().toPlainString());
+    details.put("balance_due", invoice.getBalanceDue().toPlainString());
     if (projectId != null) {
       details.put("project_id", projectId.toString());
     }

@@ -40,6 +40,7 @@ public class InvoiceRenderingService {
   private final TaxCalculationService taxCalculationService;
   private final TariffItemRepository tariffItemRepository;
   private final EmailTerminology emailTerminology;
+  private final PaymentEventRepository paymentEventRepository;
 
   public InvoiceRenderingService(
       InvoiceRepository invoiceRepository,
@@ -50,7 +51,9 @@ public class InvoiceRenderingService {
       OrgSettingsRepository orgSettingsRepository,
       TaxCalculationService taxCalculationService,
       TariffItemRepository tariffItemRepository,
-      EmailTerminology emailTerminology) {
+      EmailTerminology emailTerminology,
+      PaymentEventRepository paymentEventRepository) {
+    this.paymentEventRepository = paymentEventRepository;
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.projectRepository = projectRepository;
@@ -168,9 +171,24 @@ public class InvoiceRenderingService {
             .map(s -> s.getTax().isTaxInclusive())
             .orElse(false);
 
+    // Phase 88 U15: payments[] lists the COMPLETED events, newest first (a draft has none).
+    List<PaymentEvent> payments =
+        invoice.getStatus() == InvoiceStatus.DRAFT
+            ? List.of()
+            : paymentEventRepository.findByInvoiceIdOrderByCreatedAtDesc(invoice.getId()).stream()
+                .filter(e -> e.getStatus() == PaymentEventStatus.COMPLETED)
+                .toList();
+
     var memberNames = resolveMemberNames(invoice);
     return InvoiceResponse.from(
-        invoice, lineResponses, memberNames, taxBreakdown, taxInclusive, hasPerLineTax, warnings);
+        invoice,
+        lineResponses,
+        memberNames,
+        taxBreakdown,
+        taxInclusive,
+        hasPerLineTax,
+        payments,
+        warnings);
   }
 
   // --- Private helpers ---

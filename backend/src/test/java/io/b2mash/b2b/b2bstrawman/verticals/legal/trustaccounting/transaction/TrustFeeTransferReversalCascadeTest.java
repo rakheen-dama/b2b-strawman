@@ -50,9 +50,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 /**
  * Integration tests for GAP-L-70: cascading FEE_TRANSFER trust transaction reversals back into the
  * invoice domain. Confirms that the trust ledger and the linked invoice always tie out — when a
- * trust reversal succeeds, the invoice either flips PAID -> SENT (single-payment) or stays PAID
- * with one payment_event removed (multi-payment partial reversal). Both writes share the
- * same @Transactional boundary.
+ * trust reversal succeeds, the invoice either flips PAID -> SENT (single-payment) or, with one
+ * payment_event removed (multi-payment partial reversal), recomputes amount_paid from the remaining
+ * COMPLETED events — PARTIALLY_PAID when they no longer cover the total (Phase 88 U15, ADR-347).
+ * Both writes share the same @Transactional boundary.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -270,7 +271,7 @@ class TrustFeeTransferReversalCascadeTest {
   }
 
   @Test
-  void multiPaymentReversal_keepsInvoicePaidAndDeletesOnlyOnePaymentEvent() {
+  void multiPaymentReversal_leavesInvoicePartiallyPaidAndDeletesOnlyOnePaymentEvent() {
     UUID[] invoiceIdHolder = new UUID[1];
     UUID[] feeTransferTxnIdHolder = new UUID[1];
     UUID extraPaymentEventIdHolder[] = new UUID[1];
@@ -353,11 +354,15 @@ class TrustFeeTransferReversalCascadeTest {
                   transactionService.reverseTransaction(
                       feeTransferTxnIdHolder[0], "Trust transfer was wrong amount");
 
-                  // Invoice stays PAID — the prior card payment still satisfies the balance
+                  // ADR-347 (Phase 88 U15): amount_paid is recomputed from the remaining COMPLETED
+                  // events — the prior 500.00 no longer covers the total, so the fee note is
+                  // PARTIALLY_PAID (pre-U15 it stayed PAID regardless of the remaining sum).
                   var invoice = invoiceRepository.findById(invoiceIdHolder[0]).orElseThrow();
                   assertThat(invoice.getStatus())
-                      .as("invoice stays PAID — other payment events remain")
-                      .isEqualTo(InvoiceStatus.PAID);
+                      .as("invoice PARTIALLY_PAID — remaining payments are below the total")
+                      .isEqualTo(InvoiceStatus.PARTIALLY_PAID);
+                  assertThat(invoice.getAmountPaid()).isEqualByComparingTo("500.00");
+                  assertThat(invoice.getPaidAt()).isNull();
 
                   // Only the trust fee_transfer payment_event was deleted; the prior one survives
                   var remaining =

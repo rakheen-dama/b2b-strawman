@@ -49,8 +49,9 @@ export async function closeMatterAction(
     };
   }
   if (req.override) {
-    const canOverride =
-      caps.isOwner || caps.isAdmin || caps.capabilities.includes("OVERRIDE_MATTER_CLOSURE");
+    // OVERRIDE_MATTER_CLOSURE is owner-only (Capability.OWNER_ONLY) — admins do not inherit it
+    // (ADR-355). Literal idiom: this "use server" module cannot import the "use client" mirror.
+    const canOverride = caps.isOwner || caps.capabilities.includes("OVERRIDE_MATTER_CLOSURE");
     if (!canOverride) {
       return {
         success: false,

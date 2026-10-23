@@ -316,15 +316,7 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
   });
 
   // ── 85.5-85.9: Admin (Bob) — override not available, step 3 ───────
-  // FIXME(depth-ii:admin-offered-closure-override) PRODUCT BUG (reproduced): Bob (Admin) is
-  // offered the override. The backend correctly
-  // withholds OVERRIDE_MATTER_CLOSURE from Admin (GET /api/me/capabilities for Bob has no
-  // OVERRIDE_MATTER_CLOSURE), but the frontend `hasCapability` (lib/capabilities.tsx) returns
-  // true for every capability when isAdmin || isOwner, so MatterClosureDialog's `canOverride`
-  // is true: Continue goes to Step 2 with the "Override failing gates" toggle instead of
-  // Step 3 "Cannot close". Submitting the override then fails with 403
-  // "Insufficient permissions for this operation".
-  test.fixme("Bob (Admin): Close Matter on failing-gates matter routes to Step 3 (no override)", async ({
+  test("Bob (Admin): Close Matter on failing-gates matter routes to Step 3 (no override)", async ({
     page,
   }) => {
     await loginAs(page, "bob");

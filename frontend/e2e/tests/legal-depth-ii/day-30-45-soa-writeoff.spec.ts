@@ -92,9 +92,10 @@ async function verifyStatementPreview(dialog: Locator): Promise<RegExp> {
     /^R\s?[1-9][\d\s]*,\d{2}$/, // rate
     /^R\s?[1-9][\d\s]*,\d{2}$/, // amount
   ]);
-  // Disbursements: the Day 5 sheriff fee
+  // Disbursements: the Day 5 sheriff fee (R750) + trust-linked deeds-office fee (R1,250)
+  // (scenario 30.4; 621D S1)
   await expect(preview).toContainText(SHERIFF_FEE_DESCRIPTION);
-  await expect(preview).toContainText(/Total disbursements:\s*R\s?750,00/);
+  await expect(preview).toContainText(/Total disbursements:\s*R\s?2\s?000,00/);
   // Trust activity: Sipho's client trust ledger (client-scoped) with the Day 5 deposit + payment
   const runId = currentDepthIiRun();
   await expect(preview).toContainText("Trust Activity");
@@ -308,14 +309,9 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
   });
 
   // ── 45.5-45.11: Disbursement write-off ─────────────────────────────
-  // FIXME(depth-ii:no-write-off-action) PRODUCT BUG (missing UI, reproduced): there is no
-  // Write Off action anywhere in the UI. The
-  // disbursement detail page (app/(app)/org/[slug]/legal/disbursements/[id]/detail-client.tsx)
-  // renders no actions at all for an APPROVED/UNBILLED disbursement, even for the Owner
-  // (WRITE_OFF_DISBURSEMENTS). The backend endpoint POST /api/legal/disbursements/{id}/write-off
-  // and the client `writeOffDisbursement()` in lib/api/legal-disbursements.ts exist but
-  // nothing calls them.
-  test.fixme("Alice (Thandi): Write off one approved-UNBILLED disbursement", async ({ page }) => {
+  // Regression (was FIXME depth-ii:no-write-off-action, G-C9): the disbursement detail page
+  // offers Write off for an APPROVED/UNBILLED disbursement (621B).
+  test("Alice (Thandi): Write off one approved-UNBILLED disbursement", async ({ page }) => {
     await loginAs(page, "alice");
     const detail = await openSheriffFeeDetail(page);
     await expect(detail.getByText("Unbilled", { exact: true })).toBeVisible();
@@ -335,9 +331,9 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     await captureScreenshot(page, "day-45-disbursement-written-off");
   });
 
-  // FIXME(depth-ii:no-write-off-action) PRODUCT BUG — blocked by the missing write-off
-  // action above (no write-off event can be produced).
-  test.fixme("Alice: Verify write-off audit event present in audit log", async ({ page }) => {
+  // Regression (was FIXME depth-ii:no-write-off-action): the write-off above emits
+  // disbursement.written_off with the reason (621B).
+  test("Alice: Verify write-off audit event present in audit log", async ({ page }) => {
     await loginAs(page, "alice");
     // Phase 87 S9 (ADR-344): /settings/audit-log → /settings/firm?tab=audit-trail
     await page.goto(`${BASE}/settings/firm?tab=audit-trail`);
@@ -357,9 +353,9 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     await captureScreenshot(page, "day-45-audit-log-write-off-event");
   });
 
-  // FIXME(depth-ii:no-write-off-action) PRODUCT BUG — blocked by the missing write-off
-  // action above (nothing is written off to exclude).
-  test.fixme("Alice: Verify written-off disbursement excluded from next invoice draft", async ({
+  // Regression (was FIXME depth-ii:no-write-off-action): the written-off disbursement is not
+  // offered on the next fee-note draft (621B).
+  test("Alice: Verify written-off disbursement excluded from next invoice draft", async ({
     page,
   }) => {
     await loginAs(page, "alice");
@@ -372,7 +368,9 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     await page.waitForURL(/\/clients\/[0-9a-f-]{36}\?tab=invoices/);
 
     await page.getByRole("tabpanel").getByRole("button", { name: "New Fee Note" }).click();
-    const dialog = page.getByRole("dialog", { name: "Generate Fee Note" });
+    // Phase 88 621D (B-7, mirrors 611B / ADR-338 at day-75-85-closure): label amendment — the
+    // title switches to "Select Unbilled Items" after Fetch (invoice-generation-dialog.tsx:67)
+    const dialog = page.getByRole("dialog", { name: /Generate fee note|Select Unbilled Items/ });
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", { name: "Fetch Unbilled Time" }).click();
 

@@ -4,7 +4,7 @@
  * Exercises the disbursement lifecycle on the legal-za profile:
  *   - Bob (Admin) creates a sheriff-fee OFFICE_ACCOUNT disbursement + submits
  *   - Bob creates a deeds-office TRUST_ACCOUNT disbursement linked to an approved
- *     DISBURSEMENT_PAYMENT trust transaction + submits
+ *     PAYMENT trust transaction + submits
  *   - Thandi (Owner, alice fixture) approves the trust-linked one (needs
  *     APPROVE_TRUST_PAYMENT capability)
  *   - Bob approves the office-account one (APPROVE_DISBURSEMENT)
@@ -267,19 +267,9 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
   });
 
   // ── 5.9: Bob creates deeds-office TRUST_ACCOUNT disbursement + trust link ──
-  // FIXME(depth-ii:trust-link-payment-type) PRODUCT BUG (reproduced on the e2e stack):
-  // the trust-link dialog never lists the approved trust payment.
-  // `fetchApprovedTrustDisbursementPayments`
-  // (app/(app)/org/[slug]/legal/disbursements/actions.ts) keeps only rows with
-  // transactionType === "DISBURSEMENT_PAYMENT", but the trust ledger records payments as
-  // "PAYMENT" (chk_trust_txn_type has no DISBURSEMENT_PAYMENT value and
-  // DisbursementService.EXPECTED_TRUST_TRANSACTION_TYPE is "PAYMENT"). The dialog shows
-  // "No approved disbursement-payment trust transactions found for this matter." even
-  // with the approved PAY/DEEDS/<run> payment above, so a TRUST_ACCOUNT disbursement
-  // cannot be created from the UI.
-  test.fixme("Bob: Create deeds-office TRUST_ACCOUNT disbursement with trust link", async ({
-    page,
-  }) => {
+  // Regression (was FIXME depth-ii:trust-link-payment-type, G-B11): the trust-link dialog
+  // must list the approved PAYMENT above (it now queries type=PAYMENT&status=APPROVED; 621C).
+  test("Bob: Create deeds-office TRUST_ACCOUNT disbursement with trust link", async ({ page }) => {
     await loginAs(page, "bob");
     const dialog = await openNewDisbursementDialog(page);
 
@@ -320,10 +310,9 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
   });
 
   // ── 5.10: Approval of the trust-linked disbursement (Thandi/Owner) ─
-  // FIXME(depth-ii:trust-link-payment-type) PRODUCT BUG — blocked by the 5.9 trust-link
-  // bug: the trust-linked disbursement cannot be created, so there is nothing for Thandi
-  // to approve.
-  test.fixme("Alice (Thandi): Approve trust-linked disbursement", async ({ page }) => {
+  // Regression (was FIXME depth-ii:trust-link-payment-type): approves the 5.9 trust-linked
+  // disbursement created above (621C).
+  test("Alice (Thandi): Approve trust-linked disbursement", async ({ page }) => {
     await loginAs(page, "alice");
     const detail = await openDisbursementDetail(page, DEEDS_FEE_DESCRIPTION);
     await expect(detail).toContainText("Trust Account");
@@ -454,12 +443,9 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
   });
 
   // ── 5.12 (part 2): "Unbilled Disbursements: R2,000.00" summary ────
-  // FIXME(depth-ii:matter-unbilled-disbursements-summary) PRODUCT BUG (missing UI,
-  // reproduced): the matter Finance → Disbursements tab (components/legal/
-  // project-disbursements-tab.tsx) renders only the disbursement table —
-  // there is no "Unbilled Disbursements" summary on the matter at all. The R2,000.00
-  // figure also needs the trust-linked deeds-office disbursement (blocked, see 5.9).
-  test.fixme("Alice: Verify Unbilled Disbursements summary on Sipho's matter", async ({ page }) => {
+  // Regression (was FIXME depth-ii:matter-unbilled-disbursements-summary, G-B12): the matter
+  // Disbursements tab shows the unbilled summary — sheriff R750 + deeds-office R1,250 (621C).
+  test("Alice: Verify Unbilled Disbursements summary on Sipho's matter", async ({ page }) => {
     await loginAs(page, "alice");
     await openMatter(page, siphoMatterName());
     await openGroupedTab(page, "finance", "disbursements");

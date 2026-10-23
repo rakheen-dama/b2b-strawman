@@ -156,8 +156,20 @@ public class TrustTransactionService {
 
   // --- Service Methods ---
 
+  /**
+   * Lists a trust account's transactions, newest first. All filters are optional; with none set the
+   * result equals the historical unfiltered list. {@code matterId} narrows to the matter's
+   * transactions ({@code trust_transactions.project_id}); {@code excludeLinked} hides transactions
+   * already linked to a legal disbursement (Phase 88 Epic 621A — trust-link picker).
+   */
   @Transactional(readOnly = true)
-  public Page<TrustTransactionResponse> listTransactions(UUID trustAccountId, Pageable pageable) {
+  public Page<TrustTransactionResponse> listTransactions(
+      UUID trustAccountId,
+      UUID matterId,
+      String transactionType,
+      String status,
+      boolean excludeLinked,
+      Pageable pageable) {
     moduleGuard.requireModule(MODULE_ID);
 
     trustAccountRepository
@@ -165,7 +177,7 @@ public class TrustTransactionService {
         .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
 
     return transactionRepository
-        .findByTrustAccountIdOrderByTransactionDateDesc(trustAccountId, pageable)
+        .findFiltered(trustAccountId, matterId, transactionType, status, excludeLinked, pageable)
         .map(this::toResponse);
   }
 

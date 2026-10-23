@@ -1,5 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -74,14 +78,15 @@ class TrustTransactionControllerTest {
         "Txn Ctrl Member",
         "member");
 
-    // Enable trust_accounting module
+    // Enable trust_accounting module (+ disbursements: the excludeLinked test links a payment via
+    // the real POST /api/legal/disbursements — Phase 88 Epic 621A)
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .run(
             () ->
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var settings = orgSettingsService.getOrCreateForCurrentTenant();
-                      settings.setEnabledModules(List.of("trust_accounting"));
+                      settings.setEnabledModules(List.of("trust_accounting", "disbursements"));
                       orgSettingsRepository.save(settings);
                     }));
 
@@ -519,6 +524,168 @@ class TrustTransactionControllerTest {
         .andExpect(jsonPath("$.transactionType").value("REVERSAL"))
         .andExpect(jsonPath("$.reversalOf").value(paymentId))
         .andExpect(jsonPath("$.id").isNotEmpty());
+  }
+
+  // --- Phase 88 Epic 621A: list filters honoured (matterId / type / status / excludeLinked) ---
+
+  @Test
+  void getTransactions_withMatterTypeStatusFilters_returnsOnlyMatchingRows() throws Exception {
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_txn_ctrl_owner");
+    var clientId =
+        TestEntityHelper.createCustomer(
+            mockMvc, ownerJwt, "Trust Filter Client", "trust_filter_client@test.com");
+    var matterA = TestEntityHelper.createProject(mockMvc, ownerJwt, "Trust Filter Matter A");
+    var matterB = TestEntityHelper.createProject(mockMvc, ownerJwt, "Trust Filter Matter B");
+
+    var depositA = recordDeposit(clientId, matterA, "5000.00", "DEP-FILTER-A");
+    var approvedA = recordPayment(clientId, matterA, "1000.00", "PAY-FILTER-A1");
+    approve(approvedA);
+    var pendingA = recordPayment(clientId, matterA, "500.00", "PAY-FILTER-A2"); // AWAITING_APPROVAL
+    var approvedB = recordPayment(clientId, matterB, "250.00", "PAY-FILTER-B1");
+    approve(approvedB);
+
+    // matterId + type + status → only the approved PAYMENT on matter A.
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId + "/transactions")
+                .param("matterId", matterA)
+                .param("type", "PAYMENT")
+                .param("status", "APPROVED")
+                .with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content", hasSize(1)))
+        .andExpect(jsonPath("$.content[0].id").value(approvedA))
+        .andExpect(jsonPath("$.page.totalElements").value(1));
+
+    // matterId alone → all three matter-A rows, nothing from matter B.
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId + "/transactions")
+                .param("matterId", matterA)
+                .param("size", "50")
+                .with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content", hasSize(3)))
+        .andExpect(jsonPath("$.content[*].id", containsInAnyOrder(depositA, approvedA, pendingA)));
+
+    // type alone (account-wide, shared state) → every row is a PAYMENT.
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId + "/transactions")
+                .param("type", "PAYMENT")
+                .param("size", "200")
+                .with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[*].transactionType", everyItem(is("PAYMENT"))));
+  }
+
+  @Test
+  void getTransactions_excludeLinked_hidesPaymentAlreadyLinkedToDisbursement() throws Exception {
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_txn_ctrl_owner");
+    var clientId =
+        TestEntityHelper.createCustomer(
+            mockMvc, ownerJwt, "Trust Link Client", "trust_link_client@test.com");
+    var matter = TestEntityHelper.createProject(mockMvc, ownerJwt, "Trust Link Matter");
+
+    recordDeposit(clientId, matter, "5000.00", "DEP-LINK-1");
+    var linked = recordPayment(clientId, matter, "1250.00", "PAY-LINK-DEEDS");
+    approve(linked);
+    var free = recordPayment(clientId, matter, "750.00", "PAY-LINK-FREE");
+    approve(free);
+
+    // Link `linked` to a trust-funded disbursement through the real endpoint.
+    mockMvc
+        .perform(
+            post("/api/legal/disbursements")
+                .with(ownerJwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "matterId": "%s",
+                      "clientId": "%s",
+                      "category": "DEEDS_OFFICE_FEES",
+                      "description": "Deeds office lodgement",
+                      "amount": 1250.00,
+                      "paymentSource": "TRUST_ACCOUNT",
+                      "trustTransactionId": "%s",
+                      "incurredDate": "2026-03-03",
+                      "supplierName": "Deeds Office"
+                    }
+                    """
+                        .formatted(matter, clientId, linked)))
+        .andExpect(status().isCreated());
+
+    // excludeLinked=true → only the unused payment.
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId + "/transactions")
+                .param("matterId", matter)
+                .param("type", "PAYMENT")
+                .param("status", "APPROVED")
+                .param("excludeLinked", "true")
+                .with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content", hasSize(1)))
+        .andExpect(jsonPath("$.content[0].id").value(free));
+
+    // Default (excludeLinked omitted) is unchanged → both payments.
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId + "/transactions")
+                .param("matterId", matter)
+                .param("type", "PAYMENT")
+                .param("status", "APPROVED")
+                .with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content", hasSize(2)))
+        .andExpect(jsonPath("$.content[*].id", containsInAnyOrder(linked, free)));
+  }
+
+  private String recordDeposit(String clientId, String matterId, String amount, String reference)
+      throws Exception {
+    return recordTxn("deposit", clientId, matterId, amount, reference, "2026-03-01");
+  }
+
+  private String recordPayment(String clientId, String matterId, String amount, String reference)
+      throws Exception {
+    return recordTxn("payment", clientId, matterId, amount, reference, "2026-03-02");
+  }
+
+  private String recordTxn(
+      String kind, String clientId, String matterId, String amount, String reference, String date)
+      throws Exception {
+    // Recorded by the admin so the owner can approve (a recorder cannot be the sole approver).
+    var result =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts/" + trustAccountId + "/transactions/" + kind)
+                    .with(TestJwtFactory.adminJwt(ORG_ID, "user_txn_ctrl_admin"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "clientId": "%s",
+                          "matterId": "%s",
+                          "amount": %s,
+                          "reference": "%s",
+                          "description": "621A filter test",
+                          "transactionDate": "%s"
+                        }
+                        """
+                            .formatted(clientId, matterId, amount, reference, date)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+  }
+
+  private void approve(String transactionId) throws Exception {
+    mockMvc
+        .perform(
+            post("/api/trust-transactions/" + transactionId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_txn_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("APPROVED"));
   }
 
   // --- 442.5: Controller authorization tests ---

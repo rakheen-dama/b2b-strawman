@@ -185,6 +185,15 @@ public class AuditEventTypeRegistry {
                 "collections.policy.updated",
                 "Collections Policy Updated",
                 AuditSeverity.NOTICE,
+                AuditEventGroup.STANDARD),
+            // DISBURSEMENTS — Phase 88 (Epic 621A, U14). Additive stored key (ADR-342: storage
+            // key, do not rename; registry pin 29 → 30 per Phase 88 OQ #10). Classified exactly
+            // as the unregistered disbursement.* siblings resolve (INFO/STANDARD) — only the
+            // label is explicit.
+            new AuditEventTypeMetadata(
+                "disbursement.restored",
+                "Disbursement restored",
+                AuditSeverity.INFO,
                 AuditEventGroup.STANDARD));
     var map = new HashMap<String, AuditEventTypeMetadata>();
     for (var entry : entries) {

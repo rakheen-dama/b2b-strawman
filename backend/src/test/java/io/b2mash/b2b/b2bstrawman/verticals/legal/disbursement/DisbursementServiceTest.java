@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -21,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.CreateDisbursementRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.UnbilledDisbursementDto;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.UpdateDisbursementRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.event.DisbursementApprovedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.event.DisbursementBilledEvent;
@@ -41,6 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
@@ -80,6 +83,7 @@ class DisbursementServiceTest {
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private InvoiceLineRepository invoiceLineRepository;
   @Autowired private ApplicationEvents events;
+  @Autowired private AuditEventRepository auditEventRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -315,6 +319,97 @@ class DisbursementServiceTest {
 
           assertThatThrownBy(() -> disbursementService.writeOff(created.id(), "too late"))
               .isInstanceOf(ResourceConflictException.class);
+        });
+  }
+
+  // ==========================================================================
+  // Restore (undo write-off) — Phase 88 Epic 621A
+  // ==========================================================================
+
+  @Test
+  void restore_WRITTEN_OFF_returnsToUnbilled_clearsReason_andAudits() {
+    runInTenant(
+        () -> {
+          var created =
+              disbursementService.create(officeRequest(DisbursementCategory.OTHER, null), memberId);
+          disbursementService.writeOff(created.id(), "client insolvent");
+
+          var restored = disbursementService.restore(created.id());
+
+          assertThat(restored.billingStatus()).isEqualTo(DisbursementBillingStatus.UNBILLED);
+          assertThat(restored.writeOffReason()).isNull();
+          var persisted = disbursementRepository.findById(created.id()).orElseThrow();
+          assertThat(persisted.getBillingStatus()).isEqualTo("UNBILLED");
+          assertThat(persisted.getWriteOffReason()).isNull();
+
+          var audit =
+              auditEventRepository.findByFilter(
+                  "legal_disbursement",
+                  created.id(),
+                  null,
+                  "disbursement.restored",
+                  null,
+                  null,
+                  Pageable.ofSize(10));
+          assertThat(audit.getContent()).hasSize(1);
+          assertThat(audit.getContent().getFirst().getEventType())
+              .isEqualTo("disbursement.restored");
+          assertThat(audit.getContent().getFirst().getDetails())
+              .containsEntry("project_id", projectId.toString());
+        });
+  }
+
+  @Test
+  void restore_UNBILLED_throwsConflict() {
+    runInTenant(
+        () -> {
+          var created =
+              disbursementService.create(officeRequest(DisbursementCategory.OTHER, null), memberId);
+          assertThatThrownBy(() -> disbursementService.restore(created.id()))
+              .isInstanceOf(ResourceConflictException.class);
+        });
+  }
+
+  @Test
+  void restore_BILLED_throwsConflict() {
+    final UUID[] lineIdHolder = new UUID[1];
+    runInTenant(
+        () -> transactionTemplate.executeWithoutResult(tx -> lineIdHolder[0] = seedInvoiceLine()));
+
+    runInTenant(
+        () -> {
+          var created =
+              disbursementService.create(officeRequest(DisbursementCategory.OTHER, null), memberId);
+          disbursementService.submitForApproval(created.id());
+          disbursementService.approve(created.id(), memberId, null);
+          disbursementService.markBilled(created.id(), lineIdHolder[0]);
+
+          assertThatThrownBy(() -> disbursementService.restore(created.id()))
+              .isInstanceOf(ResourceConflictException.class);
+        });
+  }
+
+  @Test
+  void restore_approvedRow_reappearsInUnbilledList() {
+    // The business point of Undo: a restored APPROVED disbursement is billable again (the next
+    // fee-note draft / unbilled strip picks it up). Containment by id — the shared tenant
+    // accumulates rows across methods (count-bleed rule).
+    runInTenant(
+        () -> {
+          var created =
+              disbursementService.create(officeRequest(DisbursementCategory.OTHER, null), memberId);
+          disbursementService.submitForApproval(created.id());
+          disbursementService.approve(created.id(), memberId, null);
+          disbursementService.writeOff(created.id(), "uncollectable");
+          assertThat(disbursementService.listUnbilledForProject(projectId))
+              .extracting(UnbilledDisbursementDto::id)
+              .doesNotContain(created.id());
+
+          disbursementService.restore(created.id());
+
+          assertThat(disbursementService.listUnbilledForProject(projectId))
+              .extracting(UnbilledDisbursementDto::id)
+              .contains(created.id());
         });
   }
 

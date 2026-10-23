@@ -1,7 +1,7 @@
 {
-  "commit": "ce2349b665336e1101cd0d347699ebd5672812c6",
+  "commit": "b52f4727b52fc09dabd5d38e5470e389fd903c93",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-23T05:28:00Z",
-  "summary": "Epic 619C PR #1648 head ce2349b66 (orchestrator run in worktree-epic-619C): 5507 testcases / 0 failures / 0 errors / 26 skipped across 701 surefire reports (= 5493 after 619B + 14 new: ProjectMemberIntegrationTest + InstantiateTemplateIntegrationTest gate/auto-add cases). Covers 619.9 BE-VERIFY for 619A+619B+619C. Log /tmp/mvn-619C-final.log."
+  "ts": "2026-10-23T14:01:00Z",
+  "summary": "Slice 620A PR #1652 head b52f4727b (orchestrator run in worktree-epic-620A): 5526 testcases / 0 failures / 0 errors / 26 skipped across 702 surefire reports (= 5507 after 619C + 19 new: V4InvoiceDueDateBackfillTest, InvoiceLifecycleIntegrationTest due-date cases, OrgSettingsIntegrationTest terms cases, seeder pin). Log /tmp/mvn-620A-final.log."
 }

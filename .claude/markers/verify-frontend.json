@@ -1,7 +1,7 @@
 {
-  "commit": "6b9b2f6011608dcfe34414dd77989ed4bd451f60",
+  "commit": "7233ffae7c8928d71f2bf8390eb6d5727e20376e",
   "command": "pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-23T15:45:42Z",
-  "summary": "Slice 620C FE-GATE on phase88/03C-fee-notes-tiles-terms-field head 3c07aa0f4: lint 0 errors / 92 warnings (= baseline); format:check clean; vitest 411 files / 3059 passed / 2 skipped (+3 files, +34 tests vs 408/3025/2); next build OK; CI Frontend pass. Observed 620.9 on e2e :3001 rebuilt from the branch: Fee notes Total outstanding R 3 450,00 = Home Debtors = Collections (was R 4 950,00 vs R 3 450,00); Fee runs terms 30 -> 14 saved, INV-0003 approved due = issue + 14; INVOICING-only role degrades (tiles hidden, no summary request). Targeted legal PW day-90-review 13/1/4 (profitability locator failure, unrelated), day-30 fee-notes nav 1/0. Merged as a326e6b10 (PR #1656)."
+  "ts": "2026-10-23T20:05:00Z",
+  "summary": "Slice 621B FE-GATE on phase88/04B-write-off-restore-ui head 7233ffae7: lint 0 errors / 92 warnings (= baseline); format:check clean; vitest 414 files / 3092 passed / 2 skipped (+3 files, +30 tests vs 411/3062/2); next build OK; CI Frontend pass. Observed 621.5 on e2e :3001 rebuilt from the branch: write-off (reason required) -> Written off badge + reason row + disbursement.written_off audit; next fee-note draft excludes it; Undo -> UNBILLED + disbursement.restored; firm list + matter tab round trips; member gated. depth-ii day-05/day-30-45/day-75-85 22/0/9 on head 7233ffae7 (functional, --update-snapshots=all; baselines uncommitted). Merged as df5e79dcf (PR #1658)."
 }

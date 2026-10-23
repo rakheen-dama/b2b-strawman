@@ -11,9 +11,11 @@ import {
   listDisbursements as listDisbursementsApi,
   listUnbilled as listUnbilledApi,
   rejectDisbursement as rejectDisbursementApi,
+  restoreDisbursement as restoreDisbursementApi,
   submitForApproval as submitForApprovalApi,
   updateDisbursement as updateDisbursementApi,
   uploadReceipt as uploadReceiptApi,
+  writeOffDisbursement as writeOffDisbursementApi,
   type CreateDisbursementRequest,
   type DisbursementResponse,
   type ListDisbursementsParams,
@@ -29,6 +31,14 @@ function hasApproveDisbursementCapability(caps: {
   capabilities: string[];
 }): boolean {
   return caps.isAdmin || caps.isOwner || caps.capabilities.includes("APPROVE_DISBURSEMENTS");
+}
+
+function hasWriteOffDisbursementCapability(caps: {
+  isAdmin: boolean;
+  isOwner: boolean;
+  capabilities: string[];
+}): boolean {
+  return caps.isAdmin || caps.isOwner || caps.capabilities.includes("WRITE_OFF_DISBURSEMENTS");
 }
 
 function hasManageDisbursementCapability(caps: {
@@ -205,6 +215,58 @@ export async function rejectDisbursementAction(
     return { success: true, data: result };
   } catch (error) {
     const message = error instanceof ApiError ? error.message : "Failed to reject disbursement";
+    return { success: false, error: message };
+  }
+}
+
+export async function writeOffDisbursementAction(
+  slug: string,
+  id: string,
+  reason: string
+): Promise<ActionResult<DisbursementResponse>> {
+  const caps = await fetchMyCapabilities();
+  if (!hasWriteOffDisbursementCapability(caps)) {
+    return { success: false, error: "You do not have permission to write off disbursements." };
+  }
+
+  const trimmedReason = reason?.trim() ?? "";
+  if (!trimmedReason) {
+    return { success: false, error: "A write-off reason is required" };
+  }
+
+  try {
+    const result = await writeOffDisbursementApi(id, { reason: trimmedReason });
+    revalidatePath(`/org/${slug}/legal/disbursements`);
+    revalidatePath(`/org/${slug}/legal/disbursements/${id}`);
+    if (result?.matterId) {
+      revalidatePath(`/org/${slug}/matters/${result.matterId}`);
+    }
+    return { success: true, data: result };
+  } catch (error) {
+    const message = error instanceof ApiError ? error.message : "Failed to write off disbursement";
+    return { success: false, error: message };
+  }
+}
+
+export async function restoreDisbursementAction(
+  slug: string,
+  id: string
+): Promise<ActionResult<DisbursementResponse>> {
+  const caps = await fetchMyCapabilities();
+  if (!hasWriteOffDisbursementCapability(caps)) {
+    return { success: false, error: "You do not have permission to undo a write-off." };
+  }
+
+  try {
+    const result = await restoreDisbursementApi(id);
+    revalidatePath(`/org/${slug}/legal/disbursements`);
+    revalidatePath(`/org/${slug}/legal/disbursements/${id}`);
+    if (result?.matterId) {
+      revalidatePath(`/org/${slug}/matters/${result.matterId}`);
+    }
+    return { success: true, data: result };
+  } catch (error) {
+    const message = error instanceof ApiError ? error.message : "Failed to undo write-off";
     return { success: false, error: message };
   }
 }

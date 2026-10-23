@@ -25,6 +25,10 @@ interface DisbursementListViewProps {
   onSelect?: (disbursement: DisbursementResponse) => void;
   onEdit?: (disbursement: DisbursementResponse) => void;
   onUploadReceipt?: (disbursement: DisbursementResponse) => void;
+  /** Offered on UNBILLED rows (any approval state — A14). Pass only with WRITE_OFF_DISBURSEMENTS. */
+  onWriteOff?: (disbursement: DisbursementResponse) => void;
+  /** "Undo write-off" on WRITTEN_OFF rows. Pass only with WRITE_OFF_DISBURSEMENTS. */
+  onRestore?: (disbursement: DisbursementResponse) => void;
 }
 
 type SortField = "incurredDate" | "supplierName" | "amount" | "approvalStatus";
@@ -75,6 +79,8 @@ export function DisbursementListView({
   onSelect,
   onEdit,
   onUploadReceipt,
+  onWriteOff,
+  onRestore,
 }: DisbursementListViewProps) {
   const [sortField, setSortField] = useState<SortField>("incurredDate");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -176,7 +182,11 @@ export function DisbursementListView({
           {sorted.map((d) => {
             const inclVat = d.amount + d.vatAmount;
             const editable = canEditStatus(d.approvalStatus);
-            const hasActions = !!onEdit || !!onUploadReceipt;
+            const edit = editable ? onEdit : undefined;
+            const uploadReceipt = editable ? onUploadReceipt : undefined;
+            const writeOff = d.billingStatus === "UNBILLED" ? onWriteOff : undefined;
+            const restore = d.billingStatus === "WRITTEN_OFF" ? onRestore : undefined;
+            const hasActions = !!edit || !!uploadReceipt || !!writeOff || !!restore;
 
             return (
               <tr
@@ -209,7 +219,7 @@ export function DisbursementListView({
                 <td className="px-4 py-3">{approvalStatusBadge(d.approvalStatus)}</td>
                 <td className="px-4 py-3">{billingStatusBadge(d.billingStatus)}</td>
                 <td className="px-4 py-3 text-right">
-                  {hasActions && editable && (
+                  {hasActions && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
@@ -217,30 +227,53 @@ export function DisbursementListView({
                           size="sm"
                           className="size-8 p-0"
                           onClick={(e) => e.stopPropagation()}
+                          data-testid={`disbursement-actions-${d.id}`}
                         >
                           <MoreHorizontal className="size-4" />
                           <span className="sr-only">Actions</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {onEdit && (
+                        {edit && (
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation();
-                              onEdit(d);
+                              edit(d);
                             }}
                           >
                             Edit
                           </DropdownMenuItem>
                         )}
-                        {onUploadReceipt && (
+                        {uploadReceipt && (
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation();
-                              onUploadReceipt(d);
+                              uploadReceipt(d);
                             }}
                           >
                             Upload receipt
+                          </DropdownMenuItem>
+                        )}
+                        {writeOff && (
+                          <DropdownMenuItem
+                            data-testid={`disbursement-write-off-item-${d.id}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              writeOff(d);
+                            }}
+                          >
+                            Write off
+                          </DropdownMenuItem>
+                        )}
+                        {restore && (
+                          <DropdownMenuItem
+                            data-testid={`disbursement-restore-item-${d.id}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              restore(d);
+                            }}
+                          >
+                            Undo write-off
                           </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>

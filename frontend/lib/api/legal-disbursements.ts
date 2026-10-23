@@ -189,6 +189,10 @@ export async function writeOffDisbursement(
   return api.post<DisbursementResponse>(`/api/legal/disbursements/${id}/write-off`, data);
 }
 
+export async function restoreDisbursement(id: string): Promise<DisbursementResponse> {
+  return api.post<DisbursementResponse>(`/api/legal/disbursements/${id}/restore`);
+}
+
 export async function listUnbilled(params: {
   matterId: string;
 }): Promise<UnbilledDisbursementsResponse> {

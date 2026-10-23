@@ -24,18 +24,27 @@ export default async function DisbursementDetailPage({
   }
 
   // Capability lookup is a best-effort secondary check — the backend enforces
-  // APPROVE_DISBURSEMENTS authoritatively. Default to canApprove=false on
-  // failure so we hide the approve/reject UI rather than crashing the page.
+  // APPROVE_DISBURSEMENTS / WRITE_OFF_DISBURSEMENTS authoritatively. Default to
+  // false on failure so we hide the approve/reject and write-off/undo UI rather
+  // than crashing the page.
   let canApprove = false;
+  let canWriteOff = false;
   try {
     const caps = await fetchMyCapabilities();
     canApprove =
       caps.isAdmin || caps.isOwner || caps.capabilities.includes("APPROVE_DISBURSEMENTS");
+    canWriteOff =
+      caps.isAdmin || caps.isOwner || caps.capabilities.includes("WRITE_OFF_DISBURSEMENTS");
   } catch (error) {
     console.error("Failed to fetch capabilities on disbursement detail:", error);
   }
 
   return (
-    <DisbursementDetailClient slug={slug} disbursement={disbursement} canApprove={canApprove} />
+    <DisbursementDetailClient
+      slug={slug}
+      disbursement={disbursement}
+      canApprove={canApprove}
+      canWriteOff={canWriteOff}
+    />
   );
 }

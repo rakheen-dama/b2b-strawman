@@ -102,4 +102,86 @@ describe("DisbursementListView", () => {
     // Actions dropdown trigger should not be rendered for APPROVED status
     expect(screen.queryByRole("button", { name: /Actions/i })).not.toBeInTheDocument();
   });
+
+  it("offers Write off on an UNBILLED row (any approval state) without selecting the row", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    const onWriteOff = vi.fn();
+    const approved = makeDisbursement({ id: "d-wo", approvalStatus: "APPROVED" });
+
+    render(
+      <DisbursementListView
+        disbursements={[approved]}
+        onSelect={onSelect}
+        onWriteOff={onWriteOff}
+        onRestore={vi.fn()}
+      />
+    );
+
+    await user.click(screen.getByTestId("disbursement-actions-d-wo"));
+    expect(screen.queryByRole("menuitem", { name: "Undo write-off" })).not.toBeInTheDocument();
+    await user.click(screen.getByTestId("disbursement-write-off-item-d-wo"));
+
+    expect(onWriteOff).toHaveBeenCalledWith(approved);
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it("offers Undo write-off on a WRITTEN_OFF row", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    const onRestore = vi.fn();
+    const writtenOff = makeDisbursement({
+      id: "d-ro",
+      approvalStatus: "APPROVED",
+      billingStatus: "WRITTEN_OFF",
+      writeOffReason: "Absorbed",
+    });
+
+    render(
+      <DisbursementListView
+        disbursements={[writtenOff]}
+        onSelect={onSelect}
+        onWriteOff={vi.fn()}
+        onRestore={onRestore}
+      />
+    );
+
+    await user.click(screen.getByTestId("disbursement-actions-d-ro"));
+    expect(screen.queryByRole("menuitem", { name: "Write off" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("menuitem", { name: "Undo write-off" }));
+
+    expect(onRestore).toHaveBeenCalledWith(writtenOff);
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it("shows no write-off actions on a BILLED row", () => {
+    const billed = makeDisbursement({
+      id: "d-billed",
+      approvalStatus: "APPROVED",
+      billingStatus: "BILLED",
+    });
+
+    render(
+      <DisbursementListView disbursements={[billed]} onWriteOff={vi.fn()} onRestore={vi.fn()} />
+    );
+
+    expect(screen.queryByTestId("disbursement-actions-d-billed")).not.toBeInTheDocument();
+  });
+
+  it("never renders a test id prefixed disbursement-row- other than the row itself", () => {
+    const row = makeDisbursement({ id: "d-pref" });
+    const { container } = render(
+      <DisbursementListView
+        disbursements={[row]}
+        onEdit={vi.fn()}
+        onWriteOff={vi.fn()}
+        onRestore={vi.fn()}
+      />
+    );
+
+    const prefixed = Array.from(container.querySelectorAll('[data-testid^="disbursement-row-"]'));
+    expect(prefixed.map((el) => el.getAttribute("data-testid"))).toEqual([
+      "disbursement-row-d-pref",
+    ]);
+  });
 });

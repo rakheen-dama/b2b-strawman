@@ -259,3 +259,10 @@ export const rejectionNotesSchema = z.object({
 });
 
 export type RejectionNotesFormData = z.infer<typeof rejectionNotesSchema>;
+
+// Max mirrors backend WriteOffRequest (@NotBlank, @Size(max = 5000)).
+export const writeOffDisbursementSchema = z.object({
+  reason: z.string().trim().min(1, "Reason is required").max(5000),
+});
+
+export type WriteOffDisbursementFormData = z.infer<typeof writeOffDisbursementSchema>;

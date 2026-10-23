@@ -71,6 +71,8 @@ import {
   fetchApprovedTrustDisbursementPayments,
   fetchDisbursements,
   fetchUnbilledDisbursementsAction,
+  restoreDisbursementAction,
+  writeOffDisbursementAction,
 } from "@/app/(app)/org/[slug]/legal/disbursements/actions";
 import {
   recordDeposit,
@@ -315,6 +317,28 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
     });
     await fetchUnbilledDisbursementsAction(M);
     expect(mockGet).toHaveBeenCalledWith(`/api/legal/disbursements/unbilled?matterId=${M}`);
+  });
+
+  it("writeOffDisbursementAction POSTs /write-off with the trimmed reason", async () => {
+    mockPost.mockResolvedValue({ id: "d1", matterId: M, billingStatus: "WRITTEN_OFF" });
+    const result = await writeOffDisbursementAction("acme", "d1", "  Client dispute  ");
+    const [path, body] = lastPost();
+    expect(path).toBe("/api/legal/disbursements/d1/write-off");
+    expect(body).toEqual({ reason: "Client dispute" });
+    expect(result.success).toBe(true);
+  });
+
+  it("writeOffDisbursementAction rejects a blank reason without calling the API", async () => {
+    const result = await writeOffDisbursementAction("acme", "d1", "   ");
+    expect(mockPost).not.toHaveBeenCalled();
+    expect(result).toEqual({ success: false, error: "A write-off reason is required" });
+  });
+
+  it("restoreDisbursementAction POSTs /restore", async () => {
+    mockPost.mockResolvedValue({ id: "d1", matterId: M, billingStatus: "UNBILLED" });
+    const result = await restoreDisbursementAction("acme", "d1");
+    expect(mockPost).toHaveBeenCalledWith("/api/legal/disbursements/d1/restore");
+    expect(result.success).toBe(true);
   });
 
   it("placeInvestment sends clientId (never customerId) and a decimal rate", async () => {

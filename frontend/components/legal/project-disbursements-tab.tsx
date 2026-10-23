@@ -3,11 +3,17 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import useSWR from "swr";
+import { toast } from "sonner";
 import { ModuleGate } from "@/components/module-gate";
 import { CreateDisbursementDialog } from "@/components/legal/create-disbursement-dialog";
 import { EditDisbursementDialog } from "@/components/legal/edit-disbursement-dialog";
 import { DisbursementListView } from "@/components/legal/disbursement-list-view";
-import { fetchDisbursements } from "@/app/(app)/org/[slug]/legal/disbursements/actions";
+import { DisbursementWriteOffFormDialog } from "@/components/legal/disbursement-write-off-dialog";
+import {
+  fetchDisbursements,
+  restoreDisbursementAction,
+} from "@/app/(app)/org/[slug]/legal/disbursements/actions";
+import { useCapabilities } from "@/lib/capabilities";
 import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
 
 interface ProjectDisbursementsTabProps {
@@ -25,6 +31,10 @@ export function ProjectDisbursementsTab({
 }: ProjectDisbursementsTabProps) {
   const router = useRouter();
   const [editTarget, setEditTarget] = useState<DisbursementResponse | null>(null);
+  const [writeOffTarget, setWriteOffTarget] = useState<DisbursementResponse | null>(null);
+  // Write-off / undo need WRITE_OFF_DISBURSEMENTS (backend @RequiresCapability) — not canManage.
+  const { hasCapability } = useCapabilities();
+  const canWriteOff = hasCapability("WRITE_OFF_DISBURSEMENTS");
 
   const { data, isLoading, mutate } = useSWR(
     `project-disbursements-${projectId}`,
@@ -35,6 +45,16 @@ export function ProjectDisbursementsTab({
   const disbursements = data?.content ?? [];
   const totalElements = data?.page.totalElements ?? disbursements.length;
   const hasMore = totalElements > disbursements.length;
+
+  async function handleRestore(d: DisbursementResponse) {
+    const result = await restoreDisbursementAction(slug, d.id);
+    if (result.success) {
+      toast.success("Write-off undone");
+      mutate();
+    } else {
+      toast.error(result.error ?? "Failed to undo write-off");
+    }
+  }
 
   return (
     <ModuleGate module="disbursements">
@@ -71,6 +91,8 @@ export function ProjectDisbursementsTab({
             disbursements={disbursements}
             onSelect={(d) => router.push(`/org/${slug}/legal/disbursements/${d.id}`)}
             onEdit={setEditTarget}
+            onWriteOff={canWriteOff ? setWriteOffTarget : undefined}
+            onRestore={canWriteOff ? handleRestore : undefined}
           />
         )}
 
@@ -82,6 +104,19 @@ export function ProjectDisbursementsTab({
             onOpenChange={(open) => !open && setEditTarget(null)}
             onSuccess={() => {
               setEditTarget(null);
+              mutate();
+            }}
+          />
+        )}
+
+        {writeOffTarget && (
+          <DisbursementWriteOffFormDialog
+            slug={slug}
+            disbursement={writeOffTarget}
+            open={!!writeOffTarget}
+            onOpenChange={(open) => !open && setWriteOffTarget(null)}
+            onWrittenOff={() => {
+              setWriteOffTarget(null);
               mutate();
             }}
           />

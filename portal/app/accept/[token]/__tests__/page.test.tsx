@@ -240,6 +240,9 @@ describe("AcceptancePage", () => {
     // Form and PDF should not be visible
     expect(screen.queryByLabelText("Full name")).not.toBeInTheDocument();
     expect(screen.queryByTitle("Document PDF")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Open in new tab" }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows error and stays on form when submission fails", async () => {
@@ -285,5 +288,39 @@ describe("AcceptancePage", () => {
       "src",
       "https://example.com/logo.png",
     );
+  });
+
+  it("renders an Open in new tab link to the same PDF URL as the iframe", async () => {
+    mockGetAcceptancePageData.mockResolvedValue(mockPendingPageData);
+
+    render(<AcceptancePage token="test-token" />);
+
+    const link = await screen.findByRole("link", { name: "Open in new tab" });
+    expect(link).toHaveAttribute(
+      "href",
+      "http://localhost:8080/api/portal/acceptance/test-token/pdf",
+    );
+    expect(link).toHaveAttribute(
+      "href",
+      screen.getByTitle("Document PDF").getAttribute("src"),
+    );
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    expect(mockGetAcceptancePdfUrl).toHaveBeenCalledWith("test-token");
+  });
+
+  it("keeps the Open in new tab link after the document is accepted", async () => {
+    mockGetAcceptancePageData.mockResolvedValue(mockAcceptedPageData);
+
+    render(<AcceptancePage token="test-token" />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Jane Doe accepted this document/),
+      ).toBeInTheDocument();
+    });
+    expect(
+      screen.getByRole("link", { name: "Open in new tab" }),
+    ).toBeInTheDocument();
   });
 });

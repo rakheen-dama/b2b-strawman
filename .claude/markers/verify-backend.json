@@ -1,7 +1,7 @@
 {
-  "commit": "b52f4727b52fc09dabd5d38e5470e389fd903c93",
+  "commit": "b4d747701814edaf699c3d4cecd5f23e3d347c77",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-23T14:01:00Z",
-  "summary": "Slice 620A PR #1652 head b52f4727b (orchestrator run in worktree-epic-620A): 5526 testcases / 0 failures / 0 errors / 26 skipped across 702 surefire reports (= 5507 after 619C + 19 new: V4InvoiceDueDateBackfillTest, InvoiceLifecycleIntegrationTest due-date cases, OrgSettingsIntegrationTest terms cases, seeder pin). Log /tmp/mvn-620A-final.log."
+  "ts": "2026-10-23T15:20:00Z",
+  "summary": "Slice 620B PR #1653 head b4d747701 (orchestrator run in worktree-epic-620B): 5534 testcases / 0 failures / 0 errors / 26 skipped across 703 reports (= 5526 after 620A + 8 new: CollectionsSqlSourceScanTest 5, CollectionsReadApiTest real-path + 2x 403). Backend CI pass (19m35s). Log /tmp/mvn-620B-final.log."
 }

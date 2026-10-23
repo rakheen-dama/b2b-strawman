@@ -5,17 +5,29 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface InformationRequestRepository extends JpaRepository<InformationRequest, UUID> {
 
   List<InformationRequest> findByCustomerId(UUID customerId);
 
   /**
-   * Batch read for FICA status projection (Phase 87, Epic 614A): every request against the given
-   * templates whose status is not the given one (callers pass {@code CANCELLED}).
+   * FICA status batch (ADR-348): the given clients' requests on any template of pack {@code
+   * packId}, excluding status {@code excluded} (callers pass {@code CANCELLED}). The pack lookup is
+   * a subquery so the batch costs one statement here (Clients list cap, Epic 615B).
    */
-  List<InformationRequest> findByRequestTemplateIdInAndStatusNot(
-      Collection<UUID> requestTemplateIds, RequestStatus status);
+  @Query(
+      """
+      SELECT r FROM InformationRequest r
+      WHERE r.customerId IN :customerIds
+        AND r.status <> :excluded
+        AND r.requestTemplateId IN (SELECT t.id FROM RequestTemplate t WHERE t.packId = :packId)
+      """)
+  List<InformationRequest> findFicaRequestsForClients(
+      @Param("customerIds") Collection<UUID> customerIds,
+      @Param("packId") String packId,
+      @Param("excluded") RequestStatus excluded);
 
   List<InformationRequest> findByProjectId(UUID projectId);
 

@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.informationrequest;
 
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstance;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Comparator;
@@ -9,16 +10,24 @@ import java.util.UUID;
 import java.util.function.Function;
 
 /**
- * The FICA onboarding status rule (GAP-L-46), extracted from {@code
- * InformationRequestService#getFicaStatus} so the single-client read, the dashboard batch (Phase
- * 87, Epic 614A) and the client list share ONE rule. Pure — no Spring, no repositories.
+ * The FICA onboarding status rule (GAP-L-46; checklist-first since Phase 88, ADR-348), shared by
+ * the single-client read, the dashboard batch and the client list. Pure — no Spring, no
+ * repositories.
  *
- * <p>Rule: consider the client's requests whose template is one of the FICA templates, ignoring
- * {@code CANCELLED}, newest first (by {@code createdAt}, then id for determinism). None → {@code
- * NOT_STARTED}. Otherwise the newest {@code COMPLETED} request wins: {@code DONE} (with its {@code
- * completedAt}) when it has at least one item and every item is {@code ACCEPTED}, else {@code
- * IN_PROGRESS} with that request's id. No {@code COMPLETED} request → {@code IN_PROGRESS} with the
- * newest live request's id.
+ * <p>Rule, in order:
+ *
+ * <ol>
+ *   <li><b>Onboarding checklist instances</b> (templates with {@code auto_instantiate = true}; the
+ *       caller passes only those), ignoring {@code CANCELLED}: any {@code IN_PROGRESS} → {@code
+ *       IN_PROGRESS} with the newest open instance's id (an open obligation outranks a past
+ *       completion, A2); otherwise the newest {@code COMPLETED} → {@code DONE} with its {@code
+ *       completedAt} and id. The checklist branch outranks the information-request branch entirely.
+ *   <li>Otherwise the <b>information-request rule</b>, unchanged: the client's requests on a FICA
+ *       template, ignoring {@code CANCELLED}, newest first (by {@code createdAt}, then id). None →
+ *       {@code NOT_STARTED}. The newest {@code COMPLETED} request wins: {@code DONE} when it has at
+ *       least one item and every item is {@code ACCEPTED}, else {@code IN_PROGRESS}. No {@code
+ *       COMPLETED} request → {@code IN_PROGRESS} with the newest live request's id.
+ * </ol>
  */
 public final class FicaStatusProjector {
 
@@ -26,24 +35,63 @@ public final class FicaStatusProjector {
   public static final String IN_PROGRESS = "IN_PROGRESS";
   public static final String DONE = "DONE";
 
+  // ChecklistInstance.status is a String column (IN_PROGRESS / COMPLETED / CANCELLED).
+  private static final String INSTANCE_IN_PROGRESS = "IN_PROGRESS";
+  private static final String INSTANCE_COMPLETED = "COMPLETED";
+  private static final String INSTANCE_CANCELLED = "CANCELLED";
+
+  /** Newest first by {@code createdAt}, then id for determinism (mirrors the request rule). */
+  private static final Comparator<ChecklistInstance> NEWEST_INSTANCE_FIRST =
+      Comparator.comparing(ChecklistInstance::getCreatedAt)
+          .reversed()
+          .thenComparing(ChecklistInstance::getId);
+
   private FicaStatusProjector() {}
 
   /**
-   * Projected FICA status. {@code completedAt} is set only for {@code DONE}; {@code requestId} is
-   * null only for {@code NOT_STARTED}.
+   * Projected FICA status. {@code completedAt} is set only for {@code DONE}. Exactly one of {@code
+   * requestId} / {@code checklistInstanceId} is set, except for {@code NOT_STARTED} (both null):
+   * {@code checklistInstanceId} when the checklist branch decided, {@code requestId} when the
+   * information-request branch did.
    */
-  public record Projection(String status, Instant completedAt, UUID requestId) {}
+  public record Projection(
+      String status, Instant completedAt, UUID requestId, UUID checklistInstanceId) {}
 
-  private static final Projection NOT_STARTED_PROJECTION = new Projection(NOT_STARTED, null, null);
+  private static final Projection NOT_STARTED_PROJECTION =
+      new Projection(NOT_STARTED, null, null, null);
 
   /**
    * Projects one client's FICA status.
    *
-   * @param ficaTemplateIds every template id whose pack is the FICA onboarding pack (active or not)
+   * @param onboardingInstances the client's checklist instances whose template is an onboarding
+   *     template ({@code auto_instantiate = true}) — any status, filtered here
+   * @param ficaTemplateIds FICA request-template ids (the fallback rule's filter)
    * @param clientRequests the client's information requests (any template/status — filtered here)
    * @param itemsForRequest item lookup; invoked at most once, for the chosen COMPLETED request
    */
   public static Projection project(
+      Collection<ChecklistInstance> onboardingInstances,
+      Set<UUID> ficaTemplateIds,
+      Collection<InformationRequest> clientRequests,
+      Function<UUID, List<RequestItem>> itemsForRequest) {
+    var live =
+        onboardingInstances.stream()
+            .filter(i -> !INSTANCE_CANCELLED.equals(i.getStatus()))
+            .sorted(NEWEST_INSTANCE_FIRST)
+            .toList();
+    var open = live.stream().filter(i -> INSTANCE_IN_PROGRESS.equals(i.getStatus())).findFirst();
+    if (open.isPresent()) {
+      return new Projection(IN_PROGRESS, null, null, open.get().getId());
+    }
+    var done = live.stream().filter(i -> INSTANCE_COMPLETED.equals(i.getStatus())).findFirst();
+    if (done.isPresent()) {
+      return new Projection(DONE, done.get().getCompletedAt(), null, done.get().getId());
+    }
+    return projectFromInformationRequests(ficaTemplateIds, clientRequests, itemsForRequest);
+  }
+
+  /** The GAP-L-46 information-request rule — unchanged, now the fallback. */
+  private static Projection projectFromInformationRequests(
       Set<UUID> ficaTemplateIds,
       Collection<InformationRequest> clientRequests,
       Function<UUID, List<RequestItem>> itemsForRequest) {
@@ -77,11 +125,11 @@ public final class FicaStatusProjector {
       // COMPLETED in lifecycle but not every item ACCEPTED — IN_PROGRESS so the UI prompts review
       // rather than a green check.
       return allAccepted
-          ? new Projection(DONE, r.getCompletedAt(), r.getId())
-          : new Projection(IN_PROGRESS, null, r.getId());
+          ? new Projection(DONE, r.getCompletedAt(), r.getId(), null)
+          : new Projection(IN_PROGRESS, null, r.getId(), null);
     }
 
     // No completed FICA request — the most-recent non-terminal one.
-    return new Projection(IN_PROGRESS, null, fica.getFirst().getId());
+    return new Projection(IN_PROGRESS, null, fica.getFirst().getId(), null);
   }
 }

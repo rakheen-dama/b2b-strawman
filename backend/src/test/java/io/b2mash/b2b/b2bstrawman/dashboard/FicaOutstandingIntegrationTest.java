@@ -15,6 +15,8 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
@@ -40,6 +42,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  *   <li>ONBOARDING, no FICA request, clock started 10 days ago → NOT_STARTED, listed first
  *   <li>ACTIVE with a DRAFT FICA request → IN_PROGRESS
  *   <li>ACTIVE with a COMPLETED, all-accepted FICA request → DONE, excluded
+ *   <li>Onboarded through the real path (firm onboarding template → Start Onboarding → items
+ *       completed via the API; ONBOARDING or auto-ACTIVE) with no FICA request → DONE via the
+ *       completed onboarding checklist (ADR-348), excluded but counted
  *   <li>PROSPECT and OFFBOARDED clients without FICA → out of scope, excluded
  *   <li>Archived client re-activated via the lifecycle API (status ARCHIVED, lifecycle ACTIVE, no
  *       FICA) → excluded and not counted
@@ -72,6 +77,7 @@ class FicaOutstandingIntegrationTest {
   private String prospectId;
   private String offboardedId;
   private String archivedId;
+  private String checklistDoneId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -103,6 +109,18 @@ class FicaOutstandingIntegrationTest {
     String doneRequestId =
         createFicaRequest(doneId, createPortalContact(doneId, "dfo-done@test.com"));
     completeWithAllItemsAccepted(doneRequestId);
+
+    // Checklist-onboarded client (ADR-348): real path, no FICA request.
+    var owner = TestJwtFactory.ownerJwt(ORG_ID, OWNER);
+    TestChecklistHelper.createOnboardingTemplate(mockMvc, owner, "DFO Onboarding");
+    checklistDoneId =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            owner,
+            "Golf Checklist Onboarded",
+            "dfo-golf-" + UUID.randomUUID() + "@test.com");
+    TestChecklistHelper.startOnboarding(mockMvc, checklistDoneId, owner);
+    TestChecklistHelper.completeChecklistItems(mockMvc, checklistDoneId, owner);
   }
 
   @Test
@@ -114,7 +132,8 @@ class FicaOutstandingIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.limit").value(10))
             .andExpect(jsonPath("$.outstandingCount").value(2))
-            .andExpect(jsonPath("$.totalActiveClients").value(3))
+            // Not-started, in-progress, request-DONE and checklist-DONE clients.
+            .andExpect(jsonPath("$.totalActiveClients").value(4))
             .andExpect(jsonPath("$.clients", hasSize(2)))
             // Longest outstanding first.
             .andExpect(jsonPath("$.clients[0].clientId").value(notStartedId))
@@ -134,7 +153,8 @@ class FicaOutstandingIntegrationTest {
             .getContentAsString();
 
     List<String> listed = JsonPath.read(body, "$.clients[*].clientId");
-    assertThat(listed).doesNotContain(doneId, prospectId, offboardedId, archivedId);
+    assertThat(listed)
+        .doesNotContain(doneId, checklistDoneId, prospectId, offboardedId, archivedId);
   }
 
   @Test
@@ -154,8 +174,8 @@ class FicaOutstandingIntegrationTest {
                     .param("limit", "50")
                     .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
             .andExpect(status().isOk())
-            // Only the three non-archived ONBOARDING/ACTIVE clients count.
-            .andExpect(jsonPath("$.totalActiveClients").value(3))
+            // Only the four non-archived ONBOARDING/ACTIVE clients count (incl. checklist-DONE).
+            .andExpect(jsonPath("$.totalActiveClients").value(4))
             .andExpect(jsonPath("$.outstandingCount").value(2))
             .andReturn()
             .getResponse()
@@ -191,6 +211,15 @@ class FicaOutstandingIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("DONE"));
+    // And the excluded checklist-onboarded client is DONE from its onboarding checklist.
+    mockMvc
+        .perform(
+            get("/api/clients/{id}/fica-status", checklistDoneId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("DONE"))
+        .andExpect(jsonPath("$.checklistInstanceId").isNotEmpty())
+        .andExpect(jsonPath("$.requestId").doesNotExist());
   }
 
   @Test

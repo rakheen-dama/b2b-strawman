@@ -157,9 +157,10 @@ public class CustomerService {
    * the tag batch.
    *
    * <p>Statement budget on the default path (no view): base 1 + org settings 1 + trust 0–1 +
-   * completeness field definitions 1 + FICA 1–3 + client aggregates 1 + tags 1–2 = at most 10,
-   * independent of page size (pinned by {@code ClientListRowIntegrationTest}). A saved view adds 1
-   * (the view lookup; the view query replaces the base query).
+   * completeness field definitions 1 + FICA 2–3 (onboarding checklist instances 1 + FICA requests 1
+   * + items of COMPLETED requests 0–1) + client aggregates 1 + tags 1–2 = at most 10, independent
+   * of page size (pinned by {@code ClientListRowIntegrationTest}). A saved view adds 1 (the view
+   * lookup; the view query replaces the base query).
    *
    * <p>Redaction: {@code outstandingFeeNoteTotal} needs FINANCIAL_VISIBILITY (owner/admin always —
    * the 614A home rule); {@code trustBalance} needs VIEW_TRUST and the trust_accounting module.

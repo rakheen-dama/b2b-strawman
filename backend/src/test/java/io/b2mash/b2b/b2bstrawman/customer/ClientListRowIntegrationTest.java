@@ -29,6 +29,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
 import io.b2mash.b2b.b2bstrawman.testutil.TenantTestSupport;
+import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
@@ -80,6 +81,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  *   <li><b>D</b> (DORMANT, the only DORMANT client): both fixture-defined required CUSTOMER fields
  *       filled (100%; the others score below 100), FICA DONE, a tag and a ledger card — the 1-row
  *       page of the statement-count test.
+ *   <li><b>E</b> (ONBOARDING/ACTIVE via Start Onboarding): FICA DONE through a completed onboarding
+ *       checklist — no FICA request (ADR-348, the real service path).
  *   <li>50 bulk ACTIVE clients (reach the 50-client page).
  * </ul>
  */
@@ -128,6 +131,7 @@ class ClientListRowIntegrationTest {
   private UUID clientB;
   private UUID clientC;
   private UUID clientD;
+  private UUID clientE;
   private UUID bulkClient;
   private int invoiceSeq;
 
@@ -160,6 +164,17 @@ class ClientListRowIntegrationTest {
     createFicaRequest(clientB, createPortalContact(clientB, "clr-b@test.com"));
     completeWithAllItemsAccepted(
         createFicaRequest(clientD, createPortalContact(clientD, "clr-d@test.com")));
+
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, OWNER);
+    // E: FICA DONE through the real onboarding path (ADR-348). The template is created after
+    // seedEntities so the bulk clients (direct entities, never transitioned) get no instance.
+    TestChecklistHelper.createOnboardingTemplate(mockMvc, ownerJwt, "CLR Onboarding");
+    String e =
+        TestEntityHelper.createCustomer(
+            mockMvc, ownerJwt, "CLR Echo Checklist Client", "clr_e@test.com");
+    TestChecklistHelper.startOnboarding(mockMvc, e, ownerJwt);
+    TestChecklistHelper.completeChecklistItems(mockMvc, e, ownerJwt);
+    clientE = UUID.fromString(e);
   }
 
   private void seedEntities() {
@@ -340,12 +355,21 @@ class ClientListRowIntegrationTest {
   @Test
   void ficaStatusDoneAndOutstandingSplitTheClients() throws Exception {
     assertThat(ids(list(owner(), "?ficaStatus=DONE")))
-        .contains(clientA.toString(), clientD.toString())
+        .contains(clientA.toString(), clientD.toString(), clientE.toString())
         .doesNotContain(clientB.toString(), clientC.toString(), bulkClient.toString());
     // case-insensitive; OUTSTANDING = NOT_STARTED or IN_PROGRESS
     assertThat(ids(list(owner(), "?ficaStatus=outstanding")))
         .contains(clientB.toString(), clientC.toString(), bulkClient.toString())
-        .doesNotContain(clientA.toString(), clientD.toString());
+        .doesNotContain(clientA.toString(), clientD.toString(), clientE.toString());
+  }
+
+  @Test
+  void checklistDrivenClientRowIsDone() throws Exception {
+    var row = row(list(owner(), ""), clientE);
+    assertThat(row).containsEntry("ficaStatus", "DONE");
+    assertThat(row.get("ficaLastVerifiedAt"))
+        .as("completed onboarding checklist's completed_at")
+        .isNotNull();
   }
 
   @Test
@@ -458,6 +482,9 @@ class ClientListRowIntegrationTest {
     assertThat(a.ficaStatus()).isEqualTo("DONE");
     assertThat(a.outstandingFeeNoteTotal()).isEqualByComparingTo("1500.00");
     assertThat(a.openMatterCount()).isEqualTo(2);
+    // ...and the checklist branch of the FICA rule (E: DONE from its onboarding checklist)
+    var e = page.rows().stream().filter(r -> r.id().equals(clientE)).findFirst().orElseThrow();
+    assertThat(e.ficaStatus()).isEqualTo("DONE");
     assertThat(page.statements())
         .as("GET /api/clients statement cap (Epic 615B, D7)")
         .isLessThanOrEqualTo(STATEMENT_CAP);

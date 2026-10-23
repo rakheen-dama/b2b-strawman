@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.informationrequest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -10,6 +11,8 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
@@ -33,6 +36,10 @@ import org.springframework.test.web.servlet.MockMvc;
  * (FICA request exists but not all items accepted), {@code DONE} (every item ACCEPTED). Uses direct
  * JDBC to mark items ACCEPTED and to back-fill the {@code pack_id} column, since the public
  * template API does not expose pack identifiers (they come from pack JSON seeding).
+ *
+ * <p>Checklist-first (Phase 88, ADR-348): clients onboarded through the real path (firm onboarding
+ * template → Start Onboarding → items completed via the API) read DONE / IN_PROGRESS from their
+ * onboarding checklist instance, which outranks any FICA information request.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -60,6 +67,10 @@ class CustomerFicaStatusIntegrationTest {
     // Verify tenant schema resolved correctly (used implicitly by helpers).
     orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow();
     ficaTemplateId = createFicaTemplate();
+    // Auto-instantiated on Start Onboarding. The three information-request cases below create
+    // PROSPECT clients that never transition, so they get no instance and are unaffected.
+    TestChecklistHelper.createOnboardingTemplate(
+        mockMvc, TestJwtFactory.ownerJwt(ORG_ID, "user_fica_owner"), "FICA Status Onboarding");
   }
 
   @Test
@@ -133,6 +144,82 @@ class CustomerFicaStatusIntegrationTest {
         .andExpect(jsonPath("$.status").value("DONE"))
         .andExpect(jsonPath("$.lastVerifiedAt").isNotEmpty())
         .andExpect(jsonPath("$.requestId").value(requestId));
+  }
+
+  // --- Checklist-first (ADR-348): the real onboarding path ---
+
+  @Test
+  void onboardingChecklistCompletedThroughTheApiIsDone() throws Exception {
+    var owner = TestJwtFactory.ownerJwt(ORG_ID, "user_fica_owner");
+    String clientId =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            owner,
+            "Checklist Done " + UUID.randomUUID(),
+            "cl-done-" + UUID.randomUUID() + "@test.com");
+    TestChecklistHelper.startOnboarding(mockMvc, clientId, owner);
+    List<String> instances = TestChecklistHelper.checklistInstanceIds(mockMvc, clientId, owner);
+    assertThat(instances).hasSize(1);
+    TestChecklistHelper.completeChecklistItems(mockMvc, clientId, owner);
+
+    mockMvc
+        .perform(get("/api/clients/{id}/fica-status", clientId).with(owner))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.clientId").value(clientId))
+        .andExpect(jsonPath("$.status").value("DONE"))
+        .andExpect(jsonPath("$.checklistInstanceId").value(instances.getFirst()))
+        .andExpect(jsonPath("$.lastVerifiedAt").isNotEmpty())
+        .andExpect(jsonPath("$.requestId").doesNotExist());
+  }
+
+  @Test
+  void openOnboardingChecklistIsInProgress() throws Exception {
+    var owner = TestJwtFactory.ownerJwt(ORG_ID, "user_fica_owner");
+    String clientId =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            owner,
+            "Checklist Open " + UUID.randomUUID(),
+            "cl-open-" + UUID.randomUUID() + "@test.com");
+    TestChecklistHelper.startOnboarding(mockMvc, clientId, owner);
+    List<String> instances = TestChecklistHelper.checklistInstanceIds(mockMvc, clientId, owner);
+    assertThat(instances).hasSize(1);
+
+    mockMvc
+        .perform(get("/api/clients/{id}/fica-status", clientId).with(owner))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
+        .andExpect(jsonPath("$.checklistInstanceId").value(instances.getFirst()))
+        .andExpect(jsonPath("$.lastVerifiedAt").doesNotExist())
+        .andExpect(jsonPath("$.requestId").doesNotExist());
+  }
+
+  @Test
+  void completedChecklistOutranksAnOpenFicaRequest() throws Exception {
+    var owner = TestJwtFactory.ownerJwt(ORG_ID, "user_fica_owner");
+    String clientId =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            owner,
+            "Checklist Wins " + UUID.randomUUID(),
+            "cl-wins-" + UUID.randomUUID() + "@test.com");
+    // A live (DRAFT) FICA request on its own would read IN_PROGRESS with its id.
+    createFicaRequest(
+        clientId,
+        createPortalContact(clientId, "cl-wins-" + UUID.randomUUID() + "@test.com", "Wins"));
+    TestChecklistHelper.startOnboarding(mockMvc, clientId, owner);
+    List<String> instances = TestChecklistHelper.checklistInstanceIds(mockMvc, clientId, owner);
+    assertThat(instances).hasSize(1);
+    TestChecklistHelper.completeChecklistItems(mockMvc, clientId, owner);
+
+    // ADR-348 rationale 2: the firm-driven checklist is the authoritative act — DONE.
+    mockMvc
+        .perform(get("/api/clients/{id}/fica-status", clientId).with(owner))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("DONE"))
+        .andExpect(jsonPath("$.checklistInstanceId").value(instances.getFirst()))
+        .andExpect(jsonPath("$.lastVerifiedAt").isNotEmpty())
+        .andExpect(jsonPath("$.requestId").doesNotExist());
   }
 
   // --- helpers ---

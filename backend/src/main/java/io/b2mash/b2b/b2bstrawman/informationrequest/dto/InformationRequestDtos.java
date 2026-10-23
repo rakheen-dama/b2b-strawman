@@ -188,21 +188,28 @@ public final class InformationRequestDtos {
       double completionRateLast30Days) {}
 
   /**
-   * Lightweight FICA status projection for a customer. Derives from the customer's information
-   * requests backed by the `fica-onboarding-pack` template. Designed to expand later into a
-   * composite signal (adapter outcome + beneficial-owner coverage) without a schema change — that's
-   * why this is a standalone DTO rather than a column on Customer.
-   *
-   * <p>Status values:
+   * FICA onboarding status for a client (GAP-L-46; checklist-first since Phase 88, ADR-348).
+   * Derived, never stored: the client's onboarding checklist instances (templates with {@code
+   * auto_instantiate = true}) decide first; the client's {@code fica-onboarding-pack} information
+   * requests are the fallback. A standalone DTO rather than a column on Customer, so it can expand
+   * into a composite signal later without a schema change.
    *
    * <ul>
-   *   <li>{@code NOT_STARTED} — no FICA request exists for the customer.
-   *   <li>{@code IN_PROGRESS} — at least one FICA request exists but not every item is ACCEPTED
-   *       yet.
-   *   <li>{@code DONE} — the most-recent FICA request has every item ACCEPTED; {@code
-   *       lastVerifiedAt} is the request's completedAt.
+   *   <li>{@code NOT_STARTED} — no live onboarding checklist and no FICA request.
+   *   <li>{@code IN_PROGRESS} — an onboarding checklist is open, or (no checklist) a FICA request
+   *       exists but not every item is ACCEPTED.
+   *   <li>{@code DONE} — the newest live onboarding checklist is COMPLETED (none open), or (no
+   *       checklist) the newest COMPLETED FICA request has every item ACCEPTED; {@code
+   *       lastVerifiedAt} is that checklist's / request's completedAt.
    * </ul>
+   *
+   * {@code checklistInstanceId} is set when the checklist decided; {@code requestId} keeps its
+   * information-request meaning and is set only when a request decided.
    */
   public record FicaStatusResponse(
-      UUID clientId, String status, Instant lastVerifiedAt, UUID requestId) {}
+      UUID clientId,
+      String status,
+      Instant lastVerifiedAt,
+      UUID requestId,
+      UUID checklistInstanceId) {}
 }

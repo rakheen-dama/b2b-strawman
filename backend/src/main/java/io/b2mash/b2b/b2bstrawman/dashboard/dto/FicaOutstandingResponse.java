@@ -15,7 +15,7 @@ public record FicaOutstandingResponse(
   /**
    * One outstanding client. {@code openedAt} is the client's clock-start instant ({@code
    * lifecycleStatusChangedAt}, falling back to {@code createdAt}) — not a request timestamp; {@code
-   * requestId} is null when FICA has not been started.
+   * requestId} is null unless the information-request branch of the FICA rule decided (ADR-348).
    */
   public record FicaOutstandingClient(
       UUID clientId,

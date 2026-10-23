@@ -1,7 +1,7 @@
 {
-  "commit": "0e6ba31fbb3fd74ece8a074d9c98f7e14c98cb21",
-  "command": "cd backend && ./mvnw spotless:apply && ./mvnw clean -q && bash scripts/verify.sh -q",
+  "commit": "b8fe6f0237705306049ee3aaefe0cb92de81a0a6",
+  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-23T03:35:00Z",
-  "summary": "Epic 619A PR #1646 head 0e6ba31fb (orchestrator run in worktree-epic-619A): 5477 testcases / 0 failures / 0 errors / 26 skipped across 699 surefire reports (= 5464 baseline + 13 new ProjectMemberTest cases), 12:36 wall. spotless:apply no diff. Backend CI pass (20m). Log /tmp/mvn-619A-final.log."
+  "ts": "2026-10-23T04:17:00Z",
+  "summary": "Epic 619B PR #1647 head b8fe6f023 (orchestrator run in worktree-epic-619B): 5493 testcases / 0 failures / 0 errors / 26 skipped across 701 surefire reports (= 5477 baseline + 16 new: V4ProjectRoleMigrationTest 9, TemplateCreatedMatterReadPathIntegrationTest 7). Log /tmp/mvn-619B-final.log."
 }

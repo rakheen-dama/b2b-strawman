@@ -59,6 +59,7 @@ import { TimeSummaryPanel } from "@/components/projects/time-summary-panel";
 import { ActivityFeed } from "@/components/activity/activity-feed";
 import { ProjectCustomersPanel } from "@/components/projects/project-customers-panel";
 import { MatterTabs } from "@/components/matters/matter-tabs";
+import { ProjectMembersPanel } from "@/components/projects/project-members-panel";
 import { ProjectAuditTab } from "@/components/projects/project-audit-tab";
 import { ClosureHistorySection } from "@/components/projects/closure-history-section";
 import { ProjectRatesTab } from "@/components/rates/project-rates-tab";
@@ -95,7 +96,7 @@ export default async function ProjectDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  // Auth guard (keycloak-bff re-login funnel); userId was only read by the removed members panel.
+  // Auth guard (keycloak-bff re-login funnel).
   await getAuthContext();
   const caps = await fetchMyCapabilities();
 
@@ -146,7 +147,7 @@ export default async function ProjectDetailPage({
         {
           label: "Team members added",
           complete: setupStatus.teamAssigned,
-          actionHref: `?tab=members`,
+          actionHref: `?tab=team`,
         },
         {
           label:
@@ -481,6 +482,16 @@ export default async function ProjectDetailPage({
             canEdit={canEdit}
             canManage={canManage}
             slug={slug}
+          />
+        }
+        teamPanel={
+          <ProjectMembersPanel
+            members={members}
+            slug={slug}
+            projectId={id}
+            canManage={canManage}
+            isCurrentLead={isCurrentLead}
+            currentUserId={currentMemberId ?? ""}
           />
         }
         overviewPanel={

@@ -19,6 +19,15 @@ interface TransferLeadDialogProps {
   projectId: string;
   targetMemberId: string;
   targetMemberName: string;
+  /**
+   * The caller is the current lead (copy: "You will become a regular member"). Owner/Admin callers
+   * who are not the lead pass false, and the copy names the current lead instead (ADR-346).
+   */
+  actorIsLead?: boolean;
+  /** The caller is transferring the lead to themselves (an Owner/Admin on the matter as a member). */
+  targetIsSelf?: boolean;
+  /** Name of the lead who will be demoted; shown when the caller is not the lead. */
+  currentLeadName?: string | null;
   children: React.ReactNode;
 }
 
@@ -27,11 +36,17 @@ export function TransferLeadDialog({
   projectId,
   targetMemberId,
   targetMemberName,
+  actorIsLead = true,
+  targetIsSelf = false,
+  currentLeadName = null,
   children,
 }: TransferLeadDialogProps) {
   const [open, setOpen] = useState(false);
   const [isTransferring, setIsTransferring] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const demotedLead = currentLeadName
+    ? `${currentLeadName}, the current lead,`
+    : "The current lead";
 
   async function handleTransfer() {
     setError(null);
@@ -66,9 +81,19 @@ export function TransferLeadDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Transfer Lead Role</AlertDialogTitle>
           <AlertDialogDescription>
-            Transfer the lead role to{" "}
-            <span className="text-foreground font-semibold">{targetMemberName}</span>? You will
-            become a regular member. This action cannot be undone.
+            {targetIsSelf ? (
+              <>
+                Make yourself the lead on this matter? {demotedLead} will become a regular member.
+              </>
+            ) : (
+              <>
+                Transfer the lead role to{" "}
+                <span className="text-foreground font-semibold">{targetMemberName}</span>?{" "}
+                {actorIsLead
+                  ? "You will become a regular member."
+                  : `${demotedLead} will become a regular member.`}
+              </>
+            )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && <p className="text-destructive text-sm">{error}</p>}

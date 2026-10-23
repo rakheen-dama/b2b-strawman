@@ -27,7 +27,7 @@ function makeSetupSteps(overrides?: Partial<{ complete: boolean }>): SetupStep[]
     {
       label: "Team members added",
       complete,
-      actionHref: "?tab=members",
+      actionHref: "?tab=team",
     },
     {
       label: "Required fields filled (0/2)",
@@ -129,7 +129,7 @@ describe("OverviewTab — Compact Setup Bar (395.2)", () => {
         permissionRequired: true,
       },
       { label: "Budget set", complete: false, actionHref: "?tab=budget" },
-      { label: "Team members added", complete: false, actionHref: "?tab=members" },
+      { label: "Team members added", complete: false, actionHref: "?tab=team" },
       { label: "Required fields filled", complete: false, actionHref: "#custom-fields" },
     ];
     const completedSteps = steps.filter((s) => s.complete).length;

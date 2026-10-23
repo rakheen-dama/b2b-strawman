@@ -12,6 +12,7 @@ import { aliasLegacyTabId } from "@/lib/constants/legacy-tab-ids";
 interface MatterTabsProps {
   detailsPanel: ReactNode;
   fieldsPanel: ReactNode;
+  teamPanel?: ReactNode;
   overviewPanel: ReactNode;
   documentsPanel: ReactNode;
   correspondencePanel?: ReactNode;
@@ -36,6 +37,7 @@ interface MatterTabsProps {
 type TabId =
   | "details"
   | "fields"
+  | "team"
   | "overview"
   | "documents"
   | "correspondence"
@@ -56,10 +58,11 @@ type TabId =
   | "statements"
   | "audit";
 
-// The 21 tab ids of MATTER_TAB_GROUPS (pinned by __tests__/components/matters/matter-tabs.test.tsx).
+// The 22 tab ids of MATTER_TAB_GROUPS (pinned by __tests__/components/matters/matter-tabs.test.tsx).
 const validTabIds = new Set<string>([
   "details",
   "fields",
+  "team",
   "overview",
   "documents",
   "correspondence",
@@ -84,6 +87,7 @@ const validTabIds = new Set<string>([
 export function MatterTabs({
   detailsPanel,
   fieldsPanel,
+  teamPanel,
   overviewPanel,
   documentsPanel,
   correspondencePanel,
@@ -130,9 +134,10 @@ export function MatterTabs({
   const visibleGroups = useMemo(() => {
     /** Per-tab visibility map — true means the tab should be shown */
     const tabVisibility: Record<string, boolean> = {
-      // Details group — always visible
+      // Details group — details/fields always visible; team is panel-gated
       details: true,
       fields: true,
+      team: !!teamPanel,
       // Always-visible tabs
       overview: true,
       tasks: true,
@@ -167,6 +172,7 @@ export function MatterTabs({
       })),
     }));
   }, [
+    teamPanel,
     correspondencePanel,
     generatedPanel,
     ratesPanel,
@@ -203,7 +209,7 @@ export function MatterTabs({
 
   return (
     <TabsPrimitive.Root value={activeTab}>
-      {/* GroupedTabBar replaces the flat TabsPrimitive.List — groups 21 sub-tabs into 7 top-level groups */}
+      {/* GroupedTabBar replaces the flat TabsPrimitive.List — groups 22 sub-tabs into 7 top-level groups */}
       <GroupedTabBar groups={visibleGroups} activeTab={activeTab} onTabChange={handleTabChange} />
 
       {/* Radix Content provides role="tabpanel" + aria-labelledby */}
@@ -213,6 +219,11 @@ export function MatterTabs({
       <TabsPrimitive.Content value="fields" className="pt-6 outline-none">
         {fieldsPanel}
       </TabsPrimitive.Content>
+      {teamPanel && (
+        <TabsPrimitive.Content value="team" className="pt-6 outline-none">
+          {teamPanel}
+        </TabsPrimitive.Content>
+      )}
       <TabsPrimitive.Content value="overview" className="pt-6 outline-none">
         {overviewPanel}
       </TabsPrimitive.Content>

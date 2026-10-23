@@ -1,11 +1,12 @@
 /**
  * Tab group configuration for the grouped matter-detail tab bar.
  *
- * 7 top-level groups / 21 sub-tabs (Phase 87 §12.6.5). Labels are the legal words — there is no
- * runtime vocabulary layer (ADR-338). Group ids and deep-linked tab ids (`court-dates`,
+ * 7 top-level groups / 22 sub-tabs (Phase 87 §12.6.5; Team added Phase 88 §13.3.4, ADR-346).
+ * Labels are the legal words — there is no runtime vocabulary layer (ADR-338). Group ids and deep-linked tab ids (`court-dates`,
  * `disbursements`, `statements`, `trust`, `time`, `documents`) are stable: specs and scenario docs
  * address them as `tab-group-{groupId}` / `tab-item-{tabId}` / `?tab=`. The renamed id
- * (`customers` → `clients`) is aliased in `legacy-tab-ids.ts`.
+ * (`customers` → `clients`) and the old setup-step id (`members` → `team`) are aliased in
+ * `legacy-tab-ids.ts`.
  *
  * Architecture: Section 11.4.1, Section 12.6.5, ADR-287, ADR-340 (no Expenses tab).
  */
@@ -17,7 +18,7 @@ import { buildTabIdToGroupMap } from "./tab-group-types";
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Matter tab group definitions (7 groups, 21 sub-tabs). */
+/** Matter tab group definitions (7 groups, 22 sub-tabs). */
 export const MATTER_TAB_GROUPS: readonly TabGroup[] = [
   {
     id: "details",
@@ -25,6 +26,7 @@ export const MATTER_TAB_GROUPS: readonly TabGroup[] = [
     tabs: [
       { id: "details", label: "Details" },
       { id: "fields", label: "Custom fields" },
+      { id: "team", label: "Team" },
     ],
     visible: true,
   },

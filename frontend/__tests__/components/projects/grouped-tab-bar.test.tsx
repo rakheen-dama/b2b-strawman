@@ -130,9 +130,9 @@ describe("resolveTabFromUrl", () => {
     expect(result).toEqual({ groupId: "overview", tabId: "overview" });
   });
 
-  it("returns overview for unknown param (members redirect handled by caller)", () => {
-    // Legacy ?tab=members has no redirect target (the staffing tab was removed in Epic 599),
-    // so it falls through to the overview default.
+  it("returns overview for unknown param (members alias applied by caller)", () => {
+    // resolveTabFromUrl is entity-agnostic: the raw "members" id is not a tab, so it falls through
+    // to the overview default. MatterTabs applies aliasLegacyTabId first (members → team, ADR-346).
     const result = resolveTabFromUrl("members", MATTER_TAB_GROUPS);
     expect(result).toEqual({ groupId: "overview", tabId: "overview" });
   });

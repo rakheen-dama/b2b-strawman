@@ -49,6 +49,10 @@ class InvoiceGenerationValidationIntegrationTest {
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_inv_gen_val_test";
 
+  /** G-C6 blocking copy for COMPANY/TRUST clients; this tenant has no profile → "invoice" noun. */
+  private static final String BLOCKING_TAX_NUMBER_COPY =
+      "A tax number is required before an invoice can be sent to a company or trust";
+
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
@@ -337,7 +341,62 @@ class InvoiceGenerationValidationIntegrationTest {
             jsonPath("$.validationChecks[?(@.name == 'customer_tax_number')].passed").value(false))
         .andExpect(
             jsonPath("$.validationChecks[?(@.name == 'customer_tax_number')].severity")
-                .value("CRITICAL"));
+                .value("CRITICAL"))
+        // G-C6: blocking copy for COMPANY/TRUST (generic tenant → "invoice" noun).
+        .andExpect(
+            jsonPath("$.validationChecks[?(@.name == 'customer_tax_number')].message")
+                .value(BLOCKING_TAX_NUMBER_COPY));
+  }
+
+  @Test
+  void sendInvoice_trustMissingTaxNumber_isBlockedWithBlockingCopy() throws Exception {
+    // G-C6: TRUST clients are blocked at send exactly like COMPANY, with the same blocking copy.
+    String invoiceId =
+        createApprovedInvoiceForNoTaxCustomer(
+            "Trust No Tax Client", "trustnotax@test.com", CustomerType.TRUST, "Trust NoTax");
+
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.title").value("Invoice validation failed"))
+        .andExpect(
+            jsonPath("$.validationChecks[?(@.name == 'customer_tax_number')].passed").value(false))
+        .andExpect(
+            jsonPath("$.validationChecks[?(@.name == 'customer_tax_number')].severity")
+                .value("CRITICAL"))
+        .andExpect(
+            jsonPath("$.validationChecks[?(@.name == 'customer_tax_number')].message")
+                .value(BLOCKING_TAX_NUMBER_COPY));
+  }
+
+  @Test
+  void validateGeneration_companyMissingTaxNumber_warnsWithBlockingCopy() throws Exception {
+    // G-C6: the generation-time check is WARNING for every client type, but the copy is keyed on
+    // the client type — a COMPANY's pre-generation checklist must say send will be blocked, never
+    // that the fee note "will be sent without a client VAT number".
+    UUID[] ids =
+        createNoTaxCustomerWithTimeEntry(
+            "GenVal Company No Tax", "genvalco@test.com", CustomerType.COMPANY, "GenVal Co");
+
+    mockMvc
+        .perform(
+            post("/api/invoices/validate-generation")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    { "clientId": "%s", "timeEntryIds": ["%s"] }
+                    """
+                        .formatted(ids[0], ids[1])))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.name == 'customer_tax_number')].severity").value("WARNING"))
+        .andExpect(jsonPath("$[?(@.name == 'customer_tax_number')].passed").value(false))
+        .andExpect(
+            jsonPath("$[?(@.name == 'customer_tax_number')].message")
+                .value(BLOCKING_TAX_NUMBER_COPY));
   }
 
   @Test
@@ -370,6 +429,11 @@ class InvoiceGenerationValidationIntegrationTest {
                       assertThat(taxCheck.passed()).isFalse();
                       assertThat(taxCheck.severity())
                           .isEqualTo(InvoiceValidationService.Severity.WARNING);
+                      // G-C6: warning copy — an INDIVIDUAL is never blocked at send.
+                      assertThat(taxCheck.message())
+                          .isEqualTo(
+                              "Client has no tax number \u2014 the invoice will be sent without a"
+                                  + " client VAT number");
                       assertThat(invoiceValidationService.hasCriticalFailures(checks)).isFalse();
                     }));
 
@@ -462,6 +526,43 @@ class InvoiceGenerationValidationIntegrationTest {
   private String createApprovedInvoiceForNoTaxCustomer(
       String customerName, String customerEmail, CustomerType customerType, String labelPrefix)
       throws Exception {
+    UUID[] ids =
+        createNoTaxCustomerWithTimeEntry(customerName, customerEmail, customerType, labelPrefix);
+
+    // Create the draft first — succeeds even without tax number (soft-warn path).
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/invoices")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        { "clientId": "%s", "currency": "ZAR",
+                          "timeEntryIds": ["%s"] }
+                        """
+                            .formatted(ids[0], ids[1])))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String invoiceId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    return invoiceId;
+  }
+
+  /**
+   * Creates an ACTIVE customer of the given type with all prerequisite fields EXCEPT the tax number
+   * (wiped on both entity column and JSONB), a linked project + task and one billable time entry.
+   * Returns {@code {customerId, timeEntryId}}.
+   */
+  private UUID[] createNoTaxCustomerWithTimeEntry(
+      String customerName, String customerEmail, CustomerType customerType, String labelPrefix) {
     var customerIdRef = new UUID[1];
     var taskIdRef = new UUID[1];
 
@@ -508,32 +609,7 @@ class InvoiceGenerationValidationIntegrationTest {
 
     UUID teId =
         createBillableTimeEntryForTask(taskIdRef[0], LocalDate.now(), 60, labelPrefix + " work");
-
-    // Create the draft first — succeeds even without tax number (soft-warn path).
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/invoices")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        { "clientId": "%s", "currency": "ZAR",
-                          "timeEntryIds": ["%s"] }
-                        """
-                            .formatted(customerIdRef[0], teId)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String invoiceId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
-
-    mockMvc
-        .perform(
-            post("/api/invoices/" + invoiceId + "/approve")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk());
-
-    return invoiceId;
+    return new UUID[] {customerIdRef[0], teId};
   }
 
   private UUID createBillableTimeEntry(LocalDate date, int durationMinutes, String description) {

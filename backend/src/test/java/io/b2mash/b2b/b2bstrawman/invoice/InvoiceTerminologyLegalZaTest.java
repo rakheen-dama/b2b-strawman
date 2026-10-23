@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -25,7 +26,8 @@ import org.springframework.test.web.servlet.MockMvc;
  *
  * <ul>
  *   <li>Site 1: the invoice HTML preview header/title must read "Fee Note: DRAFT" for legal-za.
- *   <li>Site 2: the send-validation message must read "…required to send a fee note".
+ *   <li>Site 2: the send-validation tax-number copy must say "fee note" (Phase 88 G-C6: INDIVIDUAL
+ *       → warning copy, COMPANY/TRUST → blocking copy).
  * </ul>
  *
  * A generic (no-profile) tenant is asserted as a control — its copy must keep saying "Invoice".
@@ -159,7 +161,51 @@ class InvoiceTerminologyLegalZaTest {
             .findFirst()
             .orElseThrow();
     assertThat(taxCheck.passed()).isFalse();
-    assertThat(taxCheck.message()).isEqualTo("Tax Number is required to send a fee note");
+    assertThat(taxCheck.severity()).isEqualTo(InvoiceValidationService.Severity.WARNING);
+    assertThat(taxCheck.message())
+        .isEqualTo(
+            "Client has no tax number \u2014 the fee note will be sent without a client VAT number");
+  }
+
+  @Test
+  void validateInvoiceSend_legalZa_companyTaxNumberMessageIsBlockingCopy() {
+    UUID companyId =
+        ScopedValue.where(RequestScopes.TENANT_ID, legalSchema)
+            .call(
+                () ->
+                    customerRepository
+                        .save(
+                            TestCustomerFactory.createActiveCustomer(
+                                "LZKC-009 Legal Company",
+                                "lzkc009-company@test.com",
+                                legalMemberId,
+                                CustomerType.COMPANY))
+                        .getId());
+
+    var checks =
+        ScopedValue.where(RequestScopes.TENANT_ID, legalSchema)
+            .where(RequestScopes.ORG_ID, LEGAL_ORG_ID)
+            .call(
+                () ->
+                    invoiceValidationService.validateInvoiceSend(
+                        new Invoice(
+                            companyId,
+                            "ZAR",
+                            "LZKC-009 Legal Company",
+                            null,
+                            null,
+                            "LZKC-009 Law Firm",
+                            legalMemberId)));
+
+    var taxCheck =
+        checks.stream()
+            .filter(c -> c.name().equals("customer_tax_number"))
+            .findFirst()
+            .orElseThrow();
+    assertThat(taxCheck.passed()).isFalse();
+    assertThat(taxCheck.severity()).isEqualTo(InvoiceValidationService.Severity.CRITICAL);
+    assertThat(taxCheck.message())
+        .isEqualTo("A tax number is required before a fee note can be sent to a company or trust");
   }
 
   @Test
@@ -185,7 +231,9 @@ class InvoiceTerminologyLegalZaTest {
             .findFirst()
             .orElseThrow();
     assertThat(taxCheck.passed()).isFalse();
-    assertThat(taxCheck.message()).isEqualTo("Tax Number is required to send an invoice");
+    assertThat(taxCheck.message())
+        .isEqualTo(
+            "Client has no tax number \u2014 the invoice will be sent without a client VAT number");
   }
 
   // --- Helpers ---

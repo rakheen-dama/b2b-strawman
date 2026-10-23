@@ -1,7 +1,7 @@
 {
-  "commit": "ba3063ea4664be95426fb7e6ef0f291fa4a3f2b2",
+  "commit": "a599a6767fc4adee761ad4aaefff69968269aa8e",
   "command": "pnpm install --frozen-lockfile && cd portal && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-22T16:35:49+0200",
-  "summary": "PR #1640 (617B; portal specs on /matters + labels, /acceptance responsive row dropped, portal e2e magic-link helpers fixed + globalSetup single exchange fail-fast, Day-60 card by href; 3 scenario docs nav/URL/label sweep) on ba3063ea4 (orchestrator run in worktree): lint 0 errors / 6 warnings (= main); format:check clean; vitest 42 files / 193 passed; build OK (/matters, /matters/[id]). Portal e2e on fresh e2e stack (fixer logs /tmp/617b-fix-*.log, re-checked by orchestrator): 90-day 5 passed / 3 failed / 1 skipped / 3 did not run — failures Day 3, Day 60, Day 85 biweekly all data-prerequisite (e2e seed = Acme Corp + 1 matter, weekly cadence); responsive 21 passed; as-is baseline (helper never authenticated, PNGs = login page) 90-day 1/2/6/3, responsive 3 passed/1 failed/20 dnr. Frontend portal-data-isolation 2 passed with KGOSI_EMAIL. globalSetup throw proven (/tmp/617b-fix-throwproof.log)."
+  "ts": "2026-10-23T02:38:34+0200",
+  "summary": "PR #1644 (618B; portal acceptance page 'Open in new tab' link reusing the iframe pdfUrl, rel=noopener noreferrer) on a599a6767 (orchestrator run in worktree): lint 0 errors / 5 warnings (main 6; unused mockAcceptedPageData now used); format:check clean; vitest 42 files / 195 passed (+2); build OK (/accept/[token]). Observed on :3002 (worktree portal dev → e2e backend :8081, 618A token): PDF renders inline in the iframe, link right-aligned beneath it, click opens a new tab on http://localhost:8081/api/portal/acceptance/<token>/pdf (contentType application/pdf, window.opener null, referrer empty); console only favicon 404 (pre-existing)."
 }

@@ -1,7 +1,7 @@
 # Blank page after navigating into a `loading.tsx` segment (Next 16 router race)
 
-**Status:** Fixed with a vendor patch to `next` (`patches/next@16.2.6.patch`, marker `KAZI-PATCH(next-null-prefetch)`). Upstream issue drafted, not yet filed.
-**Versions:** Next 16.2.6 and React 19.2.3. The same code is in Next 16.2.10. The `InnerLayoutRouter` block is unchanged in 16.3.8.
+**Status:** Fixed with a vendor patch to `next` (`patches/next@16.3.8.patch`, marker `KAZI-PATCH(next-null-prefetch)`). Upstream issue drafted, not yet filed.
+**Versions:** Found on Next 16.2.6 with React 19.2.3; the same code is in Next 16.2.10. The patch was re-keyed to Next 16.3.8 (branch `phase88/02E-next-16-3-8-react-ping`): its `InnerLayoutRouter` non-deferred branch still does `resolvedRsc = rsc;` (CJS `dist/client/components/layout-router.js:402`, ESM `:375`), so the race is not fixed upstream and the hunk bodies are identical to the 16.2.6 patch.
 **Previously tracked as:** `FIXME(depth-ii:page-transition-blank)` in the legal-depth-ii e2e suite.
 
 ## Symptom
@@ -54,6 +54,26 @@ Each count is a fresh browser session per attempt: log in, open the list, click 
 | Control: deleting `projects/[id]/loading.tsx` (no patch) | — | 0/120 |
 
 The ship PR re-measured both sides on its own builds. See the PR description for those numbers.
+
+## Related: React lost-ping bug fixed by the 16.3 upgrade
+
+The 16.2.6 → 16.3.8 bump was made for a different bug, not for this race. It is recorded here because both live in the Next-vendored client runtime and the next upgrade has to re-check both.
+
+- **Symptom.** After a server action calls `revalidatePath` (for example, adding a member on the matter Team tab), the revalidated RSC tree sometimes never commits. The new row only appears on the next unrelated root update, which is the notification bell's 30 s poll (`frontend/hooks/use-notification-polling.ts`). It shows up most on a cold server, when the RSC response streams slowly. Phase 88 619E's "Add Carol to the Sipho matter team" step failed every time on a freshly restarted e2e frontend and passed when the server was warm.
+- **Cause.** The React build that Next vendors (`next/dist/compiled/react-dom/cjs/react-dom-client.production.js`, `pingSuspendedRoot`) drops a Suspense ping that arrives during the render phase. Next 16.2.6 (still present in 16.2.12):
+  ```js
+  ? 0 === (executionContext & 2) && prepareFreshStack(root, 0)
+  : (workInProgressRootPingedLanes |= pingedLanes),
+  ```
+  Next 16.3.8 (also 16.4.2) records the ping instead of dropping it:
+  ```js
+  ? 0 === (executionContext & 2)
+    ? prepareFreshStack(root, 0)
+    : (workInProgressRootPingedLanes |= pingedLanes)
+  : (workInProgressRootPingedLanes |= pingedLanes),
+  ```
+  The development and profiling builds of `react-dom` vendored by 16.3.8 carry the same fix.
+- **On the next Next bump.** Do not go back to a 16.2.x release. Check that `pingSuspendedRoot` in the vendored `react-dom-client.production.js` still has the else-branch shown above.
 
 ## Upgrade check (every Next bump)
 

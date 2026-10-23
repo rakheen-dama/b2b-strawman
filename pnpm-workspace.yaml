@@ -6,4 +6,4 @@ packages:
 # Vendor patches applied at install time. Each one is documented in its marker
 # comment and guarded by a test — see "Patched dependencies" in frontend/CLAUDE.md.
 patchedDependencies:
-  next@16.2.6: patches/next@16.2.6.patch
+  next@16.3.8: patches/next@16.3.8.patch

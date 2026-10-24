@@ -32,7 +32,8 @@ vi.mock("@/lib/api", () => ({
   ApiError: class ApiError extends Error {
     constructor(
       public status: number,
-      message: string
+      message: string,
+      public detail?: { title?: string; detail?: string }
     ) {
       super(message);
       this.name = "ApiError";
@@ -59,6 +60,8 @@ import {
 } from "@/app/(app)/org/[slug]/profitability/actions";
 import { fetchProjectTimeSummary } from "@/app/(app)/org/[slug]/matters/[id]/time-summary-actions";
 import { loadPreview } from "@/lib/api/billing-runs";
+import { recordPayment } from "@/app/(app)/org/[slug]/invoices/invoice-payment-actions";
+import { ApiError } from "@/lib/api";
 
 const RATE = {
   memberId: "mem-1",
@@ -147,5 +150,33 @@ describe("finance wire bodies (Phase 87 S3)", () => {
     expect(mockGet).toHaveBeenCalledWith(
       "/api/reports/profitability?from=2026-10-01&to=2026-10-31&customerId=c-1"
     );
+  });
+
+  // Phase 88 622E (§13.4.7): amount + paymentMethod are required on the manual payment
+  // endpoint — an empty / reference-only body is a 400 since the D5 back-compat was removed.
+  it("recordPayment posts {amount, paymentMethod, paymentReference} (never an empty body)", async () => {
+    await recordPayment("acme", "inv-1", "c-1", {
+      amount: 5000,
+      paymentMethod: "EFT",
+      paymentReference: "EFT-0001",
+    });
+    const [path, body] = mockPost.mock.calls[0] as [string, Record<string, unknown>];
+    expect(path).toBe("/api/invoices/inv-1/payment");
+    expect(body).toEqual({ amount: 5000, paymentMethod: "EFT", paymentReference: "EFT-0001" });
+  });
+
+  it("recordPayment surfaces the 409 title 'Payment exceeds balance due' with the detail", async () => {
+    mockPost.mockRejectedValueOnce(
+      new ApiError(409, "Balance due is R 37 182,00", {
+        title: "Payment exceeds balance due",
+        detail: "Balance due is R 37 182,00",
+      })
+    );
+    const result = await recordPayment("acme", "inv-1", "c-1", {
+      amount: 60000,
+      paymentMethod: "EFT",
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("Payment exceeds balance due. Balance due is R 37 182,00");
   });
 });

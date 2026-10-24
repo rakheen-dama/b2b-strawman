@@ -197,7 +197,7 @@ public class InvoiceController {
   @PostMapping("/{id}/payment")
   @RequiresCapability("INVOICING")
   public ResponseEntity<InvoiceResponse> recordPayment(
-      @PathVariable UUID id, @Valid @RequestBody(required = false) RecordPaymentRequest request) {
+      @PathVariable UUID id, @Valid @RequestBody RecordPaymentRequest request) {
     return ResponseEntity.ok(invoiceService.recordManualPayment(id, request));
   }
 

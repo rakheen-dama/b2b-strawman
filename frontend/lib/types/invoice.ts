@@ -7,6 +7,23 @@ export type InvoiceStatus = "DRAFT" | "APPROVED" | "SENT" | "PARTIALLY_PAID" | "
 
 export type TaxType = "VAT" | "GST" | "SALES_TAX" | "NONE";
 
+// How a fee-note payment arrived (backend invoice/PaymentMethod.java, ADR-347 A5).
+export type PaymentMethod = "EFT" | "CARD" | "CASH" | "TRUST_TRANSFER" | "XERO" | "OTHER";
+
+// Methods the firm Record Payment form offers. TRUST_TRANSFER and XERO post from their
+// own sources and are refused by the manual endpoint.
+export type ManualPaymentMethod = Extract<PaymentMethod, "EFT" | "CARD" | "CASH" | "OTHER">;
+
+// One posted (COMPLETED) payment on a fee note (backend InvoiceResponse.PaymentLine).
+export interface InvoicePaymentLine {
+  id: string;
+  amount: number;
+  paymentMethod: PaymentMethod | null;
+  paymentReference: string | null;
+  recordedAt: string;
+  source: "MANUAL" | "TRUST_TRANSFER" | "XERO" | "GATEWAY";
+}
+
 export type InvoiceLineType =
   | "TIME"
   | "EXPENSE"
@@ -62,6 +79,12 @@ export interface InvoiceResponse {
   taxType: TaxType | null;
   billingPeriodStart: string | null;
   billingPeriodEnd: string | null;
+  /** Running total of posted payments, capped at total (ADR-347 A3). */
+  amountPaid: number;
+  /** total − amountPaid. */
+  balanceDue: number;
+  /** COMPLETED payment events, newest first. */
+  payments: InvoicePaymentLine[];
   paymentReference: string | null;
   paidAt: string | null;
   clientName: string;
@@ -110,6 +133,8 @@ export interface PaymentEvent {
   amount: number;
   currency: string;
   paymentDestination: string;
+  /** NULL for events recorded before the payment_method column existed. */
+  paymentMethod: PaymentMethod | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -154,7 +179,10 @@ export interface UpdateLineItemRequest {
   taxRateId?: string | null;
 }
 
+// POST /api/invoices/{id}/payment — amount + method are required (622E, §13.4.7).
 export interface RecordPaymentRequest {
+  amount: number;
+  paymentMethod: ManualPaymentMethod;
   paymentReference?: string;
 }
 

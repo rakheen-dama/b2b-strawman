@@ -317,8 +317,9 @@ if should_run "invoice_lifecycle"; then
   api_post "/api/invoices/${INV_ID}/send" "{\"overrideWarnings\":true}" "$ALICE" > /dev/null
   assert_http "APPROVED -> SENT" "2"
 
-  # SENT -> PAID
-  api_post "/api/invoices/${INV_ID}/payment" "{\"paymentReference\":\"REG-PAY-001\"}" "$ALICE" > /dev/null
+  # SENT -> PAID (amount + paymentMethod are required since 622E; pay the full balance due)
+  INV_BALANCE=$(api_get "/api/invoices/${INV_ID}" "$ALICE" | jq -r '.balanceDue')
+  api_post "/api/invoices/${INV_ID}/payment" "{\"amount\":${INV_BALANCE},\"paymentMethod\":\"EFT\",\"paymentReference\":\"REG-PAY-001\"}" "$ALICE" > /dev/null
   assert_http "SENT -> PAID" "2"
 
   # Cannot PAID -> VOID

@@ -409,10 +409,7 @@ class PaymentReconciliationServiceIntegrationTest {
             post("/api/invoices/" + invoiceId + "/payment")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_recon_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"paymentReference": "manual-settle-before-webhook"}
-                    """))
+                .content(fullBalanceBody(invoiceId, "manual-settle-before-webhook")))
         .andExpect(status().isOk());
 
     inTenant(
@@ -520,10 +517,7 @@ class PaymentReconciliationServiceIntegrationTest {
             post("/api/invoices/" + invoiceId + "/payment")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_recon_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"paymentReference": "manual-ref-cancel"}
-                    """))
+                .content(fullBalanceBody(invoiceId, "manual-ref-cancel")))
         .andExpect(status().isOk());
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -548,10 +542,7 @@ class PaymentReconciliationServiceIntegrationTest {
             post("/api/invoices/" + invoiceId + "/payment")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_recon_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"paymentReference": "manual-ref-event"}
-                    """))
+                .content(fullBalanceBody(invoiceId, "manual-ref-event")))
         .andExpect(status().isOk());
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -657,6 +648,14 @@ class PaymentReconciliationServiceIntegrationTest {
   }
 
   /** Runs {@code action} in one tenant transaction (no member bound — webhook context). */
+  /** A Record Payment body settling the current balance due (amount + method are required). */
+  private String fullBalanceBody(String invoiceId, String reference) {
+    var balance = new BigDecimal[1];
+    inTenant(() -> balance[0] = invoice(invoiceId).getBalanceDue());
+    return "{\"amount\": %s, \"paymentMethod\": \"EFT\", \"paymentReference\": \"%s\"}"
+        .formatted(balance[0].toPlainString(), reference);
+  }
+
   private void inTenant(Runnable action) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)

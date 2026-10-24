@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.AddLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
@@ -11,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.SendInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateLineItemRequest;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -186,23 +186,24 @@ public class InvoiceService {
   }
 
   /**
-   * Record Payment form — {@code POST /api/invoices/{id}/payment} (Phase 88 U15). An absent amount
-   * settles the remaining balance and an absent method is {@code OTHER}: the deployed firm form
-   * still posts only a reference until 622E ships (D5 back-compat).
+   * Record Payment form — {@code POST /api/invoices/{id}/payment} (Phase 88 U15, ADR-347). Posts
+   * the amount + method the user entered; an amount above the balance due is refused (409). The
+   * system-only methods {@link PaymentMethod#TRUST_TRANSFER} and {@link PaymentMethod#XERO} are
+   * refused (400): those payments post from their own sources, never from the manual form.
    */
   @Transactional
   public InvoiceResponse recordManualPayment(UUID invoiceId, RecordPaymentRequest request) {
-    BigDecimal amount = request != null ? request.amount() : null;
-    PaymentMethod method =
-        request != null && request.paymentMethod() != null
-            ? request.paymentMethod()
-            : PaymentMethod.OTHER;
-    String reference = request != null ? request.paymentReference() : null;
-    if (amount == null) {
-      return transitionService.settleBalance(invoiceId, method, reference);
+    if (request.paymentMethod() == PaymentMethod.TRUST_TRANSFER
+        || request.paymentMethod() == PaymentMethod.XERO) {
+      throw new InvalidStateException(
+          "Payment method not allowed",
+          request.paymentMethod()
+              + " payments are posted by their source and cannot be recorded manually");
     }
     return transitionService.postPayment(
-        invoiceId, PaymentPosting.manual(amount, method, reference));
+        invoiceId,
+        PaymentPosting.manual(
+            request.amount(), request.paymentMethod(), request.paymentReference()));
   }
 
   /** Settles the remaining balance in full (method OTHER) — the automation "mark PAID" action. */

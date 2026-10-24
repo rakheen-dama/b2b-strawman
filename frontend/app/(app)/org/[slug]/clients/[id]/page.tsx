@@ -679,6 +679,7 @@ export default async function CustomerDetailPage({
               slug={slug}
               canManage={isAdmin && customer.status === "ACTIVE"}
               defaultCurrency={defaultCurrency}
+              clientType={customer.clientType ?? null}
             />
           ) : undefined
         }

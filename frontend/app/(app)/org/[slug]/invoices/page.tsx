@@ -5,7 +5,8 @@ import { listClients } from "@/lib/api/clients";
 import { getOrgSettings } from "@/lib/api/settings";
 import type { InvoiceResponse, InvoiceStatus, OutstandingSummary } from "@/lib/types";
 import { hasCapability, type WidgetResult } from "@/lib/dashboard-home";
-import { StatusBadge } from "@/components/invoices/status-badge";
+import { StatusBadge, invoiceStatusLabel } from "@/components/invoices/status-badge";
+import { BalanceDueHint } from "@/components/invoices/balance-due-hint";
 import { CreateInvoiceButton } from "@/components/invoices/create-invoice-button";
 import { EmptyState } from "@/components/empty-state";
 import { createMessages } from "@/lib/messages";
@@ -140,7 +141,14 @@ export default async function InvoicesPage({
 
   const { t } = createMessages("empty-states");
 
-  const statusOptions: InvoiceStatus[] = ["DRAFT", "APPROVED", "SENT", "PAID", "VOID"];
+  const statusOptions: InvoiceStatus[] = [
+    "DRAFT",
+    "APPROVED",
+    "SENT",
+    "PARTIALLY_PAID",
+    "PAID",
+    "VOID",
+  ];
 
   // Validate search.status against the whitelist — reject unknown values
   const validatedStatus = statusOptions.includes(search.status as InvoiceStatus)
@@ -241,7 +249,7 @@ export default async function InvoicesPage({
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             }`}
           >
-            {status.charAt(0) + status.slice(1).toLowerCase()}
+            {invoiceStatusLabel(status)}
           </Link>
         ))}
       </div>
@@ -252,12 +260,12 @@ export default async function InvoicesPage({
           icon={Receipt}
           title={
             validatedStatus
-              ? `No ${validatedStatus.toLowerCase()} fee notes found`
+              ? `No ${invoiceStatusLabel(validatedStatus).toLowerCase()} fee notes found`
               : t("invoices.list.heading")
           }
           description={
             validatedStatus
-              ? `No ${validatedStatus.toLowerCase()} fee notes found.`
+              ? `No ${invoiceStatusLabel(validatedStatus).toLowerCase()} fee notes found.`
               : t("invoices.list.description")
           }
         />
@@ -327,6 +335,7 @@ export default async function InvoicesPage({
                   </td>
                   <td className="px-4 py-3 text-right text-sm font-medium text-slate-900 dark:text-slate-100">
                     {formatCurrency(invoice.total, invoice.currency)}
+                    <BalanceDueHint invoice={invoice} />
                   </td>
                   <td className="hidden px-4 py-3 text-sm text-slate-600 xl:table-cell dark:text-slate-400">
                     {invoice.currency}

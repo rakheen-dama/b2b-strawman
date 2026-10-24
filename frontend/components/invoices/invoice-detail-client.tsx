@@ -12,6 +12,7 @@ import {
   SendValidationOverride,
   InvoicePaymentForm,
   PaidIndicator,
+  PartiallyPaidIndicator,
   PaymentLinkSection,
   VoidIndicator,
   PaymentHistorySection,
@@ -54,7 +55,10 @@ export function InvoiceDetailClient({
   return (
     <div className="space-y-6">
       {h.error && (
-        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+        <div
+          role="alert"
+          className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300"
+        >
           {h.error}
         </div>
       )}
@@ -77,6 +81,7 @@ export function InvoiceDetailClient({
         isDraft={h.isDraft}
         isApproved={h.isApproved}
         isSent={h.isSent}
+        canRecordPayment={h.canRecordPayment}
         onPreview={h.handlePreview}
         onApprove={h.handleApprove}
         onDelete={h.handleDelete}
@@ -85,22 +90,22 @@ export function InvoiceDetailClient({
         onShowPaymentForm={() => h.setShowPaymentForm(true)}
       />
 
-      {/* Payment Form (inline for SENT status) */}
-      {h.showPaymentForm && h.isSent && (
+      {/* Payment Form (inline while a balance is due: SENT / PARTIALLY_PAID) */}
+      {h.showPaymentForm && h.canRecordPayment && (
         <InvoicePaymentForm
-          paymentRef={h.paymentRef}
-          onPaymentRefChange={h.setPaymentRef}
+          invoice={h.invoice}
           isPending={h.isPending}
           onConfirm={h.handleRecordPayment}
           onCancel={() => h.setShowPaymentForm(false)}
         />
       )}
 
-      {/* Paid indicator */}
+      {/* Paid / part-paid indicators */}
       {h.isPaid && <PaidIndicator invoice={h.invoice} />}
+      {h.isPartiallyPaid && <PartiallyPaidIndicator invoice={h.invoice} />}
 
-      {/* Payment Link Section (SENT + paymentUrl non-null) */}
-      {h.isSent && h.invoice.paymentUrl && (
+      {/* Payment Link Section (balance due + paymentUrl non-null) */}
+      {h.canRecordPayment && h.invoice.paymentUrl && (
         <PaymentLinkSection
           paymentUrl={h.invoice.paymentUrl}
           copied={h.copied}
@@ -111,7 +116,9 @@ export function InvoiceDetailClient({
       )}
 
       {/* Payment Event History */}
-      {(h.isSent || h.isPaid) && <PaymentHistorySection paymentEvents={paymentEvents ?? []} />}
+      {(h.isSent || h.isPartiallyPaid || h.isPaid) && (
+        <PaymentHistorySection paymentEvents={paymentEvents ?? []} />
+      )}
 
       {/* Void indicator */}
       {h.isVoid && <VoidIndicator />}

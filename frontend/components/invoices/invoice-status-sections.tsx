@@ -1,10 +1,37 @@
 "use client";
 
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
 import { Copy, Check, RefreshCw } from "lucide-react";
-import { formatDate } from "@/lib/format";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { formatCurrency, formatDate } from "@/lib/format";
 import { PaymentEventHistory } from "@/components/invoices/PaymentEventHistory";
-import type { InvoiceResponse, ValidationCheck, PaymentEvent } from "@/lib/types";
+import {
+  recordInvoicePaymentSchema,
+  type RecordInvoicePaymentFormData,
+} from "@/lib/schemas/invoice";
+import type {
+  InvoiceResponse,
+  ManualPaymentMethod,
+  ValidationCheck,
+  PaymentEvent,
+} from "@/lib/types";
 
 // --- Send Validation Override ---
 
@@ -61,44 +88,118 @@ export function SendValidationOverride({
 
 // --- Payment Form ---
 
+const MANUAL_METHOD_OPTIONS: ReadonlyArray<{ value: ManualPaymentMethod; label: string }> = [
+  { value: "EFT", label: "EFT" },
+  { value: "CARD", label: "Card" },
+  { value: "CASH", label: "Cash" },
+  { value: "OTHER", label: "Other" },
+];
+
 interface PaymentFormProps {
-  paymentRef: string;
-  onPaymentRefChange: (value: string) => void;
+  invoice: InvoiceResponse;
   isPending: boolean;
-  onConfirm: () => void;
+  onConfirm: (data: RecordInvoicePaymentFormData) => void;
   onCancel: () => void;
 }
 
-export function InvoicePaymentForm({
-  paymentRef,
-  onPaymentRefChange,
-  isPending,
-  onConfirm,
-  onCancel,
-}: PaymentFormProps) {
+/**
+ * Record Payment (Phase 88 U15, ADR-347): the money that moved, how it arrived and an optional
+ * reference. Amount defaults to the balance due; a part payment leaves the fee note
+ * PARTIALLY_PAID. Over-balance is the backend's rule (409, surfaced by the page error banner).
+ */
+export function InvoicePaymentForm({ invoice, isPending, onConfirm, onCancel }: PaymentFormProps) {
+  const form = useForm<RecordInvoicePaymentFormData>({
+    resolver: zodResolver(recordInvoicePaymentSchema),
+    defaultValues: {
+      amount: invoice.balanceDue ?? invoice.total,
+      paymentMethod: "EFT",
+      paymentReference: "",
+    },
+  });
+
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
-      <h3 className="mb-3 font-medium text-slate-900 dark:text-slate-100">Record Payment</h3>
-      <div className="flex items-end gap-3">
-        <div className="flex-1">
-          <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">
-            Payment Reference (optional)
-          </label>
-          <input
-            type="text"
-            value={paymentRef}
-            onChange={(e) => onPaymentRefChange(e.target.value)}
-            placeholder="e.g. CHK-12345, Wire transfer"
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-600"
-          />
-        </div>
-        <Button variant="accent" size="sm" onClick={onConfirm} disabled={isPending}>
-          Confirm Payment
-        </Button>
-        <Button variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
-          Cancel
-        </Button>
-      </div>
+    <div
+      data-testid="record-payment-form"
+      className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50"
+    >
+      <h3 className="font-medium text-slate-900 dark:text-slate-100">Record Payment</h3>
+      <p
+        data-testid="payment-form-balance-due"
+        className="mt-1 mb-3 text-sm text-slate-600 dark:text-slate-400"
+      >
+        Balance due {formatCurrency(invoice.balanceDue ?? invoice.total, invoice.currency)}
+      </p>
+      <Form {...form}>
+        <form noValidate onSubmit={form.handleSubmit(onConfirm)} className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <FormField
+              control={form.control}
+              name="amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Amount</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      placeholder="0.00"
+                      {...field}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="paymentMethod"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Payment method</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger data-testid="payment-method-select" className="w-full">
+                        <SelectValue placeholder="Select method" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {MANUAL_METHOD_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="paymentReference"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Payment Reference (optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. CHK-12345, Wire transfer" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button type="submit" variant="accent" size="sm" disabled={isPending}>
+              Confirm Payment
+            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 }
@@ -113,6 +214,25 @@ export function PaidIndicator({ invoice }: { invoice: InvoiceResponse }) {
         {invoice.paidAt && <p>Paid on: {formatDate(invoice.paidAt)}</p>}
         {invoice.paymentReference && <p>Reference: {invoice.paymentReference}</p>}
       </div>
+    </div>
+  );
+}
+
+// --- Partially Paid Indicator ---
+
+export function PartiallyPaidIndicator({ invoice }: { invoice: InvoiceResponse }) {
+  return (
+    <div
+      data-testid="partially-paid-indicator"
+      className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950"
+    >
+      <h3 className="font-medium text-amber-800 dark:text-amber-200">Part payment received</h3>
+      <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
+        Paid {formatCurrency(invoice.amountPaid ?? 0, invoice.currency)} · Balance due{" "}
+        <span data-testid="invoice-balance-due" className="font-medium">
+          {formatCurrency(invoice.balanceDue ?? invoice.total, invoice.currency)}
+        </span>
+      </p>
     </div>
   );
 }

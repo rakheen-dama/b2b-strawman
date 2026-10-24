@@ -5,6 +5,7 @@ import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { InvoiceGenerationDialog } from "@/components/invoices/invoice-generation-dialog";
 import { StatusBadge } from "@/components/invoices/status-badge";
+import { BalanceDueHint } from "@/components/invoices/balance-due-hint";
 import { formatDate, formatCurrency } from "@/lib/format";
 import type { InvoiceResponse } from "@/lib/types";
 import Link from "next/link";
@@ -16,6 +17,8 @@ interface CustomerInvoicesTabProps {
   slug: string;
   canManage: boolean;
   defaultCurrency: string;
+  /** INDIVIDUAL | COMPANY | TRUST — drives the generation dialog's tax-number banner. */
+  clientType?: string | null;
 }
 
 export function CustomerInvoicesTab({
@@ -25,6 +28,7 @@ export function CustomerInvoicesTab({
   slug,
   canManage,
   defaultCurrency,
+  clientType = null,
 }: CustomerInvoicesTabProps) {
   const header = (
     <div className="flex items-center justify-between">
@@ -38,6 +42,7 @@ export function CustomerInvoicesTab({
           customerName={customerName}
           slug={slug}
           defaultCurrency={defaultCurrency}
+          clientType={clientType}
         />
       )}
     </div>
@@ -106,6 +111,7 @@ export function CustomerInvoicesTab({
                   </td>
                   <td className="px-4 py-3 text-right text-sm font-medium text-slate-900 dark:text-slate-100">
                     {formatCurrency(invoice.total, invoice.currency)}
+                    <BalanceDueHint invoice={invoice} />
                   </td>
                 </tr>
               );

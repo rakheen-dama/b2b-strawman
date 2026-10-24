@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -143,7 +144,9 @@ class InvoiceSyncIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/payment")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner")))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(fullBalanceBody(invoiceId)))
         .andExpect(status().isOk());
 
     // Verify status updated to PAID in portal
@@ -229,7 +232,9 @@ class InvoiceSyncIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices/" + partialInvoiceId + "/payment")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner")))
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(fullBalanceBody(partialInvoiceId)))
             .andExpect(status().isOk())
             .andReturn();
     var afterSettle = readModelRepo.findInvoiceById(id, ORG_ID).orElseThrow();
@@ -317,5 +322,20 @@ class InvoiceSyncIntegrationTest {
                     """
                         .formatted(description, quantity, unitPrice, sortOrder)))
         .andExpect(status().isCreated());
+  }
+
+  /**
+   * A Record Payment body settling the fee note's current balance due (amount + method required).
+   */
+  private String fullBalanceBody(String id) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                get("/api/invoices/" + id).with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner")))
+            .andExpect(status().isOk())
+            .andReturn();
+    Number balance = JsonPath.read(result.getResponse().getContentAsString(), "$.balanceDue");
+    return "{\"amount\": %s, \"paymentMethod\": \"EFT\"}"
+        .formatted(new java.math.BigDecimal(balance.toString()).toPlainString());
   }
 }

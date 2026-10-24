@@ -270,3 +270,107 @@ describe("Invoice Generation Validation", () => {
     });
   });
 });
+
+describe("Tax-number banner by client type (622A finding, 622E)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  const BACKEND_MESSAGE = "Backend client-type keyed tax message";
+
+  async function openWithMissingTaxNumber(clientType: string | null | undefined) {
+    const user = userEvent.setup();
+    mockFetchUnbilledTime.mockResolvedValue({
+      success: true,
+      data: {
+        matters: [
+          {
+            matterId: "p1",
+            matterName: "Test Matter",
+            entries: [
+              {
+                id: "e1",
+                taskTitle: "Task 1",
+                memberName: "Alice",
+                date: "2026-02-20",
+                durationMinutes: 60,
+                billableValue: 1800,
+                billingRateCurrency: "ZAR",
+                billingRateSnapshot: 1800,
+              },
+            ],
+          },
+        ],
+        totals: [{ currency: "ZAR", totalMinutes: 60, totalBillable: 1800 }],
+        grandTotals: { ZAR: { hours: 1, amount: 1800 } },
+        unbilledExpenses: [],
+        unbilledExpenseTotals: {},
+      },
+    });
+    const checks: ValidationCheck[] = [
+      {
+        name: "customer_tax_number",
+        severity: "WARNING",
+        passed: false,
+        message: BACKEND_MESSAGE,
+      },
+    ];
+    mockValidateInvoiceGeneration.mockResolvedValue({ success: true, checks });
+
+    render(
+      <InvoiceGenerationDialog
+        customerId="cust-1"
+        customerName="Banner Client"
+        slug="test-org"
+        defaultCurrency="ZAR"
+        clientType={clientType}
+      />
+    );
+    await user.click(screen.getByText("New fee note"));
+    await user.click(screen.getByText("Fetch Unbilled Time"));
+    await waitFor(() => {
+      expect(screen.getByText("Select Unbilled Items")).toBeInTheDocument();
+    });
+    await user.click(screen.getByText("Validate & Create Draft"));
+    return await screen.findByTestId("tax-number-warning");
+  }
+
+  it("INDIVIDUAL: says the fee note can be sent without a client VAT number", async () => {
+    const banner = await openWithMissingTaxNumber("INDIVIDUAL");
+
+    expect(banner).toHaveAttribute("data-client-type", "INDIVIDUAL");
+    expect(banner).toHaveTextContent("Tax number missing");
+    expect(banner).toHaveTextContent(
+      "The fee note can be sent — it will be sent without a client VAT number."
+    );
+    expect(banner).not.toHaveTextContent(/cannot be sent|required before/i);
+    expect(banner).not.toHaveTextContent(/invoice|customer/i);
+  });
+
+  it("COMPANY: says a tax number is required before the fee note can be sent", async () => {
+    const banner = await openWithMissingTaxNumber("COMPANY");
+
+    expect(banner).toHaveTextContent("Tax number required");
+    expect(banner).toHaveTextContent(
+      "a tax number is required before a fee note can be sent to a company or trust"
+    );
+    expect(banner).not.toHaveTextContent(/invoice|customer/i);
+  });
+
+  it("TRUST: same required copy as a company", async () => {
+    const banner = await openWithMissingTaxNumber("TRUST");
+
+    expect(banner).toHaveTextContent("Tax number required");
+  });
+
+  it("unknown client type: falls back to the backend check message", async () => {
+    const banner = await openWithMissingTaxNumber(null);
+
+    expect(banner).toHaveTextContent("Tax number missing");
+    expect(banner).toHaveTextContent(BACKEND_MESSAGE);
+  });
+});

@@ -1,0 +1,11 @@
+
+Running 5 tests using 2 workers
+
+  ✓  1 [chromium] › e2e/tests/audit-log/matter-closure-audit-tab.spec.ts:94:7 › Epic 508B — Matter closure override audit surface › override row surfaces matter.closure.override_used CRITICAL event with justification (1.8s)
+  ✓  2 [chromium] › e2e/tests/documents/document-generation.spec.ts:39:7 › DOC-02: Document Generation › Generate document from template on customer/project page (3.8s)
+  -  3 [chromium] › e2e/tests/documents/document-generation.spec.ts:138:7 › DOC-02: Document Generation › Preview shows resolved variables
+  -  4 [chromium] › e2e/tests/documents/document-generation.spec.ts:204:7 › DOC-02: Document Generation › Download PDF
+  -  5 [chromium] › e2e/tests/documents/document-generation.spec.ts:261:7 › DOC-02: Document Generation › Generated documents list
+
+  3 skipped
+  2 passed (6.0s)

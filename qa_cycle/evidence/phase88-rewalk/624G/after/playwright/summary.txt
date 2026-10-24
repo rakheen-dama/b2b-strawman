@@ -1,0 +1,8 @@
+/tmp/624G-pw-default.log:  3 skipped
+/tmp/624G-pw-default.log:  2 passed (6.0s)
+/tmp/624G-pw-depth-ii.log:  8 skipped
+/tmp/624G-pw-depth-ii.log:  35 passed (1.7m)
+/tmp/624G-pw-lifecycle.log:  5 failed
+/tmp/624G-pw-lifecycle.log:  3 skipped
+/tmp/624G-pw-lifecycle.log:  20 did not run
+/tmp/624G-pw-lifecycle.log:  69 passed (2.3m)

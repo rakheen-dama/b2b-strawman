@@ -1,0 +1,201 @@
+- generic [active] [ref=f3e1]:
+  - link "Skip to content" [ref=f3e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f3e3]:
+    - complementary [ref=f3e4]:
+      - generic [ref=f3e5]: Kazi
+      - generic [ref=f3e8]: E2E Test Organization
+      - button "Search, Command K" [ref=f3e11]:
+        - text: Search...
+        - generic [ref=f3e15]: ⌘K
+      - navigation "Main navigation" [ref=f3e16]:
+        - generic [ref=f3e17]:
+          - button "Today" [expanded] [ref=f3e18]
+          - generic [ref=f3e22]:
+            - link "Home" [ref=f3e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f3e27] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f3e31] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f3e35]:
+          - button "Matters" [expanded] [ref=f3e36]
+          - generic [ref=f3e40]:
+            - link "Matters" [ref=f3e41] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f3e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f3e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f3e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f3e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f3e65]:
+          - button "Clients" [expanded] [ref=f3e66]
+          - generic [ref=f3e70]:
+            - link "Clients" [ref=f3e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f3e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f3e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f3e86]
+        - button "Trust" [ref=f3e92]
+        - button "Firm" [ref=f3e98]
+      - link "Platform Admin" [ref=f3e104] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f3e109] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f3e114]:
+        - generic [ref=f3e115]: AO
+        - generic [ref=f3e116]:
+          - paragraph [ref=f3e117]: Alice Owner
+          - paragraph [ref=f3e118]: alice@e2e-test.local
+    - generic [ref=f3e119]:
+      - banner [ref=f3e120]:
+        - navigation "Breadcrumb" [ref=f3e121]:
+          - link "E2E Test Organization" [ref=f3e122] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Matters" [ref=f3e126] [cursor=pointer]:
+            - /url: /org/e2e-test-org/matters
+          - generic [ref=f3e127]: Matter
+        - generic [ref=f3e131]:
+          - generic [ref=f3e132]: e2e-test-org
+          - button "AO" [ref=f3e135]
+          - button "Notifications" [ref=f3e137]:
+            - generic [ref=f3e138]: 8 unread notifications
+            - generic [aria-hidden] [ref=f3e139]: "8"
+      - main [ref=f3e140]:
+        - generic [ref=f3e143]:
+          - generic [ref=f3e144]:
+            - link "Back to Matters" [ref=f3e145] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - generic [ref=f3e148]:
+              - button "Generate Document" [ref=f3e149]
+              - button "Generate Statement of Account" [ref=f3e150]
+              - button "More actions" [ref=f3e151]
+          - generic [ref=f3e154]:
+            - generic [ref=f3e155]:
+              - heading "Khumalo Property Holdings — Erf 1234 Sandton Transfer mvm024uad719" [level=1] [ref=f3e156]
+              - generic [ref=f3e157]:
+                - generic [ref=f3e158]: Active
+                - generic [ref=f3e159]: CONVEYANCING
+              - link "Khumalo Property Holdings mvm024uad719" [ref=f3e161] [cursor=pointer]:
+                - /url: /org/e2e-test-org/clients/7c97210a-9d7b-4883-a218-f60bf03cff3c
+            - generic [ref=f3e162]:
+              - button "Close Matter" [ref=f3e163]
+              - button "Complete Matter" [ref=f3e164]
+              - button [ref=f3e165]
+          - generic [ref=f3e166]:
+            - tablist [ref=f3e167]:
+              - tab "Details" [ref=f3e168] [cursor=pointer]
+              - tab "Overview" [ref=f3e171] [cursor=pointer]
+              - tab "Work · Generated documents" [selected] [ref=f3e172] [cursor=pointer]:
+                - text: Work
+                - generic [ref=f3e173]: · Generated documents
+              - tab "Fees" [ref=f3e177] [cursor=pointer]
+              - tab "Client" [ref=f3e180] [cursor=pointer]
+              - tab "Diary" [ref=f3e183] [cursor=pointer]
+              - tab "Activity" [ref=f3e184] [cursor=pointer]
+            - tabpanel [ref=f3e187]:
+              - table [ref=f3e190]:
+                - rowgroup [ref=f3e191]:
+                  - row [ref=f3e192]:
+                    - columnheader "Template Name" [ref=f3e193]
+                    - columnheader "Generated By" [ref=f3e194]
+                    - columnheader "Date" [ref=f3e195]
+                    - columnheader "File Size" [ref=f3e196]
+                    - columnheader "Format" [ref=f3e197]
+                    - columnheader "Acceptance" [ref=f3e198]
+                    - columnheader "Actions" [ref=f3e199]
+                - rowgroup [ref=f3e200]:
+                  - row [ref=f3e201]:
+                    - cell "Engagement Letter — General" [ref=f3e202]
+                    - cell "Alice Owner" [ref=f3e203]
+                    - cell "24 Oct 2026" [ref=f3e204]
+                    - cell "4.0 KB" [ref=f3e205]
+                    - cell "PDF" [ref=f3e206]
+                    - cell [ref=f3e208]
+                    - cell [ref=f3e209]:
+                      - generic [ref=f3e210]:
+                        - button "Download PDF" [ref=f3e211]
+                        - button "Send for Acceptance" [ref=f3e212]
+                        - button "Delete" [ref=f3e213]
+                  - row [ref=f3e214]:
+                    - cell "Engagement Letter — Conveyancing" [ref=f3e215]
+                    - cell "Alice Owner" [ref=f3e216]
+                    - cell "24 Oct 2026" [ref=f3e217]
+                    - cell "4.6 KB" [ref=f3e218]
+                    - cell "PDF" [ref=f3e219]
+                    - cell [ref=f3e221]
+                    - cell [ref=f3e222]:
+                      - generic [ref=f3e223]:
+                        - button "Download PDF" [ref=f3e224]
+                        - button "Send for Acceptance" [ref=f3e225]
+                        - button "Delete" [ref=f3e226]
+                  - row [ref=f3e227]:
+                    - cell "Statement of Account" [ref=f3e228]
+                    - cell "Alice Owner" [ref=f3e229]
+                    - cell "24 Oct 2026" [ref=f3e230]
+                    - cell "3.3 KB" [ref=f3e231]
+                    - cell "PDF" [ref=f3e232]
+                    - cell [ref=f3e234]
+                    - cell [ref=f3e235]:
+                      - generic [ref=f3e236]:
+                        - button "Download PDF" [ref=f3e237]
+                        - button "Send for Acceptance" [ref=f3e238]
+                        - button "Delete" [ref=f3e239]
+                  - row [ref=f3e240]:
+                    - cell "Statement of Account" [ref=f3e241]
+                    - cell "Alice Owner" [ref=f3e242]
+                    - cell "24 Oct 2026" [ref=f3e243]
+                    - cell "3.3 KB" [ref=f3e244]
+                    - cell "PDF" [ref=f3e245]
+                    - cell [ref=f3e247]
+                    - cell [ref=f3e248]:
+                      - generic [ref=f3e249]:
+                        - button "Download PDF" [ref=f3e250]
+                        - button "Send for Acceptance" [ref=f3e251]
+                        - button "Delete" [ref=f3e252]
+                  - row [ref=f3e253]:
+                    - cell "Statement of Account" [ref=f3e254]
+                    - cell "Alice Owner" [ref=f3e255]
+                    - cell "24 Oct 2026" [ref=f3e256]
+                    - cell "3.3 KB" [ref=f3e257]
+                    - cell "PDF" [ref=f3e258]
+                    - cell [ref=f3e260]
+                    - cell [ref=f3e261]:
+                      - generic [ref=f3e262]:
+                        - button "Download PDF" [ref=f3e263]
+                        - button "Send for Acceptance" [ref=f3e264]
+                        - button "Delete" [ref=f3e265]
+                  - row [ref=f3e266]:
+                    - cell "Statement of Account" [ref=f3e267]
+                    - cell "Alice Owner" [ref=f3e268]
+                    - cell "24 Oct 2026" [ref=f3e269]
+                    - cell "3.3 KB" [ref=f3e270]
+                    - cell "PDF" [ref=f3e271]
+                    - cell [ref=f3e273]
+                    - cell [ref=f3e274]:
+                      - generic [ref=f3e275]:
+                        - button "Download PDF" [ref=f3e276]
+                        - button "Send for Acceptance" [ref=f3e277]
+                        - button "Delete" [ref=f3e278]
+                  - row [ref=f3e279]:
+                    - cell "Offer to Purchase" [ref=f3e280]
+                    - cell "Alice Owner" [ref=f3e281]
+                    - cell "24 Oct 2026" [ref=f3e282]
+                    - cell "1.9 KB" [ref=f3e283]
+                    - cell "PDF" [ref=f3e284]
+                    - cell [ref=f3e286]
+                    - cell [ref=f3e287]:
+                      - generic [ref=f3e288]:
+                        - button "Download PDF" [ref=f3e289]
+                        - button "Send for Acceptance" [ref=f3e290]
+                        - button "Delete" [ref=f3e291]
+  - generic [ref=f3e292]:
+    - heading "Command Palette" [level=2] [ref=f3e293]
+    - paragraph [ref=f3e294]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f3e295]

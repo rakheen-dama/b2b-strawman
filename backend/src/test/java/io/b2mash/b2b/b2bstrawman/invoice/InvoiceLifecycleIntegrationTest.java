@@ -858,6 +858,25 @@ class InvoiceLifecycleIntegrationTest {
     assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.SENT);
     assertThat(invoice.getAmountPaid()).isEqualByComparingTo(BigDecimal.ZERO);
     assertThat(invoice.getPaidAt()).isNull();
+    inTenant(
+        () -> {
+          var reversed =
+              auditService.findEvents(
+                  new io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter(
+                      "invoice",
+                      UUID.fromString(invoiceId),
+                      null,
+                      "invoice.payment_reversed",
+                      null,
+                      null,
+                      null),
+                  PageRequest.of(0, 10));
+          assertThat(reversed.getContent()).hasSize(1);
+          // money scale kept at 2 even when no COMPLETED events remain
+          assertThat(reversed.getContent().getFirst().getDetails())
+              .containsEntry("amount_paid", "0.00");
+          return null;
+        });
     mockMvc
         .perform(
             org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
@@ -905,6 +924,55 @@ class InvoiceLifecycleIntegrationTest {
     assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PARTIALLY_PAID);
     assertThat(invoice.getAmountPaid()).isEqualByComparingTo(first);
     assertThat(invoice.getPaidAt()).isNull();
+  }
+
+  @Test
+  void reversalKeepsPaidWhenRemainingEventsStillCoverTotal() throws Exception {
+    var sent = createSentInvoice();
+    String invoiceId = (String) sent[0];
+    UUID id = UUID.fromString(invoiceId);
+    BigDecimal total = (BigDecimal) sent[1];
+
+    var part =
+        postPayment(invoiceId, "{\"amount\": 500.00, \"paymentMethod\": \"EFT\"}")
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("PARTIALLY_PAID"))
+            .andReturn();
+    UUID manualEventId =
+        UUID.fromString(JsonPath.read(part.getResponse().getContentAsString(), "$.payments[0].id"));
+
+    // An external source then moves the full total (capped at PAID; the event keeps the real
+    // amount)
+    var settled =
+        inTenant(
+            () ->
+                invoiceTransitionService.postPayment(
+                    id,
+                    new PaymentPosting(
+                        total,
+                        PaymentMethod.TRUST_TRANSFER,
+                        "FT-COVER-1",
+                        "trust_fee_transfer",
+                        null,
+                        "TRUST")));
+    assertThat(settled.status()).isEqualTo(InvoiceStatus.PAID);
+    var paidAt = settled.paidAt();
+    assertThat(paidAt).isNotNull();
+
+    // Reversing the manual 500 leaves Σ remaining = total ≥ total → still PAID, paidAt kept (A3)
+    inTenant(
+        () -> {
+          invoiceTransitionService.reversePayment(id, manualEventId);
+          return null;
+        });
+
+    var invoice = inTenant(() -> invoiceRepository.findById(id).orElseThrow());
+    assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PAID);
+    assertThat(invoice.getAmountPaid()).isEqualByComparingTo(total);
+    assertThat(invoice.getBalanceDue()).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(invoice.getPaidAt()).isNotNull();
+    assertThat(invoice.getPaidAt().truncatedTo(java.time.temporal.ChronoUnit.MILLIS))
+        .isEqualTo(paidAt.truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
   }
 
   // --- Test 11: double-billing prevention (ADR-050) ---

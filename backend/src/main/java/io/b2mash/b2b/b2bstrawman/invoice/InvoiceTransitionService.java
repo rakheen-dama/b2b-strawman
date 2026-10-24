@@ -35,7 +35,6 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -321,14 +320,6 @@ public class InvoiceTransitionService {
     return invoiceRenderingService.buildResponse(invoice);
   }
 
-  /** Statuses that can take a payment (ADR-347). */
-  private static final Set<InvoiceStatus> PAYABLE =
-      Set.of(InvoiceStatus.SENT, InvoiceStatus.PARTIALLY_PAID);
-
-  /** Statuses a payment can be reversed from (ADR-347 rationale 4). */
-  private static final Set<InvoiceStatus> REVERSIBLE =
-      Set.of(InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.PAID);
-
   /**
    * The one internal payment entry point (Phase 88 U15, ADR-347, architecture §13.3.8). Posts the
    * real amount: SENT/PARTIALLY_PAID only; an excess is refused (409) for manual entries and capped
@@ -341,7 +332,7 @@ public class InvoiceTransitionService {
             .findByIdForUpdate(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
     try {
-      invoice.requireStatus(PAYABLE, "take a payment");
+      invoice.requireStatus(Invoice.PAYABLE, "take a payment");
     } catch (IllegalStateException e) {
       throw new ResourceConflictException("Invalid status transition", e.getMessage());
     }
@@ -524,31 +515,33 @@ public class InvoiceTransitionService {
   /**
    * INTERIM (until 622C): full settlement for the three external callers — trust fee-transfer
    * approval, pay-now webhook reconciliation, Xero sync — which save their own PaymentEvent, so
-   * this path saves none (no double count). 622C re-points them to {@link #postPayment} with their
-   * real amounts (N-5) and deletes this overload.
+   * this path saves none (no double count). Exactly the pre-622B contract: SENT → PAID ({@code
+   * amount_paid = total}); PAID is an idempotent no-op; anything else — PARTIALLY_PAID included —
+   * is refused with 409, so a trust fee transfer approved after a manual part payment is refused
+   * rather than over-collecting from trust (622B D7). 622C re-points these callers to {@link
+   * #postPayment} with their real amounts (N-5) and deletes this overload.
+   *
+   * @param fromWebhook retained for the 622C-owned callers' signature; every caller passes {@code
+   *     true} and the value is not read.
    */
   @Transactional
   public InvoiceResponse recordPayment(
       UUID invoiceId, String paymentReference, boolean fromWebhook) {
-    if (!fromWebhook) {
-      return settleBalance(invoiceId, PaymentMethod.OTHER, paymentReference);
-    }
-
     var invoice =
         invoiceRepository
-            .findById(invoiceId)
+            .findByIdForUpdate(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
     if (invoice.getStatus() == InvoiceStatus.PAID) {
       return invoiceRenderingService.buildResponse(invoice);
     }
 
-    try {
-      // Settles the remaining balance → PAID, amount_paid = total (SENT or PARTIALLY_PAID).
-      invoice.recordPayment(paymentReference);
-    } catch (IllegalStateException e) {
-      throw new ResourceConflictException("Invalid status transition", e.getMessage());
+    if (invoice.getStatus() != InvoiceStatus.SENT) {
+      throw new ResourceConflictException(
+          "Invalid status transition", "Only sent invoices can be paid");
     }
+
+    invoice.recordPayment(paymentReference); // SENT → PAID, amount_paid = total
     invoice = invoiceRepository.save(invoice);
 
     log.info(
@@ -683,7 +676,7 @@ public class InvoiceTransitionService {
             .findByIdForUpdate(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
-    if (!REVERSIBLE.contains(invoice.getStatus())) {
+    if (!Invoice.REVERSIBLE.contains(invoice.getStatus())) {
       throw new InvalidStateException(
           "Invalid status for payment reversal",
           "Only paid or partially paid invoices can have a payment reversed (current status: "
@@ -856,9 +849,11 @@ public class InvoiceTransitionService {
 
   @Transactional
   public InvoiceResponse voidInvoice(UUID invoiceId) {
+    // Row lock (as postPayment/reversePayment): a concurrent payment can't be overwritten by a
+    // void decided on a stale SENT read.
     var invoice =
         invoiceRepository
-            .findById(invoiceId)
+            .findByIdForUpdate(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
     try {

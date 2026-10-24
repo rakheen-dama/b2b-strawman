@@ -195,8 +195,4 @@ public class PaymentEvent {
   public PaymentMethod getPaymentMethod() {
     return paymentMethod;
   }
-
-  public void setPaymentMethod(PaymentMethod paymentMethod) {
-    this.paymentMethod = paymentMethod;
-  }
 }

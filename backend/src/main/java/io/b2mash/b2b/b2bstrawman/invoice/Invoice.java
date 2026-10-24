@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -264,19 +265,21 @@ public class Invoice {
     this.updatedAt = Instant.now();
   }
 
-  /** Statuses that can take a payment (ADR-347). */
-  private static final Set<InvoiceStatus> PAYABLE =
+  /**
+   * Statuses that can take a payment (ADR-347) — the single definition, also read by the service.
+   */
+  static final Set<InvoiceStatus> PAYABLE =
       Set.of(InvoiceStatus.SENT, InvoiceStatus.PARTIALLY_PAID);
 
-  /** Statuses a payment can be reversed from (ADR-347 rationale 4). */
-  private static final Set<InvoiceStatus> REVERSIBLE =
+  /** Statuses a payment can be reversed from (ADR-347 rationale 4) — also read by the service. */
+  static final Set<InvoiceStatus> REVERSIBLE =
       Set.of(InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.PAID);
 
   /**
    * Guard-and-throw: e.g. {@code IllegalStateException("Only sent or partially paid fee notes can
    * take a payment")}. Services translate it to a 409 "Invalid status transition".
    */
-  public void requireStatus(Set<InvoiceStatus> allowed, String action) {
+  void requireStatus(Set<InvoiceStatus> allowed, String action) {
     if (!allowed.contains(this.status)) {
       String names =
           allowed.stream()
@@ -324,7 +327,8 @@ public class Invoice {
    */
   public void reapplyPayments(BigDecimal completedSum) {
     requireStatus(REVERSIBLE, "have a payment reversed");
-    this.amountPaid = completedSum.max(BigDecimal.ZERO).min(this.total);
+    this.amountPaid =
+        completedSum.max(BigDecimal.ZERO).min(this.total).setScale(2, RoundingMode.HALF_UP);
     if (this.amountPaid.signum() == 0) {
       this.status = InvoiceStatus.SENT;
       this.paidAt = null;

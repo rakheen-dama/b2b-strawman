@@ -18,12 +18,19 @@ import {
  * Strict by design: a missing precondition (stack down, contact not seeded,
  * cap hit) fails the test; nothing is soft-asserted or skipped.
  *
- * PRODUCTION BUILD REQUIRED: run this against `next build && next start
- * --port 3002`, not `next dev`. Under `next dev`, React StrictMode runs the
- * effect in app/auth/exchange/page.tsx twice, so the single-use token is
+ * OPT-IN: the `login-bare` project is registered only when LOGIN_BARE=1, so
+ * the default all-projects run skips it. Run it with
+ * `pnpm test:e2e:login-bare`, which sets the flag and selects the project;
+ * the config then self-serves a PRODUCTION portal on :3002
+ * (`pnpm run build && pnpm run start`, NEXT_PUBLIC_PORTAL_API_URL passed
+ * through). It must not run against `next dev`: there React StrictMode runs
+ * the effect in app/auth/exchange/page.tsx twice, so the single-use token is
  * POSTed twice and the second POST's 401 can show "Link expired or invalid"
- * (known pre-existing bug, 624D follow-up). The spec counts exchange POSTs and
- * fails with that diagnosis rather than flaking.
+ * (known pre-existing bug; follow-up: exchange double-POST under next dev).
+ * A dev server already on :3002 is reused (`reuseExistingServer`), so the spec
+ * counts exchange POSTs and fails with that diagnosis rather than flaking.
+ *
+ * SKIP_PORTAL_BASELINES=true skips it, like the neighbouring portal specs.
  *
  * Assertions and errors on the magic-link path print `token=<redacted>`, never
  * the token itself.
@@ -35,6 +42,7 @@ const EMAIL = process.env.LOGIN_BARE_EMAIL || "contact@acme.example.com";
 const ORG_SLUG = process.env.PORTAL_ORG_SLUG || "e2e-test-org";
 const ORG_NAME = process.env.PORTAL_ORG_NAME || "E2E Test Organization";
 const MATTER = process.env.LOGIN_BARE_MATTER || "Website Redesign";
+const SKIP = process.env.SKIP_PORTAL_BASELINES === "true";
 
 const LINK_SUBJECT_PREFIX = "Your portal access link from";
 const REQUEST_LINK_PATH = "/portal/auth/request-link";
@@ -46,9 +54,19 @@ const redactToken = (s: string) =>
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 test.describe("Bare /login — email-only portal sign-in", () => {
+  test.beforeAll(async () => {
+    test.skip(
+      SKIP,
+      "SKIP_PORTAL_BASELINES=true — login-bare disabled. Unset with the seeded e2e stack to execute.",
+    );
+  });
+
   test("fresh browser: bare /login → one branded link in Mailpit → /matters", async ({
     page,
   }) => {
+    // Covers the 30 s Mailpit poll, the 3 s negative check, both navigations
+    // and the exchange; the config default (30 s) would cut the mail poll off.
+    test.setTimeout(90_000);
     const before = (await listMessages(EMAIL)).map((m) => m.ID);
 
     // 1. Bare /login in a fresh context: no query string, no stored hint.

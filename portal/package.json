@@ -10,7 +10,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "test:e2e:login-bare": "echo 'login-bare needs a production portal on :3002 (next build && next start); see e2e/tests/login-bare.spec.ts' && playwright test --config=playwright.portal.config.ts --project=login-bare",
+    "test:e2e:login-bare": "LOGIN_BARE=1 playwright test --config=playwright.portal.config.ts --project=login-bare",
     "test:e2e:portal-client-90day": "playwright test --config=playwright.portal.config.ts --project=portal-client-90day",
     "test:watch": "vitest"
   },

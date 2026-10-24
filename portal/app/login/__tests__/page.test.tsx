@@ -146,6 +146,10 @@ describe("LoginPage", () => {
       expect(screen.getByText("Check your email.")).toBeInTheDocument();
     });
     expect(screen.getByText(/sent a sign-in link/i)).toBeInTheDocument();
+    // Email-only can reach several firms: the multi-firm sentence shows.
+    expect(
+      screen.getByText(/more than one firm, you'll get one email from each/i),
+    ).toBeInTheDocument();
     expect(
       screen.queryByText(/couldn't determine which organization/i),
     ).toBeNull();
@@ -200,6 +204,13 @@ describe("LoginPage", () => {
         orgId: "org_abc",
       });
     });
+
+    // ?orgId= targets one firm: the multi-firm sentence is not shown.
+    await waitFor(() => {
+      expect(screen.getByText("Check your email.")).toBeInTheDocument();
+    });
+    expect(screen.getByText(/sent a sign-in link/i)).toBeInTheDocument();
+    expect(screen.queryByText(/more than one firm/i)).toBeNull();
   });
 
   // Phase 88 U11 — (c) the localStorage hint brands the page only.

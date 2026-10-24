@@ -155,8 +155,17 @@ function LoginForm() {
               </p>
               <p className="mt-1 text-sm text-teal-600">
                 If <span className="font-medium">{email}</span> is registered
-                for a client portal, we&apos;ve sent a sign-in link. If you work
-                with more than one firm, you&apos;ll get one email from each.
+                for a client portal, we&apos;ve sent a sign-in link.
+                {/* Only the email-only request can reach several firms; with
+                    ?orgId= it targets one. Keyed on the URL alone, never on the
+                    response, so it leaks nothing about the address. */}
+                {!queryOrgId && (
+                  <>
+                    {" "}
+                    If you work with more than one firm, you&apos;ll get one
+                    email from each.
+                  </>
+                )}
               </p>
             </div>
             {magicLink && (

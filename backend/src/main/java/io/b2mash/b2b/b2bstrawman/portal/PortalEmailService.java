@@ -189,8 +189,9 @@ public class PortalEmailService {
 
   /**
    * Sends the per-event "document is ready" portal email (GAP-L-72, slice 23). Fired by {@code
-   * PortalDocumentNotificationHandler} for closure-pack + Statement-of-Account artefacts (and any
-   * other template added to {@code OrgSettings.portalNotificationDocTypes}). Fire-and-forget.
+   * PortalDocumentNotificationHandler} only when the firm explicitly asked to notify the client
+   * (Phase 88 U13 / ADR-350: {@code notifyClient} at generation or on "Share with client").
+   * Fire-and-forget.
    */
   public boolean sendDocumentReadyEmail(PortalContact contact, Map<String, Object> context) {
     return sendPortalNotification(

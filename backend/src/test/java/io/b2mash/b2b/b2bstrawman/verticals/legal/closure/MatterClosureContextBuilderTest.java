@@ -68,7 +68,8 @@ class MatterClosureContextBuilderTest {
     Map<String, Object> context =
         builder.buildClosureContext(
             PROJECT_ID,
-            new ClosureRequest(ClosureReason.CONCLUDED, null, false, null, false, null));
+            new ClosureRequest(
+                ClosureReason.CONCLUDED, null, false, null, false, null, null, null));
 
     @SuppressWarnings("unchecked")
     var matter = (Map<String, Object>) context.get("matter");

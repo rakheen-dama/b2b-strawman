@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.clause.ClauseResolver;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.document.DocumentService;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
@@ -35,6 +36,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -69,6 +71,7 @@ public class GeneratedDocumentService {
   private final ProjectAccessService projectAccessService;
   private final List<TemplateContextBuilder> contextBuilders;
   private final OrgSettingsRepository orgSettingsRepository;
+  private final DocumentService documentService;
 
   public GeneratedDocumentService(
       GeneratedDocumentRepository generatedDocumentRepository,
@@ -87,7 +90,8 @@ public class GeneratedDocumentService {
       PdfConversionService pdfConversionService,
       ProjectAccessService projectAccessService,
       List<TemplateContextBuilder> contextBuilders,
-      OrgSettingsRepository orgSettingsRepository) {
+      OrgSettingsRepository orgSettingsRepository,
+      DocumentService documentService) {
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.documentTemplateRepository = documentTemplateRepository;
     this.memberNameResolver = memberNameResolver;
@@ -105,6 +109,7 @@ public class GeneratedDocumentService {
     this.projectAccessService = projectAccessService;
     this.contextBuilders = contextBuilders;
     this.orgSettingsRepository = orgSettingsRepository;
+    this.documentService = documentService;
   }
 
   /**
@@ -159,7 +164,8 @@ public class GeneratedDocumentService {
         clauseSelections,
         memberId,
         intendedVisibility,
-        Map.of());
+        Map.of(),
+        false);
   }
 
   /**
@@ -168,6 +174,12 @@ public class GeneratedDocumentService {
    * the auto-dispatched {@link TemplateContextBuilder} — both for required-field validation and for
    * rendering. Used by flows whose template variables cannot be derived from the primary entity
    * alone, e.g. the matter-closure letter's {@code closure.*} / {@code matter.*} groups (LZKC-018).
+   *
+   * <p>{@code notifyClient} (Phase 88 U13 / ADR-350) is the caller's explicit client-email intent,
+   * surfaced as {@code details.notify_client} on the {@link DocumentGeneratedEvent}; {@code
+   * PortalDocumentNotificationHandler} emails the client's portal contact only when it is {@code
+   * true} and the linked Document is portal-visible. Only the closure letter passes the request's
+   * intent; every other generation path passes {@code false}.
    */
   @Transactional
   public GenerationResult generateDocument(
@@ -178,7 +190,8 @@ public class GeneratedDocumentService {
       List<ClauseSelection> clauseSelections,
       UUID memberId,
       String intendedVisibility,
-      Map<String, Object> extraContext) {
+      Map<String, Object> extraContext,
+      boolean notifyClient) {
     // 0. Check action-point prerequisites
     var template =
         documentTemplateRepository
@@ -282,6 +295,8 @@ public class GeneratedDocumentService {
       eventDetails.put("scope", linkedDocument.getScope());
       eventDetails.put("visibility", linkedDocument.getVisibility());
     }
+    // Phase 88 U13 / ADR-350: explicit client-email intent, always present (false unless asked).
+    eventDetails.put("notify_client", notifyClient);
     eventPublisher.publishEvent(
         new DocumentGeneratedEvent(
             "document.generated",
@@ -294,11 +309,8 @@ public class GeneratedDocumentService {
             orgId,
             Instant.now(),
             Map.copyOf(eventDetails),
-            // GAP-L-97: PortalDocumentNotificationHandler keys off
-            // DocumentGeneratedEvent.templateName
-            // against an allowlist of SLUGS (OrgSettings.portalNotificationDocTypes default
-            // ["matter-closure-letter","statement-of-account"]). Pass the slug here; the display
-            // name remains in details.template_name above for activity-feed UX.
+            // GAP-L-97: PortalDocumentNotificationHandler keys the email headline + dedup off the
+            // template SLUG; the display name stays in details.template_name for activity-feed UX.
             templateDetail.slug(),
             TemplateEntityType.valueOf(templateDetail.primaryEntityType()),
             entityId,
@@ -361,15 +373,14 @@ public class GeneratedDocumentService {
 
   /**
    * Variant of {@link #generateForProject(UUID, String, UUID)} that lets the caller declare the
-   * intended {@link Document.Visibility} of the linked Document. Used by closure-pack flows
-   * (closure-letter via {@code MatterClosureService.generateClosureLetterSafely}) so the linked
-   * Document is born portal-visible and the canonical {@link DocumentGeneratedEvent} carries the
-   * visibility hint atomically — no follow-up event, no DB-fallback race.
+   * intended {@link Document.Visibility} of the linked Document, so the linked Document is born at
+   * that visibility and the canonical {@link DocumentGeneratedEvent} carries the visibility hint
+   * atomically — no follow-up event, no DB-fallback race. Never requests a client email.
    */
   public GenerationResult generateForProject(
       UUID projectId, String templateSlug, UUID actingMemberId, String intendedVisibility) {
     return generateForProject(
-        projectId, templateSlug, actingMemberId, intendedVisibility, Map.of());
+        projectId, templateSlug, actingMemberId, intendedVisibility, Map.of(), false);
   }
 
   /**
@@ -377,14 +388,16 @@ public class GeneratedDocumentService {
    * {@code extraContext} over the builder-produced context before validation and rendering. Used by
    * {@code MatterClosureService.generateClosureLetterSafely} to supply the closure letter's {@code
    * closure.*} / {@code matter.*} variables, which the PROJECT-dispatched {@code
-   * ProjectContextBuilder} cannot produce (LZKC-018).
+   * ProjectContextBuilder} cannot produce (LZKC-018), and to pass the closure request's {@code
+   * notifyClient} intent (ADR-350).
    */
   public GenerationResult generateForProject(
       UUID projectId,
       String templateSlug,
       UUID actingMemberId,
       String intendedVisibility,
-      Map<String, Object> extraContext) {
+      Map<String, Object> extraContext,
+      boolean notifyClient) {
     var template =
         documentTemplateRepository
             .findBySlug(templateSlug)
@@ -398,7 +411,8 @@ public class GeneratedDocumentService {
         List.of(),
         actingMemberId,
         intendedVisibility,
-        extraContext);
+        extraContext,
+        notifyClient);
   }
 
   /**
@@ -419,7 +433,73 @@ public class GeneratedDocumentService {
     var documents =
         generatedDocumentRepository.findByPrimaryEntityTypeAndPrimaryEntityIdOrderByGeneratedAtDesc(
             entityType, entityId);
-    return documents.stream().map(this::toListResponse).toList();
+    // ADR-350 / D-9: surface the linked Document's visibility (one batch query, no N+1) so the
+    // firm UI can offer "Share with client" only on INTERNAL rows.
+    var linkedIds =
+        documents.stream().map(GeneratedDocument::getDocumentId).filter(Objects::nonNull).toList();
+    Map<UUID, String> visibilityByDocumentId = new HashMap<>();
+    if (!linkedIds.isEmpty()) {
+      documentRepository
+          .findAllById(linkedIds)
+          .forEach(d -> visibilityByDocumentId.put(d.getId(), d.getVisibility()));
+    }
+    return documents.stream()
+        .map(gd -> toListResponse(gd, visibilityByDocumentId.get(gd.getDocumentId())))
+        .toList();
+  }
+
+  /**
+   * Phase 88 U13 / ADR-350 — "Share with client": makes a generated matter document portal-visible
+   * ({@link Document.Visibility#PORTAL}, via {@link DocumentService#markSystemAutoShared}, which
+   * audits the change and syncs the portal read model) and, when {@code notifyClient}, asks {@code
+   * PortalDocumentNotificationHandler} (AFTER_COMMIT) to email the client's portal contact a
+   * document-ready link.
+   *
+   * <p>Idempotent: an already portal-visible (SHARED/PORTAL) document is not re-flipped — the
+   * portal read model would double-count it — but {@code notifyClient=true} still requests the
+   * email (subject to the handler's 5-minute dedup).
+   *
+   * @throws ResourceNotFoundException unknown id, or the caller cannot view the matter
+   * @throws InvalidStateException not a matter document, or never saved to the matter's documents
+   */
+  @Transactional
+  public GeneratedDocumentListResponse share(UUID id, boolean notifyClient) {
+    var generatedDoc = getById(id);
+    if (generatedDoc.getPrimaryEntityType() != TemplateEntityType.PROJECT) {
+      throw new InvalidStateException(
+          "Cannot share document", "Only matter documents can be shared with the client.");
+    }
+    UUID projectId = generatedDoc.getPrimaryEntityId();
+    projectAccessService.requireViewAccess(projectId, ActorContext.fromRequestScopes());
+    UUID documentId = generatedDoc.getDocumentId();
+    if (documentId == null) {
+      throw new InvalidStateException(
+          "Cannot share document", "The document was not saved to the matter's documents.");
+    }
+    var document =
+        documentRepository
+            .findById(documentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
+    if (!Document.Visibility.isPortalVisible(document.getVisibility())) {
+      document = documentService.markSystemAutoShared(documentId);
+    }
+    String templateSlug =
+        documentTemplateRepository
+            .findById(generatedDoc.getTemplateId())
+            .map(DocumentTemplate::getSlug)
+            .orElse(null);
+    eventPublisher.publishEvent(
+        new GeneratedDocumentSharedEvent(
+            RequestScopes.requireTenantId(),
+            RequestScopes.requireOrgId(),
+            RequestScopes.getShardIdOrDefault(),
+            projectId,
+            generatedDoc.getId(),
+            templateSlug,
+            generatedDoc.getFileName(),
+            document.getVisibility(),
+            notifyClient));
+    return toListResponse(generatedDoc, document.getVisibility());
   }
 
   @Transactional(readOnly = true)
@@ -872,7 +952,7 @@ public class GeneratedDocumentService {
     return memberNameResolver.resolveName(memberId);
   }
 
-  private GeneratedDocumentListResponse toListResponse(GeneratedDocument gd) {
+  private GeneratedDocumentListResponse toListResponse(GeneratedDocument gd, String visibility) {
     String templateName = resolveTemplateName(gd.getTemplateId());
     String generatedByName = resolveGeneratedByName(gd.getGeneratedBy());
     return new GeneratedDocumentListResponse(
@@ -886,7 +966,8 @@ public class GeneratedDocumentService {
         gd.getGeneratedAt(),
         gd.getDocumentId(),
         gd.getOutputFormat().name(),
-        gd.getDocxS3Key() != null);
+        gd.getDocxS3Key() != null,
+        visibility);
   }
 
   private String resolveTemplateName(UUID templateId) {
@@ -905,7 +986,11 @@ public class GeneratedDocumentService {
    */
   public record GenerationResult(GeneratedDocument generatedDocument, PdfResult pdfResult) {}
 
-  /** DTO for generated document list responses. */
+  /**
+   * DTO for generated document list responses (also returned by the share action). {@code
+   * visibility} is the linked Document's visibility ({@code INTERNAL}/{@code SHARED}/{@code
+   * PORTAL}), or {@code null} when the document was not saved to the documents list (ADR-350).
+   */
   public record GeneratedDocumentListResponse(
       UUID id,
       String templateName,
@@ -917,7 +1002,8 @@ public class GeneratedDocumentService {
       Instant generatedAt,
       UUID documentId,
       String outputFormat,
-      boolean hasDocxDownload) {}
+      boolean hasDocxDownload,
+      String visibility) {}
 
   /** Result DTO for DOCX generation. */
   public record GenerateDocxResult(

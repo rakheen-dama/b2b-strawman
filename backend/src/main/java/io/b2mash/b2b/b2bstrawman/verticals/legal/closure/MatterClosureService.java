@@ -198,7 +198,9 @@ public class MatterClosureService {
       // (e.g., StatementService throws when the disbursements module is disabled) cannot
       // poison the outer (already-committed) close. Mirrors C3's best-effort guarantee.
       try {
-        soaDocId = self.generateSoaSafely(projectId, actingMemberId);
+        soaDocId =
+            self.generateSoaSafely(
+                projectId, actingMemberId, req.isShareWithClient(), req.isNotifyClient());
       } catch (RuntimeException e) {
         log.warn(
             "SoA generation failed for project={}; closure proceeds without SoA", projectId, e);
@@ -375,12 +377,13 @@ public class MatterClosureService {
    * <p>{@code REQUIRES_NEW} guarantees a fresh transaction even if a caller's test harness still
    * has one open, so a rollback here cannot poison the outer close transaction.
    *
-   * <p>The closure letter is born portal-visible — {@code generateForProject} creates the linked
-   * Document at {@link Document.Visibility#PORTAL} from the start and emits a canonical {@code
-   * DocumentGeneratedEvent} carrying explicit {@code scope=PROJECT, visibility=PORTAL} in details
-   * (GAP-L-74 part B: client-facing per scenario step 61.8). This eliminates the OBS-2106 race
-   * where the listener could observe an INTERNAL visibility before the post-generation flip
-   * committed, dropping the portal email; no follow-up event or dedup-coalescence is needed.
+   * <p>Phase 88 U13 / ADR-350: the letter's visibility follows the request's intent flags — {@link
+   * Document.Visibility#PORTAL} when {@link ClosureRequest#isShareWithClient()} (notify implies
+   * share), otherwise {@link Document.Visibility#INTERNAL}. {@code generateForProject} creates the
+   * linked Document at that visibility from the start and emits a canonical {@code
+   * DocumentGeneratedEvent} carrying explicit {@code scope}/{@code visibility} and {@code
+   * notify_client} in details, so {@code PortalDocumentNotificationHandler} emails the client only
+   * on explicit intent — and without the OBS-2106 DB-fallback race.
    *
    * <p>LZKC-018: the template's {@code closure.*} / {@code matter.*} variables cannot be produced
    * by the PROJECT-dispatched {@code ProjectContextBuilder} (they depend on the in-flight {@link
@@ -398,8 +401,9 @@ public class MatterClosureService {
               projectId,
               CLOSURE_LETTER_SLUG,
               actingMemberId,
-              Document.Visibility.PORTAL,
-              closureContext);
+              req.isShareWithClient() ? Document.Visibility.PORTAL : Document.Visibility.INTERNAL,
+              closureContext,
+              req.isNotifyClient());
       if (result == null || result.generatedDocument() == null) {
         return null;
       }
@@ -427,13 +431,17 @@ public class MatterClosureService {
    * (project {@code createdAt}) → today (UTC). If a different window is needed, the operator can
    * re-generate via the standalone "Generate Statement of Account" button on the matter header.
    *
+   * <p>Phase 88 U13 / ADR-350: the closure request's {@code shareWithClient} / {@code notifyClient}
+   * intent is passed through, so the SoA follows the same visibility + email rule as the letter.
+   *
    * <p>Deliberately does NOT swallow exceptions internally — Spring's REQUIRES_NEW proxy needs a
    * clean throw path to roll back the inner transaction without marking it
    * rollback-only-but-not-rolled-back. The caller ({@link #close}) wraps the proxy invocation in
    * try/catch and treats any failure as a null SoA id, preserving the close commit (C3).
    */
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public UUID generateSoaSafely(UUID projectId, UUID actingMemberId) {
+  public UUID generateSoaSafely(
+      UUID projectId, UUID actingMemberId, boolean shareWithClient, boolean notifyClient) {
     LocalDate today = LocalDate.now(ZoneOffset.UTC);
     LocalDate openDate =
         projectRepository
@@ -446,7 +454,9 @@ public class MatterClosureService {
             .orElse(today.minusYears(1));
     var resp =
         statementService.generate(
-            projectId, new GenerateStatementRequest(openDate, today, null), actingMemberId);
+            projectId,
+            new GenerateStatementRequest(openDate, today, null, shareWithClient, notifyClient),
+            actingMemberId);
     return resp.id();
   }
 

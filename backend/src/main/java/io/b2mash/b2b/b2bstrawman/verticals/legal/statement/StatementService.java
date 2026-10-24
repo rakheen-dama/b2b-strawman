@@ -109,6 +109,10 @@ public class StatementService {
       UUID projectId, GenerateStatementRequest request, UUID memberId) {
     moduleGuard.requireModule(MODULE_ID);
 
+    // Phase 88 U13 / ADR-350: explicit client-notification intent (notifyClient implies share).
+    boolean notifyClient = request.isNotifyClient();
+    boolean shareWithClient = request.isShareWithClient();
+
     var project =
         projectRepository
             .findById(projectId)
@@ -156,21 +160,22 @@ public class StatementService {
     // GeneratedDocumentService.createLinkedDocument PROJECT branch (the standard generate path),
     // but inlined here because StatementService deliberately bypasses
     // GeneratedDocumentService.generateDocument for the period-bound context (see class Javadoc).
-    // Use Visibility.PORTAL — a system-auto-shared statement of account is conceptually distinct
-    // from a firm user manually clicking "share with client" (Visibility.SHARED).
+    // Phase 88 U13 / ADR-350 (G-C5): INTERNAL until the firm explicitly shares — PORTAL only when
+    // the request carries shareWithClient (or notifyClient, which implies share).
     var pairedDocument =
         new Document(projectId, fileName, "application/pdf", pdfBytes.length, memberId);
     pairedDocument.assignS3Key(s3Key);
     pairedDocument.confirmUpload();
     pairedDocument.setVisibility(
-        Document.Visibility.PORTAL); // system-auto-shared per scenario step 61.2
+        shareWithClient ? Document.Visibility.PORTAL : Document.Visibility.INTERNAL);
     var savedDocument = documentRepository.save(pairedDocument);
     generatedDoc.linkToDocument(savedDocument.getId());
     // generatedDoc is managed in this @Transactional — Hibernate flushes the link on commit.
 
     // GAP-OBS-Day61 / E2.5: SoA bypasses DocumentService.confirmUpload (which is the canonical
     // emitter of DocumentCreatedEvent → portal projection upsert). Without this manual publish,
-    // SoA documents never appear in `portal.portal_documents`. Mirror DocumentService.java:320-332.
+    // shared SoA documents never appear in `portal.portal_documents` (the projection ignores
+    // INTERNAL ones). Mirror DocumentService.java:320-332.
     // Slice 25 (E2.6 refactor) will route SoA through the unified path and delete this inline
     // emission.
     eventPublisher.publishEvent(
@@ -198,7 +203,9 @@ public class StatementService {
                     "period_start", request.periodStart().toString(),
                     "period_end", request.periodEnd().toString(),
                     "template_id", template.getId().toString(),
-                    "file_name", fileName))
+                    "file_name", fileName,
+                    "shared_with_client", shareWithClient,
+                    "notify_client", notifyClient))
             .build());
 
     eventPublisher.publishEvent(
@@ -233,12 +240,12 @@ public class StatementService {
                 "scope",
                 "PROJECT",
                 "visibility",
-                "PORTAL"),
-            // GAP-L-97: PortalDocumentNotificationHandler keys off
-            // DocumentGeneratedEvent.templateName
-            // against an allowlist of SLUGS (OrgSettings.portalNotificationDocTypes default
-            // ["matter-closure-letter","statement-of-account"]). Pass the slug here; the display
-            // name remains in details.template_name above for activity-feed UX.
+                savedDocument.getVisibility(),
+                // ADR-350: PortalDocumentNotificationHandler emails the client only when true.
+                "notify_client",
+                notifyClient),
+            // GAP-L-97: PortalDocumentNotificationHandler keys the email headline + dedup off the
+            // template SLUG; the display name stays in details.template_name for activity-feed UX.
             template.getSlug(),
             TemplateEntityType.PROJECT,
             projectId,

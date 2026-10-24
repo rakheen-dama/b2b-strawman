@@ -1,13 +1,17 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.statement;
 
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.document.Document;
+import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -15,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.event.StatementOfAccountGeneratedEvent;
@@ -61,6 +66,8 @@ class StatementControllerIntegrationTest {
   @Autowired private ProjectRepository projectRepository;
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private EventCapture eventCapture;
+  @Autowired private GeneratedDocumentRepository generatedDocumentRepository;
+  @Autowired private DocumentRepository documentRepository;
 
   private String legalTenantSchema;
   private String nonLegalTenantSchema;
@@ -271,6 +278,51 @@ class StatementControllerIntegrationTest {
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.title").value("Module not enabled"))
         .andExpect(jsonPath("$.moduleId").value("disbursements"));
+  }
+
+  // ==========================================================================
+  // Phase 88 U13 / ADR-350: the boxed intent flags bind from JSON. shareWithClient=true saves the
+  // statement PORTAL (the no-flag bodies above prove the INTERNAL default stays accepted).
+  // ==========================================================================
+
+  @Test
+  void legalTenant_owner_POST_withShareWithClient_bindsFlag_andSavesPortal() throws Exception {
+    String body =
+        """
+        {
+          "periodStart": "2026-03-01",
+          "periodEnd": "2026-03-31",
+          "templateId": null,
+          "shareWithClient": true,
+          "notifyClient": false
+        }
+        """;
+
+    var result =
+        mockMvc
+            .perform(
+                post("/api/matters/" + projectId + "/statements")
+                    .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_statement_ctrl_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    UUID generatedId =
+        UUID.fromString(JsonPath.read(result.getResponse().getContentAsString(), "$.id"));
+    final String[] visibility = new String[1];
+    runInLegalTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var generated = generatedDocumentRepository.findById(generatedId).orElseThrow();
+                  visibility[0] =
+                      documentRepository
+                          .findById(generated.getDocumentId())
+                          .orElseThrow()
+                          .getVisibility();
+                }));
+    assertThat(visibility[0]).isEqualTo(Document.Visibility.PORTAL);
   }
 
   // ==========================================================================

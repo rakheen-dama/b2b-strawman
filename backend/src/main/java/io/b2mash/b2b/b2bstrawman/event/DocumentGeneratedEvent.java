@@ -8,10 +8,14 @@ import java.util.UUID;
 /**
  * Published when a document is generated from a template. Used for notifications and activity feed.
  *
- * @param templateName template SLUG (e.g., {@code "matter-closure-letter"}) — matches the
- *     per-tenant allowlist semantics in {@code OrgSettings.portalNotificationDocTypes}. The
- *     human-readable display name lives in {@code details.template_name} for activity-feed UX.
- *     Publishing the display name here breaks the portal-document-ready email gate (GAP-L-97).
+ * <p>Phase 88 U13 / ADR-350: {@code details.notify_client} ({@link Boolean}) carries the explicit
+ * client-email intent. {@code PortalDocumentNotificationHandler} emails the client's portal contact
+ * only when it is {@code true} and the document is portal-visible; publishers that have no intent
+ * put {@code false}.
+ *
+ * @param templateName template SLUG (e.g., {@code "matter-closure-letter"}) — drives the
+ *     portal-document-ready email headline and its dedup key. The human-readable display name lives
+ *     in {@code details.template_name} for activity-feed UX (GAP-L-97).
  */
 public record DocumentGeneratedEvent(
     String eventType,

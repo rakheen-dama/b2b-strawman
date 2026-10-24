@@ -12,13 +12,11 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentSharedEvent;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import jakarta.mail.internet.MimeMessage;
 import java.time.Instant;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -34,12 +32,16 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * GAP-L-72 (E5.1, slice 23) — covers the {@link PortalDocumentNotificationHandler} listener that
- * fires per-event portal-contact emails when matter-closure or Statement-of-Account documents are
- * generated.
+ * fires per-event portal-contact "Document ready" emails.
  *
- * <p>Each test publishes a synthetic {@link DocumentGeneratedEvent} via {@link
- * ApplicationEventPublisher} inside a tenant-scoped transaction so the {@code AFTER_COMMIT}
- * listener fires. Assertions are made against the GreenMail JVM singleton (dynamic port).
+ * <p>Phase 88 U13 / ADR-350: the handler emails only on explicit client-notification intent — a
+ * {@link DocumentGeneratedEvent} whose {@code details.notify_client} is {@code true}, or a {@link
+ * GeneratedDocumentSharedEvent} with {@code notifyClient=true} — and only for portal-visible
+ * documents. The per-tenant template allowlist is gone: intent, not template type, decides.
+ *
+ * <p>Each test publishes a synthetic event via {@link ApplicationEventPublisher} inside a
+ * tenant-scoped transaction so the {@code AFTER_COMMIT} listener fires. Assertions are made against
+ * the GreenMail JVM singleton (dynamic port).
  */
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -58,8 +60,6 @@ class PortalDocumentNotificationHandlerIntegrationTest {
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private PortalContactRepository portalContactRepository;
-  @Autowired private OrgSettingsRepository orgSettingsRepository;
-  @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private ApplicationEventPublisher eventPublisher;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private PortalDocumentNotificationHandler handler;
@@ -68,7 +68,6 @@ class PortalDocumentNotificationHandlerIntegrationTest {
   private UUID memberId;
   private UUID customerId;
   private UUID projectId;
-  private UUID contactId;
 
   @BeforeAll
   void provisionTenant() {
@@ -83,15 +82,6 @@ class PortalDocumentNotificationHandlerIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  // Default allowlist is seeded by Flyway V117. Re-assert it explicitly so the test
-                  // tenant is not at the mercy of unrelated migrations.
-                  OrgSettings settings = orgSettingsService.getOrCreateForCurrentTenant();
-                  settings
-                      .getPortal()
-                      .setPortalNotificationDocTypes(
-                          List.of("matter-closure-letter", "statement-of-account"));
-                  orgSettingsRepository.save(settings);
-
                   var customer = createActiveCustomer("L72 Test Client", CONTACT_EMAIL, memberId);
                   customer = customerRepository.save(customer);
                   customerId = customer.getId();
@@ -107,36 +97,25 @@ class PortalDocumentNotificationHandlerIntegrationTest {
                           CONTACT_EMAIL,
                           "L72 Test Contact",
                           PortalContact.ContactRole.PRIMARY);
-                  contactId = portalContactRepository.save(contact).getId();
+                  portalContactRepository.save(contact);
                 }));
   }
 
   @BeforeEach
-  void resetGreenMailAndAllowlist() throws Exception {
+  void resetGreenMailAndDedup() throws Exception {
     greenMail.purgeEmailFromAllMailboxes();
     // Caffeine dedup window is 5 minutes — without an explicit reset every test after the first
-    // would silently dedup against the previous one's (customer, project) tuple.
+    // would silently dedup against the previous one's (customer, project, template) tuple.
     handler.clearDedupCacheForTesting();
-    // Re-assert default allowlist between tests so the empty-allowlist case doesn't bleed into
-    // subsequent tests.
-    runInTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  OrgSettings settings = orgSettingsService.getOrCreateForCurrentTenant();
-                  settings
-                      .getPortal()
-                      .setPortalNotificationDocTypes(
-                          List.of("matter-closure-letter", "statement-of-account"));
-                  orgSettingsRepository.save(settings);
-                }));
   }
 
-  /** Eligible event (visibility=PORTAL, scope=PROJECT, allowlisted template) → email sent. */
+  /**
+   * Portal-visible event with explicit notify_client=true → email sent, deep-linked to /matters.
+   */
   @Test
-  void eligibleEvent_sendsEmail() throws Exception {
+  void eligibleEvent_withNotifyClient_sendsEmail() throws Exception {
     UUID generatedDocId = UUID.randomUUID();
-    publishEvent(generatedDocId, projectId, "statement-of-account", "PROJECT", "PORTAL");
+    publishEvent(generatedDocId, projectId, "statement-of-account", "PROJECT", "PORTAL", true);
 
     MimeMessage[] received = greenMail.getReceivedMessages();
     assertThat(received).hasSize(1);
@@ -153,62 +132,52 @@ class PortalDocumentNotificationHandlerIntegrationTest {
     assertThat(html).as("legacy /projects/ link must be gone").doesNotContain("/projects/");
   }
 
-  /** Non-portal-visible event (INTERNAL) → no email. */
+  /**
+   * ADR-350 (G-C5): a portal-visible statement of account WITHOUT a notify_client key — what every
+   * "Preview & Save" produced before the intent flags — must NOT email the client.
+   */
   @Test
-  void internalVisibility_skipsEmail() {
+  void portalVisibleEvent_withoutNotifyClient_skipsEmail() {
     UUID generatedDocId = UUID.randomUUID();
-    publishEvent(generatedDocId, projectId, "statement-of-account", "PROJECT", "INTERNAL");
+    publishEvent(generatedDocId, projectId, "statement-of-account", "PROJECT", "PORTAL", null);
 
-    MimeMessage[] received = greenMail.getReceivedMessages();
-    assertThat(received).isEmpty();
+    assertThat(greenMail.getReceivedMessages()).isEmpty();
   }
 
-  /** Template name not in allowlist (e.g. invoice-delivery) → no email. */
+  /** ADR-350: explicit notify_client=false → no email even when portal-visible. */
   @Test
-  void unallowedTemplate_skipsEmail() {
+  void notifyClientFalse_skipsEmail() {
     UUID generatedDocId = UUID.randomUUID();
-    publishEvent(generatedDocId, projectId, "invoice-delivery", "PROJECT", "PORTAL");
+    publishEvent(generatedDocId, projectId, "matter-closure-letter", "PROJECT", "PORTAL", false);
 
-    MimeMessage[] received = greenMail.getReceivedMessages();
-    assertThat(received).isEmpty();
+    assertThat(greenMail.getReceivedMessages()).isEmpty();
+  }
+
+  /** Intent without portal visibility (INTERNAL) → no email: the client could not open it. */
+  @Test
+  void notifyClientTrue_butInternal_skipsEmail() {
+    UUID generatedDocId = UUID.randomUUID();
+    publishEvent(generatedDocId, projectId, "statement-of-account", "PROJECT", "INTERNAL", true);
+
+    assertThat(greenMail.getReceivedMessages()).isEmpty();
   }
 
   /**
-   * GAP-L-97 regression guard: if a future change accidentally reverts a publisher to passing the
-   * display NAME (e.g., "Statement of Account") instead of the SLUG ("statement-of-account"), the
-   * allowlist must still reject it. This prevents the silent-skip mode that broke the Day 60 portal
-   * email kick-off in cycle 46.
+   * ADR-350: the allowlist is gone — any template slug emails on explicit intent, with the generic
+   * "A new document is ready for you" copy.
    */
   @Test
-  void displayNamePublishedAsTemplateName_skipsEmail() {
+  void anyTemplate_withNotifyClient_sendsGenericDocumentReadyEmail() throws Exception {
     UUID generatedDocId = UUID.randomUUID();
-    publishEvent(generatedDocId, projectId, "Statement of Account", "PROJECT", "PORTAL");
+    publishEvent(generatedDocId, projectId, "engagement-letter", "PROJECT", "PORTAL", true);
 
     MimeMessage[] received = greenMail.getReceivedMessages();
-    assertThat(received)
-        .as(
-            "Display name 'Statement of Account' must NOT match the slug allowlist — guarding"
-                + " against GAP-L-97 regressions where a publisher reverts to template.getName().")
-        .isEmpty();
-  }
-
-  /** Empty per-tenant allowlist (toggle off) → no email even for normally allowlisted templates. */
-  @Test
-  void emptyAllowlist_disablesAllSends() {
-    runInTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  OrgSettings settings = orgSettingsService.getOrCreateForCurrentTenant();
-                  settings.getPortal().setPortalNotificationDocTypes(List.of());
-                  orgSettingsRepository.save(settings);
-                }));
-
-    UUID generatedDocId = UUID.randomUUID();
-    publishEvent(generatedDocId, projectId, "matter-closure-letter", "PROJECT", "PORTAL");
-
-    MimeMessage[] received = greenMail.getReceivedMessages();
-    assertThat(received).isEmpty();
+    assertThat(received).hasSize(1);
+    assertThat(received[0].getAllRecipients()[0].toString()).isEqualTo(CONTACT_EMAIL);
+    String html = extractHtmlBody(received[0]);
+    assertThat(html).contains("A new document is ready for you");
+    assertThat(html)
+        .contains("href=\"http://localhost:3002/matters/" + projectId + "?orgId=" + ORG_ID + "\"");
   }
 
   /**
@@ -222,8 +191,8 @@ class PortalDocumentNotificationHandlerIntegrationTest {
     UUID gd1 = UUID.randomUUID();
     UUID gd2 = UUID.randomUUID();
 
-    publishEvent(gd1, projectId, "matter-closure-letter", "PROJECT", "PORTAL");
-    publishEvent(gd2, projectId, "statement-of-account", "PROJECT", "PORTAL");
+    publishEvent(gd1, projectId, "matter-closure-letter", "PROJECT", "PORTAL", true);
+    publishEvent(gd2, projectId, "statement-of-account", "PROJECT", "PORTAL", true);
 
     MimeMessage[] received = greenMail.getReceivedMessages();
     assertThat(received)
@@ -234,15 +203,15 @@ class PortalDocumentNotificationHandlerIntegrationTest {
   /**
    * Re-emission of the SAME document type within 5 minutes for the same (customer, project) → still
    * only one email. Guards the residual dedup semantics after LZKC-015 widened the key to (tenant,
-   * customer, project, template).
+   * customer, project, template). ADR-350 keeps the dedup gate unchanged.
    */
   @Test
   void sameDocumentTypeReEmissionStillDedups() {
     UUID gd1 = UUID.randomUUID();
     UUID gd2 = UUID.randomUUID();
 
-    publishEvent(gd1, projectId, "statement-of-account", "PROJECT", "PORTAL");
-    publishEvent(gd2, projectId, "statement-of-account", "PROJECT", "PORTAL");
+    publishEvent(gd1, projectId, "statement-of-account", "PROJECT", "PORTAL", true);
+    publishEvent(gd2, projectId, "statement-of-account", "PROJECT", "PORTAL", true);
 
     MimeMessage[] received = greenMail.getReceivedMessages();
     assertThat(received)
@@ -267,11 +236,44 @@ class PortalDocumentNotificationHandlerIntegrationTest {
     UUID gd1 = UUID.randomUUID();
     UUID gd2 = UUID.randomUUID();
 
-    publishEvent(gd1, projectId, "statement-of-account", "PROJECT", "PORTAL");
-    publishEvent(gd2, secondProjectId, "statement-of-account", "PROJECT", "PORTAL");
+    publishEvent(gd1, projectId, "statement-of-account", "PROJECT", "PORTAL", true);
+    publishEvent(gd2, secondProjectId, "statement-of-account", "PROJECT", "PORTAL", true);
 
     MimeMessage[] received = greenMail.getReceivedMessages();
     assertThat(received).hasSize(2);
+  }
+
+  /** ADR-350 "Share with client" with notifyClient=true → one document-ready email. */
+  @Test
+  void sharedEvent_withNotifyClient_sendsEmail() throws Exception {
+    publishSharedEvent(projectId, "statement-of-account", "PORTAL", true);
+
+    MimeMessage[] received = greenMail.getReceivedMessages();
+    assertThat(received).hasSize(1);
+    assertThat(received[0].getAllRecipients()[0].toString()).isEqualTo(CONTACT_EMAIL);
+    assertThat(extractHtmlBody(received[0]))
+        .contains("href=\"http://localhost:3002/matters/" + projectId + "?orgId=" + ORG_ID + "\"");
+  }
+
+  /** ADR-350 "Share with client" without notifyClient → shared silently, no email. */
+  @Test
+  void sharedEvent_withoutNotifyClient_skipsEmail() {
+    publishSharedEvent(projectId, "statement-of-account", "PORTAL", false);
+
+    assertThat(greenMail.getReceivedMessages()).isEmpty();
+  }
+
+  /**
+   * D-16: the blank-template early return existed only for the allowlist. Sharing a document whose
+   * template has since been deleted (null slug) must still email on explicit intent.
+   */
+  @Test
+  void sharedEvent_withNullTemplateSlug_stillSendsEmail() throws Exception {
+    publishSharedEvent(projectId, null, "PORTAL", true);
+
+    MimeMessage[] received = greenMail.getReceivedMessages();
+    assertThat(received).hasSize(1);
+    assertThat(received[0].getAllRecipients()[0]).hasToString(CONTACT_EMAIL);
   }
 
   // ── helpers ────────────────────────────────────────────────────────────
@@ -279,14 +281,24 @@ class PortalDocumentNotificationHandlerIntegrationTest {
   /**
    * Publishes a {@link DocumentGeneratedEvent} inside a tenant-scoped transaction. {@code
    * AFTER_COMMIT} listeners run when the transaction commits, so we wrap in {@code
-   * transactionTemplate} to give them a chance to fire.
+   * transactionTemplate} to give them a chance to fire. A {@code null} {@code notifyClient} omits
+   * the {@code notify_client} key entirely (the pre-ADR-350 event shape).
    */
   private void publishEvent(
       UUID generatedDocId,
       UUID targetProjectId,
       String templateName,
       String scope,
-      String visibility) {
+      String visibility,
+      Boolean notifyClient) {
+    Map<String, Object> details = new HashMap<>();
+    details.put("file_name", "L72-test-" + templateName + ".pdf");
+    details.put("template_name", templateName);
+    details.put("scope", scope);
+    details.put("visibility", visibility);
+    if (notifyClient != null) {
+      details.put("notify_client", notifyClient);
+    }
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
@@ -302,20 +314,32 @@ class PortalDocumentNotificationHandlerIntegrationTest {
                             tenantSchema,
                             ORG_ID,
                             Instant.now(),
-                            Map.of(
-                                "file_name",
-                                "L72-test-" + templateName + ".pdf",
-                                "template_name",
-                                templateName,
-                                "scope",
-                                scope,
-                                "visibility",
-                                visibility),
+                            Map.copyOf(details),
                             templateName,
                             TemplateEntityType.PROJECT,
                             targetProjectId,
                             "L72-test-" + templateName + ".pdf",
                             generatedDocId))));
+  }
+
+  /** Publishes a {@link GeneratedDocumentSharedEvent} inside a tenant-scoped transaction. */
+  private void publishSharedEvent(
+      UUID targetProjectId, String templateSlug, String visibility, boolean notifyClient) {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx ->
+                    eventPublisher.publishEvent(
+                        new GeneratedDocumentSharedEvent(
+                            tenantSchema,
+                            ORG_ID,
+                            RequestScopes.getShardIdOrDefault(),
+                            targetProjectId,
+                            UUID.randomUUID(),
+                            templateSlug,
+                            "L72-shared.pdf",
+                            visibility,
+                            notifyClient))));
   }
 
   private static String extractHtmlBody(MimeMessage msg) throws Exception {

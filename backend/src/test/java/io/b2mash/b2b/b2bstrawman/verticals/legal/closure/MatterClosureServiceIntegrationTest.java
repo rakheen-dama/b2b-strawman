@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -171,7 +172,14 @@ class MatterClosureServiceIntegrationTest {
                         matterClosureService.close(
                             projectId,
                             new ClosureRequest(
-                                ClosureReason.CONCLUDED, "note", false, false, false, null),
+                                ClosureReason.CONCLUDED,
+                                "note",
+                                false,
+                                false,
+                                false,
+                                null,
+                                null,
+                                null),
                             memberId))
                 .isInstanceOfSatisfying(
                     ClosureGateFailedException.class,
@@ -211,7 +219,9 @@ class MatterClosureServiceIntegrationTest {
                                     false,
                                     false,
                                     true,
-                                    VALID_JUSTIFICATION),
+                                    VALID_JUSTIFICATION,
+                                    null,
+                                    null),
                                 memberId))
                     .isInstanceOf(AccessDeniedException.class));
   }
@@ -227,7 +237,14 @@ class MatterClosureServiceIntegrationTest {
                         matterClosureService.close(
                             projectId,
                             new ClosureRequest(
-                                ClosureReason.CONCLUDED, null, false, false, true, "too short"),
+                                ClosureReason.CONCLUDED,
+                                null,
+                                false,
+                                false,
+                                true,
+                                "too short",
+                                null,
+                                null),
                             memberId))
                 .isInstanceOf(InvalidStateException.class));
   }
@@ -248,7 +265,9 @@ class MatterClosureServiceIntegrationTest {
                       /* generateClosureLetter */ false,
                       /* generateStatementOfAccount */ false,
                       /* override */ true,
-                      VALID_JUSTIFICATION),
+                      VALID_JUSTIFICATION,
+                      null,
+                      null),
                   memberId);
 
           assertThat(response.matterId()).isEqualTo(projectId);
@@ -296,7 +315,14 @@ class MatterClosureServiceIntegrationTest {
             matterClosureService.close(
                 projectId,
                 new ClosureRequest(
-                    ClosureReason.CONCLUDED, "done", false, false, true, VALID_JUSTIFICATION),
+                    ClosureReason.CONCLUDED,
+                    "done",
+                    false,
+                    false,
+                    true,
+                    VALID_JUSTIFICATION,
+                    null,
+                    null),
                 memberId));
 
     runInTenantAsOwner(
@@ -330,7 +356,14 @@ class MatterClosureServiceIntegrationTest {
             matterClosureService.close(
                 projectId,
                 new ClosureRequest(
-                    ClosureReason.CONCLUDED, "done", false, false, true, VALID_JUSTIFICATION),
+                    ClosureReason.CONCLUDED,
+                    "done",
+                    false,
+                    false,
+                    true,
+                    VALID_JUSTIFICATION,
+                    null,
+                    null),
                 memberId));
 
     runInTenantAsOwner(
@@ -383,7 +416,14 @@ class MatterClosureServiceIntegrationTest {
             matterClosureService.close(
                 projectId,
                 new ClosureRequest(
-                    ClosureReason.CONCLUDED, "done", false, false, true, VALID_JUSTIFICATION),
+                    ClosureReason.CONCLUDED,
+                    "done",
+                    false,
+                    false,
+                    true,
+                    VALID_JUSTIFICATION,
+                    null,
+                    null),
                 memberId));
 
     runInTenantAsOwner(
@@ -418,7 +458,14 @@ class MatterClosureServiceIntegrationTest {
             matterClosureService.close(
                 projectId,
                 new ClosureRequest(
-                    ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
+                    ClosureReason.CONCLUDED,
+                    null,
+                    false,
+                    false,
+                    true,
+                    VALID_JUSTIFICATION,
+                    null,
+                    null),
                 memberId));
 
     runInTenantAsOwner(
@@ -439,7 +486,14 @@ class MatterClosureServiceIntegrationTest {
             matterClosureService.close(
                 projectId,
                 new ClosureRequest(
-                    ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
+                    ClosureReason.CONCLUDED,
+                    null,
+                    false,
+                    false,
+                    true,
+                    VALID_JUSTIFICATION,
+                    null,
+                    null),
                 memberId));
 
     // Backdate the retention anchor far past the retention window (default 7 years at OrgSettings).
@@ -461,14 +515,14 @@ class MatterClosureServiceIntegrationTest {
   }
 
   // ==========================================================================
-  // GAP-L-74 part B / GAP-L-74-followup — closure letter linked Document is
-  // flipped to PORTAL (system-auto-shared) so it appears on the portal Documents
-  // tab. PORTAL is the "system" twin of SHARED — both render to portal contacts,
-  // but audit + analytics can tell manual vs system shares apart.
+  // GAP-L-74 part B / Phase 88 U13 (ADR-350) — the closure letter and the
+  // closure SoA each get a linked Document. They are INTERNAL by default; the
+  // ClosureRequest intent flags (shareWithClient, notifyClient → implies share)
+  // make them PORTAL and carry notify_client on the DocumentGeneratedEvent.
   // ==========================================================================
 
   @Test
-  void close_withGenerateClosureLetterTrue_flipsLinkedDocumentVisibility_toPortal() {
+  void close_withGenerateClosureLetterTrue_defaultsLinkedDocumentToInternal() {
     UUID projectId = createProject("L-74b Closure Letter Visibility Matter");
 
     var response =
@@ -476,18 +530,14 @@ class MatterClosureServiceIntegrationTest {
             () ->
                 matterClosureService.close(
                     projectId,
-                    new ClosureRequest(
-                        ClosureReason.CONCLUDED,
-                        "L-74b regression",
-                        /* generateClosureLetter */ true,
-                        /* generateStatementOfAccount */ false,
-                        /* override */ true,
-                        VALID_JUSTIFICATION),
+                    closureRequestWithIntent(
+                        "L-74b regression", /* shareWithClient */ null, /* notifyClient */ null),
                     memberId));
 
     assertThat(response.closureLetterDocumentId())
         .as("closure letter GeneratedDocument id must be set when generateClosureLetter=true")
         .isNotNull();
+    assertThat(response.statementOfAccountDocumentId()).isNotNull();
 
     runInTenantAsOwner(
         () ->
@@ -505,13 +555,77 @@ class MatterClosureServiceIntegrationTest {
                       documentRepository.findById(generated.getDocumentId()).orElseThrow();
                   assertThat(linkedDoc.getVisibility())
                       .as(
-                          "GAP-L-74 part B / GAP-L-74-followup: closure-letter linked Document"
-                              + " must be flipped to PORTAL (system-auto-shared) so it appears on"
-                              + " the portal Documents tab — distinct from manual SHARED")
-                      .isEqualTo(Document.Visibility.PORTAL);
+                          "ADR-350 (G-D14): without intent flags the closure-letter linked"
+                              + " Document stays INTERNAL — the client sees nothing until shared")
+                      .isEqualTo(Document.Visibility.INTERNAL);
                   assertThat(linkedDoc.getProjectId()).isEqualTo(projectId);
                   assertThat(linkedDoc.getFileName()).startsWith("matter-closure-letter");
                 }));
+    assertThat(linkedVisibility(response.statementOfAccountDocumentId()))
+        .as("ADR-350: the closure SoA follows the same default — INTERNAL")
+        .isEqualTo(Document.Visibility.INTERNAL);
+  }
+
+  @Test
+  void close_withShareWithClient_letterAndSoaArePortal() {
+    UUID projectId = createProject("ADR-350 Share Closure Pack Matter");
+
+    var response =
+        runInTenantReturning(
+            () ->
+                matterClosureService.close(
+                    projectId,
+                    closureRequestWithIntent(
+                        "ADR-350 share", /* shareWithClient */ true, /* notifyClient */ null),
+                    memberId));
+
+    assertThat(linkedVisibility(response.closureLetterDocumentId()))
+        .isEqualTo(Document.Visibility.PORTAL);
+    assertThat(linkedVisibility(response.statementOfAccountDocumentId()))
+        .isEqualTo(Document.Visibility.PORTAL);
+
+    var projectEvents =
+        events.stream(DocumentGeneratedEvent.class)
+            .filter(e -> projectId.equals(e.projectId()))
+            .toList();
+    assertThat(projectEvents).hasSize(2);
+    assertThat(projectEvents)
+        .allSatisfy(
+            e ->
+                assertThat(e.details())
+                    .containsEntry("visibility", "PORTAL")
+                    .containsEntry("notify_client", false));
+  }
+
+  @Test
+  void close_withNotifyClient_eventsCarryNotifyClientTrue() {
+    UUID projectId = createProject("ADR-350 Notify Closure Pack Matter");
+
+    var response =
+        runInTenantReturning(
+            () ->
+                matterClosureService.close(
+                    projectId,
+                    closureRequestWithIntent(
+                        "ADR-350 notify", /* shareWithClient */ null, /* notifyClient */ true),
+                    memberId));
+
+    assertThat(response.closureLetterDocumentId()).isNotNull();
+    assertThat(response.statementOfAccountDocumentId()).isNotNull();
+
+    var projectEvents =
+        events.stream(DocumentGeneratedEvent.class)
+            .filter(e -> projectId.equals(e.projectId()))
+            .toList();
+    assertThat(projectEvents)
+        .extracting(DocumentGeneratedEvent::templateName)
+        .containsExactlyInAnyOrder("matter-closure-letter", "statement-of-account");
+    assertThat(projectEvents)
+        .allSatisfy(
+            e ->
+                assertThat(e.details())
+                    .containsEntry("visibility", "PORTAL")
+                    .containsEntry("notify_client", true));
   }
 
   // ==========================================================================
@@ -537,7 +651,9 @@ class MatterClosureServiceIntegrationTest {
                         /* generateClosureLetter */ true,
                         /* generateStatementOfAccount */ false,
                         /* override */ true,
-                        VALID_JUSTIFICATION),
+                        VALID_JUSTIFICATION,
+                        null,
+                        null),
                     memberId));
 
     assertThat(response.closureLetterDocumentId())
@@ -595,7 +711,14 @@ class MatterClosureServiceIntegrationTest {
             matterClosureService.close(
                 projectId,
                 new ClosureRequest(
-                    ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
+                    ClosureReason.CONCLUDED,
+                    null,
+                    false,
+                    false,
+                    true,
+                    VALID_JUSTIFICATION,
+                    null,
+                    null),
                 memberId));
 
     // Backdate the persisted closure timestamp — as if the letter is re-rendered long after the
@@ -612,7 +735,14 @@ class MatterClosureServiceIntegrationTest {
                 matterClosureContextBuilder.buildClosureContext(
                     projectId,
                     new ClosureRequest(
-                        ClosureReason.CONCLUDED, "re-render", false, false, false, null)));
+                        ClosureReason.CONCLUDED,
+                        "re-render",
+                        false,
+                        false,
+                        false,
+                        null,
+                        null,
+                        null)));
 
     @SuppressWarnings("unchecked")
     Map<String, Object> closure = (Map<String, Object>) context.get("closure");
@@ -640,7 +770,9 @@ class MatterClosureServiceIntegrationTest {
                         /* generateClosureLetter */ false,
                         /* generateStatementOfAccount */ true,
                         /* override */ true,
-                        VALID_JUSTIFICATION),
+                        VALID_JUSTIFICATION,
+                        null,
+                        null),
                     memberId));
 
     assertThat(response.statementOfAccountDocumentId())
@@ -668,7 +800,9 @@ class MatterClosureServiceIntegrationTest {
                         /* generateClosureLetter */ false,
                         /* generateStatementOfAccount */ false,
                         /* override */ true,
-                        VALID_JUSTIFICATION),
+                        VALID_JUSTIFICATION,
+                        null,
+                        null),
                     memberId));
 
     assertThat(response.statementOfAccountDocumentId())
@@ -693,7 +827,9 @@ class MatterClosureServiceIntegrationTest {
                         /* generateClosureLetter */ false,
                         /* generateStatementOfAccount */ null,
                         /* override */ true,
-                        VALID_JUSTIFICATION),
+                        VALID_JUSTIFICATION,
+                        null,
+                        null),
                     memberId));
 
     assertThat(response.statementOfAccountDocumentId())
@@ -714,7 +850,14 @@ class MatterClosureServiceIntegrationTest {
             matterClosureService.close(
                 projectId,
                 new ClosureRequest(
-                    ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
+                    ClosureReason.CONCLUDED,
+                    null,
+                    false,
+                    false,
+                    true,
+                    VALID_JUSTIFICATION,
+                    null,
+                    null),
                 memberId));
 
     runInTenantAsOwner(
@@ -746,7 +889,14 @@ class MatterClosureServiceIntegrationTest {
             matterClosureService.close(
                 projectIdA,
                 new ClosureRequest(
-                    ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
+                    ClosureReason.CONCLUDED,
+                    null,
+                    false,
+                    false,
+                    true,
+                    VALID_JUSTIFICATION,
+                    null,
+                    null),
                 memberId));
 
     // Second close on the same tenant — must NOT throw a ResourceConflictException, must NOT
@@ -756,7 +906,14 @@ class MatterClosureServiceIntegrationTest {
             matterClosureService.close(
                 projectIdB,
                 new ClosureRequest(
-                    ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
+                    ClosureReason.CONCLUDED,
+                    null,
+                    false,
+                    false,
+                    true,
+                    VALID_JUSTIFICATION,
+                    null,
+                    null),
                 memberId));
 
     runInTenantAsOwner(
@@ -792,7 +949,9 @@ class MatterClosureServiceIntegrationTest {
                         false,
                         false,
                         true,
-                        VALID_JUSTIFICATION),
+                        VALID_JUSTIFICATION,
+                        null,
+                        null),
                     memberId));
 
     UUID closureLogId = response.closureLogId();
@@ -863,7 +1022,14 @@ class MatterClosureServiceIntegrationTest {
                 matterClosureService.close(
                     projectIdA,
                     new ClosureRequest(
-                        ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
+                        ClosureReason.CONCLUDED,
+                        null,
+                        false,
+                        false,
+                        true,
+                        VALID_JUSTIFICATION,
+                        null,
+                        null),
                     memberId));
     var responseB =
         runInTenantReturning(
@@ -871,7 +1037,14 @@ class MatterClosureServiceIntegrationTest {
                 matterClosureService.close(
                     projectIdB,
                     new ClosureRequest(
-                        ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
+                        ClosureReason.CONCLUDED,
+                        null,
+                        false,
+                        false,
+                        true,
+                        VALID_JUSTIFICATION,
+                        null,
+                        null),
                     memberId));
 
     UUID closureLogIdA = responseA.closureLogId();
@@ -940,7 +1113,14 @@ class MatterClosureServiceIntegrationTest {
                 matterClosureService.close(
                     projectId,
                     new ClosureRequest(
-                        ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
+                        ClosureReason.CONCLUDED,
+                        null,
+                        false,
+                        false,
+                        true,
+                        VALID_JUSTIFICATION,
+                        null,
+                        null),
                     memberId));
     UUID overrideLogId = response.closureLogId();
     assertThat(overrideLogId).isNotNull();
@@ -1015,7 +1195,14 @@ class MatterClosureServiceIntegrationTest {
                 matterClosureService.close(
                     projectId,
                     new ClosureRequest(
-                        ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
+                        ClosureReason.CONCLUDED,
+                        null,
+                        false,
+                        false,
+                        true,
+                        VALID_JUSTIFICATION,
+                        null,
+                        null),
                     memberId));
     UUID closureLogId = response.closureLogId();
     assertThat(closureLogId).isNotNull();
@@ -1062,6 +1249,33 @@ class MatterClosureServiceIntegrationTest {
    * Creates a persisted Project in the tenant schema and returns its id. Projects start in ACTIVE
    * status which is required for the close path.
    */
+  private ClosureRequest closureRequestWithIntent(
+      String notes, Boolean shareWithClient, Boolean notifyClient) {
+    return new ClosureRequest(
+        ClosureReason.CONCLUDED,
+        notes,
+        /* generateClosureLetter */ true,
+        /* generateStatementOfAccount */ true,
+        /* override */ true,
+        VALID_JUSTIFICATION,
+        shareWithClient,
+        notifyClient);
+  }
+
+  private String linkedVisibility(UUID generatedDocumentId) {
+    return runInTenantReturning(
+        () ->
+            transactionTemplate.execute(
+                tx -> {
+                  var generated =
+                      generatedDocumentRepository.findById(generatedDocumentId).orElseThrow();
+                  return documentRepository
+                      .findById(generated.getDocumentId())
+                      .orElseThrow()
+                      .getVisibility();
+                }));
+  }
+
   private UUID createProject(String name) {
     final UUID[] id = new UUID[1];
     runInTenantAsOwner(

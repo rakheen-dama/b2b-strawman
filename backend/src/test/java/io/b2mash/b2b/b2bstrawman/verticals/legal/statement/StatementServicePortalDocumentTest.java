@@ -40,9 +40,13 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * GAP-L-74 part A regression: {@link StatementService#generate} must persist a paired {@link
- * Document} row (with {@code visibility=SHARED}, {@code status=UPLOADED}, the same {@code s3Key} as
- * the {@code GeneratedDocument}) and link it back via {@code generatedDoc.linkToDocument(...)} so
- * the SoA appears on the standard documents pipeline that the portal queries.
+ * Document} row ({@code status=UPLOADED}, the same {@code s3Key} as the {@code GeneratedDocument})
+ * and link it back via {@code generatedDoc.linkToDocument(...)} so the SoA appears on the standard
+ * documents pipeline that the portal queries.
+ *
+ * <p>Phase 88 U13 / ADR-350 (G-C5): the paired Document is {@code INTERNAL} unless the request
+ * carries {@code shareWithClient} (or {@code notifyClient}, which implies share), and {@code
+ * DocumentGeneratedEvent.details.notify_client} carries the explicit client-email intent.
  *
  * <p>Pre-fix evidence (Day 61 verify): {@code generated_documents.document_id} was {@code NULL} for
  * SoA outputs and no row existed in {@code documents}, so the Statement of Account never showed up
@@ -113,7 +117,7 @@ class StatementServicePortalDocumentTest {
   }
 
   @Test
-  void generate_persistsPairedDocumentRow_withSharedVisibility_andLinksGeneratedDocument() {
+  void generate_persistsPairedDocumentRow_defaultsToInternal_andLinksGeneratedDocument() {
     StatementResponse response =
         runInTenantReturning(
             () ->
@@ -122,7 +126,9 @@ class StatementServicePortalDocumentTest {
                     new GenerateStatementRequest(
                         LocalDate.parse("2026-04-01"),
                         LocalDate.parse("2026-04-30"),
-                        /* templateId */ null),
+                        /* templateId */ null,
+                        null,
+                        null),
                     memberId));
 
     assertThat(response).isNotNull();
@@ -140,12 +146,11 @@ class StatementServicePortalDocumentTest {
                               + " back via document_id")
                       .isNotNull();
 
-                  // GAP-L-74-followup: the paired Document is PORTAL (system-auto-shared) +
-                  // UPLOADED + same S3 key as the GeneratedDocument so the portal Documents tab
-                  // can list + presign-download it. PORTAL distinguishes system-auto-share from
-                  // a firm user manually clicking "share" (Visibility.SHARED).
+                  // ADR-350 (G-C5): no intent flags → the paired Document is INTERNAL (the client
+                  // sees nothing until the firm shares it) + UPLOADED + same S3 key as the
+                  // GeneratedDocument so a later share can list + presign-download it.
                   var paired = documentRepository.findById(generated.getDocumentId()).orElseThrow();
-                  assertThat(paired.getVisibility()).isEqualTo(Document.Visibility.PORTAL);
+                  assertThat(paired.getVisibility()).isEqualTo(Document.Visibility.INTERNAL);
                   assertThat(paired.getStatus()).isEqualTo(Document.Status.UPLOADED);
                   assertThat(paired.getS3Key()).isEqualTo(generated.getS3Key());
                   assertThat(paired.getProjectId()).isEqualTo(projectId);
@@ -166,7 +171,7 @@ class StatementServicePortalDocumentTest {
    * GeneratedDocumentService.generateDocument}.
    */
   @Test
-  void generate_publishesBothStatementAndDocumentGeneratedEvents() {
+  void generate_withoutIntentFlags_savesInternal_andEventCarriesNotifyClientFalse() {
     StatementResponse response =
         runInTenantReturning(
             () ->
@@ -175,7 +180,9 @@ class StatementServicePortalDocumentTest {
                     new GenerateStatementRequest(
                         LocalDate.parse("2026-05-01"),
                         LocalDate.parse("2026-05-31"),
-                        /* templateId */ null),
+                        /* templateId */ null,
+                        null,
+                        null),
                     memberId));
 
     assertThat(response).isNotNull();
@@ -216,21 +223,21 @@ class StatementServicePortalDocumentTest {
     assertThat(docEvent.primaryEntityId()).isEqualTo(projectId);
     assertThat(docEvent.fileName()).isNotBlank();
     assertThat(docEvent.templateName()).isNotBlank();
-    // GAP-L-97: templateName MUST be the slug (matches OrgSettings.portalNotificationDocTypes
-    // allowlist semantics — display name "Statement of Account" never matches the slug
-    // "statement-of-account" and the portal-document-ready email is silently skipped).
+    // GAP-L-97: templateName MUST be the slug — PortalDocumentNotificationHandler keys the email
+    // headline and its dedup on it.
     assertThat(docEvent.templateName())
         .as("DocumentGeneratedEvent.templateName must be the slug, not the display name")
         .isEqualTo("statement-of-account");
     assertThat(docEvent.details())
         .containsEntry("scope", "PROJECT")
-        .containsEntry("visibility", "PORTAL")
+        .containsEntry("visibility", "INTERNAL")
+        .containsEntry("notify_client", false)
         .containsKey("file_name")
         .containsKey("template_name");
 
     // DocumentCreatedEvent — new (E2.5 fix). Drives the portal.portal_documents projection via
-    // PortalEventHandler.onDocumentCreated. Without this, SoA documents never surface in the
-    // portal projection (the gap the slice is named after).
+    // PortalEventHandler.onDocumentCreated, which ignores INTERNAL documents; it is still published
+    // for every SoA (parity with DocumentService.confirmUpload).
     var createdEvents =
         events.stream(DocumentCreatedEvent.class)
             .filter(e -> response.id() != null && e.getDocumentId() != null)
@@ -240,13 +247,82 @@ class StatementServicePortalDocumentTest {
         .as("DocumentCreatedEvent must be published so the portal projection upserts SoA rows")
         .hasSize(1);
     var createdEvent = createdEvents.get(0);
-    assertThat(createdEvent.getVisibility()).isEqualTo("PORTAL");
+    assertThat(createdEvent.getVisibility()).isEqualTo("INTERNAL");
     assertThat(createdEvent.getFileName()).isNotBlank();
     assertThat(createdEvent.getOrgId()).isEqualTo(ORG_ID);
     assertThat(createdEvent.getTenantId()).isEqualTo(tenantSchema);
   }
 
+  /** ADR-350: {@code shareWithClient=true} saves PORTAL but does not request an email. */
+  @Test
+  void generate_withShareWithClient_savesPortal_notifyFalse() {
+    StatementResponse response =
+        runInTenantReturning(
+            () ->
+                statementService.generate(
+                    projectId,
+                    new GenerateStatementRequest(
+                        LocalDate.parse("2026-06-01"),
+                        LocalDate.parse("2026-06-30"),
+                        /* templateId */ null,
+                        /* shareWithClient */ true,
+                        /* notifyClient */ null),
+                    memberId));
+
+    assertThat(pairedVisibility(response.id())).isEqualTo(Document.Visibility.PORTAL);
+    var docEvent = documentGeneratedEventFor(response.id());
+    assertThat(docEvent.details())
+        .containsEntry("visibility", "PORTAL")
+        .containsEntry("notify_client", false);
+  }
+
+  /** ADR-350: {@code notifyClient=true} implies share even when {@code shareWithClient} is null. */
+  @Test
+  void generate_withNotifyClientOnly_impliesShare() {
+    StatementResponse response =
+        runInTenantReturning(
+            () ->
+                statementService.generate(
+                    projectId,
+                    new GenerateStatementRequest(
+                        LocalDate.parse("2026-07-01"),
+                        LocalDate.parse("2026-07-31"),
+                        /* templateId */ null,
+                        /* shareWithClient */ null,
+                        /* notifyClient */ true),
+                    memberId));
+
+    assertThat(pairedVisibility(response.id())).isEqualTo(Document.Visibility.PORTAL);
+    var docEvent = documentGeneratedEventFor(response.id());
+    assertThat(docEvent.details())
+        .containsEntry("visibility", "PORTAL")
+        .containsEntry("notify_client", true);
+  }
+
   // ── helpers ────────────────────────────────────────────────────────────
+
+  private String pairedVisibility(UUID generatedDocumentId) {
+    return runInTenantReturning(
+        () ->
+            transactionTemplate.execute(
+                tx -> {
+                  var generated =
+                      generatedDocumentRepository.findById(generatedDocumentId).orElseThrow();
+                  return documentRepository
+                      .findById(generated.getDocumentId())
+                      .orElseThrow()
+                      .getVisibility();
+                }));
+  }
+
+  private DocumentGeneratedEvent documentGeneratedEventFor(UUID generatedDocumentId) {
+    var matching =
+        events.stream(DocumentGeneratedEvent.class)
+            .filter(e -> generatedDocumentId.equals(e.generatedDocumentId()))
+            .toList();
+    assertThat(matching).hasSize(1);
+    return matching.get(0);
+  }
 
   private void runInTenant(Runnable action) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

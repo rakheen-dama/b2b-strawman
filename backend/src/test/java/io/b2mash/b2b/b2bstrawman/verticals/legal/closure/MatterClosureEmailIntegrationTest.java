@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.icegreen.greenmail.util.GreenMail;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.document.Document;
+import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -16,11 +18,16 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.GreenMailTestSupport;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureReason;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.GenerateStatementRequest;
 import jakarta.mail.internet.MimeMessage;
+import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -48,19 +55,23 @@ import org.springframework.transaction.support.TransactionTemplate;
  *       can resolve a recipient.
  *   <li>Invoke {@link MatterClosureService#close} with {@code generateClosureLetter=true} and
  *       {@code generateStatementOfAccount=true} — both PDFs render, both publish {@code
- *       DocumentGeneratedEvent}s with explicit {@code visibility=PORTAL} (SoA via {@code
- *       StatementService}, closure-letter via the OBS-2106 Part 2 follow-up event in {@code
- *       MatterClosureService#publishPortalReadyFollowUp}).
+ *       DocumentGeneratedEvent}s with explicit {@code scope}/{@code visibility} in details (SoA via
+ *       {@code StatementService}, closure-letter via {@code GeneratedDocumentService
+ *       .generateForProject}).
  *   <li>Assert the GreenMail JVM singleton receives one portal-document-ready email PER document
  *       (LZKC-015): the 5-minute Caffeine dedup in {@code PortalDocumentNotificationHandler} keys
  *       on (tenant, customer, project, template), so distinct doc types each notify while genuine
  *       re-emissions of the same doc type stay deduped.
  * </ol>
  *
- * <p>Without this test, OBS-2106 would re-regress silently: the existing closure-letter test
- * (`close_withGenerateClosureLetterTrue_flipsLinkedDocumentVisibility_toPortal`) only checks the
- * persisted Document visibility, not whether the AFTER_COMMIT listener actually fired and sent the
- * email.
+ * <p>Phase 88 U13 / ADR-350 (G-C5, G-D14 emails): the client is emailed ONLY on explicit intent
+ * ({@code notifyClient}, which implies {@code shareWithClient}). Without flags the closure letter,
+ * the closure SoA and a standalone "Preview &amp; Save" SoA are saved {@code INTERNAL} and no email
+ * is sent; {@code shareWithClient} alone shares silently.
+ *
+ * <p>Without this test, OBS-2106 would re-regress silently: the closure-letter visibility test in
+ * {@code MatterClosureServiceIntegrationTest} only checks the persisted Document visibility, not
+ * whether the AFTER_COMMIT listener actually fired and sent the email.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -88,6 +99,9 @@ class MatterClosureEmailIntegrationTest {
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private PortalContactRepository portalContactRepository;
+  @Autowired private StatementService statementService;
+  @Autowired private GeneratedDocumentRepository generatedDocumentRepository;
+  @Autowired private DocumentRepository documentRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -118,12 +132,6 @@ class MatterClosureEmailIntegrationTest {
                   // matter_closure module + disbursements (SoA pre-req) must be enabled.
                   var settings = orgSettingsService.getOrCreateForCurrentTenant();
                   settings.setEnabledModules(List.of("matter_closure", "disbursements"));
-                  // Re-assert default allowlist explicitly — V117 seeds it but a future migration
-                  // could change defaults.
-                  settings
-                      .getPortal()
-                      .setPortalNotificationDocTypes(
-                          List.of("matter-closure-letter", "statement-of-account"));
                   orgSettingsRepository.save(settings);
 
                   var customer =
@@ -159,6 +167,7 @@ class MatterClosureEmailIntegrationTest {
    * key includes the template name, so distinct doc types each notify while genuine re-emissions of
    * the same doc type stay deduped. (Pre-LZKC-015 the key omitted the template name, so the closure
    * letter claimed the key and the SoA email was silently swallowed — Day 60/61, cycle 2026-07-06.)
+   * ADR-350: the firm explicitly asks for the email ({@code notifyClient=true}, implies share).
    */
   @Test
   void close_withClosureLetterAndSoa_dispatchesOnePortalEmailPerDocument() throws Exception {
@@ -175,7 +184,9 @@ class MatterClosureEmailIntegrationTest {
                         /* generateClosureLetter */ true,
                         /* generateStatementOfAccount */ true,
                         /* override */ true,
-                        VALID_JUSTIFICATION),
+                        VALID_JUSTIFICATION,
+                        /* shareWithClient */ null,
+                        /* notifyClient */ true),
                     memberId));
 
     // Sanity: both PDFs were produced + linked.
@@ -219,8 +230,8 @@ class MatterClosureEmailIntegrationTest {
    * portal email STILL dispatches. This is the exact regression scenario from Day 60 — the
    * canonical {@code GeneratedDocumentService.generateDocument} event carries no {@code visibility}
    * key in details, so prior to Part 2 the listener relied on a DB fallback that races the
-   * visibility flip's commit. The follow-up event from {@link
-   * MatterClosureService#publishPortalReadyFollowUp} eliminates the race.
+   * visibility flip's commit. The explicit visibility hint carried by {@code generateForProject}
+   * eliminates the race. ADR-350: requires {@code notifyClient=true}.
    */
   @Test
   void close_withClosureLetterOnly_dispatchesPortalEmail() throws Exception {
@@ -237,7 +248,9 @@ class MatterClosureEmailIntegrationTest {
                         /* generateClosureLetter */ true,
                         /* generateStatementOfAccount */ false,
                         /* override */ true,
-                        VALID_JUSTIFICATION),
+                        VALID_JUSTIFICATION,
+                        /* shareWithClient */ null,
+                        /* notifyClient */ true),
                     memberId));
 
     assertThat(response.closureLetterDocumentId()).isNotNull();
@@ -266,6 +279,7 @@ class MatterClosureEmailIntegrationTest {
    * the closure-letter through {@code generateForProject} with explicit {@code
    * intendedVisibility=PORTAL}, so the linked Document is born PORTAL and the canonical event
    * carries the visibility hint atomically. The compensating second event is then unnecessary.
+   * ADR-350: with {@code notifyClient=true} the event also carries {@code notify_client=true}.
    */
   @Test
   void close_publishesSingleCanonicalEventWithExplicitPortalVisibility(ApplicationEvents events)
@@ -282,7 +296,9 @@ class MatterClosureEmailIntegrationTest {
                     /* generateClosureLetter */ true,
                     /* generateStatementOfAccount */ false,
                     /* override */ true,
-                    VALID_JUSTIFICATION),
+                    VALID_JUSTIFICATION,
+                    /* shareWithClient */ null,
+                    /* notifyClient */ true),
                 memberId));
 
     var closureLetterEvents =
@@ -305,10 +321,186 @@ class MatterClosureEmailIntegrationTest {
                 + " StatementService:228-236), eliminating the DB-fallback race in"
                 + " PortalDocumentNotificationHandler.isPortalVisible")
         .containsEntry("scope", "PROJECT")
-        .containsEntry("visibility", "PORTAL");
+        .containsEntry("visibility", "PORTAL")
+        .containsEntry("notify_client", true);
+  }
+
+  /**
+   * ADR-350 default counterpart: without intent flags the closure letter's canonical event carries
+   * {@code visibility=INTERNAL} and {@code notify_client=false}.
+   */
+  @Test
+  void close_withoutIntentFlags_canonicalEventCarriesInternalAndNotifyClientFalse(
+      ApplicationEvents events) {
+    UUID projectId = createProject("ADR-350 default canonical event shape");
+
+    runInTenantAsOwner(
+        () ->
+            matterClosureService.close(
+                projectId,
+                closureRequest(
+                    "ADR-350 default event shape",
+                    true,
+                    false, /* share */
+                    null, /* notify */
+                    null),
+                memberId));
+
+    var closureLetterEvents =
+        events.stream(DocumentGeneratedEvent.class)
+            .filter(e -> projectId.equals(e.projectId()))
+            .filter(e -> "matter-closure-letter".equals(e.templateName()))
+            .toList();
+    assertThat(closureLetterEvents).hasSize(1);
+    assertThat(closureLetterEvents.get(0).details())
+        .containsEntry("scope", "PROJECT")
+        .containsEntry("visibility", "INTERNAL")
+        .containsEntry("notify_client", false);
+  }
+
+  /**
+   * G-C5 reproduction: the firm's SoA "Preview &amp; Save" sends {@code {periodStart, periodEnd,
+   * templateId}} only. Before ADR-350 the SoA was saved PORTAL and the client was emailed. Now it
+   * must be INTERNAL and nothing is sent.
+   */
+  @Test
+  void statementGenerate_withoutIntentFlags_sendsNoClientEmail_andIsInternal() {
+    UUID projectId = createProject("G-C5 Preview and Save Matter");
+
+    var response =
+        runInTenantReturning(
+            () ->
+                statementService.generate(
+                    projectId,
+                    new GenerateStatementRequest(
+                        LocalDate.now().minusMonths(1), LocalDate.now(), null, null, null),
+                    memberId));
+
+    greenMail.waitForIncomingEmail(2_000L, 1);
+    assertThat(mailsToContact()).as("G-C5: Preview & Save must not email the client").isEmpty();
+    assertThat(linkedDocumentVisibility(response.id())).isEqualTo(Document.Visibility.INTERNAL);
+  }
+
+  /**
+   * G-D14 (emails) reproduction: closing with letter + SoA and no intent flags used to email the
+   * client twice and publish both documents. Now both stay INTERNAL and nothing is sent.
+   */
+  @Test
+  void close_withoutIntentFlags_sendsNoClientEmail_andDocumentsStayInternal() {
+    UUID projectId = createProject("G-D14 Silent Close Matter");
+
+    var response =
+        runInTenantReturning(
+            () ->
+                matterClosureService.close(
+                    projectId,
+                    closureRequest("G-D14 silent close", true, true, null, null),
+                    memberId));
+
+    assertThat(response.closureLetterDocumentId()).isNotNull();
+    assertThat(response.statementOfAccountDocumentId()).isNotNull();
+
+    greenMail.waitForIncomingEmail(2_000L, 1);
+    assertThat(mailsToContact()).as("G-D14: closing must not email the client").isEmpty();
+    assertThat(linkedDocumentVisibility(response.closureLetterDocumentId()))
+        .isEqualTo(Document.Visibility.INTERNAL);
+    assertThat(linkedDocumentVisibility(response.statementOfAccountDocumentId()))
+        .isEqualTo(Document.Visibility.INTERNAL);
+  }
+
+  /**
+   * ADR-350: "Email the client" on the SoA dialog → exactly one email, and notify implies share.
+   */
+  @Test
+  void statementGenerate_withNotifyClient_sendsOneEmailAndImpliesShare() throws Exception {
+    UUID projectId = createProject("ADR-350 SoA Notify Matter");
+
+    var response =
+        runInTenantReturning(
+            () ->
+                statementService.generate(
+                    projectId,
+                    new GenerateStatementRequest(
+                        LocalDate.now().minusMonths(1),
+                        LocalDate.now(),
+                        null,
+                        /* shareWithClient */ null,
+                        /* notifyClient */ true),
+                    memberId));
+
+    assertThat(greenMail.waitForIncomingEmail(5_000L, 1)).isTrue();
+    var mails = mailsToContact();
+    assertThat(mails).hasSize(1);
+    assertThat(mails.get(0).getSubject()).containsIgnoringCase("statement");
+    assertThat(linkedDocumentVisibility(response.id())).isEqualTo(Document.Visibility.PORTAL);
+  }
+
+  /** ADR-350: {@code shareWithClient} alone shares letter + SoA silently — no email. */
+  @Test
+  void close_withShareOnly_sendsNoEmail_documentsPortal() {
+    UUID projectId = createProject("ADR-350 Share Only Close Matter");
+
+    var response =
+        runInTenantReturning(
+            () ->
+                matterClosureService.close(
+                    projectId,
+                    closureRequest("ADR-350 share-only close", true, true, true, null),
+                    memberId));
+
+    greenMail.waitForIncomingEmail(2_000L, 1);
+    assertThat(mailsToContact()).as("share without notify must not email").isEmpty();
+    assertThat(linkedDocumentVisibility(response.closureLetterDocumentId()))
+        .isEqualTo(Document.Visibility.PORTAL);
+    assertThat(linkedDocumentVisibility(response.statementOfAccountDocumentId()))
+        .isEqualTo(Document.Visibility.PORTAL);
   }
 
   // ── helpers ────────────────────────────────────────────────────────────
+
+  private ClosureRequest closureRequest(
+      String notes,
+      boolean generateClosureLetter,
+      boolean generateStatementOfAccount,
+      Boolean shareWithClient,
+      Boolean notifyClient) {
+    return new ClosureRequest(
+        ClosureReason.CONCLUDED,
+        notes,
+        generateClosureLetter,
+        generateStatementOfAccount,
+        /* override */ true,
+        VALID_JUSTIFICATION,
+        shareWithClient,
+        notifyClient);
+  }
+
+  private List<MimeMessage> mailsToContact() {
+    return Arrays.stream(greenMail.getReceivedMessages())
+        .filter(
+            m -> {
+              try {
+                return CONTACT_EMAIL.equals(m.getAllRecipients()[0].toString());
+              } catch (jakarta.mail.MessagingException e) {
+                throw new IllegalStateException(e);
+              }
+            })
+        .toList();
+  }
+
+  private String linkedDocumentVisibility(UUID generatedDocumentId) {
+    return runInTenantReturning(
+        () ->
+            transactionTemplate.execute(
+                tx -> {
+                  var generated =
+                      generatedDocumentRepository.findById(generatedDocumentId).orElseThrow();
+                  return documentRepository
+                      .findById(generated.getDocumentId())
+                      .orElseThrow()
+                      .getVisibility();
+                }));
+  }
 
   private UUID createProject(String name) {
     final UUID[] id = new UUID[1];

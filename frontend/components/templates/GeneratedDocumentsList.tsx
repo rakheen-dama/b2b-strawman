@@ -288,17 +288,21 @@ export function GeneratedDocumentsList({
             return (
               <React.Fragment key={doc.id}>
                 <TableRow>
-                  <TableCell className="font-medium">
-                    {doc.templateName}
-                    {isOnPortal && (
-                      <Badge
-                        variant="outline"
-                        className="ml-2 align-middle font-normal"
-                        title="The client can see this document on the client portal"
-                      >
-                        Client portal
-                      </Badge>
-                    )}
+                  {/* The name may wrap and the badge drops under it, so neither sets the table's
+                      min width (all other cells are nowrap; a wide table overflows the page). */}
+                  <TableCell className="font-medium whitespace-normal">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span>{doc.templateName}</span>
+                      {isOnPortal && (
+                        <Badge
+                          variant="outline"
+                          className="font-normal"
+                          title="The client can see this document on the client portal"
+                        >
+                          Client portal
+                        </Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>{doc.generatedByName}</TableCell>
                   <TableCell>{formatDate(doc.generatedAt)}</TableCell>

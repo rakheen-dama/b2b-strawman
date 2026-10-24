@@ -31,8 +31,9 @@ export function AcceptanceStatusBadge({ status, declineReason }: AcceptanceStatu
   if (reason) {
     const label = `${config.label} — ${reason}`;
     // Long reasons (≤ 2000 chars) are truncated by CSS; the full text is in the title tooltip.
+    // Capped near the "Awaiting Acceptance" badge width so the reason never widens a table column.
     return (
-      <Badge variant={config.variant} className="max-w-[16rem]" title={label}>
+      <Badge variant={config.variant} className="max-w-[10rem]" title={label}>
         <span className="min-w-0 truncate">{label}</span>
       </Badge>
     );

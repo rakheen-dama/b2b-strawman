@@ -51,6 +51,8 @@ describe("AcceptanceStatusBadge", () => {
     expect(badge).toHaveAttribute("data-variant", "destructive");
     // Long reasons are truncated by CSS, never cut in the DOM.
     expect(label).toHaveClass("truncate");
+    // Width cap keeps the Acceptance column near the "Awaiting Acceptance" badge width.
+    expect(badge).toHaveClass("max-w-[10rem]");
   });
 
   it('renders plain "Declined" (destructive) when the reason is null or blank', () => {

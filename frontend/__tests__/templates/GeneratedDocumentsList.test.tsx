@@ -434,6 +434,10 @@ describe("GeneratedDocumentsList", () => {
     expect(within(rowFor("Shared Note")).getByText("Client portal")).toBeInTheDocument();
     expect(within(rowFor("Internal Letter")).queryByText("Client portal")).not.toBeInTheDocument();
     expect(within(rowFor("Unsaved Draft")).queryByText("Client portal")).not.toBeInTheDocument();
+    // The name cell wraps (badge drops under the name) instead of widening the nowrap table.
+    expect(
+      within(rowFor("Portal Statement")).getByText("Portal Statement").closest("td")
+    ).toHaveClass("whitespace-normal");
   });
 
   it("hides Share with client without canShare and on non-matter lists", async () => {

@@ -84,7 +84,7 @@ $ docker exec b2b-postgres psql -U postgres -d docteams -c "SELECT 'tenant_5039f
 
 The fresh output is identical to 623A's durable-record capture (`logs/v4-durable-record.txt`, 2026-10-24T07:49:57Z) for `tenant_56399d06a773`, and to the 623C scout's read at 10:40:58Z. Nothing has been applied since.
 
-Informational only, not a numbering basis: the e2e stack (`e2e-postgres` :5433, db `app`) is wipeable (OQ #9), so it never counts. Per the 623C scout read, its tenant was also at V4 and its global history at V1.
+Informational only, not a numbering basis: the e2e stack (`e2e-postgres` :5433, db `app`) is wipeable (OQ #9), so it never counts. Per the 623C scout's earlier read, its tenant was also at V4 and its global history at V1 — **not re-verified by 623C** (the fresh read in `logs/623c-flyway-history.txt` covers the Keycloak dev database only).
 
 ## 3. First application (623A, KC-STACK)
 

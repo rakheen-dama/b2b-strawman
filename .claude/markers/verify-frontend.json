@@ -1,7 +1,7 @@
 {
-  "commit": "93566920a16c6cf98777cfbe294f72a6cd89b978",
+  "commit": "b1c73e0d2fb7ec0b5c371e09a3bd6e6e472d3a52",
   "command": "pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-23T22:01:33Z",
-  "summary": "Slice 621D FE-GATE on phase88/04D-depth-ii-unfixme-gate head 93566920a (and 8bc05757e): lint 0 errors / 92 warnings (= baseline); format:check clean; vitest 417 files / 3106 passed / 2 skipped (= baseline, spec-only PR); next build OK; CI Frontend pass. E2E-LEGAL on fresh stacks built from the worktree: depth-ii full 35/0/8 (was 29/0/14; the six un-fixme'd day-05 T1-T3 + day-30-45 T4-T6 pass); legal-lifecycle alone 74/4/5/14 = 620E baseline, failed = carried {A1,A2,A4,A6}, set not grown. S1 (day-30-45:98 Total disbursements R750 -> R2 000,00, orchestrator-authorised per scenario legal-za-90day-keycloak.md:418) reproduced before amendment."
+  "ts": "2026-10-24T01:00:00Z",
+  "summary": "Slice 622B FE-GATE on phase88/05B-balance-model-partially-paid head b1c73e0d2 (frontend tree identical at final head e828f5624): lint 0 errors / 92 warnings (= baseline); format:check clean; vitest 417 files / 3109 passed / 2 skipped (+3: StatusBadge PARTIALLY_PAID + unknown fallback, customer invoices tab); next build OK. CI Frontend pass @b1c73e0d2 and on re-run @e828f5624 (first attempt hit the documented invoice-generation-with-expenses CI timing flake). E2E-LEGAL @b1c73e0d2, each suite on its own fresh stack: depth-ii 35/0/8 (= baseline); legal-lifecycle 74/4/5/14 (= baseline, carried {A1,A2,A4,A6}, per-test outcomes identical to 621D). Browser observer OBSERVED PASS @b1c73e0d2."
 }

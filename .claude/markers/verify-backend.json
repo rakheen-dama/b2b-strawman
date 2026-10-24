@@ -1,7 +1,7 @@
 {
-  "commit": "d981903cae8642dc53624aa5a487ddc499df5efa",
+  "commit": "e828f562475c8d1a09998626de67298f6b82a444",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-23T22:57:00Z",
-  "summary": "Slice 622A PR #1661 head d981903ca (orchestrator run in worktree-epic-622A): 5569 testcases / 0 failures / 0 errors / 26 skipped across 704 reports (= 5554 after 621A + 15 new: InvoiceLineDescriptionIntegrationTest 8, PdfRenderingServiceTest +4, InvoiceGenerationValidationIntegrationTest TRUST + company-generation cases, InvoiceTerminologyLegalZaTest legal-za COMPANY case). Backend CI pass (14m35s). Log /tmp/mvn-622A-final.log."
+  "ts": "2026-10-24T01:39:12Z",
+  "summary": "Slice 622B PR #1662 final head e828f5624 (orchestrator run in worktree-epic-622B): 5603 testcases / 0 failures / 0 errors / 26 skipped across 705 reports (= 5569 after 622A + 34 new: InvoiceLifecycleIntegrationTest partial/complete/overpay 409/back-compat/void guard/reversal cases, V4InvoiceStatusCheckTest, PaymentEventTest, InvoiceAuditIntegrationTest new keys, TrustFeeTransferReversalCascadeTest D7 refusal + reference, PortalEventHandlerTest + InvoiceSyncIntegrationTest PARTIALLY_PAID projection). Same result on b1c73e0d2. Backend CI pass (18m7s). Log /tmp/mvn-622B-final2.log."
 }

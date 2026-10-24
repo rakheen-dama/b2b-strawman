@@ -304,7 +304,10 @@ public class AccountingSyncService {
       }
 
       UUID invoiceId = pushEntry.get().getEntityId();
-      var invoiceOpt = invoiceRepository.findById(invoiceId);
+      // Row lock before the status / dedup / currency checks: postPayment re-reads the invoice in
+      // this persistence context, so an unlocked load here would let it compute amount_paid from
+      // stale state while a trust approval, manual payment or card webhook posts concurrently.
+      var invoiceOpt = invoiceRepository.findByIdForUpdate(invoiceId);
 
       if (invoiceOpt.isEmpty()) {
         log.warn(

@@ -21,6 +21,29 @@ import { defineConfig, devices } from "@playwright/test";
  *                               Scoped to ./e2e/tests/portal-client-90day.
  *                               Relies on the top-level `workers: 1` so later
  *                               days observe state created by earlier days.
+ *   - `login-bare`            — Phase 88 624D: bare /login → email-only
+ *                               request-link → Mailpit link → /matters.
+ *                               See e2e/tests/login-bare.spec.ts.
+ *                               - OPT-IN: registered only when LOGIN_BARE=1,
+ *                                 so the default all-projects run does not
+ *                                 include it. Run it via
+ *                                 `pnpm test:e2e:login-bare`.
+ *                               - With the flag set, `webServer` self-serves
+ *                                 a PRODUCTION portal on :3002
+ *                                 (`pnpm run build && pnpm run start`), with
+ *                                 NEXT_PUBLIC_PORTAL_API_URL passed through
+ *                                 (default: BACKEND_URL, else the e2e backend
+ *                                 :8081) so the build targets that backend.
+ *                                 Under `pnpm dev` the exchange double-POSTs
+ *                                 (StrictMode in app/auth/exchange/page.tsx;
+ *                                 follow-up: exchange double-POST under
+ *                                 next dev). A server already on :3002 is
+ *                                 still reused, and the spec's exchange-count
+ *                                 check fails loudly if that is a dev server.
+ *                               - Spends 1 request of the per-email cap
+ *                                 (3 / 15 min) per run; PORTAL_CONTACT_EMAIL
+ *                                 set to the same address spends a second
+ *                                 (globalSetup). Run it without that env.
  *
  * First-run usage (baselines):
  *   pnpm exec playwright test \
@@ -31,12 +54,16 @@ import { defineConfig, devices } from "@playwright/test";
  *     --config=playwright.portal.config.ts \
  *     --project=portal-client-90day --update-snapshots
  *
- * By default both projects run (and `webServer` boots the portal).
+ * By default all projects except the opt-in `login-bare` run (and
+ * `webServer` boots the portal with `pnpm dev`).
  * Set SKIP_PORTAL_BASELINES=true to skip (the webServer is also skipped in
  * that case — no point booting a dev server when every test is skipped).
  * See e2e/tests/responsive/portal-pages.spec.ts and
  *     e2e/tests/portal-client-90day/*.spec.ts for details.
  */
+// Phase 88 624D: opt-in `login-bare` project + production webServer.
+const LOGIN_BARE = process.env.LOGIN_BARE === "1";
+
 export default defineConfig({
   snapshotPathTemplate:
     "{testDir}/../../screenshots/portal-v2/{projectName}/{arg}{ext}",
@@ -64,12 +91,27 @@ export default defineConfig({
   webServer:
     process.env.SKIP_PORTAL_BASELINES === "true"
       ? undefined
-      : {
-          command: "NODE_OPTIONS= pnpm dev",
-          url: "http://localhost:3002",
-          reuseExistingServer: !process.env.CI,
-          timeout: 120_000,
-        },
+      : LOGIN_BARE
+        ? {
+            // Production build: `next dev` double-POSTs the exchange.
+            command: "pnpm run build && pnpm run start",
+            url: "http://localhost:3002",
+            reuseExistingServer: !process.env.CI,
+            timeout: 300_000,
+            env: {
+              NODE_OPTIONS: "",
+              NEXT_PUBLIC_PORTAL_API_URL:
+                process.env.NEXT_PUBLIC_PORTAL_API_URL ||
+                process.env.BACKEND_URL ||
+                "http://localhost:8081",
+            },
+          }
+        : {
+            command: "NODE_OPTIONS= pnpm dev",
+            url: "http://localhost:3002",
+            reuseExistingServer: !process.env.CI,
+            timeout: 120_000,
+          },
   projects: [
     {
       name: "chromium",
@@ -89,5 +131,20 @@ export default defineConfig({
       // Sequential by virtue of the top-level `workers: 1` — later days
       // depend on state created by earlier days in the lifecycle.
     },
+    // Phase 88 624D: opt-in (LOGIN_BARE=1). The spec sits at the top of
+    // ./e2e/tests, outside the responsive/ and portal-client-90day/ dirs the
+    // other projects scope to.
+    ...(LOGIN_BARE
+      ? [
+          {
+            name: "login-bare",
+            testDir: "./e2e/tests",
+            testMatch: /login-bare\.spec\.ts$/,
+            use: {
+              ...devices["Desktop Chrome"],
+            },
+          },
+        ]
+      : []),
   ],
 });

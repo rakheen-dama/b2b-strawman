@@ -21,6 +21,7 @@ interface TimelineStageProps {
   isComplete: boolean;
   isActive?: boolean;
   isLast?: boolean;
+  testId?: string;
   children?: React.ReactNode;
 }
 
@@ -30,10 +31,11 @@ function TimelineStage({
   isComplete,
   isActive,
   isLast,
+  testId,
   children,
 }: TimelineStageProps) {
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-3" data-testid={testId}>
       <div className="flex flex-col items-center">
         <div
           className={cn(
@@ -91,7 +93,8 @@ export function AcceptanceDetailPanel({
   const isAccepted = request.status === "ACCEPTED";
   const isExpired = request.status === "EXPIRED";
   const isRevoked = request.status === "REVOKED";
-  const isTerminal = isAccepted || isExpired || isRevoked;
+  const isDeclined = request.status === "DECLINED";
+  const isTerminal = isAccepted || isExpired || isRevoked || isDeclined;
   const canRemind = (isSent || isViewed) && isAdmin;
   const canRevoke = (isSent || isViewed) && isAdmin;
 
@@ -162,7 +165,8 @@ export function AcceptanceDetailPanel({
   const acceptedComplete = isAccepted;
 
   // Determine what the final stage is
-  const showAcceptedStage = !isRevoked && !isExpired;
+  const showAcceptedStage = !isRevoked && !isExpired && !isDeclined;
+  const showDeclinedStage = isDeclined;
   const showRevokedStage = isRevoked;
   const showExpiredStage = isExpired;
 
@@ -202,6 +206,15 @@ export function AcceptanceDetailPanel({
             isLast
           />
         )}
+        {showDeclinedStage && (
+          <TimelineStage
+            label="Declined"
+            date={request.declinedAt}
+            isComplete
+            isLast
+            testId="acceptance-timeline-declined"
+          />
+        )}
         {showRevokedStage && (
           <TimelineStage label="Revoked" date={request.revokedAt} isComplete isLast />
         )}
@@ -221,6 +234,18 @@ export function AcceptanceDetailPanel({
               on {formatDate(request.acceptedAt)}
             </p>
           )}
+        </div>
+      )}
+
+      {/* Declined details */}
+      {isDeclined && request.declineReason?.trim() && (
+        <div
+          className="mb-4 rounded-md border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950/30"
+          data-testid="acceptance-decline-reason"
+        >
+          <p className="text-sm break-words whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+            Reason: <span className="font-medium">{request.declineReason.trim()}</span>
+          </p>
         </div>
       )}
 

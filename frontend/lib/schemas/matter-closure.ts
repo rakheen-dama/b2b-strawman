@@ -15,6 +15,9 @@ export const closeMatterSchema = z
     // the firm doesn't have to remember the standalone "Generate Statement of Account" step.
     generateStatementOfAccount: z.boolean(),
     override: z.boolean(),
+    // ADR-350: client intent for the generated closure documents; default off.
+    shareWithClient: z.boolean(),
+    notifyClient: z.boolean(),
     overrideJustification: z.string().trim().max(5000).optional(),
   })
   .refine((data) => !data.override || (data.overrideJustification?.trim().length ?? 0) >= 20, {

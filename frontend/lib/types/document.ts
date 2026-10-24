@@ -1,3 +1,5 @@
+import type { TemplateEntityType } from "./template";
+
 // ---- Documents (from DocumentController.java) ----
 
 export type DocumentStatus = "PENDING" | "UPLOADED" | "FAILED";
@@ -52,12 +54,18 @@ export interface GenerateDocumentResponse {
 export interface GeneratedDocumentListResponse {
   id: string;
   templateName: string;
+  primaryEntityType?: TemplateEntityType;
+  primaryEntityId?: string;
   fileName: string;
   fileSize: number;
   generatedByName: string;
   generatedAt: string;
+  /** Linked Document id; null when the document was not saved to the documents list. */
+  documentId?: string | null;
   outputFormat?: string;
   hasDocxDownload?: boolean;
+  /** Linked Document visibility (ADR-350); null when not saved to the documents list. */
+  visibility?: DocumentVisibility | null;
 }
 
 export interface GenerateDocxResult {

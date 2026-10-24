@@ -592,6 +592,7 @@ export default async function ProjectDetailPage({
             slug={slug}
             isAdmin={isAdmin}
             customerId={customers.length > 0 ? customers[0].id : undefined}
+            canShare={isAdmin || caps.capabilities.includes("PROJECT_MANAGEMENT")}
           />
         }
         requestsPanel={

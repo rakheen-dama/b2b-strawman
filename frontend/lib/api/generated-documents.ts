@@ -66,6 +66,17 @@ export async function fetchGeneratedDocuments(
   );
 }
 
+/**
+ * Phase 88 U13 / ADR-350 — "Share with client": INTERNAL → PORTAL. `notifyClient` asks the
+ * backend for one document-ready email (it may skip it: no portal contact, 5-minute dedup).
+ */
+export async function shareGeneratedDocument(
+  id: string,
+  body: { notifyClient: boolean }
+): Promise<GeneratedDocumentListResponse> {
+  return api.post<GeneratedDocumentListResponse>(`/api/generated-documents/${id}/share`, body);
+}
+
 export async function deleteGeneratedDocument(id: string): Promise<void> {
   return api.delete<void>(`/api/generated-documents/${id}`);
 }

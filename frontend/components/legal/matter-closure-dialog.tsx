@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import useSWR from "swr";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
@@ -41,6 +41,7 @@ import {
   evaluateClosureAction,
 } from "@/app/(app)/org/[slug]/matters/[id]/matter-closure-actions";
 import type { ClosureReport } from "@/lib/api/matter-closure";
+import { CLIENT_EMAIL_CAVEAT } from "@/lib/client-notification-copy";
 
 interface MatterClosureDialogProps {
   slug: string;
@@ -51,6 +52,36 @@ interface MatterClosureDialogProps {
 }
 
 type Step = 1 | 2 | 3;
+
+/**
+ * ADR-350: what "Close matter" does with the generated closure documents, stated exactly.
+ * The backend applies the intent flags to the closure letter AND the closure SoA.
+ */
+function closureIntentSummary(
+  letter: boolean,
+  soa: boolean,
+  share: boolean,
+  notify: boolean
+): string {
+  if (!letter && !soa) {
+    return "No closure documents will be generated, so nothing is shared with or emailed to the client.";
+  }
+  const both = letter && soa;
+  const docs = both
+    ? "the closure letter and Statement of Account"
+    : letter
+      ? "the closure letter"
+      : "the Statement of Account";
+  if (notify) {
+    return `Share ${docs} on the client portal and request an email to the client${both ? " for each" : ""}.`;
+  }
+  if (share) {
+    return `Share ${docs} on the client portal — the client can see ${both ? "them" : "it"} there. No email is sent now.`;
+  }
+  return both
+    ? `Save ${docs} as internal drafts — the client will not see them.`
+    : `Save ${docs} as an internal draft — the client will not see it.`;
+}
 
 export function MatterClosureDialog(props: MatterClosureDialogProps) {
   return (
@@ -83,10 +114,20 @@ function MatterClosureDialogInner({
       generateStatementOfAccount: true,
       override: false,
       overrideJustification: "",
+      shareWithClient: false,
+      notifyClient: false,
     },
   });
 
   const overrideValue = form.watch("override");
+  const letterValue = useWatch({ control: form.control, name: "generateClosureLetter" });
+  const soaValue = useWatch({ control: form.control, name: "generateStatementOfAccount" });
+  const notifyValue = useWatch({ control: form.control, name: "notifyClient" });
+  const shareFieldValue = useWatch({ control: form.control, name: "shareWithClient" });
+  // With no closure document generated the flags are no-ops — disable them and send false.
+  const intentDisabled = !letterValue && !soaValue;
+  const effectiveNotify = !intentDisabled && notifyValue;
+  const effectiveShare = !intentDisabled && (shareFieldValue || notifyValue);
 
   // SWR handles: conditional fetching (null key when closed), automatic
   // data clearing on error/refetch, deduplication, and cache freshness.
@@ -120,6 +161,8 @@ function MatterClosureDialogInner({
       generateStatementOfAccount: true,
       override: false,
       overrideJustification: "",
+      shareWithClient: false,
+      notifyClient: false,
     });
   }, [open, projectId, form]);
 
@@ -140,6 +183,9 @@ function MatterClosureDialogInner({
     try {
       const trimmedNotes = values.notes?.trim() ?? "";
       const trimmedJustification = values.overrideJustification?.trim() ?? "";
+      const generatesAny = values.generateClosureLetter || values.generateStatementOfAccount;
+      const notifyClient = generatesAny && values.notifyClient;
+      const shareWithClient = generatesAny && (values.shareWithClient || values.notifyClient);
       const result = await closeMatterAction(slug, projectId, {
         reason: values.reason,
         notes: trimmedNotes || undefined,
@@ -147,6 +193,8 @@ function MatterClosureDialogInner({
         generateStatementOfAccount: values.generateStatementOfAccount,
         override: values.override,
         overrideJustification: values.override ? trimmedJustification || undefined : undefined,
+        shareWithClient,
+        notifyClient,
       });
       if (result.success) {
         toast.success("Matter closed");
@@ -178,7 +226,10 @@ function MatterClosureDialogInner({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-xl" data-testid="matter-closure-dialog">
+      <DialogContent
+        className="max-h-[90vh] overflow-y-auto sm:max-w-xl"
+        data-testid="matter-closure-dialog"
+      >
         <DialogHeader>
           <DialogTitle>Close matter</DialogTitle>
           <DialogDescription>
@@ -324,6 +375,74 @@ function MatterClosureDialogInner({
                   </FormItem>
                 )}
               />
+
+              <div
+                className="space-y-3 rounded-md border border-slate-200 p-3 dark:border-slate-800"
+                data-testid="matter-closure-intent"
+              >
+                <FormField
+                  control={form.control}
+                  name="shareWithClient"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start gap-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={effectiveShare}
+                          disabled={intentDisabled || notifyValue}
+                          onCheckedChange={(v) => field.onChange(v === true)}
+                          data-testid="matter-closure-share-checkbox"
+                        />
+                      </FormControl>
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-sm font-medium">
+                          Share on the client portal
+                        </FormLabel>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          The client can see the generated closure documents when they sign in to
+                          the portal.
+                        </p>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="notifyClient"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start gap-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={effectiveNotify}
+                          disabled={intentDisabled}
+                          onCheckedChange={(v) => {
+                            const next = v === true;
+                            field.onChange(next);
+                            // Email implies share: tick it; unticking email leaves share ticked.
+                            if (next) form.setValue("shareWithClient", true, { shouldDirty: true });
+                          }}
+                          data-testid="matter-closure-notify-checkbox"
+                        />
+                      </FormControl>
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-sm font-medium">Email the client now</FormLabel>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Also shares them, and requests one email per document with a link to the
+                          client&apos;s portal contact.
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {CLIENT_EMAIL_CAVEAT}
+                        </p>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                <p
+                  className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                  data-testid="matter-closure-intent-summary"
+                >
+                  {closureIntentSummary(letterValue, soaValue, effectiveShare, effectiveNotify)}
+                </p>
+              </div>
 
               {anyFailing && canOverride && (
                 <>

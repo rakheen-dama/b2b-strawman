@@ -35,6 +35,8 @@ function makeRequest(
     acceptedAt: null,
     expiresAt: "2026-03-22T10:00:00Z",
     revokedAt: null,
+    declinedAt: null,
+    declineReason: null,
     acceptorName: null,
     hasCertificate: false,
     certificateFileName: null,
@@ -131,6 +133,44 @@ describe("AcceptanceDetailPanel", () => {
 
     expect(screen.queryByRole("button", { name: /Remind/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Revoke/i })).not.toBeInTheDocument();
+  });
+
+  it("treats DECLINED as terminal: Declined step with date and reason, no Accepted step, no expiry, no actions", () => {
+    render(
+      <AcceptanceDetailPanel
+        request={makeRequest({
+          status: "DECLINED",
+          viewedAt: "2026-02-21T10:00:00Z",
+          declinedAt: "2026-02-22T09:00:00Z",
+          declineReason: "Price too high",
+        })}
+        isAdmin
+      />
+    );
+
+    const declinedStep = screen.getByTestId("acceptance-timeline-declined");
+    expect(declinedStep).toHaveTextContent("Declined");
+    expect(declinedStep.textContent).not.toBe("Declined"); // carries the declinedAt date
+    expect(screen.queryByText("Accepted")).not.toBeInTheDocument();
+    expect(screen.getByTestId("acceptance-decline-reason")).toHaveTextContent(
+      "Reason: Price too high"
+    );
+    expect(screen.queryByText(/Expires:/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Remind/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Revoke/i })).not.toBeInTheDocument();
+  });
+
+  it("DECLINED without a reason shows the Declined step and no reason box", () => {
+    render(
+      <AcceptanceDetailPanel
+        request={makeRequest({ status: "DECLINED", declinedAt: "2026-02-22T09:00:00Z" })}
+        isAdmin
+      />
+    );
+
+    expect(screen.getByTestId("acceptance-timeline-declined")).toBeInTheDocument();
+    expect(screen.queryByTestId("acceptance-decline-reason")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Expires:/)).not.toBeInTheDocument();
   });
 
   it("calls remindAcceptance and dispatches refresh event on remind", async () => {

@@ -100,6 +100,29 @@ export async function deleteGeneratedDocumentAction(
   }
 }
 
+export async function shareGeneratedDocumentAction(
+  id: string,
+  notifyClient: boolean
+): Promise<{
+  success: boolean;
+  data?: import("@/lib/types").GeneratedDocumentListResponse;
+  error?: string;
+}> {
+  try {
+    const { shareGeneratedDocument } = await import("@/lib/api");
+    const data = await shareGeneratedDocument(id, { notifyClient });
+    return { success: true, data };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return { success: false, error: "You do not have permission to share documents." };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to share document." };
+  }
+}
+
 export async function downloadGeneratedDocumentAction(
   id: string
 ): Promise<{ success: boolean; pdfBase64?: string; fileName?: string; error?: string }> {

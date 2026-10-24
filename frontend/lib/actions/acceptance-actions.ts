@@ -43,6 +43,9 @@ export interface AcceptanceRequestResponse {
   acceptedAt: string | null;
   expiresAt: string | null;
   revokedAt: string | null;
+  /** 624F: set when the client declined; decline reason is optional (blank → null). */
+  declinedAt?: string | null;
+  declineReason?: string | null;
   acceptorName: string | null;
   hasCertificate: boolean;
   certificateFileName: string | null;

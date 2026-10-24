@@ -20,6 +20,9 @@ export const generateStatementSchema = z
     periodStart: isoDateString("Period start"),
     periodEnd: isoDateString("Period end"),
     templateId: z.string().uuid().optional().or(z.literal("")),
+    // ADR-350: default off — "Preview & Save" alone keeps the statement internal.
+    shareWithClient: z.boolean(),
+    notifyClient: z.boolean(),
   })
   .refine((d) => !d.periodEnd || !d.periodStart || d.periodEnd >= d.periodStart, {
     path: ["periodEnd"],

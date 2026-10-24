@@ -238,7 +238,9 @@ describe("StatementOfAccountDialog", () => {
     });
     // Download button appears after successful generation
     expect(screen.getByTestId("statement-download-btn")).toBeInTheDocument();
-    expect(vi.mocked(toast.success)).toHaveBeenCalledWith("Statement generated");
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith("Statement generated", {
+      description: "Saved as internal draft — the client will not see it.",
+    });
   });
 
   it("blocks submit when periodEnd is before periodStart (schema validation)", async () => {
@@ -327,5 +329,155 @@ describe("StatementOfAccountDialog", () => {
     expect(container).toBeEmptyDOMElement();
     expect(mockGenerate).not.toHaveBeenCalled();
     expect(mockList).not.toHaveBeenCalled();
+  });
+
+  // ---- 624G / ADR-350: client notification intent ----
+
+  function renderOpenDialog(onOpenChange = vi.fn()) {
+    return render(
+      withProviders(
+        <StatementOfAccountDialog
+          slug="acme"
+          projectId="p1"
+          projectName="Smith v Jones"
+          open={true}
+          onOpenChange={onOpenChange}
+        />
+      )
+    );
+  }
+
+  it("intent checkboxes default off; summary says internal draft; request sends both flags false", async () => {
+    const user = userEvent.setup();
+    mockGenerate.mockResolvedValue({ success: true, data: makeStatement() });
+    renderOpenDialog();
+
+    await waitFor(() =>
+      expect(screen.getByTestId("statement-of-account-dialog")).toBeInTheDocument()
+    );
+    const share = screen.getByTestId("statement-share-checkbox");
+    const notify = screen.getByTestId("statement-notify-checkbox");
+    expect(share).toHaveAttribute("data-state", "unchecked");
+    expect(notify).toHaveAttribute("data-state", "unchecked");
+    expect(share).not.toBeDisabled();
+    expect(screen.getByText("Share on the client portal")).toBeInTheDocument();
+    expect(screen.getByText("Email the client now")).toBeInTheDocument();
+    expect(screen.getByTestId("statement-intent-summary")).toHaveTextContent(
+      "Save as internal draft — the client will not see it."
+    );
+
+    await user.click(screen.getByTestId("statement-generate-btn"));
+    await waitFor(() => expect(mockGenerate).toHaveBeenCalled());
+    expect(mockGenerate.mock.calls[0][2]).toMatchObject({
+      shareWithClient: false,
+      notifyClient: false,
+    });
+  });
+
+  it("share only: request sends shareWithClient=true, notifyClient=false and the summary says no email", async () => {
+    const user = userEvent.setup();
+    mockGenerate.mockResolvedValue({ success: true, data: makeStatement() });
+    renderOpenDialog();
+
+    await waitFor(() =>
+      expect(screen.getByTestId("statement-of-account-dialog")).toBeInTheDocument()
+    );
+    await user.click(screen.getByTestId("statement-share-checkbox"));
+    expect(screen.getByTestId("statement-share-checkbox")).toHaveAttribute("data-state", "checked");
+    expect(screen.getByTestId("statement-intent-summary")).toHaveTextContent(
+      "Save and share on the client portal — the client can see it there. No email is sent now."
+    );
+
+    await user.click(screen.getByTestId("statement-generate-btn"));
+    await waitFor(() => expect(mockGenerate).toHaveBeenCalled());
+    expect(mockGenerate.mock.calls[0][2]).toMatchObject({
+      shareWithClient: true,
+      notifyClient: false,
+    });
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith("Statement generated", {
+      description: "Shared on the client portal.",
+    });
+  });
+
+  it("email ticks and locks share; caveat shown; request sends both flags true; unticking email re-enables share", async () => {
+    const user = userEvent.setup();
+    mockGenerate.mockResolvedValue({ success: true, data: makeStatement() });
+    renderOpenDialog();
+
+    await waitFor(() =>
+      expect(screen.getByTestId("statement-of-account-dialog")).toBeInTheDocument()
+    );
+    await user.click(screen.getByTestId("statement-notify-checkbox"));
+
+    const share = screen.getByTestId("statement-share-checkbox");
+    expect(screen.getByTestId("statement-notify-checkbox")).toHaveAttribute(
+      "data-state",
+      "checked"
+    );
+    expect(share).toHaveAttribute("data-state", "checked");
+    expect(share).toBeDisabled();
+    expect(
+      screen.getByText(
+        "No email is sent if the client has no portal contact, or if they were already emailed about this kind of document on this matter in the last 5 minutes."
+      )
+    ).toBeInTheDocument();
+    const summary = screen.getByTestId("statement-intent-summary");
+    expect(summary).toHaveTextContent(
+      "Save, share on the client portal and request an email to the client."
+    );
+    expect(summary).not.toHaveTextContent(/email sent/i);
+
+    await user.click(screen.getByTestId("statement-generate-btn"));
+    await waitFor(() => expect(mockGenerate).toHaveBeenCalled());
+    expect(mockGenerate.mock.calls[0][2]).toMatchObject({
+      shareWithClient: true,
+      notifyClient: true,
+    });
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith("Statement generated", {
+      description: "Shared on the client portal — email requested.",
+    });
+
+    // Unticking email re-enables share and leaves it ticked.
+    await user.click(screen.getByTestId("statement-notify-checkbox"));
+    expect(screen.getByTestId("statement-share-checkbox")).not.toBeDisabled();
+    expect(screen.getByTestId("statement-share-checkbox")).toHaveAttribute("data-state", "checked");
+  });
+
+  it("resets both intent flags to off when the dialog is closed and reopened", async () => {
+    const user = userEvent.setup();
+    const ui = (open: boolean) =>
+      withProviders(
+        <StatementOfAccountDialog
+          slug="acme"
+          projectId="p1"
+          projectName="Smith v Jones"
+          open={open}
+          onOpenChange={vi.fn()}
+        />
+      );
+    const { rerender } = render(ui(true));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("statement-of-account-dialog")).toBeInTheDocument()
+    );
+    await user.click(screen.getByTestId("statement-notify-checkbox"));
+    expect(screen.getByTestId("statement-share-checkbox")).toHaveAttribute("data-state", "checked");
+
+    rerender(ui(false));
+    await waitFor(() =>
+      expect(screen.queryByTestId("statement-of-account-dialog")).not.toBeInTheDocument()
+    );
+    rerender(ui(true));
+    await waitFor(() =>
+      expect(screen.getByTestId("statement-of-account-dialog")).toBeInTheDocument()
+    );
+    expect(screen.getByTestId("statement-share-checkbox")).toHaveAttribute(
+      "data-state",
+      "unchecked"
+    );
+    expect(screen.getByTestId("statement-notify-checkbox")).toHaveAttribute(
+      "data-state",
+      "unchecked"
+    );
   });
 });

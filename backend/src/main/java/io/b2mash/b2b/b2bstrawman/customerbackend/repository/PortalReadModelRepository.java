@@ -536,6 +536,7 @@ public class PortalReadModelRepository {
         .update();
   }
 
+  /** Writes {@code status}, {@code paid_at} and {@code amount_paid} for one portal invoice. */
   public void updatePortalInvoiceStatusAndPaidAt(
       UUID id, String orgId, String status, Instant paidAt, BigDecimal amountPaid) {
     jdbc.sql(

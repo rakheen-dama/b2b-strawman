@@ -5,20 +5,23 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.datarequest.DataAnonymizationService;
+import io.b2mash.b2b.b2bstrawman.datarequest.DataSubjectRequest;
+import io.b2mash.b2b.b2bstrawman.datarequest.DataSubjectRequestRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.portal.directory.PortalContactDirectoryBackfillRunner;
 import io.b2mash.b2b.b2bstrawman.portal.directory.PortalContactDirectoryEntry;
 import io.b2mash.b2b.b2bstrawman.portal.directory.PortalContactDirectoryRepository;
 import io.b2mash.b2b.b2bstrawman.portal.directory.PortalContactDirectoryService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,9 +40,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 /**
  * Phase 88 U11 (ADR-351): the global {@code portal.portal_contact_directory} stays in step with
  * each tenant's ACTIVE portal contacts — create (incl. auto-provisioning), suspend, archive,
- * anonymization ("email change"), delete, rollback — and is rebuilt by the backfill runner and by
- * {@code /internal/portal/resync/{orgId}}. Directory and marker tables accumulate rows from every
- * test class, so every assertion is scoped to this class's orgs / tenant schemas / unique emails.
+ * anonymization ("email change", both the standalone and the DSAR path), delete, rollback — and is
+ * rebuilt by {@code /internal/portal/resync/{orgId}} (the backfill runner is covered in {@code
+ * portal.directory.PortalContactDirectoryBackfillIntegrationTest}). Directory and marker tables
+ * accumulate rows from every test class, so every assertion is scoped to this class's orgs / tenant
+ * schemas / unique emails.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -62,8 +67,9 @@ class PortalContactDirectoryIntegrationTest {
   @Autowired private PortalContactRepository portalContactRepository;
   @Autowired private PortalContactDirectoryRepository directoryRepository;
   @Autowired private PortalContactDirectoryService directoryService;
-  @Autowired private PortalContactDirectoryBackfillRunner backfillRunner;
   @Autowired private DataAnonymizationService dataAnonymizationService;
+  @Autowired private CustomerRepository customerRepository;
+  @Autowired private DataSubjectRequestRepository dataSubjectRequestRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
   @Autowired
@@ -223,6 +229,51 @@ class PortalContactDirectoryIntegrationTest {
     }
   }
 
+  // ── 6b. DSAR deletion (executeAnonymization) also removes the real email (D-4a) ──
+
+  @Test
+  void dsarDeletionRemovesTheRealEmailFromTheDirectory() {
+    UUID customerId =
+        inA(
+            () ->
+                customerRepository
+                    .save(
+                        TestCustomerFactory.createActiveCustomer(
+                            "Dir Dsar Customer", "dir-dsar-customer@test.com", memberIdA))
+                    .getId());
+    var contact = createContactInA(customerId, "Dir.Dsar@Test.com");
+    assertThat(directoryRepository.find("dir.dsar@test.com", ORG_A)).isPresent();
+    UUID requestId =
+        inA(
+            () ->
+                transactionTemplate.execute(
+                    tx -> {
+                      var request =
+                          new DataSubjectRequest(
+                              customerId,
+                              "DELETION",
+                              "Delete all data",
+                              memberIdA,
+                              LocalDate.now().plusDays(30));
+                      request = dataSubjectRequestRepository.save(request);
+                      request.startProcessing(memberIdA);
+                      return dataSubjectRequestRepository.save(request).getId();
+                    }));
+
+    inA(
+        () ->
+            dataAnonymizationService.executeAnonymization(
+                requestId, "Dir Dsar Customer", memberIdA));
+
+    assertThat(directoryRepository.find("dir.dsar@test.com", ORG_A)).isEmpty();
+    var anonymised = inA(() -> portalContactRepository.findById(contact.getId())).orElseThrow();
+    assertThat(anonymised.getEmail()).endsWith("@anonymized.invalid");
+    assertThat(
+            directoryRepository.find(
+                PortalContactDirectoryService.normalise(anonymised.getEmail()), ORG_A))
+        .isEmpty();
+  }
+
   // ── 7. Delete: reconcile with no remaining ACTIVE contact deletes the row (D-2) ──
 
   @Test
@@ -267,35 +318,6 @@ class PortalContactDirectoryIntegrationTest {
                     portalContactRepository.existsByEmailAndCustomerId(
                         "rolled-back@test.com", customerA1)))
         .isFalse();
-  }
-
-  // ── 9. Backfill runner is idempotent across two runs ─────────────────────
-
-  @Test
-  void backfillRunnerRestoresRowsOnceAndIsIdempotent() {
-    createContactInA(customerA1, "backfill-me@test.com");
-    wipeOrgRows(ORG_A);
-    portalJdbc
-        .sql("DELETE FROM portal.portal_contact_directory_backfill WHERE tenant_schema = ?")
-        .params(schemaA)
-        .update();
-    assertThat(directoryRepository.find("backfill-me@test.com", ORG_A)).isEmpty();
-    List<String> expected = inA(portalContactRepository::findDistinctActiveEmailsLower);
-    assertThat(expected).contains("backfill-me@test.com");
-
-    backfillRunner.run(null);
-
-    assertOrgRowsAre(ORG_A, schemaA, expected);
-    Map<String, Object> markerAfterFirst = marker(schemaA);
-    assertThat(((Number) markerAfterFirst.get("row_count")).intValue()).isEqualTo(expected.size());
-
-    backfillRunner.run(null);
-
-    Map<String, Object> markerAfterSecond = marker(schemaA);
-    assertThat(markerAfterSecond.get("row_count")).isEqualTo(markerAfterFirst.get("row_count"));
-    assertThat(markerAfterSecond.get("backfilled_at"))
-        .isEqualTo(markerAfterFirst.get("backfilled_at"));
-    assertOrgRowsAre(ORG_A, schemaA, expected);
   }
 
   // ── 10. /internal/portal/resync/{orgId} triggers a per-org reconcile ─────
@@ -376,16 +398,6 @@ class PortalContactDirectoryIntegrationTest {
         .extracting(PortalContactDirectoryEntry::emailLower)
         .containsExactlyInAnyOrderElementsOf(expectedEmails);
     assertThat(rows).allSatisfy(r -> assertThat(r.tenantSchema()).isEqualTo(schema));
-  }
-
-  private Map<String, Object> marker(String schema) {
-    return portalJdbc
-        .sql(
-            "SELECT row_count, backfilled_at FROM portal.portal_contact_directory_backfill"
-                + " WHERE tenant_schema = ?")
-        .params(schema)
-        .query()
-        .singleRow();
   }
 
   private <T> T inA(Callable<T> action) {

@@ -217,6 +217,10 @@ class PortalReadModelOrgScopingGuardTest {
             + " (email, org slug, schema, firm name) — no tenant data; the token is minted and"
             + " exchanged inside the target tenant (§13.6.3). Consumer: PortalAuthService (624B).");
     m.put(
+        directory + "lockOrg",
+        "pg_advisory_xact_lock on a key derived from the org id — reads and writes no table rows;"
+            + " serialises the org's directory writes (PortalContactDirectoryService).");
+    m.put(
         directory + "hasBackfillMarker",
         "portal_contact_directory_backfill has no org_id/customer_id column; keyed by"
             + " tenant_schema; read only by the trusted startup backfill runner.");

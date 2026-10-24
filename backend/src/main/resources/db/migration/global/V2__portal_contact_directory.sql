@@ -23,3 +23,11 @@ CREATE TABLE IF NOT EXISTS portal.portal_contact_directory_backfill (
 -- U15: the portal fee-note read model shows the balance.
 ALTER TABLE portal.portal_invoices
   ADD COLUMN IF NOT EXISTS amount_paid numeric(14,2) NOT NULL DEFAULT 0;
+
+-- The DEFAULT above zeroes pre-V2 rows. A PAID fee note gets no further InvoiceSyncEvent unless a
+-- payment is reversed, so nothing would heal it; and PAID always means amount_paid = total
+-- (Invoice.applyPayment / reapplyPayments cap at total), so stamp it exactly here. Pre-V2 PARTIALLY_PAID rows stay 0 until their next sync: the true value
+-- lives in tenant schemas, which a global migration must not read (A8). Data only; idempotent.
+UPDATE portal.portal_invoices
+   SET amount_paid = total
+ WHERE status = 'PAID' AND amount_paid = 0;

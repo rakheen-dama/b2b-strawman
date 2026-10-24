@@ -25,11 +25,21 @@ import org.springframework.transaction.support.TransactionTemplate;
  *
  * <p>Presence rule: a row {@code (lower(trim(email)), org_id)} exists iff the tenant has at least
  * one ACTIVE portal contact with that normalised email. Never logs the email (PII).
+ *
+ * <p>Ordering invariant: every read-then-write runs in one short portal transaction that first
+ * takes the org's advisory lock ({@link PortalContactDirectoryRepository#lockOrg}), THEN reads the
+ * tenant's contacts, THEN writes. Concurrent reconciles for one org therefore serialise, and the
+ * last to take the lock reads the latest committed contacts — an archive of contact X racing a
+ * create of contact Y (same email) cannot delete Y's row after it is written, and {@link
+ * #reconcileOrg} cannot drop a row added while it scans. Always lock first, then read the tenant.
  */
 @Service
 public class PortalContactDirectoryService {
 
   private static final Logger log = LoggerFactory.getLogger(PortalContactDirectoryService.class);
+
+  /** One bounded retry for an after-commit reconcile before it is logged at ERROR. */
+  static final int RECONCILE_ATTEMPTS = 2;
 
   private final PortalContactDirectoryRepository directoryRepository;
   private final PortalContactRepository portalContactRepository;
@@ -86,56 +96,80 @@ public class PortalContactDirectoryService {
   /**
    * §13.3.9: recompute the (email, org) presence row from the tenant's ACTIVE contacts. Idempotent.
    * Requires the tenant scope to be bound (the ambient after-commit binding, or a caller's {@code
-   * callForTenantOnShard}).
+   * callForTenantOnShard}). Holds the org's directory lock across the read and the write.
    */
   public void reconcile(String emailLower, String orgId, String tenantSchema, String orgName) {
-    boolean present =
-        Boolean.TRUE.equals(
-            tenantReadTx.execute(
-                s -> portalContactRepository.existsActiveByEmailLower(emailLower)));
-    if (present) {
-      directoryRepository.upsert(emailLower, orgId, tenantSchema, orgName);
-    } else {
-      directoryRepository.deleteByEmailLowerAndOrgId(emailLower, orgId);
-    }
+    portalTx.executeWithoutResult(
+        s -> {
+          directoryRepository.lockOrg(orgId);
+          boolean present =
+              Boolean.TRUE.equals(
+                  tenantReadTx.execute(
+                      t -> portalContactRepository.existsActiveByEmailLower(emailLower)));
+          if (present) {
+            directoryRepository.upsert(emailLower, orgId, tenantSchema, orgName);
+          } else {
+            directoryRepository.deleteByEmailLowerAndOrgId(emailLower, orgId);
+          }
+        });
   }
 
   /**
    * Rebuilds one org's rows from its tenant (backfill runner + {@code /internal/portal/resync}):
    * upserts every ACTIVE email and deletes the org's stale rows. Binds the tenant itself. Returns
-   * the number of rows present for the org afterwards.
+   * the number of rows present for the org afterwards. Holds the org's directory lock across the
+   * tenant scan and the writes.
    */
   public int reconcileOrg(String orgId, String tenantSchema, @Nullable String shardId) {
-    List<String> emails =
-        RequestScopes.callForTenantOnShard(
-            tenantSchema,
-            orgId,
-            shardId,
-            () ->
-                tenantReadTx.execute(s -> portalContactRepository.findDistinctActiveEmailsLower()));
-    List<String> active = emails != null ? emails : List.of();
     String orgName = resolveOrgName(orgId);
-    portalTx.executeWithoutResult(
-        s -> {
-          directoryRepository.deleteByOrgIdNotIn(orgId, active);
-          for (String emailLower : active) {
-            directoryRepository.upsert(emailLower, orgId, tenantSchema, orgName);
-          }
-        });
-    return active.size();
+    Integer count =
+        portalTx.execute(
+            s -> {
+              directoryRepository.lockOrg(orgId);
+              List<String> emails =
+                  RequestScopes.callForTenantOnShard(
+                      tenantSchema,
+                      orgId,
+                      shardId,
+                      () ->
+                          tenantReadTx.execute(
+                              t -> portalContactRepository.findDistinctActiveEmailsLower()));
+              List<String> active = emails != null ? emails : List.of();
+              directoryRepository.deleteByOrgIdNotIn(orgId, active);
+              for (String emailLower : active) {
+                directoryRepository.upsert(emailLower, orgId, tenantSchema, orgName);
+              }
+              return active.size();
+            });
+    return count != null ? count : 0;
   }
 
   private void reconcileQuietly(String emailLower, String orgId, String tenantSchema) {
-    try {
-      String orgName = tenantReadTx.execute(s -> resolveOrgName(orgId));
-      reconcile(emailLower, orgId, tenantSchema, orgName);
-    } catch (RuntimeException e) {
-      // The contact write already committed — never fail it. Heals via /internal/portal/resync.
-      log.warn(
-          "Portal contact directory reconcile failed for org {} (tenant {})",
-          orgId,
-          tenantSchema,
-          e);
+    for (int attempt = 1; attempt <= RECONCILE_ATTEMPTS; attempt++) {
+      try {
+        String orgName = tenantReadTx.execute(s -> resolveOrgName(orgId));
+        reconcile(emailLower, orgId, tenantSchema, orgName);
+        return;
+      } catch (RuntimeException e) {
+        if (attempt < RECONCILE_ATTEMPTS) {
+          log.warn(
+              "Portal contact directory reconcile failed for org {} (tenant {}), retrying",
+              orgId,
+              tenantSchema,
+              e);
+        } else {
+          // The contact write already committed — never fail it. A stale row (e.g. a real email
+          // left after POPIA anonymization) needs /internal/portal/resync/{orgId} to heal.
+          log.error(
+              "Portal contact directory reconcile failed for org {} (tenant {}) after {} attempts"
+                  + " — directory may be stale until /internal/portal/resync/{}",
+              orgId,
+              tenantSchema,
+              RECONCILE_ATTEMPTS,
+              orgId,
+              e);
+        }
+      }
     }
   }
 

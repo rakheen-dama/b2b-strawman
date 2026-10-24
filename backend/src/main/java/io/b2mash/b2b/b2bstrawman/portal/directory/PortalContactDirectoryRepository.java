@@ -22,6 +22,20 @@ public class PortalContactDirectoryRepository {
     this.jdbc = jdbc;
   }
 
+  /**
+   * Serialises directory writes for one org until the caller's portal transaction ends ({@code
+   * pg_advisory_xact_lock}). Must run inside a {@code portalTransactionManager} transaction.
+   */
+  public void lockOrg(String orgId) {
+    jdbc.sql(
+            """
+            SELECT pg_advisory_xact_lock(hashtext('portal_contact_directory:' || ?))
+            """)
+        .param(orgId)
+        .query()
+        .singleRow();
+  }
+
   public void upsert(String emailLower, String orgId, String tenantSchema, String orgName) {
     jdbc.sql(
             """

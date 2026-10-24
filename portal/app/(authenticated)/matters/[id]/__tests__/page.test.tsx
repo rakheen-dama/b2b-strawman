@@ -138,8 +138,8 @@ describe("ProjectDetailPage", () => {
       expect(screen.getByText("Website Redesign")).toBeInTheDocument();
     });
 
-    // Status badge
-    expect(screen.getByText("ACTIVE")).toBeInTheDocument();
+    // Status badge (sentence-case label — Phase 88 624H, G-D19)
+    expect(screen.getByText("Active")).toBeInTheDocument();
     // Description
     expect(
       screen.getByText("Modernizing the company website"),

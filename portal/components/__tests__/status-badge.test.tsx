@@ -7,9 +7,9 @@ describe("StatusBadge", () => {
     cleanup();
   });
 
-  it("renders project status with formatted text", () => {
+  it("renders project status with a sentence-case label", () => {
     render(<StatusBadge status="ON_HOLD" variant="project" />);
-    expect(screen.getByText("ON HOLD")).toBeInTheDocument();
+    expect(screen.getByText("On hold")).toBeInTheDocument();
   });
 
   it("renders task status with correct color classes", () => {
@@ -23,9 +23,25 @@ describe("StatusBadge", () => {
 
   it("renders CLOSED project status with the muted slate variant", () => {
     const { container } = render(<StatusBadge status="CLOSED" />);
-    expect(screen.getByText("CLOSED")).toBeInTheDocument();
+    expect(screen.getByText("Closed")).toBeInTheDocument();
     const badge = container.querySelector("[data-slot='badge']");
     expect(badge?.className).toContain("bg-slate-200");
+    expect(badge?.className).toContain("text-slate-600");
+  });
+
+  it("renders ARCHIVED and COMPLETED project statuses in sentence case", () => {
+    render(<StatusBadge status="ARCHIVED" />);
+    expect(screen.getByText("Archived")).toBeInTheDocument();
+    cleanup();
+    render(<StatusBadge status="COMPLETED" />);
+    expect(screen.getByText("Completed")).toBeInTheDocument();
+  });
+
+  it("humanises an unknown project status with neutral slate classes", () => {
+    const { container } = render(<StatusBadge status="FOO_BAR" />);
+    expect(screen.getByText("Foo bar")).toBeInTheDocument();
+    const badge = container.querySelector("[data-slot='badge']");
+    expect(badge?.className).toContain("bg-slate-100");
     expect(badge?.className).toContain("text-slate-600");
   });
 });

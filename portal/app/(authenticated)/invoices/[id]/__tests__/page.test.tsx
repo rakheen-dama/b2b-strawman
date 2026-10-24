@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { formatCurrency } from "@b2mash/shared/format";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -73,6 +74,8 @@ const mockInvoiceDetail = {
   subtotal: 1000.0,
   taxAmount: 150.0,
   total: 1150.0,
+  amountPaid: 0,
+  balanceDue: 1150.0,
   currency: "ZAR",
   notes: "Payment due within 30 days",
   paymentUrl: null,
@@ -141,6 +144,26 @@ const mockInvoiceWithTaxInclusive = {
   taxInclusive: true,
 };
 
+/**
+ * Whitespace-free comparison (Node "R 37,814.50" vs Chrome "R 37 814,50" — R-14;
+ * the summary is a <dl>, so label and amount are adjacent text nodes).
+ */
+function norm(text: string | null | undefined): string {
+  return (text ?? "").replace(/\s+/g, "");
+}
+
+const mockPartiallyPaid = {
+  ...mockInvoiceDetail,
+  id: "inv-pp",
+  invoiceNumber: "INV-PP-001",
+  status: "PARTIALLY_PAID",
+  subtotal: 37230.0,
+  taxAmount: 5584.5,
+  total: 42814.5,
+  amountPaid: 5000.0,
+  balanceDue: 37814.5,
+};
+
 describe("InvoiceDetailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -163,8 +186,8 @@ describe("InvoiceDetailPage", () => {
       expect(screen.getByText("INV-001")).toBeInTheDocument();
     });
 
-    // Status badge
-    expect(screen.getByText("SENT")).toBeInTheDocument();
+    // Status badge (sentence case — Phase 88 624H)
+    expect(screen.getByText("Sent")).toBeInTheDocument();
     // Notes
     expect(screen.getByText("Payment due within 30 days")).toBeInTheDocument();
     // Back link
@@ -305,5 +328,71 @@ describe("InvoiceDetailPage", () => {
 
     const headers = screen.getAllByRole("columnheader");
     expect(headers).toHaveLength(5); // Description, Quantity, Rate, Tax, Amount
+  });
+
+  // ── Phase 88 624H: part-paid balance (portal half of G-C11 / OQ #13) ──
+
+  it("shows Total, Amount paid and Balance due for a part-paid fee note", async () => {
+    mockPortalGet.mockResolvedValue(mockPartiallyPaid);
+
+    render(<InvoiceDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("INV-PP-001")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Partially paid")).toBeInTheDocument();
+    const summary = screen.getByTestId("invoice-balance-summary");
+    const text = norm(summary.textContent);
+    expect(text).toContain(norm(`Total${formatCurrency(42814.5, "ZAR")}`));
+    expect(text).toContain(
+      norm(`Amount paid${formatCurrency(5000, "ZAR")}`),
+    );
+    expect(text).toContain(
+      norm(`Balance due${formatCurrency(37814.5, "ZAR")}`),
+    );
+  });
+
+  it("falls back to contact copy (no amounts) when a part-paid note has amountPaid 0", async () => {
+    // Pre-V2 rows (624A follow-up) read amountPaid 0 until their next sync.
+    mockPortalGet.mockResolvedValue({
+      ...mockPartiallyPaid,
+      amountPaid: 0,
+      balanceDue: 42814.5,
+    });
+
+    render(<InvoiceDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("INV-PP-001")).toBeInTheDocument();
+    });
+
+    expect(
+      screen.queryByTestId("invoice-balance-summary"),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/Amount paid/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Balance due/)).not.toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "A part payment has been received. Contact Test Org for the outstanding balance.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("shows no balance summary for a SENT fee note", async () => {
+    mockPortalGet.mockResolvedValue(mockInvoiceDetail);
+
+    render(<InvoiceDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("INV-001")).toBeInTheDocument();
+    });
+
+    expect(
+      screen.queryByTestId("invoice-balance-summary"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("invoice-balance-contact"),
+    ).not.toBeInTheDocument();
   });
 });

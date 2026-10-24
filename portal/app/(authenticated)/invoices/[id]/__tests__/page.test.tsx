@@ -345,9 +345,7 @@ describe("InvoiceDetailPage", () => {
     const summary = screen.getByTestId("invoice-balance-summary");
     const text = norm(summary.textContent);
     expect(text).toContain(norm(`Total${formatCurrency(42814.5, "ZAR")}`));
-    expect(text).toContain(
-      norm(`Amount paid${formatCurrency(5000, "ZAR")}`),
-    );
+    expect(text).toContain(norm(`Amount paid${formatCurrency(5000, "ZAR")}`));
     expect(text).toContain(
       norm(`Balance due${formatCurrency(37814.5, "ZAR")}`),
     );

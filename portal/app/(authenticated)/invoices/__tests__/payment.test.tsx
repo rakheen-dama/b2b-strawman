@@ -192,7 +192,9 @@ describe("InvoiceDetailPage — Payment Section", () => {
       expect(screen.getByTestId("invoice-balance-contact")).toBeInTheDocument();
     });
 
-    expect(norm(screen.getByTestId("invoice-balance-contact").textContent)).toBe(
+    expect(
+      norm(screen.getByTestId("invoice-balance-contact").textContent),
+    ).toBe(
       norm(
         `To pay the balance of ${formatCurrency(37814.5, "ZAR")}, contact Test Org.`,
       ),

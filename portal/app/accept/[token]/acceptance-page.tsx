@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CheckCircle,
   AlertTriangle,
@@ -16,14 +16,17 @@ import { Label } from "@b2mash/ui/label";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import { StickyActionBar } from "@/components/ui/sticky-action-bar";
 import { BRAND_NAME } from "@/lib/brand";
-import { formatDate } from "@b2mash/shared/format";
+import { formatDateTime } from "@b2mash/shared/format";
 import { isSafeImageUrl, isValidHexColor } from "@/lib/utils";
 import {
+  DeclineConflictError,
+  declineAcceptance,
   getAcceptancePageData,
   getAcceptancePdfUrl,
   submitAcceptance,
 } from "@/lib/api/acceptance";
-import type { AcceptancePageData, AcceptanceStatus } from "@/lib/types";
+import type { AcceptancePageData } from "@/lib/types";
+import { DeclineDialog } from "./decline-dialog";
 
 interface AcceptancePageProps {
   token: string;
@@ -34,7 +37,9 @@ type PageState =
   | "ERROR"
   | "PENDING"
   | "SUBMITTING"
+  | "DECLINING"
   | "ACCEPTED"
+  | "DECLINED"
   | "EXPIRED"
   | "REVOKED";
 
@@ -56,6 +61,17 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
   const [name, setName] = useState("");
   const [acceptedAt, setAcceptedAt] = useState<string | null>(null);
   const [acceptorName, setAcceptorName] = useState<string | null>(null);
+  const [declinedAt, setDeclinedAt] = useState<string | null>(null);
+  // Shown only in this session — PortalPageData carries no decline reason (R-6).
+  const [declineReason, setDeclineReason] = useState<string | null>(null);
+  const [declineOpen, setDeclineOpen] = useState(false);
+  const [declineError, setDeclineError] = useState<string | null>(null);
+  // Page-level message after a 409 decline (the re-fetched state may hide the form).
+  const [notice, setNotice] = useState<string | null>(null);
+  // Bumped to re-fetch the page data after a 409, so the true state renders.
+  const [reloadKey, setReloadKey] = useState(0);
+  // Whichever Decline button opened the dialog (desktop or mobile sticky bar).
+  const declineOpenerRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,6 +87,9 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
           setAcceptedAt(data.acceptedAt);
           setAcceptorName(data.acceptorName);
           setPageState("ACCEPTED");
+        } else if (data.status === "DECLINED") {
+          setDeclinedAt(data.declinedAt ?? null);
+          setPageState("DECLINED");
         } else if (data.status === "EXPIRED") {
           setPageState("EXPIRED");
         } else if (data.status === "REVOKED") {
@@ -108,7 +127,7 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [token, reloadKey]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -117,6 +136,7 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
 
       setPageState("SUBMITTING");
       setError(null);
+      setNotice(null);
 
       try {
         const response = await submitAcceptance(token, name.trim());
@@ -132,6 +152,44 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
     },
     [token, name],
   );
+
+  const handleDecline = useCallback(
+    async (reason: string) => {
+      setPageState("DECLINING");
+      setDeclineError(null);
+      setNotice(null);
+
+      try {
+        const response = await declineAcceptance(token, reason);
+        setDeclinedAt(response.declinedAt);
+        setDeclineReason(reason.trim() || null);
+        setDeclineOpen(false);
+        setPageState("DECLINED");
+      } catch (err) {
+        if (err instanceof DeclineConflictError) {
+          // Declined elsewhere, accepted, revoked or expired: re-fetch so the true
+          // state renders (the bar stays disabled in DECLINING until it lands).
+          setDeclineOpen(false);
+          setNotice(err.message);
+          setReloadKey((key) => key + 1);
+        } else {
+          setDeclineError(
+            err instanceof Error
+              ? err.message
+              : "Failed to decline. Please try again.",
+          );
+          setPageState("PENDING");
+        }
+      }
+    },
+    [token],
+  );
+
+  function openDeclineDialog(e: React.MouseEvent<HTMLButtonElement>) {
+    declineOpenerRef.current = e.currentTarget;
+    setDeclineError(null);
+    setDeclineOpen(true);
+  }
 
   const pdfUrl = getAcceptancePdfUrl(token);
   const orgName = pageData?.orgName ?? BRAND_NAME;
@@ -165,7 +223,10 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
   }
 
   const showStickyAcceptBar =
-    pageState === "PENDING" || pageState === "SUBMITTING";
+    pageState === "PENDING" ||
+    pageState === "SUBMITTING" ||
+    pageState === "DECLINING";
+  const isBusy = pageState === "SUBMITTING" || pageState === "DECLINING";
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8">
@@ -226,6 +287,15 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
           </div>
         </div>
 
+        {notice && (
+          <div
+            role="alert"
+            className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800"
+          >
+            {notice}
+          </div>
+        )}
+
         {/* Status-Specific Content */}
         {pageState === "EXPIRED" && (
           <Card className="border-amber-200 bg-amber-50">
@@ -258,7 +328,28 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
                 {acceptorName
                   ? `${acceptorName} accepted this document`
                   : "You have accepted this document"}{" "}
-                on {acceptedAt ? formatDate(acceptedAt) : "an unknown date"}.
+                on {acceptedAt ? formatDateTime(acceptedAt) : "an unknown date"}
+                .
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {pageState === "DECLINED" && (
+          <Card className="border-slate-200 bg-slate-100">
+            <CardContent className="py-6 text-center">
+              <XCircle className="mx-auto mb-3 h-10 w-10 text-slate-500" />
+              <p className="text-sm font-medium text-slate-800">
+                You declined this document
+                {declinedAt ? ` on ${formatDateTime(declinedAt)}` : ""}.
+              </p>
+              {declineReason && (
+                <p className="mt-2 text-sm break-words text-slate-600">
+                  Your reason: &ldquo;{declineReason}&rdquo;
+                </p>
+              )}
+              <p className="mt-2 text-sm text-slate-600">
+                {orgName} has been notified.
               </p>
             </CardContent>
           </Card>
@@ -289,7 +380,7 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
                     minLength={2}
                     autoComplete="name"
                     autoFocus
-                    disabled={pageState === "SUBMITTING"}
+                    disabled={isBusy}
                     className="h-11 md:h-9"
                   />
                 </div>
@@ -304,9 +395,7 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
                 <Button
                   type="submit"
                   variant="accent"
-                  disabled={
-                    name.trim().length < 2 || pageState === "SUBMITTING"
-                  }
+                  disabled={name.trim().length < 2 || isBusy}
                   className="hidden min-h-11 w-full md:inline-flex"
                 >
                   {pageState === "SUBMITTING" ? (
@@ -317,6 +406,17 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
                   ) : (
                     "I Accept"
                   )}
+                </Button>
+
+                {/* Desktop decline — mobile uses the sticky bar */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isBusy}
+                  onClick={openDeclineDialog}
+                  className="hidden min-h-11 w-full md:inline-flex"
+                >
+                  Decline
                 </Button>
 
                 <p className="text-xs text-slate-400">
@@ -336,7 +436,7 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
             type="submit"
             form="accept-form"
             variant="accent"
-            disabled={name.trim().length < 2 || pageState === "SUBMITTING"}
+            disabled={name.trim().length < 2 || isBusy}
             aria-label="Accept document"
             className="min-h-11 w-full flex-1"
           >
@@ -349,8 +449,28 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
               "I Accept"
             )}
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isBusy}
+            onClick={openDeclineDialog}
+            aria-label="Decline this document"
+            className="min-h-11 flex-1"
+          >
+            Decline
+          </Button>
         </StickyActionBar>
       )}
+
+      <DeclineDialog
+        open={declineOpen}
+        onOpenChange={setDeclineOpen}
+        orgName={orgName}
+        isSubmitting={pageState === "DECLINING"}
+        error={declineError}
+        onConfirm={handleDecline}
+        returnFocusRef={declineOpenerRef}
+      />
     </main>
   );
 }

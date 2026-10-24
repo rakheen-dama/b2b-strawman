@@ -1,5 +1,9 @@
 import { publicFetch } from "@/lib/api-client";
-import type { AcceptancePageData, AcceptanceResponse } from "@/lib/types";
+import type {
+  AcceptancePageData,
+  AcceptanceResponse,
+  DeclineResponse,
+} from "@/lib/types";
 
 /**
  * Fetches acceptance page data for the given token.
@@ -35,6 +39,40 @@ export async function submitAcceptance(
     throw new Error("Failed to submit acceptance. Please try again.");
   }
   return response.json() as Promise<AcceptanceResponse>;
+}
+
+/** 409 from the decline endpoint — the page re-fetches so the true state renders. */
+export class DeclineConflictError extends Error {
+  constructor() {
+    super("This request can no longer be declined.");
+    this.name = "DeclineConflictError";
+  }
+}
+
+/**
+ * Declines the document for the given token (Phase 88 U23). The backend requires a
+ * JSON body: `{}` without a reason, `{reason}` with one (≤ 2000 chars; blank → null).
+ * 409 (no longer SENT/VIEWED-and-unexpired) throws {@link DeclineConflictError}.
+ */
+export async function declineAcceptance(
+  token: string,
+  reason = "",
+): Promise<DeclineResponse> {
+  const trimmed = reason.trim();
+  const response = await publicFetch(
+    `/api/portal/acceptance/${encodeURIComponent(token)}/decline`,
+    {
+      method: "POST",
+      body: JSON.stringify(trimmed ? { reason: trimmed } : {}),
+    },
+  );
+  if (response.status === 409) {
+    throw new DeclineConflictError();
+  }
+  if (!response.ok) {
+    throw new Error("Failed to decline. Please try again.");
+  }
+  return response.json() as Promise<DeclineResponse>;
 }
 
 /**

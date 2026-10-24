@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle, CreditCard, Download } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
-import { formatDate } from "@b2mash/shared/format";
+import { formatCurrency, formatDate } from "@b2mash/shared/format";
 import { useBranding } from "@/hooks/use-branding";
 import { InvoiceStatusBadge } from "@/components/invoice-status-badge";
 import { InvoiceLineTable } from "@/components/invoice-line-table";
@@ -86,7 +86,12 @@ export default function InvoiceDetailPage() {
 
   if (!invoice) return null;
 
+  // Pay Now is SENT-only. A PARTIALLY_PAID note's portal paymentUrl is the checkout the part
+  // payment cancelled (created for the old full amount) — never link it (G88-M11 portal half).
   const hasPaymentBar = invoice.status === "SENT" && !!invoice.paymentUrl;
+  const isPartiallyPaid = invoice.status === "PARTIALLY_PAID";
+  // Pre-V2 rows read amountPaid 0 until their next sync (624A) — show no amounts then.
+  const hasKnownPartPayment = isPartiallyPaid && invoice.amountPaid > 0;
 
   return (
     <>
@@ -152,6 +157,39 @@ export default function InvoiceDetailPage() {
             >
               Pay Now
             </a>
+          </div>
+        )}
+        {hasKnownPartPayment && (
+          <div
+            data-testid="invoice-balance-summary"
+            className="rounded-lg border border-amber-200 bg-amber-50 p-4 md:max-w-sm"
+          >
+            <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-sm">
+              <dt className="text-slate-600">Total</dt>
+              <dd className="text-right text-slate-900 tabular-nums">
+                {formatCurrency(invoice.total, invoice.currency)}
+              </dd>
+              <dt className="text-slate-600">Amount paid</dt>
+              <dd className="text-right text-slate-900 tabular-nums">
+                {formatCurrency(invoice.amountPaid, invoice.currency)}
+              </dd>
+              <dt className="font-medium text-slate-900">Balance due</dt>
+              <dd className="text-right font-semibold text-slate-900 tabular-nums">
+                {formatCurrency(invoice.balanceDue, invoice.currency)}
+              </dd>
+            </dl>
+          </div>
+        )}
+        {isPartiallyPaid && (
+          <div
+            data-testid="invoice-balance-contact"
+            className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+          >
+            <p className="text-sm text-slate-600">
+              {hasKnownPartPayment
+                ? `To pay the balance of ${formatCurrency(invoice.balanceDue, invoice.currency)}, contact ${orgName}.`
+                : `A part payment has been received. Contact ${orgName} for the outstanding balance.`}
+            </p>
           </div>
         )}
         {invoice.status === "SENT" && !invoice.paymentUrl && (

@@ -20,3 +20,12 @@ const HEX_COLOR_RE = /^#[0-9a-fA-F]{3,8}$/;
 export function isValidHexColor(color: string): boolean {
   return HEX_COLOR_RE.test(color);
 }
+
+/**
+ * Readable fallback label for a status enum the badge label maps do not know yet:
+ * "SOME_STATUS" → "Some status" (sentence case, matching the mapped labels).
+ */
+export function humaniseStatus(status: string): string {
+  const text = status.replace(/_/g, " ").toLowerCase();
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}

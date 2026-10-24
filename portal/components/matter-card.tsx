@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FileText, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
+import { StatusBadge } from "@/components/status-badge";
 import type { PortalMatter } from "@/lib/types";
 
 interface MatterCardProps {
@@ -35,7 +36,12 @@ export function MatterCard({ matter }: MatterCardProps) {
     <Link href={`/matters/${matter.id}`} className="block">
       <Card className="transition-shadow hover:shadow-md">
         <CardHeader>
-          <CardTitle className="text-base">{matter.name}</CardTitle>
+          <div className="flex items-start justify-between gap-3">
+            <CardTitle className="min-w-0 text-base break-words">
+              {matter.name}
+            </CardTitle>
+            <StatusBadge status={matter.status} variant="project" />
+          </div>
         </CardHeader>
         <CardContent className="space-y-3">
           {matter.description && (

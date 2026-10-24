@@ -29,7 +29,7 @@ export interface PortalMatter {
   description: string | null;
   documentCount: number;
   createdAt: string; // ISO 8601 instant
-  status?: string; // ACTIVE | CLOSED | COMPLETED | ON_HOLD | CANCELLED — optional until backend list endpoint surfaces it
+  status: string; // ACTIVE | CLOSED in the read model today (backend enum also COMPLETED | ARCHIVED)
 }
 
 export interface PortalMatterDetail {
@@ -87,6 +87,8 @@ export interface PortalInvoice {
   issueDate: string; // ISO date (YYYY-MM-DD)
   dueDate: string;
   total: number;
+  amountPaid: number; // Phase 88 624A / ADR-347 — 0 on pre-V2 PARTIALLY_PAID rows until re-synced
+  balanceDue: number; // total − amountPaid (derived server-side)
   currency: string;
 }
 
@@ -106,6 +108,8 @@ export interface PortalInvoiceDetail {
   subtotal: number;
   taxAmount: number;
   total: number;
+  amountPaid: number; // Phase 88 624A / ADR-347 — 0 on pre-V2 PARTIALLY_PAID rows until re-synced
+  balanceDue: number; // total − amountPaid (derived server-side)
   currency: string;
   notes: string | null;
   paymentUrl: string | null;
@@ -169,6 +173,7 @@ export type AcceptanceStatus =
   | "SENT"
   | "VIEWED"
   | "ACCEPTED"
+  | "DECLINED"
   | "EXPIRED"
   | "REVOKED";
 
@@ -183,12 +188,18 @@ export interface AcceptancePageData {
   brandColor: string | null;
   acceptedAt: string | null;
   acceptorName: string | null;
+  declinedAt: string | null; // Phase 88 U23 — PortalPageData carries no decline reason
 }
 
 export interface AcceptanceResponse {
   status: AcceptanceStatus;
   acceptedAt: string;
   acceptorName: string;
+}
+
+export interface DeclineResponse {
+  status: AcceptanceStatus;
+  declinedAt: string;
 }
 
 // === Pending Acceptances ===

@@ -156,9 +156,7 @@ describe("InvoicesPage", () => {
     // Balance line renders once per layout, only for the part-paid row.
     const hints = screen.getAllByTestId("row-balance-due");
     expect(hints).toHaveLength(2);
-    const expected = norm(
-      `Balance ${formatCurrency(37814.5, "ZAR")}`,
-    );
+    const expected = norm(`Balance ${formatCurrency(37814.5, "ZAR")}`);
     for (const hint of hints) {
       expect(norm(hint.textContent)).toBe(expected);
     }

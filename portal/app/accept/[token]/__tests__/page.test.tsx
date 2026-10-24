@@ -540,7 +540,9 @@ describe("AcceptancePage", () => {
         within(dialog).getByRole("button", { name: /Declining/ }),
       ).toBeDisabled();
     });
-    expect(within(dialog).getByRole("button", { name: "Cancel" })).toBeDisabled();
+    expect(
+      within(dialog).getByRole("button", { name: "Cancel" }),
+    ).toBeDisabled();
     const stickyBar = screen.getByTestId("sticky-action-bar");
     expect(
       within(stickyBar).getByRole("button", {

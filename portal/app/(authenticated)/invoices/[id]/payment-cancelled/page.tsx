@@ -77,7 +77,8 @@ export default function PaymentCancelledPage() {
         </div>
 
         <div className="mt-8 flex flex-col items-stretch gap-3 sm:items-center">
-          {invoice?.paymentUrl && (
+          {/* SENT only: a PARTIALLY_PAID note's paymentUrl is the cancelled full-amount checkout (G88-M11) */}
+          {invoice?.status === "SENT" && invoice.paymentUrl && (
             <a
               href={invoice.paymentUrl}
               target="_blank"

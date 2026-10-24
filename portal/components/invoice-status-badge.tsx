@@ -1,5 +1,5 @@
 import { Badge } from "@b2mash/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, humaniseStatus } from "@/lib/utils";
 
 const INVOICE_STATUS_COLORS: Record<string, string> = {
   DRAFT:
@@ -14,13 +14,19 @@ const INVOICE_STATUS_COLORS: Record<string, string> = {
   VOID: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
 };
 
+// Phase 88 624H: sentence-case labels ("Partially paid" — ADR-347 / 624.19 copy).
+const INVOICE_STATUS_LABELS: Record<string, string> = {
+  DRAFT: "Draft",
+  APPROVED: "Approved",
+  SENT: "Sent",
+  PARTIALLY_PAID: "Partially paid",
+  PAID: "Paid",
+  VOID: "Void",
+};
+
 interface InvoiceStatusBadgeProps {
   status: string;
   className?: string;
-}
-
-function formatStatus(status: string): string {
-  return status.replace(/_/g, " ");
 }
 
 export function InvoiceStatusBadge({
@@ -32,7 +38,7 @@ export function InvoiceStatusBadge({
 
   return (
     <Badge className={cn(colorClasses, className)}>
-      {formatStatus(status)}
+      {INVOICE_STATUS_LABELS[status] ?? humaniseStatus(status)}
     </Badge>
   );
 }

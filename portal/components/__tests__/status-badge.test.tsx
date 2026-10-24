@@ -44,4 +44,11 @@ describe("StatusBadge", () => {
     expect(badge?.className).toContain("bg-slate-100");
     expect(badge?.className).toContain("text-slate-600");
   });
+
+  it("renders nothing (does not crash) when the status is missing", () => {
+    const { container } = render(
+      <StatusBadge status={undefined as unknown as string} />,
+    );
+    expect(container.querySelector("[data-slot='badge']")).toBeNull();
+  });
 });

@@ -71,3 +71,16 @@ sipho.dlamini@email.co.za|mathebula-partners
 ## tenant schemas
 tenant_5039f2d497cf
 tenant_56399d06a773
+## post-cleanup census of every org-keyed portal table + other org-keyed public tables (read-only, 2026-10-24T23:18:00Z)
+portal.portal_comments org_id='khanyile-attorneys-624i': 0
+portal.portal_contact_directory org_id='khanyile-attorneys-624i': 0
+portal.portal_documents org_id='khanyile-attorneys-624i': 0
+portal.portal_invoices org_id='khanyile-attorneys-624i': 0
+portal.portal_project_summaries org_id='khanyile-attorneys-624i': 0
+portal.portal_projects org_id='khanyile-attorneys-624i': 0
+portal.portal_requests org_id='khanyile-attorneys-624i': 0
+portal.portal_tasks org_id='khanyile-attorneys-624i': 0
+public.job_queue org_id='khanyile-attorneys-624i': 127
+## portal tables referencing tenant_db75730dfc5f
+portal.portal_contact_directory.tenant_schema: 0
+portal.portal_contact_directory_backfill.tenant_schema: 1

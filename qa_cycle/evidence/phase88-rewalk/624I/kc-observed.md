@@ -25,7 +25,7 @@ Tokens are redacted everywhere (`[REDACTED]`). In the two request-link success s
 - **R-2 Browser only for writes.** Every product write went through the firm UI (:3000) or the portal UI (:3002). The only exception is the R-5 Keycloak admin-REST cleanup. Every DB access was a read-only SELECT, and Mailpit was used through its API and HTML view.
 - **R-3 Prod build of the worktree portal.** As in Stack facts.
 - **R-4 Dedicated multi-firm email.** `multifirm.624i@email.co.za` ("Lerato Multifirm") was used. Sipho's address was not used for Step B.
-- **R-5 Second firm through the real flow, then KC cleanup.** The DB tenant was left in place (see Data created).
+- **R-5 Second firm through the real flow, then KC cleanup.** The DB tenant was left in place (see Data created). *(Superseded after review H-1: the DB footprint was removed too. See `logs/kc-D-db-cleanup.txt`.)*
 - **R-6 Restore.** Done (see Restore).
 - **R-7 Nothing PASS unless observed.** Every verdict below cites the Mailpit id, the network request and response, the final URL and a screenshot.
 
@@ -198,7 +198,7 @@ Mailpit `to:multifirm.624i@email.co.za` went from 0 to **2**. Both mails are bra
 |---|---|
 | Disbursement (Mathebula) | `699277c6-9f9e-4d51-9a4c-93812bf43cfb`, "624I court filing fee", Court Fees, R 100,00 zero-rated, Approved, now billed on INV-0004 |
 | Fee note (Mathebula) | **INV-0004**, id `0feb4764-f6f4-425d-9fb1-5ca250ab8c88`, Sipho Dlamini, SENT, total R 100,00, mock payment session created at send |
-| Second firm | "Khanyile Attorneys 624I", slug `khanyile-attorneys-624i`, schema **`tenant_db75730dfc5f`** (V1–V5), `public.access_requests` row APPROVED for `owner@khanyile-624i.local`. KC org `be3c9226-a3e8-491f-b90e-4a450dcbd27f` was **deleted** (see below) |
+| Second firm | "Khanyile Attorneys 624I", slug `khanyile-attorneys-624i`, schema **`tenant_db75730dfc5f`** (V1–V5), `public.access_requests` row APPROVED for `owner@khanyile-624i.local`. KC org `be3c9226-a3e8-491f-b90e-4a450dcbd27f` was **deleted** (see below)  *(DB footprint removed after review: `logs/kc-D-db-cleanup.txt`.)* |
 | Clients | Khanyile `1f3967e1-795c-4590-bbb9-b8dd6ae03d11`; Mathebula `98f91243-4156-4a83-b261-45347de14062`. Both "Lerato Multifirm", `multifirm.624i@email.co.za`, ONBOARDING (Mathebula onboarding checklist instantiated, 0/8) |
 | Matters | Khanyile `05a87979-653f-4135-8104-6f34af4d62ab`; Mathebula `a79db65e-c065-4101-b334-d541941b1166` (both Commercial template) |
 | Portal contacts | Khanyile `5d4bd3b9-8159-42d0-be9a-74730169d7fc`; Mathebula `c2e07e34-484f-46d5-b032-f3b78d976702` |

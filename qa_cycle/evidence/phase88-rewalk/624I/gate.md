@@ -1,6 +1,6 @@
 # 624I — Epic 624 gate (task 624.22) + carried 624.11 KC steps
 
-Orchestrator run, 2026-10-25 00:15–01:05 SAST (2026-10-24 22:15–23:05Z), worktree `worktree-epic-624I`, branch `phase88/07I-gate`, on **main `bd32f07ff2729c5f5d611a597c61d568cd022663`** (= origin/main, contains 624A–624H). No product code changes in this slice.
+Orchestrator run, 2026-10-25 00:15–01:20 SAST (2026-10-24 22:15–23:20Z, including the post-review KC cleanup), worktree `worktree-epic-624I`, branch `phase88/07I-gate`, on **main `bd32f07ff2729c5f5d611a597c61d568cd022663`** (= origin/main, contains 624A–624H). No product code changes in this slice.
 
 Source trees at this head are byte-identical to the heads earlier slices built from (`git diff --quiet` exit 0):
 - `backend/` + `compose/` = 624F head `cdb1dbb0a`
@@ -33,10 +33,8 @@ legal-lifecycle 4 failed: all four are in the carried set (617C `e2e-runs.md` "C
 - `day-90-review.spec.ts:179` Profitability dashboard
 
 The failing set did not grow, but it is not title-identical to 617C run 2:
-- **`day-90-review.spec.ts:63`** "Fee notes list shows multiple fee notes" **passes** here. It failed in 617C and in this slice's run 0.
-- `:179` is now reached, and it fails.
-
-Both titles are in the carried six, so `:63` is a non-deterministic carried failure rather than a fix.
+- **`day-90-review.spec.ts:63`** "Fee notes list shows multiple fee notes": its real assertion (`expect.soft(count) >= 1`, spec line 73) **passed in both 624I runs**. In run 0 the test failed only on the missing baseline at line 76. In 617C it failed on line 73, in both runs. That points to a deterministic change between Phase 87 and Phase 88 (fee notes now exist by Day 90), not a flake. Treat it as likely resolved: if 629.9 also passes it, drop it from the carried set. A failure there is a regression to investigate.
+- `:179` is now reached, and it fails (a carried title).
 
 portal-client-90day 3 failed: these are the 617C data-prerequisite titles, owned by 628G (the seed):
 - `day-00-07:119` Day 3 upload + info request
@@ -61,24 +59,34 @@ Reviewer A had no shell, so I record here what the orchestrator re-checked direc
 2. **Run 0 of login-bare failed, because my run order tripped the per-contact magic-link cap. Not a product defect.** Evidence: `logs/e2e-login-bare-run0-cap-backend.txt` (backend log lines, token rows and restart times).
    - **Sequence.** All requests below were for the contact `contact@acme.example.com`.
      - Isolation spec: 2 tokens at 22:56:03Z.
-     - `docker restart e2e-backend`: started 22:56:16Z.
+     - `docker restart e2e-backend`: app-ready ("Started BackendApplication") at 22:56:16Z.
      - 90-day `globalSetup`: 1 token at 22:56:18Z.
-     - `docker restart e2e-backend` again: started 22:57:03Z.
+     - `docker restart e2e-backend` again: app-ready at 22:57:03Z (container `StartedAt` 22:56:52Z; docker records only the last restart).
      - login-bare request: 22:57:06Z.
    - **Which cap fired.** The restarts cleared the in-memory per-email limiter (`PortalLoginRateLimiter`, 3 / 15 min, which would have returned 429). So the 4th request reached `MagicLinkService`'s **per-contact cap**: `MAX_TOKENS_PER_5_MINUTES = 3`, counted from `magic_link_tokens` in the DB (`MagicLinkService.java:29,112-117`). It threw `PortalAuthException("Too many login attempts")`. `PortalAuthService` logs that as `Magic link not issued … (PortalAuthException)` and returns the generic 200, so no mail was sent and the spec timed out waiting for Mailpit.
    - **Re-run.** After the 5-minute window, at 23:01:44Z: token issued 23:01:46Z, exchanged 23:01:49Z, **1 passed**.
-   - **Ordering rule** for later gates: run login-bare first, or ≥5 min after any other run that issues links for the same contact. A restart does not help with this cap.
+   - **Ordering rule for later gates.** Two caps apply to the same address:
+     - the per-contact cap: 3 tokens per 5 min, DB-counted, which a restart does not clear;
+     - the per-email limiter: 3 request-link calls per 15 min, in memory, cleared only by a restart.
+
+     So run login-bare **first** on a fresh stack. Otherwise, restart the backend (clears the per-email limiter) **and** wait ≥5 min after the last token (per-contact cap), or wait ≥15 min.
+3. The portal suites ran against a **production** portal build (`NEXT_PUBLIC_PORTAL_API_URL=http://localhost:8081`; 4 chunks contain :8081, 0 contain :8080) served on :3002. The KC `svc.sh` portal was stopped for the run and then restored: PID 35523, cwd main checkout `portal/`, `/login` 200.
+4. KC backend restart (KC-STACK): `./mvnw -q clean compile -DskipTests` in the main checkout, then a `svc.sh` restart → tenant **V5 applied on KC** to `tenant_5039f2d497cf` and `tenant_56399d06a773` (`logs/kc-backend-restart.log`). KC is therefore now at tenant V5 / global V2.
 5. **KC fixture cleanup, R-5 completed after review H-1** (`logs/kc-D-db-cleanup.txt`). Session 0's §R recipe was run scoped to `khanyile-attorneys-624i`:
    - R.0: backend stopped.
    - R.2: deleted 1 `portal_projects` row and 1 `portal_contact_directory` row.
    - R.3: `DROP SCHEMA tenant_db75730dfc5f CASCADE`.
    - R.4: deleted 1 row each from subscriptions, org_schema_mapping, organizations and access_requests.
    - R.6: backend restarted, "Running tenant migrations for 2 schemas", health UP.
-   - Read-back: tenant schemas `tenant_5039f2d497cf` and `tenant_56399d06a773` only; mapping `mathebula-partners` and `org_phase86_squash_smoke` only; no Khanyile rows anywhere.
+   - Read-back: tenant schemas `tenant_5039f2d497cf` and `tenant_56399d06a773` only; mapping `mathebula-partners` and `org_phase86_squash_smoke` only.
+   - Every org-keyed `portal.*` table has 0 Khanyile rows (per-table census appended to the log).
+   - Residue outside the tables Session 0 guards, recorded and left:
+     - 127 COMPLETED `public.job_queue` rows with `org_id='khanyile-attorneys-624i'`;
+     - 1 `portal.portal_contact_directory_backfill` marker for `tenant_db75730dfc5f`.
+
+     Session 0 does not clear those for Mathebula either, and neither trips the R.2 guard, R.6 or CP-3.
    - My first attempt executed **no SQL**: zsh did not word-split a `$P` command variable. It caused one extra KC backend restart, with no state change. The script was re-run under bash.
    - Mathebula keeps the walk's `multifirm.624i@email.co.za` client, matter and directory row. Session 0 removes them with the Mathebula tenant, except for the directory row (see follow-ups).
-3. The portal suites ran against a **production** portal build (`NEXT_PUBLIC_PORTAL_API_URL=http://localhost:8081`; 4 chunks contain :8081, 0 contain :8080) served on :3002. The KC `svc.sh` portal was stopped for the run and then restored: PID 35523, cwd main checkout `portal/`, `/login` 200.
-4. KC backend restart (KC-STACK): `./mvnw -q clean compile -DskipTests` in the main checkout, then a `svc.sh` restart → tenant **V5 applied on KC** to `tenant_5039f2d497cf` and `tenant_56399d06a773` (`logs/kc-backend-restart.log`). KC is therefore now at tenant V5 / global V2.
 
 ## Orchestrator rulings for the KC walk (R-1..R-7, full text in `kc-observed.md`)
 
@@ -90,6 +98,6 @@ Reviewer A had no shell, so I record here what the orchestrator re-checked direc
 
 - **Exchange double-POST under `next dev`** (624D follow-up): still unfixed, and no slice owns it. 629.1 KC-STACK uses `svc.sh start all`, which runs the portal under `pnpm dev`, so every 629 portal sign-in is exposed. The 629 row now carries: serve the portal as a production build for the walk (the R-3 recipe from `kc-observed.md`), or land the fix first.
 - **Session 0 recipe gap.** The §R recipe predates global V2, so it does not delete `portal.portal_contact_directory` rows. After 629's reset, Mathebula's directory rows (including `multifirm.624i@email.co.za`) outlive the dropped tenant. Add `DELETE FROM portal.portal_contact_directory WHERE org_id='mathebula-partners'` to R.2.
-- **E2E-PORTAL ordering.** login-bare and the other portal runs share `contact@acme.example.com`, and the per-contact cap is 3 per 5 min in the DB. Run login-bare first or space it ≥5 min. The comments in `login-bare.spec.ts:13-15` / `:96-97` and `playwright.portal.config.ts` say the cap is "cleared only by a backend restart", which is true only of the per-email 429 limiter. The comment fix is routed with the other 629 items. 628G, which edits the portal suites, may take it first.
+- **E2E-PORTAL ordering.** login-bare and the other portal runs share `contact@acme.example.com`, so the per-contact cap and the per-email limiter both apply (run note 2). Run login-bare first on a fresh stack. The comments in `login-bare.spec.ts:13-15` / `:96-97` say the cap is "cleared only by a backend restart", which is true only of the per-email 429 limiter. The comment fix is routed with the other 629 items. 628G, which edits the portal suites, may take it first.
 - **Visual baselines uncommitted.** A gate on a clean worktree needs `--update-snapshots=all`, otherwise it reports missing-baseline failures. The 629.9 run must use it, or the suites (628E/628F) commit baselines.
 - **624D `kc-observed.md` evidence error.** It says the orgId-path success copy matches the bare path. It does not, by design: `portal/app/login/page.tsx:162-166` shows the multi-firm sentence only when there is no orgId. Recorded here and not edited, since it is historical evidence.

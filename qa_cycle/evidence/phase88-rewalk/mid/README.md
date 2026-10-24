@@ -1,6 +1,6 @@
 # Phase 88 mid-phase re-walk (623) — Keycloak — evidence index
 
-Scenario `qa/testplan/demos/legal-za-90day-keycloak.md`. Stack: Keycloak dev stack (frontend :3000, gateway :8443, backend :8080, Keycloak :8180, Mailpit :8025, portal :3002) served from the main checkout at `6cc2b525e7a3f9d17a277f7dcffd4dadb6a46499` (= origin/main = worktree base `phase88/06A-mid-rewalk-days-01-07`) after `./mvnw -q clean compile`. Walk date 2026-10-24 (UTC). Walker: 623A.
+Scenario `qa/testplan/demos/legal-za-90day-keycloak.md`. Stack: Keycloak dev stack (frontend :3000, gateway :8443, backend :8080, Keycloak :8180, Mailpit :8025, portal :3002) served from the main checkout at `6cc2b525e7a3f9d17a277f7dcffd4dadb6a46499` (= origin/main = worktree base `phase88/06A-mid-rewalk-days-01-07`) after `./mvnw -q clean compile`. Walk date 2026-10-24 (UTC). Walkers: 623A (KC-STACK, Session 0, Days 1–7; branch `phase88/06A-mid-rewalk-days-01-07`); 623B (runs 1–2: Days 36–47 + 61–75, deck re-shoots; branch `phase88/06B-mid-rewalk-days-36-75`, stack not restarted — see § Stack state left for 623C).
 
 ## KC-STACK (623.1)
 
@@ -122,9 +122,11 @@ UI halves of 4.4 / 4.5 / 6.1 (rates R 1 200,00/hr and R 550,00/hr, entries R 1 8
 
 617C → 623A headline: G-B3 access chain closed (list → open → log time → reply PASS); notification deep-link precision FAIL (6.3, G88-M6). G-B7 acceptance PDF inline PASS (4.3b-i). No regression of a Phase 88 fix.
 
+623B adapted PASS rows: 45.8, 45.11, 61.1 "PASS (adapted — …)" (scenario-wording deviations awaiting founder authorisation); adapted PASS counts as PASS, as in 623A, so the tallies are unchanged.
+
 Days 36–47 doc rows only (27 split rows): 24 / 3 / 0 / 0 — FAIL 38.3b, 45.9b, 47.2b; target rows (13): 12 / 1 (T12, pointer to 47.2b) / 0 / 0. Days 61–75 doc rows only (20 split rows): 8 / 2 / 10 / 0 — FAIL 68.1, 75.2b; DEFERRED 68.2, 75.3–75.11; target rows (3): 3 / 0 / 0 / 0.
 
-617C → 623B headline: the four HIGH chains of Epic 623 pass in the browser — **G-C9 write-off PASS** (write off → reason → audit → excluded from next draft → Undo → re-write-off, 45.6–45.11 + T11); **G-C10 narrative lines PASS** (draft, preview, saved + emailed PDF, INV-0003); **G-C11 part payments PASS** (R 5 000 EFT → PARTIALLY_PAID on fee note, client row, Home Debtors, aging report; tile drops by exactly R 5 000); **G-D21 debtors PASS** (Home Debtors 1 → 2 → 3 clients owe fees, on balance). Closure gates: a written-off disbursement counts as settled (T14 PASS), a PARTIALLY_PAID fee note satisfies FINAL_BILL_ISSUED (T15 PASS), Admin gets Step 3 "Cannot close — resolve gates" (618C, T16 PASS). G-B3 also closed on 62.1 / 70.1. Still FAIL with unbuilt owners: letterhead/brand/banking (626), audit filter by plain words (625), portal login from the bare URL (G-D1 → 624), close a COMPLETED matter (G-D2 → 627). D-1 (a) left the Day-75 close DEFERRED (G88-M16 → 628H). No regression of a Phase 88 fix.
+617C → 623B headline: the four HIGH chains of Epic 623 pass in the browser — **G-C9 write-off PASS** (write off → reason → audit → excluded from next draft → Undo → re-write-off, 45.6–45.11 + T11); **G-C10 narrative lines PASS** (draft, preview, saved + emailed PDF, INV-0003); **G-C11 part payments PASS** (R 5 000 EFT → PARTIALLY_PAID on fee note, client row, Home Debtors, aging report; tile drops by exactly R 5 000); **G-D21 debtors PASS on the firm-level views** (Home Debtors 1 → 2 → 3 clients owe fees, Clients "Outstanding fee notes", Fees tiles / Debtor book — all on balance; the matter Overview "Outstanding fee notes" tile still reads "--", G88-M13). Closure gates: a written-off disbursement counts as settled (T14 PASS), a PARTIALLY_PAID fee note satisfies FINAL_BILL_ISSUED (T15 PASS), Admin gets Step 3 "Cannot close — resolve gates" (618C, T16 PASS). G-B3 also closed on 62.1 / 70.1. Still FAIL with unbuilt owners: letterhead/brand/banking (626), audit filter by plain words (625), portal login from the bare URL (G-D1 → 624), close a COMPLETED matter (G-D2 → 627), URL tab wins over click (G-B14 → 627A, observed still open). D-1 (a) left the Day-75 close DEFERRED (G88-M16 → 628H). No regression of a Phase 88 fix.
 
 ## Candidate gaps raised by 623A
 
@@ -144,18 +146,18 @@ Scenario-wording deviations needing founder authorisation (CLAUDE.md §6, route 
 
 ## Candidate gaps raised by 623B
 
-See `days-36-47.md` (G88-M8 … G88-M11) and `days-61-75.md` (G88-M12 … G88-M16) § Candidate gaps: 0 BLOCKER, 0 HIGH, 3 MEDIUM, 6 LOW. No regression of a closed Phase 88 gap. 623C consolidates into `gaps.md`.
+See `days-36-47.md` (G88-M8 … G88-M11) and `days-61-75.md` (G88-M12 … G88-M16) § Candidate gaps: **7 new gaps — 0 BLOCKER, 0 HIGH, 2 MEDIUM (M13, M16), 5 LOW (M8, M9, M10, M11, M14)**. Not new: G88-M12 is a retired id (merged into register gap G-B14); G88-M15 is a note on G-D3 (already specified by 627.5 / 627.8). Ids are not renumbered. No regression of a closed Phase 88 gap. 623C consolidates into `gaps.md`.
 
 | ID | Severity | Owner |
 |---|---|---|
 | G88-M8 fee-note PDF VAT column wraps amounts mid-number (T7c, 38.3a) | LOW | 626 (U8 PDF template) |
 | G88-M9 Generated Documents panel stale after Send fee note until reload (38.1, 45.4) | LOW | 626 (U10) |
-| G88-M10 tariff line saved with sort_order 0 → prints between time lines on the PDF (45.3, 47.2a) | LOW | new unit for the founder (candidate 627 U20) |
+| G88-M10 tariff line saved with sort_order 0 → prints between time lines on the PDF (45.3, 47.2a) | LOW | new unit for the founder |
 | G88-M11 manual part payment cancels the online-payment session; no link for the balance (T13a) | LOW | new unit for the founder (622 follow-up; confirm intended) |
-| G88-M12 matter page loaded with any `?tab=` is pinned to that tab (62.1) | MEDIUM | new unit for the founder (candidate 627 U20) |
+| G88-M12 → **merged into G-B14** "URL tab wins over click" (register item 26, U16), observed still open on 62.1 — not a new gap; id kept as a marker | — | **627A** (627.2 / 627.3) |
 | G88-M13 matter Overview "Outstanding fee notes" tile shows "--" despite outstanding notes (T15, 75.1) | MEDIUM | new unit for the founder (620B/622D follow-up) |
-| G88-M14 Tasks tab says "No tasks yet" and hides filters when all tasks are Done (75.1) | LOW | 627 (U20); copy → 628 |
-| G88-M15 Reopen keeps `retention_clock_started_at` from the Complete (75.2b) | LOW | 627 (U17) — confirm intended |
+| G88-M14 Tasks tab says "No tasks yet" and hides filters when all tasks are Done (75.1) | LOW | new unit for the founder; "project" copy → 628 |
+| G88-M15 Reopen keeps `retention_clock_started_at` from the Complete (75.2b) — observed current behaviour, **already specified by 627.5 / 627.8** (G-D3, ADR-354); a note, not a new gap | — | **627** (627.5 / 627.8) |
 | G88-M16 Day-75 closure pre-state (trust R0, all PAID) unreachable after the §5 5.9 reorder (75.3–75.11) | MEDIUM | 628H (needs founder §6 authorisation) |
 
 Scenario-wording deviations raised by 623B (route to 628H): 36.1/45.1, 38.1/45.4/65.1, 45.7, 75.2 (§5-authorised, prose pending 628H); 45.8 "Written off" vs WRITTEN_OFF, 45.11 exact literal, 61.1 "4th client" (3rd here), 68.1 landing page, 75.3 pre-state, 75.7 "Close matter" vs "Confirm Close" (need founder authorisation) — see each day file.
@@ -166,7 +168,7 @@ All five: `marketing/decks/screens/phase88/`, PNG **1440 × 900** (`file` verifi
 
 | File | Shows | Source URL | Taken (UTC) |
 |---|---|---|---|
-| `fee-note-lines.png` | INV-0001 **Sent**, "Issued: 24 Oct 2026 · Due: 23 Nov 2026", Line Items with the narrative lines "2026-10-24 · Bob Ndlovu · Drafting particulars of claim" and "2026-10-24 · Carol Mokoena · Legal research — precedent review" | `/org/mathebula-partners/invoices/8878574f-e15f-4936-a8c0-dd05d17b5556` | 2026-10-24 08:40Z (run 1, after 38.1) |
+| `fee-note-lines.png` | INV-0001 (Sent) scrolled to "Fee note details — Due Date 23 Nov 2026" + Line Items with the narrative lines "2026-10-24 · Bob Ndlovu · Drafting particulars of claim" and "2026-10-24 · Carol Mokoena · Legal research — precedent review", the deeds disbursement, Subtotal R 4 150,00 / VAT R 435,00 / **Total R 4 585,00**. The dev Online Payment Link panel (mock-payment URL) is scrolled out of frame | `/org/mathebula-partners/invoices/8878574f-e15f-4936-a8c0-dd05d17b5556` | **re-shot 2026-10-24 09:34Z** (review fix; view only, no state change). The original 08:40Z run-1 shot showed the mock-payment URL panel and was replaced |
 | `part-payment.png` | INV-0002 **Partially Paid** badge, "Part payment received — Paid R 5 000,00 · Balance due R 37 814,50", Payment History "Completed · Manual · EFT · EFT/MOROKA-001 · R 5 000,00", Record Payment offered, Void hidden | `/org/mathebula-partners/invoices/4591b2c1-3404-4cb9-8b97-d0e3099bfb64` | 08:48Z (run 1, after T13a) |
 | `home-debtors.png` | Home › Debtors "**3** clients owe fees": Moroka Family Trust R 37 814,50 · Nomvula Khoza R 7 058,13 · Sipho Dlamini R 4 585,00 (all "Not yet overdue", Current bars + aging legend); Trust position "Balanced" | `/org/mathebula-partners/dashboard` | 09:02Z (run 2, after 65.1, before 75.1) |
 | `clients-outstanding.png` | Clients list, **Outstanding fee notes** column: Moroka "R 37 814,50 · 1", Nomvula "R 7 058,13 · 1", Sipho "R 4 585,00 · 1"; FICA "Done" ×3; Trust balance R 50 000,00 / R 0,00 / R 3 750,00 | `/org/mathebula-partners/clients` | 09:03Z (run 2) |
@@ -181,12 +183,14 @@ All five: `marketing/decks/screens/phase88/`, PNG **1440 × 900** (`file` verifi
 | 75.3–75.9, 75.11 Day-75 happy-path close (623B) | D-1 (a) Strict: scenario pre-state (trust R0, all fee notes PAID) unreachable after the §5 5.9 reorder; no refund/transfer workaround, no owner override | **628H** (G88-M16 scenario amendment, founder §6), then 629 re-walk |
 | 75.10 retention row / retention card after close (623B) | No close under D-1 (a); G-D3 itself unbuilt | **629** (observe), **627** U17 (fix G-D3) |
 
-## Stack state left for 623B
+## Stack state left for 623B (historical — 623A end state)
 
 KC stack running from `$MAIN` (backend PID 70187 on :8080, gateway, frontend, portal), caffeinate PID 67665 (`-dimsu -t 43200`), `/tmp/.e2e-keycloak-mode` present. Dev artefacts in `$MAIN`: `.svc/`, `.playwright-mcp/` (623a-*.png, fixtures), possibly `portal/next-env.d.ts` (portal dev server rewrite) — not committed.
 
 ## Stack state left for 623C
 
-KC stack still running from `$MAIN`, not restarted, pulled or rebuilt by 623B (`svc.sh status` 08:54Z: backend / gateway / frontend / portal all `yes yes`; Docker b2b-keycloak, b2b-postgres, b2b-mailpit, b2b-localstack up). `origin/main` = `7d25a8eb4` throughout. caffeinate PID 67665 (`-dimsu -t 43200`, started 07:00:30Z, alive at 09:17Z, expires ≈ 19:00Z); host was on **battery** (91 % → 79 % over the walk). `/tmp/.e2e-keycloak-mode` present. Browser (Playwright MCP) logged in as Thandi, light colour scheme emulated; the separate portal context was closed. Dev artefacts in `$MAIN` (not committed): `.svc/`, `.playwright-mcp/` (`623b-*.png`, `623b-deck-*.png`, `623b-47.1-INV-0002-download.pdf`, FICA fixtures), possibly `portal/next-env.d.ts`.
+623A built and started the stack (§ KC-STACK rows 4a–5 above); 623B (runs 1–2) did not restart, rebuild or pull it. KC stack still running from `$MAIN` (`svc.sh status` 08:54Z: backend / gateway / frontend / portal all `yes yes`; Docker b2b-keycloak, b2b-postgres, b2b-mailpit, b2b-localstack up). `origin/main` = `7d25a8eb4` throughout. caffeinate PID 67665 (`-dimsu -t 43200`, started 07:00:30Z, alive at 09:17Z, expires ≈ 19:00Z); host was on **battery** (91 % → 79 % over the walk). `/tmp/.e2e-keycloak-mode` present. Browser (Playwright MCP) logged in as Thandi, light colour scheme emulated; the separate portal context was closed. Dev artefacts in `$MAIN` (not committed): `.svc/`, `.playwright-mcp/` (`623b-*.png`, `623b-deck-*.png`, `623b-47.1-INV-0002-download.pdf`, FICA fixtures), possibly `portal/next-env.d.ts`.
 
 Tenant `tenant_5039f2d497cf` at end of 623B (09:17Z): 3 clients ACTIVE (Sipho, Moroka Family Trust, Nomvula Khoza); 3 matters **ACTIVE** (Sipho's completed → reopened; 9 tasks DONE; Moroka + Nomvula 9 OPEN each); INV-0001 SENT R 4 585,00, INV-0002 PARTIALLY_PAID balance R 37 814,50, INV-0003 SENT R 7 058,13; Moroka 1 h unbilled (Carol, 70.1); disbursements sheriff WRITTEN_OFF / deeds BILLED; trust Sipho R 3 750,00, Moroka R 38 000,00; no matter closed, `matter_closure_log` empty; Mailpit 14 messages. Created ids per day file § Created state.
+
+623B end state confirmed at review time (2026-10-24 09:32–09:36Z): stack not restarted (`svc.sh status`: backend 70060, gateway 68353, frontend 68497, portal 68555, all `yes yes`; origin/main still `7d25a8eb4`); read-only SELECT `security.access_denied` still 21 rows / max 09:05:59Z (T16 after-state, `logs/backend-access-denied-T16.txt`); `fee-note-lines.png` re-shot as Thandi (view only); INV-0001 PDF re-fetched from Mailpit (`logs/mailpit-inv0001-INV-0001.pdf`). No writes.

@@ -12,3 +12,22 @@ SET
                   21 |                0 | 2026-10-24 09:05:59.809164+00
 (1 row)
 
+
+## AFTER snapshot — taken 2026-10-24T09:32:50Z during the review fix (later than Bob's 09:15–09:16Z attempt; bounds the window: no access-denied row since the 09:15:08Z BEFORE snapshot)
+backend.log: /Users/rakheendama/Projects/2026/b2b-strawman/.svc/logs/backend.log (363185 bytes, mtime Oct 24 11:32:34 2026)
+grep -c 'Access denied' now: 0
+SET
+ access_denied_total | mentions_closure |              max              
+---------------------+------------------+-------------------------------
+                  21 |                0 | 2026-10-24 09:05:59.809164+00
+(1 row)
+
+# per-minute breakdown since 08:50Z (ad2.sql) — latest row 09:05Z, i.e. none at/after T16
+SET
+         minute         | count |                                                                              sample                                                                              
+------------------------+-------+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-10-24 08:58:00+00 |     5 | {"path": "/api/matters/a93e8910-8840-45e5-96bf-1ce5e26561a0/time-summary/by-member", "method": "GET", "reason": "Per-member time breakdown is restricted to proj
+ 2026-10-24 08:59:00+00 |     2 | {"path": "/api/matters/a93e8910-8840-45e5-96bf-1ce5e26561a0/time-summary/by-member", "method": "GET", "reason": "Per-member time breakdown is restricted to proj
+ 2026-10-24 09:05:00+00 |     2 | {"path": "/api/matters/b15e15ee-0879-4691-abab-e319281e36f5/time-summary/by-member", "method": "GET", "reason": "Per-member time breakdown is restricted to proj
+(3 rows)
+

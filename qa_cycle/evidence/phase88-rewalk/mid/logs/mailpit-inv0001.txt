@@ -28,3 +28,9 @@ Deeds office fees: Deeds office search fee (Deeds Office Pretoria, 2026-10-24) |
 Page 2: Amount Summary: Subtotal (excl. VAT): R4 150,00 / VAT: R435,00 / Total Due: R4 585,00
 Payment Details: "Please use the fee note number as your payment reference. Banking details are available on request or as provided in your engagement letter. Kindly settle this fee note by the due date."
 Header: a plain dark (#1B3A4B-coloured) square logo block above "FEE NOTE"; no firm address/contact letterhead block.
+
+# Review fix (2026-10-24T09:33Z): the same attachment re-fetched from Mailpit and committed
+GET http://localhost:8025/api/v1/message/XjvC3zG6yBNwkHKNfVV69w/part/2 → logs/mailpit-inv0001-INV-0001.pdf
+size 3997 B (= the attachment Size above), PDF 1.6, sha256 2b12349ea9bad96337e90444accd816603176088a16385d77da3b78456ae5850
+Page 1 rendered with macOS `qlmanage -t -s 1600` → screens/T7c-inv0001-emailed-pdf-page1.png (1131 × 1600):
+the two narrative lines with the `·` glyph (no `&middot;` literal), and the VAT column wrapping "R270," / "00" and "R165," / "00" (G88-M8).

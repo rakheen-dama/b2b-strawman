@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -64,10 +66,31 @@ public class GeneratedDocumentController {
     return ResponseEntity.status(302).header(HttpHeaders.LOCATION, url).build();
   }
 
+  /**
+   * Phase 88 U13 / ADR-350 — "Share with client": INTERNAL → PORTAL, optional document-ready email.
+   */
+  @PostMapping("/{id}/share")
+  @RequiresCapability("PROJECT_MANAGEMENT")
+  public ResponseEntity<GeneratedDocumentListResponse> shareGeneratedDocument(
+      @PathVariable UUID id, @RequestBody ShareGeneratedDocumentRequest request) {
+    return ResponseEntity.ok(generatedDocumentService.share(id, request.isNotifyClient()));
+  }
+
   @DeleteMapping("/{id}")
   @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<Void> deleteGeneratedDocument(@PathVariable UUID id) {
     generatedDocumentService.delete(id);
     return ResponseEntity.noContent().build();
+  }
+
+  /**
+   * Body for {@code POST /api/generated-documents/{id}/share}. Boxed so {@code {}} is accepted
+   * (Jackson 3 strict mode rejects missing primitives in records); {@code null} → no email.
+   */
+  public record ShareGeneratedDocumentRequest(Boolean notifyClient) {
+
+    public boolean isNotifyClient() {
+      return Boolean.TRUE.equals(notifyClient);
+    }
   }
 }

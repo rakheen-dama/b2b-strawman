@@ -326,10 +326,11 @@ public class DocumentService {
   }
 
   /**
-   * Marks a document as system-auto-shared (visibility = {@link Document.Visibility#PORTAL}).
-   * Reserved for generated artefacts (closure-pack letters, statements of account) that the firm
-   * implicitly shares as a side-effect of triggering a workflow. Distinct from {@link
-   * #toggleVisibility} so audit + analytics can separate manual shares from system shares.
+   * Marks a generated document as shared with the client (visibility = {@link
+   * Document.Visibility#PORTAL}). Reserved for generated artefacts: since Phase 88 U13 / ADR-350
+   * this is the generated-document "Share with client" action ({@code
+   * GeneratedDocumentService.share}). Distinct from {@link #toggleVisibility} (the Documents-tab
+   * manual {@code SHARED} toggle) so audit + analytics can tell the two paths apart.
    */
   @Transactional
   public Document markSystemAutoShared(UUID documentId) {

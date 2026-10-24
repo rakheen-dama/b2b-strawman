@@ -73,9 +73,9 @@ class OrgSettingsEmbeddableNullReloadTest {
 
     // 2. Null out the nullable branding + portal columns via raw SQL — simulating a legacy row.
     //    All three branding columns are nullable, so Hibernate materialises a NULL branding
-    //    embedded (the genuine NPE risk). The portal group's portal_notification_doc_types column
-    //    is NOT NULL (V117 JSONB DEFAULT) and cannot be nulled — it is set to an empty array, which
-    //    still exercises the null-safe portal accessors against an otherwise-blank group.
+    //    embedded (the genuine NPE risk). Since Phase 88 U13 / ADR-350 the portal group is also
+    //    all-nullable (portal_digest_cadence + digest_last_sent_at; the unmapped allowlist column
+    //    portal_notification_doc_types is no longer part of it), so it materialises as NULL too.
     try (Connection conn = dataSource.getConnection();
         Statement stmt = conn.createStatement()) {
       stmt.execute("SET search_path TO " + tenantSchema);
@@ -84,7 +84,7 @@ class OrgSettingsEmbeddableNullReloadTest {
               "UPDATE org_settings SET "
                   + "logo_s3_key = NULL, brand_color = NULL, document_footer_text = NULL, "
                   + "portal_digest_cadence = NULL, "
-                  + "digest_last_sent_at = NULL, portal_notification_doc_types = '[]'::jsonb, "
+                  + "digest_last_sent_at = NULL, "
                   // Expense is a single-column nullable group (Wave 3.4) — nulling the sole
                   // column makes Hibernate materialise a NULL embedded, the genuine NPE risk.
                   + "default_expense_markup_percent = NULL, "
@@ -133,8 +133,6 @@ class OrgSettingsEmbeddableNullReloadTest {
                     assertThat(reloaded.getPortal()).isNotNull();
                     assertThat(reloaded.getPortal().getPortalDigestCadence()).isNull();
                     assertThat(reloaded.getPortal().getDigestLastSentAt()).isNull();
-                    // null-safe accessor returns empty list, never null
-                    assertThat(reloaded.getPortal().getPortalNotificationDocTypes()).isEmpty();
 
                     // Effective-getter fallbacks must still work on the all-null group.
                     assertThat(reloaded.getPortal().getEffectivePortalDigestCadence())
@@ -238,6 +236,52 @@ class OrgSettingsEmbeddableNullReloadTest {
             assertThat(orgSettingsRepository.findById(id).orElseThrow().getUpdatedAt())
                 .as("updatedAt must refresh when an embedded group field is mutated")
                 .isAfter(beforeRef.get()));
+  }
+
+  /**
+   * Phase 88 U13 / ADR-350: with the allowlist column unmapped, the portal group is all-nullable
+   * ({@code portal_digest_cadence} + {@code digest_last_sent_at}) and materialises as NULL on every
+   * fresh tenant. Writes go through the lazy {@link OrgSettings#getPortal()} (e.g. {@code
+   * OrgSettingsService} cadence update, {@code PortalDigestScheduler.markDigestSent}) — prove that
+   * a write through the lazily created group after a NULL reload is actually persisted.
+   */
+  @Test
+  void portalGroupAllNull_writeThroughLazyGetter_persists() throws Exception {
+    var idRef = new AtomicReference<UUID>();
+    runInTenant(() -> idRef.set(orgSettingsRepository.save(new OrgSettings("GBP")).getId()));
+    UUID id = idRef.get();
+
+    try (Connection conn = dataSource.getConnection();
+        Statement stmt = conn.createStatement()) {
+      stmt.execute("SET search_path TO " + tenantSchema);
+      int updated =
+          stmt.executeUpdate(
+              "UPDATE org_settings SET portal_digest_cadence = NULL, digest_last_sent_at = NULL"
+                  + " WHERE id = '"
+                  + id
+                  + "'");
+      assertThat(updated).isEqualTo(1);
+    }
+
+    Instant sentAt = Instant.parse("2026-10-24T08:00:00Z");
+    runInTenant(
+        () -> {
+          var reloaded = orgSettingsRepository.findById(id).orElseThrow();
+          reloaded.getPortal().setPortalDigestCadence(PortalDigestCadence.BIWEEKLY);
+          reloaded.getPortal().markDigestSent(sentAt);
+          orgSettingsRepository.save(reloaded);
+        });
+
+    runInTenant(
+        () -> {
+          var fresh = orgSettingsRepository.findById(id).orElseThrow();
+          assertThat(fresh.getPortal().getPortalDigestCadence())
+              .as("cadence written through the lazily created portal group must persist")
+              .isEqualTo(PortalDigestCadence.BIWEEKLY);
+          assertThat(fresh.getPortal().getDigestLastSentAt())
+              .as("markDigestSent through the lazily created portal group must persist")
+              .isEqualTo(sentAt);
+        });
   }
 
   private void runInTenant(Runnable action) {

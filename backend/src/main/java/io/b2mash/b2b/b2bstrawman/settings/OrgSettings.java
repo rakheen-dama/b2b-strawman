@@ -20,15 +20,6 @@ import org.hibernate.type.SqlTypes;
 @Table(name = "org_settings")
 public class OrgSettings {
 
-  /**
-   * Canonical default for {@link PortalSettings#getPortalNotificationDocTypes()}. Must stay in sync
-   * with the JSONB default literal in the tenant baseline — {@link PortalSettings#withDefaults()}
-   * seeds this so newly provisioned tenants persist the canonical list rather than an empty array
-   * (OBS-2107 follow-up).
-   */
-  public static final List<String> DEFAULT_PORTAL_NOTIFICATION_DOC_TYPES =
-      List.of("matter-closure-letter", "statement-of-account");
-
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
@@ -273,20 +264,19 @@ public class OrgSettings {
   private DataProtectionSettings dataProtection = new DataProtectionSettings();
 
   /**
-   * Customer-portal settings group (Wave 3.3): digest cadence, last-digest-sent timestamp, and the
-   * per-event notification allowlist. Persisted inline on {@code org_settings} via
-   * {@code @Embedded} — column names pinned by {@code @AttributeOverride} for zero schema change.
-   * Initialised non-null so a fresh entity and an all-null DB row never NPE on {@link
-   * #getPortal()}.
+   * Customer-portal settings group (Wave 3.3): digest cadence and last-digest-sent timestamp.
+   * Persisted inline on {@code org_settings} via {@code @Embedded} — column names pinned by
+   * {@code @AttributeOverride} for zero schema change. Both columns are nullable, so the group
+   * materialises as NULL on reload when both are null (every fresh tenant); {@link #getPortal()}
+   * lazily re-creates it (guarded by {@code OrgSettingsEmbeddableNullReloadTest}). The former
+   * allowlist column {@code portal_notification_doc_types} stays in the table, unmapped (Phase 88
+   * U13 / ADR-350, A15).
    */
   @Embedded
   @AttributeOverride(
       name = "portalDigestCadence",
       column = @Column(name = "portal_digest_cadence", length = 12))
   @AttributeOverride(name = "digestLastSentAt", column = @Column(name = "digest_last_sent_at"))
-  @AttributeOverride(
-      name = "portalNotificationDocTypes",
-      column = @Column(name = "portal_notification_doc_types", columnDefinition = "jsonb"))
   private PortalSettings portal = new PortalSettings();
 
   protected OrgSettings() {}
@@ -310,7 +300,6 @@ public class OrgSettings {
     this.accountingEnabled = false;
     this.aiEnabled = false;
     this.documentSigningEnabled = false;
-    this.portal = PortalSettings.withDefaults();
   }
 
   /** Returns the branding settings group. Never null. */

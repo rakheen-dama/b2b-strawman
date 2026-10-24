@@ -14,13 +14,6 @@ class OrgSettingsTest {
   }
 
   @Test
-  void defaultPortalNotificationDocTypes_matchesV117CanonicalDefault() {
-    var settings = new OrgSettings("USD");
-    assertThat(settings.getPortal().getPortalNotificationDocTypes())
-        .containsExactly("matter-closure-letter", "statement-of-account");
-  }
-
-  @Test
   void getWorkingDays_parsesCorrectly() {
     var settings = new OrgSettings("USD");
     settings.getTimeReminder().setTimeReminderDays("MON,WED,FRI");

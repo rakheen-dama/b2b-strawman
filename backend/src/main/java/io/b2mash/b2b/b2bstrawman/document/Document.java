@@ -237,9 +237,11 @@ public class Document {
    *   <li>{@code INTERNAL} — firm-only; not visible on the portal.
    *   <li>{@code SHARED} — manually shared with the client (firm clicked a "share with portal"
    *       toggle). Visible on the portal.
-   *   <li>{@code PORTAL} — system-auto-shared on a generated artefact (closure-pack letter,
-   *       statement of account, etc.). Visible on the portal. Distinct from {@code SHARED} so audit
-   *       + analytics can tell manual shares from system shares.
+   *   <li>{@code PORTAL} — a generated artefact (closure-pack letter, statement of account, etc.)
+   *       shared with the client through its own flow: the generation-time {@code shareWithClient}
+   *       / {@code notifyClient} intent or the generated-document "Share with client" action (Phase
+   *       88 U13 / ADR-350; generated artefacts are INTERNAL until then). Visible on the portal.
+   *       Distinct from {@code SHARED} so audit + analytics can tell the two paths apart.
    * </ul>
    *
    * Both {@code SHARED} and {@code PORTAL} render on the portal — see {@link

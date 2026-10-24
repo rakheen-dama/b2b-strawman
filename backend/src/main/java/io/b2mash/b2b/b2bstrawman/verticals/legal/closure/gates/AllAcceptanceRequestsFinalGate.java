@@ -18,6 +18,9 @@ import org.springframework.stereotype.Component;
  * per customer is the common case. A future phase may extend {@code AcceptanceRequest} with a
  * direct {@code projectId} for tighter scoping. Active statuses are PENDING, SENT, VIEWED (the
  * non-terminal set defined on {@link AcceptanceStatus}).
+ *
+ * <p>DECLINED is final (Phase 88 A12): a declined engagement is a resolved request, not an open
+ * one, so it is deliberately absent from the counted set and never blocks closure.
  */
 @Component
 public class AllAcceptanceRequestsFinalGate implements ClosureGate {

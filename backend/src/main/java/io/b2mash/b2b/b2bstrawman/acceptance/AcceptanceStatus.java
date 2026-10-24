@@ -14,6 +14,9 @@ public enum AcceptanceStatus {
   /** Recipient accepted the document. */
   ACCEPTED,
 
+  /** Recipient declined the document (terminal; frees the document/contact pair for re-send). */
+  DECLINED,
+
   /** Request passed its expiresAt deadline. */
   EXPIRED,
 

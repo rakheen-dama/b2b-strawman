@@ -40,6 +40,7 @@ public sealed interface DomainEvent
         AcceptanceRequestSentEvent,
         AcceptanceRequestViewedEvent,
         AcceptanceRequestAcceptedEvent,
+        AcceptanceRequestDeclinedEvent,
         AcceptanceRequestRevokedEvent,
         AcceptanceRequestExpiredEvent,
         ProjectCompletedEvent,

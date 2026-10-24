@@ -22,7 +22,11 @@ import java.util.UUID;
 public class AcceptanceRequest {
 
   private static final Set<AcceptanceStatus> TERMINAL_STATUSES =
-      Set.of(AcceptanceStatus.ACCEPTED, AcceptanceStatus.EXPIRED, AcceptanceStatus.REVOKED);
+      Set.of(
+          AcceptanceStatus.ACCEPTED,
+          AcceptanceStatus.DECLINED,
+          AcceptanceStatus.EXPIRED,
+          AcceptanceStatus.REVOKED);
 
   private static final Set<AcceptanceStatus> ACTIVE_STATUSES =
       Set.of(AcceptanceStatus.PENDING, AcceptanceStatus.SENT, AcceptanceStatus.VIEWED);
@@ -61,6 +65,12 @@ public class AcceptanceRequest {
 
   @Column(name = "revoked_at")
   private Instant revokedAt;
+
+  @Column(name = "declined_at")
+  private Instant declinedAt;
+
+  @Column(name = "decline_reason")
+  private String declineReason;
 
   @Column(name = "acceptor_name", length = 255)
   private String acceptorName;
@@ -161,6 +171,18 @@ public class AcceptanceRequest {
     this.updatedAt = Instant.now();
   }
 
+  /**
+   * Records the recipient's decline (Phase 88 U23). Only valid from SENT or VIEWED. {@code reason}
+   * is optional and already normalised by the service (stripped, blank → null).
+   */
+  public void decline(String reason) {
+    requireStatus(Set.of(AcceptanceStatus.SENT, AcceptanceStatus.VIEWED), "decline");
+    this.status = AcceptanceStatus.DECLINED;
+    this.declineReason = reason;
+    this.declinedAt = Instant.now();
+    this.updatedAt = Instant.now();
+  }
+
   /** Revokes the request. Valid from PENDING, SENT, or VIEWED. */
   public void markRevoked(UUID revokedBy) {
     requireStatus(ACTIVE_STATUSES, "revoke");
@@ -239,6 +261,14 @@ public class AcceptanceRequest {
 
   public Instant getRevokedAt() {
     return revokedAt;
+  }
+
+  public Instant getDeclinedAt() {
+    return declinedAt;
+  }
+
+  public String getDeclineReason() {
+    return declineReason;
   }
 
   public String getAcceptorName() {

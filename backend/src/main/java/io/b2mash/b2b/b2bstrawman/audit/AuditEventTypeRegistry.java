@@ -209,7 +209,16 @@ public class AuditEventTypeRegistry {
                 "invoice.payment_excess",
                 "Fee note payment exceeded balance",
                 AuditSeverity.NOTICE,
-                AuditEventGroup.FINANCIAL));
+                AuditEventGroup.FINANCIAL),
+            // ACCEPTANCE — Phase 88 (Epic 624F, U23). Additive stored key (ADR-342: storage key,
+            // do not rename; registry pin 32 → 33 per Phase 88 OQ #10). Classified exactly as the
+            // unregistered acceptance.* siblings resolve (INFO/STANDARD) — only the label is
+            // explicit.
+            new AuditEventTypeMetadata(
+                "acceptance.declined",
+                "Acceptance declined",
+                AuditSeverity.INFO,
+                AuditEventGroup.STANDARD));
     var map = new HashMap<String, AuditEventTypeMetadata>();
     for (var entry : entries) {
       var previous = map.put(entry.eventType(), entry);

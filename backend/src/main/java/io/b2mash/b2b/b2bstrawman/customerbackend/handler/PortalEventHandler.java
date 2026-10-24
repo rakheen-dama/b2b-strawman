@@ -21,6 +21,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepos
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestAcceptedEvent;
+import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestDeclinedEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestExpiredEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestRevokedEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestSentEvent;
@@ -725,6 +726,25 @@ public class PortalEventHandler {
           } catch (Exception e) {
             log.warn(
                 "Failed to project AcceptanceRequestAcceptedEvent: requestId={}",
+                event.requestId(),
+                e);
+          }
+        });
+  }
+
+  /** Phase 88 U23: status only — the portal page reads decline details from the tenant (D-9). */
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onAcceptanceRequestDeclined(AcceptanceRequestDeclinedEvent event) {
+    RequestScopes.runForTenantOnShard(
+        event.tenantId(),
+        event.orgId(),
+        event.shardId(),
+        () -> {
+          try {
+            readModelRepo.updateAcceptanceRequestStatus(event.requestId(), "DECLINED");
+          } catch (Exception e) {
+            log.warn(
+                "Failed to project AcceptanceRequestDeclinedEvent: requestId={}",
                 event.requestId(),
                 e);
           }

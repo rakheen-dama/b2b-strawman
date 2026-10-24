@@ -24,6 +24,7 @@ const NOTIFICATION_TYPE_LABELS: Record<string, { label: string; category: string
   MEMBER_INVITED: { label: "Member Invited", category: "Collaboration" },
   DOCUMENT_GENERATED: { label: "Document Generated", category: "Collaboration" },
   ACCEPTANCE_COMPLETED: { label: "Acceptance Completed", category: "Collaboration" },
+  ACCEPTANCE_DECLINED: { label: "Acceptance Declined", category: "Collaboration" },
   // Billing & Invoicing
   BUDGET_ALERT: { label: "Budget Alert", category: "Billing & Invoicing" },
   INVOICE_APPROVED: { label: "Invoice Approved", category: "Billing & Invoicing" },

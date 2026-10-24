@@ -1,17 +1,20 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.closure.gates;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.acceptance.AcceptanceRequestRepository;
 import io.b2mash.b2b.b2bstrawman.acceptance.AcceptanceStatus;
 import io.b2mash.b2b.b2bstrawman.project.Project;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -63,6 +66,24 @@ class AllAcceptanceRequestsFinalGateTest {
 
     assertThat(result.passed()).isTrue();
     verifyNoInteractions(repo);
+  }
+
+  /**
+   * Phase 88 A12: DECLINED is final — a declined engagement is a resolved request, not an open one,
+   * so the gate never counts it (a matter whose only request is DECLINED can be closed).
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  void declinedRequestsAreFinal_gateNeverCountsDeclined() {
+    when(project.getCustomerId()).thenReturn(CUSTOMER_ID);
+    ArgumentCaptor<Collection<AcceptanceStatus>> captor = ArgumentCaptor.forClass(Collection.class);
+    when(repo.countByCustomerIdAndStatusIn(eq(CUSTOMER_ID), captor.capture())).thenReturn(0L);
+
+    assertThat(gate.evaluate(project).passed()).isTrue();
+    assertThat(captor.getValue())
+        .doesNotContain(AcceptanceStatus.DECLINED)
+        .containsExactlyInAnyOrder(
+            AcceptanceStatus.PENDING, AcceptanceStatus.SENT, AcceptanceStatus.VIEWED);
   }
 
   @Test

@@ -176,4 +176,77 @@ class AcceptanceRequestTest {
     assertThatThrownBy(() -> revoked.markViewed(Instant.now()))
         .isInstanceOf(InvalidStateException.class);
   }
+
+  // --- decline (Phase 88 U23) ---
+
+  @Test
+  void decline_from_sent_sets_status_reason_and_declinedAt() {
+    var request = buildRequest();
+    request.markSent();
+
+    request.decline("Price too high");
+
+    assertThat(request.getStatus()).isEqualTo(AcceptanceStatus.DECLINED);
+    assertThat(request.getDeclineReason()).isEqualTo("Price too high");
+    assertThat(request.getDeclinedAt()).isNotNull();
+    assertThat(request.isActive()).isFalse();
+  }
+
+  @Test
+  void decline_from_viewed_without_reason() {
+    var request = buildRequest();
+    request.markSent();
+    request.markViewed(Instant.now());
+
+    request.decline(null);
+
+    assertThat(request.getStatus()).isEqualTo(AcceptanceStatus.DECLINED);
+    assertThat(request.getDeclineReason()).isNull();
+    assertThat(request.getDeclinedAt()).isNotNull();
+  }
+
+  @Test
+  void decline_rejected_from_pending() {
+    var request = buildRequest();
+    assertThatThrownBy(() -> request.decline("x")).isInstanceOf(InvalidStateException.class);
+    assertThat(request.getStatus()).isEqualTo(AcceptanceStatus.PENDING);
+  }
+
+  @Test
+  void decline_rejected_from_terminal_statuses() {
+    var accepted = buildRequest();
+    accepted.markSent();
+    accepted.markAccepted("Name", "127.0.0.1", "UA");
+    assertThatThrownBy(() -> accepted.decline("x")).isInstanceOf(InvalidStateException.class);
+
+    var expired = buildRequest();
+    expired.markSent();
+    expired.markExpired();
+    assertThatThrownBy(() -> expired.decline("x")).isInstanceOf(InvalidStateException.class);
+
+    var revoked = buildRequest();
+    revoked.markSent();
+    revoked.markRevoked(UUID.randomUUID());
+    assertThatThrownBy(() -> revoked.decline("x")).isInstanceOf(InvalidStateException.class);
+
+    var declined = buildRequest();
+    declined.markSent();
+    declined.decline("first");
+    assertThatThrownBy(() -> declined.decline("second")).isInstanceOf(InvalidStateException.class);
+    assertThat(declined.getDeclineReason()).isEqualTo("first");
+  }
+
+  @Test
+  void declined_request_cannot_be_accepted_revoked_or_reminded() {
+    var request = buildRequest();
+    request.markSent();
+    request.decline(null);
+
+    assertThatThrownBy(() -> request.markAccepted("Name", "127.0.0.1", "UA"))
+        .isInstanceOf(InvalidStateException.class);
+    assertThatThrownBy(() -> request.markRevoked(UUID.randomUUID()))
+        .isInstanceOf(InvalidStateException.class);
+    assertThatThrownBy(request::recordReminder).isInstanceOf(InvalidStateException.class);
+    assertThat(request.getStatus()).isEqualTo(AcceptanceStatus.DECLINED);
+  }
 }

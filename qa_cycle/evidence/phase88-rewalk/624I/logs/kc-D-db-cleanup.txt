@@ -55,6 +55,7 @@ org_phase86_squash_smoke|tenant_56399d06a773
 mathebula-partners|tenant_5039f2d497cf
 ## portal org-keyed rows for khanyile-attorneys-624i
 ## contact/customer-keyed rows (a acceptance, b notif pref, c trust bal, d trust tx, e deadline)
+# N/A after R.3 (annotated post-run, CodeRabbit): DROP SCHEMA removed tenant_db75730dfc5f.portal_contacts/customers, so this check cannot execute; the raw error below is expected and is NOT a zero-row verification. The BEFORE census (0|0|0|0|0) is the applicable check.
 ERROR:  relation "tenant_db75730dfc5f.portal_contacts" does not exist
 LINE 1: ...quests where portal_contact_id in (select id from tenant_db7...
                                                              ^

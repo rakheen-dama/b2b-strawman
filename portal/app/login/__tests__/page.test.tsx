@@ -35,6 +35,9 @@ import LoginPage from "@/app/login/page";
 describe("LoginPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // clearAllMocks keeps queued mockResolvedValueOnce values; reset so an
+    // unconsumed response cannot leak into the next test.
+    mockPublicFetch.mockReset();
     mockSearchParams = new URLSearchParams();
     mockGetLastOrgId.mockReturnValue(null);
     if (typeof sessionStorage !== "undefined") {
@@ -87,9 +90,7 @@ describe("LoginPage", () => {
     await user.click(screen.getByRole("button", { name: "Send Magic Link" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Check your email for a login link."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Check your email.")).toBeInTheDocument();
     });
   });
 
@@ -114,8 +115,95 @@ describe("LoginPage", () => {
     });
   });
 
-  // GAP-L-66
-  it("uses last-known orgId from localStorage when query param missing", async () => {
+  // Phase 88 U11 (ADR-351) — (a) bare /login: no query, no hint.
+  it("bare /login submits email-only and shows the truthful success copy", async () => {
+    mockSearchParams = new URLSearchParams();
+    mockGetLastOrgId.mockReturnValue(null);
+    mockPublicFetch.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          message: "If an account exists, a link has been sent.",
+          magicLink: null,
+        }),
+        { status: 200 },
+      ),
+    );
+
+    const user = userEvent.setup();
+    render(<LoginPage />);
+
+    // Generic branding, no branding fetch when no orgId is known.
+    expect(screen.getByText("Kazi")).toBeInTheDocument();
+    expect(mockPublicFetch).not.toHaveBeenCalled();
+
+    await user.type(
+      screen.getByLabelText("Email address"),
+      "first@example.com",
+    );
+    await user.click(screen.getByRole("button", { name: "Send Magic Link" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Check your email.")).toBeInTheDocument();
+    });
+    expect(screen.getByText(/sent a sign-in link/i)).toBeInTheDocument();
+    expect(
+      screen.queryByText(/couldn't determine which organization/i),
+    ).toBeNull();
+
+    expect(mockPublicFetch).toHaveBeenCalledTimes(1);
+    const [url, init] = mockPublicFetch.mock.calls[0];
+    expect(url).toBe("/portal/auth/request-link");
+    expect(JSON.parse(init.body as string)).toEqual({
+      email: "first@example.com",
+    });
+  });
+
+  // Phase 88 U11 — (b) ?orgId= from the link is the fast path.
+  it("sends the query orgId as the fast-path hint", async () => {
+    mockSearchParams = new URLSearchParams("orgId=org_abc");
+    mockPublicFetch
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            orgName: "Test Corp",
+            logoUrl: null,
+            brandColor: null,
+            footerText: null,
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "Sent." }), { status: 200 }),
+      );
+
+    const user = userEvent.setup();
+    render(<LoginPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Corp")).toBeInTheDocument();
+    });
+    expect(mockPublicFetch.mock.calls[0][0]).toBe(
+      "/portal/branding?orgId=org_abc",
+    );
+
+    await user.type(screen.getByLabelText("Email address"), "a@example.com");
+    await user.click(screen.getByRole("button", { name: "Send Magic Link" }));
+
+    await waitFor(() => {
+      const requestLinkCall = mockPublicFetch.mock.calls.find(
+        (c) => c[0] === "/portal/auth/request-link",
+      );
+      expect(requestLinkCall).toBeDefined();
+      expect(JSON.parse(requestLinkCall![1].body as string)).toEqual({
+        email: "a@example.com",
+        orgId: "org_abc",
+      });
+    });
+  });
+
+  // Phase 88 U11 — (c) the localStorage hint brands the page only.
+  it("uses the last-known orgId hint for branding but never sends it", async () => {
     mockSearchParams = new URLSearchParams();
     mockGetLastOrgId.mockReturnValue("mathebula-partners");
     mockPublicFetch
@@ -137,8 +225,6 @@ describe("LoginPage", () => {
     const user = userEvent.setup();
     render(<LoginPage />);
 
-    // Branding fetch is triggered after the effect populates orgId from
-    // localStorage — confirm tenant name renders.
     await waitFor(() => {
       expect(screen.getByText("Mathebula & Partners")).toBeInTheDocument();
     });
@@ -149,38 +235,66 @@ describe("LoginPage", () => {
     );
     await user.click(screen.getByRole("button", { name: "Send Magic Link" }));
 
-    // Confirm orgId from localStorage was threaded into the request body.
     await waitFor(() => {
       const requestLinkCall = mockPublicFetch.mock.calls.find(
         (c) => c[0] === "/portal/auth/request-link",
       );
       expect(requestLinkCall).toBeDefined();
-      const body = JSON.parse(requestLinkCall![1].body as string);
-      expect(body.orgId).toBe("mathebula-partners");
+      expect(JSON.parse(requestLinkCall![1].body as string)).toEqual({
+        email: "sipho@example.com",
+      });
     });
   });
 
-  // GAP-L-66
-  it("renders inline guard when orgId is unresolvable", async () => {
+  // Phase 88 U11 — (d) per-email cap.
+  it("shows the rate-limit message on 429", async () => {
     mockSearchParams = new URLSearchParams();
-    mockGetLastOrgId.mockReturnValue(null);
+    mockPublicFetch.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({ status: 429, title: "Too many login attempts" }),
+        { status: 429 },
+      ),
+    );
 
     const user = userEvent.setup();
     render(<LoginPage />);
 
-    await user.type(
-      screen.getByLabelText("Email address"),
-      "first@example.com",
-    );
+    await user.type(screen.getByLabelText("Email address"), "a@example.com");
     await user.click(screen.getByRole("button", { name: "Send Magic Link" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/couldn't determine which organization/i),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Too many login attempts. Please try again later.",
+      );
     });
-    // Form must NOT POST when orgId can't be resolved (avoids guaranteed 400).
-    expect(mockPublicFetch).not.toHaveBeenCalled();
+    expect(screen.queryByText("Check your email.")).toBeNull();
+  });
+
+  // (f) dev-profile echo still renders.
+  it("renders the dev-mode magic link when the backend echoes one", async () => {
+    mockSearchParams = new URLSearchParams();
+    mockPublicFetch.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          message: "If an account exists, a link has been sent.",
+          magicLink: "/auth/exchange?token=t&orgId=acme",
+        }),
+        { status: 200 },
+      ),
+    );
+
+    const user = userEvent.setup();
+    render(<LoginPage />);
+
+    await user.type(screen.getByLabelText("Email address"), "a@example.com");
+    await user.click(screen.getByRole("button", { name: "Send Magic Link" }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Dev mode/)).toBeInTheDocument();
+    });
+    expect(
+      screen.getByRole("link", { name: "/auth/exchange?token=t&orgId=acme" }),
+    ).toHaveAttribute("href", "/auth/exchange?token=t&orgId=acme");
   });
 
   // GAP-L-66

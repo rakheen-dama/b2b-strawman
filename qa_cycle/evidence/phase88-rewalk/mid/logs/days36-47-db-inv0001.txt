@@ -1,0 +1,41 @@
+SET
+ invoice_number | status | customer_name | issue_date |  due_date  | subtotal | tax_amount |  total  | amount_paid | balance_due | paid_at 
+----------------+--------+---------------+------------+------------+----------+------------+---------+-------------+-------------+---------
+ INV-0001       | SENT   | Sipho Dlamini | 2026-10-24 | 2026-11-23 |  4150.00 |     435.00 | 4585.00 |        0.00 |     4585.00 | 
+(1 row)
+
+ invoice_number | sort_order |  line_type   |                                  description                                   | quantity | unit_price | amount  | tax_amount 
+----------------+------------+--------------+--------------------------------------------------------------------------------+----------+------------+---------+------------
+ INV-0001       |          0 | TIME         | 2026-10-24 · Bob Ndlovu · Drafting particulars of claim                        |   1.5000 |    1200.00 | 1800.00 |     270.00
+ INV-0001       |          1 | TIME         | 2026-10-24 · Carol Mokoena · Legal research — precedent review                 |   2.0000 |     550.00 | 1100.00 |     165.00
+ INV-0001       |          2 | DISBURSEMENT | Deeds office fees: Deeds office search fee (Deeds Office Pretoria, 2026-10-24) |   1.0000 |    1250.00 | 1250.00 |       0.00
+(3 rows)
+
+          occurred_at          |       event_type        | entity_type | actor_type |                                                                                         details                                                                                          
+-------------------------------+-------------------------+-------------+------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-10-24 08:35:51.553575+00 | invoice.created         | invoice     | USER       | {"currency": "ZAR", "subtotal": "4150.00", "actor_name": "Thandi Mathebula", "line_count": "3", "customer_id": "ad774504-3f2f-4e36-a896-20d92c6ec14f", "customer_name": "Sipho Dlamini"}
+ 2026-10-24 08:36:34.57461+00  | invoice.approved        | invoice     | USER       | {"total": "4585.00", "actor_name": "Thandi Mathebula", "issue_date": "2026-10-24", "expense_count": "0", "invoice_number": "INV-0001", "time_entry_count": "2"}
+ 2026-10-24 08:37:13.738011+00 | payment.session.created | invoice     | SYSTEM     | {"amount": "4585.00", "provider": "mock", "actor_name": "System", "session_id": "MOCK-SESS-0a25b5d3-9004-4a94-8039-a799cb9e9cce"}
+ 2026-10-24 08:37:13.743323+00 | invoice.sent            | invoice     | USER       | {"actor_name": "Thandi Mathebula", "project_id": "e794d8d8-974b-4ac2-b073-e7ffc3bc9852", "invoice_number": "INV-0001"}
+(4 rows)
+
+            email            |    date    | duration_minutes |                     description                      | invoice_number 
+-----------------------------+------------+------------------+------------------------------------------------------+----------------
+ bob@mathebula-test.local    | 2026-10-24 |               90 | Drafting particulars of claim                        | INV-0001
+ carol@mathebula-test.local  | 2026-10-24 |              120 | Legal research — precedent review                    | INV-0001
+ thandi@mathebula-test.local | 2026-10-24 |              180 | Initial consultation with heirs + document gathering | 
+ thandi@mathebula-test.local | 2026-10-24 |              180 | Reporting estate to the Master — J294 + inventory    | 
+ thandi@mathebula-test.local | 2026-10-24 |              150 | Letters of Executorship application                  | 
+ thandi@mathebula-test.local | 2026-10-24 |              150 | Drafting inventory of assets & liabilities           | 
+ bob@mathebula-test.local    | 2026-10-24 |               90 | Master of High Court filing preparation              | 
+ bob@mathebula-test.local    | 2026-10-24 |              180 | Section 29 notice — Gazette + newspaper placement    | 
+ bob@mathebula-test.local    | 2026-10-24 |              150 | Estate bank account opening documents                | 
+ carol@mathebula-test.local  | 2026-10-24 |               60 | Drafting Section 29 advertisement notice             | 
+(10 rows)
+
+     category      | amount  | approval_status | billing_status | write_off_reason | on_fee_note 
+-------------------+---------+-----------------+----------------+------------------+-------------
+ SHERIFF_FEES      |  750.00 | APPROVED        | UNBILLED       |                  | f
+ DEEDS_OFFICE_FEES | 1250.00 | APPROVED        | BILLED         |                  | t
+(2 rows)
+

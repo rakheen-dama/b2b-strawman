@@ -68,6 +68,7 @@ class CollectionsTriageServiceTest {
   private UUID custSlowDrift; // slow payer drifting even further → DRIFTING + SERIAL_LATE
   private UUID custGoneQuiet; // ≥2 SENT reminders, no payment since → GONE_QUIET
   private UUID custEscalated; // FLAGGED ESCALATION on outstanding invoice → ESCALATED
+  private UUID custEscalatedPartPaid; // same, but the invoice is PARTIALLY_PAID (622D)
   private UUID custTrust; // positive trust balance → TRUST_FUNDS_AVAILABLE (advisor)
   private UUID custNoTrust; // no ledger card → zero balance → no advice
 
@@ -140,6 +141,21 @@ class CollectionsTriageServiceTest {
                   90,
                   "partner_review"));
 
+          // 622D: a PARTIALLY_PAID invoice is still outstanding
+          // (CollectionsSql.OUTSTANDING_STATUSES)
+          // → a FLAGGED ESCALATION on it still raises ESCALATED.
+          custEscalatedPartPaid = seedCustomer("Escalated Part Paid Co", "esc_pp@test.com");
+          UUID escPpInvoice =
+              seedPartPaidInvoice(custEscalatedPartPaid, "Escalated Part Paid Co", "INV-EP1", 90);
+          activityRepository.save(
+              new CollectionActivity(
+                  escPpInvoice,
+                  custEscalatedPartPaid,
+                  CollectionStage.ESCALATION,
+                  CollectionActivityStatus.FLAGGED,
+                  90,
+                  "partner_review"));
+
           // Trust: positive aggregate trust balance → advisor contributes TRUST_FUNDS_AVAILABLE.
           custTrust = seedCustomer("Trust Co", "trust@test.com");
           seedSentInvoice(custTrust, "Trust Co", "INV-T1", 20);
@@ -183,6 +199,11 @@ class CollectionsTriageServiceTest {
   @Test
   void flaggedEscalationOnOutstandingInvoice_isEscalated() {
     assertThat(signals(custEscalated)).containsExactly("ESCALATED");
+  }
+
+  @Test
+  void flaggedEscalationOnPartiallyPaidInvoice_isEscalated() {
+    assertThat(signals(custEscalatedPartPaid)).containsExactly("ESCALATED");
   }
 
   @Test
@@ -245,6 +266,16 @@ class CollectionsTriageServiceTest {
     Invoice invoice = draftInvoice(customerId, name, LocalDate.now().minusDays(daysOverdue));
     invoice.approve(invoiceNumber, ownerMemberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
     invoice.markSent();
+    return invoiceRepository.save(invoice).getId();
+  }
+
+  /** A SENT invoice due {@code daysOverdue} in the past with 300 of its 1000 paid (622D). */
+  private UUID seedPartPaidInvoice(
+      UUID customerId, String name, String invoiceNumber, int daysOverdue) {
+    Invoice invoice = draftInvoice(customerId, name, LocalDate.now().minusDays(daysOverdue));
+    invoice.approve(invoiceNumber, ownerMemberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    invoice.markSent();
+    invoice.applyPayment(new BigDecimal("300"), "PART-" + invoiceNumber);
     return invoiceRepository.save(invoice).getId();
   }
 

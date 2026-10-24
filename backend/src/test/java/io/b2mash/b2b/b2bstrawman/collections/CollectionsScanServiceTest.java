@@ -111,6 +111,44 @@ class CollectionsScanServiceTest {
     return holder[0];
   }
 
+  /**
+   * Seeds a SENT invoice (total 1500) overdue by {@code daysOverdue}, then posts {@code paid}
+   * against it ({@code null} settles the full balance → PAID).
+   */
+  private UUID seedPaymentOn(String name, String email, int daysOverdue, String paid) {
+    UUID invoiceId = seedSentInvoice(name, email, daysOverdue, false);
+    runInTenant(
+        () -> {
+          var invoice = invoiceRepository.findById(invoiceId).orElseThrow();
+          if (paid == null) {
+            invoice.recordPayment("PAID-" + name);
+          } else {
+            invoice.applyPayment(new BigDecimal(paid), "PART-" + name);
+          }
+          invoiceRepository.save(invoice);
+        });
+    return invoiceId;
+  }
+
+  // 622D (ADR-347 A3): an overdue PARTIALLY_PAID fee note still owes its balance → it is chased;
+  // a fully PAID one is not.
+  @Test
+  void partiallyPaidOverdueInvoiceIsChased_paidIsNot() {
+    UUID partPaid = seedPaymentOn("Part Paid Co", "partpaid@test.com", 10, "500");
+    UUID settled = seedPaymentOn("Settled Co", "settled@test.com", 10, null);
+
+    runInTenant(scanService::scanForTenant);
+
+    runInTenant(
+        () -> {
+          var rows = activityRepository.findByInvoiceId(partPaid);
+          assertThat(rows).hasSize(1);
+          assertThat(rows.get(0).getStage()).isEqualTo(CollectionStage.STAGE_1);
+          assertThat(rows.get(0).getReason()).isEqualTo("ai_unavailable");
+          assertThat(activityRepository.findByInvoiceId(settled)).isEmpty();
+        });
+  }
+
   @Test
   void stageOneSelectedWhenOnlyStageOneThresholdCrossed() {
     UUID invoiceId = seedSentInvoice("Stage One Co", "stage1@test.com", 10, false);

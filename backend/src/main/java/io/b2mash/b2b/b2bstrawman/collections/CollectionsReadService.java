@@ -42,8 +42,9 @@ import org.springframework.transaction.annotation.Transactional;
  * mixed-currency invoices surfaces as one row per currency, each carrying a single {@code currency}
  * — using the 4-bucket §4.1 aging split ({@code current} ≤ 0 days, {@code d30} = 1–30, {@code d60}
  * = 31–60, {@code d90plus} = 61+). Unlike the collections SCAN, the debtor book INCLUDES {@code
- * collections_exempt} customers (surfacing the flag) and INCLUDES not-yet-overdue SENT invoices
- * (they land in the {@code current} bucket).
+ * collections_exempt} customers (surfacing the flag) and INCLUDES not-yet-overdue SENT and
+ * PARTIALLY_PAID fee notes (they land in the {@code current} bucket). Amounts are balances due
+ * ({@link CollectionsSql#OUTSTANDING_AMOUNT}, 622D).
  *
  * <p>The four-way bucket boundaries are shared with the aging report and cash digest via {@link
  * AgingBuckets} (extracted 593A). {@code signals} is populated by {@link CollectionsTriageService}
@@ -120,15 +121,16 @@ public class CollectionsReadService {
           i.id AS invoice_id,
           i.invoice_number AS invoice_number,
           i.total AS total,
+          %1$s AS balance_due,
           i.currency AS currency,
           i.due_date AS due_date,
           (CURRENT_DATE - i.due_date) AS days_overdue
       FROM invoices i
       WHERE i.customer_id = CAST(:customerId AS UUID)
-        AND %s
+        AND %2$s
       ORDER BY i.due_date
       """
-          .formatted(CollectionsSql.OUTSTANDING_PREDICATE);
+          .formatted(CollectionsSql.OUTSTANDING_AMOUNT, CollectionsSql.OUTSTANDING_PREDICATE);
 
   /**
    * The Fee notes page summary (Phase 88 U3, §13.4.3): one statement, org default currency only.
@@ -308,6 +310,7 @@ public class CollectionsReadService {
               t.get("invoice_id", UUID.class),
               t.get("invoice_number", String.class),
               toBigDecimal(t.get("total")),
+              toBigDecimal(t.get("balance_due")),
               t.get("currency", String.class),
               toLocalDate(t.get("due_date")),
               toInt(t.get("days_overdue"))));
@@ -414,10 +417,15 @@ public class CollectionsReadService {
       List<OutstandingInvoice> outstandingInvoices,
       Page<ActivityResponse> activities) {}
 
+  /**
+   * One outstanding fee note: {@code total} is the gross; {@code balanceDue} what is still owed
+   * ({@code total - amountPaid}, Phase 88 622D).
+   */
   public record OutstandingInvoice(
       UUID invoiceId,
       String invoiceNumber,
       BigDecimal total,
+      BigDecimal balanceDue,
       String currency,
       LocalDate dueDate,
       int daysOverdue) {}

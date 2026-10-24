@@ -128,11 +128,12 @@ public class CustomerContextBuilder implements TemplateContextBuilder {
       boolean isDraft = invoice.getStatus() == InvoiceStatus.DRAFT;
 
       if (!isVoid && !isDraft) {
-        runningBalance = runningBalance.add(invoice.getTotal());
-        if (isPaid) {
-          runningBalance = runningBalance.subtract(invoice.getTotal());
-        } else {
-          totalOutstanding = totalOutstanding.add(invoice.getTotal());
+        // Phase 88 622D (ADR-347): a fee note contributes what is still owed — total − amount_paid
+        // (zero once PAID) — so a PARTIALLY_PAID note counts at its balance, not its total.
+        BigDecimal owed = invoice.getBalanceDue();
+        runningBalance = runningBalance.add(owed);
+        if (!isPaid) {
+          totalOutstanding = totalOutstanding.add(owed);
         }
       }
       im.put("runningBalance", runningBalance);

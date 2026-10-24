@@ -129,6 +129,12 @@ class CashDigestDataTest {
     // Issued in window (billed includes PAID), paid out of window (not collected).
     seedPaidInvoice("Digest Paid Billed", 300, today.minusDays(2), instantDaysAgo(20));
 
+    // ── 622D (ADR-347 A3): PARTIALLY_PAID rows count at their balance; billed includes them. ──
+    // Out of the billed window, overdue 10 days (d30): total 2000, paid 500 → balance 1500.
+    seedPartPaidInvoice("Digest Part Paid", 2000, "500", today.minusDays(10), today.minusDays(30));
+    // Issued in window (billed at its total), current: total 400, paid 100 → balance 300.
+    seedPartPaidInvoice("Digest Part Billed", 400, "100", today.plusDays(20), today.minusDays(2));
+
     // ── Stale unbilled WIP: billable, no invoice, worked more than 30 days ago. ──
     Project project = projectRepository.save(new Project("Digest WIP Project", "wip", memberId));
     Task task =
@@ -151,6 +157,25 @@ class CashDigestDataTest {
     UUID invoiceId = seedInvoice(name, total, dueDate, false, null);
     pinIssueDate(invoiceId, issueDate);
     return invoiceId;
+  }
+
+  private void seedPartPaidInvoice(
+      String name, long total, String paid, LocalDate dueDate, LocalDate issueDate) {
+    Customer customer =
+        customerRepository.save(
+            TestCustomerFactory.createActiveCustomer(
+                name, name.replace(' ', '_') + "@test.com", memberId));
+    var invoice =
+        new Invoice(customer.getId(), "ZAR", name, "x@test.com", null, "Test Org", memberId);
+    invoice.updateDraft(dueDate, null, null, BigDecimal.ZERO);
+    invoice.recalculateTotals(BigDecimal.valueOf(total), false, BigDecimal.ZERO, false);
+    invoice.approve(
+        "INV-" + UUID.randomUUID().toString().substring(0, 8),
+        memberId,
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    invoice.markSent();
+    invoice.applyPayment(new BigDecimal(paid), "ref-" + name);
+    pinIssueDate(invoiceRepository.save(invoice).getId(), issueDate);
   }
 
   private void seedPaidInvoice(String name, long total, LocalDate issueDate, Instant paidAt) {
@@ -211,18 +236,22 @@ class CashDigestDataTest {
     runInTenant(() -> holder[0] = cashDigestService.assembleData());
     CashDigestData data = holder[0];
 
-    // Outstanding = every SENT invoice: 100+200+400+800+1000+5000.
-    assertThat(data.outstandingTotal()).isEqualByComparingTo("7500");
-    // Buckets: current = 100 (aging current) + 1000 (billed-in) + 5000 (big debtor).
-    assertThat(data.buckets().current()).isEqualByComparingTo("6100");
-    assertThat(data.buckets().d30()).isEqualByComparingTo("200");
+    // Outstanding = every SENT invoice at its total (100+200+400+800+1000+5000) + every
+    // PARTIALLY_PAID one at its balance (1500 + 300) — 622D.
+    assertThat(data.outstandingTotal()).isEqualByComparingTo("9300");
+    // Buckets: current = 100 (aging current) + 1000 (billed-in) + 5000 (big debtor) + 300 (part
+    // billed); d30 = 200 (aging d30) + 1500 (part paid).
+    assertThat(data.buckets().current()).isEqualByComparingTo("6400");
+    assertThat(data.buckets().d30()).isEqualByComparingTo("1700");
     assertThat(data.buckets().d60()).isEqualByComparingTo("400");
     assertThat(data.buckets().d90plus()).isEqualByComparingTo("800");
 
-    // Billed (issue_date in last 7 days, status SENT|PAID): 1000 (SENT in-window) + 300 (PAID
-    // in-window). The 5000 SENT was issued out of window; PAID-out/collected rows are out too.
-    assertThat(data.billed()).isEqualByComparingTo("1300");
-    // Collected (paid_at in last 7 days): 700 only.
+    // Billed (issue_date in last 7 days, status SENT|PARTIALLY_PAID|PAID, at total): 1000 (SENT
+    // in-window) + 300 (PAID in-window) + 400 (PARTIALLY_PAID in-window, 622D). The 5000 SENT and
+    // the 2000 PARTIALLY_PAID were issued out of window; PAID-out/collected rows are out too.
+    assertThat(data.billed()).isEqualByComparingTo("1700");
+    // Collected (paid_at in last 7 days, PAID only — part payments are not counted, 622D D-3
+    // follow-up): 700 only.
     assertThat(data.collected()).isEqualByComparingTo("700");
 
     // Stale WIP: two billable, uninvoiced entries older than 30 days (120+180 min = 5.0 h).
@@ -235,10 +264,13 @@ class CashDigestDataTest {
         .containsEntry("PROPOSED", 1L)
         .containsEntry("SKIPPED", 1L);
 
-    // Top debtor risks: six SENT customers, capped at five, ordered by outstanding DESC.
+    // Top debtor risks: eight outstanding customers, capped at five, ordered by outstanding DESC.
     assertThat(data.topRisks()).hasSize(5);
     assertThat(data.topRisks().get(0).customerName()).isEqualTo("Big Debtor Co");
     assertThat(data.topRisks().get(0).outstanding()).isEqualByComparingTo("5000");
+    // ...and the part-paid debtor ranks by its balance (1500), not its total (2000).
+    assertThat(data.topRisks().get(1).customerName()).isEqualTo("Digest Part Paid");
+    assertThat(data.topRisks().get(1).outstanding()).isEqualByComparingTo("1500");
   }
 
   @Test

@@ -778,7 +778,23 @@ class InvoiceLifecycleIntegrationTest {
         .perform(
             post("/api/invoices/" + invoiceId + "/void")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
-        .andExpect(status().isConflict());
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.status").value(409))
+        .andExpect(jsonPath("$.title").value("Invalid status transition"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value("A partially paid fee note cannot be voided — reverse its payments first"));
+
+    // Nothing changed (622D pin): still PARTIALLY_PAID with its payment.
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
+                    "/api/invoices/" + invoiceId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("PARTIALLY_PAID"))
+        .andExpect(jsonPath("$.amountPaid").value(100.0))
+        .andExpect(jsonPath("$.payments.length()").value(1));
   }
 
   private <T> T inTenant(java.util.concurrent.Callable<T> body) throws Exception {

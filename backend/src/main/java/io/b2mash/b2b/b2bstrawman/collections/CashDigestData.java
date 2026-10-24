@@ -10,10 +10,11 @@ import java.util.Map;
  * of what the AI narration says, so a hallucinated figure in prose can never change what the tables
  * show.
  *
- * @param outstandingTotal total outstanding across all SENT invoices with a due date
+ * @param outstandingTotal total balance due across all SENT and PARTIALLY_PAID fee notes with a due
+ *     date (the debtor-book definition, {@code CollectionsSql})
  * @param buckets the four-way aging split (current / d30 / d60 / d90plus), summed tenant-wide
  * @param billed value issued-and-sent in the trailing 7 days ({@code issue_date} in window, status
- *     SENT or PAID)
+ *     SENT, PARTIALLY_PAID or PAID, at the fee-note total)
  * @param collected value collected in the trailing 7 days ({@code paid_at} in window)
  * @param staleWipEntryCount unbilled billable {@code TimeEntry} rows older than 30 days
  * @param staleWipHours total unbilled hours older than 30 days

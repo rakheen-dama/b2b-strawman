@@ -126,6 +126,9 @@ public class CollectionReminderSkill implements AiSkill {
     prompt.append("Invoice number: ").append(nullSafe(invoice.getInvoiceNumber())).append("\n");
     prompt.append("Total: ").append(invoice.getTotal()).append(" ");
     prompt.append(nullSafe(invoice.getCurrency())).append("\n");
+    // Phase 88 622D (ADR-347): chase the balance, not the total, on a part-paid fee note.
+    prompt.append("Balance due: ").append(invoice.getBalanceDue()).append(" ");
+    prompt.append(nullSafe(invoice.getCurrency())).append("\n");
     prompt
         .append("Due date: ")
         .append(invoice.getDueDate() != null ? invoice.getDueDate().toString() : "unknown")

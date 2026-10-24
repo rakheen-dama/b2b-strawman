@@ -14,13 +14,13 @@ import java.util.UUID;
  * projection composed from batched aggregates; owns no table. The detail endpoint keeps {@link
  * ClientDtos.ClientResponse}.
  *
- * <p>{@code outstandingFeeNoteTotal} (SENT fee notes with a due date, the debtor-book definition)
- * is null without FINANCIAL_VISIBILITY (owner/admin always see it); {@code trustBalance}
- * (client-level SUM of ledger cards) is null without VIEW_TRUST or with trust accounting off.
- * Counts and {@code currency} are never redacted. {@code completenessPercent} is null when no
- * required field applies to the client (N/A). {@code lifecycleStatusChangedAt} is carried (no extra
- * query) for list consumers that read it. Nulls are serialized explicitly so the table can render
- * "—".
+ * <p>{@code outstandingFeeNoteTotal} (SENT or PARTIALLY_PAID fee notes with a due date at their
+ * balance due — the debtor-book definition, {@code CollectionsSql}) is null without
+ * FINANCIAL_VISIBILITY (owner/admin always see it); {@code trustBalance} (client-level SUM of
+ * ledger cards) is null without VIEW_TRUST or with trust accounting off. Counts and {@code
+ * currency} are never redacted. {@code completenessPercent} is null when no required field applies
+ * to the client (N/A). {@code lifecycleStatusChangedAt} is carried (no extra query) for list
+ * consumers that read it. Nulls are serialized explicitly so the table can render "—".
  */
 public record ClientListRow(
     UUID id,

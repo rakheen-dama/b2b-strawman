@@ -110,14 +110,15 @@ public class CashDigestService {
               CollectionsSql.OUTSTANDING_AMOUNT,
               CollectionsSql.OUTSTANDING_PREDICATE);
 
-  // billed = issued-and-sent in the trailing window (issue_date, status SENT|PAID); collected =
-  // paid in the trailing window (paid_at). paid_at is set by all three payment routes (manual /
-  // webhook / Xero poll), so it captures collections that PaymentEvent (PSP-only) would miss.
+  // billed = issued-and-sent in the trailing window (issue_date; status SENT | PARTIALLY_PAID |
+  // PAID — a part-paid fee note was still billed, 622D), at its total; collected = settled in the
+  // trailing window (paid_at, PAID only — part payments are not counted here; 622D D-3 follow-up).
   private static final String BILLED_COLLECTED_SQL =
       """
       SELECT
           COALESCE(SUM(i.total) FILTER (
-              WHERE i.issue_date >= :billedSince AND i.status IN ('SENT', 'PAID')), 0) AS billed,
+              WHERE i.issue_date >= :billedSince
+                AND i.status IN ('SENT', 'PARTIALLY_PAID', 'PAID')), 0) AS billed,
           COALESCE(SUM(i.total) FILTER (
               WHERE i.status = 'PAID' AND i.paid_at >= :collectedSince), 0) AS collected
       FROM invoices i

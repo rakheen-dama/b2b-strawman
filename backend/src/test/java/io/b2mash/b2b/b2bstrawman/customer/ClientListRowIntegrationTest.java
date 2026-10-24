@@ -132,6 +132,7 @@ class ClientListRowIntegrationTest {
   private UUID clientC;
   private UUID clientD;
   private UUID clientE;
+  private UUID clientF;
   private UUID bulkClient;
   private int invoiceSeq;
 
@@ -211,6 +212,8 @@ class ClientListRowIntegrationTest {
             "CLR Delta Client", "clr_d@test.com", ownerId, requiredDefs);
     complete.setLifecycleStatus(LifecycleStatus.DORMANT, ownerId);
     clientD = saveClient(complete);
+    clientF =
+        saveClient(createActiveCustomer("CLR Foxtrot Part-Paid Client", "clr_f@test.com", ownerId));
 
     transactionTemplate.executeWithoutResult(
         tx -> {
@@ -223,6 +226,11 @@ class ClientListRowIntegrationTest {
           invoiceRepository.save(newInvoice(clientA, 4242, currency, today.plusDays(10))); // DRAFT
           // C: foreign currency only → the row reports that group.
           seedSentInvoice(clientC, 250, foreignCurrency, today.plusDays(3));
+          // F (622D, ADR-347 A3): a SENT 1,000.00 and a PARTIALLY_PAID 2,000.00 with 800.00 paid
+          // (balance 1,200.00) count; a fully PAID 500.00 does not → 2 notes, 2,200.00.
+          seedSentInvoice(clientF, 1000, currency, today.plusDays(10));
+          seedPartPaidInvoice(clientF, 2000, "800.00", today.minusDays(5));
+          seedPaidInvoice(clientF, 500, today.minusDays(5));
 
           TestTrustBalanceFactory.seedTrustBalance(
               trustAccountRepository,
@@ -293,6 +301,14 @@ class ClientListRowIntegrationTest {
         .as("the fixture defines required CUSTOMER fields")
         .isPositive();
     assertThat(row).containsEntry("completenessPercent", score.get("percentage"));
+  }
+
+  // 622D (ADR-347 A3): a PARTIALLY_PAID fee note counts at its balance due; a PAID one drops out.
+  @Test
+  void partiallyPaidFeeNoteCountsAtItsBalanceAndPaidIsExcluded() throws Exception {
+    var row = row(list(owner(), ""), clientF);
+    assertThat(row).containsEntry("outstandingFeeNoteCount", 2).containsEntry("currency", currency);
+    assertThat(money(row, "outstandingFeeNoteTotal")).isEqualByComparingTo("2200.00");
   }
 
   @Test
@@ -613,6 +629,22 @@ class ClientListRowIntegrationTest {
     var invoice = newInvoice(clientId, amount, invoiceCurrency, due);
     invoice.approve("CLR-" + (++invoiceSeq), ownerId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
     invoice.markSent();
+    return invoiceRepository.save(invoice).getId();
+  }
+
+  private UUID seedPartPaidInvoice(UUID clientId, long amount, String paid, LocalDate due) {
+    var invoice = newInvoice(clientId, amount, currency, due);
+    invoice.approve("CLR-" + (++invoiceSeq), ownerId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    invoice.markSent();
+    invoice.applyPayment(new BigDecimal(paid), "CLR-PART-" + invoiceSeq);
+    return invoiceRepository.save(invoice).getId();
+  }
+
+  private UUID seedPaidInvoice(UUID clientId, long amount, LocalDate due) {
+    var invoice = newInvoice(clientId, amount, currency, due);
+    invoice.approve("CLR-" + (++invoiceSeq), ownerId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    invoice.markSent();
+    invoice.recordPayment("CLR-PAID-" + invoiceSeq);
     return invoiceRepository.save(invoice).getId();
   }
 

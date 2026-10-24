@@ -352,6 +352,77 @@ class AccountingPaymentPollIntegrationTest {
         });
   }
 
+  /**
+   * A zero or negative Xero payment amount (zero rounds-to-zero at scale 2 included) is skipped,
+   * not posted: zero would move a SENT note to PARTIALLY_PAID with nothing paid, and a negative one
+   * used to throw inside the poll transaction, so {@code recordPoll()} never ran and the same
+   * window was re-fetched forever. The poll still completes and posts the valid payment; the
+   * reconcile audit carries the amount actually posted (scale 2).
+   */
+  @Test
+  void nonPositiveXeroAmounts_areSkippedAndThePollCompletes() {
+    runInTenant(
+        () -> {
+          String extRef = "KAZI-INV-NONPOS-" + UUID.randomUUID().toString().substring(0, 6);
+          UUID invoiceId =
+              createSentInvoiceWithPushEntry(
+                  "Non Positive Xero Customer", new BigDecimal("1000.00"), extRef);
+
+          var negative =
+              new ExternalPaymentEvent(
+                  extRef, "XERO-PAY-NEG", new BigDecimal("-50.00"), "USD", Instant.now(), "PAID");
+          var zero =
+              new ExternalPaymentEvent(
+                  extRef, "XERO-PAY-ZERO", BigDecimal.ZERO, "USD", Instant.now(), "PAID");
+          var roundsToZero =
+              new ExternalPaymentEvent(
+                  extRef, "XERO-PAY-TINY", new BigDecimal("0.004"), "USD", Instant.now(), "PAID");
+          var valid =
+              new ExternalPaymentEvent(
+                  extRef,
+                  "XERO-PAY-VALID",
+                  new BigDecimal("300.004"),
+                  "USD",
+                  Instant.now(),
+                  "PAID");
+
+          stubPaymentSource(new TestPaymentSource(List.of(negative, zero, roundsToZero, valid)));
+
+          Instant beforePoll = Instant.now();
+          var summary = syncService.pollPaymentsForConnection(connectionId);
+
+          assertThat(summary.matched()).isEqualTo(1);
+          assertThat(summary.drifted()).isZero();
+          assertThat(summary.skipped()).isEqualTo(3);
+
+          var invoice = invoiceRepository.findById(invoiceId).orElseThrow();
+          assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PARTIALLY_PAID);
+          assertThat(invoice.getAmountPaid()).isEqualByComparingTo("300.00");
+
+          var events = paymentEventRepository.findByInvoiceIdOrderByCreatedAtDesc(invoiceId);
+          assertThat(events)
+              .extracting(e -> e.getPaymentReference())
+              .containsExactly("XERO-PAY-VALID");
+
+          var reconciledAudits =
+              auditEventRepository
+                  .findByFilter(
+                      null,
+                      invoiceId,
+                      null,
+                      "integration.xero.payment_reconciled",
+                      null,
+                      null,
+                      PageRequest.of(0, 10))
+                  .getContent();
+          assertThat(reconciledAudits).hasSize(1);
+          assertThat(reconciledAudits.getFirst().getDetails()).containsEntry("amount", "300.00");
+
+          var connection = xeroConnectionRepository.findOneById(connectionId).orElseThrow();
+          assertThat(connection.getLastPollAt()).isNotNull().isAfterOrEqualTo(beforePoll);
+        });
+  }
+
   @Test
   void currencyMismatch_createsReconcileDriftEntry() {
     runInTenant(

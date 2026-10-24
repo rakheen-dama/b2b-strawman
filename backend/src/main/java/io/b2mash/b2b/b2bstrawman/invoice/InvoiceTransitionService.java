@@ -348,12 +348,18 @@ public class InvoiceTransitionService {
           "Balance due is " + formatMoney(balanceBefore, invoice.getCurrency()));
     }
 
+    // Any payment changes the balance due, so a live pay-now checkout (created for the old balance)
+    // would over-collect if paid: cancel it — unless this posting IS that checkout settling (the
+    // card webhook for the active session). No auto-regeneration (OQ-6): the firm refreshes the
+    // link for the new balance via refresh-payment-link.
+    if (invoice.getPaymentSessionId() != null
+        && !invoice.getPaymentSessionId().equals(posting.sessionId())) {
+      paymentLinkService.cancelActiveSession(invoice);
+    }
+
     var effective = posting;
     if (posting.isManualEntry()) {
       // Manual-path side effects carried over from the pre-U15 recordPayment(UUID, String).
-      if (invoice.getPaymentSessionId() != null) {
-        paymentLinkService.cancelActiveSession(invoice);
-      }
       var paymentResult =
           resolvePaymentGateway()
               .recordManualPayment(

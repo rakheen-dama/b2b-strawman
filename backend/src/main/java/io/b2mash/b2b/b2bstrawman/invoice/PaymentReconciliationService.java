@@ -94,11 +94,20 @@ public class PaymentReconciliationService {
   }
 
   private void handlePaymentCompleted(Invoice invoice, WebhookResult result, String providerSlug) {
+    // A card payment we can't tie to a checkout session can be neither verified (the crafted-
+    // webhook check above is session-based) nor posted idempotently (the replay guard below is
+    // too) — a replay would post the balance due again on a part-paid fee note. Refuse it.
+    if (result.sessionId() == null || result.sessionId().isBlank()) {
+      log.warn(
+          "COMPLETED webhook from {} for invoice {} has no session id — not posted",
+          providerSlug,
+          invoice.getId());
+      return;
+    }
     // §13.2.3(c): idempotent on replay by session_id, not on status — a part-paid fee note is
     // still payable, so a status check would double-post a replayed webhook.
-    if (result.sessionId() != null
-        && paymentEventRepository.existsBySessionIdAndStatus(
-            result.sessionId(), PaymentEventStatus.COMPLETED)) {
+    if (paymentEventRepository.existsBySessionIdAndStatus(
+        result.sessionId(), PaymentEventStatus.COMPLETED)) {
       log.info(
           "Session {} already reconciled on invoice {}; skipping replayed webhook",
           result.sessionId(),
@@ -152,7 +161,7 @@ public class PaymentReconciliationService {
                     "provider",
                     providerSlug,
                     "session_id",
-                    result.sessionId() != null ? result.sessionId() : "",
+                    result.sessionId(),
                     "payment_reference",
                     paymentRef,
                     "amount",

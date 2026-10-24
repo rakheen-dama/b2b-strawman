@@ -69,6 +69,7 @@ class CardPaymentBalanceLinkIntegrationTest {
   @Autowired private OrgIntegrationRepository orgIntegrationRepository;
   @Autowired private IntegrationRegistry integrationRegistry;
   @Autowired private PaymentReconciliationService reconciliationService;
+  @Autowired private InvoiceService invoiceService;
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
@@ -212,6 +213,11 @@ class CardPaymentBalanceLinkIntegrationTest {
                   .stream()
                   .filter(e -> secondSessionId.equals(e.getSessionId()))
                   .toList();
+          assertThat(
+                  paymentEventRepository.findBySessionIdAndStatus(
+                      secondSessionId, PaymentEventStatus.CANCELLED))
+              .as("the card webhook settles its own session — it does not cancel it")
+              .isEmpty();
           assertThat(cardEvents)
               .as("one COMPLETED event for the session despite the replay")
               .singleElement()
@@ -221,6 +227,49 @@ class CardPaymentBalanceLinkIntegrationTest {
                     assertThat(e.getProviderSlug()).isEqualTo("mock");
                     assertThat(e.getAmount()).isEqualByComparingTo(balance);
                   });
+          return null;
+        });
+  }
+
+  /**
+   * A trust fee transfer that leaves a balance changes what is owed, so the live checkout (created
+   * for the old balance) is cancelled — paying it would over-collect. The firm regenerates via
+   * refresh-payment-link (OQ-6: no auto-regeneration).
+   */
+  @Test
+  void trustTransferPartPayment_cancelsTheLiveCheckoutSession() throws Exception {
+    assertExternalPartPaymentCancelsSession(
+        PaymentPosting.trustTransfer(new BigDecimal("400.00"), "TRUST-REF-1"));
+  }
+
+  /** As above for a part payment pulled from Xero. */
+  @Test
+  void xeroPartPayment_cancelsTheLiveCheckoutSession() throws Exception {
+    assertExternalPartPaymentCancelsSession(
+        PaymentPosting.xero(new BigDecimal("400.00"), "XERO-PAY-1"));
+  }
+
+  private void assertExternalPartPaymentCancelsSession(PaymentPosting posting) throws Exception {
+    String invoiceId = createAndSendInvoice();
+    String sessionId = inTenant(() -> invoice(invoiceId).getPaymentSessionId());
+    assertThat(sessionId).as("send created a mock checkout session").isNotNull();
+
+    inTenant(() -> invoiceService.postPayment(UUID.fromString(invoiceId), posting));
+
+    inTenant(
+        () -> {
+          var invoice = invoice(invoiceId);
+          assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PARTIALLY_PAID);
+          assertThat(invoice.getPaymentSessionId()).isNull();
+          assertThat(invoice.getPaymentUrl()).isNull();
+          assertThat(
+                  paymentEventRepository.findBySessionIdAndStatus(
+                      sessionId, PaymentEventStatus.CANCELLED))
+              .isPresent();
+          assertThat(
+                  paymentEventRepository.findBySessionIdAndStatus(
+                      sessionId, PaymentEventStatus.CREATED))
+              .isEmpty();
           return null;
         });
   }

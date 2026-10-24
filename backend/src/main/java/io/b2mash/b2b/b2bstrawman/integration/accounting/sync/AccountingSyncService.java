@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceTransitionService;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentPosting;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import java.math.RoundingMode;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -266,7 +267,7 @@ public class AccountingSyncService {
    * InvoiceTransitionService#postPayment} — PARTIALLY_PAID or PAID; an amount above the balance due
    * is capped at PAID and audited as {@code invoice.payment_excess}), detects currency drift
    * (creating {@code RECONCILE_DRIFT} sync entries), or skips (Xero-native invoices, already-paid,
-   * not payable, or dedup).
+   * not payable, dedup, or a non-positive amount).
    */
   @Transactional
   public PaymentPollSummary pollPaymentsForConnection(UUID connectionId) {
@@ -383,13 +384,27 @@ public class AccountingSyncService {
         continue;
       }
 
-      // 6. Match — post the Xero payment amount (XERO) and create the PULL sync entry. No amount
+      // 6. Non-positive amount (at the scale 2 the posting rounds to) — not a payment. Skip
+      // rather than post: zero would move a SENT note to PARTIALLY_PAID with nothing paid, and a
+      // negative amount would throw and roll back the poll, so recordPoll() never runs and the
+      // same window is re-fetched forever.
+      if (event.amount().setScale(2, RoundingMode.HALF_UP).signum() <= 0) {
+        log.warn(
+            "Xero payment {} for invoice {} has non-positive amount {}; skipping",
+            event.externalPaymentId(),
+            invoiceId,
+            event.amount());
+        skipped++;
+        continue;
+      }
+
+      // 7. Match — post the Xero payment amount (XERO) and create the PULL sync entry. No amount
       // drift check (Phase 88 U15, ADR-347): a Xero payment below the balance is a real part
       // payment (A3); one above it is capped at PAID + invoice.payment_excess by postPayment (A4).
       // postPayment writes the COMPLETED payment event with reference = the Xero PaymentID, which
       // keeps the step-4 dedup working on the next poll.
-      invoiceTransitionService.postPayment(
-          invoiceId, PaymentPosting.xero(event.amount(), event.externalPaymentId()));
+      var posting = PaymentPosting.xero(event.amount(), event.externalPaymentId());
+      invoiceTransitionService.postPayment(invoiceId, posting);
 
       var pullEntry =
           new AccountingSyncEntry(
@@ -416,14 +431,14 @@ public class AccountingSyncService {
                       "xeroPaymentId",
                       event.externalPaymentId(),
                       "amount",
-                      event.amount().toString(),
+                      posting.amount().toPlainString(),
                       "syncEntryId",
                       pullEntry.getId().toString()))
               .build());
 
       eventPublisher.publishEvent(
           new XeroPaymentReconciledEvent(
-              invoiceId, invoice.getInvoiceNumber(), event.amount(), event.externalPaymentId()));
+              invoiceId, invoice.getInvoiceNumber(), posting.amount(), event.externalPaymentId()));
 
       matched++;
     }

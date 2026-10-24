@@ -338,6 +338,38 @@ class PaymentReconciliationServiceIntegrationTest {
         });
   }
 
+  /**
+   * A COMPLETED webhook with no session id can't be tied to a checkout session, so it can be
+   * neither verified (crafted-webhook check) nor de-duplicated (session-id replay guard) — posting
+   * it would let a replay post the balance due again on a part-paid fee note. It is refused.
+   */
+  @Test
+  void completedWebhookWithoutSessionId_isNotPosted() throws Exception {
+    String invoiceId = createAndSendInvoice();
+
+    inTenant(
+        () -> {
+          var before = invoice(invoiceId);
+          var total = before.getTotal();
+          reconciliationService.processWebhookResult(
+              buildWebhookResult(invoiceId, PaymentStatus.COMPLETED, "pay_ref_nosess", null),
+              "test-provider");
+          reconciliationService.processWebhookResult(
+              buildWebhookResult(invoiceId, PaymentStatus.COMPLETED, "pay_ref_nosess", "  "),
+              "test-provider");
+
+          var invoice = invoice(invoiceId);
+          assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.SENT);
+          assertThat(invoice.getAmountPaid()).isEqualByComparingTo("0.00");
+          assertThat(invoice.getBalanceDue()).isEqualByComparingTo(total);
+          assertThat(
+                  paymentEventRepository.findByInvoiceIdAndStatus(
+                      UUID.fromString(invoiceId), PaymentEventStatus.COMPLETED))
+              .isEmpty();
+          assertThat(auditDetails(invoiceId, "payment.completed")).isEmpty();
+        });
+  }
+
   @Test
   void webhookAboveBalance_isCappedWithPaymentExcess() throws Exception {
     String invoiceId = createAndSendInvoice();

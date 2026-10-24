@@ -194,7 +194,22 @@ public class AuditEventTypeRegistry {
                 "disbursement.restored",
                 "Disbursement restored",
                 AuditSeverity.INFO,
-                AuditEventGroup.STANDARD));
+                AuditEventGroup.STANDARD),
+            // FEE-NOTE PAYMENTS — Phase 88 (Epic 622B, U15, ADR-347). Additive stored keys
+            // (ADR-342: storage key, do not rename; registry pin 30 → 32 per Phase 88 OQ #10).
+            // invoice.partially_paid keeps its invoice.* parent's INFO/FINANCIAL classification
+            // with an explicit label; invoice.payment_excess is NOTICE — an external source moved
+            // more money than the fee note owed and the excess must be reconciled.
+            new AuditEventTypeMetadata(
+                "invoice.partially_paid",
+                "Fee note partially paid",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "invoice.payment_excess",
+                "Fee note payment exceeded balance",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.FINANCIAL));
     var map = new HashMap<String, AuditEventTypeMetadata>();
     for (var entry : entries) {
       var previous = map.put(entry.eventType(), entry);

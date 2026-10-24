@@ -9,6 +9,9 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceTransitionService;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentMethod;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentPosting;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -23,6 +26,7 @@ import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -59,6 +63,7 @@ class InvoiceAuditIntegrationTest {
   @Autowired private TaskRepository taskRepository;
   @Autowired private TimeEntryRepository timeEntryRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private InvoiceTransitionService invoiceTransitionService;
 
   @Autowired
   private io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService customerLifecycleService;
@@ -246,6 +251,128 @@ class InvoiceAuditIntegrationTest {
               assertThat(event.getEventType()).isEqualTo("invoice.voided");
               assertThat(event.getDetails()).containsKey("invoice_number");
               assertThat(event.getDetails()).containsKey("reverted_time_entry_count");
+            });
+  }
+
+  // --- Phase 88 U15 (ADR-347): payment audit keys ---
+
+  @Test
+  void partialPayment_logsInvoicePartiallyPaidWithAmountMethodBalanceAndProject() throws Exception {
+    String invoiceId = createSentInvoice();
+    BigDecimal total = totalOf(invoiceId);
+
+    postPayment(invoiceId, "{\"amount\": 500.00, \"paymentMethod\": \"EFT\"}");
+
+    var details = singleEventDetails(invoiceId, "invoice.partially_paid");
+    assertThat(details)
+        .containsEntry("amount", "500.00")
+        .containsEntry("payment_method", "EFT")
+        .containsEntry("balance_due", total.subtract(new BigDecimal("500.00")).toPlainString())
+        .containsEntry("project_id", projectId.toString())
+        .containsKeys("invoice_number", "payment_reference", "total")
+        .doesNotContainKey("paid_at");
+  }
+
+  @Test
+  void fullPayment_logsInvoicePaidWithNewDetailKeysAndPaidAt() throws Exception {
+    String invoiceId = createSentInvoice();
+    BigDecimal total = totalOf(invoiceId);
+
+    postPayment(
+        invoiceId,
+        "{\"amount\": %s, \"paymentMethod\": \"CASH\", \"paymentReference\": \"CASH-1\"}"
+            .formatted(total.toPlainString()));
+
+    var details = singleEventDetails(invoiceId, "invoice.paid");
+    assertThat(details)
+        .containsEntry("amount", total.toPlainString())
+        .containsEntry("payment_method", "CASH")
+        .containsEntry("balance_due", "0.00")
+        .containsEntry("payment_reference", "CASH-1")
+        .containsEntry("project_id", projectId.toString())
+        .containsKeys("invoice_number", "total", "paid_at");
+  }
+
+  @Test
+  void externalOverpayment_logsInvoicePaymentExcess() throws Exception {
+    String invoiceId = createSentInvoice();
+    BigDecimal total = totalOf(invoiceId);
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                invoiceTransitionService.postPayment(
+                    UUID.fromString(invoiceId),
+                    new PaymentPosting(
+                        total.add(new BigDecimal("250.00")),
+                        PaymentMethod.XERO,
+                        "XERO-EXCESS-1",
+                        "xero",
+                        null,
+                        null)));
+
+    var excess = singleEventDetails(invoiceId, "invoice.payment_excess");
+    assertThat(excess)
+        .containsEntry("excess", "250.00")
+        .containsEntry("payment_method", "XERO")
+        .containsEntry("payment_reference", "XERO-EXCESS-1")
+        .containsEntry("project_id", projectId.toString());
+    assertThat(singleEventDetails(invoiceId, "invoice.paid")).containsEntry("balance_due", "0.00");
+  }
+
+  private String createSentInvoice() throws Exception {
+    String invoiceId = createInvoice();
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_audit_owner")))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_audit_owner")))
+        .andExpect(status().isOk());
+    return invoiceId;
+  }
+
+  private BigDecimal totalOf(String invoiceId) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
+                        "/api/invoices/" + invoiceId)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_audit_owner")))
+            .andExpect(status().isOk())
+            .andReturn();
+    Number total = JsonPath.read(result.getResponse().getContentAsString(), "$.total");
+    return new BigDecimal(total.toString()).setScale(2);
+  }
+
+  private void postPayment(String invoiceId, String body) throws Exception {
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/payment")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_audit_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isOk());
+  }
+
+  private Map<String, Object> singleEventDetails(String invoiceId, String eventType) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .call(
+            () -> {
+              var page =
+                  auditService.findEvents(
+                      new AuditEventFilter(
+                          "invoice", UUID.fromString(invoiceId), null, eventType, null, null, null),
+                      PageRequest.of(0, 10));
+              assertThat(page.getContent()).as(eventType).hasSize(1);
+              return page.getContent().getFirst().getDetails();
             });
   }
 

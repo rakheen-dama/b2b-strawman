@@ -46,6 +46,20 @@ describe("StatusBadge", () => {
     const badge = screen.getByText("Void");
     expect(badge).toHaveAttribute("data-variant", "destructive");
   });
+
+  // Phase 88 622B (ADR-347): a part-paid fee note crashed every page rendering this badge
+  // ("Cannot read properties of undefined (reading 'variant')").
+  it("renders PARTIALLY_PAID badge with warning variant", () => {
+    render(<StatusBadge status="PARTIALLY_PAID" />);
+    const badge = screen.getByText("Partially Paid");
+    expect(badge).toHaveAttribute("data-variant", "warning");
+  });
+
+  it("falls back to a neutral humanised label for an unknown status instead of throwing", () => {
+    render(<StatusBadge status={"WRITTEN_OFF" as InvoiceStatus} />);
+    const badge = screen.getByText("Written Off");
+    expect(badge).toHaveAttribute("data-variant", "neutral");
+  });
 });
 
 describe("InvoiceLineTable", () => {

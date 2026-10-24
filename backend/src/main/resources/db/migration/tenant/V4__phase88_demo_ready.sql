@@ -67,3 +67,44 @@ SET due_date = COALESCE(i.issue_date, (i.created_at AT TIME ZONE 'UTC')::date)
                + COALESCE((SELECT s.default_payment_terms_days FROM org_settings s LIMIT 1), 30)
 WHERE i.status IN ('APPROVED', 'SENT')
   AND i.due_date IS NULL;
+
+-- ---------- §3 U15: payment balance model --------------------------------------------
+ALTER TABLE invoices ADD COLUMN IF NOT EXISTS amount_paid numeric(14,2) NOT NULL DEFAULT 0;
+
+-- Existing PAID rows were always full settlements (the old service posted invoice.total).
+-- total > 0 keeps the statement a true no-op on re-run: a zero-total PAID row already has
+-- amount_paid = total = 0, so rewriting it would change nothing but its row version
+-- (authorised deviation from §13.7.1, like §2's COALESCE; value-equivalent).
+UPDATE invoices SET amount_paid = total WHERE status = 'PAID' AND amount_paid = 0 AND total > 0;
+
+DO $$
+BEGIN
+  -- chk_invoice_status is a baseline CHECK over five values; swap it for six (PARTIALLY_PAID).
+  IF EXISTS (SELECT 1 FROM pg_constraint c JOIN pg_namespace n ON n.oid = c.connamespace
+             WHERE c.conname = 'chk_invoice_status' AND n.nspname = current_schema()
+               AND pg_get_constraintdef(c.oid) NOT LIKE '%PARTIALLY_PAID%') THEN
+    ALTER TABLE invoices DROP CONSTRAINT chk_invoice_status;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint c JOIN pg_namespace n ON n.oid = c.connamespace
+                 WHERE c.conname = 'chk_invoice_status' AND n.nspname = current_schema()) THEN
+    ALTER TABLE invoices ADD CONSTRAINT chk_invoice_status
+      CHECK (status IN ('DRAFT', 'APPROVED', 'SENT', 'PARTIALLY_PAID', 'PAID', 'VOID'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint c JOIN pg_namespace n ON n.oid = c.connamespace
+                 WHERE c.conname = 'chk_invoices_amount_paid' AND n.nspname = current_schema()) THEN
+    ALTER TABLE invoices ADD CONSTRAINT chk_invoices_amount_paid
+      CHECK (amount_paid >= 0 AND amount_paid <= total);
+  END IF;
+END $$;
+
+ALTER TABLE payment_events ADD COLUMN IF NOT EXISTS payment_method varchar(20);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint c JOIN pg_namespace n ON n.oid = c.connamespace
+                 WHERE c.conname = 'chk_payment_events_method' AND n.nspname = current_schema()) THEN
+    ALTER TABLE payment_events ADD CONSTRAINT chk_payment_events_method
+      CHECK (payment_method IS NULL OR payment_method IN ('EFT','CARD','CASH','TRUST_TRANSFER','XERO','OTHER'));
+  END IF;
+END $$;
+-- Debtor-book and aging reads filter on (status, due_date) and sum (total - amount_paid);
+-- idx_invoices_status + idx_invoices_customer_status already cover the predicate.

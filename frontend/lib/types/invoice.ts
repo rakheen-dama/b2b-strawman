@@ -2,7 +2,8 @@
 
 import type { ExpenseCategory } from "./expense";
 
-export type InvoiceStatus = "DRAFT" | "APPROVED" | "SENT" | "PAID" | "VOID";
+// PARTIALLY_PAID: ADR-347 balance model (Phase 88 622B) — between SENT and PAID.
+export type InvoiceStatus = "DRAFT" | "APPROVED" | "SENT" | "PARTIALLY_PAID" | "PAID" | "VOID";
 
 export type TaxType = "VAT" | "GST" | "SALES_TAX" | "NONE";
 

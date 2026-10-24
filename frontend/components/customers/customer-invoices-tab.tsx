@@ -4,20 +4,10 @@ import { FileText } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { InvoiceGenerationDialog } from "@/components/invoices/invoice-generation-dialog";
+import { StatusBadge } from "@/components/invoices/status-badge";
 import { formatDate, formatCurrency } from "@/lib/format";
-import type { InvoiceResponse, InvoiceStatus } from "@/lib/types";
+import type { InvoiceResponse } from "@/lib/types";
 import Link from "next/link";
-
-const STATUS_BADGE: Record<
-  InvoiceStatus,
-  { label: string; variant: "neutral" | "lead" | "success" | "destructive" }
-> = {
-  DRAFT: { label: "Draft", variant: "neutral" },
-  APPROVED: { label: "Approved", variant: "lead" },
-  SENT: { label: "Sent", variant: "lead" },
-  PAID: { label: "Paid", variant: "success" },
-  VOID: { label: "Void", variant: "destructive" },
-};
 
 interface CustomerInvoicesTabProps {
   invoices: InvoiceResponse[];
@@ -92,8 +82,6 @@ export function CustomerInvoicesTab({
           </thead>
           <tbody>
             {invoices.map((invoice) => {
-              const badge = STATUS_BADGE[invoice.status];
-
               return (
                 <tr
                   key={invoice.id}
@@ -108,7 +96,7 @@ export function CustomerInvoicesTab({
                     </Link>
                   </td>
                   <td className="px-4 py-3">
-                    <Badge variant={badge.variant}>{badge.label}</Badge>
+                    <StatusBadge status={invoice.status} />
                   </td>
                   <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
                     {invoice.issueDate ? formatDate(invoice.issueDate) : "\u2014"}

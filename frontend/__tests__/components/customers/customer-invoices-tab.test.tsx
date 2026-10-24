@@ -109,6 +109,22 @@ describe("CustomerInvoicesTab", () => {
     expect(screen.getByText("US$300,00")).toBeInTheDocument();
   });
 
+  it("renders a PARTIALLY_PAID fee note row without throwing (Phase 88 622B)", () => {
+    render(
+      <CustomerInvoicesTab
+        invoices={[{ ...sampleInvoices[0], id: "inv-3", status: "PARTIALLY_PAID", paidAt: null }]}
+        customerId="c1"
+        customerName="Acme Corp"
+        slug="acme"
+        canManage={false}
+        defaultCurrency="USD"
+      />
+    );
+
+    const badge = screen.getByText("Partially Paid");
+    expect(badge).toHaveAttribute("data-variant", "warning");
+  });
+
   it("shows New fee note button when canManage is true and opens dialog", async () => {
     const user = userEvent.setup();
 

@@ -9,13 +9,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -66,6 +70,14 @@ public class Invoice {
 
   @Column(name = "paid_at")
   private Instant paidAt;
+
+  /**
+   * Running total of posted payments, capped at {@code total} (Phase 88 U15, ADR-347 A3).
+   * Initialised in Java: Hibernate inserts the field value, not the column DEFAULT, so null would
+   * violate NOT NULL.
+   */
+  @Column(name = "amount_paid", nullable = false, precision = 14, scale = 2)
+  private BigDecimal amountPaid = BigDecimal.ZERO;
 
   @Column(name = "customer_name", nullable = false, length = 255)
   private String customerName;
@@ -253,34 +265,91 @@ public class Invoice {
     this.updatedAt = Instant.now();
   }
 
-  public void recordPayment(String paymentReference) {
-    if (this.status != InvoiceStatus.SENT) {
-      throw new IllegalStateException("Only sent invoices can be paid");
+  /**
+   * Statuses that can take a payment (ADR-347) — the single definition, also read by the service.
+   */
+  static final Set<InvoiceStatus> PAYABLE =
+      Set.of(InvoiceStatus.SENT, InvoiceStatus.PARTIALLY_PAID);
+
+  /** Statuses a payment can be reversed from (ADR-347 rationale 4) — also read by the service. */
+  static final Set<InvoiceStatus> REVERSIBLE =
+      Set.of(InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.PAID);
+
+  /**
+   * Guard-and-throw: e.g. {@code IllegalStateException("Only sent or partially paid fee notes can
+   * take a payment")}. Services translate it to a 409 "Invalid status transition".
+   */
+  void requireStatus(Set<InvoiceStatus> allowed, String action) {
+    if (!allowed.contains(this.status)) {
+      String names =
+          allowed.stream()
+              .sorted()
+              .map(s -> s.name().toLowerCase(Locale.ROOT).replace('_', ' '))
+              .collect(Collectors.joining(" or "));
+      throw new IllegalStateException("Only " + names + " fee notes can " + action);
     }
-    this.status = InvoiceStatus.PAID;
-    this.paidAt = Instant.now();
-    this.paymentReference = paymentReference;
+  }
+
+  /**
+   * Applies a posted payment (Phase 88 U15, ADR-347): {@code amountPaid = min(amountPaid + amount,
+   * total)}; PAID (with {@code paidAt}) once the balance is zero, else PARTIALLY_PAID. The payment
+   * event itself always records the real amount — the cap only protects {@code
+   * chk_invoices_amount_paid} when an external source overpays.
+   */
+  public void applyPayment(BigDecimal amount, String paymentReference) {
+    requireStatus(PAYABLE, "take a payment");
+    this.amountPaid = this.amountPaid.add(amount).min(this.total);
+    if (paymentReference != null) {
+      this.paymentReference = paymentReference;
+    }
+    if (getBalanceDue().signum() == 0) {
+      this.status = InvoiceStatus.PAID;
+      this.paidAt = Instant.now();
+    } else {
+      this.status = InvoiceStatus.PARTIALLY_PAID;
+    }
     this.updatedAt = Instant.now();
   }
 
   /**
-   * Reverses a previously-recorded payment, flipping PAID → SENT and clearing the {@code paidAt}
-   * and {@code paymentReference} fields. Called from {@code
-   * InvoiceTransitionService.reversePayment} when the underlying trust transaction is reversed and
-   * no other COMPLETED payment events remain. The corresponding {@code payment_event} row is
-   * deleted by the service.
+   * Settles the remaining balance in full — the interim path for the external callers until 622C
+   * re-points them to {@code postPayment} with their real amounts, plus seeders and test fixtures.
    */
-  public void reversePayment() {
-    if (this.status != InvoiceStatus.PAID) {
-      throw new IllegalStateException("Only paid invoices can have a payment reversed");
+  public void recordPayment(String paymentReference) {
+    applyPayment(getBalanceDue(), paymentReference);
+  }
+
+  /**
+   * Recomputes the balance after a payment event is reversed (ADR-347 rationale 4): {@code
+   * amountPaid = LEAST(total, completedSum)} — never decremented in place. Zero → SENT (reference
+   * and {@code paidAt} cleared); still fully paid → PAID ({@code paidAt} kept); otherwise
+   * PARTIALLY_PAID ({@code paidAt} cleared). The reference is reset to {@code latestReference} —
+   * the newest remaining COMPLETED event's reference (null when none has one) — so it never keeps
+   * pointing at the reversed event.
+   */
+  public void reapplyPayments(BigDecimal completedSum, String latestReference) {
+    requireStatus(REVERSIBLE, "have a payment reversed");
+    this.amountPaid =
+        completedSum.max(BigDecimal.ZERO).min(this.total).setScale(2, RoundingMode.HALF_UP);
+    this.paymentReference = latestReference;
+    if (this.amountPaid.signum() == 0) {
+      this.status = InvoiceStatus.SENT;
+      this.paidAt = null;
+      this.paymentReference = null;
+    } else if (this.amountPaid.compareTo(this.total) == 0) {
+      this.status = InvoiceStatus.PAID; // paidAt kept — still settled
+    } else {
+      this.status = InvoiceStatus.PARTIALLY_PAID;
+      this.paidAt = null;
     }
-    this.status = InvoiceStatus.SENT;
-    this.paidAt = null;
-    this.paymentReference = null;
     this.updatedAt = Instant.now();
   }
 
   public void voidInvoice() {
+    if (this.status == InvoiceStatus.PARTIALLY_PAID) {
+      throw new IllegalStateException(
+          "A partially paid fee note cannot be voided — reverse its payments first");
+    }
     if (this.status != InvoiceStatus.APPROVED && this.status != InvoiceStatus.SENT) {
       throw new IllegalStateException("Only approved or sent invoices can be voided");
     }
@@ -353,6 +422,15 @@ public class Invoice {
 
   public Instant getPaidAt() {
     return paidAt;
+  }
+
+  public BigDecimal getAmountPaid() {
+    return amountPaid;
+  }
+
+  /** {@code total − amountPaid} — derived, never stored (ADR-347 A3). */
+  public BigDecimal getBalanceDue() {
+    return total.subtract(amountPaid);
   }
 
   public String getCustomerName() {

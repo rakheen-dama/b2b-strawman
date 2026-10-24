@@ -51,6 +51,11 @@ public class PaymentEvent {
   @Column(name = "payment_destination", nullable = false, length = 50)
   private String paymentDestination;
 
+  /** How the money arrived (Phase 88 U15, ADR-347 A5). NULL for pre-622B rows (CHECK allows it). */
+  @Enumerated(EnumType.STRING)
+  @Column(name = "payment_method", length = 20)
+  private PaymentMethod paymentMethod;
+
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "provider_payload", columnDefinition = "jsonb")
   private String providerPayload;
@@ -91,6 +96,27 @@ public class PaymentEvent {
     this.currency = Objects.requireNonNull(currency, "currency must not be null");
     this.paymentDestination =
         Objects.requireNonNull(paymentDestination, "paymentDestination must not be null");
+  }
+
+  /**
+   * A COMPLETED event recording the real amount of a posted payment (Phase 88 U15). {@code
+   * currency} and {@code invoicePaymentDestination} come from the invoice (both NOT NULL columns);
+   * the posting's own destination wins when set (e.g. {@code "TRUST"} for a trust fee transfer).
+   */
+  public static PaymentEvent completed(
+      UUID invoiceId, String currency, String invoicePaymentDestination, PaymentPosting posting) {
+    var event =
+        new PaymentEvent(
+            invoiceId,
+            posting.providerSlug(),
+            posting.sessionId(),
+            PaymentEventStatus.COMPLETED,
+            posting.amount(),
+            currency,
+            posting.destination() != null ? posting.destination() : invoicePaymentDestination);
+    event.paymentMethod = posting.method();
+    event.paymentReference = posting.reference();
+    return event;
   }
 
   @PrePersist
@@ -164,5 +190,9 @@ public class PaymentEvent {
 
   public Instant getUpdatedAt() {
     return updatedAt;
+  }
+
+  public PaymentMethod getPaymentMethod() {
+    return paymentMethod;
   }
 }

@@ -5,8 +5,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
@@ -43,6 +47,8 @@ class InvoiceSyncIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PortalReadModelRepository readModelRepo;
+  @Autowired private InvoiceService invoiceService;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
 
   private String projectId;
   private String customerId;
@@ -181,6 +187,68 @@ class InvoiceSyncIntegrationTest {
 
     var lines = readModelRepo.findInvoiceLinesByInvoice(UUID.fromString(voidInvoiceId));
     assertThat(lines).isEmpty();
+  }
+
+  /**
+   * Phase 88 622B (ADR-347): a part payment projects PARTIALLY_PAID to the portal (paid_at null);
+   * settling the balance projects PAID; reversing the settling payment projects PAID →
+   * PARTIALLY_PAID and clears paid_at again (previously dropped as "Unknown InvoiceSyncEvent
+   * status", leaving the portal on a stale PAID).
+   */
+  @Test
+  @Order(7)
+  void partialPaymentAndReversal_projectPartiallyPaidToPortal() throws Exception {
+    String partialInvoiceId = createInvoice(customerId, "ZAR");
+    addLineItem(partialInvoiceId, "Partial test line", "2", "50.00", 0);
+    mockMvc
+        .perform(
+            post("/api/invoices/" + partialInvoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner")))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            post("/api/invoices/" + partialInvoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner")))
+        .andExpect(status().isOk());
+    UUID id = UUID.fromString(partialInvoiceId);
+
+    // Part payment → PARTIALLY_PAID in the portal, no paid_at
+    mockMvc
+        .perform(
+            post("/api/invoices/" + partialInvoiceId + "/payment")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"amount\": 40.00, \"paymentMethod\": \"EFT\"}"))
+        .andExpect(status().isOk());
+    var afterPart = readModelRepo.findInvoiceById(id, ORG_ID).orElseThrow();
+    assertThat(afterPart.status()).isEqualTo("PARTIALLY_PAID");
+    assertThat(afterPart.paidAt()).isNull();
+
+    // Settle the balance → PAID with paid_at
+    var settled =
+        mockMvc
+            .perform(
+                post("/api/invoices/" + partialInvoiceId + "/payment")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner")))
+            .andExpect(status().isOk())
+            .andReturn();
+    var afterSettle = readModelRepo.findInvoiceById(id, ORG_ID).orElseThrow();
+    assertThat(afterSettle.status()).isEqualTo("PAID");
+    assertThat(afterSettle.paidAt()).isNotNull();
+
+    // Reverse the settling payment (payments[] is newest first) → back to PARTIALLY_PAID
+    UUID settlingEventId =
+        UUID.fromString(
+            JsonPath.read(settled.getResponse().getContentAsString(), "$.payments[0].id"));
+    String tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(() -> invoiceService.reversePayment(id, settlingEventId));
+
+    var afterReversal = readModelRepo.findInvoiceById(id, ORG_ID).orElseThrow();
+    assertThat(afterReversal.status()).isEqualTo("PARTIALLY_PAID");
+    assertThat(afterReversal.paidAt()).isNull();
   }
 
   private void transitionCustomerToActive(String customerId) throws Exception {

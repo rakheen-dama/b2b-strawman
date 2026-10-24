@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.invoice.dto;
 
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentEvent;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentMethod;
 import io.b2mash.b2b.b2bstrawman.invoice.TaxType;
 import io.b2mash.b2b.b2bstrawman.tax.dto.TaxBreakdownEntry;
 import java.math.BigDecimal;
@@ -49,6 +51,12 @@ public record InvoiceResponse(
     TaxType taxType,
     LocalDate billingPeriodStart,
     LocalDate billingPeriodEnd,
+    /** Phase 88 U15 (ADR-347 A3): stored running total of posted payments, capped at total. */
+    BigDecimal amountPaid,
+    /** {@code total − amountPaid}, derived. */
+    BigDecimal balanceDue,
+    /** COMPLETED payment events, newest first. */
+    List<PaymentLine> payments,
     /**
      * Non-blocking warnings emitted by the draft-creation path (soft prerequisites that would hard-
      * block invoice-send). Populated by {@code InvoiceCreationService.createDraft} and empty on
@@ -57,6 +65,42 @@ public record InvoiceResponse(
      */
     List<String> warnings) {
 
+  /** One posted payment (§13.4.3 {@code payments[]}). */
+  public record PaymentLine(
+      UUID id,
+      BigDecimal amount,
+      PaymentMethod paymentMethod,
+      String paymentReference,
+      Instant recordedAt,
+      String source) {
+
+    public static PaymentLine from(PaymentEvent e) {
+      return new PaymentLine(
+          e.getId(),
+          e.getAmount(),
+          e.getPaymentMethod(),
+          e.getPaymentReference(),
+          e.getCreatedAt(),
+          sourceOf(e.getProviderSlug()));
+    }
+
+    /**
+     * provider_slug → wire source: manual → MANUAL, trust_fee_transfer → TRUST_TRANSFER, xero →
+     * XERO, anything else (stripe/payfast/mock gateways) → GATEWAY.
+     */
+    static String sourceOf(String providerSlug) {
+      if (providerSlug == null) {
+        return "GATEWAY";
+      }
+      return switch (providerSlug) {
+        case "manual" -> "MANUAL";
+        case "trust_fee_transfer" -> "TRUST_TRANSFER";
+        case "xero" -> "XERO";
+        default -> "GATEWAY";
+      };
+    }
+  }
+
   public static InvoiceResponse from(
       Invoice invoice,
       List<InvoiceLineResponse> lines,
@@ -64,7 +108,15 @@ public record InvoiceResponse(
       List<TaxBreakdownEntry> taxBreakdown,
       boolean taxInclusive,
       boolean hasPerLineTax) {
-    return from(invoice, lines, memberNames, taxBreakdown, taxInclusive, hasPerLineTax, List.of());
+    return from(
+        invoice,
+        lines,
+        memberNames,
+        taxBreakdown,
+        taxInclusive,
+        hasPerLineTax,
+        List.of(),
+        List.of());
   }
 
   public static InvoiceResponse from(
@@ -74,6 +126,7 @@ public record InvoiceResponse(
       List<TaxBreakdownEntry> taxBreakdown,
       boolean taxInclusive,
       boolean hasPerLineTax,
+      List<PaymentEvent> payments,
       List<String> warnings) {
     return new InvoiceResponse(
         invoice.getId(),
@@ -113,6 +166,9 @@ public record InvoiceResponse(
         invoice.getTaxType(),
         invoice.getBillingPeriodStart(),
         invoice.getBillingPeriodEnd(),
+        invoice.getAmountPaid(),
+        invoice.getBalanceDue(),
+        payments != null ? payments.stream().map(PaymentLine::from).toList() : List.of(),
         warnings != null ? warnings : List.of());
   }
 }

@@ -545,6 +545,39 @@ class PortalEventHandlerTest {
     verify(readModelRepo, never()).deletePortalInvoiceLinesByInvoice(any());
   }
 
+  // ── 13b. InvoiceSynced PARTIALLY_PAID -> status updated, paid_at cleared (ADR-347) ──
+
+  @Test
+  void onInvoiceSynced_partiallyPaid_updatesStatusAndClearsPaidAt() {
+    var invoiceId = UUID.randomUUID();
+    var customerId = UUID.randomUUID();
+    var event =
+        new InvoiceSyncEvent(
+            invoiceId,
+            customerId,
+            "INV-004",
+            "PARTIALLY_PAID",
+            LocalDate.of(2026, 2, 1),
+            LocalDate.of(2026, 3, 1),
+            new BigDecimal("1725.00"),
+            BigDecimal.ZERO,
+            new BigDecimal("1725.00"),
+            "ZAR",
+            null,
+            null,
+            null,
+            ORG_ID,
+            TENANT_ID,
+            null);
+
+    handler.onInvoiceSynced(event);
+
+    verify(readModelRepo)
+        .updatePortalInvoiceStatusAndPaidAt(invoiceId, ORG_ID, "PARTIALLY_PAID", null);
+    verify(readModelRepo, never()).deletePortalInvoiceLinesByInvoice(any());
+    verify(readModelRepo, never()).deletePortalInvoice(any(), any());
+  }
+
   // ── 14. InvoiceSynced VOID -> deletes invoice ──────────────────────
 
   @Test

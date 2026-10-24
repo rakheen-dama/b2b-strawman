@@ -470,6 +470,12 @@ public class PortalEventHandler {
               case "PAID" ->
                   readModelRepo.updatePortalInvoiceStatusAndPaidAt(
                       event.getInvoiceId(), event.getOrgId(), "PAID", Instant.now());
+              // ADR-347: a part payment (SENT → PARTIALLY_PAID) or a reversal that leaves a
+              // balance (PAID → PARTIALLY_PAID) — not settled, so paid_at is cleared. The portal
+              // balance itself (portal_invoices.amount_paid) is 624A/624H.
+              case "PARTIALLY_PAID" ->
+                  readModelRepo.updatePortalInvoiceStatusAndPaidAt(
+                      event.getInvoiceId(), event.getOrgId(), "PARTIALLY_PAID", null);
               case "VOID" ->
                   readModelRepo.deletePortalInvoice(event.getInvoiceId(), event.getOrgId());
               default -> log.warn("Unknown InvoiceSyncEvent status: {}", event.getStatus());

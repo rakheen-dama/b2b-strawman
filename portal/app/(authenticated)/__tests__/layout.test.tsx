@@ -4,7 +4,6 @@ import { cleanup, render, screen } from "@testing-library/react";
 const mockReplace = vi.fn();
 let mockPathname = "/invoices/123";
 let mockAuthed = false;
-let mockLastOrg: string | null = null;
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -40,11 +39,8 @@ vi.mock("@/components/portal-sidebar", () => ({
 }));
 vi.mock("@/components/portal-footer", () => ({ PortalFooter: () => null }));
 
-// The layout must not consult the localStorage hint (Phase 88 U11, R-2). The
-// mock exists so the "hint present" case would catch a regression.
-vi.mock("@/lib/auth", () => ({ getLastOrgId: () => mockLastOrg }));
-
 import AuthenticatedLayout from "@/app/(authenticated)/layout";
+import { getLastOrgId } from "@/lib/auth";
 
 /** Sets the incoming URL the layout reads and the pathname mock. */
 function visit(url: string) {
@@ -64,7 +60,6 @@ describe("AuthenticatedLayout — unauthenticated redirect (Phase 88 U11)", () =
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuthed = false;
-    mockLastOrg = null;
     localStorage.clear();
   });
 
@@ -84,8 +79,10 @@ describe("AuthenticatedLayout — unauthenticated redirect (Phase 88 U11)", () =
   });
 
   it("adds no orgId when the incoming URL has none, even with a hint", () => {
-    mockLastOrg = "hint-org";
+    // The real hint key lib/auth.ts writes (LAST_ORG_KEY). The layout must
+    // not consult it (Phase 88 U11, R-2); nothing in this file mocks it away.
     localStorage.setItem("portal_last_org_id", "hint-org");
+    expect(getLastOrgId()).toBe("hint-org");
     visit("/matters/42");
 
     render(<AuthenticatedLayout>child</AuthenticatedLayout>);

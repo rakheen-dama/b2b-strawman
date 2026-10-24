@@ -19,10 +19,11 @@ import type { BrandingInfo } from "@/lib/types";
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  // GAP-L-66 / Phase 88 U11: orgId comes from the query first, then the
-  // last-known localStorage hint. Both are optional hints: the query value is
-  // the request-link fast path, the localStorage hint only brands the page.
-  // Bare /login (neither) signs in by email alone.
+  // GAP-L-66 / Phase 88 U11 (R-1): `orgId` drives BRANDING only and comes from
+  // the query first, then the last-known localStorage hint. Only `queryOrgId`
+  // ever goes into the request-link body (the fast path); the localStorage
+  // hint never does, so a stale hint cannot pin the request to the wrong
+  // firm. Bare /login (no query orgId) signs in by email alone.
   const queryOrgId = searchParams.get("orgId");
   const [orgId, setOrgId] = useState<string | null>(queryOrgId);
   const redirectTo = searchParams.get("redirectTo");

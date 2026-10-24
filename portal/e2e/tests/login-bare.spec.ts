@@ -18,6 +18,16 @@ import {
  * Strict by design: a missing precondition (stack down, contact not seeded,
  * cap hit) fails the test; nothing is soft-asserted or skipped.
  *
+ * PRODUCTION BUILD REQUIRED: run this against `next build && next start
+ * --port 3002`, not `next dev`. Under `next dev`, React StrictMode runs the
+ * effect in app/auth/exchange/page.tsx twice, so the single-use token is
+ * POSTed twice and the second POST's 401 can show "Link expired or invalid"
+ * (known pre-existing bug, 624D follow-up). The spec counts exchange POSTs and
+ * fails with that diagnosis rather than flaking.
+ *
+ * Assertions and errors on the magic-link path print `token=<redacted>`, never
+ * the token itself.
+ *
  * Defaults target the e2e seed (compose/seed/seed.sh): portal contact
  * contact@acme.example.com, client Acme Corp, matter "Website Redesign".
  */
@@ -28,6 +38,10 @@ const MATTER = process.env.LOGIN_BARE_MATTER || "Website Redesign";
 
 const LINK_SUBJECT_PREFIX = "Your portal access link from";
 const REQUEST_LINK_PATH = "/portal/auth/request-link";
+const EXCHANGE_PATH = "/portal/auth/exchange";
+
+const redactToken = (s: string) =>
+  s.replace(/token=[^&\s"']+/g, "token=<redacted>");
 
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -81,6 +95,9 @@ test.describe("Bare /login — email-only portal sign-in", () => {
       exclude: before,
       subject: `${LINK_SUBJECT_PREFIX} ${ORG_NAME}`,
     });
+    // Time-bounded negative check, not proof: a second mail arriving after
+    // this 3 s window would go unnoticed. The backend N-firm case is pinned by
+    // PortalAuthIntegrationTest (624B).
     await page.waitForTimeout(3_000);
     const freshLinks = (await listMessages(EMAIL)).filter(
       (m) =>
@@ -91,20 +108,47 @@ test.describe("Bare /login — email-only portal sign-in", () => {
       "one firm knows this email → exactly one magic-link email",
     ).toEqual([`${LINK_SUBJECT_PREFIX} ${ORG_NAME}`]);
 
+    // The token is single-use but still a credential: assert on the redacted
+    // path so a failure never prints it. An empty token is not redacted (it
+    // stays `token=`), so it still fails the match.
     const path = extractExchangePath(mail);
-    expect(path).toMatch(
+    expect(redactToken(path)).toMatch(
       new RegExp(
-        `^/auth/exchange\\?token=[^&]+&orgId=${escapeRegExp(ORG_SLUG)}$`,
+        `^/auth/exchange\\?token=<redacted>&orgId=${escapeRegExp(ORG_SLUG)}$`,
       ),
     );
 
     // 4. Follow the link (replayed against baseURL: e2e mail links point at
-    //    :3002) and land on the client's matters.
-    await page.goto(path);
-    await page.waitForURL("**/matters");
-    await expect(
-      page.getByRole("heading", { name: "Your matters" }),
-    ).toBeVisible();
+    //    :3002). Record every exchange POST, wait for either outcome, and
+    //    check the POST count before the landing page so a dev-mode double
+    //    exchange fails with its diagnosis instead of a bare timeout.
+    let exchangePosts = 0;
+    page.on("request", (r) => {
+      if (r.method() === "POST" && new URL(r.url()).pathname === EXCHANGE_PATH)
+        exchangePosts++;
+    });
+    try {
+      await page.goto(path);
+    } catch (e) {
+      throw new Error(redactToken(e instanceof Error ? e.message : String(e)));
+    }
+    const mattersHeading = page.getByRole("heading", { name: "Your matters" });
+    const linkExpired = page.getByText(/Link expired or invalid/i);
+    await expect(mattersHeading.or(linkExpired).first()).toBeVisible();
+
+    expect(
+      exchangePosts,
+      `exchange POSTed ${exchangePosts} times — known pre-existing dev-mode ` +
+        "StrictMode double effect in app/auth/exchange/page.tsx (624D " +
+        "follow-up); run this project against a production build " +
+        "(next build && next start)",
+    ).toBe(1);
+
+    expect(
+      new URL(page.url()).pathname,
+      "exchange did not land on /matters (Login Failed page shown?)",
+    ).toBe("/matters");
+    await expect(mattersHeading).toBeVisible();
     await expect(page.getByText(MATTER).first()).toBeVisible();
     expect(
       await page.evaluate(() => localStorage.getItem("portal_last_org_id")),

@@ -18,11 +18,11 @@ import type { Page } from "@playwright/test";
  * email per 15 minutes across firms (PortalLoginRateLimiter; in-memory,
  * cleared only by restarting the backend; the 4th call is a 429). The portal
  * JWT lives 1 h (PortalJwtService.SESSION_TTL). `exchangePortalSession`
- * sends `orgId: ORG_SLUG`, the request-link fast path (ADR-351). Playwright restarts the worker after every
- * failed test (which drops module state), so `global-setup.ts` exchanges once
- * per run for PORTAL_CONTACT_EMAIL and hands the session to every worker via
- * `process.env[PORTAL_SESSIONS_ENV]`. Other emails fall back to one exchange
- * per worker.
+ * sends `orgId: ORG_SLUG`, the request-link fast path (ADR-351). Playwright
+ * restarts the worker after every failed test (which drops module state), so
+ * `global-setup.ts` exchanges once per run for PORTAL_CONTACT_EMAIL and hands
+ * the session to every worker via `process.env[PORTAL_SESSIONS_ENV]`. Other
+ * emails fall back to one exchange per worker.
  */
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";

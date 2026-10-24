@@ -23,9 +23,19 @@ import { defineConfig, devices } from "@playwright/test";
  *                               days observe state created by earlier days.
  *   - `login-bare`            — Phase 88 624D: bare /login → email-only
  *                               request-link → Mailpit link → /matters.
- *                               Run WITHOUT PORTAL_CONTACT_EMAIL (one
- *                               request-link per run; per-email cap is
- *                               3 / 15 min). See e2e/tests/login-bare.spec.ts.
+ *                               See e2e/tests/login-bare.spec.ts.
+ *                               - Needs a PRODUCTION portal on :3002
+ *                                 (`next build && next start`), started
+ *                                 before the run so `reuseExistingServer`
+ *                                 picks it up: the default `pnpm dev`
+ *                                 webServer double-POSTs the exchange
+ *                                 (StrictMode; 624D follow-up) and the spec
+ *                                 fails on that by design.
+ *                               - Joins the default all-projects run.
+ *                               - Spends 1 request of the per-email cap
+ *                                 (3 / 15 min) per run; PORTAL_CONTACT_EMAIL
+ *                                 set to the same address spends a second
+ *                                 (globalSetup). Run it without that env.
  *
  * First-run usage (baselines):
  *   pnpm exec playwright test \

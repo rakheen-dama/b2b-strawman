@@ -1,7 +1,7 @@
 {
-  "commit": "a4aa86b0bd9a9a3b6aee7f38f681333e85d55220",
-  "command": "cd frontend && pnpm install && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test",
+  "commit": "90a7695b9660f3402be834dacf6eed76337f0320",
+  "command": "cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-24T05:48:56Z",
-  "summary": "Slice 622E PR #1665 final head a4aa86b0b (orchestrator re-run in worktree-epic-622E): lint 0 errors, format:check clean, build OK, vitest 417 files / 3129 passed / 2 skipped (was 417/3109/2)."
+  "ts": "2026-10-24T06:10:39Z",
+  "summary": "Slice 622F PR #1666 head 90a7695b9 (orchestrator re-run in worktree-epic-622F): lint 0 errors / 92 warnings, format:check clean, vitest 417 files / 3129 passed / 2 skipped (= baseline, spec-only PR), next build OK; CI Frontend pass. E2E-LEGAL fresh stack: lifecycle alone 74/4/5/14 (failed = carried {A1,A2,A4,A6}), depth-ii 35/0/8; E2E-DEFAULT invoices/ 19/0/2."
 }

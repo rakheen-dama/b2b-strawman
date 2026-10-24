@@ -155,16 +155,31 @@ class PortalDigestSchedulerIntegrationTest {
     MimeMessage[] received = greenMail.getReceivedMessages();
     assertThat(received).isNotEmpty();
     // Filter to the digest recipient (other tests on the JVM may share the inbox briefly).
-    boolean found = false;
+    MimeMessage digest = null;
     for (MimeMessage msg : received) {
       if (CONTACT_EMAIL.equals(msg.getAllRecipients()[0].toString())
           && msg.getSubject() != null
           && msg.getSubject().toLowerCase().contains("weekly update")) {
-        found = true;
+        digest = msg;
         break;
       }
     }
-    assertThat(found).as("digest email with 'weekly update' subject should be received").isTrue();
+    assertThat(digest)
+        .as("digest email with 'weekly update' subject should be received")
+        .isNotNull();
+
+    // Phase 88 U11 (§13.6.6): both authenticated portal links (the home CTA and the unsubscribe
+    // footer link) carry orgId. Thymeleaf escapes & as &amp; inside th:href.
+    String body = extractBody(digest);
+    assertThat(body)
+        .as("digest home CTA must carry orgId")
+        .contains("href=\"http://localhost:3002/home?orgId=" + ORG_ID + "\"");
+    assertThat(body)
+        .as("digest unsubscribe link must carry orgId")
+        .containsPattern(
+            "href=\"http://localhost:3002/settings/notifications\\?unsubscribe=1&(amp;)?orgId="
+                + ORG_ID
+                + "\"");
 
     // digest_last_sent_at stamped after a successful run.
     Instant lastSent =
@@ -278,6 +293,22 @@ class PortalDigestSchedulerIntegrationTest {
       }
     }
     return false;
+  }
+
+  private static String extractBody(MimeMessage message) throws Exception {
+    StringBuilder out = new StringBuilder();
+    collectParts(message.getContent(), out);
+    return out.toString();
+  }
+
+  private static void collectParts(Object content, StringBuilder out) throws Exception {
+    if (content instanceof jakarta.mail.Multipart multipart) {
+      for (int i = 0; i < multipart.getCount(); i++) {
+        collectParts(multipart.getBodyPart(i).getContent(), out);
+      }
+    } else if (content instanceof String s) {
+      out.append(s);
+    }
   }
 
   private void seedPortalInvoice(UUID portalInvoiceId, String invoiceNumber) {

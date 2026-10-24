@@ -50,6 +50,7 @@ class PaymentLinkServiceIntegrationTest {
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private PaymentEventRepository paymentEventRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private PaymentLinkService paymentLinkService;
 
   private String tenantSchema;
   private UUID memberIdOwner;
@@ -98,6 +99,27 @@ class PaymentLinkServiceIntegrationTest {
                       customerProjectRepository.save(
                           new CustomerProject(customerId, projectId, memberIdOwner));
                     }));
+  }
+
+  @Test
+  void psp_return_urls_are_portal_deep_links_carrying_orgId() {
+    // Phase 88 U11 (§13.6.6): the PSP success/cancel return URLs land on authenticated portal
+    // routes, so they carry orgId (the org's external id) like every other portal deep link.
+    UUID invoiceId = UUID.randomUUID();
+    String[] urls = new String[2];
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              urls[0] = paymentLinkService.buildSuccessUrl(invoiceId);
+              urls[1] = paymentLinkService.buildCancelUrl(invoiceId);
+            });
+    assertThat(urls[0])
+        .isEqualTo(
+            "http://localhost:3002/invoices/" + invoiceId + "/payment-success?orgId=" + ORG_ID);
+    assertThat(urls[1])
+        .isEqualTo(
+            "http://localhost:3002/invoices/" + invoiceId + "/payment-cancelled?orgId=" + ORG_ID);
   }
 
   @Test

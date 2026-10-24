@@ -143,6 +143,14 @@ class PortalDocumentNotificationHandlerIntegrationTest {
     assertThat(received[0].getAllRecipients()[0].toString()).isEqualTo(CONTACT_EMAIL);
     assertThat(received[0].getSubject()).containsIgnoringCase("document ready");
     assertThat(received[0].getSubject()).containsIgnoringCase("statement-of-account");
+
+    // Phase 88 U11 / ADR-350 / ADR-351: the "View document" link is the matter page (the portal
+    // has no /projects route) and carries orgId so a fresh browser lands branded.
+    String html = extractHtmlBody(received[0]);
+    assertThat(html)
+        .as("document-ready CTA must deep-link to /matters/{id} with orgId")
+        .contains("href=\"http://localhost:3002/matters/" + projectId + "?orgId=" + ORG_ID + "\"");
+    assertThat(html).as("legacy /projects/ link must be gone").doesNotContain("/projects/");
   }
 
   /** Non-portal-visible event (INTERNAL) → no email. */
@@ -308,6 +316,28 @@ class PortalDocumentNotificationHandlerIntegrationTest {
                             targetProjectId,
                             "L72-test-" + templateName + ".pdf",
                             generatedDocId))));
+  }
+
+  private static String extractHtmlBody(MimeMessage msg) throws Exception {
+    StringBuilder out = new StringBuilder();
+    collectHtmlParts(msg.getContent(), out);
+    return out.toString();
+  }
+
+  private static void collectHtmlParts(Object content, StringBuilder out) throws Exception {
+    if (content instanceof jakarta.mail.Multipart multipart) {
+      for (int i = 0; i < multipart.getCount(); i++) {
+        var part = multipart.getBodyPart(i);
+        String ct = part.getContentType() == null ? "" : part.getContentType().toLowerCase();
+        if (ct.contains("text/html")) {
+          out.append(part.getContent().toString());
+        } else if (ct.contains("multipart/")) {
+          collectHtmlParts(part.getContent(), out);
+        }
+      }
+    } else if (content != null) {
+      out.append(content.toString());
+    }
   }
 
   private void runInTenant(Runnable action) {

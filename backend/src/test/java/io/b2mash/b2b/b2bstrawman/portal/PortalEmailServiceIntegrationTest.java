@@ -110,6 +110,26 @@ class PortalEmailServiceIntegrationTest {
   }
 
   @Test
+  void magic_link_is_portal_exchange_with_token_then_orgId() throws Exception {
+    // Phase 88 U11 (§13.6.6): the exchange link always carries token then orgId (624B tests
+    // extract the token with token=([A-Za-z0-9_-]+)). Thymeleaf escapes & as &amp; in th:href.
+    UUID tokenId = UUID.randomUUID();
+    String rawToken = "test-token";
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(() -> portalEmailService.sendMagicLinkEmail(savedContact, rawToken, tokenId));
+
+    MimeMessage[] received = greenMail.getReceivedMessages();
+    assertThat(received).hasSize(1);
+    assertThat(collectAllText(received[0].getContent()))
+        .containsPattern(
+            "href=\"http://localhost:3002/auth/exchange\\?token=test-token&(amp;)?orgId="
+                + ORG_ID
+                + "\"");
+  }
+
+  @Test
   void records_delivery_log() {
     UUID tokenId = UUID.randomUUID();
     String rawToken = "test-token";
@@ -225,6 +245,18 @@ class PortalEmailServiceIntegrationTest {
                   .as("Delivery log referenceId should match MagicLinkToken.id")
                   .isPresent();
             });
+  }
+
+  /** Recursively concatenates every text part (the HTML body sits in a nested multipart). */
+  private static String collectAllText(Object content) throws Exception {
+    if (content instanceof jakarta.mail.Multipart multipart) {
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < multipart.getCount(); i++) {
+        sb.append(collectAllText(multipart.getBodyPart(i).getContent()));
+      }
+      return sb.toString();
+    }
+    return content instanceof String str ? str : "";
   }
 
   /** Helper to extract text content from a MimeMessage (handles multipart). */

@@ -252,12 +252,14 @@ class InvoiceEmailServiceIntegrationTest {
     assertThat(received).hasSize(1);
 
     String htmlBody = extractHtmlBody(received[0]);
-    // Portal-base-url defaults to http://localhost:3002 in tests; assert the portalUrl path is
-    // present in the rendered View Invoice CTA href (template uses th:href="${portalUrl}").
-    String expectedPortalPath = "/invoices/" + savedInvoice.getId();
+    // Portal-base-url defaults to http://localhost:3002 in tests. Phase 88 U11 (§13.6.6): the
+    // View Fee Note CTA is an authenticated portal deep link, so it must carry ?orgId= (the org's
+    // external id) or a fresh browser bounces to an unbranded /login (G-D1).
+    String expectedPortalUrl =
+        "http://localhost:3002/invoices/" + savedInvoice.getId() + "?orgId=" + ORG_ID;
     assertThat(htmlBody)
-        .as("rendered email must include portalUrl path even without PSP")
-        .contains(expectedPortalPath);
+        .as("rendered email must include the full portalUrl (with orgId) even without PSP")
+        .contains("href=\"" + expectedPortalUrl + "\"");
     // The placeholder text "View Invoice" appears next to the CTA — sanity check the button exists
     assertThat(htmlBody).contains("View Invoice");
     // Confirm the View Invoice anchor's href is non-empty (no href="" — that was the bug)

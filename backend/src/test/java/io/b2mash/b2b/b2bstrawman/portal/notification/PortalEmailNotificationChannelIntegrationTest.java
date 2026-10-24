@@ -178,6 +178,10 @@ class PortalEmailNotificationChannelIntegrationTest {
     assertThat(body)
         .as("CTA href must deep-link by matter (project) id")
         .contains("/trust/" + projectId);
+    // Phase 88 U11 (§13.6.6): authenticated portal links carry orgId.
+    assertThat(body)
+        .as("CTA href must carry orgId")
+        .contains("href=\"http://localhost:3002/trust/" + projectId + "?orgId=" + ORG_ID + "\"");
     assertThat(body)
         .as("CTA href must NOT use trust-account id")
         .doesNotContain("/trust/" + trustAccountId);
@@ -235,6 +239,10 @@ class PortalEmailNotificationChannelIntegrationTest {
     assertThat(body)
         .as("CTA href must deep-link by matter (project) id")
         .contains("/trust/" + projectId);
+    // Phase 88 U11 (§13.6.6): authenticated portal links carry orgId.
+    assertThat(body)
+        .as("CTA href must carry orgId")
+        .contains("href=\"http://localhost:3002/trust/" + projectId + "?orgId=" + ORG_ID + "\"");
     assertThat(body)
         .as("CTA href must NOT use trust-account id")
         .doesNotContain("/trust/" + trustAccountId);
@@ -306,7 +314,7 @@ class PortalEmailNotificationChannelIntegrationTest {
         .doesNotContain("/trust/" + trustAccountId);
     assertThat(body)
         .as("CTA href must point at /trust index when projectId is null")
-        .containsPattern("href=\"[^\"]+/trust\"");
+        .containsPattern("href=\"[^\"]+/trust\\?orgId=" + ORG_ID + "\"");
   }
 
   @Test
@@ -370,16 +378,20 @@ class PortalEmailNotificationChannelIntegrationTest {
 
     assertThat(greenMail.waitForIncomingEmail(5000, 1)).isTrue();
     MimeMessage[] received = greenMail.getReceivedMessages();
-    boolean matched = false;
+    MimeMessage deadlineMessage = null;
     for (MimeMessage msg : received) {
       if (CONTACT_EMAIL.equals(msg.getAllRecipients()[0].toString())
           && msg.getSubject() != null
           && msg.getSubject().toLowerCase().startsWith("upcoming deadline")) {
-        matched = true;
+        deadlineMessage = msg;
         break;
       }
     }
-    assertThat(matched).as("deadline-approaching email should be received").isTrue();
+    assertThat(deadlineMessage).as("deadline-approaching email should be received").isNotNull();
+    // Phase 88 U11 (§13.6.6): authenticated portal links carry orgId.
+    assertThat(extractBody(deadlineMessage))
+        .as("deadline CTA href must carry orgId")
+        .contains("href=\"http://localhost:3002/deadlines?orgId=" + ORG_ID + "\"");
 
     var logs = findLogsByReferenceType("PORTAL_DEADLINE");
     assertThat(logs).as("delivery log should record referenceType=PORTAL_DEADLINE").isNotEmpty();

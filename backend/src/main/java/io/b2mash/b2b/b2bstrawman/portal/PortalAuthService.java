@@ -3,6 +3,11 @@ package io.b2mash.b2b.b2bstrawman.portal;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.portal.directory.PortalContactDirectoryEntry;
+import io.b2mash.b2b.b2bstrawman.portal.directory.PortalContactDirectoryRepository;
+import io.b2mash.b2b.b2bstrawman.portal.directory.PortalContactDirectoryService;
+import jakarta.annotation.Nullable;
+import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +16,9 @@ import org.springframework.stereotype.Service;
 
 /**
  * Service encapsulating portal authentication orchestration: magic link requests and token
- * exchanges. Extracted from PortalAuthController to keep the controller thin and testable.
+ * exchanges. Extracted from PortalAuthController to keep the controller thin and testable. Since
+ * Phase 88 (ADR-351) a magic link request may carry the email alone: the global contact directory
+ * selects the firms to try and one branded link is sent per firm, minted inside that firm's tenant.
  */
 @Service
 public class PortalAuthService {
@@ -25,6 +32,8 @@ public class PortalAuthService {
   private final CustomerRepository customerRepository;
   private final OrgSchemaMappingRepository orgSchemaMappingRepository;
   private final Environment environment;
+  private final PortalContactDirectoryRepository directoryRepository;
+  private final PortalLoginRateLimiter loginRateLimiter;
 
   public PortalAuthService(
       MagicLinkService magicLinkService,
@@ -32,74 +41,103 @@ public class PortalAuthService {
       PortalContactRepository portalContactRepository,
       CustomerRepository customerRepository,
       OrgSchemaMappingRepository orgSchemaMappingRepository,
-      Environment environment) {
+      Environment environment,
+      PortalContactDirectoryRepository directoryRepository,
+      PortalLoginRateLimiter loginRateLimiter) {
     this.magicLinkService = magicLinkService;
     this.portalJwtService = portalJwtService;
     this.portalContactRepository = portalContactRepository;
     this.customerRepository = customerRepository;
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
     this.environment = environment;
+    this.directoryRepository = directoryRepository;
+    this.loginRateLimiter = loginRateLimiter;
   }
 
   /**
-   * Requests a magic link for portal access. Resolves the org, looks up the portal contact by
-   * email, checks contact status, and generates a magic link token. Returns a generic message to
-   * prevent email enumeration; in dev/test profiles, also returns the magic link URL.
+   * Requests portal sign-in links (Phase 88 U11, ADR-351). {@code orgClerkId} is optional: with it,
+   * only that firm is tried and the directory is not consulted (fast path — ADR-351 "{@code
+   * ?orgId=} short-circuits the directory lookup"); without it (or blank), the global contact
+   * directory selects every firm that routes the email. For each firm the org is resolved through
+   * {@code org_schema_mapping} (never the directory's {@code tenant_schema}), and the ACTIVE
+   * contact is looked up, the token minted and the branded email sent inside that tenant by the
+   * unchanged {@link MagicLinkService}. Always returns the same generic message for 0, 1 or N
+   * firms; in dev/test profiles the first generated link (directory order) is echoed for testing.
+   *
+   * @throws io.b2mash.b2b.b2bstrawman.exception.TooManyRequestsException when the per-email cap (3
+   *     / 15 min across firms) is exceeded — counted before any lookup, so it leaks nothing
    */
-  public MagicLinkResult requestMagicLink(String email, String orgClerkId, String remoteAddr) {
-    // Resolve org to verify it exists and get schema
-    var mapping = orgSchemaMappingRepository.findByClerkOrgId(orgClerkId).orElse(null);
+  public MagicLinkResult requestMagicLink(
+      String email, @Nullable String orgClerkId, String remoteAddr) {
+    String emailLower = PortalContactDirectoryService.normalise(email);
+    loginRateLimiter.checkEmail(emailLower, remoteAddr);
 
-    // Return generic message even if org not found (prevent enumeration)
-    if (mapping == null) {
-      return new MagicLinkResult(GENERIC_MESSAGE, null);
+    String magicLink = null;
+    for (String targetOrgId : resolveTargetOrgIds(emailLower, orgClerkId)) {
+      String link = sendBrandedLink(emailLower, targetOrgId, remoteAddr);
+      if (magicLink == null) {
+        magicLink = link;
+      }
     }
+    return new MagicLinkResult(GENERIC_MESSAGE, magicLink);
+  }
 
-    String tenantSchema = mapping.getSchemaName();
+  /** An explicit org is the only target; otherwise every firm the directory routes. */
+  private List<String> resolveTargetOrgIds(String emailLower, @Nullable String orgClerkId) {
+    if (orgClerkId != null && !orgClerkId.isBlank()) {
+      return List.of(orgClerkId);
+    }
+    return directoryRepository.findAll(emailLower).stream()
+        .map(PortalContactDirectoryEntry::orgId)
+        .toList();
+  }
 
-    // Look up portal contact and generate token within the tenant scope
+  /**
+   * The existing per-tenant path for one firm: org → schema/shard via {@code org_schema_mapping},
+   * then contact lookup + token + branded email inside that tenant. Returns the dev-profile echo
+   * link, or {@code null} when nothing was sent. Never throws: an unknown org, a missing/inactive
+   * contact, the per-contact cap or any send failure for one firm must neither abort the other
+   * firms nor change the response (no enumeration). Our own log lines never include the email;
+   * unexpected failures attach the exception for diagnosis.
+   */
+  private @Nullable String sendBrandedLink(
+      String emailLower, String orgClerkId, String remoteAddr) {
     try {
+      var mapping = orgSchemaMappingRepository.findByClerkOrgId(orgClerkId).orElse(null);
+      if (mapping == null) {
+        return null; // unknown org, or a stale directory row for a deleted org
+      }
       return RequestScopes.callForTenantOnShard(
-          tenantSchema,
+          mapping.getSchemaName(),
           null,
           mapping.getShardId(),
           () -> {
             PortalContact contact =
-                portalContactRepository.findByEmailAndOrgId(email, orgClerkId).orElse(null);
-
-            // Return generic message if contact not found (prevent email enumeration)
+                portalContactRepository
+                    .findPreferredActiveByEmailLowerAndOrgId(emailLower, orgClerkId)
+                    .orElse(null);
             if (contact == null) {
-              return new MagicLinkResult(GENERIC_MESSAGE, null);
+              return null; // not a contact here, or SUSPENDED/ARCHIVED — generic response
             }
-
-            // Check contact status -- return generic message to prevent enumeration
-            if (contact.getStatus() == PortalContact.ContactStatus.SUSPENDED
-                || contact.getStatus() == PortalContact.ContactStatus.ARCHIVED) {
-              log.info(
-                  "Magic link requested for {} contact {}", contact.getStatus(), contact.getId());
-              return new MagicLinkResult(GENERIC_MESSAGE, null);
-            }
-
             String rawToken = magicLinkService.generateToken(contact.getId(), remoteAddr);
-
             log.info(
                 "Generated magic link for portal contact {} in org {}",
                 contact.getId(),
                 orgClerkId);
-
-            // In dev/test profiles, include the magic link URL for testing
-            String magicLink = null;
-            if (isDevProfile()) {
-              magicLink = "/auth/exchange?token=" + rawToken + "&orgId=" + orgClerkId;
-            }
-
-            return new MagicLinkResult(GENERIC_MESSAGE, magicLink);
+            return isDevProfile()
+                ? "/auth/exchange?token=" + rawToken + "&orgId=" + orgClerkId
+                : null;
           });
     } catch (PortalAuthException e) {
-      throw e;
-    } catch (Exception e) {
-      log.error("Error processing magic link request", e);
-      return new MagicLinkResult(GENERIC_MESSAGE, null);
+      // PortalAuthException("Too many login attempts") from the per-contact cap: swallowed so a
+      // known contact is indistinguishable from an unknown email. Expected — no message/stack.
+      log.warn("Magic link not issued for org {} ({})", orgClerkId, e.getClass().getSimpleName());
+      return null;
+    } catch (RuntimeException e) {
+      // Unexpected DB/shard/SMTP fault: keep the cause chain for diagnosis; response unchanged.
+      log.error(
+          "Magic link not issued for org {} ({})", orgClerkId, e.getClass().getSimpleName(), e);
+      return null;
     }
   }
 

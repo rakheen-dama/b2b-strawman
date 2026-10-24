@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.portal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -71,6 +72,7 @@ class MagicLinkTokenIntegrationTest {
   private UUID contactIdExpired;
   private UUID portalContactIdB;
   private UUID suspendedContactIdA;
+  private UUID contactIdContactCap;
 
   @BeforeAll
   void setup() throws Exception {
@@ -224,6 +226,23 @@ class MagicLinkTokenIntegrationTest {
                       PortalContact.ContactRole.GENERAL);
               portalContactService.suspendContact(suspendedContact.getId());
               suspendedContactIdA = suspendedContact.getId();
+
+              // Phase 88 U11 (624B): email-only resolution + per-contact cap swallowed
+              portalContactService.createContact(
+                  ORG_ID_A,
+                  customerIdA,
+                  "mlt-emailonly@test.com",
+                  "Email Only Contact",
+                  PortalContact.ContactRole.GENERAL);
+              contactIdContactCap =
+                  portalContactService
+                      .createContact(
+                          ORG_ID_A,
+                          customerIdA,
+                          "mlt-contact-cap@test.com",
+                          "Contact Cap Contact",
+                          PortalContact.ContactRole.GENERAL)
+                      .getId();
             });
 
     // Create customer and portal contact in tenant B
@@ -413,6 +432,50 @@ class MagicLinkTokenIntegrationTest {
                   .content(
                       """
                       {"email": "mlt-suspended@test.com", "orgId": "%s"}
+                      """
+                          .formatted(ORG_ID_A)))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.message").value("If an account exists, a link has been sent."))
+          .andExpect(jsonPath("$.magicLink").doesNotExist());
+    }
+
+    @Test
+    void shouldResolveContactWithoutOrgId() throws Exception {
+      // Phase 88 U11 (ADR-351): orgId is optional; the global contact directory resolves the firm.
+      mockMvc
+          .perform(
+              post("/portal/auth/request-link")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      """
+                      {"email": "mlt-emailonly@test.com"}
+                      """))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.message").value("If an account exists, a link has been sent."))
+          .andExpect(jsonPath("$.magicLink").value(containsString("orgId=" + ORG_ID_A)));
+    }
+
+    @Test
+    void perContactCapIsSwallowedIntoTheGenericResponse() throws Exception {
+      // Exhaust the per-contact cap (3 tokens / 5 min) at service level — this does not touch the
+      // per-email request limiter.
+      ScopedValue.where(RequestScopes.TENANT_ID, tenantSchemaA)
+          .run(
+              () -> {
+                for (int i = 0; i < 3; i++) {
+                  magicLinkService.generateToken(contactIdContactCap, "127.0.0.1");
+                }
+              });
+
+      // Before 624B this was 401 "Too many login attempts" — an existence oracle (unknown emails
+      // never get it). Now the same generic 200 as any other request.
+      mockMvc
+          .perform(
+              post("/portal/auth/request-link")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      """
+                      {"email": "mlt-contact-cap@test.com", "orgId": "%s"}
                       """
                           .formatted(ORG_ID_A)))
           .andExpect(status().isOk())

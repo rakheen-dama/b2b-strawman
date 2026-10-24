@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentPosting;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
@@ -570,11 +571,14 @@ public class TrustTransactionService {
           "Invalid fee transfer", "Invoice does not belong to the specified customer");
     }
 
+    // A remainder transfer can be recorded against a part-paid fee note (Phase 88 U15, ADR-347).
     if (invoice.getStatus() != InvoiceStatus.APPROVED
-        && invoice.getStatus() != InvoiceStatus.SENT) {
+        && invoice.getStatus() != InvoiceStatus.SENT
+        && invoice.getStatus() != InvoiceStatus.PARTIALLY_PAID) {
       throw new InvalidStateException(
           "Invalid fee transfer",
-          "Invoice must be in APPROVED or SENT status, current status: " + invoice.getStatus());
+          "Invoice must be in APPROVED, SENT or PARTIALLY_PAID status, current status: "
+              + invoice.getStatus());
     }
 
     var memberId = RequestScopes.requireMemberId();
@@ -858,16 +862,19 @@ public class TrustTransactionService {
 
       ledgerCardRepository.save(ledgerCard);
 
-      // 441.9: Fee transfer invoice integration — mark invoice as PAID on approval.
-      // Use fromWebhook=true to skip PSP gateway call: a trust fee transfer is an internal
-      // accounting operation, not an external payment through a payment service provider.
-      // Pre-check: the webhook path silently accepts already-PAID invoices (idempotent),
-      // but trust fee transfers must reject this to prevent double debit from trust balance.
+      // 441.9 / Phase 88 U15 (ADR-347, N-5): a fee transfer posts its real amount through the one
+      // payment entry point — PARTIALLY_PAID when it leaves a balance, PAID when it clears it, and
+      // (ADR-347 A4) capped at PAID with an invoice.payment_excess audit when it exceeds the
+      // balance due. postPayment writes the payment_events row (provider trust_fee_transfer, method
+      // TRUST_TRANSFER, destination TRUST, reference = the trust reference), which the reversal
+      // cascade in reverseTransaction matches on. No PSP is involved: a trust fee transfer is an
+      // internal accounting operation. A PAID fee note is refused up front so trust is never
+      // debited for a settled fee note.
       if ("FEE_TRANSFER".equals(transaction.getTransactionType())
           && transaction.getInvoiceId() != null) {
         var invoice =
             invoiceRepository
-                .findById(transaction.getInvoiceId())
+                .findByIdForUpdate(transaction.getInvoiceId())
                 .orElseThrow(
                     () -> new ResourceNotFoundException("Invoice", transaction.getInvoiceId()));
         if (invoice.getStatus() == InvoiceStatus.PAID) {
@@ -875,24 +882,9 @@ public class TrustTransactionService {
               "Invoice already paid",
               "Cannot complete fee transfer — invoice is already in PAID status");
         }
-        invoiceService.recordPayment(transaction.getInvoiceId(), transaction.getReference(), true);
-
-        // GAP-L-70: also persist a payment_event row so a future reversal can locate and remove
-        // it. The webhook path of recordPayment does not create a payment_event itself; the
-        // trust ledger is the source-of-truth for fee transfers, so we record one here keyed by
-        // the trust transaction's reference. This mirrors the manual-payment path in
-        // InvoiceTransitionService.recordPayment without altering that code.
-        var paymentEvent =
-            new io.b2mash.b2b.b2bstrawman.invoice.PaymentEvent(
-                transaction.getInvoiceId(),
-                "trust_fee_transfer",
-                null,
-                PaymentEventStatus.COMPLETED,
-                transaction.getAmount(),
-                invoice.getCurrency(),
-                "TRUST");
-        paymentEvent.setPaymentReference(transaction.getReference());
-        paymentEventRepository.save(paymentEvent);
+        invoiceService.postPayment(
+            transaction.getInvoiceId(),
+            PaymentPosting.trustTransfer(transaction.getAmount(), transaction.getReference()));
       }
     }
 
@@ -1117,23 +1109,25 @@ public class TrustTransactionService {
 
       // GAP-L-70: cascade FEE_TRANSFER reversal back into the invoice domain.
       // When the trust ledger rolls back, the linked invoice must roll back symmetrically
-      // (PAID -> SENT, payment_event deleted) so the books always tie out. Both writes share
+      // (payment_event deleted; PAID/PARTIALLY_PAID -> SENT or PARTIALLY_PAID, recomputed from the
+      // remaining COMPLETED events — ADR-347) so the books always tie out. Both writes share
       // this @Transactional boundary — atomic commit or atomic rollback.
       if ("FEE_TRANSFER".equals(original.getTransactionType()) && original.getInvoiceId() != null) {
         var paymentEvents =
             paymentEventRepository.findByInvoiceIdAndStatus(
                 original.getInvoiceId(), PaymentEventStatus.COMPLETED);
-        // Locate the payment event written by InvoiceTransitionService.recordPayment for this
-        // FEE_TRANSFER. The trust transaction's reference is propagated to
-        // payment_event.payment_reference by the recordPayment path. We filter by both reference
-        // AND amount because trust references are user-supplied at recordFeeTransfer time and
-        // not constrained to be unique — using both fields breaks ties safely on multi-payment
-        // invoices where several COMPLETED payment_events may co-exist.
+        // Locate the payment event postPayment wrote at approval for this FEE_TRANSFER: provider
+        // trust_fee_transfer, payment_reference = the trust reference, amount = the transfer
+        // amount. We filter by provider, reference AND amount because trust references are
+        // user-supplied at recordFeeTransfer time and not constrained to be unique — the provider
+        // keeps a manual/card/Xero event that happens to share reference + amount from being
+        // deleted, and the amount breaks ties on multi-payment invoices.
         var matches =
             paymentEvents.stream()
                 .filter(
                     pe ->
-                        pe.getPaymentReference() != null
+                        PaymentPosting.TRUST_PROVIDER.equals(pe.getProviderSlug())
+                            && pe.getPaymentReference() != null
                             && pe.getPaymentReference().equals(original.getReference())
                             && pe.getAmount() != null
                             && pe.getAmount().compareTo(original.getAmount()) == 0)

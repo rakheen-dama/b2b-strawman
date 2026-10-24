@@ -316,7 +316,8 @@ public class InvoiceTransitionService {
             invoice.getPaymentSessionId(),
             orgIdForEvent,
             tenantIdForEvent,
-            taxContext));
+            taxContext,
+            invoice.getAmountPaid()));
 
     return invoiceRenderingService.buildResponse(invoice);
   }
@@ -347,12 +348,18 @@ public class InvoiceTransitionService {
           "Balance due is " + formatMoney(balanceBefore, invoice.getCurrency()));
     }
 
+    // Any payment changes the balance due, so a live pay-now checkout (created for the old balance)
+    // would over-collect if paid: cancel it — unless this posting IS that checkout settling (the
+    // card webhook for the active session). No auto-regeneration (OQ-6): the firm refreshes the
+    // link for the new balance via refresh-payment-link.
+    if (invoice.getPaymentSessionId() != null
+        && !invoice.getPaymentSessionId().equals(posting.sessionId())) {
+      paymentLinkService.cancelActiveSession(invoice);
+    }
+
     var effective = posting;
     if (posting.isManualEntry()) {
       // Manual-path side effects carried over from the pre-U15 recordPayment(UUID, String).
-      if (invoice.getPaymentSessionId() != null) {
-        paymentLinkService.cancelActiveSession(invoice);
-      }
       var paymentResult =
           resolvePaymentGateway()
               .recordManualPayment(
@@ -514,93 +521,9 @@ public class InvoiceTransitionService {
   }
 
   /**
-   * INTERIM (until 622C): full settlement for the three external callers — trust fee-transfer
-   * approval, pay-now webhook reconciliation, Xero sync — which save their own PaymentEvent, so
-   * this path saves none (no double count). Exactly the pre-622B contract: SENT → PAID ({@code
-   * amount_paid = total}); PAID is an idempotent no-op; anything else — PARTIALLY_PAID included —
-   * is refused with 409, so a trust fee transfer approved after a manual part payment is refused
-   * rather than over-collecting from trust (622B D7). 622C re-points these callers to {@link
-   * #postPayment} with their real amounts (N-5) and deletes this overload.
-   *
-   * @param fromWebhook retained for the 622C-owned callers' signature; every caller passes {@code
-   *     true} and the value is not read.
+   * Portal sync with the invoice's current status and {@code amountPaid} (the portal handler's
+   * {@code amountPaid} mapping is 624A).
    */
-  @Transactional
-  public InvoiceResponse recordPayment(
-      UUID invoiceId, String paymentReference, boolean fromWebhook) {
-    var invoice =
-        invoiceRepository
-            .findByIdForUpdate(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
-
-    if (invoice.getStatus() == InvoiceStatus.PAID) {
-      return invoiceRenderingService.buildResponse(invoice);
-    }
-
-    if (invoice.getStatus() != InvoiceStatus.SENT) {
-      throw new ResourceConflictException(
-          "Invalid status transition", "Only sent invoices can be paid");
-    }
-
-    invoice.recordPayment(paymentReference); // SENT → PAID, amount_paid = total
-    invoice = invoiceRepository.save(invoice);
-
-    log.info(
-        "Recorded webhook payment for invoice {} with reference {}", invoiceId, paymentReference);
-
-    UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("invoice.paid")
-            .entityType("invoice")
-            .entityId(invoice.getId())
-            .actorType("SYSTEM")
-            .source("WEBHOOK")
-            .details(
-                Map.of(
-                    "invoice_number",
-                    invoice.getInvoiceNumber(),
-                    "payment_reference",
-                    paymentReference != null ? paymentReference : "",
-                    "total",
-                    invoice.getTotal().toString(),
-                    "paid_at",
-                    invoice.getPaidAt().toString()))
-            .build());
-
-    String tenantIdForEvent = RequestScopes.getTenantIdOrNull();
-    String orgIdForEvent = RequestScopes.getOrgIdOrNull();
-    eventPublisher.publishEvent(
-        new InvoicePaidEvent(
-            "invoice.paid",
-            "invoice",
-            invoice.getId(),
-            null,
-            actorId,
-            resolveActorName(actorId),
-            tenantIdForEvent,
-            orgIdForEvent,
-            Instant.now(),
-            Map.of(
-                "invoice_number",
-                invoice.getInvoiceNumber(),
-                "customer_name",
-                invoice.getCustomerName(),
-                "payment_reference",
-                paymentReference != null ? paymentReference : "",
-                "total",
-                invoice.getTotal().toString()),
-            invoice.getCreatedBy(),
-            invoice.getInvoiceNumber(),
-            invoice.getCustomerName(),
-            paymentReference));
-
-    publishSync(invoice, orgIdForEvent, tenantIdForEvent);
-
-    return invoiceRenderingService.buildResponse(invoice);
-  }
-
-  /** Portal sync with the invoice's current status ({@code amountPaid} on the event is 622C's). */
   private void publishSync(Invoice invoice, String orgId, String tenantId) {
     eventPublisher.publishEvent(
         new InvoiceSyncEvent(
@@ -619,7 +542,8 @@ public class InvoiceTransitionService {
             invoice.getPaymentSessionId(),
             orgId,
             tenantId,
-            null));
+            null,
+            invoice.getAmountPaid()));
   }
 
   /** "R 37 182,00" for ZAR — fixed symbols, stable across JDK locale data. */
@@ -631,16 +555,22 @@ public class InvoiceTransitionService {
     return (currency == null || "ZAR".equals(currency) ? "R" : currency) + " " + formatted;
   }
 
+  /**
+   * Cancels the active checkout session (if any) and creates a new one for the fee note's balance
+   * due. A PARTIALLY_PAID fee note can take a pay-now link for what remains (Phase 88 U15,
+   * ADR-347); the row lock keeps the balance stable while the checkout amount is read.
+   */
   @Transactional
   public InvoiceResponse refreshPaymentLink(UUID invoiceId) {
     var invoice =
         invoiceRepository
-            .findById(invoiceId)
+            .findByIdForUpdate(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
-    if (invoice.getStatus() != InvoiceStatus.SENT) {
+    if (!invoice.isPayable()) {
       throw new ResourceConflictException(
-          "Invalid status", "Only sent invoices can have their payment link refreshed");
+          "Invalid status",
+          "Only sent or partially paid fee notes can have their payment link refreshed");
     }
 
     paymentLinkService.refreshPaymentLink(invoice);
@@ -970,7 +900,8 @@ public class InvoiceTransitionService {
             invoice.getPaymentSessionId(),
             orgIdForEvent,
             tenantIdForEvent,
-            null));
+            null,
+            invoice.getAmountPaid()));
 
     return invoiceRenderingService.buildResponse(invoice);
   }

@@ -6,7 +6,9 @@ import io.b2mash.b2b.b2bstrawman.integration.payment.WebhookResult;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
+import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +63,9 @@ public class PaymentReconciliationService {
       return;
     }
 
-    var invoice = invoiceRepository.findById(invoiceId).orElse(null);
+    // Row lock: serialises concurrent deliveries of the same webhook ahead of the session-id
+    // idempotency check in handlePaymentCompleted (payment_events.session_id is not unique).
+    var invoice = invoiceRepository.findByIdForUpdate(invoiceId).orElse(null);
     if (invoice == null) {
       log.warn("Webhook references unknown invoice: {}", invoiceId);
       return;
@@ -90,32 +94,59 @@ public class PaymentReconciliationService {
   }
 
   private void handlePaymentCompleted(Invoice invoice, WebhookResult result, String providerSlug) {
-    // Idempotency: skip if already PAID
-    if (invoice.getStatus() == InvoiceStatus.PAID) {
-      log.info("Invoice {} already paid, skipping webhook", invoice.getId());
+    // A card payment we can't tie to a checkout session can be neither verified (the crafted-
+    // webhook check above is session-based) nor posted idempotently (the replay guard below is
+    // too) — a replay would post the balance due again on a part-paid fee note. Refuse it.
+    if (result.sessionId() == null || result.sessionId().isBlank()) {
+      log.warn(
+          "COMPLETED webhook from {} for invoice {} has no session id — not posted",
+          providerSlug,
+          invoice.getId());
       return;
     }
+    // §13.2.3(c): idempotent on replay by session_id, not on status — a part-paid fee note is
+    // still payable, so a status check would double-post a replayed webhook.
+    if (paymentEventRepository.existsBySessionIdAndStatus(
+        result.sessionId(), PaymentEventStatus.COMPLETED)) {
+      log.info(
+          "Session {} already reconciled on invoice {}; skipping replayed webhook",
+          result.sessionId(),
+          invoice.getId());
+      return;
+    }
+    if (!invoice.isPayable()) {
+      // Settled (or voided) through another route while the checkout was open — leave it for
+      // reconciliation rather than refusing inside the webhook transaction.
+      log.warn(
+          "Invoice {} is {} — card payment for session {} not posted",
+          invoice.getId(),
+          invoice.getStatus(),
+          result.sessionId());
+      return;
+    }
+
+    // The amount the PSP was asked to collect: the checkout session's CREATED/PENDING event,
+    // written by PaymentLinkService at the balance due when the link was generated.
+    BigDecimal amount =
+        sessionAmount(result.sessionId())
+            .orElseGet(
+                () -> {
+                  log.warn(
+                      "No checkout session amount for invoice {} (session {}); posting the balance"
+                          + " due",
+                      invoice.getId(),
+                      result.sessionId());
+                  return invoice.getBalanceDue();
+                });
 
     String paymentRef =
         result.paymentReference() != null ? result.paymentReference() : result.sessionId();
 
-    // Record payment via InvoiceService — fromWebhook=true skips gateway call
-    invoiceService.recordPayment(invoice.getId(), paymentRef, true);
-
-    // Write COMPLETED payment event
-    var completedEvent =
-        new PaymentEvent(
-            invoice.getId(),
-            providerSlug,
-            result.sessionId(),
-            PaymentEventStatus.COMPLETED,
-            invoice.getTotal(),
-            invoice.getCurrency(),
-            invoice.getPaymentDestination());
-    if (result.paymentReference() != null) {
-      completedEvent.setPaymentReference(result.paymentReference());
-    }
-    paymentEventRepository.save(completedEvent);
+    // Phase 88 U15 (ADR-347): post the real amount as CARD through the one payment entry point,
+    // which writes the COMPLETED payment event (provider, session id, reference). An amount above
+    // the balance due is capped at PAID and audited as invoice.payment_excess (A4).
+    invoiceService.postPayment(
+        invoice.getId(), PaymentPosting.card(amount, providerSlug, result.sessionId(), paymentRef));
 
     // Audit: payment.completed (SYSTEM actor — webhook-driven reconciliation)
     auditService.log(
@@ -130,11 +161,11 @@ public class PaymentReconciliationService {
                     "provider",
                     providerSlug,
                     "session_id",
-                    result.sessionId() != null ? result.sessionId() : "",
+                    result.sessionId(),
                     "payment_reference",
                     paymentRef,
                     "amount",
-                    invoice.getTotal().toPlainString()))
+                    amount.toPlainString()))
             .build());
 
     // Audit: portal.invoice.paid (PORTAL_CONTACT actor — payer half of the story).
@@ -176,7 +207,7 @@ public class PaymentReconciliationService {
                     "customer_id",
                     invoice.getCustomerId() != null ? invoice.getCustomerId().toString() : "",
                     "amount",
-                    invoice.getTotal().toPlainString(),
+                    amount.toPlainString(),
                     "currency",
                     invoice.getCurrency() != null ? invoice.getCurrency() : "",
                     "payment_reference",
@@ -186,6 +217,20 @@ public class PaymentReconciliationService {
             .build());
 
     log.info("Reconciled completed payment for invoice {} via {}", invoice.getId(), providerSlug);
+  }
+
+  /** The amount the checkout session was created for (its CREATED, else PENDING, event). */
+  private Optional<BigDecimal> sessionAmount(String sessionId) {
+    if (sessionId == null) {
+      return Optional.empty();
+    }
+    return paymentEventRepository
+        .findBySessionIdAndStatus(sessionId, PaymentEventStatus.CREATED)
+        .or(
+            () ->
+                paymentEventRepository.findBySessionIdAndStatus(
+                    sessionId, PaymentEventStatus.PENDING))
+        .map(PaymentEvent::getAmount);
   }
 
   private void handlePaymentFailed(Invoice invoice, WebhookResult result, String providerSlug) {

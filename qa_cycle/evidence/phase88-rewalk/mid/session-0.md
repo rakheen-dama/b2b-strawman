@@ -10,7 +10,7 @@ Main checkout `/Users/rakheendama/Projects/2026/b2b-strawman` at `6cc2b525e7a3f9
 
 **These writes are the slice-authorised Session 0 infrastructure reset (623.2 §R, orchestrator ruling 1), not walk state.** They ran with the backend stopped, after the V4 AFTER snapshot and step-8 browser observation were recorded. Verbatim output: `logs/session0-reset.txt`. `tenant_56399d06a773` / `org_phase86_squash_smoke` was not touched.
 
-| Step | Command (summary) | Result |
+| Step | Command (summary — exact statements in the block below) | Result |
 |---|---|---|
 | R.0 | `svc.sh stop backend` | stopped PID 68172; nothing on :8080; backend java 68329 gone |
 | R.1 | KC admin REST (master `admin`), `GET /admin/realms/docteams/organizations` | only org: `{"id":"2c4034d3-f76d-4323-a172-7eabd018657d","name":"Mathebula & Partners","alias":"mathebula-partners"}` |
@@ -24,6 +24,83 @@ Main checkout `/Users/rakheendama/Projects/2026/b2b-strawman` at `6cc2b525e7a3f9
 | R.5 | `DELETE http://localhost:8025/api/v1/messages` | **200** (count before 0, after 0) |
 | R.6 | verify | tenant schemas: `tenant_56399d06a773` only; org_schema_mapping: `org_phase86_squash_smoke` only; access_requests 0; portal_projects 0 rows; organizations 1; subscriptions 1 |
 | R.6 | `svc.sh start backend` | ready 15 s, :8080 pid 70187 etime 00:13; "Running tenant migrations for 1 schemas … `tenant_56399d06a773`: 4 … up to date … 0 migrations applied … completed"; health UP |
+
+### Statements — as executed (brief §R script; per-statement results in logs/session0-reset.txt)
+
+The statement text below is the brief's §R script, with `<org-id>` filled in. `logs/session0-reset.txt` records each statement's **output** in order (section headers `## R.0` … `## R.6`), but it does **not** echo the command text. So each statement is included only where the log shows its own result line. The `# log:` comments give that result. Where the log shows a result whose statement text was not recorded, that is stated below the block.
+
+```bash
+# R.0 — log: "backend: stopped"; "lsof :8080 -> []"; "backend java 68329 gone"
+bash $MAIN/compose/scripts/svc.sh stop backend; lsof -nP -iTCP:8080 -sTCP:LISTEN
+
+# R.1 — log: "token len 750"
+KC=http://localhost:8180
+TOKEN=$(curl -sf "$KC/realms/master/protocol/openid-connect/token" -d grant_type=password -d client_id=admin-cli -d username=admin -d password=admin | jq -r .access_token)
+# log (under "orgs before:"): {"id":"2c4034d3-f76d-4323-a172-7eabd018657d","name":"Mathebula & Partners","alias":"mathebula-partners"}
+curl -s "$KC/admin/realms/docteams/organizations?search=mathebula" -H "Authorization: Bearer $TOKEN" | jq -c '.[]|{id,name,alias}'
+# log: "org delete 2c4034d3-f76d-4323-a172-7eabd018657d 204"
+curl -s -o /dev/null -w 'org delete %{http_code}\n' -X DELETE "$KC/admin/realms/docteams/organizations/2c4034d3-f76d-4323-a172-7eabd018657d" -H "Authorization: Bearer $TOKEN"
+# log: "thandi already gone" / "bob already gone" / "carol already gone" (lookup returned no id → the || branch)
+for e in thandi bob carol; do
+  id=$(curl -s "$KC/admin/realms/docteams/users?email=$e@mathebula-test.local&exact=true" -H "Authorization: Bearer $TOKEN" | jq -r '.[0].id // empty')
+  [ -n "$id" ] && curl -s -o /dev/null -w "$e delete %{http_code}\n" -X DELETE "$KC/admin/realms/docteams/users/$id" -H "Authorization: Bearer $TOKEN" || echo "$e already gone"
+done
+# log (under "users after:"): padmin@docteams.local
+docker exec b2b-postgres psql -U postgres -d keycloak -Atc "SELECT u.email FROM user_entity u JOIN realm r ON r.id=u.realm_id WHERE r.name='docteams' ORDER BY 1"
+# log (under "orgs after:"): nothing before "(end orgs)"
+docker exec b2b-postgres psql -U postgres -d keycloak -Atc "SELECT o.alias FROM org o JOIN realm r ON r.id=o.realm_id WHERE r.name='docteams'"
+
+# R.2 guard — log: a 0 | b 0 | c 0 | d 0
+P="docker exec b2b-postgres psql -U postgres -d docteams -c"; T=tenant_5039f2d497cf
+$P "SELECT (SELECT count(*) FROM portal.portal_acceptance_requests WHERE portal_contact_id NOT IN (SELECT id FROM $T.portal_contacts)) a, (SELECT count(*) FROM portal.portal_notification_preference WHERE portal_contact_id NOT IN (SELECT id FROM $T.portal_contacts)) b, (SELECT count(*) FROM portal.portal_trust_balance WHERE customer_id NOT IN (SELECT id FROM $T.customers)) c, (SELECT count(*) FROM portal.portal_trust_transaction WHERE customer_id NOT IN (SELECT id FROM $T.customers)) d"
+
+# R.2 deletes — log: BEGIN, then DELETE 2 / 1 / 2 / 1 / 0 / 4 / 0 / 17 / 5 / 5 / 0 / 0 (in this statement order), COMMIT
+$P "BEGIN;
+DELETE FROM portal.portal_acceptance_requests WHERE portal_contact_id IN (SELECT id FROM $T.portal_contacts);
+DELETE FROM portal.portal_notification_preference WHERE portal_contact_id IN (SELECT id FROM $T.portal_contacts);
+DELETE FROM portal.portal_trust_transaction WHERE customer_id IN (SELECT id FROM $T.customers);
+DELETE FROM portal.portal_trust_balance WHERE customer_id IN (SELECT id FROM $T.customers);
+DELETE FROM portal.portal_deadline_view WHERE customer_id IN (SELECT id FROM $T.customers);
+DELETE FROM portal.portal_invoices WHERE org_id='mathebula-partners';
+DELETE FROM portal.portal_requests WHERE org_id='mathebula-partners';
+DELETE FROM portal.portal_tasks WHERE org_id='mathebula-partners';
+DELETE FROM portal.portal_documents WHERE org_id='mathebula-partners';
+DELETE FROM portal.portal_projects WHERE org_id='mathebula-partners';
+DELETE FROM portal.portal_project_summaries WHERE org_id='mathebula-partners';
+DELETE FROM portal.portal_comments WHERE org_id='mathebula-partners';
+COMMIT;"
+
+# R.3 — log: "NOTICE: drop cascades to 102 other objects" … "DROP SCHEMA"
+$P "DROP SCHEMA tenant_5039f2d497cf CASCADE;"
+
+# R.4 — log: BEGIN, DELETE 1 / 1 / 1 / 1, COMMIT
+$P "BEGIN;
+DELETE FROM public.subscriptions WHERE organization_id = (SELECT id FROM public.organizations WHERE external_org_id='mathebula-partners');
+DELETE FROM public.org_schema_mapping WHERE external_org_id='mathebula-partners';
+DELETE FROM public.organizations WHERE external_org_id='mathebula-partners';
+DELETE FROM public.access_requests WHERE email LIKE '%@mathebula-test.local';
+COMMIT;"
+
+# R.5 — log: "count before: 0", "mailpit clear 200", "count after: 0"
+curl -s -o /dev/null -w 'mailpit clear %{http_code}\n' -X DELETE http://localhost:8025/api/v1/messages
+
+# R.6 verify — log: tenant_56399d06a773 (1 row)
+$P "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%' ORDER BY 1"
+# log: org_phase86_squash_smoke | tenant_56399d06a773
+$P "SELECT external_org_id, schema_name FROM public.org_schema_mapping"
+# log: portal_projects "org_id | count" (0 rows). The access_requests count is NOT confirmable verbatim: the log shows a column
+# header "access_requests" (value 0), so the executed SELECT aliased the count — the brief's un-aliased form below is not what ran.
+$P "SELECT count(*) FROM public.access_requests"; $P "SELECT org_id, count(*) FROM portal.portal_projects GROUP BY 1"
+# log: "## R.6 restart backend 2026-10-24T07:07:43Z" … "ready (15s)", "8080 pid 70187 etime 00:13", tenant_56399d06a773 "up to date … 0 migrations applied", health UP
+bash $MAIN/compose/scripts/svc.sh start backend
+```
+
+What the log cannot confirm:
+- **Logging wrappers.** Several output lines were produced by logging wrappers around the brief's statements, not by the bare statements: `token len 750`, `lsof :8080 -> []`, `org delete 2c4034d3-… 204` (the brief's `-w` format prints no id), and `count before/after` around R.5. The operations themselves (the REST calls, SQL `SELECT`/`DELETE`/`DROP`, Mailpit `DELETE`) match the brief one-for-one, and so do their results. The exact wrapper text is not recorded.
+- **R.1 search query string.** The org GET result is logged (the jq `{id,name,alias}` shape), but the log does not record whether the `?search=mathebula` filter was in the URL. The realm held only this one org (orgs-after read-back: none), so the result is the same either way.
+- **Extra read-backs whose statement text was not recorded.** "users before:" / "orgs before:" (the R.1 read-back SELECTs, run before the deletes as well), the R.2 "extra guard: org_id values in org-keyed portal tables" queries (8 result sets plus `deadline_rows_not_mathebula 0`), the R.6 `organizations 1` / `subscriptions 1` counts, the port-holder `ps` line and the post-start `jq` migration extract. The log shows their outputs only, so they are **not** in the block above.
+- **R.6 access_requests count.** The value 0 is logged, but under the header `access_requests`. The executed text therefore differs from the brief's `SELECT count(*) FROM public.access_requests` (it had a column alias), and the exact text was not recorded.
+- **R.6 `N1=$(wc -l …)`.** The offset is not logged. It is moot anyway: `svc.sh start` truncates the log (README § KC-STACK infra note).
 
 ## Scenario steps
 

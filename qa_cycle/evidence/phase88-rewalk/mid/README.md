@@ -89,7 +89,7 @@ Playwright MCP, viewport 1440×900, cookies cleared → `http://localhost:3000/d
 | Check | Observed | Result | Screenshot |
 |---|---|---|---|
 | Home › Debtors widget | "**2** clients owe fees"; Largest debtors: **Moroka Family Trust R 42 182,00** "Not yet overdue" (Current R 42 182,00, 30/60/90+ R 0,00) and **Nomvula Khoza R 7 058,13** "Not yet overdue" (Current). Not "No client owes fees." | PASS | `screens/v4-after-home-debtors.png` |
-| Fees › Fee notes list | header tiles "Total outstanding R 49 240,13", "Overdue R 0,00"; column "Due Date" present | PASS | (snapshot) |
+| Fees › Fee notes list | header tiles "Total outstanding R 49 240,13", "Overdue R 0,00"; column "Due Date" present | PASS (supporting) | DOM snapshot only, no screenshot (tenant since dropped). Supporting only: rows 1 and 3 carry the 620A closure |
 | INV-0002 detail (`/invoices/3f8888c9-4b2a-4891-af9c-eb1a2a13b858`) | header "Issued: 22 Oct 2026 · **Due: 21 Nov 2026**"; Fee note details › Due Date **21 Nov 2026**; status Sent; Record Payment button present | PASS | `screens/v4-after-inv0002-due.png` |
 
 Then cookies + storage cleared (before Session 0 reset).
@@ -100,24 +100,46 @@ After the Session 0 reset, approval of the new access request (2026-10-24 07:13:
 
 ### Statement (for 623C `migrations.md`)
 
-**V4 (`V4__phase88_demo_ready.sql`, §1–§3) was first applied to a persistent stack (Keycloak dev DB `docteams`) at 2026-10-24 09:01:53 SAST (07:01:53Z) — `installed_on` 2026-10-24 09:01:53.948575 on `tenant_5039f2d497cf` and 2026-10-24 09:01:53.871463 on `tenant_56399d06a773`; every later tenant migration takes a new file (V5+).**
+**V4 (`V4__phase88_demo_ready.sql`, §1–§3) was first applied to a persistent stack (Keycloak dev DB `docteams`) at 2026-10-24 09:01:53 SAST (07:01:53Z). Durable record: `tenant_56399d06a773` (`org_phase86_squash_smoke`, still present) `flyway_schema_history` row `4 | phase88 demo ready | installed_on 2026-10-24 09:01:53.871463 | success t`, on top of V1 (2026-10-18) / V2 / V3 (2026-10-22) (`logs/v4-durable-record.txt`, fresh read-only SELECT 2026-10-24T07:49:57Z). Every later tenant migration takes a new file (V5+).**
 
-Note: `tenant_5039f2d497cf` was then dropped by the slice-authorised Session 0 reset and re-provisioned (V1–V4 at 09:13:25 SAST). The durable record of the in-place V4 upgrade is `tenant_56399d06a773` (`org_phase86_squash_smoke`), which was not touched.
+Supporting history: the same start also upgraded `tenant_5039f2d497cf` (617C Mathebula tenant) in place, `installed_on` 2026-10-24 09:01:53.948575 (`logs/v4-after.txt`, `logs/backend-startup-v4.txt`). That schema was then dropped by the slice-authorised Session 0 reset and re-provisioned from empty (V1–V4 at 09:13:25 SAST), so its row is history only and must not be cited as the durable record.
 
 ## Sections
 
 | Section | Doc lines | File | Rows | P / F / D / N/A |
 |---|---|---|---|---|
-| KC-STACK + V4 (623.1) | — | README.md | — | V4 applied on both tenants, backfill as expected; step-8 browser observation 3/3 PASS |
+| KC-STACK + V4 (623.1) | — | README.md | — | V4 applied on both tenants, backfill as expected; step-8 browser observation 3/3 PASS (rows 1 + 3 screenshot-backed carry the 620A closure; row 2 supporting, DOM snapshot only); V4 durable record `logs/v4-durable-record.txt` |
 | Session 0 (623.2) | 43–49 + master 115–152 | session-0.md | 16 (0.A, 0.B, M.1–M.9, 5 checkpoints) | 15 / 0 / 0 / 1 (M.2) |
 | Day 0 seeding (not scored) | 52–188 (phases A–F, J) | session-0.md | 7 phases run, 4 skipped (G, H, I, K) | — |
-| Days 1–7 (623.3) | 209–298 | days-01-07.md | 70 (59 doc + 3 pre + 8 target) | 61 / 8 / 1 / 0 |
+| Days 1–7 (623.3) | 209–298 | days-01-07.md | 72 (60 doc [59 steps, 4.3b split] + 3 pre + 9 target [T2 split]) | 61 / 10 / 1 / 0 |
 
-Days 1–7 doc rows only: 50 / 8 / 1 / 0. FAIL: 2.9, 3.8, 4.2, 4.6, 5.2, 5.4, 6.3, 6.6. DEFERRED: 5.14.
+Days 1–7 doc rows only (60): 50 / 9 / 1 / 0. Target rows (9): 8 / 1 / 0 / 0. Pre-rows (3): 3 / 0 / 0 / 0. FAIL: 2.9, 3.8, 4.2, 4.3b-ii, 4.6, 5.2, 5.4, 6.3, 6.6, T2b. DEFERRED: 5.14 (→ 629). Split rows count separately. PASS includes 3.3 and 6.2 "PASS (adapted — 617C precedent)" (scenario-wording deviations awaiting founder authorisation, days-01-07.md § Scenario-wording deviations) and T4 (b) "PASS (supporting only — not discriminating)".
+
+UI halves of 4.4 / 4.5 / 6.1 (rates R 1 200,00/hr and R 550,00/hr, entries R 1 800,00 and R 1 100,00) are post-hoc re-observations of the same persisted entries (2026-10-24 07:50–07:51Z, Log Time dialogs Cancelled, no new walk state): `screens/4.5-recap-*.png`, `screens/6.1-recap-*.png`.
+
+617C → 623A headline: G-B3 access chain closed (list → open → log time → reply PASS); notification deep-link precision FAIL (6.3, G88-M6). G-B7 acceptance PDF inline PASS (4.3b-i). No regression of a Phase 88 fix.
 
 ## Candidate gaps raised by 623A
 
-See `days-01-07.md` § Candidate gaps (G88-M1 … G88-M7; 0 BLOCKER, 0 HIGH, 3 MEDIUM, 4 LOW). 623C consolidates into `gaps.md`. No regression of a Phase 88 fix was observed.
+See `days-01-07.md` § Candidate gaps (G88-M1 … G88-M7; 0 BLOCKER, 0 HIGH, 3 MEDIUM, 4 LOW — caveat: G-B3 access chain closed (list → open → log time → reply PASS); notification deep-link precision FAIL (6.3, G88-M6, MEDIUM)). 623C consolidates into `gaps.md`. No regression of a Phase 88 fix was observed.
+
+| ID | Severity | Owner |
+|---|---|---|
+| G88-M1 scenario doc paths (0.A / M.6) | LOW | 628H (needs founder §6 authorisation) |
+| G88-M2 Team tab does not identify the matter lead (T2b) | MEDIUM | new unit for the founder (619 follow-up — Team panel lead indicator) |
+| G88-M3 portal accepted state date-only (4.3b-ii) | LOW | 624 |
+| G88-M4 disbursement tables overflow 1440 px | MEDIUM | 627 |
+| G88-M5 Member matter visits write `security.access_denied` audit noise | LOW | 627 (619D N3 follow-up) |
+| G88-M6 comment notification lands on task list, not the comment (6.3) | MEDIUM | new unit for the founder (notification deep-link to comment) |
+| G88-M7 client Matters table STATUS cell blank | LOW | 627 |
+
+Scenario-wording deviations needing founder authorisation (CLAUDE.md §6, route to 628H): 3.3, 6.2, 6.3 unread count, G88-M1 doc paths — listed in `days-01-07.md` § Scenario-wording deviations.
+
+## Deferred items and owners
+
+| Item | Why deferred | Owner |
+|---|---|---|
+| 5.14 mixed Approved + Pending disbursement list screenshot | Walker missed the capture window between 5.10 and 5.11; re-capture would need extra disbursements (new walk state, forbidden); 623B covers Days 36–47, not Day 5 | **629** (full 90-day re-walk walks Day 5 again) |
 
 ## Stack state left for 623B
 

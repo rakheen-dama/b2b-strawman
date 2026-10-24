@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.portal;
 
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -47,7 +48,7 @@ public class PortalAuthController {
   public record MagicLinkRequest(
       @NotBlank(message = "email is required") @Email(message = "invalid email format")
           String email,
-      @NotBlank(message = "orgId is required") String orgId) {}
+      @Nullable String orgId) {}
 
   public record MagicLinkResponse(String message, String magicLink) {}
 

@@ -296,22 +296,23 @@ class PortalTenantIsolationAuthTest {
     return out;
   }
 
-  /** Text of a (possibly multipart) message — as PortalEmailServiceIntegrationTest. */
+  /** Text of a (possibly nested multipart) message. */
   private String content(MimeMessage message) throws Exception {
-    Object content = message.getContent();
+    return text(message.getContent());
+  }
+
+  private static String text(Object content) throws Exception {
     if (content instanceof String str) {
       return str;
     }
     if (content instanceof MimeMultipart multipart) {
       StringBuilder sb = new StringBuilder();
       for (int i = 0; i < multipart.getCount(); i++) {
-        if (multipart.getBodyPart(i).getContent() instanceof String part) {
-          sb.append(part);
-        }
+        sb.append(text(multipart.getBodyPart(i).getContent()));
       }
       return sb.toString();
     }
-    return content.toString();
+    return "";
   }
 
   /** Token from ".../auth/exchange?token=XYZ&orgId=..." (HTML may encode & as &amp;). */

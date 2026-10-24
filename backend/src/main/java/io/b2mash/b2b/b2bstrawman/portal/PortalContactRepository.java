@@ -68,6 +68,19 @@ public interface PortalContactRepository extends JpaRepository<PortalContact, UU
           + " WHERE lower(trim(pc.email)) = :emailLower AND pc.status = 'ACTIVE'")
   boolean existsActiveByEmailLower(@Param("emailLower") String emailLower);
 
+  /**
+   * Sign-in lookup (ADR-351): the ACTIVE contact in this tenant whose normalised email ({@code
+   * lower(trim(email))}) equals {@code emailLower}. When several customers share the email, the
+   * same PRIMARY > BILLING > GENERAL > oldest ordering as {@link
+   * #findPreferredByCustomerIdAndOrgId} makes the pick deterministic.
+   */
+  @Query(
+      "SELECT pc FROM PortalContact pc WHERE lower(trim(pc.email)) = :emailLower AND pc.orgId ="
+          + " :orgId AND pc.status = 'ACTIVE' ORDER BY CASE pc.role WHEN 'PRIMARY' THEN 0 WHEN"
+          + " 'BILLING' THEN 1 ELSE 2 END ASC, pc.createdAt ASC LIMIT 1")
+  Optional<PortalContact> findPreferredActiveByEmailLowerAndOrgId(
+      @Param("emailLower") String emailLower, @Param("orgId") String orgId);
+
   /** Directory backfill/resync (ADR-351): distinct normalised emails of ACTIVE contacts. */
   @Query("SELECT DISTINCT lower(trim(pc.email)) FROM PortalContact pc WHERE pc.status = 'ACTIVE'")
   List<String> findDistinctActiveEmailsLower();

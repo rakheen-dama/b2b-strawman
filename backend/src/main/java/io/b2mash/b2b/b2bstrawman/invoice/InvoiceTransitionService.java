@@ -338,7 +338,7 @@ public class InvoiceTransitionService {
   public InvoiceResponse postPayment(UUID invoiceId, PaymentPosting posting) {
     var invoice =
         invoiceRepository
-            .findById(invoiceId)
+            .findByIdForUpdate(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
     try {
       invoice.requireStatus(PAYABLE, "take a payment");
@@ -508,13 +508,14 @@ public class InvoiceTransitionService {
   /**
    * Settles the remaining balance in full through {@link #postPayment} (manual source) — the
    * automation "mark PAID" action, the legacy reference-only Record Payment body and {@code
-   * InvoiceService.recordPayment(UUID, String)}.
+   * InvoiceService.recordPayment(UUID, String)}. Takes the row lock before reading the balance, so
+   * the amount it posts is the current balance and postPayment's re-read is the same locked row.
    */
   @Transactional
   public InvoiceResponse settleBalance(UUID invoiceId, PaymentMethod method, String reference) {
     var invoice =
         invoiceRepository
-            .findById(invoiceId)
+            .findByIdForUpdate(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
     return postPayment(
         invoiceId, PaymentPosting.manual(invoice.getBalanceDue(), method, reference));
@@ -679,7 +680,7 @@ public class InvoiceTransitionService {
   public void reversePayment(UUID invoiceId, UUID paymentEventId) {
     var invoice =
         invoiceRepository
-            .findById(invoiceId)
+            .findByIdForUpdate(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
     if (!REVERSIBLE.contains(invoice.getStatus())) {

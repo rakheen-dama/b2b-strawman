@@ -1,13 +1,23 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
+import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
+  /**
+   * Row lock for payment posting and reversal (Phase 88 U15): the balance-due excess check and the
+   * amount_paid update must not interleave with a concurrent payment on the same fee note.
+   */
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT i FROM Invoice i WHERE i.id = :id")
+  Optional<Invoice> findByIdForUpdate(@Param("id") UUID id);
+
   @Query("SELECT i FROM Invoice i WHERE i.customerId = :customerId ORDER BY i.createdAt DESC")
   List<Invoice> findByCustomerId(@Param("customerId") UUID customerId);
 

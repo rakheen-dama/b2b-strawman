@@ -223,6 +223,27 @@ class AiReminderComposerTest {
         });
   }
 
+  // 622D (ADR-347): the AI letter chases the balance due on a part-paid fee note, so the prompt's
+  // invoice facts carry it (1500.00 − 400.00 = 1100.00) next to the gross total.
+  @Test
+  void userPrompt_carriesBalanceDue_forPartiallyPaidFeeNote() {
+    // Exempt customer → the scan never touches this hand-seeded row.
+    var ids = seedSentInvoice("Balance Co", "balance@test.com", 10, randomInvoiceNumber(), true);
+
+    runInTenant(
+        () -> {
+          var invoice = invoiceRepository.findById(ids[0]).orElseThrow();
+          invoice.applyPayment(new BigDecimal("400.00"), "PART-1");
+          invoiceRepository.save(invoice);
+
+          UUID activityId = seedActivity(ids, CollectionStage.STAGE_1);
+          String prompt = skill.assembleUserPrompt(contextFor(activityId));
+
+          assertThat(prompt).contains("Total: 1500.00 ZAR");
+          assertThat(prompt).contains("Balance due: 1100.00 ZAR");
+        });
+  }
+
   private UUID seedActivity(UUID[] invoiceAndCustomer, CollectionStage stage) {
     var activity =
         new CollectionActivity(

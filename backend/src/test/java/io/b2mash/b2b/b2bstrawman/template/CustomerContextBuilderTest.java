@@ -223,6 +223,55 @@ class CustomerContextBuilderTest {
     assertThat(context.get("totalOutstanding")).isEqualTo(new BigDecimal("1000.00"));
   }
 
+  // 622D (ADR-347): a PARTIALLY_PAID fee note contributes its balance due to totalOutstanding and
+  // the running balance — not its full total.
+  @Test
+  void buildContextCountsPartiallyPaidInvoiceAtItsBalance() {
+    var customer =
+        TestCustomerFactory.createActiveCustomer(
+            "Part Paid Customer", "partpaid@example.com", memberId);
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+    when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
+
+    var sentInvoice =
+        new Invoice(customerId, "ZAR", "Part Paid Customer", null, null, "Org", memberId);
+    sentInvoice.recalculateTotals(new BigDecimal("1000.00"), false, BigDecimal.ZERO, false);
+    sentInvoice.approve("INV-101", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    sentInvoice.markSent();
+
+    var partInvoice =
+        new Invoice(customerId, "ZAR", "Part Paid Customer", null, null, "Org", memberId);
+    partInvoice.recalculateTotals(new BigDecimal("2000.00"), false, BigDecimal.ZERO, false);
+    partInvoice.approve("INV-102", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    partInvoice.markSent();
+    partInvoice.applyPayment(new BigDecimal("800.00"), "P-1");
+
+    var paidInvoice =
+        new Invoice(customerId, "ZAR", "Part Paid Customer", null, null, "Org", memberId);
+    paidInvoice.recalculateTotals(new BigDecimal("500.00"), false, BigDecimal.ZERO, false);
+    paidInvoice.approve("INV-103", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    paidInvoice.markSent();
+    paidInvoice.recordPayment("PAY-103");
+
+    when(invoiceRepository.findByCustomerId(customerId))
+        .thenReturn(List.of(sentInvoice, partInvoice, paidInvoice));
+    when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
+
+    var context = builder.buildContext(customerId, memberId);
+
+    @SuppressWarnings("unchecked")
+    var invoices = (List<Map<String, Object>>) context.get("invoices");
+    assertThat(invoices).hasSize(3);
+    assertThat(invoices.get(1).get("status")).isEqualTo("PARTIALLY_PAID");
+    assertThat(invoices.get(1).get("total")).isEqualTo(new BigDecimal("2000.00"));
+    // 1,000.00 (SENT) + 1,200.00 (2,000.00 − 800.00 paid); the PAID note owes nothing.
+    assertThat((BigDecimal) invoices.get(1).get("runningBalance")).isEqualByComparingTo("2200.00");
+    assertThat((BigDecimal) invoices.get(2).get("runningBalance")).isEqualByComparingTo("2200.00");
+    assertThat((BigDecimal) context.get("totalOutstanding")).isEqualByComparingTo("2200.00");
+  }
+
   @Test
   void buildContextWithNoInvoicesHasEmptyListAndZeroOutstanding() {
     var customer =

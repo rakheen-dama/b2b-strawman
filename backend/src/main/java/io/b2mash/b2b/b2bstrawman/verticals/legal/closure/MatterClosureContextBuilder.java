@@ -44,8 +44,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class MatterClosureContextBuilder {
 
+  /** Issued fee notes (Phase 88 622D: PARTIALLY_PAID was issued too; 626E owns the arithmetic). */
   private static final Set<InvoiceStatus> BILLED_INVOICE_STATUSES =
-      Set.of(InvoiceStatus.SENT, InvoiceStatus.PAID);
+      Set.of(InvoiceStatus.SENT, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.PAID);
 
   private final ProjectRepository projectRepository;
   private final InvoiceRepository invoiceRepository;

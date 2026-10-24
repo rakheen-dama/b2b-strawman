@@ -13,9 +13,10 @@ import java.util.Set;
 import org.springframework.stereotype.Component;
 
 /**
- * Gate 4 — a final bill must have been issued (at least one invoice SENT or PAID on this matter)
- * AND there must be no unbilled billable time AND no approved-unbilled disbursements (Phase 67
- * §67.3.4 gate 4).
+ * Gate 4 — a final bill must have been issued (at least one invoice SENT, PARTIALLY_PAID or PAID on
+ * this matter) AND there must be no unbilled billable time AND no approved-unbilled disbursements
+ * (Phase 67 §67.3.4 gate 4; PARTIALLY_PAID added in Phase 88 622D, ADR-347 — a part-paid fee note
+ * was issued).
  *
  * <p>This is the most composite gate — it spans invoices + time entries + disbursements. The
  * message interpolates both the unbilled hours and the unbilled disbursement count so the user can
@@ -29,7 +30,7 @@ public class FinalBillIssuedGate implements ClosureGate {
   private static final double EPSILON = 1e-9;
 
   private static final Set<InvoiceStatus> FINAL_BILL_STATUSES =
-      Set.of(InvoiceStatus.SENT, InvoiceStatus.PAID);
+      Set.of(InvoiceStatus.SENT, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.PAID);
 
   private final InvoiceRepository invoiceRepository;
   private final TimeEntryRepository timeEntryRepository;

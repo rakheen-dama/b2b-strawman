@@ -69,6 +69,13 @@ class CollectionsReadApiTest {
    */
   private static final String RP_ORG_ID = "org_collections_read_realpath";
 
+  /**
+   * 622D: dedicated tenant for the balance case — only {@link
+   * #partiallyPaidFeeNoteCountsAtItsBalance_paidExcluded} writes here, so its tenant-wide summary
+   * totals are exact (count-bleed rule).
+   */
+  private static final String BAL_ORG_ID = "org_collections_read_balance";
+
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Autowired private MockMvc mockMvc;
@@ -95,6 +102,9 @@ class CollectionsReadApiTest {
   private UUID rpOwnerId;
   private UUID rpClientId;
   private UUID rpMatterId;
+
+  private UUID balClientId;
+  private UUID balMatterId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -201,6 +211,33 @@ class CollectionsReadApiTest {
               customerProjectRepository.save(
                   new CustomerProject(rpClientId, rpMatterId, rpOwnerId));
             });
+
+    provisioningService.provisionTenant(BAL_ORG_ID, "Collections Balance Org", null, "ZA");
+    UUID balOwnerId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, BAL_ORG_ID, "user_bal_owner", "bal_owner@test.com", "Bal Owner", "owner"));
+    String balSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(BAL_ORG_ID).orElseThrow().getSchemaName();
+    ScopedValue.where(RequestScopes.TENANT_ID, balSchema)
+        .where(RequestScopes.ORG_ID, BAL_ORG_ID)
+        .where(RequestScopes.MEMBER_ID, balOwnerId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              balClientId =
+                  customerRepository
+                      .save(
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
+                              "Balance Client", "balance@test.com", balOwnerId))
+                      .getId();
+              balMatterId =
+                  projectRepository
+                      .save(new Project("Balance Matter", "622D balance", balOwnerId))
+                      .getId();
+              customerProjectRepository.save(
+                  new CustomerProject(balClientId, balMatterId, balOwnerId));
+            });
   }
 
   private void runInTenant(Runnable body) {
@@ -264,18 +301,28 @@ class CollectionsReadApiTest {
 
   /** POST /api/invoices (→ InvoiceCreationService.createDraft) + one manual line on the matter. */
   private String rpCreateDraftWithLine(LocalDate dueDate) throws Exception {
+    return createDraftWithLine(RP_ORG_ID, "user_rp_owner", rpClientId, rpMatterId, dueDate);
+  }
+
+  private JsonNode rpPost(String path) throws Exception {
+    return postAs(RP_ORG_ID, "user_rp_owner", path, null);
+  }
+
+  private String createDraftWithLine(
+      String orgId, String subject, UUID clientId, UUID matterId, LocalDate dueDate)
+      throws Exception {
     String body =
         dueDate == null
-            ? "{\"clientId\": \"%s\", \"currency\": \"ZAR\"}".formatted(rpClientId)
+            ? "{\"clientId\": \"%s\", \"currency\": \"ZAR\"}".formatted(clientId)
             : "{\"clientId\": \"%s\", \"currency\": \"ZAR\", \"dueDate\": \"%s\"}"
-                .formatted(rpClientId, dueDate);
+                .formatted(clientId, dueDate);
     String id =
         objectMapper
             .readTree(
                 mockMvc
                     .perform(
                         post("/api/invoices")
-                            .with(TestJwtFactory.ownerJwt(RP_ORG_ID, "user_rp_owner"))
+                            .with(TestJwtFactory.ownerJwt(orgId, subject))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body))
                     .andExpect(status().isCreated())
@@ -287,22 +334,38 @@ class CollectionsReadApiTest {
     mockMvc
         .perform(
             post("/api/invoices/" + id + "/lines")
-                .with(TestJwtFactory.ownerJwt(RP_ORG_ID, "user_rp_owner"))
+                .with(TestJwtFactory.ownerJwt(orgId, subject))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"matterId": "%s", "description": "Consultation", "quantity": 1.0000,
                      "unitPrice": 5000.00, "sortOrder": 0}
                     """
-                        .formatted(rpMatterId)))
+                        .formatted(matterId)))
         .andExpect(status().isCreated());
     return id;
   }
 
-  private JsonNode rpPost(String path) throws Exception {
+  /** POST as the given owner (optional JSON body), expecting 200; returns the response body. */
+  private JsonNode postAs(String orgId, String subject, String path, String jsonBody)
+      throws Exception {
+    var request = post(path).with(TestJwtFactory.ownerJwt(orgId, subject));
+    if (jsonBody != null) {
+      request = request.contentType(MediaType.APPLICATION_JSON).content(jsonBody);
+    }
     return objectMapper.readTree(
         mockMvc
-            .perform(post(path).with(TestJwtFactory.ownerJwt(RP_ORG_ID, "user_rp_owner")))
+            .perform(request)
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString());
+  }
+
+  private JsonNode getAs(String orgId, String subject, String path) throws Exception {
+    return objectMapper.readTree(
+        mockMvc
+            .perform(get(path).with(TestJwtFactory.ownerJwt(orgId, subject)))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -600,6 +663,90 @@ class CollectionsReadApiTest {
               assertThat(s.get("approvedUnsentTotal").decimalValue())
                   .isEqualByComparingTo(approvedTotal);
             });
+  }
+
+  // 622D (ADR-347 A3): a PARTIALLY_PAID fee note stays in the debtor book at its balance due
+  // (total − amount_paid); a fully PAID one leaves it. Real write path: create → approve → send →
+  // POST /payment, in a dedicated tenant so the tenant-wide summary totals are exact.
+  @Test
+  void partiallyPaidFeeNoteCountsAtItsBalance_paidExcluded() throws Exception {
+    String sent = balCreateDraftWithLine();
+    balPost("/api/invoices/" + sent + "/approve", null);
+    BigDecimal sentTotal =
+        balPost("/api/invoices/" + sent + "/send", null).get("total").decimalValue();
+
+    String part = balCreateDraftWithLine();
+    balPost("/api/invoices/" + part + "/approve", null);
+    BigDecimal partTotal =
+        balPost("/api/invoices/" + part + "/send", null).get("total").decimalValue();
+    JsonNode partPaid =
+        balPost(
+            "/api/invoices/" + part + "/payment",
+            "{\"amount\": 1000.00, \"paymentMethod\": \"EFT\", \"paymentReference\": \"EFT-622D\"}");
+    assertThat(partPaid.get("status").asText()).isEqualTo("PARTIALLY_PAID");
+    BigDecimal partBalance = partTotal.subtract(new BigDecimal("1000.00"));
+    assertThat(partPaid.get("balanceDue").decimalValue()).isEqualByComparingTo(partBalance);
+
+    String paid = balCreateDraftWithLine();
+    balPost("/api/invoices/" + paid + "/approve", null);
+    BigDecimal paidTotal =
+        balPost("/api/invoices/" + paid + "/send", null).get("total").decimalValue();
+    JsonNode settled =
+        balPost(
+            "/api/invoices/" + paid + "/payment",
+            "{\"amount\": %s, \"paymentMethod\": \"EFT\"}".formatted(paidTotal.toPlainString()));
+    assertThat(settled.get("status").asText()).isEqualTo("PAID");
+
+    // Debtor book: one row — SENT at its total + PARTIALLY_PAID at its balance; PAID excluded.
+    JsonNode debtors = getAs(BAL_ORG_ID, "user_bal_owner", "/api/collections/debtors");
+    JsonNode row = null;
+    for (JsonNode r : debtors.get("content")) {
+      if (balClientId.toString().equals(r.get("clientId").asText())) {
+        row = r;
+      }
+    }
+    assertThat(row).as("balance client in the debtor book").isNotNull();
+    assertThat(debtors.get("page").get("totalElements").asInt()).isEqualTo(1);
+    assertThat(row.get("invoiceCount").asInt()).isEqualTo(2);
+    BigDecimal owed = sentTotal.add(partBalance);
+    assertThat(row.get("outstandingTotal").decimalValue()).isEqualByComparingTo(owed);
+    assertThat(row.get("buckets").get("current").decimalValue()).isEqualByComparingTo(owed);
+
+    // Drill-in: each outstanding fee note carries its gross total AND its balance due.
+    JsonNode detail =
+        getAs(BAL_ORG_ID, "user_bal_owner", "/api/collections/debtors/" + balClientId);
+    JsonNode invoices = detail.get("outstandingInvoices");
+    assertThat(invoices).hasSize(2);
+    JsonNode partRow = null;
+    JsonNode sentRow = null;
+    for (JsonNode inv : invoices) {
+      if (part.equals(inv.get("invoiceId").asText())) {
+        partRow = inv;
+      } else if (sent.equals(inv.get("invoiceId").asText())) {
+        sentRow = inv;
+      }
+    }
+    assertThat(partRow).as("part-paid fee note in the drill-in").isNotNull();
+    assertThat(sentRow).as("sent fee note in the drill-in").isNotNull();
+    assertThat(partRow.get("total").decimalValue()).isEqualByComparingTo(partTotal);
+    assertThat(partRow.get("balanceDue").decimalValue()).isEqualByComparingTo(partBalance);
+    assertThat(sentRow.get("total").decimalValue()).isEqualByComparingTo(sentTotal);
+    assertThat(sentRow.get("balanceDue").decimalValue()).isEqualByComparingTo(sentTotal);
+
+    // Outstanding summary: the same definition (approve stamps due = issue + 30 → none overdue).
+    JsonNode summary = getAs(BAL_ORG_ID, "user_bal_owner", "/api/invoices/outstanding-summary");
+    assertThat(summary.get("outstandingCount").asInt()).isEqualTo(2);
+    assertThat(summary.get("outstandingTotal").decimalValue()).isEqualByComparingTo(owed);
+    assertThat(summary.get("overdueCount").asInt()).isZero();
+    assertThat(summary.get("approvedUnsentCount").asInt()).isZero();
+  }
+
+  private String balCreateDraftWithLine() throws Exception {
+    return createDraftWithLine(BAL_ORG_ID, "user_bal_owner", balClientId, balMatterId, null);
+  }
+
+  private JsonNode balPost(String path, String jsonBody) throws Exception {
+    return postAs(BAL_ORG_ID, "user_bal_owner", path, jsonBody);
   }
 
   @Test

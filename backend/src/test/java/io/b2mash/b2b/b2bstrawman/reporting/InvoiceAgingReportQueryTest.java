@@ -309,6 +309,48 @@ class InvoiceAgingReportQueryTest {
         });
   }
 
+  // 622D (ADR-347 A3): a PARTIALLY_PAID fee note ages at its balance due (total − amount_paid).
+  // Seeded inside a rolled-back transaction so the shared book's tenant-wide pins stay exact.
+  @Test
+  void partiallyPaidInvoiceAgesAtItsBalance() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var gamma =
+                          customerRepository.saveAndFlush(
+                              TestCustomerFactory.createActiveCustomer(
+                                  "Gamma Ltd", "gamma@test.com", memberId));
+                      var invoice =
+                          createSentInvoice(
+                              gamma.getId(),
+                              "Gamma Ltd",
+                              "INV-PP1",
+                              LocalDate.of(2025, 1, 15),
+                              LocalDate.of(2025, 2, 14), // 15 days overdue at AS_OF_DATE → 1_30
+                              new BigDecimal("2500.00"));
+                      invoice.applyPayment(new BigDecimal("1000.00"), "PART-1");
+                      invoiceRepository.saveAndFlush(invoice);
+
+                      var params = agingParams(AS_OF_DATE);
+                      params.put("customerId", gamma.getId().toString());
+                      var result = invoiceAgingReportQuery.executeAll(params);
+
+                      assertThat(result.rows()).hasSize(1);
+                      var row = result.rows().getFirst();
+                      assertThat(row.get("status")).isEqualTo("PARTIALLY_PAID");
+                      assertThat(compareBd(row.get("amount"), "1500.00")).isTrue();
+                      assertThat(row.get("ageBucket")).isEqualTo("1_30");
+                      assertThat(compareBd(result.summary().get("totalAmount"), "1500.00"))
+                          .isTrue();
+                      tx.setRollbackOnly(); // keep the shared book's exact pins intact
+                    }));
+  }
+
   // --- Helpers ---
 
   private Map<String, Object> agingParams(LocalDate asOfDate) {

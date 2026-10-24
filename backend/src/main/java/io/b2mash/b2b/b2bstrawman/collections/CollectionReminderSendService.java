@@ -127,7 +127,10 @@ public class CollectionReminderSendService {
         emailContextBuilder.buildBaseContext(invoice.getCustomerName(), null);
     context.put("customerName", invoice.getCustomerName());
     context.put("invoiceNumber", invoice.getInvoiceNumber());
-    context.put("amount", invoice.getTotal() != null ? invoice.getTotal().toPlainString() : null);
+    // Phase 88 622D (ADR-347): "Amount Due" is the balance due — a part-paid fee note is chased for
+    // what remains, not its original total.
+    context.put(
+        "amount", invoice.getTotal() != null ? invoice.getBalanceDue().toPlainString() : null);
     context.put("currency", invoice.getCurrency());
     context.put("dueDate", invoice.getDueDate() != null ? invoice.getDueDate().toString() : null);
     context.put(

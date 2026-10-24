@@ -57,6 +57,23 @@ class FinalBillIssuedGateTest {
     assertThat(result.code()).isEqualTo("FINAL_BILL_ISSUED");
   }
 
+  // 622D (ADR-347): a part-paid fee note WAS issued — it satisfies the final-bill condition.
+  @Test
+  void passesWhenFinalBillPartiallyPaidAndNoUnbilledItems() {
+    when(sentInvoice.getStatus()).thenReturn(InvoiceStatus.PARTIALLY_PAID);
+    when(invoiceRepository.findByProjectId(PROJECT_ID)).thenReturn(List.of(sentInvoice));
+    when(unbilledZero.getTotalHours()).thenReturn(0.0);
+    when(timeEntryRepository.countUnbilledByProjectId(PROJECT_ID)).thenReturn(unbilledZero);
+    when(disbursementRepository.countByProjectIdAndApprovalStatusAndBillingStatus(
+            PROJECT_ID, "APPROVED", "UNBILLED"))
+        .thenReturn(0L);
+
+    var result = gate.evaluate(project);
+
+    assertThat(result.passed()).isTrue();
+    assertThat(result.message()).isEqualTo("Final bill issued with no unbilled items.");
+  }
+
   @Test
   void failsWhenNoFinalBillWithUnbilledItems() {
     when(draftInvoice.getStatus()).thenReturn(InvoiceStatus.DRAFT);

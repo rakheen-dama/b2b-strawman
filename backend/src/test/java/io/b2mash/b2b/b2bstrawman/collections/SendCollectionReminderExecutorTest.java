@@ -241,6 +241,32 @@ class SendCollectionReminderExecutorTest {
         });
   }
 
+  // 622D (ADR-347): the frame-owned "Amount Due" on a PARTIALLY_PAID fee note is its balance due
+  // (1500.00 − 400.00 = 1100.00), not its original total.
+  @Test
+  void approve_onPartiallyPaidFeeNote_emailShowsBalanceDueNotTotal() throws Exception {
+    UUID invoiceId =
+        seedSentInvoice(
+            tenantSchema, ORG_ID, memberId, "Part Paid Co", "partpaid@test.com", "INV-PP-0001");
+    runInTenant(
+        () -> {
+          var invoice = invoiceRepository.findById(invoiceId).orElseThrow();
+          invoice.applyPayment(new BigDecimal("400.00"), "PART-1");
+          invoiceRepository.save(invoice);
+        });
+    var activity = scanAndGetProposedActivity(invoiceId);
+
+    runInTenant(() -> gateService.approve(activity.getGateId(), memberId, "approved for send"));
+
+    assertThat(greenMail.waitForIncomingEmail(5_000L, 1)).isTrue();
+    MimeMessage[] received = greenMail.getReceivedMessages();
+    assertThat(received).hasSize(1);
+    String body = extractBody(received[0]);
+    assertThat(body).contains("INV-PP-0001");
+    assertThat(body).contains("1100.00");
+    assertThat(body).doesNotContain("1500.00");
+  }
+
   @Test
   void providerFailure_marksSendFailed_thenNextScanReproposesFreshDraft() {
     UUID invoiceId =

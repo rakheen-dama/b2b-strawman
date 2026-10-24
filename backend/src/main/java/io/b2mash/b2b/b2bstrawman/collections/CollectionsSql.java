@@ -24,25 +24,29 @@ import java.util.Set;
  * rather than comparing against {@code InvoiceStatus.SENT} inline, so the SQL and Java views of the
  * book cannot drift.
  *
- * <p>Current semantics (620B): SENT with a due date, amount = total. Epic 622D flips all three
- * constants once ({@code status IN ('SENT','PARTIALLY_PAID')}, {@code (i.total - i.amount_paid)},
- * {@code Set.of(SENT, PARTIALLY_PAID)}).
+ * <p>Semantics (Phase 88 622D, ADR-347 A3): a fee note is in the debtor book while it is SENT or
+ * PARTIALLY_PAID and carries a due date, and it contributes its balance due {@code total -
+ * amount_paid} ({@code amount_paid} is the persisted running sum, CHECK-bounded to {@code [0,
+ * total]} by V4 §3). 620B introduced the constants with the SENT/total definition; 622D flipped all
+ * three together.
  */
 public final class CollectionsSql {
 
-  /** A fee note in the debtor book: sent and carrying a due date (alias {@code i}). */
-  public static final String OUTSTANDING_PREDICATE = "i.status = 'SENT' AND i.due_date IS NOT NULL";
+  /** A fee note in the debtor book: sent or part-paid, carrying a due date (alias {@code i}). */
+  public static final String OUTSTANDING_PREDICATE =
+      "i.status IN ('SENT','PARTIALLY_PAID') AND i.due_date IS NOT NULL";
 
-  /** The amount a debtor-book fee note contributes (alias {@code i}). */
-  public static final String OUTSTANDING_AMOUNT = "i.total";
+  /** The amount a debtor-book fee note contributes — its balance due (alias {@code i}). */
+  public static final String OUTSTANDING_AMOUNT = "(i.total - i.amount_paid)";
 
   /**
    * The Java companion of {@link #OUTSTANDING_PREDICATE}: the invoice statuses that put a fee note
    * in the debtor book. It MUST list exactly the statuses quoted in {@code OUTSTANDING_PREDICATE}
-   * ({@code CollectionsSqlSourceScanTest} pins the two together) — Epic 622D flips both in the same
-   * commit. Status only: callers apply their own due-date conditions.
+   * ({@code CollectionsSqlSourceScanTest} pins the two together). Status only: callers apply their
+   * own due-date conditions.
    */
-  public static final Set<InvoiceStatus> OUTSTANDING_STATUSES = Set.of(InvoiceStatus.SENT);
+  public static final Set<InvoiceStatus> OUTSTANDING_STATUSES =
+      Set.of(InvoiceStatus.SENT, InvoiceStatus.PARTIALLY_PAID);
 
   private CollectionsSql() {}
 }

@@ -93,7 +93,7 @@ public class InformationRequestEmailEventListener {
                 items.size(),
                 request.getId(),
                 rawToken,
-                contact.getOrgId() != null ? contact.getOrgId() : event.orgId());
+                contact.getOrgId());
           } catch (Exception e) {
             log.error("Failed to send request-sent email for request={}", event.requestId(), e);
           }
@@ -128,7 +128,8 @@ public class InformationRequestEmailEventListener {
                 contact.getDisplayName(),
                 item.getName(),
                 request.getRequestNumber(),
-                request.getId());
+                request.getId(),
+                contact.getOrgId());
           } catch (Exception e) {
             log.error("Failed to send item-accepted email for item={}", event.itemId(), e);
           }
@@ -164,7 +165,8 @@ public class InformationRequestEmailEventListener {
                 item.getName(),
                 request.getRequestNumber(),
                 event.rejectionReason(),
-                request.getId());
+                request.getId(),
+                contact.getOrgId());
           } catch (Exception e) {
             log.error("Failed to send item-rejected email for item={}", event.itemId(), e);
           }
@@ -194,7 +196,8 @@ public class InformationRequestEmailEventListener {
                 contact.getDisplayName(),
                 request.getRequestNumber(),
                 items.size(),
-                request.getId());
+                request.getId(),
+                contact.getOrgId());
           } catch (Exception e) {
             log.error(
                 "Failed to send request-completed email for request={}", event.requestId(), e);

@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,8 +68,6 @@ public class AcceptanceService {
   private final OrganizationRepository organizationRepository;
   private final PortalReadModelRepository portalReadModelRepository;
   private final TransactionTemplate transactionTemplate;
-
-  private final String portalBaseUrl;
   private final SecureRandom secureRandom;
 
   public AcceptanceService(
@@ -89,8 +86,7 @@ public class AcceptanceService {
       TenantDiscoveryHelper tenantDiscoveryHelper,
       OrganizationRepository organizationRepository,
       PortalReadModelRepository portalReadModelRepository,
-      TransactionTemplate transactionTemplate,
-      @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl) {
+      TransactionTemplate transactionTemplate) {
     this.acceptanceRequestRepository = acceptanceRequestRepository;
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.portalContactRepository = portalContactRepository;
@@ -107,7 +103,6 @@ public class AcceptanceService {
     this.organizationRepository = organizationRepository;
     this.portalReadModelRepository = portalReadModelRepository;
     this.transactionTemplate = transactionTemplate;
-    this.portalBaseUrl = portalBaseUrl;
     this.secureRandom = new SecureRandom();
   }
 
@@ -225,7 +220,7 @@ public class AcceptanceService {
             .build());
 
     // 9. Send email
-    notificationService.sendAcceptanceEmail(request, contact, doc, TEMPLATE_REQUEST, portalBaseUrl);
+    notificationService.sendAcceptanceEmail(request, contact, doc, TEMPLATE_REQUEST);
 
     // 10-11. Transition to SENT and save
     request.markSent();
@@ -547,8 +542,7 @@ public class AcceptanceService {
     PortalContact contact =
         portalContactRepository.findById(request.getPortalContactId()).orElse(null);
     if (doc != null && contact != null) {
-      notificationService.sendAcceptanceEmail(
-          request, contact, doc, TEMPLATE_REMINDER, portalBaseUrl);
+      notificationService.sendAcceptanceEmail(request, contact, doc, TEMPLATE_REMINDER);
     } else {
       log.warn(
           "Skipping reminder email for request={}: doc={}, contact={} (null indicates data integrity issue)",

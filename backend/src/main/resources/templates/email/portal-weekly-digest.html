@@ -69,7 +69,7 @@
   <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 24px 0;">
     <tr>
       <td align="center" style="border-radius: 6px;" th:style="'border-radius: 6px; background-color: ' + (${brandColor != null ? brandColor : '#2563EB'}) + ';'">
-        <a th:href="${portalHomeUrl != null ? portalHomeUrl : portalBaseUrl}" style="display: inline-block; padding: 12px 24px; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px;" th:style="'display: inline-block; padding: 12px 24px; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px; background-color: ' + (${brandColor != null ? brandColor : '#2563EB'}) + ';'">
+        <a th:href="${portalHomeUrl}" style="display: inline-block; padding: 12px 24px; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px;" th:style="'display: inline-block; padding: 12px 24px; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px; background-color: ' + (${brandColor != null ? brandColor : '#2563EB'}) + ';'">
           Open portal &rarr;
         </a>
       </td>
@@ -83,7 +83,7 @@
 
   <!-- Preferences / unsubscribe link (Epic 498C, ADR-258) -->
   <p style="margin: 16px 0 0 0; font-size: 12px; color: #6b7280; text-align: center;">
-    <a th:href="${portalBaseUrl} + '/settings/notifications?unsubscribe=1'" style="color: #6b7280; text-decoration: underline;">
+    <a th:href="${portalUnsubscribeUrl}" style="color: #6b7280; text-decoration: underline;">
       Unsubscribe from weekly digests
     </a>
   </p>

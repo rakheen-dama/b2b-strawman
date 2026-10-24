@@ -9,12 +9,12 @@ import io.b2mash.b2b.b2bstrawman.integration.email.EmailRateLimiter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailTemplateRenderer;
+import io.b2mash.b2b.b2bstrawman.portal.PortalLinkBuilder;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,7 +28,7 @@ public class InformationRequestEmailService {
   private final EmailContextBuilder emailContextBuilder;
   private final EmailDeliveryLogService deliveryLogService;
   private final EmailRateLimiter emailRateLimiter;
-  private final String portalBaseUrl;
+  private final PortalLinkBuilder portalLinkBuilder;
 
   public InformationRequestEmailService(
       IntegrationRegistry integrationRegistry,
@@ -36,13 +36,13 @@ public class InformationRequestEmailService {
       EmailContextBuilder emailContextBuilder,
       EmailDeliveryLogService deliveryLogService,
       EmailRateLimiter emailRateLimiter,
-      @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl) {
+      PortalLinkBuilder portalLinkBuilder) {
     this.integrationRegistry = integrationRegistry;
     this.emailTemplateRenderer = emailTemplateRenderer;
     this.emailContextBuilder = emailContextBuilder;
     this.deliveryLogService = deliveryLogService;
     this.emailRateLimiter = emailRateLimiter;
-    this.portalBaseUrl = portalBaseUrl;
+    this.portalLinkBuilder = portalLinkBuilder;
   }
 
   public void sendRequestSentEmail(
@@ -58,13 +58,12 @@ public class InformationRequestEmailService {
     context.put("requestNumber", requestNumber);
     context.put("itemCount", String.valueOf(itemCount));
 
-    String portalUrl;
-    if (rawToken != null && orgId != null) {
-      portalUrl = portalBaseUrl + "/auth/exchange?token=" + rawToken + "&orgId=" + orgId;
-    } else {
-      // Fallback — still point at the portal, not the firm. Portal will require interactive login.
-      portalUrl = portalBaseUrl + "/requests";
-    }
+    // Fallback when the token mint failed — still a branded portal deep link (Phase 88 U11); the
+    // portal will require interactive login. The builder rejects a null orgId (§13.6.6).
+    String portalUrl =
+        rawToken != null
+            ? portalLinkBuilder.exchange(orgId, rawToken)
+            : portalLinkBuilder.authenticated(orgId, "/requests");
     context.put("portalUrl", portalUrl);
     String orgName = (String) context.get("orgName");
     context.put("subject", "Information request %s from %s".formatted(requestNumber, orgName));
@@ -76,12 +75,13 @@ public class InformationRequestEmailService {
       String contactName,
       String itemName,
       String requestNumber,
-      UUID requestId) {
+      UUID requestId,
+      String orgId) {
     var context = emailContextBuilder.buildBaseContext(contactName, null);
     context.put("contactName", contactName);
     context.put("itemName", itemName);
     context.put("requestNumber", requestNumber);
-    context.put("portalUrl", portalBaseUrl + "/requests/" + requestId);
+    context.put("portalUrl", portalLinkBuilder.authenticated(orgId, "/requests/" + requestId));
     String orgName = (String) context.get("orgName");
     context.put("subject", "Item accepted — %s (%s)".formatted(itemName, orgName));
     sendEmail("request-item-accepted", recipientEmail, context, requestId);
@@ -93,13 +93,14 @@ public class InformationRequestEmailService {
       String itemName,
       String requestNumber,
       String rejectionReason,
-      UUID requestId) {
+      UUID requestId,
+      String orgId) {
     var context = emailContextBuilder.buildBaseContext(contactName, null);
     context.put("contactName", contactName);
     context.put("itemName", itemName);
     context.put("requestNumber", requestNumber);
     context.put("rejectionReason", rejectionReason);
-    context.put("portalUrl", portalBaseUrl + "/requests/" + requestId);
+    context.put("portalUrl", portalLinkBuilder.authenticated(orgId, "/requests/" + requestId));
     String orgName = (String) context.get("orgName");
     context.put("subject", "Item requires re-submission — %s (%s)".formatted(itemName, orgName));
     sendEmail("request-item-rejected", recipientEmail, context, requestId);
@@ -110,7 +111,8 @@ public class InformationRequestEmailService {
       String contactName,
       String requestNumber,
       List<RequestItem> pendingItems,
-      UUID requestId) {
+      UUID requestId,
+      String orgId) {
     var context = emailContextBuilder.buildBaseContext(contactName, null);
     context.put("contactName", contactName);
     context.put("requestNumber", requestNumber);
@@ -120,7 +122,7 @@ public class InformationRequestEmailService {
         pendingItems.stream()
             .map(item -> Map.of("name", item.getName(), "status", item.getStatus().name()))
             .toList());
-    context.put("portalUrl", portalBaseUrl + "/requests/" + requestId);
+    context.put("portalUrl", portalLinkBuilder.authenticated(orgId, "/requests/" + requestId));
     String orgName = (String) context.get("orgName");
     context.put(
         "subject",
@@ -134,12 +136,13 @@ public class InformationRequestEmailService {
       String contactName,
       String requestNumber,
       int totalItems,
-      UUID requestId) {
+      UUID requestId,
+      String orgId) {
     var context = emailContextBuilder.buildBaseContext(contactName, null);
     context.put("contactName", contactName);
     context.put("requestNumber", requestNumber);
     context.put("totalItems", String.valueOf(totalItems));
-    context.put("portalUrl", portalBaseUrl + "/requests/" + requestId);
+    context.put("portalUrl", portalLinkBuilder.authenticated(orgId, "/requests/" + requestId));
     String orgName = (String) context.get("orgName");
     context.put("subject", "Request %s completed (%s)".formatted(requestNumber, orgName));
     sendEmail("request-completed", recipientEmail, context, requestId);

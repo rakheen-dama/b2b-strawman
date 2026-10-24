@@ -16,12 +16,12 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailTemplateRenderer;
+import io.b2mash.b2b.b2bstrawman.portal.PortalLinkBuilder;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -62,7 +62,7 @@ public class CollectionReminderSendService {
   private final CollectionActivityRepository activityRepository;
   private final InvoiceRepository invoiceRepository;
   private final AuditService auditService;
-  private final String portalBaseUrl;
+  private final PortalLinkBuilder portalLinkBuilder;
 
   public CollectionReminderSendService(
       IntegrationRegistry integrationRegistry,
@@ -73,7 +73,7 @@ public class CollectionReminderSendService {
       CollectionActivityRepository activityRepository,
       InvoiceRepository invoiceRepository,
       AuditService auditService,
-      @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl) {
+      PortalLinkBuilder portalLinkBuilder) {
     this.integrationRegistry = integrationRegistry;
     this.emailTemplateRenderer = emailTemplateRenderer;
     this.emailContextBuilder = emailContextBuilder;
@@ -82,7 +82,7 @@ public class CollectionReminderSendService {
     this.activityRepository = activityRepository;
     this.invoiceRepository = invoiceRepository;
     this.auditService = auditService;
-    this.portalBaseUrl = portalBaseUrl;
+    this.portalLinkBuilder = portalLinkBuilder;
   }
 
   public void sendReminder(GateAction.SendCollectionReminderAction action) {
@@ -144,8 +144,12 @@ public class CollectionReminderSendService {
     context.put("subject", action.subject());
     context.put("reminderBodyHtml", ReminderHtmlSanitizer.sanitize(action.bodyHtml()));
     // GAP-L-64 — always populate portalUrl so the CTA renders with a working href even when no
-    // PSP is configured (paymentUrl null keeps the Pay Now block hidden).
-    context.put("portalUrl", portalBaseUrl + "/invoices/" + invoice.getId());
+    // PSP is configured (paymentUrl null keeps the Pay Now block hidden). Phase 88 U11: the link
+    // carries orgId so a fresh browser lands on the branded portal (§13.6.6).
+    context.put(
+        "portalUrl",
+        portalLinkBuilder.authenticated(
+            RequestScopes.requireOrgId(), "/invoices/" + invoice.getId()));
     context.put("paymentUrl", invoice.getPaymentUrl());
 
     // 3. Render template

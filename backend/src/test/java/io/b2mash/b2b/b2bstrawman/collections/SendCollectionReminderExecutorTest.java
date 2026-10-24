@@ -205,7 +205,9 @@ class SendCollectionReminderExecutorTest {
     assertThat(body).contains(STUB_BODY_PHRASE);
     assertThat(body).contains("INV-STUB-0001");
     // No PSP configured → paymentUrl null → Pay Now hidden; portalUrl fallback CTA renders.
-    assertThat(body).contains("/invoices/" + invoiceId);
+    // Phase 88 U11 (§13.6.6): the fee-note CTA is an authenticated portal link → carries orgId.
+    assertThat(body)
+        .contains("href=\"http://localhost:3002/invoices/" + invoiceId + "?orgId=" + ORG_ID + "\"");
 
     runInTenant(
         () -> {

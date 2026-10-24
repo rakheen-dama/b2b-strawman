@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -78,7 +77,7 @@ public class PortalDocumentNotificationHandler {
   private final PortalEmailService portalEmailService;
   private final EmailContextBuilder emailContextBuilder;
   private final TransactionTemplate transactionTemplate;
-  private final String portalBaseUrl;
+  private final PortalLinkBuilder portalLinkBuilder;
   private final Cache<String, Boolean> dedupCache;
 
   public PortalDocumentNotificationHandler(
@@ -90,7 +89,7 @@ public class PortalDocumentNotificationHandler {
       PortalEmailService portalEmailService,
       EmailContextBuilder emailContextBuilder,
       TransactionTemplate transactionTemplate,
-      @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl) {
+      PortalLinkBuilder portalLinkBuilder) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.projectRepository = projectRepository;
     this.generatedDocumentRepository = generatedDocumentRepository;
@@ -99,7 +98,7 @@ public class PortalDocumentNotificationHandler {
     this.portalEmailService = portalEmailService;
     this.emailContextBuilder = emailContextBuilder;
     this.transactionTemplate = transactionTemplate;
-    this.portalBaseUrl = portalBaseUrl;
+    this.portalLinkBuilder = portalLinkBuilder;
     this.dedupCache =
         Caffeine.newBuilder().expireAfterWrite(DEDUP_WINDOW).maximumSize(DEDUP_MAX_SIZE).build();
   }
@@ -296,8 +295,10 @@ public class PortalDocumentNotificationHandler {
     context.put("contactName", ctx.contact().getDisplayName());
     context.put("documentTitle", resolveDocumentTitle(event));
     context.put("matterName", ctx.project() != null ? ctx.project().getName() : null);
-    context.put("portalBaseUrl", portalBaseUrl);
-    context.put("documentUrl", portalBaseUrl + "/projects/" + ctx.project().getId());
+    // ADR-350/351: the portal's matter page (there is no /projects route), carrying orgId.
+    context.put(
+        "documentUrl",
+        portalLinkBuilder.authenticated(event.orgId(), "/matters/" + ctx.project().getId()));
 
     String orgName = String.valueOf(context.getOrDefault("orgName", "Kazi"));
     String headline;

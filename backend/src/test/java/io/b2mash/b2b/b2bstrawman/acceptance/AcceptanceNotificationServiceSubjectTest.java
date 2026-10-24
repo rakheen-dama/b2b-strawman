@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailTemplateRenderer;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
+import io.b2mash.b2b.b2bstrawman.portal.PortalLinkBuilder;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocument;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -64,7 +65,8 @@ class AcceptanceNotificationServiceSubjectTest {
             deliveryLogService,
             emailRateLimiter,
             eventPublisher,
-            auditService);
+            auditService,
+            new PortalLinkBuilder("https://portal.example.com"));
 
     // Base context must carry orgName so the service can render the new subject template.
     Map<String, Object> baseContext = new HashMap<>();
@@ -98,16 +100,16 @@ class AcceptanceNotificationServiceSubjectTest {
     when(request.getId()).thenReturn(UUID.randomUUID());
 
     ScopedValue.where(RequestScopes.TENANT_ID, "tenant_testca1234ab")
-        .run(
-            () ->
-                service.sendAcceptanceEmail(
-                    request, contact, doc, "acceptance-request", "https://portal.example.com"));
+        .run(() -> service.sendAcceptanceEmail(request, contact, doc, "acceptance-request"));
 
     Map<String, Object> renderedCtx = captor.getValue();
     String subject = (String) renderedCtx.get("subject");
     assertThat(subject).contains("Mathebula & Partners");
     assertThat(subject).containsIgnoringCase("engagement letter");
     assertThat(subject).contains("engagement-letter-litigation-dlamini-v-road-accident-fund.pdf");
+    // Phase 88 U11 (§13.6.6): the acceptance link is the public /accept/{token} page — no orgId.
+    assertThat(renderedCtx.get("acceptanceUrl"))
+        .isEqualTo("https://portal.example.com/accept/token-1");
   }
 
   @Test
@@ -120,7 +122,8 @@ class AcceptanceNotificationServiceSubjectTest {
             deliveryLogService,
             emailRateLimiter,
             eventPublisher,
-            auditService);
+            auditService,
+            new PortalLinkBuilder("https://portal.example.com"));
 
     Map<String, Object> baseContext = new HashMap<>();
     baseContext.put("orgName", "Mathebula & Partners");
@@ -152,10 +155,7 @@ class AcceptanceNotificationServiceSubjectTest {
     when(request.getId()).thenReturn(UUID.randomUUID());
 
     ScopedValue.where(RequestScopes.TENANT_ID, "tenant_testca1234ab")
-        .run(
-            () ->
-                service.sendAcceptanceEmail(
-                    request, contact, doc, "acceptance-reminder", "https://portal.example.com"));
+        .run(() -> service.sendAcceptanceEmail(request, contact, doc, "acceptance-reminder"));
 
     Map<String, Object> renderedCtx = captor.getValue();
     String subject = (String) renderedCtx.get("subject");

@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.integration.email.SendResult;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailTemplateRenderer;
+import io.b2mash.b2b.b2bstrawman.portal.PortalLinkBuilder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,7 @@ class InformationRequestEmailServicePortalUrlTest {
 
   private static final String PORTAL_BASE_URL = "https://portal.example.com";
   private static final String TENANT = "tenant_irportal1234";
+  private static final String ORG_ID = "mathebula-partners";
 
   @Mock private IntegrationRegistry integrationRegistry;
   @Mock private EmailTemplateRenderer emailTemplateRenderer;
@@ -66,7 +68,7 @@ class InformationRequestEmailServicePortalUrlTest {
             emailContextBuilder,
             deliveryLogService,
             emailRateLimiter,
-            PORTAL_BASE_URL);
+            new PortalLinkBuilder(PORTAL_BASE_URL));
 
     when(emailContextBuilder.buildBaseContext(anyString(), any()))
         .thenAnswer(
@@ -92,7 +94,7 @@ class InformationRequestEmailServicePortalUrlTest {
         .run(
             () ->
                 service.sendItemAcceptedEmail(
-                    "client@example.com", "Sipho", "ID copy", "REQ-0001", requestId));
+                    "client@example.com", "Sipho", "ID copy", "REQ-0001", requestId, ORG_ID));
 
     assertPortalDeepLink();
   }
@@ -103,7 +105,13 @@ class InformationRequestEmailServicePortalUrlTest {
         .run(
             () ->
                 service.sendItemRejectedEmail(
-                    "client@example.com", "Sipho", "ID copy", "REQ-0001", "Blurry", requestId));
+                    "client@example.com",
+                    "Sipho",
+                    "ID copy",
+                    "REQ-0001",
+                    "Blurry",
+                    requestId,
+                    ORG_ID));
 
     assertPortalDeepLink();
   }
@@ -118,7 +126,7 @@ class InformationRequestEmailServicePortalUrlTest {
         .run(
             () ->
                 service.sendReminderEmail(
-                    "client@example.com", "Sipho", "REQ-0001", List.of(item), requestId));
+                    "client@example.com", "Sipho", "REQ-0001", List.of(item), requestId, ORG_ID));
 
     assertPortalDeepLink();
   }
@@ -129,14 +137,39 @@ class InformationRequestEmailServicePortalUrlTest {
         .run(
             () ->
                 service.sendRequestCompletedEmail(
-                    "client@example.com", "Sipho", "REQ-0001", 3, requestId));
+                    "client@example.com", "Sipho", "REQ-0001", 3, requestId, ORG_ID));
 
     assertPortalDeepLink();
   }
 
-  private void assertPortalDeepLink() {
+  @Test
+  void requestSentEmail_withToken_linksToPortalExchange() {
+    ScopedValue.where(RequestScopes.TENANT_ID, TENANT)
+        .run(
+            () ->
+                service.sendRequestSentEmail(
+                    "client@example.com", "Sipho", "REQ-0001", 2, requestId, "tok_-1", ORG_ID));
+
     assertThat(contextCaptor.getValue().get("portalUrl"))
-        .as("client email 'View Request' link must deep-link into the client portal")
-        .isEqualTo(PORTAL_BASE_URL + "/requests/" + requestId);
+        .isEqualTo(PORTAL_BASE_URL + "/auth/exchange?token=tok_-1&orgId=" + ORG_ID);
+  }
+
+  @Test
+  void requestSentEmail_tokenMintFailed_fallsBackToBrandedRequestsList() {
+    ScopedValue.where(RequestScopes.TENANT_ID, TENANT)
+        .run(
+            () ->
+                service.sendRequestSentEmail(
+                    "client@example.com", "Sipho", "REQ-0001", 2, requestId, null, ORG_ID));
+
+    assertThat(contextCaptor.getValue().get("portalUrl"))
+        .isEqualTo(PORTAL_BASE_URL + "/requests?orgId=" + ORG_ID);
+  }
+
+  private void assertPortalDeepLink() {
+    // Phase 88 U11 (§13.6.6): authenticated portal deep links carry orgId.
+    assertThat(contextCaptor.getValue().get("portalUrl"))
+        .as("client email 'View Request' link must deep-link into the client portal with orgId")
+        .isEqualTo(PORTAL_BASE_URL + "/requests/" + requestId + "?orgId=" + ORG_ID);
   }
 }

@@ -130,7 +130,8 @@ public class RequestReminderScheduler {
       String contactName,
       String requestNumber,
       List<RequestItem> pendingItems,
-      UUID requestId) {}
+      UUID requestId,
+      String orgId) {}
 
   private boolean sendReminder(UUID requestId, int intervalDays) {
     try {
@@ -204,7 +205,8 @@ public class RequestReminderScheduler {
                     contact.getDisplayName(),
                     request.getRequestNumber(),
                     pendingItems,
-                    request.getId());
+                    request.getId(),
+                    contact.getOrgId());
               });
 
       if (reminderData == null) {
@@ -217,7 +219,8 @@ public class RequestReminderScheduler {
           reminderData.contactName(),
           reminderData.requestNumber(),
           reminderData.pendingItems(),
-          reminderData.requestId());
+          reminderData.requestId(),
+          reminderData.orgId());
 
       return true;
     } catch (Exception e) {

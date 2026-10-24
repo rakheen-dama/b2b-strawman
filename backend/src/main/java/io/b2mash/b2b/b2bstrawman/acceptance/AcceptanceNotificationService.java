@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailTemplateRenderer;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
+import io.b2mash.b2b.b2bstrawman.portal.PortalLinkBuilder;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocument;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -45,6 +46,7 @@ class AcceptanceNotificationService {
   private final EmailRateLimiter emailRateLimiter;
   private final ApplicationEventPublisher eventPublisher;
   private final AuditService auditService;
+  private final PortalLinkBuilder portalLinkBuilder;
 
   AcceptanceNotificationService(
       EmailTemplateRenderer emailTemplateRenderer,
@@ -53,7 +55,8 @@ class AcceptanceNotificationService {
       EmailDeliveryLogService deliveryLogService,
       EmailRateLimiter emailRateLimiter,
       ApplicationEventPublisher eventPublisher,
-      AuditService auditService) {
+      AuditService auditService,
+      PortalLinkBuilder portalLinkBuilder) {
     this.emailTemplateRenderer = emailTemplateRenderer;
     this.emailContextBuilder = emailContextBuilder;
     this.integrationRegistry = integrationRegistry;
@@ -61,14 +64,14 @@ class AcceptanceNotificationService {
     this.emailRateLimiter = emailRateLimiter;
     this.eventPublisher = eventPublisher;
     this.auditService = auditService;
+    this.portalLinkBuilder = portalLinkBuilder;
   }
 
   void sendAcceptanceEmail(
       AcceptanceRequest request,
       PortalContact contact,
       GeneratedDocument doc,
-      String templateName,
-      String portalBaseUrl) {
+      String templateName) {
     String recipientEmail = contact.getEmail();
     if (recipientEmail == null || recipientEmail.isBlank()) {
       log.warn("Skipping acceptance email for contact {} -- no email address", contact.getId());
@@ -84,7 +87,8 @@ class AcceptanceNotificationService {
           integrationRegistry.resolve(IntegrationDomain.EMAIL, EmailProvider.class);
 
       // 2. Build context
-      String acceptanceUrl = portalBaseUrl + "/accept/" + request.getRequestToken();
+      // Public token page — the token resolves the firm, so no orgId (§13.6.6).
+      String acceptanceUrl = portalLinkBuilder.acceptance(request.getRequestToken());
       Map<String, Object> context =
           emailContextBuilder.buildBaseContext(contact.getDisplayName(), null);
       context.put("contactName", contact.getDisplayName());

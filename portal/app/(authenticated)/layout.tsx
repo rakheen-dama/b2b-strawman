@@ -3,7 +3,6 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import { getLastOrgId } from "@/lib/auth";
 import { PortalContextProvider } from "@/hooks/use-portal-context";
 import { PortalTopbar } from "@/components/portal-topbar";
 import {
@@ -59,16 +58,24 @@ export default function AuthenticatedLayout({
 
   useEffect(() => {
     if (hasMounted && !isAuthenticated) {
-      // GAP-L-66: preserve the deep-link target + last-known orgId so /login
-      // can render branding and submit a valid magic-link request after
-      // session expiry.
+      // Phase 88 U11 (§13.6.6): every portal email link carries ?orgId=.
+      // Forward it from the INCOMING URL so /login is branded and uses the
+      // request-link fast path even in a fresh browser. The localStorage hint
+      // is deliberately not forwarded: /login reads it for branding only.
+      // The rest of the query (e.g. the digest's ?unsubscribe=1) stays in
+      // redirectTo; orgId travels as its own param. window.location is read
+      // in the effect because useSearchParams in a layout needs a Suspense
+      // boundary.
+      const incoming = new URLSearchParams(window.location.search);
+      const orgId = incoming.get("orgId");
+      incoming.delete("orgId");
       const params = new URLSearchParams();
       if (pathname && pathname !== "/login") {
-        params.set("redirectTo", pathname);
+        const rest = incoming.toString();
+        params.set("redirectTo", rest ? `${pathname}?${rest}` : pathname);
       }
-      const lastOrg = getLastOrgId();
-      if (lastOrg) {
-        params.set("orgId", lastOrg);
+      if (orgId) {
+        params.set("orgId", orgId);
       }
       const qs = params.toString();
       router.replace(qs ? `/login?${qs}` : "/login");

@@ -21,6 +21,11 @@ import { defineConfig, devices } from "@playwright/test";
  *                               Scoped to ./e2e/tests/portal-client-90day.
  *                               Relies on the top-level `workers: 1` so later
  *                               days observe state created by earlier days.
+ *   - `login-bare`            — Phase 88 624D: bare /login → email-only
+ *                               request-link → Mailpit link → /matters.
+ *                               Run WITHOUT PORTAL_CONTACT_EMAIL (one
+ *                               request-link per run; per-email cap is
+ *                               3 / 15 min). See e2e/tests/login-bare.spec.ts.
  *
  * First-run usage (baselines):
  *   pnpm exec playwright test \
@@ -31,7 +36,7 @@ import { defineConfig, devices } from "@playwright/test";
  *     --config=playwright.portal.config.ts \
  *     --project=portal-client-90day --update-snapshots
  *
- * By default both projects run (and `webServer` boots the portal).
+ * By default all projects run (and `webServer` boots the portal).
  * Set SKIP_PORTAL_BASELINES=true to skip (the webServer is also skipped in
  * that case — no point booting a dev server when every test is skipped).
  * See e2e/tests/responsive/portal-pages.spec.ts and
@@ -88,6 +93,16 @@ export default defineConfig({
       },
       // Sequential by virtue of the top-level `workers: 1` — later days
       // depend on state created by earlier days in the lifecycle.
+    },
+    {
+      // Phase 88 624D: the spec sits at the top of ./e2e/tests, outside the
+      // responsive/ and portal-client-90day/ dirs the other projects scope to.
+      name: "login-bare",
+      testDir: "./e2e/tests",
+      testMatch: /login-bare\.spec\.ts$/,
+      use: {
+        ...devices["Desktop Chrome"],
+      },
     },
   ],
 });

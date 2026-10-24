@@ -19,8 +19,10 @@ import type { BrandingInfo } from "@/lib/types";
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  // GAP-L-66: source orgId from query first, then last-known localStorage hint.
-  // null only when neither path resolves (first-ever visit with bare /login).
+  // GAP-L-66 / Phase 88 U11: orgId comes from the query first, then the
+  // last-known localStorage hint. Both are optional hints: the query value is
+  // the request-link fast path, the localStorage hint only brands the page.
+  // Bare /login (neither) signs in by email alone.
   const queryOrgId = searchParams.get("orgId");
   const [orgId, setOrgId] = useState<string | null>(queryOrgId);
   const redirectTo = searchParams.get("redirectTo");
@@ -92,23 +94,16 @@ function LoginForm() {
       setError(null);
       setSubmitting(true);
 
-      // GAP-L-66: short-circuit before posting a guaranteed-400 body. orgId is
-      // null only when both the query param and localStorage hint are missing
-      // (first-ever visit to bare /login). Generic copy avoids tenant-existence
-      // leaks.
-      if (!orgId) {
-        setError(
-          "We couldn't determine which organization to sign you into. " +
-            "Please use the original link from your email.",
-        );
-        setSubmitting(false);
-        return;
-      }
+      // Phase 88 U11 (ADR-351): email alone resolves every firm that knows the
+      // address. ?orgId= from the link is the fast path; the localStorage hint
+      // only brands the page (a shared device's last firm must not narrow the
+      // lookup).
+      const body = queryOrgId ? { email, orgId: queryOrgId } : { email };
 
       try {
         const response = await publicFetch("/portal/auth/request-link", {
           method: "POST",
-          body: JSON.stringify({ email, orgId }),
+          body: JSON.stringify(body),
         });
 
         if (response.status === 429) {
@@ -132,7 +127,7 @@ function LoginForm() {
         setSubmitting(false);
       }
     },
-    [email, orgId],
+    [email, queryOrgId],
   );
 
   const orgName = branding?.orgName ?? BRAND_NAME;
@@ -155,10 +150,12 @@ function LoginForm() {
           <CardContent className="text-center">
             <div className="rounded-lg bg-teal-50 p-4">
               <p className="text-sm font-medium text-teal-800">
-                Check your email for a login link.
+                Check your email.
               </p>
               <p className="mt-1 text-sm text-teal-600">
-                We sent a link to <span className="font-medium">{email}</span>.
+                If <span className="font-medium">{email}</span> is registered
+                for a client portal, we&apos;ve sent a sign-in link. If you work
+                with more than one firm, you&apos;ll get one email from each.
               </p>
             </div>
             {magicLink && (

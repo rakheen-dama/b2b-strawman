@@ -10,9 +10,11 @@ import { decodeJwt } from "jose";
 
 const JWT_KEY = "portal_jwt";
 const CUSTOMER_KEY = "portal_customer";
-// GAP-L-66: routing-hint key that survives clearAuth() so the /login form can
-// recover orgId after JWT expiry / deep-link redirects. orgId is a public slug
-// (used in branding lookups already), not a credential.
+// GAP-L-66: hint key that survives clearAuth() so the /login form can show the
+// last firm's branding after JWT expiry. orgId is a public slug (used in
+// branding lookups already), not a credential. Phase 88 U11 (ADR-351): branding
+// hint only; never required, and never sent as the request-link orgId (a
+// shared device's last firm must not narrow the email lookup).
 const LAST_ORG_KEY = "portal_last_org_id";
 
 export interface CustomerInfo {
@@ -129,8 +131,9 @@ export function isAuthenticated(): boolean {
 
 /**
  * GAP-L-66: Returns the last-known orgId, even after the JWT has been cleared.
- * Used by `/login` and the `(authenticated)` layout so deep-link returns after
- * session expiry can resolve branding and submit a valid magic-link request.
+ * Phase 88 U11: a branding hint for `/login` only. It is never required and
+ * never sent as the request-link orgId; the `(authenticated)` layout forwards
+ * the incoming URL's `?orgId=` instead.
  */
 export function getLastOrgId(): string | null {
   if (typeof window === "undefined") return null;

@@ -1,0 +1,53 @@
+SET
+                      name                       | status |  work_type  | completed_at | closed_at | retention_clock_started_at 
+-------------------------------------------------+--------+-------------+--------------+-----------+----------------------------
+ Sipho Dlamini v. Standard Bank (civil)          | ACTIVE | LITIGATION  |              |           | 2026-10-24 09:13:48.402343
+ Estate Late Peter Moroka                        | ACTIVE | ESTATES     |              |           | 
+ Nomvula Khoza — Debt Recovery (Mokoena Traders) | ACTIVE | COLLECTIONS |              |           | 
+(3 rows)
+
+ closed_at | reason | override_used | left | closure_letter_document_id | reopened_at 
+-----------+--------+---------------+------+----------------------------+-------------
+(0 rows)
+
+ record_type | retention_days |    trigger_event    | action | active |          created_at           
+-------------+----------------+---------------------+--------+--------+-------------------------------
+ CUSTOMER    |           1825 | CUSTOMER_OFFBOARDED | FLAG   | t      | 2026-10-24 07:13:25.737579+00
+ AUDIT_EVENT |           2555 | RECORD_CREATED      | FLAG   | t      | 2026-10-24 07:13:25.753615+00
+(2 rows)
+
+                      name                       | status | count 
+-------------------------------------------------+--------+-------
+ Estate Late Peter Moroka                        | OPEN   |     9
+ Nomvula Khoza — Debt Recovery (Mokoena Traders) | OPEN   |     9
+ Sipho Dlamini v. Standard Bank (civil)          | DONE   |     9
+(3 rows)
+
+          occurred_at          |           event_type            |    entity_type    |                                                                                                 details                                                                                                  
+-------------------------------+---------------------------------+-------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-10-24 08:54:42.058987+00 | customer.created                | customer          | {"name": "Nomvula Khoza", "email": "nomvula.khoza@email.co.za", "actor_name": "Thandi Mathebula"}
+ 2026-10-24 08:54:53.590235+00 | customer.lifecycle.transitioned | customer          | {"notes": "", "newStatus": "ONBOARDING", "oldStatus": "PROSPECT", "actor_name": "Thandi Mathebula", "checklistsInstantiated": 1}
+ 2026-10-24 08:56:27.593517+00 | customer.lifecycle.transitioned | customer          | {"notes": "All onboarding checklists completed", "newStatus": "ACTIVE", "oldStatus": "ONBOARDING", "actor_name": "Thandi Mathebula", "checklistsInstantiated": 0}
+ 2026-10-24 08:56:56.980552+00 | project.created_from_template   | project           | {"actor_name": "Thandi Mathebula", "project_id": "a93e8910-8840-45e5-96bf-1ce5e26561a0", "project_name": "Nomvula Khoza — Debt Recovery (Mokoena Traders)", "customer_name": "Nomvula Khoza", "template_
+ 2026-10-24 09:01:07.346104+00 | invoice.created                 | invoice           | {"currency": "ZAR", "subtotal": "6137.50", "actor_name": "Thandi Mathebula", "line_count": "4", "customer_id": "2e134b9e-94b5-4a8a-a19d-c889690250c1", "customer_name": "Nomvula Khoza"}
+ 2026-10-24 09:01:25.275557+00 | invoice.approved                | invoice           | {"total": "7058.13", "actor_name": "Thandi Mathebula", "issue_date": "2026-10-24", "expense_count": "0", "invoice_number": "INV-0003", "time_entry_count": "4"}
+ 2026-10-24 09:01:33.40312+00  | invoice.sent                    | invoice           | {"actor_name": "Thandi Mathebula", "project_id": "a93e8910-8840-45e5-96bf-1ce5e26561a0", "invoice_number": "INV-0003"}
+ 2026-10-24 09:06:43.954815+00 | trust_payment.recorded          | trust_transaction | {"amount": "12000", "reference": "PAY/2026/001", "actor_name": "Thandi Mathebula", "customer_id": "df7536c3-aa8d-4a49-b094-3db2bbbd2279", "customer_name": "Moroka Family Trust"}
+ 2026-10-24 09:07:36.910941+00 | trust_payment.approved          | trust_transaction | {"amount": "12000.00", "actor_name": "Bob Ndlovu", "approved_by": "04a52be7-6661-4411-9251-dfe75a7a6ad6", "transaction_type": "PAYMENT"}
+ 2026-10-24 09:13:48.404502+00 | project.completed               | project           | {"name": "Sipho Dlamini v. Standard Bank (civil)", "actor_name": "Thandi Mathebula", "project_id": "e794d8d8-974b-4ac2-b073-e7ffc3bc9852", "completed_by": "6b188912-21c9-43fc-bc64-1781ea557a02"}
+ 2026-10-24 09:14:19.345731+00 | project.reopened                | project           | {"name": "Sipho Dlamini v. Standard Bank (civil)", "actor_name": "Thandi Mathebula", "project_id": "e794d8d8-974b-4ac2-b073-e7ffc3bc9852", "reopened_by": "6b188912-21c9-43fc-bc64-1781ea557a02", "previ
+(11 rows)
+
+ invoice_number |     status     |    customer_name    |  total   | amount_paid | balance_due 
+----------------+----------------+---------------------+----------+-------------+-------------
+ INV-0001       | SENT           | Sipho Dlamini       |  4585.00 |        0.00 |     4585.00
+ INV-0002       | PARTIALLY_PAID | Moroka Family Trust | 42814.50 |     5000.00 |    37814.50
+ INV-0003       | SENT           | Nomvula Khoza       |  7058.13 |        0.00 |     7058.13
+(3 rows)
+
+     category      | amount  | approval_status | billing_status | has_reason 
+-------------------+---------+-----------------+----------------+------------
+ SHERIFF_FEES      |  750.00 | APPROVED        | WRITTEN_OFF    | t
+ DEEDS_OFFICE_FEES | 1250.00 | APPROVED        | BILLED         | f
+(2 rows)
+

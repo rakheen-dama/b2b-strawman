@@ -1,0 +1,14 @@
+SET
+                  name                  |                    title                    | status |          updated_at           
+----------------------------------------+---------------------------------------------+--------+-------------------------------
+ Sipho Dlamini v. Standard Bank (civil) | Execution -- warrant / attachment           | DONE   | 2026-10-24 09:09:23.528913+00
+ Sipho Dlamini v. Standard Bank (civil) | Post-judgment -- taxation of costs / appeal | DONE   | 2026-10-24 09:09:30.0983+00
+ Sipho Dlamini v. Standard Bank (civil) | Trial / hearing attendance                  | DONE   | 2026-10-24 09:10:59.862593+00
+ Sipho Dlamini v. Standard Bank (civil) | Pre-trial conference preparation            | DONE   | 2026-10-24 09:11:06.778284+00
+ Sipho Dlamini v. Standard Bank (civil) | Discovery -- request & exchange documents   | DONE   | 2026-10-24 09:11:13.73832+00
+ Sipho Dlamini v. Standard Bank (civil) | File plea / exception / counterclaim        | DONE   | 2026-10-24 09:11:20.656764+00
+ Sipho Dlamini v. Standard Bank (civil) | Issue summons / combined summons            | DONE   | 2026-10-24 09:11:27.597995+00
+ Sipho Dlamini v. Standard Bank (civil) | Letter of demand                            | DONE   | 2026-10-24 09:11:34.528366+00
+ Sipho Dlamini v. Standard Bank (civil) | Initial consultation & case assessment      | DONE   | 2026-10-24 09:11:41.482259+00
+(9 rows)
+

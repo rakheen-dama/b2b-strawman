@@ -1,0 +1,13 @@
+# Mailpit (API, read-only) — messages created during 623B run 2 (2026-10-24T09:20:50Z); total now 14
+CeJo3ft4EfnhuJ4hc5TA2S	2026-10-24T09:07:36.951Z	moroka.trust@email.co.za	Mathebula & Partners: Trust account activity	0
+YRvSgdpYnmvyouhfPjkp9Q	2026-10-24T09:04:42.315Z	sipho.dlamini@email.co.za	Your portal access link from Mathebula & Partners	0
+V3DU5k7H4FtHyDHg3yMznH	2026-10-24T09:01:33.671Z	nomvula.khoza@email.co.za	Fee Note INV-0003 from Mathebula & Partners	1
+
+## V3DU5k7H4FtHyDHg3yMznH
+Subject: Fee Note INV-0003 from Mathebula & Partners
+Attachments: INV-0003.pdf
+## CeJo3ft4EfnhuJ4hc5TA2S
+Subject: Mathebula & Partners: Trust account activity
+Attachments: 
+## YRvSgdpYnmvyouhfPjkp9Q (68.2 driver-path magic link; token redacted)
+http://localhost:3002/auth/exchange?token=<redacted>&orgId=mathebula-partners

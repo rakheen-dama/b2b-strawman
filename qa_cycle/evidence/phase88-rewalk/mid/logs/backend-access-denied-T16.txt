@@ -1,0 +1,14 @@
+# T16 — Bob (Admin) Close Matter attempt on Sipho's matter, 09:15–09:16Z
+backend.log: /Users/rakheendama/Projects/2026/b2b-strawman/.svc/logs/backend.log (  342016 bytes, mtime Oct 24 11:15:33 2026)
+grep -c 'Access denied' before (09:15:08Z): 0
+grep -c 'Access denied' after  (09:15:41Z): 0
+grep 'Access denied' | tail -5:
+(end)
+
+## audit_events security.access_denied (before 09:15:08Z: total 21, mentions_closure 0, max 09:05:59.809Z)
+SET
+ access_denied_total | mentions_closure |              max              
+---------------------+------------------+-------------------------------
+                  21 |                0 | 2026-10-24 09:05:59.809164+00
+(1 row)
+

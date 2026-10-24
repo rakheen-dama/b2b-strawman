@@ -1,0 +1,17 @@
+# 68.1 — every Sipho email: links to the portal and whether they carry orgId (Mailpit API, 2026-10-24T09:04:13Z)
+XjvC3zG6yBNwkHKNfVV69w	Fee Note INV-0001 from Mathebula & Partners	2026-10-24T10:37:13+02:00
+    http://localhost:3002/invoices/8878574f-e15f-4936-a8c0-dd05d17b5556
+YjVWPRYXWBNiu6fVNGw7op	Mathebula & Partners: Trust account activity	2026-10-24T09:34:00+02:00
+    http://localhost:3002/trust/e794d8d8-974b-4ac2-b073-e7ffc3bc9852
+TFCEhbVRgeFpbmitdmhXYK	Mathebula & Partners: Trust account activity	2026-10-24T09:33:21+02:00
+    http://localhost:3002/trust/e794d8d8-974b-4ac2-b073-e7ffc3bc9852
+d9gZS6wKeVv9x8VLgBGSz8	Confirmed: You have accepted engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-24.pdf	2026-10-24T09:29:15+02:00
+28EhbiQiutroWDXG8HUoB8	Mathebula & Partners -- Please review engagement letter for acceptance: engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-24.pdf	2026-10-24T09:28:46+02:00
+    http://localhost:3002/accept/tEc8b1LEhXCPM7kx1pA8g3Oxa3CF3SNvTXzAyFfVbS8
+
+grep -c orgId across all Sipho message Text+HTML:
+XjvC3zG6yBNwkHKNfVV69w 0
+YjVWPRYXWBNiu6fVNGw7op 0
+TFCEhbVRgeFpbmitdmhXYK 0
+d9gZS6wKeVv9x8VLgBGSz8 0
+28EhbiQiutroWDXG8HUoB8 0

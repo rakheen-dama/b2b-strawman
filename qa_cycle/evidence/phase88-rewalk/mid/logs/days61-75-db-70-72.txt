@@ -1,0 +1,35 @@
+SET
+            email            |    date    | duration_minutes | billing_rate_snapshot | billable |                     description                      | billed |          created_at           
+-----------------------------+------------+------------------+-----------------------+----------+------------------------------------------------------+--------+-------------------------------
+ thandi@mathebula-test.local | 2026-10-24 |              180 |               2500.00 | t        | Initial consultation with heirs + document gathering | t      | 2026-10-24 08:32:13.177555+00
+ thandi@mathebula-test.local | 2026-10-24 |              180 |               2500.00 | t        | Reporting estate to the Master — J294 + inventory    | t      | 2026-10-24 08:32:16.021671+00
+ thandi@mathebula-test.local | 2026-10-24 |              150 |               2500.00 | t        | Letters of Executorship application                  | t      | 2026-10-24 08:32:18.931874+00
+ thandi@mathebula-test.local | 2026-10-24 |              150 |               2500.00 | t        | Drafting inventory of assets & liabilities           | t      | 2026-10-24 08:32:21.860294+00
+ bob@mathebula-test.local    | 2026-10-24 |               90 |               1200.00 | t        | Master of High Court filing preparation              | t      | 2026-10-24 08:33:10.573116+00
+ bob@mathebula-test.local    | 2026-10-24 |              180 |               1200.00 | t        | Section 29 notice — Gazette + newspaper placement    | t      | 2026-10-24 08:33:13.465466+00
+ bob@mathebula-test.local    | 2026-10-24 |              150 |               1200.00 | t        | Estate bank account opening documents                | t      | 2026-10-24 08:33:16.393798+00
+ carol@mathebula-test.local  | 2026-10-24 |               60 |                550.00 | t        | Drafting Section 29 advertisement notice             | t      | 2026-10-24 08:33:38.88785+00
+ carol@mathebula-test.local  | 2026-10-24 |               60 |                550.00 | t        | Estate correspondence with heirs                     | f      | 2026-10-24 09:05:59.498147+00
+(9 rows)
+
+      customer       |                 matter                 | transaction_type |  amount  |  status  |           reference           |                                     description                                     |             recorded_by              |             approved_by              |          approved_at          
+---------------------+----------------------------------------+------------------+----------+----------+-------------------------------+-------------------------------------------------------------------------------------+--------------------------------------+--------------------------------------+-------------------------------
+ Sipho Dlamini       | Sipho Dlamini v. Standard Bank (civil) | DEPOSIT          |  5000.00 | RECORDED | DEP/SIPHO-001                 | Client deposit — litigation disbursements                                           | 6b188912-21c9-43fc-bc64-1781ea557a02 |                                      | 
+ Sipho Dlamini       | Sipho Dlamini v. Standard Bank (civil) | PAYMENT          |  1250.00 | APPROVED | DEEDS/SIPHO-001               | Deeds office search fee — Deeds Office Pretoria                                     | 04a52be7-6661-4411-9251-dfe75a7a6ad6 | 6b188912-21c9-43fc-bc64-1781ea557a02 | 2026-10-24 07:34:00.448951+00
+ Moroka Family Trust | Estate Late Peter Moroka               | DEPOSIT          | 50000.00 | RECORDED | Initial fund for estate admin | Deposit for estate admin. Source: Moroka Trust operating account                    | 6b188912-21c9-43fc-bc64-1781ea557a02 |                                      | 
+ Moroka Family Trust | Estate Late Peter Moroka               | PAYMENT          | 12000.00 | APPROVED | PAY/2026/001                  | Payment to third party: Johannesburg Valuers (Pty) Ltd — estate asset valuation fee | 6b188912-21c9-43fc-bc64-1781ea557a02 | 04a52be7-6661-4411-9251-dfe75a7a6ad6 | 2026-10-24 09:07:36.910328+00
+(4 rows)
+
+        name         | balance_recorded_or_approved 
+---------------------+------------------------------
+ Moroka Family Trust |                     38000.00
+ Sipho Dlamini       |                      3750.00
+(2 rows)
+
+            email            |                  id                  
+-----------------------------+--------------------------------------
+ bob@mathebula-test.local    | 04a52be7-6661-4411-9251-dfe75a7a6ad6
+ carol@mathebula-test.local  | 133de597-3305-4941-baf9-09cc0e46ba97
+ thandi@mathebula-test.local | 6b188912-21c9-43fc-bc64-1781ea557a02
+(3 rows)
+

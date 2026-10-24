@@ -1,7 +1,8 @@
 /**
  * INV-02: Invoice Lifecycle — Playwright E2E Tests
  *
- * Tests: DRAFT -> APPROVED -> SENT -> PAID, VOID, edit restrictions, skip rejections.
+ * Tests: DRAFT -> APPROVED -> SENT -> PAID (amount/method payment form, Phase 88 ADR-347), VOID,
+ * edit restrictions, skip rejections.
  *
  * Prerequisites:
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
@@ -203,26 +204,47 @@ test.describe.serial("INV-02: Invoice Lifecycle", () => {
     await expect(paymentBtn).toBeVisible({ timeout: 5000 });
     await paymentBtn.click();
 
-    // The payment form appears inline (not a dialog) with "Confirm Payment" button
-    await page.waitForTimeout(1000);
+    // (Phase 88, ADR-347) The inline payment form records the money that moved: amount
+    // (defaults to the balance due — the full total on a SENT fee note), method (defaults to
+    // EFT) and an optional reference.
+    const form = page.getByTestId("record-payment-form");
+    await expect(form).toBeVisible({ timeout: 5000 });
+    await expect(form.getByLabel("Amount", { exact: true })).toHaveValue(
+      String(Number(invoice.total))
+    );
+    await expect(form.getByTestId("payment-method-select")).toHaveText("EFT");
 
-    // Fill optional payment reference
-    const refInput = page.getByPlaceholder(/CHK-12345|Wire transfer/i);
-    const hasRefInput = await refInput.isVisible({ timeout: 2000 }).catch(() => false);
-    if (hasRefInput) {
-      await refInput.fill(`PAY-${RUN_ID}`);
-    }
+    // Fill the optional payment reference
+    const refInput = form.getByPlaceholder(/CHK-12345|Wire transfer/i);
+    await expect(refInput).toBeVisible();
+    await refInput.fill(`PAY-${RUN_ID}`);
 
-    // Click "Confirm Payment" button
-    const confirmBtn = page.getByRole("button", { name: /Confirm Payment/i });
-    await expect(confirmBtn).toBeVisible({ timeout: 5000 });
+    // Click "Confirm Payment" — records the default amount (full balance) by EFT
+    const confirmBtn = form.getByRole("button", { name: /Confirm Payment/i });
+    await expect(confirmBtn).toBeVisible();
     await confirmBtn.click();
-
-    await page.waitForTimeout(2000);
+    await expect(form).toBeHidden({ timeout: 10000 });
 
     // Verify status shows Paid
     await page.reload();
     await expect(page.getByText(/Paid/i).first()).toBeVisible({ timeout: 10000 });
+
+    // (Phase 88, ADR-347) A full payment marks PAID: amount_paid = total, balance due 0, one
+    // EFT payment for the whole total carrying the reference.
+    const paidRes = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    expect(paidRes.ok).toBeTruthy();
+    const paid = await paidRes.json();
+    expect(paid.status).toBe("PAID");
+    expect(Number(paid.amountPaid)).toBe(Number(paid.total));
+    expect(Number(paid.balanceDue)).toBe(0);
+    expect(paid.payments).toHaveLength(1);
+    expect(paid.payments[0]).toMatchObject({
+      paymentMethod: "EFT",
+      paymentReference: `PAY-${RUN_ID}`,
+    });
+    expect(Number(paid.payments[0].amount)).toBe(Number(paid.total));
   });
 
   test("VOID a sent invoice", async ({ page }) => {

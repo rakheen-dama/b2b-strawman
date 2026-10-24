@@ -1,0 +1,40 @@
+                  id                  |  status   |         completed_at          
+--------------------------------------+-----------+-------------------------------
+ 4ba2ef5c-376b-4e17-85dd-912daee1d859 | COMPLETED | 2026-10-24 07:23:12.360428+00
+(1 row)
+
+               name               |  status   | required | has_doc |         completed_at          
+----------------------------------+-----------+----------+---------+-------------------------------
+ Proof of Identity                | COMPLETED | t        | t       | 2026-10-24 07:22:17.627965+00
+ Proof of Address                 | COMPLETED | t        | t       | 2026-10-24 07:22:20.190221+00
+ Beneficial Ownership Declaration | COMPLETED | t        | t       | 2026-10-24 07:22:22.849447+00
+ Source of Funds Declaration      | COMPLETED | t        | t       | 2026-10-24 07:22:25.020239+00
+ Engagement Letter Signed         | COMPLETED | t        | t       | 2026-10-24 07:22:27.168365+00
+ Conflict Check Performed         | COMPLETED | t        | f       | 2026-10-24 07:22:29.076861+00
+ Power of Attorney Signed         | COMPLETED | f        | t       | 2026-10-24 07:22:31.24043+00
+ FICA Risk Assessment             | COMPLETED | t        | f       | 2026-10-24 07:22:33.625418+00
+ Sanctions Screening              | COMPLETED | t        | f       | 2026-10-24 07:23:12.353904+00
+(9 rows)
+
+                  id                  |     name      | lifecycle_status 
+--------------------------------------+---------------+------------------
+ ad774504-3f2f-4e36-a896-20d92c6ec14f | Sipho Dlamini | ACTIVE
+(1 row)
+
+           event_type            |       entity_type       |          occurred_at          
+---------------------------------+-------------------------+-------------------------------
+ checklist.instance.created      | checklist_instance      | 2026-10-24 07:19:51.816442+00
+ customer.lifecycle.transitioned | customer                | 2026-10-24 07:19:51.818522+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-24 07:22:17.63541+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-24 07:22:20.192443+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-24 07:22:22.851879+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-24 07:22:25.024754+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-24 07:22:27.172014+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-24 07:22:29.079507+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-24 07:22:31.242504+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-24 07:22:33.62742+00
+ checklist.item.completed        | checklist_instance_item | 2026-10-24 07:23:12.355933+00
+ checklist.instance.completed    | checklist_instance      | 2026-10-24 07:23:12.360584+00
+ customer.lifecycle.transitioned | customer                | 2026-10-24 07:23:12.368133+00
+(13 rows)
+

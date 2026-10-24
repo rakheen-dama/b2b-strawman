@@ -1,0 +1,11 @@
+access_denied before Carol: 0
+access_denied after Carol visits (list, open, tasks, task sheet): 4
+       event_type       |                                                                                                                details                                                                                                                 |          occurred_at          
+------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------
+ security.access_denied | {"path": "/api/matters/e794d8d8-974b-4ac2-b073-e7ffc3bc9852/time-summary/by-member", "method": "GET", "reason": "Per-member time breakdown is restricted to project leads, org admins, and org owners", "actor_name": "Carol Mokoena"} | 2026-10-24 07:37:44.379506+00
+ security.access_denied | {"path": "/api/matters/e794d8d8-974b-4ac2-b073-e7ffc3bc9852/time-summary/by-member", "method": "GET", "reason": "Per-member time breakdown is restricted to project leads, org admins, and org owners", "actor_name": "Carol Mokoena"} | 2026-10-24 07:37:56.495119+00
+ security.access_denied | {"path": "/api/matters/e794d8d8-974b-4ac2-b073-e7ffc3bc9852/time-summary/by-member", "method": "GET", "reason": "Per-member time breakdown is restricted to project leads, org admins, and org owners", "actor_name": "Carol Mokoena"} | 2026-10-24 07:38:02.581479+00
+ security.access_denied | {"path": "/api/matters/e794d8d8-974b-4ac2-b073-e7ffc3bc9852/time-summary/by-member", "method": "GET", "reason": "Per-member time breakdown is restricted to project leads, org admins, and org owners", "actor_name": "Carol Mokoena"} | 2026-10-24 07:38:03.142568+00
+(4 rows)
+
+access_denied total after all Carol visits: 7

@@ -1,0 +1,12 @@
+ transaction_type | amount  |    reference    |  status  |          approved_at          
+------------------+---------+-----------------+----------+-------------------------------
+ DEPOSIT          | 5000.00 | DEP/SIPHO-001   | RECORDED | 
+ PAYMENT          | 1250.00 | DEEDS/SIPHO-001 | APPROVED | 2026-10-24 07:34:00.448951+00
+(2 rows)
+
+     category      | amount  | vat_amount | payment_source |         trust_transaction_id         | approval_status | billing_status 
+-------------------+---------+------------+----------------+--------------------------------------+-----------------+----------------
+ SHERIFF_FEES      |  750.00 |       0.00 | OFFICE_ACCOUNT |                                      | APPROVED        | UNBILLED
+ DEEDS_OFFICE_FEES | 1250.00 |       0.00 | TRUST_ACCOUNT  | 2ca7fd1d-b782-4a8d-b1b8-66f3ebfb8a0d | APPROVED        | UNBILLED
+(2 rows)
+

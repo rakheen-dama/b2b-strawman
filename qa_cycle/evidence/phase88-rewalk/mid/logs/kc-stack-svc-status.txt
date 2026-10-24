@@ -1,0 +1,21 @@
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      68172    yes      yes      8080
+  gateway      68353    yes      yes      8443
+  frontend     68497    yes      yes      3000
+  portal       68555    yes      yes      3002
+
+
+Done.
+8080 pid 68329 etime 00:43
+8443 pid 68482 etime 00:28
+3000 pid 68542 etime 00:23
+3002 pid 68598 etime 00:16
+8080: {"groups":["liveness","readiness"],"status":"UP"}
+8443: {"groups":["liveness","readiness"],"status":"UP"}
+3000: 200
+3002/login: 200

@@ -1,0 +1,10 @@
+ entity_type |              entity_id               | parent_id |          email           |                    body                     | visibility |          created_at           
+-------------+--------------------------------------+-----------+--------------------------+---------------------------------------------+------------+-------------------------------
+ TASK        | 0cb3ecd0-fa98-4273-b6f0-f47cfff53fc0 |           | bob@mathebula-test.local | Need to confirm court date by Monday @Carol | INTERNAL   | 2026-10-24 07:39:14.558869+00
+(1 row)
+
+           email            |     type      |                                 title                                 | is_read | reference_entity_type |         reference_entity_id          |          created_at           
+----------------------------+---------------+-----------------------------------------------------------------------+---------+-----------------------+--------------------------------------+-------------------------------
+ carol@mathebula-test.local | COMMENT_ADDED | Bob Ndlovu commented on task "Initial consultation & case assessment" | f       | TASK                  | 0cb3ecd0-fa98-4273-b6f0-f47cfff53fc0 | 2026-10-24 07:39:14.582285+00
+(1 row)
+

@@ -1,0 +1,14 @@
+# backend.log is truncated by svc.sh start (svc.sh:124 ': > "$log"'), so the whole file is this start's output (brief's N0=948 offset does not apply)
+2026-10-24T07:01:45.644357Z	org.flywaydb.core.internal.command.DbMigrate	Current version of schema "public": 1
+2026-10-24T07:01:45.646619Z	org.flywaydb.core.internal.command.DbMigrate	Schema "public" is up to date. No migration necessary.
+2026-10-24T07:01:53.737581Z	io.b2mash.b2b.b2bstrawman.BackendApplication	Started BackendApplication in 10.553 seconds (process running for 10.751)
+2026-10-24T07:01:53.849673Z	io.b2mash.b2b.b2bstrawman.provisioning.TenantMigrationRunner	Running tenant migrations for 2 schemas
+2026-10-24T07:01:53.874149Z	org.flywaydb.core.internal.command.DbMigrate	Current version of schema "tenant_56399d06a773": 3
+2026-10-24T07:01:53.887484Z	org.flywaydb.core.internal.command.DbMigrate	Migrating schema "tenant_56399d06a773" to version "4 - phase88 demo ready"
+2026-10-24T07:01:53.928979Z	org.flywaydb.core.internal.command.DbMigrate	Successfully applied 1 migration to schema "tenant_56399d06a773", now at version v4 (execution time 00:00.035s)
+2026-10-24T07:01:53.930849Z	io.b2mash.b2b.b2bstrawman.provisioning.TenantMigrationRunner	Migrated schema tenant_56399d06a773 — 1 migrations applied
+2026-10-24T07:01:53.951186Z	org.flywaydb.core.internal.command.DbMigrate	Current version of schema "tenant_5039f2d497cf": 3
+2026-10-24T07:01:53.954677Z	org.flywaydb.core.internal.command.DbMigrate	Migrating schema "tenant_5039f2d497cf" to version "4 - phase88 demo ready"
+2026-10-24T07:01:53.978351Z	org.flywaydb.core.internal.command.DbMigrate	Successfully applied 1 migration to schema "tenant_5039f2d497cf", now at version v4 (execution time 00:00.018s)
+2026-10-24T07:01:53.980204Z	io.b2mash.b2b.b2bstrawman.provisioning.TenantMigrationRunner	Migrated schema tenant_5039f2d497cf — 1 migrations applied
+2026-10-24T07:01:53.980301Z	io.b2mash.b2b.b2bstrawman.provisioning.TenantMigrationRunner	Tenant migration runner completed

@@ -1,0 +1,17 @@
+# V4 durable record — read-only SELECT on the surviving tenant tenant_56399d06a773 (org_phase86_squash_smoke), captured 2026-10-24T07:49:57Z for the 623A review fix (finding 7). installed_on is local time (SAST, UTC+2).
+$ docker exec b2b-postgres psql -U postgres -d docteams -c "SELECT version, description, installed_on, success FROM tenant_56399d06a773.flyway_schema_history ORDER BY installed_rank"
+ version |          description           |        installed_on        | success 
+---------+--------------------------------+----------------------------+---------
+ 1       | baseline                       | 2026-10-18 04:21:29.676908 | t
+ 2       | add project template work type | 2026-10-22 17:12:49.002347 | t
+ 3       | normalise work types           | 2026-10-22 17:12:49.031763 | t
+ 4       | phase88 demo ready             | 2026-10-24 09:01:53.871463 | t
+(4 rows)
+
+$ docker exec b2b-postgres psql -U postgres -d docteams -c "SELECT external_org_id, schema_name FROM public.org_schema_mapping ORDER BY 1"
+     external_org_id      |     schema_name     
+--------------------------+---------------------
+ mathebula-partners       | tenant_5039f2d497cf
+ org_phase86_squash_smoke | tenant_56399d06a773
+(2 rows)
+

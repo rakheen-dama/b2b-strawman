@@ -105,7 +105,7 @@ No entity is renamed and no table is dropped. Phase 88 adds columns to five tena
 |---|---|---|---|
 | `dueDate` | `LocalDate` → `due_date date` | unchanged | **now stamped by `approve()`**: `if (dueDate == null) dueDate = issueDate.plusDays(terms)`. `applyDefaults` (batch send) keeps working and is a no-op when already set. |
 | `amountPaid` | `BigDecimal` → `amount_paid numeric(14,2)` | NOT NULL DEFAULT 0; `CHECK (amount_paid >= 0 AND amount_paid <= total)` | denormalised `LEAST(total, SUM(payment_events.amount) WHERE status = 'COMPLETED')`, recomputed from the remaining events by `InvoiceTransitionService` on every event write and reversal (never incremented or decremented in place, so an overpaid external event followed by a reversal cannot drive it negative or above `total`). Stored, not computed, because five native-SQL read sites (debtor book, aging, cash digest, scan, client list) need it in a predicate without a correlated subquery. |
-| `balanceDue` | derived, not stored | — | `total − amountPaid`; exposed on `InvoiceResponse.balanceDue`, the portal invoice read model and `MatterListRow`/`ClientListRow` aggregates. |
+| `balanceDue` | derived, not stored | — | `total − amountPaid`; exposed on `InvoiceResponse.balanceDue`, the portal invoice read model and `MatterListRow`/`ClientListRow` aggregates. *(622D errata: `MatterListRow` has no fee-note aggregate, so it carries no balance; `ClientListRow` keeps its `outstanding` field name, whose value is now the balance.)* |
 | `status` | `InvoiceStatus` | `chk_invoice_status` **swapped** to `IN ('DRAFT','APPROVED','SENT','PARTIALLY_PAID','PAID','VOID')` | `PARTIALLY_PAID` sits between SENT and PAID. |
 | `paidAt` | `Instant` | unchanged | set when the balance reaches zero; cleared when a reversal reopens the balance. |
 | `paymentReference` | `String(255)` | unchanged | last reference recorded; per-payment references live on `payment_events`. |
@@ -828,7 +828,7 @@ Paths keep the Phase 87 wire vocabulary (`/api/matters`, `/api/clients`; `/api/i
 | GET | `/api/invoices/{id}` | `InvoiceResponse` gains `amountPaid`, `balanceDue`, `payments[] {id, amount, paymentMethod, paymentReference, recordedAt, source}` | as today | R |
 | GET | `/api/invoices/outstanding-summary` | **new** — debtor-book definition: `{currency, outstandingTotal, outstandingCount, overdueTotal, overdueCount, approvedUnsentTotal, approvedUnsentCount}` | `FINANCIAL_VISIBILITY` | R |
 | GET | `/api/invoices/{id}/preview` | (existing path) now the Tiptap fee-note template render, `text/html` | as today | R |
-| GET | `/api/collections/debtors` · `/api/collections/debtors/{clientId}/invoices` · aging report · cash digest | (existing) predicate `status IN (SENT, PARTIALLY_PAID)`, amount `total − amount_paid`; rows gain `balanceDue` | unchanged | R |
+| GET | `/api/collections/debtors` · `/api/collections/debtors/{clientId}/invoices` · aging report · cash digest | (existing) predicate `status IN (SENT, PARTIALLY_PAID)`, amount `total − amount_paid`; rows gain `balanceDue` *(622D errata: only the per-invoice drill-in row `OutstandingInvoice` gains `balanceDue`; debtor totals, the outstanding summary, the client list and the digest keep their field names and now carry the balance)* | unchanged | R |
 | GET/PATCH | `/api/settings/billing` | `defaultPaymentTermsDays` (0–365) | `TEAM_OVERSIGHT` | R/W |
 
 Request / response:

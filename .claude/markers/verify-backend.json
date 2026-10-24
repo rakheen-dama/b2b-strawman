@@ -1,7 +1,7 @@
 {
-  "commit": "450c6eee385760e9528656902f937ed711410252",
+  "commit": "d0a139b12e3afd03871fee030ef0033dd9472e68",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-24T03:56:52Z",
-  "summary": "Slice 622C PR #1663 final head 450c6eee3 (orchestrator run in worktree-epic-622C): 5619 testcases / 0 failures / 0 errors / 26 skipped across 706 reports (= 5603 after 622B + 16 new: trust fee-transfer partial/remainder/excess/reversal, CardPaymentBalanceLinkIntegrationTest balance link + replay + session-cancel on trust/Xero, PaymentReconciliationServiceIntegrationTest session amount + session-less refusal, AccountingPaymentPollIntegrationTest part/complete/excess/non-positive). Same result on c5af805b0. Log /tmp/mvn-622C-final2.log."
+  "ts": "2026-10-24T04:43:28Z",
+  "summary": "Slice 622D PR #1664 final head d0a139b12 (orchestrator run in worktree-epic-622D): 5629 testcases / 0 failures / 0 errors / 26 skipped (= 5619 after 622C + 10 new: CollectionsReadApiTest part-paid at balance, ClientListRow client F, CashDigestData pins, aging part-paid row, scan/triage part-paid, reminder amount = balance, AI reminder balance line, FinalBillIssuedGate part-paid, MatterClosureContextBuilderTest, CustomerContextBuilder balance). Is the 622.10 BE-VERIFY gate for 622A-622D. Log /tmp/mvn-622D-final.log."
 }

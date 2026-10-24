@@ -26,6 +26,9 @@ public class PortalLoginRateLimiter {
 
   private static final Logger log = LoggerFactory.getLogger(PortalLoginRateLimiter.class);
 
+  // The key is attacker-chosen: under a flood, eviction resets counters (accepted trade-off).
+  private static final long MAX_TRACKED_EMAILS = 100_000;
+
   private final int maxRequestsPerEmail;
   private final Cache<String, AtomicInteger> emailCounters;
 
@@ -41,7 +44,11 @@ public class PortalLoginRateLimiter {
   PortalLoginRateLimiter(int maxRequestsPerEmail, Duration window, Ticker ticker) {
     this.maxRequestsPerEmail = maxRequestsPerEmail;
     this.emailCounters =
-        Caffeine.newBuilder().expireAfterWrite(window).maximumSize(100_000).ticker(ticker).build();
+        Caffeine.newBuilder()
+            .expireAfterWrite(window)
+            .maximumSize(MAX_TRACKED_EMAILS)
+            .ticker(ticker)
+            .build();
   }
 
   /**

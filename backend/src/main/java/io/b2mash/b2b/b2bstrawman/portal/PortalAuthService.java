@@ -97,7 +97,8 @@ public class PortalAuthService {
    * then contact lookup + token + branded email inside that tenant. Returns the dev-profile echo
    * link, or {@code null} when nothing was sent. Never throws: an unknown org, a missing/inactive
    * contact, the per-contact cap or any send failure for one firm must neither abort the other
-   * firms nor change the response (no enumeration). Never logs the email.
+   * firms nor change the response (no enumeration). Our own log lines never include the email;
+   * unexpected failures attach the exception for diagnosis.
    */
   private @Nullable String sendBrandedLink(
       String emailLower, String orgClerkId, String remoteAddr) {
@@ -127,10 +128,15 @@ public class PortalAuthService {
                 ? "/auth/exchange?token=" + rawToken + "&orgId=" + orgClerkId
                 : null;
           });
+    } catch (PortalAuthException e) {
+      // PortalAuthException("Too many login attempts") from the per-contact cap: swallowed so a
+      // known contact is indistinguishable from an unknown email. Expected — no message/stack.
+      log.warn("Magic link not issued for org {} ({})", orgClerkId, e.getClass().getSimpleName());
+      return null;
     } catch (RuntimeException e) {
-      // Incl. PortalAuthException("Too many login attempts") from the per-contact cap: swallowed
-      // so a known contact is indistinguishable from an unknown email.
-      log.warn("Magic link not issued for org {}: {}", orgClerkId, e.getMessage());
+      // Unexpected DB/shard/SMTP fault: keep the cause chain for diagnosis; response unchanged.
+      log.error(
+          "Magic link not issued for org {} ({})", orgClerkId, e.getClass().getSimpleName(), e);
       return null;
     }
   }

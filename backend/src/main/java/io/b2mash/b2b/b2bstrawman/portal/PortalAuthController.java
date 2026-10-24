@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,7 +47,9 @@ public class PortalAuthController {
   // --- DTOs ---
 
   public record MagicLinkRequest(
-      @NotBlank(message = "email is required") @Email(message = "invalid email format")
+      @NotBlank(message = "email is required")
+          @Email(message = "invalid email format")
+          @Size(max = 254, message = "email is too long")
           String email,
       @Nullable String orgId) {}
 

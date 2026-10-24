@@ -80,11 +80,12 @@ class AuditEventTypeRegistryTest {
     // + 5 collections.* entries (5 exact, Epic 588B)
     // + 1 disbursement.restored (exact, Phase 88 Epic 621A — additive ADR-342 key, OQ #10)
     // + 2 invoice.partially_paid / invoice.payment_excess (exact, Phase 88 Epic 622B — additive
-    // ADR-342 keys, OQ #10) = 32.
+    // ADR-342 keys, OQ #10)
+    // + 1 acceptance.declined (exact, Phase 88 Epic 624F — additive ADR-342 key, OQ #10) = 33.
     // Default fallback is synthesised inside resolve() and must NOT appear in entries().
     // (Phase 86 slice 2 / Epic 596B removed the 5 deal.* SALES entries; Phase 86 slice 3 / Epic
     // 597B removed proposal.*; Phase 86 slice 7 / Epic 601 removed six ai.specialist.* entries.)
-    assertThat(registry.entries()).hasSize(32);
+    assertThat(registry.entries()).hasSize(33);
     assertThat(registry.entries())
         .extracting(AuditEventTypeMetadata::eventType)
         .doesNotContain("(default fallback)")
@@ -102,7 +103,8 @@ class AuditEventTypeRegistryTest {
             "ai.specialist.failed",
             "disbursement.restored",
             "invoice.partially_paid",
-            "invoice.payment_excess")
+            "invoice.payment_excess",
+            "acceptance.declined")
         .doesNotContain(
             "ai.specialist.*",
             "ai.specialist.invoked",
@@ -134,8 +136,8 @@ class AuditEventTypeRegistryTest {
 
   @Test
   void entriesMatchingWithEmptyOrNullReturnsAll() {
-    assertThat(registry.entriesMatching(Set.of())).hasSize(32);
-    assertThat(registry.entriesMatching(null)).hasSize(32);
+    assertThat(registry.entriesMatching(Set.of())).hasSize(33);
+    assertThat(registry.entriesMatching(null)).hasSize(33);
   }
 
   @Test
@@ -158,6 +160,17 @@ class AuditEventTypeRegistryTest {
     assertThat(resolved.label()).isEqualTo("Fee note payment exceeded balance");
     assertThat(resolved.severity()).isEqualTo(AuditSeverity.NOTICE);
     assertThat(resolved.group()).isEqualTo(AuditEventGroup.FINANCIAL);
+  }
+
+  @Test
+  void acceptanceDeclinedExactEntry() {
+    // Phase 88 Epic 624F — additive stored key (ADR-342). Same INFO/STANDARD classification the
+    // unregistered acceptance.* siblings resolve to; only the label is explicit.
+    var resolved = registry.resolve("acceptance.declined");
+    assertThat(resolved.eventType()).isEqualTo("acceptance.declined");
+    assertThat(resolved.label()).isEqualTo("Acceptance declined");
+    assertThat(resolved.severity()).isEqualTo(AuditSeverity.INFO);
+    assertThat(resolved.group()).isEqualTo(AuditEventGroup.STANDARD);
   }
 
   @Test

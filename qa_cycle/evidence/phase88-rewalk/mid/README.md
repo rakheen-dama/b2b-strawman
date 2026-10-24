@@ -104,6 +104,8 @@ After the Session 0 reset, approval of the new access request (2026-10-24 07:13:
 
 Supporting history: the same start also upgraded `tenant_5039f2d497cf` (617C Mathebula tenant) in place, `installed_on` 2026-10-24 09:01:53.948575 (`logs/v4-after.txt`, `logs/backend-startup-v4.txt`). That schema was then dropped by the slice-authorised Session 0 reset and re-provisioned from empty (V1–V4 at 09:13:25 SAST), so its row is history only and must not be cited as the durable record.
 
+623C fresh read (2026-10-24T10:53:02Z): both tenant schemas still at max V4, `public` at max V1, no V5+ anywhere (`logs/623c-flyway-history.txt`); decision record in [migrations.md](migrations.md).
+
 ## Sections
 
 | Section | Doc lines | File | Rows | P / F / D / N/A |
@@ -115,6 +117,8 @@ Supporting history: the same start also upgraded `tenant_5039f2d497cf` (617C Mat
 | Setup Days 8–21 (not scored, 623B run 1) | 307–360 | days-36-47.md | 8 setup rows run (S8, S9, S9b, S10, S11, S12, S13, S16 — S9.5 + the other Days 8–35 steps not run) | — (all OK) |
 | Days 36–47 (623.4, 623B run 1) | 423–464 | days-36-47.md | 40 (24 doc [splits 38.3a/b, 45.9a/b, 47.2a/b → 27] + 13 target T7a–T13d, T10b) | 36 / 4 / 0 / 0 |
 | Days 61–75 (623.5, 623B run 2) | 475–504 | days-61-75.md | 23 (19 doc [split 75.2a/b → 20] + 3 target T14–T16) | 11 / 2 / 10 / 0 |
+| Gap list (623.7, 623C) | — | gaps.md | 14 gaps + 2 retired/notes (G88-M1…M16) | 0 BLOCKER / 0 HIGH / 5 MEDIUM / 9 LOW |
+| Migration-numbering decision (623.8, 623C) | — | migrations.md | — | V4 applied 2026-10-24 09:01:53 SAST; next tenant V5, next global V2 |
 
 Days 1–7 doc rows only (60): 50 / 9 / 1 / 0. Target rows (9): 8 / 1 / 0 / 0. Pre-rows (3): 3 / 0 / 0 / 0. FAIL: 2.9, 3.8, 4.2, 4.3b-ii, 4.6, 5.2, 5.4, 6.3, 6.6, T2b. DEFERRED: 5.14 (→ 629). Split rows count separately. PASS includes 3.3 and 6.2 "PASS (adapted — 617C precedent)" (scenario-wording deviations awaiting founder authorisation, days-01-07.md § Scenario-wording deviations) and T4 (b) "PASS (supporting only — not discriminating)".
 
@@ -144,6 +148,8 @@ See `days-01-07.md` § Candidate gaps (G88-M1 … G88-M7; 0 BLOCKER, 0 HIGH, 3 M
 
 Scenario-wording deviations needing founder authorisation (CLAUDE.md §6, route to 628H): 3.3, 6.2, 6.3 unread count, G88-M1 doc paths — listed in `days-01-07.md` § Scenario-wording deviations.
 
+Consolidated and re-routed in [gaps.md](gaps.md) (623C); where owners differ, gaps.md supersedes the table above.
+
 ## Candidate gaps raised by 623B
 
 See `days-36-47.md` (G88-M8 … G88-M11) and `days-61-75.md` (G88-M12 … G88-M16) § Candidate gaps: **7 new gaps — 0 BLOCKER, 0 HIGH, 2 MEDIUM (M13, M16), 5 LOW (M8, M9, M10, M11, M14)**. Not new: G88-M12 is a retired id (merged into register gap G-B14); G88-M15 is a note on G-D3 (already specified by 627.5 / 627.8). Ids are not renumbered. No regression of a closed Phase 88 gap. 623C consolidates into `gaps.md`.
@@ -161,6 +167,8 @@ See `days-36-47.md` (G88-M8 … G88-M11) and `days-61-75.md` (G88-M12 … G88-M1
 | G88-M16 Day-75 closure pre-state (trust R0, all PAID) unreachable after the §5 5.9 reorder (75.3–75.11) | MEDIUM | 628H (needs founder §6 authorisation) |
 
 Scenario-wording deviations raised by 623B (route to 628H): 36.1/45.1, 38.1/45.4/65.1, 45.7, 75.2 (§5-authorised, prose pending 628H); 45.8 "Written off" vs WRITTEN_OFF, 45.11 exact literal, 61.1 "4th client" (3rd here), 68.1 landing page, 75.3 pre-state, 75.7 "Close matter" vs "Confirm Close" (need founder authorisation) — see each day file.
+
+Consolidated and re-routed in [gaps.md](gaps.md) (623C); where owners differ, gaps.md supersedes the table above.
 
 ## Deck re-shoots (623.6)
 

@@ -1,0 +1,62 @@
+# 623C migration-numbering evidence — read-only SELECTs on the Keycloak dev DB (b2b-postgres / docteams), captured 2026-10-24T10:53:02Z. installed_on = JDBC session zone (host JVM, SAST UTC+2).
+
+$ docker exec b2b-postgres psql -U postgres -d docteams -c "SELECT version, description, installed_on, success FROM tenant_56399d06a773.flyway_schema_history ORDER BY installed_rank;"
+ version |          description           |        installed_on        | success 
+---------+--------------------------------+----------------------------+---------
+ 1       | baseline                       | 2026-10-18 04:21:29.676908 | t
+ 2       | add project template work type | 2026-10-22 17:12:49.002347 | t
+ 3       | normalise work types           | 2026-10-22 17:12:49.031763 | t
+ 4       | phase88 demo ready             | 2026-10-24 09:01:53.871463 | t
+(4 rows)
+
+
+$ docker exec b2b-postgres psql -U postgres -d docteams -c "SELECT version, description, installed_on, success FROM tenant_5039f2d497cf.flyway_schema_history ORDER BY installed_rank;"
+ version |          description           |        installed_on        | success 
+---------+--------------------------------+----------------------------+---------
+ 1       | baseline                       | 2026-10-24 09:13:24.320391 | t
+ 2       | add project template work type | 2026-10-24 09:13:25.381194 | t
+ 3       | normalise work types           | 2026-10-24 09:13:25.398636 | t
+ 4       | phase88 demo ready             | 2026-10-24 09:13:25.411561 | t
+(4 rows)
+
+
+$ docker exec b2b-postgres psql -U postgres -d docteams -c "SELECT version, description, installed_on, success FROM public.flyway_schema_history ORDER BY installed_rank;"
+ version | description |        installed_on        | success 
+---------+-------------+----------------------------+---------
+ 1       | baseline    | 2026-10-18 04:20:53.007533 | t
+(1 row)
+
+
+$ docker exec b2b-postgres psql -U postgres -d docteams -c "SELECT external_org_id, schema_name FROM public.org_schema_mapping ORDER BY 1;"
+     external_org_id      |     schema_name     
+--------------------------+---------------------
+ mathebula-partners       | tenant_5039f2d497cf
+ org_phase86_squash_smoke | tenant_56399d06a773
+(2 rows)
+
+
+$ docker exec b2b-postgres psql -U postgres -d docteams -c "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%' ORDER BY 1;"
+     schema_name     
+---------------------
+ tenant_5039f2d497cf
+ tenant_56399d06a773
+(2 rows)
+
+
+$ docker exec b2b-postgres psql -U postgres -d docteams -c "SELECT 'tenant_5039f2d497cf' AS tenant_schema, max(version::int) AS max_version, count(*) AS rows FROM tenant_5039f2d497cf.flyway_schema_history WHERE success UNION ALL SELECT 'tenant_56399d06a773', max(version::int), count(*) FROM tenant_56399d06a773.flyway_schema_history WHERE success UNION ALL SELECT 'public (global)', max(version::int), count(*) FROM public.flyway_schema_history WHERE success ORDER BY 1;"
+    tenant_schema    | max_version | rows 
+---------------------+-------------+------
+ public (global)     |           1 |    1
+ tenant_5039f2d497cf |           4 |    4
+ tenant_56399d06a773 |           4 |    4
+(3 rows)
+
+
+$ ls backend/src/main/resources/db/migration/tenant | sort -V
+V1__baseline.sql
+V2__add_project_template_work_type.sql
+V3__normalise_work_types.sql
+V4__phase88_demo_ready.sql
+
+$ ls backend/src/main/resources/db/migration/global | sort -V
+V1__baseline.sql

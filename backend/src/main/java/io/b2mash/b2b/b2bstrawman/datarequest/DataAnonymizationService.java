@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
+import io.b2mash.b2b.b2bstrawman.portal.directory.PortalContactDirectoryService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.LocalDate;
@@ -46,6 +47,7 @@ public class DataAnonymizationService {
   private final TimeEntryRepository timeEntryRepository;
   private final OrgSettingsRepository orgSettingsRepository;
   private final DataExportService dataExportService;
+  private final PortalContactDirectoryService portalContactDirectoryService;
 
   public DataAnonymizationService(
       DataSubjectRequestRepository requestRepository,
@@ -60,7 +62,8 @@ public class DataAnonymizationService {
       CustomerProjectRepository customerProjectRepository,
       TimeEntryRepository timeEntryRepository,
       OrgSettingsRepository orgSettingsRepository,
-      DataExportService dataExportService) {
+      DataExportService dataExportService,
+      PortalContactDirectoryService portalContactDirectoryService) {
     this.requestRepository = requestRepository;
     this.customerRepository = customerRepository;
     this.documentRepository = documentRepository;
@@ -74,6 +77,7 @@ public class DataAnonymizationService {
     this.timeEntryRepository = timeEntryRepository;
     this.orgSettingsRepository = orgSettingsRepository;
     this.dataExportService = dataExportService;
+    this.portalContactDirectoryService = portalContactDirectoryService;
   }
 
   /**
@@ -148,8 +152,11 @@ public class DataAnonymizationService {
     var contacts = portalContactRepository.findByCustomerId(customerId);
     int contactsAnonymized = contacts.size();
     for (var contact : contacts) {
+      String previousEmail = contact.getEmail();
       contact.anonymize("Removed Contact");
       portalContactRepository.save(contact);
+      // POPIA: the real email must leave the global portal directory once this commits (ADR-351).
+      portalContactDirectoryService.reconcileAfterCommit(previousEmail, contact.getOrgId());
     }
 
     // Step 5: Transition lifecycle to OFFBOARDED (requires two steps: ACTIVE -> OFFBOARDING ->
@@ -268,8 +275,11 @@ public class DataAnonymizationService {
     var contacts = portalContactRepository.findByCustomerId(customerId);
     int contactsAnonymized = contacts.size();
     for (var contact : contacts) {
+      String previousEmail = contact.getEmail();
       contact.anonymize("Removed Contact");
       portalContactRepository.save(contact);
+      // POPIA: the real email must leave the global portal directory once this commits (ADR-351).
+      portalContactDirectoryService.reconcileAfterCommit(previousEmail, contact.getOrgId());
     }
 
     // Step 7: Update invoice customer references to REF-{shortId}

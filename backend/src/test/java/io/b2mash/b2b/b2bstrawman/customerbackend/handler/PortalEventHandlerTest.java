@@ -496,6 +496,9 @@ class PortalEventHandlerTest {
             any(),
             any(boolean.class),
             any(boolean.class));
+    // paid_at cleared and amount_paid stamped (Phase 88 U15) right after the upsert
+    verify(readModelRepo)
+        .updatePortalInvoiceStatusAndPaidAt(invoiceId, ORG_ID, "SENT", null, BigDecimal.ZERO);
     // Verify stale lines were cleared and new lines upserted
     verify(readModelRepo).deletePortalInvoiceLinesByInvoice(invoiceId);
     verify(readModelRepo, times(2))
@@ -543,7 +546,11 @@ class PortalEventHandlerTest {
 
     verify(readModelRepo)
         .updatePortalInvoiceStatusAndPaidAt(
-            eq(invoiceId), eq(ORG_ID), eq("PAID"), any(Instant.class));
+            eq(invoiceId),
+            eq(ORG_ID),
+            eq("PAID"),
+            any(Instant.class),
+            eq(new BigDecimal("500.00")));
     verify(readModelRepo, never()).deletePortalInvoiceLinesByInvoice(any());
   }
 
@@ -576,9 +583,42 @@ class PortalEventHandlerTest {
     handler.onInvoiceSynced(event);
 
     verify(readModelRepo)
-        .updatePortalInvoiceStatusAndPaidAt(invoiceId, ORG_ID, "PARTIALLY_PAID", null);
+        .updatePortalInvoiceStatusAndPaidAt(
+            invoiceId, ORG_ID, "PARTIALLY_PAID", null, new BigDecimal("700.00"));
     verify(readModelRepo, never()).deletePortalInvoiceLinesByInvoice(any());
     verify(readModelRepo, never()).deletePortalInvoice(any(), any());
+  }
+
+  // ── 13c. InvoiceSynced with no amountPaid -> projects zero (column is NOT NULL) ──
+
+  @Test
+  void onInvoiceSynced_nullAmountPaid_projectsZero() {
+    var invoiceId = UUID.randomUUID();
+    var event =
+        new InvoiceSyncEvent(
+            invoiceId,
+            UUID.randomUUID(),
+            "INV-005",
+            "PARTIALLY_PAID",
+            LocalDate.of(2026, 2, 1),
+            LocalDate.of(2026, 3, 1),
+            new BigDecimal("100.00"),
+            BigDecimal.ZERO,
+            new BigDecimal("100.00"),
+            "ZAR",
+            null,
+            null,
+            null,
+            ORG_ID,
+            TENANT_ID,
+            null,
+            null);
+
+    handler.onInvoiceSynced(event);
+
+    verify(readModelRepo)
+        .updatePortalInvoiceStatusAndPaidAt(
+            invoiceId, ORG_ID, "PARTIALLY_PAID", null, BigDecimal.ZERO);
   }
 
   // ── 14. InvoiceSynced VOID -> deletes invoice ──────────────────────

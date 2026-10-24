@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.math.BigDecimal;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -31,6 +32,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 /**
  * Integration tests verifying the invoice sync pipeline: staff API call -> InvoiceSyncEvent ->
@@ -125,6 +127,10 @@ class InvoiceSyncIntegrationTest {
     var invoices = readModelRepo.findInvoicesByCustomer(ORG_ID, UUID.fromString(customerId));
     assertThat(invoices)
         .anyMatch(i -> i.id().equals(UUID.fromString(invoiceId)) && "SENT".equals(i.status()));
+    // Phase 88 U15: nothing received yet — amount_paid 0, balance = total
+    var sent = readModelRepo.findInvoiceById(UUID.fromString(invoiceId), ORG_ID).orElseThrow();
+    assertThat(sent.amountPaid()).isEqualByComparingTo("0");
+    assertThat(sent.balanceDue()).isEqualByComparingTo(sent.total());
   }
 
   @Test
@@ -153,6 +159,8 @@ class InvoiceSyncIntegrationTest {
     var invoice = readModelRepo.findInvoiceById(UUID.fromString(invoiceId), ORG_ID);
     assertThat(invoice).isPresent();
     assertThat(invoice.get().status()).isEqualTo("PAID");
+    assertThat(invoice.get().amountPaid()).isEqualByComparingTo(invoice.get().total());
+    assertThat(invoice.get().balanceDue()).isEqualByComparingTo("0");
   }
 
   @Test
@@ -226,6 +234,9 @@ class InvoiceSyncIntegrationTest {
     var afterPart = readModelRepo.findInvoiceById(id, ORG_ID).orElseThrow();
     assertThat(afterPart.status()).isEqualTo("PARTIALLY_PAID");
     assertThat(afterPart.paidAt()).isNull();
+    assertThat(afterPart.amountPaid()).isEqualByComparingTo("40.00");
+    assertThat(afterPart.balanceDue())
+        .isEqualByComparingTo(afterPart.total().subtract(new BigDecimal("40.00")));
 
     // Settle the balance → PAID with paid_at
     var settled =
@@ -240,6 +251,7 @@ class InvoiceSyncIntegrationTest {
     var afterSettle = readModelRepo.findInvoiceById(id, ORG_ID).orElseThrow();
     assertThat(afterSettle.status()).isEqualTo("PAID");
     assertThat(afterSettle.paidAt()).isNotNull();
+    assertThat(afterSettle.amountPaid()).isEqualByComparingTo(afterSettle.total());
 
     // Reverse the settling payment (payments[] is newest first) → back to PARTIALLY_PAID
     UUID settlingEventId =
@@ -254,6 +266,69 @@ class InvoiceSyncIntegrationTest {
     var afterReversal = readModelRepo.findInvoiceById(id, ORG_ID).orElseThrow();
     assertThat(afterReversal.status()).isEqualTo("PARTIALLY_PAID");
     assertThat(afterReversal.paidAt()).isNull();
+    assertThat(afterReversal.amountPaid()).isEqualByComparingTo("40.00");
+  }
+
+  /**
+   * Phase 88 624A: {@code portal_invoices.amount_paid} follows every change to the fee note's
+   * {@code amountPaid}, not only status changes — (a) a second part payment (PARTIALLY_PAID →
+   * PARTIALLY_PAID) and (b) a reversal that leaves the fee note PARTIALLY_PAID.
+   */
+  @Test
+  @Order(8)
+  void amountPaidFollowsPaymentsAndReversalsWithoutStatusChange() throws Exception {
+    String partialInvoiceId = createInvoice(customerId, "ZAR");
+    addLineItem(partialInvoiceId, "Amount paid test line", "1", "100.00", 0);
+    mockMvc
+        .perform(
+            post("/api/invoices/" + partialInvoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner")))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            post("/api/invoices/" + partialInvoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner")))
+        .andExpect(status().isOk());
+    UUID id = UUID.fromString(partialInvoiceId);
+
+    recordPayment(partialInvoiceId, "30.00");
+    var afterFirst = readModelRepo.findInvoiceById(id, ORG_ID).orElseThrow();
+    assertThat(afterFirst.status()).isEqualTo("PARTIALLY_PAID");
+    assertThat(afterFirst.amountPaid()).isEqualByComparingTo("30.00");
+
+    // (a) second part payment — status unchanged, amount received grows
+    var second = recordPayment(partialInvoiceId, "20.00");
+    var afterSecond = readModelRepo.findInvoiceById(id, ORG_ID).orElseThrow();
+    assertThat(afterSecond.status()).isEqualTo("PARTIALLY_PAID");
+    assertThat(afterSecond.amountPaid()).isEqualByComparingTo("50.00");
+
+    // (b) reverse the second payment (payments[] is newest first) — still PARTIALLY_PAID
+    UUID secondEventId =
+        UUID.fromString(
+            JsonPath.read(second.getResponse().getContentAsString(), "$.payments[0].id"));
+    String tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(() -> invoiceService.reversePayment(id, secondEventId));
+
+    var afterReversal = readModelRepo.findInvoiceById(id, ORG_ID).orElseThrow();
+    assertThat(afterReversal.status()).isEqualTo("PARTIALLY_PAID");
+    assertThat(afterReversal.paidAt()).isNull();
+    assertThat(afterReversal.amountPaid()).isEqualByComparingTo("30.00");
+    assertThat(afterReversal.balanceDue())
+        .isEqualByComparingTo(afterReversal.total().subtract(new BigDecimal("30.00")));
+  }
+
+  private MvcResult recordPayment(String invoiceId, String amount) throws Exception {
+    return mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/payment")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"amount\": %s, \"paymentMethod\": \"EFT\"}".formatted(amount)))
+        .andExpect(status().isOk())
+        .andReturn();
   }
 
   private void transitionCustomerToActive(String customerId) throws Exception {

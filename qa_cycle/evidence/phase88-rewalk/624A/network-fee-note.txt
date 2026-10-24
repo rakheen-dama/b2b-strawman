@@ -1,0 +1,4 @@
+1. [GET] http://localhost:3002/__624a_blank_probe => [404] Not Found
+40. [GET] http://localhost:3002/login?redirectTo=%2Finvoices%2F8878574f-e15f-4936-a8c0-dd05d17b5556&_rsc=AFNVV3p1FssHP0Fz => [200] OK
+
+Note: 42 static requests not shown, run with "static" option to see them.

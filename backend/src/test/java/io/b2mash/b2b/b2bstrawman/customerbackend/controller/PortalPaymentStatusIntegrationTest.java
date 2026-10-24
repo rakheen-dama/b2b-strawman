@@ -16,20 +16,30 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalJwtService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -48,6 +58,14 @@ class PortalPaymentStatusIntegrationTest {
   @Autowired private PortalJwtService portalJwtService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private PortalReadModelRepository readModelRepo;
+
+  @Autowired
+  @Qualifier("portalJdbcClient")
+  private JdbcClient portalJdbc;
+
+  @Autowired
+  @Qualifier("portalTransactionManager")
+  private PlatformTransactionManager portalTxManager;
 
   private UUID customerId;
   private UUID otherCustomerId;
@@ -165,7 +183,8 @@ class PortalPaymentStatusIntegrationTest {
         false,
         false);
     // Set paid_at for the paid invoice
-    readModelRepo.updatePortalInvoiceStatusAndPaidAt(paidInvoiceId, ORG_ID, "PAID", Instant.now());
+    readModelRepo.updatePortalInvoiceStatusAndPaidAt(
+        paidInvoiceId, ORG_ID, "PAID", Instant.now(), new BigDecimal("500.00"));
 
     otherCustomerInvoiceId = UUID.randomUUID();
     readModelRepo.upsertPortalInvoice(
@@ -263,5 +282,80 @@ class PortalPaymentStatusIntegrationTest {
     assertThat(invoice).isPresent();
     assertThat(invoice.get().paymentUrl()).isEqualTo("https://pay.example.com/session/abc123");
     assertThat(invoice.get().paymentSessionId()).isEqualTo("sess_abc123");
+  }
+
+  /**
+   * Global V2 (624A) adds {@code amount_paid DEFAULT 0}, then stamps pre-existing PAID rows with
+   * {@code amount_paid = total}; PARTIALLY_PAID rows are left for their next sync. Executes the
+   * statement text from the migration file inside a rolled-back portal transaction, so no other
+   * test class's rows are touched.
+   */
+  @Test
+  void globalV2_backfillsAmountPaidForPreExistingPaidRowsOnly() throws Exception {
+    String backfill = loadV2AmountPaidBackfill();
+    UUID paidPreV2 = UUID.randomUUID();
+    UUID partialPreV2 = UUID.randomUUID();
+    var tx = new TransactionTemplate(portalTxManager);
+    tx.executeWithoutResult(
+        status -> {
+          seedPreV2Invoice(paidPreV2, "INV-V2-PAID", "PAID", new BigDecimal("640.00"));
+          seedPreV2Invoice(partialPreV2, "INV-V2-PART", "PARTIALLY_PAID", new BigDecimal("300.00"));
+
+          portalJdbc.sql(backfill).update();
+
+          assertThat(amountPaidOf(paidPreV2)).isEqualByComparingTo("640.00");
+          assertThat(amountPaidOf(partialPreV2)).isEqualByComparingTo("0");
+          status.setRollbackOnly();
+        });
+    assertThat(readModelRepo.findInvoiceById(paidPreV2, ORG_ID)).isEmpty();
+  }
+
+  /** A row as it stands right after V2's ADD COLUMN: amount_paid zeroed by the DEFAULT. */
+  private void seedPreV2Invoice(UUID id, String number, String status, BigDecimal total) {
+    readModelRepo.upsertPortalInvoice(
+        id,
+        ORG_ID,
+        customerId,
+        number,
+        status,
+        LocalDate.of(2026, 1, 1),
+        LocalDate.of(2026, 2, 1),
+        total,
+        BigDecimal.ZERO,
+        total,
+        "ZAR",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        false);
+    portalJdbc
+        .sql("UPDATE portal.portal_invoices SET amount_paid = 0 WHERE id = ? AND org_id = ?")
+        .params(id, ORG_ID)
+        .update();
+  }
+
+  private BigDecimal amountPaidOf(UUID id) {
+    return portalJdbc
+        .sql("SELECT amount_paid FROM portal.portal_invoices WHERE id = ? AND org_id = ?")
+        .params(id, ORG_ID)
+        .query(BigDecimal.class)
+        .single();
+  }
+
+  private static String loadV2AmountPaidBackfill() throws IOException {
+    String migration;
+    try (InputStream in =
+        new ClassPathResource("db/migration/global/V2__portal_contact_directory.sql")
+            .getInputStream()) {
+      migration = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+    }
+    Matcher m = Pattern.compile("(?s)UPDATE portal\\.portal_invoices.*?;").matcher(migration);
+    assertThat(m.find()).as("V2 carries the PAID amount_paid backfill").isTrue();
+    return m.group();
   }
 }

@@ -9,7 +9,7 @@ import java.util.UUID;
  * reversal changes its status) to sync to the portal read-model.
  *
  * <p>Carries {@code amountPaid} — the money received so far (Phase 88 U15); {@code
- * PortalEventHandler} ignores it until 624A adds {@code portal_invoices.amount_paid} (OQ #13).
+ * PortalEventHandler} projects it to {@code portal_invoices.amount_paid} (global V2, 624A, OQ #13).
  *
  * <p>Tax data is grouped into a {@link TaxContext} record. Only SENT events carry a non-null
  * TaxContext; PAID and VOID events pass {@code null} since the handler only uses status for those
@@ -125,7 +125,7 @@ public final class InvoiceSyncEvent extends PortalDomainEvent {
     return taxContext;
   }
 
-  /** Money received so far ({@code invoices.amount_paid}); the portal mapping is 624A (OQ #13). */
+  /** Money received so far ({@code invoices.amount_paid}); projected to the portal read model. */
   public BigDecimal getAmountPaid() {
     return amountPaid;
   }

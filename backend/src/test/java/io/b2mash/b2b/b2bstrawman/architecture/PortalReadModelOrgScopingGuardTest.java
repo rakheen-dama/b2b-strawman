@@ -40,6 +40,10 @@ import org.junit.jupiter.api.Test;
  *       so it is an equivalent tenant boundary.
  * </ul>
  *
+ * <p>The portal contact directory ({@code portal.portal_contact_directory}, Phase 88 U11) is scoped
+ * by {@code org_id} like the original tables; its email-keyed login lookup and its backfill marker
+ * table are justified exemptions.
+ *
  * <p>This test makes a missing predicate a build failure. It scans the source of the read-model
  * package, extracts every {@code jdbc.sql("""...""")} statement keyed to its enclosing method, and
  * asserts each statement either:
@@ -76,7 +80,11 @@ class PortalReadModelOrgScopingGuardTest {
    * guard keeps covering the read-model layer as Wave 3.2b splits it apart.
    */
   private static final List<String> READ_MODEL_SOURCE_DIRS =
-      List.of("src/main/java/io/b2mash/b2b/b2bstrawman/customerbackend/repository");
+      List.of(
+          // get(0) is the module-root marker used by resolveModuleRoot() — keep it first.
+          "src/main/java/io/b2mash/b2b/b2bstrawman/customerbackend/repository",
+          // Phase 88 U11 (ADR-351): the global email → firm directory on the portal datasource.
+          "src/main/java/io/b2mash/b2b/b2bstrawman/portal/directory");
 
   /** The columns that constitute a valid tenant boundary in the portal read-model. */
   private static final List<String> TENANT_DISCRIMINATORS = List.of("org_id", "customer_id");
@@ -199,6 +207,27 @@ class PortalReadModelOrgScopingGuardTest {
         "Deliberately tenant-agnostic: enumerates every customer_id that has any portal trust row, "
             + "for the backfill drift-repair job (TrustLedgerPortalSyncService). Never reachable "
             + "from a portal request.");
+
+    // ── portal_contact_directory (Phase 88 U11, ADR-351): global routing table + backfill marker
+    // ──
+    String directory = "PortalContactDirectoryRepository#";
+    m.put(
+        directory + "findAll",
+        "Global email → firm routing lookup (ADR-351): keyed by email_lower by design, returns only"
+            + " (email, org slug, schema, firm name) — no tenant data; the token is minted and"
+            + " exchanged inside the target tenant (§13.6.3). Consumer: PortalAuthService (624B).");
+    m.put(
+        directory + "lockOrg",
+        "pg_advisory_xact_lock on a key derived from the org id — reads and writes no table rows;"
+            + " serialises the org's directory writes (PortalContactDirectoryService).");
+    m.put(
+        directory + "hasBackfillMarker",
+        "portal_contact_directory_backfill has no org_id/customer_id column; keyed by"
+            + " tenant_schema; read only by the trusted startup backfill runner.");
+    m.put(
+        directory + "insertBackfillMarker",
+        "portal_contact_directory_backfill has no org_id/customer_id column; keyed by"
+            + " tenant_schema; written only by the trusted startup backfill runner. INSERT.");
 
     return m;
   }

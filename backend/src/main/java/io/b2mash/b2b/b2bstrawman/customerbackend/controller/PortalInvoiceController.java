@@ -45,6 +45,8 @@ public class PortalInvoiceController {
                         i.issueDate(),
                         i.dueDate(),
                         i.total(),
+                        i.amountPaid(),
+                        i.balanceDue(),
                         i.currency()))
             .toList();
 
@@ -87,6 +89,8 @@ public class PortalInvoiceController {
             invoice.subtotal(),
             invoice.taxAmount(),
             invoice.total(),
+            invoice.amountPaid(),
+            invoice.balanceDue(),
             invoice.currency(),
             invoice.notes(),
             invoice.paymentUrl(),
@@ -126,6 +130,8 @@ public class PortalInvoiceController {
       LocalDate issueDate,
       LocalDate dueDate,
       BigDecimal total,
+      BigDecimal amountPaid,
+      BigDecimal balanceDue,
       String currency) {}
 
   public record PortalInvoiceDetailResponse(
@@ -137,6 +143,8 @@ public class PortalInvoiceController {
       BigDecimal subtotal,
       BigDecimal taxAmount,
       BigDecimal total,
+      BigDecimal amountPaid,
+      BigDecimal balanceDue,
       String currency,
       String notes,
       String paymentUrl,

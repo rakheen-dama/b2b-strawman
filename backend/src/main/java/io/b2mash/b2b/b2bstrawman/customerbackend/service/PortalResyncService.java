@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.portal.directory.PortalContactDirectoryService;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
@@ -36,6 +37,7 @@ public class PortalResyncService {
   private final MemberNameResolver memberNameResolver;
   private final OrgSchemaMappingRepository orgSchemaMappingRepository;
   private final TransactionTemplate portalTxTemplate;
+  private final PortalContactDirectoryService directoryService;
 
   public PortalResyncService(
       PortalReadModelRepository readModelRepo,
@@ -45,7 +47,8 @@ public class PortalResyncService {
       TaskRepository taskRepository,
       MemberNameResolver memberNameResolver,
       OrgSchemaMappingRepository orgSchemaMappingRepository,
-      @Qualifier("portalTransactionManager") PlatformTransactionManager portalTxManager) {
+      @Qualifier("portalTransactionManager") PlatformTransactionManager portalTxManager,
+      PortalContactDirectoryService directoryService) {
     this.readModelRepo = readModelRepo;
     this.customerProjectRepository = customerProjectRepository;
     this.projectRepository = projectRepository;
@@ -54,6 +57,7 @@ public class PortalResyncService {
     this.memberNameResolver = memberNameResolver;
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
     this.portalTxTemplate = new TransactionTemplate(portalTxManager);
+    this.directoryService = directoryService;
   }
 
   public ResyncResult resyncOrg(String orgId) {
@@ -182,15 +186,21 @@ public class PortalResyncService {
               return taskCount;
             });
 
+    // Step 3: rebuild the org's portal contact directory rows (ADR-351, §13.7.2) — the seed's
+    // resync call doubles as a per-org directory reconcile.
+    int directoryRows = directoryService.reconcileOrg(orgId, schema, mapping.getShardId());
+
     int projectsProjected = projections.size();
     int documentsProjected = projections.stream().mapToInt(d -> d.sharedDocs().size()).sum();
 
     log.info(
-        "Portal resync completed for org={}: projects={}, documents={}, tasks={}",
+        "Portal resync completed for org={}: projects={}, documents={}, tasks={},"
+            + " directoryRows={}",
         orgId,
         projectsProjected,
         documentsProjected,
-        tasksProjected);
+        tasksProjected,
+        directoryRows);
 
     return new ResyncResult(projectsProjected, documentsProjected, tasksProjected);
   }

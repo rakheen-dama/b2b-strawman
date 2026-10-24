@@ -291,6 +291,9 @@ class PortalInvoiceControllerIntegrationTest {
         .perform(get("/portal/invoices").header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.invoiceNumber == 'INV-2026-001')]").exists())
+        // Phase 88 U15 (backend half consumed by 624H): nothing paid yet → balance = total
+        .andExpect(jsonPath("$[?(@.invoiceNumber == 'INV-2026-001')].amountPaid").value(0.0))
+        .andExpect(jsonPath("$[?(@.invoiceNumber == 'INV-2026-001')].balanceDue").value(1150.00))
         .andExpect(jsonPath("$[?(@.invoiceNumber == 'INV-2026-OTHER')]").doesNotExist());
   }
 
@@ -330,6 +333,8 @@ class PortalInvoiceControllerIntegrationTest {
         .andExpect(jsonPath("$.invoiceNumber").value("INV-2026-001"))
         .andExpect(jsonPath("$.status").value("SENT"))
         .andExpect(jsonPath("$.total").value(1150.00))
+        .andExpect(jsonPath("$.amountPaid").value(0.0))
+        .andExpect(jsonPath("$.balanceDue").value(1150.00))
         .andExpect(jsonPath("$.currency").value("ZAR"))
         .andExpect(jsonPath("$.notes").value("Test invoice"))
         .andExpect(jsonPath("$.lines.length()").value(2))

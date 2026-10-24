@@ -58,4 +58,17 @@ public interface PortalContactRepository extends JpaRepository<PortalContact, UU
           + " ORDER BY CASE pc.role WHEN 'PRIMARY' THEN 0 WHEN 'BILLING' THEN 1 ELSE 2 END ASC,"
           + " pc.createdAt ASC LIMIT 1")
   Optional<PortalContact> findPreferredActiveByCustomerId(@Param("customerId") UUID customerId);
+
+  /**
+   * Directory presence (ADR-351): any ACTIVE contact in this tenant whose normalised email ({@code
+   * lower(trim(email))}) equals {@code emailLower}.
+   */
+  @Query(
+      "SELECT CASE WHEN COUNT(pc) > 0 THEN true ELSE false END FROM PortalContact pc"
+          + " WHERE lower(trim(pc.email)) = :emailLower AND pc.status = 'ACTIVE'")
+  boolean existsActiveByEmailLower(@Param("emailLower") String emailLower);
+
+  /** Directory backfill/resync (ADR-351): distinct normalised emails of ACTIVE contacts. */
+  @Query("SELECT DISTINCT lower(trim(pc.email)) FROM PortalContact pc WHERE pc.status = 'ACTIVE'")
+  List<String> findDistinctActiveEmailsLower();
 }

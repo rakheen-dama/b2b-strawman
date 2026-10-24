@@ -30,6 +30,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
@@ -48,8 +49,13 @@ import org.springframework.test.context.ActiveProfiles;
  * {@link TenantProvisioningService} path must have one successful row per tenant migration file on
  * the classpath, so V2+ still apply on provisioning.
  *
- * <p>The global series still has only V1 and is compared as migrated at startup. The first PR that
- * adds a schema-changing global V2 must pin the global comparison to V1 the same way.
+ * <p>The global comparison is pinned the same way (Phase 88 624A, before global V2 landed): the
+ * global series is migrated into a scratch DATABASE with {@code .target("1")} — a scratch schema
+ * cannot work because global V1 hard-codes {@code portal.} and the unqualified {@code public}
+ * tables — and that database's {@code public}/{@code portal} are compared with {@code
+ * global-baseline.snapshot}. Its history must be exactly one successful SQL row, version 1. The
+ * live global history (migrated at startup by {@code FlywayConfig.globalFlyway}) must have one
+ * successful row per global migration file on the classpath, so V2+ still apply at startup.
  *
  * <p>The snapshots pin the shape a tenant gets on an EMPTY database. The pre-squash series was not
  * deterministic across tenants: V7/V8/V10/V16/V27/V29/V127 guarded nine objects with unscoped
@@ -71,6 +77,9 @@ class BaselineSchemaParityTest {
   // Never provisioned or mapped — only names the scratch schema migrated to V1.
   private static final String SCRATCH_SCHEMA =
       SchemaNameGenerator.generateSchemaName("org_baseline_schema_parity_v1_scratch");
+  // Never used by the application — only holds the global series migrated to V1. A database (not a
+  // schema) because global V1 creates/qualifies `portal.` and writes unqualified `public` tables.
+  private static final String SCRATCH_GLOBAL_DB = "baseline_parity_global_v1_scratch";
   private static final String TENANT_TOKEN = "<tenant>";
   // PG16 information_schema synthesises NOT NULL "constraints" named
   // <nspoid>_<reloid>_<attnum>_not_null.
@@ -83,6 +92,7 @@ class BaselineSchemaParityTest {
   private final TenantProvisioningService provisioningService;
   private final DataSource migrationDataSource;
   private String provisionedSchema;
+  private DataSource scratchGlobalDataSource;
 
   @Autowired
   BaselineSchemaParityTest(
@@ -113,6 +123,33 @@ class BaselineSchemaParityTest {
         .target(MigrationVersion.fromVersion("1"))
         .load()
         .migrate();
+
+    // Global series: a scratch DATABASE on the same server, same config as
+    // FlywayConfig.globalFlyway, pinned to V1. CREATE/DROP DATABASE need autocommit (Hikari
+    // default) and cannot run in a transaction.
+    String serverUrl;
+    try (Connection c = migrationDataSource.getConnection();
+        Statement s = c.createStatement()) {
+      s.execute("DROP DATABASE IF EXISTS " + SCRATCH_GLOBAL_DB + " WITH (FORCE)");
+      s.execute("CREATE DATABASE " + SCRATCH_GLOBAL_DB);
+      serverUrl = c.getMetaData().getURL();
+    }
+    // jdbc:postgresql://host:port/<db>[?params] → same server, scratch database
+    String scratchUrl =
+        serverUrl.replaceFirst("^(jdbc:postgresql://[^/]+/)[^?]*", "$1" + SCRATCH_GLOBAL_DB);
+    try (Connection c = migrationDataSource.getConnection()) {
+      scratchGlobalDataSource =
+          new SimpleDriverDataSource(
+              new org.postgresql.Driver(), scratchUrl, c.getMetaData().getUserName(), "postgres");
+    }
+    Flyway.configure()
+        .dataSource(scratchGlobalDataSource)
+        .locations("classpath:db/migration/global")
+        .schemas("public")
+        .baselineOnMigrate(false)
+        .target(MigrationVersion.fromVersion("1"))
+        .load()
+        .migrate();
   }
 
   @AfterAll
@@ -120,17 +157,39 @@ class BaselineSchemaParityTest {
     try (Connection c = migrationDataSource.getConnection();
         Statement s = c.createStatement()) {
       s.execute("DROP SCHEMA IF EXISTS \"" + SCRATCH_SCHEMA + "\" CASCADE");
+      s.execute("DROP DATABASE IF EXISTS " + SCRATCH_GLOBAL_DB + " WITH (FORCE)");
     }
   }
 
   @Test
   void tenantSchemaAtV1MatchesCommittedSnapshot() throws Exception {
-    compare("tenant-baseline.snapshot", dump(new String[] {SCRATCH_SCHEMA}, true));
+    compare(
+        "tenant-baseline.snapshot", dump(migrationDataSource, new String[] {SCRATCH_SCHEMA}, true));
   }
 
   @Test
-  void globalSchemasMatchCommittedSnapshot() throws Exception {
-    compare("global-baseline.snapshot", dump(new String[] {"public", "portal"}, false));
+  void globalSchemasAtV1MatchCommittedSnapshot() throws Exception {
+    compare(
+        "global-baseline.snapshot",
+        dump(scratchGlobalDataSource, new String[] {"public", "portal"}, false));
+  }
+
+  @Test
+  void scratchGlobalHistoryIsExactlyBaselineV1() throws Exception {
+    try (Connection c = scratchGlobalDataSource.getConnection();
+        Statement s = c.createStatement();
+        ResultSet rs =
+            s.executeQuery(
+                "SELECT count(*), count(*) FILTER (WHERE success),"
+                    + " count(*) FILTER (WHERE type <> 'SQL'), min(version), max(version)"
+                    + " FROM public.flyway_schema_history")) {
+      rs.next();
+      assertThat(rs.getInt(1)).as("scratch global history rows").isEqualTo(1);
+      assertThat(rs.getInt(2)).as("scratch global successful rows").isEqualTo(1);
+      assertThat(rs.getInt(3)).as("scratch global BASELINE/SCHEMA rows").isZero();
+      assertThat(rs.getString(4)).as("scratch global lowest version").isEqualTo("1");
+      assertThat(rs.getString(5)).as("scratch global highest version").isEqualTo("1");
+    }
   }
 
   @Test
@@ -183,9 +242,9 @@ class BaselineSchemaParityTest {
     }
   }
 
-  private String dump(String[] schemas, boolean tenant) throws Exception {
+  private String dump(DataSource dataSource, String[] schemas, boolean tenant) throws Exception {
     List<String> out = new ArrayList<>();
-    try (Connection c = migrationDataSource.getConnection()) {
+    try (Connection c = dataSource.getConnection()) {
       try (Statement s = c.createStatement()) {
         s.execute("SET search_path TO pg_catalog"); // deterministic qualification (T8)
       }

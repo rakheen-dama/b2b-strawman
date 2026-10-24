@@ -521,8 +521,8 @@ public class InvoiceTransitionService {
   }
 
   /**
-   * Portal sync with the invoice's current status and {@code amountPaid} (the portal handler's
-   * {@code amountPaid} mapping is 624A).
+   * Portal sync with the invoice's current status and {@code amountPaid} (projected to {@code
+   * portal_invoices.amount_paid} by the portal handler).
    */
   private void publishSync(Invoice invoice, String orgId, String tenantId) {
     eventPublisher.publishEvent(
@@ -654,6 +654,7 @@ public class InvoiceTransitionService {
             .findFirst()
             .orElse(null);
     var statusBefore = invoice.getStatus();
+    var amountPaidBefore = invoice.getAmountPaid();
     try {
       // amount_paid = LEAST(total, Σ remaining); reference = newest remaining event's
       invoice.reapplyPayments(remainingSum, latestReference);
@@ -755,7 +756,11 @@ public class InvoiceTransitionService {
               invoice.getCustomerId(),
               paymentEventId,
               amount));
-      if (invoice.getStatus() != statusBefore) {
+      // The portal projects amount_paid too (624A), so a reversal that leaves the fee note
+      // PARTIALLY_PAID must still sync. PAID → PAID with an unchanged amount is skipped: the
+      // handler's PAID branch would re-stamp paid_at.
+      if (invoice.getStatus() != statusBefore
+          || invoice.getAmountPaid().compareTo(amountPaidBefore) != 0) {
         publishSync(invoice, orgIdForEvent, tenantIdForEvent);
       }
     }

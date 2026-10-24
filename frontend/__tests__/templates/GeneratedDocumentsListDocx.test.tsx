@@ -13,6 +13,7 @@ vi.mock("@/app/(app)/org/[slug]/settings/documents/_tabs/template-generation-act
   downloadGeneratedDocumentAction: (...args: unknown[]) => mockDownloadGeneratedDocument(...args),
   downloadDocxGeneratedDocumentAction: (...args: unknown[]) =>
     mockDownloadDocxGeneratedDocument(...args),
+  shareGeneratedDocumentAction: vi.fn(),
 }));
 
 vi.mock("@/lib/format", () => ({

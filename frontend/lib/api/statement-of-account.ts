@@ -9,6 +9,9 @@ export interface GenerateStatementRequest {
   periodStart: string; // ISO yyyy-MM-dd
   periodEnd: string; // ISO yyyy-MM-dd
   templateId?: string; // optional UUID; defaults to system statement-of-account slug
+  // ADR-350: explicit client intent. Backend null → false; notifyClient implies share.
+  shareWithClient?: boolean; // true → saved PORTAL (client can see it); false → INTERNAL
+  notifyClient?: boolean; // true → one document-ready email is requested
 }
 
 // ---- Response types ----

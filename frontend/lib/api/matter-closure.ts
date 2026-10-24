@@ -87,6 +87,10 @@ export interface CloseMatterRequest {
   generateStatementOfAccount: boolean;
   override: boolean;
   overrideJustification?: string;
+  // ADR-350: explicit client intent, applied to the closure letter AND the closure SoA.
+  // false → documents saved INTERNAL; notifyClient implies share (one email per document type).
+  shareWithClient: boolean;
+  notifyClient: boolean;
 }
 
 export interface ReopenMatterRequest {

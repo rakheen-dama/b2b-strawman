@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { ChevronDown, ChevronRight, Download, FileText, Send, Trash2 } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { Badge } from "@b2mash/ui/badge";
@@ -35,6 +36,7 @@ import type { AcceptanceRequestResponse } from "@/lib/actions/acceptance-actions
 import { AcceptanceStatusBadge } from "@/components/acceptance/AcceptanceStatusBadge";
 import { SendForAcceptanceDialog } from "@/components/acceptance/SendForAcceptanceDialog";
 import { AcceptanceDetailPanel } from "@/components/acceptance/AcceptanceDetailPanel";
+import { ShareGeneratedDocumentDialog } from "@/components/templates/share-generated-document-dialog";
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -49,6 +51,11 @@ interface GeneratedDocumentsListProps {
   isAdmin?: boolean;
   refreshKey?: number;
   customerId?: string;
+  /**
+   * 624G: may the user "Share with client" (backend PROJECT_MANAGEMENT)? Set by the matter page
+   * only; the action is offered on INTERNAL matter rows.
+   */
+  canShare?: boolean;
 }
 
 export function GeneratedDocumentsList({
@@ -57,6 +64,7 @@ export function GeneratedDocumentsList({
   isAdmin = false,
   refreshKey = 0,
   customerId,
+  canShare = false,
 }: GeneratedDocumentsListProps) {
   const [documents, setDocuments] = useState<GeneratedDocumentListResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -72,6 +80,13 @@ export function GeneratedDocumentsList({
   const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
 
   const showAcceptanceColumn = isAdmin && !!customerId;
+  // Stable focus target once a shared row's Share trigger leaves the DOM.
+  const listRef = useRef<HTMLDivElement>(null);
+
+  function handleShared(updated: GeneratedDocumentListResponse, notifyClient: boolean) {
+    setDocuments((prev) => prev.map((d) => (d.id === updated.id ? { ...d, ...updated } : d)));
+    toast.success(notifyClient ? "Shared with client — email requested" : "Shared with client");
+  }
 
   const fetchDocuments = useCallback(async () => {
     setIsLoading(true);
@@ -240,7 +255,12 @@ export function GeneratedDocumentsList({
   }
 
   return (
-    <div className="space-y-4">
+    <div
+      ref={listRef}
+      tabIndex={-1}
+      className="space-y-4 outline-none"
+      data-testid="generated-documents-list"
+    >
       {error && <p className="text-destructive text-sm">{error}</p>}
 
       <Table>
@@ -263,10 +283,27 @@ export function GeneratedDocumentsList({
             const format = doc.outputFormat || "PDF";
             const hasPdf = format === "PDF" || format === "BOTH";
             const hasDocx = format === "DOCX" || format === "BOTH";
+            const isOnPortal = doc.visibility === "SHARED" || doc.visibility === "PORTAL";
+            const showShare = canShare && entityType === "PROJECT" && doc.visibility === "INTERNAL";
             return (
               <React.Fragment key={doc.id}>
                 <TableRow>
-                  <TableCell className="font-medium">{doc.templateName}</TableCell>
+                  {/* The name may wrap and the badge drops under it, so neither sets the table's
+                      min width (all other cells are nowrap; a wide table overflows the page). */}
+                  <TableCell className="font-medium whitespace-normal">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span>{doc.templateName}</span>
+                      {isOnPortal && (
+                        <Badge
+                          variant="outline"
+                          className="font-normal"
+                          title="The client can see this document on the client portal"
+                        >
+                          Client portal
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>{doc.generatedByName}</TableCell>
                   <TableCell>{formatDate(doc.generatedAt)}</TableCell>
                   <TableCell>{formatFileSize(doc.fileSize)}</TableCell>
@@ -293,7 +330,10 @@ export function GeneratedDocumentsList({
                             isExpanded ? "Collapse acceptance details" : "Expand acceptance details"
                           }
                         >
-                          <AcceptanceStatusBadge status={acceptanceRequest.status} />
+                          <AcceptanceStatusBadge
+                            status={acceptanceRequest.status}
+                            declineReason={acceptanceRequest.declineReason}
+                          />
                           {isExpanded ? (
                             <ChevronDown className="size-3.5 text-slate-400" />
                           ) : (
@@ -326,6 +366,13 @@ export function GeneratedDocumentsList({
                         >
                           <FileText className="size-4" />
                         </Button>
+                      )}
+                      {showShare && (
+                        <ShareGeneratedDocumentDialog
+                          document={doc}
+                          onShared={handleShared}
+                          fallbackFocusRef={listRef}
+                        />
                       )}
                       {isAdmin && customerId && (
                         <Button

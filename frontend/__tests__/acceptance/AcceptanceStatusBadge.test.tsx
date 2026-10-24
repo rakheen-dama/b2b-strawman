@@ -42,6 +42,32 @@ describe("AcceptanceStatusBadge", () => {
     expect(badge?.querySelector("svg")).not.toBeInTheDocument();
   });
 
+  it('renders "Declined — {reason}" with the full reason as a title for DECLINED with a reason', () => {
+    render(<AcceptanceStatusBadge status="DECLINED" declineReason="Price too high" />);
+    const label = screen.getByText("Declined — Price too high");
+    expect(label).toBeInTheDocument();
+    const badge = label.closest("[data-slot='badge']");
+    expect(badge).toHaveAttribute("title", "Declined — Price too high");
+    expect(badge).toHaveAttribute("data-variant", "destructive");
+    // Long reasons are truncated by CSS, never cut in the DOM.
+    expect(label).toHaveClass("truncate");
+    // Width cap keeps the Acceptance column near the "Awaiting Acceptance" badge width.
+    expect(badge).toHaveClass("max-w-[10rem]");
+  });
+
+  it('renders plain "Declined" (destructive) when the reason is null or blank', () => {
+    render(<AcceptanceStatusBadge status="DECLINED" declineReason="   " />);
+    const badge = screen.getByText("Declined").closest("[data-slot='badge']");
+    expect(badge).toHaveAttribute("data-variant", "destructive");
+    expect(screen.queryByText(/Declined —/)).not.toBeInTheDocument();
+  });
+
+  it("ignores declineReason for non-DECLINED statuses", () => {
+    render(<AcceptanceStatusBadge status="SENT" declineReason="stale" />);
+    expect(screen.getByText("Awaiting Acceptance")).toBeInTheDocument();
+    expect(screen.queryByText(/stale/)).not.toBeInTheDocument();
+  });
+
   it('renders "Pending" badge for PENDING status', () => {
     render(<AcceptanceStatusBadge status="PENDING" />);
     expect(screen.getByText("Pending")).toBeInTheDocument();

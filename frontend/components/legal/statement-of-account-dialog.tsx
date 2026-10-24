@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Download, Eye, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
@@ -24,6 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@b2mash/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ModuleGate } from "@/components/module-gate";
 import { A4PreviewWrapper } from "@/components/documents/a4-preview-wrapper";
 import {
@@ -34,6 +35,7 @@ import {
   generateStatementAction,
   listStatementsAction,
 } from "@/app/(app)/org/[slug]/matters/[id]/statement-actions";
+import { CLIENT_EMAIL_CAVEAT } from "@/lib/client-notification-copy";
 import { downloadGeneratedDocumentAction } from "@/app/(app)/org/[slug]/settings/documents/_tabs/template-generation-actions";
 import type { StatementResponse } from "@/lib/api/statement-of-account";
 
@@ -81,6 +83,20 @@ function addDaysIso(isoDate: string, days: number): string {
   return `${yy}-${mm}-${dd}`;
 }
 
+/** ADR-350: what the next "Preview & Save" click does, stated exactly. */
+function intentSummary(share: boolean, notify: boolean): string {
+  if (notify) return "Save, share on the client portal and request an email to the client.";
+  if (share)
+    return "Save and share on the client portal — the client can see it there. No email is sent now.";
+  return "Save as internal draft — the client will not see it.";
+}
+
+function intentToastDescription(share: boolean, notify: boolean): string {
+  if (notify) return "Shared on the client portal — email requested.";
+  if (share) return "Shared on the client portal.";
+  return "Saved as internal draft — the client will not see it.";
+}
+
 function StatementOfAccountDialogInner({
   slug,
   projectId,
@@ -125,8 +141,13 @@ function StatementOfAccountDialogInner({
       periodStart: defaultPeriodStart,
       periodEnd: todayIso(),
       templateId: "",
+      shareWithClient: false,
+      notifyClient: false,
     },
   });
+
+  const notifyValue = useWatch({ control: form.control, name: "notifyClient" });
+  const shareValue = useWatch({ control: form.control, name: "shareWithClient" }) || notifyValue;
 
   useEffect(() => {
     if (!open) {
@@ -137,6 +158,9 @@ function StatementOfAccountDialogInner({
       setIsGenerating(false);
       setIsDownloading(false);
       /* eslint-enable react-hooks/set-state-in-effect */
+      // ADR-350 demo safety: a reopened dialog never carries a previous "Email the client" tick.
+      form.resetField("shareWithClient");
+      form.resetField("notifyClient");
       return;
     }
     // When the dialog (re-)opens, recompute defaults from prior statements.
@@ -147,6 +171,8 @@ function StatementOfAccountDialogInner({
         periodStart: defaultPeriodStart,
         periodEnd: todayIso(),
         templateId: "",
+        shareWithClient: false,
+        notifyClient: false,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -166,6 +192,9 @@ function StatementOfAccountDialogInner({
       periodStart: values.periodStart,
       periodEnd: values.periodEnd,
       templateId: values.templateId && values.templateId.length > 0 ? values.templateId : undefined,
+      // notifyClient implies share (backend rule too); send the honest pair.
+      shareWithClient: values.shareWithClient || values.notifyClient,
+      notifyClient: values.notifyClient,
     };
     return await generateStatementAction(slug, projectId, req);
   }
@@ -178,7 +207,12 @@ function StatementOfAccountDialogInner({
       if (result.success) {
         setLastGenerated(result.data);
         setPreviewHtml(result.data.htmlPreview ?? null);
-        toast.success("Statement generated");
+        toast.success("Statement generated", {
+          description: intentToastDescription(
+            values.shareWithClient || values.notifyClient,
+            values.notifyClient
+          ),
+        });
         onGenerated?.();
       } else {
         setError(result.error);
@@ -229,7 +263,10 @@ function StatementOfAccountDialogInner({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-3xl" data-testid="statement-of-account-dialog">
+      <DialogContent
+        className="max-h-[90vh] max-w-3xl overflow-y-auto"
+        data-testid="statement-of-account-dialog"
+      >
         <DialogHeader>
           <DialogTitle>Generate Statement of Account</DialogTitle>
           <DialogDescription>
@@ -268,6 +305,69 @@ function StatementOfAccountDialogInner({
                   </FormItem>
                 )}
               />
+            </div>
+
+            <div className="space-y-3" data-testid="statement-intent">
+              <FormField
+                control={form.control}
+                name="shareWithClient"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start gap-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value || notifyValue}
+                        disabled={notifyValue}
+                        onCheckedChange={(v) => field.onChange(v === true)}
+                        data-testid="statement-share-checkbox"
+                      />
+                    </FormControl>
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-sm font-medium">
+                        Share on the client portal
+                      </FormLabel>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        The client can see this statement when they sign in to the portal.
+                      </p>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="notifyClient"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start gap-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(v) => {
+                          const next = v === true;
+                          field.onChange(next);
+                          // Email implies share: tick it; unticking email leaves share ticked.
+                          if (next) form.setValue("shareWithClient", true, { shouldDirty: true });
+                        }}
+                        data-testid="statement-notify-checkbox"
+                      />
+                    </FormControl>
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-sm font-medium">Email the client now</FormLabel>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Also shares it, and requests an email with a link to the client&apos;s
+                        portal contact.
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {CLIENT_EMAIL_CAVEAT}
+                      </p>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <p
+                className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                data-testid="statement-intent-summary"
+              >
+                {intentSummary(shareValue, notifyValue)}
+              </p>
             </div>
 
             <div className="max-h-[50vh] overflow-y-auto" data-testid="statement-preview-container">

@@ -200,6 +200,8 @@ describe("MatterClosureDialog", () => {
       generateClosureLetter: true,
       generateStatementOfAccount: true,
       override: false,
+      shareWithClient: false,
+      notifyClient: false,
     });
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   });
@@ -490,6 +492,144 @@ describe("MatterClosureDialog", () => {
     expect(mockClose.mock.calls[0][2]).toMatchObject({
       generateClosureLetter: true,
       generateStatementOfAccount: false,
+    });
+  });
+
+  // ---- 624G / ADR-350: client notification intent (Step 2) ----
+
+  async function openStep2(user: ReturnType<typeof userEvent.setup>) {
+    mockEvaluate.mockResolvedValue({
+      success: true,
+      report: makeReport({ allPassed: true, gates: [makeGate()] }),
+    });
+    mockClose.mockResolvedValue({
+      success: true,
+      data: {
+        matterId: "p1",
+        status: "CLOSED",
+        closedAt: "2026-04-28T08:00:00Z",
+        closureLogId: "log-1",
+        closureLetterDocumentId: "doc-1",
+        statementOfAccountDocumentId: "soa-1",
+        retentionEndsAt: "2031-04-28",
+      },
+    });
+    render(
+      withProviders(
+        <MatterClosureDialog
+          slug="acme"
+          projectId="p1"
+          projectName="Smith v Jones"
+          open={true}
+          onOpenChange={vi.fn()}
+        />
+      )
+    );
+    await waitFor(() => expect(screen.getByTestId("matter-closure-step-1")).toBeInTheDocument());
+    await user.click(screen.getByTestId("matter-closure-next-btn"));
+    await waitFor(() => expect(screen.getByTestId("matter-closure-step-2")).toBeInTheDocument());
+  }
+
+  it("step 2: intent checkboxes default off and the summary says internal drafts", async () => {
+    const user = userEvent.setup();
+    await openStep2(user);
+
+    const share = screen.getByTestId("matter-closure-share-checkbox");
+    const notify = screen.getByTestId("matter-closure-notify-checkbox");
+    expect(share).toHaveAttribute("data-state", "unchecked");
+    expect(notify).toHaveAttribute("data-state", "unchecked");
+    expect(share).not.toBeDisabled();
+    expect(notify).not.toBeDisabled();
+    expect(screen.getByText("Share on the client portal")).toBeInTheDocument();
+    expect(screen.getByText("Email the client now")).toBeInTheDocument();
+    expect(screen.getByTestId("matter-closure-intent-summary")).toHaveTextContent(
+      "Save the closure letter and Statement of Account as internal drafts — the client will not see them."
+    );
+  });
+
+  it("step 2: share only sends shareWithClient=true, notifyClient=false", async () => {
+    const user = userEvent.setup();
+    await openStep2(user);
+
+    await user.click(screen.getByTestId("matter-closure-share-checkbox"));
+    expect(screen.getByTestId("matter-closure-intent-summary")).toHaveTextContent(
+      "Share the closure letter and Statement of Account on the client portal — the client can see them there. No email is sent now."
+    );
+    await user.click(screen.getByTestId("matter-closure-confirm-close-btn"));
+
+    await waitFor(() => expect(mockClose).toHaveBeenCalled());
+    expect(mockClose.mock.calls[0][2]).toMatchObject({
+      shareWithClient: true,
+      notifyClient: false,
+    });
+  });
+
+  it("step 2: email ticks and locks share, shows the caveat, and sends both flags true", async () => {
+    const user = userEvent.setup();
+    await openStep2(user);
+
+    await user.click(screen.getByTestId("matter-closure-notify-checkbox"));
+    const share = screen.getByTestId("matter-closure-share-checkbox");
+    expect(share).toHaveAttribute("data-state", "checked");
+    expect(share).toBeDisabled();
+    expect(
+      screen.getByText(
+        "No email is sent if the client has no portal contact, or if they were already emailed about this kind of document on this matter in the last 5 minutes."
+      )
+    ).toBeInTheDocument();
+    const summary = screen.getByTestId("matter-closure-intent-summary");
+    expect(summary).toHaveTextContent(
+      "Share the closure letter and Statement of Account on the client portal and request an email to the client for each."
+    );
+    expect(summary).not.toHaveTextContent(/email sent/i);
+
+    await user.click(screen.getByTestId("matter-closure-confirm-close-btn"));
+    await waitFor(() => expect(mockClose).toHaveBeenCalled());
+    expect(mockClose.mock.calls[0][2]).toMatchObject({
+      shareWithClient: true,
+      notifyClient: true,
+    });
+  });
+
+  it("step 2: summary names only the documents being generated", async () => {
+    const user = userEvent.setup();
+    await openStep2(user);
+
+    await user.click(screen.getByTestId("matter-closure-generate-soa-checkbox"));
+    expect(screen.getByTestId("matter-closure-intent-summary")).toHaveTextContent(
+      "Save the closure letter as an internal draft — the client will not see it."
+    );
+  });
+
+  it("step 2: with no documents generated the intent checkboxes are disabled and both flags are sent false", async () => {
+    const user = userEvent.setup();
+    await openStep2(user);
+
+    await user.click(screen.getByTestId("matter-closure-notify-checkbox"));
+    await user.click(screen.getByTestId("matter-closure-generate-letter-checkbox"));
+    await user.click(screen.getByTestId("matter-closure-generate-soa-checkbox"));
+
+    expect(screen.getByTestId("matter-closure-share-checkbox")).toBeDisabled();
+    expect(screen.getByTestId("matter-closure-notify-checkbox")).toBeDisabled();
+    expect(screen.getByTestId("matter-closure-share-checkbox")).toHaveAttribute(
+      "data-state",
+      "unchecked"
+    );
+    expect(screen.getByTestId("matter-closure-notify-checkbox")).toHaveAttribute(
+      "data-state",
+      "unchecked"
+    );
+    expect(screen.getByTestId("matter-closure-intent-summary")).toHaveTextContent(
+      "No closure documents will be generated, so nothing is shared with or emailed to the client."
+    );
+
+    await user.click(screen.getByTestId("matter-closure-confirm-close-btn"));
+    await waitFor(() => expect(mockClose).toHaveBeenCalled());
+    expect(mockClose.mock.calls[0][2]).toMatchObject({
+      generateClosureLetter: false,
+      generateStatementOfAccount: false,
+      shareWithClient: false,
+      notifyClient: false,
     });
   });
 

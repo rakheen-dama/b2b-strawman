@@ -1,6 +1,10 @@
 import { Badge } from "@b2mash/ui/badge";
 import { cn, humaniseStatus } from "@/lib/utils";
 
+/** Neutral slate classes for a project status the colour map does not know yet. */
+const NEUTRAL_STATUS_COLORS =
+  "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
+
 const PROJECT_STATUS_COLORS: Record<string, string> = {
   ACTIVE: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
   CLOSED: "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400",
@@ -56,7 +60,7 @@ export function StatusBadge({
   const colorMap = VARIANT_MAP[variant] ?? PROJECT_STATUS_COLORS;
   const colorClasses =
     colorMap[status] ??
-    (isProject ? PROJECT_STATUS_COLORS.ARCHIVED : colorMap["OPEN"]) ??
+    (isProject ? NEUTRAL_STATUS_COLORS : colorMap["OPEN"]) ??
     "";
   const label = isProject
     ? (PROJECT_STATUS_LABELS[status] ?? humaniseStatus(status))

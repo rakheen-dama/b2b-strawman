@@ -11,6 +11,7 @@ import { InvoiceStatusBadge } from "@/components/invoice-status-badge";
 import { InvoiceLineTable } from "@/components/invoice-line-table";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import { StickyActionBar } from "@/components/ui/sticky-action-bar";
+import { hasKnownPartPayment, partPaymentContactMessage } from "@/lib/utils";
 import type { PortalInvoiceDetail, PortalDownload } from "@/lib/types";
 
 function PageSkeleton() {
@@ -91,7 +92,7 @@ export default function InvoiceDetailPage() {
   const hasPaymentBar = invoice.status === "SENT" && !!invoice.paymentUrl;
   const isPartiallyPaid = invoice.status === "PARTIALLY_PAID";
   // Pre-V2 rows read amountPaid 0 until their next sync (624A) — show no amounts then.
-  const hasKnownPartPayment = isPartiallyPaid && invoice.amountPaid > 0;
+  const showBalanceSummary = hasKnownPartPayment(invoice);
 
   return (
     <>
@@ -159,7 +160,7 @@ export default function InvoiceDetailPage() {
             </a>
           </div>
         )}
-        {hasKnownPartPayment && (
+        {showBalanceSummary && (
           <div
             data-testid="invoice-balance-summary"
             className="rounded-lg border border-amber-200 bg-amber-50 p-4 md:max-w-sm"
@@ -186,9 +187,7 @@ export default function InvoiceDetailPage() {
             className="rounded-lg border border-slate-200 bg-slate-50 p-4"
           >
             <p className="text-sm text-slate-600">
-              {hasKnownPartPayment
-                ? `To pay the balance of ${formatCurrency(invoice.balanceDue, invoice.currency)}, contact ${orgName}.`
-                : `A part payment has been received. Contact ${orgName} for the outstanding balance.`}
+              {partPaymentContactMessage(invoice, orgName)}
             </p>
           </div>
         )}

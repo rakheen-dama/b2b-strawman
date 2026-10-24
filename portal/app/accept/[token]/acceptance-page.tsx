@@ -228,6 +228,16 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
     pageState === "DECLINING";
   const isBusy = pageState === "SUBMITTING" || pageState === "DECLINING";
 
+  // Whole sentences as single strings so the formatter can never split the trailing "."
+  // onto its own JSX text node.
+  const acceptedBy = acceptorName
+    ? `${acceptorName} accepted this document`
+    : "You have accepted this document";
+  const acceptedSentence = `${acceptedBy} on ${acceptedAt ? formatDateTime(acceptedAt) : "an unknown date"}.`;
+  const declinedSentence = declinedAt
+    ? `You declined this document on ${formatDateTime(declinedAt)}.`
+    : "You declined this document.";
+
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8">
       <div
@@ -325,11 +335,7 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
             <CardContent className="py-6 text-center">
               <CheckCircle className="mx-auto mb-3 h-10 w-10 text-green-500" />
               <p className="text-sm font-medium text-green-700">
-                {acceptorName
-                  ? `${acceptorName} accepted this document`
-                  : "You have accepted this document"}{" "}
-                on {acceptedAt ? formatDateTime(acceptedAt) : "an unknown date"}
-                .
+                {acceptedSentence}
               </p>
             </CardContent>
           </Card>
@@ -340,8 +346,7 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
             <CardContent className="py-6 text-center">
               <XCircle className="mx-auto mb-3 h-10 w-10 text-slate-500" />
               <p className="text-sm font-medium text-slate-800">
-                You declined this document
-                {declinedAt ? ` on ${formatDateTime(declinedAt)}` : ""}.
+                {declinedSentence}
               </p>
               {declineReason && (
                 <p className="mt-2 text-sm break-words text-slate-600">

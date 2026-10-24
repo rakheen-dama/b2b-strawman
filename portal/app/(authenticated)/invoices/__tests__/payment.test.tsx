@@ -341,4 +341,74 @@ describe("PaymentCancelledPage", () => {
     expect(screen.queryByText("Pay Now")).not.toBeInTheDocument();
     expect(screen.getByText("View Fee Note")).toBeInTheDocument();
   });
+
+  it("offers to try again for a SENT fee note", async () => {
+    mockPortalGet.mockResolvedValue(mockInvoiceDetail);
+
+    render(<PaymentCancelledPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("payment-cancelled-message")).toHaveTextContent(
+        "Your payment was not completed. You can try again when you are ready.",
+      );
+    });
+  });
+
+  it("shows the balance-contact copy, not try again, for a PARTIALLY_PAID fee note", async () => {
+    mockPortalGet.mockResolvedValue(mockPartiallyPaidWithStaleUrl);
+
+    render(<PaymentCancelledPage />);
+
+    await waitFor(() => {
+      expect(mockPortalGet).toHaveBeenCalledWith("/portal/invoices/inv-1");
+    });
+    await waitFor(() => {
+      expect(
+        norm(screen.getByTestId("payment-cancelled-message").textContent),
+      ).toBe(
+        norm(
+          `Your payment was not completed. To pay the balance of ${formatCurrency(37814.5, "ZAR")}, contact Test Org.`,
+        ),
+      );
+    });
+    expect(screen.queryByText(/try again/i)).not.toBeInTheDocument();
+  });
+
+  it("shows the part-payment fallback copy for a PARTIALLY_PAID fee note with amountPaid 0", async () => {
+    mockPortalGet.mockResolvedValue({
+      ...mockPartiallyPaidWithStaleUrl,
+      amountPaid: 0,
+      balanceDue: 42814.5,
+    });
+
+    render(<PaymentCancelledPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("payment-cancelled-message")).toHaveTextContent(
+        "Your payment was not completed. A part payment has been received. Contact Test Org for the outstanding balance.",
+      );
+    });
+    expect(screen.queryByText(/try again/i)).not.toBeInTheDocument();
+    expect(screen.queryByText("Pay Now")).not.toBeInTheDocument();
+  });
+
+  it("shows no try-again sentence for other statuses", async () => {
+    mockPortalGet.mockResolvedValue({
+      ...mockInvoiceDetail,
+      status: "PAID",
+      paymentUrl: null,
+    });
+
+    render(<PaymentCancelledPage />);
+
+    await waitFor(() => {
+      expect(mockPortalGet).toHaveBeenCalledWith("/portal/invoices/inv-1");
+    });
+    await waitFor(() => {
+      expect(screen.getByTestId("payment-cancelled-message")).toHaveTextContent(
+        /^Your payment was not completed\.$/,
+      );
+    });
+    expect(screen.queryByText("Pay Now")).not.toBeInTheDocument();
+  });
 });

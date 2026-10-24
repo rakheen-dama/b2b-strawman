@@ -1,5 +1,6 @@
 import { formatCurrency } from "@b2mash/shared/format";
 import type { PortalInvoice } from "@/lib/types";
+import { hasKnownPartPayment } from "@/lib/utils";
 
 interface BalanceDueHintProps {
   invoice: Pick<
@@ -9,12 +10,13 @@ interface BalanceDueHintProps {
 }
 
 /**
- * Muted "Balance R x" sub-line under a fee-note total while it is part-paid
- * (ADR-347; portal twin of the firm `BalanceDueHint`). Renders nothing for other
- * statuses, or when amountPaid is 0 — pre-V2 rows read 0 until re-synced (624A).
+ * Small amber "Balance R x" sub-line under a fee-note total while it is part-paid
+ * (ADR-347; portal twin of the firm `BalanceDueHint`, whose amber-700 colour it keeps).
+ * Renders nothing for other statuses, or when amountPaid is 0 — pre-V2 rows read 0
+ * until re-synced (624A).
  */
 export function BalanceDueHint({ invoice }: BalanceDueHintProps) {
-  if (invoice.status !== "PARTIALLY_PAID" || !(invoice.amountPaid > 0)) {
+  if (!hasKnownPartPayment(invoice)) {
     return null;
   }
   return (

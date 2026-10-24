@@ -1,0 +1,22 @@
+== A after {} decline
+                  id                  |  status  |          declined_at          | reason_null 
+--------------------------------------+----------+-------------------------------+-------------
+ b24b31b1-b38e-444f-83f0-df2de01c73be | DECLINED | 2026-10-24 19:40:50.605088+00 | t
+(1 row)
+
+                                                                                          details                                                                                           
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"actor_name": "System", "ip_address": "172.217.76.95", "project_id": "dbebf31b-e0d0-4672-ab7e-2bf289b6c262", "customer_id": "7c97210a-9d7b-4883-a218-f60bf03cff3c", "decline_reason": ""}
+(1 row)
+
+        type         |                                      title                                       | body_null |         reference_project_id         
+---------------------+----------------------------------------------------------------------------------+-----------+--------------------------------------
+ ACCEPTANCE_DECLINED | Khumalo Property Holdings mvm024uad719 declined Engagement Letter — Conveyancing | t         | dbebf31b-e0d0-4672-ab7e-2bf289b6c262
+(1 row)
+
+  status  
+----------
+ DECLINED
+(1 row)
+
+total 27

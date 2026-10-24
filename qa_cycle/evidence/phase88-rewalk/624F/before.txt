@@ -1,0 +1,28 @@
+== BEFORE (3a) 2026-10-24T19:40:16Z
+                  id                  | status | viewed_at | declined_at | decline_reason 
+--------------------------------------+--------+-----------+-------------+----------------
+ b7498a5e-86c7-4f2b-b72a-2aaeb8e99125 | SENT   |           |             | 
+(1 row)
+
+ notifications 
+---------------
+            29
+(1 row)
+
+ declined_audits 
+-----------------
+               0
+(1 row)
+
+                  id                  | status |                                               document_title                                               
+--------------------------------------+--------+------------------------------------------------------------------------------------------------------------
+ 58d37957-32a4-4b4f-a8f9-9cf99bc1bab2 | SENT   | offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-mvm024uad719-2026-10-24
+ b24b31b1-b38e-444f-83f0-df2de01c73be | SENT   | engagement-letter-conveyancing-khumalo-property-holdings-erf-1234-sandton-transfer-mvm024uad719-2026-10-24
+ b7498a5e-86c7-4f2b-b72a-2aaeb8e99125 | SENT   | engagement-letter-general-khumalo-property-holdings-erf-1234-sandton-transfer-mvm024uad719-2026-10-24
+(3 rows)
+
+Mailpit total:
+total 27
+jqnhE2in6RuQKxkYXo2qVP 2026-10-24T19:10:04.921Z khumalo.property.mvm024uad719@example.com | E2E Test Organization -- Please review engagement letter for acceptance: engagement-letter-general-khumalo-property-holdings-erf-1234-sandton-transfer-mvm024uad719-2026-10-24.pdf
+L5sxi778v9hLsvUPSN6jS9 2026-10-24T19:09:34.399Z khumalo.property.mvm024uad719@example.com | E2E Test Organization -- Please review engagement letter for acceptance: engagement-letter-conveyancing-khumalo-property-holdings-erf-1234-sandton-transfer-mvm024uad719-2026-10-24.pdf
+AS6WRfz6vnNhFMFwEdmyM8 2026-10-24T18:48:51.1Z khumalo.property.mvm024uad719@example.com | Document ready: statement-of-account-khumalo-property-holdings-erf-1234-sandton-transfe-2026-10-24.pdf from E2E Test Organization

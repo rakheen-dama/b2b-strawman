@@ -1,0 +1,2 @@
+{"requestId":"b7498a5e-86c7-4f2b-b72a-2aaeb8e99125","status":"DECLINED","documentTitle":"engagement-letter-general-khumalo-property-holdings-erf-1234-sandton-transfer-mvm024uad719-2026-10-24.pdf","documentFileName":"engagement-letter-general-khumalo-property-holdings-erf-1234-sandton-transfer-mvm024uad719-2026-10-24.pdf","expiresAt":"2026-11-23T19:10:04.887317Z","orgName":"E2E Test Organization","orgLogo":null,"brandColor":"#1b3a4b","acceptedAt":null,"acceptorName":null,"declinedAt":"2026-10-24T19:40:28.253878Z"}
+HTTP 200

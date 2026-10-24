@@ -1,0 +1,2 @@
+{"detail":"Cannot mark as accepted acceptance request in status DECLINED","instance":"/api/portal/acceptance/Hln6OL…/accept","status":400,"title":"Invalid acceptance request state"}
+HTTP 400

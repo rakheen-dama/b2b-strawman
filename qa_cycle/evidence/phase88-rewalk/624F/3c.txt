@@ -1,0 +1,2 @@
+{"detail":"This request can no longer be declined","instance":"/api/portal/acceptance/Hln6OL…/decline","status":409,"title":"Invalid status transition"}
+HTTP 409

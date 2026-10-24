@@ -1,0 +1,2 @@
+{"status":"DECLINED","declinedAt":"2026-10-24T19:40:28.253877965Z"}
+HTTP 200

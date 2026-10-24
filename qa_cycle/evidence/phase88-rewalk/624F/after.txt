@@ -1,0 +1,31 @@
+== AFTER (3e) 2026-10-24T19:40:35Z portal poll iterations=1
+                  id                  |  status  | viewed_at | accepted_at | acceptor_name |          declined_at          |         decline_reason         |          updated_at           
+--------------------------------------+----------+-----------+-------------+---------------+-------------------------------+--------------------------------+-------------------------------
+ b7498a5e-86c7-4f2b-b72a-2aaeb8e99125 | DECLINED |           |             |               | 2026-10-24 19:40:28.253878+00 | Price too high — 624F observer | 2026-10-24 19:40:28.287889+00
+(1 row)
+
+     event_type      |    entity_type     |              entity_id               |   actor_type   |               actor_id               | source |                                                                                                         details                                                                                                          |          occurred_at          
+---------------------+--------------------+--------------------------------------+----------------+--------------------------------------+--------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------
+ acceptance.declined | acceptance_request | b7498a5e-86c7-4f2b-b72a-2aaeb8e99125 | PORTAL_CONTACT | 1dce89e2-395e-4335-a90b-15f345e5a790 | PORTAL | {"actor_name": "System", "ip_address": "172.217.76.95", "project_id": "dbebf31b-e0d0-4672-ab7e-2bf289b6c262", "customer_id": "7c97210a-9d7b-4883-a218-f60bf03cff3c", "decline_reason": "Price too high — 624F observer"} | 2026-10-24 19:40:28.274532+00
+(1 row)
+
+ notifications 
+---------------
+            30
+(1 row)
+
+         recipient_member_id          |        type         |                                                    title                                                    |              body              | reference_entity_type |         reference_entity_id          |         reference_project_id         | is_read |          created_at           
+--------------------------------------+---------------------+-------------------------------------------------------------------------------------------------------------+--------------------------------+-----------------------+--------------------------------------+--------------------------------------+---------+-------------------------------
+ 7f8ad470-cf18-49b7-aa34-c5a3939b062e | ACCEPTANCE_DECLINED | Khumalo Property Holdings mvm024uad719 declined Engagement Letter — General: Price too high — 624F observer | Price too high — 624F observer | ACCEPTANCE_REQUEST    | b7498a5e-86c7-4f2b-b72a-2aaeb8e99125 | dbebf31b-e0d0-4672-ab7e-2bf289b6c262 | f       | 2026-10-24 19:40:28.30876+00
+ 9842c960-a8fc-4f66-81b2-18c49646e87a | INVOICE_SENT        | Fee Note INV-0005 for Acme Corp has been sent                                                               |                                | INVOICE               | 5a74e1d8-e423-49d7-880e-18fd3b5572d5 |                                      | f       | 2026-10-24 16:14:55.800965+00
+(2 rows)
+
+                  id                  |  status  
+--------------------------------------+----------
+ b7498a5e-86c7-4f2b-b72a-2aaeb8e99125 | DECLINED
+(1 row)
+
+total 27
+jqnhE2in6RuQKxkYXo2qVP 2026-10-24T19:10:04.921Z khumalo.property.mvm024uad719@example.com | E2E Test Organization -- Please review engagement letter for acceptance: engagement-letter-general-khumalo-property-holdings-erf-1234-sandton-transfer-mvm024uad719-2026-10-24.pdf
+L5sxi778v9hLsvUPSN6jS9 2026-10-24T19:09:34.399Z khumalo.property.mvm024uad719@example.com | E2E Test Organization -- Please review engagement letter for acceptance: engagement-letter-conveyancing-khumalo-property-holdings-erf-1234-sandton-transfer-mvm024uad719-2026-10-24.pdf
+AS6WRfz6vnNhFMFwEdmyM8 2026-10-24T18:48:51.1Z khumalo.property.mvm024uad719@example.com | Document ready: statement-of-account-khumalo-property-holdings-erf-1234-sandton-transfe-2026-10-24.pdf from E2E Test Organization

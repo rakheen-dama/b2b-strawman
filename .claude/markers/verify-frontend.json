@@ -1,7 +1,7 @@
 {
-  "commit": "90a7695b9660f3402be834dacf6eed76337f0320",
+  "commit": "cdb1dbb0a622d1597c6ea4c725f1ebd0cd6b3efe",
   "command": "cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-24T06:10:39Z",
-  "summary": "Slice 622F PR #1666 head 90a7695b9 (orchestrator re-run in worktree-epic-622F): lint 0 errors / 92 warnings, format:check clean, vitest 417 files / 3129 passed / 2 skipped (= baseline, spec-only PR), next build OK; CI Frontend pass. E2E-LEGAL fresh stack: lifecycle alone 74/4/5/14 (failed = carried {A1,A2,A4,A6}), depth-ii 35/0/8; E2E-DEFAULT invoices/ 19/0/2."
+  "ts": "2026-10-24T20:05:18Z",
+  "summary": "Slice 624F PR #1675 head cdb1dbb0a (orchestrator re-run in worktree-epic-624F): lint 0 errors / 92 warnings, format:check clean, vitest 417 files / 3130 passed / 2 skipped (baseline 3129 + 1 DECLINED badge case), next build OK; CI Frontend pass. Observer: firm generated-documents list renders Declined badge with 0 console errors on e2e (built from cdb1dbb0a)."
 }

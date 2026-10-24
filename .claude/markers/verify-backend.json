@@ -1,7 +1,7 @@
 {
-  "commit": "af4187510dd95605e5b595e5ac38be42aa4d0e5b",
+  "commit": "cdb1dbb0a622d1597c6ea4c725f1ebd0cd6b3efe",
   "command": "cd backend && caffeinate -is ./mvnw clean verify -q (verify.sh preflight skipped: it would kill the svc.sh spring-boot:run KC backend)",
   "exit": 0,
-  "ts": "2026-10-24T19:04:48Z",
-  "summary": "PR #1674 (624E) head af4187510: 5710 testcases / 0 failing report files / 26 skipped; Backend CI pass"
+  "ts": "2026-10-24T20:05:00Z",
+  "summary": "PR #1675 (624F) head cdb1dbb0a: 5743 testcases / 0 failing report files (baseline 5710); Backend CI pass 16m03s"
 }

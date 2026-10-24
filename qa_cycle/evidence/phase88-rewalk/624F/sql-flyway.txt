@@ -1,0 +1,46 @@
+ version |          description           | success |        installed_on        
+---------+--------------------------------+---------+----------------------------
+ 1       | baseline                       | t       | 2026-10-24 06:07:55.396645
+ 2       | add project template work type | t       | 2026-10-24 06:07:56.080307
+ 3       | normalise work types           | t       | 2026-10-24 06:07:56.090443
+ 4       | phase88 demo ready             | t       | 2026-10-24 06:07:56.097054
+ 5       | phase88 acceptance decline     | t       | 2026-10-24 19:39:53.069957
+(5 rows)
+
+                            Table "tenant_7d218705360b.acceptance_requests"
+        Column         |           Type           | Collation | Nullable |           Default            
+-----------------------+--------------------------+-----------+----------+------------------------------
+ id                    | uuid                     |           | not null | gen_random_uuid()
+ generated_document_id | uuid                     |           | not null | 
+ portal_contact_id     | uuid                     |           | not null | 
+ customer_id           | uuid                     |           | not null | 
+ status                | character varying(20)    |           | not null | 'PENDING'::character varying
+ request_token         | character varying(255)   |           | not null | 
+ sent_at               | timestamp with time zone |           |          | 
+ viewed_at             | timestamp with time zone |           |          | 
+ accepted_at           | timestamp with time zone |           |          | 
+ expires_at            | timestamp with time zone |           | not null | 
+ revoked_at            | timestamp with time zone |           |          | 
+ acceptor_name         | character varying(255)   |           |          | 
+ acceptor_ip_address   | character varying(45)    |           |          | 
+ acceptor_user_agent   | character varying(500)   |           |          | 
+ certificate_s3_key    | character varying(1000)  |           |          | 
+ certificate_file_name | character varying(255)   |           |          | 
+ sent_by_member_id     | uuid                     |           | not null | 
+ revoked_by_member_id  | uuid                     |           |          | 
+ reminder_count        | integer                  |           | not null | 0
+ last_reminded_at      | timestamp with time zone |           |          | 
+ created_at            | timestamp with time zone |           | not null | now()
+ updated_at            | timestamp with time zone |           | not null | now()
+ declined_at           | timestamp with time zone |           |          | 
+ decline_reason        | text                     |           |          | 
+Indexes:
+    "acceptance_requests_pkey" PRIMARY KEY, btree (id)
+    "idx_acceptance_requests_active_unique" UNIQUE, btree (generated_document_id, portal_contact_id) WHERE status::text = ANY (ARRAY['PENDING'::character varying, 'SENT'::character varying, 'VIEWED'::character varying]::text[])
+    "idx_acceptance_requests_customer_status" btree (customer_id, status)
+    "idx_acceptance_requests_document" btree (generated_document_id)
+    "idx_acceptance_requests_expiry" btree (status, expires_at) WHERE status::text = ANY (ARRAY['PENDING'::character varying, 'SENT'::character varying, 'VIEWED'::character varying]::text[])
+    "idx_acceptance_requests_token" UNIQUE, btree (request_token)
+Check constraints:
+    "chk_acceptance_requests_status" CHECK (status::text = ANY (ARRAY['PENDING'::character varying, 'SENT'::character varying, 'VIEWED'::character varying, 'ACCEPTED'::character varying, 'DECLINED'::character varying, 'EXPIRED'::character varying, 'REVOKED'::character varying]::text[]))
+

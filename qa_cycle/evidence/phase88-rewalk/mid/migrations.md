@@ -157,6 +157,10 @@ ls backend/src/main/resources/db/migration/tenant | sort -V | tail -1
 ls backend/src/main/resources/db/migration/global | sort -V | tail -1
 docker exec b2b-postgres psql -U postgres -d docteams -c "SELECT version, description, installed_on, success FROM tenant_56399d06a773.flyway_schema_history ORDER BY installed_rank;"
 docker exec b2b-postgres psql -U postgres -d docteams -c "SELECT version, description, installed_on, success FROM public.flyway_schema_history ORDER BY installed_rank;"
+# Only if the e2e stack was NOT wiped since it last applied migrations (OQ #9: `e2e-reseed.sh` keeps data) — then it counts too:
+docker exec e2e-postgres psql -U postgres -d app -c "\dn tenant_*"
+docker exec e2e-postgres psql -U postgres -d app -c "SELECT version, description, installed_on, success FROM <e2e-tenant-schema>.flyway_schema_history ORDER BY installed_rank;"
+docker exec e2e-postgres psql -U postgres -d app -c "SELECT version, description, installed_on, success FROM public.flyway_schema_history ORDER BY installed_rank;"
 ```
 
 ## 6. Linked from

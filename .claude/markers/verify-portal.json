@@ -1,7 +1,7 @@
 {
-  "commit": "b1c73e0d2fb7ec0b5c371e09a3bd6e6e472d3a52",
+  "commit": "bd32f07ff2729c5f5d611a597c61d568cd022663",
   "command": "pnpm install --frozen-lockfile && cd portal && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-24T01:00:00Z",
-  "summary": "Slice 622B PORTAL-GATE on head b1c73e0d2 (portal tree identical at final head e828f5624): lint 0 errors / 5 warnings (= baseline); format:check clean; vitest 42 files / 196 passed (+1: PARTIALLY_PAID badge colour); next build OK. CI Portal pass. Portal UI not observed (no portal service on the e2e stack); portal read-model PARTIALLY_PAID projection observed via portal.portal_invoices (INV-0005 SENT→PARTIALLY_PAID→PAID)."
+  "ts": "2026-10-24T23:00:00Z",
+  "summary": "Slice 624I epic gate PORTAL-GATE on main head bd32f07ff (worktree-epic-624I): lint 0 errors / 4 warnings, format:check clean, vitest 44 files / 233 passed (= 624H baseline), next build OK."
 }

@@ -1,0 +1,16 @@
+
+> portal@0.1.0 lint /Users/rakheendama/Projects/2026/worktree-epic-624I/portal
+> eslint
+
+
+/Users/rakheendama/Projects/2026/worktree-epic-624I/portal/app/accept/[token]/acceptance-page.tsx
+  251:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/rakheendama/Projects/2026/worktree-epic-624I/portal/app/login/page.tsx
+   47:7   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+  143:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  199:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+✖ 4 problems (0 errors, 4 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+

@@ -1,0 +1,29 @@
+# Mailpit 8aKFRbFgpzPHombJZLFKQx (fetched 2026-10-24T22:28:44Z)
+{
+  "ID": "8aKFRbFgpzPHombJZLFKQx",
+  "Subject": "Fee Note INV-0004 from Mathebula & Partners",
+  "Date": "2026-10-25T00:28:21+02:00",
+  "From": "noreply@kazi.app",
+  "To": [
+    "sipho.dlamini@email.co.za"
+  ]
+}
+## Text part (mock-payment sessionId kept: not a credential)
+Fee Note INV-0004 from Mathebula & Partners
+ Mathebula & Partners
+ Fee Note from Mathebula & Partners
+ Hi Sipho Dlamini,
+ Please find your fee note details below.
+ Fee Note Number
+ INV-0004
+ Due Date
+ 2026-11-24
+ Amount Due
+ ZAR
+ 100.00
+ Pay Now
+ (http://localhost:8080/portal/dev/mock-payment?sessionId=MOCK-SESS-ae9d2cb2-c8f5-493b-af31-5f8ea254c0cd&invoiceId=0feb4764-f6f4-425d-9fb1-5ca250ab8c88&amount=100.00&currency=ZAR&returnUrl=http%3A%2F%2Flocalhost%3A3002%2Finvoices%2F0feb4764-f6f4-425d-9fb1-5ca250ab8c88%2Fpayment-success%3ForgId%3Dmathebula-partners)
+ View Fee Note (http://localhost:3002/invoices/0feb4764-f6f4-425d-9fb1-5ca250ab8c88?orgId=mathebula-partners)
+ Best,
+ Mathebula & Partners
+ Mathebula & Partners

@@ -1,0 +1,45 @@
+  ✓   1 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:98:7 › Day 5 — Disbursements (Phase 67) › [setup] Alice (Thandi): Create client Sipho Ndlovu and start FICA onboarding (3.3s)
+  ✓   2 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:115:7 › Day 5 — Disbursements (Phase 67) › [setup] Alice (Thandi): Open Sipho's litigation matter from the Litigation template (1.8s)
+  ✓   3 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:140:7 › Day 5 — Disbursements (Phase 67) › Bob: Navigate to Legal → Disbursements list page (1.2s)
+  ✓   4 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:156:7 › Day 5 — Disbursements (Phase 67) › Bob: Create sheriff-fee OFFICE_ACCOUNT disbursement + submit (2.6s)
+  ✓   5 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:197:7 › Day 5 — Disbursements (Phase 67) › [setup] Alice + Bob: Fund Sipho's trust ledger and approve a deeds-office trust payment (6.3s)
+  ✓   6 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:272:7 › Day 5 — Disbursements (Phase 67) › Bob: Create deeds-office TRUST_ACCOUNT disbursement with trust link (4.3s)
+  ✓   7 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:315:7 › Day 5 — Disbursements (Phase 67) › Alice (Thandi): Approve trust-linked disbursement (1.8s)
+  ✓   8 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:335:7 › Day 5 — Disbursements (Phase 67) › Bob: Approve sheriff-fee OFFICE_ACCOUNT disbursement (1.1s)
+  ✓   9 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:360:7 › Day 5 — Disbursements (Phase 67) › Bob: Approve dialog opened right after navigating to a disbursement stays open (4.2s)
+  ✓  10 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:411:7 › Day 5 — Disbursements (Phase 67) › Alice: Sipho's matter Finance → Disbursements tab lists the disbursements (2.8s)
+  ✓  11 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:448:7 › Day 5 — Disbursements (Phase 67) › Alice: Verify Unbilled Disbursements summary on Sipho's matter (1.2s)
+  ✓  12 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:88:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Create client Khumalo Property Holdings and start FICA onboardin
+  -  13 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:139:8 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Complete Khumalo's FICA checklist → client becomes ACTIVE
+  ✓  14 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:176:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Create matter using Property Transfer template (2.0s)
+  ✓  15 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:209:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Clicking into a matter (route with a loading skeleton) renders its conte
+  ✓  16 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:234:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Verify 10 conveyancing custom fields present on matter detail (2.7s)
+  ✓  17 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:272:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Fill property_address, erf_number, deeds_office (2.6s)
+  ✓  18 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:297:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Generate Offer to Purchase document and save it to the matter (4.0s)
+  -  19 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:335:8 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Generate Offer to Purchase document with conveyancing clauses
+  ✓  20 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:360:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Send OTP for Acceptance via Phase 28 flow (3.6s)
+  ✓  21 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:138:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › [setup] Alice (Thandi): Billing rate override for Alice on Sipho's client (2.
+  ✓  22 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:162:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › [setup] Alice (Thandi): Log 2h on Sipho's matter — letter of demand (2.9s)
+  ✓  23 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:193:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice (Thandi): Open Statements tab on oldest matter (1.9s)
+  -  24 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:216:8 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Generate Statement of Account with HTML preview
+  ✓  25 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:234:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Save Statement — listed on the matter, PDF downloadable from the Docum
+  -  26 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:299:8 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Statements-tab Download fetches the PDF
+  ✓  27 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:314:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice (Thandi): Write off one approved-UNBILLED disbursement (1.5s)
+  ✓  28 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:336:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Verify write-off audit event present in audit log (1.7s)
+  ✓  29 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:358:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Verify written-off disbursement excluded from next invoice draft (2.5s
+  ✓  30 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:90:7 › Day 75-85 — Matter Closure (Phase 67) › [setup] Alice (Thandi): Create client Apex Holdings and start FICA onboarding (2.7s)
+  ✓  31 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:105:7 › Day 75-85 — Matter Closure (Phase 67) › [setup] Alice (Thandi): Open a clean commercial matter for Apex Holdings (2.2s)
+  ✓  32 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:129:7 › Day 75-85 — Matter Closure (Phase 67) › [setup] Bob: Record + approve counsel's fee disbursement on the Apex matter (2.6s)
+  ✓  33 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:167:7 › Day 75-85 — Matter Closure (Phase 67) › [setup] Alice (Thandi): Bill the Apex matter — fee note drafted, approved and sent (4.0s)
+  ✓  34 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:223:7 › Day 75-85 — Matter Closure (Phase 67) › Alice (Thandi): Open Close Matter dialog on clean matter (1.8s)
+  ✓  35 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:233:7 › Day 75-85 — Matter Closure (Phase 67) › Alice: Step 1 gate report renders all-green (happy path) (2.1s)
+  ✓  36 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:256:7 › Day 75-85 — Matter Closure (Phase 67) › Alice: Advance to Step 2 + confirm close with CONCLUDED reason (3.4s)
+  -  37 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:307:8 › Day 75-85 — Matter Closure (Phase 67) › Alice: Closed matter's retention card shows the deletion date (closure + 5 years)
+  ✓  38 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:319:7 › Day 75-85 — Matter Closure (Phase 67) › Bob (Admin): Close Matter on failing-gates matter routes to Step 3 (no override) (2.1s)
+  ✓  39 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:344:7 › Day 75-85 — Matter Closure (Phase 67) › Alice (Thandi): Override close with justification ≥20 chars (2.5s)
+  ✓  40 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:376:7 › Day 75-85 — Matter Closure (Phase 67) › Alice: Verify override audit event captures override_used=true + justification (3.0s)
+  -  41 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Matters list -> matter (projects/[id]): 120 fresh-session clicks render the destination
+  -  42 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Reports -> report detail (reports/[reportSlug]): 120 fresh-session clicks render the dest
+  -  43 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Sidebar /projects -> /dashboard: 120 fresh-session clicks render the destination
+  8 skipped
+  35 passed (1.7m)

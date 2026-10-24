@@ -1,0 +1,29 @@
+# Mailpit to:multifirm.624i@email.co.za after bare request-link at 22:36:43Z (baseline 0, now 2) — tokens redacted
+## S5khrDgFvRcHzhezSnGGnt
+{"ID":"S5khrDgFvRcHzhezSnGGnt","Subject":"Your portal access link from Khanyile Attorneys 624I","Created":"2026-10-25T00:36:43+02:00","From":"noreply@kazi.app","To":["multifirm.624i@email.co.za"]}
+Your portal access link from Khanyile Attorneys 624I
+ Khanyile Attorneys 624I
+ Access Your Portal
+ Hi Lerato Multifirm,
+ Click the button below to securely access your portal. This link will expire in
+ 15 minutes.
+ Access Portal
+ (http://localhost:3002/auth/exchange?token=[REDACTED]&orgId=khanyile-attorneys-624i)
+ If you didn't request this link, you can safely ignore this email.
+ Best,
+ Khanyile Attorneys 624I
+ Khanyile Attorneys 624I
+## Y7Xvz2bMazmZF6T5SRhJRu
+{"ID":"Y7Xvz2bMazmZF6T5SRhJRu","Subject":"Your portal access link from Mathebula & Partners","Created":"2026-10-25T00:36:43+02:00","From":"noreply@kazi.app","To":["multifirm.624i@email.co.za"]}
+Your portal access link from Mathebula & Partners
+ Mathebula & Partners
+ Access Your Portal
+ Hi Lerato Multifirm,
+ Click the button below to securely access your portal. This link will expire in
+ 15 minutes.
+ Access Portal
+ (http://localhost:3002/auth/exchange?token=[REDACTED]&orgId=mathebula-partners)
+ If you didn't request this link, you can safely ignore this email.
+ Best,
+ Mathebula & Partners
+ Mathebula & Partners

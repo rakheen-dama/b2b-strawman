@@ -1,0 +1,30 @@
+# KC cleanup 2026-10-24T22:38:06Z — admin REST (master admin), realm docteams
+## orgs before
+{"id":"be3c9226-a3e8-491f-b90e-4a450dcbd27f","name":"Khanyile Attorneys 624I","alias":"khanyile-attorneys-624i"}
+{"id":"a21f5935-c745-4454-8dde-aa6b758af449","name":"Mathebula & Partners","alias":"mathebula-partners"}
+## users before
+bob@mathebula-test.local
+carol@mathebula-test.local
+owner@khanyile-624i.local
+padmin@docteams.local
+thandi@mathebula-test.local
+## DELETE org be3c9226-a3e8-491f-b90e-4a450dcbd27f (khanyile-attorneys-624i)
+org delete 204
+## DELETE user owner@khanyile-624i.local
+owner already gone (org DELETE removed the org-managed member)
+## orgs after (admin REST)
+{"id":"a21f5935-c745-4454-8dde-aa6b758af449","name":"Mathebula & Partners","alias":"mathebula-partners"}
+## orgs after (keycloak.org)
+mathebula-partners
+## users after (keycloak.user_entity)
+bob@mathebula-test.local
+carol@mathebula-test.local
+padmin@docteams.local
+thandi@mathebula-test.local
+## docteams DB left in place (by ruling R-5)
+khanyile-attorneys-624i|tenant_db75730dfc5f
+mathebula-partners|tenant_5039f2d497cf
+org_phase86_squash_smoke|tenant_56399d06a773
+tenant_5039f2d497cf
+tenant_56399d06a773
+tenant_db75730dfc5f

@@ -1,0 +1,20 @@
+# B1 read-back 2026-10-24T22:36:13Z
+## portal.portal_contact_directory (email_lower|org_id|tenant_schema|org_name|updated_at) for multifirm
+multifirm.624i@email.co.za|khanyile-attorneys-624i|tenant_db75730dfc5f|Khanyile Attorneys 624I|2026-10-24 22:33:16.872023+00
+multifirm.624i@email.co.za|mathebula-partners|tenant_5039f2d497cf|Mathebula & Partners|2026-10-24 22:35:16.026761+00
+## org_schema_mapping
+khanyile-attorneys-624i|tenant_db75730dfc5f
+mathebula-partners|tenant_5039f2d497cf
+org_phase86_squash_smoke|tenant_56399d06a773
+## portal_contacts
+5d4bd3b9-8159-42d0-be9a-74730169d7fc|1f3967e1-795c-4590-bbb9-b8dd6ae03d11|multifirm.624i@email.co.za|ACTIVE|khanyile-attorneys-624i
+c2e07e34-484f-46d5-b032-f3b78d976702|98f91243-4156-4a83-b261-45347de14062|multifirm.624i@email.co.za|ACTIVE|mathebula-partners
+## customers (id|name|status|lifecycle)
+1f3967e1-795c-4590-bbb9-b8dd6ae03d11|Lerato Multifirm|ACTIVE|ONBOARDING
+98f91243-4156-4a83-b261-45347de14062|Lerato Multifirm|ACTIVE|ONBOARDING
+## portal.portal_projects for these customers
+05a87979-653f-4135-8104-6f34af4d62ab|khanyile-attorneys-624i|1f3967e1-795c-4590-bbb9-b8dd6ae03d11|Lerato Multifirm — Shareholder agreement (Khanyile)|ACTIVE
+a79db65e-c065-4101-b334-d541941b1166|mathebula-partners|98f91243-4156-4a83-b261-45347de14062|Lerato Multifirm — Lease review (Mathebula)|ACTIVE
+## Sipho INV-0004
+0feb4764-f6f4-425d-9fb1-5ca250ab8c88|INV-0004|SENT|100.00
+0feb4764-f6f4-425d-9fb1-5ca250ab8c88|SENT|INV-0004

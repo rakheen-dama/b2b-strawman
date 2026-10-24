@@ -1,7 +1,7 @@
 {
-  "commit": "cdb1dbb0a622d1597c6ea4c725f1ebd0cd6b3efe",
-  "command": "cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && pnpm run build",
+  "commit": "bd32f07ff2729c5f5d611a597c61d568cd022663",
+  "command": "pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-24T20:05:18Z",
-  "summary": "Slice 624F PR #1675 head cdb1dbb0a (orchestrator re-run in worktree-epic-624F): lint 0 errors / 92 warnings, format:check clean, vitest 417 files / 3130 passed / 2 skipped (baseline 3129 + 1 DECLINED badge case), next build OK; CI Frontend pass. Observer: firm generated-documents list renders Declined badge with 0 console errors on e2e (built from cdb1dbb0a)."
+  "ts": "2026-10-24T22:58:00Z",
+  "summary": "Slice 624I epic gate FE-GATE on main head bd32f07ff (worktree-epic-624I): lint 0 errors / 92 warnings, format:check clean, vitest 417 files / 3150 passed / 2 skipped (= 624G baseline), next build OK."
 }

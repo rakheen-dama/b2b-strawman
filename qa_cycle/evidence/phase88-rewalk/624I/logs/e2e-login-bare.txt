@@ -1,0 +1,2 @@
+  ✓  1 [login-bare] › e2e/tests/login-bare.spec.ts:64:7 › Bare /login — email-only portal sign-in › fresh browser: bare /login → one branded link in Mailpit → /matters (4.3s)
+  1 passed (5.0s)

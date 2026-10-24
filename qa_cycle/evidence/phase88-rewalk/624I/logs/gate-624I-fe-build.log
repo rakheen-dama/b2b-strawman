@@ -1,0 +1,25 @@
+├ ƒ /org/[slug]/settings/matters/request-templates/new
+├ ƒ /org/[slug]/settings/matters/templates/[id]
+├ ƒ /org/[slug]/team
+├ ƒ /org/[slug]/trust-accounting
+├ ƒ /org/[slug]/trust-accounting/client-ledgers
+├ ƒ /org/[slug]/trust-accounting/client-ledgers/[clientId]
+├ ƒ /org/[slug]/trust-accounting/interest
+├ ƒ /org/[slug]/trust-accounting/investments
+├ ƒ /org/[slug]/trust-accounting/reconciliation
+├ ƒ /org/[slug]/trust-accounting/reconciliation/new
+├ ƒ /org/[slug]/trust-accounting/reports
+├ ƒ /org/[slug]/trust-accounting/transactions
+├ ƒ /platform-admin/access-requests
+├ ƒ /platform-admin/billing
+├ ƒ /platform-admin/demo
+├ ○ /request-access
+├ ƒ /sign-in
+└ ○ /signed-out
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

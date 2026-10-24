@@ -521,8 +521,8 @@ public class InvoiceTransitionService {
   }
 
   /**
-   * Portal sync with the invoice's current status and {@code amountPaid} (the portal handler's
-   * {@code amountPaid} mapping is 624A).
+   * Portal sync with the invoice's current status and {@code amountPaid} (projected to {@code
+   * portal_invoices.amount_paid} by the portal handler).
    */
   private void publishSync(Invoice invoice, String orgId, String tenantId) {
     eventPublisher.publishEvent(

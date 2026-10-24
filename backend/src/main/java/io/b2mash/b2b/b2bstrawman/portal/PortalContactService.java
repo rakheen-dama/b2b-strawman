@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.portal;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.portal.directory.PortalContactDirectoryService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,11 +19,15 @@ public class PortalContactService {
 
   private final PortalContactRepository portalContactRepository;
   private final CustomerRepository customerRepository;
+  private final PortalContactDirectoryService directoryService;
 
   public PortalContactService(
-      PortalContactRepository portalContactRepository, CustomerRepository customerRepository) {
+      PortalContactRepository portalContactRepository,
+      CustomerRepository customerRepository,
+      PortalContactDirectoryService directoryService) {
     this.portalContactRepository = portalContactRepository;
     this.customerRepository = customerRepository;
+    this.directoryService = directoryService;
   }
 
   @Transactional
@@ -46,6 +51,8 @@ public class PortalContactService {
 
     var contact = new PortalContact(orgId, customerId, email, displayName, role);
     var saved = portalContactRepository.save(contact);
+    // ADR-351: keep the global email → firm directory in step once this write commits.
+    directoryService.reconcileAfterCommit(saved.getEmail(), saved.getOrgId());
     log.info(
         "Created portal contact {} for customer {} in org {}", saved.getId(), customerId, orgId);
     return saved;
@@ -79,6 +86,8 @@ public class PortalContactService {
             .orElseThrow(() -> new ResourceNotFoundException("PortalContact", contactId));
     contact.suspend();
     var saved = portalContactRepository.save(contact);
+    // A suspended contact cannot sign in, so it must not be routable (ADR-351).
+    directoryService.reconcileAfterCommit(saved.getEmail(), saved.getOrgId());
     log.info("Suspended portal contact {}", contactId);
     return saved;
   }
@@ -91,6 +100,7 @@ public class PortalContactService {
             .orElseThrow(() -> new ResourceNotFoundException("PortalContact", contactId));
     contact.archive();
     var saved = portalContactRepository.save(contact);
+    directoryService.reconcileAfterCommit(saved.getEmail(), saved.getOrgId());
     log.info("Archived portal contact {}", contactId);
     return saved;
   }

@@ -45,6 +45,7 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import java.math.BigDecimal;
 import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -387,6 +388,10 @@ public class PortalEventHandler {
         event.getOrgId(),
         () -> {
           try {
+            // Phase 88 U15 (OQ #13): every non-VOID branch stamps the money received so far.
+            // portal_invoices.amount_paid is NOT NULL, so a missing value projects as zero.
+            BigDecimal amountPaid =
+                event.getAmountPaid() != null ? event.getAmountPaid() : BigDecimal.ZERO;
             switch (event.getStatus()) {
               case "SENT" -> {
                 // Serialize tax breakdown to JSON from TaxContext
@@ -465,17 +470,17 @@ public class PortalEventHandler {
                 // to SENT (e.g., via trust-transfer reversal) would otherwise show a stale
                 // "paid on …" date in the portal. Clear it explicitly.
                 readModelRepo.updatePortalInvoiceStatusAndPaidAt(
-                    event.getInvoiceId(), event.getOrgId(), "SENT", null);
+                    event.getInvoiceId(), event.getOrgId(), "SENT", null, amountPaid);
               }
               case "PAID" ->
                   readModelRepo.updatePortalInvoiceStatusAndPaidAt(
-                      event.getInvoiceId(), event.getOrgId(), "PAID", Instant.now());
+                      event.getInvoiceId(), event.getOrgId(), "PAID", Instant.now(), amountPaid);
               // ADR-347: a part payment (SENT → PARTIALLY_PAID) or a reversal that leaves a
-              // balance (PAID → PARTIALLY_PAID) — not settled, so paid_at is cleared. The portal
-              // balance itself (portal_invoices.amount_paid) is 624A/624H.
+              // balance (PAID → PARTIALLY_PAID) — not settled, so paid_at is cleared; the
+              // amount received so far is projected (the portal balance UI is 624H).
               case "PARTIALLY_PAID" ->
                   readModelRepo.updatePortalInvoiceStatusAndPaidAt(
-                      event.getInvoiceId(), event.getOrgId(), "PARTIALLY_PAID", null);
+                      event.getInvoiceId(), event.getOrgId(), "PARTIALLY_PAID", null, amountPaid);
               case "VOID" ->
                   readModelRepo.deletePortalInvoice(event.getInvoiceId(), event.getOrgId());
               default -> log.warn("Unknown InvoiceSyncEvent status: {}", event.getStatus());

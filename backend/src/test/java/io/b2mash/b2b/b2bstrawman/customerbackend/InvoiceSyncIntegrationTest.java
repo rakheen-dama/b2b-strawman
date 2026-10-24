@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.math.BigDecimal;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -125,6 +126,10 @@ class InvoiceSyncIntegrationTest {
     var invoices = readModelRepo.findInvoicesByCustomer(ORG_ID, UUID.fromString(customerId));
     assertThat(invoices)
         .anyMatch(i -> i.id().equals(UUID.fromString(invoiceId)) && "SENT".equals(i.status()));
+    // Phase 88 U15: nothing received yet — amount_paid 0, balance = total
+    var sent = readModelRepo.findInvoiceById(UUID.fromString(invoiceId), ORG_ID).orElseThrow();
+    assertThat(sent.amountPaid()).isEqualByComparingTo("0");
+    assertThat(sent.balanceDue()).isEqualByComparingTo(sent.total());
   }
 
   @Test
@@ -153,6 +158,8 @@ class InvoiceSyncIntegrationTest {
     var invoice = readModelRepo.findInvoiceById(UUID.fromString(invoiceId), ORG_ID);
     assertThat(invoice).isPresent();
     assertThat(invoice.get().status()).isEqualTo("PAID");
+    assertThat(invoice.get().amountPaid()).isEqualByComparingTo(invoice.get().total());
+    assertThat(invoice.get().balanceDue()).isEqualByComparingTo("0");
   }
 
   @Test
@@ -226,6 +233,9 @@ class InvoiceSyncIntegrationTest {
     var afterPart = readModelRepo.findInvoiceById(id, ORG_ID).orElseThrow();
     assertThat(afterPart.status()).isEqualTo("PARTIALLY_PAID");
     assertThat(afterPart.paidAt()).isNull();
+    assertThat(afterPart.amountPaid()).isEqualByComparingTo("40.00");
+    assertThat(afterPart.balanceDue())
+        .isEqualByComparingTo(afterPart.total().subtract(new BigDecimal("40.00")));
 
     // Settle the balance → PAID with paid_at
     var settled =
@@ -240,6 +250,7 @@ class InvoiceSyncIntegrationTest {
     var afterSettle = readModelRepo.findInvoiceById(id, ORG_ID).orElseThrow();
     assertThat(afterSettle.status()).isEqualTo("PAID");
     assertThat(afterSettle.paidAt()).isNotNull();
+    assertThat(afterSettle.amountPaid()).isEqualByComparingTo(afterSettle.total());
 
     // Reverse the settling payment (payments[] is newest first) → back to PARTIALLY_PAID
     UUID settlingEventId =
@@ -254,6 +265,7 @@ class InvoiceSyncIntegrationTest {
     var afterReversal = readModelRepo.findInvoiceById(id, ORG_ID).orElseThrow();
     assertThat(afterReversal.status()).isEqualTo("PARTIALLY_PAID");
     assertThat(afterReversal.paidAt()).isNull();
+    assertThat(afterReversal.amountPaid()).isEqualByComparingTo("40.00");
   }
 
   private void transitionCustomerToActive(String customerId) throws Exception {

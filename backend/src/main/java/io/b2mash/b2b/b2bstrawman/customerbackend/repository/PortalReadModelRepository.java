@@ -537,14 +537,14 @@ public class PortalReadModelRepository {
   }
 
   public void updatePortalInvoiceStatusAndPaidAt(
-      UUID id, String orgId, String status, Instant paidAt) {
+      UUID id, String orgId, String status, Instant paidAt, BigDecimal amountPaid) {
     jdbc.sql(
             """
             UPDATE portal.portal_invoices
-            SET status = ?, paid_at = ?, synced_at = now()
+            SET status = ?, paid_at = ?, amount_paid = ?, synced_at = now()
             WHERE id = ? AND org_id = ?
             """)
-        .params(status, toTimestamp(paidAt), id, orgId)
+        .params(status, toTimestamp(paidAt), amountPaid, id, orgId)
         .update();
   }
 
@@ -582,7 +582,7 @@ public class PortalReadModelRepository {
     return jdbc.sql(
             """
             SELECT id, org_id, customer_id, invoice_number, status, issue_date, due_date,
-                   subtotal, tax_amount, total, currency, notes,
+                   subtotal, tax_amount, total, amount_paid, currency, notes,
                    payment_url, payment_session_id, paid_at, synced_at,
                    tax_breakdown_json, tax_registration_number, tax_registration_label,
                    tax_label, tax_inclusive, has_per_line_tax
@@ -599,7 +599,7 @@ public class PortalReadModelRepository {
     return jdbc.sql(
             """
             SELECT id, org_id, customer_id, invoice_number, status, issue_date, due_date,
-                   subtotal, tax_amount, total, currency, notes,
+                   subtotal, tax_amount, total, amount_paid, currency, notes,
                    payment_url, payment_session_id, paid_at, synced_at,
                    tax_breakdown_json, tax_registration_number, tax_registration_label,
                    tax_label, tax_inclusive, has_per_line_tax

@@ -165,7 +165,8 @@ class PortalPaymentStatusIntegrationTest {
         false,
         false);
     // Set paid_at for the paid invoice
-    readModelRepo.updatePortalInvoiceStatusAndPaidAt(paidInvoiceId, ORG_ID, "PAID", Instant.now());
+    readModelRepo.updatePortalInvoiceStatusAndPaidAt(
+        paidInvoiceId, ORG_ID, "PAID", Instant.now(), new BigDecimal("500.00"));
 
     otherCustomerInvoiceId = UUID.randomUUID();
     readModelRepo.upsertPortalInvoice(

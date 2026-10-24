@@ -16,6 +16,7 @@ public record PortalInvoiceView(
     BigDecimal subtotal,
     BigDecimal taxAmount,
     BigDecimal total,
+    BigDecimal amountPaid,
     String currency,
     String notes,
     String paymentUrl,
@@ -27,4 +28,10 @@ public record PortalInvoiceView(
     String taxRegistrationLabel,
     String taxLabel,
     boolean taxInclusive,
-    boolean hasPerLineTax) {}
+    boolean hasPerLineTax) {
+
+  /** {@code total − amountPaid} — derived, never stored (ADR-347 A3). */
+  public BigDecimal balanceDue() {
+    return total.subtract(amountPaid);
+  }
+}

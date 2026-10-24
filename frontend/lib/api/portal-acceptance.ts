@@ -7,7 +7,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:808
 
 export interface AcceptancePageData {
   requestId: string;
-  status: "PENDING" | "SENT" | "VIEWED" | "ACCEPTED" | "EXPIRED" | "REVOKED";
+  status: "PENDING" | "SENT" | "VIEWED" | "ACCEPTED" | "DECLINED" | "EXPIRED" | "REVOKED";
   documentTitle: string | null;
   documentFileName: string | null;
   expiresAt: string | null;

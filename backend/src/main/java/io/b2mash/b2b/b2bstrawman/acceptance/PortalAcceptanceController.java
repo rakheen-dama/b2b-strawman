@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.acceptance;
 
 import io.b2mash.b2b.b2bstrawman.acceptance.AcceptanceService.PortalAcceptResponse;
+import io.b2mash.b2b.b2bstrawman.acceptance.AcceptanceService.PortalDeclineResponse;
 import io.b2mash.b2b.b2bstrawman.acceptance.AcceptanceService.PortalPageData;
 import io.b2mash.b2b.b2bstrawman.security.ClientIpResolver;
 import jakarta.servlet.http.HttpServletRequest;
@@ -57,6 +58,17 @@ public class PortalAcceptanceController {
     String userAgent = request.getHeader("User-Agent");
     return ResponseEntity.ok(
         acceptanceService.acceptFromPortal(token, submission, ipAddress, userAgent));
+  }
+
+  /** Declines the document (Phase 88 U23). Body required: {@code {}} or {@code {"reason": …}}. */
+  @PostMapping("/{token}/decline")
+  public ResponseEntity<PortalDeclineResponse> decline(
+      @PathVariable String token,
+      @Valid @RequestBody DeclineSubmission submission,
+      HttpServletRequest request) {
+    return ResponseEntity.ok(
+        acceptanceService.declineFromPortal(
+            token, submission, ClientIpResolver.resolve(request), request.getHeader("User-Agent")));
   }
 
   /** Strips characters that could be used for header injection or path traversal. */

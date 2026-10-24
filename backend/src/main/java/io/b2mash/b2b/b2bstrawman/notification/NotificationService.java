@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.notification;
 import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestAcceptedEvent;
+import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestDeclinedEvent;
 import io.b2mash.b2b.b2bstrawman.event.BudgetThresholdEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
@@ -173,6 +174,8 @@ public class NotificationService {
           "PAYMENT_FAILED",
           "PAYMENT_LINK_EXPIRED",
           "ACCEPTANCE_COMPLETED",
+          // Phase 88 U23 — own type so members can mute declines separately from completions.
+          "ACCEPTANCE_DECLINED",
           "PROJECT_COMPLETED",
           "PROJECT_ARCHIVED",
           "TASK_RECURRENCE_CREATED",
@@ -679,6 +682,62 @@ public class NotificationService {
             event.requestId(),
             null);
     return notification != null ? List.of(notification) : List.of();
+  }
+
+  /** notifications.title is varchar(500). */
+  static final int NOTIFICATION_TITLE_MAX = 500;
+
+  /**
+   * Phase 88 U23: tells the sender a contact declined — "Sipho Dlamini declined Offer to Purchase:
+   * Price too high". The reason (up to 2000 chars) is abbreviated with "…" to fit the title column;
+   * the full reason is the body and stays on the request row and the audit event. Deep-links to the
+   * matter when one was resolved.
+   */
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<Notification> handleAcceptanceRequestDeclined(AcceptanceRequestDeclinedEvent event) {
+    if (event.sentByMemberId() == null) {
+      log.warn("No sentByMemberId for decline notification, requestId={}", event.requestId());
+      return List.of();
+    }
+
+    var title = declinedTitle(event.contactName(), event.documentName(), event.declineReason());
+
+    var notification =
+        createIfEnabled(
+            event.sentByMemberId(),
+            "ACCEPTANCE_DECLINED",
+            title,
+            event.declineReason(),
+            "ACCEPTANCE_REQUEST",
+            event.requestId(),
+            event.projectId());
+    return notification != null ? List.of(notification) : List.of();
+  }
+
+  /** Builds the decline title, abbreviating the reason (then the whole title) to the column. */
+  static String declinedTitle(String contactName, String documentName, String reason) {
+    String base = "%s declined %s".formatted(contactName, documentName);
+    if (reason == null || reason.isBlank()) {
+      return abbreviate(base, NOTIFICATION_TITLE_MAX);
+    }
+    String prefix = base + ": ";
+    int room = NOTIFICATION_TITLE_MAX - prefix.length();
+    if (room <= 1) {
+      return abbreviate(base, NOTIFICATION_TITLE_MAX);
+    }
+    return prefix + abbreviate(reason, room);
+  }
+
+  /** Cuts {@code text} to at most {@code max} chars, ending in "…", never splitting a pair. */
+  private static String abbreviate(String text, int max) {
+    if (text.length() <= max) {
+      return text;
+    }
+    int end = max - 1;
+    if (Character.isHighSurrogate(text.charAt(end - 1))) {
+      end--;
+    }
+    return text.substring(0, end) + "…";
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)

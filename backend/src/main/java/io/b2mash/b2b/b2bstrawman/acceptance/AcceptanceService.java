@@ -5,11 +5,15 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
+import io.b2mash.b2b.b2bstrawman.document.Document;
+import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestAcceptedEvent;
+import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestDeclinedEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestRevokedEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestViewedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
@@ -20,14 +24,18 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
+import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocument;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
+import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -68,6 +76,8 @@ public class AcceptanceService {
   private final OrganizationRepository organizationRepository;
   private final PortalReadModelRepository portalReadModelRepository;
   private final TransactionTemplate transactionTemplate;
+  private final DocumentRepository documentRepository;
+  private final DocumentTemplateRepository documentTemplateRepository;
   private final SecureRandom secureRandom;
 
   public AcceptanceService(
@@ -86,7 +96,9 @@ public class AcceptanceService {
       TenantDiscoveryHelper tenantDiscoveryHelper,
       OrganizationRepository organizationRepository,
       PortalReadModelRepository portalReadModelRepository,
-      TransactionTemplate transactionTemplate) {
+      TransactionTemplate transactionTemplate,
+      DocumentRepository documentRepository,
+      DocumentTemplateRepository documentTemplateRepository) {
     this.acceptanceRequestRepository = acceptanceRequestRepository;
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.portalContactRepository = portalContactRepository;
@@ -103,6 +115,8 @@ public class AcceptanceService {
     this.organizationRepository = organizationRepository;
     this.portalReadModelRepository = portalReadModelRepository;
     this.transactionTemplate = transactionTemplate;
+    this.documentRepository = documentRepository;
+    this.documentTemplateRepository = documentTemplateRepository;
     this.secureRandom = new SecureRandom();
   }
 
@@ -329,7 +343,7 @@ public class AcceptanceService {
         yield request;
       }
       case VIEWED, ACCEPTED -> request; // idempotent — no event
-      case EXPIRED, REVOKED ->
+      case EXPIRED, REVOKED, DECLINED ->
           throw new InvalidStateException(
               "Acceptance request is no longer active",
               "Cannot view acceptance request in status " + request.getStatus());
@@ -457,6 +471,92 @@ public class AcceptanceService {
             submission.name()));
 
     log.info("Acceptance request {} accepted by '{}'", request.getId(), submission.name());
+    return request;
+  }
+
+  /**
+   * Declines a document on behalf of the token holder (Phase 88 U23, G-B19). Locks the row first,
+   * then checks: only a SENT or VIEWED, unexpired request can be declined — anything else (PENDING,
+   * ACCEPTED, EXPIRED, REVOKED, a second decline, or a request past its deadline) is 409 "This
+   * request can no longer be declined", with no side effect (the expiry job flips an overdue
+   * request). Writes {@code acceptance.declined} and publishes {@link
+   * AcceptanceRequestDeclinedEvent} (firm notification + portal read-model sync after commit).
+   *
+   * @param requestToken the acceptance request token
+   * @param rawReason the optional reason (stripped; blank → null)
+   * @param ipAddress the decliner's IP address
+   * @param userAgent the decliner's user agent (also captured by the audit builder)
+   * @return the updated acceptance request in DECLINED status
+   */
+  @Transactional
+  public AcceptanceRequest decline(
+      String requestToken, String rawReason, String ipAddress, String userAgent) {
+    AcceptanceRequest request =
+        acceptanceRequestRepository
+            .findByRequestTokenForUpdate(requestToken)
+            .orElseThrow(() -> new ResourceNotFoundException("AcceptanceRequest", "token"));
+    boolean declinable =
+        (request.getStatus() == AcceptanceStatus.SENT
+                || request.getStatus() == AcceptanceStatus.VIEWED)
+            && !request.isExpired();
+    if (!declinable) {
+      throw new ResourceConflictException(
+          "Invalid status transition", "This request can no longer be declined");
+    }
+    String reason = rawReason == null || rawReason.isBlank() ? null : rawReason.strip();
+    request.decline(reason);
+    request = acceptanceRequestRepository.save(request);
+
+    GeneratedDocument doc =
+        generatedDocumentRepository.findById(request.getGeneratedDocumentId()).orElse(null);
+    PortalContact contact =
+        portalContactRepository.findById(request.getPortalContactId()).orElse(null);
+    UUID projectId = resolveMatterId(doc);
+
+    // ADR-349: matter correlation keys written as literals; 625A migrates this call to
+    // AuditDetails.matterScoped. LinkedHashMap — Map.of rejects nulls.
+    var details = new LinkedHashMap<String, Object>();
+    details.put("project_id", projectId != null ? projectId.toString() : "");
+    details.put("customer_id", request.getCustomerId().toString());
+    details.put("decline_reason", reason != null ? reason : "");
+    details.put("ip_address", ipAddress != null ? ipAddress : "");
+    auditService.log(
+        AuditEventBuilder.builder()
+            // ADR-342: storage key, do not rename
+            .eventType("acceptance.declined")
+            .entityType("acceptance_request")
+            .entityId(request.getId())
+            .actorId(request.getPortalContactId())
+            .actorType("PORTAL_CONTACT")
+            .source("PORTAL")
+            .details(details)
+            .build());
+
+    String contactName = contact != null ? contact.getDisplayName() : "A client";
+    String documentName = resolveDocumentName(doc);
+    var eventDetails = new LinkedHashMap<String, Object>();
+    eventDetails.put("document_name", documentName);
+    eventDetails.put("contact_name", contactName);
+    eventDetails.put("decline_reason", reason != null ? reason : "");
+    eventPublisher.publishEvent(
+        new AcceptanceRequestDeclinedEvent(
+            "acceptance_request.declined",
+            "acceptance_request",
+            request.getId(),
+            projectId,
+            null,
+            contactName,
+            RequestScopes.getTenantIdOrNull(),
+            RequestScopes.getOrgIdOrNull(),
+            Instant.now(),
+            eventDetails,
+            request.getId(),
+            request.getSentByMemberId(),
+            documentName,
+            contactName,
+            reason));
+
+    log.info("Acceptance request {} declined", request.getId());
     return request;
   }
 
@@ -595,6 +695,7 @@ public class AcceptanceService {
             AcceptanceStatus.SENT,
             AcceptanceStatus.VIEWED,
             AcceptanceStatus.ACCEPTED,
+            AcceptanceStatus.DECLINED,
             AcceptanceStatus.EXPIRED,
             AcceptanceStatus.REVOKED));
   }
@@ -650,6 +751,7 @@ public class AcceptanceService {
                 AcceptanceStatus.SENT,
                 AcceptanceStatus.VIEWED,
                 AcceptanceStatus.ACCEPTED,
+                AcceptanceStatus.DECLINED,
                 AcceptanceStatus.EXPIRED,
                 AcceptanceStatus.REVOKED))
         .stream()
@@ -708,10 +810,14 @@ public class AcceptanceService {
       String orgLogo,
       String brandColor,
       Instant acceptedAt,
-      String acceptorName) {}
+      String acceptorName,
+      Instant declinedAt) {}
 
   /** Response DTO for the portal acceptance accept action. */
   public record PortalAcceptResponse(String status, Instant acceptedAt, String acceptorName) {}
+
+  /** Response DTO for the portal acceptance decline action (Phase 88 U23). */
+  public record PortalDeclineResponse(String status, Instant declinedAt) {}
 
   /** Context record for resolving a token to its tenant schema. */
   public record TenantAcceptanceContext(
@@ -733,7 +839,8 @@ public class AcceptanceService {
 
   /**
    * Gets the portal acceptance page data for a given token. Marks active requests as viewed (side
-   * effect). Terminal states (EXPIRED, REVOKED, ACCEPTED) are returned without side effects.
+   * effect). Terminal states (EXPIRED, REVOKED, ACCEPTED, DECLINED) are returned without side
+   * effects.
    */
   public PortalPageData getPageData(String token, String ipAddress) {
     var ctx = resolveByToken(token);
@@ -822,7 +929,8 @@ public class AcceptanceService {
         orgLogo,
         brandColor,
         request.getAcceptedAt(),
-        request.getAcceptorName());
+        request.getAcceptorName(),
+        request.getDeclinedAt());
   }
 
   /**
@@ -871,7 +979,13 @@ public class AcceptanceService {
             () ->
                 transactionTemplate.execute(
                     status -> {
-                      AcceptanceRequest current = findByTokenOrThrow(token);
+                      // Lock first (Phase 88 U23): serialises with a concurrent decline.
+                      AcceptanceRequest current =
+                          acceptanceRequestRepository
+                              .findByRequestTokenForUpdate(token)
+                              .orElseThrow(
+                                  () ->
+                                      new ResourceNotFoundException("AcceptanceRequest", "token"));
                       // Idempotent: if already accepted, return current state
                       if (current.getStatus() == AcceptanceStatus.ACCEPTED) {
                         return current;
@@ -882,6 +996,25 @@ public class AcceptanceService {
 
     return new PortalAcceptResponse(
         request.getStatus().name(), request.getAcceptedAt(), request.getAcceptorName());
+  }
+
+  /**
+   * Declines a document from the portal (Phase 88 U23). Resolves the tenant from the token, then
+   * runs {@link #decline} in that tenant's transaction. Not idempotent: a second decline is 409.
+   *
+   * @return the decline response DTO
+   */
+  public PortalDeclineResponse declineFromPortal(
+      String token, DeclineSubmission submission, String ipAddress, String userAgent) {
+    var ctx = resolveByToken(token);
+    AcceptanceRequest request =
+        RequestScopes.callForTenant(
+            ctx.tenantSchema(),
+            ctx.orgId(),
+            () ->
+                transactionTemplate.execute(
+                    status -> decline(token, submission.reason(), ipAddress, userAgent)));
+    return new PortalDeclineResponse(request.getStatus().name(), request.getDeclinedAt());
   }
 
   /**
@@ -945,6 +1078,47 @@ public class AcceptanceService {
               "Unsupported entity type",
               "Acceptance is not supported for organization-level documents");
     };
+  }
+
+  /**
+   * Matter for an acceptance request's document (ADR-349, Phase 88 D-18): the generated document's
+   * primary entity when it is a PROJECT, else the matter of its saved {@code documents} row, else
+   * null. Private on purpose — 625A extracts it when it adds {@code project_id} to the other
+   * acceptance events.
+   */
+  private UUID resolveMatterId(GeneratedDocument doc) {
+    if (doc == null) {
+      return null;
+    }
+    if (doc.getPrimaryEntityType() == TemplateEntityType.PROJECT) {
+      return doc.getPrimaryEntityId();
+    }
+    if (doc.getDocumentId() == null) {
+      return null;
+    }
+    return documentRepository
+        .findById(doc.getDocumentId())
+        .map(Document::getProjectId)
+        .orElse(null);
+  }
+
+  /** Display name for a document: its template's name, else its file name, else "a document". */
+  private String resolveDocumentName(GeneratedDocument doc) {
+    if (doc == null) {
+      return "a document";
+    }
+    String fallback =
+        doc.getFileName() != null && !doc.getFileName().isBlank()
+            ? doc.getFileName()
+            : "a document";
+    if (doc.getTemplateId() == null) {
+      return fallback;
+    }
+    return documentTemplateRepository
+        .findById(doc.getTemplateId())
+        .map(DocumentTemplate::getName)
+        .filter(name -> !name.isBlank())
+        .orElse(fallback);
   }
 
   private int resolveExpiryDays(Integer expiryDaysOverride) {

@@ -35,6 +35,13 @@ describe("AcceptanceStatusBadge", () => {
     expect(screen.getByText("Revoked")).toBeInTheDocument();
   });
 
+  it('renders "Declined" badge without check icon for DECLINED status', () => {
+    render(<AcceptanceStatusBadge status="DECLINED" />);
+    expect(screen.getByText("Declined")).toBeInTheDocument();
+    const badge = screen.getByText("Declined").closest("div, span");
+    expect(badge?.querySelector("svg")).not.toBeInTheDocument();
+  });
+
   it('renders "Pending" badge for PENDING status', () => {
     render(<AcceptanceStatusBadge status="PENDING" />);
     expect(screen.getByText("Pending")).toBeInTheDocument();

@@ -6,7 +6,14 @@ import type { PortalContactSummary } from "@/lib/types";
 
 // ---- Types ----
 
-export type AcceptanceStatus = "PENDING" | "SENT" | "VIEWED" | "ACCEPTED" | "EXPIRED" | "REVOKED";
+export type AcceptanceStatus =
+  | "PENDING"
+  | "SENT"
+  | "VIEWED"
+  | "ACCEPTED"
+  | "DECLINED"
+  | "EXPIRED"
+  | "REVOKED";
 
 export interface ActionResult<T = void> {
   success: boolean;

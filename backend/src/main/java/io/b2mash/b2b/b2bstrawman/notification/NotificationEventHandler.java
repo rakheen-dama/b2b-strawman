@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunEvents.BillingRunCompleted
 import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunEvents.BillingRunFailuresEvent;
 import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunEvents.BillingRunSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestAcceptedEvent;
+import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestDeclinedEvent;
 import io.b2mash.b2b.b2bstrawman.event.BudgetThresholdEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
@@ -330,6 +331,25 @@ public class NotificationEventHandler {
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for acceptance_request.accepted event={}",
+                event.entityId(),
+                e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onAcceptanceRequestDeclined(AcceptanceRequestDeclinedEvent event) {
+    RequestScopes.runForTenantOnShard(
+        event.tenantId(),
+        event.orgId(),
+        event.shardId(),
+        () -> {
+          try {
+            var notifications = notificationService.handleAcceptanceRequestDeclined(event);
+            dispatchAll(notifications);
+          } catch (Exception e) {
+            log.warn(
+                "Failed to create notifications for acceptance_request.declined event={}",
                 event.entityId(),
                 e);
           }

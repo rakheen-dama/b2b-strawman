@@ -14,6 +14,7 @@ const STATUS_CONFIG: Record<
   SENT: { label: "Awaiting Acceptance", variant: "warning" },
   VIEWED: { label: "Viewed", variant: "lead" },
   ACCEPTED: { label: "Accepted", variant: "success", showIcon: true },
+  DECLINED: { label: "Declined", variant: "neutral" },
   EXPIRED: { label: "Expired", variant: "neutral" },
   REVOKED: { label: "Revoked", variant: "neutral" },
 };

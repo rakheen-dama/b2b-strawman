@@ -442,7 +442,8 @@ class PortalEventHandlerTest {
             null,
             ORG_ID,
             TENANT_ID,
-            new TaxContext(List.of(), null, null, null, false, false));
+            new TaxContext(List.of(), null, null, null, false, false),
+            BigDecimal.ZERO);
 
     var line1 =
         TestIds.withId(
@@ -535,7 +536,8 @@ class PortalEventHandlerTest {
             null,
             ORG_ID,
             TENANT_ID,
-            null);
+            null,
+            new BigDecimal("500.00"));
 
     handler.onInvoiceSynced(event);
 
@@ -568,7 +570,8 @@ class PortalEventHandlerTest {
             null,
             ORG_ID,
             TENANT_ID,
-            null);
+            null,
+            new BigDecimal("700.00"));
 
     handler.onInvoiceSynced(event);
 
@@ -601,7 +604,8 @@ class PortalEventHandlerTest {
             null,
             ORG_ID,
             TENANT_ID,
-            null);
+            null,
+            BigDecimal.ZERO);
 
     handler.onInvoiceSynced(event);
 

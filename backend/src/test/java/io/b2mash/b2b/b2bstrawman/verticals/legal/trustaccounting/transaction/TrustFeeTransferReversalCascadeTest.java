@@ -7,10 +7,12 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.InvoiceSyncEvent;
+import io.b2mash.b2b.b2bstrawman.event.InvoicePaidEvent;
+import io.b2mash.b2b.b2bstrawman.event.InvoicePartiallyPaidEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoicePaymentPartiallyReversedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoicePaymentReversedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceTransitionService;
@@ -35,6 +37,8 @@ import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -57,7 +61,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  * trust reversal succeeds, the invoice either flips PAID -> SENT (single-payment) or, with one
  * payment_event removed (multi-payment partial reversal), recomputes amount_paid from the remaining
  * COMPLETED events — PARTIALLY_PAID when they no longer cover the total (Phase 88 U15, ADR-347).
- * Both writes share the same @Transactional boundary.
+ * Both writes share the same @Transactional boundary. Also pins the approval side (622C, N-5): a
+ * fee transfer posts its real amount through postPayment (TRUST_TRANSFER) — PARTIALLY_PAID when it
+ * leaves a balance, capped at PAID + {@code invoice.payment_excess} when it exceeds it.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -206,8 +212,16 @@ class TrustFeeTransferReversalCascadeTest {
                   var paymentEvents =
                       paymentEventRepository.findByInvoiceIdAndStatus(
                           invoiceIdHolder[0], PaymentEventStatus.COMPLETED);
-                  assertThat(paymentEvents).hasSize(1);
+                  assertThat(paymentEvents)
+                      .as("postPayment writes the one trust event — no double count")
+                      .hasSize(1);
                   assertThat(paymentEvents.get(0).getPaymentReference()).isEqualTo(reference);
+                  assertThat(paymentEvents.get(0).getPaymentMethod())
+                      .isEqualTo(PaymentMethod.TRUST_TRANSFER);
+                  assertThat(paymentEvents.get(0).getProviderSlug())
+                      .isEqualTo(PaymentPosting.TRUST_PROVIDER);
+                  assertThat(paymentEvents.get(0).getPaymentDestination()).isEqualTo("TRUST");
+                  assertThat(invoice.getAmountPaid()).isEqualByComparingTo("1150.00");
                 }));
 
     // Reverse the FEE_TRANSFER — invoice should snap back to SENT
@@ -348,6 +362,20 @@ class TrustFeeTransferReversalCascadeTest {
                           paymentEventRepository.findByInvoiceIdAndStatus(
                               invoiceIdHolder[0], PaymentEventStatus.COMPLETED))
                       .hasSize(2);
+
+                  // ADR-347 A4: the 2 000.00 transfer exceeds the 1 150.00 balance — the fee note
+                  // is capped at PAID and the 850.00 excess is audited.
+                  var invoice = invoiceRepository.findById(invoiceIdHolder[0]).orElseThrow();
+                  assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PAID);
+                  assertThat(invoice.getAmountPaid()).isEqualByComparingTo("1150.00");
+                  assertThat(auditDetails(invoiceIdHolder[0], "invoice.payment_excess"))
+                      .singleElement()
+                      .satisfies(
+                          d ->
+                              assertThat(d)
+                                  .containsEntry("excess", "850.00")
+                                  .containsEntry("amount", "2000.00")
+                                  .containsEntry("payment_method", "TRUST_TRANSFER"));
                 }));
 
     runInTenantWithCapabilities(
@@ -415,104 +443,305 @@ class TrustFeeTransferReversalCascadeTest {
   }
 
   /**
-   * Phase 88 622B D7: a fee transfer recorded on a SENT fee note but approved after a manual part
-   * payment must not over-collect from trust. The interim legacy settle path is SENT-only, so the
-   * approval is refused (409) and rolls back as a whole — no trust debit, invoice untouched — until
-   * 622C posts the transfer's real amount through postPayment.
+   * Phase 88 622C (ADR-347 A4, OQ-1 A): a fee transfer recorded for the full total while the fee
+   * note is SENT, approved after a manual part payment landed. The transfer posts its real amount
+   * through postPayment — the fee note is capped at PAID and the 500.00 excess is audited as {@code
+   * invoice.payment_excess}; trust is debited the transfer amount. (622B's interim D7 refusal was a
+   * stopgap for the deleted legacy full-settle path.)
    */
   @Test
-  void feeTransferApprovalOnPartiallyPaidFeeNote_isRefusedWithoutDebitingTrust() {
-    UUID[] invoiceIdHolder = new UUID[1];
-    UUID[] customerIdHolder = new UUID[1];
-    UUID[] feeTransferTxnIdHolder = new UUID[1];
-
-    runInTenantWithCapabilities(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  UUID projectId = UUID.randomUUID();
-                  insertProject(projectId, "D7 Partial Project");
-
-                  var customer =
-                      customerRepository.save(
-                          TestCustomerFactory.createActiveCustomer(
-                              "D7 Partial Client", "d7_partial@test.com", memberId));
-                  customerIdHolder[0] = customer.getId();
-
-                  transactionService.recordDeposit(
-                      trustAccountId,
-                      new RecordDepositRequest(
-                          customer.getId(),
-                          projectId,
-                          new BigDecimal("5000.00"),
-                          "DEP-D7-PARTIAL",
-                          "Funding",
-                          LocalDate.of(2026, 4, 25)));
-
-                  UUID invoiceId = UUID.randomUUID();
-                  invoiceIdHolder[0] = invoiceId;
-                  insertInvoice(invoiceId, customer.getId(), "INV-D7-PARTIAL");
-                  insertInvoiceLine(invoiceId, projectId, new BigDecimal("1150.00"));
-                  entityManager.flush();
-
-                  // Fee transfer for the full total while the fee note is still SENT
-                  var ftResponse =
-                      transactionService.recordFeeTransfer(
-                          trustAccountId,
-                          new RecordFeeTransferRequest(
-                              customer.getId(),
-                              invoiceId,
-                              new BigDecimal("1150.00"),
-                              "FT-D7-PARTIAL"));
-                  feeTransferTxnIdHolder[0] = ftResponse.id();
-                }));
+  void feeTransferAboveBalanceDueAtApproval_isCappedAtPaidWithExcessAudit() {
+    var note =
+        seedFundedFeeNote(
+            "D7",
+            new BigDecimal("1000.00"),
+            new BigDecimal("150.00"),
+            new BigDecimal("1150.00"),
+            new BigDecimal("5000.00"));
+    UUID txnId = recordTransfer(note, new BigDecimal("1150.00"), "FT-D7-PARTIAL");
 
     // A manual part payment lands before the transfer is approved → PARTIALLY_PAID, 500 paid
     runInTenantWithCapabilities(
         () ->
             invoiceTransitionService.postPayment(
-                invoiceIdHolder[0],
+                note.invoiceId(),
                 PaymentPosting.manual(new BigDecimal("500.00"), PaymentMethod.EFT, "EFT-D7")));
 
-    runAsApproverWithCapabilities(
-        () ->
-            assertThatThrownBy(
-                    () ->
-                        transactionTemplate.executeWithoutResult(
-                            tx ->
-                                transactionService.approveTransaction(
-                                    feeTransferTxnIdHolder[0], approverId)))
-                .isInstanceOf(ResourceConflictException.class));
+    approve(txnId);
 
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var invoice = invoiceRepository.findById(invoiceIdHolder[0]).orElseThrow();
+                  var invoice = invoiceRepository.findById(note.invoiceId()).orElseThrow();
+                  assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PAID);
+                  assertThat(invoice.getAmountPaid()).isEqualByComparingTo("1150.00");
+                  assertThat(invoice.getBalanceDue()).isEqualByComparingTo("0.00");
+                  assertThat(invoice.getPaidAt()).isNotNull();
+
+                  var completed =
+                      paymentEventRepository.findByInvoiceIdAndStatus(
+                          note.invoiceId(), PaymentEventStatus.COMPLETED);
+                  assertThat(completed)
+                      .extracting(PaymentEvent::getPaymentReference)
+                      .containsExactlyInAnyOrder("EFT-D7", "FT-D7-PARTIAL");
+                  var trustEvent =
+                      completed.stream()
+                          .filter(pe -> "FT-D7-PARTIAL".equals(pe.getPaymentReference()))
+                          .findFirst()
+                          .orElseThrow();
+                  assertThat(trustEvent.getAmount())
+                      .as("the event records the real transfer amount")
+                      .isEqualByComparingTo("1150.00");
+                  assertThat(trustEvent.getPaymentMethod()).isEqualTo(PaymentMethod.TRUST_TRANSFER);
+
+                  assertThat(auditDetails(note.invoiceId(), "invoice.payment_excess"))
+                      .singleElement()
+                      .satisfies(
+                          d ->
+                              assertThat(d)
+                                  .containsEntry("excess", "500.00")
+                                  .containsEntry("amount", "1150.00")
+                                  .containsEntry("payment_method", "TRUST_TRANSFER"));
+
+                  assertThat(ledgerBalance(note.customerId()))
+                      .as("trust debited the transfer amount")
+                      .isEqualByComparingTo("3850.00");
+                  assertThat(transactionRepository.findById(txnId).orElseThrow().getStatus())
+                      .isEqualTo("APPROVED");
+                }));
+  }
+
+  /**
+   * N-5 (Phase 88 U15): a R 12 000 fee transfer against a R 42 182 fee note posts R 12 000 — the
+   * fee note is PARTIALLY_PAID, never PAID.
+   */
+  @Test
+  void partialFeeTransfer_leavesFeeNotePartiallyPaidWithRealAmount() {
+    var note = seedN5FeeNote("N5");
+    UUID txnId = recordTransfer(note, new BigDecimal("12000.00"), "FT-N5");
+
+    applicationEvents.clear();
+    approve(txnId);
+
+    var partiallyPaidEvents =
+        applicationEvents.stream(InvoicePartiallyPaidEvent.class)
+            .filter(e -> note.invoiceId().equals(e.entityId()))
+            .toList();
+    assertThat(partiallyPaidEvents).hasSize(1);
+    assertThat(
+            applicationEvents.stream(InvoicePaidEvent.class)
+                .filter(e -> note.invoiceId().equals(e.entityId())))
+        .isEmpty();
+    var syncEvents =
+        applicationEvents.stream(InvoiceSyncEvent.class)
+            .filter(e -> note.invoiceId().equals(e.getInvoiceId()))
+            .toList();
+    assertThat(syncEvents).hasSize(1);
+    assertThat(syncEvents.get(0).getStatus()).isEqualTo("PARTIALLY_PAID");
+    assertThat(syncEvents.get(0).getAmountPaid()).isEqualByComparingTo("12000.00");
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var invoice = invoiceRepository.findById(note.invoiceId()).orElseThrow();
                   assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PARTIALLY_PAID);
-                  assertThat(invoice.getAmountPaid()).isEqualByComparingTo("500.00");
-                  assertThat(invoice.getBalanceDue()).isEqualByComparingTo("650.00");
+                  assertThat(invoice.getAmountPaid()).isEqualByComparingTo("12000.00");
+                  assertThat(invoice.getBalanceDue()).isEqualByComparingTo("30182.00");
                   assertThat(invoice.getPaidAt()).isNull();
 
                   var completed =
                       paymentEventRepository.findByInvoiceIdAndStatus(
-                          invoiceIdHolder[0], PaymentEventStatus.COMPLETED);
-                  assertThat(completed)
-                      .as("only the manual part payment — no trust_fee_transfer event")
-                      .hasSize(1);
-                  assertThat(completed.get(0).getPaymentReference()).isEqualTo("EFT-D7");
+                          note.invoiceId(), PaymentEventStatus.COMPLETED);
+                  assertThat(completed).hasSize(1);
+                  var event = completed.get(0);
+                  assertThat(event.getAmount()).isEqualByComparingTo("12000.00");
+                  assertThat(event.getPaymentMethod()).isEqualTo(PaymentMethod.TRUST_TRANSFER);
+                  assertThat(event.getProviderSlug()).isEqualTo("trust_fee_transfer");
+                  assertThat(event.getPaymentDestination()).isEqualTo("TRUST");
+                  assertThat(event.getPaymentReference()).isEqualTo("FT-N5");
 
-                  var ledger =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(trustAccountId, customerIdHolder[0])
-                          .orElseThrow();
-                  assertThat(ledger.getBalance())
-                      .as("no trust debit — approval rolled back")
-                      .isEqualByComparingTo("5000.00");
+                  assertThat(ledgerBalance(note.customerId())).isEqualByComparingTo("38000.00");
 
-                  var txn = transactionRepository.findById(feeTransferTxnIdHolder[0]).orElseThrow();
-                  assertThat(txn.getStatus()).isEqualTo("AWAITING_APPROVAL");
+                  assertThat(auditDetails(note.invoiceId(), "invoice.partially_paid"))
+                      .singleElement()
+                      .satisfies(
+                          d ->
+                              assertThat(d)
+                                  .containsEntry("amount", "12000.00")
+                                  .containsEntry("payment_method", "TRUST_TRANSFER")
+                                  .containsEntry("balance_due", "30182.00"));
+                  assertThat(auditDetails(note.invoiceId(), "invoice.payment_excess")).isEmpty();
                 }));
+  }
+
+  /**
+   * 622B D7 lifted + OQ-2: a remainder transfer can be recorded and approved on a PARTIALLY_PAID
+   * fee note; it clears the balance exactly (no excess).
+   */
+  @Test
+  void feeTransferOnPartiallyPaidFeeNote_isApproved() {
+    var note =
+        seedFundedFeeNote(
+            "PP",
+            new BigDecimal("1000.00"),
+            new BigDecimal("150.00"),
+            new BigDecimal("1150.00"),
+            new BigDecimal("5000.00"));
+
+    runInTenantWithCapabilities(
+        () ->
+            invoiceTransitionService.postPayment(
+                note.invoiceId(),
+                PaymentPosting.manual(new BigDecimal("500.00"), PaymentMethod.EFT, "EFT-PP")));
+
+    // Recorded while the fee note is PARTIALLY_PAID (OQ-2)
+    UUID txnId = recordTransfer(note, new BigDecimal("650.00"), "FT-PP-REMAINDER");
+    approve(txnId);
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var invoice = invoiceRepository.findById(note.invoiceId()).orElseThrow();
+                  assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PAID);
+                  assertThat(invoice.getAmountPaid()).isEqualByComparingTo("1150.00");
+                  assertThat(invoice.getPaidAt()).isNotNull();
+                  assertThat(invoice.getPaymentReference()).isEqualTo("FT-PP-REMAINDER");
+
+                  var completed =
+                      paymentEventRepository.findByInvoiceIdAndStatus(
+                          note.invoiceId(), PaymentEventStatus.COMPLETED);
+                  assertThat(completed)
+                      .extracting(PaymentEvent::getPaymentReference)
+                      .containsExactlyInAnyOrder("EFT-PP", "FT-PP-REMAINDER");
+                  assertThat(auditDetails(note.invoiceId(), "invoice.payment_excess")).isEmpty();
+
+                  assertThat(ledgerBalance(note.customerId())).isEqualByComparingTo("4350.00");
+                }));
+  }
+
+  /** Reversing a part fee transfer returns the fee note to SENT and restores the trust ledger. */
+  @Test
+  void reversalOfPartialFeeTransfer_returnsFeeNoteToSent() {
+    var note = seedN5FeeNote("N5-REV");
+    UUID txnId = recordTransfer(note, new BigDecimal("12000.00"), "FT-N5-REV");
+    approve(txnId);
+
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  applicationEvents.clear();
+                  transactionService.reverseTransaction(txnId, "Wrong matter");
+
+                  var invoice = invoiceRepository.findById(note.invoiceId()).orElseThrow();
+                  assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.SENT);
+                  assertThat(invoice.getAmountPaid()).isEqualByComparingTo("0.00");
+                  assertThat(invoice.getPaidAt()).isNull();
+                  assertThat(
+                          paymentEventRepository.findByInvoiceIdAndStatus(
+                              note.invoiceId(), PaymentEventStatus.COMPLETED))
+                      .isEmpty();
+                }));
+
+    assertThat(
+            applicationEvents.stream(InvoicePaymentReversedEvent.class)
+                .filter(e -> note.invoiceId().equals(e.entityId()))
+                .toList())
+        .singleElement()
+        .satisfies(e -> assertThat(e.amount()).isEqualByComparingTo("12000.00"));
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  assertThat(auditDetails(note.invoiceId(), "invoice.payment_reversed"))
+                      .singleElement()
+                      .satisfies(
+                          d ->
+                              assertThat(d)
+                                  .containsEntry("partial", "false")
+                                  .containsEntry("amount", "12000.00"));
+                  assertThat(ledgerBalance(note.customerId())).isEqualByComparingTo("50000.00");
+                }));
+  }
+
+  /** A funded client + a SENT fee note with one project-bound line. */
+  private record SeededNote(UUID invoiceId, UUID customerId, UUID projectId) {}
+
+  private SeededNote seedN5FeeNote(String label) {
+    return seedFundedFeeNote(
+        label,
+        new BigDecimal("36680.00"),
+        new BigDecimal("5502.00"),
+        new BigDecimal("42182.00"),
+        new BigDecimal("50000.00"));
+  }
+
+  private SeededNote seedFundedFeeNote(
+      String label, BigDecimal subtotal, BigDecimal tax, BigDecimal total, BigDecimal deposit) {
+    SeededNote[] holder = new SeededNote[1];
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  UUID projectId = UUID.randomUUID();
+                  insertProject(projectId, label + " Project");
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              label + " Client",
+                              label.toLowerCase(Locale.ROOT) + "_ft@test.com",
+                              memberId));
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          projectId,
+                          deposit,
+                          "DEP-" + label,
+                          "Funding",
+                          LocalDate.of(2026, 4, 25)));
+                  UUID invoiceId = UUID.randomUUID();
+                  insertInvoice(invoiceId, customer.getId(), "INV-" + label, subtotal, tax, total);
+                  insertInvoiceLine(invoiceId, projectId, subtotal);
+                  entityManager.flush();
+                  holder[0] = new SeededNote(invoiceId, customer.getId(), projectId);
+                }));
+    return holder[0];
+  }
+
+  private UUID recordTransfer(SeededNote note, BigDecimal amount, String reference) {
+    UUID[] holder = new UUID[1];
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx ->
+                    holder[0] =
+                        transactionService
+                            .recordFeeTransfer(
+                                trustAccountId,
+                                new RecordFeeTransferRequest(
+                                    note.customerId(), note.invoiceId(), amount, reference))
+                            .id()));
+    return holder[0];
+  }
+
+  /** Approves as the second owner (the recorder cannot approve their own transaction). */
+  private void approve(UUID txnId) {
+    runAsApproverWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> transactionService.approveTransaction(txnId, approverId)));
+  }
+
+  private BigDecimal ledgerBalance(UUID customerId) {
+    return ledgerCardRepository
+        .findByTrustAccountIdAndCustomerId(trustAccountId, customerId)
+        .orElseThrow()
+        .getBalance();
   }
 
   @Test
@@ -685,6 +914,22 @@ class TrustFeeTransferReversalCascadeTest {
   }
 
   private void insertInvoice(UUID invoiceId, UUID customerId, String invoiceNumber) {
+    insertInvoice(
+        invoiceId,
+        customerId,
+        invoiceNumber,
+        new BigDecimal("1000.00"),
+        new BigDecimal("150.00"),
+        new BigDecimal("1150.00"));
+  }
+
+  private void insertInvoice(
+      UUID invoiceId,
+      UUID customerId,
+      String invoiceNumber,
+      BigDecimal subtotal,
+      BigDecimal tax,
+      BigDecimal total) {
     entityManager
         .createNativeQuery(
             """
@@ -692,14 +937,31 @@ class TrustFeeTransferReversalCascadeTest {
                 subtotal, tax_amount, total, due_date,
                 customer_name, org_name, payment_destination, created_by, created_at, updated_at)
             VALUES (:id, :customerId, :invoiceNumber, 'SENT', 'ZAR',
-                1000.00, 150.00, 1150.00, '2026-05-30',
+                :subtotal, :tax, :total, '2026-05-30',
                 'L70 Client', 'Test Org', 'OPERATING', :memberId, now(), now())
             """)
         .setParameter("id", invoiceId)
         .setParameter("customerId", customerId)
         .setParameter("invoiceNumber", invoiceNumber)
+        .setParameter("subtotal", subtotal)
+        .setParameter("tax", tax)
+        .setParameter("total", total)
         .setParameter("memberId", memberId)
         .executeUpdate();
+  }
+
+  /**
+   * Details of every audit row of {@code eventType} on this invoice (id-scoped, no count-bleed).
+   */
+  private List<Map<String, Object>> auditDetails(UUID invoiceId, String eventType) {
+    return auditService
+        .findEvents(
+            new AuditEventFilter("invoice", invoiceId, null, eventType, null, null, null),
+            PageRequest.of(0, 10))
+        .getContent()
+        .stream()
+        .map(e -> e.getDetails())
+        .toList();
   }
 
   private void insertInvoiceLine(UUID invoiceId, UUID projectId, BigDecimal amount) {

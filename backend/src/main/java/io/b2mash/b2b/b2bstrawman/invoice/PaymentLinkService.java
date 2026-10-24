@@ -45,11 +45,14 @@ public class PaymentLinkService {
 
     String tenantSchema = RequestScopes.requireTenantId();
 
+    // The checkout asks for the balance due: the total at send, what remains after a part payment
+    // (Phase 88 U15, ADR-347).
+    var amount = invoice.getBalanceDue();
     var checkoutRequest =
         new CheckoutRequest(
             invoice.getId(),
             invoice.getInvoiceNumber(),
-            invoice.getTotal(),
+            amount,
             invoice.getCurrency(),
             invoice.getCustomerEmail(),
             invoice.getCustomerName(),
@@ -78,7 +81,7 @@ public class PaymentLinkService {
             gateway.providerId(),
             result.sessionId(),
             PaymentEventStatus.CREATED,
-            invoice.getTotal(),
+            amount,
             invoice.getCurrency(),
             invoice.getPaymentDestination());
     paymentEventRepository.save(paymentEvent);
@@ -97,7 +100,7 @@ public class PaymentLinkService {
                     "session_id",
                     result.sessionId(),
                     "amount",
-                    invoice.getTotal().toPlainString()))
+                    amount.toPlainString()))
             .build());
 
     log.info("Generated payment link for invoice {} via {}", invoice.getId(), gateway.providerId());

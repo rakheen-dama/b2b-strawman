@@ -16,11 +16,9 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceTransitionService;
-import io.b2mash.b2b.b2bstrawman.invoice.PaymentEvent;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
-import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentPosting;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
-import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -264,9 +262,11 @@ public class AccountingSyncService {
   /**
    * Poll payments for a Xero connection. Resolves external payments via {@link
    * AccountingPaymentSource}, matches them against Kazi invoices through completed PUSH sync
-   * entries, and either reconciles (creating {@link PaymentEvent} + transitioning to PAID), detects
-   * drift (creating {@code RECONCILE_DRIFT} sync entries), or skips (Xero-native invoices,
-   * already-paid, or dedup).
+   * entries, and either reconciles (posting the Xero payment amount as XERO through {@link
+   * InvoiceTransitionService#postPayment} — PARTIALLY_PAID or PAID; an amount above the balance due
+   * is capped at PAID and audited as {@code invoice.payment_excess}), detects currency drift
+   * (creating {@code RECONCILE_DRIFT} sync entries), or skips (Xero-native invoices, already-paid,
+   * not payable, or dedup).
    */
   @Transactional
   public PaymentPollSummary pollPaymentsForConnection(UUID connectionId) {
@@ -323,10 +323,10 @@ public class AccountingSyncService {
         continue;
       }
 
-      // 3. Not in SENT status — cannot auto-transition (only SENT -> PAID is valid)
-      if (invoice.getStatus() != InvoiceStatus.SENT) {
+      // 3. Only SENT / PARTIALLY_PAID fee notes can take a payment (ADR-347, §13.4.7)
+      if (!invoice.isPayable()) {
         log.warn(
-            "Invoice {} is in {} status (not SENT); skipping payment reconciliation",
+            "Invoice {} is in {} status (not SENT/PARTIALLY_PAID); skipping payment reconciliation",
             invoiceId,
             invoice.getStatus());
         skipped++;
@@ -383,62 +383,13 @@ public class AccountingSyncService {
         continue;
       }
 
-      // 6. Amount drift check
-      BigDecimal drift = event.amount().subtract(invoice.getTotal()).abs();
-      if (drift.compareTo(new BigDecimal("0.01")) > 0) {
-        var driftEntry =
-            new AccountingSyncEntry(
-                SyncEntityType.PAYMENT_PULL,
-                invoiceId,
-                "xero",
-                SyncDirection.PULL,
-                SyncTrigger.EVENT,
-                event.externalInvoiceReference());
-        driftEntry.markReconcileDrift(
-            "DRIFT_DETECTED",
-            "Xero amount %s does not match Kazi total %s (drift: %s)"
-                .formatted(event.amount(), invoice.getTotal(), drift));
-        syncEntryRepository.save(driftEntry);
-
-        auditService.log(
-            AuditEventBuilder.builder()
-                .eventType("integration.xero.reconcile_drift")
-                .entityType("INVOICE")
-                .entityId(invoiceId)
-                .actorType("SYSTEM")
-                .source("ACCOUNTING_SYNC")
-                .details(
-                    Map.of(
-                        "invoiceNumber",
-                        invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "",
-                        "xeroAmount",
-                        event.amount().toString(),
-                        "kaziTotal",
-                        invoice.getTotal().toString(),
-                        "drift",
-                        drift.toString(),
-                        "xeroPaymentId",
-                        event.externalPaymentId()))
-                .build());
-
-        drifted++;
-        continue;
-      }
-
-      // 7. Match — create PaymentEvent, transition invoice, create PULL sync entry
-      var paymentEvent =
-          new PaymentEvent(
-              invoiceId,
-              "xero",
-              null,
-              PaymentEventStatus.COMPLETED,
-              event.amount(),
-              event.currency(),
-              invoice.getPaymentDestination());
-      paymentEvent.setPaymentReference(event.externalPaymentId());
-      paymentEventRepository.save(paymentEvent);
-
-      invoiceTransitionService.recordPayment(invoiceId, event.externalPaymentId(), true);
+      // 6. Match — post the Xero payment amount (XERO) and create the PULL sync entry. No amount
+      // drift check (Phase 88 U15, ADR-347): a Xero payment below the balance is a real part
+      // payment (A3); one above it is capped at PAID + invoice.payment_excess by postPayment (A4).
+      // postPayment writes the COMPLETED payment event with reference = the Xero PaymentID, which
+      // keeps the step-4 dedup working on the next poll.
+      invoiceTransitionService.postPayment(
+          invoiceId, PaymentPosting.xero(event.amount(), event.externalPaymentId()));
 
       var pullEntry =
           new AccountingSyncEntry(

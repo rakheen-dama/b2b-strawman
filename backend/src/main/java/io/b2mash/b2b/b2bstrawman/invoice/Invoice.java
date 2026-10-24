@@ -275,6 +275,11 @@ public class Invoice {
   static final Set<InvoiceStatus> REVERSIBLE =
       Set.of(InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.PAID);
 
+  /** SENT or PARTIALLY_PAID — the statuses {@code postPayment} accepts (ADR-347). */
+  public boolean isPayable() {
+    return PAYABLE.contains(this.status);
+  }
+
   /**
    * Guard-and-throw: e.g. {@code IllegalStateException("Only sent or partially paid fee notes can
    * take a payment")}. Services translate it to a 409 "Invalid status transition".
@@ -312,8 +317,9 @@ public class Invoice {
   }
 
   /**
-   * Settles the remaining balance in full — the interim path for the external callers until 622C
-   * re-points them to {@code postPayment} with their real amounts, plus seeders and test fixtures.
+   * Settles the remaining balance in full without a payment event — for demo seeders and test
+   * fixtures only. Every runtime payment source posts its real amount through {@code
+   * InvoiceTransitionService.postPayment} (Phase 88 U15, ADR-347).
    */
   public void recordPayment(String paymentReference) {
     applyPayment(getBalanceDue(), paymentReference);

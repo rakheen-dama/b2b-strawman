@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
@@ -165,7 +166,40 @@ class PaymentLinkServiceIntegrationTest {
         .perform(
             post("/api/invoices/" + invoiceId + "/refresh-payment-link")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_link_owner")))
-        .andExpect(status().isConflict());
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.title").value("Invalid status"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "Only sent or partially paid fee notes can have their payment link refreshed"));
+  }
+
+  /** Phase 88 622C (ADR-347): a part-paid fee note can take a pay-now link for its balance due. */
+  @Test
+  void refresh_payment_link_returns_ok_for_partially_paid_invoice() throws Exception {
+    String invoiceId = createDraftInvoice();
+    addLineItem(invoiceId);
+    approveInvoice(invoiceId);
+    sendInvoice(invoiceId);
+
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/payment")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_link_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"amount": 100.00, "paymentMethod": "EFT", "paymentReference": "EFT-PART"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("PARTIALLY_PAID"));
+
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/refresh-payment-link")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_link_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("PARTIALLY_PAID"));
   }
 
   private String createDraftInvoice() throws Exception {

@@ -211,10 +211,13 @@ public class InvoiceService {
     return transitionService.settleBalance(invoiceId, PaymentMethod.OTHER, paymentReference);
   }
 
+  /**
+   * Posts a payment from an external source (trust fee transfer, pay-now webhook) through the one
+   * internal entry point (Phase 88 U15, ADR-347). Joins the caller's transaction.
+   */
   @Transactional
-  public InvoiceResponse recordPayment(
-      UUID invoiceId, String paymentReference, boolean fromWebhook) {
-    return transitionService.recordPayment(invoiceId, paymentReference, fromWebhook);
+  public InvoiceResponse postPayment(UUID invoiceId, PaymentPosting posting) {
+    return transitionService.postPayment(invoiceId, posting);
   }
 
   @Transactional

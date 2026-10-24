@@ -23,6 +23,8 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -248,7 +250,151 @@ class PaymentReconciliationServiceIntegrationTest {
                       var invoice =
                           invoiceRepository.findById(UUID.fromString(invoiceId)).orElseThrow();
                       assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PAID);
+                      assertThat(completedForSession(invoiceId, "sess_2"))
+                          .as("one COMPLETED event for the session after a replay")
+                          .hasSize(1);
                     }));
+  }
+
+  // --- Phase 88 622C (ADR-347): the pay-now webhook posts the session's amount as CARD ---
+
+  @Test
+  void webhookPostsSessionAmountAsCard() throws Exception {
+    String invoiceId = createAndSendInvoice();
+
+    inTenant(
+        () -> {
+          var balance = invoice(invoiceId).getBalanceDue();
+          seedCreatedPaymentEvent(invoiceId, "sess_card", balance);
+          reconciliationService.processWebhookResult(
+              buildWebhookResult(invoiceId, PaymentStatus.COMPLETED, "pay_ref_card", "sess_card"),
+              "test-provider");
+
+          var invoice = invoice(invoiceId);
+          assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PAID);
+          assertThat(invoice.getAmountPaid()).isEqualByComparingTo(invoice.getTotal());
+
+          assertThat(completedForSession(invoiceId, "sess_card"))
+              .singleElement()
+              .satisfies(
+                  e -> {
+                    assertThat(e.getPaymentMethod()).isEqualTo(PaymentMethod.CARD);
+                    assertThat(e.getProviderSlug()).isEqualTo("test-provider");
+                    assertThat(e.getAmount()).isEqualByComparingTo(balance);
+                    assertThat(e.getPaymentReference()).isEqualTo("pay_ref_card");
+                  });
+        });
+  }
+
+  @Test
+  void webhookForPartialSession_leavesFeeNotePartiallyPaid() throws Exception {
+    String invoiceId = createAndSendInvoice();
+
+    inTenant(
+        () -> {
+          seedCreatedPaymentEvent(invoiceId, "sess_part", new BigDecimal("500.00"));
+          reconciliationService.processWebhookResult(
+              buildWebhookResult(invoiceId, PaymentStatus.COMPLETED, "pay_ref_part", "sess_part"),
+              "test-provider");
+
+          var invoice = invoice(invoiceId);
+          assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PARTIALLY_PAID);
+          assertThat(invoice.getAmountPaid()).isEqualByComparingTo("500.00");
+          assertThat(invoice.getBalanceDue())
+              .isEqualByComparingTo(invoice.getTotal().subtract(new BigDecimal("500.00")));
+          assertThat(invoice.getPaidAt()).isNull();
+          assertThat(completedForSession(invoiceId, "sess_part"))
+              .singleElement()
+              .satisfies(
+                  e -> {
+                    assertThat(e.getAmount()).isEqualByComparingTo("500.00");
+                    assertThat(e.getPaymentMethod()).isEqualTo(PaymentMethod.CARD);
+                  });
+
+          // The audit rows this service writes carry the posted amount, not the total
+          assertThat(auditDetails(invoiceId, "payment.completed"))
+              .singleElement()
+              .satisfies(d -> assertThat(d).containsEntry("amount", "500.00"));
+        });
+  }
+
+  @Test
+  void webhookReplayOnPartiallyPaidFeeNote_isIdempotentOnSessionId() throws Exception {
+    String invoiceId = createAndSendInvoice();
+
+    inTenant(
+        () -> {
+          seedCreatedPaymentEvent(invoiceId, "sess_replay", new BigDecimal("500.00"));
+          var result =
+              buildWebhookResult(
+                  invoiceId, PaymentStatus.COMPLETED, "pay_ref_replay", "sess_replay");
+          reconciliationService.processWebhookResult(result, "test-provider");
+          reconciliationService.processWebhookResult(result, "test-provider");
+
+          var invoice = invoice(invoiceId);
+          assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PARTIALLY_PAID);
+          assertThat(invoice.getAmountPaid()).isEqualByComparingTo("500.00");
+          assertThat(completedForSession(invoiceId, "sess_replay")).hasSize(1);
+        });
+  }
+
+  @Test
+  void webhookAboveBalance_isCappedWithPaymentExcess() throws Exception {
+    String invoiceId = createAndSendInvoice();
+
+    inTenant(
+        () -> {
+          var sessionAmount = invoice(invoiceId).getBalanceDue().add(new BigDecimal("100.00"));
+          seedCreatedPaymentEvent(invoiceId, "sess_excess", sessionAmount);
+          reconciliationService.processWebhookResult(
+              buildWebhookResult(
+                  invoiceId, PaymentStatus.COMPLETED, "pay_ref_excess", "sess_excess"),
+              "test-provider");
+
+          var invoice = invoice(invoiceId);
+          assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PAID);
+          assertThat(invoice.getAmountPaid()).isEqualByComparingTo(invoice.getTotal());
+          assertThat(completedForSession(invoiceId, "sess_excess"))
+              .singleElement()
+              .satisfies(e -> assertThat(e.getAmount()).isEqualByComparingTo(sessionAmount));
+          assertThat(auditDetails(invoiceId, "invoice.payment_excess"))
+              .singleElement()
+              .satisfies(
+                  d ->
+                      assertThat(d)
+                          .containsEntry("excess", "100.00")
+                          .containsEntry("payment_method", "CARD"));
+        });
+  }
+
+  @Test
+  void webhookOnPaidFeeNote_isNotPosted() throws Exception {
+    String invoiceId = createAndSendInvoice();
+
+    // Settled in full through the firm app while a checkout was still open
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/payment")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_recon_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"paymentReference": "manual-settle-before-webhook"}
+                    """))
+        .andExpect(status().isOk());
+
+    inTenant(
+        () -> {
+          seedCreatedPaymentEvent(invoiceId, "sess_late", new BigDecimal("500.00"));
+          reconciliationService.processWebhookResult(
+              buildWebhookResult(invoiceId, PaymentStatus.COMPLETED, "pay_ref_late", "sess_late"),
+              "test-provider");
+
+          var invoice = invoice(invoiceId);
+          assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PAID);
+          assertThat(invoice.getAmountPaid()).isEqualByComparingTo(invoice.getTotal());
+          assertThat(completedForSession(invoiceId, "sess_late")).isEmpty();
+        });
   }
 
   @Test
@@ -431,16 +577,58 @@ class PaymentReconciliationServiceIntegrationTest {
    * checkout session is first created.
    */
   private void seedCreatedPaymentEvent(String invoiceId, String sessionId) {
+    // The checkout session asks for the fee note's balance due (PaymentLinkService) — the webhook
+    // posts the session's amount (Phase 88 622C).
+    seedCreatedPaymentEvent(invoiceId, sessionId, invoice(invoiceId).getBalanceDue());
+  }
+
+  private void seedCreatedPaymentEvent(String invoiceId, String sessionId, BigDecimal amount) {
     var event =
         new PaymentEvent(
             UUID.fromString(invoiceId),
             "test-provider",
             sessionId,
             PaymentEventStatus.CREATED,
-            java.math.BigDecimal.valueOf(1500),
+            amount,
             "ZAR",
             "OPERATING");
     paymentEventRepository.save(event);
+  }
+
+  private Invoice invoice(String invoiceId) {
+    return invoiceRepository.findById(UUID.fromString(invoiceId)).orElseThrow();
+  }
+
+  /** COMPLETED events this session produced on this invoice (id-scoped — no count-bleed). */
+  private List<PaymentEvent> completedForSession(String invoiceId, String sessionId) {
+    return paymentEventRepository
+        .findByInvoiceIdAndStatus(UUID.fromString(invoiceId), PaymentEventStatus.COMPLETED)
+        .stream()
+        .filter(e -> sessionId.equals(e.getSessionId()))
+        .toList();
+  }
+
+  private List<Map<String, Object>> auditDetails(String invoiceId, String eventType) {
+    return auditEventRepository
+        .findByFilter(
+            "invoice",
+            UUID.fromString(invoiceId),
+            null,
+            eventType,
+            null,
+            null,
+            PageRequest.of(0, 10))
+        .getContent()
+        .stream()
+        .map(e -> e.getDetails())
+        .toList();
+  }
+
+  /** Runs {@code action} in one tenant transaction (no member bound — webhook context). */
+  private void inTenant(Runnable action) {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(() -> transactionTemplate.executeWithoutResult(tx -> action.run()));
   }
 
   private WebhookResult buildWebhookResult(

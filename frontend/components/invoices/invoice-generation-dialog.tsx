@@ -39,6 +39,32 @@ interface InvoiceGenerationDialogProps {
   customerName: string;
   slug: string;
   defaultCurrency: string;
+  /** INDIVIDUAL | COMPANY | TRUST — the tax-number banner copy branches on it. */
+  clientType?: string | null;
+}
+
+/**
+ * Tax-number banner copy by client type (622A finding): at generation time the check is a
+ * WARNING for every type, but only a company or trust is blocked at send. Unknown type →
+ * the backend check message, which is already client-type keyed.
+ */
+function taxNumberBannerCopy(
+  clientType: string | null | undefined,
+  fallbackMessage: string
+): { title: string; body: string } {
+  if (clientType === "INDIVIDUAL") {
+    return {
+      title: "Tax number missing",
+      body: "The fee note can be sent \u2014 it will be sent without a client VAT number. Add a tax number to the client profile to include it.",
+    };
+  }
+  if (clientType === "COMPANY" || clientType === "TRUST") {
+    return {
+      title: "Tax number required",
+      body: "This draft can be saved, but a tax number is required before a fee note can be sent to a company or trust. Add it to the client profile.",
+    };
+  }
+  return { title: "Tax number missing", body: fallbackMessage };
 }
 
 export function InvoiceGenerationDialog({
@@ -46,8 +72,11 @@ export function InvoiceGenerationDialog({
   customerName,
   slug,
   defaultCurrency,
+  clientType,
 }: InvoiceGenerationDialogProps) {
   const h = useInvoiceGeneration({ customerId, slug, defaultCurrency });
+  const taxCheck = h.validationChecks?.find((c) => c.name === "customer_tax_number" && !c.passed);
+  const taxBanner = taxCheck ? taxNumberBannerCopy(clientType, taxCheck.message) : null;
 
   return (
     <>
@@ -249,23 +278,21 @@ export function InvoiceGenerationDialog({
                 </div>
               )}
 
-              {/* GAP-L-62 soft-warn banner — missing tax number does NOT block
-                  Save Draft, but the invoice cannot be sent until it is set. */}
-              {h.validationChecks?.some((c) => c.name === "customer_tax_number" && !c.passed) && (
+              {/* GAP-L-62 soft-warn banner — a missing tax number never blocks Save Draft.
+                  Whether the fee note can then be sent depends on the client type. */}
+              {taxBanner && (
                 <div
                   data-testid="tax-number-warning"
+                  data-client-type={clientType ?? "UNKNOWN"}
                   role="status"
                   className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20"
                 >
                   <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-300" />
                   <div className="space-y-0.5 text-sm">
                     <p className="font-medium text-amber-800 dark:text-amber-200">
-                      Tax number missing
+                      {taxBanner.title}
                     </p>
-                    <p className="text-amber-700 dark:text-amber-300">
-                      This draft can be saved, but the invoice cannot be sent until a tax number is
-                      added to the customer profile.
-                    </p>
+                    <p className="text-amber-700 dark:text-amber-300">{taxBanner.body}</p>
                   </div>
                 </div>
               )}

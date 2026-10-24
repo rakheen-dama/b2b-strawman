@@ -1,8 +1,9 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PaymentEventHistory } from "@/components/invoices/PaymentEventHistory";
+import { formatCurrency } from "@/lib/format";
 import type { InvoiceResponse, PaymentEvent } from "@/lib/types";
 
 vi.mock("server-only", () => ({}));
@@ -30,6 +31,7 @@ vi.mock("@/lib/capabilities", () => ({
 
 // Mock server actions
 const mockRefreshPaymentLink = vi.fn();
+const mockRecordPayment = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/invoices/invoice-crud-actions", () => ({
   fetchInvoice: vi.fn().mockResolvedValue({ success: true, invoice: null }),
   updateInvoice: vi.fn(),
@@ -58,7 +60,7 @@ vi.mock("@/lib/org-profile", () => ({
 vi.mock("@/app/(app)/org/[slug]/invoices/invoice-payment-actions", () => ({
   approveInvoice: vi.fn(),
   sendInvoice: vi.fn(),
-  recordPayment: vi.fn(),
+  recordPayment: (...args: unknown[]) => mockRecordPayment(...args),
   voidInvoice: vi.fn(),
   refreshPaymentLink: (...args: unknown[]) => mockRefreshPaymentLink(...args),
 }));
@@ -77,6 +79,9 @@ function makeInvoice(overrides: Partial<InvoiceResponse> = {}): InvoiceResponse 
     total: 1150,
     notes: null,
     paymentTerms: null,
+    amountPaid: 0,
+    balanceDue: 1150,
+    payments: [],
     paymentReference: null,
     paidAt: null,
     clientName: "Acme Corp",
@@ -107,6 +112,7 @@ function makePaymentEvent(overrides: Partial<PaymentEvent> = {}): PaymentEvent {
     amount: 1150,
     currency: "ZAR",
     paymentDestination: "OPERATING",
+    paymentMethod: "CARD",
     createdAt: "2026-02-25T10:00:00Z",
     updatedAt: "2026-02-25T10:05:00Z",
     ...overrides,
@@ -135,6 +141,25 @@ describe("PaymentEventHistory", () => {
     expect(screen.getByText("Completed")).toBeInTheDocument();
     expect(screen.getByText("Created")).toBeInTheDocument();
     expect(screen.getAllByText("Stripe")).toHaveLength(2);
+  });
+
+  it("shows a Method column with the payment method label, and a dash for pre-column events", () => {
+    const events = [
+      makePaymentEvent({ id: "pe-eft", providerSlug: "manual", paymentMethod: "EFT" }),
+      makePaymentEvent({
+        id: "pe-trust",
+        providerSlug: "trust_fee_transfer",
+        paymentMethod: "TRUST_TRANSFER",
+      }),
+      makePaymentEvent({ id: "pe-legacy", providerSlug: "manual", paymentMethod: null }),
+    ];
+    render(<PaymentEventHistory events={events} />);
+
+    expect(screen.getByRole("columnheader", { name: "Method" })).toBeInTheDocument();
+    expect(screen.getByText("EFT")).toBeInTheDocument();
+    // Provider + method both read "Trust transfer" for a trust fee transfer
+    expect(screen.getAllByText("Trust transfer")).toHaveLength(2);
+    expect(screen.getAllByText("\u2014").length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows empty state when no events", () => {
@@ -247,5 +272,138 @@ describe("Invoice list — payment indicator", () => {
       </div>
     );
     expect(container.querySelector("[title='Online payment enabled']")).toBeInTheDocument();
+  });
+});
+
+describe("InvoiceDetailClient — Record Payment form (Phase 88 U15)", () => {
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
+  async function openPaymentForm(invoiceOverrides: Partial<InvoiceResponse> = {}) {
+    const { InvoiceDetailClient } = await import("@/components/invoices/invoice-detail-client");
+    render(
+      <InvoiceDetailClient
+        invoice={makeInvoice({
+          status: "SENT",
+          total: 42182,
+          balanceDue: 37182,
+          amountPaid: 5000,
+          paymentUrl: null,
+          ...invoiceOverrides,
+        })}
+        slug="test-org"
+        isAdmin={true}
+        paymentEvents={[]}
+      />
+    );
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Record Payment" }));
+    return user;
+  }
+
+  it("defaults the amount to the balance due and shows the balance line", async () => {
+    await openPaymentForm();
+
+    expect(screen.getByLabelText("Amount")).toHaveValue(37182);
+    expect(screen.getByTestId("payment-form-balance-due").textContent).toBe(
+      `Balance due ${formatCurrency(37182, "ZAR")}`
+    );
+    expect(screen.getByTestId("payment-form-balance-due").textContent).toMatch(/37\s182,00/);
+    // Spec-compatible labels/placeholder (invoice-lifecycle.spec.ts)
+    expect(screen.getByPlaceholderText("e.g. CHK-12345, Wire transfer")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Confirm Payment" })).toBeInTheDocument();
+  });
+
+  it("defaults the method to EFT and offers EFT / Card / Cash / Other only", async () => {
+    const user = await openPaymentForm();
+
+    const trigger = screen.getByTestId("payment-method-select");
+    expect(trigger).toHaveTextContent("EFT");
+    await user.click(trigger);
+
+    expect(screen.getByRole("option", { name: "EFT" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Card" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Cash" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Other" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: /Trust/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: /Xero/i })).not.toBeInTheDocument();
+  });
+
+  it("submits {amount, paymentMethod, paymentReference} to recordPayment", async () => {
+    mockRecordPayment.mockResolvedValue({
+      success: true,
+      invoice: makeInvoice({
+        status: "PARTIALLY_PAID",
+        total: 42182,
+        amountPaid: 10000,
+        balanceDue: 32182,
+        paymentUrl: null,
+      }),
+    });
+    const user = await openPaymentForm();
+
+    const amount = screen.getByLabelText("Amount");
+    await user.clear(amount);
+    await user.type(amount, "5000");
+    await user.type(screen.getByLabelText("Payment Reference (optional)"), "EFT-0001");
+    await user.click(screen.getByRole("button", { name: "Confirm Payment" }));
+
+    await waitFor(() =>
+      expect(mockRecordPayment).toHaveBeenCalledWith("test-org", "inv-1", "cust-1", {
+        amount: 5000,
+        paymentMethod: "EFT",
+        paymentReference: "EFT-0001",
+      })
+    );
+    // Success closes the form and shows the part-paid state
+    await waitFor(() =>
+      expect(screen.queryByTestId("record-payment-form")).not.toBeInTheDocument()
+    );
+    expect(screen.getByTestId("invoice-balance-due").textContent).toMatch(/32\s182,00/);
+  });
+
+  it("omits an empty reference from the body", async () => {
+    mockRecordPayment.mockResolvedValue({ success: true, invoice: makeInvoice() });
+    const user = await openPaymentForm();
+
+    await user.click(screen.getByRole("button", { name: "Confirm Payment" }));
+
+    await waitFor(() =>
+      expect(mockRecordPayment).toHaveBeenCalledWith("test-org", "inv-1", "cust-1", {
+        amount: 37182,
+        paymentMethod: "EFT",
+        paymentReference: undefined,
+      })
+    );
+  });
+
+  it("shows 'Payment exceeds balance due' inline after a 409", async () => {
+    mockRecordPayment.mockResolvedValue({
+      success: false,
+      error: "Payment exceeds balance due. Balance due is R 37 182,00",
+    });
+    const user = await openPaymentForm();
+
+    const amount = screen.getByLabelText("Amount");
+    await user.clear(amount);
+    await user.type(amount, "60000");
+    await user.click(screen.getByRole("button", { name: "Confirm Payment" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Payment exceeds balance due");
+    // The form stays open so the amount can be corrected
+    expect(screen.getByTestId("record-payment-form")).toBeInTheDocument();
+  });
+
+  it("refuses a zero amount client-side without calling the action", async () => {
+    const user = await openPaymentForm();
+
+    const amount = screen.getByLabelText("Amount");
+    await user.clear(amount);
+    await user.click(screen.getByRole("button", { name: "Confirm Payment" }));
+
+    expect(await screen.findByText("Amount must be greater than zero")).toBeInTheDocument();
+    expect(mockRecordPayment).not.toHaveBeenCalled();
   });
 });

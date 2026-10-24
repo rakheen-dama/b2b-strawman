@@ -21,12 +21,17 @@ function humanise(status: string): string {
     .join(" ");
 }
 
+/** Display label for a fee-note status ("PARTIALLY_PAID" → "Partially Paid"). */
+export function invoiceStatusLabel(status: InvoiceStatus | string): string {
+  return STATUS_BADGE[status as InvoiceStatus]?.label ?? humanise(String(status));
+}
+
 interface StatusBadgeProps {
   status: InvoiceStatus;
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
   // Defensive: an unknown status must not crash the fee-note list/detail/client tab.
-  const badge = STATUS_BADGE[status] ?? { label: humanise(String(status)), variant: "neutral" };
+  const badge = STATUS_BADGE[status] ?? { label: invoiceStatusLabel(status), variant: "neutral" };
   return <Badge variant={badge.variant}>{badge.label}</Badge>;
 }

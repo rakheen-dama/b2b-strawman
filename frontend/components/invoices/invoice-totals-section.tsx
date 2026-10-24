@@ -47,6 +47,22 @@ export function InvoiceTotalsSection({ invoice }: InvoiceTotalsSectionProps) {
           <span>Total</span>
           <span>{formatCurrency(invoice.total, invoice.currency)}</span>
         </div>
+
+        {/* ADR-347 balance model: shown once a payment has been posted (part-paid or paid). */}
+        {(invoice.amountPaid ?? 0) > 0 && (
+          <>
+            <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
+              <span>Amount paid</span>
+              <span>{formatCurrency(invoice.amountPaid, invoice.currency)}</span>
+            </div>
+            <div className="flex justify-between text-sm font-medium text-slate-900 dark:text-slate-100">
+              <span>Balance due</span>
+              <span data-testid="totals-balance-due">
+                {formatCurrency(invoice.balanceDue, invoice.currency)}
+              </span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

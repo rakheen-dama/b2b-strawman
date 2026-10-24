@@ -26,6 +26,7 @@ import {
   voidInvoice,
   refreshPaymentLink,
 } from "@/app/(app)/org/[slug]/invoices/invoice-payment-actions";
+import type { RecordInvoicePaymentFormData } from "@/lib/schemas/invoice";
 
 interface UseInvoiceDetailOptions {
   initialInvoice: InvoiceResponse;
@@ -81,8 +82,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
   const [editLineRate, setEditLineRate] = useState("");
   const [editLineTaxRateId, setEditLineTaxRateId] = useState("none");
 
-  // Payment reference state
-  const [paymentRef, setPaymentRef] = useState("");
+  // Record Payment form visibility
   const [showPaymentForm, setShowPaymentForm] = useState(false);
 
   // Copy link state
@@ -95,8 +95,11 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
   const isDraft = invoice.status === "DRAFT";
   const isApproved = invoice.status === "APPROVED";
   const isSent = invoice.status === "SENT";
+  const isPartiallyPaid = invoice.status === "PARTIALLY_PAID";
   const isPaid = invoice.status === "PAID";
   const isVoid = invoice.status === "VOID";
+  // ADR-347: a payment can be posted while a balance is due (SENT or PARTIALLY_PAID).
+  const canRecordPayment = isSent || isPartiallyPaid;
 
   function handleError(result: { success: boolean; error?: string }) {
     if (!result.success) {
@@ -202,19 +205,17 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
     });
   }
 
-  function handleRecordPayment() {
+  function handleRecordPayment(data: RecordInvoicePaymentFormData) {
     setError(null);
     startTransition(async () => {
-      const result = await recordPayment(
-        slug,
-        invoice.id,
-        invoice.clientId,
-        paymentRef ? { paymentReference: paymentRef } : undefined
-      );
+      const result = await recordPayment(slug, invoice.id, invoice.clientId, {
+        amount: data.amount,
+        paymentMethod: data.paymentMethod,
+        paymentReference: data.paymentReference || undefined,
+      });
       if (result.success && result.invoice) {
         setInvoice(result.invoice);
         setShowPaymentForm(false);
-        setPaymentRef("");
       } else {
         handleError(result);
       }
@@ -338,8 +339,10 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
     isDraft,
     isApproved,
     isSent,
+    isPartiallyPaid,
     isPaid,
     isVoid,
+    canRecordPayment,
     // Draft fields
     dueDate,
     setDueDate,
@@ -380,8 +383,6 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
     editLineTaxRateId,
     setEditLineTaxRateId,
     // Payment state
-    paymentRef,
-    setPaymentRef,
     showPaymentForm,
     setShowPaymentForm,
     // Copy state

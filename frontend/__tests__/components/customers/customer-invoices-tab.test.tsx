@@ -125,6 +125,35 @@ describe("CustomerInvoicesTab", () => {
     expect(badge).toHaveAttribute("data-variant", "warning");
   });
 
+  it("shows the balance due under a PARTIALLY_PAID row's total (Phase 88 622E)", () => {
+    render(
+      <CustomerInvoicesTab
+        invoices={[
+          {
+            ...sampleInvoices[0],
+            id: "inv-4",
+            status: "PARTIALLY_PAID",
+            paidAt: null,
+            currency: "ZAR",
+            total: 42182,
+            amountPaid: 5000,
+            balanceDue: 37182,
+          } as InvoiceResponse,
+          sampleInvoices[1],
+        ]}
+        customerId="c1"
+        customerName="Acme Corp"
+        slug="acme"
+        canManage={false}
+        defaultCurrency="ZAR"
+      />
+    );
+
+    const hints = screen.getAllByTestId("row-balance-due");
+    expect(hints).toHaveLength(1);
+    expect(hints[0].textContent).toMatch(/^Balance R\s37\s182,00$/);
+  });
+
   it("shows New fee note button when canManage is true and opens dialog", async () => {
     const user = userEvent.setup();
 

@@ -244,3 +244,68 @@ describe("Fee notes summary tiles (Phase 88 620C)", () => {
     expect(screen.getByTestId("fee-notes-paid-this-month")).toBeInTheDocument();
   });
 });
+
+// Phase 88 622E: PARTIALLY_PAID is a first-class fee-note status in the list — a filter chip
+// with a readable label, and the balance due under a part-paid row's total.
+describe("Fee notes list — Partially Paid (Phase 88 622E)", () => {
+  beforeEach(() => {
+    mockCaps.mockResolvedValue(OWNER);
+    mockApiGet.mockResolvedValue([
+      invoice({
+        id: "inv-pp",
+        invoiceNumber: "INV-0004",
+        status: "PARTIALLY_PAID",
+        total: 42182,
+        amountPaid: 5000,
+        balanceDue: 37182,
+      }),
+      invoice({ id: "inv-sent", invoiceNumber: "INV-0005", status: "SENT", balanceDue: 9999 }),
+    ]);
+    mockListClients.mockResolvedValue([]);
+    mockGetOrgSettings.mockResolvedValue({ defaultCurrency: "ZAR" });
+    mockFetchSummary.mockResolvedValue({ state: "ok", data: SUMMARY });
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
+  async function renderWithStatus(status?: string) {
+    render(
+      await InvoicesPage({
+        params: Promise.resolve({ slug: "acme" }),
+        searchParams: Promise.resolve(status ? { status } : {}),
+      })
+    );
+  }
+
+  it("offers a 'Partially Paid' filter chip linking to ?status=PARTIALLY_PAID", async () => {
+    await renderWithStatus();
+
+    const chip = screen.getByRole("link", { name: "Partially Paid" });
+    expect(chip).toHaveAttribute("href", "/org/acme/invoices?status=PARTIALLY_PAID");
+    expect(screen.queryByText("Partially_paid")).not.toBeInTheDocument();
+  });
+
+  it("passes ?status=PARTIALLY_PAID through to the list read", async () => {
+    await renderWithStatus("PARTIALLY_PAID");
+
+    expect(mockApiGet).toHaveBeenCalledWith(expect.stringContaining("status=PARTIALLY_PAID"));
+  });
+
+  it("shows the balance due under a part-paid row's total, and only there", async () => {
+    await renderWithStatus();
+
+    const hints = screen.getAllByTestId("row-balance-due");
+    expect(hints).toHaveLength(1);
+    expect(hints[0].textContent).toBe(`Balance ${formatCurrency(37182, "ZAR")}`);
+  });
+
+  it("empty Partially Paid filter reads as words, not the enum", async () => {
+    mockApiGet.mockResolvedValue([]);
+    await renderWithStatus("PARTIALLY_PAID");
+
+    expect(screen.getByText("No partially paid fee notes found")).toBeInTheDocument();
+  });
+});

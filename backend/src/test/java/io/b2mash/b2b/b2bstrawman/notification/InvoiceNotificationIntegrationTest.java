@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.notification;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -251,10 +252,7 @@ class InvoiceNotificationIntegrationTest {
             post("/api/invoices/" + invoiceId + "/payment")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_notif_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"paymentReference": "EFT-NOTIF-001"}
-                    """))
+                .content(fullBalanceBody(invoiceId, "EFT-NOTIF-001")))
         .andExpect(status().isOk());
 
     var paidEvents = events.stream(InvoicePaidEvent.class).toList();
@@ -350,5 +348,19 @@ class InvoiceNotificationIntegrationTest {
                       holder[0] = te.getId();
                     }));
     return holder[0];
+  }
+
+  /** A Record Payment body settling the current balance due (amount + method are required). */
+  private String fullBalanceBody(String invoiceId, String reference) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                get("/api/invoices/" + invoiceId)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_notif_owner")))
+            .andExpect(status().isOk())
+            .andReturn();
+    Number balance = JsonPath.read(result.getResponse().getContentAsString(), "$.balanceDue");
+    return "{\"amount\": %s, \"paymentMethod\": \"EFT\", \"paymentReference\": \"%s\"}"
+        .formatted(new java.math.BigDecimal(balance.toString()).toPlainString(), reference);
   }
 }

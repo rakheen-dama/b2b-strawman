@@ -15,6 +15,8 @@ interface InvoiceHeaderActionsProps {
   isDraft: boolean;
   isApproved: boolean;
   isSent: boolean;
+  /** SENT or PARTIALLY_PAID — a balance is due, so a payment can be recorded. */
+  canRecordPayment: boolean;
   onPreview: () => void;
   onApprove: () => void;
   onDelete: () => void;
@@ -30,6 +32,7 @@ export function InvoiceHeaderActions({
   isDraft,
   isApproved,
   isSent,
+  canRecordPayment,
   onPreview,
   onApprove,
   onDelete,
@@ -85,15 +88,16 @@ export function InvoiceHeaderActions({
                 </Button>
               </>
             )}
+            {canRecordPayment && (
+              <Button variant="accent" size="sm" onClick={onShowPaymentForm} disabled={isPending}>
+                Record Payment
+              </Button>
+            )}
+            {/* A part-paid fee note cannot be voided (backend 409) — SENT only. */}
             {isSent && (
-              <>
-                <Button variant="accent" size="sm" onClick={onShowPaymentForm} disabled={isPending}>
-                  Record Payment
-                </Button>
-                <Button variant="destructive" size="sm" onClick={onVoid} disabled={isPending}>
-                  Void
-                </Button>
-              </>
+              <Button variant="destructive" size="sm" onClick={onVoid} disabled={isPending}>
+                Void
+              </Button>
             )}
           </>
         )}

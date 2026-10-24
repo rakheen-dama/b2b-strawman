@@ -60,9 +60,13 @@ export default async function InvoiceDetailPage({
     // Non-fatal: hide generate button if template fetch fails
   }
 
-  // Payment events (only for SENT/PAID invoices)
+  // Payment events (only once sent: SENT / PARTIALLY_PAID / PAID fee notes)
   let paymentEvents: PaymentEvent[] = [];
-  if (invoice!.status === "SENT" || invoice!.status === "PAID") {
+  if (
+    invoice!.status === "SENT" ||
+    invoice!.status === "PARTIALLY_PAID" ||
+    invoice!.status === "PAID"
+  ) {
     try {
       paymentEvents = await api.get<PaymentEvent[]>(`/api/invoices/${id}/payment-events`);
     } catch {

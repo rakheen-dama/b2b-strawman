@@ -172,10 +172,7 @@ class PaymentEventsControllerIntegrationTest {
             post("/api/invoices/" + invoiceId + "/payment")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_events_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"paymentReference": "PAY-TEST-001"}
-                    """))
+                .content(fullBalanceBody(invoiceId, "PAY-TEST-001")))
         .andExpect(status().isOk());
   }
 
@@ -273,10 +270,7 @@ class PaymentEventsControllerIntegrationTest {
             post("/api/invoices/" + invoiceId + "/payment")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_events_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"paymentReference": "REF-CUSTOM-123"}
-                    """))
+                .content(fullBalanceBody(invoiceId, "REF-CUSTOM-123")))
         .andExpect(status().isOk());
 
     mockMvc
@@ -285,5 +279,19 @@ class PaymentEventsControllerIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_events_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].paymentReference").value("REF-CUSTOM-123"));
+  }
+
+  /** A Record Payment body settling the current balance due (amount + method are required). */
+  private String fullBalanceBody(String invoiceId, String reference) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                get("/api/invoices/" + invoiceId)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_events_owner")))
+            .andExpect(status().isOk())
+            .andReturn();
+    Number balance = JsonPath.read(result.getResponse().getContentAsString(), "$.balanceDue");
+    return "{\"amount\": %s, \"paymentMethod\": \"EFT\", \"paymentReference\": \"%s\"}"
+        .formatted(new java.math.BigDecimal(balance.toString()).toPlainString(), reference);
   }
 }

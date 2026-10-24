@@ -450,21 +450,11 @@ class InvoiceLifecycleIntegrationTest {
   // --- Test 6: recordPayment transitions SENT -> PAID ---
   @Test
   void shouldRecordPaymentOnSentInvoice() throws Exception {
-    String invoiceId = createDraftWithManualLine();
+    var sent = createSentInvoice();
+    String invoiceId = (String) sent[0];
+    BigDecimal total = (BigDecimal) sent[1];
 
-    // Approve -> Send
-    mockMvc
-        .perform(
-            post("/api/invoices/" + invoiceId + "/approve")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
-        .andExpect(status().isOk());
-    mockMvc
-        .perform(
-            post("/api/invoices/" + invoiceId + "/send")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
-        .andExpect(status().isOk());
-
-    // Record payment
+    // Record payment of the full balance
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/payment")
@@ -473,9 +463,12 @@ class InvoiceLifecycleIntegrationTest {
                 .content(
                     """
                     {
+                      "amount": %s,
+                      "paymentMethod": "EFT",
                       "paymentReference": "EFT-2025-0215"
                     }
-                    """))
+                    """
+                        .formatted(total.toPlainString())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("PAID"))
         .andExpect(jsonPath("$.paymentReference").value("EFT-2025-0215"))
@@ -503,6 +496,8 @@ class InvoiceLifecycleIntegrationTest {
                 .content(
                     """
                     {
+                      "amount": 10.00,
+                      "paymentMethod": "EFT",
                       "paymentReference": "EFT-SHOULD-FAIL"
                     }
                     """))
@@ -573,24 +568,20 @@ class InvoiceLifecycleIntegrationTest {
   // --- Test 10: void fails if PAID ---
   @Test
   void shouldRejectVoidWhenPaid() throws Exception {
-    String invoiceId = createDraftWithManualLine();
-
-    // Full lifecycle: Approve -> Send -> Pay
-    mockMvc
-        .perform(
-            post("/api/invoices/" + invoiceId + "/approve")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
-        .andExpect(status().isOk());
-    mockMvc
-        .perform(
-            post("/api/invoices/" + invoiceId + "/send")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
-        .andExpect(status().isOk());
+    // Full lifecycle: Approve -> Send -> Pay the full balance
+    var sent = createSentInvoice();
+    String invoiceId = (String) sent[0];
+    BigDecimal total = (BigDecimal) sent[1];
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/payment")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
-        .andExpect(status().isOk());
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{\"amount\": %s, \"paymentMethod\": \"EFT\"}"
+                        .formatted(total.toPlainString())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("PAID"));
 
     // Try to void a PAID invoice
     mockMvc
@@ -627,6 +618,8 @@ class InvoiceLifecycleIntegrationTest {
                 .content(
                     """
                     {
+                      "amount": 10.00,
+                      "paymentMethod": "EFT",
                       "paymentReference": "EFT-SHOULD-FAIL"
                     }
                     """))
@@ -752,20 +745,59 @@ class InvoiceLifecycleIntegrationTest {
         .andExpect(status().isBadRequest());
   }
 
-  /** D5 back-compat: the deployed firm form still posts only a reference until 622E ships. */
+  /**
+   * 622E (architecture §13.4.7): amount + method are required — the D5 reference-only back-compat
+   * is gone, so a body missing either (or no body at all) is a 400 and nothing is posted.
+   */
   @Test
-  void legacyReferenceOnlyBodySettlesTheFullBalance() throws Exception {
-    var sent = createSentInvoice();
-    String invoiceId = (String) sent[0];
-    BigDecimal total = (BigDecimal) sent[1];
+  void bodyWithoutAmountAndMethodIsRejectedWith400() throws Exception {
+    String invoiceId = (String) createSentInvoice()[0];
 
     postPayment(invoiceId, "{\"paymentReference\": \"LEGACY-REF-1\"}")
+        .andExpect(status().isBadRequest());
+    postPayment(invoiceId, "{\"amount\": 10.00}").andExpect(status().isBadRequest());
+    postPayment(invoiceId, "{\"paymentMethod\": \"EFT\"}").andExpect(status().isBadRequest());
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/payment")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
+        .andExpect(status().isBadRequest());
+
+    // Nothing changed: still SENT, no payment posted.
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
+                    "/api/invoices/" + invoiceId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value("PAID"))
-        .andExpect(jsonPath("$.amountPaid").value(total.doubleValue()))
-        .andExpect(jsonPath("$.balanceDue").value(0.0))
-        .andExpect(jsonPath("$.payments[0].paymentMethod").value("OTHER"))
-        .andExpect(jsonPath("$.payments[0].paymentReference").value("LEGACY-REF-1"));
+        .andExpect(jsonPath("$.status").value("SENT"))
+        .andExpect(jsonPath("$.amountPaid").value(0.0))
+        .andExpect(jsonPath("$.payments.length()").value(0));
+  }
+
+  /**
+   * 622E D-A: TRUST_TRANSFER and XERO payments post from their own sources (trust fee-transfer
+   * approval, Xero sync); the manual form refuses them with a 400 and posts nothing.
+   */
+  @Test
+  void systemOnlyMethodsAreRefusedOnTheManualEndpoint() throws Exception {
+    String invoiceId = (String) createSentInvoice()[0];
+
+    postPayment(invoiceId, "{\"amount\": 10.00, \"paymentMethod\": \"TRUST_TRANSFER\"}")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Payment method not allowed"));
+    postPayment(invoiceId, "{\"amount\": 10.00, \"paymentMethod\": \"XERO\"}")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Payment method not allowed"));
+
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
+                    "/api/invoices/" + invoiceId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("SENT"))
+        .andExpect(jsonPath("$.amountPaid").value(0.0));
   }
 
   @Test

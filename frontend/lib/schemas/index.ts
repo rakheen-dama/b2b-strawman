@@ -81,3 +81,6 @@ export { confidenceEnum, variableFillSchema, draftingVariableFillsSchema } from 
 export type { VariableFillFormData, DraftingVariableFillsFormData } from "./drafting";
 
 export { paymentTermsDaysSchema } from "./settings";
+
+export { recordInvoicePaymentSchema } from "./invoice";
+export type { RecordInvoicePaymentFormData } from "./invoice";

@@ -2,7 +2,7 @@
 
 import { Badge } from "@b2mash/ui/badge";
 import { formatDate, formatCurrency } from "@/lib/format";
-import type { PaymentEvent, PaymentEventStatus } from "@/lib/types";
+import type { PaymentEvent, PaymentEventStatus, PaymentMethod } from "@/lib/types";
 
 const STATUS_BADGE: Record<
   PaymentEventStatus,
@@ -24,6 +24,17 @@ const PROVIDER_LABELS: Record<string, string> = {
   payfast: "PayFast",
   manual: "Manual",
   noop: "Manual",
+  trust_fee_transfer: "Trust transfer",
+  xero: "Xero",
+};
+
+const METHOD_LABELS: Record<PaymentMethod, string> = {
+  EFT: "EFT",
+  CARD: "Card",
+  CASH: "Cash",
+  TRUST_TRANSFER: "Trust transfer",
+  XERO: "Xero",
+  OTHER: "Other",
 };
 
 interface PaymentEventHistoryProps {
@@ -54,6 +65,9 @@ export function PaymentEventHistory({ events }: PaymentEventHistoryProps) {
                 Provider
               </th>
               <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
+                Method
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Reference
               </th>
               <th className="px-3 py-2 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
@@ -77,6 +91,11 @@ export function PaymentEventHistory({ events }: PaymentEventHistoryProps) {
                   </td>
                   <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">
                     {PROVIDER_LABELS[event.providerSlug] ?? event.providerSlug}
+                  </td>
+                  <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">
+                    {event.paymentMethod
+                      ? (METHOD_LABELS[event.paymentMethod] ?? event.paymentMethod)
+                      : "\u2014"}
                   </td>
                   <td className="px-3 py-2 font-mono text-sm text-slate-600 dark:text-slate-400">
                     {event.paymentReference ?? "\u2014"}

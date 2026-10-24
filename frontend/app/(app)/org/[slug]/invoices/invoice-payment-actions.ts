@@ -87,7 +87,7 @@ export async function recordPayment(
   slug: string,
   invoiceId: string,
   customerId: string,
-  request?: RecordPaymentRequest
+  request: RecordPaymentRequest
 ): Promise<InvoiceActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -98,18 +98,24 @@ export async function recordPayment(
   }
 
   try {
-    const invoice = await api.post<InvoiceResponse>(
-      `/api/invoices/${invoiceId}/payment`,
-      request ?? {}
-    );
+    const invoice = await api.post<InvoiceResponse>(`/api/invoices/${invoiceId}/payment`, request);
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };
   } catch (error) {
-    const message =
-      error instanceof ApiError
-        ? error.message
-        : createMessages("errors").t(classifyError(error).messageCode);
-    return { success: false, error: message };
+    if (error instanceof ApiError) {
+      // 409 "Payment exceeds balance due": ApiError.message is only the ProblemDetail detail
+      // ("Balance due is R 37 182,00"), so lead with the title the user must see.
+      const title = error.detail?.title;
+      if (error.status === 409 && title) {
+        const detail = error.message && error.message !== title ? ` ${error.message}` : "";
+        return { success: false, error: `${title}.${detail}` };
+      }
+      return { success: false, error: error.message };
+    }
+    return {
+      success: false,
+      error: createMessages("errors").t(classifyError(error).messageCode),
+    };
   }
 }
 

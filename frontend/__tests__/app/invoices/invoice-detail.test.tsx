@@ -89,6 +89,9 @@ function makeDraftInvoice(overrides?: Partial<InvoiceResponse>): InvoiceResponse
     total: 1100,
     notes: null,
     paymentTerms: null,
+    amountPaid: 0,
+    balanceDue: 1100,
+    payments: [],
     paymentReference: null,
     paidAt: null,
     clientName: "Acme Corp",
@@ -242,6 +245,73 @@ describe("InvoiceDetailClient", () => {
 
     // No Approve button for SENT
     expect(screen.queryByRole("button", { name: /approve/i })).not.toBeInTheDocument();
+  });
+
+  it("renders PARTIALLY_PAID fee note with Record Payment, payment history and balance, but no Void", () => {
+    const invoice = makeDraftInvoice({
+      status: "PARTIALLY_PAID",
+      invoiceNumber: "INV-2026-005",
+      currency: "ZAR",
+      issueDate: "2026-01-15",
+      dueDate: "2026-02-15",
+      total: 42182,
+      amountPaid: 5000,
+      balanceDue: 37182,
+    });
+    render(
+      <InvoiceDetailClient
+        invoice={invoice}
+        slug="acme"
+        isAdmin={true}
+        paymentEvents={[
+          {
+            id: "pe-1",
+            providerSlug: "manual",
+            sessionId: null,
+            paymentReference: "EFT-0001",
+            status: "COMPLETED",
+            amount: 5000,
+            currency: "ZAR",
+            paymentDestination: "OPERATING",
+            paymentMethod: "EFT",
+            createdAt: "2026-02-01T00:00:00Z",
+            updatedAt: "2026-02-01T00:00:00Z",
+          },
+        ]}
+      />
+    );
+
+    expect(screen.getByText("Partially Paid")).toBeInTheDocument(); // StatusBadge
+    expect(screen.getByRole("button", { name: /record payment/i })).toBeInTheDocument();
+    // A part-paid fee note cannot be voided (backend 409) — no Void button
+    expect(screen.queryByRole("button", { name: /void/i })).not.toBeInTheDocument();
+
+    expect(screen.getByText("Part payment received")).toBeInTheDocument();
+    expect(screen.getByTestId("invoice-balance-due").textContent).toMatch(/37\s182,00/);
+    // Totals gain Amount paid + Balance due rows
+    expect(screen.getByText("Amount paid")).toBeInTheDocument();
+    expect(screen.getByTestId("totals-balance-due").textContent).toMatch(/37\s182,00/);
+    // Payment history is shown for PARTIALLY_PAID
+    expect(screen.getByText("Payment History")).toBeInTheDocument();
+    expect(screen.getByText("EFT-0001")).toBeInTheDocument();
+  });
+
+  it("opens the Record Payment form on a PARTIALLY_PAID fee note, defaulting to the balance", async () => {
+    const invoice = makeDraftInvoice({
+      status: "PARTIALLY_PAID",
+      invoiceNumber: "INV-2026-006",
+      currency: "ZAR",
+      total: 42182,
+      amountPaid: 5000,
+      balanceDue: 37182,
+    });
+    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /record payment/i }));
+
+    expect(screen.getByLabelText("Amount")).toHaveValue(37182);
+    expect(screen.getByTestId("payment-form-balance-due").textContent).toMatch(/37\s182,00/);
   });
 
   it("renders VOID invoice with no action buttons", () => {

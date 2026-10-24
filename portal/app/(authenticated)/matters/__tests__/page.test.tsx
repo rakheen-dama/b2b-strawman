@@ -82,6 +82,7 @@ describe("ProjectsPage", () => {
         description: "Modernizing the website",
         documentCount: 3,
         createdAt: "2026-02-01T10:00:00Z",
+        status: "ACTIVE",
       },
       {
         id: "proj-2",
@@ -89,6 +90,7 @@ describe("ProjectsPage", () => {
         description: null,
         documentCount: 0,
         createdAt: "2026-01-15T08:00:00Z",
+        status: "CLOSED",
       },
     ]);
 
@@ -100,6 +102,12 @@ describe("ProjectsPage", () => {
       expect(screen.getByText("Website Redesign")).toBeInTheDocument();
       expect(screen.getByText("Annual Report")).toBeInTheDocument();
     });
+    // Phase 88 624H (G-D19): each card shows its status in sentence case
+    // (scoped to badges — the "Active" filter tab has the same text).
+    const badges = Array.from(
+      document.querySelectorAll("[data-slot='badge']"),
+    ).map((el) => el.textContent);
+    expect(badges).toEqual(["Active", "Closed"]);
   });
 
   it("shows empty state when no projects exist", async () => {

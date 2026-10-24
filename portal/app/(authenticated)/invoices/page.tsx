@@ -6,6 +6,7 @@ import { Download, FileText } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
 import { formatCurrency, formatDate } from "@b2mash/shared/format";
 import { InvoiceStatusBadge } from "@/components/invoice-status-badge";
+import { BalanceDueHint } from "@/components/balance-due-hint";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import type { PortalInvoice, PortalDownload } from "@/lib/types";
 
@@ -110,9 +111,12 @@ export default function InvoicesPage() {
                   <span>Due {formatDate(invoice.dueDate)}</span>
                 </div>
                 <div className="flex items-center justify-between border-t border-slate-100 pt-3">
-                  <span className="text-base font-semibold text-slate-900">
-                    {formatCurrency(invoice.total, invoice.currency)}
-                  </span>
+                  <div>
+                    <span className="text-base font-semibold text-slate-900">
+                      {formatCurrency(invoice.total, invoice.currency)}
+                    </span>
+                    <BalanceDueHint invoice={invoice} />
+                  </div>
                   <div className="flex items-center gap-3">
                     <Link
                       href={`/invoices/${invoice.id}`}
@@ -187,6 +191,7 @@ export default function InvoicesPage() {
                     </td>
                     <td className="px-4 py-3 text-right font-medium text-slate-900">
                       {formatCurrency(invoice.total, invoice.currency)}
+                      <BalanceDueHint invoice={invoice} />
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">

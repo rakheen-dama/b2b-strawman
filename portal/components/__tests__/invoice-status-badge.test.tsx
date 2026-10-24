@@ -9,21 +9,21 @@ describe("InvoiceStatusBadge", () => {
 
   it("renders SENT status with blue color classes", () => {
     const { container } = render(<InvoiceStatusBadge status="SENT" />);
-    expect(screen.getByText("SENT")).toBeInTheDocument();
+    expect(screen.getByText("Sent")).toBeInTheDocument();
     const badge = container.querySelector("[data-slot='badge']");
     expect(badge?.className).toContain("bg-blue-100");
   });
 
   it("renders PAID status with green color classes", () => {
     const { container } = render(<InvoiceStatusBadge status="PAID" />);
-    expect(screen.getByText("PAID")).toBeInTheDocument();
+    expect(screen.getByText("Paid")).toBeInTheDocument();
     const badge = container.querySelector("[data-slot='badge']");
     expect(badge?.className).toContain("bg-green-100");
   });
 
   it("renders VOID status with slate/gray color classes", () => {
     const { container } = render(<InvoiceStatusBadge status="VOID" />);
-    expect(screen.getByText("VOID")).toBeInTheDocument();
+    expect(screen.getByText("Void")).toBeInTheDocument();
     const badge = container.querySelector("[data-slot='badge']");
     expect(badge?.className).toContain("bg-slate-100");
   });
@@ -33,7 +33,7 @@ describe("InvoiceStatusBadge", () => {
     const { container } = render(
       <InvoiceStatusBadge status="PARTIALLY_PAID" />,
     );
-    expect(screen.getByText("PARTIALLY PAID")).toBeInTheDocument();
+    expect(screen.getByText("Partially paid")).toBeInTheDocument();
     const badge = container.querySelector("[data-slot='badge']");
     expect(badge?.className).toContain("bg-amber-100");
     expect(badge?.className).not.toContain("bg-slate-100");
@@ -43,9 +43,17 @@ describe("InvoiceStatusBadge", () => {
     const { container } = render(
       <InvoiceStatusBadge status="UNKNOWN_STATUS" />,
     );
-    expect(screen.getByText("UNKNOWN STATUS")).toBeInTheDocument();
+    expect(screen.getByText("Unknown status")).toBeInTheDocument();
     const badge = container.querySelector("[data-slot='badge']");
     // Falls back to VOID colors
     expect(badge?.className).toContain("bg-slate-100");
+  });
+
+  it("renders DRAFT and APPROVED in sentence case", () => {
+    render(<InvoiceStatusBadge status="DRAFT" />);
+    expect(screen.getByText("Draft")).toBeInTheDocument();
+    cleanup();
+    render(<InvoiceStatusBadge status="APPROVED" />);
+    expect(screen.getByText("Approved")).toBeInTheDocument();
   });
 });

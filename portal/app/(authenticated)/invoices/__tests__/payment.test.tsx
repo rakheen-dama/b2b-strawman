@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
+import { formatCurrency } from "@b2mash/shared/format";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -77,6 +78,8 @@ const mockInvoiceDetail = {
   subtotal: 1000.0,
   taxAmount: 150.0,
   total: 1150.0,
+  amountPaid: 0,
+  balanceDue: 1150.0,
   currency: "ZAR",
   notes: "Payment due within 30 days",
   paymentUrl: "https://pay.example.com/session/abc123",
@@ -91,6 +94,22 @@ const mockInvoiceDetail = {
     },
   ],
 };
+
+// Phase 88 624H (G88-M11 portal half): the read model keeps the payment_url of the
+// checkout that the part payment cancelled (created for the old full amount).
+const mockPartiallyPaidWithStaleUrl = {
+  ...mockInvoiceDetail,
+  status: "PARTIALLY_PAID",
+  total: 42814.5,
+  amountPaid: 5000.0,
+  balanceDue: 37814.5,
+  paymentUrl: "https://pay.example.com/session/cancelled-full-amount",
+};
+
+/** Whitespace-insensitive (Node "R 37,814.50" vs Chrome "R 37 814,50" — R-14). */
+function norm(text: string | null | undefined): string {
+  return (text ?? "").replace(/\s+/g, " ").trim();
+}
 
 describe("InvoiceDetailPage — Payment Section", () => {
   beforeEach(() => {
@@ -162,6 +181,34 @@ describe("InvoiceDetailPage — Payment Section", () => {
     });
 
     expect(screen.queryByText("Pay Now")).not.toBeInTheDocument();
+  });
+
+  it("never renders Pay Now for PARTIALLY_PAID, even with a paymentUrl, and shows contact-for-balance copy", async () => {
+    mockPortalGet.mockResolvedValue(mockPartiallyPaidWithStaleUrl);
+
+    render(<InvoiceDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("invoice-balance-contact")).toBeInTheDocument();
+    });
+
+    expect(
+      norm(screen.getByTestId("invoice-balance-contact").textContent),
+    ).toBe(
+      norm(
+        `To pay the balance of ${formatCurrency(37814.5, "ZAR")}, contact Test Org.`,
+      ),
+    );
+    expect(screen.queryByText("Pay Now")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("invoice-payment-inline-banner"),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("sticky-action-bar")).not.toBeInTheDocument();
+    expect(
+      document.querySelector(
+        'a[href="https://pay.example.com/session/cancelled-full-amount"]',
+      ),
+    ).toBeNull();
   });
 });
 
@@ -276,5 +323,92 @@ describe("PaymentCancelledPage", () => {
       "https://pay.example.com/session/abc123",
     );
     expect(screen.getByText("View Fee Note")).toBeInTheDocument();
+  });
+
+  it("does not render Pay Now for a PARTIALLY_PAID fee note with a stale paymentUrl", async () => {
+    mockPortalGet.mockResolvedValue(mockPartiallyPaidWithStaleUrl);
+
+    render(<PaymentCancelledPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Payment was cancelled")).toBeInTheDocument();
+    });
+    // Let the detail fetch settle before asserting the absence.
+    await waitFor(() => {
+      expect(mockPortalGet).toHaveBeenCalledWith("/portal/invoices/inv-1");
+    });
+
+    expect(screen.queryByText("Pay Now")).not.toBeInTheDocument();
+    expect(screen.getByText("View Fee Note")).toBeInTheDocument();
+  });
+
+  it("offers to try again for a SENT fee note", async () => {
+    mockPortalGet.mockResolvedValue(mockInvoiceDetail);
+
+    render(<PaymentCancelledPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("payment-cancelled-message")).toHaveTextContent(
+        "Your payment was not completed. You can try again when you are ready.",
+      );
+    });
+  });
+
+  it("shows the balance-contact copy, not try again, for a PARTIALLY_PAID fee note", async () => {
+    mockPortalGet.mockResolvedValue(mockPartiallyPaidWithStaleUrl);
+
+    render(<PaymentCancelledPage />);
+
+    await waitFor(() => {
+      expect(mockPortalGet).toHaveBeenCalledWith("/portal/invoices/inv-1");
+    });
+    await waitFor(() => {
+      expect(
+        norm(screen.getByTestId("payment-cancelled-message").textContent),
+      ).toBe(
+        norm(
+          `Your payment was not completed. To pay the balance of ${formatCurrency(37814.5, "ZAR")}, contact Test Org.`,
+        ),
+      );
+    });
+    expect(screen.queryByText(/try again/i)).not.toBeInTheDocument();
+  });
+
+  it("shows the part-payment fallback copy for a PARTIALLY_PAID fee note with amountPaid 0", async () => {
+    mockPortalGet.mockResolvedValue({
+      ...mockPartiallyPaidWithStaleUrl,
+      amountPaid: 0,
+      balanceDue: 42814.5,
+    });
+
+    render(<PaymentCancelledPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("payment-cancelled-message")).toHaveTextContent(
+        "Your payment was not completed. A part payment has been received. Contact Test Org for the outstanding balance.",
+      );
+    });
+    expect(screen.queryByText(/try again/i)).not.toBeInTheDocument();
+    expect(screen.queryByText("Pay Now")).not.toBeInTheDocument();
+  });
+
+  it("shows no try-again sentence for other statuses", async () => {
+    mockPortalGet.mockResolvedValue({
+      ...mockInvoiceDetail,
+      status: "PAID",
+      paymentUrl: null,
+    });
+
+    render(<PaymentCancelledPage />);
+
+    await waitFor(() => {
+      expect(mockPortalGet).toHaveBeenCalledWith("/portal/invoices/inv-1");
+    });
+    await waitFor(() => {
+      expect(screen.getByTestId("payment-cancelled-message")).toHaveTextContent(
+        /^Your payment was not completed\.$/,
+      );
+    });
+    expect(screen.queryByText("Pay Now")).not.toBeInTheDocument();
   });
 });

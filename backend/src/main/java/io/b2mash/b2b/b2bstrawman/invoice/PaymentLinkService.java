@@ -7,11 +7,11 @@ import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
 import io.b2mash.b2b.b2bstrawman.integration.payment.CheckoutRequest;
 import io.b2mash.b2b.b2bstrawman.integration.payment.PaymentGateway;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.portal.PortalLinkBuilder;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,19 +24,19 @@ public class PaymentLinkService {
   private final InvoiceRepository invoiceRepository;
   private final PaymentEventRepository paymentEventRepository;
   private final AuditService auditService;
-  private final String portalBaseUrl;
+  private final PortalLinkBuilder portalLinkBuilder;
 
   public PaymentLinkService(
       IntegrationRegistry integrationRegistry,
       InvoiceRepository invoiceRepository,
       PaymentEventRepository paymentEventRepository,
       AuditService auditService,
-      @Value("${docteams.app.portal-base-url}") String portalBaseUrl) {
+      PortalLinkBuilder portalLinkBuilder) {
     this.integrationRegistry = integrationRegistry;
     this.invoiceRepository = invoiceRepository;
     this.paymentEventRepository = paymentEventRepository;
     this.auditService = auditService;
-    this.portalBaseUrl = portalBaseUrl;
+    this.portalLinkBuilder = portalLinkBuilder;
   }
 
   @Transactional
@@ -152,11 +152,16 @@ public class PaymentLinkService {
     log.info("Cancelled active payment session for invoice {}", invoice.getId());
   }
 
+  // PSP return URLs land on authenticated portal routes, so they carry orgId like every other
+  // portal deep link (Phase 88 U11, §13.6.6). ORG_ID is bound on every send/refresh path (firm
+  // request via TenantFilter, or JobWorker/AutomationEventListener re-binding the event's org).
   String buildSuccessUrl(UUID invoiceId) {
-    return portalBaseUrl + "/invoices/" + invoiceId + "/payment-success";
+    return portalLinkBuilder.authenticated(
+        RequestScopes.requireOrgId(), "/invoices/" + invoiceId + "/payment-success");
   }
 
   String buildCancelUrl(UUID invoiceId) {
-    return portalBaseUrl + "/invoices/" + invoiceId + "/payment-cancelled";
+    return portalLinkBuilder.authenticated(
+        RequestScopes.requireOrgId(), "/invoices/" + invoiceId + "/payment-cancelled");
   }
 }

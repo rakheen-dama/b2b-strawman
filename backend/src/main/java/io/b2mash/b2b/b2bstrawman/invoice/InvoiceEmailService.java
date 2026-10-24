@@ -10,10 +10,10 @@ import io.b2mash.b2b.b2bstrawman.integration.email.EmailRateLimiter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailTemplateRenderer;
+import io.b2mash.b2b.b2bstrawman.portal.PortalLinkBuilder;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,7 +28,7 @@ public class InvoiceEmailService {
   private final EmailContextBuilder emailContextBuilder;
   private final EmailDeliveryLogService deliveryLogService;
   private final EmailRateLimiter emailRateLimiter;
-  private final String portalBaseUrl;
+  private final PortalLinkBuilder portalLinkBuilder;
 
   public InvoiceEmailService(
       IntegrationRegistry integrationRegistry,
@@ -36,13 +36,13 @@ public class InvoiceEmailService {
       EmailContextBuilder emailContextBuilder,
       EmailDeliveryLogService deliveryLogService,
       EmailRateLimiter emailRateLimiter,
-      @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl) {
+      PortalLinkBuilder portalLinkBuilder) {
     this.integrationRegistry = integrationRegistry;
     this.emailTemplateRenderer = emailTemplateRenderer;
     this.emailContextBuilder = emailContextBuilder;
     this.deliveryLogService = deliveryLogService;
     this.emailRateLimiter = emailRateLimiter;
-    this.portalBaseUrl = portalBaseUrl;
+    this.portalLinkBuilder = portalLinkBuilder;
   }
 
   public void sendInvoiceEmail(Invoice invoice, byte[] pdfBytes) {
@@ -76,8 +76,12 @@ public class InvoiceEmailService {
       String invoiceTerm = (String) context.get("invoiceTerm");
       context.put("subject", invoiceTerm + " " + invoice.getInvoiceNumber() + " from " + orgName);
       // GAP-L-64 — always populate portalUrl so the email "View Invoice" CTA renders with a
-      // working href even when no PSP is configured (paymentUrl is null).
-      context.put("portalUrl", portalBaseUrl + "/invoices/" + invoice.getId());
+      // working href even when no PSP is configured (paymentUrl is null). Phase 88 U11: the link
+      // carries orgId so a fresh browser lands on the branded portal (§13.6.6).
+      context.put(
+          "portalUrl",
+          portalLinkBuilder.authenticated(
+              RequestScopes.requireOrgId(), "/invoices/" + invoice.getId()));
       context.put("paymentUrl", invoice.getPaymentUrl());
       // Note: passing invoice.getPaymentUrl() (may be null) preserves existing template
       // behaviour — the Pay Now block is gated on ${paymentUrl} and remains hidden when null.

@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalEmailService;
+import io.b2mash.b2b.b2bstrawman.portal.PortalLinkBuilder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.PortalDigestCadence;
@@ -67,7 +68,7 @@ public class PortalDigestScheduler {
   private final TransactionTemplate transactionTemplate;
   private final JobEnqueuer jobEnqueuer;
   private final JobQueueProperties jobQueueProperties;
-  private final String portalBaseUrl;
+  private final PortalLinkBuilder portalLinkBuilder;
   private final String productName;
 
   public PortalDigestScheduler(
@@ -81,7 +82,7 @@ public class PortalDigestScheduler {
       TransactionTemplate transactionTemplate,
       JobEnqueuer jobEnqueuer,
       JobQueueProperties jobQueueProperties,
-      @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl,
+      PortalLinkBuilder portalLinkBuilder,
       @Value("${docteams.app.product-name:Kazi}") String productName) {
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
     this.orgSettingsRepository = orgSettingsRepository;
@@ -93,7 +94,7 @@ public class PortalDigestScheduler {
     this.transactionTemplate = transactionTemplate;
     this.jobEnqueuer = jobEnqueuer;
     this.jobQueueProperties = jobQueueProperties;
-    this.portalBaseUrl = portalBaseUrl;
+    this.portalLinkBuilder = portalLinkBuilder;
     this.productName = productName;
   }
 
@@ -300,8 +301,12 @@ public class PortalDigestScheduler {
     context.putAll(bundle);
     String orgName = context.getOrDefault("orgName", productName).toString();
     context.put("subject", orgName + ": Your weekly update");
-    context.put("portalBaseUrl", portalBaseUrl);
-    context.put("portalHomeUrl", portalBaseUrl + "/home");
+    // Phase 88 U11 (§13.6.6): both digest links are authenticated portal routes → carry orgId.
+    context.put("portalHomeUrl", portalLinkBuilder.authenticated(contact.getOrgId(), "/home"));
+    context.put(
+        "portalUnsubscribeUrl",
+        portalLinkBuilder.authenticated(
+            contact.getOrgId(), "/settings/notifications?unsubscribe=1"));
 
     if (dryRun) {
       // Selection + content assembly succeeded; would-have-sent. Skip SMTP delivery and

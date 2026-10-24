@@ -46,7 +46,7 @@ public class PortalEmailService {
   private final EmailDeliveryLogService deliveryLogService;
   private final EmailRateLimiter emailRateLimiter;
   private final OrganizationRepository organizationRepository;
-  private final String portalBaseUrl;
+  private final PortalLinkBuilder portalLinkBuilder;
   private final String productName;
 
   public PortalEmailService(
@@ -56,7 +56,7 @@ public class PortalEmailService {
       EmailDeliveryLogService deliveryLogService,
       EmailRateLimiter emailRateLimiter,
       OrganizationRepository organizationRepository,
-      @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl,
+      PortalLinkBuilder portalLinkBuilder,
       @Value("${docteams.app.product-name:Kazi}") String productName) {
     this.integrationRegistry = integrationRegistry;
     this.emailTemplateRenderer = emailTemplateRenderer;
@@ -64,7 +64,7 @@ public class PortalEmailService {
     this.deliveryLogService = deliveryLogService;
     this.emailRateLimiter = emailRateLimiter;
     this.organizationRepository = organizationRepository;
-    this.portalBaseUrl = portalBaseUrl;
+    this.portalLinkBuilder = portalLinkBuilder;
     this.productName = productName;
   }
 
@@ -95,7 +95,7 @@ public class PortalEmailService {
 
       // 2. Build context (base + magic-link-specific). No unsubscribe for transactional emails.
       String orgId = contact.getOrgId();
-      String magicLinkUrl = portalBaseUrl + "/auth/exchange?token=" + rawToken + "&orgId=" + orgId;
+      String magicLinkUrl = portalLinkBuilder.exchange(orgId, rawToken);
       Map<String, Object> context =
           emailContextBuilder.buildBaseContext(contact.getDisplayName(), null);
       context.put("contactName", contact.getDisplayName());

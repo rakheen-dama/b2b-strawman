@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalEmailService;
+import io.b2mash.b2b.b2bstrawman.portal.PortalLinkBuilder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
@@ -78,7 +79,7 @@ public class PortalEmailNotificationChannel {
   private final EmailContextBuilder emailContextBuilder;
   private final OrgSettingsRepository orgSettingsRepository;
   private final TransactionTemplate transactionTemplate;
-  private final String portalBaseUrl;
+  private final PortalLinkBuilder portalLinkBuilder;
   private final String productName;
 
   public PortalEmailNotificationChannel(
@@ -88,7 +89,7 @@ public class PortalEmailNotificationChannel {
       EmailContextBuilder emailContextBuilder,
       OrgSettingsRepository orgSettingsRepository,
       PlatformTransactionManager transactionManager,
-      @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl,
+      PortalLinkBuilder portalLinkBuilder,
       @Value("${docteams.app.product-name:Kazi}") String productName) {
     this.portalContactRepository = portalContactRepository;
     this.preferenceService = preferenceService;
@@ -101,7 +102,7 @@ public class PortalEmailNotificationChannel {
     TransactionTemplate tpl = new TransactionTemplate(transactionManager);
     tpl.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     this.transactionTemplate = tpl;
-    this.portalBaseUrl = portalBaseUrl;
+    this.portalLinkBuilder = portalLinkBuilder;
     this.productName = productName;
   }
 
@@ -286,10 +287,11 @@ public class PortalEmailNotificationChannel {
     // Falls back to the /trust index page when the transaction has no matter
     // (e.g. cross-customer transfers, or matter id genuinely unset).
     UUID matterId = event.projectId();
+    // Phase 88 U11 (§13.6.6): an authenticated portal route → carries orgId.
     context.put(
         "trustUrl",
-        matterId != null ? portalBaseUrl + "/trust/" + matterId : portalBaseUrl + "/trust");
-    context.put("portalBaseUrl", portalBaseUrl);
+        portalLinkBuilder.authenticated(
+            contact.getOrgId(), matterId != null ? "/trust/" + matterId : "/trust"));
     return context;
   }
 
@@ -317,10 +319,11 @@ public class PortalEmailNotificationChannel {
     // Falls back to the /trust index page when the transaction has no matter
     // (e.g. cross-customer transfers, or matter id genuinely unset).
     UUID matterId = event.projectId();
+    // Phase 88 U11 (§13.6.6): an authenticated portal route → carries orgId.
     context.put(
         "trustUrl",
-        matterId != null ? portalBaseUrl + "/trust/" + matterId : portalBaseUrl + "/trust");
-    context.put("portalBaseUrl", portalBaseUrl);
+        portalLinkBuilder.authenticated(
+            contact.getOrgId(), matterId != null ? "/trust/" + matterId : "/trust"));
     return context;
   }
 
@@ -362,8 +365,7 @@ public class PortalEmailNotificationChannel {
     context.put("dueDate", dueDate);
     context.put("daysUntil", daysUntil);
     context.put("entityName", stringOrNull(details.get("entity_name")));
-    context.put("deadlineUrl", portalBaseUrl + "/deadlines");
-    context.put("portalBaseUrl", portalBaseUrl);
+    context.put("deadlineUrl", portalLinkBuilder.authenticated(contact.getOrgId(), "/deadlines"));
     context.put("dueSoonThresholdDays", DEADLINE_DUE_SOON_DAYS);
     return context;
   }

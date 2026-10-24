@@ -82,7 +82,7 @@ Tokens are redacted everywhere (`[REDACTED]`). In the two request-link success s
 
 ### A4 — request a link
 
-- Typed `sipho.dlamini@email.co.za` and clicked Send Magic Link at 22:29:06Z. There was exactly **one** request-link call:
+- Typed `sipho.dlamini@email.co.za` and clicked Send Magic Link at ~22:29:04Z (corrected on review: the observer's 22:29:06Z was an estimate; Mailpit created `dQw5LfUsb3nqLjFPLHLsHi` at 22:29:04.937Z, which bounds the submit). There was exactly **one** request-link call:
   - `POST http://localhost:8080/portal/auth/request-link` → **200**
   - request body: **`{"email":"sipho.dlamini@email.co.za","orgId":"mathebula-partners"}`**
   - response body: `{"message":"If an account exists, a link has been sent.","magicLink":"/auth/exchange?token=[REDACTED]&orgId=mathebula-partners"}` (KC `local` profile dev echo; not used to sign in)
@@ -151,7 +151,7 @@ This replaces 624D's PARTIAL step 3 (constructed link) with a real 624C fee-note
 
 - Pre-state: 0 cookies, `[]`, `[]`. Opened `http://localhost:3002/login` with no query string. The page showed "Kazi / Sign in to your client portal / Email address / Send Magic Link" (unbranded). Screenshot: `kc-B2-bare-login.png`.
 - Mailpit baseline for `to:multifirm.624i@email.co.za`: **0**.
-- Submitted `multifirm.624i@email.co.za` at 22:36:45Z. There was exactly **one** request-link call:
+- Submitted `multifirm.624i@email.co.za` at ~22:36:43Z (corrected on review: the observer's 22:36:45Z was an estimate; both magic-link mails were created at 22:36:43.1Z). There was exactly **one** request-link call:
   - `POST http://localhost:8080/portal/auth/request-link` → **200**
   - request body: **`{"email":"multifirm.624i@email.co.za"}`** (**no orgId**)
   - response body: `{"message":"If an account exists, a link has been sent.","magicLink":"/auth/exchange?token=[REDACTED]&orgId=khanyile-attorneys-624i"}` (the dev echo returns the first link in directory order)
@@ -218,6 +218,7 @@ Mailpit `to:multifirm.624i@email.co.za` went from 0 to **2**. Both mails are bra
   - `keycloak.user_entity` (docteams) = `bob@mathebula-test.local, carol@mathebula-test.local, padmin@docteams.local, thandi@mathebula-test.local`
   - The Mathebula KC org and its users were not touched.
 - DB left in place (R-5): `org_schema_mapping` still has `khanyile-attorneys-624i → tenant_db75730dfc5f`, and the schema `tenant_db75730dfc5f` exists.
+- **Superseded after review (H-1):** the orchestrator then removed the DB footprint with the scoped Session 0 recipe. That covered the schema, the mapping, organizations, subscriptions, access_requests, the `portal_projects` row and the Khanyile directory row. See `logs/kc-D-db-cleanup.txt` and `gate.md` run note 5.
 
 ## Restore
 
@@ -233,8 +234,8 @@ Mailpit `to:multifirm.624i@email.co.za` went from 0 to **2**. Both mails are bra
 
 ## Notes (not under test — listed, not fixed)
 
-1. **Leftover legal-za tenant vs Session 0 CP-3.** Per R-5, `tenant_db75730dfc5f` (khanyile-attorneys-624i, `vertical_profile legal-za`) and its `org_schema_mapping`, `organizations`, `subscriptions` and `access_requests` rows remain. They are joined by the `portal.portal_contact_directory` row and `portal_projects` row for Khanyile. Session 0's R.2–R.4 only delete Mathebula-keyed rows, and CP-3 expects `tenant_%` = `tenant_56399d06a773` only. The next re-walk's Session 0 must either accept this schema the way it accepts the smoke tenant, or drop it. Orchestrator call.
-2. **The multifirm address still routes to Khanyile after the KC cleanup.** The directory row and `org_schema_mapping` remain, so a later bare login for `multifirm.624i@email.co.za` would still mail a Khanyile link. Its exchange would still succeed DB-side, because exchange is DB-only. Sipho, Nomvula and Moroka are unaffected: they each still have a single Mathebula directory row.
+1. **(Resolved after review: see `logs/kc-D-db-cleanup.txt`.) Leftover legal-za tenant vs Session 0 CP-3.** Per R-5, `tenant_db75730dfc5f` (khanyile-attorneys-624i, `vertical_profile legal-za`) and its `org_schema_mapping`, `organizations`, `subscriptions` and `access_requests` rows remain. They are joined by the `portal.portal_contact_directory` row and `portal_projects` row for Khanyile. Session 0's R.2–R.4 only delete Mathebula-keyed rows, and CP-3 expects `tenant_%` = `tenant_56399d06a773` only. The next re-walk's Session 0 must either accept this schema the way it accepts the smoke tenant, or drop it. Orchestrator call.
+2. **(Resolved after review: the Khanyile directory row was deleted.) The multifirm address still routes to Khanyile after the KC cleanup.** The directory row and `org_schema_mapping` remain, so a later bare login for `multifirm.624i@email.co.za` would still mail a Khanyile link. Its exchange would still succeed DB-side, because exchange is DB-only. Sipho, Nomvula and Moroka are unaffected: they each still have a single Mathebula directory row.
 3. **624D evidence inaccuracy.** 624D step 3 said the branded (`?orgId=`) success copy was the "same text as step 1". On this build the orgId form omits the multi-firm sentence, and that is intentional: `portal/app/login/page.tsx:162` renders it only when `!queryOrgId`, with a comment explaining why. This is an evidence wording error in 624D, not a product defect.
 4. The portal header shows the org name as text for Khanyile (no logo) but only the logo img for Mathebula. This is consistent with the branding data and was not investigated.
 5. Fee-note pre-generation warned "Client has no tax number" for Sipho. It is a warning, not a blocker, and the fee note sent fine.

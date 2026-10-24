@@ -1,0 +1,17 @@
+# E2E stack provenance (review M-2)
+## e2e-up (run used for the gate numbers: second fresh stack, e2e-down && e2e-up at ~22:48Z)
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-624I
+[1/3] Building and starting services...
+[2/3] Waiting for services to become healthy...
+[3/3] Waiting for seed to complete...
+  Mock login page:       http://localhost:3001/mock-login
+  Backend (e2e profile): http://localhost:8081
+worktree HEAD at run time: bd32f07ff2729c5f5d611a597c61d568cd022663 (the gate commit aa600eb64 adds evidence + markers only)
+## source-tree identity (git -C main diff --quiet A B -- paths; exit 0 = identical)
+backend+compose cdb1dbb0a..bd32f07ff exit=0
+frontend+packages 17834f000..bd32f07ff exit=0
+## images (docker build cache hit on identical inputs → CreatedAt = first build of that tree)
+docteams-e2e-frontend bb98f27a326d 2026-10-24 23:03:54 +0200 SAST
+docteams-e2e-backend 6900eb69c6e6 2026-10-24 21:38:48 +0200 SAST
+docteams-e2e-mock-idp 2b5c9ecdb13a 2026-10-22 08:13:23 +0200 SAST
+docteams-e2e-seed e797be8bf778 2026-10-20 06:39:02 +0200 SAST

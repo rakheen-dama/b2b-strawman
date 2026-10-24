@@ -1,0 +1,73 @@
+# 624I R-5 completion — scoped Session 0 reset of the Khanyile fixture (review H-1), 2026-10-24T23:09:26Z
+## census BEFORE
+## mapping
+org_phase86_squash_smoke|tenant_56399d06a773
+mathebula-partners|tenant_5039f2d497cf
+khanyile-attorneys-624i|tenant_db75730dfc5f
+## portal org-keyed rows for khanyile-attorneys-624i
+portal.portal_projects: 1
+portal.portal_contact_directory: 1
+## contact/customer-keyed rows (a acceptance, b notif pref, c trust bal, d trust tx, e deadline)
+0|0|0|0|0
+## public
+aba2a693-d2a3-40e2-8087-735794d2021e|khanyile-attorneys-624i
+72abce40-ec2c-498e-a4f8-e195d329f47b|mathebula-partners
+b9f579c0-e2e6-40e7-8ba5-79fce66c23c6|org_phase86_squash_smoke
+1
+thandi@mathebula-test.local|APPROVED
+owner@khanyile-624i.local|APPROVED
+## directory
+multifirm.624i@email.co.za|khanyile-attorneys-624i
+moroka.trust@email.co.za|mathebula-partners
+multifirm.624i@email.co.za|mathebula-partners
+nomvula.khoza@email.co.za|mathebula-partners
+sipho.dlamini@email.co.za|mathebula-partners
+## tenant schemas
+tenant_5039f2d497cf
+tenant_56399d06a773
+tenant_db75730dfc5f
+## R.0 stop backend
+Done.
+lsof :8080 -> []
+## R.2 portal rows (org khanyile-attorneys-624i)
+BEGIN
+DELETE 1
+DELETE 1
+COMMIT
+## R.3 drop schema
+and 2 other objects (see server log for list)
+DROP SCHEMA
+## R.4 public rows
+BEGIN
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1
+COMMIT
+## R.6 restart backend 2026-10-24T23:09:32Z
+Done.
+39387   00:13
+"message":"Running tenant migrations for 2 schemas"
+{"groups":["liveness","readiness"],"status":"UP"}
+## census AFTER
+## mapping
+org_phase86_squash_smoke|tenant_56399d06a773
+mathebula-partners|tenant_5039f2d497cf
+## portal org-keyed rows for khanyile-attorneys-624i
+## contact/customer-keyed rows (a acceptance, b notif pref, c trust bal, d trust tx, e deadline)
+ERROR:  relation "tenant_db75730dfc5f.portal_contacts" does not exist
+LINE 1: ...quests where portal_contact_id in (select id from tenant_db7...
+                                                             ^
+## public
+72abce40-ec2c-498e-a4f8-e195d329f47b|mathebula-partners
+b9f579c0-e2e6-40e7-8ba5-79fce66c23c6|org_phase86_squash_smoke
+0
+thandi@mathebula-test.local|APPROVED
+## directory
+moroka.trust@email.co.za|mathebula-partners
+multifirm.624i@email.co.za|mathebula-partners
+nomvula.khoza@email.co.za|mathebula-partners
+sipho.dlamini@email.co.za|mathebula-partners
+## tenant schemas
+tenant_5039f2d497cf
+tenant_56399d06a773

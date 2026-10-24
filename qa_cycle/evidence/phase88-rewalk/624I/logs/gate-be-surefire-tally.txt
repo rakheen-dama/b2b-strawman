@@ -1,0 +1,13 @@
+# BE-VERIFY surefire tally (review M-2) — run on bd32f07ff, log /tmp/mvn-624I-final.log (-q: only test-noise ERROR lines)
+$ caffeinate -is ./mvnw clean verify -q > /tmp/mvn-624I-final.log 2>&1  → exit=0 elapsed=18m (22:16Z–22:34Z)
+$ ls target/surefire-reports/TEST-*.xml | wc -l
+     717
+$ cat target/surefire-reports/TEST-*.xml | grep -c "<testcase"
+5743
+$ grep -l "failures=\"[1-9]\|errors=\"[1-9]" target/surefire-reports/TEST-*.xml | wc -l
+       0
+$ grep -c "<failure \|<error " (all reports)
+0
+$ grep -h -o "<skipped" … | wc -l
+      26
+(no target/failsafe-reports directory — no IT phase reports)

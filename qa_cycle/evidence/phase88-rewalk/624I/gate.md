@@ -32,21 +32,51 @@ legal-lifecycle 4 failed: all four are in the carried set (617C `e2e-runs.md` "C
 - `day-45-recon-prescription.spec.ts:41` Start new bank reconciliation
 - `day-90-review.spec.ts:179` Profitability dashboard
 
+The failing set did not grow, but it is not title-identical to 617C run 2:
+- **`day-90-review.spec.ts:63`** "Fee notes list shows multiple fee notes" **passes** here. It failed in 617C and in this slice's run 0.
+- `:179` is now reached, and it fails.
+
+Both titles are in the carried six, so `:63` is a non-deterministic carried failure rather than a fix.
+
 portal-client-90day 3 failed: these are the 617C data-prerequisite titles, owned by 628G (the seed):
 - `day-00-07:119` Day 3 upload + info request
 - `day-45-75:133` Day 60 SoA download
 - `day-85-90:91` Day 85 digest cadence
 
-Non-vacuity: I opened `portal-v2/portal-client-90day/day-00-home-landing.png` with Read before deleting it. It shows the authenticated portal Home with "E2E Test Organization" / "Acme Corp" and the 7-item rail.
+Non-vacuity: I opened `portal-v2/portal-client-90day/day-00-home-landing.png` with Read. It shows the authenticated portal Home with "E2E Test Organization" / "Acme Corp" and the 7-item rail. The PNG is not retained, because visual baselines are untracked by design and were deleted to leave the worktree clean. The `globalSetup` exchange in `logs/e2e-login-bare-run0-cap-backend.txt` (22:56:18Z "Exchanged magic link for portal JWT") independently shows the run was authenticated.
+
+## Orchestrator re-verification (independent of the walker's report)
+
+Reviewer A had no shell, so I record here what the orchestrator re-checked directly:
+- **Mailpit API (KC).**
+  - `to:multifirm.624i@email.co.za` → exactly `S5khrDgFvRcHzhezSnGGnt` ("…from Khanyile Attorneys 624I", 22:36:43.125Z) and `Y7Xvz2bMazmZF6T5SRhJRu` ("…from Mathebula & Partners", 22:36:43.16Z).
+  - The text part of message `8aKFRbFgpzPHombJZLFKQx` contains `http://localhost:3002/invoices/0feb4764-f6f4-425d-9fb1-5ca250ab8c88?orgId=mathebula-partners`.
+- **Screenshots.** I opened `kc-A5-feenote-landing.png` (INV-0004 · Sent · R 100,00, header "Sipho Dlamini") and `kc-B4-link1-khanyile-matters.png` (header "Khanyile Attorneys 624I" / "Lerato Multifirm", only the Khanyile matter).
+- **Tree identity, counts and cap.** Source-tree identity, the BE surefire tally, and the e2e cap mechanism are in `logs/e2e-stack-provenance.txt`, `logs/gate-be-surefire-tally.txt` and `logs/e2e-login-bare-run0-cap-backend.txt`.
+- **The `gate-*` files under `logs/` are orchestrator extracts**: tails, result lines and tallies. The full raw logs were run with `-q` / redirected to `/tmp` and are not retained.
 
 ## Run notes (honest record of what did not go right first time)
 
 1. **Run 0 of E2E-LEGAL was not gate-grade, and was discarded.** The first lifecycle / depth-ii run on a fresh stack gave lifecycle 71/15/5/6 and depth-ii 14 passed / 21 failed / 8 skipped. Every extra failure was `A snapshot doesn't exist … writing actual`. The legal visual baselines are not committed (only `.gitkeep` is tracked), so a clean worktree has none. The prior gates' numbers (620E, 622F) were taken with `--update-snapshots`. I wiped the PNGs, ran `e2e-down && e2e-up` again, and re-ran both suites with `--update-snapshots=all`. Those are the numbers above. The real (non-snapshot) failures in run 0 were the same carried titles. Log: `logs/e2e-lifecycle-run0-missing-baselines.txt`.
-2. **Run 0 of login-bare failed, because my run order tripped the per-contact magic-link cap. Not a product defect.**
-   - The isolation spec (2 links) and the 90-day globalSetup (1 link) issued 3 tokens for `contact@acme.example.com` at 22:56:03–22:56:18Z.
-   - The cap is 3 per contact per 5 min and is DB-counted, so a backend restart does not clear it. The 4th request at 22:57:06Z logged `Magic link not issued for org e2e-test-org (PortalAuthException)` and sent no mail, so the spec timed out waiting for Mailpit.
-   - I re-ran it after the window, at 23:01:44Z: 1 passed.
-   - For later gates, run login-bare first, or space it ≥5 min after the other portal runs.
+2. **Run 0 of login-bare failed, because my run order tripped the per-contact magic-link cap. Not a product defect.** Evidence: `logs/e2e-login-bare-run0-cap-backend.txt` (backend log lines, token rows and restart times).
+   - **Sequence.** All requests below were for the contact `contact@acme.example.com`.
+     - Isolation spec: 2 tokens at 22:56:03Z.
+     - `docker restart e2e-backend`: started 22:56:16Z.
+     - 90-day `globalSetup`: 1 token at 22:56:18Z.
+     - `docker restart e2e-backend` again: started 22:57:03Z.
+     - login-bare request: 22:57:06Z.
+   - **Which cap fired.** The restarts cleared the in-memory per-email limiter (`PortalLoginRateLimiter`, 3 / 15 min, which would have returned 429). So the 4th request reached `MagicLinkService`'s **per-contact cap**: `MAX_TOKENS_PER_5_MINUTES = 3`, counted from `magic_link_tokens` in the DB (`MagicLinkService.java:29,112-117`). It threw `PortalAuthException("Too many login attempts")`. `PortalAuthService` logs that as `Magic link not issued … (PortalAuthException)` and returns the generic 200, so no mail was sent and the spec timed out waiting for Mailpit.
+   - **Re-run.** After the 5-minute window, at 23:01:44Z: token issued 23:01:46Z, exchanged 23:01:49Z, **1 passed**.
+   - **Ordering rule** for later gates: run login-bare first, or ≥5 min after any other run that issues links for the same contact. A restart does not help with this cap.
+5. **KC fixture cleanup, R-5 completed after review H-1** (`logs/kc-D-db-cleanup.txt`). Session 0's §R recipe was run scoped to `khanyile-attorneys-624i`:
+   - R.0: backend stopped.
+   - R.2: deleted 1 `portal_projects` row and 1 `portal_contact_directory` row.
+   - R.3: `DROP SCHEMA tenant_db75730dfc5f CASCADE`.
+   - R.4: deleted 1 row each from subscriptions, org_schema_mapping, organizations and access_requests.
+   - R.6: backend restarted, "Running tenant migrations for 2 schemas", health UP.
+   - Read-back: tenant schemas `tenant_5039f2d497cf` and `tenant_56399d06a773` only; mapping `mathebula-partners` and `org_phase86_squash_smoke` only; no Khanyile rows anywhere.
+   - My first attempt executed **no SQL**: zsh did not word-split a `$P` command variable. It caused one extra KC backend restart, with no state change. The script was re-run under bash.
+   - Mathebula keeps the walk's `multifirm.624i@email.co.za` client, matter and directory row. Session 0 removes them with the Mathebula tenant, except for the directory row (see follow-ups).
 3. The portal suites ran against a **production** portal build (`NEXT_PUBLIC_PORTAL_API_URL=http://localhost:8081`; 4 chunks contain :8081, 0 contain :8080) served on :3002. The KC `svc.sh` portal was stopped for the run and then restored: PID 35523, cwd main checkout `portal/`, `/login` 200.
 4. KC backend restart (KC-STACK): `./mvnw -q clean compile -DskipTests` in the main checkout, then a `svc.sh` restart → tenant **V5 applied on KC** to `tenant_5039f2d497cf` and `tenant_56399d06a773` (`logs/kc-backend-restart.log`). KC is therefore now at tenant V5 / global V2.
 
@@ -54,11 +84,12 @@ Non-vacuity: I opened `portal-v2/portal-client-90day/day-00-home-landing.png` wi
 
 - R-1: KC data is not reserved. Session 0 of every re-walk deletes and re-provisions Mathebula (623A `mid/session-0.md` R.1 / Phase B). 624D's observer was wrong to refuse a new fee note.
 - R-4: the multi-firm step uses a dedicated address (`multifirm.624i@email.co.za`) and never Sipho's, so later bare-login walks of Sipho still get one link.
-- R-5: the second firm was provisioned through the real flow, and its Keycloak org and owner were deleted afterwards. The DB tenant schema stays.
+- R-5: the second firm was provisioned through the real flow. Afterwards its Keycloak org and owner were deleted (walk, `logs/kc-C-keycloak-cleanup.txt`) and its DB footprint was removed with the scoped Session 0 recipe (run note 5, `logs/kc-D-db-cleanup.txt`). The walk's ruling to leave the DB schema in place was reversed on review: the leftover rows would have tripped Session 0's R.2 foreign-row guard, R.6 `portal_projects` 0 and CP-3.
 
-## Follow-ups (not fixed here)
+## Follow-ups (routed in the plan: 629A and 629C rows, "Carried from 624I")
 
-- **629 Session 0 / CP-3:** the leftover legal-za tenant schema `tenant_db75730dfc5f` ("Khanyile Attorneys 624I") and its directory row for `multifirm.624i@email.co.za` stay in the KC DB. Session 0's "only `tenant_56399d06a773` remains" read-back must accept or drop it.
-- **Exchange double-POST under `next dev`** (624D follow-up): still unfixed. Every dev-mode KC walk is exposed to it until it lands.
-- **Visual baselines uncommitted:** a gate on a clean worktree needs `--update-snapshots=all`, otherwise it reports missing-baseline failures. Either commit the baselines or put the flag into the gate definition (628/629 own the suites).
-- 624D `kc-observed.md` evidence error: it says the orgId-path success copy matches the bare path. It does not, by design: `portal/app/login/page.tsx:162-166` shows the multi-firm sentence only when there is no orgId.
+- **Exchange double-POST under `next dev`** (624D follow-up): still unfixed, and no slice owns it. 629.1 KC-STACK uses `svc.sh start all`, which runs the portal under `pnpm dev`, so every 629 portal sign-in is exposed. The 629 row now carries: serve the portal as a production build for the walk (the R-3 recipe from `kc-observed.md`), or land the fix first.
+- **Session 0 recipe gap.** The §R recipe predates global V2, so it does not delete `portal.portal_contact_directory` rows. After 629's reset, Mathebula's directory rows (including `multifirm.624i@email.co.za`) outlive the dropped tenant. Add `DELETE FROM portal.portal_contact_directory WHERE org_id='mathebula-partners'` to R.2.
+- **E2E-PORTAL ordering.** login-bare and the other portal runs share `contact@acme.example.com`, and the per-contact cap is 3 per 5 min in the DB. Run login-bare first or space it ≥5 min. The comments in `login-bare.spec.ts:13-15` / `:96-97` and `playwright.portal.config.ts` say the cap is "cleared only by a backend restart", which is true only of the per-email 429 limiter. The comment fix is routed with the other 629 items. 628G, which edits the portal suites, may take it first.
+- **Visual baselines uncommitted.** A gate on a clean worktree needs `--update-snapshots=all`, otherwise it reports missing-baseline failures. The 629.9 run must use it, or the suites (628E/628F) commit baselines.
+- **624D `kc-observed.md` evidence error.** It says the orgId-path success copy matches the bare path. It does not, by design: `portal/app/login/page.tsx:162-166` shows the multi-firm sentence only when there is no orgId. Recorded here and not edited, since it is historical evidence.

@@ -1,0 +1,21 @@
+# e2e per-contact magic-link cap — login-bare run 0 (review M-1)
+## e2e-backend container restarts (docker inspect StartedAt = last restart only) + health
+2026-10-24T22:56:52.193033877Z
+## magic_link_tokens for the Acme contact (e2e tenant tenant_7d218705360b), all rows
+2026-10-24 22:56:03.768287+00|t
+2026-10-24 22:56:03.869308+00|t
+2026-10-24 22:56:18.614071+00|t
+2026-10-24 23:01:46.202331+00|t
+## backend log, portal auth lines (since container start, incl. pre-restart via docker logs)
+2026-10-24T22:50:57.355337172Z BackendApplication Started BackendApplication in 11.236 seconds (process running for 11.496)
+2026-10-24T22:56:03.793895716Z portal.PortalAuthService Generated magic link for portal contact 172b170b-e3cf-4c80-a1c6-5afa051dc2d8 in org e2e-test-org
+2026-10-24T22:56:03.822317966Z portal.PortalAuthService Exchanged magic link for portal JWT -- contact 172b170b-e3cf-4c80-a1c6-5afa051dc2d8 customer b6dc030f-bb6f-45c6-844f-a673637c5da9 in org e2e-test-org
+2026-10-24T22:56:03.885054591Z portal.PortalAuthService Generated magic link for portal contact 172b170b-e3cf-4c80-a1c6-5afa051dc2d8 in org e2e-test-org
+2026-10-24T22:56:03.895602216Z portal.PortalAuthService Exchanged magic link for portal JWT -- contact 172b170b-e3cf-4c80-a1c6-5afa051dc2d8 customer b6dc030f-bb6f-45c6-844f-a673637c5da9 in org e2e-test-org
+2026-10-24T22:56:16.324942166Z BackendApplication Started BackendApplication in 11.409 seconds (process running for 11.683)
+2026-10-24T22:56:18.854976334Z portal.PortalAuthService Generated magic link for portal contact 172b170b-e3cf-4c80-a1c6-5afa051dc2d8 in org e2e-test-org
+2026-10-24T22:56:18.919147543Z portal.PortalAuthService Exchanged magic link for portal JWT -- contact 172b170b-e3cf-4c80-a1c6-5afa051dc2d8 customer b6dc030f-bb6f-45c6-844f-a673637c5da9 in org e2e-test-org
+2026-10-24T22:57:03.628035175Z BackendApplication Started BackendApplication in 11.095 seconds (process running for 11.341)
+2026-10-24T22:57:06.264621551Z portal.PortalAuthService Magic link not issued for org e2e-test-org (PortalAuthException)
+2026-10-24T23:01:46.534961083Z portal.PortalAuthService Generated magic link for portal contact 172b170b-e3cf-4c80-a1c6-5afa051dc2d8 in org e2e-test-org
+2026-10-24T23:01:49.679077668Z portal.PortalAuthService Exchanged magic link for portal JWT -- contact 172b170b-e3cf-4c80-a1c6-5afa051dc2d8 customer b6dc030f-bb6f-45c6-844f-a673637c5da9 in org e2e-test-org

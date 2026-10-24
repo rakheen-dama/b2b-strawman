@@ -35,6 +35,7 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -707,15 +708,25 @@ public class InvoiceTransitionService {
     paymentEventRepository.delete(paymentEvent);
     paymentEventRepository.flush();
 
+    // newest first, so the first non-null reference is the latest remaining one
     var remainingCompleted =
-        paymentEventRepository.findByInvoiceIdAndStatus(invoiceId, PaymentEventStatus.COMPLETED);
+        paymentEventRepository.findByInvoiceIdOrderByCreatedAtDesc(invoiceId).stream()
+            .filter(pe -> pe.getStatus() == PaymentEventStatus.COMPLETED)
+            .toList();
     var remainingSum =
         remainingCompleted.stream()
             .map(PaymentEvent::getAmount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
+    var latestReference =
+        remainingCompleted.stream()
+            .map(PaymentEvent::getPaymentReference)
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(null);
     var statusBefore = invoice.getStatus();
     try {
-      invoice.reapplyPayments(remainingSum); // amount_paid = LEAST(total, Σ remaining)
+      // amount_paid = LEAST(total, Σ remaining); reference = newest remaining event's
+      invoice.reapplyPayments(remainingSum, latestReference);
     } catch (IllegalStateException e) {
       throw new ResourceConflictException("Invalid status transition", e.getMessage());
     }

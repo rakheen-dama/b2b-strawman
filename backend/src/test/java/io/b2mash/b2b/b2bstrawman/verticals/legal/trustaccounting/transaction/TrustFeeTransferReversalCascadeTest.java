@@ -368,6 +368,9 @@ class TrustFeeTransferReversalCascadeTest {
                       .isEqualTo(InvoiceStatus.PARTIALLY_PAID);
                   assertThat(invoice.getAmountPaid()).isEqualByComparingTo("500.00");
                   assertThat(invoice.getPaidAt()).isNull();
+                  assertThat(invoice.getPaymentReference())
+                      .as("reference follows the surviving payment, not the reversed transfer")
+                      .isEqualTo("PRIOR-CARD-PAYMENT");
 
                   // Only the trust fee_transfer payment_event was deleted; the prior one survives
                   var remaining =

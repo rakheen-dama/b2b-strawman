@@ -840,9 +840,12 @@ class InvoiceLifecycleIntegrationTest {
   void reversalFromPartiallyPaidReturnsToSent() throws Exception {
     String invoiceId = (String) createSentInvoice()[0];
     var paid =
-        postPayment(invoiceId, "{\"amount\": 750.00, \"paymentMethod\": \"EFT\"}")
+        postPayment(
+                invoiceId,
+                "{\"amount\": 750.00, \"paymentMethod\": \"EFT\", \"paymentReference\": \"EFT-ONLY\"}")
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("PARTIALLY_PAID"))
+            .andExpect(jsonPath("$.paymentReference").value("EFT-ONLY"))
             .andReturn();
     UUID eventId =
         UUID.fromString(JsonPath.read(paid.getResponse().getContentAsString(), "$.payments[0].id"));
@@ -858,6 +861,8 @@ class InvoiceLifecycleIntegrationTest {
     assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.SENT);
     assertThat(invoice.getAmountPaid()).isEqualByComparingTo(BigDecimal.ZERO);
     assertThat(invoice.getPaidAt()).isNull();
+    // no COMPLETED event remains → the reversed event's reference must not linger
+    assertThat(invoice.getPaymentReference()).isNull();
     inTenant(
         () -> {
           var reversed =
@@ -895,15 +900,18 @@ class InvoiceLifecycleIntegrationTest {
     BigDecimal total = (BigDecimal) sent[1];
     BigDecimal first = new BigDecimal("1200.00");
 
-    postPayment(invoiceId, "{\"amount\": 1200.00, \"paymentMethod\": \"EFT\"}")
+    postPayment(
+            invoiceId,
+            "{\"amount\": 1200.00, \"paymentMethod\": \"EFT\", \"paymentReference\": \"EFT-FIRST\"}")
         .andExpect(status().isOk());
     var settled =
         postPayment(
                 invoiceId,
-                "{\"amount\": %s, \"paymentMethod\": \"EFT\"}"
+                "{\"amount\": %s, \"paymentMethod\": \"EFT\", \"paymentReference\": \"EFT-SECOND\"}"
                     .formatted(total.subtract(first).toPlainString()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("PAID"))
+            .andExpect(jsonPath("$.paymentReference").value("EFT-SECOND"))
             .andReturn();
     // payments[] is newest first — [0] is the second (settling) payment.
     UUID secondEventId =
@@ -924,6 +932,17 @@ class InvoiceLifecycleIntegrationTest {
     assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PARTIALLY_PAID);
     assertThat(invoice.getAmountPaid()).isEqualByComparingTo(first);
     assertThat(invoice.getPaidAt()).isNull();
+    // reference follows the newest remaining COMPLETED event, not the reversed one
+    assertThat(invoice.getPaymentReference()).isEqualTo("EFT-FIRST");
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
+                    "/api/invoices/" + invoiceId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.paymentReference").value("EFT-FIRST"))
+        .andExpect(jsonPath("$.payments.length()").value(1))
+        .andExpect(jsonPath("$.payments[0].paymentReference").value("EFT-FIRST"));
   }
 
   @Test

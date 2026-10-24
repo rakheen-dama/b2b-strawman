@@ -323,12 +323,15 @@ public class Invoice {
    * Recomputes the balance after a payment event is reversed (ADR-347 rationale 4): {@code
    * amountPaid = LEAST(total, completedSum)} — never decremented in place. Zero → SENT (reference
    * and {@code paidAt} cleared); still fully paid → PAID ({@code paidAt} kept); otherwise
-   * PARTIALLY_PAID ({@code paidAt} cleared).
+   * PARTIALLY_PAID ({@code paidAt} cleared). The reference is reset to {@code latestReference} —
+   * the newest remaining COMPLETED event's reference (null when none has one) — so it never keeps
+   * pointing at the reversed event.
    */
-  public void reapplyPayments(BigDecimal completedSum) {
+  public void reapplyPayments(BigDecimal completedSum, String latestReference) {
     requireStatus(REVERSIBLE, "have a payment reversed");
     this.amountPaid =
         completedSum.max(BigDecimal.ZERO).min(this.total).setScale(2, RoundingMode.HALF_UP);
+    this.paymentReference = latestReference;
     if (this.amountPaid.signum() == 0) {
       this.status = InvoiceStatus.SENT;
       this.paidAt = null;

@@ -1,0 +1,29 @@
+SET
+ invoice_number |     status     |    customer_name    |  total   | amount_paid | balance_due | paid_at 
+----------------+----------------+---------------------+----------+-------------+-------------+---------
+ INV-0001       | SENT           | Sipho Dlamini       |  4585.00 |        0.00 |     4585.00 | 
+ INV-0002       | PARTIALLY_PAID | Moroka Family Trust | 42814.50 |     5000.00 |    37814.50 | 
+(2 rows)
+
+ invoice_number |  status   |  amount  | payment_method | payment_reference | provider_slug |          created_at           
+----------------+-----------+----------+----------------+-------------------+---------------+-------------------------------
+ INV-0001       | CREATED   |  4585.00 |                |                   | mock          | 2026-10-24 08:37:13.737696+00
+ INV-0002       | CANCELLED | 42814.50 |                |                   | mock          | 2026-10-24 08:42:21.998211+00
+ INV-0002       | COMPLETED |  5000.00 | EFT            | EFT/MOROKA-001    | manual        | 2026-10-24 08:48:22.740402+00
+(3 rows)
+
+          occurred_at          |        event_type         | entity_type |                                                                                                                         details                                                                                                                          
+-------------------------------+---------------------------+-------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-10-24 08:35:51.553575+00 | invoice.created           | invoice     | {"currency": "ZAR", "subtotal": "4150.00", "actor_name": "Thandi Mathebula", "line_count": "3", "customer_id": "ad774504-3f2f-4e36-a896-20d92c6ec14f", "customer_name": "Sipho Dlamini"}
+ 2026-10-24 08:36:34.57461+00  | invoice.approved          | invoice     | {"total": "4585.00", "actor_name": "Thandi Mathebula", "issue_date": "2026-10-24", "expense_count": "0", "invoice_number": "INV-0001", "time_entry_count": "2"}
+ 2026-10-24 08:37:13.738011+00 | payment.session.created   | invoice     | {"amount": "4585.00", "provider": "mock", "actor_name": "System", "session_id": "MOCK-SESS-0a25b5d3-9004-4a94-8039-a799cb9e9cce"}
+ 2026-10-24 08:37:13.743323+00 | invoice.sent              | invoice     | {"actor_name": "Thandi Mathebula", "project_id": "e794d8d8-974b-4ac2-b073-e7ffc3bc9852", "invoice_number": "INV-0001"}
+ 2026-10-24 08:41:38.001333+00 | invoice.created           | invoice     | {"currency": "ZAR", "subtotal": "36450.00", "actor_name": "Thandi Mathebula", "line_count": "8", "customer_id": "df7536c3-aa8d-4a49-b094-3db2bbbd2279", "customer_name": "Moroka Family Trust"}
+ 2026-10-24 08:42:01.988608+00 | invoice.updated           | invoice     | {"action": "line_item_added", "line_type": "TARIFF", "new_total": "42814.50", "actor_name": "Thandi Mathebula", "new_subtotal": "37230.00"}
+ 2026-10-24 08:42:17.915575+00 | invoice.approved          | invoice     | {"total": "42814.50", "actor_name": "Thandi Mathebula", "issue_date": "2026-10-24", "expense_count": "0", "invoice_number": "INV-0002", "time_entry_count": "8"}
+ 2026-10-24 08:42:21.99829+00  | payment.session.created   | invoice     | {"amount": "42814.50", "provider": "mock", "actor_name": "System", "session_id": "MOCK-SESS-5bf5ebd7-cc8a-45f0-8b7a-4b1a6aa56bb0"}
+ 2026-10-24 08:42:22.000766+00 | invoice.sent              | invoice     | {"actor_name": "Thandi Mathebula", "project_id": "b15e15ee-0879-4691-abab-e319281e36f5", "invoice_number": "INV-0002"}
+ 2026-10-24 08:48:22.73945+00  | payment.session.cancelled | invoice     | {"action": "session_cancelled", "actor_name": "System"}
+ 2026-10-24 08:48:22.744665+00 | invoice.partially_paid    | invoice     | {"total": "42814.50", "amount": "5000", "actor_name": "Thandi Mathebula", "project_id": "b15e15ee-0879-4691-abab-e319281e36f5", "balance_due": "37814.50", "invoice_number": "INV-0002", "payment_method": "EFT", "payment_reference": "EFT/MOROKA-001"}
+(11 rows)
+

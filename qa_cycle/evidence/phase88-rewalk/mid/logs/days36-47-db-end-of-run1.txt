@@ -1,0 +1,43 @@
+SET
+        name         | customer_type | lifecycle_status | tax_number |           email           
+---------------------+---------------+------------------+------------+---------------------------
+ Sipho Dlamini       | INDIVIDUAL    | ACTIVE           |            | sipho.dlamini@email.co.za
+ Moroka Family Trust | TRUST         | ACTIVE           | 9123456789 | moroka.trust@email.co.za
+(2 rows)
+
+                  name                  | status | work_type  | completed_at | closed_at 
+----------------------------------------+--------+------------+--------------+-----------
+ Sipho Dlamini v. Standard Bank (civil) | ACTIVE | LITIGATION |              | 
+ Estate Late Peter Moroka               | ACTIVE | ESTATES    |              | 
+(2 rows)
+
+ invoice_number |     status     |    customer_name    | issue_date |  due_date  | subtotal | tax_amount |  total   | amount_paid | balance_due 
+----------------+----------------+---------------------+------------+------------+----------+------------+----------+-------------+-------------
+ INV-0001       | SENT           | Sipho Dlamini       | 2026-10-24 | 2026-11-23 |  4150.00 |     435.00 |  4585.00 |        0.00 |     4585.00
+ INV-0002       | PARTIALLY_PAID | Moroka Family Trust | 2026-10-24 | 2026-11-23 | 37230.00 |    5584.50 | 42814.50 |     5000.00 |    37814.50
+(2 rows)
+
+     category      | amount  | approval_status | billing_status |                               write_off_reason                               | on_fee_note 
+-------------------+---------+-----------------+----------------+------------------------------------------------------------------------------+-------------
+ SHERIFF_FEES      |  750.00 | APPROVED        | WRITTEN_OFF    | Client dispute — unable to recover from third party, firm absorbing the cost | f
+ DEEDS_OFFICE_FEES | 1250.00 | APPROVED        | BILLED         |                                                                              | t
+(2 rows)
+
+      customer       |                 matter                 | transaction_type |  amount  |  status  |           reference           
+---------------------+----------------------------------------+------------------+----------+----------+-------------------------------
+ Sipho Dlamini       | Sipho Dlamini v. Standard Bank (civil) | DEPOSIT          |  5000.00 | RECORDED | DEP/SIPHO-001
+ Sipho Dlamini       | Sipho Dlamini v. Standard Bank (civil) | PAYMENT          |  1250.00 | APPROVED | DEEDS/SIPHO-001
+ Moroka Family Trust | Estate Late Peter Moroka               | DEPOSIT          | 50000.00 | RECORDED | Initial fund for estate admin
+(3 rows)
+
+                  name                  | status | count 
+----------------------------------------+--------+-------
+ Estate Late Peter Moroka               | OPEN   |     9
+ Sipho Dlamini v. Standard Bank (civil) | OPEN   |     9
+(2 rows)
+
+ unbilled_time_entries 
+-----------------------
+                     0
+(1 row)
+

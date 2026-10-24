@@ -1,0 +1,30 @@
+# Mailpit API GET /api/v1/message/XjvC3zG6yBNwkHKNfVV69w (2026-10-24T08:38Z)
+{
+  "ID": "XjvC3zG6yBNwkHKNfVV69w",
+  "Subject": "Fee Note INV-0001 from Mathebula & Partners",
+  "To": "sipho.dlamini@email.co.za",
+  "Date": "2026-10-24T10:37:13+02:00",
+  "Attachments": [
+    {
+      "PartID": "2",
+      "FileName": "INV-0001.pdf",
+      "ContentType": "application/pdf",
+      "Size": 3997
+    }
+  ]
+}
+
+# Text (whitespace-collapsed)
+Fee Note INV-0001 from Mathebula & Partners Mathebula & Partners Fee Note from Mathebula & Partners Hi Sipho Dlamini, Please find your fee note details below. Fee Note Number INV-0001 Due Date 2026-11-23 Amount Due ZAR 4585.00 Pay Now (http://localhost:8080/portal/dev/mock-payment?sessionId=MOCK-SESS-0a25b5d3-9004-4a94-8039-a799cb9e9cce&invoiceId=8878574f-e15f-4936-a8c0-dd05d17b5556&amount=4585.00&currency=ZAR&returnUrl=http%3A%2F%2Flocalhost%3A3002%2Finvoices%2F8878574f-e15f-4936-a8c0-dd05d17b5556%2Fpayment-success) View Fee Note (http://localhost:3002/invoices/8878574f-e15f-4936-a8c0-dd05d17b5556) Best, Mathebula & Partners Mathebula & Partners 
+
+# INV-0001.pdf (part 2, 3997 B, fetched to /tmp/623b-pdfs/INV-0001.pdf, read with the Read tool) — text lines:
+FEE NOTE / From: Mathebula & Partners / VAT Registration No: (blank) / To: Sipho Dlamini / Client VAT Number: (blank)
+Matter: Sipho Dlamini v. Standard Bank (civil) / Matter Reference: (blank)
+Fee Note Number: INV-0001 / Issue Date: 24 October 2026 / Due Date: 23 November 2026 / Currency: ZAR
+Fees and Disbursements: Description | Qty | Unit Price (excl. VAT) | VAT | Total (incl. VAT)
+2026-10-24 · Bob Ndlovu · Drafting particulars of claim | 1,5 | R1 200,00 | R270,00 (wrapped "R270," / "00") | R2 070,00
+2026-10-24 · Carol Mokoena · Legal research — precedent review | 2 | R550,00 | R165,00 (wrapped "R165," / "00") | R1 265,00
+Deeds office fees: Deeds office search fee (Deeds Office Pretoria, 2026-10-24) | 1 | R1 250,00 | R0,00 | R1 250,00
+Page 2: Amount Summary: Subtotal (excl. VAT): R4 150,00 / VAT: R435,00 / Total Due: R4 585,00
+Payment Details: "Please use the fee note number as your payment reference. Banking details are available on request or as provided in your engagement letter. Kindly settle this fee note by the due date."
+Header: a plain dark (#1B3A4B-coloured) square logo block above "FEE NOTE"; no firm address/contact letterhead block.

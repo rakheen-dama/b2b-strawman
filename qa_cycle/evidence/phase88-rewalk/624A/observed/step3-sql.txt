@@ -1,0 +1,83 @@
+ installed_rank | version |       description        | success |        installed_on        
+----------------+---------+--------------------------+---------+----------------------------
+              1 | 1       | baseline                 | t       | 2026-10-24 06:07:41.644265
+              2 | 2       | portal contact directory | t       | 2026-10-24 13:16:51.17308
+(2 rows)
+
+                  Table "portal.portal_contact_directory"
+    Column     |           Type           | Collation | Nullable | Default 
+---------------+--------------------------+-----------+----------+---------
+ email_lower   | character varying(255)   |           | not null | 
+ org_id        | character varying(255)   |           | not null | 
+ tenant_schema | character varying(63)    |           | not null | 
+ org_name      | character varying(255)   |           | not null | 
+ updated_at    | timestamp with time zone |           | not null | now()
+Indexes:
+    "portal_contact_directory_pkey" PRIMARY KEY, btree (email_lower, org_id)
+
+             Table "portal.portal_contact_directory_backfill"
+    Column     |           Type           | Collation | Nullable | Default 
+---------------+--------------------------+-----------+----------+---------
+ tenant_schema | character varying(63)    |           | not null | 
+ backfilled_at | timestamp with time zone |           | not null | now()
+ row_count     | integer                  |           | not null | 
+Indexes:
+    "portal_contact_directory_backfill_pkey" PRIMARY KEY, btree (tenant_schema)
+
+ column_name | data_type | numeric_precision | numeric_scale | is_nullable | column_default 
+-------------+-----------+-------------------+---------------+-------------+----------------
+ amount_paid | numeric   |                14 |             2 | NO          | 0
+(1 row)
+
+    tenant_schema    | row_count |         backfilled_at         
+---------------------+-----------+-------------------------------
+ tenant_7d218705360b |         8 | 2026-10-24 13:16:59.619001+00
+(1 row)
+
+                email_lower                |    org_id    |    tenant_schema    |       org_name        
+-------------------------------------------+--------------+---------------------+-----------------------
+ apex-zhod@example.com                     | e2e-test-org | tenant_7d218705360b | E2E Test Organization
+ apex.holdings.mvm024uad719@example.com    | e2e-test-org | tenant_7d218705360b | E2E Test Organization
+ contact@acme.example.com                  | e2e-test-org | tenant_7d218705360b | E2E Test Organization
+ khumalo.property.mvm024uad719@example.com | e2e-test-org | tenant_7d218705360b | E2E Test Organization
+ moroka-zhod@example.com                   | e2e-test-org | tenant_7d218705360b | E2E Test Organization
+ quickcollect-zhod@example.com             | e2e-test-org | tenant_7d218705360b | E2E Test Organization
+ sipho-zhod@example.com                    | e2e-test-org | tenant_7d218705360b | E2E Test Organization
+ sipho.ndlovu.mvm024uad719@example.com     | e2e-test-org | tenant_7d218705360b | E2E Test Organization
+(8 rows)
+
+                  id                  | status |  total  | amount_paid 
+--------------------------------------+--------+---------+-------------
+ 80ef4e4a-1922-41d7-9376-68c114f6b55b | SENT   | 4025.00 |        0.00
+ e808fc08-3170-45d2-906b-7e08859c667d | SENT   | 1725.00 |        0.00
+ ca289b97-c8c9-4516-935e-d547c503f6b9 | PAID   | 1725.00 |     1725.00
+(3 rows)
+
+       kind        | count 
+-------------------+-------
+ active_not_in_dir |     0
+ dir_not_active    |     0
+(2 rows)
+
+ status | count 
+--------+-------
+ ACTIVE |     8
+(1 row)
+
+                  id                  | invoice_number |  status  |  total  | amount_paid 
+--------------------------------------+----------------+----------+---------+-------------
+ 80ef4e4a-1922-41d7-9376-68c114f6b55b | INV-0001       | SENT     | 4025.00 |        0.00
+ cf9e5ea6-1bbe-416c-8ee1-aa0835f7400b |                | DRAFT    | 1552.50 |        0.00
+ 8e66bacc-786a-4c20-829d-cfcdf6cf94ad |                | DRAFT    | 2875.00 |        0.00
+ a815dc31-0944-4c3b-8ada-843f9722da64 |                | DRAFT    |  575.00 |        0.00
+ ca289b97-c8c9-4516-935e-d547c503f6b9 | INV-0002       | PAID     | 1725.00 |     1725.00
+ 055e4c47-7f61-45b6-8899-52b5886ce8a8 |                | DRAFT    | 2875.00 |        0.00
+ 52da848c-b8c1-4e8b-9837-473bddc82a56 |                | DRAFT    |    0.00 |        0.00
+ 5898ef3e-7e6a-4459-8c5a-41f20eec191f |                | DRAFT    |  345.00 |        0.00
+ 2fdda9ad-31d4-4c6e-85c5-f501da7463ed |                | DRAFT    | 1840.00 |        0.00
+ 4155aa01-a9a0-48a0-8d1c-3e8dce1eef81 |                | DRAFT    | 2875.00 |        0.00
+ e808fc08-3170-45d2-906b-7e08859c667d | INV-0003       | SENT     | 1725.00 |        0.00
+ 67427168-287f-406f-8e9a-73f704839d8f | INV-0004       | APPROVED | 1725.00 |        0.00
+ 5a74e1d8-e423-49d7-880e-18fd3b5572d5 |                | DRAFT    | 1725.00 |        0.00
+(13 rows)
+

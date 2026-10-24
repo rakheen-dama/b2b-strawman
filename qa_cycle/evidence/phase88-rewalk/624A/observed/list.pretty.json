@@ -1,0 +1,24 @@
+[
+    {
+        "id": "ca289b97-c8c9-4516-935e-d547c503f6b9",
+        "invoiceNumber": "INV-0002",
+        "status": "PAID",
+        "issueDate": "2026-10-24",
+        "dueDate": "2026-11-23",
+        "total": 1725.0,
+        "amountPaid": 1725.0,
+        "balanceDue": 0.0,
+        "currency": "ZAR"
+    },
+    {
+        "id": "e808fc08-3170-45d2-906b-7e08859c667d",
+        "invoiceNumber": "INV-0003",
+        "status": "PARTIALLY_PAID",
+        "issueDate": "2026-10-24",
+        "dueDate": "2026-11-23",
+        "total": 1725.0,
+        "amountPaid": 600.5,
+        "balanceDue": 1124.5,
+        "currency": "ZAR"
+    }
+]

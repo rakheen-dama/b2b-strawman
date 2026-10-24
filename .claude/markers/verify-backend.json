@@ -1,7 +1,7 @@
 {
-  "commit": "a4aa86b0bd9a9a3b6aee7f38f681333e85d55220",
-  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
+  "commit": "c68529891",
+  "command": "cd backend && bash scripts/verify.sh -q (./mvnw verify under caffeinate)",
   "exit": 0,
-  "ts": "2026-10-24T05:48:56Z",
-  "summary": "Slice 622E PR #1665 final head a4aa86b0b (orchestrator run in worktree-epic-622E): 5630 testcases / 0 failures / 0 errors / 26 skipped, 14 min (= 5629 after 622D + 1 net: RecordPaymentRequest @NotNull 400 cases, D-A TRUST_TRANSFER/XERO refusal, reference-only settle test converted to 400). Log /tmp/mvn-622E-final.log."
+  "ts": "2026-10-24T13:09:17Z",
+  "summary": "PR #1670 (624A) head c68529891: 5653 testcases / 0 failures / 0 errors / 26 skipped"
 }

@@ -1,0 +1,42 @@
+{
+    "id": "e808fc08-3170-45d2-906b-7e08859c667d",
+    "invoiceNumber": "INV-0003",
+    "status": "PARTIALLY_PAID",
+    "issueDate": "2026-10-24",
+    "dueDate": "2026-11-23",
+    "subtotal": 1500.0,
+    "taxAmount": 225.0,
+    "total": 1725.0,
+    "amountPaid": 600.5,
+    "balanceDue": 1124.5,
+    "currency": "ZAR",
+    "notes": "Lifecycle test 4cd3",
+    "paymentUrl": null,
+    "lines": [
+        {
+            "id": "cab50266-d531-4245-ace9-0051a04165a8",
+            "description": "Lifecycle line 4cd3",
+            "quantity": 2.0,
+            "unitPrice": 750.0,
+            "amount": 1500.0,
+            "sortOrder": 0,
+            "taxRateName": "VAT \u2014 Standard",
+            "taxRatePercent": 15.0,
+            "taxAmount": 225.0,
+            "taxExempt": false
+        }
+    ],
+    "taxBreakdown": [
+        {
+            "rateName": "VAT \u2014 Standard",
+            "ratePercent": 15.0,
+            "taxableAmount": 1500.0,
+            "taxAmount": 225.0
+        }
+    ],
+    "taxRegistrationNumber": null,
+    "taxRegistrationLabel": null,
+    "taxLabel": "VAT",
+    "taxInclusive": false,
+    "hasPerLineTax": true
+}

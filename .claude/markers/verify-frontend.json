@@ -1,7 +1,7 @@
 {
-  "commit": "b1c73e0d2fb7ec0b5c371e09a3bd6e6e472d3a52",
-  "command": "pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && pnpm run build",
+  "commit": "a4aa86b0bd9a9a3b6aee7f38f681333e85d55220",
+  "command": "cd frontend && pnpm install && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test",
   "exit": 0,
-  "ts": "2026-10-24T01:00:00Z",
-  "summary": "Slice 622B FE-GATE on phase88/05B-balance-model-partially-paid head b1c73e0d2 (frontend tree identical at final head e828f5624): lint 0 errors / 92 warnings (= baseline); format:check clean; vitest 417 files / 3109 passed / 2 skipped (+3: StatusBadge PARTIALLY_PAID + unknown fallback, customer invoices tab); next build OK. CI Frontend pass @b1c73e0d2 and on re-run @e828f5624 (first attempt hit the documented invoice-generation-with-expenses CI timing flake). E2E-LEGAL @b1c73e0d2, each suite on its own fresh stack: depth-ii 35/0/8 (= baseline); legal-lifecycle 74/4/5/14 (= baseline, carried {A1,A2,A4,A6}, per-test outcomes identical to 621D). Browser observer OBSERVED PASS @b1c73e0d2."
+  "ts": "2026-10-24T05:48:56Z",
+  "summary": "Slice 622E PR #1665 final head a4aa86b0b (orchestrator re-run in worktree-epic-622E): lint 0 errors, format:check clean, build OK, vitest 417 files / 3129 passed / 2 skipped (was 417/3109/2)."
 }

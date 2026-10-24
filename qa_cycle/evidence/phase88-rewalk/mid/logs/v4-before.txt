@@ -1,0 +1,67 @@
+# V4 BEFORE snapshot — 2026-10-24T07:00:48Z — backend DOWN (svc.sh status all 'no', nothing on :8080)
+=== tenant_5039f2d497cf
+ version |          description           |        installed_on        | success 
+---------+--------------------------------+----------------------------+---------
+ 1       | baseline                       | 2026-10-22 17:15:18.154426 | t
+ 2       | add project template work type | 2026-10-22 17:15:19.153161 | t
+ 3       | normalise work types           | 2026-10-22 17:15:19.171147 | t
+(3 rows)
+
+ invoice_number | status | issue_date | due_date |  total   
+----------------+--------+------------+----------+----------
+ INV-0001       | PAID   | 2026-10-22 |          |  2070.00
+ INV-0002       | SENT   | 2026-10-22 |          | 42182.00
+ INV-0003       | SENT   | 2026-10-22 |          |  7058.13
+ INV-0004       | PAID   | 2026-10-22 |          |   750.00
+                | DRAFT  |            |          |  9660.00
+(5 rows)
+
+ project_role | count 
+--------------+-------
+ LEAD         |     4
+(1 row)
+
+ column_name | table_name 
+-------------+------------
+(0 rows)
+
+      conname       
+--------------------
+ chk_invoice_status
+(1 row)
+
+                                                                                     pg_get_constraintdef                                                                                     
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ CHECK (((status)::text = ANY ((ARRAY['DRAFT'::character varying, 'APPROVED'::character varying, 'SENT'::character varying, 'PAID'::character varying, 'VOID'::character varying])::text[])))
+(1 row)
+
+=== tenant_56399d06a773
+ version |          description           |        installed_on        | success 
+---------+--------------------------------+----------------------------+---------
+ 1       | baseline                       | 2026-10-18 04:21:29.676908 | t
+ 2       | add project template work type | 2026-10-22 17:12:49.002347 | t
+ 3       | normalise work types           | 2026-10-22 17:12:49.031763 | t
+(3 rows)
+
+ invoice_number | status | issue_date | due_date | total 
+----------------+--------+------------+----------+-------
+(0 rows)
+
+ project_role | count 
+--------------+-------
+(0 rows)
+
+ column_name | table_name 
+-------------+------------
+(0 rows)
+
+      conname       
+--------------------
+ chk_invoice_status
+(1 row)
+
+                                                                                     pg_get_constraintdef                                                                                     
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ CHECK (((status)::text = ANY ((ARRAY['DRAFT'::character varying, 'APPROVED'::character varying, 'SENT'::character varying, 'PAID'::character varying, 'VOID'::character varying])::text[])))
+(1 row)
+

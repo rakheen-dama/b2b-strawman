@@ -1,0 +1,20 @@
+            email            |              type               |                                                      title                                                      |          created_at           
+-----------------------------+---------------------------------+-----------------------------------------------------------------------------------------------------------------+-------------------------------
+ carol@mathebula-test.local  | DOCUMENT_SHARED                 | Bob Ndlovu uploaded "Particulars of Claim — draft v1.pdf"                                                       | 2026-10-24 07:41:31.012172+00
+ thandi@mathebula-test.local | DOCUMENT_SHARED                 | Bob Ndlovu uploaded "Particulars of Claim — draft v1.pdf"                                                       | 2026-10-24 07:41:31.011311+00
+ thandi@mathebula-test.local | AUTOMATION                      | Document accepted: Particulars of Claim — draft v1.pdf                                                          | 2026-10-24 07:41:30.993531+00
+ bob@mathebula-test.local    | COMMENT_ADDED                   | Carol Mokoena commented on task "Initial consultation & case assessment"                                        | 2026-10-24 07:41:13.124513+00
+ carol@mathebula-test.local  | COMMENT_ADDED                   | Bob Ndlovu commented on task "Initial consultation & case assessment"                                           | 2026-10-24 07:39:14.582285+00
+ bob@mathebula-test.local    | TRUST_PAYMENT_APPROVED          | Trust payment approved                                                                                          | 2026-10-24 07:34:00.49419+00
+ bob@mathebula-test.local    | TRUST_PAYMENT_AWAITING_APPROVAL | Trust payment requires approval                                                                                 | 2026-10-24 07:33:43.759915+00
+ thandi@mathebula-test.local | TRUST_PAYMENT_AWAITING_APPROVAL | Trust payment requires approval                                                                                 | 2026-10-24 07:33:43.75972+00
+ bob@mathebula-test.local    | ACCEPTANCE_COMPLETED            | Sipho Dlamini has accepted engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-24.pdf      | 2026-10-24 07:29:15.144683+00
+ thandi@mathebula-test.local | DOCUMENT_GENERATED              | Bob Ndlovu generated document "engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-24.pdf" | 2026-10-24 07:28:17.689746+00
+(10 rows)
+
+ entity_type | parent_id |           email            |                    body                     | visibility 
+-------------+-----------+----------------------------+---------------------------------------------+------------
+ TASK        |           | bob@mathebula-test.local   | Need to confirm court date by Monday @Carol | INTERNAL
+ TASK        |           | carol@mathebula-test.local | Confirmed, court date is 2026-05-12         | INTERNAL
+(2 rows)
+

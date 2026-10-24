@@ -1,0 +1,40 @@
+# Day 0.16 provisioning log (backend.log lines after      123) — 2026-10-24T07:13:42Z
+2026-10-24T07:13:24.260547Z	io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService	Provisioning tenant schema tenant_5039f2d497cf for org mathebula-partners on shard primary
+2026-10-24T07:13:24.263003Z	io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService	Created schema tenant_5039f2d497cf
+2026-10-24T07:13:24.324265Z	org.flywaydb.core.internal.command.DbMigrate	Current version of schema "tenant_5039f2d497cf": << Empty Schema >>
+2026-10-24T07:13:24.421285Z	org.flywaydb.core.internal.command.DbMigrate	Migrating schema "tenant_5039f2d497cf" to version "1 - baseline"
+2026-10-24T07:13:25.391477Z	org.flywaydb.core.internal.command.DbMigrate	Migrating schema "tenant_5039f2d497cf" to version "2 - add project template work type"
+2026-10-24T07:13:25.404437Z	org.flywaydb.core.internal.command.DbMigrate	Migrating schema "tenant_5039f2d497cf" to version "3 - normalise work types"
+2026-10-24T07:13:25.417324Z	org.flywaydb.core.internal.command.DbMigrate	Migrating schema "tenant_5039f2d497cf" to version "4 - phase88 demo ready"
+2026-10-24T07:13:25.433962Z	org.flywaydb.core.internal.command.DbMigrate	Successfully applied 4 migrations to schema "tenant_5039f2d497cf", now at version v4 (execution time 00:00.980s)
+2026-10-24T07:13:25.435674Z	io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService	Ran tenant migrations for schema tenant_5039f2d497cf
+2026-10-24T07:13:25.915262Z	io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService	Created mapping mathebula-partners -> tenant_5039f2d497cf on shard primary
+2026-10-24T07:13:25.918578Z	io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService	Successfully provisioned tenant tenant_5039f2d497cf for org mathebula-partners
+2026-10-24T07:13:25.918833Z	io.b2mash.b2b.b2bstrawman.accessrequest.AccessRequestApprovalService	Provisioned tenant schema for org a21f5935-c745-4454-8dde-aa6b758af449 (slug=mathebula-partners)
+2026-10-24T07:13:26.066308Z	io.b2mash.b2b.b2bstrawman.accessrequest.KeycloakProvisioningClient	Could not find Keycloak user for email thandi@mathebula-test.local to set as org creator
+2026-10-24T07:13:26.074553Z	io.b2mash.b2b.b2bstrawman.accessrequest.KeycloakProvisioningClient	Cannot set password — no Keycloak user found for email thandi@mathebula-test.local
+--- errors
+     external_org_id      |     schema_name     
+--------------------------+---------------------
+ org_phase86_squash_smoke | tenant_56399d06a773
+ mathebula-partners       | tenant_5039f2d497cf
+(2 rows)
+
+ version |          description           |        installed_on        | success 
+---------+--------------------------------+----------------------------+---------
+ 1       | baseline                       | 2026-10-24 09:13:24.320391 | t
+ 2       | add project template work type | 2026-10-24 09:13:25.381194 | t
+ 3       | normalise work types           | 2026-10-24 09:13:25.398636 | t
+ 4       | phase88 demo ready             | 2026-10-24 09:13:25.411561 | t
+(4 rows)
+
+ vertical_profile | default_currency | default_payment_terms_days 
+------------------+------------------+----------------------------
+ legal-za         | ZAR              |                         30
+(1 row)
+
+  status  |            email            
+----------+-----------------------------
+ APPROVED | thandi@mathebula-test.local
+(1 row)
+

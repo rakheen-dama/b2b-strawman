@@ -1,0 +1,247 @@
+# Session 0 §R reset — slice-authorised infra writes (623.2), not walk state — started 2026-10-24T07:07:03Z
+## R.0 stop backend
+  backend: stopping (PID 68172)...
+  backend: stopped
+
+Done.
+lsof :8080 -> []
+68353 /Users/rakheendama/.sdkman/candidates/java/current/bin/java --enable-native-access=ALL-UNNAMED -classpath /Users/rakheendama/.m2/wrapper/dists/apache-maven-3.9.12/6068d197/boot/plexus-classworlds-2.9.0.jar -Dclassworlds.conf=/Users/rakheendama/.m2/wrapper/dists/apache-maven-3.9.12/6068d197/bin/m2.conf -Dmaven.home=/Users/rakheendama/.m2/wrapper/dists/apache-maven-3.9.12/6068d197 -Dlibrary.jansi.path=/Users/rakheendama/.m2/wrapper/dists/apache-maven-3.9.12/6068d197/lib/jansi-native -Dmaven.multiModuleProjectDirectory=/Users/rakheendama/Projects/2026/b2b-strawman/gateway org.codehaus.plexus.classworlds.launcher.Launcher spring-boot:run
+backend java 68329 gone
+## R.1 Keycloak (admin REST, master admin) — M.7 / 0.B
+token len 750
+users before:
+bob@mathebula-test.local
+carol@mathebula-test.local
+padmin@docteams.local
+thandi@mathebula-test.local
+orgs before:
+{"id":"2c4034d3-f76d-4323-a172-7eabd018657d","name":"Mathebula & Partners","alias":"mathebula-partners"}
+org delete 2c4034d3-f76d-4323-a172-7eabd018657d 204
+thandi already gone
+bob already gone
+carol already gone
+users after:
+padmin@docteams.local
+orgs after:
+(end orgs)
+(method: admin REST, not console UI)
+note: the 3 users were already gone when the per-user DELETE loop ran — the org DELETE (204) removed them (KC org-managed members are deleted with the org). Read-back confirms padmin only.
+## R.2 guard (all four must be 0)
+ a | b | c | d 
+---+---+---+---
+ 0 | 0 | 0 | 0
+(1 row)
+
+## extra guard: org_id values in org-keyed portal tables
+       tbl       |       org_id       | count 
+-----------------+--------------------+-------
+ portal_invoices | mathebula-partners |     4
+(1 row)
+
+ tbl | org_id | count 
+-----+--------+-------
+(0 rows)
+
+     tbl      |       org_id       | count 
+--------------+--------------------+-------
+ portal_tasks | mathebula-partners |    17
+(1 row)
+
+       tbl        |       org_id       | count 
+------------------+--------------------+-------
+ portal_documents | mathebula-partners |     5
+(1 row)
+
+       tbl       |       org_id       | count 
+-----------------+--------------------+-------
+ portal_projects | mathebula-partners |     5
+(1 row)
+
+ tbl | org_id | count 
+-----+--------+-------
+(0 rows)
+
+ tbl | org_id | count 
+-----+--------+-------
+(0 rows)
+
+ deadline_rows_not_mathebula 
+-----------------------------
+                           0
+(1 row)
+
+## R.2 portal read-model deletes
+BEGIN
+DELETE 2
+DELETE 1
+DELETE 2
+DELETE 1
+DELETE 0
+DELETE 4
+DELETE 0
+DELETE 17
+DELETE 5
+DELETE 5
+DELETE 0
+DELETE 0
+COMMIT
+## R.3 DROP SCHEMA (0.A / M.6)
+NOTICE:  drop cascades to 102 other objects
+DETAIL:  drop cascades to table tenant_5039f2d497cf.flyway_schema_history
+drop cascades to table tenant_5039f2d497cf.acceptance_requests
+drop cascades to table tenant_5039f2d497cf.accounting_sync_entry
+drop cascades to table tenant_5039f2d497cf.accounting_tax_code_mapping
+drop cascades to table tenant_5039f2d497cf.adverse_parties
+drop cascades to table tenant_5039f2d497cf.ai_executions
+drop cascades to table tenant_5039f2d497cf.ai_firm_profiles
+drop cascades to table tenant_5039f2d497cf.audit_events
+drop cascades to table tenant_5039f2d497cf.billing_runs
+drop cascades to table tenant_5039f2d497cf.checklist_templates
+drop cascades to table tenant_5039f2d497cf.clauses
+drop cascades to table tenant_5039f2d497cf.collection_activities
+drop cascades to table tenant_5039f2d497cf.correspondence
+drop cascades to table tenant_5039f2d497cf.email_delivery_log
+drop cascades to table tenant_5039f2d497cf.expenses
+drop cascades to table tenant_5039f2d497cf.field_date_notification_log
+drop cascades to table tenant_5039f2d497cf.field_definitions
+drop cascades to table tenant_5039f2d497cf.field_groups
+drop cascades to table tenant_5039f2d497cf.invoice_counters
+drop cascades to table tenant_5039f2d497cf.mcp_egress_consents
+drop cascades to table tenant_5039f2d497cf.org_integrations
+drop cascades to table tenant_5039f2d497cf.org_roles
+drop cascades to table tenant_5039f2d497cf.org_secrets
+drop cascades to table tenant_5039f2d497cf.org_settings
+drop cascades to table tenant_5039f2d497cf.pack_install
+drop cascades to table tenant_5039f2d497cf.processing_activities
+drop cascades to table tenant_5039f2d497cf.report_definitions
+drop cascades to table tenant_5039f2d497cf.request_counters
+drop cascades to table tenant_5039f2d497cf.request_templates
+drop cascades to table tenant_5039f2d497cf.retention_policies
+drop cascades to table tenant_5039f2d497cf.saved_views
+drop cascades to table tenant_5039f2d497cf.tags
+drop cascades to table tenant_5039f2d497cf.tariff_schedules
+drop cascades to table tenant_5039f2d497cf.tax_rates
+drop cascades to table tenant_5039f2d497cf.trust_accounts
+drop cascades to table tenant_5039f2d497cf.accounting_xero_connection
+drop cascades to table tenant_5039f2d497cf.ai_execution_gates
+drop cascades to table tenant_5039f2d497cf.automation_rules
+drop cascades to table tenant_5039f2d497cf.checklist_template_items
+drop cascades to table tenant_5039f2d497cf.compliance_audit_reports
+drop cascades to table tenant_5039f2d497cf.document_templates
+drop cascades to table tenant_5039f2d497cf.entity_tags
+drop cascades to table tenant_5039f2d497cf.field_group_members
+drop cascades to table tenant_5039f2d497cf.lpff_rates
+drop cascades to table tenant_5039f2d497cf.members
+drop cascades to table tenant_5039f2d497cf.org_role_capabilities
+drop cascades to table tenant_5039f2d497cf.project_templates
+drop cascades to table tenant_5039f2d497cf.request_template_items
+drop cascades to table tenant_5039f2d497cf.tariff_items
+drop cascades to table tenant_5039f2d497cf.automation_actions
+drop cascades to table tenant_5039f2d497cf.automation_executions
+drop cascades to table tenant_5039f2d497cf.bank_statements
+drop cascades to table tenant_5039f2d497cf.compliance_audit_findings
+drop cascades to table tenant_5039f2d497cf.cost_rates
+drop cascades to table tenant_5039f2d497cf.customers
+drop cascades to table tenant_5039f2d497cf.interest_runs
+drop cascades to table tenant_5039f2d497cf.member_capability_overrides
+drop cascades to table tenant_5039f2d497cf.notification_preferences
+drop cascades to table tenant_5039f2d497cf.notifications
+drop cascades to table tenant_5039f2d497cf.pending_invitations
+drop cascades to table tenant_5039f2d497cf.projects
+drop cascades to table tenant_5039f2d497cf.template_clauses
+drop cascades to table tenant_5039f2d497cf.template_tags
+drop cascades to table tenant_5039f2d497cf.template_tasks
+drop cascades to table tenant_5039f2d497cf.action_executions
+drop cascades to table tenant_5039f2d497cf.adverse_party_links
+drop cascades to table tenant_5039f2d497cf.billing_rates
+drop cascades to table tenant_5039f2d497cf.checklist_instances
+drop cascades to table tenant_5039f2d497cf.client_ledger_cards
+drop cascades to table tenant_5039f2d497cf.comments
+drop cascades to table tenant_5039f2d497cf.court_dates
+drop cascades to table tenant_5039f2d497cf.customer_projects
+drop cascades to table tenant_5039f2d497cf.data_subject_requests
+drop cascades to table tenant_5039f2d497cf.documents
+drop cascades to table tenant_5039f2d497cf.invoices
+drop cascades to table tenant_5039f2d497cf.matter_closure_log
+drop cascades to table tenant_5039f2d497cf.portal_contacts
+drop cascades to table tenant_5039f2d497cf.prescription_trackers
+drop cascades to table tenant_5039f2d497cf.project_budgets
+drop cascades to table tenant_5039f2d497cf.project_members
+drop cascades to table tenant_5039f2d497cf.tasks
+drop cascades to table tenant_5039f2d497cf.template_task_items
+drop cascades to table tenant_5039f2d497cf.trust_reconciliations
+drop cascades to table tenant_5039f2d497cf.billing_run_items
+drop cascades to table tenant_5039f2d497cf.checklist_instance_items
+drop cascades to table tenant_5039f2d497cf.conflict_checks
+drop cascades to table tenant_5039f2d497cf.generated_documents
+drop cascades to table tenant_5039f2d497cf.information_requests
+drop cascades to table tenant_5039f2d497cf.magic_link_tokens
+drop cascades to table tenant_5039f2d497cf.payment_events
+drop cascades to table tenant_5039f2d497cf.task_items
+drop cascades to table tenant_5039f2d497cf.time_entries
+drop cascades to table tenant_5039f2d497cf.billing_run_entry_selections
+drop cascades to table tenant_5039f2d497cf.request_items
+drop cascades to table tenant_5039f2d497cf.bank_statement_lines
+drop cascades to table tenant_5039f2d497cf.trust_transactions
+drop cascades to table tenant_5039f2d497cf.interest_allocations
+drop cascades to table tenant_5039f2d497cf.trust_investments
+drop cascades to table tenant_5039f2d497cf.invoice_lines
+drop cascades to table tenant_5039f2d497cf.legal_disbursements
+and 2 other objects (see server log for list)
+DROP SCHEMA
+## R.4 public rows
+BEGIN
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1
+COMMIT
+## R.5 Mailpit (M.8)
+count before: 0
+mailpit clear 200
+count after: 0
+## R.6 verify
+     schema_name     
+---------------------
+ tenant_56399d06a773
+(1 row)
+
+     external_org_id      |     schema_name     
+--------------------------+---------------------
+ org_phase86_squash_smoke | tenant_56399d06a773
+(1 row)
+
+ access_requests 
+-----------------
+               0
+(1 row)
+
+ org_id | count 
+--------+-------
+(0 rows)
+
+ organizations 
+---------------
+             1
+(1 row)
+
+ subscriptions 
+---------------
+             1
+(1 row)
+
+## R.6 restart backend 2026-10-24T07:07:43Z
+  backend: starting...
+  Waiting for backend (port 8080)... ready (15s)
+
+Done.
+8080 pid 70187 etime 00:13
+2026-10-24T07:07:49.077015Z	org.flywaydb.core.internal.command.DbMigrate	Current version of schema "public": 1
+2026-10-24T07:07:49.079680Z	org.flywaydb.core.internal.command.DbMigrate	Schema "public" is up to date. No migration necessary.
+2026-10-24T07:07:57.248211Z	io.b2mash.b2b.b2bstrawman.BackendApplication	Started BackendApplication in 10.363 seconds (process running for 10.534)
+2026-10-24T07:07:57.329031Z	io.b2mash.b2b.b2bstrawman.provisioning.TenantMigrationRunner	Running tenant migrations for 1 schemas
+2026-10-24T07:07:57.361462Z	org.flywaydb.core.internal.command.DbMigrate	Current version of schema "tenant_56399d06a773": 4
+2026-10-24T07:07:57.362084Z	org.flywaydb.core.internal.command.DbMigrate	Schema "tenant_56399d06a773" is up to date. No migration necessary.
+2026-10-24T07:07:57.364290Z	io.b2mash.b2b.b2bstrawman.provisioning.TenantMigrationRunner	Migrated schema tenant_56399d06a773 — 0 migrations applied
+2026-10-24T07:07:57.364425Z	io.b2mash.b2b.b2bstrawman.provisioning.TenantMigrationRunner	Tenant migration runner completed
+health: {"groups":["liveness","readiness"],"status":"UP"}

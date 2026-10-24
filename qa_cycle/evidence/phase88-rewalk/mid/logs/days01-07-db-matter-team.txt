@@ -1,0 +1,41 @@
+# T1 / 3.4 — 2026-10-24T07:25:14Z
+                  id                  |                  name                  | work_type  | custom_fields | status 
+--------------------------------------+----------------------------------------+------------+---------------+--------
+ e794d8d8-974b-4ac2-b073-e7ffc3bc9852 | Sipho Dlamini v. Standard Bank (civil) | LITIGATION | {}            | ACTIVE
+(1 row)
+
+ project_role |            email            |          created_at           
+--------------+-----------------------------+-------------------------------
+ lead         | thandi@mathebula-test.local | 2026-10-24 07:25:03.793226+00
+ member       | bob@mathebula-test.local    | 2026-10-24 07:25:03.793921+00
+(2 rows)
+
+             customer_id              |              project_id              
+--------------------------------------+--------------------------------------
+ ad774504-3f2f-4e36-a896-20d92c6ec14f | e794d8d8-974b-4ac2-b073-e7ffc3bc9852
+(1 row)
+
+ tasks 
+-------
+     9
+(1 row)
+
+                 title                  |            email            
+----------------------------------------+-----------------------------
+ Initial consultation & case assessment | bob@mathebula-test.local
+ Letter of demand                       | carol@mathebula-test.local
+ Issue summons / combined summons       | thandi@mathebula-test.local
+(3 rows)
+
+ project_role |            email            
+--------------+-----------------------------
+ lead         | thandi@mathebula-test.local
+ member       | bob@mathebula-test.local
+ member       | carol@mathebula-test.local
+(3 rows)
+
+                                     custom_fields                                     
+---------------------------------------------------------------------------------------
+ {"court_name": "Gauteng High Court, Johannesburg", "case_number": "JHB/CIV/2026/001"}
+(1 row)
+

@@ -1,0 +1,10 @@
+          email           | duration_minutes | billing_rate_snapshot |          description          
+--------------------------+------------------+-----------------------+-------------------------------
+ bob@mathebula-test.local |               90 |               1200.00 | Drafting particulars of claim
+(1 row)
+
+ docs |                                                        string_agg                                                         
+------+---------------------------------------------------------------------------------------------------------------------------
+    2 | Sipho Dlamini — certified FICA pack.pdf | engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-24.pdf
+(1 row)
+

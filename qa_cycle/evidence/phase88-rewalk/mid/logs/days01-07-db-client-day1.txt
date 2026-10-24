@@ -1,0 +1,5 @@
+                  id                  |     name      | lifecycle_status | customer_type |           email           |      phone      |   address_line1    |     city     | postal_code | country |              custom_fields              
+--------------------------------------+---------------+------------------+---------------+---------------------------+-----------------+--------------------+--------------+-------------+---------+-----------------------------------------
+ ad774504-3f2f-4e36-a896-20d92c6ec14f | Sipho Dlamini | PROSPECT         | INDIVIDUAL    | sipho.dlamini@email.co.za | +27-82-555-0101 | 42 Commissioner St | Johannesburg | 2001        | ZA      | {"id_passport_number": "8501015800083"}
+(1 row)
+

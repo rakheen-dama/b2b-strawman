@@ -1,0 +1,6 @@
+           email            | duration_minutes | billing_rate_snapshot |            description            
+----------------------------+------------------+-----------------------+-----------------------------------
+ bob@mathebula-test.local   |               90 |               1200.00 | Drafting particulars of claim
+ carol@mathebula-test.local |              120 |                550.00 | Legal research — precedent review
+(2 rows)
+

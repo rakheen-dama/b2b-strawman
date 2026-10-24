@@ -1,0 +1,9 @@
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.diffplug.spotless.java.ModuleHelper (file:/Users/rakheendama/.m2/repository/com/diffplug/spotless/spotless-lib/4.3.0/spotless-lib-4.3.0.jar)
+WARNING: Please consider reporting this to the maintainers of class com.diffplug.spotless.java.ModuleHelper
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+EXIT 0 wall 17s
+ls target/classes/db/migration/tenant:  V1__baseline.sql  V2__add_project_template_work_type.sql  V3__normalise_work_types.sql  V4__phase88_demo_ready.sql 
+ihxsimtydt3bnw1v7inoy7b2o               	true 	0B        	9 hours ago
+5y2uyk00phz6junp5zse2mcic               	true 	0B        	9 hours ago
+Total:	8.005GB

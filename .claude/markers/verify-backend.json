@@ -1,7 +1,7 @@
 {
-  "commit": "e828f562475c8d1a09998626de67298f6b82a444",
+  "commit": "450c6eee385760e9528656902f937ed711410252",
   "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-24T01:39:12Z",
-  "summary": "Slice 622B PR #1662 final head e828f5624 (orchestrator run in worktree-epic-622B): 5603 testcases / 0 failures / 0 errors / 26 skipped across 705 reports (= 5569 after 622A + 34 new: InvoiceLifecycleIntegrationTest partial/complete/overpay 409/back-compat/void guard/reversal cases, V4InvoiceStatusCheckTest, PaymentEventTest, InvoiceAuditIntegrationTest new keys, TrustFeeTransferReversalCascadeTest D7 refusal + reference, PortalEventHandlerTest + InvoiceSyncIntegrationTest PARTIALLY_PAID projection). Same result on b1c73e0d2. Backend CI pass (18m7s). Log /tmp/mvn-622B-final2.log."
+  "ts": "2026-10-24T03:56:52Z",
+  "summary": "Slice 622C PR #1663 final head 450c6eee3 (orchestrator run in worktree-epic-622C): 5619 testcases / 0 failures / 0 errors / 26 skipped across 706 reports (= 5603 after 622B + 16 new: trust fee-transfer partial/remainder/excess/reversal, CardPaymentBalanceLinkIntegrationTest balance link + replay + session-cancel on trust/Xero, PaymentReconciliationServiceIntegrationTest session amount + session-less refusal, AccountingPaymentPollIntegrationTest part/complete/excess/non-positive). Same result on c5af805b0. Log /tmp/mvn-622C-final2.log."
 }

@@ -1,0 +1,2 @@
+exit=0 elapsed=18m
+surefire reports=717 testcases=5743 failing_report_files=0 skipped=26

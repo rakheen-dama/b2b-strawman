@@ -1,0 +1,25 @@
+  39:11  warning  'snapshot' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-epic-624I/frontend/e2e/tests/demo-full-90day.spec.ts
+  1:16  warning  'expect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-epic-624I/frontend/e2e/tests/demo-recording.spec.ts
+  1:16  warning  'expect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-epic-624I/frontend/e2e/tests/invoices/invoice-lifecycle.spec.ts
+  309:13  warning  'timeLines' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-epic-624I/frontend/e2e/tests/projects/project-crud.spec.ts
+  288:61  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-epic-624I/frontend/e2e/tests/projects/project-tasks.spec.ts
+  260:35  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-epic-624I/frontend/e2e/tests/projects/project-time.spec.ts
+  209:60  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+  223:57  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+  268:52  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 92 problems (0 errors, 92 warnings)
+  0 errors and 4 warnings potentially fixable with the `--fix` option.
+

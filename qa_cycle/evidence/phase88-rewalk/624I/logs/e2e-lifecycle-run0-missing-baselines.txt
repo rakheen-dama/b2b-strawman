@@ -1,0 +1,22 @@
+  13) [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:179:7 › Day 90 — Quarter Review › Alice: Profitability dashboard — revenue, costs, margins for 4 clients 
+  14) [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:227:7 › Day 90 — Quarter Review › Alice: Dashboard shows KPIs 
+  15) [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:426:7 › Day 90 — Role-Based Access › Alice: Has full owner access to all areas 
+  15 failed
+    [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:282:7 › Day 0 — Firm Setup › Alice: Trust account settings page loads 
+    [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:36:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Conflict check for Sipho Ndlovu — CLEAR 
+    [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:390:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Create client Apex Holdings (Company) 
+    [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:175:7 › Day 7 — First Week of Work › Alice: Create court date for Sipho (Motion, 30 days out) 
+    [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:258:7 › Day 7 — First Week of Work › Alice: My Work page shows active items 
+    [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:541:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Trust dashboard overview 
+    [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:32:7 › Day 30 — First Billing Cycle › Alice: Create fee note for Sipho Ndlovu (hourly + tariff + disbursement) 
+    [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:159:7 › Day 30 — First Billing Cycle › Alice: Create fee note for Apex Holdings (fixed fee R35,000 + VAT) 
+    [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:41:7 › Day 45 — Reconciliation & Prescription › Alice: Start new bank reconciliation 
+    [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:377:7 › Day 60 — Interest Run & Investments › Alice: Check profitability report 
+    [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:63:7 › Day 90 — Quarter Review › Alice: Fee notes list shows multiple fee notes 
+    [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:143:7 › Day 90 — Quarter Review › Alice: Trust reports — Investment Register with s86 basis 
+    [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:179:7 › Day 90 — Quarter Review › Alice: Profitability dashboard — revenue, costs, margins for 4 clients 
+    [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:227:7 › Day 90 — Quarter Review › Alice: Dashboard shows KPIs 
+    [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:426:7 › Day 90 — Role-Based Access › Alice: Has full owner access to all areas 
+  5 skipped
+  6 did not run
+  71 passed (2.5m)

@@ -1,0 +1,6 @@
+    Error: Timed out waiting for a new email to contact@acme.example.com ("Your portal access link from E2E Test Organization") (30000ms)
+    > 81 |   throw new Error(
+    test-results/login-bare-Bare-login-—-em-ea39b-d-link-in-Mailpit-→-matters-login-bare/test-failed-1.png
+    Error Context: test-results/login-bare-Bare-login-—-em-ea39b-d-link-in-Mailpit-→-matters-login-bare/error-context.md
+  1 failed
+ ELIFECYCLE  Command failed with exit code 1.

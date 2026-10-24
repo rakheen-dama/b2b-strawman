@@ -93,7 +93,7 @@ public class InformationRequestEmailEventListener {
                 items.size(),
                 request.getId(),
                 rawToken,
-                contact.getOrgId() != null ? contact.getOrgId() : event.orgId());
+                contact.getOrgId());
           } catch (Exception e) {
             log.error("Failed to send request-sent email for request={}", event.requestId(), e);
           }

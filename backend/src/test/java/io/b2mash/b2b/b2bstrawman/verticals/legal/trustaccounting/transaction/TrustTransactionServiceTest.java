@@ -45,6 +45,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.ApplicationEvents;
@@ -1025,6 +1026,46 @@ class TrustTransactionServiceTest {
                       transactionRepository.findById(transferOutTxnId[0]).orElseThrow();
                   assertThat(originalOut.getStatus()).isEqualTo("REVERSED");
                   assertThat(originalOut.getReversedById()).isNotNull();
+
+                  // R-17 (625A): both transfer audit rows name the SOURCE client (ADR-349
+                  // customer_id) so the portal Firm trail scopes them to that client on a
+                  // shared matter instead of showing them to every linked client.
+                  assertThat(
+                          auditEventRepository
+                              .findByFilter(
+                                  "trust_transaction",
+                                  transferOutTxnId[0],
+                                  null,
+                                  "trust_transfer.recorded",
+                                  null,
+                                  null,
+                                  PageRequest.of(0, 10))
+                              .getContent())
+                      .singleElement()
+                      .satisfies(
+                          e ->
+                              assertThat(e.getDetails())
+                                  .containsEntry("customer_id", sourceCustomerId[0].toString())
+                                  .containsEntry(
+                                      "source_customer_id", sourceCustomerId[0].toString())
+                                  .containsEntry(
+                                      "target_customer_id", targetCustomerId[0].toString()));
+                  assertThat(
+                          auditEventRepository
+                              .findByFilter(
+                                  "trust_transaction",
+                                  reversalResponse.id(),
+                                  null,
+                                  "trust_transaction.reversed",
+                                  null,
+                                  null,
+                                  PageRequest.of(0, 10))
+                              .getContent())
+                      .singleElement()
+                      .satisfies(
+                          e ->
+                              assertThat(e.getDetails())
+                                  .containsEntry("customer_id", sourceCustomerId[0].toString()));
                 }));
   }
 

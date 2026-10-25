@@ -185,6 +185,12 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
   // Tenant isolation is provided by Hibernate search_path. The UUID-shape regex on the JSONB
   // lookup mirrors findCrossProjectActivity (line 119) and is safety-critical: a malformed
   // details->>'project_id' value would crash the ::uuid cast.
+  //
+  // Client discriminator (R-17, ADR-349 customer_id): customer_projects is many-to-many, so a
+  // matter can be linked to several clients. Matter-scoped firm rows are additionally scoped to
+  // the row's own client when it carries one, so client A never sees client B's trust/fee-note
+  // rows on a shared matter. Legacy rows without the key (or with "") keep matter-only scoping.
+  // Applies to the FIRM branch only; the contact's own (MINE) rows are unaffected.
 
   /**
    * Combined portal-contact + firm activity for a portal contact. Returns events the contact
@@ -208,6 +214,10 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
                AND (ae.details->>'project_id')::uuid IN (
                  SELECT project_id FROM customer_projects WHERE customer_id = :customerId
                )
+               AND (
+                 NULLIF(ae.details->>'customer_id', '') IS NULL
+                 OR ae.details->>'customer_id' = CAST(:customerId AS TEXT)
+               )
              )
           ORDER BY ae.occurred_at DESC
           """,
@@ -221,6 +231,10 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
                AND (ae.details->>'project_id') ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
                AND (ae.details->>'project_id')::uuid IN (
                  SELECT project_id FROM customer_projects WHERE customer_id = :customerId
+               )
+               AND (
+                 NULLIF(ae.details->>'customer_id', '') IS NULL
+                 OR ae.details->>'customer_id' = CAST(:customerId AS TEXT)
                )
              )
           """)
@@ -268,6 +282,10 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
             AND (ae.details->>'project_id')::uuid IN (
               SELECT project_id FROM customer_projects WHERE customer_id = :customerId
             )
+            AND (
+              NULLIF(ae.details->>'customer_id', '') IS NULL
+              OR ae.details->>'customer_id' = CAST(:customerId AS TEXT)
+            )
           ORDER BY ae.occurred_at DESC
           """,
       countQuery =
@@ -279,6 +297,10 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
             AND (ae.details->>'project_id') ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
             AND (ae.details->>'project_id')::uuid IN (
               SELECT project_id FROM customer_projects WHERE customer_id = :customerId
+            )
+            AND (
+              NULLIF(ae.details->>'customer_id', '') IS NULL
+              OR ae.details->>'customer_id' = CAST(:customerId AS TEXT)
             )
           """)
   Page<AuditEvent> findActivityFirmForCustomer(

@@ -435,9 +435,12 @@ public class TrustTransactionService {
             .entityType("trust_transaction")
             .entityId(savedOut.getId())
             .details(
+                // R-17: customer_id = the SOURCE client (the TRANSFER_OUT leg's owner) so the
+                // portal Firm trail never shows the row to every client on a shared matter;
+                // source/target keys below still carry both sides.
                 AuditDetails.matterScoped(
                     savedOut.getProjectId(),
-                    null,
+                    savedOut.getCustomerId(),
                     Map.of(
                         "amount", request.amount().toString(),
                         "source_customer_id", request.sourceClientId().toString(),
@@ -1326,9 +1329,10 @@ public class TrustTransactionService {
             .entityType("trust_transaction")
             .entityId(savedOutReversal.getId())
             .details(
+                // R-17: scoped to the SOURCE client (the reversed TRANSFER_OUT's owner).
                 AuditDetails.matterScoped(
                     savedOutReversal.getProjectId(),
-                    null,
+                    original.getCustomerId(),
                     Map.of(
                         "original_transaction_id", original.getId().toString(),
                         "paired_transfer_in_id", pairedTransferIn.getId().toString(),

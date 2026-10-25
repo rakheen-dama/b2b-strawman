@@ -50,14 +50,17 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
       Pageable pageable);
 
   /**
-   * Finds audit events for a specific project using the JSONB details->>'project_id' field. Uses
-   * the expression index idx_audit_project for efficient lookups.
+   * The matter Activity feed: audit events correlated to a matter by the publisher-written
+   * details->>'project_id' key (ADR-349, expression index idx_audit_project) OR, for history that
+   * predates the key, the matter's own rows (entity_type 'project' + entity_id, idx_audit_entity).
+   * Both branches are indexed; for rows that carry both, the OR is the same row.
    */
   @Query(
       value =
           """
           SELECT * FROM audit_events
-          WHERE (details->>'project_id') = CAST(:projectId AS TEXT)
+          WHERE ((details->>'project_id') = CAST(:projectId AS TEXT)
+                 OR (entity_type = 'project' AND entity_id = CAST(:projectId AS UUID)))
             AND (:entityType IS NULL OR entity_type = :entityType)
             AND (CAST(:since AS TIMESTAMPTZ) IS NULL OR occurred_at >= CAST(:since AS TIMESTAMPTZ))
           ORDER BY occurred_at DESC
@@ -65,11 +68,14 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
       countQuery =
           """
           SELECT count(*) FROM audit_events
-          WHERE (details->>'project_id') = CAST(:projectId AS TEXT)
+          WHERE ((details->>'project_id') = CAST(:projectId AS TEXT)
+                 OR (entity_type = 'project' AND entity_id = CAST(:projectId AS UUID)))
             AND (:entityType IS NULL OR entity_type = :entityType)
             AND (CAST(:since AS TIMESTAMPTZ) IS NULL OR occurred_at >= CAST(:since AS TIMESTAMPTZ))
           """,
       nativeQuery = true)
+  // ADR-342: 'project' is the persisted audit entity-type literal — stays "project" under the
+  // matter/client wire; do not rename.
   Page<AuditEvent> findByProjectId(
       @Param("projectId") String projectId,
       @Param("entityType") String entityType,

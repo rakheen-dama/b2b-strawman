@@ -277,12 +277,18 @@ public class MatterClosureService {
                     "reason", req.reason().name(),
                     "override_used", req.override(),
                     "closure_log_id", savedLog.getId().toString(),
-                    "project_id", projectId.toString()))
+                    "project_id", projectId.toString(),
+                    // D3 / ADR-349: the override justification, "" when no override was used.
+                    // Firm-visible only — PortalActivityEventResponse never sends details.
+                    "justification",
+                        req.override()
+                            ? Objects.requireNonNullElse(req.overrideJustification(), "")
+                            : ""))
             .build());
 
     // 5b. Additive override-used emission (Epic 508A) — keyed on the closure log row, dot-delimited
     //     event type so it resolves to CRITICAL/COMPLIANCE via AuditEventTypeRegistry (501A).
-    //     The existing matter_closure.closed event above is preserved unchanged for portal
+    //     The matter_closure.closed event above keeps its event type and entity for portal
     //     compatibility (PortalActivityEventTypes whitelist + ~11 dependent tests).
     if (req.override()) {
       auditService.log(

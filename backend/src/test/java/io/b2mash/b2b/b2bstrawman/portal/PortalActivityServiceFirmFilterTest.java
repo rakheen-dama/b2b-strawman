@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -320,6 +321,61 @@ class PortalActivityServiceFirmFilterTest {
             .findFirst()
             .orElseThrow();
     assertThat(ownDownload.summary()).isEqualTo("You downloaded a document");
+  }
+
+  /**
+   * N-6 (Phase 88 625A): approvals are audited as trust_<type>.approved (never as the domain-event
+   * type trust_transaction.approved) — the four approvable types all surface, humanised.
+   */
+  @Test
+  void firmTab_includes_trust_type_approvals() {
+    var keys =
+        List.of(
+            "trust_payment.approved",
+            "trust_fee_transfer.approved",
+            "trust_refund.approved",
+            "trust_reversal.approved");
+    keys.forEach(this::seedFirmEvent);
+
+    var page = listActivity(PortalActivityService.Tab.FIRM);
+
+    assertThat(page.getContent())
+        .extracting(PortalActivityEventResponse::eventType)
+        .contains(keys.toArray(String[]::new));
+    assertThat(page.getContent())
+        .filteredOn(e -> keys.contains(e.eventType()))
+        .allSatisfy(
+            e ->
+                assertThat(e.summary())
+                    .as("summary for %s must be humanised, not a raw slug", e.eventType())
+                    .doesNotContain("."));
+  }
+
+  /**
+   * 625A (OD-3): acceptance.viewed / accepted / declined carry the portal contact as actor, so they
+   * land in the contact's MINE tab — each needs a second-person label, never the raw slug.
+   */
+  @Test
+  void mineTab_humanises_acceptance_events() {
+    seedPortalEvent("acceptance.viewed");
+    seedPortalEvent("acceptance.accepted");
+    seedPortalEvent("acceptance.declined");
+
+    var page = listActivity(PortalActivityService.Tab.MINE);
+
+    var summariesByType =
+        page.getContent().stream()
+            .collect(
+                java.util.stream.Collectors.toMap(
+                    PortalActivityEventResponse::eventType,
+                    PortalActivityEventResponse::summary,
+                    (a, b) -> a));
+    assertThat(summariesByType.get("acceptance.viewed")).isEqualTo("You viewed a document");
+    assertThat(summariesByType.get("acceptance.accepted")).isEqualTo("You accepted a document");
+    assertThat(summariesByType.get("acceptance.declined")).isEqualTo("You declined a document");
+    assertThat(page.getContent())
+        .filteredOn(e -> e.eventType().startsWith("acceptance."))
+        .allSatisfy(e -> assertThat(e.summary()).doesNotContain("."));
   }
 
   @Test

@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -272,11 +273,13 @@ public class TrustTransactionService {
             .entityType("trust_transaction")
             .entityId(saved.getId())
             .details(
-                Map.of(
-                    "amount", request.amount().toString(),
-                    "customer_id", request.clientId().toString(),
-                    "customer_name", customer.getName(),
-                    "reference", request.reference()))
+                AuditDetails.matterScoped(
+                    saved.getProjectId(),
+                    request.clientId(),
+                    Map.of(
+                        "amount", request.amount().toString(),
+                        "customer_name", customer.getName(),
+                        "reference", request.reference())))
             .build());
 
     // Publish a RECORDED-path event so downstream projections (notably the portal trust-ledger
@@ -432,11 +435,14 @@ public class TrustTransactionService {
             .entityType("trust_transaction")
             .entityId(savedOut.getId())
             .details(
-                Map.of(
-                    "amount", request.amount().toString(),
-                    "source_customer_id", request.sourceClientId().toString(),
-                    "target_customer_id", request.targetClientId().toString(),
-                    "reference", request.reference()))
+                AuditDetails.matterScoped(
+                    savedOut.getProjectId(),
+                    null,
+                    Map.of(
+                        "amount", request.amount().toString(),
+                        "source_customer_id", request.sourceClientId().toString(),
+                        "target_customer_id", request.targetClientId().toString(),
+                        "reference", request.reference())))
             .build());
 
     // Publish one RECORDED-path event per leg so the portal read-model recomputes BOTH the
@@ -516,11 +522,13 @@ public class TrustTransactionService {
             .entityType("trust_transaction")
             .entityId(saved.getId())
             .details(
-                Map.of(
-                    "amount", request.amount().toString(),
-                    "customer_id", request.clientId().toString(),
-                    "customer_name", customer.getName(),
-                    "reference", request.reference()))
+                AuditDetails.matterScoped(
+                    saved.getProjectId(),
+                    request.clientId(),
+                    Map.of(
+                        "amount", request.amount().toString(),
+                        "customer_name", customer.getName(),
+                        "reference", request.reference())))
             .build());
 
     eventPublisher.publishEvent(
@@ -615,13 +623,14 @@ public class TrustTransactionService {
             .entityType("trust_transaction")
             .entityId(saved.getId())
             .details(
-                Map.of(
-                    "amount", request.amount().toString(),
-                    "customer_id", request.clientId().toString(),
-                    "customer_name", customer.getName(),
-                    "invoice_id", request.invoiceId().toString(),
-                    "project_id", inferredProjectId == null ? "" : inferredProjectId.toString(),
-                    "reference", request.reference()))
+                AuditDetails.matterScoped(
+                    inferredProjectId,
+                    request.clientId(),
+                    Map.of(
+                        "amount", request.amount().toString(),
+                        "customer_name", customer.getName(),
+                        "invoice_id", request.invoiceId().toString(),
+                        "reference", request.reference())))
             .build());
 
     eventPublisher.publishEvent(
@@ -685,12 +694,13 @@ public class TrustTransactionService {
             .entityType("trust_transaction")
             .entityId(saved.getId())
             .details(
-                Map.of(
-                    "amount", request.amount().toString(),
-                    "customer_id", request.clientId().toString(),
-                    "customer_name", customer.getName(),
-                    "project_id", request.matterId() == null ? "" : request.matterId().toString(),
-                    "reference", request.reference()))
+                AuditDetails.matterScoped(
+                    saved.getProjectId(),
+                    request.clientId(),
+                    Map.of(
+                        "amount", request.amount().toString(),
+                        "customer_name", customer.getName(),
+                        "reference", request.reference())))
             .build());
 
     eventPublisher.publishEvent(
@@ -788,10 +798,13 @@ public class TrustTransactionService {
               .entityType("trust_transaction")
               .entityId(transaction.getId())
               .details(
-                  Map.of(
-                      "transaction_type", transaction.getTransactionType(),
-                      "amount", transaction.getAmount().toString(),
-                      "first_approved_by", approverId.toString()))
+                  AuditDetails.matterScoped(
+                      transaction.getProjectId(),
+                      transaction.getCustomerId(),
+                      Map.of(
+                          "transaction_type", transaction.getTransactionType(),
+                          "amount", transaction.getAmount().toString(),
+                          "first_approved_by", approverId.toString())))
               .build());
 
       return toResponse(transaction);
@@ -901,10 +914,13 @@ public class TrustTransactionService {
             .entityType("trust_transaction")
             .entityId(transaction.getId())
             .details(
-                Map.of(
-                    "transaction_type", transaction.getTransactionType(),
-                    "amount", transaction.getAmount().toString(),
-                    "approved_by", approverId.toString()))
+                AuditDetails.matterScoped(
+                    transaction.getProjectId(),
+                    transaction.getCustomerId(),
+                    Map.of(
+                        "transaction_type", transaction.getTransactionType(),
+                        "amount", transaction.getAmount().toString(),
+                        "approved_by", approverId.toString())))
             .build());
 
     // Publish approval event for notifications
@@ -961,11 +977,14 @@ public class TrustTransactionService {
             .entityType("trust_transaction")
             .entityId(transaction.getId())
             .details(
-                Map.of(
-                    "transaction_type", transaction.getTransactionType(),
-                    "amount", transaction.getAmount().toString(),
-                    "rejected_by", rejecterId.toString(),
-                    "reason", reason))
+                AuditDetails.matterScoped(
+                    transaction.getProjectId(),
+                    transaction.getCustomerId(),
+                    Map.of(
+                        "transaction_type", transaction.getTransactionType(),
+                        "amount", transaction.getAmount().toString(),
+                        "rejected_by", rejecterId.toString(),
+                        "reason", reason)))
             .build());
 
     eventPublisher.publishEvent(
@@ -1171,12 +1190,15 @@ public class TrustTransactionService {
             .entityType("trust_transaction")
             .entityId(savedReversal.getId())
             .details(
-                Map.of(
-                    "original_transaction_id", original.getId().toString(),
-                    "original_type", original.getTransactionType(),
-                    "amount", original.getAmount().toString(),
-                    "reversal_status", reversalStatus,
-                    "reason", reason))
+                AuditDetails.matterScoped(
+                    savedReversal.getProjectId(),
+                    original.getCustomerId(),
+                    Map.of(
+                        "original_transaction_id", original.getId().toString(),
+                        "original_type", original.getTransactionType(),
+                        "amount", original.getAmount().toString(),
+                        "reversal_status", reversalStatus,
+                        "reason", reason)))
             .build());
 
     return toResponse(savedReversal);
@@ -1304,13 +1326,16 @@ public class TrustTransactionService {
             .entityType("trust_transaction")
             .entityId(savedOutReversal.getId())
             .details(
-                Map.of(
-                    "original_transaction_id", original.getId().toString(),
-                    "paired_transfer_in_id", pairedTransferIn.getId().toString(),
-                    "original_type", original.getTransactionType(),
-                    "amount", original.getAmount().toString(),
-                    "reversal_status", "RECORDED",
-                    "reason", reason))
+                AuditDetails.matterScoped(
+                    savedOutReversal.getProjectId(),
+                    null,
+                    Map.of(
+                        "original_transaction_id", original.getId().toString(),
+                        "paired_transfer_in_id", pairedTransferIn.getId().toString(),
+                        "original_type", original.getTransactionType(),
+                        "amount", original.getAmount().toString(),
+                        "reversal_status", "RECORDED",
+                        "reason", reason)))
             .build());
 
     return toResponse(savedOutReversal);

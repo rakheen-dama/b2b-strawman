@@ -32,6 +32,14 @@ public final class PortalActivityEventTypes {
           "invoice.payment_partially_reversed",
           // Trust accounting (client-facing approved transactions only)
           "trust_transaction.approved",
+          // N-6 (Phase 88 625A): the audit rows are trust_<type>.approved (TrustTransactionService
+          // performApprovalCompletion); trust_transaction.approved above is only the Spring
+          // domain-event type and is never written to audit_events. Only these four types can be
+          // approved (deposits and transfers are recorded without an approval step).
+          "trust_payment.approved",
+          "trust_fee_transfer.approved",
+          "trust_refund.approved",
+          "trust_reversal.approved",
           "trust_transaction.reversed",
           // Documents the firm shared with the client
           "document.generated",

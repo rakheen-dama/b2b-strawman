@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.acceptance;
 
 import io.b2mash.b2b.b2bstrawman.acceptance.dto.AcceptanceRequestResponse;
+import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
@@ -138,8 +139,9 @@ public class AcceptanceService {
             .orElseThrow(
                 () -> new ResourceNotFoundException("GeneratedDocument", generatedDocumentId));
 
-    // 2. Resolve customerId
+    // 2. Resolve customerId (and the matter, for the ADR-349 audit correlation key)
     UUID customerId = resolveCustomerId(doc);
+    UUID projectId = resolveMatterId(doc);
 
     // 3. Validate portal contact exists and belongs to same customer
     PortalContact contact =
@@ -196,7 +198,11 @@ public class AcceptanceService {
                       .eventType("acceptance.revoked")
                       .entityType("acceptance_request")
                       .entityId(existing.getId())
-                      .details(Map.of("revoked_by", revokedBy.toString(), "reason", "auto_revoked"))
+                      .details(
+                          AuditDetails.matterScoped(
+                              projectId,
+                              customerId,
+                              Map.of("revoked_by", revokedBy.toString(), "reason", "auto_revoked")))
                       .build());
             });
 
@@ -225,12 +231,14 @@ public class AcceptanceService {
             .entityType("acceptance_request")
             .entityId(request.getId())
             .details(
-                Map.of(
-                    "generated_document_id", generatedDocumentId.toString(),
-                    "portal_contact_id", portalContactId.toString(),
-                    "customer_id", customerId.toString(),
-                    "document_file_name", doc.getFileName(),
-                    "contact_name", contact.getDisplayName()))
+                AuditDetails.matterScoped(
+                    projectId,
+                    customerId,
+                    Map.of(
+                        "generated_document_id", generatedDocumentId.toString(),
+                        "portal_contact_id", portalContactId.toString(),
+                        "document_file_name", doc.getFileName(),
+                        "contact_name", contact.getDisplayName())))
             .build());
 
     // 9. Send email
@@ -247,11 +255,14 @@ public class AcceptanceService {
             .entityType("acceptance_request")
             .entityId(request.getId())
             .details(
-                Map.of(
-                    "generated_document_id", generatedDocumentId.toString(),
-                    "contact_name", contact.getDisplayName(),
-                    "contact_email", contact.getEmail() != null ? contact.getEmail() : "",
-                    "document_file_name", doc.getFileName()))
+                AuditDetails.matterScoped(
+                    projectId,
+                    customerId,
+                    Map.of(
+                        "generated_document_id", generatedDocumentId.toString(),
+                        "contact_name", contact.getDisplayName(),
+                        "contact_email", contact.getEmail() != null ? contact.getEmail() : "",
+                        "document_file_name", doc.getFileName())))
             .build());
 
     // Publish domain event
@@ -304,7 +315,7 @@ public class AcceptanceService {
     if (request.isActive() && request.isExpired()) {
       request.markExpired();
       acceptanceRequestRepository.save(request);
-      notificationService.publishExpiredEvent(request);
+      notificationService.publishExpiredEvent(request, resolveMatterId(request));
       throw new InvalidStateException(
           "Acceptance request has expired",
           "This acceptance request expired on " + EMAIL_DATE_FORMAT.format(request.getExpiresAt()));
@@ -321,9 +332,14 @@ public class AcceptanceService {
                 .eventType("acceptance.viewed")
                 .entityType("acceptance_request")
                 .entityId(request.getId())
+                .actorId(request.getPortalContactId())
                 .actorType("PORTAL_CONTACT")
                 .source("PORTAL")
-                .details(Map.of("ip_address", ipAddress != null ? ipAddress : ""))
+                .details(
+                    AuditDetails.matterScoped(
+                        resolveMatterId(request),
+                        request.getCustomerId(),
+                        Map.of("ip_address", ipAddress != null ? ipAddress : "")))
                 .build());
 
         eventPublisher.publishEvent(
@@ -372,7 +388,7 @@ public class AcceptanceService {
     if (request.isActive() && request.isExpired()) {
       request.markExpired();
       acceptanceRequestRepository.save(request);
-      notificationService.publishExpiredEvent(request);
+      notificationService.publishExpiredEvent(request, resolveMatterId(request));
       throw new InvalidStateException(
           "Acceptance request has expired",
           "This acceptance request expired on " + EMAIL_DATE_FORMAT.format(request.getExpiresAt()));
@@ -382,20 +398,28 @@ public class AcceptanceService {
     request.markAccepted(submission.name(), ipAddress, userAgent);
     request = acceptanceRequestRepository.save(request);
 
+    GeneratedDocument doc =
+        generatedDocumentRepository.findById(request.getGeneratedDocumentId()).orElse(null);
+    UUID projectId = resolveMatterId(doc);
+
     // Audit: acceptance.accepted
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("acceptance.accepted")
             .entityType("acceptance_request")
             .entityId(request.getId())
+            .actorId(request.getPortalContactId())
             .actorType("PORTAL_CONTACT")
             .source("PORTAL")
             .details(
-                Map.of(
-                    "acceptor_name",
-                    submission.name(),
-                    "ip_address",
-                    ipAddress != null ? ipAddress : ""))
+                AuditDetails.matterScoped(
+                    projectId,
+                    request.getCustomerId(),
+                    Map.of(
+                        "acceptor_name",
+                        submission.name(),
+                        "ip_address",
+                        ipAddress != null ? ipAddress : "")))
             .build());
 
     // Generate Certificate of Acceptance (synchronous, non-fatal on failure)
@@ -414,15 +438,18 @@ public class AcceptanceService {
                 .actorType("SYSTEM")
                 .source("INTERNAL")
                 .details(
-                    Map.of(
-                        "certificate_s3_key",
-                            request.getCertificateS3Key() != null
-                                ? request.getCertificateS3Key()
-                                : "",
-                        "certificate_file_name",
-                            request.getCertificateFileName() != null
-                                ? request.getCertificateFileName()
-                                : ""))
+                    AuditDetails.matterScoped(
+                        projectId,
+                        request.getCustomerId(),
+                        Map.of(
+                            "certificate_s3_key",
+                                request.getCertificateS3Key() != null
+                                    ? request.getCertificateS3Key()
+                                    : "",
+                            "certificate_file_name",
+                                request.getCertificateFileName() != null
+                                    ? request.getCertificateFileName()
+                                    : "")))
                 .build());
       } catch (Exception e) {
         log.warn(
@@ -437,8 +464,6 @@ public class AcceptanceService {
     }
 
     // Send confirmation email
-    GeneratedDocument doc =
-        generatedDocumentRepository.findById(request.getGeneratedDocumentId()).orElse(null);
     PortalContact contact =
         portalContactRepository.findById(request.getPortalContactId()).orElse(null);
     if (doc != null && contact != null) {
@@ -513,11 +538,8 @@ public class AcceptanceService {
         portalContactRepository.findById(request.getPortalContactId()).orElse(null);
     UUID projectId = resolveMatterId(doc);
 
-    // ADR-349: matter correlation keys written as literals; 625A migrates this call to
-    // AuditDetails.matterScoped. LinkedHashMap — Map.of rejects nulls.
-    var details = new LinkedHashMap<String, Object>();
-    details.put("project_id", projectId != null ? projectId.toString() : "");
-    details.put("customer_id", request.getCustomerId().toString());
+    // ADR-349: matter correlation keys through the helper (mutable — Map.of rejects nulls).
+    var details = AuditDetails.matterScoped(projectId, request.getCustomerId());
     details.put("decline_reason", reason != null ? reason : "");
     details.put("ip_address", ipAddress != null ? ipAddress : "");
     auditService.log(
@@ -583,7 +605,11 @@ public class AcceptanceService {
             .eventType("acceptance.revoked")
             .entityType("acceptance_request")
             .entityId(request.getId())
-            .details(Map.of("revoked_by", memberId.toString()))
+            .details(
+                AuditDetails.matterScoped(
+                    resolveMatterId(request),
+                    request.getCustomerId(),
+                    Map.of("revoked_by", memberId.toString())))
             .build());
 
     // Publish domain event
@@ -630,7 +656,7 @@ public class AcceptanceService {
     if (request.isExpired()) {
       request.markExpired();
       acceptanceRequestRepository.save(request);
-      notificationService.publishExpiredEvent(request);
+      notificationService.publishExpiredEvent(request, resolveMatterId(request));
       throw new InvalidStateException(
           "Acceptance request has expired",
           "This acceptance request expired on " + EMAIL_DATE_FORMAT.format(request.getExpiresAt()));
@@ -660,7 +686,11 @@ public class AcceptanceService {
             .eventType("acceptance.reminded")
             .entityType("acceptance_request")
             .entityId(request.getId())
-            .details(Map.of("reminder_count", request.getReminderCount()))
+            .details(
+                AuditDetails.matterScoped(
+                    resolveMatterId(doc),
+                    request.getCustomerId(),
+                    Map.of("reminder_count", request.getReminderCount())))
             .build());
 
     log.info(
@@ -1033,7 +1063,7 @@ public class AcceptanceService {
               for (var request : expired) {
                 request.markExpired();
                 acceptanceRequestRepository.save(request);
-                notificationService.publishExpiredEvent(request);
+                notificationService.publishExpiredEvent(request, resolveMatterId(request));
               }
               return expired.size();
             });
@@ -1083,8 +1113,9 @@ public class AcceptanceService {
   /**
    * Matter for an acceptance request's document (ADR-349, Phase 88 D-18): the generated document's
    * primary entity when it is a PROJECT, else the matter of its saved {@code documents} row, else
-   * null. Private on purpose — 625A extracts it when it adds {@code project_id} to the other
-   * acceptance events.
+   * null. Feeds {@code project_id} on every acceptance audit row via {@link
+   * AuditDetails#matterScoped}; {@link #resolveMatterId(AcceptanceRequest)} is the overload for
+   * sites that hold only the request.
    */
   private UUID resolveMatterId(GeneratedDocument doc) {
     if (doc == null) {
@@ -1100,6 +1131,12 @@ public class AcceptanceService {
         .findById(doc.getDocumentId())
         .map(Document::getProjectId)
         .orElse(null);
+  }
+
+  /** The matter of a request's generated document (null when none) — ADR-349 audit key. */
+  private UUID resolveMatterId(AcceptanceRequest request) {
+    return resolveMatterId(
+        generatedDocumentRepository.findById(request.getGeneratedDocumentId()).orElse(null));
   }
 
   /** Display name for a document: its template's name, else its file name, else "a document". */

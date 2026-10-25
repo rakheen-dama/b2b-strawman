@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
@@ -231,18 +232,21 @@ public class InvoiceCreationService {
             .eventType("invoice.created")
             .entityType("invoice")
             .entityId(invoice.getId())
+            // ADR-349: the lines created above carry the matter; a draft created empty (manual
+            // lines added later) has none yet and writes project_id "".
             .details(
-                Map.of(
-                    "customer_id",
-                    request.clientId().toString(),
-                    "customer_name",
-                    customer.getName(),
-                    "currency",
-                    request.currency(),
-                    "line_count",
-                    String.valueOf(totalLineCount),
-                    "subtotal",
-                    invoice.getSubtotal().toString()))
+                AuditDetails.matterScoped(
+                    lineRepository.findSingleProjectIdOrNull(invoice.getId()),
+                    request.clientId(),
+                    Map.of(
+                        "customer_name",
+                        customer.getName(),
+                        "currency",
+                        request.currency(),
+                        "line_count",
+                        String.valueOf(totalLineCount),
+                        "subtotal",
+                        invoice.getSubtotal().toString())))
             .build());
 
     return invoiceRenderingService.buildResponse(invoice, warnings);

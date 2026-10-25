@@ -979,7 +979,10 @@ class MatterClosureServiceIntegrationTest {
                   AuditEvent closedEvent = closedPage.getContent().get(0);
                   assertThat(closedEvent.getEntityType()).isEqualTo("project");
                   assertThat(closedEvent.getEntityId()).isEqualTo(projectId);
-                  assertThat(closedEvent.getDetails()).containsEntry("override_used", true);
+                  // D3 / ADR-349: the override justification is on the closed row itself.
+                  assertThat(closedEvent.getDetails())
+                      .containsEntry("override_used", true)
+                      .containsEntry("justification", VALID_JUSTIFICATION);
 
                   // (b) New matter.closure.override_used — keyed on the closure log row.
                   var overridePage =

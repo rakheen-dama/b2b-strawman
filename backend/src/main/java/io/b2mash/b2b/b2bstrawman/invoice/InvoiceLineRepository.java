@@ -66,4 +66,13 @@ public interface InvoiceLineRepository extends JpaRepository<InvoiceLine, UUID> 
       WHERE il.invoiceId = :invoiceId AND il.projectId IS NOT NULL
       """)
   List<UUID> findDistinctProjectIdsByInvoiceId(@Param("invoiceId") UUID invoiceId);
+
+  /**
+   * ADR-349: the matter a fee note belongs to — the single distinct line project, else null (the
+   * fee note spans no matter, or several). Feeds AuditDetails.matterScoped (null → "").
+   */
+  default UUID findSingleProjectIdOrNull(UUID invoiceId) {
+    var ids = findDistinctProjectIdsByInvoiceId(invoiceId);
+    return ids.size() == 1 ? ids.getFirst() : null;
+  }
 }

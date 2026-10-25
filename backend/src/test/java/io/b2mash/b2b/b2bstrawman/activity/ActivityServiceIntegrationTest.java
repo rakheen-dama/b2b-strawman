@@ -282,6 +282,70 @@ class ActivityServiceIntegrationTest {
             });
   }
 
+  /**
+   * ADR-349 entity branch: a matter's own pre-convention row (entity_type 'project', entity_id =
+   * the matter, details WITHOUT project_id) still reaches the feed; the entity-type filter and the
+   * count query honour it. Test-owned projects only — the class's other cases pin exact totals.
+   */
+  @Test
+  void legacyProjectRowWithoutProjectIdKeyAppearsViaEntityBranch() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              var legacy =
+                  projectRepository.save(
+                      new Project("Activity Svc Legacy Project", "Entity-branch matter", memberId));
+              var neighbour =
+                  projectRepository.save(
+                      new Project("Activity Svc Neighbour Project", "Must not leak", memberId));
+              auditService.log(
+                  new AuditEventRecord(
+                      "project.updated",
+                      "project", // ADR-342: storage key, do not rename
+                      legacy.getId(),
+                      memberId,
+                      "USER",
+                      "API",
+                      null,
+                      null,
+                      Map.of("name", "Legacy matter")));
+              auditService.log(
+                  new AuditEventRecord(
+                      "project.updated",
+                      "project", // ADR-342: storage key, do not rename
+                      neighbour.getId(),
+                      memberId,
+                      "USER",
+                      "API",
+                      null,
+                      null,
+                      Map.of("name", "Neighbour matter")));
+
+              var actor = new ActorContext(memberId, "owner");
+              var all =
+                  activityService.getProjectActivity(
+                      legacy.getId(), null, null, PageRequest.of(0, 20), actor);
+              assertThat(all.getContent())
+                  .extracting(ActivityItem::entityId)
+                  .containsExactly(legacy.getId());
+              assertThat(all.getTotalElements()).as("count query carries the branch").isEqualTo(1);
+
+              assertThat(
+                      activityService
+                          .getProjectActivity(
+                              legacy.getId(), "PROJECT", null, PageRequest.of(0, 20), actor)
+                          .getTotalElements())
+                  .isEqualTo(1);
+              assertThat(
+                      activityService
+                          .getProjectActivity(
+                              legacy.getId(), "TASK", null, PageRequest.of(0, 20), actor)
+                          .getTotalElements())
+                  .isZero();
+            });
+  }
+
   // --- Helpers ---
 
   private static void sleep(long millis) {

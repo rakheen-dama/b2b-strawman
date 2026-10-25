@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.InvoiceSyncEvent;
@@ -32,7 +33,6 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.Instant;
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -183,17 +183,22 @@ public class InvoiceTransitionService {
             .entityType("invoice")
             .entityId(invoice.getId())
             .details(
-                Map.of(
-                    "invoice_number",
-                    invoiceNumber,
-                    "issue_date",
-                    invoice.getIssueDate().toString(),
-                    "total",
-                    invoice.getTotal().toString(),
-                    "time_entry_count",
-                    String.valueOf(lines.stream().filter(l -> l.getTimeEntryId() != null).count()),
-                    "expense_count",
-                    String.valueOf(lines.stream().filter(l -> l.getExpenseId() != null).count())))
+                AuditDetails.matterScoped(
+                    lineRepository.findSingleProjectIdOrNull(invoiceId),
+                    invoice.getCustomerId(),
+                    Map.of(
+                        "invoice_number",
+                        invoiceNumber,
+                        "issue_date",
+                        invoice.getIssueDate().toString(),
+                        "total",
+                        invoice.getTotal().toString(),
+                        "time_entry_count",
+                        String.valueOf(
+                            lines.stream().filter(l -> l.getTimeEntryId() != null).count()),
+                        "expense_count",
+                        String.valueOf(
+                            lines.stream().filter(l -> l.getExpenseId() != null).count()))))
             .build());
 
     String tenantIdForEvent = RequestScopes.getTenantIdOrNull();
@@ -248,18 +253,18 @@ public class InvoiceTransitionService {
     // details.project_id field is load-bearing — the matter Activity feed
     // (AuditEventRepository.findByProjectId) and the portal Firm-actions trail
     // (findActivityFirmForCustomer) both scope on details->>'project_id', so without it this
-    // client-safe milestone is silently dropped from both feeds (OBS-8801). Mirrors the
-    // portal.invoice.paid emission in PaymentReconciliationService.
-    var sentProjectIds = lineRepository.findDistinctProjectIdsByInvoiceId(invoice.getId());
-    String sentProjectId = sentProjectIds.size() == 1 ? sentProjectIds.getFirst().toString() : "";
-
+    // client-safe milestone is silently dropped from both feeds (OBS-8801). Written through
+    // AuditDetails.matterScoped (ADR-349), as every matter-scoped publisher must.
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("invoice.sent")
             .entityType("invoice")
             .entityId(invoice.getId())
             .details(
-                Map.of("invoice_number", invoice.getInvoiceNumber(), "project_id", sentProjectId))
+                AuditDetails.matterScoped(
+                    lineRepository.findSingleProjectIdOrNull(invoice.getId()),
+                    invoice.getCustomerId(),
+                    Map.of("invoice_number", invoice.getInvoiceNumber())))
             .build());
 
     String tenantIdForEvent = RequestScopes.getTenantIdOrNull();
@@ -394,10 +399,10 @@ public class InvoiceTransitionService {
         invoice.getStatus());
 
     UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
-    UUID projectId = inferProjectIdFromInvoice(invoiceId);
+    UUID projectId = lineRepository.findSingleProjectIdOrNull(invoiceId);
     String reference = effective.reference() != null ? effective.reference() : "";
 
-    var details = new LinkedHashMap<String, Object>();
+    var details = AuditDetails.matterScoped(projectId, invoice.getCustomerId());
     details.put("invoice_number", invoice.getInvoiceNumber());
     details.put("payment_reference", reference);
     details.put("amount", effective.amount().toPlainString());
@@ -406,9 +411,6 @@ public class InvoiceTransitionService {
     details.put("total", invoice.getTotal().toString());
     if (paid) {
       details.put("paid_at", invoice.getPaidAt().toString());
-    }
-    if (projectId != null) {
-      details.put("project_id", projectId.toString());
     }
     auditService.log(
         AuditEventBuilder.builder()
@@ -422,15 +424,12 @@ public class InvoiceTransitionService {
             .build());
 
     if (excess.signum() > 0) { // only reachable for CARD / XERO / TRUST_TRANSFER sources
-      var excessDetails = new LinkedHashMap<String, Object>();
+      var excessDetails = AuditDetails.matterScoped(projectId, invoice.getCustomerId());
       excessDetails.put("invoice_number", invoice.getInvoiceNumber());
       excessDetails.put("amount", effective.amount().toPlainString());
       excessDetails.put("excess", excess.toPlainString());
       excessDetails.put("payment_method", effective.method().name());
       excessDetails.put("payment_reference", reference);
-      if (projectId != null) {
-        excessDetails.put("project_id", projectId.toString());
-      }
       auditService.log(
           AuditEventBuilder.builder()
               // ADR-342: storage key, do not rename
@@ -666,7 +665,7 @@ public class InvoiceTransitionService {
     UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
     String tenantIdForEvent = RequestScopes.getTenantIdOrNull();
     String orgIdForEvent = RequestScopes.getOrgIdOrNull();
-    UUID projectId = inferProjectIdFromInvoice(invoiceId);
+    UUID projectId = lineRepository.findSingleProjectIdOrNull(invoiceId);
 
     if (remainingCompleted.isEmpty()) {
       log.info(
@@ -768,29 +767,15 @@ public class InvoiceTransitionService {
 
   private Map<String, Object> buildReversalAuditDetails(
       Invoice invoice, UUID paymentEventId, UUID projectId, BigDecimal amount, boolean partial) {
-    var details = new LinkedHashMap<String, Object>();
+    var details = AuditDetails.matterScoped(projectId, invoice.getCustomerId());
     details.put(
         "invoice_number", invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "");
-    details.put("customer_id", invoice.getCustomerId().toString());
     details.put("payment_event_id", paymentEventId.toString());
     details.put("amount", amount.toString());
     details.put("partial", String.valueOf(partial));
     details.put("amount_paid", invoice.getAmountPaid().toPlainString());
     details.put("balance_due", invoice.getBalanceDue().toPlainString());
-    if (projectId != null) {
-      details.put("project_id", projectId.toString());
-    }
     return details;
-  }
-
-  /**
-   * Returns the single distinct projectId across the invoice's lines, or null when the invoice
-   * spans multiple matters or has no project-bound lines. Mirrors the inference used by the trust
-   * fee-transfer recording path (GAP-L-69) so reversal events carry the same matter binding.
-   */
-  private UUID inferProjectIdFromInvoice(UUID invoiceId) {
-    var distinctProjectIds = lineRepository.findDistinctProjectIdsByInvoiceId(invoiceId);
-    return distinctProjectIds.size() == 1 ? distinctProjectIds.get(0) : null;
   }
 
   @Transactional
@@ -852,15 +837,20 @@ public class InvoiceTransitionService {
             .entityType("invoice")
             .entityId(invoice.getId())
             .details(
-                Map.of(
-                    "invoice_number",
-                    invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "",
-                    "total",
-                    invoice.getTotal().toString(),
-                    "reverted_time_entry_count",
-                    String.valueOf(lines.stream().filter(l -> l.getTimeEntryId() != null).count()),
-                    "reverted_expense_count",
-                    String.valueOf(lines.stream().filter(l -> l.getExpenseId() != null).count())))
+                AuditDetails.matterScoped(
+                    lineRepository.findSingleProjectIdOrNull(invoiceId),
+                    invoice.getCustomerId(),
+                    Map.of(
+                        "invoice_number",
+                        invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "",
+                        "total",
+                        invoice.getTotal().toString(),
+                        "reverted_time_entry_count",
+                        String.valueOf(
+                            lines.stream().filter(l -> l.getTimeEntryId() != null).count()),
+                        "reverted_expense_count",
+                        String.valueOf(
+                            lines.stream().filter(l -> l.getExpenseId() != null).count()))))
             .build());
 
     String tenantIdForEvent = RequestScopes.getTenantIdOrNull();

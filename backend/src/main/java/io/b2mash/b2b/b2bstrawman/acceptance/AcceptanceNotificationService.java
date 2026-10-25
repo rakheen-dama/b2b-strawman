@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.acceptance;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestExpiredEvent;
@@ -19,6 +20,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -240,7 +242,12 @@ class AcceptanceNotificationService {
     }
   }
 
-  void publishExpiredEvent(AcceptanceRequest request) {
+  /**
+   * Audits {@code acceptance.expired} and publishes the domain event. {@code projectId} is the
+   * request's matter (ADR-349 correlation key; null when the document has none) — resolved by the
+   * caller, which owns the document lookups.
+   */
+  void publishExpiredEvent(AcceptanceRequest request, UUID projectId) {
     // Audit: acceptance.expired
     auditService.log(
         AuditEventBuilder.builder()
@@ -249,7 +256,11 @@ class AcceptanceNotificationService {
             .entityId(request.getId())
             .actorType("SYSTEM")
             .source("INTERNAL")
-            .details(Map.of("expired_at", request.getExpiresAt().toString()))
+            .details(
+                AuditDetails.matterScoped(
+                    projectId,
+                    request.getCustomerId(),
+                    Map.of("expired_at", request.getExpiresAt().toString())))
             .build());
 
     eventPublisher.publishEvent(

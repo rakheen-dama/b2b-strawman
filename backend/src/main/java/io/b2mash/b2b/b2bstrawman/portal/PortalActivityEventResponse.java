@@ -82,6 +82,10 @@ public record PortalActivityEventResponse(
       case "portal.document.acknowledged" -> "You acknowledged a document";
       case "portal.request_item.submitted" -> "You submitted an information request item";
       case "portal.invoice.paid" -> "You paid a fee note";
+      // 625A: acceptance rows carry the portal contact as actor (ADR-349 / OD-3)
+      case "acceptance.viewed" -> "You viewed a document";
+      case "acceptance.accepted" -> "You accepted a document";
+      case "acceptance.declined" -> "You declined a document";
       // Firm-emitted, allow-listed (FIRM tab)
       case "information_request.created" -> "Information request created";
       case "information_request.sent" -> "Information request sent to you";
@@ -95,6 +99,10 @@ public record PortalActivityEventResponse(
       case "invoice.payment_reversed" -> "Payment reversed";
       case "invoice.payment_partially_reversed" -> "Payment partially reversed";
       case "trust_transaction.approved" -> "Trust transaction recorded";
+      case "trust_payment.approved" -> "Trust payment approved";
+      case "trust_fee_transfer.approved" -> "Fees paid from trust";
+      case "trust_refund.approved" -> "Trust refund approved";
+      case "trust_reversal.approved" -> "Trust transaction reversed";
       case "trust_transaction.reversed" -> "Trust transaction reversed";
       case "document.generated", "docx_document.generated" -> "Document generated for you";
       case "statement.generated" -> "Statement of Account generated";

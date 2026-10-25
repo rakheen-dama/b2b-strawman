@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -65,6 +66,9 @@ class PortalActivityServiceFirmFilterTest {
   private UUID portalContactId;
   private UUID projectId;
   private UUID memberId;
+  // R-17: a second client on the SAME matter (customer_projects is many-to-many).
+  private UUID otherCustomerId;
+  private UUID otherPortalContactId;
   private String tenantSchema;
 
   @BeforeAll
@@ -123,27 +127,51 @@ class PortalActivityServiceFirmFilterTest {
 
               customerProjectService.linkCustomerToProject(
                   customerId, projectId, memberId, new ActorContext(memberId, "owner"));
+
+              var other =
+                  customerRepository.save(
+                      TestCustomerFactory.createActiveCustomer(
+                          "Other Client", "pa-ff-other@test.com", memberId));
+              otherCustomerId = other.getId();
+              otherPortalContactId =
+                  portalContactService
+                      .createContact(
+                          ORG_ID,
+                          otherCustomerId,
+                          "pa-ff-other@test.com",
+                          "Other Client",
+                          PortalContact.ContactRole.PRIMARY)
+                      .getId();
+              customerProjectService.linkCustomerToProject(
+                  otherCustomerId, projectId, memberId, new ActorContext(memberId, "owner"));
             });
   }
 
   /** Seeds a firm (USER actor) audit event on the test project with no extra details. */
-  private void seedFirmEvent(String eventType) {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+  private UUID seedFirmEvent(String eventType) {
+    return seedFirmEvent(eventType, Map.of("project_id", projectId.toString()));
+  }
+
+  /** Seeds a firm (USER actor) audit event with the given details; returns the event id. */
+  private UUID seedFirmEvent(String eventType, Map<String, Object> details) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
-        .run(
+        .call(
             () ->
-                auditEventRepository.save(
-                    new AuditEvent(
-                        new AuditEventRecord(
-                            eventType,
-                            "matter",
-                            UUID.randomUUID(),
-                            memberId,
-                            "USER",
-                            "API",
-                            null,
-                            null,
-                            Map.of("project_id", projectId.toString())))));
+                auditEventRepository
+                    .save(
+                        new AuditEvent(
+                            new AuditEventRecord(
+                                eventType,
+                                "matter",
+                                UUID.randomUUID(),
+                                memberId,
+                                "USER",
+                                "API",
+                                null,
+                                null,
+                                details)))
+                    .getId());
   }
 
   /** Seeds a portal-contact-authored audit event for the bound contact. */
@@ -168,11 +196,53 @@ class PortalActivityServiceFirmFilterTest {
 
   /** Runs a service call under the portal-context scopes and returns the response page. */
   private Page<PortalActivityEventResponse> listActivity(PortalActivityService.Tab tab) {
+    return listActivity(tab, customerId, portalContactId);
+  }
+
+  private Page<PortalActivityEventResponse> listActivity(
+      PortalActivityService.Tab tab, UUID asCustomerId, UUID asPortalContactId) {
     return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.CUSTOMER_ID, customerId)
-        .where(RequestScopes.PORTAL_CONTACT_ID, portalContactId)
-        .call(() -> portalActivityService.listActivity(tab, PageRequest.of(0, 100)));
+        .where(RequestScopes.CUSTOMER_ID, asCustomerId)
+        .where(RequestScopes.PORTAL_CONTACT_ID, asPortalContactId)
+        .call(() -> portalActivityService.listActivity(tab, PageRequest.of(0, 500)));
+  }
+
+  /**
+   * R-17 (Phase 88 625A): on a matter linked to two clients, a firm row that names its client
+   * (ADR-349 {@code customer_id}) reaches only that client's portal — A must never see B's trust
+   * approvals or reversals. Legacy matter-level rows without the key keep matter-only scoping.
+   */
+  @Test
+  void firmTrail_onSharedMatter_scopesClientRowsToThatClient() {
+    String matter = projectId.toString();
+    UUID otherApproval =
+        seedFirmEvent(
+            "trust_payment.approved",
+            Map.of("project_id", matter, "customer_id", otherCustomerId.toString()));
+    UUID otherReversal =
+        seedFirmEvent(
+            "trust_transaction.reversed",
+            Map.of("project_id", matter, "customer_id", otherCustomerId.toString()));
+    UUID ownApproval =
+        seedFirmEvent(
+            "trust_payment.approved",
+            Map.of("project_id", matter, "customer_id", customerId.toString()));
+    UUID legacyMatterRow = seedFirmEvent("invoice.sent"); // no customer_id key
+
+    for (var tab : List.of(PortalActivityService.Tab.FIRM, PortalActivityService.Tab.ALL)) {
+      assertThat(listActivity(tab).getContent())
+          .as("client A, %s tab", tab)
+          .extracting(PortalActivityEventResponse::id)
+          .contains(ownApproval, legacyMatterRow)
+          .doesNotContain(otherApproval, otherReversal);
+
+      assertThat(listActivity(tab, otherCustomerId, otherPortalContactId).getContent())
+          .as("client B, %s tab", tab)
+          .extracting(PortalActivityEventResponse::id)
+          .contains(otherApproval, otherReversal, legacyMatterRow)
+          .doesNotContain(ownApproval);
+    }
   }
 
   @Test
@@ -320,6 +390,61 @@ class PortalActivityServiceFirmFilterTest {
             .findFirst()
             .orElseThrow();
     assertThat(ownDownload.summary()).isEqualTo("You downloaded a document");
+  }
+
+  /**
+   * N-6 (Phase 88 625A): approvals are audited as trust_<type>.approved (never as the domain-event
+   * type trust_transaction.approved) — the four approvable types all surface, humanised.
+   */
+  @Test
+  void firmTab_includes_trust_type_approvals() {
+    var keys =
+        List.of(
+            "trust_payment.approved",
+            "trust_fee_transfer.approved",
+            "trust_refund.approved",
+            "trust_reversal.approved");
+    keys.forEach(this::seedFirmEvent);
+
+    var page = listActivity(PortalActivityService.Tab.FIRM);
+
+    assertThat(page.getContent())
+        .extracting(PortalActivityEventResponse::eventType)
+        .contains(keys.toArray(String[]::new));
+    assertThat(page.getContent())
+        .filteredOn(e -> keys.contains(e.eventType()))
+        .allSatisfy(
+            e ->
+                assertThat(e.summary())
+                    .as("summary for %s must be humanised, not a raw slug", e.eventType())
+                    .doesNotContain("."));
+  }
+
+  /**
+   * 625A (OD-3): acceptance.viewed / accepted / declined carry the portal contact as actor, so they
+   * land in the contact's MINE tab — each needs a second-person label, never the raw slug.
+   */
+  @Test
+  void mineTab_humanises_acceptance_events() {
+    seedPortalEvent("acceptance.viewed");
+    seedPortalEvent("acceptance.accepted");
+    seedPortalEvent("acceptance.declined");
+
+    var page = listActivity(PortalActivityService.Tab.MINE);
+
+    var summariesByType =
+        page.getContent().stream()
+            .collect(
+                java.util.stream.Collectors.toMap(
+                    PortalActivityEventResponse::eventType,
+                    PortalActivityEventResponse::summary,
+                    (a, b) -> a));
+    assertThat(summariesByType.get("acceptance.viewed")).isEqualTo("You viewed a document");
+    assertThat(summariesByType.get("acceptance.accepted")).isEqualTo("You accepted a document");
+    assertThat(summariesByType.get("acceptance.declined")).isEqualTo("You declined a document");
+    assertThat(page.getContent())
+        .filteredOn(e -> e.eventType().startsWith("acceptance."))
+        .allSatisfy(e -> assertThat(e.summary()).doesNotContain("."));
   }
 
   @Test

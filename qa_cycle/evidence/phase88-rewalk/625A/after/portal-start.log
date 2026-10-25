@@ -1,0 +1,11 @@
+
+> portal@0.1.0 start /Users/rakheendama/Projects/2026/worktree-epic-625A/portal
+> next start --port 3002
+
+▲ Next.js 16.3.8
+- Local:         http://localhost:3002
+- Network:       http://192.168.0.112:3002
+✓ Ready in 123ms
+✓ Running next.config.ts took 69ms
+⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+ ELIFECYCLE  Command failed with exit code 143.

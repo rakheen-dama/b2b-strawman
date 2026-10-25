@@ -1,0 +1,32 @@
+SET
+    t     |            event_type            |    entity_type     |   actor_type   |               actor_id               |  source  |              project_id              |             customer_id              
+----------+----------------------------------+--------------------+----------------+--------------------------------------+----------+--------------------------------------+--------------------------------------
+ 00:22:37 | trust_deposit.recorded           | trust_transaction  | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 1d7cae32-0deb-43fe-af41-a3b9452f3128
+ 00:23:17 | trust_payment.recorded           | trust_transaction  | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 1d7cae32-0deb-43fe-af41-a3b9452f3128
+ 00:23:37 | trust_payment.approved           | trust_transaction  | USER           | c9ccb6c0-0ce4-44a1-a161-7066b6f9c9be | API      | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 1d7cae32-0deb-43fe-af41-a3b9452f3128
+ 00:24:25 | document.generated               | generated_document | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 
+ 00:24:25 | document.generated_with_clauses  | generated_document | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      |                                      | 
+ 00:24:58 | acceptance.created               | acceptance_request | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 1d7cae32-0deb-43fe-af41-a3b9452f3128
+ 00:24:58 | acceptance.sent                  | acceptance_request | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 1d7cae32-0deb-43fe-af41-a3b9452f3128
+ 00:25:15 | acceptance.viewed                | acceptance_request | PORTAL_CONTACT | 65f788e3-7d32-4125-ade0-1d25a5e0a85a | PORTAL   | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 1d7cae32-0deb-43fe-af41-a3b9452f3128
+ 00:25:21 | acceptance.accepted              | acceptance_request | PORTAL_CONTACT | 65f788e3-7d32-4125-ade0-1d25a5e0a85a | PORTAL   | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 1d7cae32-0deb-43fe-af41-a3b9452f3128
+ 00:25:21 | acceptance.certificate_generated | acceptance_request | SYSTEM         |                                      | INTERNAL | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 1d7cae32-0deb-43fe-af41-a3b9452f3128
+ 00:25:50 | document.generated               | generated_document | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 
+ 00:25:50 | document.generated_with_clauses  | generated_document | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      |                                      | 
+ 00:26:15 | acceptance.created               | acceptance_request | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 1d7cae32-0deb-43fe-af41-a3b9452f3128
+ 00:26:15 | acceptance.sent                  | acceptance_request | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 1d7cae32-0deb-43fe-af41-a3b9452f3128
+ 00:26:27 | acceptance.viewed                | acceptance_request | PORTAL_CONTACT | 65f788e3-7d32-4125-ade0-1d25a5e0a85a | PORTAL   | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 1d7cae32-0deb-43fe-af41-a3b9452f3128
+ 00:26:34 | acceptance.declined              | acceptance_request | PORTAL_CONTACT | 65f788e3-7d32-4125-ade0-1d25a5e0a85a | PORTAL   | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 1d7cae32-0deb-43fe-af41-a3b9452f3128
+ 00:26:59 | time_entry.created               | time_entry         | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 
+ 00:28:11 | invoice.created                  | invoice            | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 1d7cae32-0deb-43fe-af41-a3b9452f3128
+ 00:28:28 | invoice.approved                 | invoice            | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 1d7cae32-0deb-43fe-af41-a3b9452f3128
+ 00:28:39 | invoice.sent                     | invoice            | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 1d7cae32-0deb-43fe-af41-a3b9452f3128
+ 00:28:39 | document.generated               | generated_document | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      |                                      | 
+ 00:28:58 | invoice.partially_paid           | invoice            | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 1d7cae32-0deb-43fe-af41-a3b9452f3128
+ 00:30:05 | project.created_from_template    | project            | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 8ca3c73d-fb8d-4aed-99f0-cc12dbe9bdd6 | 
+ 00:30:26 | matter_closure.closed            | project            | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 8ca3c73d-fb8d-4aed-99f0-cc12dbe9bdd6 | 
+ 00:30:26 | matter.closure.override_used     | matter_closure     | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 8ca3c73d-fb8d-4aed-99f0-cc12dbe9bdd6 | 
+ 00:30:26 | document.generated               | generated_document | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 8ca3c73d-fb8d-4aed-99f0-cc12dbe9bdd6 | 
+ 00:30:26 | statement.generated              | generated_document | USER           | 2e38845d-7fd5-4348-9b70-280c5d442df6 | API      | 8ca3c73d-fb8d-4aed-99f0-cc12dbe9bdd6 | 
+(27 rows)
+

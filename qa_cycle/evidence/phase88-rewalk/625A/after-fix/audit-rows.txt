@@ -1,0 +1,9 @@
+SET
+          occurred_at          |       event_type       | actor_type |  actor   |              entity_id               |              project_id              |             customer_id              
+-------------------------------+------------------------+------------+----------+--------------------------------------+--------------------------------------+--------------------------------------
+ 2026-10-25 00:44:05.576635+00 | customer.linked        | USER       | 2e38845d | 218397cf-bddb-4fbd-9e9d-872bd4589c6c | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 
+ 2026-10-25 00:44:53.504222+00 | trust_deposit.recorded | USER       | 2e38845d | b57003e0-f353-44d4-9058-ae575e7440fd | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 218397cf-bddb-4fbd-9e9d-872bd4589c6c
+ 2026-10-25 00:45:21.591828+00 | trust_payment.recorded | USER       | 2e38845d | a0e634c2-f086-45d6-b3dd-bebbdbad0945 | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 218397cf-bddb-4fbd-9e9d-872bd4589c6c
+ 2026-10-25 00:45:38.014444+00 | trust_payment.approved | USER       | c9ccb6c0 | a0e634c2-f086-45d6-b3dd-bebbdbad0945 | 9a27cd08-76fc-44b1-8c41-a8dd1aa1af22 | 218397cf-bddb-4fbd-9e9d-872bd4589c6c
+(4 rows)
+

@@ -1,0 +1,32 @@
+{
+  "at": "2026-10-25T00:46:49.091Z",
+  "customer": {
+    "id": "218397cf-bddb-4fbd-9e9d-872bd4589c6c",
+    "name": "Khumalo Property Holdings mvmzw78f31c9",
+    "orgId": "e2e-test-org"
+  },
+  "FIRM": {
+    "status": 200,
+    "total": 6,
+    "rows": [
+      "2026-10-25T00:45:38.014444Z | trust_payment.approved | Trust payment approved | Bob Admin | 0b06d5e4-8252-40b2-b785-54ceb835f0a3",
+      "2026-10-25T00:25:50.971711Z | document.generated | Document generated for you | Alice Owner | fdb2b09f-7e3a-4875-8ea7-6e79d44e9dec",
+      "2026-10-25T00:24:25.172538Z | document.generated | Document generated for you | Alice Owner | d25bb9c9-bf41-4573-a3e1-3f3f0cc8a971",
+      "2026-10-24T23:39:17.483163Z | invoice.sent | Fee note sent to you | Alice Owner | 4e856e1a-c782-45c0-a1ae-67fde80c561f",
+      "2026-10-24T23:36:40.875471Z | document.generated | Document generated for you | Alice Owner | fc77cee7-dfa2-4b32-a49d-2c4a6dd0b4c2",
+      "2026-10-24T22:54:20.602651Z | document.generated | Document generated for you | Alice Owner | fd02db67-ea6a-4fb4-9ebf-afb23f22b465"
+    ]
+  },
+  "ALL": {
+    "status": 200,
+    "total": 6,
+    "rows": [
+      "2026-10-25T00:45:38.014444Z | trust_payment.approved | Trust payment approved | Bob Admin | 0b06d5e4-8252-40b2-b785-54ceb835f0a3",
+      "2026-10-25T00:25:50.971711Z | document.generated | Document generated for you | Alice Owner | fdb2b09f-7e3a-4875-8ea7-6e79d44e9dec",
+      "2026-10-25T00:24:25.172538Z | document.generated | Document generated for you | Alice Owner | d25bb9c9-bf41-4573-a3e1-3f3f0cc8a971",
+      "2026-10-24T23:39:17.483163Z | invoice.sent | Fee note sent to you | Alice Owner | 4e856e1a-c782-45c0-a1ae-67fde80c561f",
+      "2026-10-24T23:36:40.875471Z | document.generated | Document generated for you | Alice Owner | fc77cee7-dfa2-4b32-a49d-2c4a6dd0b4c2",
+      "2026-10-24T22:54:20.602651Z | document.generated | Document generated for you | Alice Owner | fd02db67-ea6a-4fb4-9ebf-afb23f22b465"
+    ]
+  }
+}

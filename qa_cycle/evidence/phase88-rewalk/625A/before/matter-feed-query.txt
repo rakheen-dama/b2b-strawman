@@ -1,0 +1,10 @@
+SET
+          occurred_at          |          event_type           |    entity_type     
+-------------------------------+-------------------------------+--------------------
+ 2026-10-24 23:39:33.773569+00 | invoice.partially_paid        | invoice
+ 2026-10-24 23:39:17.483163+00 | invoice.sent                  | invoice
+ 2026-10-24 23:38:24.998364+00 | time_entry.created            | time_entry
+ 2026-10-24 23:36:40.875471+00 | document.generated            | generated_document
+ 2026-10-24 23:33:26.847767+00 | project.created_from_template | project
+(5 rows)
+

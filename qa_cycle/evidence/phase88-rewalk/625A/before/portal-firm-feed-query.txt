@@ -1,0 +1,14 @@
+SET
+          occurred_at          |      event_type       
+-------------------------------+-----------------------
+ 2026-10-24 23:41:33.558135+00 | statement.generated
+ 2026-10-24 23:41:33.479074+00 | document.generated
+ 2026-10-24 23:41:33.371473+00 | matter_closure.closed
+ 2026-10-24 23:39:17.483163+00 | invoice.sent
+ 2026-10-24 23:36:40.875471+00 | document.generated
+ 2026-10-24 22:55:06.145685+00 | statement.generated
+ 2026-10-24 22:55:06.097149+00 | document.generated
+ 2026-10-24 22:55:06.036386+00 | matter_closure.closed
+ 2026-10-24 22:54:35.491788+00 | statement.generated
+(9 rows)
+

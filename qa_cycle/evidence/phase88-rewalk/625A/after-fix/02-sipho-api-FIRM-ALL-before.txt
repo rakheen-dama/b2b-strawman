@@ -1,0 +1,4 @@
+Sipho (customer 1d7cae32-0deb-43fe-af41-a3b9452f3128), in-page GET with the portal session JWT, 2026-10-25 ~00:44Z, BEFORE co-client actions
+FIRM total 16: includes 2026-10-25T00:23:37.328161Z | trust_payment.approved | Trust payment approved | Bob Admin
+ALL  total 20: includes the same trust_payment.approved row + 4 MINE acceptance rows
+(full JSON row list captured in the agent transcript; identical to the Firm actions UI list in 01-*.png)

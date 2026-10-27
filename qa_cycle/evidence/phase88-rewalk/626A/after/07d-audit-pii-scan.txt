@@ -1,0 +1,29 @@
+== PII leak scan over ALL letterhead_updated details (values that must not appear)
+62812345678 -> 0
+250655 -> 0
+555 0142 -> 0
+Thandiwe -> 0
+Khumalo -> 0
+Bob Admin -> 1
+Rivonia -> 0
+First National -> 0
+accounts@ -> 0
+== any audit event anywhere containing the account number
+== disambiguation: 'Bob Admin' hit is actor_name (Bob was the actor), not the signatory value
+          occurred_at          |         detail_keys         | actor_name  | value_in_non_actor_keys 
+-------------------------------+-----------------------------+-------------+-------------------------
+ 2026-10-27 19:10:13.83788+00  | {actor_name,changed_fields} | Alice Owner | f
+ 2026-10-27 19:10:32.623195+00 | {actor_name,changed_fields} | Alice Owner | f
+ 2026-10-27 19:10:32.800206+00 | {actor_name,changed_fields} | Alice Owner | f
+ 2026-10-27 19:10:58.349483+00 | {actor_name,changed_fields} | Bob Admin   | f
+(4 rows)
+
+== backend log: letterhead log lines + PII scan of whole backend log
+"message":"Updated letterhead settings: changedFields=[addressLine1, addressLine2, addressLine3, city, postalCode, country, phone, email, website, bankName, bankBranchCode, bankAccountNumber, bankAccountType, paymentReferenceNote, signatoryName, signatoryDesignation]"
+"message":"Updated letterhead settings: changedFields=[bankName, bankBranchCode, bankAccountNumber, bankAccountType, paymentReferenceNote]"
+"message":"Updated letterhead settings: changedFields=[addressLine3, website]"
+"message":"Updated letterhead settings: changedFields=[addressLine3, website, bankName, bankBranchCode, bankAccountNumber, bankAccountType, paymentReferenceNote, signatoryName]"
+"message":"Updated letterhead settings: changedFields=[]"
+62812345678 in backend log: 0
+555 0142 in backend log: 0
+Thandiwe in backend log: 0

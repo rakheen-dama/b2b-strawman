@@ -1,0 +1,24 @@
+-[ RECORD 1 ]---------------------+------------------------------------
+letterhead_address_line1          | 12 Rivonia Road
+letterhead_address_line2          | Illovo Point, 3rd Floor
+letterhead_address_line3          | Illovo
+letterhead_city                   | Sandton
+letterhead_postal_code            | 2196
+letterhead_country                | South Africa
+letterhead_phone                  | +27 11 555 0142
+letterhead_email                  | accounts@khumalo-attorneys.co.za
+letterhead_website                | https://www.khumalo-attorneys.co.za
+letterhead_bank_name              | 
+letterhead_bank_branch_code       | 
+letterhead_bank_account_number    | 
+letterhead_bank_account_type      | 
+letterhead_payment_reference_note | 
+letterhead_signatory_name         | Thandiwe Khumalo
+letterhead_signatory_designation  | Director
+updated_at                        | 2026-10-27 19:10:32.630507+00
+
+ bank_name_null | branch_null | acct_null | type_null | ref_null 
+----------------+-------------+-----------+-----------+----------
+ t              | t           | t         | t         | t
+(1 row)
+

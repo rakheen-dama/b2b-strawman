@@ -955,9 +955,9 @@ public class OrgSettingsService {
 
   /**
    * Replaces the firm letterhead group (Phase 88 U8, ADR-353). Admin/owner only. Full replace:
-   * every field is written; null / blank clears (trimmed, blank → null). Audits {@code
-   * org_settings.letterhead_updated} with the changed field NAMES only — no values (bank account
-   * number, phone and signatory stay out of the audit log; POPIA).
+   * every field is written; null / blank clears (the request record trims, blank → null, before
+   * validation). Audits {@code org_settings.letterhead_updated} with the changed field NAMES only —
+   * no values (bank account number, phone and signatory stay out of the audit log; POPIA).
    */
   @Transactional
   public SettingsResponse updateLetterhead(
@@ -968,22 +968,23 @@ public class OrgSettingsService {
     var letterhead = settings.getLetterhead();
     var before = toLetterheadResponse(letterhead);
 
-    letterhead.setAddressLine1(trimToNull(request.addressLine1()));
-    letterhead.setAddressLine2(trimToNull(request.addressLine2()));
-    letterhead.setAddressLine3(trimToNull(request.addressLine3()));
-    letterhead.setCity(trimToNull(request.city()));
-    letterhead.setPostalCode(trimToNull(request.postalCode()));
-    letterhead.setCountry(trimToNull(request.country()));
-    letterhead.setPhone(trimToNull(request.phone()));
-    letterhead.setEmail(trimToNull(request.email()));
-    letterhead.setWebsite(trimToNull(request.website()));
-    letterhead.setBankName(trimToNull(request.bankName()));
-    letterhead.setBankBranchCode(trimToNull(request.bankBranchCode()));
-    letterhead.setBankAccountNumber(trimToNull(request.bankAccountNumber()));
-    letterhead.setBankAccountType(trimToNull(request.bankAccountType()));
-    letterhead.setPaymentReferenceNote(trimToNull(request.paymentReferenceNote()));
-    letterhead.setSignatoryName(trimToNull(request.signatoryName()));
-    letterhead.setSignatoryDesignation(trimToNull(request.signatoryDesignation()));
+    letterhead.updateLetterhead(
+        request.addressLine1(),
+        request.addressLine2(),
+        request.addressLine3(),
+        request.city(),
+        request.postalCode(),
+        request.country(),
+        request.phone(),
+        request.email(),
+        request.website(),
+        request.bankName(),
+        request.bankBranchCode(),
+        request.bankAccountNumber(),
+        request.bankAccountType(),
+        request.paymentReferenceNote(),
+        request.signatoryName(),
+        request.signatoryDesignation());
     settings.touchUpdatedAt();
     settings = orgSettingsRepository.save(settings);
 
@@ -1038,14 +1039,6 @@ public class OrgSettingsService {
       }
     }
     return changed;
-  }
-
-  private static String trimToNull(String value) {
-    if (value == null) {
-      return null;
-    }
-    var trimmed = value.strip();
-    return trimmed.isEmpty() ? null : trimmed;
   }
 
   /**

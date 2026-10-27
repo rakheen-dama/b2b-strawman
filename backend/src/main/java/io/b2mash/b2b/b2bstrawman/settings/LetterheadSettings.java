@@ -19,8 +19,10 @@ import java.util.stream.Stream;
  * — {@link OrgSettings#getLetterhead()} lazily re-creates it (guarded by {@code
  * OrgSettingsEmbeddableNullReloadTest}).
  *
- * <p>Setters do NOT bump {@code OrgSettings.updatedAt}; the entity's {@code @PreUpdate} callback
- * refreshes it on every dirty flush.
+ * <p>{@link #updateLetterhead} is the domain mutator {@code OrgSettingsService} calls (full
+ * replace, mirroring {@link TaxSettings#updateTaxSettings}). Neither it nor the setters bump {@code
+ * OrgSettings.updatedAt}; the entity's {@code @PreUpdate} callback refreshes it on every dirty
+ * flush.
  */
 @Embeddable
 public class LetterheadSettings {
@@ -74,6 +76,46 @@ public class LetterheadSettings {
   private String signatoryDesignation;
 
   protected LetterheadSettings() {}
+
+  /**
+   * Full replace of all sixteen letterhead fields (Phase 88 U8, R-2): every value is written as
+   * given, so a {@code null} clears the stored value. Callers pass already-normalised values
+   * (trimmed, blank → null — {@code UpdateLetterheadSettingsRequest} does this).
+   */
+  public void updateLetterhead(
+      String addressLine1,
+      String addressLine2,
+      String addressLine3,
+      String city,
+      String postalCode,
+      String country,
+      String phone,
+      String email,
+      String website,
+      String bankName,
+      String bankBranchCode,
+      String bankAccountNumber,
+      String bankAccountType,
+      String paymentReferenceNote,
+      String signatoryName,
+      String signatoryDesignation) {
+    this.addressLine1 = addressLine1;
+    this.addressLine2 = addressLine2;
+    this.addressLine3 = addressLine3;
+    this.city = city;
+    this.postalCode = postalCode;
+    this.country = country;
+    this.phone = phone;
+    this.email = email;
+    this.website = website;
+    this.bankName = bankName;
+    this.bankBranchCode = bankBranchCode;
+    this.bankAccountNumber = bankAccountNumber;
+    this.bankAccountType = bankAccountType;
+    this.paymentReferenceNote = paymentReferenceNote;
+    this.signatoryName = signatoryName;
+    this.signatoryDesignation = signatoryDesignation;
+  }
 
   /**
    * Non-blank address lines in print order: line 1, line 2, line 3, "city postal-code" (one line,

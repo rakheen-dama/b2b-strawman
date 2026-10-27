@@ -82,7 +82,12 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.defaultCurrency").value("USD"));
+        .andExpect(jsonPath("$.defaultCurrency").value("USD"))
+        .andExpect(jsonPath("$.letterhead").isMap())
+        .andExpect(jsonPath("$.letterhead.addressLine1").value(nullValue()))
+        .andExpect(jsonPath("$.letterhead.email").value(nullValue()))
+        .andExpect(jsonPath("$.letterhead.bankAccountNumber").value(nullValue()))
+        .andExpect(jsonPath("$.letterhead.signatoryDesignation").value(nullValue()));
   }
 
   @Test
@@ -1177,6 +1182,70 @@ class OrgSettingsIntegrationTest {
   }
 
   @Test
+  void patchLetterhead_whitespaceOnlyEmailClears() throws Exception {
+    // R-2: blank after trim clears — normalised before @Email runs, so this is not a 400.
+    try {
+      mockMvc
+          .perform(
+              patch("/api/settings/letterhead")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      """
+                      {"email": "   ", "city": "Johannesburg"}
+                      """))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.letterhead.email").value(nullValue()))
+          .andExpect(jsonPath("$.letterhead.city").value("Johannesburg"));
+    } finally {
+      clearLetterhead();
+    }
+  }
+
+  @Test
+  void patchLetterhead_paddedEmailIsTrimmedAndStored() throws Exception {
+    try {
+      mockMvc
+          .perform(
+              patch("/api/settings/letterhead")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      """
+                      {"email": " info@x.law "}
+                      """))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.letterhead.email").value("info@x.law"));
+
+      mockMvc
+          .perform(
+              get("/api/settings/letterhead")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.email").value("info@x.law"));
+    } finally {
+      clearLetterhead();
+    }
+  }
+
+  @Test
+  void patchLetterhead_sizeAppliesToTrimmedLength() throws Exception {
+    // 20 significant characters padded with whitespace fit the 20-char bankBranchCode column.
+    try {
+      mockMvc
+          .perform(
+              patch("/api/settings/letterhead")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content("{\"bankBranchCode\": \"  " + "1".repeat(20) + "  \"}"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.letterhead.bankBranchCode").value("1".repeat(20)));
+    } finally {
+      clearLetterhead();
+    }
+  }
+
+  @Test
   void patchLetterhead_rejectsInvalidEmail() throws Exception {
     mockMvc
         .perform(
@@ -1300,6 +1369,93 @@ class OrgSettingsIntegrationTest {
     } finally {
       clearLetterhead();
     }
+  }
+
+  @Test
+  void patchLetterhead_unchangedPatchWritesNoAuditRow() throws Exception {
+    // R-6: audit only when something changed. Id-scoped (not a total count) so concurrent writers
+    // of the same event type cannot bleed into the assertion.
+    try {
+      mockMvc
+          .perform(
+              patch("/api/settings/letterhead")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(FULL_LETTERHEAD))
+          .andExpect(status().isOk());
+      var idsBefore =
+          readEvents("org_settings.letterhead_updated").stream().map(AuditEvent::getId).toList();
+      assertThat(idsBefore).isNotEmpty();
+
+      // Identical content, padded with whitespace that normalisation strips — still a no-op.
+      mockMvc
+          .perform(
+              patch("/api/settings/letterhead")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(FULL_LETTERHEAD.replace("\"FNB\"", "\"  FNB  \"")))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.letterhead.bankName").value("FNB"));
+
+      var idsAfter =
+          readEvents("org_settings.letterhead_updated").stream().map(AuditEvent::getId).toList();
+      assertThat(idsAfter).containsExactlyInAnyOrderElementsOf(idsBefore);
+    } finally {
+      clearLetterhead();
+    }
+  }
+
+  @Test
+  void letterhead_tenantWithoutSettingsRow_returnsAllNullGroup() throws Exception {
+    // R-5 / R-9: provisioning always writes an org_settings row, so the no-row branch needs a
+    // fresh tenant whose row is deleted. The class tenant cannot be used — its row carries the
+    // vertical profile, modules and pack versions the other tests depend on.
+    String noRowOrg = "org_settings_norow_test";
+    provisioningService.provisionTenant(noRowOrg, "OrgSettings No-Row Org", null);
+    TestMemberHelper.syncMember(
+        mockMvc, noRowOrg, "user_norow_owner", "norow_owner@test.com", "Owner", "owner");
+    String schema =
+        orgSchemaMappingRepository.findByExternalOrgId(noRowOrg).orElseThrow().getSchemaName();
+    ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(tx -> orgSettingsRepository.deleteAll()));
+    assertThat(settingsRowExists(schema)).isFalse();
+
+    mockMvc
+        .perform(
+            get("/api/settings/letterhead")
+                .with(TestJwtFactory.ownerJwt(noRowOrg, "user_norow_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.addressLine1").value(nullValue()))
+        .andExpect(jsonPath("$.city").value(nullValue()))
+        .andExpect(jsonPath("$.email").value(nullValue()))
+        .andExpect(jsonPath("$.bankAccountNumber").value(nullValue()))
+        .andExpect(jsonPath("$.signatoryName").value(nullValue()))
+        .andExpect(jsonPath("$.signatoryDesignation").value(nullValue()));
+
+    mockMvc
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(noRowOrg, "user_norow_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.letterhead").isMap())
+        .andExpect(jsonPath("$.letterhead.addressLine1").value(nullValue()))
+        .andExpect(jsonPath("$.letterhead.bankAccountNumber").value(nullValue()))
+        .andExpect(jsonPath("$.letterhead.signatoryDesignation").value(nullValue()));
+
+    // Both reads served the default branch: neither created a row.
+    assertThat(settingsRowExists(schema)).isFalse();
+  }
+
+  private boolean settingsRowExists(String schema) {
+    boolean[] holder = new boolean[1];
+    ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .run(
+            () ->
+                holder[0] =
+                    Boolean.TRUE.equals(
+                        transactionTemplate.execute(
+                            tx -> orgSettingsRepository.findForCurrentTenant().isPresent())));
+    return holder[0];
   }
 
   private void expectFullLetterhead(

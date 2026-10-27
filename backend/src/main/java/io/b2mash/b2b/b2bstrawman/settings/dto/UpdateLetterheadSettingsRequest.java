@@ -8,8 +8,11 @@ import jakarta.validation.constraints.Size;
  * semantics</strong> (same as {@code PATCH /api/settings/tax}): every component is written on every
  * call — a {@code null}, absent or blank component CLEARS the stored value — so the Firm › General
  * form can clear, e.g., the banking block and the fee note then hides its "Banking details" label.
- * Values are trimmed and blank-normalised to null service-side. Max lengths mirror the V7 columns;
- * {@code paymentReferenceNote} ({@code text} column) is capped at 500 characters.
+ * The compact constructor trims every component and normalises blank to null BEFORE bean validation
+ * runs, so {@code @Email} / {@code @Size} see the stored value: {@code " "} clears, {@code "
+ * info@x.law "} stores {@code "info@x.law"}, and lengths are checked after trimming. Max lengths
+ * mirror the V7 columns; {@code paymentReferenceNote} ({@code text} column) is capped at 500
+ * characters.
  */
 public record UpdateLetterheadSettingsRequest(
     @Size(max = 255, message = "addressLine1 must be at most 255 characters") String addressLine1,
@@ -33,4 +36,32 @@ public record UpdateLetterheadSettingsRequest(
         String paymentReferenceNote,
     @Size(max = 255, message = "signatoryName must be at most 255 characters") String signatoryName,
     @Size(max = 255, message = "signatoryDesignation must be at most 255 characters")
-        String signatoryDesignation) {}
+        String signatoryDesignation) {
+
+  public UpdateLetterheadSettingsRequest {
+    addressLine1 = trimToNull(addressLine1);
+    addressLine2 = trimToNull(addressLine2);
+    addressLine3 = trimToNull(addressLine3);
+    city = trimToNull(city);
+    postalCode = trimToNull(postalCode);
+    country = trimToNull(country);
+    phone = trimToNull(phone);
+    email = trimToNull(email);
+    website = trimToNull(website);
+    bankName = trimToNull(bankName);
+    bankBranchCode = trimToNull(bankBranchCode);
+    bankAccountNumber = trimToNull(bankAccountNumber);
+    bankAccountType = trimToNull(bankAccountType);
+    paymentReferenceNote = trimToNull(paymentReferenceNote);
+    signatoryName = trimToNull(signatoryName);
+    signatoryDesignation = trimToNull(signatoryDesignation);
+  }
+
+  private static String trimToNull(String value) {
+    if (value == null) {
+      return null;
+    }
+    var trimmed = value.strip();
+    return trimmed.isEmpty() ? null : trimmed;
+  }
+}

@@ -1,0 +1,5 @@
+ line3_null | website_null | city_bracketed 
+------------+--------------+----------------
+ t          | t            | [Sandton]
+(1 row)
+

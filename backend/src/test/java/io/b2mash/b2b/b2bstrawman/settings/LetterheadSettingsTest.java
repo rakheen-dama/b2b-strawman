@@ -80,6 +80,49 @@ class LetterheadSettingsTest {
   }
 
   @Test
+  void updateLetterhead_replacesAllSixteenFieldsAndNullClears() {
+    var letterhead = new LetterheadSettings();
+    letterhead.setBankName("FNB");
+    letterhead.setSignatoryName("Old Signatory");
+
+    letterhead.updateLetterhead(
+        "12 Rissik Street",
+        "Marshalltown",
+        "Gauteng",
+        "Johannesburg",
+        "2001",
+        "South Africa",
+        "+27 11 555 0100",
+        "info@mathebula.law",
+        "https://mathebula.law",
+        null,
+        "250655",
+        "62012345678",
+        "Cheque",
+        "Use the fee-note number as your reference",
+        "Thandi Mathebula",
+        "Director");
+
+    assertThat(letterhead.getAddressLine1()).isEqualTo("12 Rissik Street");
+    assertThat(letterhead.getAddressLine2()).isEqualTo("Marshalltown");
+    assertThat(letterhead.getAddressLine3()).isEqualTo("Gauteng");
+    assertThat(letterhead.getCity()).isEqualTo("Johannesburg");
+    assertThat(letterhead.getPostalCode()).isEqualTo("2001");
+    assertThat(letterhead.getCountry()).isEqualTo("South Africa");
+    assertThat(letterhead.getPhone()).isEqualTo("+27 11 555 0100");
+    assertThat(letterhead.getEmail()).isEqualTo("info@mathebula.law");
+    assertThat(letterhead.getWebsite()).isEqualTo("https://mathebula.law");
+    assertThat(letterhead.getBankName()).isNull(); // full replace: null clears
+    assertThat(letterhead.getBankBranchCode()).isEqualTo("250655");
+    assertThat(letterhead.getBankAccountNumber()).isEqualTo("62012345678");
+    assertThat(letterhead.getBankAccountType()).isEqualTo("Cheque");
+    assertThat(letterhead.getPaymentReferenceNote())
+        .isEqualTo("Use the fee-note number as your reference");
+    assertThat(letterhead.getSignatoryName()).isEqualTo("Thandi Mathebula");
+    assertThat(letterhead.getSignatoryDesignation()).isEqualTo("Director");
+  }
+
+  @Test
   void nonAddressFields_doNotAffectTheAddress() {
     var letterhead = new LetterheadSettings();
     letterhead.setPhone("+27 11 555 0100");

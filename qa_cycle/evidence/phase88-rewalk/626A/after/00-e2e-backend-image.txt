@@ -1,0 +1,4 @@
+container=e2e-backend image=sha256:618268dc9a9d9c1fa809948216baac8471bb08f631073a4287c9b83d0d1050ca started=2026-10-27T19:09:19.030241461Z
+tag docteams-e2e-backend id=sha256:618268dc9a9d9c1fa809948216baac8471bb08f631073a4287c9b83d0d1050ca created=2026-10-27T19:09:17.72559446Z
+built from worktree /Users/rakheendama/Projects/2026/worktree-epic-626A at 03ae9c289ad0b7df78194caf4258448adc4d9ef0 (clean backend/src)
+previous image: sha256:7087002fca78... (built from worktree-epic-625G / main 1c2447f12)

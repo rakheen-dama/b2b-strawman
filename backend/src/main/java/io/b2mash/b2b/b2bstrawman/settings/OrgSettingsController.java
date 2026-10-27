@@ -4,12 +4,14 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.settings.dto.CollectionsSettingsResponse;
 import io.b2mash.b2b.b2bstrawman.settings.dto.DataProtectionSettingsRequest;
+import io.b2mash.b2b.b2bstrawman.settings.dto.LetterheadSettingsResponse;
 import io.b2mash.b2b.b2bstrawman.settings.dto.SettingsResponse;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateAcceptanceSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateBatchBillingSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateCollectionsSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateComplianceSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateExpenseSettingsRequest;
+import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateLetterheadSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdatePortalDigestCadenceRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateTaxSettingsRequest;
@@ -182,5 +184,20 @@ public class OrgSettingsController {
       @Valid @RequestBody UpdatePortalDigestCadenceRequest request, ActorContext actor) {
     return ResponseEntity.ok(
         orgSettingsService.updatePortalDigestCadence(request.portalDigestCadence(), actor));
+  }
+
+  // Firm letterhead (Phase 88 U8, ADR-353). PATCH is full replace (null / absent / blank clears) —
+  // see UpdateLetterheadSettingsRequest. Service also enforces admin/owner.
+  @GetMapping("/letterhead")
+  @RequiresCapability("TEAM_OVERSIGHT")
+  public ResponseEntity<LetterheadSettingsResponse> getLetterheadSettings() {
+    return ResponseEntity.ok(orgSettingsService.getLetterheadSettings());
+  }
+
+  @PatchMapping("/letterhead")
+  @RequiresCapability("TEAM_OVERSIGHT")
+  public ResponseEntity<SettingsResponse> updateLetterheadSettings(
+      @Valid @RequestBody UpdateLetterheadSettingsRequest request, ActorContext actor) {
+    return ResponseEntity.ok(orgSettingsService.updateLetterhead(request, actor));
   }
 }

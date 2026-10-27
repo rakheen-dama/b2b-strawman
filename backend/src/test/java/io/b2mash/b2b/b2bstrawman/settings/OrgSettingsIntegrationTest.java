@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.settings;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -9,6 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -26,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -45,6 +50,7 @@ class OrgSettingsIntegrationTest {
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private AuditEventRepository auditEventRepository;
 
   private String memberIdOwner;
   private String memberIdAdmin;
@@ -1045,6 +1051,306 @@ class OrgSettingsIntegrationTest {
                     {"defaultPaymentTermsDays": 14}
                     """))
         .andExpect(status().isForbidden());
+  }
+
+  // --- Firm letterhead (Phase 88 U8, ADR-353) ---
+  // PATCH /api/settings/letterhead is FULL REPLACE: every field is written; null / absent / blank
+  // clears. Every mutating case restores the all-null state in finally with body {}.
+
+  private static final String FULL_LETTERHEAD =
+      """
+      {
+        "addressLine1": "12 Rissik Street",
+        "addressLine2": "Marshalltown",
+        "addressLine3": "Gauteng",
+        "city": "Johannesburg",
+        "postalCode": "2001",
+        "country": "South Africa",
+        "phone": "+27 11 555 0100",
+        "email": "info@mathebula.law",
+        "website": "https://mathebula.law",
+        "bankName": "FNB",
+        "bankBranchCode": "250655",
+        "bankAccountNumber": "62012345678",
+        "bankAccountType": "Cheque",
+        "paymentReferenceNote": "Use the fee-note number as your reference",
+        "signatoryName": "Thandi Mathebula",
+        "signatoryDesignation": "Director"
+      }
+      """;
+
+  @Test
+  void patchLetterhead_roundTripsAllSixteenFields() throws Exception {
+    try {
+      var patched =
+          mockMvc
+              .perform(
+                  patch("/api/settings/letterhead")
+                      .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(FULL_LETTERHEAD))
+              .andExpect(status().isOk());
+      expectFullLetterhead(patched, "$.letterhead.");
+
+      var settings =
+          mockMvc
+              .perform(
+                  get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
+              .andExpect(status().isOk());
+      expectFullLetterhead(settings, "$.letterhead.");
+
+      var group =
+          mockMvc
+              .perform(
+                  get("/api/settings/letterhead")
+                      .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
+              .andExpect(status().isOk());
+      expectFullLetterhead(group, "$.");
+    } finally {
+      clearLetterhead();
+    }
+  }
+
+  @Test
+  void patchLetterhead_omittedFieldsAreCleared() throws Exception {
+    try {
+      mockMvc
+          .perform(
+              patch("/api/settings/letterhead")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(FULL_LETTERHEAD))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.letterhead.bankName").value("FNB"));
+
+      // Second PATCH resends the address/contact/signatory fields but omits the banking five.
+      mockMvc
+          .perform(
+              patch("/api/settings/letterhead")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      """
+                      {
+                        "addressLine1": "12 Rissik Street",
+                        "city": "Johannesburg",
+                        "signatoryName": "Thandi Mathebula",
+                        "bankName": null
+                      }
+                      """))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.letterhead.addressLine1").value("12 Rissik Street"))
+          .andExpect(jsonPath("$.letterhead.city").value("Johannesburg"))
+          .andExpect(jsonPath("$.letterhead.signatoryName").value("Thandi Mathebula"))
+          .andExpect(jsonPath("$.letterhead.bankName").value(nullValue()))
+          .andExpect(jsonPath("$.letterhead.bankBranchCode").value(nullValue()))
+          .andExpect(jsonPath("$.letterhead.bankAccountNumber").value(nullValue()))
+          .andExpect(jsonPath("$.letterhead.bankAccountType").value(nullValue()))
+          .andExpect(jsonPath("$.letterhead.paymentReferenceNote").value(nullValue()))
+          // other fields not resent are cleared too (full replace)
+          .andExpect(jsonPath("$.letterhead.addressLine2").value(nullValue()))
+          .andExpect(jsonPath("$.letterhead.email").value(nullValue()));
+    } finally {
+      clearLetterhead();
+    }
+  }
+
+  @Test
+  void patchLetterhead_blankValuesAreStoredAsNull() throws Exception {
+    try {
+      mockMvc
+          .perform(
+              patch("/api/settings/letterhead")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      """
+                      {"phone": "   ", "email": "", "city": " Johannesburg "}
+                      """))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.letterhead.phone").value(nullValue()))
+          .andExpect(jsonPath("$.letterhead.email").value(nullValue()))
+          .andExpect(jsonPath("$.letterhead.city").value("Johannesburg"));
+    } finally {
+      clearLetterhead();
+    }
+  }
+
+  @Test
+  void patchLetterhead_rejectsInvalidEmail() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/letterhead")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"email": "not-an-email"}
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("email"))
+        .andExpect(jsonPath("$.fieldErrors[0].message").value("email must be a valid email"));
+  }
+
+  @Test
+  void patchLetterhead_rejectsOverlongBranchCode() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/letterhead")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"bankBranchCode\": \"" + "1".repeat(21) + "\"}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("bankBranchCode"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message")
+                .value("bankBranchCode must be at most 20 characters"));
+  }
+
+  @Test
+  void patchLetterhead_adminCanUpdate() throws Exception {
+    try {
+      mockMvc
+          .perform(
+              patch("/api/settings/letterhead")
+                  .with(TestJwtFactory.adminJwt(ORG_ID, "user_settings_admin"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      """
+                      {"signatoryName": "Admin Signatory", "signatoryDesignation": "Partner"}
+                      """))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.letterhead.signatoryName").value("Admin Signatory"))
+          .andExpect(jsonPath("$.letterhead.signatoryDesignation").value("Partner"));
+
+      mockMvc
+          .perform(
+              get("/api/settings/letterhead")
+                  .with(TestJwtFactory.adminJwt(ORG_ID, "user_settings_admin")))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.signatoryName").value("Admin Signatory"));
+    } finally {
+      clearLetterhead();
+    }
+  }
+
+  @Test
+  void letterhead_memberForbidden() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/letterhead")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_settings_member"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"bankName": "FNB"}
+                    """))
+        .andExpect(status().isForbidden());
+
+    mockMvc
+        .perform(
+            get("/api/settings/letterhead")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_settings_member")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void getSettings_exposesLetterheadObject() throws Exception {
+    mockMvc
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.letterhead").isMap())
+        .andExpect(jsonPath("$.letterhead.addressLine1").value(nullValue()))
+        .andExpect(jsonPath("$.letterhead.bankAccountNumber").value(nullValue()))
+        .andExpect(jsonPath("$.letterhead.signatoryDesignation").value(nullValue()));
+  }
+
+  @Test
+  void patchLetterhead_writesAuditRowWithChangedFieldNamesOnly() throws Exception {
+    try {
+      clearLetterhead();
+      mockMvc
+          .perform(
+              patch("/api/settings/letterhead")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(FULL_LETTERHEAD))
+          .andExpect(status().isOk());
+
+      // findByFilter orders by occurredAt DESC, so getFirst() is the event this PATCH just wrote.
+      var events = readEvents("org_settings.letterhead_updated");
+      assertThat(events).isNotEmpty();
+      var event = events.getFirst();
+      assertThat(event.getEntityType()).isEqualTo("org_settings");
+      var details = event.getDetails();
+      // The audit service adds actor_name itself; the letterhead payload is changed_fields only.
+      assertThat(details).containsKey("changed_fields");
+      @SuppressWarnings("unchecked")
+      var changed = (List<String>) details.get("changed_fields");
+      assertThat(changed).contains("bankAccountNumber", "signatoryName", "phone").hasSize(16);
+      // POPIA: names only — no values in the audit log.
+      assertThat(details.toString())
+          .doesNotContain("62012345678")
+          .doesNotContain("Thandi Mathebula")
+          .doesNotContain("+27 11 555 0100");
+    } finally {
+      clearLetterhead();
+    }
+  }
+
+  private void expectFullLetterhead(
+      org.springframework.test.web.servlet.ResultActions result, String prefix) throws Exception {
+    result
+        .andExpect(jsonPath(prefix + "addressLine1").value("12 Rissik Street"))
+        .andExpect(jsonPath(prefix + "addressLine2").value("Marshalltown"))
+        .andExpect(jsonPath(prefix + "addressLine3").value("Gauteng"))
+        .andExpect(jsonPath(prefix + "city").value("Johannesburg"))
+        .andExpect(jsonPath(prefix + "postalCode").value("2001"))
+        .andExpect(jsonPath(prefix + "country").value("South Africa"))
+        .andExpect(jsonPath(prefix + "phone").value("+27 11 555 0100"))
+        .andExpect(jsonPath(prefix + "email").value("info@mathebula.law"))
+        .andExpect(jsonPath(prefix + "website").value("https://mathebula.law"))
+        .andExpect(jsonPath(prefix + "bankName").value("FNB"))
+        .andExpect(jsonPath(prefix + "bankBranchCode").value("250655"))
+        .andExpect(jsonPath(prefix + "bankAccountNumber").value("62012345678"))
+        .andExpect(jsonPath(prefix + "bankAccountType").value("Cheque"))
+        .andExpect(
+            jsonPath(prefix + "paymentReferenceNote")
+                .value("Use the fee-note number as your reference"))
+        .andExpect(jsonPath(prefix + "signatoryName").value("Thandi Mathebula"))
+        .andExpect(jsonPath(prefix + "signatoryDesignation").value("Director"));
+  }
+
+  private void clearLetterhead() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/letterhead")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+        .andExpect(status().isOk());
+  }
+
+  private List<AuditEvent> readEvents(String prefix) {
+    String tenantSchema =
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
+    @SuppressWarnings("unchecked")
+    List<AuditEvent>[] holder = new List[1];
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () ->
+                holder[0] =
+                    transactionTemplate.execute(
+                        tx ->
+                            auditEventRepository
+                                .findByFilter(
+                                    null, null, null, prefix, null, null, PageRequest.of(0, 200))
+                                .getContent()));
+    return holder[0];
   }
 
   // --- Helpers ---

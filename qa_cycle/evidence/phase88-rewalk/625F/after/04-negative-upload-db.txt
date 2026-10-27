@@ -1,0 +1,32 @@
+# 04 — negative behaviour: Carol uploads to 'Ndlovu v RAF op0p' with rule disabled
+T0=2026-10-27T17:39:44Z (recorded before the upload)
+
+## Baseline at T0
+Alice unread=9, Bob unread=11, Carol unread=2; automation_executions total=5; rule executions=1; AUTOMATION 'Document accepted/uploaded:' notifications=1
+
+## documents since T0
+f2f2e810-0303-4795-a7db-08db10a4988c | 625F-observe-upload.pdf | UPLOADED | 2026-10-27 17:40:00.536982+00
+## audit document.uploaded since T0 (DocumentUploadedEvent really fired)
+document.uploaded | 2026-10-27 17:40:00.690558+00
+## rule executions since T0 (expect 0)
+0
+## any automation_executions since T0 (expect 0)
+0
+## AUTOMATION notifications since T0 (expect 0)
+0
+## 'Document accepted%'/'Document uploaded:%' notifications since T0 (expect 0)
+0
+## all notifications since T0
+Alice Owner | DOCUMENT_SHARED | Carol Member uploaded "625F-observe-upload.pdf" | 2026-10-27 17:40:00.72088+00
+## unread per member now
+Alice Owner | 10
+Bob Admin | 11
+Carol Member | 2
+## rule executions total (was 1)
+1
+
+## backend log during upload window (docker logs --since T0)
+2026-10-27T17:39:51.697563046Z WARN GlobalExceptionHandler | Forbidden: path=/api/matters/02496c55-b778-4da3-8902-f1b779aab555/time-summary/by-member, method=GET, reason=Per-member time breakdown is restricted to project leads, org admins, and org owners
+2026-10-27T17:40:00.518629134Z INFO DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T17:40:00.996794467Z WARN GlobalExceptionHandler | Forbidden: path=/api/matters/02496c55-b778-4da3-8902-f1b779aab555/time-summary/by-member, method=GET, reason=Per-member time breakdown is restricted to project leads, org admins, and org owners
+2026-10-27T17:40:00.999702967Z WARN GlobalExceptionHandler | Forbidden: path=/api/matters/02496c55-b778-4da3-8902-f1b779aab555/time-summary/by-member, method=GET, reason=Per-member time breakdown is restricted to project leads, org admins, and org owners

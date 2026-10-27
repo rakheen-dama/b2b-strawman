@@ -1,0 +1,29 @@
+# 01 — backend startup log after rebuild from worktree HEAD 6c51f36bcff1fa107018dd86266bd39b4d188b7a
+# image sha256:5464477f45c7f2a3429dd9d9344f1a69dc20012861e786ba1b23a95839519287 created 2026-10-27T17:38:15.562821168Z
+# build log: 'RUN ./mvnw clean package -DskipTests -B' executed (not cached); jar automation-templates/common.json: "version": 3
+# source: docker logs e2e-backend (ECS JSON), formatted '<ts> <level> <logger> | <message>'
+
+## Reconcile / pack lines
+2026-10-27T17:38:30.362155717Z INFO PackReconciliationRunner | Running pack reconciliation for 1 tenants
+2026-10-27T17:38:30.626507592Z INFO PackVersionGate | Reconciling AUTOMATION_TEMPLATE pack automation-common v2 -> v3 for tenant tenant_7d218705360b
+2026-10-27T17:38:30.668092217Z INFO AutomationTemplateSeeder | Reconcile applied: tenant=tenant_7d218705360b pack=automation-common automation_rule 'document-review-notification' field name updated
+2026-10-27T17:38:30.678540676Z INFO AutomationTemplateSeeder | Reconcile applied: tenant=tenant_7d218705360b pack=automation-common automation_rule 'document-review-notification' field description updated
+2026-10-27T17:38:30.683175134Z INFO AutomationTemplateSeeder | Reconcile applied: tenant=tenant_7d218705360b pack=automation-common automation_rule 'document-review-notification' field actions[0].actionConfig.title updated
+2026-10-27T17:38:30.686982967Z INFO AutomationTemplateSeeder | Reconcile applied: tenant=tenant_7d218705360b pack=automation-common automation_rule 'document-review-notification' field actions[0].actionConfig.message updated
+2026-10-27T17:38:30.688902467Z INFO AutomationTemplateSeeder | Reconcile applied: tenant=tenant_7d218705360b pack=automation-common automation_rule 'document-review-notification' field enabled updated
+2026-10-27T17:38:30.699517926Z INFO AutomationPackInstaller | Re-pinned content hash of 1 rules of automation pack automation-common after the reconcile block for tenant tenant_7d218705360b
+2026-10-27T17:38:30.703504634Z INFO PackInstallService | Pack automation-common reconciled to v3 for tenant tenant_7d218705360b (internal path)
+2026-10-27T17:38:30.718435842Z INFO PackInstallService | Pack automation-legal-za already installed (internal path), skipping
+2026-10-27T17:38:30.764934926Z INFO PackReconciliationRunner | Pack reconciliation: checked 1 tenants, 1 succeeded, 0 failed
+
+## Forbidden lines (Reconcile skipped|Reconcile entry ignored|Reconcile gate closed): 0
+## ERROR lines: 0
+## WARN lines: 8 (baseline set of 8: 6 BeanPostProcessorChecker + CglibAopProxy + LibreOffice)
+2026-10-27T17:38:19.660709795Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'capabilityAuthorizationManager' of type [io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizatio
+2026-10-27T17:38:19.663566462Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'requiresCapabilityAdvisor' of type [org.springframework.security.authorization.method.Authorizati
+2026-10-27T17:38:19.683066712Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAuto
+2026-10-27T17:38:19.684484670Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.anno
+2026-10-27T17:38:19.694040254Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.flyway.autoconfigure.F
+2026-10-27T17:38:19.696813170Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.an
+2026-10-27T17:38:25.325454298Z WARN CglibAopProxy | Unable to proxy interface-implementing method [public final void org.springframework.web.filter.GenericFilterBean.init(jakarta.servlet.FilterConfig)
+2026-10-27T17:38:28.668661633Z WARN PdfConversionService | LibreOffice not found — PDF conversion will fall back to docx4j

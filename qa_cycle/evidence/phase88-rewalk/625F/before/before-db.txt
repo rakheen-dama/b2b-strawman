@@ -1,0 +1,62 @@
+# 625F BEFORE — DB facts (captured 2026-10-27T17:08:12Z); backend image = main ~e7bf0e386 (625E merged)
+# tenant: e2e-test-org -> tenant_7d218705360b
+                  id                  | external_org_id |     schema_name     |          created_at           | shard_id 
+--------------------------------------+-----------------+---------------------+-------------------------------+----------
+ 0198c446-a36b-4fb6-b49e-ab9ca7fb32b5 | e2e-test-org    | tenant_7d218705360b | 2026-10-27 15:10:18.986646+00 | primary
+(1 row)
+
+## automation_rules: document-review-notification
+                  id                  |             name             |                    description                     | enabled |   trigger_type    | trigger_config | conditions |  source  |        template_slug         |        source_pack_install_id        |                           content_hash                           |          created_at           |          updated_at           | last_run_at 
+--------------------------------------+------------------------------+----------------------------------------------------+---------+-------------------+----------------+------------+----------+------------------------------+--------------------------------------+------------------------------------------------------------------+-------------------------------+-------------------------------+-------------
+ 19dc292f-6044-4001-97c1-b15844b15a78 | Document Review Notification | Notifies project owner when a document is accepted | t       | DOCUMENT_ACCEPTED | {}             | []         | TEMPLATE | document-review-notification | 71d882c5-3f35-4ab3-bc4a-d351bc7c13f2 | bfbe0ab9d5ea2957ad81657e082286ab593cca2e4f612294cc73d30f893b4b29 | 2026-10-27 15:10:18.677568+00 | 2026-10-27 15:10:18.677568+00 | 
+(1 row)
+
+## automation_actions for the rule
+                  id                  |               rule_id                | sort_order |    action_type    |                                                                        action_config                                                                        | delay_duration | delay_unit |          created_at           |          updated_at           
+--------------------------------------+--------------------------------------+------------+-------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+------------+-------------------------------+-------------------------------
+ 37e71985-8ad3-480d-b513-8711d5e6c0da | 19dc292f-6044-4001-97c1-b15844b15a78 |          0 | SEND_NOTIFICATION | {"title": "Document accepted: {{document.name}}", "message": "A document has been accepted in project {{project.name}}.", "recipientType": "PROJECT_OWNER"} |                |            | 2026-10-27 15:10:18.677681+00 | 2026-10-27 15:10:18.677682+00
+(1 row)
+
+## pack_install automation rows
+                  id                  |       pack_id       |      pack_type      | pack_version |      pack_name      |         installed_at          | installed_by_member_id | item_count 
+--------------------------------------+---------------------+---------------------+--------------+---------------------+-------------------------------+------------------------+------------
+ f85e6865-f329-468a-b16c-2add55d3d035 | automation-legal-za | AUTOMATION_TEMPLATE | 2            | automation-legal-za | 2026-10-27 15:10:18.779237+00 |                        |          4
+ 71d882c5-3f35-4ab3-bc4a-d351bc7c13f2 | automation-common   | AUTOMATION_TEMPLATE | 2            | automation-common   | 2026-10-27 15:10:18.666908+00 |                        |          6
+(2 rows)
+
+## org_settings.automation_pack_status
+                                                                                     automation_pack_status                                                                                     
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [{"packId": "automation-legal-za", "version": 2, "appliedAt": "2026-10-27T15:10:18.817017338Z"}, {"packId": "automation-common", "version": 2, "appliedAt": "2026-10-27T16:44:38.289344221Z"}]
+(1 row)
+
+## all automation rules (summary)
+              name               | enabled |         trigger_type          |          template_slug          |                           content_hash                           
+---------------------------------+---------+-------------------------------+---------------------------------+------------------------------------------------------------------
+ Budget Alert Escalation         | t       | BUDGET_THRESHOLD_REACHED      | budget-alert-escalation         | 78a6146e975968751cbdb0fbf944862b470fcb275a46238f2b709ed41361f62f
+ Document Review Notification    | t       | DOCUMENT_ACCEPTED             | document-review-notification    | bfbe0ab9d5ea2957ad81657e082286ab593cca2e4f612294cc73d30f893b4b29
+ Investment Maturity Reminder    | t       | FIELD_DATE_APPROACHING        | investment-maturity-reminder    | f290e7748b6d8208ce254b10fb78b05b4610035c8858275b70e616386f7a62dc
+ Matter Onboarding Reminder      | t       | CUSTOMER_STATUS_CHANGED       | matter-onboarding-reminder      | 4eb72998f09e6d28c8432250b1499c2b81820a1312c3ac1ed4688f2b65e19ebb
+ Overdue Invoice Reminder        | t       | INVOICE_STATUS_CHANGED        | overdue-invoice-reminder        | 9f44118668b6bd06f2f190aaf431ad26e48f43a9bd1e9ee1caca3a1c494be3c7
+ Pending Approval Aging          | t       | FIELD_DATE_APPROACHING        | pending-approval-aging          | cf079f4e2712a4808a19829b9b6bcb8be0948367e1fe791be169455fc30edc7f
+ Reconciliation Overdue Reminder | t       | FIELD_DATE_APPROACHING        | reconciliation-overdue-reminder | 744d476543ab84ee8ad196c403f31b3becaac456a11d56090d13c488dd5371c8
+ Request Complete Follow-up      | t       | INFORMATION_REQUEST_COMPLETED | request-complete-followup       | f1971a58db1e6d15a44454262e5465a33c090e792532706f67baa3b2a9b8d2cf
+ Task Completion Chain           | f       | TASK_STATUS_CHANGED           | task-completion-chain           | d80b4d0244e91a9f5a230d4380915ae85723b4a5d79e26a2071fcbd087c70f4b
+ Welcome Notification            | t       | PROJECT_STATUS_CHANGED        | new-project-welcome             | 22658f59767638dfe8f0a66f42e4e0ba6c49384865aa4d38d2731717bfeb9eda
+(10 rows)
+
+## classpath pack (worktree backend/src/main/resources/automation-templates/common.json): packId=automation-common version=2
+## baseline counts pre-upload
+ execs | notifs | docs 
+-------+--------+------
+     4 |     20 |    7
+(1 row)
+
+## Mailpit total pre-upload: 22
+## project_members for Ndlovu v RAF op0p (upload target)
+     name     | project_role 
+--------------+--------------
+ Alice Owner  | lead
+ Carol Member | member
+(2 rows)
+

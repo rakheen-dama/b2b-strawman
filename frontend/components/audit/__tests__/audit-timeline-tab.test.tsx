@@ -46,7 +46,7 @@ describe("<AuditTimelineTab>", () => {
 
     await waitFor(() => {
       // Empty timeline with zero events surfaces the empty state.
-      expect(screen.getByText("No audit events for this customer")).toBeInTheDocument();
+      expect(screen.getByText("No audit events for this client")).toBeInTheDocument();
     });
     expect(mocked).toHaveBeenCalledWith("customer", "cust-tab-visible", 0, 20);
   });

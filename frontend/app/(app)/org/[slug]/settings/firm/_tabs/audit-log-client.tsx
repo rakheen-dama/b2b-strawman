@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, ChevronsUpDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import {
   Table,
@@ -17,15 +17,19 @@ import { Button } from "@b2mash/ui/button";
 import { cn } from "@/lib/utils";
 import { formatComplianceDateWithTime } from "@/lib/format";
 import type {
+  ActorFacet,
   AuditEventFilter,
   AuditEventResponse,
   AuditEventsPage,
   AuditEventTypeMetadata,
   AuditSeverity,
+  EntityTypeFacet,
+  EventTypeFacet,
 } from "@/lib/api/audit-events";
 import { SeverityPill } from "@/components/audit/severity-pill";
 import { ActorDisplay } from "@/components/audit/actor-display";
 import { EntityCell } from "@/components/audit/entity-cell";
+import { entityTypeLabel } from "@/components/audit/entity-type-labels";
 import { AuditDetailsViewer } from "@/components/audit/audit-details-viewer";
 import {
   MULTI_EVENT_SENTINEL,
@@ -36,10 +40,20 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Command,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const ALL_SEVERITIES: AuditSeverity[] = ["INFO", "NOTICE", "WARNING", "CRITICAL"];
 
@@ -64,6 +78,91 @@ interface AuditLogClientProps {
    * Defaults to `[]` so existing tests that don't supply metadata still work.
    */
   metadata?: AuditEventTypeMetadata[];
+  /**
+   * 625D: audit facets over the list's range, fetched by the RSC loader. They feed the Actor and
+   * Entity type Selects and the Event type combobox. Default `[]` (options then hold only "All …"
+   * plus the URL's current value).
+   */
+  actorFacets?: ActorFacet[];
+  entityTypeFacets?: EntityTypeFacet[];
+  eventTypeFacets?: EventTypeFacet[];
+}
+
+/** Radix Select forbids an empty-string item value; "All …" uses this sentinel. */
+const ALL_VALUE = "__all__";
+
+const FILTER_FIELD_CLASS = "min-w-0 flex-[1_1_14rem] space-y-1";
+const FILTER_LABEL_CLASS = "text-xs font-medium text-slate-700 dark:text-slate-300";
+
+function shortId(id: string): string {
+  return id.slice(0, 8);
+}
+
+interface FacetOption {
+  value: string;
+  label: string;
+  count?: number;
+}
+
+type ActorGroupName = "Members" | "Portal contacts" | "System";
+const ACTOR_GROUPS: ActorGroupName[] = ["Members", "Portal contacts", "System"];
+
+function actorGroupOf(actorType: string): ActorGroupName {
+  if (actorType === "USER") return "Members";
+  if (actorType === "PORTAL_CONTACT") return "Portal contacts";
+  return "System";
+}
+
+/**
+ * Actor options from the actor facets, grouped by actor type. Labels that repeat (every portal
+ * contact is "Portal Contact") gain a short-id suffix, and the backend's
+ * "Former member (<uuid>)" is shortened to 8 characters. Rows with a NULL actor (System, webhooks)
+ * are not in the facet and cannot be filtered by actor.
+ */
+function buildActorOptions(facets: ActorFacet[]): Record<ActorGroupName, FacetOption[]> {
+  const labelCounts = new Map<string, number>();
+  for (const f of facets) {
+    labelCounts.set(f.actorDisplayName, (labelCounts.get(f.actorDisplayName) ?? 0) + 1);
+  }
+  const groups: Record<ActorGroupName, FacetOption[]> = {
+    Members: [],
+    "Portal contacts": [],
+    System: [],
+  };
+  for (const f of facets) {
+    let label = f.actorDisplayName;
+    if (label === `Former member (${f.actorId})`) {
+      label = `Former member (${shortId(f.actorId)})`;
+    } else if ((labelCounts.get(label) ?? 0) > 1) {
+      label = `${label} (${shortId(f.actorId)})`;
+    }
+    groups[actorGroupOf(f.actorType)].push({ value: f.actorId, label, count: f.eventCount });
+  }
+  return groups;
+}
+
+/** Entity type options labelled through the legal label map, alphabetical by label. */
+function buildEntityTypeOptions(facets: EntityTypeFacet[], current?: string): FacetOption[] {
+  const options: FacetOption[] = facets.map((f) => ({
+    value: f.entityType,
+    label: entityTypeLabel(f.entityType, f.label),
+    count: f.count,
+  }));
+  if (current && !options.some((o) => o.value === current)) {
+    options.push({ value: current, label: entityTypeLabel(current) });
+  }
+  return options.sort((a, b) => a.label.localeCompare(b.label));
+}
+
+function OptionText({ option }: { option: FacetOption }) {
+  return (
+    <>
+      <span className="truncate">{option.label}</span>
+      {option.count !== undefined && (
+        <span className="text-xs text-slate-400 tabular-nums">{option.count}</span>
+      )}
+    </>
+  );
 }
 
 function isoDateInputValue(iso: string | undefined): string {
@@ -81,6 +180,11 @@ interface FilterTextInputProps {
   onCommit: (value: string) => void;
 }
 
+/**
+ * Free-text filter that commits on Enter as well as on blur. `lastCommittedRef` stops the blur
+ * that follows an Enter from pushing the same value twice (the `initialValue` prop stays stale
+ * until the server re-render lands).
+ */
 function FilterTextInput({
   id,
   label,
@@ -89,9 +193,23 @@ function FilterTextInput({
   inputRef,
   onCommit,
 }: FilterTextInputProps) {
+  const lastCommittedRef = useRef(initialValue);
+  useEffect(() => {
+    lastCommittedRef.current = initialValue;
+    // Keep the uncontrolled input in step with the URL (e.g. after "Clear filters").
+    if (inputRef.current) inputRef.current.value = initialValue;
+  }, [initialValue, inputRef]);
+
+  const commit = (raw: string) => {
+    const v = raw.trim();
+    if (v === lastCommittedRef.current) return;
+    lastCommittedRef.current = v;
+    onCommit(v);
+  };
+
   return (
-    <div className="space-y-1">
-      <label htmlFor={id} className="text-xs font-medium text-slate-700 dark:text-slate-300">
+    <div className={FILTER_FIELD_CLASS}>
+      <label htmlFor={id} className={FILTER_LABEL_CLASS}>
         {label}
       </label>
       <Input
@@ -100,14 +218,134 @@ function FilterTextInput({
         type="text"
         placeholder={placeholder}
         defaultValue={initialValue}
-        onBlur={(e) => {
-          const v = e.target.value.trim();
-          if (v !== initialValue) {
-            onCommit(v);
+        onBlur={(e) => commit(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            commit(e.currentTarget.value);
           }
         }}
       />
     </div>
+  );
+}
+
+interface EventTypeComboboxProps {
+  value: string | undefined;
+  facets: EventTypeFacet[];
+  /** Resolved event-type count of an active group preset (sentinel value), when known. */
+  presetEventCount: number | undefined;
+  onCommit: (eventType: string | undefined) => void;
+}
+
+/**
+ * Event type filter: a searchable Popover + Command combobox over the event-type facets. Search
+ * matches the legal label or the stored key. Because the backend matches `eventType` as a prefix,
+ * the first item for a typed query is "Starts with “…”", which commits the typed text (Enter
+ * picks it). The trigger keeps the `audit-filter-event-type` id the e2e specs target.
+ */
+function EventTypeCombobox({ value, facets, presetEventCount, onCommit }: EventTypeComboboxProps) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const q = query.trim();
+  const qLower = q.toLowerCase();
+
+  const exact = q ? facets.find((f) => f.eventType === q) : undefined;
+  const matches = q
+    ? facets.filter(
+        (f) =>
+          f !== exact &&
+          (f.label.toLowerCase().includes(qLower) || f.eventType.toLowerCase().includes(qLower))
+      )
+    : facets;
+  const items = exact ? [exact, ...matches] : matches;
+
+  const current = value ? facets.find((f) => f.eventType === value) : undefined;
+  let triggerText: React.ReactNode;
+  if (value === MULTI_EVENT_SENTINEL) {
+    triggerText = `Preset (${presetEventCount ?? "multiple"} event types)`;
+  } else if (current) {
+    triggerText = (
+      <>
+        {current.label}{" "}
+        <span className="font-mono text-[10px] text-slate-500">{current.eventType}</span>
+      </>
+    );
+  } else if (value) {
+    triggerText = <span className="font-mono text-xs">{value}</span>;
+  } else {
+    triggerText = "All event types";
+  }
+
+  const select = (next: string | undefined) => {
+    setOpen(false);
+    setQuery("");
+    if ((next ?? "") !== (value ?? "")) onCommit(next);
+  };
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) setQuery("");
+      }}
+    >
+      <PopoverTrigger asChild>
+        <Button
+          id="audit-filter-event-type"
+          type="button"
+          variant="plain"
+          role="combobox"
+          aria-expanded={open}
+          className="h-8 w-full justify-between rounded-md border border-slate-200 bg-white px-3 font-normal dark:border-slate-800 dark:bg-slate-950"
+        >
+          <span className="truncate">{triggerText}</span>
+          <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" aria-hidden="true" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[22rem] max-w-[calc(100vw-2rem)] p-0" align="start">
+        <Command shouldFilter={false}>
+          <CommandInput placeholder="Search event types…" value={query} onValueChange={setQuery} />
+          <CommandList>
+            <CommandGroup>
+              {q && !exact && (
+                <CommandItem value={`__prefix__:${q}`} onSelect={() => select(q)}>
+                  Starts with &ldquo;{q}&rdquo;
+                </CommandItem>
+              )}
+              {!q && (
+                <CommandItem value={ALL_VALUE} onSelect={() => select(undefined)}>
+                  <Check className={cn("size-4", value ? "opacity-0" : "opacity-100")} />
+                  All event types
+                </CommandItem>
+              )}
+              {items.map((f) => (
+                <CommandItem
+                  key={f.eventType}
+                  value={f.eventType}
+                  onSelect={() => select(f.eventType)}
+                >
+                  <Check
+                    className={cn("size-4", value === f.eventType ? "opacity-100" : "opacity-0")}
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate">{f.label}</span>
+                    <span className="block truncate font-mono text-[10px] text-slate-500">
+                      {f.eventType}
+                    </span>
+                  </span>
+                  <span className="text-xs text-slate-400 tabular-nums">{f.count}</span>
+                </CommandItem>
+              ))}
+              {q && items.length === 0 && (
+                <p className="px-2 py-1.5 text-xs text-slate-500">No matching event types.</p>
+              )}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -116,6 +354,9 @@ export function AuditLogClient({
   initialEvents,
   initialFilter,
   metadata = [],
+  actorFacets = [],
+  entityTypeFacets = [],
+  eventTypeFacets = [],
 }: AuditLogClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -139,12 +380,10 @@ export function AuditLogClient({
   const currentPage = page.number;
   const totalPages = page.totalPages;
 
-  // Refs for the text inputs so that filter actions which fire WITHOUT
-  // blurring an in-progress input first (e.g. clicking a severity chip,
-  // clicking "Clear filters") can flush the typed value into the URL.
-  const actorIdRef = useRef<HTMLInputElement | null>(null);
-  const eventTypeRef = useRef<HTMLInputElement | null>(null);
-  const entityTypeRef = useRef<HTMLInputElement | null>(null);
+  // Ref for the one remaining text input (Entity ID) so that filter actions which fire WITHOUT
+  // blurring an in-progress input first (e.g. clicking a severity chip, paging) can flush the
+  // typed value into the URL. The Actor / Entity type Selects and the Event type combobox commit
+  // immediately.
   const entityIdRef = useRef<HTMLInputElement | null>(null);
 
   // Phase 87 S9 (616A, ADR-341): the audit trail is the `audit-trail` tab of the Firm settings
@@ -193,17 +432,9 @@ export function AuditLogClient({
         if (v) params.set(key, v);
         else params.delete(key);
       };
-      flush("actorId", actorIdRef, initialFilter.actorId);
-      flush("eventType", eventTypeRef, initialFilter.eventType);
-      flush("entityType", entityTypeRef, initialFilter.entityType);
       flush("entityId", entityIdRef, initialFilter.entityId);
     },
-    [
-      initialFilter.actorId,
-      initialFilter.eventType,
-      initialFilter.entityType,
-      initialFilter.entityId,
-    ]
+    [initialFilter.entityId]
   );
 
   const setParam = useCallback(
@@ -355,6 +586,27 @@ export function AuditLogClient({
     [initialFilter.severities]
   );
 
+  const actorGroups = useMemo(() => buildActorOptions(actorFacets), [actorFacets]);
+  const currentActorId = initialFilter.actorId;
+  const currentActorOption = useMemo(() => {
+    if (!currentActorId) return undefined;
+    const known = ACTOR_GROUPS.flatMap((g) => actorGroups[g]).find(
+      (o) => o.value === currentActorId
+    );
+    return known ?? { value: currentActorId, label: `Unknown actor (${shortId(currentActorId)})` };
+  }, [actorGroups, currentActorId]);
+  const actorIsUnknown =
+    currentActorOption !== undefined &&
+    !ACTOR_GROUPS.some((g) => actorGroups[g].some((o) => o.value === currentActorOption.value));
+
+  const entityTypeOptions = useMemo(
+    () => buildEntityTypeOptions(entityTypeFacets, initialFilter.entityType),
+    [entityTypeFacets, initialFilter.entityType]
+  );
+  const currentEntityTypeLabel = initialFilter.entityType
+    ? entityTypeLabel(initialFilter.entityType)
+    : "All entity types";
+
   return (
     <div className="space-y-6">
       <Card>
@@ -428,12 +680,9 @@ export function AuditLogClient({
           <CardTitle className="text-base">Filters</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <div className="space-y-1">
-              <label
-                htmlFor="audit-filter-from"
-                className="text-xs font-medium text-slate-700 dark:text-slate-300"
-              >
+          <div className="flex flex-wrap gap-4" data-testid="audit-filter-row">
+            <div className={FILTER_FIELD_CLASS}>
+              <label htmlFor="audit-filter-from" className={FILTER_LABEL_CLASS}>
                 From
               </label>
               {/* UTC-day semantics: we map the picker's local YYYY-MM-DD to
@@ -452,11 +701,8 @@ export function AuditLogClient({
                 }
               />
             </div>
-            <div className="space-y-1">
-              <label
-                htmlFor="audit-filter-to"
-                className="text-xs font-medium text-slate-700 dark:text-slate-300"
-              >
+            <div className={FILTER_FIELD_CLASS}>
+              <label htmlFor="audit-filter-to" className={FILTER_LABEL_CLASS}>
                 To
               </label>
               {/* UTC-day semantics: pin the upper bound to the very last
@@ -476,30 +722,71 @@ export function AuditLogClient({
                 }
               />
             </div>
-            <FilterTextInput
-              id="audit-filter-actor"
-              label="Actor ID"
-              placeholder="UUID"
-              initialValue={initialFilter.actorId ?? ""}
-              inputRef={actorIdRef}
-              onCommit={(v) => setParam("actorId", v || undefined)}
-            />
-            <FilterTextInput
-              id="audit-filter-event-type"
-              label="Event type"
-              placeholder="e.g. security.login.failure"
-              initialValue={initialFilter.eventType ?? ""}
-              inputRef={eventTypeRef}
-              onCommit={(v) => setParam("eventType", v || undefined)}
-            />
-            <FilterTextInput
-              id="audit-filter-entity-type"
-              label="Entity type"
-              placeholder="e.g. customer"
-              initialValue={initialFilter.entityType ?? ""}
-              inputRef={entityTypeRef}
-              onCommit={(v) => setParam("entityType", v || undefined)}
-            />
+            <div className={FILTER_FIELD_CLASS}>
+              <label htmlFor="audit-filter-actor" className={FILTER_LABEL_CLASS}>
+                Actor
+              </label>
+              <Select
+                value={currentActorId ?? ALL_VALUE}
+                onValueChange={(v) => setParam("actorId", v === ALL_VALUE ? undefined : v)}
+              >
+                <SelectTrigger id="audit-filter-actor" size="sm" className="w-full">
+                  <SelectValue>{currentActorOption?.label ?? "All actors"}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_VALUE}>All actors</SelectItem>
+                  {actorIsUnknown && currentActorOption && (
+                    <SelectItem value={currentActorOption.value}>
+                      {currentActorOption.label}
+                    </SelectItem>
+                  )}
+                  {ACTOR_GROUPS.filter((g) => actorGroups[g].length > 0).map((g) => (
+                    <SelectGroup key={g}>
+                      <SelectLabel>{g}</SelectLabel>
+                      {actorGroups[g].map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          <OptionText option={o} />
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className={FILTER_FIELD_CLASS}>
+              <label htmlFor="audit-filter-entity-type" className={FILTER_LABEL_CLASS}>
+                Entity type
+              </label>
+              {/* ADR-342: the value is always the stored literal (`project`); only the label is
+                  the legal word ("Matter"). */}
+              <Select
+                value={initialFilter.entityType ?? ALL_VALUE}
+                onValueChange={(v) => setParam("entityType", v === ALL_VALUE ? undefined : v)}
+              >
+                <SelectTrigger id="audit-filter-entity-type" size="sm" className="w-full">
+                  <SelectValue>{currentEntityTypeLabel}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_VALUE}>All entity types</SelectItem>
+                  {entityTypeOptions.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      <OptionText option={o} />
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className={FILTER_FIELD_CLASS}>
+              <label htmlFor="audit-filter-event-type" className={FILTER_LABEL_CLASS}>
+                Event type
+              </label>
+              <EventTypeCombobox
+                value={initialFilter.eventType}
+                facets={eventTypeFacets}
+                presetEventCount={multiEventBanner?.eventTypes.length || undefined}
+                onCommit={(v) => setParam("eventType", v)}
+              />
+            </div>
             <FilterTextInput
               id="audit-filter-entity-id"
               label="Entity ID"
@@ -570,32 +857,37 @@ export function AuditLogClient({
                 : "The audit log is empty. Activity is logged automatically once team members start working in Kazi."}
             </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-10"></TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Severity</TableHead>
-                  <TableHead>Event</TableHead>
-                  <TableHead>Actor</TableHead>
-                  <TableHead>Entity</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {content.map((event: AuditEventResponse) => {
-                  const isExpanded = expanded.has(event.id);
-                  return (
-                    <Row
-                      key={event.id}
-                      event={event}
-                      slug={slug}
-                      expanded={isExpanded}
-                      onToggle={() => toggleRow(event.id)}
-                    />
-                  );
-                })}
-              </TableBody>
-            </Table>
+            // `contain-inline-size`: the table scrolls inside its own wrapper instead of widening
+            // the page — its nowrap min-content otherwise propagated through the app shell and
+            // overflowed the page at 1280 px (625D overflow baseline).
+            <div className="contain-inline-size">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-10"></TableHead>
+                    <TableHead>Time</TableHead>
+                    <TableHead>Severity</TableHead>
+                    <TableHead>Event</TableHead>
+                    <TableHead>Actor</TableHead>
+                    <TableHead>Entity</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {content.map((event: AuditEventResponse) => {
+                    const isExpanded = expanded.has(event.id);
+                    return (
+                      <Row
+                        key={event.id}
+                        event={event}
+                        slug={slug}
+                        expanded={isExpanded}
+                        onToggle={() => toggleRow(event.id)}
+                      />
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -689,7 +981,12 @@ function Row({ event, slug, expanded, onToggle }: RowProps) {
           />
         </TableCell>
         <TableCell>
-          <EntityCell entityType={event.entityType} entityId={event.entityId} slug={slug} />
+          <EntityCell
+            entityType={event.entityType}
+            entityId={event.entityId}
+            slug={slug}
+            details={event.details}
+          />
         </TableCell>
       </TableRow>
       {expanded && (

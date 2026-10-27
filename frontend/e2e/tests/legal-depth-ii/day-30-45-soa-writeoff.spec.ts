@@ -338,9 +338,13 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     // Phase 87 S9 (ADR-344): /settings/audit-log → /settings/firm?tab=audit-trail
     await page.goto(`${BASE}/settings/firm?tab=audit-trail`);
     await page.waitForLoadState("networkidle");
+    // 625D: Event type is a searchable combobox — type the key, Enter commits it.
     const eventType = page.locator("#audit-filter-event-type");
-    await eventType.fill("disbursement.written_off");
-    await eventType.press("Tab"); // the filter commits on blur
+    await eventType.click();
+    const search = page.getByPlaceholder("Search event types…");
+    await expect(search).toBeVisible();
+    await search.fill("disbursement.written_off");
+    await search.press("Enter");
     await page.waitForURL(/eventType=/);
 
     const row = page.locator('[data-testid^="audit-row-"]').first();

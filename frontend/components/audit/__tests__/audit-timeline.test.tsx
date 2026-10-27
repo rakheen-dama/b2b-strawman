@@ -168,6 +168,51 @@ describe("<AuditTimeline>", () => {
     expect(mocked).not.toHaveBeenCalled();
   });
 
+  it("an unmemoised inline loadPage does not refetch on re-render; the latest one pages", async () => {
+    const loader = vi
+      .fn()
+      .mockResolvedValue(
+        makePage([makeRow({ id: "lp-1", occurredAt: "2026-05-03T10:00:00Z" })], 2, 0)
+      );
+    const latest = vi
+      .fn()
+      .mockResolvedValue(
+        makePage([makeRow({ id: "lp-2", occurredAt: "2026-05-02T10:00:00Z" })], 2, 1)
+      );
+
+    const { rerender } = render(
+      <AuditTimeline entityType="customer" entityId="cust-1" loadPage={(p, s) => loader(p, s)} />
+    );
+    await screen.findByTestId("audit-timeline-load-more");
+    rerender(
+      <AuditTimeline entityType="customer" entityId="cust-1" loadPage={(p, s) => loader(p, s)} />
+    );
+    rerender(
+      <AuditTimeline entityType="customer" entityId="cust-1" loadPage={(p, s) => latest(p, s)} />
+    );
+    await screen.findByTestId("audit-timeline-load-more");
+    expect(loader).toHaveBeenCalledTimes(1);
+    expect(latest).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByTestId("audit-timeline-load-more"));
+    await waitFor(() => expect(screen.getAllByTestId("audit-timeline-row")).toHaveLength(2));
+    expect(latest).toHaveBeenCalledWith(1, 20);
+    expect(loader).toHaveBeenCalledTimes(1);
+  });
+
+  it("refetches the first page when the entity identity changes", async () => {
+    mocked
+      .mockResolvedValueOnce(makePage([makeRow({ id: "a", occurredAt: "2026-05-03T10:00:00Z" })]))
+      .mockResolvedValueOnce(makePage([makeRow({ id: "b", occurredAt: "2026-05-02T10:00:00Z" })]));
+
+    const { rerender } = render(<AuditTimeline entityType="customer" entityId="cust-1" />);
+    await screen.findByTestId("audit-timeline");
+    rerender(<AuditTimeline entityType="customer" entityId="cust-2" />);
+
+    await waitFor(() => expect(mocked).toHaveBeenLastCalledWith("customer", "cust-2", 0, 20));
+    expect(mocked).toHaveBeenCalledTimes(2);
+  });
+
   it("appends the lifecycle from/to and the checklist item name to the row label", async () => {
     mocked.mockResolvedValueOnce(
       makePage([

@@ -15,6 +15,7 @@ import {
 } from "@/lib/api/audit-events";
 import { AuditLogClient } from "./audit-log-client";
 import { ExportDropdown } from "@/components/audit/export-dropdown";
+import { isIsoInstant, isUuid } from "@/components/audit/filter-params";
 import type { SettingsTabProps } from "@/components/settings/settings-family-page";
 
 const PAGE_SIZE = 50;
@@ -31,15 +32,17 @@ const VALID_SEVERITIES: ReadonlySet<AuditSeverity> = new Set([
  */
 const FACETS_ALL_TIME_FROM = "1970-01-01T00:00:00Z";
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 /**
- * `actorId` / `entityId` are UUIDs on the backend (a non-UUID is a 400 that would fail the whole
- * settings page). A hand-edited or stale non-UUID value is dropped — treated as no filter.
+ * `actorId` / `entityId` are UUIDs and `from` / `to` are instants on the backend; a value it cannot
+ * parse is a 400 that would fail the whole settings page. A hand-edited or stale value of the wrong
+ * shape is dropped — treated as no filter.
  */
-function uuidOrUndefined(value: string | undefined): string | undefined {
+function validOrUndefined(
+  value: string | undefined,
+  isValid: (v: string) => boolean
+): string | undefined {
   const trimmed = value?.trim();
-  return trimmed && UUID_PATTERN.test(trimmed) ? trimmed : undefined;
+  return trimmed && isValid(trimmed) ? trimmed : undefined;
 }
 
 type SearchParams = {
@@ -66,13 +69,13 @@ function parseFilter(sp: SearchParams): AuditEventFilter {
   return {
     page: requestedPage,
     size: PAGE_SIZE,
-    from: sp.from || undefined,
-    to: sp.to || undefined,
+    from: validOrUndefined(sp.from, isIsoInstant),
+    to: validOrUndefined(sp.to, isIsoInstant),
     severities: severities && severities.length > 0 ? severities : undefined,
-    actorId: uuidOrUndefined(sp.actorId),
+    actorId: validOrUndefined(sp.actorId, isUuid),
     eventType: sp.eventType || undefined,
     entityType: sp.entityType || undefined,
-    entityId: uuidOrUndefined(sp.entityId),
+    entityId: validOrUndefined(sp.entityId, isUuid),
   };
 }
 

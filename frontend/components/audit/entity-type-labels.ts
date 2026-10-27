@@ -63,9 +63,10 @@ export const ENTITY_TYPE_LABELS: Readonly<Record<string, string>> = Object.freez
   // Compliance
   information_request: "Information request",
   request_item: "Information request item",
-  checklist_instance: "FICA checklist",
-  checklist_instance_item: "FICA checklist item",
-  checklist_template: "FICA checklist template",
+  // Any firm checklist template (FICA onboarding is one of many), so no "FICA" in the label.
+  checklist_instance: "Checklist",
+  checklist_instance_item: "Checklist item",
+  checklist_template: "Checklist template",
   data_subject_request: "Data subject request",
   retention_policy: "Retention policy",
   audit_export: "Audit export",
@@ -104,7 +105,9 @@ export function sentenceCaseKey(key: string): string {
  */
 export function entityTypeLabel(literal: string, fallbackLabel?: string): string {
   if (!literal) return "";
-  return ENTITY_TYPE_LABELS[literal] ?? (fallbackLabel || sentenceCaseKey(literal));
+  // Own-property lookup: `?entityType=constructor` must not resolve to Object.prototype members.
+  if (Object.hasOwn(ENTITY_TYPE_LABELS, literal)) return ENTITY_TYPE_LABELS[literal];
+  return fallbackLabel || sentenceCaseKey(literal);
 }
 
 /**

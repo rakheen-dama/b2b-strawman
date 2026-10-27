@@ -28,8 +28,9 @@ import type {
 } from "@/lib/api/audit-events";
 import { SeverityPill } from "@/components/audit/severity-pill";
 import { ActorDisplay } from "@/components/audit/actor-display";
-import { EntityCell } from "@/components/audit/entity-cell";
+import { EntityCell, shortId } from "@/components/audit/entity-cell";
 import { entityTypeLabel } from "@/components/audit/entity-type-labels";
+import { isUuid } from "@/components/audit/filter-params";
 import { AuditDetailsViewer } from "@/components/audit/audit-details-viewer";
 import {
   MULTI_EVENT_SENTINEL,
@@ -93,9 +94,12 @@ const ALL_VALUE = "__all__";
 
 const FILTER_FIELD_CLASS = "min-w-0 flex-[1_1_14rem] space-y-1";
 const FILTER_LABEL_CLASS = "text-xs font-medium text-slate-700 dark:text-slate-300";
+/** Stretch the SelectItem's ItemText span so an option's count can sit at the right edge (OD-6). */
+const COUNTED_OPTION_CLASS = "*:[span]:last:min-w-0 *:[span]:last:flex-1";
 
-function shortId(id: string): string {
-  return id.slice(0, 8);
+/** Entity ID input check: the backend `entityId` filter is a UUID (R-6). */
+function entityIdError(value: string): string | null {
+  return isUuid(value) ? null : "Enter a full ID";
 }
 
 interface FacetOption {
@@ -114,10 +118,11 @@ function actorGroupOf(actorType: string): ActorGroupName {
 }
 
 /**
- * Actor options from the actor facets, grouped by actor type. Labels that repeat (every portal
- * contact is "Portal Contact") gain a short-id suffix, and the backend's
- * "Former member (<uuid>)" is shortened to 8 characters. Rows with a NULL actor (System, webhooks)
- * are not in the facet and cannot be filtered by actor.
+ * Actor options from the actor facets, grouped by actor type. Portal contacts carry only the
+ * backend's static "Portal Contact" label, so each is named "Portal contact (<short id>)"; other
+ * labels that repeat gain the same short-id suffix. The backend's "Former member (<uuid>)" is
+ * shortened to 8 characters (the facet has no name-missing flag, so that one is a string match).
+ * Rows with a NULL actor (System, webhooks) are not in the facet and cannot be filtered by actor.
  */
 function buildActorOptions(facets: ActorFacet[]): Record<ActorGroupName, FacetOption[]> {
   const labelCounts = new Map<string, number>();
@@ -131,7 +136,9 @@ function buildActorOptions(facets: ActorFacet[]): Record<ActorGroupName, FacetOp
   };
   for (const f of facets) {
     let label = f.actorDisplayName;
-    if (label === `Former member (${f.actorId})`) {
+    if (f.actorType === "PORTAL_CONTACT") {
+      label = `Portal contact (${shortId(f.actorId)})`;
+    } else if (label === `Former member (${f.actorId})`) {
       label = `Former member (${shortId(f.actorId)})`;
     } else if ((labelCounts.get(label) ?? 0) > 1) {
       label = `${label} (${shortId(f.actorId)})`;
@@ -157,9 +164,9 @@ function buildEntityTypeOptions(facets: EntityTypeFacet[], current?: string): Fa
 function OptionText({ option }: { option: FacetOption }) {
   return (
     <>
-      <span className="truncate">{option.label}</span>
+      <span className="min-w-0 truncate">{option.label}</span>
       {option.count !== undefined && (
-        <span className="text-xs text-slate-400 tabular-nums">{option.count}</span>
+        <span className="ml-auto shrink-0 text-xs text-slate-400 tabular-nums">{option.count}</span>
       )}
     </>
   );
@@ -178,12 +185,15 @@ interface FilterTextInputProps {
   initialValue: string;
   inputRef: React.RefObject<HTMLInputElement | null>;
   onCommit: (value: string) => void;
+  /** Error message for a non-empty value that must not be committed, or `null` when it is valid. */
+  validate?: (value: string) => string | null;
 }
 
 /**
  * Free-text filter that commits on Enter as well as on blur. `lastCommittedRef` stops the blur
  * that follows an Enter from pushing the same value twice (the `initialValue` prop stays stale
- * until the server re-render lands).
+ * until the server re-render lands). A non-empty value that fails `validate` is not committed: the
+ * input shows an inline error instead (empty always commits, clearing the filter).
  */
 function FilterTextInput({
   id,
@@ -192,7 +202,10 @@ function FilterTextInput({
   initialValue,
   inputRef,
   onCommit,
+  validate,
 }: FilterTextInputProps) {
+  const [error, setError] = useState<string | null>(null);
+  const errorId = `${id}-error`;
   const lastCommittedRef = useRef(initialValue);
   useEffect(() => {
     lastCommittedRef.current = initialValue;
@@ -202,6 +215,9 @@ function FilterTextInput({
 
   const commit = (raw: string) => {
     const v = raw.trim();
+    const problem = v && validate ? validate(v) : null;
+    setError(problem);
+    if (problem) return;
     if (v === lastCommittedRef.current) return;
     lastCommittedRef.current = v;
     onCommit(v);
@@ -218,6 +234,11 @@ function FilterTextInput({
         type="text"
         placeholder={placeholder}
         defaultValue={initialValue}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
+        onChange={() => {
+          if (error) setError(null);
+        }}
         onBlur={(e) => commit(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
@@ -226,6 +247,11 @@ function FilterTextInput({
           }
         }}
       />
+      {error && (
+        <p id={errorId} role="alert" className="text-xs text-red-600 dark:text-red-400">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -238,11 +264,20 @@ interface EventTypeComboboxProps {
   onCommit: (eventType: string | undefined) => void;
 }
 
+/** A query that looks like an event key (`matter_closure`, `invoice.sent`) rather than a word. */
+function isKeyShaped(query: string): boolean {
+  return query.includes(".") || query.includes("_");
+}
+
 /**
  * Event type filter: a searchable Popover + Command combobox over the event-type facets. Search
  * matches the legal label or the stored key. Because the backend matches `eventType` as a prefix,
- * the first item for a typed query is "Starts with “…”", which commits the typed text (Enter
- * picks it). The trigger keeps the `audit-filter-event-type` id the e2e specs target.
+ * a typed query also offers "Event key starts with “…”", which commits the typed text. Enter picks
+ * the first item, ordered so it is the one the user most likely means:
+ *  (a) the query is exactly a facet key → that option first (no prefix item);
+ *  (b) a plain word (no `.` / `_`) with label matches → label matches first, then the prefix item;
+ *  (c) otherwise (key-shaped, or no label match) → the prefix item first.
+ * The trigger keeps the `audit-filter-event-type` id the e2e specs target.
  */
 function EventTypeCombobox({ value, facets, presetEventCount, onCommit }: EventTypeComboboxProps) {
   const [open, setOpen] = useState(false);
@@ -251,14 +286,27 @@ function EventTypeCombobox({ value, facets, presetEventCount, onCommit }: EventT
   const qLower = q.toLowerCase();
 
   const exact = q ? facets.find((f) => f.eventType === q) : undefined;
+  const labelHit = (f: EventTypeFacet) => f.label.toLowerCase().includes(qLower);
   const matches = q
     ? facets.filter(
-        (f) =>
-          f !== exact &&
-          (f.label.toLowerCase().includes(qLower) || f.eventType.toLowerCase().includes(qLower))
+        (f) => f !== exact && (labelHit(f) || f.eventType.toLowerCase().includes(qLower))
       )
-    : facets;
-  const items = exact ? [exact, ...matches] : matches;
+    : [];
+  const showPrefix = q !== "" && !exact;
+  // Facet items rendered before / after the prefix item, per rules (a)–(c) above.
+  let beforePrefix: EventTypeFacet[];
+  let afterPrefix: EventTypeFacet[] = [];
+  if (!q) {
+    beforePrefix = facets;
+  } else if (exact) {
+    beforePrefix = [exact, ...matches];
+  } else if (!isKeyShaped(q) && matches.some(labelHit)) {
+    beforePrefix = matches.filter(labelHit);
+    afterPrefix = matches.filter((f) => !labelHit(f));
+  } else {
+    beforePrefix = [];
+    afterPrefix = matches;
+  }
 
   const current = value ? facets.find((f) => f.eventType === value) : undefined;
   let triggerText: React.ReactNode;
@@ -283,6 +331,17 @@ function EventTypeCombobox({ value, facets, presetEventCount, onCommit }: EventT
     if ((next ?? "") !== (value ?? "")) onCommit(next);
   };
 
+  const renderFacet = (f: EventTypeFacet) => (
+    <CommandItem key={f.eventType} value={f.eventType} onSelect={() => select(f.eventType)}>
+      <Check className={cn("size-4", value === f.eventType ? "opacity-100" : "opacity-0")} />
+      <span className="min-w-0 flex-1">
+        <span className="block truncate">{f.label}</span>
+        <span className="block truncate font-mono text-[10px] text-slate-500">{f.eventType}</span>
+      </span>
+      <span className="text-xs text-slate-400 tabular-nums">{f.count}</span>
+    </CommandItem>
+  );
+
   return (
     <Popover
       open={open}
@@ -305,40 +364,26 @@ function EventTypeCombobox({ value, facets, presetEventCount, onCommit }: EventT
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[22rem] max-w-[calc(100vw-2rem)] p-0" align="start">
-        <Command shouldFilter={false}>
+        {/* cmdk names its input via aria-labelledby → a visually hidden <label> holding `label`
+            (an aria-label on the input would be overridden). */}
+        <Command shouldFilter={false} label="Search event types">
           <CommandInput placeholder="Search event types…" value={query} onValueChange={setQuery} />
           <CommandList>
             <CommandGroup>
-              {q && !exact && (
-                <CommandItem value={`__prefix__:${q}`} onSelect={() => select(q)}>
-                  Starts with &ldquo;{q}&rdquo;
-                </CommandItem>
-              )}
               {!q && (
                 <CommandItem value={ALL_VALUE} onSelect={() => select(undefined)}>
                   <Check className={cn("size-4", value ? "opacity-0" : "opacity-100")} />
                   All event types
                 </CommandItem>
               )}
-              {items.map((f) => (
-                <CommandItem
-                  key={f.eventType}
-                  value={f.eventType}
-                  onSelect={() => select(f.eventType)}
-                >
-                  <Check
-                    className={cn("size-4", value === f.eventType ? "opacity-100" : "opacity-0")}
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate">{f.label}</span>
-                    <span className="block truncate font-mono text-[10px] text-slate-500">
-                      {f.eventType}
-                    </span>
-                  </span>
-                  <span className="text-xs text-slate-400 tabular-nums">{f.count}</span>
+              {beforePrefix.map(renderFacet)}
+              {showPrefix && (
+                <CommandItem value={`__prefix__:${q}`} onSelect={() => select(q)}>
+                  Event key starts with &ldquo;{q}&rdquo;
                 </CommandItem>
-              ))}
-              {q && items.length === 0 && (
+              )}
+              {afterPrefix.map(renderFacet)}
+              {q && !exact && matches.length === 0 && (
                 <p className="px-2 py-1.5 text-xs text-slate-500">No matching event types.</p>
               )}
             </CommandGroup>
@@ -429,6 +474,8 @@ export function AuditLogClient({
         if (!node) return;
         const v = node.value.trim();
         if (v === (prev ?? "")) return;
+        // Never flush a value the input refused to commit (FilterTextInput shows its error).
+        if (v && !isUuid(v)) return;
         if (v) params.set(key, v);
         else params.delete(key);
       };
@@ -588,16 +635,18 @@ export function AuditLogClient({
 
   const actorGroups = useMemo(() => buildActorOptions(actorFacets), [actorFacets]);
   const currentActorId = initialFilter.actorId;
-  const currentActorOption = useMemo(() => {
+  const currentActor = useMemo(() => {
     if (!currentActorId) return undefined;
     const known = ACTOR_GROUPS.flatMap((g) => actorGroups[g]).find(
       (o) => o.value === currentActorId
     );
-    return known ?? { value: currentActorId, label: `Unknown actor (${shortId(currentActorId)})` };
+    return known
+      ? { option: known, unknown: false }
+      : {
+          option: { value: currentActorId, label: `Unknown actor (${shortId(currentActorId)})` },
+          unknown: true,
+        };
   }, [actorGroups, currentActorId]);
-  const actorIsUnknown =
-    currentActorOption !== undefined &&
-    !ACTOR_GROUPS.some((g) => actorGroups[g].some((o) => o.value === currentActorOption.value));
 
   const entityTypeOptions = useMemo(
     () => buildEntityTypeOptions(entityTypeFacets, initialFilter.entityType),
@@ -731,20 +780,20 @@ export function AuditLogClient({
                 onValueChange={(v) => setParam("actorId", v === ALL_VALUE ? undefined : v)}
               >
                 <SelectTrigger id="audit-filter-actor" size="sm" className="w-full">
-                  <SelectValue>{currentActorOption?.label ?? "All actors"}</SelectValue>
+                  <SelectValue>{currentActor?.option.label ?? "All actors"}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={ALL_VALUE}>All actors</SelectItem>
-                  {actorIsUnknown && currentActorOption && (
-                    <SelectItem value={currentActorOption.value}>
-                      {currentActorOption.label}
+                  {currentActor?.unknown && (
+                    <SelectItem value={currentActor.option.value}>
+                      {currentActor.option.label}
                     </SelectItem>
                   )}
                   {ACTOR_GROUPS.filter((g) => actorGroups[g].length > 0).map((g) => (
                     <SelectGroup key={g}>
                       <SelectLabel>{g}</SelectLabel>
                       {actorGroups[g].map((o) => (
-                        <SelectItem key={o.value} value={o.value}>
+                        <SelectItem key={o.value} value={o.value} className={COUNTED_OPTION_CLASS}>
                           <OptionText option={o} />
                         </SelectItem>
                       ))}
@@ -769,7 +818,7 @@ export function AuditLogClient({
                 <SelectContent>
                   <SelectItem value={ALL_VALUE}>All entity types</SelectItem>
                   {entityTypeOptions.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>
+                    <SelectItem key={o.value} value={o.value} className={COUNTED_OPTION_CLASS}>
                       <OptionText option={o} />
                     </SelectItem>
                   ))}
@@ -793,6 +842,7 @@ export function AuditLogClient({
               placeholder="UUID"
               initialValue={initialFilter.entityId ?? ""}
               inputRef={entityIdRef}
+              validate={entityIdError}
               onCommit={(v) => setParam("entityId", v || undefined)}
             />
           </div>

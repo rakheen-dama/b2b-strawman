@@ -8,6 +8,11 @@ import {
   sentenceCaseKey,
 } from "../entity-type-labels";
 
+// CI NOTE: the frontend CI workflow is path-filtered to frontend changes, so this test does NOT
+// run on a backend-only PR. If it fails on an unrelated frontend PR with a non-empty `missing`
+// list, a backend PR has added a new audit entity literal — add its legal label to
+// ENTITY_TYPE_LABELS (do not weaken the test).
+//
 // Cross-file drift guard (Epic 611 technique): the audit entity-type literals are backend storage
 // keys (ADR-342). Every literal the backend emits must carry an explicit legal label, so the
 // Firm › Audit trail Entity column and Entity type filter never print a raw key.
@@ -69,7 +74,9 @@ describe("ENTITY_TYPE_LABELS", () => {
     // Parser self-check: 68 on 2026-10-27; a broken regex must not pass vacuously.
     expect(emitted.size).toBeGreaterThanOrEqual(60);
     expect(emitted.has("cash_digest")).toBe(true);
-    const missing = [...emitted].filter((literal) => !(literal in ENTITY_TYPE_LABELS)).sort();
+    const missing = [...emitted]
+      .filter((literal) => !Object.hasOwn(ENTITY_TYPE_LABELS, literal))
+      .sort();
     expect(missing).toEqual([]);
   });
 
@@ -91,7 +98,14 @@ describe("ENTITY_TYPE_LABELS", () => {
     // R-2: acceptance requests cover any document, not only engagement letters.
     expect(entityTypeLabel("acceptance_request")).toBe("Document for acceptance");
     expect(entityTypeLabel("portal_contact")).toBe("Portal contact");
-    expect(entityTypeLabel("checklist_instance_item")).toBe("FICA checklist item");
+    // Checklists are any firm template (e.g. "Generic Client Onboarding"), not only FICA.
+    expect(entityTypeLabel("checklist_instance")).toBe("Checklist");
+    expect(entityTypeLabel("checklist_instance_item")).toBe("Checklist item");
+    expect(entityTypeLabel("checklist_template")).toBe("Checklist template");
+  });
+
+  it("no label names a narrower kind than its literal covers (e.g. FICA for any checklist)", () => {
+    for (const label of Object.values(ENTITY_TYPE_LABELS)) expect(label).not.toMatch(/\bFICA\b/);
   });
 
   it("no label leaks the storage vocabulary (Project / Customer / Invoice)", () => {
@@ -106,6 +120,13 @@ describe("ENTITY_TYPE_LABELS", () => {
     expect(entityTypeLabel("unknown_thing", "Backend label")).toBe("Backend label");
     expect(entityTypeLabel("project", "Project")).toBe("Matter");
     expect(entityTypeLabel("")).toBe("");
+  });
+
+  it("only reads own map entries — prototype keys fall back like any unknown literal", () => {
+    expect(entityTypeLabel("constructor")).toBe("Constructor");
+    expect(entityTypeLabel("toString")).toBe("ToString");
+    expect(entityTypeLabel("hasOwnProperty", "Backend label")).toBe("Backend label");
+    expect(entityTypeLabel("__proto__")).toBe("Proto");
   });
 
   it("derives a display name only from a string invoice number (R-4)", () => {

@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("server-only", () => ({}));
@@ -240,6 +240,35 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
     expect(screen.getByText("Event C")).toBeInTheDocument();
   });
 
+  it("drops a non-ISO from / to from the URL instead of failing the page (R-6 class)", async () => {
+    mockListAuditEvents.mockResolvedValue({
+      content: [makeEvent({ id: "evt-d", label: "Event D" })],
+      page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
+    });
+
+    await renderTab({ from: "yesterday", to: "2026-10-27", severities: "INFO" });
+
+    const filter = mockListAuditEvents.mock.calls[0]?.[0];
+    expect(filter.from).toBeUndefined();
+    expect(filter.to).toBeUndefined();
+    expect(filter.severities).toEqual(["INFO"]);
+    expect(mockListFacetActors).toHaveBeenCalledWith({
+      from: "1970-01-01T00:00:00Z",
+      to: undefined,
+    });
+    expect(screen.getByText("Event D")).toBeInTheDocument();
+  });
+
+  it("keeps valid ISO instants and drops impossible calendar dates", async () => {
+    mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
+
+    await renderTab({ from: "2026-10-01T00:00:00.000Z", to: "2026-02-30T23:59:59.999Z" });
+
+    const filter = mockListAuditEvents.mock.calls[0]?.[0];
+    expect(filter.from).toBe("2026-10-01T00:00:00.000Z");
+    expect(filter.to).toBeUndefined();
+  });
+
   it("shows 'Not authorised' copy when the API returns 403", async () => {
     mockListAuditEvents.mockRejectedValue(
       new ApiError(403, "Forbidden", {
@@ -358,7 +387,7 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
 
     expect(screen.getByTestId("entity-cell-link")).toHaveTextContent(/^Fee note INV-0003$/);
     expect(screen.getByTestId("entity-cell-literal")).toHaveTextContent(
-      /^FICA checklist item 5831f9d6$/
+      /^Checklist item 5831f9d6$/
     );
     expect(screen.queryByText(/invoice 7b7e7dde/)).not.toBeInTheDocument();
   });
@@ -468,15 +497,31 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       await user.click(screen.getByRole("combobox", { name: "Actor" }));
       expect(await screen.findByRole("option", { name: /All actors/ })).toBeInTheDocument();
       expect(screen.getByRole("option", { name: /Former member/ })).toBeInTheDocument();
-      // Repeated labels are disambiguated with a short id.
+      // Portal contacts carry a static backend label, so each is named by its short id (sentence
+      // case, like the "Portal contacts" group label).
       expect(
-        screen.getByRole("option", { name: /Portal Contact \(65f788e3\)/ })
+        screen.getByRole("option", { name: /^Portal contact \(65f788e3\)/ })
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("option", { name: /Portal Contact \(77e1b2c3\)/ })
+        screen.getByRole("option", { name: /^Portal contact \(77e1b2c3\)/ })
+      ).toBeInTheDocument();
+      expect(screen.queryByRole("option", { name: /Portal Contact/ })).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("option", { name: /Former member \(9a9a9a9a\)/ })
       ).toBeInTheDocument();
       expect(screen.getByText("Members")).toBeInTheDocument();
       expect(screen.getByText("Portal contacts")).toBeInTheDocument();
+    });
+
+    it("right-aligns the event count of each option (OD-6)", async () => {
+      mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
+
+      await renderTab();
+
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("combobox", { name: "Actor" }));
+      const alice = await screen.findByRole("option", { name: /Alice Smith/ });
+      expect(within(alice).getByText("3")).toHaveClass("ml-auto");
     });
 
     it("choosing 'All actors' clears the actorId param", async () => {
@@ -560,6 +605,51 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       expect(pushMock).toHaveBeenCalledTimes(1);
     });
 
+    it("a non-UUID is not pushed: inline error, aria-invalid, and later flushes skip it", async () => {
+      mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
+
+      await renderTab();
+
+      const input = screen.getByLabelText("Entity ID") as HTMLInputElement;
+      fireEvent.change(input, { target: { value: "abc" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      const error = screen.getByText("Enter a full ID");
+      expect(input).toHaveAttribute("aria-invalid", "true");
+      expect(input.getAttribute("aria-describedby")).toBe(error.id);
+      fireEvent.blur(input);
+      expect(pushMock).not.toHaveBeenCalled();
+
+      // A severity click flushes pending inputs — the invalid value must not ride along.
+      fireEvent.click(screen.getByTestId("severity-toggle-CRITICAL"));
+      await waitFor(() => expect(pushMock).toHaveBeenCalledTimes(1));
+      expect(pushedUrl()).toContain("severities=CRITICAL");
+      expect(pushedUrl()).not.toContain("entityId=");
+
+      // Editing clears the error; a full UUID then commits.
+      fireEvent.change(input, { target: { value: ALICE_ID } });
+      expect(screen.queryByText("Enter a full ID")).not.toBeInTheDocument();
+      expect(input).not.toHaveAttribute("aria-invalid", "true");
+      fireEvent.keyDown(input, { key: "Enter" });
+      await waitFor(() => expect(pushMock).toHaveBeenCalledTimes(2));
+      expect(pushMock.mock.calls[1]?.[0]).toContain(`entityId=${ALICE_ID}`);
+    });
+
+    it("an empty value clears the entityId filter normally", async () => {
+      mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
+
+      await renderTab({ entityId: ALICE_ID });
+
+      const input = screen.getByLabelText("Entity ID") as HTMLInputElement;
+      expect(input.value).toBe(ALICE_ID);
+      fireEvent.change(input, { target: { value: "" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      await waitFor(() => expect(pushMock).toHaveBeenCalledTimes(1));
+      expect(pushedUrl()).not.toContain("entityId=");
+      expect(screen.queryByText("Enter a full ID")).not.toBeInTheDocument();
+    });
+
     it("blur still commits a changed value", async () => {
       mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
 
@@ -591,7 +681,18 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       expect(pushedUrl()).toContain("eventType=invoice.sent");
     });
 
-    it("Enter commits the typed prefix through the 'Starts with' item", async () => {
+    it("names the search input for assistive tech", async () => {
+      mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
+
+      await renderTab();
+
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("combobox", { name: "Event type" }));
+      const search = await screen.findByRole("combobox", { name: "Search event types" });
+      expect(search).toHaveAttribute("placeholder", "Search event types…");
+    });
+
+    it("(c) no label match: Enter commits the typed prefix through the key-prefix item", async () => {
       mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
 
       await renderTab();
@@ -600,7 +701,7 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       await user.click(screen.getByRole("combobox", { name: "Event type" }));
       const search = await screen.findByPlaceholderText("Search event types…");
       await user.type(search, "proj");
-      expect(screen.getByRole("option", { name: /Starts with “proj”/ })).toBeInTheDocument();
+      expect(screen.getAllByRole("option")[0]).toHaveTextContent("Event key starts with “proj”");
       await user.keyboard("{Enter}");
 
       await waitFor(() => expect(pushMock).toHaveBeenCalled());
@@ -608,7 +709,47 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       expect(pushedUrl()).not.toContain("eventType=project.updated");
     });
 
-    it("Enter on an exact key commits that key (the e2e helper flow)", async () => {
+    it("(b) a plain word with label matches: label matches first, the key-prefix item after", async () => {
+      mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
+
+      await renderTab();
+
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("combobox", { name: "Event type" }));
+      const search = await screen.findByPlaceholderText("Search event types…");
+      await user.type(search, "matter");
+      const options = screen.getAllByRole("option");
+      expect(options.map((o) => o.textContent)).toEqual([
+        expect.stringContaining("Matter updated"),
+        expect.stringContaining("Matter closure closed"),
+        "Event key starts with “matter”",
+      ]);
+      await user.keyboard("{Enter}");
+
+      await waitFor(() => expect(pushMock).toHaveBeenCalled());
+      expect(pushedUrl()).toContain("eventType=project.updated");
+      expect(pushedUrl()).not.toMatch(/eventType=matter($|&)/);
+    });
+
+    it("(c) a key-shaped query (has . or _): the key-prefix item is first", async () => {
+      mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
+
+      await renderTab();
+
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("combobox", { name: "Event type" }));
+      const search = await screen.findByPlaceholderText("Search event types…");
+      fireEvent.change(search, { target: { value: "matter_closure" } });
+      const first = (await screen.findAllByRole("option"))[0];
+      expect(first).toHaveTextContent("Event key starts with “matter_closure”");
+      expect(screen.getByRole("option", { name: /Matter closure closed/ })).toBeInTheDocument();
+      await user.keyboard("{Enter}");
+
+      await waitFor(() => expect(pushMock).toHaveBeenCalled());
+      expect(pushedUrl()).toMatch(/eventType=matter_closure($|&)/);
+    });
+
+    it("(a) Enter on an exact key commits that key (the e2e helper flow)", async () => {
       mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
 
       await renderTab();
@@ -621,7 +762,8 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       expect(
         await screen.findByRole("option", { name: /Matter closure closed/ })
       ).toBeInTheDocument();
-      expect(screen.queryByRole("option", { name: /Starts with/ })).not.toBeInTheDocument();
+      expect(screen.getAllByRole("option")[0]).toHaveTextContent("Matter closure closed");
+      expect(screen.queryByRole("option", { name: /starts with/ })).not.toBeInTheDocument();
       await user.keyboard("{Enter}");
 
       await waitFor(() => expect(pushMock).toHaveBeenCalled());

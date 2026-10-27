@@ -18,8 +18,9 @@ const ENTITY_ROUTES: Record<string, (id: string) => string> = {
 // entityTypes that should never link (synthetic / not navigable)
 const NO_LINK_TYPES = new Set(["audit_export", "task"]);
 
-function shortId(id: string): string {
-  return id.length > 8 ? id.slice(0, 8) : id;
+/** First 8 characters of an id ("3f2a1b9c"); shorter ids are returned whole. */
+export function shortId(id: string): string {
+  return id.slice(0, 8);
 }
 
 export interface EntityCellProps {

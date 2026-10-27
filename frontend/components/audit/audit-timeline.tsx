@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { History } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -32,8 +32,9 @@ export interface AuditTimelineProps {
   /**
    * Page fetcher override (625D). Defaults to the strict by-entity feed
    * (`fetchEntityAuditPage(entityType, entityId, …)`). The client Activity tab passes the
-   * three-branch `/api/clients/{id}/activity` feed. Must be memoised by the caller — it is an
-   * effect dependency.
+   * three-branch `/api/clients/{id}/activity` feed. Held in a latest-value ref: a new function
+   * identity never refetches by itself (the first page reloads only when `entityType`, `entityId`
+   * or `initialPageSize` change); the latest loader is used for the next fetch.
    */
   loadPage?: AuditTimelinePageLoader;
 }
@@ -81,9 +82,18 @@ export function AuditTimeline({
   severityPillSize = "sm",
   loadPage,
 }: AuditTimelineProps) {
-  const fetchPage = useMemo<AuditTimelinePageLoader>(
-    () => loadPage ?? ((p, size) => fetchEntityAuditPage(entityType, entityId, p, size)),
-    [loadPage, entityType, entityId]
+  // Latest-value ref so an unmemoised caller cannot cause a refetch loop (the effect below is keyed
+  // on entity identity, not on the loader's identity).
+  const loadPageRef = useRef(loadPage);
+  useEffect(() => {
+    loadPageRef.current = loadPage;
+  }, [loadPage]);
+  const fetchPage = useCallback<AuditTimelinePageLoader>(
+    (p, size) =>
+      loadPageRef.current
+        ? loadPageRef.current(p, size)
+        : fetchEntityAuditPage(entityType, entityId, p, size),
+    [entityType, entityId]
   );
   const [events, setEvents] = useState<AuditEventResponse[]>([]);
   const [page, setPage] = useState(0);

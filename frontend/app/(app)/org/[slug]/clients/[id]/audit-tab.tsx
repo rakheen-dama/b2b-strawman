@@ -11,7 +11,7 @@ import { fetchClientActivityPage } from "@/lib/actions/audit-events";
  * client-side `useCapabilities()` hook) lives here.
  *
  * Reads the paged three-branch client feed (`GET /api/clients/{id}/activity`, 625C) rather than
- * the strict by-entity query, so the client's FICA checklist and information-request events show
+ * the strict by-entity query, so the client's checklist and information-request events show
  * up next to its own rows (G-B2).
  */
 export function CustomerAuditTab({ customerId }: { customerId: string }) {

@@ -338,7 +338,8 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     // Phase 87 S9 (ADR-344): /settings/audit-log → /settings/firm?tab=audit-trail
     await page.goto(`${BASE}/settings/firm?tab=audit-trail`);
     await page.waitForLoadState("networkidle");
-    // 625D: Event type is a searchable combobox — type the key, Enter commits it.
+    // 625D: Event type is a searchable combobox — type the full key, Enter commits it (exact facet
+    // key first, else the key-shaped query's "Event key starts with …" prefix item).
     const eventType = page.locator("#audit-filter-event-type");
     await eventType.click();
     const search = page.getByPlaceholder("Search event types…");

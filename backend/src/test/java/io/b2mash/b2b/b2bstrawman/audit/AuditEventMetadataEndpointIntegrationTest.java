@@ -3,16 +3,20 @@ package io.b2mash.b2b.b2bstrawman.audit;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.testutil.AbstractIntegrationTest;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * HTTP integration tests for {@code GET /api/audit-events/metadata} (501.7) covering authorization
@@ -22,11 +26,21 @@ class AuditEventMetadataEndpointIntegrationTest extends AbstractIntegrationTest 
 
   private static final String ORG_ID = "org_audit_metadata_endpoint_test";
 
+  @Autowired private AuditService auditService;
+
+  private String tenantSchema;
+  private UUID ownerId;
+
   @BeforeAll
   void provisionTenantAndSeedMembers() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Audit Metadata Endpoint Test Org", null);
-    TestMemberHelper.syncMember(
-        mockMvc, ORG_ID, "user_amd_owner", "amd_owner@test.com", "AMD Owner", "owner");
+    tenantSchema =
+        provisioningService
+            .provisionTenant(ORG_ID, "Audit Metadata Endpoint Test Org", null)
+            .schemaName();
+    ownerId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_amd_owner", "amd_owner@test.com", "AMD Owner", "owner"));
     TestMemberHelper.syncMember(
         mockMvc, ORG_ID, "user_amd_member", "amd_member@test.com", "AMD Member", "member");
   }
@@ -63,6 +77,75 @@ class AuditEventMetadataEndpointIntegrationTest extends AbstractIntegrationTest 
         .andExpect(
             jsonPath("$[?(@.eventType == 'matter.closure.override_used')].group")
                 .value(hasItem("COMPLIANCE")));
+  }
+
+  @Test
+  void invoicePrefixEntryReadsFeeNoteAndNoCatalogueLabelSaysInvoice() throws Exception {
+    // Phase 88 625C (D12, R-8): stored key invoice.* unchanged (ADR-342); display label legal.
+    mockMvc
+        .perform(
+            get("/api/audit-events/metadata")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_amd_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.eventType == 'invoice.*')].label").value(hasItem("Fee note")))
+        .andExpect(jsonPath("$[?(@.eventType == 'invoice.*')].group").value(hasItem("FINANCIAL")))
+        .andExpect(jsonPath("$[*].label", not(hasItem("Invoice"))));
+  }
+
+  @Test
+  void resolvedRowLabelsAreLegalWorded() throws Exception {
+    // Phase 88 625C (D12, R-8): the labels a firm audit-trail read returns — "Fee note" for an
+    // invoice.* row and the six legal head mappings for synthesised (unregistered) defaults.
+    UUID entityId = UUID.randomUUID();
+    String entityType = "legal_label_probe";
+    for (String eventType :
+        new String[] {
+          "invoice.sent",
+          "project.updated",
+          "customer.lifecycle.transitioned",
+          "project_member.added",
+          "legal_disbursement.created",
+          "project_budget.updated"
+        }) {
+      ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+          .run(
+              () ->
+                  auditService.log(
+                      new AuditEventRecord(
+                          eventType,
+                          entityType,
+                          entityId,
+                          ownerId,
+                          "USER",
+                          "API",
+                          null,
+                          null,
+                          null)));
+    }
+    mockMvc
+        .perform(
+            get("/api/audit-events/" + entityType + "/" + entityId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_amd_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content", hasSize(6)))
+        .andExpect(
+            jsonPath("$.content[?(@.eventType == 'invoice.sent')].label")
+                .value(hasItem("Fee note")))
+        .andExpect(
+            jsonPath("$.content[?(@.eventType == 'project.updated')].label")
+                .value(hasItem("Matter updated")))
+        .andExpect(
+            jsonPath("$.content[?(@.eventType == 'customer.lifecycle.transitioned')].label")
+                .value(hasItem("Client lifecycle transitioned")))
+        .andExpect(
+            jsonPath("$.content[?(@.eventType == 'project_member.added')].label")
+                .value(hasItem("Matter team member added")))
+        .andExpect(
+            jsonPath("$.content[?(@.eventType == 'legal_disbursement.created')].label")
+                .value(hasItem("Disbursement created")))
+        .andExpect(
+            jsonPath("$.content[?(@.eventType == 'project_budget.updated')].label")
+                .value(hasItem("Matter budget updated")));
   }
 
   @Test

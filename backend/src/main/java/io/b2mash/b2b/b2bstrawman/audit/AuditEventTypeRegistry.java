@@ -1,10 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.audit;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,8 +22,8 @@ import org.springframework.stereotype.Component;
  * <ol>
  *   <li>Exact match wins (e.g. {@code matter.closure.override_used} ⇒ CRITICAL).
  *   <li>Otherwise walk down on dots and probe {@code s + ".*"} — the deepest matching prefix wins.
- *   <li>If nothing matches, synthesise a default with title-cased label, {@code severity=INFO},
- *       {@code group=STANDARD}.
+ *   <li>If nothing matches, synthesise a default with a legal sentence-cased label ({@link
+ *       #legalLabel}), {@code severity=INFO}, {@code group=STANDARD}.
  * </ol>
  */
 @Component
@@ -105,9 +107,11 @@ public class AuditEventTypeRegistry {
                 "Role Capabilities Changed",
                 AuditSeverity.WARNING,
                 AuditEventGroup.SECURITY),
-            // FINANCIAL — invoice
+            // FINANCIAL — fee note (stored key invoice.*; ADR-342: storage key, do not rename).
+            // D12 (Phase 88 625C): legal display label — labels derive at read time, so history
+            // relabels and exports regenerate on demand.
             new AuditEventTypeMetadata(
-                "invoice.*", "Invoice", AuditSeverity.INFO, AuditEventGroup.FINANCIAL),
+                "invoice.*", "Fee note", AuditSeverity.INFO, AuditEventGroup.FINANCIAL),
             // AI SKILL FAILURE — Phase 72 skill pipeline (AiExecutionPersistenceService) still
             // emits
             // ai.specialist.failed; the other Phase 70 ai.specialist.* entries were removed in
@@ -281,7 +285,8 @@ public class AuditEventTypeRegistry {
    * input matches a registered {@code .*} prefix, a new {@link AuditEventTypeMetadata} is returned
    * that carries the caller's input as its {@code eventType} but copies the prefix entry's label,
    * severity, and group. If no entry matches, a default fallback metadata is synthesised with a
-   * title-cased label, {@code severity=INFO}, and {@code group=STANDARD}.
+   * legal sentence-cased label ({@link #legalLabel}), {@code severity=INFO}, and {@code
+   * group=STANDARD}.
    *
    * @param eventType the audit event type to classify (may be {@code null}, in which case a default
    *     fallback for the empty string is returned)
@@ -328,36 +333,53 @@ public class AuditEventTypeRegistry {
     return entriesList.stream().filter(entry -> severities.contains(entry.severity())).toList();
   }
 
+  /**
+   * D12 / ADR-342 (Phase 88 625C): legal display words for the FIRST dot-segment of a stored key.
+   * Only the synthesised label changes — stored event types and entity literals are keys, never
+   * renamed.
+   */
+  private static final Map<String, String> LEGAL_HEADS =
+      Map.of(
+          "project", "Matter",
+          "customer", "Client",
+          "invoice", "Fee note",
+          "legal_disbursement", "Disbursement",
+          "project_member", "Matter team member",
+          "project_budget", "Matter budget");
+
   /** Synthesises the default metadata for an unregistered event type. */
   private static AuditEventTypeMetadata defaultFor(String eventType) {
     return new AuditEventTypeMetadata(
-        eventType, titleCase(eventType), AuditSeverity.INFO, AuditEventGroup.STANDARD);
+        eventType, legalLabel(eventType), AuditSeverity.INFO, AuditEventGroup.STANDARD);
   }
 
   /**
-   * Converts a dotted/underscored event-type string to a title-cased human label. {@code
-   * "foo.bar.baz"} ⇒ {@code "Foo Bar Baz"}; {@code "matter.closure_override"} ⇒ {@code "Matter
-   * Closure_override"} (only the first character of each dot/underscore segment is forced
-   * upper-case to keep the transformation reversible-ish for camel-cased segments).
+   * Sentence-cased legal label for a dotted/underscored key — the one label helper for synthesised
+   * event-type labels and the entity-type facet labels ({@link DatabaseAuditService#facets}). The
+   * first dot-segment goes through {@link #LEGAL_HEADS} (else its underscores become spaces), the
+   * remaining segments follow with dots/underscores as spaces, and only the first character is
+   * upper-cased: {@code "project.created_from_template"} ⇒ {@code "Matter created from template"};
+   * {@code "customer.lifecycle.transitioned"} ⇒ {@code "Client lifecycle transitioned"}; {@code
+   * "project_member.added"} ⇒ {@code "Matter team member added"}; {@code "foo.bar.baz"} ⇒ {@code
+   * "Foo bar baz"}; entity literal {@code "trust_account"} ⇒ {@code "Trust account"}.
    */
-  private static String titleCase(String s) {
-    if (s == null || s.isEmpty()) {
+  static String legalLabel(String key) {
+    if (key == null || key.isBlank()) {
       return "";
     }
-    var parts = s.split("[._]");
-    var out = new StringBuilder();
-    for (int i = 0; i < parts.length; i++) {
-      if (parts[i].isEmpty()) {
-        continue;
-      }
-      if (out.length() > 0) {
-        out.append(' ');
-      }
-      out.append(Character.toUpperCase(parts[i].charAt(0)));
-      if (parts[i].length() > 1) {
-        out.append(parts[i].substring(1));
-      }
-    }
-    return out.toString();
+    int dot = key.indexOf('.');
+    String head = dot < 0 ? key : key.substring(0, dot);
+    String rest = dot < 0 ? "" : key.substring(dot + 1);
+    String words = LEGAL_HEADS.getOrDefault(head, spaced(head));
+    String tail = spaced(rest);
+    String label = words.isEmpty() ? tail : tail.isEmpty() ? words : words + " " + tail;
+    return label.isEmpty() ? "" : Character.toUpperCase(label.charAt(0)) + label.substring(1);
+  }
+
+  /** Dots and underscores become single spaces; empty segments are dropped. */
+  private static String spaced(String s) {
+    return Arrays.stream(s.split("[._]"))
+        .filter(part -> !part.isEmpty())
+        .collect(Collectors.joining(" "));
   }
 }

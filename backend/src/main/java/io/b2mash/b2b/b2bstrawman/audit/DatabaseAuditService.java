@@ -515,11 +515,15 @@ public class DatabaseAuditService implements AuditService {
               row.getCount()));
     }
 
-    // EntityType facets — title-case the raw entity_type for the label.
+    // EntityType facets — the registry's legal label helper (Phase 88 625C, D12): stored literals
+    // unchanged (ADR-342), display words legal ("project" ⇒ "Matter"), sentence case.
     List<EntityTypeFacet> entityTypes = new ArrayList<>(entityTypeRows.size());
     for (var row : entityTypeRows) {
       entityTypes.add(
-          new EntityTypeFacet(row.getEntityType(), titleCase(row.getEntityType()), row.getCount()));
+          new EntityTypeFacet(
+              row.getEntityType(),
+              AuditEventTypeRegistry.legalLabel(row.getEntityType()),
+              row.getCount()));
     }
 
     return new FacetSnapshot(
@@ -539,31 +543,5 @@ public class DatabaseAuditService implements AuditService {
       case "API_KEY" -> "API Key";
       default -> "System";
     };
-  }
-
-  /**
-   * Title-cases a dotted/underscored token for facet display. Mirrors {@link
-   * AuditEventTypeRegistry}'s private titleCase helper -- {@code "task"} ⇒ {@code "Task"}, {@code
-   * "trust_account"} ⇒ {@code "Trust account"}.
-   */
-  private static String titleCase(String s) {
-    if (s == null || s.isEmpty()) {
-      return "";
-    }
-    var parts = s.split("[._]");
-    var out = new StringBuilder();
-    for (int i = 0; i < parts.length; i++) {
-      if (parts[i].isEmpty()) {
-        continue;
-      }
-      if (out.length() > 0) {
-        out.append(' ');
-      }
-      out.append(Character.toUpperCase(parts[i].charAt(0)));
-      if (parts[i].length() > 1) {
-        out.append(parts[i].substring(1));
-      }
-    }
-    return out.toString();
   }
 }

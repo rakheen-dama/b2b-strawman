@@ -1,0 +1,47 @@
+== Client: Acme Corp b6dc030f-bb6f-45c6-844f-a673637c5da9, schema tenant_7d218705360b
+== Branch A: entity_type=customer AND entity_id=client
+            event_type            | count 
+----------------------------------+-------
+ customer.created                 |     1
+ customer.lifecycle.auto_dormancy |     1
+ customer.lifecycle.transitioned  |     2
+(3 rows)
+
+== Branch B: child entities (checklist_instance/_item, information_request, request_item, portal_contact) of the client
+       entity_type       |          event_type          | count 
+-------------------------+------------------------------+-------
+ checklist_instance      | checklist.instance.completed |     1
+ checklist_instance      | checklist.instance.created   |     1
+ checklist_instance_item | checklist.item.completed     |     1
+ checklist_instance_item | checklist.item.skipped       |     8
+(4 rows)
+
+== Branch B (any entity_type, matched by id only, for diagnosis)
+       entity_type       |          event_type          | count 
+-------------------------+------------------------------+-------
+ checklist_instance      | checklist.instance.completed |     1
+ checklist_instance      | checklist.instance.created   |     1
+ checklist_instance_item | checklist.item.completed     |     1
+ checklist_instance_item | checklist.item.skipped       |     8
+(4 rows)
+
+== Branch C: details->>customer_id = client
+ entity_type | event_type | count 
+-------------+------------+-------
+(0 rows)
+
+== Union of A + B + C (distinct rows)
+ count 
+-------
+    15
+(1 row)
+
+== Distinct entity_type values stored for checklist/request/portal events (tenant-wide)
+       entity_type       |          event_type          | count 
+-------------------------+------------------------------+-------
+ checklist_instance      | checklist.instance.completed |     1
+ checklist_instance      | checklist.instance.created   |     3
+ checklist_instance_item | checklist.item.completed     |     1
+ checklist_instance_item | checklist.item.skipped       |     8
+(4 rows)
+

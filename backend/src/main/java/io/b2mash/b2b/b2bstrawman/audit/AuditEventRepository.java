@@ -83,6 +83,70 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
       Pageable pageable);
 
   /**
+   * WHERE clause of {@link #findClientActivity} — shared verbatim by its page and count queries so
+   * the two cannot drift. Each child branch keeps its (entity_type, entity_id) pair together; the
+   * {@code = ANY(ARRAY(subquery))} form makes each child-id list an InitPlan evaluated once, so
+   * {@code entity_id = ANY($n)} stays eligible for {@code idx_audit_entity} (a plain {@code IN
+   * (subquery)} plans as a per-row hashed SubPlan). Branch (c) is served by {@code
+   * idx_audit_customer} (tenant V6). ADR-342: 'customer' and the child entity-type strings are
+   * persisted audit literals — they stay under the matter/client wire; do not rename.
+   */
+  String CLIENT_ACTIVITY_WHERE =
+      """
+      WHERE (e.entity_type = 'customer' -- ADR-342: storage key, do not rename
+             AND e.entity_id = CAST(:customerId AS UUID))
+         OR (e.entity_type = 'checklist_instance' -- ADR-342: storage key, do not rename
+             AND e.entity_id = ANY(ARRAY(
+               SELECT ci.id FROM checklist_instances ci
+               WHERE ci.customer_id = CAST(:customerId AS UUID))))
+         OR (e.entity_type = 'checklist_instance_item' -- ADR-342: storage key, do not rename
+             AND e.entity_id = ANY(ARRAY(
+               SELECT cii.id FROM checklist_instance_items cii
+               JOIN checklist_instances ci ON ci.id = cii.instance_id
+               WHERE ci.customer_id = CAST(:customerId AS UUID))))
+         OR (e.entity_type = 'information_request' -- ADR-342: storage key, do not rename
+             AND e.entity_id = ANY(ARRAY(
+               SELECT ir.id FROM information_requests ir
+               WHERE ir.customer_id = CAST(:customerId AS UUID))))
+         OR (e.entity_type = 'request_item' -- ADR-342: storage key, do not rename
+             AND e.entity_id = ANY(ARRAY(
+               SELECT ri.id FROM request_items ri
+               JOIN information_requests ir ON ir.id = ri.request_id
+               WHERE ir.customer_id = CAST(:customerId AS UUID))))
+         OR (e.entity_type = 'portal_contact' -- ADR-342: storage key, do not rename
+             AND e.entity_id = ANY(ARRAY(
+               SELECT pc.id FROM portal_contacts pc
+               WHERE pc.customer_id = CAST(:customerId AS UUID))))
+         OR (e.details->>'customer_id') = CAST(:customerId AS TEXT)
+      """;
+
+  /**
+   * The client Activity feed (Phase 88 625C, U6, G-B2): three OR-branches —
+   *
+   * <ul>
+   *   <li>(a) the client's own rows: {@code entity_type='customer' AND entity_id=:customerId};
+   *   <li>(b) rows on entities the client owns (each owner FK is NOT NULL, so a child id belongs to
+   *       exactly one client): checklist instances and their items, information requests and their
+   *       items, portal contacts;
+   *   <li>(c) rows whose publisher named the client in {@code details->>'customer_id'} (ADR-349
+   *       publisher obligation, {@link AuditDetails#CUSTOMER_ID}: 625A matter-scoped rows, the 625C
+   *       checklist item events, information_request.created).
+   * </ul>
+   *
+   * <p>Selects by client only — never by matter — so another client's rows on a shared matter
+   * cannot appear (R-17). Ordered {@code occurred_at DESC, id DESC} (deterministic paging); the
+   * caller must pass a sort-free {@link Pageable}.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          "SELECT * FROM audit_events e "
+              + CLIENT_ACTIVITY_WHERE
+              + " ORDER BY e.occurred_at DESC, e.id DESC",
+      countQuery = "SELECT count(*) FROM audit_events e " + CLIENT_ACTIVITY_WHERE)
+  Page<AuditEvent> findClientActivity(@Param("customerId") UUID customerId, Pageable pageable);
+
+  /**
    * Counts audit events grouped by event type, ordered by count descending. Uses typed projection
    * instead of Object[] for type safety.
    */

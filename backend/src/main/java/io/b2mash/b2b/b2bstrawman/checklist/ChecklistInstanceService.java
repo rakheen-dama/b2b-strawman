@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.checklist;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.ChecklistInstanceItemResponse;
@@ -240,6 +241,7 @@ public class ChecklistInstanceService {
     var completeDetails = new LinkedHashMap<String, Object>();
     completeDetails.put("itemName", item.getName());
     completeDetails.put("instanceId", item.getInstanceId().toString());
+    completeDetails.put(AuditDetails.CUSTOMER_ID, customerIdOf(item));
     if (actorId != null) {
       completeDetails.put("completedBy", actorId.toString());
     }
@@ -280,6 +282,7 @@ public class ChecklistInstanceService {
     var skipDetails = new LinkedHashMap<String, Object>();
     skipDetails.put("itemName", item.getName());
     skipDetails.put("instanceId", item.getInstanceId().toString());
+    skipDetails.put(AuditDetails.CUSTOMER_ID, customerIdOf(item));
     if (reason != null) {
       skipDetails.put("reason", reason);
     }
@@ -330,6 +333,7 @@ public class ChecklistInstanceService {
     var reopenDetails = new LinkedHashMap<String, Object>();
     reopenDetails.put("itemName", item.getName());
     reopenDetails.put("instanceId", item.getInstanceId().toString());
+    reopenDetails.put(AuditDetails.CUSTOMER_ID, instance.getCustomerId().toString());
     if (actorId != null) {
       reopenDetails.put("reopenedBy", actorId.toString());
     }
@@ -444,6 +448,21 @@ public class ChecklistInstanceService {
       instanceItemRepository.save(dependent);
       log.info("Unblocked checklist item '{}' ({})", dependent.getName(), dependent.getId());
     }
+  }
+
+  /**
+   * U5/U6 publisher obligation (ADR-349, Phase 88 625C): checklist item events name their client in
+   * {@code details.customer_id} so the client Activity feed matches them without the child join.
+   * One PK read; the persistence context serves the later instance lookup in
+   * checkInstanceCompletion.
+   */
+  private String customerIdOf(ChecklistInstanceItem item) {
+    UUID instanceId = item.getInstanceId();
+    return instanceRepository
+        .findById(instanceId)
+        .orElseThrow(() -> new ResourceNotFoundException("ChecklistInstance", instanceId))
+        .getCustomerId()
+        .toString();
   }
 
   private void checkInstanceCompletion(UUID instanceId, UUID actorId) {

@@ -1,0 +1,7 @@
+                  id                  |                  name                  | lifecycle_status |             instance_id              |   status    | completed | skipped | total 
+--------------------------------------+----------------------------------------+------------------+--------------------------------------+-------------+-----------+---------+-------
+ b6dc030f-bb6f-45c6-844f-a673637c5da9 | Acme Corp                              | DORMANT          | ba78be61-0e38-45e0-9303-88b0e43c0cb8 | COMPLETED   |         1 |       8 |     9
+ 218397cf-bddb-4fbd-9e9d-872bd4589c6c | Khumalo Property Holdings mvmzw78f31c9 | ONBOARDING       | a8210f89-197d-40e9-8f05-2436ecfeebe5 | IN_PROGRESS |         0 |       0 |     9
+ 1d7cae32-0deb-43fe-af41-a3b9452f3128 | Sipho Ndlovu mvmzw78f31c9              | ONBOARDING       | cc57d406-3895-478c-97c9-755607bff2ed | IN_PROGRESS |         0 |       0 |     9
+(3 rows)
+

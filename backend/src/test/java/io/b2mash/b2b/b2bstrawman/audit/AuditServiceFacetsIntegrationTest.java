@@ -163,6 +163,47 @@ class AuditServiceFacetsIntegrationTest extends AbstractIntegrationTest {
   }
 
   @Test
+  void entityTypeFacetLabelsAreLegalWorded() {
+    // Phase 88 625C (D12, R-9): entity-type facet labels share the registry's legal label helper —
+    // stored literals unchanged (ADR-342), display words legal, sentence case.
+    var rangeStart = Instant.now().truncatedTo(ChronoUnit.SECONDS).minus(1, ChronoUnit.MINUTES);
+    var rangeEnd = rangeStart.plus(1, ChronoUnit.HOURS);
+
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .run(
+            () -> {
+              for (var entityType :
+                  new String[] {
+                    "project", "customer", "legal_disbursement", "project_budget", "trust_account"
+                  }) {
+                auditService.log(
+                    new AuditEventRecord(
+                        entityType + ".probed",
+                        entityType,
+                        UUID.randomUUID(),
+                        liveMemberId,
+                        "USER",
+                        "API",
+                        null,
+                        null,
+                        null));
+              }
+
+              var labels =
+                  auditService.facets(rangeStart, rangeEnd).entityTypes().stream()
+                      .collect(
+                          java.util.stream.Collectors.toMap(
+                              EntityTypeFacet::entityType, EntityTypeFacet::label));
+              assertThat(labels)
+                  .containsEntry("project", "Matter")
+                  .containsEntry("customer", "Client")
+                  .containsEntry("legal_disbursement", "Disbursement")
+                  .containsEntry("project_budget", "Matter budget")
+                  .containsEntry("trust_account", "Trust account");
+            });
+  }
+
+  @Test
   void actorFacetEnrichesFormerMemberFallback() {
     // Seed an event for an actorId that does NOT match any member row — the LEFT JOIN miss must
     // surface as the "Former member ({uuid})" fallback per architecture §12.3.4.

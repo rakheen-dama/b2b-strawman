@@ -126,11 +126,13 @@ public abstract class AbstractPackSeeder<D> {
    * clones or tenant-authored rows. Empty → the entry is skipped and logged. Default: no entity is
    * supported.
    *
-   * <p>For a {@code sha256:} {@code to} (Tiptap body), the returned {@link
-   * PackReconcileEntry.Target#apply} receives the hash <em>string</em>: it must ignore it, load the
-   * new body from {@code packResource}, write it, and re-pin the row's stored install-time hash
-   * ({@code document_template.content_hash}, as its {@code PackInstaller} computes it). {@code
-   * currentValue()} returns the body JSON.
+   * <p>The returned target writes the new value only. For a {@code sha256:} {@code to} (Tiptap
+   * body), {@link PackReconcileEntry.Target#apply} receives the hash <em>string</em>: it must
+   * ignore it, load the new body from {@code packResource} and write it; {@code currentValue()}
+   * returns the body JSON. Targets must NOT compute or write content hashes: for installer-managed
+   * types (templates, automations) the {@code PackInstaller} re-pins the stored content hash of
+   * rows that were pristine before the hook; seeder-managed types have no install-time content
+   * hash.
    *
    * @param pack the current pack definition from the classpath
    * @param entry the reconcile entry

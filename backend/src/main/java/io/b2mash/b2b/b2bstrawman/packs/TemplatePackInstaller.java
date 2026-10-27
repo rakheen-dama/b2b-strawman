@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -157,7 +158,9 @@ public class TemplatePackInstaller implements PackInstaller {
    *       this is how content fixes (e.g. LZKC-010's {@code invoice.number} placeholder typo) reach
    *       existing tenants. Tenant-edited templates are never touched, and templates without a
    *       recorded content hash are left alone (unknown provenance);
-   *   <li>advances the recorded install version.
+   *   <li>advances the recorded install version;
+   *   <li>applies the pack's {@code reconcile} block (ADR-356, one rule) via the seeder hook, then
+   *       re-pins the content hash of templates that were pristine before the hook.
    * </ul>
    *
    * <p>Templates are never deleted. Note that a version bump restores any pack template the tenant
@@ -242,17 +245,57 @@ public class TemplatePackInstaller implements PackInstaller {
     }
 
     // ADR-356: apply the pack's reconcile block (one rule) after the additive create/refresh pass,
-    // so pristine content already refreshed above reads as ALREADY_CURRENT.
+    // so pristine content already refreshed above reads as ALREADY_CURRENT. The pristine snapshot
+    // is taken after that pass (created/refreshed rows are covered) and immediately before the
+    // hook; the installer — never the reconcile target — re-pins those rows' content hash.
+    List<DocumentTemplate> pristine = findPristineTemplates(install.getId());
     templatePackSeeder.reconcileInstalledPack(pack, loadedPack.resource(), tenantId);
+    int repinned = repinContentHashes(pristine);
 
     log.info(
-        "Reconciled template pack {} to v{} for tenant {} ({} new templates, {} refreshed)",
+        "Reconciled template pack {} to v{} for tenant {} ({} new templates, {} refreshed, {}"
+            + " re-pinned after the reconcile block)",
         packId,
         pack.version(),
         tenantId,
         created,
-        refreshed);
+        refreshed,
+        repinned);
     return true;
+  }
+
+  /**
+   * Templates of this install the tenant has not edited: a recorded content hash equal to the row's
+   * current content (the uninstall gate's "unedited" predicate; rows without a recorded hash are
+   * unknown provenance and excluded).
+   */
+  private List<DocumentTemplate> findPristineTemplates(UUID installId) {
+    return documentTemplateRepository.findBySourcePackInstallId(installId).stream()
+        .filter(dt -> dt.getContentHash() != null)
+        .filter(dt -> dt.getContentHash().equals(computeTemplateHash(dt)))
+        .toList();
+  }
+
+  /**
+   * Re-pins the content hash of templates that were pristine before the reconcile hook and whose
+   * content the hook changed, so they still read as unedited for the uninstall gate and {@link
+   * #refreshIfUnmodified}. Rows that were tenant-edited before the hook are never passed in.
+   *
+   * @return the number of re-pinned templates
+   */
+  private int repinContentHashes(List<DocumentTemplate> pristineBeforeHook) {
+    List<DocumentTemplate> changed = new ArrayList<>();
+    for (DocumentTemplate dt : pristineBeforeHook) {
+      String current = computeTemplateHash(dt);
+      if (!Objects.equals(current, dt.getContentHash())) {
+        dt.setContentHash(current);
+        changed.add(dt);
+      }
+    }
+    if (!changed.isEmpty()) {
+      documentTemplateRepository.saveAll(changed);
+    }
+    return changed.size();
   }
 
   /**

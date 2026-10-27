@@ -20,7 +20,11 @@ import org.slf4j.Logger;
  *
  * <p>{@code from} may be {@code null} only for entities whose seeder overrides {@link
  * AbstractPackSeeder#applyReconcileEntry} (e.g. additive {@code clause_template_association}
- * upserts); under the one rule a {@code null from} matches only a {@code null} current value.
+ * upserts); under the one rule a {@code null from} matches only a {@code null} current value. For
+ * such an override where {@code from} is unused, {@code field} names the relation (e.g. {@code
+ * "association"}), {@code to} carries the desired value (e.g. the template key) and {@code from} is
+ * {@code null}; the parser's required fields ({@code entity}, {@code key}, {@code field}, {@code
+ * to}) still apply.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record PackReconcileEntry(String entity, String key, String field, Object from, Object to) {
@@ -35,23 +39,28 @@ public record PackReconcileEntry(String entity, String key, String field, Object
 
   /**
    * The targeted row's current field value and how to write it. Resolved per entity by a seeder
-   * ({@link AbstractPackSeeder#resolveReconcileTarget}).
+   * ({@link AbstractPackSeeder#resolveReconcileTarget}). A target writes the new value only.
+   *
+   * <p><b>Content hashes are not the target's job.</b> For installer-managed types (document
+   * templates, automation rules) the {@code PackInstaller} snapshots the install's pristine rows
+   * (stored content hash equals the recomputed hash) immediately before the reconcile hook and
+   * re-pins their stored content hash afterwards, so a row the hook updated still reads as
+   * unedited; rows already tenant-edited are never re-pinned. Targets must NOT compute or write
+   * content hashes. Seeder-managed types (clause, field, report, request) have no install-time
+   * content hash today.
    *
    * <p><b>{@code sha256:} contract (Tiptap bodies, 626D).</b> When {@code to} is a {@code
    * sha256:<hex>} value, {@link #currentValue()} must return the body JSON (the one rule hashes it
    * with {@link ContentHashUtil#hashOf}), and {@link #apply(Object)} receives that hash
    * <em>string</em>, not a body: the target must ignore the argument, load the new body from the
-   * pack {@code Resource} passed to {@code resolveReconcileTarget}, write it, and re-pin any stored
-   * install-time hash of the row ({@code document_template.content_hash}, recomputed the way its
-   * {@code PackInstaller} computes it — not the body-only {@code sha256:}) so the row still reads
-   * as unedited afterwards.
+   * pack {@code Resource} passed to {@code resolveReconcileTarget}, and write it.
    */
   public interface Target {
     Object currentValue();
 
     /**
-     * Writes the new value. For a {@code sha256:} {@code to} the argument is the hash string — see
-     * the interface Javadoc.
+     * Writes the new value (and nothing else — no content hash). For a {@code sha256:} {@code to}
+     * the argument is the hash string — see the interface Javadoc.
      */
     void apply(Object to);
   }

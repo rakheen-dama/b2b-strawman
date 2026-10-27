@@ -284,7 +284,7 @@ public class PackInstallService {
           settings.getPackStatus().recordTemplatePackApplication(entry.packId(), version);
       case AUTOMATION_TEMPLATE ->
           settings.getPackStatus().recordAutomationPackApplication(entry.packId(), version);
-      default -> {
+      case CLAUSE, FIELD, REPORT, REQUEST -> {
         // Ledger-only types (CLAUSE / FIELD / REPORT / REQUEST) never reach the installer path:
         // their seeders record OrgSettings themselves.
       }
@@ -297,7 +297,7 @@ public class PackInstallService {
     switch (type) {
       case DOCUMENT_TEMPLATE -> settings.getPackStatus().removeTemplatePackEntry(packId);
       case AUTOMATION_TEMPLATE -> settings.getPackStatus().removeAutomationPackEntry(packId);
-      default -> {
+      case CLAUSE, FIELD, REPORT, REQUEST -> {
         // Ledger-only types are filtered out before uninstall (findInstallerManagedInstall).
       }
     }

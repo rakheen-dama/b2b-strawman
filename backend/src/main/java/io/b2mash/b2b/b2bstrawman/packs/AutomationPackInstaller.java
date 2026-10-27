@@ -158,8 +158,9 @@ public class AutomationPackInstaller implements PackInstaller {
   /**
    * ADR-356 gate for automation packs: when the installed version is lower than the classpath
    * version, claims the advance and runs {@link AutomationTemplateSeeder}'s reconcile hook (the
-   * pack's {@code reconcile} block under the one rule). Creates and deletes no rules — a rule added
-   * in a newer pack version is not created for existing tenants.
+   * pack's {@code reconcile} block under the one rule), then re-pins the content hash of rules that
+   * were pristine before the hook. Creates and deletes no rules — a rule added in a newer pack
+   * version is not created for existing tenants.
    *
    * @return {@code true} when the recorded version advanced (the caller re-records OrgSettings)
    */
@@ -178,8 +179,58 @@ public class AutomationPackInstaller implements PackInstaller {
         PackType.AUTOMATION_TEMPLATE, packId, String.valueOf(pack.version()), tenantId)) {
       return false;
     }
+    // Snapshot the install's pristine rules immediately before the hook; the installer — never the
+    // reconcile target — re-pins their content hash afterwards.
+    List<AutomationRule> pristine =
+        packInstallRepository
+            .findByPackId(packId)
+            .map(install -> findPristineRules(install.getId()))
+            .orElse(List.of());
     automationTemplateSeeder.reconcileInstalledPack(pack, loadedPack.get().resource(), tenantId);
+    int repinned = repinContentHashes(pristine);
+    if (repinned > 0) {
+      log.info(
+          "Re-pinned content hash of {} rules of automation pack {} after the reconcile block for"
+              + " tenant {}",
+          repinned,
+          packId,
+          tenantId);
+    }
     return true;
+  }
+
+  /**
+   * Rules of this install the tenant has not edited: a recorded content hash equal to the rule's
+   * current hash (the uninstall gate's "unedited" predicate; rules without a recorded hash are
+   * excluded).
+   */
+  private List<AutomationRule> findPristineRules(UUID installId) {
+    return ruleRepository.findBySourcePackInstallId(installId).stream()
+        .filter(rule -> rule.getContentHash() != null)
+        .filter(rule -> rule.getContentHash().equals(computeRuleHash(rule)))
+        .toList();
+  }
+
+  /**
+   * Re-pins the content hash of rules that were pristine before the reconcile hook and whose
+   * content (trigger, conditions or actions) the hook changed, so they still read as unedited for
+   * the uninstall gate. Rules that were tenant-edited before the hook are never passed in.
+   *
+   * @return the number of re-pinned rules
+   */
+  private int repinContentHashes(List<AutomationRule> pristineBeforeHook) {
+    List<AutomationRule> changed = new ArrayList<>();
+    for (AutomationRule rule : pristineBeforeHook) {
+      String current = computeRuleHash(rule);
+      if (!current.equals(rule.getContentHash())) {
+        rule.setContentHash(current);
+        changed.add(rule);
+      }
+    }
+    if (!changed.isEmpty()) {
+      ruleRepository.saveAll(changed);
+    }
+    return changed.size();
   }
 
   @Override
@@ -261,7 +312,11 @@ public class AutomationPackInstaller implements PackInstaller {
     return new UninstallCheck(false, String.join("; ", reasons));
   }
 
-  private String computeRuleHash(AutomationRule rule) {
+  /**
+   * Canonical content hash of a rule (trigger, conditions and its actions). Package-visible so
+   * tests can pin hashes for simulated rule states.
+   */
+  String computeRuleHash(AutomationRule rule) {
     Map<String, Object> hashInput = new LinkedHashMap<>();
     hashInput.put("triggerType", rule.getTriggerType().name());
     hashInput.put("triggerConfig", rule.getTriggerConfig());

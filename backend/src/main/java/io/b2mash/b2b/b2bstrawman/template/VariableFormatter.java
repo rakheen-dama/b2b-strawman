@@ -72,18 +72,47 @@ public final class VariableFormatter {
     };
   }
 
-  private static String formatCurrency(Object value, Locale locale) {
+  /**
+   * Formats a currency amount as <b>plain text</b> (not HTML-escaped) for non-HTML sinks such as
+   * the activity feed, whose strings React renders verbatim. Same locale/NumberFormat path as the
+   * document renderer's {@code format(value, "currency", locale)}: en-ZA gives {@code R50 000,00}
+   * with the JDK's U+00A0 grouping separator.
+   *
+   * @param value the raw amount (BigDecimal, Number or numeric String)
+   * @param locale the formatting locale; falls back to ZA if null
+   * @return the formatted amount, {@code String.valueOf(value)} if it is not numeric, or {@code ""}
+   *     for null
+   */
+  public static String formatCurrencyText(Object value, Locale locale) {
+    if (value == null) return "";
     try {
       BigDecimal amount = new BigDecimal(String.valueOf(value));
       // NumberFormat is not thread-safe, so create a new instance each time
-      NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(locale);
-      return HtmlUtils.htmlEscape(currencyFormat.format(amount));
+      NumberFormat currencyFormat =
+          NumberFormat.getCurrencyInstance(locale != null ? locale : ZA_LOCALE);
+      return currencyFormat.format(amount);
     } catch (NumberFormatException e) {
-      return HtmlUtils.htmlEscape(String.valueOf(value));
+      return String.valueOf(value);
     }
   }
 
-  private static String formatDate(Object value) {
+  private static String formatCurrency(Object value, Locale locale) {
+    return HtmlUtils.htmlEscape(formatCurrencyText(value, locale));
+  }
+
+  /**
+   * Formats a date as <b>plain text</b> (not HTML-escaped) for non-HTML sinks such as the activity
+   * feed. Same {@code "d MMMM yyyy"} pattern as the document renderer's {@code format(value,
+   * "date")}, which wraps this method: a {@link LocalDate}, an ISO date ({@code 2026-03-08}) or an
+   * ISO instant ({@code 2026-03-08T14:30:00Z}, taken in UTC) gives {@code 8 March 2026}.
+   *
+   * @param value the raw date (LocalDate, ISO date String or ISO instant String)
+   * @return the formatted date, {@code String.valueOf(value)} if it is not parsable, or {@code ""}
+   *     for null
+   */
+  public static String formatDateText(Object value) {
+    if (value == null) return "";
+    if (value instanceof LocalDate date) return date.format(DATE_FORMAT);
     try {
       String str = String.valueOf(value);
       if (str.contains("T")) {
@@ -95,8 +124,15 @@ public final class VariableFormatter {
         return date.format(DATE_FORMAT);
       }
     } catch (Exception e) {
-      return HtmlUtils.htmlEscape(String.valueOf(value));
+      return String.valueOf(value);
     }
+  }
+
+  /**
+   * Document variant: {@link #formatDateText} HTML-escaped (a formatted date escapes to itself).
+   */
+  private static String formatDate(Object value) {
+    return HtmlUtils.htmlEscape(formatDateText(value));
   }
 
   /**

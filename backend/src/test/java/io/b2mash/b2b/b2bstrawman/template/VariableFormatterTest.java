@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 
 class VariableFormatterTest {
@@ -19,6 +20,23 @@ class VariableFormatterTest {
   @Test
   void currency_formats_zero() {
     assertThat(VariableFormatter.format(0, "currency")).isEqualTo("R0,00");
+  }
+
+  @Test
+  void currencyText_is_plain_text_not_html_escaped() {
+    // 625B: the activity feed is rendered verbatim by React, so the plain-text variant keeps the
+    // JDK's U+00A0 grouping separator instead of "&nbsp;".
+    assertThat(
+            VariableFormatter.formatCurrencyText(
+                "50000.00", VariableFormatter.resolveLocale("ZAR")))
+        .isEqualTo("R50\u00a0000,00")
+        .doesNotContain("&");
+    assertThat(VariableFormatter.formatCurrencyText(new java.math.BigDecimal("1500"), null))
+        .isEqualTo("R1\u00a0500,00");
+    assertThat(VariableFormatter.formatCurrencyText("1500", VariableFormatter.resolveLocale("USD")))
+        .isEqualTo("$1,500.00");
+    assertThat(VariableFormatter.formatCurrencyText(null, null)).isEmpty();
+    assertThat(VariableFormatter.formatCurrencyText("R&D", null)).isEqualTo("R&D");
   }
 
   @Test
@@ -40,6 +58,17 @@ class VariableFormatterTest {
   void date_formats_iso_instant_near_midnight_utc() {
     assertThat(VariableFormatter.format("2026-01-01T00:00:00Z", "date"))
         .isEqualTo("1 January 2026");
+  }
+
+  @Test
+  void dateText_is_plain_text_and_document_date_wraps_it() {
+    assertThat(VariableFormatter.formatDateText(LocalDate.of(2026, 3, 8)))
+        .isEqualTo("8 March 2026");
+    assertThat(VariableFormatter.formatDateText("2026-03-08T14:30:00Z")).isEqualTo("8 March 2026");
+    assertThat(VariableFormatter.formatDateText(null)).isEmpty();
+    // Unparsable: text variant is raw, document variant is the same text HTML-escaped.
+    assertThat(VariableFormatter.formatDateText("<b>&</b>")).isEqualTo("<b>&</b>");
+    assertThat(VariableFormatter.format("<b>&</b>", "date")).isEqualTo("&lt;b&gt;&amp;&lt;/b&gt;");
   }
 
   @Test

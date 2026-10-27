@@ -1,0 +1,10 @@
+# O1 — engagement letter preview dialog iframe, getComputedStyle per h1/h2/h3/hr (Playwright, 2026-10-27 ~20:17 UTC)
+H1 "E2E Test Organization" color=rgb(15, 118, 110)
+H2 "Engagement Letter — Conveyancing" color=rgb(15, 118, 110)
+HR borderTop=rgb(15, 118, 110) solid
+H3 "Transaction Details" color=rgb(15, 118, 110)
+H3 "Scope of Services" color=rgb(15, 118, 110)
+H3 "Terms and Conditions" color=rgb(15, 118, 110)
+H3 "Acceptance" color=rgb(15, 118, 110)
+HR borderTop=rgb(15, 118, 110) solid
+# rgb(15,118,110) = #0f766e (brand). Before: headings #1a1a2e in the preview too.

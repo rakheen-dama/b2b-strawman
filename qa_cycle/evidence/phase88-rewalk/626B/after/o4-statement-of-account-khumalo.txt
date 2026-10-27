@@ -1,0 +1,36 @@
+       E2E Test Organization
+       VAT Reg:
+       Statement of Account
+       Reference: SOA-02b5a264-20261027
+       Period: 1 October 2026 — 27 October 2026
+       Generated: 27 October 2026
+       To
+       Khumalo Property Holdings mvr15e76ef9a
+       12 Rivonia Road Sandton 2196 ZA
+       Matter
+       Matter: Khumalo Property Holdings — Erf 1234 Sandton Transfer mvr15e76ef9a
+       File reference:
+       Opened: 27 October 2026
+       Professional Fees
+        Date  Fee Earner  Description Hours  Rate  Amount
+       Total fees (excl. VAT): R0,00
+       VAT: R0,00
+       Total fees (incl. VAT): R0,00
+       Disbursements
+        Date  Category  Description Supplier  Amount   VAT
+       Total disbursements: R0,00
+            Trust Activity
+            Opening balance: R0,00
+            Deposits
+             Date          Reference               Description                 Amount
+            Payments
+             Date        Type        Reference            Description             Amount
+            Closing balance: R0,00
+            Summary
+            Total fees: R0,00
+            Total disbursements: R0,00
+            Previous balance owing: R0,00
+            Payments received: R0,00
+            Closing balance owing: R0,00
+            Trust balance held: R0,00
+            Payment Instructions

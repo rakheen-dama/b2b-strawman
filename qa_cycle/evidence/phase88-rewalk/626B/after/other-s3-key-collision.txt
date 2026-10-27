@@ -1,0 +1,10 @@
+# Other observation (pre-existing, outside 626B): generated-document S3 key collision overwrites earlier PDFs
+# The S3 key is <template-slug>-<matter-slug>-<date>.pdf, so two generations of the same template on the same matter on the same day share one key.
+# generated_documents rows on the Khumalo matter (read-only SELECT): see 00c-db-generated-documents-khumalo.txt
+#   0f59ac2d-… (before/R4 SoA, 19:53Z, file_size 3345, document eed30b82-…)  s3_key …/statement-of-account-khumalo-property-holdings-erf-1234-sandton-transfe-2026-10-27.pdf
+#   ece4ac02-… (after/O4 SoA, 20:21Z, file_size 3334, document 9b415576-…)   s3_key  (identical)
+# GET /api/generated-documents/0f59ac2d-…/download now serves the NEW statement:
+d0a7c898421d5cca482ef2881badd7fca0edd55b804c417fac6480ffaa170155  old-soa-now.pdf   (download of 0f59ac2d, 3334 bytes, DB says 3345)
+d0a7c898421d5cca482ef2881badd7fca0edd55b804c417fac6480ffaa170155  o4-statement-of-account-khumalo.pdf
+573a8bb79cb191b961544b81a02305df766f30243cbb2e4d1ae656f1590ee506  before/r4-statement-of-account-khumalo.pdf   (what 0f59ac2d served at 19:55Z)
+# Same pattern for engagement-letter-conveyancing (3 rows, 1 key) and the probe (2 rows, 1 key).

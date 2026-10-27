@@ -1,0 +1,50 @@
+# O3 — Insert Variable dialog on Settings › Documents › Templates › New (Primary Entity Type = Project, form NOT submitted), Alice, 2026-10-27 ~20:19 UTC
+# dialog innerText per search term (Playwright)
+
+## search "org."  (screenshots 03-…, 03b-…, 03c-…, 03d-…)
+Organization
+org.name                          Organization Name
+org.defaultCurrency               Default Currency
+org.brandColor                    Brand Color
+org.documentFooterText            Document Footer
+org.logoUrl                       Logo
+org.taxRegistrationNumber         VAT Registration Number      <- new
+org.address                       Firm Address                 <- new
+org.phone                         Firm Phone                   <- new
+org.email                         Firm Email                   <- new
+org.website                       Firm Website                 <- new
+org.bankingDetails.bankName       Bank Name                    <- new
+org.bankingDetails.branchCode     Branch Code                  <- new
+org.bankingDetails.accountNumber  Bank Account Number          <- new
+org.bankingDetails.accountType    Bank Account Type            <- new
+org.bankingDetails.referenceNote  Payment Reference Note       <- new
+org.signatory.name                Signatory Name               <- new
+org.signatory.designation         Signatory Designation        <- new
+(17 org keys = 5 existing + 13 new: 12 letterhead leaves + org.taxRegistrationNumber)
+NOT offered: org.principal_attorney, org.addressLines, org.bankingDetails (group), org.signatory (group)
+
+## search "address"
+Customer: customer.addressLine1, customer.addressLine2
+Organization: org.address  (Firm Address)
+Custom Fields: project.customFields.property_address
+Customer Custom Fields: customer.customFields.postal_address
+(no org.addressLines)
+
+## search "bank"
+Organization: org.bankingDetails.bankName / branchCode / accountNumber / accountType / referenceNote
+(no bare org.bankingDetails)
+
+## search "signatory"
+Organization: org.signatory.name, org.signatory.designation
+Custom Fields: project.customFields.opposing_attorney   (fuzzy match, unrelated)
+(no bare org.signatory)
+
+## search "principal"   (screenshot 04-…)
+No variables found.   (org.principal_attorney deliberately not offered)
+
+## search "phone"
+Customer: customer.contactPhone ; Organization: org.phone (Firm Phone)
+
+## search "VAT"
+Custom Fields: project.customFields.conveyancing_type, project.customFields.advocate_name
+(org.taxRegistrationNumber is NOT found by "VAT": the picker search appears to fuzzy-match on the key, not the label "VAT Registration Number". Frontend search behaviour, pre-existing, outside 626B's backend scope.)

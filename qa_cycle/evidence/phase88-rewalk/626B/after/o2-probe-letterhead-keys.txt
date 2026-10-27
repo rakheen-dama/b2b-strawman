@@ -1,0 +1,20 @@
+       E2E Test Organization
+       626B probe — letterhead keys
+       Resolved values
+       [org.name] => <E2E Test Organization>
+       [org.address] => <12 Rivonia Road, Illovo Point, 3rd Floor, Illovo, Sandton 2196, South Africa>
+       [org.addressLines] => <>
+       [org.phone] => <+27 11 555 0142>
+       [org.email] => <info@ndlovu-attorneys.co.za>
+       [org.website] => <https://www.khumalo-attorneys.co.za>
+       [org.bankingDetails.bankName] => <First National Bank>
+       [org.bankingDetails.branchCode] => <250655>
+       [org.bankingDetails.accountNumber] => <62812345678>
+       [org.bankingDetails.accountType] => <Cheque>
+       [org.bankingDetails.referenceNote] => <Please use your fee note number as the payment 
+       reference.>
+       [org.signatory.name] => <Thandiwe Khumalo>
+       [org.signatory.designation] => <Director>
+       [org.principal_attorney] => <Thandiwe Khumalo>
+       [org.brandColor] => <#0f766e>
+       [org.logoUrl] => <>

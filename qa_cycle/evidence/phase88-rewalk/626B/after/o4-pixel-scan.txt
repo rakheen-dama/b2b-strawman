@@ -1,0 +1,64 @@
+o4-1.ppm 661x935 brand_teal_px(#0f766e±12)=8320 heading_navy_px(#1a1a2e±8)=0 logo_orange_px=0
+o4-2.ppm 661x935 brand_teal_px(#0f766e±12)=4230 heading_navy_px(#1a1a2e±8)=0 logo_orange_px=0
+o4-statement-of-account-khumalo.pdf image_xobjects=0 Do_ops=0
+ fill rg colours: ['0.05882 0.46275 0.43137', '0.2 0.2 0.2', '0.86667 0.86667 0.86667', '0.96078 0.96078 0.96078']
+ stroke RG colours: []
+ brand #0f766e = 0.0588 0.4627 0.4314 rg ; heading #1a1a2e = 0.10196 0.10196 0.18039 rg
+
+# Text runs in non-body colours + text of table headers (decompressed content streams)
+page1 rg=0.05882 0.46275 0.43137 [/F1 18] (E2E Test Organization)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (VAT Reg:)
+page1 rg=0.05882 0.46275 0.43137 [/F1 13.9875] (Statement of Account)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Reference: )
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Period: )
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Generated: )
+page1 rg=0.05882 0.46275 0.43137 [/F1 12] (To)
+page1 rg=0.05882 0.46275 0.43137 [/F1 12] (Matter)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Matter: )
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (File reference:)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Opened: )
+page1 rg=0.05882 0.46275 0.43137 [/F1 12] (Professional Fees)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Date)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Fee Earner)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Description)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Hours)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Rate)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Amount)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Total fees \(excl. VAT\): )
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (VAT: )
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Total fees \(incl. VAT\): )
+page1 rg=0.05882 0.46275 0.43137 [/F1 12] (Disbursements)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Date)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Category)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Description)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Supplier)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Amount)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (VAT)
+page1 rg=0.2 0.2 0.2 [/F1 10.9875] (Total disbursements: )
+page2 rg=0.05882 0.46275 0.43137 [/F1 12] (Trust Activity)
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Opening balance: )
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Deposits)
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Date)
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Reference)
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Description)
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Amount)
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Payments)
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Date)
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Type)
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Reference)
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Description)
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Amount)
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Closing balance: )
+page2 rg=0.05882 0.46275 0.43137 [/F1 12] (Summary)
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Total fees: )
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Total disbursements: )
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Previous balance owing: )
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Payments received: )
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Closing balance owing: )
+page2 rg=0.2 0.2 0.2 [/F1 10.9875] (Trust balance held: )
+page2 rg=0.05882 0.46275 0.43137 [/F1 12] (Payment Instructions)
+
+# Non-text filled paths per fill colour (path fills 'f' outside BT/ET), per page
+page1 {'0.05882 0.46275 0.43137': 16, '0.96078 0.96078 0.96078': 12, '0.86667 0.86667 0.86667': 12}
+page2 {'0.05882 0.46275 0.43137': 12, '0.96078 0.96078 0.96078': 9, '0.86667 0.86667 0.86667': 9}
+# 0.05882 0.46275 0.43137 = #0f766e brand (hr: 4 trapezoids per rule, one colour = solid); 0.86667 = #ddd th border-bottom; 0.96078 = #f5f5f5 th background; 0.2 = #333 bullets/body

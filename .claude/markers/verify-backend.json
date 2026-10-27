@@ -1,7 +1,7 @@
 {
-  "commit": "99420af96",
-  "command": "cd backend && bash scripts/verify.sh -q (./mvnw verify under caffeinate, preflight-guarded)",
+  "commit": "14f84b925",
+  "command": "cd backend && bash scripts/verify.sh -q (./mvnw verify, worktree-epic-626B @14f84b9250ebfb4cccff407cbed8de818d4c4e97)",
   "exit": 0,
-  "ts": "2026-10-27T19:42:45Z",
-  "summary": "Slice 626A PR #1685 head 99420af96: 6033 testcases / 0 failures / 0 errors / 26 skipped — 15:15 min; Backend CI pass 21m13s"
+  "ts": "2026-10-27T20:56:05Z",
+  "summary": "6056 tests / 0 failures / 0 errors / 26 skipped — PR #1686 (626B) final head; Backend CI run 40579164301 pass"
 }

@@ -1,0 +1,93 @@
+[
+  {
+    "label": "Organization",
+    "prefix": "org",
+    "variables": [
+      {
+        "key": "org.name",
+        "label": "Organization Name",
+        "type": "string"
+      },
+      {
+        "key": "org.defaultCurrency",
+        "label": "Default Currency",
+        "type": "string"
+      },
+      {
+        "key": "org.brandColor",
+        "label": "Brand Color",
+        "type": "string"
+      },
+      {
+        "key": "org.documentFooterText",
+        "label": "Document Footer",
+        "type": "string"
+      },
+      {
+        "key": "org.logoUrl",
+        "label": "Logo",
+        "type": "image"
+      },
+      {
+        "key": "org.taxRegistrationNumber",
+        "label": "VAT Registration Number",
+        "type": "string"
+      },
+      {
+        "key": "org.address",
+        "label": "Firm Address",
+        "type": "string"
+      },
+      {
+        "key": "org.phone",
+        "label": "Firm Phone",
+        "type": "string"
+      },
+      {
+        "key": "org.email",
+        "label": "Firm Email",
+        "type": "string"
+      },
+      {
+        "key": "org.website",
+        "label": "Firm Website",
+        "type": "string"
+      },
+      {
+        "key": "org.bankingDetails.bankName",
+        "label": "Bank Name",
+        "type": "string"
+      },
+      {
+        "key": "org.bankingDetails.branchCode",
+        "label": "Branch Code",
+        "type": "string"
+      },
+      {
+        "key": "org.bankingDetails.accountNumber",
+        "label": "Bank Account Number",
+        "type": "string"
+      },
+      {
+        "key": "org.bankingDetails.accountType",
+        "label": "Bank Account Type",
+        "type": "string"
+      },
+      {
+        "key": "org.bankingDetails.referenceNote",
+        "label": "Payment Reference Note",
+        "type": "string"
+      },
+      {
+        "key": "org.signatory.name",
+        "label": "Signatory Name",
+        "type": "string"
+      },
+      {
+        "key": "org.signatory.designation",
+        "label": "Signatory Designation",
+        "type": "string"
+      }
+    ]
+  }
+]

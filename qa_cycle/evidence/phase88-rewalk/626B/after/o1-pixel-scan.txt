@@ -1,0 +1,20 @@
+o1-1.ppm 661x935 brand_teal_px(#0f766e±12)=5458 heading_navy_px(#1a1a2e±8)=0 logo_orange_px=0
+o1-2.ppm 661x935 brand_teal_px(#0f766e±12)=292 heading_navy_px(#1a1a2e±8)=0 logo_orange_px=0
+o1-3.ppm 661x935 brand_teal_px(#0f766e±12)=1569 heading_navy_px(#1a1a2e±8)=0 logo_orange_px=0
+o1-engagement-letter-conveyancing.pdf image_xobjects=0 Do_ops=0
+ fill rg colours: ['0.05882 0.46275 0.43137', '0.2 0.2 0.2']
+ stroke RG colours: []
+ brand #0f766e = 0.0588 0.4627 0.4314 rg ; heading #1a1a2e = 0.10196 0.10196 0.18039 rg
+
+# Text runs / rect fills with their fill colour (decompressed content streams)
+page1 rg=0.05882 0.46275 0.43137 [/F1 18] (E2E Test Organization)
+page1 rg=0.05882 0.46275 0.43137 [/F1 13.9875] Engagement Letter — Conveyancing
+page1 rg=0.05882 0.46275 0.43137 [/F1 12] (Transaction Details)
+page1 rg=0.05882 0.46275 0.43137 [/F1 12] (Scope of Services)
+page1 rg=0.05882 0.46275 0.43137 [/F1 12] (Terms and Conditions)
+page2 rg=0.05882 0.46275 0.43137 [/F2 12] (Acceptance)
+
+# horizontalRule: page 1 (y≈708) and page 3 (y≈756) — all four border trapezoids filled 0.05882 0.46275 0.43137 rg (#0f766e),
+# one colour on every side = solid (before: UA-default inset, #1d1d1d top/left vs #333333 bottom/right). No stroke (RG) ops at all.
+# Remaining fill 0.2 0.2 0.2 = body text + list bullets (neutral, unchanged). #1a1a2e appears nowhere.
+# No table in this template; table-header neutrality checked on the SoA (o4-pixel-scan.txt).

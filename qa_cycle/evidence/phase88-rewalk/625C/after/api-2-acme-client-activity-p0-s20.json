@@ -1,0 +1,340 @@
+{
+ "content": [
+  {
+   "id": "cbdb6440-bb94-4630-aeb9-d9bf0c276b15",
+   "eventType": "customer.lifecycle.auto_dormancy",
+   "entityType": "customer",
+   "entityId": "b6dc030f-bb6f-45c6-844f-a673637c5da9",
+   "actorId": null,
+   "actorType": "SYSTEM",
+   "source": "INTERNAL",
+   "ipAddress": null,
+   "userAgent": null,
+   "details": {
+    "reason": "auto-dormancy scheduled job",
+    "actor_name": "System",
+    "thresholdDays": 90,
+    "daysSinceActivity": 90
+   },
+   "occurredAt": "2026-10-25T02:16:02.307920Z",
+   "label": "Client lifecycle auto dormancy",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "System"
+  },
+  {
+   "id": "f6e721c6-db30-49c6-8858-1c0faaa6cd5c",
+   "eventType": "customer.lifecycle.transitioned",
+   "entityType": "customer",
+   "entityId": "b6dc030f-bb6f-45c6-844f-a673637c5da9",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.8",
+   "userAgent": "curl/8.14.1",
+   "details": {
+    "notes": "All onboarding checklists completed",
+    "newStatus": "ACTIVE",
+    "oldStatus": "ONBOARDING",
+    "actor_name": "Alice Owner",
+    "checklistsInstantiated": 0
+   },
+   "occurredAt": "2026-10-24T22:51:09.580768Z",
+   "label": "Client lifecycle transitioned",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "bd3a2ef1-fb6e-4f8a-b672-663e6f9628ec",
+   "eventType": "checklist.instance.completed",
+   "entityType": "checklist_instance",
+   "entityId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.8",
+   "userAgent": "curl/8.14.1",
+   "details": {
+    "actor_name": "Alice Owner",
+    "customerId": "b6dc030f-bb6f-45c6-844f-a673637c5da9"
+   },
+   "occurredAt": "2026-10-24T22:51:09.550680Z",
+   "label": "Checklist instance completed",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "cdb2ea42-0646-479d-a1eb-454a5419ee96",
+   "eventType": "checklist.item.skipped",
+   "entityType": "checklist_instance_item",
+   "entityId": "6a270187-3b1d-4a60-9a57-c937e473ab04",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.8",
+   "userAgent": "curl/8.14.1",
+   "details": {
+    "reason": "boot-seed",
+    "itemName": "Sanctions Screening",
+    "actor_name": "Alice Owner",
+    "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8"
+   },
+   "occurredAt": "2026-10-24T22:51:09.546290Z",
+   "label": "Checklist item skipped",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "c7326909-74c0-459a-866a-96ffcf6fcd95",
+   "eventType": "checklist.item.skipped",
+   "entityType": "checklist_instance_item",
+   "entityId": "6ad805bb-261f-4564-ae9c-d09df921c674",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.8",
+   "userAgent": "curl/8.14.1",
+   "details": {
+    "reason": "boot-seed",
+    "itemName": "FICA Risk Assessment",
+    "actor_name": "Alice Owner",
+    "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8"
+   },
+   "occurredAt": "2026-10-24T22:51:09.509961Z",
+   "label": "Checklist item skipped",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "b59f26da-a341-49e6-8813-fdce248604ed",
+   "eventType": "checklist.item.skipped",
+   "entityType": "checklist_instance_item",
+   "entityId": "b3fc30d7-e8e5-4aec-aeac-ba07454227ae",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.8",
+   "userAgent": "curl/8.14.1",
+   "details": {
+    "reason": "boot-seed",
+    "itemName": "Power of Attorney Signed",
+    "actor_name": "Alice Owner",
+    "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8"
+   },
+   "occurredAt": "2026-10-24T22:51:09.474961Z",
+   "label": "Checklist item skipped",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "057e3cc6-01bd-4790-b1cd-74a66de9d752",
+   "eventType": "checklist.item.completed",
+   "entityType": "checklist_instance_item",
+   "entityId": "ed570499-ee00-4cfc-8cf4-b4fc16e9bac9",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.8",
+   "userAgent": "curl/8.14.1",
+   "details": {
+    "notes": "boot-seed",
+    "itemName": "Conflict Check Performed",
+    "actor_name": "Alice Owner",
+    "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8",
+    "completedBy": "2e38845d-7fd5-4348-9b70-280c5d442df6"
+   },
+   "occurredAt": "2026-10-24T22:51:09.431329Z",
+   "label": "Checklist item completed",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "091e1279-79b4-467c-ba45-fe462cf9042f",
+   "eventType": "checklist.item.skipped",
+   "entityType": "checklist_instance_item",
+   "entityId": "3b8c23bb-1dff-46c0-ac12-0129a2cccbf5",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.8",
+   "userAgent": "curl/8.14.1",
+   "details": {
+    "reason": "boot-seed",
+    "itemName": "Engagement Letter Signed",
+    "actor_name": "Alice Owner",
+    "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8"
+   },
+   "occurredAt": "2026-10-24T22:51:09.410188Z",
+   "label": "Checklist item skipped",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "5a5d1467-54d3-4c85-a089-14abd2877128",
+   "eventType": "checklist.item.skipped",
+   "entityType": "checklist_instance_item",
+   "entityId": "d8bfa8bc-59d2-41c2-9917-f7a5feeec4ba",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.8",
+   "userAgent": "curl/8.14.1",
+   "details": {
+    "reason": "boot-seed",
+    "itemName": "Source of Funds Declaration",
+    "actor_name": "Alice Owner",
+    "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8"
+   },
+   "occurredAt": "2026-10-24T22:51:09.372250Z",
+   "label": "Checklist item skipped",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "e8e30762-5dbe-48e6-a328-dd42dcf6167c",
+   "eventType": "checklist.item.skipped",
+   "entityType": "checklist_instance_item",
+   "entityId": "5573ab1d-7ada-4d9d-b59a-6dbc6ca58ed5",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.8",
+   "userAgent": "curl/8.14.1",
+   "details": {
+    "reason": "boot-seed",
+    "itemName": "Beneficial Ownership Declaration",
+    "actor_name": "Alice Owner",
+    "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8"
+   },
+   "occurredAt": "2026-10-24T22:51:09.333456Z",
+   "label": "Checklist item skipped",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "81d47d40-1e09-4e99-8f36-ec28bf071e8b",
+   "eventType": "checklist.item.skipped",
+   "entityType": "checklist_instance_item",
+   "entityId": "5167f908-8ea7-45ac-8a91-5e1296dec1a9",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.8",
+   "userAgent": "curl/8.14.1",
+   "details": {
+    "reason": "boot-seed",
+    "itemName": "Proof of Address",
+    "actor_name": "Alice Owner",
+    "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8"
+   },
+   "occurredAt": "2026-10-24T22:51:09.295204Z",
+   "label": "Checklist item skipped",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "e110bce5-9866-416a-a677-9de259cda74a",
+   "eventType": "checklist.item.skipped",
+   "entityType": "checklist_instance_item",
+   "entityId": "205172f5-492a-4afa-a1f4-a7c34eec39ed",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.8",
+   "userAgent": "curl/8.14.1",
+   "details": {
+    "reason": "boot-seed",
+    "itemName": "Proof of Identity",
+    "actor_name": "Alice Owner",
+    "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8"
+   },
+   "occurredAt": "2026-10-24T22:51:09.255459Z",
+   "label": "Checklist item skipped",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "eafab608-40ac-4f44-aeb2-744ad7c6d286",
+   "eventType": "customer.lifecycle.transitioned",
+   "entityType": "customer",
+   "entityId": "b6dc030f-bb6f-45c6-844f-a673637c5da9",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.8",
+   "userAgent": "curl/8.14.1",
+   "details": {
+    "notes": "E2E seed: start onboarding",
+    "newStatus": "ONBOARDING",
+    "oldStatus": "PROSPECT",
+    "actor_name": "Alice Owner",
+    "checklistsInstantiated": 1
+   },
+   "occurredAt": "2026-10-24T22:51:09.139350Z",
+   "label": "Client lifecycle transitioned",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "98cd4c02-fae8-418b-b7d7-726ed215a82c",
+   "eventType": "checklist.instance.created",
+   "entityType": "checklist_instance",
+   "entityId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.8",
+   "userAgent": "curl/8.14.1",
+   "details": {
+    "actor_name": "Alice Owner",
+    "customerId": "b6dc030f-bb6f-45c6-844f-a673637c5da9",
+    "templateId": "b3ef89eb-b8c6-4d2a-9b02-afc26a470097",
+    "templateName": "Legal Individual Client Onboarding"
+   },
+   "occurredAt": "2026-10-24T22:51:09.138030Z",
+   "label": "Checklist instance created",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "bd19e923-a0d0-4937-9a86-350eecad943e",
+   "eventType": "customer.created",
+   "entityType": "customer",
+   "entityId": "b6dc030f-bb6f-45c6-844f-a673637c5da9",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.8",
+   "userAgent": "curl/8.14.1",
+   "details": {
+    "name": "Acme Corp",
+    "email": "contact@acme.example.com",
+    "actor_name": "Alice Owner"
+   },
+   "occurredAt": "2026-10-24T22:51:09.024213Z",
+   "label": "Client created",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  }
+ ],
+ "page": {
+  "size": 20,
+  "number": 0,
+  "totalElements": 15,
+  "totalPages": 1
+ }
+}

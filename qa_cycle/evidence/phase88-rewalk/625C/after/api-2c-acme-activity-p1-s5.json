@@ -1,0 +1,121 @@
+{
+  "content": [
+    {
+      "id": "b59f26da-a341-49e6-8813-fdce248604ed",
+      "eventType": "checklist.item.skipped",
+      "entityType": "checklist_instance_item",
+      "entityId": "b3fc30d7-e8e5-4aec-aeac-ba07454227ae",
+      "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+      "actorType": "USER",
+      "source": "API",
+      "ipAddress": "172.21.0.8",
+      "userAgent": "curl/8.14.1",
+      "details": {
+        "reason": "boot-seed",
+        "itemName": "Power of Attorney Signed",
+        "actor_name": "Alice Owner",
+        "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8"
+      },
+      "occurredAt": "2026-10-24T22:51:09.474961Z",
+      "label": "Checklist item skipped",
+      "severity": "INFO",
+      "group": "STANDARD",
+      "actorDisplayName": "Alice Owner"
+    },
+    {
+      "id": "057e3cc6-01bd-4790-b1cd-74a66de9d752",
+      "eventType": "checklist.item.completed",
+      "entityType": "checklist_instance_item",
+      "entityId": "ed570499-ee00-4cfc-8cf4-b4fc16e9bac9",
+      "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+      "actorType": "USER",
+      "source": "API",
+      "ipAddress": "172.21.0.8",
+      "userAgent": "curl/8.14.1",
+      "details": {
+        "notes": "boot-seed",
+        "itemName": "Conflict Check Performed",
+        "actor_name": "Alice Owner",
+        "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8",
+        "completedBy": "2e38845d-7fd5-4348-9b70-280c5d442df6"
+      },
+      "occurredAt": "2026-10-24T22:51:09.431329Z",
+      "label": "Checklist item completed",
+      "severity": "INFO",
+      "group": "STANDARD",
+      "actorDisplayName": "Alice Owner"
+    },
+    {
+      "id": "091e1279-79b4-467c-ba45-fe462cf9042f",
+      "eventType": "checklist.item.skipped",
+      "entityType": "checklist_instance_item",
+      "entityId": "3b8c23bb-1dff-46c0-ac12-0129a2cccbf5",
+      "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+      "actorType": "USER",
+      "source": "API",
+      "ipAddress": "172.21.0.8",
+      "userAgent": "curl/8.14.1",
+      "details": {
+        "reason": "boot-seed",
+        "itemName": "Engagement Letter Signed",
+        "actor_name": "Alice Owner",
+        "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8"
+      },
+      "occurredAt": "2026-10-24T22:51:09.410188Z",
+      "label": "Checklist item skipped",
+      "severity": "INFO",
+      "group": "STANDARD",
+      "actorDisplayName": "Alice Owner"
+    },
+    {
+      "id": "5a5d1467-54d3-4c85-a089-14abd2877128",
+      "eventType": "checklist.item.skipped",
+      "entityType": "checklist_instance_item",
+      "entityId": "d8bfa8bc-59d2-41c2-9917-f7a5feeec4ba",
+      "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+      "actorType": "USER",
+      "source": "API",
+      "ipAddress": "172.21.0.8",
+      "userAgent": "curl/8.14.1",
+      "details": {
+        "reason": "boot-seed",
+        "itemName": "Source of Funds Declaration",
+        "actor_name": "Alice Owner",
+        "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8"
+      },
+      "occurredAt": "2026-10-24T22:51:09.372250Z",
+      "label": "Checklist item skipped",
+      "severity": "INFO",
+      "group": "STANDARD",
+      "actorDisplayName": "Alice Owner"
+    },
+    {
+      "id": "e8e30762-5dbe-48e6-a328-dd42dcf6167c",
+      "eventType": "checklist.item.skipped",
+      "entityType": "checklist_instance_item",
+      "entityId": "5573ab1d-7ada-4d9d-b59a-6dbc6ca58ed5",
+      "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+      "actorType": "USER",
+      "source": "API",
+      "ipAddress": "172.21.0.8",
+      "userAgent": "curl/8.14.1",
+      "details": {
+        "reason": "boot-seed",
+        "itemName": "Beneficial Ownership Declaration",
+        "actor_name": "Alice Owner",
+        "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8"
+      },
+      "occurredAt": "2026-10-24T22:51:09.333456Z",
+      "label": "Checklist item skipped",
+      "severity": "INFO",
+      "group": "STANDARD",
+      "actorDisplayName": "Alice Owner"
+    }
+  ],
+  "page": {
+    "size": 5,
+    "number": 1,
+    "totalElements": 15,
+    "totalPages": 3
+  }
+}

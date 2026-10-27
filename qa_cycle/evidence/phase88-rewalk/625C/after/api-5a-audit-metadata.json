@@ -1,0 +1,200 @@
+[
+  {
+    "eventType": "security.login.failure",
+    "label": "Login Failed",
+    "severity": "WARNING",
+    "group": "SECURITY"
+  },
+  {
+    "eventType": "security.permission.denied",
+    "label": "Permission Denied",
+    "severity": "WARNING",
+    "group": "SECURITY"
+  },
+  {
+    "eventType": "security.*",
+    "label": "Security Event",
+    "severity": "NOTICE",
+    "group": "SECURITY"
+  },
+  {
+    "eventType": "matter.closure.override_used",
+    "label": "Matter Closure Override Used",
+    "severity": "CRITICAL",
+    "group": "COMPLIANCE"
+  },
+  {
+    "eventType": "matter.closure.*",
+    "label": "Matter Closure",
+    "severity": "NOTICE",
+    "group": "COMPLIANCE"
+  },
+  {
+    "eventType": "trust.transaction.approved",
+    "label": "Trust Transaction Approved",
+    "severity": "NOTICE",
+    "group": "FINANCIAL"
+  },
+  {
+    "eventType": "trust.transaction.rejected",
+    "label": "Trust Transaction Rejected",
+    "severity": "WARNING",
+    "group": "FINANCIAL"
+  },
+  {
+    "eventType": "trust.*",
+    "label": "Trust Activity",
+    "severity": "NOTICE",
+    "group": "FINANCIAL"
+  },
+  {
+    "eventType": "dataprotection.dsar.*",
+    "label": "Data Subject Request",
+    "severity": "NOTICE",
+    "group": "DATA"
+  },
+  {
+    "eventType": "dataprotection.export.*",
+    "label": "Data Export",
+    "severity": "NOTICE",
+    "group": "DATA"
+  },
+  {
+    "eventType": "dataprotection.anonymization.*",
+    "label": "Data Anonymization",
+    "severity": "NOTICE",
+    "group": "DATA"
+  },
+  {
+    "eventType": "dataprotection.*",
+    "label": "Data Protection",
+    "severity": "NOTICE",
+    "group": "DATA"
+  },
+  {
+    "eventType": "audit.export.generated",
+    "label": "Audit Log Exported",
+    "severity": "NOTICE",
+    "group": "COMPLIANCE"
+  },
+  {
+    "eventType": "member.role_changed",
+    "label": "Member Role Changed",
+    "severity": "WARNING",
+    "group": "SECURITY"
+  },
+  {
+    "eventType": "orgrole.capability.changed",
+    "label": "Role Capabilities Changed",
+    "severity": "WARNING",
+    "group": "SECURITY"
+  },
+  {
+    "eventType": "invoice.*",
+    "label": "Fee note",
+    "severity": "INFO",
+    "group": "FINANCIAL"
+  },
+  {
+    "eventType": "ai.specialist.failed",
+    "label": "AI Specialist Failed",
+    "severity": "WARNING",
+    "group": "STANDARD"
+  },
+  {
+    "eventType": "ai.gate.created",
+    "label": "AI Execution Gate Created",
+    "severity": "NOTICE",
+    "group": "COMPLIANCE"
+  },
+  {
+    "eventType": "ai.gate.*",
+    "label": "AI Execution Gate Activity",
+    "severity": "NOTICE",
+    "group": "COMPLIANCE"
+  },
+  {
+    "eventType": "mcp.write.correspondence_filed",
+    "label": "Correspondence Filed via MCP",
+    "severity": "NOTICE",
+    "group": "STANDARD"
+  },
+  {
+    "eventType": "mcp.write.correspondence_refiled",
+    "label": "Correspondence Re-filed via MCP",
+    "severity": "NOTICE",
+    "group": "STANDARD"
+  },
+  {
+    "eventType": "mcp.write.document_attached",
+    "label": "Document Attached via MCP",
+    "severity": "NOTICE",
+    "group": "STANDARD"
+  },
+  {
+    "eventType": "mcp.write.task_proposed",
+    "label": "Task Proposed via MCP",
+    "severity": "NOTICE",
+    "group": "STANDARD"
+  },
+  {
+    "eventType": "mcp.write.*",
+    "label": "MCP Write",
+    "severity": "NOTICE",
+    "group": "STANDARD"
+  },
+  {
+    "eventType": "collections.reminder.sent",
+    "label": "Collection Reminder Sent",
+    "severity": "NOTICE",
+    "group": "STANDARD"
+  },
+  {
+    "eventType": "collections.reminder.cancelled",
+    "label": "Collection Reminder Cancelled",
+    "severity": "NOTICE",
+    "group": "STANDARD"
+  },
+  {
+    "eventType": "collections.escalation.flagged",
+    "label": "Collection Escalation Flagged",
+    "severity": "NOTICE",
+    "group": "STANDARD"
+  },
+  {
+    "eventType": "collections.digest.sent",
+    "label": "Cash Digest Sent",
+    "severity": "NOTICE",
+    "group": "STANDARD"
+  },
+  {
+    "eventType": "collections.policy.updated",
+    "label": "Collections Policy Updated",
+    "severity": "NOTICE",
+    "group": "STANDARD"
+  },
+  {
+    "eventType": "disbursement.restored",
+    "label": "Disbursement restored",
+    "severity": "INFO",
+    "group": "STANDARD"
+  },
+  {
+    "eventType": "invoice.partially_paid",
+    "label": "Fee note partially paid",
+    "severity": "INFO",
+    "group": "FINANCIAL"
+  },
+  {
+    "eventType": "invoice.payment_excess",
+    "label": "Fee note payment exceeded balance",
+    "severity": "NOTICE",
+    "group": "FINANCIAL"
+  },
+  {
+    "eventType": "acceptance.declined",
+    "label": "Acceptance declined",
+    "severity": "INFO",
+    "group": "STANDARD"
+  }
+]

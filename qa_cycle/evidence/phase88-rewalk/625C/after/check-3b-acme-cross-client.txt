@@ -1,0 +1,10 @@
+client Acme Corp b6dc030f-bb6f-45c6-844f-a673637c5da9
+API totalElements=15 rows fetched=15 distinct ids=15
+independent SQL expected union count=15  match=True
+newest-first (occurredAt desc): True
+owned child ids: {"customer": 1, "checklist_instance": 1, "checklist_instance_item": 9, "information_request": 0, "request_item": 0, "portal_contact": 1}
+rows by branch: {'a-entity': 4, 'b-child': 11}
+eventType counts: {"customer.lifecycle.auto_dormancy": 1, "customer.lifecycle.transitioned": 2, "checklist.instance.completed": 1, "checklist.item.skipped": 8, "checklist.item.completed": 1, "checklist.instance.created": 1, "customer.created": 1}
+label by eventType: {"customer.lifecycle.auto_dormancy": "Client lifecycle auto dormancy", "customer.lifecycle.transitioned": "Client lifecycle transitioned", "checklist.instance.completed": "Checklist instance completed", "checklist.item.skipped": "Checklist item skipped", "checklist.item.completed": "Checklist item completed", "checklist.instance.created": "Checklist instance created", "customer.created": "Client created"}
+rows with details.customer_id present: 0
+VIOLATIONS: 0

@@ -1,0 +1,189 @@
+{
+ "page": {
+  "totalElements": 8
+ },
+ "content": [
+  {
+   "id": "0b06d5e4-8252-40b2-b785-54ceb835f0a3",
+   "eventType": "trust_payment.approved",
+   "entityType": "trust_transaction",
+   "entityId": "a0e634c2-f086-45d6-b3dd-bebbdbad0945",
+   "actorId": "c9ccb6c0-0ce4-44a1-a161-7066b6f9c9be",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.7",
+   "userAgent": "node",
+   "details": {
+    "amount": "2500.00",
+    "actor_name": "Bob Admin",
+    "project_id": "9a27cd08-76fc-44b1-8c41-a8dd1aa1af22",
+    "approved_by": "c9ccb6c0-0ce4-44a1-a161-7066b6f9c9be",
+    "customer_id": "218397cf-bddb-4fbd-9e9d-872bd4589c6c",
+    "transaction_type": "PAYMENT"
+   },
+   "occurredAt": "2026-10-25T00:45:38.014444Z",
+   "label": "Trust payment approved",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Bob Admin"
+  },
+  {
+   "id": "65fbc6ca-f156-4086-a477-17a9ca3edcb7",
+   "eventType": "trust_payment.recorded",
+   "entityType": "trust_transaction",
+   "entityId": "a0e634c2-f086-45d6-b3dd-bebbdbad0945",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.7",
+   "userAgent": "node",
+   "details": {
+    "amount": "2500",
+    "reference": "PAY/625A-FIX/KHU",
+    "actor_name": "Alice Owner",
+    "project_id": "9a27cd08-76fc-44b1-8c41-a8dd1aa1af22",
+    "customer_id": "218397cf-bddb-4fbd-9e9d-872bd4589c6c",
+    "customer_name": "Khumalo Property Holdings mvmzw78f31c9"
+   },
+   "occurredAt": "2026-10-25T00:45:21.591828Z",
+   "label": "Trust payment recorded",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "bcc8bd77-e179-4b50-ac9c-efeb182d2166",
+   "eventType": "trust_deposit.recorded",
+   "entityType": "trust_transaction",
+   "entityId": "b57003e0-f353-44d4-9058-ae575e7440fd",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.7",
+   "userAgent": "node",
+   "details": {
+    "amount": "10000",
+    "reference": "DEP/625A-FIX/KHU",
+    "actor_name": "Alice Owner",
+    "project_id": "9a27cd08-76fc-44b1-8c41-a8dd1aa1af22",
+    "customer_id": "218397cf-bddb-4fbd-9e9d-872bd4589c6c",
+    "customer_name": "Khumalo Property Holdings mvmzw78f31c9"
+   },
+   "occurredAt": "2026-10-25T00:44:53.504222Z",
+   "label": "Trust deposit recorded",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "d17f90fd-9e30-4759-9e16-8901c49db532",
+   "eventType": "customer.linked",
+   "entityType": "customer",
+   "entityId": "218397cf-bddb-4fbd-9e9d-872bd4589c6c",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.7",
+   "userAgent": "node",
+   "details": {
+    "actor_name": "Alice Owner",
+    "project_id": "9a27cd08-76fc-44b1-8c41-a8dd1aa1af22"
+   },
+   "occurredAt": "2026-10-25T00:44:05.576635Z",
+   "label": "Client linked",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "4379fde3-e8d8-44d2-8928-beb618198fb5",
+   "eventType": "acceptance.created",
+   "entityType": "acceptance_request",
+   "entityId": "9ff7cbaf-7e1b-4418-a7b1-ffb09526061f",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.7",
+   "userAgent": "node",
+   "details": {
+    "actor_name": "Alice Owner",
+    "customer_id": "218397cf-bddb-4fbd-9e9d-872bd4589c6c",
+    "contact_name": "Khumalo Property Holdings mvmzw78f31c9",
+    "portal_contact_id": "7861b984-1178-4b77-9022-d229ea8d7e26",
+    "document_file_name": "offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-mvmzw78f31c9-2026-10-24.pdf",
+    "generated_document_id": "cbef061b-a514-4b42-87ca-462698bb210b"
+   },
+   "occurredAt": "2026-10-24T22:54:24.770106Z",
+   "label": "Acceptance created",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "3596ed6e-8c66-4313-b7c7-41e458097979",
+   "eventType": "customer.lifecycle.transitioned",
+   "entityType": "customer",
+   "entityId": "218397cf-bddb-4fbd-9e9d-872bd4589c6c",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.7",
+   "userAgent": "node",
+   "details": {
+    "notes": "",
+    "newStatus": "ONBOARDING",
+    "oldStatus": "PROSPECT",
+    "actor_name": "Alice Owner",
+    "checklistsInstantiated": 1
+   },
+   "occurredAt": "2026-10-24T22:54:00.481633Z",
+   "label": "Client lifecycle transitioned",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "38fa30b4-556d-484e-b594-4ba5babaa863",
+   "eventType": "checklist.instance.created",
+   "entityType": "checklist_instance",
+   "entityId": "a8210f89-197d-40e9-8f05-2436ecfeebe5",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.7",
+   "userAgent": "node",
+   "details": {
+    "actor_name": "Alice Owner",
+    "customerId": "218397cf-bddb-4fbd-9e9d-872bd4589c6c",
+    "templateId": "b3ef89eb-b8c6-4d2a-9b02-afc26a470097",
+    "templateName": "Legal Individual Client Onboarding"
+   },
+   "occurredAt": "2026-10-24T22:54:00.480699Z",
+   "label": "Checklist instance created",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  },
+  {
+   "id": "e2335cae-bd3b-4de3-a25e-819d213972dc",
+   "eventType": "customer.created",
+   "entityType": "customer",
+   "entityId": "218397cf-bddb-4fbd-9e9d-872bd4589c6c",
+   "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+   "actorType": "USER",
+   "source": "API",
+   "ipAddress": "172.21.0.7",
+   "userAgent": "node",
+   "details": {
+    "name": "Khumalo Property Holdings mvmzw78f31c9",
+    "email": "khumalo.property.mvmzw78f31c9@example.com",
+    "actor_name": "Alice Owner"
+   },
+   "occurredAt": "2026-10-24T22:53:59.160657Z",
+   "label": "Client created",
+   "severity": "INFO",
+   "group": "STANDARD",
+   "actorDisplayName": "Alice Owner"
+  }
+ ]
+}

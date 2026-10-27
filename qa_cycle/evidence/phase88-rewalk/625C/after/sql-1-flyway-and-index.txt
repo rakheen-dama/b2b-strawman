@@ -1,0 +1,35 @@
+-- flyway_schema_history (latest 3)
+ version |         description          | success |        installed_on        
+---------+------------------------------+---------+----------------------------
+ 6       | phase88 audit customer index | t       | 2026-10-27 13:27:53.627228
+ 5       | phase88 acceptance decline   | t       | 2026-10-24 22:51:08.073179
+ 4       | phase88 demo ready           | t       | 2026-10-24 22:51:08.056151
+(3 rows)
+
+-- \d audit_events
+                         Table "tenant_7d218705360b.audit_events"
+   Column    |           Type           | Collation | Nullable |          Default          
+-------------+--------------------------+-----------+----------+---------------------------
+ id          | uuid                     |           | not null | gen_random_uuid()
+ event_type  | character varying(100)   |           | not null | 
+ entity_type | character varying(50)    |           | not null | 
+ entity_id   | uuid                     |           | not null | 
+ actor_id    | uuid                     |           |          | 
+ actor_type  | character varying(20)    |           | not null | 'USER'::character varying
+ source      | character varying(30)    |           | not null | 
+ ip_address  | character varying(45)    |           |          | 
+ user_agent  | character varying(500)   |           |          | 
+ details     | jsonb                    |           |          | 
+ occurred_at | timestamp with time zone |           | not null | 
+Indexes:
+    "audit_events_pkey" PRIMARY KEY, btree (id)
+    "idx_audit_actor" btree (actor_id) WHERE actor_id IS NOT NULL
+    "idx_audit_customer" btree ((details ->> 'customer_id'::text))
+    "idx_audit_entity" btree (entity_type, entity_id)
+    "idx_audit_occurred" btree (occurred_at DESC)
+    "idx_audit_project" btree ((details ->> 'project_id'::text))
+    "idx_audit_type_time" btree (event_type, occurred_at DESC)
+Triggers:
+    audit_events_no_delete BEFORE DELETE ON tenant_7d218705360b.audit_events FOR EACH ROW EXECUTE FUNCTION tenant_7d218705360b.prevent_audit_delete()
+    audit_events_no_update BEFORE UPDATE ON tenant_7d218705360b.audit_events FOR EACH ROW EXECUTE FUNCTION tenant_7d218705360b.prevent_audit_update()
+

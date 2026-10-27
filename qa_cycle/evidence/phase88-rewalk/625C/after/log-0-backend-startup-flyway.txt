@@ -1,0 +1,25 @@
+2026-10-27T13:27:53.599767799Z Running tenant migrations for 1 schemas
+2026-10-27T13:27:53.628552508Z Current version of schema "tenant_7d218705360b": 5
+2026-10-27T13:27:53.642510924Z Migrating schema "tenant_7d218705360b" to version "6 - phase88 audit customer index"
+2026-10-27T13:27:53.661506508Z Successfully applied 1 migration to schema "tenant_7d218705360b", now at version v6 (execution time 00:00.012s)
+2026-10-27T13:27:53.663066716Z Migrated schema tenant_7d218705360b — 1 migrations applied
+2026-10-27T13:27:53.663251091Z Tenant migration runner completed
+2026-10-27T13:27:53.782996425Z Field pack common-project already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.783245925Z Field pack common-task already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.783329758Z Field pack conveyancing-za-project already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.783388425Z Field pack legal-za-customer already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.783447508Z Field pack legal-za-project already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.846754258Z Clause pack conveyancing-za-clauses already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.846900133Z Clause pack legal-za-clauses already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.846972133Z Clause pack standard-clauses already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.858550675Z Compliance pack generic-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.863024383Z Compliance pack legal-za-individual-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.864330508Z Compliance pack legal-za-trust-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.865599050Z Compliance pack sa-fica-company already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.866959466Z Compliance pack sa-fica-individual already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.872425800Z Report pack standard-reports already applied for tenant tenant_7d218705360b, skipping
+2026-10-27T13:27:53.878756133Z Request pack conveyancing-intake-za already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.878915716Z Request pack fica-onboarding-pack already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.879000050Z Request pack legal-za-liquidation-distribution already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.896628550Z Project-template pack legal-za-project-templates already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T13:27:53.911604841Z Tariff schedule 'LSSA 2024/2025 High Court Party-and-Party' already exists for tenant tenant_7d218705360b, skipping

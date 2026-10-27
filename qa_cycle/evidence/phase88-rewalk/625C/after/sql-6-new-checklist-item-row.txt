@@ -1,0 +1,29 @@
+-- newest checklist.item.* audit row (tenant-wide)
+                  id                  |        event_type        |       entity_type       |              entity_id               |          occurred_at          |         details_customer_id          | matches_observer_client |                          details                           
+--------------------------------------+--------------------------+-------------------------+--------------------------------------+-------------------------------+--------------------------------------+-------------------------+------------------------------------------------------------
+ 885894bd-7875-4ec2-ae40-5e1a96bffe58 | checklist.item.completed | checklist_instance_item | 5831f9d6-01ff-47f6-a006-5ec6a9ff2581 | 2026-10-27 13:31:26.089046+00 | 31775a3a-1ce2-4de0-8b26-a93202eda787 | t                       | {                                                         +
+                                      |                          |                         |                                      |                               |                                      |                         |     "notes": "625C observer: conflict check cleared",     +
+                                      |                          |                         |                                      |                               |                                      |                         |     "itemName": "Conflict Check Performed",               +
+                                      |                          |                         |                                      |                               |                                      |                         |     "actor_name": "Alice Owner",                          +
+                                      |                          |                         |                                      |                               |                                      |                         |     "instanceId": "e5278c50-4779-4a10-9137-c1495cb2529e", +
+                                      |                          |                         |                                      |                               |                                      |                         |     "completedBy": "2e38845d-7fd5-4348-9b70-280c5d442df6",+
+                                      |                          |                         |                                      |                               |                                      |                         |     "customer_id": "31775a3a-1ce2-4de0-8b26-a93202eda787" +
+                                      |                          |                         |                                      |                               |                                      |                         | }
+(1 row)
+
+-- the item row it points at
+                  id                  |           name           |  status   |             customer_id              
+--------------------------------------+--------------------------+-----------+--------------------------------------
+ 5831f9d6-01ff-47f6-a006-5ec6a9ff2581 | Conflict Check Performed | COMPLETED | 31775a3a-1ce2-4de0-8b26-a93202eda787
+(1 row)
+
+-- all audit rows for the observer client written in this session (details customer_id or entity)
+           event_type            |       entity_type       |          occurred_at          |                 cid                  
+---------------------------------+-------------------------+-------------------------------+--------------------------------------
+ checklist.item.completed        | checklist_instance_item | 2026-10-27 13:31:26.089046+00 | 31775a3a-1ce2-4de0-8b26-a93202eda787
+ customer.lifecycle.transitioned | customer                | 2026-10-27 13:30:54.854457+00 | 
+ checklist.instance.created      | checklist_instance      | 2026-10-27 13:30:54.851951+00 | 
+ customer.created                | customer                | 2026-10-27 13:30:39.868237+00 | 
+ security.access_denied          | security                | 2026-10-27 13:29:04.153604+00 | 
+(5 rows)
+

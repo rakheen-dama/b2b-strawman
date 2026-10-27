@@ -192,7 +192,13 @@ src/main/resources/db/migration/
 - `baselineOnMigrate(false)` everywhere — a non-empty schema without Flyway history fails fast (wipe the volume, never baseline it)
 - Each migration step must be idempotent (`IF NOT EXISTS`, `ON CONFLICT DO NOTHING`); scope catalog guards to `current_schema()` (an unscoped `pg_constraint WHERE conname = …` guard skips the object in every tenant after the first)
 - Name files: `V{number}__{description}.sql` (double underscore)
-- Pack seeders skip packs already applied to a tenant, so a column added to a pack-seeded entity is not backfilled for existing tenants by the seeder — backfill with an idempotent `UPDATE` in the migration (as tenant `V2` does) or an explicit reconcile step (`db/BASELINE.md` §5)
+- Pack seeders skip packs already applied to a tenant; existing tenants receive pack changes only through the ADR-356 reconcile below (a new column on a pack-seeded entity still needs an idempotent `UPDATE` in its V-migration — tenant `V2` — see `db/BASELINE.md` §5)
+
+### Pack reconcile contract (ADR-356)
+- Every pack edit that must reach existing tenants **bumps the pack `version`** (integer) **and adds `reconcile` entries** `{entity, key, field, from, to}` (`seeder/PackReconcileEntry`) — `from` is the previously shipped value (string / boolean / number, or `sha256:` + `packs/ContentHashUtil.hashOf(body)` for Tiptap bodies — body-only canonical hash, not the install-time `content_hash`). "Fresh tenants only" is a review reject. The Java-defined standard-reports pack uses `StandardReportPackSeeder.RECONCILE` + `PACK_VERSION`.
+- The gate (`packs/PackVersionGate`): `pack_install.pack_version` (integer) < `pack.version` → the seeder's `reconcileExistingPack` runs once and the version is advanced (compare-and-set, same transaction — a failing reconcile rolls the version back); equal → skipped; non-numeric → gate closed + WARN. Seeder-managed types (CLAUSE, FIELD, REPORT, REQUEST) write their own ledger rows (backfilled from the OrgSettings pack-status lists on first boot; hidden from `/api/packs`); DOCUMENT_TEMPLATE / AUTOMATION_TEMPLATE are gated by their `PackInstaller.reconcile`, which calls `reconcileInstalledPack`. Compliance, compliance-template and project-template seeders are untyped: their hook runs ungated on every pass.
+- The one rule: a field changes only where its current value equals `from`; otherwise it is left alone and logged at INFO (tenant, pack, key); a row already at `to` is never written. Clones / tenant-authored rows are never targets — each seeder's `resolveReconcileTarget` returns pack-seeded rows only (override `applyReconcileEntry` for non-field entities such as additive `clause_template_association` upserts).
+- Ship a seeder reconcile test with every pack edit: installed at n−1 → reconcile to n; a firm-edited row survives; equal version is a no-op.
 
 ### HikariCP Settings (production)
 - `maximum-pool-size`: 10 (Neon PgBouncer multiplexes upstream)

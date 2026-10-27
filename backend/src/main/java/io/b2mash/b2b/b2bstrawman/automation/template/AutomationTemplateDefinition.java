@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.b2mash.b2b.b2bstrawman.automation.ActionType;
 import io.b2mash.b2b.b2bstrawman.automation.DelayUnit;
 import io.b2mash.b2b.b2bstrawman.automation.TriggerType;
+import io.b2mash.b2b.b2bstrawman.seeder.PackReconcileEntry;
+import io.b2mash.b2b.b2bstrawman.seeder.ReconcilablePack;
 import java.util.List;
 import java.util.Map;
 
@@ -44,13 +46,18 @@ public record AutomationTemplateDefinition(
       DelayUnit delayUnit,
       int sortOrder) {}
 
-  /** Top-level pack wrapper matching the JSON structure. */
+  /**
+   * Top-level pack wrapper matching the JSON structure. {@code reconcile} is the optional ADR-356
+   * block ({@code null} when absent).
+   */
   @JsonIgnoreProperties(ignoreUnknown = true)
   public record AutomationTemplatePack(
       String packId,
       int version,
       String verticalProfile,
-      List<AutomationTemplateDefinition> templates) {}
+      List<AutomationTemplateDefinition> templates,
+      List<PackReconcileEntry> reconcile)
+      implements ReconcilablePack {}
 
   /** Response DTO for listing available templates. */
   public record TemplateDefinitionResponse(

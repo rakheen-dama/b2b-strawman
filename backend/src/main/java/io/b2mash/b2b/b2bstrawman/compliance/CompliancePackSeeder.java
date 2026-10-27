@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicy;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository;
 import io.b2mash.b2b.b2bstrawman.seeder.AbstractPackSeeder;
@@ -59,8 +60,14 @@ public class CompliancePackSeeder extends AbstractPackSeeder<CompliancePackDefin
       FieldGroupMemberRepository fieldGroupMemberRepository,
       RetentionPolicyRepository retentionPolicyRepository,
       OrgSettingsRepository orgSettingsRepository,
-      TenantTransactionHelper tenantTransactionHelper) {
-    super(resourceResolver, objectMapper, orgSettingsRepository, tenantTransactionHelper);
+      TenantTransactionHelper tenantTransactionHelper,
+      PackVersionGate packVersionGate) {
+    super(
+        resourceResolver,
+        objectMapper,
+        orgSettingsRepository,
+        tenantTransactionHelper,
+        packVersionGate);
     this.checklistTemplateRepository = checklistTemplateRepository;
     this.checklistTemplateItemRepository = checklistTemplateItemRepository;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
@@ -114,7 +121,8 @@ public class CompliancePackSeeder extends AbstractPackSeeder<CompliancePackDefin
   }
 
   @Override
-  protected void reconcileExistingPack(CompliancePackDefinition pack, String tenantId) {
+  protected void reconcileExistingPack(
+      CompliancePackDefinition pack, Resource packResource, String tenantId) {
     CompliancePackChecklistTemplate tpl = pack.checklistTemplate();
     checklistTemplateRepository
         .findByPackIdAndPackTemplateKey(pack.packId(), tpl.slug())

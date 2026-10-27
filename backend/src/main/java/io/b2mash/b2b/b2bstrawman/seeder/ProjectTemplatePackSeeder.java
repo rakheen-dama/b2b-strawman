@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.seeder;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplate;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.TemplateTask;
@@ -38,8 +39,14 @@ public class ProjectTemplatePackSeeder extends AbstractPackSeeder<ProjectTemplat
       OrgSettingsRepository orgSettingsRepository,
       TenantTransactionHelper tenantTransactionHelper,
       ProjectTemplateRepository projectTemplateRepository,
-      TemplateTaskRepository templateTaskRepository) {
-    super(resourceResolver, objectMapper, orgSettingsRepository, tenantTransactionHelper);
+      TemplateTaskRepository templateTaskRepository,
+      PackVersionGate packVersionGate) {
+    super(
+        resourceResolver,
+        objectMapper,
+        orgSettingsRepository,
+        tenantTransactionHelper,
+        packVersionGate);
     this.projectTemplateRepository = projectTemplateRepository;
     this.templateTaskRepository = templateTaskRepository;
   }

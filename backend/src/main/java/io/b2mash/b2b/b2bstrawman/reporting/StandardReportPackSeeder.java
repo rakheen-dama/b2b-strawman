@@ -1,10 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.reporting;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.packs.PackType;
+import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
+import io.b2mash.b2b.b2bstrawman.seeder.PackReconcileEntry;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.settings.PackStatusSettings;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -12,6 +17,11 @@ import org.springframework.stereotype.Service;
 /**
  * Seeds standard report definitions (Timesheet, Invoice Aging, Project Profitability) for newly
  * provisioned tenants. Idempotent: tracks applied packs in OrgSettings.reportPackStatus.
+ *
+ * <p>ADR-356: the pack is Java-defined, so its reconcile block is the {@link #RECONCILE} constant
+ * beside {@link #PACK_VERSION}. An applied pack is reconciled only when its {@code pack_install}
+ * ledger row (type REPORT, backfilled from OrgSettings for pre-625E tenants) records a lower
+ * version.
  */
 @Service
 public class StandardReportPackSeeder {
@@ -20,17 +30,26 @@ public class StandardReportPackSeeder {
   static final String PACK_ID = "standard-reports";
   static final int PACK_VERSION = 1;
 
+  /**
+   * ADR-356 reconcile block of the Java-defined standard-reports pack (empty until a pack text
+   * change ships). Bump {@link #PACK_VERSION} with every entry added here.
+   */
+  static final List<PackReconcileEntry> RECONCILE = List.of();
+
   private final ReportDefinitionRepository reportDefinitionRepository;
   private final OrgSettingsRepository orgSettingsRepository;
   private final TenantTransactionHelper tenantTransactionHelper;
+  private final PackVersionGate packVersionGate;
 
   public StandardReportPackSeeder(
       ReportDefinitionRepository reportDefinitionRepository,
       OrgSettingsRepository orgSettingsRepository,
-      TenantTransactionHelper tenantTransactionHelper) {
+      TenantTransactionHelper tenantTransactionHelper,
+      PackVersionGate packVersionGate) {
     this.reportDefinitionRepository = reportDefinitionRepository;
     this.orgSettingsRepository = orgSettingsRepository;
     this.tenantTransactionHelper = tenantTransactionHelper;
+    this.packVersionGate = packVersionGate;
   }
 
   public void seedForTenant(String tenantId, String orgId) {
@@ -48,7 +67,7 @@ public class StandardReportPackSeeder {
                 });
 
     if (isPackAlreadyApplied(settings)) {
-      log.info("Report pack {} already applied for tenant {}, skipping", PACK_ID, tenantId);
+      reconcileAppliedPack(settings, tenantId);
       return;
     }
 
@@ -58,8 +77,41 @@ public class StandardReportPackSeeder {
 
     settings.getPackStatus().recordReportPackApplication(PACK_ID, PACK_VERSION);
     orgSettingsRepository.save(settings);
+    packVersionGate.recordIfAbsent(PackType.REPORT, PACK_ID, String.valueOf(PACK_VERSION), PACK_ID);
 
     log.info("Applied report pack {} v{} for tenant {}", PACK_ID, PACK_VERSION, tenantId);
+  }
+
+  private void reconcileAppliedPack(OrgSettings settings, String tenantId) {
+    // OQ #14 backfill (pre-625E tenants record the version they applied) + version gate.
+    String appliedVersion =
+        PackStatusSettings.highestAppliedVersion(
+                settings.getPackStatus().getReportPackStatus(), PACK_ID)
+            .orElse(null);
+    if (packVersionGate.backfillAndTryOpen(
+        PackType.REPORT,
+        PACK_ID,
+        appliedVersion,
+        String.valueOf(PACK_VERSION),
+        PACK_ID,
+        tenantId)) {
+      reconcileExistingPack(tenantId);
+    }
+  }
+
+  /** Applies {@link #RECONCILE} under the ADR-356 one rule. */
+  void reconcileExistingPack(String tenantId) {
+    for (PackReconcileEntry entry : PackReconcileEntry.parse(PACK_ID, RECONCILE)) {
+      entry.applyAndLog(resolveReconcileTarget(entry), log, tenantId, PACK_ID);
+    }
+  }
+
+  /**
+   * Extension point: the {@code report_definition} row an entry targets — by slug, system ({@code
+   * is_system = true}) rows only. No entity is supported yet.
+   */
+  Optional<PackReconcileEntry.Target> resolveReconcileTarget(PackReconcileEntry entry) {
+    return Optional.empty();
   }
 
   private boolean isPackAlreadyApplied(OrgSettings settings) {

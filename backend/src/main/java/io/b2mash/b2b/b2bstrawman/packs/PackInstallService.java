@@ -192,11 +192,8 @@ public class PackInstallService {
   public void uninstall(String packId, String memberId) {
     String tenantId = RequestScopes.requireTenantId();
 
-    // 1. Find existing install
-    PackInstall install =
-        packInstallRepository
-            .findByPackId(packId)
-            .orElseThrow(() -> new ResourceNotFoundException("PackInstall", packId));
+    // 1. Find existing install (ledger-only rows of seeder-managed types are not uninstallable)
+    PackInstall install = findInstallerManagedInstall(packId);
 
     // 2. Resolve installer
     PackInstaller installer = resolveInstaller(install.getPackType());
@@ -233,16 +230,24 @@ public class PackInstallService {
   public UninstallCheck checkUninstallable(String packId) {
     String tenantId = RequestScopes.requireTenantId();
 
-    PackInstall install =
-        packInstallRepository
-            .findByPackId(packId)
-            .orElseThrow(() -> new ResourceNotFoundException("PackInstall", packId));
+    PackInstall install = findInstallerManagedInstall(packId);
 
     PackInstaller installer = resolveInstaller(install.getPackType());
     return installer.checkUninstallable(packId, tenantId);
   }
 
   // --- Private helpers ---
+
+  /**
+   * The pack_install row for an installer-managed pack. CLAUSE / FIELD / REPORT / REQUEST rows are
+   * the ADR-356 seeder ledger — invisible to the Packs API, so they resolve as not found (404).
+   */
+  private PackInstall findInstallerManagedInstall(String packId) {
+    return packInstallRepository
+        .findByPackId(packId)
+        .filter(install -> install.getPackType().isInstallerManaged())
+        .orElseThrow(() -> new ResourceNotFoundException("PackInstall", packId));
+  }
 
   private void enforceProfileAffinity(PackCatalogEntry entry) {
     if (entry.verticalProfile() == null) {
@@ -279,6 +284,10 @@ public class PackInstallService {
           settings.getPackStatus().recordTemplatePackApplication(entry.packId(), version);
       case AUTOMATION_TEMPLATE ->
           settings.getPackStatus().recordAutomationPackApplication(entry.packId(), version);
+      case CLAUSE, FIELD, REPORT, REQUEST -> {
+        // Ledger-only types (CLAUSE / FIELD / REPORT / REQUEST) never reach the installer path:
+        // their seeders record OrgSettings themselves.
+      }
     }
   }
 
@@ -288,6 +297,9 @@ public class PackInstallService {
     switch (type) {
       case DOCUMENT_TEMPLATE -> settings.getPackStatus().removeTemplatePackEntry(packId);
       case AUTOMATION_TEMPLATE -> settings.getPackStatus().removeAutomationPackEntry(packId);
+      case CLAUSE, FIELD, REPORT, REQUEST -> {
+        // Ledger-only types are filtered out before uninstall (findInstallerManagedInstall).
+      }
     }
   }
 

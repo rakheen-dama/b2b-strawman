@@ -30,6 +30,13 @@ import org.springframework.transaction.support.TransactionTemplate;
  * This covers tenants provisioned before new packs were introduced. All underlying seeders are
  * idempotent, so running on every boot is safe.
  *
+ * <p>ADR-356: already-applied packs are reconciled only when their {@code pack_install} version is
+ * lower than the classpath version (seeders gate CLAUSE / FIELD / REPORT / REQUEST themselves; the
+ * {@code PackInstaller}s gate DOCUMENT_TEMPLATE / AUTOMATION_TEMPLATE via {@code internalInstall}).
+ * Tenants provisioned before Epic 625E get their CLAUSE / FIELD / REPORT / REQUEST ledger rows
+ * backfilled from the OrgSettings pack-status lists on the first pass. Order matters: templates
+ * before clauses (clause associations reference template rows).
+ *
  * <p>Ordered after TenantMigrationRunner ({@code @Order(50)}) to ensure schemas are fully migrated
  * before seeding.
  */

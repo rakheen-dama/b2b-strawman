@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.clause;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.packs.PackType;
+import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
 import io.b2mash.b2b.b2bstrawman.seeder.AbstractPackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -30,8 +32,14 @@ public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
       TemplateClauseRepository templateClauseRepository,
       DocumentTemplateRepository documentTemplateRepository,
       OrgSettingsRepository orgSettingsRepository,
-      TenantTransactionHelper tenantTransactionHelper) {
-    super(resourceResolver, objectMapper, orgSettingsRepository, tenantTransactionHelper);
+      TenantTransactionHelper tenantTransactionHelper,
+      PackVersionGate packVersionGate) {
+    super(
+        resourceResolver,
+        objectMapper,
+        orgSettingsRepository,
+        tenantTransactionHelper,
+        packVersionGate);
     this.clauseRepository = clauseRepository;
     this.templateClauseRepository = templateClauseRepository;
     this.documentTemplateRepository = documentTemplateRepository;
@@ -50,6 +58,11 @@ public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
   @Override
   protected String getPackTypeName() {
     return "clause";
+  }
+
+  @Override
+  protected PackType getPackType() {
+    return PackType.CLAUSE;
   }
 
   @Override

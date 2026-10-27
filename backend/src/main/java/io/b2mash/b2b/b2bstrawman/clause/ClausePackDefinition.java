@@ -1,9 +1,14 @@
 package io.b2mash.b2b.b2bstrawman.clause;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.b2mash.b2b.b2bstrawman.seeder.PackReconcileEntry;
+import io.b2mash.b2b.b2bstrawman.seeder.ReconcilablePack;
 import java.util.List;
 
-/** DTO record for deserializing clause pack JSON files from the classpath. */
+/**
+ * DTO record for deserializing clause pack JSON files from the classpath. {@code reconcile} is the
+ * optional ADR-356 block ({@code null} when absent).
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record ClausePackDefinition(
     String packId,
@@ -12,7 +17,9 @@ public record ClausePackDefinition(
     String name,
     String description,
     List<ClauseDefinition> clauses,
-    List<TemplateAssociation> templateAssociations) {
+    List<TemplateAssociation> templateAssociations,
+    List<PackReconcileEntry> reconcile)
+    implements ReconcilablePack {
 
   /** A single clause definition within a clause pack. */
   public record ClauseDefinition(

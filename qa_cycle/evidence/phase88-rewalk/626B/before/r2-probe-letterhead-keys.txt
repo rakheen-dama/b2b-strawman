@@ -1,0 +1,19 @@
+       E2E Test Organization
+       626B probe — letterhead keys
+       Resolved values
+       [org.name] => <E2E Test Organization>
+       [org.address] => <>
+       [org.addressLines] => <>
+       [org.phone] => <>
+       [org.email] => <>
+       [org.website] => <>
+       [org.bankingDetails.bankName] => <>
+       [org.bankingDetails.branchCode] => <>
+       [org.bankingDetails.accountNumber] => <>
+       [org.bankingDetails.accountType] => <>
+       [org.bankingDetails.referenceNote] => <>
+       [org.signatory.name] => <>
+       [org.signatory.designation] => <>
+       [org.principal_attorney] => <>
+       [org.brandColor] => <#0f766e>
+       [org.logoUrl] => <>

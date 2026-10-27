@@ -1,0 +1,19 @@
+# R5 — logo fetch by openhtmltopdf from inside the e2e-backend container (presigned Credential/Signature REDACTED)
+# R1 engagement-letter-conveyancing render (19:49:13): no logo fetch attempted at all — the template has no org.logoUrl variable:
+#   IO-problem lines in r1-backend-log.txt: 0
+
+# R2 probe template render (19:52:16) — org.logoUrl variable present:
+com.openhtmltopdf.exception WARNING:: IO problem for http://localhost:4567/docteams-dev/org/tenant_7d218705360b/branding/logo.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20261027T195216Z&X-Amz-SignedHeaders=host&X-Amz-Credential=REDACTED&X-Amz-Expires=3600&X-Amz-Signature=REDACTED => java.net.ConnectException:: Connection refused (connect failed)
+com.openhtmltopdf.exception WARNING:: IO problem for http://localhost:4567/docteams-dev/org/tenant_7d218705360b/branding/logo.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20261027T195216Z&X-Amz-SignedHeaders=host&X-Amz-Credential=REDACTED&X-Amz-Expires=3600&X-Amz-Signature=REDACTED => java.net.ConnectException:: Connection refused (connect failed)
+com.openhtmltopdf.exception WARNING:: IO problem for http://localhost:4567/docteams-dev/org/tenant_7d218705360b/branding/logo.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20261027T195216Z&X-Amz-SignedHeaders=host&X-Amz-Credential=REDACTED&X-Amz-Expires=3600&X-Amz-Signature=REDACTED => java.net.ConnectException:: Connection refused (connect failed)
+
+# R4 statement-of-account render (19:53:36) — org.logoUrl variable present:
+com.openhtmltopdf.exception WARNING:: IO problem for http://localhost:4567/docteams-dev/org/tenant_7d218705360b/branding/logo.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20261027T195336Z&X-Amz-SignedHeaders=host&X-Amz-Credential=REDACTED&X-Amz-Expires=3600&X-Amz-Signature=REDACTED => java.net.ConnectException:: Connection refused (connect failed)
+com.openhtmltopdf.exception WARNING:: IO problem for http://localhost:4567/docteams-dev/org/tenant_7d218705360b/branding/logo.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20261027T195336Z&X-Amz-SignedHeaders=host&X-Amz-Credential=REDACTED&X-Amz-Expires=3600&X-Amz-Signature=REDACTED => java.net.ConnectException:: Connection refused (connect failed)
+com.openhtmltopdf.exception WARNING:: IO problem for http://localhost:4567/docteams-dev/org/tenant_7d218705360b/branding/logo.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20261027T195336Z&X-Amz-SignedHeaders=host&X-Amz-Credential=REDACTED&X-Amz-Expires=3600&X-Amz-Signature=REDACTED => java.net.ConnectException:: Connection refused (connect failed)
+
+# org.logoUrl as resolved into the template context (from r2-probe-preview-api.html):
+<img class="letterhead-logo" src="http://localhost:4567/docteams-dev/org/tenant_7d218705360b/branding/logo.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Date=20261027T195245Z&amp;X-Amz-SignedHeaders=host&amp;X-Amz-Credential=REDACTED&amp;X-Amz-Expires=3600&amp;X-Amz-Signature=REDACTED" alt="Logo"/>
+
+# Host browser (Playwright, outside Docker) loaded the same URL in the HTML preview iframe: naturalWidth=120 naturalHeight=120 complete=true (see 06-probe-preview-dialog.png)
+# PDFs: image_xobjects=0 in r1, r2 and r4 (see *-pixel-scan.txt)

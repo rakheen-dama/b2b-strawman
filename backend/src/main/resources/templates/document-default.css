@@ -17,7 +17,6 @@ img.letterhead-logo {
 }
 
 .header {
-    border-bottom: 3px solid var(--brand-color, #1a1a2e);
     padding-bottom: 10px;
     margin-bottom: 20px;
 }

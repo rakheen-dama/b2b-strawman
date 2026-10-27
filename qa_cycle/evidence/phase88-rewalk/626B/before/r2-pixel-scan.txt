@@ -1,0 +1,27 @@
+r2-1.ppm 661x935 brand_teal_px(#0f766e±12)=0 heading_navy_px(#1a1a2e±8)=2699 logo_orange_px=0
+r2-probe-letterhead-keys.pdf image_xobjects=0 Do_ops=0
+ fill rg colours: ['0.10196 0.10196 0.18039', '0.11373 0.11373 0.11373', '0.2 0.2 0.2']
+ stroke RG colours: []
+ brand #0f766e = 0.0588 0.4627 0.4314 rg ; heading #1a1a2e = 0.10196 0.10196 0.18039 rg
+
+# Text runs and their fill colour (decompressed content stream)
+ rg=0.10196 0.10196 0.18039 [/F1 18 Tf] (E2E Test Organization) Tj
+ rg=0.10196 0.10196 0.18039 [/F1 13.9875 Tf] <363236422070726F62652097206C657474657268656164206B657973> Tj
+ rg=0.10196 0.10196 0.18039 [/F1 12 Tf] (Resolved values) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] ([org.name] => <E2E Test Organization>) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] ([org.address] => <>) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] ([org.addressLines] => <>) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] ([org.phone] => <>) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] ([org.email] => <>) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] ([org.website] => <>) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] ([org.bankingDetails.bankName] => <>) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] ([org.bankingDetails.branchCode] => <>) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] ([org.bankingDetails.accountNumber] => <>) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] ([org.bankingDetails.accountType] => <>) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] ([org.bankingDetails.referenceNote] => <>) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] ([org.signatory.name] => <>) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] ([org.signatory.designation] => <>) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] ([org.principal_attorney] => <>) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] ([org.brandColor] => <#0f766e>) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] ([org.logoUrl] => <) Tj
+ rg=0.2 0.2 0.2 [/F2 10.9875 Tf] (>) Tj

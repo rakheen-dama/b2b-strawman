@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
+import io.b2mash.b2b.b2bstrawman.settings.LetterheadSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagRepository;
 import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
@@ -17,6 +18,7 @@ import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +79,18 @@ public class TemplateContextHelper {
             });
   }
 
-  /** Builds the org context map from OrgSettings (currency, branding, logo URL) and org name. */
+  /**
+   * Builds the org context map from OrgSettings (currency, branding, logo URL, VAT number, firm
+   * letterhead) and org name. Every key is present on both branches (settings row or none) so a
+   * template's {@code conditionalBlock} sees a null rather than a missing key.
+   *
+   * <p>Letterhead keys (Phase 88 U8, ADR-353): {@code address} (joined lines, {@code ""} when
+   * empty), {@code addressLines} (list — not template-bindable, use {@code address}), {@code
+   * phone}, {@code email}, {@code website}, {@code
+   * bankingDetails.{bankName,branchCode,accountNumber,accountType,referenceNote}}, {@code
+   * signatory.{name,designation}} and the deprecated {@code principal_attorney} alias. See {@link
+   * #putLetterheadKeys}.
+   */
   public Map<String, Object> buildOrgContext() {
     var orgMap = new LinkedHashMap<String, Object>();
 
@@ -110,6 +123,7 @@ public class TemplateContextHelper {
               } else {
                 orgMap.put("logoUrl", null);
               }
+              putLetterheadKeys(orgMap, settings.getLetterhead());
             },
             () -> {
               orgMap.put("defaultCurrency", null);
@@ -117,8 +131,64 @@ public class TemplateContextHelper {
               orgMap.put("documentFooterText", null);
               orgMap.put("taxRegistrationNumber", null);
               orgMap.put("logoUrl", null);
+              putLetterheadKeys(orgMap, null);
             });
     return orgMap;
+  }
+
+  /**
+   * Firm letterhead keys (Phase 88 U8, ADR-353). Group maps ({@code bankingDetails}, {@code
+   * signatory}) are {@code null} when every member is blank, so a {@code conditionalBlock
+   * isNotEmpty} on the group hides its label — the renderer's isNotEmpty stringifies values, so an
+   * empty or all-null map would read as non-empty. A partially filled group is a map whose unset
+   * members are {@code null}. Scalars are blank-to-null (defence in depth; the settings request
+   * already normalises). {@code addressLines} is for programmatic use: a list never renders through
+   * a variable node, and an empty list reads as non-empty to isNotEmpty — templates bind and
+   * condition on {@code org.address}.
+   */
+  private static void putLetterheadKeys(Map<String, Object> orgMap, LetterheadSettings letterhead) {
+    if (letterhead == null) {
+      orgMap.put("address", "");
+      orgMap.put("addressLines", List.of());
+      orgMap.put("phone", null);
+      orgMap.put("email", null);
+      orgMap.put("website", null);
+      orgMap.put("bankingDetails", null);
+      orgMap.put("signatory", null);
+      orgMap.put("principal_attorney", null);
+      return;
+    }
+    orgMap.put("address", letterhead.addressJoined());
+    orgMap.put("addressLines", letterhead.addressLines());
+    orgMap.put("phone", blankToNull(letterhead.getPhone()));
+    orgMap.put("email", blankToNull(letterhead.getEmail()));
+    orgMap.put("website", blankToNull(letterhead.getWebsite()));
+
+    var banking = new LinkedHashMap<String, Object>();
+    banking.put("bankName", blankToNull(letterhead.getBankName()));
+    banking.put("branchCode", blankToNull(letterhead.getBankBranchCode()));
+    banking.put("accountNumber", blankToNull(letterhead.getBankAccountNumber()));
+    banking.put("accountType", blankToNull(letterhead.getBankAccountType()));
+    banking.put("referenceNote", blankToNull(letterhead.getPaymentReferenceNote()));
+    orgMap.put("bankingDetails", anyValue(banking) ? banking : null);
+
+    var signatory = new LinkedHashMap<String, Object>();
+    signatory.put("name", blankToNull(letterhead.getSignatoryName()));
+    signatory.put("designation", blankToNull(letterhead.getSignatoryDesignation()));
+    orgMap.put("signatory", anyValue(signatory) ? signatory : null);
+
+    // DEPRECATED (Phase 88 626B, ADR-353): alias of org.signatory.name for the legal-za
+    // matter-closure-letter, deed-of-transfer and bond-cancellation-instruction templates.
+    // Remove after a pack reconcile moves those three templates onto org.signatory.name.
+    orgMap.put("principal_attorney", signatory.get("name"));
+  }
+
+  private static boolean anyValue(Map<String, Object> group) {
+    return group.values().stream().anyMatch(Objects::nonNull);
+  }
+
+  private static String blankToNull(String s) {
+    return s == null || s.isBlank() ? null : s.strip();
   }
 
   private void resolveOrgName(Map<String, Object> orgMap) {

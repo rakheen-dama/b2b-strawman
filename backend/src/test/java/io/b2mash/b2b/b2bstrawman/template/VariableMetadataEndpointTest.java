@@ -1,9 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -191,6 +194,59 @@ class VariableMetadataEndpointTest {
         .andExpect(jsonPath("$.loopSources[1].label").value("Invoices"))
         .andExpect(jsonPath("$.loopSources[1].fields.length()").value(7))
         .andExpect(jsonPath("$.loopSources[2].key").value("tags"));
+  }
+
+  @Test
+  void getVariables_orgGroup_offersLetterheadKeys() throws Exception {
+    // Phase 88 626B (U8, ADR-353, ruling R-4): leaf keys only, with legal labels. The groups
+    // (org.bankingDetails / org.signatory), the list (org.addressLines) and the deprecated
+    // org.principal_attorney alias are context-only and not offered in the picker.
+    for (String entityType : new String[] {"PROJECT", "CUSTOMER", "INVOICE"}) {
+      mockMvc
+          .perform(
+              get("/api/templates/variables")
+                  .param("entityType", entityType)
+                  .with(TestJwtFactory.memberJwt(ORG_ID, "user_vm_member"))
+                  .accept(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(
+              jsonPath(
+                  "$.groups[?(@.prefix == 'org')].variables[*].key",
+                  hasItems(
+                      "org.taxRegistrationNumber",
+                      "org.address",
+                      "org.phone",
+                      "org.email",
+                      "org.website",
+                      "org.bankingDetails.bankName",
+                      "org.bankingDetails.branchCode",
+                      "org.bankingDetails.accountNumber",
+                      "org.bankingDetails.accountType",
+                      "org.bankingDetails.referenceNote",
+                      "org.signatory.name",
+                      "org.signatory.designation")))
+          .andExpect(
+              jsonPath(
+                  "$.groups[?(@.prefix == 'org')].variables[*].key",
+                  not(
+                      anyOf(
+                          hasItem("org.principal_attorney"),
+                          hasItem("org.addressLines"),
+                          hasItem("org.bankingDetails"),
+                          hasItem("org.signatory")))))
+          .andExpect(
+              jsonPath(
+                  "$.groups[?(@.prefix == 'org')].variables[?(@.key == 'org.bankingDetails.accountNumber')].label",
+                  hasItem("Bank Account Number")))
+          .andExpect(
+              jsonPath(
+                  "$.groups[?(@.prefix == 'org')].variables[?(@.key == 'org.signatory.name')].label",
+                  hasItem("Signatory Name")))
+          .andExpect(
+              jsonPath(
+                  "$.groups[?(@.prefix == 'org')].variables[?(@.key == 'org.taxRegistrationNumber')].type",
+                  hasItem("string")));
+    }
   }
 
   @Test

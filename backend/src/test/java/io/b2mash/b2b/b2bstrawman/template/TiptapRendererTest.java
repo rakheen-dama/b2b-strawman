@@ -787,6 +787,173 @@ class TiptapRendererTest {
     assertThat(html).contains("<td>Item A</td><td>100.00</td>");
   }
 
+  // --- Brand colour rules (Phase 88 626B, U8, ADR-353, §13.6.4) ---
+
+  private static final String BRAND_HEADINGS = "h1, h2, h3 { color: %s; }";
+  private static final String BRAND_RULES = "hr, .rule { border-color: %s; }";
+  private static final String BRAND_LETTERHEAD = ".letterhead { border-bottom: 2px solid %s; }";
+
+  private static void assertBrandRules(String html, String hex) {
+    assertThat(html)
+        .contains(BRAND_HEADINGS.formatted(hex))
+        .contains(BRAND_RULES.formatted(hex))
+        .contains("hr { border-style: solid; }")
+        .contains(BRAND_LETTERHEAD.formatted(hex));
+  }
+
+  private static Map<String, Object> contextWithBrand(String brandColor) {
+    var org = new HashMap<String, Object>();
+    org.put("name", "Ndlovu Attorneys");
+    org.put("brandColor", brandColor);
+    var context = new HashMap<String, Object>();
+    context.put("org", org);
+    return context;
+  }
+
+  private Map<String, Object> headingDoc() {
+    return doc(
+        Map.<String, Object>of(
+            "type",
+            "heading",
+            "attrs",
+            Map.<String, Object>of("level", 2),
+            "content",
+            List.of(Map.<String, Object>of("type", "text", "text", "Fee Note"))));
+  }
+
+  @Test
+  void brand_rules_injected_from_org_brand_colour() {
+    String html = renderer.render(headingDoc(), contextWithBrand("#0f766e"), Map.of(), null);
+
+    assertBrandRules(html, "#0f766e");
+    assertThat(html).doesNotContain(BRAND_HEADINGS.formatted("#1a1a2e"));
+  }
+
+  @Test
+  void brand_rules_default_when_brand_colour_absent() {
+    // No org map at all
+    assertBrandRules(renderer.render(headingDoc(), Map.of(), Map.of(), null), "#1a1a2e");
+    // org map without a brandColor key
+    assertBrandRules(
+        renderer.render(headingDoc(), Map.of("org", Map.of("name", "Ndlovu")), Map.of(), null),
+        "#1a1a2e");
+    // org.brandColor explicitly null (OrgSettings with no brand colour set)
+    assertBrandRules(
+        renderer.render(headingDoc(), contextWithBrand(null), Map.of(), null), "#1a1a2e");
+  }
+
+  @Test
+  void invalid_brand_colour_falls_back() {
+    for (String bad : List.of("teal", "#0f766", "#0f766e\n", "url(x)", "#GGGGGG", "", " #0f766e")) {
+      String html = renderer.render(headingDoc(), contextWithBrand(bad), Map.of(), null);
+
+      assertBrandRules(html, "#1a1a2e");
+      if (!bad.isBlank()) {
+        assertThat(html)
+            .as("invalid brand colour %s must never reach the output", bad)
+            .doesNotContain("color: " + bad);
+      }
+    }
+  }
+
+  @Test
+  void brand_colour_attempting_to_close_style_is_rejected() {
+    String attack = "#0f766e;}</style><script>alert(1)</script>";
+
+    String html = renderer.render(headingDoc(), contextWithBrand(attack), Map.of(), null);
+
+    assertBrandRules(html, "#1a1a2e");
+    assertThat(html).doesNotContain("<script>").doesNotContain("alert(1)");
+    assertThat(html.split("</style>", -1)).hasSize(2); // exactly one </style>
+  }
+
+  @Test
+  void brand_rules_sit_between_default_and_template_css() {
+    String html =
+        renderer.render(headingDoc(), contextWithBrand("#0f766e"), Map.of(), "h1 { color: blue; }");
+
+    int defaultIdx = html.indexOf("body { font-size: 11pt; }");
+    int brandIdx = html.indexOf("h1, h2, h3 { color: #0f766e; }");
+    int templateIdx = html.indexOf("h1 { color: blue; }");
+    assertThat(defaultIdx).isNotNegative();
+    assertThat(brandIdx).isGreaterThan(defaultIdx);
+    assertThat(templateIdx).isGreaterThan(brandIdx); // template CSS still wins
+  }
+
+  @Test
+  void document_default_css_has_no_css_variables() throws Exception {
+    var css =
+        new String(
+            new org.springframework.core.io.ClassPathResource("templates/document-default.css")
+                .getInputStream()
+                .readAllBytes(),
+            java.nio.charset.StandardCharsets.UTF_8);
+
+    // OpenHTMLToPDF has no CSS custom properties — a var() declaration is skipped with a warning.
+    assertThat(css).doesNotContain("var(");
+  }
+
+  // --- Container guard (Phase 88 626B, ruling R-3) ---
+
+  private Map<String, Object> variableDoc(String key) {
+    return doc(
+        Map.<String, Object>of(
+            "type",
+            "paragraph",
+            "content",
+            List.of(
+                Map.<String, Object>of(
+                    "type", "variable", "attrs", Map.<String, Object>of("key", key)))));
+  }
+
+  @Test
+  void variable_resolving_to_map_or_list_renders_empty() {
+    var banking = new java.util.LinkedHashMap<String, Object>();
+    banking.put("bankName", "FNB");
+    banking.put("branchCode", "250655");
+    var org = new HashMap<String, Object>();
+    org.put("bankingDetails", banking);
+    org.put("addressLines", List.of("12 Rissik St", "Johannesburg 2001"));
+    var context = Map.<String, Object>of("org", org);
+
+    String mapHtml = renderer.render(variableDoc("org.bankingDetails"), context, Map.of(), null);
+    String listHtml = renderer.render(variableDoc("org.addressLines"), context, Map.of(), null);
+
+    assertThat(mapHtml).contains("<p></p>").doesNotContain("bankName=").doesNotContain("FNB");
+    assertThat(listHtml).contains("<p></p>").doesNotContain("12 Rissik St");
+  }
+
+  @Test
+  void variable_leaf_of_group_still_renders() {
+    var org = Map.<String, Object>of("bankingDetails", Map.of("bankName", "FNB"));
+
+    String html =
+        renderer.render(
+            variableDoc("org.bankingDetails.bankName"), Map.of("org", org), Map.of(), null);
+
+    assertThat(html).contains("<p>FNB</p>");
+  }
+
+  @Test
+  void hinted_currency_custom_field_map_renders_unchanged() {
+    // CURRENCY custom fields are stored as {amount, currency} maps and carry the "currency" hint
+    // (VariableMetadataRegistry.FIELD_TYPE_TO_VARIABLE_TYPE). formatCurrencyText cannot parse a map
+    // and falls back to String.valueOf — R-3 pins that the container guard leaves hinted paths
+    // exactly as they rendered before 626B.
+    var price = new java.util.LinkedHashMap<String, Object>();
+    price.put("amount", 1500000);
+    price.put("currency", "ZAR");
+    var context =
+        Map.<String, Object>of("project", Map.of("customFields", Map.of("purchase_price", price)));
+    var hints = Map.of("project.customFields.purchase_price", "currency");
+
+    String html =
+        renderer.render(
+            variableDoc("project.customFields.purchase_price"), context, Map.of(), null, hints);
+
+    assertThat(html).contains("<p>{amount=1500000, currency=ZAR}</p>");
+  }
+
   // --- Test helpers ---
 
   private Map<String, Object> doc(Map<String, Object> childNode) {

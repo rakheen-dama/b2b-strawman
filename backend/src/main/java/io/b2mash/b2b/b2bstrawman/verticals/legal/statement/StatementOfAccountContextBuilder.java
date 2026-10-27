@@ -223,10 +223,10 @@ public class StatementOfAccountContextBuilder {
 
     context.put("summary", toSummaryMap(agg.summary()));
 
-    // org.* — reuse the shared org helper, add bankingDetails placeholder for the SoA template.
-    var orgMap = new LinkedHashMap<String, Object>(templateContextHelper.buildOrgContext());
-    orgMap.putIfAbsent("bankingDetails", "");
-    context.put("org", orgMap);
+    // org.* — the shared org helper supplies org.bankingDetails (a map, or null when the firm has
+    // no banking details; Phase 88 626B, ADR-353). No SoA-specific placeholder: the renderer prints
+    // "" for the legacy whole-map {{org.bankingDetails}} binding until 626D moves it to the leaves.
+    context.put("org", new LinkedHashMap<String, Object>(templateContextHelper.buildOrgContext()));
 
     // _locale — so standalone currency/number variables format in the tenant's locale, matching
     // the loop-table columns (LZKC-017).

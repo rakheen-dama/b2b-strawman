@@ -1,0 +1,357 @@
+{
+ "name": "626B probe — letterhead keys",
+ "description": "Reproducer probe for slice 626B: letterhead org.* context keys. Leave in place for 626B observers.",
+ "category": "ENGAGEMENT_LETTER",
+ "primaryEntityType": "PROJECT",
+ "slug": "probe-626b-letterhead-keys",
+ "content": {
+  "type": "doc",
+  "content": [
+   {
+    "type": "heading",
+    "attrs": {
+     "level": 1
+    },
+    "content": [
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.name"
+      }
+     }
+    ]
+   },
+   {
+    "type": "heading",
+    "attrs": {
+     "level": 2
+    },
+    "content": [
+     {
+      "type": "text",
+      "text": "626B probe — letterhead keys"
+     }
+    ]
+   },
+   {
+    "type": "horizontalRule"
+   },
+   {
+    "type": "heading",
+    "attrs": {
+     "level": 3
+    },
+    "content": [
+     {
+      "type": "text",
+      "text": "Resolved values"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "[org.name] => <"
+     },
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.name"
+      }
+     },
+     {
+      "type": "text",
+      "text": ">"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "[org.address] => <"
+     },
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.address"
+      }
+     },
+     {
+      "type": "text",
+      "text": ">"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "[org.addressLines] => <"
+     },
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.addressLines"
+      }
+     },
+     {
+      "type": "text",
+      "text": ">"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "[org.phone] => <"
+     },
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.phone"
+      }
+     },
+     {
+      "type": "text",
+      "text": ">"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "[org.email] => <"
+     },
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.email"
+      }
+     },
+     {
+      "type": "text",
+      "text": ">"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "[org.website] => <"
+     },
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.website"
+      }
+     },
+     {
+      "type": "text",
+      "text": ">"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "[org.bankingDetails.bankName] => <"
+     },
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.bankingDetails.bankName"
+      }
+     },
+     {
+      "type": "text",
+      "text": ">"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "[org.bankingDetails.branchCode] => <"
+     },
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.bankingDetails.branchCode"
+      }
+     },
+     {
+      "type": "text",
+      "text": ">"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "[org.bankingDetails.accountNumber] => <"
+     },
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.bankingDetails.accountNumber"
+      }
+     },
+     {
+      "type": "text",
+      "text": ">"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "[org.bankingDetails.accountType] => <"
+     },
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.bankingDetails.accountType"
+      }
+     },
+     {
+      "type": "text",
+      "text": ">"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "[org.bankingDetails.referenceNote] => <"
+     },
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.bankingDetails.referenceNote"
+      }
+     },
+     {
+      "type": "text",
+      "text": ">"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "[org.signatory.name] => <"
+     },
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.signatory.name"
+      }
+     },
+     {
+      "type": "text",
+      "text": ">"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "[org.signatory.designation] => <"
+     },
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.signatory.designation"
+      }
+     },
+     {
+      "type": "text",
+      "text": ">"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "[org.principal_attorney] => <"
+     },
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.principal_attorney"
+      }
+     },
+     {
+      "type": "text",
+      "text": ">"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "[org.brandColor] => <"
+     },
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.brandColor"
+      }
+     },
+     {
+      "type": "text",
+      "text": ">"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "[org.logoUrl] => <"
+     },
+     {
+      "type": "variable",
+      "attrs": {
+       "key": "org.logoUrl"
+      }
+     },
+     {
+      "type": "text",
+      "text": ">"
+     }
+    ]
+   }
+  ]
+ }
+}

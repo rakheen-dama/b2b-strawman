@@ -1,0 +1,6 @@
+r4-1.ppm 661x935 brand_teal_px(#0f766e±12)=0 heading_navy_px(#1a1a2e±8)=3090 logo_orange_px=0
+r4-2.ppm 661x935 brand_teal_px(#0f766e±12)=0 heading_navy_px(#1a1a2e±8)=1092 logo_orange_px=0
+r4-statement-of-account-khumalo.pdf image_xobjects=0 Do_ops=0
+ fill rg colours: ['0.10196 0.10196 0.18039', '0.11373 0.11373 0.11373', '0.2 0.2 0.2', '0.86667 0.86667 0.86667', '0.96078 0.96078 0.96078']
+ stroke RG colours: []
+ brand #0f766e = 0.0588 0.4627 0.4314 rg ; heading #1a1a2e = 0.10196 0.10196 0.18039 rg

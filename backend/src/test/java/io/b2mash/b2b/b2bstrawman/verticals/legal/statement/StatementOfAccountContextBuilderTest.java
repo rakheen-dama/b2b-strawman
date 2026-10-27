@@ -1248,6 +1248,94 @@ class StatementOfAccountContextBuilderTest {
         .reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 
+  // ---------- org.bankingDetails pass-through (Phase 88 626B, ADR-353) ----------
+
+  private void stubEmptyPeriod() {
+    var project = projectWithCustomer("Banking Matter", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+  }
+
+  private static Map<String, Object> bankingMap() {
+    var banking = new java.util.LinkedHashMap<String, Object>();
+    banking.put("bankName", "FNB");
+    banking.put("branchCode", "250655");
+    banking.put("accountNumber", "62812345678");
+    banking.put("accountType", "Cheque");
+    banking.put("referenceNote", null);
+    return banking;
+  }
+
+  @Test
+  void orgBankingDetails_comesFromOrgContext_noPlaceholder() {
+    stubEmptyPeriod();
+    var banking = bankingMap();
+    var orgContext = new java.util.LinkedHashMap<String, Object>();
+    orgContext.put("name", "Acme Law");
+    orgContext.put("bankingDetails", banking);
+    when(templateContextHelper.buildOrgContext()).thenReturn(orgContext);
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> org = (Map<String, Object>) context.get("org");
+    assertThat(org.get("bankingDetails")).isSameAs(banking);
+  }
+
+  @Test
+  void orgWithoutBankingDetails_getsNoEmptyStringPlaceholder() {
+    stubEmptyPeriod();
+    // setUp() stubs buildOrgContext() with Map.of("name", "Acme Law") — no bankingDetails key.
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> org = (Map<String, Object>) context.get("org");
+    assertThat(org).doesNotContainKey("bankingDetails");
+    assertThat(org.get("name")).isEqualTo("Acme Law");
+  }
+
+  /**
+   * The shipped SoA template still binds the whole {@code org.bankingDetails} group in its "Payment
+   * Instructions" paragraph (626D moves it onto the leaf keys). Now that the org context supplies a
+   * map there, the renderer's container guard must keep that paragraph empty rather than printing
+   * {@code {bankName=FNB, ...}} (ruling R-9).
+   */
+  @Test
+  void realSoATemplate_wholeBankingMapBinding_rendersNoMapText() throws Exception {
+    stubEmptyPeriod();
+    var orgContext = new java.util.LinkedHashMap<String, Object>();
+    orgContext.put("name", "Acme Law");
+    orgContext.put("bankingDetails", bankingMap());
+    when(templateContextHelper.buildOrgContext()).thenReturn(orgContext);
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    var templateBytes =
+        getClass()
+            .getClassLoader()
+            .getResourceAsStream("template-packs/legal-za/statement-of-account.json")
+            .readAllBytes();
+    @SuppressWarnings("unchecked")
+    Map<String, Object> templateNode = objectMapper.readValue(templateBytes, Map.class);
+    var renderer =
+        new io.b2mash.b2b.b2bstrawman.template.TiptapRenderer(
+            new org.springframework.core.io.ByteArrayResource(
+                "body { font-size: 11pt; }".getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+
+    String html = renderer.render(templateNode, context, Map.of(), null, Map.of());
+
+    assertThat(html)
+        .contains("Payment Instructions</h3><p></p>")
+        .doesNotContain("bankName=")
+        .doesNotContain("62812345678");
+  }
+
   // ---------- helpers ----------
 
   private Project projectWithCustomer(String name, UUID customerId) {

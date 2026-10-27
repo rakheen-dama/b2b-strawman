@@ -1,0 +1,29 @@
+# R3 — Insert Variable dialog on Settings › Documents › Templates › New (Primary Entity Type = Project), Alice, 2026-10-27 ~19:51 UTC
+# dialog innerText per search term
+
+## search "org."
+Organization
+org.name                 Organization Name
+org.defaultCurrency      Default Currency
+org.brandColor           Brand Color
+org.documentFooterText   Document Footer
+org.logoUrl              Logo
+
+## search "address"
+Customer: customer.addressLine1, customer.addressLine2
+Custom Fields: project.customFields.property_address
+Customer Custom Fields: customer.customFields.postal_address
+(no org.address / org.addressLines)
+
+## search "bank"
+No variables found.
+
+## search "signatory"
+Custom Fields: project.customFields.opposing_attorney   (matched on label, not an org key)
+(no org.signatory.*)
+
+## search "principal"
+No variables found.   (org.principal_attorney is used by 3 legal-za pack templates but is not offered)
+
+## Not offered at all for PROJECT: org.phone, org.email, org.website, org.bankingDetails.*, org.signatory.*, org.principal_attorney, org.address, org.addressLines
+## Also note: org.taxRegistrationNumber (in the runtime context, used by 2 pack templates) is NOT offered either.

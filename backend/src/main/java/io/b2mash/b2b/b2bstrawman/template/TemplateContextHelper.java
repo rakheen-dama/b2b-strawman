@@ -87,7 +87,7 @@ public class TemplateContextHelper {
    * <p>Letterhead keys (Phase 88 U8, ADR-353): {@code address} (joined lines, {@code ""} when
    * empty), {@code addressLines} (list — not template-bindable, use {@code address}), {@code
    * phone}, {@code email}, {@code website}, {@code
-   * bankingDetails.{bankName,branchCode,accountNumber, accountType,referenceNote}}, {@code
+   * bankingDetails.{bankName,branchCode,accountNumber,accountType,referenceNote}}, {@code
    * signatory.{name,designation}} and the deprecated {@code principal_attorney} alias. See {@link
    * #putLetterheadKeys}.
    */

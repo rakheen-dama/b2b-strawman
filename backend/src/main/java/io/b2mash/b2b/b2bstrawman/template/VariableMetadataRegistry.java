@@ -334,7 +334,7 @@ public class VariableMetadataRegistry {
             // the org.bankingDetails / org.signatory groups (maps) are not bindable as variables;
             // org.principal_attorney is a deprecated context-only alias and deliberately not
             // offered. Type "string" → no format hint (buildFormatHints unchanged).
-            new VariableInfo("org.taxRegistrationNumber", "VAT Registration Number", "string"),
+            new VariableInfo("org.taxRegistrationNumber", "Tax Registration Number", "string"),
             new VariableInfo("org.address", "Firm Address", "string"),
             new VariableInfo("org.phone", "Firm Phone", "string"),
             new VariableInfo("org.email", "Firm Email", "string"),

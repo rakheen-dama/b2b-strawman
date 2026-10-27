@@ -84,3 +84,11 @@ export { paymentTermsDaysSchema } from "./settings";
 
 export { recordInvoicePaymentSchema } from "./invoice";
 export type { RecordInvoicePaymentFormData } from "./invoice";
+
+export {
+  letterheadSettingsSchema,
+  LETTERHEAD_FIELDS,
+  toLetterheadFormValues,
+  toLetterheadRequest,
+} from "./letterhead";
+export type { LetterheadSettingsFormData, LetterheadField } from "./letterhead";

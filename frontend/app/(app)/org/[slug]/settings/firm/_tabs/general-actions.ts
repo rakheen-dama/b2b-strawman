@@ -1,9 +1,14 @@
 "use server";
 
 import { api, ApiError } from "@/lib/api";
-import { uploadOrgLogo, deleteOrgLogo } from "@/lib/api/settings";
+import { uploadOrgLogo, deleteOrgLogo, updateLetterheadSettings } from "@/lib/api/settings";
 import { revalidatePath } from "next/cache";
-import type { UpdateOrgSettingsRequest, UpdateTaxSettingsRequest } from "@/lib/types";
+import type {
+  LetterheadSettings,
+  UpdateLetterheadSettingsRequest,
+  UpdateOrgSettingsRequest,
+  UpdateTaxSettingsRequest,
+} from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
@@ -89,4 +94,42 @@ export async function deleteLogoAction(slug: string): Promise<ActionResult> {
   }
   revalidatePath(`/org/${slug}/settings/firm`);
   return { success: true };
+}
+
+export interface LetterheadActionResult extends ActionResult {
+  /** The saved letterhead as the server stored it (trimmed, blank → null). */
+  letterhead?: LetterheadSettings;
+  /** Per-field messages from a 400 ProblemDetail (`fieldErrors`). */
+  fieldErrors?: Array<{ field: string; message: string }>;
+}
+
+/**
+ * Full replace of the firm letterhead (Phase 88 U8, ADR-353). Admin/owner only — enforced by the
+ * backend (TEAM_OVERSIGHT + service admin/owner check); a 403 maps to a friendly message.
+ */
+export async function updateLetterheadSettingsAction(
+  slug: string,
+  data: UpdateLetterheadSettingsRequest
+): Promise<LetterheadActionResult> {
+  let letterhead: LetterheadSettings | undefined;
+  try {
+    const settings = await updateLetterheadSettings(data);
+    letterhead = settings.letterhead;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return { success: false, error: "Only owners and admins can update the letterhead." };
+      }
+      if (error.status === 400) {
+        // GlobalExceptionHandler puts [{ field, message }] on the ProblemDetail's `fieldErrors`.
+        const fieldErrors = error.detail?.fieldErrors as
+          | Array<{ field: string; message: string }>
+          | undefined;
+        return { success: false, error: error.message, fieldErrors };
+      }
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+  revalidatePath(`/org/${slug}/settings/firm`);
+  return { success: true, letterhead };
 }

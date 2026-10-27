@@ -479,6 +479,103 @@ class VisualRegressionTest {
     assertThat(hidden).doesNotContain("Payment Instructions").doesNotContain("Bank:");
   }
 
+  // --- 626D review fixes F-6 (signatory lines gated per leaf) / F-7 (sibling address lines) ---
+
+  private static Map<String, Object> customerAddress(
+      String line1, String city, String postalCode, String country) {
+    var customer = new HashMap<String, Object>();
+    customer.put("name", "Apex Holdings");
+    customer.put("addressLine1", line1);
+    customer.put("addressLine2", null);
+    customer.put("city", city);
+    customer.put("postalCode", postalCode);
+    customer.put("country", country);
+    return customer;
+  }
+
+  private String renderFeeNote(Map<String, Object> customer) throws IOException {
+    var context =
+        feeNoteContext(
+            emptyLetterheadOrg(), customer, Map.of("invoiceNumber", "INV-0004", "currency", "ZAR"));
+    return renderer.render(
+        loadPackTemplate("legal-za", "fee-note-za"), context, Map.of(), null, LEGAL_HINTS);
+  }
+
+  /** The client block: from the "To:" line up to the separator below it. */
+  private static String clientBlock(String html) {
+    int to = html.indexOf("<p><strong>To:</strong>");
+    assertThat(to).isGreaterThanOrEqualTo(0);
+    return html.substring(to, html.indexOf("<hr/>", to));
+  }
+
+  @Test
+  void legalFeeNote_blankAddressLine1_stillRendersCityPostalCodeAndCountry() throws IOException {
+    String block = clientBlock(renderFeeNote(customerAddress(null, "Sandton", "2196", "ZA")));
+
+    assertThat(block)
+        .isEqualTo("<p><strong>To:</strong> Apex Holdings</p><p>Sandton 2196</p><p>ZA</p>");
+  }
+
+  @Test
+  void legalFeeNote_blankCity_stillRendersThePostalCodeAlone() throws IOException {
+    String block = clientBlock(renderFeeNote(customerAddress("12 Rivonia Road", "", "2196", "ZA")));
+
+    assertThat(block)
+        .isEqualTo(
+            "<p><strong>To:</strong> Apex Holdings</p><p>12 Rivonia Road</p><p>2196</p><p>ZA</p>");
+  }
+
+  @Test
+  void legalFeeNote_blankAddress_rendersOnlyTheClientName() throws IOException {
+    String block = clientBlock(renderFeeNote(customerAddress(null, null, null, null)));
+
+    assertThat(block).isEqualTo("<p><strong>To:</strong> Apex Holdings</p>");
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "engagement-letter-general",
+        "engagement-letter-litigation",
+        "engagement-letter-conveyancing",
+        "matter-closure-letter",
+        "deed-of-transfer",
+        "bond-cancellation-instruction"
+      })
+  void legalSignatureBlock_gatesTheNameAndTheDesignationSeparately(String key) throws IOException {
+    var designationOnly = emptyLetterheadOrg();
+    var signatory = new HashMap<String, Object>();
+    signatory.put("name", null);
+    signatory.put("designation", "Managing Partner");
+    designationOnly.put("signatory", signatory);
+    String html =
+        renderer.render(
+            loadPackTemplate("legal-za", key),
+            engagementContext(designationOnly),
+            Map.of(),
+            null,
+            LEGAL_HINTS);
+    assertThat(html)
+        .contains("<p>Managing Partner</p><p>Ndlovu Attorneys Inc.</p>")
+        .doesNotContain("<p></p><p>Managing Partner</p>");
+
+    var nameOnly = emptyLetterheadOrg();
+    var named = new HashMap<String, Object>();
+    named.put("name", "Sipho Ndlovu");
+    named.put("designation", null);
+    nameOnly.put("signatory", named);
+    String signed =
+        renderer.render(
+            loadPackTemplate("legal-za", key),
+            engagementContext(nameOnly),
+            Map.of(),
+            null,
+            LEGAL_HINTS);
+    assertThat(signed)
+        .contains("<p>Sipho Ndlovu</p><p>Ndlovu Attorneys Inc.</p>")
+        .doesNotContain("<p>Sipho Ndlovu</p><p></p>");
+  }
+
   /** Ruling R-2: the three letters that bound the deprecated alias sign with the signatory. */
   @ParameterizedTest
   @ValueSource(

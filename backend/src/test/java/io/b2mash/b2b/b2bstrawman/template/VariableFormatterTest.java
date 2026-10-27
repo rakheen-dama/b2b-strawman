@@ -169,6 +169,31 @@ class VariableFormatterTest {
     assertThat(VariableFormatter.format("javascript:alert(1)", "image")).isEmpty();
   }
 
+  /**
+   * 626D review F-2: an {@link InlineLogo} renders its lazily loaded data URI (still held to the
+   * strict PNG/JPEG form), or its presigned URL when the bytes are unavailable; without the image
+   * hint it prints the presigned URL as before 626D.
+   */
+  @Test
+  void image_type_hint_renders_an_inline_logo_data_uri_or_its_presigned_url() {
+    var inlined =
+        new InlineLogo("https://s3.test/logo.png", () -> "data:image/png;base64,iVBORw0=");
+    assertThat(VariableFormatter.format(inlined, "image"))
+        .isEqualTo(
+            "<img class=\"letterhead-logo\" src=\"data:image/png;base64,iVBORw0=\" alt=\"Logo\"/>");
+
+    var unavailable = new InlineLogo("https://s3.test/logo.png?a=1&b=2", () -> null);
+    assertThat(VariableFormatter.format(unavailable, "image"))
+        .isEqualTo(
+            "<img class=\"letterhead-logo\" src=\"https://s3.test/logo.png?a=1&amp;b=2\""
+                + " alt=\"Logo\"/>");
+
+    var malformed = new InlineLogo("https://s3.test/logo.png", () -> "data:text/html;base64,PA==");
+    assertThat(VariableFormatter.format(malformed, "image")).isEmpty();
+
+    assertThat(VariableFormatter.format(inlined, null)).isEqualTo("https://s3.test/logo.png");
+  }
+
   @Test
   void image_type_hint_null_value_returns_empty_string() {
     assertThat(VariableFormatter.format(null, "image")).isEmpty();

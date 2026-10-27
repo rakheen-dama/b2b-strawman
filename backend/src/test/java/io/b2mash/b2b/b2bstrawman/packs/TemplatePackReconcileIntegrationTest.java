@@ -70,8 +70,8 @@ class TemplatePackReconcileIntegrationTest {
                 tx -> {
                   var feeNote =
                       documentTemplateRepository
-                          .findByPackIdAndPackTemplateKey(PACK_ID, NEW_TEMPLATE_KEY)
-                          .orElseThrow();
+                          .findPackSeeded(PACK_ID, NEW_TEMPLATE_KEY)
+                          .getFirst();
                   documentTemplateRepository.delete(feeNote);
                 }));
 
@@ -81,9 +81,7 @@ class TemplatePackReconcileIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx ->
-                    assertThat(
-                            documentTemplateRepository.findByPackIdAndPackTemplateKey(
-                                PACK_ID, NEW_TEMPLATE_KEY))
+                    assertThat(documentTemplateRepository.findPackSeeded(PACK_ID, NEW_TEMPLATE_KEY))
                         .isEmpty()));
 
     // --- Phase 3: recorded version older than classpath -> reconcile creates the template ---
@@ -107,8 +105,8 @@ class TemplatePackReconcileIntegrationTest {
                   var install = packInstallRepository.findByPackId(PACK_ID).orElseThrow();
                   var feeNote =
                       documentTemplateRepository
-                          .findByPackIdAndPackTemplateKey(PACK_ID, NEW_TEMPLATE_KEY)
-                          .orElseThrow();
+                          .findPackSeeded(PACK_ID, NEW_TEMPLATE_KEY)
+                          .getFirst();
 
                   // Created template is tagged against the existing install with a content hash
                   assertThat(feeNote.getSourcePackInstallId()).isEqualTo(install.getId());
@@ -180,8 +178,8 @@ class TemplatePackReconcileIntegrationTest {
                   // i.e. the tenant never touched it; it is simply from an older pack version.
                   var coverLetter =
                       documentTemplateRepository
-                          .findByPackIdAndPackTemplateKey(COMMON_PACK_ID, COVER_LETTER_KEY)
-                          .orElseThrow();
+                          .findPackSeeded(COMMON_PACK_ID, COVER_LETTER_KEY)
+                          .getFirst();
                   coverLetter.updateContent(
                       coverLetter.getName(),
                       coverLetter.getDescription(),
@@ -195,8 +193,8 @@ class TemplatePackReconcileIntegrationTest {
                   // Engagement letter: tenant-edited content — stored hash does NOT match.
                   var engagement =
                       documentTemplateRepository
-                          .findByPackIdAndPackTemplateKey(COMMON_PACK_ID, EDITED_TEMPLATE_KEY)
-                          .orElseThrow();
+                          .findPackSeeded(COMMON_PACK_ID, EDITED_TEMPLATE_KEY)
+                          .getFirst();
                   engagement.updateContent(
                       engagement.getName(),
                       engagement.getDescription(),
@@ -224,8 +222,8 @@ class TemplatePackReconcileIntegrationTest {
 
                   var coverLetter =
                       documentTemplateRepository
-                          .findByPackIdAndPackTemplateKey(COMMON_PACK_ID, COVER_LETTER_KEY)
-                          .orElseThrow();
+                          .findPackSeeded(COMMON_PACK_ID, COVER_LETTER_KEY)
+                          .getFirst();
                   String coverLetterJson = coverLetter.getContent().toString();
                   assertThat(coverLetterJson).contains("invoice.invoiceNumber");
                   assertThat(coverLetterJson).doesNotContain("key=invoice.number");
@@ -238,8 +236,8 @@ class TemplatePackReconcileIntegrationTest {
 
                   var engagement =
                       documentTemplateRepository
-                          .findByPackIdAndPackTemplateKey(COMMON_PACK_ID, EDITED_TEMPLATE_KEY)
-                          .orElseThrow();
+                          .findPackSeeded(COMMON_PACK_ID, EDITED_TEMPLATE_KEY)
+                          .getFirst();
                   assertThat(engagement.getContent().toString())
                       .contains("Tenant customized engagement");
                 }));
@@ -275,8 +273,8 @@ class TemplatePackReconcileIntegrationTest {
                 tx -> {
                   var soa =
                       documentTemplateRepository
-                          .findByPackIdAndPackTemplateKey(PACK_ID, "statement-of-account")
-                          .orElseThrow();
+                          .findPackSeeded(PACK_ID, "statement-of-account")
+                          .getFirst();
                   soa.updateContent(
                       soa.getName(), soa.getDescription(), staleSoaContent, soa.getCss());
                   // Hash pinned to the stale content -> reads as pristine (never tenant-edited).
@@ -301,8 +299,8 @@ class TemplatePackReconcileIntegrationTest {
 
                   var soa =
                       documentTemplateRepository
-                          .findByPackIdAndPackTemplateKey(PACK_ID, "statement-of-account")
-                          .orElseThrow();
+                          .findPackSeeded(PACK_ID, "statement-of-account")
+                          .getFirst();
                   String soaJson = soa.getContent().toString();
                   assertThat(soaJson).contains("org.logoUrl");
                   assertThat(soaJson).contains("summary.closing_balance_owing");

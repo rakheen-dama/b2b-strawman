@@ -129,8 +129,8 @@ class MatterFeedIntegrationTest {
         inTenant(
             () ->
                 documentTemplateRepository
-                    .findByPackIdAndPackTemplateKey("legal-za", "engagement-letter-general")
-                    .orElseThrow()
+                    .findPackSeeded("legal-za", "engagement-letter-general")
+                    .getFirst()
                     .getId());
 
     var account =

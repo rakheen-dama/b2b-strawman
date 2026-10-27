@@ -101,24 +101,24 @@
     },
     {
       "type": "conditionalBlock",
-      "attrs": { "fieldKey": "org.signatory", "operator": "isNotEmpty" },
+      "attrs": { "fieldKey": "org.signatory.name", "operator": "isNotEmpty" },
       "content": [
         {
           "type": "paragraph",
           "content": [
             { "type": "variable", "attrs": { "key": "org.signatory.name" } }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.signatory.designation", "operator": "isNotEmpty" },
+      "content": [
         {
-          "type": "conditionalBlock",
-          "attrs": { "fieldKey": "org.signatory.designation", "operator": "isNotEmpty" },
+          "type": "paragraph",
           "content": [
-            {
-              "type": "paragraph",
-              "content": [
-                { "type": "variable", "attrs": { "key": "org.signatory.designation" } }
-              ]
-            }
+            { "type": "variable", "attrs": { "key": "org.signatory.designation" } }
           ]
         }
       ]

@@ -68,6 +68,13 @@ class LegalZaTemplateReconcileIntegrationTest {
           "matter-closure-letter",
           "deed-of-transfer",
           "bond-cancellation-instruction");
+
+  /**
+   * A legal-za template outside the reconcile block with no clause links: deleted to force a
+   * create.
+   */
+  private static final String MISSING_KEY = "notice-of-motion";
+
   private static final ObjectMapper JSON = new ObjectMapper();
 
   @Autowired private TenantProvisioningService provisioningService;
@@ -192,23 +199,7 @@ class LegalZaTemplateReconcileIntegrationTest {
   @Test
   void clone_survivesByteIdentical_andReconcileDoesNotThrow() {
     simulateV7Tenant(rows -> {}, true);
-    UUID cloneId =
-        inTenantTx(
-            () -> {
-              var original = packRow("fee-note-za");
-              var clone =
-                  new DocumentTemplate(
-                      original.getPrimaryEntityType(),
-                      original.getName() + " (Custom)",
-                      original.getSlug() + "-custom-626d",
-                      original.getCategory(),
-                      original.getContent());
-              clone.setDescription(original.getDescription());
-              clone.setSourceTemplateId(original.getId());
-              clone.setPackId(original.getPackId());
-              clone.setPackTemplateKey(original.getPackTemplateKey());
-              return documentTemplateRepository.save(clone).getId();
-            });
+    UUID cloneId = inTenantTx(() -> saveCloneOf("fee-note-za", "-custom-626d"));
     try {
       packInstallService.internalInstall(PACK_ID, schema);
 
@@ -221,6 +212,160 @@ class LegalZaTemplateReconcileIntegrationTest {
             assertThat(ContentHashUtil.hashOf(packRow("fee-note-za").getContent()))
                 .isEqualTo(ContentHashUtil.hashOf(shippedBody("fee-note-za")));
             assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+            return null;
+          });
+    } finally {
+      inTenantTx(
+          () -> {
+            documentTemplateRepository.deleteById(cloneId);
+            return null;
+          });
+    }
+  }
+
+  /**
+   * 626D review F-3: a version bump that re-creates a missing pack template tags the new row with
+   * the install — and never sweeps in a clone (clones copy {@code packId} and leave {@code
+   * source_pack_install_id} null). The clone stays untagged with its hash unchanged and is not
+   * counted as an item of the install.
+   */
+  @Test
+  void versionBumpCreatingAMissingTemplate_neverTagsAClone() {
+    simulateV7Tenant(rows -> {}, true);
+    UUID cloneId = inTenantTx(() -> saveCloneOf("fee-note-za", "-custom-626d-f3"));
+    String cloneHashBefore =
+        inTenantTx(
+            () -> documentTemplateRepository.findById(cloneId).orElseThrow().getContentHash());
+    inTenantTx(
+        () -> {
+          documentTemplateRepository.delete(packRow(MISSING_KEY));
+          return null;
+        });
+    try {
+      packInstallService.internalInstall(PACK_ID, schema);
+
+      inTenantTx(
+          () -> {
+            UUID installId = packInstallRepository.findByPackId(PACK_ID).orElseThrow().getId();
+            var clone = documentTemplateRepository.findById(cloneId).orElseThrow();
+            assertThat(clone.getSourcePackInstallId()).as("clone stays untagged").isNull();
+            assertThat(clone.getContentHash()).isEqualTo(cloneHashBefore);
+            var recreated = packRow(MISSING_KEY);
+            assertThat(recreated.getSourcePackInstallId()).isEqualTo(installId);
+            assertThat(documentTemplateRepository.findBySourcePackInstallId(installId))
+                .extracting(DocumentTemplate::getId)
+                .contains(recreated.getId())
+                .doesNotContain(cloneId);
+            assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+            return null;
+          });
+    } finally {
+      inTenantTx(
+          () -> {
+            documentTemplateRepository.deleteById(cloneId);
+            return null;
+          });
+    }
+  }
+
+  /**
+   * 626D review F-5: two pack-seeded rows for one key (no unique constraint backs the pair) never
+   * throw at boot — the installer's refresh pass and the reconcile resolver each WARN and skip that
+   * template, and the rest of the pack is still reconciled.
+   */
+  @Test
+  void twoPackSeededRowsForOneKey_warnAndSkip_onBothPaths_neverThrow() {
+    simulateV7Tenant(rows -> {}, true);
+    UUID originalId = inTenantTx(() -> packRow("fee-note-za").getId());
+    UUID duplicateId =
+        inTenantTx(
+            () -> {
+              var original = packRow("fee-note-za");
+              var dup =
+                  new DocumentTemplate(
+                      original.getPrimaryEntityType(),
+                      original.getName() + " (duplicate)",
+                      original.getSlug() + "-dup-626d",
+                      original.getCategory(),
+                      original.getContent());
+              dup.setSource(TemplateSource.PLATFORM);
+              dup.setPackId(original.getPackId());
+              dup.setPackTemplateKey(original.getPackTemplateKey());
+              dup.setSourcePackInstallId(original.getSourcePackInstallId());
+              dup.setContentHash(original.getContentHash());
+              return documentTemplateRepository.save(dup).getId();
+            });
+    try {
+      var logs =
+          captureLogs(
+              () -> packInstallService.internalInstall(PACK_ID, schema),
+              TemplatePackInstaller.class,
+              TemplatePackSeeder.class);
+
+      inTenantTx(
+          () -> {
+            for (UUID id : List.of(originalId, duplicateId)) {
+              assertThat(
+                      ContentHashUtil.hashOf(
+                          documentTemplateRepository.findById(id).orElseThrow().getContent()))
+                  .as("ambiguous fee-note row %s left at v7", id)
+                  .isEqualTo(ContentHashUtil.hashOf(v7Body("fee-note-za")));
+            }
+            assertThat(ContentHashUtil.hashOf(packRow("engagement-letter-general").getContent()))
+                .isEqualTo(ContentHashUtil.hashOf(shippedBody("engagement-letter-general")));
+            assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+            return null;
+          });
+      assertThat(logs)
+          .anyMatch(m -> m.contains("'fee-note-za'") && m.contains("2 pack-seeded rows"))
+          .anyMatch(m -> m.startsWith("Reconcile entry ignored") && m.contains("ambiguous"));
+    } finally {
+      inTenantTx(
+          () -> {
+            documentTemplateRepository.deleteById(duplicateId);
+            return null;
+          });
+    }
+  }
+
+  /**
+   * The resolver's ownership predicate lives in JPQL ({@code findPackSeededByInstall}): a clone is
+   * never a target even in the worst case of carrying this install's tag — it survives
+   * byte-identical while the pack row is reconciled.
+   */
+  @Test
+  void cloneTaggedWithTheInstall_isNeverATarget() {
+    simulateV7Tenant(rows -> {}, true);
+    UUID cloneId =
+        inTenantTx(
+            () -> {
+              UUID id = saveCloneOf("fee-note-za", "-custom-626d-tagged");
+              var clone = documentTemplateRepository.findById(id).orElseThrow();
+              clone.setSourcePackInstallId(packRow("fee-note-za").getSourcePackInstallId());
+              documentTemplateRepository.save(clone);
+              return id;
+            });
+    try {
+      inTenantTx(
+          () -> {
+            var pack = packRow("fee-note-za");
+            assertThat(
+                    documentTemplateRepository.findPackSeededByInstall(
+                        pack.getSourcePackInstallId(), "fee-note-za"))
+                .extracting(DocumentTemplate::getId)
+                .containsExactly(pack.getId());
+            return null;
+          });
+
+      packInstallService.internalInstall(PACK_ID, schema);
+
+      inTenantTx(
+          () -> {
+            var clone = documentTemplateRepository.findById(cloneId).orElseThrow();
+            assertThat(ContentHashUtil.hashOf(clone.getContent()))
+                .isEqualTo(ContentHashUtil.hashOf(v7Body("fee-note-za")));
+            assertThat(ContentHashUtil.hashOf(packRow("fee-note-za").getContent()))
+                .isEqualTo(ContentHashUtil.hashOf(shippedBody("fee-note-za")));
             return null;
           });
     } finally {
@@ -374,17 +519,44 @@ class LegalZaTemplateReconcileIntegrationTest {
   }
 
   private static List<String> captureSeederLogs(Runnable action) {
+    return captureLogs(action, TemplatePackSeeder.class);
+  }
+
+  private static List<String> captureLogs(Runnable action, Class<?>... sources) {
     ListAppender<ILoggingEvent> appender = new ListAppender<>();
     appender.start();
-    Logger logger = (Logger) LoggerFactory.getLogger(TemplatePackSeeder.class);
-    logger.addAppender(appender);
-    logger.setLevel(Level.INFO);
+    var loggers = new ArrayList<Logger>();
+    for (Class<?> source : sources) {
+      Logger logger = (Logger) LoggerFactory.getLogger(source);
+      logger.addAppender(appender);
+      logger.setLevel(Level.INFO);
+      loggers.add(logger);
+    }
     try {
       action.run();
     } finally {
-      logger.detachAppender(appender);
-      logger.setLevel(null);
+      for (Logger logger : loggers) {
+        logger.detachAppender(appender);
+        logger.setLevel(null);
+      }
     }
     return appender.list.stream().map(ILoggingEvent::getFormattedMessage).toList();
+  }
+
+  /** Mirrors {@code DocumentTemplateService.cloneTemplate}: ORG_CUSTOM, same pack id + key. */
+  private UUID saveCloneOf(String key, String slugSuffix) {
+    var original = packRow(key);
+    var clone =
+        new DocumentTemplate(
+            original.getPrimaryEntityType(),
+            original.getName() + " (Custom)",
+            original.getSlug() + slugSuffix,
+            original.getCategory(),
+            original.getContent());
+    clone.setDescription(original.getDescription());
+    clone.setSourceTemplateId(original.getId());
+    clone.setPackId(original.getPackId());
+    clone.setPackTemplateKey(original.getPackTemplateKey());
+    return documentTemplateRepository.save(clone).getId();
   }
 }

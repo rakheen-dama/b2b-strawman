@@ -33,6 +33,8 @@ class VerticalTemplateSelectionTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private DocumentTemplateRepository documentTemplateRepository;
+  @Autowired private DocumentTemplateService documentTemplateService;
 
   private String tenantSchemaDefault;
   private String tenantSchemaLegal;
@@ -86,6 +88,40 @@ class VerticalTemplateSelectionTest {
                       assertThat(result).isPresent();
                       assertThat(result.get().getPackId()).isEqualTo("legal-za");
                       assertThat(result.get().getPackTemplateKey()).isEqualTo("fee-note-za");
+                    }));
+  }
+
+  /**
+   * 626D review F-4: a firm clone of {@code fee-note-za} shares {@code packId} + {@code
+   * packTemplateKey} with the platform row. The emailed fee note must still resolve the platform
+   * template (as before any clone existed) instead of throwing {@code
+   * IncorrectResultSizeDataAccessException} from a single-result finder over both rows.
+   */
+  @Test
+  void legalZaWithAFirmCloneOfTheFeeNote_stillResolvesThePlatformFeeNote() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchemaLegal)
+        .where(RequestScopes.ORG_ID, ORG_ID_LEGAL)
+        .where(RequestScopes.MEMBER_ID, memberIdLegal)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var platform =
+                          documentTemplateRepository.findByPackTemplateKey("fee-note-za").stream()
+                              .filter(dt -> "legal-za".equals(dt.getPackId()))
+                              .filter(dt -> dt.getSource() == TemplateSource.PLATFORM)
+                              .filter(dt -> dt.getSourceTemplateId() == null)
+                              .findFirst()
+                              .orElseThrow();
+                      documentTemplateService.cloneTemplate(platform.getId());
+                      tx.setRollbackOnly(); // the clone never outlives this test
+
+                      var result = generatedDocumentService.resolveDefaultInvoiceTemplate();
+
+                      assertThat(result).isPresent();
+                      assertThat(result.get().getId()).isEqualTo(platform.getId());
+                      assertThat(result.get().getSource()).isEqualTo(TemplateSource.PLATFORM);
                     }));
   }
 

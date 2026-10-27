@@ -143,14 +143,16 @@ public final class VariableFormatter {
   /**
    * Renders an {@code <img>} element for the "image" type hint (letterhead logo, LZKC-007). The
    * value is expected to be server-generated ({@code org.logoUrl} from {@code
-   * TemplateContextHelper.buildOrgContext}): a strict PNG/JPEG base64 {@code data:} URI of the logo
-   * bytes (626D) or a presigned http(s) URL; anything else renders as an empty string so a
+   * TemplateContextHelper.buildOrgContext}): an {@link InlineLogo} (626D — rendered as its lazily
+   * downloaded PNG/JPEG {@code data:} URI, or its presigned URL when the bytes are unavailable) or
+   * a presigned http(s) URL string. Whatever the source, the result must be a strict PNG/JPEG
+   * base64 {@code data:} URI or an http(s) URL; anything else renders as an empty string so a
    * missing/odd value degrades to "no logo" instead of broken markup. The value is
    * HTML-attribute-escaped; sizing comes from the {@code letterhead-logo} class in
    * document-default.css.
    */
   private static String formatImage(Object value) {
-    String url = String.valueOf(value).trim();
+    String url = (value instanceof InlineLogo logo ? logo.src() : String.valueOf(value)).trim();
     if (!(url.startsWith("https://")
         || url.startsWith("http://")
         || DATA_IMAGE_URI.matcher(url).matches())) {

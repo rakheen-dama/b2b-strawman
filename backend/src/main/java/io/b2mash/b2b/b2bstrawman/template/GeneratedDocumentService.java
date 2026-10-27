@@ -543,8 +543,10 @@ public class GeneratedDocumentService {
             .map(OrgSettings::getVerticalProfile)
             .orElse(null);
     if ("legal-za".equals(verticalProfile)) {
-      // LZKC-012 guard: fee note or nothing — never the generic cover letter.
-      return documentTemplateRepository.findByPackIdAndPackTemplateKey("legal-za", "fee-note-za");
+      // LZKC-012 guard: fee note or nothing — never the generic cover letter. Clone-safe: the
+      // platform row, never a firm clone (clones share packId + packTemplateKey).
+      return documentTemplateRepository.findPackSeeded("legal-za", "fee-note-za").stream()
+          .findFirst();
     }
     // Fallback: try a generic "invoice" template from any pack
     var genericCandidates = documentTemplateRepository.findByPackTemplateKey("invoice");

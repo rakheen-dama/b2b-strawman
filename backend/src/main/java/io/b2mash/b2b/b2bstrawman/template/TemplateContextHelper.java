@@ -108,7 +108,7 @@ public class TemplateContextHelper {
               orgMap.put("documentFooterText", settings.getBranding().getDocumentFooterText());
               orgMap.put("taxRegistrationNumber", settings.getTax().getTaxRegistrationNumber());
 
-              orgMap.put("logoUrl", resolveLogoSrc(settings.getBranding().getLogoS3Key()));
+              orgMap.put("logoUrl", resolveLogo(settings.getBranding().getLogoS3Key()));
               putLetterheadKeys(orgMap, settings.getLetterhead());
             },
             () -> {
@@ -123,38 +123,47 @@ public class TemplateContextHelper {
   }
 
   /**
-   * The {@code org.logoUrl} value for a branding logo key (Phase 88 626D, ruling R-1): a {@code
-   * data:image/png|jpeg;base64,} URI of the stored bytes, so the PDF renderer never fetches the
-   * logo over the network (a presigned URL's host is not always reachable from the backend, e.g.
-   * the e2e stack) and the browser preview shows the identical string. SVG (no PDF support) or any
-   * download failure falls back to the presigned URL; {@code null} when no logo is set or no URL
-   * can be generated.
+   * The {@code org.logoUrl} value for a branding logo key (Phase 88 626D, ruling R-1). A PNG/JPEG
+   * logo is an {@link InlineLogo}: its presigned URL plus a lazy {@code data:} URI of the stored
+   * bytes, downloaded only if an {@code image}-hinted variable renders it (so the PDF renderer
+   * never fetches the logo over the network — a presigned URL's host is not always reachable from
+   * the backend, e.g. the e2e stack — and building a context never touches storage). SVG (no PDF
+   * support) is the plain presigned URL. {@code null} when no logo is set or no URL can be
+   * generated (as before 626D).
    */
-  private String resolveLogoSrc(String logoS3Key) {
+  private Object resolveLogo(String logoS3Key) {
     if (logoS3Key == null || logoS3Key.isBlank()) {
       return null;
     }
-    String mime = logoMimeType(logoS3Key);
-    if (mime != null) {
-      try {
-        byte[] bytes = storageService.download(logoS3Key);
-        if (bytes != null && bytes.length > 0) {
-          return "data:" + mime + ";base64," + Base64.getEncoder().encodeToString(bytes);
-        }
-        log.warn("Logo bytes empty for key {}, falling back to the presigned URL", logoS3Key);
-      } catch (Exception e) {
-        log.warn(
-            "Logo bytes unavailable for key {} ({}), falling back to the presigned URL",
-            logoS3Key,
-            e.getMessage());
-      }
-    }
+    String presignedUrl;
     try {
-      return storageService.generateDownloadUrl(logoS3Key, LOGO_URL_EXPIRY).url();
+      presignedUrl = storageService.generateDownloadUrl(logoS3Key, LOGO_URL_EXPIRY).url();
     } catch (Exception e) {
       log.warn("Failed to generate logo URL for key: {}", logoS3Key, e);
       return null;
     }
+    String mime = logoMimeType(logoS3Key);
+    if (mime == null) {
+      return presignedUrl;
+    }
+    return new InlineLogo(presignedUrl, () -> logoDataUri(logoS3Key, mime));
+  }
+
+  /** {@code data:} URI of the logo bytes; {@code null} (presigned-URL fallback) on any failure. */
+  private String logoDataUri(String logoS3Key, String mime) {
+    try {
+      byte[] bytes = storageService.download(logoS3Key);
+      if (bytes != null && bytes.length > 0) {
+        return "data:" + mime + ";base64," + Base64.getEncoder().encodeToString(bytes);
+      }
+      log.warn("Logo bytes empty for key {}, falling back to the presigned URL", logoS3Key);
+    } catch (Exception e) {
+      log.warn(
+          "Logo bytes unavailable for key {} ({}), falling back to the presigned URL",
+          logoS3Key,
+          e.getMessage());
+    }
+    return null;
   }
 
   /** PNG/JPEG MIME type from the logo key's extension; {@code null} for anything else (SVG). */

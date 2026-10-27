@@ -2,7 +2,10 @@ package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import ch.qos.logback.classic.Level;
@@ -176,30 +179,19 @@ class TemplatePackSeederReconcileTest {
                     && m.contains("'fee-note-za'"));
   }
 
+  /**
+   * The resolver asks only for this install's pack-seeded rows ({@code findPackSeededByInstall}:
+   * PLATFORM, not a clone, tagged with the install — the predicate is JPQL, proven against real
+   * Hibernate in {@code LegalZaTemplateReconcileIntegrationTest}); none for the key → no target.
+   */
   @Test
-  void clone_isNeverResolved_evenWhenTaggedWithTheInstall() {
-    Map<String, Object> v7 = v7Body("fee-note-za");
-    var platform = platformRow("fee-note-za", v7);
-    var clone = cloneOf(platform);
-    clone.setSourcePackInstallId(installId); // worst case: a clone carrying the install tag
-    stubInstallRows(List.of(clone, platform));
-
-    seeder.reconcileInstalledPack(shippedPack, packResource, "t");
-
-    assertThat(clone.getContent()).isSameAs(v7);
-    assertThat(ContentHashUtil.hashOf(platform.getContent()))
-        .isEqualTo(ContentHashUtil.hashOf(shippedBody("fee-note-za")));
-  }
-
-  @Test
-  void onlyACloneForTheKey_resolvesNoTarget() {
-    Map<String, Object> v7 = v7Body("fee-note-za");
-    var clone = cloneOf(platformRow("fee-note-za", v7));
-    stubInstallRows(List.of(clone));
+  void noPackSeededRowForTheKey_resolvesNoTarget() {
+    var general = platformRow("engagement-letter-general", v7Body("engagement-letter-general"));
+    stubInstallRows(List.of(general));
 
     var logs = captureLogs(() -> seeder.reconcileInstalledPack(shippedPack, packResource, "t"));
 
-    assertThat(clone.getContent()).isSameAs(v7);
+    verify(templateRepository).findPackSeededByInstall(installId, "fee-note-za");
     assertThat(logs)
         .anyMatch(
             m ->
@@ -296,8 +288,14 @@ class TemplatePackSeederReconcileTest {
 
   // --- helpers ---
 
+  /** Stubs the install-scoped finder per key (the JPQL itself is exercised by real Hibernate). */
   private void stubInstallRows(List<DocumentTemplate> rows) {
-    when(templateRepository.findBySourcePackInstallId(installId)).thenReturn(rows);
+    when(templateRepository.findPackSeededByInstall(eq(installId), anyString()))
+        .thenAnswer(
+            inv ->
+                rows.stream()
+                    .filter(dt -> inv.getArgument(1, String.class).equals(dt.getPackTemplateKey()))
+                    .toList());
   }
 
   private TemplatePackDefinition packWith(PackReconcileEntry... entries) {
@@ -321,22 +319,6 @@ class TemplatePackSeederReconcileTest {
     dt.setSourcePackInstallId(installId);
     dt.setContentHash("a".repeat(64));
     return dt;
-  }
-
-  /** Mirrors {@code DocumentTemplateService.cloneTemplate}: ORG_CUSTOM, same pack id + key. */
-  private DocumentTemplate cloneOf(DocumentTemplate original) {
-    var clone =
-        new DocumentTemplate(
-            original.getPrimaryEntityType(),
-            original.getName() + " (Custom)",
-            original.getSlug() + "-custom",
-            original.getCategory(),
-            original.getContent());
-    TestIds.withId(clone, UUID.randomUUID());
-    clone.setSourceTemplateId(original.getId());
-    clone.setPackId(original.getPackId());
-    clone.setPackTemplateKey(original.getPackTemplateKey());
-    return clone;
   }
 
   private static String hashRef(Map<String, Object> body) {

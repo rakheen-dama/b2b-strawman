@@ -146,8 +146,7 @@ class TemplatePackInstallerReconcileTest {
     // Pristine at v1 content; the classpath pack ships v2 content → refreshIfUnmodified updates it.
     var row = template("letter", body("v1 body"));
     row.setContentHash(hashOf(row));
-    when(documentTemplateRepository.findByPackIdAndPackTemplateKey(PACK_ID, "letter"))
-        .thenReturn(Optional.of(row));
+    when(documentTemplateRepository.findPackSeeded(PACK_ID, "letter")).thenReturn(List.of(row));
     when(seeder.loadTemplateContent(def, resource))
         .thenReturn(new TemplateContent(body("v2 body"), null));
     // The snapshot query runs after the refresh pass, so it sees the refreshed row.
@@ -165,6 +164,32 @@ class TemplatePackInstallerReconcileTest {
 
     assertThat(row.getContent()).isEqualTo(body("v2 body, reconciled"));
     assertThat(row.getContentHash()).isEqualTo(hashOf(row));
+  }
+
+  /**
+   * 626D review F-5: two pack-seeded rows for one key (no unique constraint backs the pair) — the
+   * refresh/create pass WARNs and skips that template instead of throwing, and the hook still runs.
+   */
+  @Test
+  void twoPackSeededRowsForOneKey_skipsRefreshAndCreate_neverThrows() {
+    givenInstalledAt("1");
+    var def =
+        new TemplatePackTemplate(
+            "letter", "letter", "COVER_LETTER", "PROJECT", "letter.json", null, null, 0, null);
+    givenClasspathPack(2, List.of(def));
+    var a = template("letter", body("v1 body"));
+    a.setContentHash(hashOf(a));
+    var b = template("letter", body("v1 body"));
+    b.setContentHash(hashOf(b));
+    when(documentTemplateRepository.findPackSeeded(PACK_ID, "letter")).thenReturn(List.of(a, b));
+
+    assertThat(installer.reconcile(PACK_ID, TENANT)).isTrue();
+
+    assertThat(a.getContent()).isEqualTo(body("v1 body"));
+    assertThat(b.getContent()).isEqualTo(body("v1 body"));
+    verify(seeder, never()).loadTemplateContent(any(), any());
+    verify(seeder, never()).applySingleTemplate(any(), any(), any());
+    verify(seeder, times(1)).reconcileInstalledPack(any(), eq(resource), eq(TENANT));
   }
 
   @Test

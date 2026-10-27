@@ -112,8 +112,8 @@ class InvoiceCoverLetterRenderIntegrationTest {
 
                       var template =
                           documentTemplateRepository
-                              .findByPackIdAndPackTemplateKey("common", "invoice-cover-letter")
-                              .orElseThrow();
+                              .findPackSeeded("common", "invoice-cover-letter")
+                              .getFirst();
 
                       Map<String, Object> context =
                           invoiceContextBuilder.buildContext(invoice.getId(), memberId);
@@ -169,8 +169,8 @@ class InvoiceCoverLetterRenderIntegrationTest {
 
                       var template =
                           documentTemplateRepository
-                              .findByPackIdAndPackTemplateKey("common", "invoice-cover-letter")
-                              .orElseThrow();
+                              .findPackSeeded("common", "invoice-cover-letter")
+                              .getFirst();
 
                       var settings = orgSettingsService.getOrCreateForCurrentTenant();
                       settings.getBranding().setLogoS3Key(LOGO_S3_KEY);
@@ -231,8 +231,8 @@ class InvoiceCoverLetterRenderIntegrationTest {
 
                       var template =
                           documentTemplateRepository
-                              .findByPackIdAndPackTemplateKey("common", "invoice-cover-letter")
-                              .orElseThrow();
+                              .findPackSeeded("common", "invoice-cover-letter")
+                              .getFirst();
 
                       var settings = orgSettingsService.getOrCreateForCurrentTenant();
                       settings.getBranding().setLogoS3Key(key);

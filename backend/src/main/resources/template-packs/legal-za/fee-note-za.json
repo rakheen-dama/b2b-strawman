@@ -113,43 +113,61 @@
           "content": [
             { "type": "variable", "attrs": { "key": "customer.addressLine1" } }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "customer.addressLine2", "operator": "isNotEmpty" },
+      "content": [
         {
-          "type": "conditionalBlock",
-          "attrs": { "fieldKey": "customer.addressLine2", "operator": "isNotEmpty" },
+          "type": "paragraph",
           "content": [
-            {
-              "type": "paragraph",
-              "content": [
-                { "type": "variable", "attrs": { "key": "customer.addressLine2" } }
-              ]
-            }
+            { "type": "variable", "attrs": { "key": "customer.addressLine2" } }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "customer.city", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "variable", "attrs": { "key": "customer.city" } },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "customer.postalCode" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "customer.city", "operator": "isEmpty" },
+      "content": [
         {
           "type": "conditionalBlock",
-          "attrs": { "fieldKey": "customer.city", "operator": "isNotEmpty" },
+          "attrs": { "fieldKey": "customer.postalCode", "operator": "isNotEmpty" },
           "content": [
             {
               "type": "paragraph",
               "content": [
-                { "type": "variable", "attrs": { "key": "customer.city" } },
-                { "type": "text", "text": " " },
                 { "type": "variable", "attrs": { "key": "customer.postalCode" } }
               ]
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "customer.country", "operator": "isNotEmpty" },
+      "content": [
         {
-          "type": "conditionalBlock",
-          "attrs": { "fieldKey": "customer.country", "operator": "isNotEmpty" },
+          "type": "paragraph",
           "content": [
-            {
-              "type": "paragraph",
-              "content": [
-                { "type": "variable", "attrs": { "key": "customer.country" } }
-              ]
-            }
+            { "type": "variable", "attrs": { "key": "customer.country" } }
           ]
         }
       ]

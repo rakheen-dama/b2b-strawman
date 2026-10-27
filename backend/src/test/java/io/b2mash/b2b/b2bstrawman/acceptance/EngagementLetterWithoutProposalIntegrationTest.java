@@ -98,8 +98,8 @@ class EngagementLetterWithoutProposalIntegrationTest {
                 tx -> {
                   templateId =
                       documentTemplateRepository
-                          .findByPackIdAndPackTemplateKey("legal-za", "engagement-letter-general")
-                          .orElseThrow()
+                          .findPackSeeded("legal-za", "engagement-letter-general")
+                          .getFirst()
                           .getId();
                   var customer =
                       customerRepository.save(

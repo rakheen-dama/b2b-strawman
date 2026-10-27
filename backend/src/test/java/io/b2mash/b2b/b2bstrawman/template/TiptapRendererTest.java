@@ -836,6 +836,46 @@ class TiptapRendererTest {
         .containsPattern("table td\\.num \\{\\s*white-space: nowrap;\\s*}");
   }
 
+  /**
+   * 626D review F-2: an image-hinted {@code org.logoUrl} referenced twice (plus a conditional on
+   * it) downloads the logo bytes exactly once per value; conditions and unhinted references see the
+   * presigned URL and never download.
+   */
+  @Test
+  void inline_logo_is_downloaded_once_per_value_and_only_by_image_rendering() {
+    var downloads = new java.util.concurrent.atomic.AtomicInteger();
+    var logo =
+        new InlineLogo(
+            "https://s3.test/logo.png",
+            () -> {
+              downloads.incrementAndGet();
+              return "data:image/png;base64,iVBORw0=";
+            });
+    Map<String, Object> context = Map.of("org", Map.of("logoUrl", logo));
+    Map<String, Object> logoVar = Map.of("type", "variable", "attrs", Map.of("key", "org.logoUrl"));
+    Map<String, Object> logoParagraph = Map.of("type", "paragraph", "content", List.of(logoVar));
+    Map<String, Object> conditional =
+        Map.of(
+            "type",
+            "conditionalBlock",
+            "attrs",
+            Map.of("fieldKey", "org.logoUrl", "operator", "isNotEmpty"),
+            "content",
+            List.of(logoParagraph));
+    var body =
+        Map.<String, Object>of("type", "doc", "content", List.of(conditional, logoParagraph));
+
+    String unhinted = renderer.render(body, context, Map.of(), null);
+    assertThat(unhinted).contains("<p>https://s3.test/logo.png</p><p>https://s3.test/logo.png</p>");
+    assertThat(downloads).hasValue(0);
+
+    String html = renderer.render(body, context, Map.of(), null, Map.of("org.logoUrl", "image"));
+    String img =
+        "<p><img class=\"letterhead-logo\" src=\"data:image/png;base64,iVBORw0=\" alt=\"Logo\"/></p>";
+    assertThat(html).contains(img + img);
+    assertThat(downloads).hasValue(1);
+  }
+
   // --- Brand colour rules (Phase 88 626B, U8, ADR-353, §13.6.4) ---
 
   private static final String BRAND_HEADINGS = "h1, h2, h3 { color: %s; }";

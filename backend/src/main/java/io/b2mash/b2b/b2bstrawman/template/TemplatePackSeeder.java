@@ -200,12 +200,7 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
       return Optional.empty();
     }
     List<DocumentTemplate> rows =
-        documentTemplateRepository.findBySourcePackInstallId(installId).stream()
-            .filter(dt -> pack.packId().equals(dt.getPackId()))
-            .filter(dt -> entry.key().equals(dt.getPackTemplateKey()))
-            .filter(dt -> dt.getSource() == TemplateSource.PLATFORM)
-            .filter(dt -> dt.getSourceTemplateId() == null)
-            .toList();
+        documentTemplateRepository.findPackSeededByInstall(installId, entry.key());
     if (rows.size() > 1) {
       log.warn(
           "Reconcile entry ignored: template pack {} '{}' is ambiguous ({} pack-seeded rows)",

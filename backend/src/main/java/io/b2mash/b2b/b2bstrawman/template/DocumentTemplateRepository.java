@@ -35,25 +35,35 @@ public interface DocumentTemplateRepository extends JpaRepository<DocumentTempla
   @Query("SELECT dt FROM DocumentTemplate dt WHERE dt.packTemplateKey = :packTemplateKey")
   List<DocumentTemplate> findByPackTemplateKey(@Param("packTemplateKey") String packTemplateKey);
 
-  @Query(
-      "SELECT dt FROM DocumentTemplate dt WHERE dt.packId = :packId"
-          + " AND dt.packTemplateKey = :packTemplateKey")
-  Optional<DocumentTemplate> findByPackIdAndPackTemplateKey(
-      @Param("packId") String packId, @Param("packTemplateKey") String packTemplateKey);
-
   /**
-   * The pack-seeded template for a pack key: {@code PLATFORM} and not a clone. Clones share {@code
-   * packId} + {@code packTemplateKey} with their source ({@code
-   * DocumentTemplateService.cloneTemplate}), so {@link #findByPackIdAndPackTemplateKey} throws
-   * {@code IncorrectResultSizeDataAccessException} once a firm has cloned the template.
+   * The pack-seeded rows for a pack key: {@code PLATFORM} and not a clone, oldest first. Clones
+   * share {@code packId} + {@code packTemplateKey} with their source ({@code
+   * DocumentTemplateService.cloneTemplate}), so never look a pack template up by those two columns
+   * alone. A {@code List} because no unique constraint backs the pair — callers decide what more
+   * than one row means (the pack installer WARNs and skips; read paths take the first).
    */
   @Query(
       "SELECT dt FROM DocumentTemplate dt WHERE dt.packId = :packId"
           + " AND dt.packTemplateKey = :packTemplateKey"
           + " AND dt.source = io.b2mash.b2b.b2bstrawman.template.TemplateSource.PLATFORM"
-          + " AND dt.sourceTemplateId IS NULL")
-  Optional<DocumentTemplate> findPackSeeded(
+          + " AND dt.sourceTemplateId IS NULL"
+          + " ORDER BY dt.createdAt, dt.id")
+  List<DocumentTemplate> findPackSeeded(
       @Param("packId") String packId, @Param("packTemplateKey") String packTemplateKey);
+
+  /**
+   * The pack-seeded rows of one pack install for a pack key — {@code PLATFORM}, not a clone, tagged
+   * with that install ({@code source_pack_install_id}): the ADR-356 reconcile target lookup ({@code
+   * TemplatePackSeeder.resolveReconcileTarget}). A clone never matches, even if tagged.
+   */
+  @Query(
+      "SELECT dt FROM DocumentTemplate dt WHERE dt.sourcePackInstallId = :installId"
+          + " AND dt.packTemplateKey = :packTemplateKey"
+          + " AND dt.source = io.b2mash.b2b.b2bstrawman.template.TemplateSource.PLATFORM"
+          + " AND dt.sourceTemplateId IS NULL"
+          + " ORDER BY dt.createdAt, dt.id")
+  List<DocumentTemplate> findPackSeededByInstall(
+      @Param("installId") UUID installId, @Param("packTemplateKey") String packTemplateKey);
 
   @Query(
       value =
@@ -74,5 +84,15 @@ public interface DocumentTemplateRepository extends JpaRepository<DocumentTempla
           + " WHERE dt.sourceTemplateId IN :templateIds")
   long countDistinctTemplatesWithClones(@Param("templateIds") List<UUID> templateIds);
 
-  List<DocumentTemplate> findByPackIdAndSourcePackInstallIdIsNull(String packId);
+  /**
+   * Pack-seeded rows of a pack not yet tagged with a pack install ({@code PLATFORM}, not a clone):
+   * what {@code TemplatePackInstaller} tags after seeding. Clones copy {@code packId} and leave
+   * {@code source_pack_install_id} null, so a {@code packId}-only query would tag them too.
+   */
+  @Query(
+      "SELECT dt FROM DocumentTemplate dt WHERE dt.packId = :packId"
+          + " AND dt.sourcePackInstallId IS NULL"
+          + " AND dt.source = io.b2mash.b2b.b2bstrawman.template.TemplateSource.PLATFORM"
+          + " AND dt.sourceTemplateId IS NULL")
+  List<DocumentTemplate> findUntaggedPackSeeded(@Param("packId") String packId);
 }

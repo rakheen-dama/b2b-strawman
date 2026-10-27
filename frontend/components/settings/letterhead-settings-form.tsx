@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
-import { Card, CardContent, CardDescription, CardHeader } from "@b2mash/ui/card";
 import { Input } from "@b2mash/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -117,6 +116,7 @@ interface LetterheadSettingsFormProps {
 export function LetterheadSettingsForm({ slug, letterhead }: LetterheadSettingsFormProps) {
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const descriptionIdPrefix = useId();
 
   const form = useForm<LetterheadSettingsFormData>({
     resolver: zodResolver(letterheadSettingsSchema),
@@ -153,24 +153,29 @@ export function LetterheadSettingsForm({ slug, letterhead }: LetterheadSettingsF
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Letterhead</h2>
-        <CardDescription className="text-slate-600 dark:text-slate-400">
-          Firm details printed on generated documents such as engagement letters and fee notes.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          {/* noValidate: the zod schema owns validation; the browser's type="email" bubble would
-              otherwise block submit before the inline message can show. */}
-          <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="@container space-y-8">
-            {GROUPS.map((group) => (
-              <fieldset key={group.legend} className="space-y-3">
+    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
+      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Letterhead</h2>
+      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+        Firm details printed on generated documents such as engagement letters and fee notes.
+      </p>
+      <Form {...form}>
+        {/* noValidate: the zod schema owns validation; the browser's type="email" bubble would
+            otherwise block submit before the inline message can show. */}
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          noValidate
+          className="@container mt-6 space-y-8"
+        >
+          {GROUPS.map((group) => {
+            const descriptionId = `${descriptionIdPrefix}-${group.legend.toLowerCase()}-description`;
+            return (
+              <fieldset key={group.legend} aria-describedby={descriptionId} className="space-y-3">
                 <legend className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   {group.legend}
                 </legend>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{group.description}</p>
+                <p id={descriptionId} className="text-xs text-slate-500 dark:text-slate-400">
+                  {group.description}
+                </p>
                 {/* Container query, not a viewport breakpoint: at a 1024px viewport this card is
                     ~390px wide, so pairs only go side by side when the card itself is wide. */}
                 <div className="grid grid-cols-1 gap-4 @lg:grid-cols-2">
@@ -179,54 +184,70 @@ export function LetterheadSettingsForm({ slug, letterhead }: LetterheadSettingsF
                       key={spec.name}
                       control={form.control}
                       name={spec.name}
-                      render={({ field }) => (
-                        <FormItem className={spec.half ? undefined : "@lg:col-span-2"}>
-                          <FormLabel>{spec.label}</FormLabel>
-                          <FormControl>
-                            {spec.multiline ? (
-                              <Textarea rows={3} placeholder={spec.placeholder} {...field} />
-                            ) : (
-                              <Input
-                                type={spec.type ?? "text"}
-                                placeholder={spec.placeholder}
-                                autoComplete="off"
-                                {...field}
-                              />
+                      render={({ field }) => {
+                        // A fresh edit makes a previous save error stale; drop the alert (no-op
+                        // re-render when there is none).
+                        const onChange = (
+                          event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+                        ) => {
+                          field.onChange(event);
+                          setError(null);
+                        };
+                        return (
+                          <FormItem className={spec.half ? undefined : "@lg:col-span-2"}>
+                            <FormLabel>{spec.label}</FormLabel>
+                            <FormControl>
+                              {spec.multiline ? (
+                                <Textarea
+                                  rows={3}
+                                  placeholder={spec.placeholder}
+                                  {...field}
+                                  onChange={onChange}
+                                />
+                              ) : (
+                                <Input
+                                  type={spec.type ?? "text"}
+                                  placeholder={spec.placeholder}
+                                  autoComplete="off"
+                                  {...field}
+                                  onChange={onChange}
+                                />
+                              )}
+                            </FormControl>
+                            {spec.multiline && (
+                              <FormDescription className="text-xs text-slate-400">
+                                {field.value.length}/{NOTE_MAX} characters
+                              </FormDescription>
                             )}
-                          </FormControl>
-                          {spec.multiline && (
-                            <FormDescription className="text-xs text-slate-400">
-                              {field.value.length}/{NOTE_MAX} characters
-                            </FormDescription>
-                          )}
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
                     />
                   ))}
                 </div>
               </fieldset>
-            ))}
+            );
+          })}
 
-            <div className="flex flex-wrap items-center gap-3">
-              <Button type="submit" disabled={isSubmitting || !isDirty}>
-                {isSubmitting && <Loader2 className="mr-1.5 size-4 animate-spin" />}
-                Save letterhead
-              </Button>
-              {status && !isDirty && (
-                <p role="status" className="text-sm text-teal-600 dark:text-teal-400">
-                  {status}
-                </p>
-              )}
-              {error && (
-                <p role="alert" className="text-destructive text-sm">
-                  {error}
-                </p>
-              )}
-            </div>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button type="submit" disabled={isSubmitting || !isDirty}>
+              {isSubmitting && <Loader2 className="mr-1.5 size-4 animate-spin" />}
+              Save letterhead
+            </Button>
+            {status && !isDirty && (
+              <p role="status" className="text-sm text-teal-600 dark:text-teal-400">
+                {status}
+              </p>
+            )}
+            {error && (
+              <p role="alert" className="text-destructive text-sm">
+                {error}
+              </p>
+            )}
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 }

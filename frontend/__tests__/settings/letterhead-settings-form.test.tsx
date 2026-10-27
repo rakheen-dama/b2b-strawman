@@ -77,6 +77,20 @@ describe("LetterheadSettingsForm — field groups", () => {
     expect(screen.getByRole("heading", { level: 2, name: "Letterhead" })).toBeInTheDocument();
   });
 
+  it("announces each group's description as the fieldset's accessible description", () => {
+    render(<LetterheadSettingsForm slug="acme" letterhead={EMPTY} />);
+
+    const descriptions: Record<string, string> = {
+      Address: "The firm address printed in the letterhead.",
+      Contact: "Phone, email and website shown with the firm name.",
+      Banking: "Payment details printed on fee notes. Leave blank to leave them off.",
+      Signatory: "The person who signs documents on behalf of the firm.",
+    };
+    for (const [group, description] of Object.entries(descriptions)) {
+      expect(screen.getByRole("group", { name: group })).toHaveAccessibleDescription(description);
+    }
+  });
+
   it("renders the payment reference note as a multi-line field with a 500-character counter", async () => {
     const user = userEvent.setup();
     render(<LetterheadSettingsForm slug="acme" letterhead={EMPTY} />);
@@ -278,6 +292,30 @@ describe("LetterheadSettingsForm — server errors", () => {
     expect(screen.getByLabelText("Email")).toHaveAttribute("aria-invalid", "true");
     expect(screen.getByText("Fix the highlighted fields and save again.")).toBeInTheDocument();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+
+  it("clears the stale save alert once the user edits a field again", async () => {
+    mockUpdateLetterhead.mockResolvedValue({
+      success: false,
+      error: "1 field(s) have validation errors",
+      fieldErrors: [{ field: "email", message: "email must be a valid email" }],
+    });
+    const user = userEvent.setup();
+    render(<LetterheadSettingsForm slug="acme" letterhead={EMPTY} />);
+
+    await user.type(screen.getByLabelText("Email"), "info@firm.law");
+    await user.click(screen.getByRole("button", SAVE));
+    const alertText = "Fix the highlighted fields and save again.";
+    const alerts = await screen.findAllByRole("alert");
+    expect(alerts.map((a) => a.textContent)).toContain(alertText);
+
+    await user.type(screen.getByLabelText("City"), "S");
+
+    expect(screen.queryByText(alertText)).not.toBeInTheDocument();
+    // The field-level server message stays on Email until that field is fixed or re-validated.
+    expect(screen.getAllByRole("alert").map((a) => a.textContent)).toEqual([
+      "email must be a valid email",
+    ]);
   });
 
   it("shows the action's error when the save is refused (403)", async () => {

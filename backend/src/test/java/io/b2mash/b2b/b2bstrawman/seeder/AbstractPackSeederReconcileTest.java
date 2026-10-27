@@ -461,6 +461,32 @@ class AbstractPackSeederReconcileTest {
     }
 
     @Test
+    void objectTo_isRejectedNamingPackAndIndex() {
+      var ok = entry("k", "name", "a", "b");
+      assertThatThrownBy(
+              () ->
+                  PackReconcileEntry.parse(
+                      PACK,
+                      List.of(ok, new PackReconcileEntry("e", "k", "f", "a", Map.of("x", 1)))))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining(PACK)
+          .hasMessageContaining("reconcile[1]")
+          .hasMessageContaining("'to'");
+    }
+
+    @Test
+    void arrayTo_isRejectedNamingPackAndIndex() {
+      assertThatThrownBy(
+              () ->
+                  PackReconcileEntry.parse(
+                      PACK, List.of(new PackReconcileEntry("e", "k", "f", "a", List.of("x", "y")))))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining(PACK)
+          .hasMessageContaining("reconcile[0]")
+          .hasMessageContaining("'to'");
+    }
+
+    @Test
     void nonFiniteNumbers_areRejectedNamingPackAndIndex() {
       assertThatThrownBy(
               () ->

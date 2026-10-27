@@ -46,8 +46,10 @@ public record PackReconcileEntry(String entity, String key, String field, Object
    * (stored content hash equals the recomputed hash) immediately before the reconcile hook and
    * re-pins their stored content hash afterwards, so a row the hook updated still reads as
    * unedited; rows already tenant-edited are never re-pinned. Targets must NOT compute or write
-   * content hashes. Seeder-managed types (clause, field, report, request) have no install-time
-   * content hash today.
+   * content hashes. Because the re-pin recomputes hashes from the entities already loaded in the
+   * transaction, a target must change rows through the <b>managed entity</b> (load it and set its
+   * fields), never a bulk JPQL/SQL {@code UPDATE}, or the re-pin will not see the change.
+   * Seeder-managed types (clause, field, report, request) have no install-time content hash today.
    *
    * <p><b>{@code sha256:} contract (Tiptap bodies, 626D).</b> When {@code to} is a {@code
    * sha256:<hex>} value, {@link #currentValue()} must return the body JSON (the one rule hashes it
@@ -95,12 +97,8 @@ public record PackReconcileEntry(String entity, String key, String field, Object
       if (e.to() == null) {
         throw new IllegalStateException(where + ": 'to' is required");
       }
-      if (e.from() != null
-          && !(e.from() instanceof String
-              || e.from() instanceof Boolean
-              || e.from() instanceof Number)) {
-        throw new IllegalStateException(where + ": 'from' must be a string, boolean or number");
-      }
+      checkScalar(where, "from", e.from());
+      checkScalar(where, "to", e.to());
       checkHash(where, "from", e.from());
       checkHash(where, "to", e.to());
       checkFinite(where, "from", e.from());
@@ -182,6 +180,15 @@ public record PackReconcileEntry(String entity, String key, String field, Object
     }
     // String/String, Boolean/Boolean; mismatched types never match (type-strict)
     return expected.equals(current);
+  }
+
+  /** {@code null} passes (required-ness is checked separately); JSON objects/arrays do not. */
+  private static void checkScalar(String where, String name, Object value) {
+    if (value != null
+        && !(value instanceof String || value instanceof Boolean || value instanceof Number)) {
+      throw new IllegalStateException(
+          where + ": '" + name + "' must be a string, boolean or number");
+    }
   }
 
   private static void checkHash(String where, String name, Object value) {

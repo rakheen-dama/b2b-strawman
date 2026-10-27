@@ -1,7 +1,7 @@
 {
-  "commit": "bd32f07ff2729c5f5d611a597c61d568cd022663",
-  "command": "pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && pnpm run build",
+  "commit": "0bf76bb35",
+  "command": "cd frontend && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build (worktree-epic-625D, NODE_OPTIONS=\"\")",
   "exit": 0,
-  "ts": "2026-10-24T22:58:00Z",
-  "summary": "Slice 624I epic gate FE-GATE on main head bd32f07ff (worktree-epic-624I): lint 0 errors / 92 warnings, format:check clean, vitest 417 files / 3150 passed / 2 skipped (= 624G baseline), next build OK."
+  "ts": "2026-10-27T15:21:35Z",
+  "summary": "Slice 625D PR #1682: lint 0 errors / 92 warnings; format clean; vitest 418 files / 3191 passed / 2 skipped; next build compiled OK"
 }

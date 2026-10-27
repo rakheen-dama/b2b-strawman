@@ -1,7 +1,7 @@
 {
-  "commit": "84c2123b8a4b31ce93a699ec895b0fa9e9e82c54",
-  "command": "cd frontend && pnpm run lint && pnpm run build && pnpm test && pnpm run format:check (worktree-epic-625F, NODE_OPTIONS=\"\")",
+  "commit": "977419fa8",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build (worktree-epic-625G, NODE_OPTIONS=\"\")",
   "exit": 0,
-  "ts": "2026-10-27T18:19:45Z",
-  "summary": "Slice 625F PR #1684: lint exit 0; next build OK; vitest 419 files / 3192 passed / 2 skipped; format clean"
+  "ts": "2026-10-27T18:25:41Z",
+  "summary": "Slice 625G epic gate FE-GATE on main 977419fa8: lint 0 errors / 92 warnings; format clean; vitest 419 files / 3192 passed / 2 skipped; build OK (= 625F)"
 }

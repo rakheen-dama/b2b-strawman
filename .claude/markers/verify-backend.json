@@ -1,7 +1,7 @@
 {
-  "commit": "295fcbd7468e624cc172d0f8103a0392a03342d9",
-  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q (preflight + caffeinate -is ./mvnw verify; worktree-epic-625F)",
+  "commit": "977419fa8",
+  "command": "cd backend && ./mvnw spotless:apply && bash scripts/verify.sh -q (preflight + caffeinate -is ./mvnw verify; fresh worktree-epic-625G)",
   "exit": 0,
-  "ts": "2026-10-27T18:19:45Z",
-  "summary": "Slice 625F BE-VERIFY on PR #1684 code head 295fcbd74: 6006 testcases / 0 failing report files / 26 skipped (baseline 5988 + 18 new), exit 0. Later commits c799f7606 (backend/CLAUDE.md bullet) + 84c2123b8 (evidence) are non-code. The verify on 6c51f36bc was intentionally killed when the fixer was dispatched (shared target/)."
+  "ts": "2026-10-27T18:37:18Z",
+  "summary": "Slice 625G epic gate BE-VERIFY on main 977419fa8: 6006 testcases / 0 failures / 0 errors / 26 skipped across 726 reports, 15:44 min, spotless no diff (= 625F)"
 }

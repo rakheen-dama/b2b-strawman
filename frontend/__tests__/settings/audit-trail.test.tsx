@@ -650,6 +650,34 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       expect(screen.queryByText("Enter a full ID")).not.toBeInTheDocument();
     });
 
+    it("a URL change (Clear filters) resets the input and drops a stale error", async () => {
+      mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
+
+      useSearchParamsMock.mockReturnValue(new URLSearchParams({ entityId: ALICE_ID }));
+      const { rerender } = render(
+        await renderAuditTrailTab({ slug: "acme", searchParams: { entityId: ALICE_ID } })
+      );
+
+      const input = screen.getByLabelText("Entity ID") as HTMLInputElement;
+      fireEvent.change(input, { target: { value: "abc" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+      expect(screen.getByText("Enter a full ID")).toBeInTheDocument();
+      expect(input).toHaveAttribute("aria-invalid", "true");
+
+      fireEvent.click(screen.getByTestId("audit-clear-filters"));
+      await waitFor(() => expect(pushMock).toHaveBeenCalledTimes(1));
+      expect(pushedUrl()).not.toContain("entityId=");
+
+      // The server re-render lands with the cleared URL.
+      useSearchParamsMock.mockReturnValue(new URLSearchParams());
+      rerender(await renderAuditTrailTab({ slug: "acme", searchParams: {} }));
+
+      expect(input.value).toBe("");
+      expect(screen.queryByText("Enter a full ID")).not.toBeInTheDocument();
+      expect(input).not.toHaveAttribute("aria-invalid");
+      expect(input).not.toHaveAttribute("aria-describedby");
+    });
+
     it("blur still commits a changed value", async () => {
       mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
 

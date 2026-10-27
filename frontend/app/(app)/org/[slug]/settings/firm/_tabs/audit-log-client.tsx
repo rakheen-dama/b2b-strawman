@@ -211,6 +211,9 @@ function FilterTextInput({
     lastCommittedRef.current = initialValue;
     // Keep the uncontrolled input in step with the URL (e.g. after "Clear filters").
     if (inputRef.current) inputRef.current.value = initialValue;
+    // The input now shows the URL value, so an error about the previously typed value is stale.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs the error with the URL value; bounded by initialValue changes.
+    setError(null);
   }, [initialValue, inputRef]);
 
   const commit = (raw: string) => {

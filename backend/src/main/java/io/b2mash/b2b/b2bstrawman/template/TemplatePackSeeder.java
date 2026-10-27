@@ -1,15 +1,21 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.packs.ContentHashUtil;
+import io.b2mash.b2b.b2bstrawman.packs.PackInstall;
+import io.b2mash.b2b.b2bstrawman.packs.PackInstallRepository;
 import io.b2mash.b2b.b2bstrawman.packs.PackType;
 import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
 import io.b2mash.b2b.b2bstrawman.seeder.AbstractPackSeeder;
+import io.b2mash.b2b.b2bstrawman.seeder.PackReconcileEntry;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
@@ -25,7 +31,13 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
 
   private static final String PACK_LOCATION = "classpath:template-packs/*/pack.json";
 
+  /** ADR-356 reconcile entity name for template bodies (the only supported field: content). */
+  private static final String TEMPLATE_ENTITY = "document_template";
+
+  private static final String CONTENT_FIELD = "content";
+
   private final DocumentTemplateRepository documentTemplateRepository;
+  private final PackInstallRepository packInstallRepository;
 
   public TemplatePackSeeder(
       ResourcePatternResolver resourceResolver,
@@ -33,7 +45,8 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
       DocumentTemplateRepository documentTemplateRepository,
       OrgSettingsRepository orgSettingsRepository,
       TenantTransactionHelper tenantTransactionHelper,
-      PackVersionGate packVersionGate) {
+      PackVersionGate packVersionGate,
+      PackInstallRepository packInstallRepository) {
     super(
         resourceResolver,
         objectMapper,
@@ -41,6 +54,7 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
         tenantTransactionHelper,
         packVersionGate);
     this.documentTemplateRepository = documentTemplateRepository;
+    this.packInstallRepository = packInstallRepository;
   }
 
   @Override
@@ -134,6 +148,90 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
           "Template definition has no JSON content file: " + templateDef.contentFile());
     }
     return new TemplateContent(contentJson, css);
+  }
+
+  /**
+   * ADR-356 reconcile target for a {@code document_template} {@code content} entry (Phase 88 626D):
+   * {@code key} is the pack's {@code templateKey} ({@code pack_template_key}) and {@code to} is
+   * {@code sha256:} + {@link ContentHashUtil#hashOf} of the body shipped in this pack. The target
+   * is this pack install's pack-seeded row only — {@code PLATFORM}, not a clone, tagged with this
+   * pack's {@code pack_install} id — so clones and firm-authored templates are never written; the
+   * one rule (current body hash = {@code from}) keeps firm edits. Writes the classpath body through
+   * the managed entity (css untouched) and never a content hash — {@code TemplatePackInstaller}
+   * re-pins pristine rows. Unsupported entries, a {@code to} that does not match the shipped body
+   * and ambiguous rows are WARN-logged and skipped; nothing here throws at boot.
+   */
+  @Override
+  protected Optional<PackReconcileEntry.Target> resolveReconcileTarget(
+      TemplatePackDefinition pack, PackReconcileEntry entry, Resource packResource) {
+    if (!TEMPLATE_ENTITY.equals(entry.entity())
+        || !CONTENT_FIELD.equals(entry.field())
+        || !(entry.to() instanceof String to)
+        || !to.startsWith(PackReconcileEntry.HASH_PREFIX)) {
+      log.warn(
+          "Reconcile entry ignored: template pack {} unsupported entity/field/value '{}'.{} (key"
+              + " {}) — only document_template content with a sha256: target is supported",
+          pack.packId(),
+          entry.entity(),
+          entry.field(),
+          entry.key());
+      return Optional.empty();
+    }
+    var templateDef =
+        pack.templates().stream().filter(t -> entry.key().equals(t.templateKey())).findFirst();
+    if (templateDef.isEmpty()) {
+      log.warn(
+          "Reconcile entry ignored: template pack {} has no template '{}'",
+          pack.packId(),
+          entry.key());
+      return Optional.empty();
+    }
+    Map<String, Object> shipped = loadTemplateContent(templateDef.get(), packResource).content();
+    if (!to.equals(PackReconcileEntry.HASH_PREFIX + ContentHashUtil.hashOf(shipped))) {
+      log.warn(
+          "Reconcile entry ignored: template pack {} '{}' to-hash does not match the shipped body",
+          pack.packId(),
+          entry.key());
+      return Optional.empty();
+    }
+    UUID installId =
+        packInstallRepository.findByPackId(pack.packId()).map(PackInstall::getId).orElse(null);
+    if (installId == null) {
+      return Optional.empty();
+    }
+    List<DocumentTemplate> rows =
+        documentTemplateRepository.findBySourcePackInstallId(installId).stream()
+            .filter(dt -> pack.packId().equals(dt.getPackId()))
+            .filter(dt -> entry.key().equals(dt.getPackTemplateKey()))
+            .filter(dt -> dt.getSource() == TemplateSource.PLATFORM)
+            .filter(dt -> dt.getSourceTemplateId() == null)
+            .toList();
+    if (rows.size() > 1) {
+      log.warn(
+          "Reconcile entry ignored: template pack {} '{}' is ambiguous ({} pack-seeded rows)",
+          pack.packId(),
+          entry.key(),
+          rows.size());
+      return Optional.empty();
+    }
+    if (rows.isEmpty()) {
+      return Optional.empty();
+    }
+    DocumentTemplate template = rows.getFirst();
+    return Optional.of(
+        new PackReconcileEntry.Target() {
+          @Override
+          public Object currentValue() {
+            return template.getContent();
+          }
+
+          @Override
+          public void apply(Object toHash) {
+            // sha256: contract — the argument is the hash string; write the shipped body.
+            template.updateContent(
+                template.getName(), template.getDescription(), shipped, template.getCss());
+          }
+        });
   }
 
   private void createTemplate(

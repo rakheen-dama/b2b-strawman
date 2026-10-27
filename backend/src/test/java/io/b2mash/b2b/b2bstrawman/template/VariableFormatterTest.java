@@ -143,6 +143,32 @@ class VariableFormatterTest {
     assertThat(VariableFormatter.format("  ", "image")).isEmpty();
   }
 
+  /**
+   * Phase 88 626D (ruling R-1): {@code org.logoUrl} may be a {@code data:} URI of the logo bytes
+   * (PNG/JPEG) so the PDF renderer never fetches the logo over the network.
+   */
+  @Test
+  void image_type_hint_accepts_strict_png_and_jpeg_data_uris() {
+    assertThat(VariableFormatter.format("data:image/png;base64,iVBORw0KGgo=", "image"))
+        .isEqualTo(
+            "<img class=\"letterhead-logo\" src=\"data:image/png;base64,iVBORw0KGgo=\""
+                + " alt=\"Logo\"/>");
+    assertThat(VariableFormatter.format("data:image/jpeg;base64,/9j/4AAQSkZJRg==", "image"))
+        .isEqualTo(
+            "<img class=\"letterhead-logo\" src=\"data:image/jpeg;base64,/9j/4AAQSkZJRg==\""
+                + " alt=\"Logo\"/>");
+  }
+
+  @Test
+  void image_type_hint_rejects_other_data_uris() {
+    assertThat(VariableFormatter.format("data:image/svg+xml;base64,PHN2Zz4=", "image")).isEmpty();
+    assertThat(VariableFormatter.format("data:text/html;base64,PHNjcmlwdD4=", "image")).isEmpty();
+    assertThat(VariableFormatter.format("data:image/png,rawbytes", "image")).isEmpty();
+    assertThat(VariableFormatter.format("data:image/png;base64,abc\"onerror=x", "image")).isEmpty();
+    assertThat(VariableFormatter.format("data:image/png;base64,", "image")).isEmpty();
+    assertThat(VariableFormatter.format("javascript:alert(1)", "image")).isEmpty();
+  }
+
   @Test
   void image_type_hint_null_value_returns_empty_string() {
     assertThat(VariableFormatter.format(null, "image")).isEmpty();

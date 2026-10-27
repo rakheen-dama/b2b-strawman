@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -15,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
+import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -62,6 +64,7 @@ class InvoiceCoverLetterRenderIntegrationTest {
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private StorageService storageService;
 
   private String tenantSchema;
   private UUID memberId;
@@ -187,5 +190,68 @@ class InvoiceCoverLetterRenderIntegrationTest {
     assertThat(withLogo.get()).contains("http://test-storage/test-bucket/" + LOGO_S3_KEY);
     assertThat(withoutLogo.get()).doesNotContain("<img");
     assertThat(withoutLogo.get()).contains("INV-9002");
+  }
+
+  /**
+   * Phase 88 626D (ruling R-1): when the logo bytes are in storage, {@code org.logoUrl} is a {@code
+   * data:image/png;base64,} URI so the PDF renderer never fetches the logo over the network (the
+   * e2e presigner host is unreachable from the backend container).
+   */
+  @Test
+  void coverLetterInlinesUploadedLogoBytesAsDataUri() {
+    String key = "org/invoice-cover-letter-test/branding/logo-bytes.png";
+    byte[] png = {(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n', 0, 0, 0, 13};
+    storageService.upload(key, png, "image/png");
+    var html = new AtomicReference<String>();
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var customer =
+                          customerRepository.save(
+                              TestCustomerFactory.createActiveCustomer(
+                                  "Bytes Client (Pty) Ltd", "bytes@acme.test", memberId));
+                      var invoice =
+                          new Invoice(
+                              customer.getId(),
+                              "ZAR",
+                              "Bytes Client (Pty) Ltd",
+                              "bytes@acme.test",
+                              "3 Main Road, Cape Town",
+                              "Render Test Org",
+                              memberId);
+                      invoice.recalculateTotals(
+                          new BigDecimal("400.00"), false, BigDecimal.ZERO, false);
+                      invoice.approve(
+                          "INV-9003", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+                      invoice = invoiceRepository.save(invoice);
+
+                      var template =
+                          documentTemplateRepository
+                              .findByPackIdAndPackTemplateKey("common", "invoice-cover-letter")
+                              .orElseThrow();
+
+                      var settings = orgSettingsService.getOrCreateForCurrentTenant();
+                      settings.getBranding().setLogoS3Key(key);
+                      orgSettingsRepository.save(settings);
+                      try {
+                        html.set(
+                            pdfRenderingService.previewHtml(
+                                template.getId(), invoice.getId(), memberId));
+                      } finally {
+                        settings.getBranding().setLogoS3Key(null);
+                        orgSettingsRepository.save(settings);
+                      }
+                    }));
+
+    assertThat(html.get())
+        .contains(
+            "<img class=\"letterhead-logo\" src=\"data:image/png;base64,"
+                + Base64.getEncoder().encodeToString(png)
+                + "\"")
+        .doesNotContain("http://test-storage/test-bucket/" + key);
   }
 }

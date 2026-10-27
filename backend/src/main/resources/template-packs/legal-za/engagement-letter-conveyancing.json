@@ -2,6 +2,18 @@
   "type": "doc",
   "content": [
     {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.logoUrl", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "variable", "attrs": { "key": "org.logoUrl" } }
+          ]
+        }
+      ]
+    },
+    {
       "type": "heading",
       "attrs": { "level": 1 },
       "content": [
@@ -9,13 +21,81 @@
       ]
     },
     {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.address", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "variable", "attrs": { "key": "org.address" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.phone", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Tel:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "org.phone" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.email", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Email:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "org.email" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.website", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Web:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "org.website" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.taxRegistrationNumber", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "VAT No:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "org.taxRegistrationNumber" } }
+          ]
+        }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
       "type": "heading",
       "attrs": { "level": 2 },
       "content": [
         { "type": "text", "text": "Engagement Letter — Conveyancing" }
       ]
     },
-    { "type": "horizontalRule" },
     {
       "type": "paragraph",
       "content": [
@@ -107,6 +187,30 @@
       "type": "paragraph",
       "content": [
         { "type": "text", "text": "Yours faithfully," }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.signatory", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "variable", "attrs": { "key": "org.signatory.name" } }
+          ]
+        },
+        {
+          "type": "conditionalBlock",
+          "attrs": { "fieldKey": "org.signatory.designation", "operator": "isNotEmpty" },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "variable", "attrs": { "key": "org.signatory.designation" } }
+              ]
+            }
+          ]
+        }
       ]
     },
     {

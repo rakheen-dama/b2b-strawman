@@ -93,8 +93,8 @@ class TemplatePackReconcileIntegrationTest {
                 tx -> {
                   // Rewind the recorded version to simulate a tenant installed before v6 (the
                   // version that introduced fee-note-za). Also exercises the CAS guard: the
-                  // expected-version match must succeed exactly once.
-                  int updated = packInstallRepository.advancePackVersion(PACK_ID, "7", "5", 16);
+                  // expected-version match must succeed exactly once. (Current classpath: v8.)
+                  int updated = packInstallRepository.advancePackVersion(PACK_ID, "8", "5", 16);
                   assertThat(updated).isEqualTo(1);
                 }));
 
@@ -115,7 +115,7 @@ class TemplatePackReconcileIntegrationTest {
                   assertThat(feeNote.getContentHash()).isNotBlank();
 
                   // Install row advanced to the classpath pack version
-                  assertThat(install.getPackVersion()).isEqualTo("7");
+                  assertThat(install.getPackVersion()).isEqualTo("8");
                   assertThat(install.getItemCount()).isEqualTo(17);
                 }));
 
@@ -247,10 +247,10 @@ class TemplatePackReconcileIntegrationTest {
 
   /**
    * LZKC-007 (part 1): the legal-za pack is now also covered by the content-refresh reconcile path
-   * (v6 → v7 letterhead-logo template update). A tenant on an older pack version whose
-   * statement-of-account template is pristine (stored hash matches content) must receive the
-   * updated content — including the new {@code org.logoUrl} letterhead node — on startup
-   * reconciliation.
+   * (introduced with the v6 → v7 letterhead-logo template update; the pack is at v8 since 626D). A
+   * tenant on an older pack version whose statement-of-account template is pristine (stored hash
+   * matches content) must receive the updated content — including the new {@code org.logoUrl}
+   * letterhead node — on startup reconciliation.
    */
   @Test
   void reconcileRefreshesUnmodifiedLegalZaTemplateContent() {
@@ -268,7 +268,7 @@ class TemplatePackReconcileIntegrationTest {
                         Map.of(
                             "type", "variable", "attrs", Map.of("key", "statement.reference"))))));
 
-    // --- Phase 1: simulate a pristine tenant seeded from an older (pre-v7) pack version ---
+    // --- Phase 1: simulate a pristine tenant seeded from an older (pre-v8) pack version ---
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
@@ -284,20 +284,20 @@ class TemplatePackReconcileIntegrationTest {
                       templatePackInstaller.computeContentHash(staleSoaContent, soa.getCss()));
                   documentTemplateRepository.save(soa);
 
-                  int updated = packInstallRepository.advancePackVersion(PACK_ID, "7", "6", 17);
+                  int updated = packInstallRepository.advancePackVersion(PACK_ID, "8", "7", 17);
                   assertThat(updated).isEqualTo(1);
                 }));
 
     // --- Phase 2: startup reconciliation ---
     packInstallService.internalInstall(PACK_ID, tenantSchema);
 
-    // --- Phase 3: pristine template refreshed to v7 content (letterhead logo node present) ---
+    // --- Phase 3: pristine template refreshed to current (v8) content (letterhead logo node) ---
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var install = packInstallRepository.findByPackId(PACK_ID).orElseThrow();
-                  assertThat(install.getPackVersion()).isEqualTo("7");
+                  assertThat(install.getPackVersion()).isEqualTo("8");
 
                   var soa =
                       documentTemplateRepository

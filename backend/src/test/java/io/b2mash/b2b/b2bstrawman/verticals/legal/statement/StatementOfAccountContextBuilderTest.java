@@ -1301,21 +1301,52 @@ class StatementOfAccountContextBuilderTest {
   }
 
   /**
-   * The shipped SoA template still binds the whole {@code org.bankingDetails} group in its "Payment
-   * Instructions" paragraph (626D moves it onto the leaf keys). Now that the org context supplies a
-   * map there, the renderer's container guard must keep that paragraph empty rather than printing
-   * {@code {bankName=FNB, ...}} (ruling R-9).
+   * Phase 88 626D (ruling R-15): the shipped SoA "Payment Instructions" section binds the {@code
+   * org.bankingDetails.*} leaves inside a {@code conditionalBlock} on the group, so the firm's
+   * banking details print line by line and never as {@code {bankName=FNB, ...}} map text.
    */
   @Test
-  void realSoATemplate_wholeBankingMapBinding_rendersNoMapText() throws Exception {
+  void realSoATemplate_paymentInstructions_renderTheBankingLeaves() throws Exception {
     stubEmptyPeriod();
     var orgContext = new java.util.LinkedHashMap<String, Object>();
     orgContext.put("name", "Acme Law");
     orgContext.put("bankingDetails", bankingMap());
     when(templateContextHelper.buildOrgContext()).thenReturn(orgContext);
 
-    var context = builder.build(projectId, periodStart, periodEnd);
+    String html = renderRealSoATemplate(builder.build(projectId, periodStart, periodEnd));
 
+    assertThat(html)
+        .contains(
+            "<h3>Payment Instructions</h3>"
+                + "<p><strong>Bank:</strong> FNB</p>"
+                + "<p><strong>Branch code:</strong> 250655</p>"
+                + "<p><strong>Account number:</strong> 62812345678</p>"
+                + "<p><strong>Account type:</strong> Cheque</p>")
+        .doesNotContain("bankName=")
+        .doesNotContain("{bankName");
+  }
+
+  /**
+   * All banking fields blank → {@code org.bankingDetails} is {@code null} (626B) → the whole
+   * "Payment Instructions" section, heading included, is absent.
+   */
+  @Test
+  void realSoATemplate_noBankingDetails_hidesPaymentInstructionsEntirely() throws Exception {
+    stubEmptyPeriod();
+    var orgContext = new java.util.LinkedHashMap<String, Object>();
+    orgContext.put("name", "Acme Law");
+    orgContext.put("bankingDetails", null);
+    when(templateContextHelper.buildOrgContext()).thenReturn(orgContext);
+
+    String html = renderRealSoATemplate(builder.build(projectId, periodStart, periodEnd));
+
+    assertThat(html)
+        .doesNotContain("Payment Instructions")
+        .doesNotContain("Bank:")
+        .doesNotContain("bankName=");
+  }
+
+  private String renderRealSoATemplate(Map<String, Object> context) throws Exception {
     var templateBytes =
         getClass()
             .getClassLoader()
@@ -1327,13 +1358,7 @@ class StatementOfAccountContextBuilderTest {
         new io.b2mash.b2b.b2bstrawman.template.TiptapRenderer(
             new org.springframework.core.io.ByteArrayResource(
                 "body { font-size: 11pt; }".getBytes(java.nio.charset.StandardCharsets.UTF_8)));
-
-    String html = renderer.render(templateNode, context, Map.of(), null, Map.of());
-
-    assertThat(html)
-        .contains("Payment Instructions</h3><p></p>")
-        .doesNotContain("bankName=")
-        .doesNotContain("62812345678");
+    return renderer.render(templateNode, context, Map.of(), null, Map.of());
   }
 
   // ---------- helpers ----------

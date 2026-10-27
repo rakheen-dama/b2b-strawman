@@ -1,0 +1,126 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.name" } }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [
+        { "type": "text", "text": "Engagement Letter — Conveyancing" }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Dear " },
+        { "type": "variable", "attrs": { "key": "customer.name" } },
+        { "type": "text", "text": "," }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "We confirm our appointment as conveyancers in connection with the above property transaction. This letter sets out the terms and conditions under which " },
+        { "type": "variable", "attrs": { "key": "org.name" } },
+        { "type": "text", "text": " will act on your behalf." }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Transaction Details" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Client:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "customer.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Matter:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "project.name" } }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Scope of Services" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Our conveyancing services include the following:" }
+      ]
+    },
+    {
+      "type": "bulletList",
+      "content": [
+        { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Preparation and lodging of the transfer and bond documents with the Deeds Office;" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Obtaining all necessary clearance certificates (rates, levies, compliance);" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "FICA verification of all parties to the transaction;" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Liaising with the purchaser's/seller's attorneys, estate agent, and financial institution;" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Attending to registration and disbursement of funds from trust account." }] }] }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Terms and Conditions" }
+      ]
+    },
+    { "type": "clauseBlock", "attrs": { "slug": "legal-za-fees-tariff" } },
+    { "type": "clauseBlock", "attrs": { "slug": "legal-za-trust-deposits" } },
+    { "type": "clauseBlock", "attrs": { "slug": "legal-za-fica-consent" } },
+    { "type": "clauseBlock", "attrs": { "slug": "legal-za-data-protection" } },
+    { "type": "clauseBlock", "attrs": { "slug": "legal-za-termination" } },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Acceptance" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Please confirm your acceptance of the terms set out in this engagement letter by signing and returning a copy to our offices." }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Yours faithfully," }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.name" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.documentFooterText" } }
+      ]
+    }
+  ]
+}

@@ -787,6 +787,55 @@ class TiptapRendererTest {
     assertThat(html).contains("<td>Item A</td><td>100.00</td>");
   }
 
+  /**
+   * G88-M8 (Phase 88 626D, ruling R-4): currency and number cells carry {@code class="num"} so the
+   * default CSS can keep them on one line ("R270," / "00" wrapped in the emailed fee note); text,
+   * date and unformatted cells and every header cell stay bare (D5 neutral headers).
+   */
+  @Test
+  void loop_table_marks_currency_and_number_cells_num_only() throws Exception {
+    var context = new HashMap<String, Object>();
+    context.put(
+        "lines",
+        List.of(
+            Map.of(
+                "description", "Counsel fees",
+                "quantity", "1",
+                "taxAmount", "270.00",
+                "date", "2026-10-27",
+                "note", "x")));
+
+    var loopNode = new HashMap<String, Object>();
+    loopNode.put("type", "loopTable");
+    loopNode.put(
+        "attrs",
+        Map.<String, Object>of(
+            "dataSource",
+            "lines",
+            "columns",
+            List.of(
+                Map.of("header", "Description", "key", "description"),
+                Map.of("header", "Qty", "key", "quantity", "format", "number"),
+                Map.of("header", "VAT", "key", "taxAmount", "format", "currency"),
+                Map.of("header", "Date", "key", "date", "format", "date"),
+                Map.of("header", "Note", "key", "note"))));
+
+    String html = renderer.render(doc(loopNode), context, Map.of(), null);
+
+    assertThat(html)
+        .contains(
+            "<tr><td>Counsel fees</td><td class=\"num\">1</td><td class=\"num\">R270,00</td>"
+                + "<td>27 October 2026</td><td>x</td></tr>")
+        .contains("<th>Qty</th><th>VAT</th>")
+        .doesNotContain("<th class=");
+
+    var realCssRenderer =
+        new TiptapRenderer(
+            new org.springframework.core.io.ClassPathResource("templates/document-default.css"));
+    assertThat(realCssRenderer.render(doc(loopNode), context, Map.of(), null))
+        .containsPattern("table td\\.num \\{\\s*white-space: nowrap;\\s*}");
+  }
+
   // --- Brand colour rules (Phase 88 626B, U8, ADR-353, §13.6.4) ---
 
   private static final String BRAND_HEADINGS = "h1, h2, h3 { color: %s; }";

@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.regex.Pattern;
 import org.springframework.web.util.HtmlUtils;
 
 /**
@@ -21,6 +22,10 @@ public final class VariableFormatter {
   private VariableFormatter() {}
 
   private static final Locale ZA_LOCALE = Locale.of("en", "ZA");
+
+  /** The only {@code data:} form an "image" value may take: base64 PNG/JPEG (626D, R-1). */
+  private static final Pattern DATA_IMAGE_URI =
+      Pattern.compile("^data:image/(png|jpeg);base64,[A-Za-z0-9+/]+={0,2}$");
 
   /**
    * Formats a value based on its type hint and locale.
@@ -137,15 +142,18 @@ public final class VariableFormatter {
 
   /**
    * Renders an {@code <img>} element for the "image" type hint (letterhead logo, LZKC-007). The
-   * value is expected to be a server-generated presigned URL ({@code org.logoUrl} from {@code
-   * TemplateContextHelper.buildOrgContext}); anything that is not a plain http(s) URL renders as an
-   * empty string so a missing/odd value degrades to "no logo" instead of broken markup. The URL is
+   * value is expected to be server-generated ({@code org.logoUrl} from {@code
+   * TemplateContextHelper.buildOrgContext}): a strict PNG/JPEG base64 {@code data:} URI of the logo
+   * bytes (626D) or a presigned http(s) URL; anything else renders as an empty string so a
+   * missing/odd value degrades to "no logo" instead of broken markup. The value is
    * HTML-attribute-escaped; sizing comes from the {@code letterhead-logo} class in
    * document-default.css.
    */
   private static String formatImage(Object value) {
     String url = String.valueOf(value).trim();
-    if (!(url.startsWith("https://") || url.startsWith("http://"))) {
+    if (!(url.startsWith("https://")
+        || url.startsWith("http://")
+        || DATA_IMAGE_URI.matcher(url).matches())) {
       return "";
     }
     return "<img class=\"letterhead-logo\" src=\""

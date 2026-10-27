@@ -47,6 +47,11 @@ table td {
     border-bottom: 1px solid #eee;
 }
 
+/* Money / quantity cells never wrap mid-number (G88-M8: "R270," / "00") */
+table td.num {
+    white-space: nowrap;
+}
+
 h1, h2, h3 {
     color: #1a1a2e;
     margin-top: 20px;

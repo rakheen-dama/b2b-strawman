@@ -1,9 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.integration.storage.PresignedUrl;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -12,6 +18,8 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagRepository;
 import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
+import java.time.Instant;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -223,5 +231,60 @@ class TemplateContextHelperLetterheadTest {
             "documentFooterText",
             "taxRegistrationNumber",
             "logoUrl");
+  }
+
+  // --- Logo as a data: URI (Phase 88 626D, ruling R-1) ---
+
+  private static final String PNG_KEY = "org/tenant_x/branding/logo.png";
+
+  private static OrgSettings withLogoKey(String key) {
+    var settings = new OrgSettings("ZAR");
+    settings.getBranding().setLogoS3Key(key);
+    return settings;
+  }
+
+  @Test
+  void logo_bytes_available_emit_a_png_data_uri() {
+    byte[] png = {(byte) 0x89, 'P', 'N', 'G', 1, 2, 3};
+    when(storageService.download(PNG_KEY)).thenReturn(png);
+
+    var org = buildWith(withLogoKey(PNG_KEY));
+
+    assertThat(org.get("logoUrl"))
+        .isEqualTo("data:image/png;base64," + Base64.getEncoder().encodeToString(png));
+    verify(storageService, never()).generateDownloadUrl(anyString(), any());
+  }
+
+  @Test
+  void jpeg_key_emits_a_jpeg_data_uri() {
+    String key = "org/tenant_x/branding/logo.JPG";
+    when(storageService.download(key)).thenReturn(new byte[] {(byte) 0xFF, (byte) 0xD8});
+
+    var org = buildWith(withLogoKey(key));
+
+    assertThat(org.get("logoUrl")).isEqualTo("data:image/jpeg;base64,/9g=");
+  }
+
+  @Test
+  void logo_download_failure_falls_back_to_the_presigned_url() {
+    when(storageService.download(PNG_KEY)).thenThrow(new RuntimeException("Key not found"));
+    when(storageService.generateDownloadUrl(eq(PNG_KEY), any()))
+        .thenReturn(new PresignedUrl("https://s3.test/logo.png?sig=1", Instant.now()));
+
+    var org = buildWith(withLogoKey(PNG_KEY));
+
+    assertThat(org.get("logoUrl")).isEqualTo("https://s3.test/logo.png?sig=1");
+  }
+
+  @Test
+  void svg_logo_is_never_inlined_and_uses_the_presigned_url() {
+    String key = "org/tenant_x/branding/logo.svg";
+    when(storageService.generateDownloadUrl(eq(key), any()))
+        .thenReturn(new PresignedUrl("https://s3.test/logo.svg", Instant.now()));
+
+    var org = buildWith(withLogoKey(key));
+
+    assertThat(org.get("logoUrl")).isEqualTo("https://s3.test/logo.svg");
+    verify(storageService, never()).download(anyString());
   }
 }

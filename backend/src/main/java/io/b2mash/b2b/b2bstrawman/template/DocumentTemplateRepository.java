@@ -41,6 +41,20 @@ public interface DocumentTemplateRepository extends JpaRepository<DocumentTempla
   Optional<DocumentTemplate> findByPackIdAndPackTemplateKey(
       @Param("packId") String packId, @Param("packTemplateKey") String packTemplateKey);
 
+  /**
+   * The pack-seeded template for a pack key: {@code PLATFORM} and not a clone. Clones share {@code
+   * packId} + {@code packTemplateKey} with their source ({@code
+   * DocumentTemplateService.cloneTemplate}), so {@link #findByPackIdAndPackTemplateKey} throws
+   * {@code IncorrectResultSizeDataAccessException} once a firm has cloned the template.
+   */
+  @Query(
+      "SELECT dt FROM DocumentTemplate dt WHERE dt.packId = :packId"
+          + " AND dt.packTemplateKey = :packTemplateKey"
+          + " AND dt.source = io.b2mash.b2b.b2bstrawman.template.TemplateSource.PLATFORM"
+          + " AND dt.sourceTemplateId IS NULL")
+  Optional<DocumentTemplate> findPackSeeded(
+      @Param("packId") String packId, @Param("packTemplateKey") String packTemplateKey);
+
   @Query(
       value =
           "SELECT * FROM document_templates WHERE active = true"

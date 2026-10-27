@@ -221,9 +221,8 @@ public class TemplatePackInstaller implements PackInstaller {
     int created = 0;
     int refreshed = 0;
     for (var templateDef : pack.templates()) {
-      var existing =
-          documentTemplateRepository.findByPackIdAndPackTemplateKey(
-              packId, templateDef.templateKey());
+      // Clone-safe: a firm's clone shares packId + packTemplateKey and is never refreshed.
+      var existing = documentTemplateRepository.findPackSeeded(packId, templateDef.templateKey());
       if (existing.isPresent()) {
         if (refreshIfUnmodified(existing.get(), templateDef, loadedPack.resource())) {
           refreshed++;

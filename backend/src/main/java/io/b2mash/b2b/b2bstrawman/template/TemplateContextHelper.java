@@ -14,9 +14,11 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagRepository;
 import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
 import java.time.Duration;
+import java.util.Base64;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -106,23 +108,7 @@ public class TemplateContextHelper {
               orgMap.put("documentFooterText", settings.getBranding().getDocumentFooterText());
               orgMap.put("taxRegistrationNumber", settings.getTax().getTaxRegistrationNumber());
 
-              if (settings.getBranding().getLogoS3Key() != null
-                  && !settings.getBranding().getLogoS3Key().isBlank()) {
-                try {
-                  var presigned =
-                      storageService.generateDownloadUrl(
-                          settings.getBranding().getLogoS3Key(), LOGO_URL_EXPIRY);
-                  orgMap.put("logoUrl", presigned.url());
-                } catch (Exception e) {
-                  log.warn(
-                      "Failed to generate logo URL for key: {}",
-                      settings.getBranding().getLogoS3Key(),
-                      e);
-                  orgMap.put("logoUrl", null);
-                }
-              } else {
-                orgMap.put("logoUrl", null);
-              }
+              orgMap.put("logoUrl", resolveLogoSrc(settings.getBranding().getLogoS3Key()));
               putLetterheadKeys(orgMap, settings.getLetterhead());
             },
             () -> {
@@ -134,6 +120,53 @@ public class TemplateContextHelper {
               putLetterheadKeys(orgMap, null);
             });
     return orgMap;
+  }
+
+  /**
+   * The {@code org.logoUrl} value for a branding logo key (Phase 88 626D, ruling R-1): a {@code
+   * data:image/png|jpeg;base64,} URI of the stored bytes, so the PDF renderer never fetches the
+   * logo over the network (a presigned URL's host is not always reachable from the backend, e.g.
+   * the e2e stack) and the browser preview shows the identical string. SVG (no PDF support) or any
+   * download failure falls back to the presigned URL; {@code null} when no logo is set or no URL
+   * can be generated.
+   */
+  private String resolveLogoSrc(String logoS3Key) {
+    if (logoS3Key == null || logoS3Key.isBlank()) {
+      return null;
+    }
+    String mime = logoMimeType(logoS3Key);
+    if (mime != null) {
+      try {
+        byte[] bytes = storageService.download(logoS3Key);
+        if (bytes != null && bytes.length > 0) {
+          return "data:" + mime + ";base64," + Base64.getEncoder().encodeToString(bytes);
+        }
+        log.warn("Logo bytes empty for key {}, falling back to the presigned URL", logoS3Key);
+      } catch (Exception e) {
+        log.warn(
+            "Logo bytes unavailable for key {} ({}), falling back to the presigned URL",
+            logoS3Key,
+            e.getMessage());
+      }
+    }
+    try {
+      return storageService.generateDownloadUrl(logoS3Key, LOGO_URL_EXPIRY).url();
+    } catch (Exception e) {
+      log.warn("Failed to generate logo URL for key: {}", logoS3Key, e);
+      return null;
+    }
+  }
+
+  /** PNG/JPEG MIME type from the logo key's extension; {@code null} for anything else (SVG). */
+  private static String logoMimeType(String key) {
+    String lower = key.toLowerCase(Locale.ROOT);
+    if (lower.endsWith(".png")) {
+      return "image/png";
+    }
+    if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
+      return "image/jpeg";
+    }
+    return null;
   }
 
   /**

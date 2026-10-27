@@ -356,7 +356,10 @@ public class TiptapRenderer {
           String colFormat = (String) col.get("format");
           Object val = colKey != null ? row.get(colKey) : null;
           String cellText = VariableFormatter.format(val, colFormat, renderLocale);
-          sb.append("<td>").append(cellText).append("</td>");
+          // G88-M8: money/quantity cells carry class="num" so document-default.css keeps them
+          // on one line (a narrow VAT column used to wrap "R270," / "00"). Headers stay bare (D5).
+          boolean numeric = "currency".equals(colFormat) || "number".equals(colFormat);
+          sb.append(numeric ? "<td class=\"num\">" : "<td>").append(cellText).append("</td>");
         }
         sb.append("</tr>");
       }

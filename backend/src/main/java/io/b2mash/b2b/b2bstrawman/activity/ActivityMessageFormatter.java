@@ -9,8 +9,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
@@ -23,8 +25,31 @@ import org.springframework.stereotype.Component;
 @Component
 public class ActivityMessageFormatter {
 
+  /**
+   * Which money a sentence may show the viewer. The sentences carry amounts and trust references
+   * (625B), so they follow the same redaction as the matter list / Home widgets: amounts need
+   * {@code FINANCIAL_VISIBILITY}, trust amounts and references need {@code VIEW_TRUST}, and
+   * owner/admin always see both (614A home rule). A hidden detail drops its fragment (R-3).
+   */
+  public record AmountVisibility(boolean financial, boolean trust) {
+    /** Everything visible — for callers that have already gated on both capabilities. */
+    public static final AmountVisibility ALL = new AmountVisibility(true, true);
+  }
+
+  /** Detail keys whose values are money (rendered through {@link #money}). */
+  private static final Set<String> MONEY_KEYS = Set.of("amount", "excess", "budget_amount");
+
+  /** Formats with every amount visible ({@link AmountVisibility#ALL}). */
   public ActivityItem format(
       AuditEvent event, Map<UUID, Member> actorMap, Map<UUID, PortalContact> portalContactMap) {
+    return format(event, actorMap, portalContactMap, AmountVisibility.ALL);
+  }
+
+  public ActivityItem format(
+      AuditEvent event,
+      Map<UUID, Member> actorMap,
+      Map<UUID, PortalContact> portalContactMap,
+      AmountVisibility visibility) {
     String actorName =
         resolveActorName(
             event.getActorType(),
@@ -34,7 +59,12 @@ public class ActivityMessageFormatter {
             event.getDetails());
     String actorAvatarUrl =
         resolveActorAvatarUrl(event.getActorType(), event.getActorId(), actorMap);
-    Map<String, Object> details = event.getDetails() != null ? event.getDetails() : Map.of();
+    Map<String, Object> details =
+        redact(
+            event.getEventType(),
+            event.getEntityType(),
+            event.getDetails() != null ? event.getDetails() : Map.of(),
+            visibility);
 
     String message = formatMessage(event.getEventType(), event.getEntityType(), actorName, details);
     String entityName = resolveEntityName(event.getEntityType(), details);
@@ -598,6 +628,29 @@ public class ActivityMessageFormatter {
   }
 
   // --- 625B helpers (U5, ADR-349) ---
+
+  /** Drops the money (and trust reference) keys the viewer may not read; never mutates input. */
+  private static Map<String, Object> redact(
+      String eventType,
+      String entityType,
+      Map<String, Object> details,
+      AmountVisibility visibility) {
+    boolean trustEvent =
+        "trust_transaction".equals(entityType)
+            || (eventType != null && eventType.startsWith("trust_"));
+    Set<String> hidden;
+    if (trustEvent) {
+      hidden = visibility.trust() ? Set.of() : Set.of("amount", "reference");
+    } else {
+      hidden = visibility.financial() ? Set.of() : MONEY_KEYS;
+    }
+    if (hidden.isEmpty() || hidden.stream().noneMatch(details::containsKey)) {
+      return details;
+    }
+    var visible = new HashMap<String, Object>(details);
+    visible.keySet().removeAll(hidden);
+    return visible;
+  }
 
   /** Sentence dates: VariableFormatter's "d MMMM yyyy" pattern, plain text (never HTML-escaped). */
   private static final DateTimeFormatter SENTENCE_DATE =

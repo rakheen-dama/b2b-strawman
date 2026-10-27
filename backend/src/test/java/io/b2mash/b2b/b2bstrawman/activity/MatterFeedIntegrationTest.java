@@ -17,6 +17,8 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
+import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
@@ -77,6 +79,7 @@ class MatterFeedIntegrationTest {
   private static final String ORG_ID = "org_matter_feed_625a";
   private static final String OWNER = "user_mf_owner";
   private static final String APPROVER = "user_mf_approver";
+  private static final String MEMBER = "user_mf_member";
   private static final String CONTACT_NAME = "Sipho Dlamini";
 
   // Acceptance and fee-note sends email best-effort; bind the JVM singleton (never start our own).
@@ -95,9 +98,11 @@ class MatterFeedIntegrationTest {
   @Autowired private TaskRepository taskRepository;
   @Autowired private TimeEntryRepository timeEntryRepository;
   @Autowired private AuditEventRepository auditEventRepository;
+  @Autowired private ProjectMemberRepository projectMemberRepository;
 
   private String tenantSchema;
   private UUID ownerId;
+  private UUID memberId;
   private UUID templateId;
   private String trustAccountId;
 
@@ -114,6 +119,11 @@ class MatterFeedIntegrationTest {
     // Single-approval mode forbids the recorder approving their own trust payment.
     TestMemberHelper.syncMember(
         mockMvc, ORG_ID, APPROVER, "mf_approver@test.com", "Bob Approver", "owner");
+    // Member role: VIEW_TRUST but no FINANCIAL_VISIBILITY (625B amount redaction).
+    memberId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, MEMBER, "mf_member@test.com", "Carol Member", "member"));
 
     templateId =
         inTenant(
@@ -369,6 +379,28 @@ class MatterFeedIntegrationTest {
             "invoice.sent",
             "invoice.partially_paid",
             "invoice.paid");
+
+    // 625B redaction: a matter member without FINANCIAL_VISIBILITY reads the same sentences
+    // without fee-note amounts — on the feed and on Home alike.
+    inTenant(
+        () ->
+            transactionTemplate.execute(
+                tx ->
+                    projectMemberRepository.save(
+                        new ProjectMember(m.projectId(), memberId, "member", ownerId))));
+    var memberFeed = feedItems(m.projectId(), MEMBER);
+    assertThat(sentences(memberFeed, "invoice.partially_paid"))
+        .containsExactly("Thandi Owner recorded a part payment on fee note " + number);
+    assertThat(sentences(memberFeed, "invoice.paid"))
+        .containsExactly(
+            "Thandi Owner recorded a payment on fee note " + number + " — paid in full");
+    assertThat(memberFeed)
+        .extracting(i -> (String) i.get("message"))
+        .noneMatch(message -> message.matches(".* of R\\d.*"));
+    var memberHome = assertHomeReadsTheFeedSentences(m.projectId(), memberFeed, 46, MEMBER);
+    assertThat(memberHome)
+        .extracting(h -> h.get("eventType"))
+        .contains("invoice.partially_paid", "invoice.paid");
   }
 
   // --- helpers ---
@@ -543,11 +575,17 @@ class MatterFeedIntegrationTest {
 
   /** The matter's HTTP feed items ({@code id, message, actorName, eventType, ...}). */
   private List<Map<String, Object>> feedItems(UUID projectId) throws Exception {
+    return feedItems(projectId, OWNER);
+  }
+
+  private List<Map<String, Object>> feedItems(UUID projectId, String subject) throws Exception {
+    var jwt =
+        OWNER.equals(subject)
+            ? TestJwtFactory.ownerJwt(ORG_ID, subject)
+            : TestJwtFactory.memberJwt(ORG_ID, subject);
     String body =
         mockMvc
-            .perform(
-                get("/api/matters/" + projectId + "/activity?size=50")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+            .perform(get("/api/matters/" + projectId + "/activity?size=50").with(jwt))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -570,12 +608,18 @@ class MatterFeedIntegrationTest {
    */
   private List<Map<String, Object>> assertHomeReadsTheFeedSentences(
       UUID projectId, List<Map<String, Object>> feed, int limit) throws Exception {
+    return assertHomeReadsTheFeedSentences(projectId, feed, limit, OWNER);
+  }
+
+  private List<Map<String, Object>> assertHomeReadsTheFeedSentences(
+      UUID projectId, List<Map<String, Object>> feed, int limit, String subject) throws Exception {
+    var jwt =
+        OWNER.equals(subject)
+            ? TestJwtFactory.ownerJwt(ORG_ID, subject)
+            : TestJwtFactory.memberJwt(ORG_ID, subject);
     String body =
         mockMvc
-            .perform(
-                get("/api/dashboard/activity")
-                    .param("limit", String.valueOf(limit))
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+            .perform(get("/api/dashboard/activity").param("limit", String.valueOf(limit)).with(jwt))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()

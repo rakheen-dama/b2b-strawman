@@ -918,7 +918,7 @@ public class DashboardService {
     List<UUID> eventIds = rows.stream().map(CrossProjectActivityProjection::getEventId).toList();
     Map<UUID, ActivityItem> formatted = new HashMap<>();
     activityService
-        .formatEvents(auditEventRepository.findAllById(eventIds))
+        .formatEvents(auditEventRepository.findAllById(eventIds), actor)
         .forEach(item -> formatted.put(item.id(), item));
 
     return rows.stream()

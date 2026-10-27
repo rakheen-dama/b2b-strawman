@@ -1730,6 +1730,97 @@ class ActivityMessageFormatterTest {
     }
   }
 
+  // ---------- 625B: amount redaction (FINANCIAL_VISIBILITY / VIEW_TRUST; owner/admin = ALL) ----
+
+  private String messageAs(
+      ActivityMessageFormatter.AmountVisibility visibility,
+      String eventType,
+      String entityType,
+      Map<String, Object> details) {
+    return formatter
+        .format(createEvent(eventType, entityType, details), actorMap(), Map.of(), visibility)
+        .message();
+  }
+
+  @Test
+  void withoutFinancialVisibilityFeeNoteAndOtherAmountsAreDropped() {
+    var memberView = new ActivityMessageFormatter.AmountVisibility(false, true);
+    assertThat(
+            messageAs(
+                memberView,
+                "invoice.partially_paid",
+                "invoice",
+                d("invoice_number", "INV-0004", "amount", "5000")))
+        .isEqualTo("Alice recorded a part payment on fee note INV-0004");
+    assertThat(
+            messageAs(
+                memberView,
+                "invoice.payment_excess",
+                "invoice",
+                d("invoice_number", "INV-0004", "excess", "250")))
+        .isEqualTo("Alice recorded an overpayment on fee note INV-0004");
+    assertThat(
+            messageAs(
+                memberView,
+                "budget.updated",
+                "project_budget",
+                d("budget_amount", "75000", "budget_currency", "ZAR")))
+        .isEqualTo("Alice updated the matter budget");
+    assertThat(
+            messageAs(
+                memberView,
+                "disbursement.created",
+                "legal_disbursement",
+                d("amount", "3500", "category", "COUNSEL_FEES")))
+        .isEqualTo("Alice recorded a disbursement (Counsel fees)");
+    // VIEW_TRUST alone still reads trust amounts and references.
+    assertThat(
+            messageAs(
+                memberView,
+                "trust_deposit.recorded",
+                "trust_transaction",
+                d("amount", "50000", "reference", "DEP-1")))
+        .isEqualTo("Alice recorded a trust deposit of R50" + NB + "000,00 (DEP-1)");
+  }
+
+  @Test
+  void withoutViewTrustTrustAmountsAndReferencesAreDropped() {
+    var noTrust = new ActivityMessageFormatter.AmountVisibility(true, false);
+    assertThat(
+            messageAs(
+                noTrust,
+                "trust_deposit.recorded",
+                "trust_transaction",
+                d("amount", "50000", "reference", "DEP-1")))
+        .isEqualTo("Alice recorded a trust deposit");
+    assertThat(
+            messageAs(
+                noTrust,
+                "trust_payment.approved",
+                "trust_transaction",
+                d("transaction_type", "PAYMENT", "amount", "2500")))
+        .isEqualTo("Alice approved the trust payment");
+    assertThat(
+            messageAs(
+                noTrust, "invoice.sent", "invoice", d("invoice_number", "INV-0004", "amount", "1")))
+        .isEqualTo("Alice sent fee note INV-0004");
+    // ALL (owner/admin) keeps every amount; the details map is never mutated.
+    var details = d("invoice_number", "INV-0004", "amount", "5000");
+    assertThat(
+            messageAs(
+                new ActivityMessageFormatter.AmountVisibility(false, false),
+                "invoice.paid",
+                "invoice",
+                details))
+        .isEqualTo("Alice recorded a payment on fee note INV-0004 — paid in full");
+    assertThat(details).containsKey("amount");
+    assertThat(
+            messageAs(
+                ActivityMessageFormatter.AmountVisibility.ALL, "invoice.paid", "invoice", details))
+        .isEqualTo(
+            "Alice recorded a payment of R5" + NB + "000,00 on fee note INV-0004 — paid in full");
+  }
+
   @Test
   void unknownKeysAndEntityTypesFallBackToTheLegalGeneric() {
     for (int i = 0; i < 25; i++) {

@@ -1,11 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.activity;
 
+import io.b2mash.b2b.b2bstrawman.activity.ActivityMessageFormatter.AmountVisibility;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import java.time.Instant;
@@ -79,7 +81,7 @@ public class ActivityService {
             projectId.toString(), normalizedEntityType, since, pageable);
 
     // 4. Resolve actors in batch and format (shared with Home recent activity)
-    var items = formatEvents(events.getContent());
+    var items = formatEvents(events.getContent(), actor);
 
     return new PageImpl<>(items, pageable, events.getTotalElements());
   }
@@ -88,14 +90,17 @@ public class ActivityService {
    * Formats audit events into activity items, batch-resolving actor names (members for USER actors,
    * portal_contacts for PORTAL_CONTACT actors — one query each, never per row). The single sentence
    * path for the matter feed and Home "Recent Activity" (ADR-349: one formatter, Home delegates),
-   * so the same event reads the same sentence and actor on both. Performs no access check: callers
-   * select the rows the actor may see. Items are returned in the order of {@code events}.
+   * so the same event reads the same sentence and actor on both. Performs no row access check:
+   * callers select the rows the actor may see. Amounts in the sentences are redacted per {@link
+   * #amountVisibility}. Items are returned in the order of {@code events}.
    *
    * @param events the audit events to format (already access-filtered by the caller)
+   * @param actor the viewer, for amount redaction
    * @return one activity item per event, same order
    */
   @Transactional(readOnly = true)
-  public List<ActivityItem> formatEvents(List<AuditEvent> events) {
+  public List<ActivityItem> formatEvents(List<AuditEvent> events, ActorContext actor) {
+    var visibility = amountVisibility(actor);
     var memberActorIds =
         events.stream()
             .filter(e -> !"PORTAL_CONTACT".equals(e.getActorType()))
@@ -119,7 +124,19 @@ public class ActivityService {
             .collect(Collectors.toMap(PortalContact::getId, Function.identity()));
 
     return events.stream()
-        .map(event -> activityMessageFormatter.format(event, actorMap, portalContactMap))
+        .map(
+            event -> activityMessageFormatter.format(event, actorMap, portalContactMap, visibility))
         .toList();
+  }
+
+  /**
+   * Amounts need FINANCIAL_VISIBILITY, trust amounts/references need VIEW_TRUST; owner/admin always
+   * see both — the same rule as the matter list's {@code unbilledValue} / {@code trustBalance}.
+   */
+  private static AmountVisibility amountVisibility(ActorContext actor) {
+    boolean ownerOrAdmin = actor != null && actor.isOwnerOrAdmin();
+    return new AmountVisibility(
+        ownerOrAdmin || RequestScopes.hasCapability("FINANCIAL_VISIBILITY"),
+        ownerOrAdmin || RequestScopes.hasCapability("VIEW_TRUST"));
   }
 }

@@ -1,7 +1,7 @@
 {
-  "commit": "977419fa8",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build (worktree-epic-625G, NODE_OPTIONS=\"\")",
+  "commit": "c25867b72",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build (worktree-epic-626C, NODE_OPTIONS=\"\")",
   "exit": 0,
-  "ts": "2026-10-27T18:25:41Z",
-  "summary": "Slice 625G epic gate FE-GATE on main 977419fa8: lint 0 errors / 92 warnings; format clean; vitest 419 files / 3192 passed / 2 skipped; build OK (= 625F)"
+  "ts": "2026-10-27T21:40:25Z",
+  "summary": "Slice 626C FE-GATE on c25867b72: lint 0 errors / 92 warnings; format clean; vitest 421 files / 3220 passed / 2 skipped; build OK; CI Frontend pass"
 }

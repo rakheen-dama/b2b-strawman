@@ -1,0 +1,14 @@
+ document_footer_text | footer_null | letterhead_address_line1 |        letterhead_email         | letterhead_signatory_name |          updated_at           
+----------------------+-------------+--------------------------+---------------------------------+---------------------------+-------------------------------
+                      | t           | 88 Fredman Drive         | accounts@ndlovu-attorneys.co.za | Sipho Ndlovu              | 2026-10-27 21:24:32.675767+00
+(1 row)
+
+           event_type            |                                                                                                      details                                                                                                       |          occurred_at          
+---------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------
+ org_settings.letterhead_updated | {"actor_name": "Alice Owner", "changed_fields": ["addressLine1", "addressLine3", "city", "phone", "email", "website", "bankName", "bankBranchCode", "bankAccountNumber", "signatoryName", "signatoryDesignation"]} | 2026-10-27 21:23:33.264884+00
+ org_settings.updated            | {"actor_name": "Alice Owner", "brand_color": "#0f766e", "default_currency": "ZAR"}                                                                                                                                 | 2026-10-27 21:24:19.80415+00
+ org_settings.tax_configured     | {"tax_label": "VAT", "actor_name": "Alice Owner", "tax_inclusive": false, "tax_registration_label": "", "tax_registration_number": ""}                                                                             | 2026-10-27 21:24:19.869521+00
+ org_settings.updated            | {"actor_name": "Alice Owner", "brand_color": "#0f766e", "default_currency": "ZAR"}                                                                                                                                 | 2026-10-27 21:24:32.589934+00
+ org_settings.tax_configured     | {"tax_label": "VAT", "actor_name": "Alice Owner", "tax_inclusive": false, "tax_registration_label": "", "tax_registration_number": ""}                                                                             | 2026-10-27 21:24:32.669403+00
+(5 rows)
+

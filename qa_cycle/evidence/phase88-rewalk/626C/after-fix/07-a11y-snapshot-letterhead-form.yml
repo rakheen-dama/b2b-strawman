@@ -1,0 +1,90 @@
+- generic [ref=f2e252]:
+  - group "Address" [ref=f2e253]:
+    - paragraph [ref=f2e255]: The firm address printed in the letterhead.
+    - generic [ref=f2e256]:
+      - generic [ref=f2e257]:
+        - generic [ref=f2e258]: Address line 1
+        - textbox "Address line 1" [ref=f2e259]:
+          - /placeholder: e.g. 12 Rissik Street
+          - text: 88 Fredman Drive
+      - generic [ref=f2e260]:
+        - generic [ref=f2e261]: Address line 2
+        - textbox "Address line 2" [ref=f2e262]: Illovo Point, 3rd Floor
+      - generic [ref=f2e263]:
+        - generic [ref=f2e264]: Address line 3
+        - textbox "Address line 3" [ref=f2e265]
+      - generic [ref=f2e266]:
+        - generic [ref=f2e267]: City
+        - textbox "City" [ref=f2e268]:
+          - /placeholder: e.g. Johannesburg
+          - text: Sandown
+      - generic [ref=f2e269]:
+        - generic [ref=f2e270]: Postal code
+        - textbox "Postal code" [ref=f2e271]:
+          - /placeholder: e.g. 2001
+          - text: "2196"
+      - generic [ref=f2e272]:
+        - generic [ref=f2e273]: Country
+        - textbox "Country" [ref=f2e274]:
+          - /placeholder: e.g. South Africa
+          - text: South Africa
+  - group "Contact" [ref=f2e275]:
+    - paragraph [ref=f2e277]: Phone, email and website shown with the firm name.
+    - generic [ref=f2e278]:
+      - generic [ref=f2e279]:
+        - generic [ref=f2e280]: Phone
+        - textbox "Phone" [ref=f2e281]:
+          - /placeholder: e.g. +27 11 555 0100
+          - text: +27 11 555 0199
+      - generic [ref=f2e282]:
+        - generic [ref=f2e283]: Email
+        - textbox "Email" [ref=f2e284]:
+          - /placeholder: e.g. info@yourfirm.co.za
+          - text: accounts@ndlovu-attorneys.co.za
+      - generic [ref=f2e285]:
+        - generic [ref=f2e286]: Website
+        - textbox "Website" [ref=f2e287]:
+          - /placeholder: e.g. https://yourfirm.co.za
+          - text: https://www.ndlovu-attorneys.co.za
+  - group "Banking" [ref=f2e288]:
+    - paragraph [ref=f2e290]: Payment details printed on fee notes. Leave blank to leave them off.
+    - generic [ref=f2e291]:
+      - generic [ref=f2e292]:
+        - generic [ref=f2e293]: Bank name
+        - textbox "Bank name" [ref=f2e294]:
+          - /placeholder: e.g. FNB
+          - text: Standard Bank
+      - generic [ref=f2e295]:
+        - generic [ref=f2e296]: Account number
+        - textbox "Account number" [ref=f2e297]: "0012345678"
+      - generic [ref=f2e298]:
+        - generic [ref=f2e299]: Branch code
+        - textbox "Branch code" [ref=f2e300]:
+          - /placeholder: e.g. 250655
+          - text: "051001"
+      - generic [ref=f2e301]:
+        - generic [ref=f2e302]: Account type
+        - textbox "Account type" [ref=f2e303]:
+          - /placeholder: e.g. Cheque
+          - text: Cheque
+      - generic [ref=f2e304]:
+        - generic [ref=f2e305]: Payment reference note
+        - textbox "Payment reference note" [ref=f2e306]:
+          - /placeholder: e.g. Use the fee note number as your reference
+          - text: Please use your fee note number as the payment reference.
+        - paragraph [ref=f2e307]: 57/500 characters
+  - group "Signatory" [ref=f2e308]:
+    - paragraph [ref=f2e310]: The person who signs documents on behalf of the firm.
+    - generic [ref=f2e311]:
+      - generic [ref=f2e312]:
+        - generic [ref=f2e313]: Signatory name
+        - textbox "Signatory name" [ref=f2e314]:
+          - /placeholder: e.g. Thandi Mathebula
+          - text: Sipho Ndlovu
+      - generic [ref=f2e315]:
+        - generic [ref=f2e316]: Designation
+        - textbox "Designation" [ref=f2e317]:
+          - /placeholder: e.g. Director
+          - text: Managing Partner
+  - generic [ref=f2e318]:
+    - button "Save letterhead" [disabled]

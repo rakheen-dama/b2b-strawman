@@ -1,0 +1,21 @@
+{
+  "values": {
+    "addressLine1": "88 Fredman Drive",
+    "addressLine2": "Illovo Point, 3rd Floor",
+    "addressLine3": "",
+    "city": "Sandown",
+    "postalCode": "2196",
+    "country": "South Africa",
+    "phone": "+27 11 555 0199",
+    "email": "accounts@ndlovu-attorneys.co.za",
+    "website": "https://www.ndlovu-attorneys.co.za",
+    "bankName": "Standard Bank",
+    "bankAccountNumber": "0012345678",
+    "bankBranchCode": "051001",
+    "bankAccountType": "Cheque",
+    "paymentReferenceNote": "Please use your fee note number as the payment reference.",
+    "signatoryName": "Sipho Ndlovu",
+    "signatoryDesignation": "Managing Partner"
+  },
+  "saveLetterheadDisabled": true
+}

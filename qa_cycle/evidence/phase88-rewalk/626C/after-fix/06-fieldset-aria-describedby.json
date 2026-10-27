@@ -1,0 +1,40 @@
+{
+  "count": 4,
+  "unique": true,
+  "docIdUnique": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "fieldsets": [
+    {
+      "legend": "Address",
+      "ariaDescribedby": "_R_elbsnqbt9iv5ubtb_-address-description",
+      "resolvedTag": "P",
+      "resolvedText": "The firm address printed in the letterhead.",
+      "descIsInsideFieldset": true
+    },
+    {
+      "legend": "Contact",
+      "ariaDescribedby": "_R_elbsnqbt9iv5ubtb_-contact-description",
+      "resolvedTag": "P",
+      "resolvedText": "Phone, email and website shown with the firm name.",
+      "descIsInsideFieldset": true
+    },
+    {
+      "legend": "Banking",
+      "ariaDescribedby": "_R_elbsnqbt9iv5ubtb_-banking-description",
+      "resolvedTag": "P",
+      "resolvedText": "Payment details printed on fee notes. Leave blank to leave them off.",
+      "descIsInsideFieldset": true
+    },
+    {
+      "legend": "Signatory",
+      "ariaDescribedby": "_R_elbsnqbt9iv5ubtb_-signatory-description",
+      "resolvedTag": "P",
+      "resolvedText": "The person who signs documents on behalf of the firm.",
+      "descIsInsideFieldset": true
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+           event_type            |                                                                                                      details                                                                                                       |          occurred_at          
+---------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------
+ org_settings.letterhead_updated | {"actor_name": "Alice Owner", "changed_fields": ["addressLine1", "addressLine3", "city", "phone", "email", "website", "bankName", "bankBranchCode", "bankAccountNumber", "signatoryName", "signatoryDesignation"]} | 2026-10-27 21:23:33.264884+00
+ org_settings.letterhead_updated | {"actor_name": "Alice Owner", "changed_fields": ["bankBranchCode"]}                                                                                                                                                | 2026-10-27 19:23:29.687186+00
+ org_settings.letterhead_updated | {"actor_name": "Alice Owner", "changed_fields": ["bankBranchCode"]}                                                                                                                                                | 2026-10-27 19:23:18.43625+00
+(3 rows)
+

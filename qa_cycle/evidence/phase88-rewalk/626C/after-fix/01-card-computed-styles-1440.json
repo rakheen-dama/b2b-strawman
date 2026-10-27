@@ -1,0 +1,43 @@
+{
+  "viewport": "1440x900",
+  "Branding": {
+    "className": "rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950",
+    "bg": "rgb(255, 255, 255)",
+    "borderWidth": "1px",
+    "borderColor": "lab(89.5346 -0.418812 -2.99045)",
+    "radius": "8px",
+    "padding": "24px",
+    "boxShadow": "none",
+    "x": 544,
+    "width": 856,
+    "docTop": 706,
+    "docBottom": 1114
+  },
+  "Letterhead": {
+    "className": "rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950",
+    "bg": "rgb(255, 255, 255)",
+    "borderWidth": "1px",
+    "borderColor": "lab(89.5346 -0.418812 -2.99045)",
+    "radius": "8px",
+    "padding": "24px",
+    "boxShadow": "none",
+    "x": 544,
+    "width": 856,
+    "docTop": 1214,
+    "docBottom": 2694
+  },
+  "Client Portal": {
+    "className": "rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950",
+    "bg": "rgb(255, 255, 255)",
+    "borderWidth": "1px",
+    "borderColor": "lab(89.5346 -0.418812 -2.99045)",
+    "radius": "8px",
+    "padding": "24px",
+    "boxShadow": "none",
+    "x": 544,
+    "width": 856,
+    "docTop": 2726,
+    "docBottom": 2950
+  },
+  "saveSettingsDocTop": 1146
+}

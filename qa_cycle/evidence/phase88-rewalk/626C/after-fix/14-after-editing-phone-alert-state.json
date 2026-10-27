@@ -1,0 +1,8 @@
+{
+  "alerts": [
+    "email must be a valid email"
+  ],
+  "fixHighlightedPresent": false,
+  "emailAriaInvalid": "true",
+  "phone": "+27 11 555 0199"
+}

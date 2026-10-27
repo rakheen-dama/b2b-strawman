@@ -11,7 +11,8 @@ import java.util.List;
  *     actorDisplayName} already resolved
  * @param eventTypes per-eventType counts ordered DESC, with registry-derived {@code label /
  *     severity / group}
- * @param entityTypes per-entityType counts ordered DESC, with title-cased {@code label}
+ * @param entityTypes per-entityType counts ordered DESC, with a legal sentence-cased {@code label}
+ *     (AuditEventTypeRegistry.legalLabel)
  */
 public record FacetSnapshot(
     List<ActorFacet> actors, List<EventTypeFacet> eventTypes, List<EntityTypeFacet> entityTypes) {}

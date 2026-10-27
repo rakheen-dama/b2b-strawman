@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.customer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -11,6 +12,9 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
+import io.b2mash.b2b.b2bstrawman.portal.PortalJwtService;
 import io.b2mash.b2b.b2bstrawman.testutil.AbstractIntegrationTest;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
@@ -47,6 +51,8 @@ class ClientActivityIntegrationTest extends AbstractIntegrationTest {
   private static final int TEMPLATE_ITEM_COUNT = 2;
 
   @Autowired private AuditService auditService;
+  @Autowired private PortalContactService portalContactService;
+  @Autowired private PortalJwtService portalJwtService;
 
   private String tenantSchema;
   private UUID ownerId;
@@ -242,6 +248,39 @@ class ClientActivityIntegrationTest extends AbstractIntegrationTest {
   }
 
   @Test
+  void informationRequestAndRequestItemRows_appearOnlyInTheOwningClientsFeed() throws Exception {
+    // Branch (b) for information_request and request_item (the two-table join): the .sent row and
+    // both request_item rows carry no customer_id in details, so only the child joins can match.
+    var owner = TestJwtFactory.ownerJwt(ORG_ID, OWNER);
+    String clientA =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            owner,
+            "IR A " + UUID.randomUUID(),
+            "ca-ir-" + UUID.randomUUID() + "@test.com");
+    String clientB =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            owner,
+            "IR B " + UUID.randomUUID(),
+            "ca-ir-" + UUID.randomUUID() + "@test.com");
+    List<String> idsA = sendSubmitAndAcceptRequest(clientA);
+    List<String> idsB = sendSubmitAndAcceptRequest(clientB);
+
+    List<Map<String, Object>> rowsA = content(feed(clientA, 0, 200));
+    List<Map<String, Object>> rowsB = content(feed(clientB, 0, 200));
+
+    assertRequestRows(rowsA, idsA.get(0), idsA.get(1));
+    assertRequestRows(rowsB, idsB.get(0), idsB.get(1));
+    assertThat(rowsA)
+        .extracting(r -> r.get("entityId"))
+        .doesNotContain(idsB.get(0), idsB.get(1), clientB);
+    assertThat(rowsB)
+        .extracting(r -> r.get("entityId"))
+        .doesNotContain(idsA.get(0), idsA.get(1), clientA);
+  }
+
+  @Test
   void memberWithoutTeamOversight_isForbidden() throws Exception {
     String clientId =
         TestEntityHelper.createCustomer(
@@ -294,6 +333,92 @@ class ClientActivityIntegrationTest extends AbstractIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.lifecycleStatus").value("ACTIVE"));
     return clientId;
+  }
+
+  /**
+   * Real path for one client: portal contact → ad-hoc information request with one required text
+   * item (firm API) → send (firm API) → text submission (portal API, the client's own JWT) → accept
+   * (firm API). Returns {@code [requestId, itemId]}.
+   */
+  private List<String> sendSubmitAndAcceptRequest(String clientId) throws Exception {
+    var owner = TestJwtFactory.ownerJwt(ORG_ID, OWNER);
+    UUID contactId =
+        inTenant(
+            () ->
+                portalContactService
+                    .createContact(
+                        ORG_ID,
+                        UUID.fromString(clientId),
+                        "ca-ir-contact-" + UUID.randomUUID() + "@test.com",
+                        "IR Contact",
+                        PortalContact.ContactRole.PRIMARY)
+                    .getId());
+    String created =
+        mockMvc
+            .perform(
+                post("/api/information-requests")
+                    .with(owner)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"clientId": "%s", "portalContactId": "%s", "items": [
+                          {"name": "Tax number", "description": "SARS tax number",
+                           "responseType": "TEXT_RESPONSE", "required": true, "sortOrder": 0}
+                        ]}
+                        """
+                            .formatted(clientId, contactId)))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    String requestId = JsonPath.read(created, "$.id");
+    String itemId = JsonPath.read(created, "$.items[0].id");
+    mockMvc
+        .perform(post("/api/information-requests/{id}/send", requestId).with(owner))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            post("/portal/requests/{id}/items/{itemId}/submit", requestId, itemId)
+                .header(
+                    "Authorization",
+                    "Bearer " + portalJwtService.issueToken(UUID.fromString(clientId), ORG_ID))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"textResponse\": \"9001234567\"}"))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            post("/api/information-requests/{id}/items/{itemId}/accept", requestId, itemId)
+                .with(owner))
+        .andExpect(status().isOk());
+    return List.of(requestId, itemId);
+  }
+
+  private static void assertRequestRows(
+      List<Map<String, Object>> rows, String requestId, String itemId) {
+    // information_request.created names the client (branch c); .sent does not (branch b only).
+    assertThat(rowsOfType(rows, "information_request.created"))
+        .singleElement()
+        .satisfies(r -> assertThat(r.get("entityId")).isEqualTo(requestId));
+    assertThat(rowsOfType(rows, "information_request.sent"))
+        .singleElement()
+        .satisfies(
+            r -> {
+              assertThat(r.get("entityType")).isEqualTo("information_request");
+              assertThat(r.get("entityId")).isEqualTo(requestId);
+              assertThat(details(r)).doesNotContainKey(AuditDetails.CUSTOMER_ID);
+            });
+    // request_item rows — the portal submission and the firm acceptance — via the two-table join.
+    for (String eventType :
+        List.of("portal.request_item.submitted", "information_request.item_accepted")) {
+      assertThat(rowsOfType(rows, eventType))
+          .singleElement()
+          .satisfies(
+              r -> {
+                assertThat(r.get("entityType")).isEqualTo("request_item");
+                assertThat(r.get("entityId")).isEqualTo(itemId);
+                assertThat(details(r)).doesNotContainKey(AuditDetails.CUSTOMER_ID);
+              });
+    }
   }
 
   private List<String> checklistItemIds(String clientId) throws Exception {

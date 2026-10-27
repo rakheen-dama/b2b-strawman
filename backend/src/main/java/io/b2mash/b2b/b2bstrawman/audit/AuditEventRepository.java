@@ -505,8 +505,8 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
       @Param("fromTs") Instant from, @Param("toTs") Instant to);
 
   /**
-   * Per-entityType counts within {@code [from, to)}. Service title-cases the {@code entity_type}
-   * for the {@code label} field.
+   * Per-entityType counts within {@code [from, to)}. The service derives the {@code label} field
+   * from the {@code entity_type}: legal sentence-cased (AuditEventTypeRegistry.legalLabel).
    */
   @Query(
       nativeQuery = true,

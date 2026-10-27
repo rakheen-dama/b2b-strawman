@@ -141,7 +141,8 @@ class AuditServiceFacetsIntegrationTest extends AbstractIntegrationTest {
               assertThat(prefixHit.label()).isEqualTo("Matter Closure");
               assertThat(prefixHit.count()).isEqualTo(1L);
 
-              // EntityType facet — title-cased label, count = 3.
+              // EntityType facet — legal sentence-cased label (AuditEventTypeRegistry.legalLabel),
+              // count = 3.
               var matterEntity =
                   snapshot.entityTypes().stream()
                       .filter(e -> e.entityType().equals("matter"))
@@ -166,8 +167,12 @@ class AuditServiceFacetsIntegrationTest extends AbstractIntegrationTest {
   void entityTypeFacetLabelsAreLegalWorded() {
     // Phase 88 625C (D12, R-9): entity-type facet labels share the registry's legal label helper —
     // stored literals unchanged (ADR-342), display words legal, sentence case.
+    // Order independence: a fresh actor (never liveMemberId — the populated test pins its count at
+    // 3) and entity literals no other test in this class logs or counts ("matter", "task" and
+    // "audit_cap_entity" belong to the others); only labels are asserted here, never counts.
     var rangeStart = Instant.now().truncatedTo(ChronoUnit.SECONDS).minus(1, ChronoUnit.MINUTES);
     var rangeEnd = rangeStart.plus(1, ChronoUnit.HOURS);
+    var probeActorId = UUID.randomUUID();
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
         .run(
@@ -181,7 +186,7 @@ class AuditServiceFacetsIntegrationTest extends AbstractIntegrationTest {
                         entityType + ".probed",
                         entityType,
                         UUID.randomUUID(),
-                        liveMemberId,
+                        probeActorId,
                         "USER",
                         "API",
                         null,

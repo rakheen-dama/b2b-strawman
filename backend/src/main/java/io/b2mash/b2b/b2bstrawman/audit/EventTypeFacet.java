@@ -5,7 +5,8 @@ package io.b2mash.b2b.b2bstrawman.audit;
  * {@code group} are enriched by the service from {@link AuditEventTypeRegistry#resolve(String)}.
  *
  * @param eventType the raw event-type string as stored on the {@code audit_events} row
- * @param label registry-resolved human label (title-cased fallback when unregistered)
+ * @param label registry-resolved human label (legal sentence-cased fallback when unregistered —
+ *     AuditEventTypeRegistry.legalLabel)
  * @param severity registry-resolved severity (defaults to {@link AuditSeverity#INFO})
  * @param group registry-resolved group (defaults to {@link AuditEventGroup#STANDARD})
  * @param count number of events of this type in the queried range

@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
  *
  * <p>Coverage focuses on the longest-prefix-wins resolution (architecture §12.3.3): exact match
  * beats prefix, deeper prefix beats shallower, default fallback synthesises an INFO/STANDARD entry
- * with a title-cased label.
+ * with a legal sentence-cased label (AuditEventTypeRegistry.legalLabel).
  */
 class AuditEventTypeRegistryTest {
 

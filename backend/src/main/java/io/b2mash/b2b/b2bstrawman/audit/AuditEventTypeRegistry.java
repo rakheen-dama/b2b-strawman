@@ -29,6 +29,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuditEventTypeRegistry {
 
+  /**
+   * D12 / ADR-342 (Phase 88 625C): legal display words for the FIRST dot-segment of a stored key.
+   * Only the synthesised label changes — stored event types and entity literals are keys, never
+   * renamed.
+   */
+  private static final Map<String, String> LEGAL_HEADS =
+      Map.of(
+          "project", "Matter",
+          "customer", "Client",
+          "invoice", "Fee note",
+          "legal_disbursement", "Disbursement",
+          "project_member", "Matter team member",
+          "project_budget", "Matter budget");
+
   private final Map<String, AuditEventTypeMetadata> registry;
   private final List<AuditEventTypeMetadata> entriesList;
 
@@ -332,20 +346,6 @@ public class AuditEventTypeRegistry {
     }
     return entriesList.stream().filter(entry -> severities.contains(entry.severity())).toList();
   }
-
-  /**
-   * D12 / ADR-342 (Phase 88 625C): legal display words for the FIRST dot-segment of a stored key.
-   * Only the synthesised label changes — stored event types and entity literals are keys, never
-   * renamed.
-   */
-  private static final Map<String, String> LEGAL_HEADS =
-      Map.of(
-          "project", "Matter",
-          "customer", "Client",
-          "invoice", "Fee note",
-          "legal_disbursement", "Disbursement",
-          "project_member", "Matter team member",
-          "project_budget", "Matter budget");
 
   /** Synthesises the default metadata for an unregistered event type. */
   private static AuditEventTypeMetadata defaultFor(String eventType) {

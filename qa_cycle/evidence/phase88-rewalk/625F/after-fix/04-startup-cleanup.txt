@@ -1,0 +1,14 @@
+=== startup 3 (cleanup: /app/config removed, equal version) — restart at 2026-10-27T17:51:38Z
+2026-10-27T17:51:55.628990673Z INFO BackendApplication | Started BackendApplication in 15.349 seconds (process running for 15.747)
+2026-10-27T17:51:57.302700382Z INFO PackReconciliationRunner | Running pack reconciliation for 1 tenants
+2026-10-27T17:51:58.101902132Z INFO PackInstallService | Pack automation-common already installed (internal path), skipping
+2026-10-27T17:51:58.116261758Z INFO PackInstallService | Pack automation-legal-za already installed (internal path), skipping
+2026-10-27T17:51:58.177068133Z INFO PackReconciliationRunner | Pack reconciliation: checked 1 tenants, 1 succeeded, 0 failed
+--- counts
+Reconciling: 0
+Reconcile: 0
+ DEBUG : 0
+Re-pinned: 0
+reconciled to v: 0
+ ERROR : 0
+ WARN : 8

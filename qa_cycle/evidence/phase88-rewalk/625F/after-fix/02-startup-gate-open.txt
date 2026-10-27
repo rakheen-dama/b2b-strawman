@@ -1,0 +1,142 @@
+=== startup 2 (gate open) — docker restart e2e-backend at 2026-10-27T17:50:57Z, image sha256:7087002fca78a60745a47ba13c38c9064293e6f233545d0e1d3955784314a7ce
+--- observer fixture (gate rewind), run at 2026-10-27T17:50:53Z:
+UPDATE tenant_7d218705360b.pack_install SET pack_version='2' WHERE pack_id='automation-common';
+    (org_settings.automation_pack_status NOT touched: PackVersionGate.tryOpen reads only pack_install.pack_version — PackVersionGate.java:93-128; OrgSettings is re-recorded after a true return — PackInstallService.java:142-149)
+--- observer fixture (DEBUG): untracked file docker-cp'd to /app/config/application.properties (Spring Boot default ./config/ location; container cwd /app):
+logging.level.io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder=DEBUG
+--- key lines
+2026-10-27T17:51:11.907007750Z INFO BackendApplication | Started BackendApplication in 12.81 seconds (process running for 13.21)
+2026-10-27T17:51:12.119735458Z INFO PackReconciliationRunner | Running pack reconciliation for 1 tenants
+2026-10-27T17:51:12.383542333Z INFO PackVersionGate | Reconciling AUTOMATION_TEMPLATE pack automation-common v2 -> v3 for tenant tenant_7d218705360b
+2026-10-27T17:51:12.427779292Z DEBUG AutomationTemplateSeeder | Reconcile no-op: tenant=tenant_7d218705360b pack=automation-common automation_rule 'document-review-notification' field name already current
+2026-10-27T17:51:12.430036667Z DEBUG AutomationTemplateSeeder | Reconcile no-op: tenant=tenant_7d218705360b pack=automation-common automation_rule 'document-review-notification' field description already current
+2026-10-27T17:51:12.433698667Z DEBUG AutomationTemplateSeeder | Reconcile no-op: tenant=tenant_7d218705360b pack=automation-common automation_rule 'document-review-notification' field actions[0].actionConfig.title already current
+2026-10-27T17:51:12.436259083Z DEBUG AutomationTemplateSeeder | Reconcile no-op: tenant=tenant_7d218705360b pack=automation-common automation_rule 'document-review-notification' field actions[0].actionConfig.message already current
+2026-10-27T17:51:12.438096292Z DEBUG AutomationTemplateSeeder | Reconcile no-op: tenant=tenant_7d218705360b pack=automation-common automation_rule 'document-review-notification' field enabled already current
+2026-10-27T17:51:12.449278833Z INFO PackInstallService | Pack automation-common reconciled to v3 for tenant tenant_7d218705360b (internal path)
+2026-10-27T17:51:12.466206417Z INFO PackInstallService | Pack automation-legal-za already installed (internal path), skipping
+2026-10-27T17:51:12.508524208Z INFO PackReconciliationRunner | Pack reconciliation: checked 1 tenants, 1 succeeded, 0 failed
+--- counts
+Reconciling AUTOMATION_TEMPLATE pack automation-common v2 -> v3: 1
+Reconcile no-op: 5
+Reconcile applied: 0
+Reconcile skipped (no pack-seeded row): 0
+Reconcile skipped (edited): 0
+Reconcile entry ignored: 0
+share slug: 0
+more than one: 0
+Reconcile gate closed: 0
+Re-pinned: 0
+reconciled to v3: 1
+ ERROR : 0
+ WARN : 8
+--- WARN lines (logger only)
+   1 CglibAopProxy
+   1 PdfConversionService
+   6 PostProcessorRegistrationDelegate$BeanPostProcessorChecker
+--- full formatted log
+2026-10-27T17:50:57.691314091Z INFO JobWorker | JobWorker stopped
+2026-10-27T17:50:57.695562341Z INFO GracefulShutdown | Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-27T17:50:57.712172507Z INFO GracefulShutdown | Graceful shutdown complete
+2026-10-27T17:50:57.880551424Z INFO HikariDataSource | HikariPool-3 - Shutdown initiated...
+2026-10-27T17:50:57.884368757Z INFO HikariDataSource | HikariPool-3 - Shutdown completed.
+2026-10-27T17:50:57.912546674Z INFO LocalContainerEntityManagerFactoryBean | Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-10-27T17:50:57.922883882Z INFO HikariDataSource | HikariPool-2 - Shutdown initiated...
+2026-10-27T17:50:57.929208049Z INFO HikariDataSource | HikariPool-2 - Shutdown completed.
+2026-10-27T17:50:57.929644091Z INFO HikariDataSource | HikariPool-1 - Shutdown initiated...
+2026-10-27T17:50:57.944504924Z INFO HikariDataSource | HikariPool-1 - Shutdown completed.
+2026-10-27T17:50:59.478087716Z INFO BackendApplication | Starting BackendApplication v0.0.1-SNAPSHOT using Java 25.0.4.1 with PID 1 (/app/app.jar started by spring in /app)
+2026-10-27T17:50:59.485319716Z INFO BackendApplication | The following 1 profile is active: "e2e"
+2026-10-27T17:51:00.917543134Z INFO RepositoryConfigurationDelegate | Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-27T17:51:01.156609301Z INFO RepositoryConfigurationDelegate | Finished Spring Data repository scanning in 229 ms. Found 105 JPA repository interfaces.
+2026-10-27T17:51:01.574514759Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'capabilityAuthorizationManager' of type [io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationManager] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [projectingArgumentResolverBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-27T17:51:01.577809176Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'requiresCapabilityAdvisor' of type [org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [projectingArgumentResolverBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-27T17:51:01.603945843Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-27T17:51:01.605392634Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration$ServerMcpAnnotatedBeans] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-27T17:51:01.616861301Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration$StringOrNumberToMigrationVersionConverter] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-27T17:51:01.619777343Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-27T17:51:01.840940468Z INFO TomcatWebServer | Tomcat initialized with port 8080 (http)
+2026-10-27T17:51:01.854844343Z INFO StandardService | Starting service [Tomcat]
+2026-10-27T17:51:01.855288218Z INFO StandardEngine | Starting Servlet engine: [Apache Tomcat/11.0.15]
+2026-10-27T17:51:01.882448134Z INFO WebApplicationContextInitializer | Root WebApplicationContext: initialization completed in 2353 ms
+2026-10-27T17:51:02.218025634Z INFO HikariDataSource | HikariPool-1 - Starting...
+2026-10-27T17:51:02.330819093Z INFO HikariPool | HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@27b8eecb
+2026-10-27T17:51:02.332366801Z INFO HikariDataSource | HikariPool-1 - Start completed.
+2026-10-27T17:51:02.353089510Z INFO FlywayExecutor | Database: jdbc:postgresql://postgres:5432/app (PostgreSQL 16.14)
+2026-10-27T17:51:02.384809676Z INFO DbValidate | Successfully validated 2 migrations (execution time 00:00.015s)
+2026-10-27T17:51:02.407080176Z INFO DbMigrate | Current version of schema "public": 2
+2026-10-27T17:51:02.410153843Z INFO DbMigrate | Schema "public" is up to date. No migration necessary.
+2026-10-27T17:51:02.477150260Z INFO HikariDataSource | HikariPool-2 - Starting...
+2026-10-27T17:51:02.489339385Z INFO HikariPool | HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@5ff37957
+2026-10-27T17:51:02.489772135Z INFO HikariDataSource | HikariPool-2 - Start completed.
+2026-10-27T17:51:02.505542260Z INFO jpa | HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-10-27T17:51:02.540308260Z INFO core | HHH000001: Hibernate ORM core version 7.2.1.Final
+2026-10-27T17:51:02.822290801Z INFO SpringPersistenceUnitInfo | No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-27T17:51:02.897599426Z INFO pooling | HHH10001005: Database info:
+	Database JDBC URL [undefined/unknown]
+	Database driver: undefined/unknown
+	Database dialect: PostgreSQLDialect
+	Database version: 16.14
+	Default catalog/schema: unknown/unknown
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	JDBC fetch size: undefined/unknown
+	Pool: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-27T17:51:04.706830177Z INFO core | HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-27T17:51:04.711523636Z INFO batch | HHH100501: Automatic JDBC statement batching enabled (maximum batch size 25)
+2026-10-27T17:51:04.717656719Z INFO LocalContainerEntityManagerFactoryBean | Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-27T17:51:04.784677719Z INFO QueryEnhancerFactories | Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-27T17:51:06.757320137Z WARN CglibAopProxy | Unable to proxy interface-implementing method [public final void org.springframework.web.filter.GenericFilterBean.init(jakarta.servlet.FilterConfig) throws jakarta.servlet.ServletException] because it is marked as final, consider using interface-based JDK proxies instead.
+2026-10-27T17:51:06.837954428Z INFO VerticalProfileRegistry | Loaded vertical profile: legal-za
+2026-10-27T17:51:06.838168470Z INFO VerticalProfileRegistry | Loaded 1 vertical profile(s)
+2026-10-27T17:51:10.031973513Z INFO JobHandlerRegistry | Registered 18 job handler(s): [collections_scan, ai_gate_expiry, magic_link_cleanup, dormancy_check, automation_poll_delayed, automation_poll_triggers, request_reminder_check, portal_digest, subscription_grace_expiry, subscription_cancellation_end, subscription_trial_expiry, acceptance_expiry, field_date_scan, accounting_sync_drain, cash_digest, time_reminder_check, court_date_reminder, accounting_payment_poll]
+2026-10-27T17:51:10.169186972Z WARN PdfConversionService | LibreOffice not found — PDF conversion will fall back to docx4j
+2026-10-27T17:51:11.404441416Z INFO McpServerAutoConfiguration | Enable tools capabilities, notification: true
+2026-10-27T17:51:11.534868125Z INFO McpServerAutoConfiguration | Registered tools: 21
+2026-10-27T17:51:11.535147541Z INFO McpServerAutoConfiguration | Enable resources capabilities, notification: true
+2026-10-27T17:51:11.542091083Z INFO McpServerAutoConfiguration | Registered resources: 1
+2026-10-27T17:51:11.542383250Z INFO McpServerAutoConfiguration | Enable resources templates capabilities, notification: true
+2026-10-27T17:51:11.545634791Z INFO McpServerAutoConfiguration | Registered resource templates: 2
+2026-10-27T17:51:11.807665166Z INFO EndpointLinksResolver | Exposing 2 endpoints beneath base path '/actuator'
+2026-10-27T17:51:11.882722083Z INFO TomcatWebServer | Tomcat started on port 8080 (http) with context path '/'
+2026-10-27T17:51:11.889090916Z INFO JobWorker | JobWorker started — pollInterval=2000ms, batchSize=20, parallelism=5
+2026-10-27T17:51:11.907007750Z INFO BackendApplication | Started BackendApplication in 12.81 seconds (process running for 13.21)
+2026-10-27T17:51:12.040817875Z INFO TenantMigrationRunner | Running tenant migrations for 1 schemas
+2026-10-27T17:51:12.061917083Z INFO FlywayExecutor | Database: jdbc:postgresql://postgres:5432/app (PostgreSQL 16.14)
+2026-10-27T17:51:12.076851625Z INFO DbValidate | Successfully validated 6 migrations (execution time 00:00.008s)
+2026-10-27T17:51:12.084974Z INFO DefaultJobEnqueuer | fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T17:51:12.085810250Z INFO DbMigrate | Current version of schema "tenant_7d218705360b": 6
+2026-10-27T17:51:12.086599875Z INFO DbMigrate | Schema "tenant_7d218705360b" is up to date. No migration necessary.
+2026-10-27T17:51:12.088526375Z INFO TenantMigrationRunner | Migrated schema tenant_7d218705360b — 0 migrations applied
+2026-10-27T17:51:12.088817Z INFO TenantMigrationRunner | Tenant migration runner completed
+2026-10-27T17:51:12.101125917Z INFO HikariDataSource | HikariPool-3 - Starting...
+2026-10-27T17:51:12.102877500Z INFO DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T17:51:12.111897542Z INFO HikariPool | HikariPool-3 - Added connection org.postgresql.jdbc.PgConnection@7373f5ff
+2026-10-27T17:51:12.112412500Z INFO HikariDataSource | HikariPool-3 - Start completed.
+2026-10-27T17:51:12.115088417Z INFO PortalContactDirectoryBackfillRunner | Portal contact directory backfill: 0 tenants scanned, 1 skipped (already marked), 0 failed, 0 rows upserted
+2026-10-27T17:51:12.119735458Z INFO PackReconciliationRunner | Running pack reconciliation for 1 tenants
+2026-10-27T17:51:12.269513583Z INFO PackInstallService | Pack common already installed (internal path), skipping
+2026-10-27T17:51:12.278035667Z INFO PackInstallService | Pack compliance-za already installed (internal path), skipping
+2026-10-27T17:51:12.293266083Z INFO PackInstallService | Pack legal-za already installed (internal path), skipping
+2026-10-27T17:51:12.331253667Z INFO CompliancePackSeeder | Compliance pack generic-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T17:51:12.337041167Z INFO CompliancePackSeeder | Compliance pack legal-za-individual-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T17:51:12.339540333Z INFO CompliancePackSeeder | Compliance pack legal-za-trust-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T17:51:12.341490125Z INFO CompliancePackSeeder | Compliance pack sa-fica-company already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T17:51:12.343051292Z INFO CompliancePackSeeder | Compliance pack sa-fica-individual already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T17:51:12.383542333Z INFO PackVersionGate | Reconciling AUTOMATION_TEMPLATE pack automation-common v2 -> v3 for tenant tenant_7d218705360b
+2026-10-27T17:51:12.427779292Z DEBUG AutomationTemplateSeeder | Reconcile no-op: tenant=tenant_7d218705360b pack=automation-common automation_rule 'document-review-notification' field name already current
+2026-10-27T17:51:12.430036667Z DEBUG AutomationTemplateSeeder | Reconcile no-op: tenant=tenant_7d218705360b pack=automation-common automation_rule 'document-review-notification' field description already current
+2026-10-27T17:51:12.433698667Z DEBUG AutomationTemplateSeeder | Reconcile no-op: tenant=tenant_7d218705360b pack=automation-common automation_rule 'document-review-notification' field actions[0].actionConfig.title already current
+2026-10-27T17:51:12.436259083Z DEBUG AutomationTemplateSeeder | Reconcile no-op: tenant=tenant_7d218705360b pack=automation-common automation_rule 'document-review-notification' field actions[0].actionConfig.message already current
+2026-10-27T17:51:12.438096292Z DEBUG AutomationTemplateSeeder | Reconcile no-op: tenant=tenant_7d218705360b pack=automation-common automation_rule 'document-review-notification' field enabled already current
+2026-10-27T17:51:12.449278833Z INFO PackInstallService | Pack automation-common reconciled to v3 for tenant tenant_7d218705360b (internal path)
+2026-10-27T17:51:12.466206417Z INFO PackInstallService | Pack automation-legal-za already installed (internal path), skipping
+2026-10-27T17:51:12.476546708Z INFO ProjectTemplatePackSeeder | Project-template pack legal-za-project-templates already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T17:51:12.496065292Z INFO LegalTariffSeeder | Tariff schedule 'LSSA 2024/2025 High Court Party-and-Party' already exists for tenant tenant_7d218705360b, skipping
+2026-10-27T17:51:12.508524208Z INFO PackReconciliationRunner | Pack reconciliation: checked 1 tenants, 1 succeeded, 0 failed
+2026-10-27T17:51:12.545165333Z INFO LegacyContentImportRunner | Legacy content import complete: 0 templates, 0 clauses converted across 1 tenants
+2026-10-27T17:51:13.878935667Z INFO [/] | Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-27T17:51:13.879359209Z INFO DispatcherServlet | Initializing Servlet 'dispatcherServlet'
+2026-10-27T17:51:13.882290459Z INFO DispatcherServlet | Completed initialization in 3 ms

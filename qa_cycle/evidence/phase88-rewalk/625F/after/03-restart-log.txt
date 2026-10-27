@@ -1,0 +1,71 @@
+# 03 — idempotency: docker restart e2e-backend at 2026-10-27T17:41:05Z (same image sha256:5464477f45c7f2a3429dd9d9344f1a69dc20012861e786ba1b23a95839519287)
+
+## Pack lines (docker logs --since T1, formatted)
+2026-10-27T17:41:07.122412512Z INFO BackendApplication | Starting BackendApplication v0.0.1-SNAPSHOT using Java 25.0.4.1 with PID 1 (/app/app.jar started by spring in /app)
+2026-10-27T17:41:20.136722504Z INFO PackReconciliationRunner | Running pack reconciliation for 1 tenants
+2026-10-27T17:41:20.303700254Z INFO PackInstallService | Pack common already installed (internal path), skipping
+2026-10-27T17:41:20.312179629Z INFO PackInstallService | Pack compliance-za already installed (internal path), skipping
+2026-10-27T17:41:20.327420462Z INFO PackInstallService | Pack legal-za already installed (internal path), skipping
+2026-10-27T17:41:20.407572837Z INFO PackInstallService | Pack automation-common already installed (internal path), skipping
+2026-10-27T17:41:20.418025046Z INFO PackInstallService | Pack automation-legal-za already installed (internal path), skipping
+2026-10-27T17:41:20.461531837Z INFO PackReconciliationRunner | Pack reconciliation: checked 1 tenants, 1 succeeded, 0 failed
+
+## counts: 'Reconciling AUTOMATION_TEMPLATE'=0  'Reconciling '=0  'Reconcile applied'=0  'Re-pinned'=0  'reconciled to v'=0  forbidden(skipped|ignored|gate closed)=0  ERROR=0  WARN=8
+2026-10-27T17:41:09.238550596Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'capabilityAuthorizationManager' of type [io.b2mash.b2b.b2
+2026-10-27T17:41:09.242860138Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'requiresCapabilityAdvisor' of type [org.springframework.s
+2026-10-27T17:41:09.275820930Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'org.springframework.ai.mcp.server.common.autoconfigure.an
+2026-10-27T17:41:09.277170263Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'serverAnnotatedBeanRegistry' of type [org.springframework
+2026-10-27T17:41:09.295046513Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'stringOrNumberMigrationVersionConverter' of type [org.spr
+2026-10-27T17:41:09.298600805Z WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'spring.ai.mcp.server.annotation-scanner-org.springframewo
+2026-10-27T17:41:14.981187501Z WARN CglibAopProxy | Unable to proxy interface-implementing method [public final void org.springframework.web.filter.GenericFilte
+2026-10-27T17:41:18.446883420Z WARN PdfConversionService | LibreOffice not found — PDF conversion will fall back to docx4j
+
+## DB after restart
+=== captured 2026-10-27T17:41:33Z label=restart
+--- pack_install (AUTOMATION_TEMPLATE)
+automation-common | AUTOMATION_TEMPLATE | 3 | 6 | 71d882c5-3f35-4ab3-bc4a-d351bc7c13f2
+automation-legal-za | AUTOMATION_TEMPLATE | 2 | 4 | f85e6865-f329-468a-b16c-2add55d3d035
+--- rule document-review-notification
+19dc292f-6044-4001-97c1-b15844b15a78 | Document uploaded — notify matter lead | Notifies the matter lead when a document is uploaded | f | DOCUMENT_ACCEPTED | 00000000-0000-0000-0000-000000000000 | 71d882c5-3f35-4ab3-bc4a-d351bc7c13f2 | 594a06536dd7485b8204193fdaa94f97a3ab62f28b791e1550ac3feed41e232f | 2026-10-27 17:38:30.688883+00 | 
+--- action
+37e71985-8ad3-480d-b513-8711d5e6c0da | 0 | SEND_NOTIFICATION | {"title": "Document uploaded: {{document.name}}", "message": "{{document.name}} was uploaded to the matter.", "recipientType": "PROJECT_OWNER"}
+--- all pack-seeded rules (slug | name | enabled | hash | updated_at)
+budget-alert-escalation | Budget Alert Escalation | t | 78a6146e975968751cbdb0fbf944862b470fcb275a46238f2b709ed41361f62f | 2026-10-27 15:10:18.677084+00
+document-review-notification | Document uploaded — notify matter lead | f | 594a06536dd7485b8204193fdaa94f97a3ab62f28b791e1550ac3feed41e232f | 2026-10-27 17:38:30.688883+00
+investment-maturity-reminder | Investment Maturity Reminder | t | f290e7748b6d8208ce254b10fb78b05b4610035c8858275b70e616386f7a62dc | 2026-10-27 15:10:18.786502+00
+matter-onboarding-reminder | Matter Onboarding Reminder | t | 4eb72998f09e6d28c8432250b1499c2b81820a1312c3ac1ed4688f2b65e19ebb | 2026-10-27 15:10:18.78574+00
+new-project-welcome | Welcome Notification | t | 22658f59767638dfe8f0a66f42e4e0ba6c49384865aa4d38d2731717bfeb9eda | 2026-10-27 15:10:18.677343+00
+overdue-invoice-reminder | Overdue Invoice Reminder | t | 9f44118668b6bd06f2f190aaf431ad26e48f43a9bd1e9ee1caca3a1c494be3c7 | 2026-10-27 15:10:18.676552+00
+pending-approval-aging | Pending Approval Aging | t | cf079f4e2712a4808a19829b9b6bcb8be0948367e1fe791be169455fc30edc7f | 2026-10-27 15:10:18.787212+00
+reconciliation-overdue-reminder | Reconciliation Overdue Reminder | t | 744d476543ab84ee8ad196c403f31b3becaac456a11d56090d13c488dd5371c8 | 2026-10-27 15:10:18.78692+00
+request-complete-followup | Request Complete Follow-up | t | f1971a58db1e6d15a44454262e5465a33c090e792532706f67baa3b2a9b8d2cf | 2026-10-27 15:10:18.677832+00
+task-completion-chain | Task Completion Chain | f | d80b4d0244e91a9f5a230d4380915ae85723b4a5d79e26a2071fcbd087c70f4b | 2026-10-27 15:10:18.675019+00
+--- all rules count
+10
+--- org_settings.automation_pack_status
+[
+    {
+        "packId": "automation-legal-za",
+        "version": 2,
+        "appliedAt": "2026-10-27T15:10:18.817017338Z"
+    },
+    {
+        "packId": "automation-common",
+        "version": 3,
+        "appliedAt": "2026-10-27T17:38:30.703457634Z"
+    }
+]
+--- automation_executions for rule
+1
+--- AUTOMATION 'Document accepted/uploaded:' notifications
+1
+--- Alice unread notifications
+10
+
+## diff 02-post-db (DB section) vs after-restart (only the timestamp header line should differ)
+IDENTICAL except header
+
+## NOTE: Alice unread 9->10 is the DOCUMENT_SHARED notification from step 04, not the restart
+## uninstall-check after restart
+{"canUninstall":false,"blockingReason":"1 rule has been executed"}
+cmp vs pre: BYTE-IDENTICAL

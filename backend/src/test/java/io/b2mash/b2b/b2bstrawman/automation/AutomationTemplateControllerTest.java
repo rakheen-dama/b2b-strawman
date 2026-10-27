@@ -254,20 +254,23 @@ class AutomationTemplateControllerTest {
                                     && systemUserId.equals(r.getCreatedBy()))
                         .toList());
 
-    // LZKC-013: task-completion-chain declares defaultEnabled=false — it must seed disabled
-    List<AutomationRule> chainRules =
-        seededRules.stream()
-            .filter(r -> "task-completion-chain".equals(r.getTemplateSlug()))
-            .toList();
-    assertTrue(!chainRules.isEmpty(), "task-completion-chain should still be seeded");
-    assertTrue(
-        chainRules.stream().noneMatch(AutomationRule::isEnabled),
-        "task-completion-chain should seed disabled (defaultEnabled=false)");
+    // Templates that declare defaultEnabled=false must seed disabled:
+    //  - task-completion-chain (LZKC-013: doesn't fight the matter-closure Open-Tasks gate)
+    //  - document-review-notification (D4 / 625F: upload is not acceptance, firms opt in)
+    Set<String> disabledByDesign = Set.of("task-completion-chain", "document-review-notification");
+    for (String slug : disabledByDesign) {
+      List<AutomationRule> rules =
+          seededRules.stream().filter(r -> slug.equals(r.getTemplateSlug())).toList();
+      assertTrue(!rules.isEmpty(), slug + " should still be seeded");
+      assertTrue(
+          rules.stream().noneMatch(AutomationRule::isEnabled),
+          slug + " should seed disabled (defaultEnabled=false)");
+    }
 
     // All other seeded rules keep the current behaviour: enabled out of the box
     boolean othersEnabled =
         seededRules.stream()
-            .filter(r -> !"task-completion-chain".equals(r.getTemplateSlug()))
+            .filter(r -> !disabledByDesign.contains(r.getTemplateSlug()))
             .allMatch(AutomationRule::isEnabled);
     assertTrue(othersEnabled, "All other seeded template rules should remain enabled");
   }

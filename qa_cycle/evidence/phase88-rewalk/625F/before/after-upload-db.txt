@@ -1,0 +1,40 @@
+# 625F BEFORE — post-upload DB evidence (captured 2026-10-27T17:10:12Z)
+# Upload: Carol Member (member) uploaded 625F-repro-upload.pdf via browser to matter 'Ndlovu v RAF op0p' (02496c55-...; lead = Alice Owner, Carol = member)
+## documents (new row)
+                  id                  |       file_name       |  status  |  scope  | visibility |              project_id              |             uploaded_by              |          created_at           
+--------------------------------------+-----------------------+----------+---------+------------+--------------------------------------+--------------------------------------+-------------------------------
+ 82f0d000-8944-46b8-8531-ea0ebc65d398 | 625F-repro-upload.pdf | UPLOADED | PROJECT | INTERNAL   | 02496c55-b778-4da3-8902-f1b779aab555 | 9756676c-b993-4940-9dad-8c5fc5f8a8a4 | 2026-10-27 17:09:00.383277+00
+(1 row)
+
+## automation_executions created by the upload
+                  id                  |          rule_name           |               rule_id                |  trigger_event_type   |                                                                                                                                          trigger_event_data                                                                                                                                           | conditions_met |      status       |          started_at          |         completed_at          | error_message 
+--------------------------------------+------------------------------+--------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+-------------------+------------------------------+-------------------------------+---------------
+ 6742c4fd-609b-4fbb-b2fe-bd9f7631ac7c | Document Review Notification | 19dc292f-6044-4001-97c1-b15844b15a78 | DocumentUploadedEvent | {"details": {"file_name": "625F-repro-upload.pdf"}, "entityId": "82f0d000-8944-46b8-8531-ea0ebc65d398", "actorName": "Carol Member", "eventType": "document.uploaded", "projectId": "02496c55-b778-4da3-8902-f1b779aab555", "entityType": "document", "occurredAt": "2026-10-27T17:09:00.449793926Z"} | t              | ACTIONS_COMPLETED | 2026-10-27 17:09:00.45491+00 | 2026-10-27 17:09:00.469636+00 | 
+(1 row)
+
+## action_executions
+                  id                  |             execution_id             |              action_id               |  status   | scheduled_for |          executed_at          |       result_data        | error_message | error_detail |          created_at           |          updated_at          
+--------------------------------------+--------------------------------------+--------------------------------------+-----------+---------------+-------------------------------+--------------------------+---------------+--------------+-------------------------------+------------------------------
+ bb5c5fa6-3340-46f6-914e-e9bf71696b39 | 6742c4fd-609b-4fbb-b2fe-bd9f7631ac7c | 37e71985-8ad3-480d-b513-8711d5e6c0da | COMPLETED |               | 2026-10-27 17:09:00.469429+00 | {"notificationsSent": 1} |               |              | 2026-10-27 17:09:00.458405+00 | 2026-10-27 17:09:00.46943+00
+(1 row)
+
+## notifications created by the upload
+                  id                  |  recipient  |         recipient_member_id          |      type       |                     title                     |                           body                            | reference_entity_type |         reference_entity_id          |         reference_project_id         | is_read |          created_at           
+--------------------------------------+-------------+--------------------------------------+-----------------+-----------------------------------------------+-----------------------------------------------------------+-----------------------+--------------------------------------+--------------------------------------+---------+-------------------------------
+ 36e1e393-c2ae-43e8-9815-c399d6d221a5 | Alice Owner | bf835b97-1987-42ab-9a57-ba8d7ca4fc0d | AUTOMATION      | Document accepted: 625F-repro-upload.pdf      | A document has been accepted in project {{project.name}}. | AutomationRule        | 02496c55-b778-4da3-8902-f1b779aab555 | 02496c55-b778-4da3-8902-f1b779aab555 | f       | 2026-10-27 17:09:00.465789+00
+ 77a15082-4970-4af6-85bd-bf236e1c7e71 | Alice Owner | bf835b97-1987-42ab-9a57-ba8d7ca4fc0d | DOCUMENT_SHARED | Carol Member uploaded "625F-repro-upload.pdf" |                                                           | DOCUMENT              | 82f0d000-8944-46b8-8531-ea0ebc65d398 | 02496c55-b778-4da3-8902-f1b779aab555 | f       | 2026-10-27 17:09:00.483725+00
+(2 rows)
+
+## rule last_run_at after firing
+             name             | enabled | last_run_at 
+------------------------------+---------+-------------
+ Document Review Notification | t       | 
+(1 row)
+
+## counts after
+ execs | notifs | docs 
+-------+--------+------
+     5 |     22 |    8
+(1 row)
+
+## Mailpit total after: 22 (unchanged from 22 -> no email for either notification)

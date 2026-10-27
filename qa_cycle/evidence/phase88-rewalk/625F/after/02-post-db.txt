@@ -1,0 +1,51 @@
+=== captured 2026-10-27T17:39:10Z label=post
+--- pack_install (AUTOMATION_TEMPLATE)
+automation-common | AUTOMATION_TEMPLATE | 3 | 6 | 71d882c5-3f35-4ab3-bc4a-d351bc7c13f2
+automation-legal-za | AUTOMATION_TEMPLATE | 2 | 4 | f85e6865-f329-468a-b16c-2add55d3d035
+--- rule document-review-notification
+19dc292f-6044-4001-97c1-b15844b15a78 | Document uploaded — notify matter lead | Notifies the matter lead when a document is uploaded | f | DOCUMENT_ACCEPTED | 00000000-0000-0000-0000-000000000000 | 71d882c5-3f35-4ab3-bc4a-d351bc7c13f2 | 594a06536dd7485b8204193fdaa94f97a3ab62f28b791e1550ac3feed41e232f | 2026-10-27 17:38:30.688883+00 | 
+--- action
+37e71985-8ad3-480d-b513-8711d5e6c0da | 0 | SEND_NOTIFICATION | {"title": "Document uploaded: {{document.name}}", "message": "{{document.name}} was uploaded to the matter.", "recipientType": "PROJECT_OWNER"}
+--- all pack-seeded rules (slug | name | enabled | hash | updated_at)
+budget-alert-escalation | Budget Alert Escalation | t | 78a6146e975968751cbdb0fbf944862b470fcb275a46238f2b709ed41361f62f | 2026-10-27 15:10:18.677084+00
+document-review-notification | Document uploaded — notify matter lead | f | 594a06536dd7485b8204193fdaa94f97a3ab62f28b791e1550ac3feed41e232f | 2026-10-27 17:38:30.688883+00
+investment-maturity-reminder | Investment Maturity Reminder | t | f290e7748b6d8208ce254b10fb78b05b4610035c8858275b70e616386f7a62dc | 2026-10-27 15:10:18.786502+00
+matter-onboarding-reminder | Matter Onboarding Reminder | t | 4eb72998f09e6d28c8432250b1499c2b81820a1312c3ac1ed4688f2b65e19ebb | 2026-10-27 15:10:18.78574+00
+new-project-welcome | Welcome Notification | t | 22658f59767638dfe8f0a66f42e4e0ba6c49384865aa4d38d2731717bfeb9eda | 2026-10-27 15:10:18.677343+00
+overdue-invoice-reminder | Overdue Invoice Reminder | t | 9f44118668b6bd06f2f190aaf431ad26e48f43a9bd1e9ee1caca3a1c494be3c7 | 2026-10-27 15:10:18.676552+00
+pending-approval-aging | Pending Approval Aging | t | cf079f4e2712a4808a19829b9b6bcb8be0948367e1fe791be169455fc30edc7f | 2026-10-27 15:10:18.787212+00
+reconciliation-overdue-reminder | Reconciliation Overdue Reminder | t | 744d476543ab84ee8ad196c403f31b3becaac456a11d56090d13c488dd5371c8 | 2026-10-27 15:10:18.78692+00
+request-complete-followup | Request Complete Follow-up | t | f1971a58db1e6d15a44454262e5465a33c090e792532706f67baa3b2a9b8d2cf | 2026-10-27 15:10:18.677832+00
+task-completion-chain | Task Completion Chain | f | d80b4d0244e91a9f5a230d4380915ae85723b4a5d79e26a2071fcbd087c70f4b | 2026-10-27 15:10:18.675019+00
+--- all rules count
+10
+--- org_settings.automation_pack_status
+[
+    {
+        "packId": "automation-legal-za",
+        "version": 2,
+        "appliedAt": "2026-10-27T15:10:18.817017338Z"
+    },
+    {
+        "packId": "automation-common",
+        "version": 3,
+        "appliedAt": "2026-10-27T17:38:30.703457634Z"
+    }
+]
+--- automation_executions for rule
+1
+--- AUTOMATION 'Document accepted/uploaded:' notifications
+1
+--- Alice unread notifications
+9
+
+--- uninstall-check
+{"canUninstall":false,"blockingReason":"1 rule has been executed"}
+--- cmp pre vs post uninstall-check: BYTE-IDENTICAL
+--- /api/automation-rules (doc-review rule)
+Document uploaded — notify matter lead False DOCUMENT_ACCEPTED
+--- diff of pack-seeded rules block (pre vs post)
+3c3
+< document-review-notification | Document Review Notification | t | bfbe0ab9d5ea2957ad81657e082286ab593cca2e4f612294cc73d30f893b4b29 | 2026-10-27 15:10:18.677568+00
+---
+> document-review-notification | Document uploaded — notify matter lead | f | 594a06536dd7485b8204193fdaa94f97a3ab62f28b791e1550ac3feed41e232f | 2026-10-27 17:38:30.688883+00

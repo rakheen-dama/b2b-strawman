@@ -55,6 +55,34 @@ public class PackVersionGate {
   }
 
   /**
+   * The single gate entry for seeder-managed types (CLAUSE, FIELD, REPORT, REQUEST) on an
+   * already-applied pack: backfills the ledger row at {@code appliedVersion} when it is missing (OQ
+   * #14 — tenants seeded before 625E; the version the tenant actually applied, never the classpath
+   * version), then {@link #tryOpen}s the gate against {@code classpathVersion}.
+   *
+   * @param appliedVersion the OrgSettings-recorded version, or {@code null} when none is recorded
+   *     (no backfill; the gate then closes with a WARN if no row exists)
+   * @return true if the caller must reconcile now (same transaction)
+   */
+  public boolean backfillAndTryOpen(
+      PackType type,
+      String packId,
+      String appliedVersion,
+      String classpathVersion,
+      String packName,
+      String tenantId) {
+    if (appliedVersion != null && recordIfAbsent(type, packId, appliedVersion, packName)) {
+      log.info(
+          "Backfilled pack_install row for {} pack {} at v{} for tenant {}",
+          type,
+          packId,
+          appliedVersion,
+          tenantId);
+    }
+    return tryOpen(type, packId, classpathVersion, tenantId);
+  }
+
+  /**
    * Opens the gate when the recorded version is numerically lower than {@code classpathVersion} and
    * this transaction claimed the advance (compare-and-set to the classpath version). The caller
    * then runs the reconcile hook in the same transaction.

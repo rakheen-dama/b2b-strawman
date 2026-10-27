@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
 import io.b2mash.b2b.b2bstrawman.seeder.PackReconcileEntry;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.settings.PackStatusSettings;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -82,21 +83,18 @@ public class StandardReportPackSeeder {
   }
 
   private void reconcileAppliedPack(OrgSettings settings, String tenantId) {
-    // OQ #14 backfill: pre-625E tenants have no ledger row — record the version they applied.
-    settings
-        .getPackStatus()
-        .appliedVersion(PackType.REPORT, PACK_ID)
-        .ifPresent(
-            version -> {
-              if (packVersionGate.recordIfAbsent(PackType.REPORT, PACK_ID, version, PACK_ID)) {
-                log.info(
-                    "Backfilled pack_install row for REPORT pack {} at v{} for tenant {}",
-                    PACK_ID,
-                    version,
-                    tenantId);
-              }
-            });
-    if (packVersionGate.tryOpen(PackType.REPORT, PACK_ID, String.valueOf(PACK_VERSION), tenantId)) {
+    // OQ #14 backfill (pre-625E tenants record the version they applied) + version gate.
+    String appliedVersion =
+        PackStatusSettings.highestAppliedVersion(
+                settings.getPackStatus().getReportPackStatus(), PACK_ID)
+            .orElse(null);
+    if (packVersionGate.backfillAndTryOpen(
+        PackType.REPORT,
+        PACK_ID,
+        appliedVersion,
+        String.valueOf(PACK_VERSION),
+        PACK_ID,
+        tenantId)) {
       reconcileExistingPack(tenantId);
     }
   }

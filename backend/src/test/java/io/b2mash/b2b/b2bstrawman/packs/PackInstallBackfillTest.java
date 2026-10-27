@@ -203,19 +203,26 @@ class PackInstallBackfillTest {
   void backfillRecreatesMissingRowsAtAppliedVersionAndIsIdempotent() {
     // Simulate a tenant provisioned before 625E: the packs are applied (OrgSettings lists) but
     // there is no pack_install ledger row for the seeder-managed types.
-    deleteLegalLedgerRows(null);
-    assertThat(legalLedger()).isEmpty();
+    try {
+      deleteLegalLedgerRows(null);
+      assertThat(legalLedger()).isEmpty();
 
-    runLegalSeeders();
-    assertThat(legalLedger())
-        .as("backfilled at the OrgSettings-recorded versions")
-        .isEqualTo(EXPECTED_LEGAL_ZA_LEDGER);
-    Map<String, UUID> firstIds = legalLedgerIds();
-    assertThat(firstIds).hasSize(12);
+      runLegalSeeders();
+      assertThat(legalLedger())
+          .as("backfilled at the OrgSettings-recorded versions")
+          .isEqualTo(EXPECTED_LEGAL_ZA_LEDGER);
+      Map<String, UUID> firstIds = legalLedgerIds();
+      assertThat(firstIds).hasSize(12);
 
-    runLegalSeeders();
-    assertThat(legalLedger()).as("second pass changes nothing").isEqualTo(EXPECTED_LEGAL_ZA_LEDGER);
-    assertThat(legalLedgerIds()).as("second pass creates no rows").isEqualTo(firstIds);
+      runLegalSeeders();
+      assertThat(legalLedger())
+          .as("second pass changes nothing")
+          .isEqualTo(EXPECTED_LEGAL_ZA_LEDGER);
+      assertThat(legalLedgerIds()).as("second pass creates no rows").isEqualTo(firstIds);
+    } finally {
+      // Restore the shared legal tenant's ledger even when an assertion above fails (idempotent).
+      runLegalSeeders();
+    }
   }
 
   @Test

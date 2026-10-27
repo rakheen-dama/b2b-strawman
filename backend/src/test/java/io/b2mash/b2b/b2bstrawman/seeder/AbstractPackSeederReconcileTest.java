@@ -339,6 +339,19 @@ class AbstractPackSeederReconcileTest {
     }
 
     @Test
+    void nonFiniteCurrentValue_neverMatches_neverThrows() {
+      var nan = new CountingTarget(Double.NaN);
+      var inf = new CountingTarget(Float.POSITIVE_INFINITY);
+      var e = entry("k", "sortOrder", 1, 2);
+
+      assertThat(e.applyTo(nan)).isEqualTo(PackReconcileEntry.Outcome.LEFT_ALONE);
+      assertThat(e.applyTo(inf)).isEqualTo(PackReconcileEntry.Outcome.LEFT_ALONE);
+      assertThat(nan.writes).isZero();
+      assertThat(inf.writes).isZero();
+      assertThat(PackReconcileEntry.matches(Double.NaN, Double.NaN)).isFalse();
+    }
+
+    @Test
     void hashFromMatchesPristineBody_isApplied() {
       var t = new CountingTarget(OLD_BODY);
       var e =
@@ -448,6 +461,29 @@ class AbstractPackSeederReconcileTest {
     }
 
     @Test
+    void nonFiniteNumbers_areRejectedNamingPackAndIndex() {
+      assertThatThrownBy(
+              () ->
+                  PackReconcileEntry.parse(
+                      PACK, List.of(new PackReconcileEntry("e", "k", "f", Double.NaN, 1))))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining(PACK)
+          .hasMessageContaining("reconcile[0]")
+          .hasMessageContaining("'from'")
+          .hasMessageContaining("finite");
+      var ok = entry("k", "name", "a", "b");
+      assertThatThrownBy(
+              () ->
+                  PackReconcileEntry.parse(
+                      PACK,
+                      List.of(
+                          ok, new PackReconcileEntry("e", "k", "f", 1, Float.NEGATIVE_INFINITY))))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("reconcile[1]")
+          .hasMessageContaining("'to'");
+    }
+
+    @Test
     void malformedHash_isRejected() {
       assertThatThrownBy(
               () ->
@@ -531,7 +567,7 @@ class AbstractPackSeederReconcileTest {
     @Test
     void gateClosed_hookNotCalled() {
       markApplied(1);
-      when(gate.tryOpen(PackType.FIELD, PACK, "2", TENANT)).thenReturn(false);
+      when(gate.backfillAndTryOpen(PackType.FIELD, PACK, "1", "2", PACK, TENANT)).thenReturn(false);
 
       seeder.seedPacksForTenant(TENANT, ORG);
 
@@ -543,7 +579,7 @@ class AbstractPackSeederReconcileTest {
     @Test
     void gateOpen_hookCalledOnce_entriesAppliedUnderOneRule() {
       markApplied(1);
-      when(gate.tryOpen(PackType.FIELD, PACK, "2", TENANT)).thenReturn(true);
+      when(gate.backfillAndTryOpen(PackType.FIELD, PACK, "1", "2", PACK, TENANT)).thenReturn(true);
 
       seeder.seedPacksForTenant(TENANT, ORG);
 
@@ -561,8 +597,9 @@ class AbstractPackSeederReconcileTest {
 
       seeder.seedPacksForTenant(TENANT, ORG);
 
-      verify(gate).recordIfAbsent(PackType.FIELD, PACK, "1", PACK);
-      verify(gate, never()).recordIfAbsent(PackType.FIELD, PACK, "2", PACK);
+      verify(gate).backfillAndTryOpen(PackType.FIELD, PACK, "1", "2", PACK, TENANT);
+      verify(gate, never()).backfillAndTryOpen(PackType.FIELD, PACK, "2", "2", PACK, TENANT);
+      verify(gate, never()).recordIfAbsent(any(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -571,7 +608,7 @@ class AbstractPackSeederReconcileTest {
 
       seeder.seedPacksForTenant(TENANT, ORG);
 
-      verify(gate).recordIfAbsent(PackType.FIELD, PACK, "2", PACK);
+      verify(gate).backfillAndTryOpen(PackType.FIELD, PACK, "2", "2", PACK, TENANT);
     }
 
     @Test
@@ -580,7 +617,8 @@ class AbstractPackSeederReconcileTest {
 
       assertThat(seeder.applyCalls).isEqualTo(1);
       verify(gate).recordIfAbsent(PackType.FIELD, PACK, "2", PACK);
-      verify(gate, never()).tryOpen(any(), anyString(), anyString(), anyString());
+      verify(gate, never())
+          .backfillAndTryOpen(any(), anyString(), any(), anyString(), anyString(), anyString());
       assertThat(seeder.hookCalls).isZero();
     }
 
@@ -725,6 +763,44 @@ class AbstractPackSeederReconcileTest {
       assertThatThrownBy(() -> gate.recordIfAbsent(PackType.AUTOMATION_TEMPLATE, "p", "1", "p"))
           .isInstanceOf(IllegalArgumentException.class);
       verifyNoInteractions(repository);
+    }
+
+    @Test
+    void backfillAndTryOpen_missingRow_backfillsAtAppliedVersionLogsThenOpens() {
+      when(repository.insertIfAbsent("p", "FIELD", "1", "p")).thenReturn(1);
+      row(PackType.FIELD, "1");
+      when(repository.compareAndSetVersion("p", "1", "2")).thenReturn(1);
+
+      assertThat(gate.backfillAndTryOpen(PackType.FIELD, "p", "1", "2", "p", TENANT)).isTrue();
+      verify(repository).insertIfAbsent("p", "FIELD", "1", "p");
+      assertThat(
+              appender.list.stream()
+                  .map(ILoggingEvent::getFormattedMessage)
+                  .anyMatch(
+                      ("Backfilled pack_install row for FIELD pack p at v1 for tenant " + TENANT)
+                          ::equals))
+          .as("backfill INFO line text is unchanged")
+          .isTrue();
+    }
+
+    @Test
+    void backfillAndTryOpen_existingRow_noBackfillLog_gateStillConsulted() {
+      when(repository.insertIfAbsent("p", "REPORT", "2", "p")).thenReturn(0);
+      row(PackType.REPORT, "2");
+
+      assertThat(gate.backfillAndTryOpen(PackType.REPORT, "p", "2", "2", "p", TENANT)).isFalse();
+      assertThat(logged(Level.INFO, "Backfilled")).isFalse();
+      verify(repository).findByPackId("p");
+    }
+
+    @Test
+    void backfillAndTryOpen_noAppliedVersion_skipsBackfill_gateClosesOnMissingRow() {
+      when(repository.findByPackId("p")).thenReturn(Optional.empty());
+
+      assertThat(gate.backfillAndTryOpen(PackType.CLAUSE, "p", null, "2", "p", TENANT)).isFalse();
+      verify(repository, never())
+          .insertIfAbsent(anyString(), anyString(), anyString(), anyString());
+      assertThat(logged(Level.WARN, "no pack_install row", "p", TENANT)).isTrue();
     }
 
     @Test

@@ -34,11 +34,25 @@ public record PackReconcileEntry(String entity, String key, String field, Object
   private static final Pattern HEX64 = Pattern.compile("[0-9a-f]{64}");
 
   /**
-   * The targeted row's current field value and how to write it. Resolved per entity by a seeder.
+   * The targeted row's current field value and how to write it. Resolved per entity by a seeder
+   * ({@link AbstractPackSeeder#resolveReconcileTarget}).
+   *
+   * <p><b>{@code sha256:} contract (Tiptap bodies, 626D).</b> When {@code to} is a {@code
+   * sha256:<hex>} value, {@link #currentValue()} must return the body JSON (the one rule hashes it
+   * with {@link ContentHashUtil#hashOf}), and {@link #apply(Object)} receives that hash
+   * <em>string</em>, not a body: the target must ignore the argument, load the new body from the
+   * pack {@code Resource} passed to {@code resolveReconcileTarget}, write it, and re-pin any stored
+   * install-time hash of the row ({@code document_template.content_hash}, recomputed the way its
+   * {@code PackInstaller} computes it — not the body-only {@code sha256:}) so the row still reads
+   * as unedited afterwards.
    */
   public interface Target {
     Object currentValue();
 
+    /**
+     * Writes the new value. For a {@code sha256:} {@code to} the argument is the hash string — see
+     * the interface Javadoc.
+     */
     void apply(Object to);
   }
 
@@ -80,6 +94,8 @@ public record PackReconcileEntry(String entity, String key, String field, Object
       }
       checkHash(where, "from", e.from());
       checkHash(where, "to", e.to());
+      checkFinite(where, "from", e.from());
+      checkFinite(where, "to", e.to());
     }
     return List.copyOf(raw);
   }
@@ -150,7 +166,10 @@ public record PackReconcileEntry(String entity, String key, String field, Object
       return expected == current;
     }
     if (expected instanceof Number a && current instanceof Number b) {
-      return new BigDecimal(a.toString()).compareTo(new BigDecimal(b.toString())) == 0;
+      // Non-finite (NaN/Infinity) or unparseable numbers never match — never throw at boot.
+      BigDecimal x = toDecimal(a);
+      BigDecimal y = toDecimal(b);
+      return x != null && y != null && x.compareTo(y) == 0;
     }
     // String/String, Boolean/Boolean; mismatched types never match (type-strict)
     return expected.equals(current);
@@ -161,6 +180,32 @@ public record PackReconcileEntry(String entity, String key, String field, Object
         && s.startsWith(HASH_PREFIX)
         && !HEX64.matcher(s.substring(HASH_PREFIX.length())).matches()) {
       throw new IllegalStateException(where + ": '" + name + "' is not sha256:<64 lower-case hex>");
+    }
+  }
+
+  /** Exact decimal value, or {@code null} for NaN/Infinity or an unparseable {@link Number}. */
+  private static BigDecimal toDecimal(Number n) {
+    if (!isFinite(n)) {
+      return null;
+    }
+    try {
+      return new BigDecimal(n.toString());
+    } catch (NumberFormatException e) {
+      return null;
+    }
+  }
+
+  private static boolean isFinite(Number n) {
+    return switch (n) {
+      case Double d -> Double.isFinite(d);
+      case Float f -> Float.isFinite(f);
+      default -> true;
+    };
+  }
+
+  private static void checkFinite(String where, String name, Object value) {
+    if (value instanceof Number n && !isFinite(n)) {
+      throw new IllegalStateException(where + ": '" + name + "' must be a finite number");
     }
   }
 

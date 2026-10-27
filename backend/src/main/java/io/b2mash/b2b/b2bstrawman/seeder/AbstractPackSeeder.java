@@ -5,9 +5,11 @@ import io.b2mash.b2b.b2bstrawman.packs.PackType;
 import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.settings.PackStatusSettings;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +35,9 @@ import tools.jackson.databind.ObjectMapper;
  * it reach existing tenants only through its {@code reconcile} block ({@link PackReconcileEntry},
  * the one rule). For seeders with a seeder-managed {@link #getPackType()} (CLAUSE, FIELD, REPORT,
  * REQUEST) the hook {@link #reconcileExistingPack} runs only when the {@code pack_install} version
- * gate opens ({@link PackVersionGate#tryOpen}: recorded version lower than the classpath version);
- * this base class writes those ledger rows on apply and backfills them for pre-625E tenants from
- * the OrgSettings pack-status lists. Installer-managed types (DOCUMENT_TEMPLATE,
+ * gate opens ({@link PackVersionGate#backfillAndTryOpen}: recorded version lower than the classpath
+ * version); this base class writes those ledger rows on apply and backfills them for pre-625E
+ * tenants from the OrgSettings pack-status lists. Installer-managed types (DOCUMENT_TEMPLATE,
  * AUTOMATION_TEMPLATE) are gated by their {@code PackInstaller.reconcile}, which calls {@link
  * #reconcileInstalledPack}. Untyped seeders ({@code getPackType() == null}) keep the legacy ungated
  * hook call on every pass.
@@ -123,6 +125,12 @@ public abstract class AbstractPackSeeder<D> {
    * Extension point (625F / 626D / 628C): the pack-seeded row an entry targets. MUST NOT return
    * clones or tenant-authored rows. Empty → the entry is skipped and logged. Default: no entity is
    * supported.
+   *
+   * <p>For a {@code sha256:} {@code to} (Tiptap body), the returned {@link
+   * PackReconcileEntry.Target#apply} receives the hash <em>string</em>: it must ignore it, load the
+   * new body from {@code packResource}, write it, and re-pin the row's stored install-time hash
+   * ({@code document_template.content_hash}, as its {@code PackInstaller} computes it). {@code
+   * currentValue()} returns the body JSON.
    *
    * @param pack the current pack definition from the classpath
    * @param entry the reconcile entry
@@ -263,25 +271,28 @@ public abstract class AbstractPackSeeder<D> {
           tenantId);
       return;
     }
-    // OQ #14 backfill: tenants seeded before 625E have no ledger row — record the version the
-    // tenant actually applied (OrgSettings), never the classpath version.
-    settings
-        .getPackStatus()
-        .appliedVersion(type, packId)
-        .ifPresent(
-            version -> {
-              if (packVersionGate.recordIfAbsent(type, packId, version, getPackName(pack))) {
-                log.info(
-                    "Backfilled pack_install row for {} pack {} at v{} for tenant {}",
-                    type,
-                    packId,
-                    version,
-                    tenantId);
-              }
-            });
-    if (packVersionGate.tryOpen(type, packId, getPackVersion(pack), tenantId)) {
+    // OQ #14 backfill (tenants seeded before 625E) + version gate: one entry point.
+    String appliedVersion = appliedVersion(settings, type, packId).orElse(null);
+    if (packVersionGate.backfillAndTryOpen(
+        type, packId, appliedVersion, getPackVersion(pack), getPackName(pack), tenantId)) {
       reconcileExistingPack(pack, loaded.resource(), tenantId);
     }
+  }
+
+  /** The OrgSettings pack-status list that backs {@code type} — the ADR-356 backfill source. */
+  private static Optional<String> appliedVersion(
+      OrgSettings settings, PackType type, String packId) {
+    var status = settings.getPackStatus();
+    List<Map<String, Object>> entries =
+        switch (type) {
+          case DOCUMENT_TEMPLATE -> status.getTemplatePackStatus();
+          case AUTOMATION_TEMPLATE -> status.getAutomationPackStatus();
+          case CLAUSE -> status.getClausePackStatus();
+          case FIELD -> status.getFieldPackStatus();
+          case REPORT -> status.getReportPackStatus();
+          case REQUEST -> status.getRequestPackStatus();
+        };
+    return PackStatusSettings.highestAppliedVersion(entries, packId);
   }
 
   protected List<LoadedPack<D>> loadPacks() {

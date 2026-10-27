@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.settings;
 
-import io.b2mash.b2b.b2bstrawman.packs.PackType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.time.Instant;
@@ -231,28 +230,20 @@ public class PackStatusSettings {
   // --- ADR-356 pack_install backfill source ---
 
   /**
-   * Version recorded for {@code packId} in the status list that backs {@code type} — the ADR-356
-   * backfill source for {@code pack_install} ledger rows (OQ #14). The field, clause, report and
-   * request lists append without de-duplication, so the highest integer version wins; a non-integer
-   * value is returned verbatim only when no integer entry exists (the version gate then closes with
-   * a WARN).
+   * Version recorded for {@code packId} in a pack-status list ({@code entries} may be null) — the
+   * ADR-356 backfill source for {@code pack_install} ledger rows (OQ #14). The field, clause,
+   * report and request lists append without de-duplication, so the highest integer version wins; a
+   * non-integer value is returned verbatim only when no integer entry exists (the version gate then
+   * closes with a WARN).
    */
-  public Optional<String> appliedVersion(PackType type, String packId) {
-    List<Map<String, Object>> list =
-        switch (type) {
-          case DOCUMENT_TEMPLATE -> templatePackStatus;
-          case AUTOMATION_TEMPLATE -> automationPackStatus;
-          case CLAUSE -> clausePackStatus;
-          case FIELD -> fieldPackStatus;
-          case REPORT -> reportPackStatus;
-          case REQUEST -> requestPackStatus;
-        };
-    if (list == null) {
+  public static Optional<String> highestAppliedVersion(
+      List<Map<String, Object>> entries, String packId) {
+    if (entries == null) {
       return Optional.empty();
     }
     String best = null;
     Integer bestInt = null;
-    for (var entry : list) {
+    for (var entry : entries) {
       if (!packId.equals(entry.get("packId")) || entry.get("version") == null) {
         continue;
       }

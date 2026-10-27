@@ -183,6 +183,8 @@ public class TemplatePackInstaller implements PackInstaller {
     TemplatePackDefinition pack = loadedPack.definition();
 
     String installedVersion = install.getPackVersion();
+    // Shared parse definition: PackVersionGate.parseVersion. The gate stays inline here because
+    // advancePackVersion also writes item_count.
     OptionalInt installed = PackVersionGate.parseVersion(installedVersion);
     if (installed.isEmpty()) {
       log.warn(

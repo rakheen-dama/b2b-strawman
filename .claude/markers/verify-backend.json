@@ -1,7 +1,7 @@
 {
-  "commit": "46e4db8455f80450f5e294b71dd1fc8bcf3f4889",
-  "command": "cd backend && caffeinate -is ./mvnw clean verify -q (worktree-epic-625B; verify.sh preflight skipped: it would kill the svc.sh spring-boot:run KC backend)",
+  "commit": "8bf8f0139132b50ac33b3a5f9a9093f5049c01ee",
+  "command": "cd backend && caffeinate -is ./mvnw clean verify -q (worktree-epic-625C; verify.sh preflight skipped: it would kill the svc.sh spring-boot:run KC backend)",
   "exit": 0,
-  "ts": "2026-10-27T12:47:36Z",
-  "summary": "Slice 625B BE-VERIFY on PR #1680 head 46e4db845: 721 surefire reports / 5914 testcases / 0 failing report files / 26 skipped (baseline 5759 + 155 new), exit 0"
+  "ts": "2026-10-27T14:25:00Z",
+  "summary": "Slice 625C BE-VERIFY (625.8 gate for 625A-625C) on PR #1681 head 8bf8f0139: 722 surefire reports / 5927 testcases / 0 failing report files / 26 skipped (baseline 5914 + 13 new), exit 0. Prior head 520f22eda also green (5926)."
 }

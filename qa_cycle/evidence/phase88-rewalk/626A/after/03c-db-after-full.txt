@@ -1,0 +1,19 @@
+-[ RECORD 1 ]---------------------+----------------------------------------------------------
+letterhead_address_line1          | 12 Rivonia Road
+letterhead_address_line2          | Illovo Point, 3rd Floor
+letterhead_address_line3          | Illovo
+letterhead_city                   | Sandton
+letterhead_postal_code            | 2196
+letterhead_country                | South Africa
+letterhead_phone                  | +27 11 555 0142
+letterhead_email                  | accounts@khumalo-attorneys.co.za
+letterhead_website                | https://www.khumalo-attorneys.co.za
+letterhead_bank_name              | First National Bank
+letterhead_bank_branch_code       | 250655
+letterhead_bank_account_number    | 62812345678
+letterhead_bank_account_type      | Cheque
+letterhead_payment_reference_note | Please use your fee note number as the payment reference.
+letterhead_signatory_name         | Thandiwe Khumalo
+letterhead_signatory_designation  | Director
+updated_at                        | 2026-10-27 19:10:13.847177+00
+

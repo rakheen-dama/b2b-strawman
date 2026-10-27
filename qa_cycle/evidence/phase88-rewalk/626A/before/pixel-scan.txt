@@ -1,0 +1,8 @@
+engagement-letter-conveyancing-1.ppm 496x702 teal_px=0 orange_px=0
+engagement-letter-conveyancing-2.ppm 496x702 teal_px=0 orange_px=0
+engagement-letter-conveyancing-3.ppm 496x702 teal_px=0 orange_px=0
+fee-note-INV-0001-1.ppm 496x702 teal_px=0 orange_px=0
+fee-note-INV-0001-2.ppm 496x702 teal_px=0 orange_px=0
+engagement-letter-conveyancing.pdf image_xobjects=0 Do_ops=0 fill_rgb_colours= ['0.10196 0.10196 0.18039', '0.11373 0.11373 0.11373', '0.2 0.2 0.2']
+fee-note-INV-0001.pdf image_xobjects=0 Do_ops=0 fill_rgb_colours= ['0.10196 0.10196 0.18039', '0.11373 0.11373 0.11373', '0.2 0.2 0.2', '0.86667 0.86667 0.86667', '0.93333 0.93333 0.93333', '0.96078 0.96078 0.96078']
+brand #0f766e = 0.059 0.463 0.431 rg; prior brand #1b3a4b = 0.106 0.227 0.294 rg

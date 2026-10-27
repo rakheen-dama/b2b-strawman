@@ -67,7 +67,7 @@ Flyway checksums would reject an edited baseline on every existing schema.
 
 ## 5. How to add a migration
 
-- Add the next free version — tenant **V7**, global **V3** as of Phase 88 625C (confirm with `for s in tenant global; do ls src/main/resources/db/migration/$s/V*.sql | sort -V | tail -1; done` from `backend/`) — as `V<n>__<description>.sql` to `src/main/resources/db/migration/tenant/` or `global/`. Double underscore.
+- Add the next free version — tenant **V8**, global **V3** as of Phase 88 626A (confirm with `for s in tenant global; do ls src/main/resources/db/migration/$s/V*.sql | sort -V | tail -1; done` from `backend/`) — as `V<n>__<description>.sql` to `src/main/resources/db/migration/tenant/` or `global/`. Double underscore.
 - Tenant V4 exists: `V4__phase88_demo_ready.sql` (Phase 88, one section per unit). Later Phase 88 slices append their sections to V4 only while no persistent stack (Keycloak dev DB, the re-walk tenant, VPS) has applied it. V4 has been applied on the Keycloak dev DB since Phase 88 623A, so it is closed: every new tenant or global change takes the next free version stated above.
 - Make it idempotent (`IF NOT EXISTS`, `ON CONFLICT DO NOTHING`). Scope every catalog guard to the current schema (`… AND n.nspname = current_schema()`, `table_schema = current_schema()`). An unscoped guard silently skips the object in every tenant after the first (see §1).
 - `baselineOnMigrate(false)` stays everywhere: in `FlywayConfig`, `TenantProvisioningService`, `TenantMigrationRunner` and the two shard tests. A non-empty schema without history must fail fast, not be baselined.

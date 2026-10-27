@@ -77,6 +77,9 @@ class OrgSettingsSchemaSnapshotTest {
   // Tenant V4 §2 (Phase 88 / Epic 620A, ADR-347): default_payment_terms_days (integer NOT NULL
   // DEFAULT 30) added — deliberate, authorised pin update (BillingSettings.defaultPaymentTermsDays
   // + V4__phase88_demo_ready.sql §2), not drift.
+  // Tenant V7 (Phase 88 / Epic 626A, ADR-353): the sixteen nullable letterhead_* columns added —
+  // deliberate, authorised pin update (LetterheadSettings embeddable + V7__phase88_letterhead.sql),
+  // not drift.
   private static final String EXPECTED_SNAPSHOT =
       """
       acceptance_expiry_days | integer | YES
@@ -113,6 +116,22 @@ class OrgSettingsSchemaSnapshotTest {
       information_officer_email | character varying(255) | YES
       information_officer_name | character varying(255) | YES
       legal_matter_retention_years | integer | YES
+      letterhead_address_line1 | character varying(255) | YES
+      letterhead_address_line2 | character varying(255) | YES
+      letterhead_address_line3 | character varying(255) | YES
+      letterhead_bank_account_number | character varying(50) | YES
+      letterhead_bank_account_type | character varying(30) | YES
+      letterhead_bank_branch_code | character varying(20) | YES
+      letterhead_bank_name | character varying(100) | YES
+      letterhead_city | character varying(100) | YES
+      letterhead_country | character varying(100) | YES
+      letterhead_email | character varying(255) | YES
+      letterhead_payment_reference_note | text | YES
+      letterhead_phone | character varying(50) | YES
+      letterhead_postal_code | character varying(20) | YES
+      letterhead_signatory_designation | character varying(255) | YES
+      letterhead_signatory_name | character varying(255) | YES
+      letterhead_website | character varying(255) | YES
       logo_s3_key | character varying(500) | YES
       onboarding_dismissed_at | timestamp with time zone | YES
       portal_digest_cadence | character varying(12) | YES

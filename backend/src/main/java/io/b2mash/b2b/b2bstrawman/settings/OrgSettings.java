@@ -279,6 +279,54 @@ public class OrgSettings {
   @AttributeOverride(name = "digestLastSentAt", column = @Column(name = "digest_last_sent_at"))
   private PortalSettings portal = new PortalSettings();
 
+  /**
+   * Firm letterhead / contact / banking / signatory group (Phase 88 U8, ADR-353, tenant V7). All
+   * sixteen columns are nullable, so the group materialises as NULL on reload for every tenant that
+   * has not filled it; {@link #getLetterhead()} lazily re-creates it (guarded by {@code
+   * OrgSettingsEmbeddableNullReloadTest}). Column names pinned by {@code @AttributeOverride} so
+   * {@code OrgSettingsSchemaSnapshotTest} sees exactly the V7 columns.
+   */
+  @Embedded
+  @AttributeOverride(
+      name = "addressLine1",
+      column = @Column(name = "letterhead_address_line1", length = 255))
+  @AttributeOverride(
+      name = "addressLine2",
+      column = @Column(name = "letterhead_address_line2", length = 255))
+  @AttributeOverride(
+      name = "addressLine3",
+      column = @Column(name = "letterhead_address_line3", length = 255))
+  @AttributeOverride(name = "city", column = @Column(name = "letterhead_city", length = 100))
+  @AttributeOverride(
+      name = "postalCode",
+      column = @Column(name = "letterhead_postal_code", length = 20))
+  @AttributeOverride(name = "country", column = @Column(name = "letterhead_country", length = 100))
+  @AttributeOverride(name = "phone", column = @Column(name = "letterhead_phone", length = 50))
+  @AttributeOverride(name = "email", column = @Column(name = "letterhead_email", length = 255))
+  @AttributeOverride(name = "website", column = @Column(name = "letterhead_website", length = 255))
+  @AttributeOverride(
+      name = "bankName",
+      column = @Column(name = "letterhead_bank_name", length = 100))
+  @AttributeOverride(
+      name = "bankBranchCode",
+      column = @Column(name = "letterhead_bank_branch_code", length = 20))
+  @AttributeOverride(
+      name = "bankAccountNumber",
+      column = @Column(name = "letterhead_bank_account_number", length = 50))
+  @AttributeOverride(
+      name = "bankAccountType",
+      column = @Column(name = "letterhead_bank_account_type", length = 30))
+  @AttributeOverride(
+      name = "paymentReferenceNote",
+      column = @Column(name = "letterhead_payment_reference_note", columnDefinition = "TEXT"))
+  @AttributeOverride(
+      name = "signatoryName",
+      column = @Column(name = "letterhead_signatory_name", length = 255))
+  @AttributeOverride(
+      name = "signatoryDesignation",
+      column = @Column(name = "letterhead_signatory_designation", length = 255))
+  private LetterheadSettings letterhead = new LetterheadSettings();
+
   protected OrgSettings() {}
 
   /**
@@ -382,6 +430,14 @@ public class OrgSettings {
     return dataProtection;
   }
 
+  /** Returns the firm letterhead settings group. Never null. */
+  public LetterheadSettings getLetterhead() {
+    if (letterhead == null) {
+      letterhead = new LetterheadSettings();
+    }
+    return letterhead;
+  }
+
   public void updateCurrency(String currency) {
     this.defaultCurrency = currency;
     this.updatedAt = Instant.now();
@@ -389,10 +445,10 @@ public class OrgSettings {
 
   /**
    * Bumps {@code updatedAt} to now. Embeddable-group setters
-   * (tax/billing/expense/time-reminder/pack-status/data-protection/data-request) do not touch the
-   * owning entity's timestamp; service methods that mutate a group through {@link #getTax()}/{@link
-   * #getBilling()}/etc. call this to preserve the explicit timestamp-bump semantics the former
-   * top-level entity mutators provided.
+   * (tax/billing/expense/time-reminder/pack-status/data-protection/data-request/letterhead) do not
+   * touch the owning entity's timestamp; service methods that mutate a group through {@link
+   * #getTax()}/{@link #getBilling()}/etc. call this to preserve the explicit timestamp-bump
+   * semantics the former top-level entity mutators provided.
    */
   public void touchUpdatedAt() {
     this.updatedAt = Instant.now();

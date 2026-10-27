@@ -37,6 +37,11 @@ import org.springframework.test.web.servlet.MockMvc;
  * connection and asserts the group accessors return non-null objects whose getters yield null
  * without throwing. The lazy-initialising {@link OrgSettings#getBranding()} / {@link
  * OrgSettings#getPortal()} fallback is what makes this safe.
+ *
+ * <p>Phase 88 U8 (ADR-353, tenant V7) adds the {@link LetterheadSettings} group: all sixteen {@code
+ * letterhead_*} columns are nullable, so every tenant that has not filled the letterhead reloads it
+ * as NULL — {@link OrgSettings#getLetterhead()} lazily re-creates it, and writes through the lazily
+ * created group must persist.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -45,6 +50,16 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OrgSettingsEmbeddableNullReloadTest {
   private static final String ORG_ID = "org_orgsettings_null_reload";
+
+  /** SET clause nulling all sixteen Phase 88 U8 letterhead columns (tenant V7). */
+  private static final String LETTERHEAD_NULLS =
+      "letterhead_address_line1 = NULL, letterhead_address_line2 = NULL, "
+          + "letterhead_address_line3 = NULL, letterhead_city = NULL, "
+          + "letterhead_postal_code = NULL, letterhead_country = NULL, letterhead_phone = NULL, "
+          + "letterhead_email = NULL, letterhead_website = NULL, letterhead_bank_name = NULL, "
+          + "letterhead_bank_branch_code = NULL, letterhead_bank_account_number = NULL, "
+          + "letterhead_bank_account_type = NULL, letterhead_payment_reference_note = NULL, "
+          + "letterhead_signatory_name = NULL, letterhead_signatory_designation = NULL";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -111,7 +126,11 @@ class OrgSettingsEmbeddableNullReloadTest {
                   + "financial_retention_months = NULL, information_officer_name = NULL, "
                   + "information_officer_email = NULL, legal_matter_retention_years = NULL, "
                   + "time_reminder_days = NULL, time_reminder_time = NULL, "
-                  + "time_reminder_min_minutes = NULL "
+                  + "time_reminder_min_minutes = NULL, "
+                  // Phase 88 U8 letterhead group — all sixteen columns nullable, so the embedded
+                  // materialises as NULL: the genuine NPE risk.
+                  + LETTERHEAD_NULLS
+                  + " "
                   + "WHERE id = '"
                   + id
                   + "'");
@@ -200,6 +219,30 @@ class OrgSettingsEmbeddableNullReloadTest {
                     assertThat(reloaded.getTimeReminder().getTimeReminderTime()).isNull();
                     assertThat(reloaded.getTimeReminder().getWorkingDays()).isEmpty();
                     assertThat(reloaded.getTimeReminder().getTimeReminderMinHours()).isEqualTo(4.0);
+
+                    // Phase 88 U8 letterhead group: all sixteen columns nulled, so the embedded
+                    // materialises as NULL — the lazy-fallback getter keeps it NPE-safe, and the
+                    // derived address helpers tolerate the all-null group.
+                    var letterhead = reloaded.getLetterhead();
+                    assertThat(letterhead).isNotNull();
+                    assertThat(letterhead.getAddressLine1()).isNull();
+                    assertThat(letterhead.getAddressLine2()).isNull();
+                    assertThat(letterhead.getAddressLine3()).isNull();
+                    assertThat(letterhead.getCity()).isNull();
+                    assertThat(letterhead.getPostalCode()).isNull();
+                    assertThat(letterhead.getCountry()).isNull();
+                    assertThat(letterhead.getPhone()).isNull();
+                    assertThat(letterhead.getEmail()).isNull();
+                    assertThat(letterhead.getWebsite()).isNull();
+                    assertThat(letterhead.getBankName()).isNull();
+                    assertThat(letterhead.getBankBranchCode()).isNull();
+                    assertThat(letterhead.getBankAccountNumber()).isNull();
+                    assertThat(letterhead.getBankAccountType()).isNull();
+                    assertThat(letterhead.getPaymentReferenceNote()).isNull();
+                    assertThat(letterhead.getSignatoryName()).isNull();
+                    assertThat(letterhead.getSignatoryDesignation()).isNull();
+                    assertThat(letterhead.addressLines()).isEmpty();
+                    assertThat(letterhead.addressJoined()).isEmpty();
                   })
               .doesNotThrowAnyException();
         });
@@ -281,6 +324,47 @@ class OrgSettingsEmbeddableNullReloadTest {
           assertThat(fresh.getPortal().getDigestLastSentAt())
               .as("markDigestSent through the lazily created portal group must persist")
               .isEqualTo(sentAt);
+        });
+  }
+
+  /**
+   * Phase 88 U8 (ADR-353): every fresh tenant reloads the all-nullable letterhead group as NULL.
+   * The Firm › General PATCH writes through the lazy {@link OrgSettings#getLetterhead()} — prove
+   * that a write through the lazily created group after a NULL reload is actually persisted.
+   */
+  @Test
+  void letterheadGroupAllNull_writeThroughLazyGetter_persists() throws Exception {
+    var idRef = new AtomicReference<UUID>();
+    runInTenant(() -> idRef.set(orgSettingsRepository.save(new OrgSettings("ZAR")).getId()));
+    UUID id = idRef.get();
+
+    try (Connection conn = dataSource.getConnection();
+        Statement stmt = conn.createStatement()) {
+      stmt.execute("SET search_path TO " + tenantSchema);
+      int updated =
+          stmt.executeUpdate(
+              "UPDATE org_settings SET " + LETTERHEAD_NULLS + " WHERE id = '" + id + "'");
+      assertThat(updated).isEqualTo(1);
+    }
+
+    runInTenant(
+        () -> {
+          var reloaded = orgSettingsRepository.findById(id).orElseThrow();
+          reloaded.getLetterhead().setBankName("FNB");
+          reloaded.getLetterhead().setSignatoryName("Thandi Mathebula");
+          orgSettingsRepository.save(reloaded);
+        });
+
+    runInTenant(
+        () -> {
+          var fresh = orgSettingsRepository.findById(id).orElseThrow();
+          assertThat(fresh.getLetterhead().getBankName())
+              .as("bank name written through the lazily created letterhead group must persist")
+              .isEqualTo("FNB");
+          assertThat(fresh.getLetterhead().getSignatoryName())
+              .as("signatory written through the lazily created letterhead group must persist")
+              .isEqualTo("Thandi Mathebula");
+          assertThat(fresh.getLetterhead().addressJoined()).isEmpty();
         });
   }
 

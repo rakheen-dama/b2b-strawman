@@ -1456,9 +1456,8 @@ public class LetterheadSettings {
   @Column(name = "letterhead_address_line1", length = 255) private String addressLine1;
   // … 15 more fields, one per §13.2.5 row …
   protected LetterheadSettings() {}
-  /** Non-blank address lines joined for single-line template use; null when nothing is set. */
-  public String addressJoined() { return Stream.of(addressLine1, addressLine2, addressLine3, cityPostal(), country)
-      .filter(s -> s != null && !s.isBlank()).collect(Collectors.collectingAndThen(Collectors.joining(", "), s -> s.isEmpty() ? null : s)); }
+  /** Non-blank address lines joined for single-line template use; "" (never null) when nothing is set (626A R-8). */
+  public String addressJoined() { return String.join(", ", addressLines()); }
   // getters/setters
 }
 

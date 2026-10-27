@@ -1,0 +1,11 @@
+== after clicking 'Save Settings' on Firm > General (frontend built from main, no letterhead fields)
+"message":"Access denied: path=/api/settings/letterhead, method=GET, reason=insufficient_role"
+"message":"Access denied: path=/api/settings/letterhead, method=PATCH, reason=insufficient_role"
+"message":"Updated letterhead settings: changedFields=[]"
+"message":"Updated org settings with branding: currency=ZAR, brandColor=#0f766e"
+"message":"Updated tax settings: taxLabel=VAT, taxInclusive=false"
+          updated_at           | letterhead_address_line1 | letterhead_bank_account_number | letterhead_signatory_name | brand_color 
+-------------------------------+--------------------------+--------------------------------+---------------------------+-------------
+ 2026-10-27 19:12:28.485612+00 | 12 Rivonia Road          | 62812345678                    | Bob Admin                 | #0f766e
+(1 row)
+

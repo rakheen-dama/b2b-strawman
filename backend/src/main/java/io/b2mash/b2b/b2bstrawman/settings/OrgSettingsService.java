@@ -16,9 +16,11 @@ import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.dto.CollectionsSettingsResponse;
 import io.b2mash.b2b.b2bstrawman.settings.dto.DataProtectionSettingsRequest;
+import io.b2mash.b2b.b2bstrawman.settings.dto.LetterheadSettingsResponse;
 import io.b2mash.b2b.b2bstrawman.settings.dto.ModuleSettingsResponse;
 import io.b2mash.b2b.b2bstrawman.settings.dto.ModuleSettingsResponse.ModuleStatus;
 import io.b2mash.b2b.b2bstrawman.settings.dto.SettingsResponse;
+import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateLetterheadSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.ModuleCategory;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleRegistry;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
@@ -30,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -139,7 +142,8 @@ public class OrgSettingsService {
                 null, // financialRetentionMonths
                 null, // informationOfficerName
                 null, // informationOfficerEmail
-                PortalDigestCadence.WEEKLY.name())); // portalDigestCadence
+                PortalDigestCadence.WEEKLY.name(), // portalDigestCadence
+                LetterheadSettingsResponse.EMPTY)); // letterhead
   }
 
   /** Updates settings including branding fields. */
@@ -348,7 +352,8 @@ public class OrgSettingsService {
         settings.getDataProtection().getFinancialRetentionMonths(),
         settings.getDataProtection().getInformationOfficerName(),
         settings.getDataProtection().getInformationOfficerEmail(),
-        settings.getPortal().getEffectivePortalDigestCadence().name());
+        settings.getPortal().getEffectivePortalDigestCadence().name(),
+        toLetterheadResponse(settings.getLetterhead()));
   }
 
   /**
@@ -937,6 +942,103 @@ public class OrgSettingsService {
             .build());
 
     return toSettingsResponse(settings);
+  }
+
+  /** Reads the firm letterhead group; all-null for a tenant without an org_settings row. */
+  @Transactional(readOnly = true)
+  public LetterheadSettingsResponse getLetterheadSettings() {
+    return orgSettingsRepository
+        .findForCurrentTenant()
+        .map(s -> toLetterheadResponse(s.getLetterhead()))
+        .orElse(LetterheadSettingsResponse.EMPTY);
+  }
+
+  /**
+   * Replaces the firm letterhead group (Phase 88 U8, ADR-353). Admin/owner only. Full replace:
+   * every field is written; null / blank clears (the request record trims, blank → null, before
+   * validation). Audits {@code org_settings.letterhead_updated} with the changed field NAMES only —
+   * no values (bank account number, phone and signatory stay out of the audit log; POPIA).
+   */
+  @Transactional
+  public SettingsResponse updateLetterhead(
+      UpdateLetterheadSettingsRequest request, ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
+
+    var settings = getOrCreateForCurrentTenant();
+    var letterhead = settings.getLetterhead();
+    var before = toLetterheadResponse(letterhead);
+
+    letterhead.updateLetterhead(
+        request.addressLine1(),
+        request.addressLine2(),
+        request.addressLine3(),
+        request.city(),
+        request.postalCode(),
+        request.country(),
+        request.phone(),
+        request.email(),
+        request.website(),
+        request.bankName(),
+        request.bankBranchCode(),
+        request.bankAccountNumber(),
+        request.bankAccountType(),
+        request.paymentReferenceNote(),
+        request.signatoryName(),
+        request.signatoryDesignation());
+    settings.touchUpdatedAt();
+    settings = orgSettingsRepository.save(settings);
+
+    var changed = changedFields(before, toLetterheadResponse(settings.getLetterhead()));
+    log.info("Updated letterhead settings: changedFields={}", changed);
+    if (!changed.isEmpty()) {
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("org_settings.letterhead_updated")
+              .entityType("org_settings")
+              .entityId(settings.getId())
+              .details(Map.of("changed_fields", changed))
+              .build());
+    }
+    return toSettingsResponse(settings);
+  }
+
+  private static LetterheadSettingsResponse toLetterheadResponse(LetterheadSettings l) {
+    return new LetterheadSettingsResponse(
+        l.getAddressLine1(),
+        l.getAddressLine2(),
+        l.getAddressLine3(),
+        l.getCity(),
+        l.getPostalCode(),
+        l.getCountry(),
+        l.getPhone(),
+        l.getEmail(),
+        l.getWebsite(),
+        l.getBankName(),
+        l.getBankBranchCode(),
+        l.getBankAccountNumber(),
+        l.getBankAccountType(),
+        l.getPaymentReferenceNote(),
+        l.getSignatoryName(),
+        l.getSignatoryDesignation());
+  }
+
+  /**
+   * Record component names whose values differ (the letterhead audit carries names, not values).
+   */
+  private static List<String> changedFields(
+      LetterheadSettingsResponse before, LetterheadSettingsResponse after) {
+    var changed = new ArrayList<String>();
+    for (var component : LetterheadSettingsResponse.class.getRecordComponents()) {
+      try {
+        var accessor = component.getAccessor();
+        if (!Objects.equals(accessor.invoke(before), accessor.invoke(after))) {
+          changed.add(component.getName());
+        }
+      } catch (ReflectiveOperationException e) {
+        throw new IllegalStateException("Cannot read letterhead component " + component, e);
+      }
+    }
+    return changed;
   }
 
   /**

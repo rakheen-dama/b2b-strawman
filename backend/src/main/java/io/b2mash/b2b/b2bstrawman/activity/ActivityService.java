@@ -137,8 +137,9 @@ public class ActivityService {
   /**
    * Amounts need FINANCIAL_VISIBILITY, trust amounts/references need VIEW_TRUST; owner/admin always
    * see both — the same rule as the matter list's {@code unbilledValue} / {@code trustBalance}.
+   * Public so callers that cache formatted sentences (Home activity) can key the cache on it.
    */
-  private static AmountVisibility amountVisibility(ActorContext actor) {
+  public static AmountVisibility amountVisibility(ActorContext actor) {
     boolean ownerOrAdmin = actor != null && actor.isOwnerOrAdmin();
     return new AmountVisibility(
         ownerOrAdmin || RequestScopes.hasCapability("FINANCIAL_VISIBILITY"),

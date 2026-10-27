@@ -879,6 +879,35 @@ class ActivityMessageFormatterTest {
    * Formats as a viewer who sees every amount (owner/admin). Redaction tests pass a restricted
    * {@link ActivityMessageFormatter.AmountVisibility} via {@link #messageAs} instead.
    */
+  @Test
+  void taskItemToggledReadsTickedOnlyForExplicitTrueUntickedOnlyForExplicitFalse() {
+    assertThat(toggled(d("completed", Map.of("from", false, "to", true))).message())
+        .isEqualTo("Alice ticked off a task item");
+    assertThat(toggled(d("completed", Map.of("from", "false", "to", "true"))).message())
+        .isEqualTo("Alice ticked off a task item");
+    assertThat(toggled(d("completed", Map.of("from", true, "to", false))).message())
+        .isEqualTo("Alice unticked a task item");
+    assertThat(toggled(d("completed", Map.of("from", "true", "to", "false"))).message())
+        .isEqualTo("Alice unticked a task item");
+  }
+
+  @Test
+  void taskItemToggledWithMissingOrUnusableStateReadsNeutral() {
+    assertThat(toggled(d()).message()).isEqualTo("Alice updated a task item");
+    assertThat(toggled(d("completed", Map.of("from", true))).message())
+        .isEqualTo("Alice updated a task item");
+    assertThat(toggled(d("completed", Map.of("to", "maybe"))).message())
+        .isEqualTo("Alice updated a task item");
+    assertThat(toggled(d("completed", true)).message()).isEqualTo("Alice updated a task item");
+  }
+
+  private ActivityItem toggled(Map<String, Object> details) {
+    return formatAll(
+        createEvent("task_item.toggled", "task_item", details),
+        actorMap(),
+        emptyPortalContactMap());
+  }
+
   private ActivityItem formatAll(
       AuditEvent event, Map<UUID, Member> actorMap, Map<UUID, PortalContact> portalContactMap) {
     return formatter.format(

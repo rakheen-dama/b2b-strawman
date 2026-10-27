@@ -382,10 +382,14 @@ public class ActivityMessageFormatter {
             ? "%s removed item \"%s\" from a task".formatted(actorName, title)
             : "%s removed an item from a task".formatted(actorName);
       }
-      case "task_item.toggled" ->
-          Boolean.TRUE.equals(deltaTo(details, "completed"))
-              ? "%s ticked off a task item".formatted(actorName)
-              : "%s unticked a task item".formatted(actorName);
+      case "task_item.toggled" -> {
+        Boolean completed = bool(deltaTo(details, "completed"));
+        yield completed == null
+            ? "%s updated a task item".formatted(actorName)
+            : completed
+                ? "%s ticked off a task item".formatted(actorName)
+                : "%s unticked a task item".formatted(actorName);
+      }
       case "task_item.updated" -> "%s updated a task item".formatted(actorName);
       case "task_item.reordered" -> "%s reordered a task's items".formatted(actorName);
       case "time_entry.rate_re_snapshot" -> formatRateReSnapshot(actorName, details);
@@ -759,6 +763,25 @@ public class ActivityMessageFormatter {
   /** The {@code to} side of an AuditDeltaBuilder {@code {from, to}} delta; null if absent. */
   private static Object deltaTo(Map<String, Object> details, String key) {
     return details.get(key) instanceof Map<?, ?> delta ? delta.get("to") : null;
+  }
+
+  /**
+   * An explicit boolean ({@link Boolean} or the strings {@code "true"} / {@code "false"}), or
+   * {@code null} when the value is missing or unusable — callers fall back to a neutral sentence.
+   */
+  private static Boolean bool(Object value) {
+    if (value instanceof Boolean b) {
+      return b;
+    }
+    if (value instanceof String s) {
+      if ("true".equalsIgnoreCase(s.strip())) {
+        return Boolean.TRUE;
+      }
+      if ("false".equalsIgnoreCase(s.strip())) {
+        return Boolean.FALSE;
+      }
+    }
+    return null;
   }
 
   private static String orElse(String value, String fallback) {

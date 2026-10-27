@@ -297,8 +297,21 @@ public class DashboardService {
       String tenantId, ActorContext actor, int limit) {
     int clampedLimit = Math.max(MIN_ACTIVITY_LIMIT, Math.min(MAX_ACTIVITY_LIMIT, limit));
 
+    // Sentences are formatted (and amounts redacted) per the actor's effective visibility, which a
+    // custom role can change without changing memberId or role slug — so it is part of the key.
+    var visibility = ActivityService.amountVisibility(actor);
     String cacheKey =
-        tenantId + ":activity:" + actor.memberId() + ":" + actor.orgRole() + ":" + clampedLimit;
+        tenantId
+            + ":activity:"
+            + actor.memberId()
+            + ":"
+            + actor.orgRole()
+            + ":fin="
+            + visibility.financial()
+            + ":trust="
+            + visibility.trust()
+            + ":"
+            + clampedLimit;
 
     List<CrossMatterActivityItem> cached =
         (List<CrossMatterActivityItem>) orgCache.getIfPresent(cacheKey);

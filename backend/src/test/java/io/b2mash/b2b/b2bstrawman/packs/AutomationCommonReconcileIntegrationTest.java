@@ -51,6 +51,7 @@ class AutomationCommonReconcileIntegrationTest {
 
   private static final String ORG_ID = "org_automation_common_reconcile_test";
   private static final String PACK_ID = "automation-common";
+  private static final String OTHER_PACK_ID = "automation-legal-za";
 
   static final String SLUG = "document-review-notification";
   static final String V2_NAME = "Document Review Notification";
@@ -107,10 +108,11 @@ class AutomationCommonReconcileIntegrationTest {
           assertThat(automationStatusVersion()).isEqualTo(3);
           return null;
         });
-    String reason = uninstallReason();
-    if (reason != null) {
-      assertThat(reason).as("re-pinned rule must not read as edited").doesNotContain("edited");
-    }
+    // Fresh tenant, no executions, every automation-common rule pristine → nothing blocks
+    // uninstall.
+    assertThat(uninstallReason())
+        .as("re-pinned rule must not read as edited (no uninstall blocker at all)")
+        .isNull();
   }
 
   @Test
@@ -227,6 +229,61 @@ class AutomationCommonReconcileIntegrationTest {
   }
 
   @Test
+  void sameSlugRuleFromAnotherPack_isNeverTouched() {
+    simulateV2Tenant(rule -> {}, false, false);
+    // A SYSTEM-created TEMPLATE rule with the same slug, tagged with a DIFFERENT pack's install —
+    // the resolver is scoped to automation-common's install, so it is neither a target nor a
+    // duplicate that would make the real target ambiguous.
+    UUID foreignId =
+        inTenantTx(
+            () -> {
+              var otherInstall = packInstallRepository.findByPackId(OTHER_PACK_ID).orElseThrow();
+              var foreign =
+                  new AutomationRule(
+                      V2_NAME,
+                      V2_DESC,
+                      TriggerType.DOCUMENT_ACCEPTED,
+                      Map.of(),
+                      List.of(),
+                      RuleSource.TEMPLATE,
+                      SLUG,
+                      SYSTEM);
+              foreign.setSourcePackInstallId(otherInstall.getId());
+              foreign = ruleRepository.save(foreign);
+              actionRepository.save(
+                  new AutomationAction(
+                      foreign.getId(), 0, ActionType.SEND_NOTIFICATION, v2Config(), null, null));
+              assertThat(packInstallRepository.compareAndSetVersion(PACK_ID, "3", "2"))
+                  .isEqualTo(1);
+              return foreign.getId();
+            });
+    try {
+      packInstallService.internalInstall(PACK_ID, schema);
+
+      inTenantTx(
+          () -> {
+            var foreign = ruleRepository.findById(foreignId).orElseThrow();
+            assertThat(foreign.getName()).isEqualTo(V2_NAME);
+            assertThat(foreign.getDescription()).isEqualTo(V2_DESC);
+            assertThat(foreign.isEnabled()).isTrue();
+            assertThat(actionConfig(foreign))
+                .containsEntry("title", V2_TITLE)
+                .containsEntry("message", V2_MESSAGE);
+            // this pack's own rule resolved unambiguously and was reconciled
+            assertThat(seededRule().getName()).isEqualTo(V3_NAME);
+            return null;
+          });
+    } finally {
+      inTenantTx(
+          () -> {
+            actionRepository.deleteByRuleId(foreignId);
+            ruleRepository.deleteById(foreignId);
+            return null;
+          });
+    }
+  }
+
+  @Test
   void equalVersion_isANoOp() {
     // v2 content, but the recorded version is already the classpath version → gate closed.
     simulateV2Tenant(rule -> {}, false, false);
@@ -335,12 +392,13 @@ class AutomationCommonReconcileIntegrationTest {
     return config;
   }
 
-  /** The single SYSTEM-created, install-tagged rule with the slug (must run inside a tx). */
+  /**
+   * The single SYSTEM-created rule with the slug tagged with automation-common's install (must run
+   * inside a tx).
+   */
   private AutomationRule seededRule() {
     var rules =
-        ruleRepository
-            .findByTemplateSlugAndSourceAndSourcePackInstallIdIsNotNull(SLUG, RuleSource.TEMPLATE)
-            .stream()
+        ruleRepository.findPackSeededByTemplateSlug(PACK_ID, SLUG, RuleSource.TEMPLATE).stream()
             .filter(r -> SYSTEM.equals(r.getCreatedBy()))
             .toList();
     assertThat(rules).hasSize(1);

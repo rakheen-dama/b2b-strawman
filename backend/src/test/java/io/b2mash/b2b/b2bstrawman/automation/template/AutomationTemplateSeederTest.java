@@ -321,16 +321,39 @@ class AutomationTemplateSeederTest {
     assertThat(seeded.rule().isEnabled()).isEqualTo(template.seedEnabled()).isFalse();
     assertThat(appender.list)
         .extracting(ILoggingEvent::getFormattedMessage)
-        .filteredOn(m -> m.startsWith("Reconcile applied"))
-        .hasSize(pack.reconcile().size());
-    assertThat(appender.list).noneMatch(e -> e.getLevel() == Level.WARN);
+        .noneMatch(m -> m.startsWith("Reconcile entry ignored"));
+  }
+
+  @Test
+  void reconcile_sameSlugRuleOfAnotherPack_isNeverResolved() {
+    // The only same-slug rule is tagged with automation-common's install; a pack with a different
+    // packId reconciling the same slug must not resolve it (pack-scoped lookup).
+    var foreign = v2Rule(SYSTEM);
+    var otherPack =
+        new AutomationTemplatePack(
+            "automation-legal-za",
+            3,
+            null,
+            List.of(),
+            List.of(
+                entry("name", V2_NAME, V3_NAME),
+                entry("actions[0].actionConfig.title", V2_TITLE, V3_TITLE),
+                entry("enabled", true, false)));
+
+    seeder.reconcileInstalledPack(otherPack, null, "tenant_test");
+
+    assertThat(foreign.rule().getName()).isEqualTo(V2_NAME);
+    assertThat(foreign.rule().isEnabled()).isTrue();
+    assertThat(foreign.action().getActionConfig()).containsEntry("title", V2_TITLE);
+    Mockito.verify(ruleRepository, Mockito.atLeastOnce())
+        .findPackSeededByTemplateSlug("automation-legal-za", SLUG, RuleSource.TEMPLATE);
   }
 
   private record SeededRule(AutomationRule rule, AutomationAction action) {}
 
   /**
-   * A pack-tagged v2 {@code document-review-notification} rule + action, stubbed as the only
-   * install-tagged TEMPLATE row with the slug.
+   * A v2 {@code document-review-notification} rule + action, stubbed as the only TEMPLATE row with
+   * the slug tagged with {@code automation-common}'s install.
    */
   private SeededRule v2Rule(UUID createdBy) {
     var rule =
@@ -355,8 +378,8 @@ class AutomationTemplateSeederTest {
                 Map.of("recipientType", "PROJECT_OWNER", "title", V2_TITLE, "message", V2_MESSAGE)),
             null,
             null);
-    when(ruleRepository.findByTemplateSlugAndSourceAndSourcePackInstallIdIsNotNull(
-            SLUG, RuleSource.TEMPLATE))
+    when(ruleRepository.findPackSeededByTemplateSlug(
+            "automation-common", SLUG, RuleSource.TEMPLATE))
         .thenReturn(List.of(rule));
     when(actionRepository.findByRuleIdOrderBySortOrder(rule.getId())).thenReturn(List.of(action));
     return new SeededRule(rule, action);

@@ -151,12 +151,12 @@ public class AutomationTemplateSeeder extends AbstractPackSeeder<AutomationTempl
 
   /**
    * ADR-356 resolver for {@code automation_rule} entries: the single pack-seeded rule with this
-   * {@code templateSlug} (source TEMPLATE, tagged with a pack install, created by the system user —
-   * API-activated copies of a template are never targets). Supported fields: {@code name}, {@code
-   * description}, {@code enabled} (boolean) and {@code actions[<sortOrder>].actionConfig.<key>}
-   * (string). Anything else is logged at WARN and skipped — never thrown, so one bad entry cannot
-   * abort a tenant's startup reconcile. Targets mutate the managed entities only; {@code
-   * AutomationPackInstaller} re-pins content hashes.
+   * {@code templateSlug} (source TEMPLATE, tagged with THIS pack's install, created by the system
+   * user — another pack's same-slug rule and API-activated copies of a template are never targets).
+   * Supported fields: {@code name}, {@code description}, {@code enabled} (boolean) and {@code
+   * actions[<sortOrder>].actionConfig.<key>} (string). Anything else is logged at WARN and skipped
+   * — never thrown, so one bad entry cannot abort a tenant's startup reconcile. Targets mutate the
+   * managed entities only; {@code AutomationPackInstaller} re-pins content hashes.
    */
   @Override
   protected Optional<PackReconcileEntry.Target> resolveReconcileTarget(
@@ -171,8 +171,7 @@ public class AutomationTemplateSeeder extends AbstractPackSeeder<AutomationTempl
     }
     List<AutomationRule> rules =
         ruleRepository
-            .findByTemplateSlugAndSourceAndSourcePackInstallIdIsNotNull(
-                entry.key(), RuleSource.TEMPLATE)
+            .findPackSeededByTemplateSlug(pack.packId(), entry.key(), RuleSource.TEMPLATE)
             .stream()
             .filter(r -> SYSTEM_USER_ID.equals(r.getCreatedBy()))
             .toList();

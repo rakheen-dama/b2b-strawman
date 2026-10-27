@@ -1,7 +1,7 @@
 {
-  "commit": "e7bf0e386f0c66768f3c90fd67cbec01863c398e",
-  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q (preflight + caffeinate -is ./mvnw verify; worktree-epic-625E)",
+  "commit": "295fcbd7468e624cc172d0f8103a0392a03342d9",
+  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q (preflight + caffeinate -is ./mvnw verify; worktree-epic-625F)",
   "exit": 0,
-  "ts": "2026-10-27T17:05:00Z",
-  "summary": "Slice 625E BE-VERIFY on PR #1683 head e7bf0e386: 5988 testcases / 0 failing report files / 26 skipped (baseline 5927 + 61 new), exit 0, 948s. Earlier heads 6716c2997 and 38c28656d verifies were intentionally killed when fixers were dispatched (shared target/)."
+  "ts": "2026-10-27T18:19:45Z",
+  "summary": "Slice 625F BE-VERIFY on PR #1684 code head 295fcbd74: 6006 testcases / 0 failing report files / 26 skipped (baseline 5988 + 18 new), exit 0. Later commits c799f7606 (backend/CLAUDE.md bullet) + 84c2123b8 (evidence) are non-code. The verify on 6c51f36bc was intentionally killed when the fixer was dispatched (shared target/)."
 }

@@ -2,7 +2,11 @@ import "server-only";
 
 import { api, ApiError, API_BASE, getAuthFetchOptions, resolveServerReturnTo } from "./client";
 import { redirectToReLogin } from "@/lib/auth/expiry";
-import type { OrgSettings, UpdateOrgSettingsRequest } from "@/lib/types";
+import type {
+  OrgSettings,
+  UpdateLetterheadSettingsRequest,
+  UpdateOrgSettingsRequest,
+} from "@/lib/types";
 
 // ---- Org Settings (Branding) ----
 
@@ -30,6 +34,16 @@ export async function isModuleEnabledServer(moduleId: string): Promise<boolean> 
 
 export async function updateOrgSettings(req: UpdateOrgSettingsRequest): Promise<OrgSettings> {
   return api.put<OrgSettings>("/api/settings", req);
+}
+
+/**
+ * Full replace of the firm letterhead (Phase 88 U8, ADR-353): every key is written, null clears.
+ * Returns the full settings response (with the saved `letterhead`).
+ */
+export async function updateLetterheadSettings(
+  req: UpdateLetterheadSettingsRequest
+): Promise<OrgSettings> {
+  return api.patch<OrgSettings>("/api/settings/letterhead", req);
 }
 
 export async function uploadOrgLogo(file: File): Promise<OrgSettings> {

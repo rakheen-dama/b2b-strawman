@@ -54,11 +54,42 @@ export interface OrgSettings {
   informationOfficerEmail?: string | null;
   // portal settings (Epic 496A / 498A / 498C — surfaced by firm settings UI)
   portalDigestCadence?: PortalDigestCadence;
+  // firm letterhead (Phase 88 U8, ADR-353). The backend always sends it (all-null object when
+  // unset); optional only because some loaders build a fallback `OrgSettings` literal.
+  letterhead?: LetterheadSettings;
 }
 
 // ---- Portal settings enums (shared between server actions + UI) ----
 
 export type PortalDigestCadence = "WEEKLY" | "BIWEEKLY" | "OFF";
+
+// ---- Firm letterhead (Phase 88 U8, ADR-353 — from LetterheadSettingsResponse.java) ----
+
+/** Firm letterhead, contact, banking and signatory group. Every field is null when unset. */
+export interface LetterheadSettings {
+  addressLine1: string | null;
+  addressLine2: string | null;
+  addressLine3: string | null;
+  city: string | null;
+  postalCode: string | null;
+  country: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  bankName: string | null;
+  bankBranchCode: string | null;
+  bankAccountNumber: string | null;
+  bankAccountType: string | null;
+  paymentReferenceNote: string | null;
+  signatoryName: string | null;
+  signatoryDesignation: string | null;
+}
+
+/**
+ * PATCH /api/settings/letterhead body. FULL REPLACE: the backend writes all 16 fields on every
+ * call (null, absent or blank CLEARS the stored value), so always send every key.
+ */
+export type UpdateLetterheadSettingsRequest = LetterheadSettings;
 
 export interface UpdateBatchBillingSettingsRequest {
   billingBatchAsyncThreshold: number;

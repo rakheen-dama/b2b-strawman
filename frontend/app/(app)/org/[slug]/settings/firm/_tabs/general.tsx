@@ -1,6 +1,7 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { GeneralSettingsForm } from "@/components/settings/general-settings-form";
+import { LetterheadSettingsForm } from "@/components/settings/letterhead-settings-form";
 import { HelpTip } from "@/components/help-tip";
 import { OrgDocumentsSection } from "@/components/settings/org-documents-section";
 import { PortalSettingsSection } from "@/components/settings/portal-settings-section";
@@ -42,7 +43,7 @@ export async function renderGeneralTab({ slug }: SettingsTabProps) {
           <HelpTip code="org.general" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Manage your organization&apos;s currency, tax configuration, and branding.
+          Manage your firm&apos;s currency, tax configuration, branding and letterhead.
         </p>
       </div>
 
@@ -56,6 +57,13 @@ export async function renderGeneralTab({ slug }: SettingsTabProps) {
         taxLabel={settings.taxLabel ?? ""}
         taxInclusive={settings.taxInclusive ?? false}
       />
+
+      {/* Phase 88 U8 (ADR-353): letterhead below the Branding card, read from the same
+          GET /api/settings (no second fetch). The PATCH is a full replace, so never render a
+          blank form: a missing letterhead (version skew) hides it rather than risk a wipe. */}
+      {settings.letterhead && (
+        <LetterheadSettingsForm slug={slug} letterhead={settings.letterhead} />
+      )}
 
       <PortalSettingsSection
         slug={slug}

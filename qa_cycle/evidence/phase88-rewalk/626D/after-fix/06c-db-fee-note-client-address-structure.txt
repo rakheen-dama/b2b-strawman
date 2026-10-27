@@ -1,0 +1,17 @@
+heading: FEE NOTE
+paragraph: To: {{customer.name}}
+conditionalBlock customer.addressLine1 isNotEmpty 
+  paragraph: {{customer.addressLine1}}
+conditionalBlock customer.addressLine2 isNotEmpty 
+  paragraph: {{customer.addressLine2}}
+conditionalBlock customer.city isNotEmpty 
+  paragraph: {{customer.city}} {{customer.postalCode}}
+conditionalBlock customer.city isEmpty 
+  conditionalBlock customer.postalCode isNotEmpty 
+    paragraph: {{customer.postalCode}}
+conditionalBlock customer.country isNotEmpty 
+  paragraph: {{customer.country}}
+conditionalBlock customerVatNumber isNotEmpty 
+  paragraph: Client VAT Number: {{customerVatNumber}}
+conditionalBlock project.name isNotEmpty 
+  paragraph: Matter: {{project.name}}

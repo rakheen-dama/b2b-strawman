@@ -1,0 +1,30 @@
+# Out-of-scope, pre-existing defect found while preparing step 1b (NOT caused by PR #1688)
+# UI template editor Save persists the Tiptap doc with every node `attrs` removed.
+
+Path: Settings > Documents > Templates > (PLATFORM row) ... > Clone & Customize > edit > Save
+(PLATFORM rows are read-only in the UI: edit/page.tsx:38 `readOnly = !isAdmin || template.source === "PLATFORM"`,
+ so Clone & Customize is the only firm-edit path.)
+
+Repro 1 (litigation, 22:32-22:33 UTC, on the OLD v7 backend before the rebuild):
+  clone 80791878-6e4d-47fc-acbc-9ec04a2a1c54 "Engagement Letter — Litigation (Custom)", appended " Firm edit 626D.", Save.
+  DB content after save: [{"type":"heading","content":[{"type":"variable"}]}, ... {"type":"variable"} ...]  <- no level, no key
+  v7 PLATFORM body:      [{"type":"heading","attrs":{"level":1},"content":[{"type":"variable","attrs":{"key":"org.name"}}]}, ...]
+  Effect: generating the clone renders "Dear ,", empty Client/Matter, no {org.name} H1, clause blocks vanish
+  (no clause step in the Generate dialog) -> e1c-engagement-letter-litigation-custom-clone.pdf / 04d-…png
+
+Repro 2 (Notice of Motion, 22:39 UTC, discriminating run):
+  clone 69808d72-8af9-4dae-9fe0-f70ea732b66d right after Clone & Customize (DB): [{"type":"heading","attrs":{"level":1},...}]  <- intact
+  editor.getJSON() in the browser: attrs present ({"level":1}, {"key":...}); attrs object is NULL-PROTOTYPE (ProseMirror computeAttrs)
+  typed " X" in H1, Save. Captured server-action POST body (browser -> Next):
+    ["e2e-test-org","69808d72-…",{"name":"Notice of Motion (Custom)",…,"content":{"type":"doc","content":[
+      {"type":"heading","attrs":"$T","content":[{"type":"text","text":"Notice of Motion X"}]},{"type":"horizontalRule"},
+      {"type":"paragraph","content":[{"type":"text","text":"IN THE "},{"type":"variable","attrs":"$T"}]},
+      {"type":"conditionalBlock","attrs":"$T",…
+  DB after save: [{"type":"heading","content":[{"text":"Notice of Motion X","type":"text"}]},{"type":"horizontalRule"},
+                  {"type":"paragraph","content":[{"text":"IN THE ","type":"text"},{"type":"variable"}]}]
+
+Mechanism: React server-action reply encoding serialises non-plain (null-prototype) objects as temporary
+references "$T"; on the server they are opaque and JSON.stringify in lib/api/client.ts drops them.
+TemplateEditorClient.handleSave passes editor.getJSON() straight to updateTemplateAction(...).
+Fix direction (not applied, out of scope): pass a plain clone, e.g. JSON.parse(JSON.stringify(editorContent)) or structuredClone→plain.
+Frontend/backend files involved are untouched by PR #1688 (backend-only, pack content + seeder/renderer).

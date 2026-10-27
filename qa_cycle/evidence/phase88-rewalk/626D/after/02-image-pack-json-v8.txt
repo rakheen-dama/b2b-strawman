@@ -1,0 +1,3 @@
+{"version":8,"reconcile":["engagement-letter-litigation","engagement-letter-conveyancing","engagement-letter-general","fee-note-za","statement-of-account","matter-closure-letter","deed-of-transfer","bond-cancellation-instruction"]}
+image contains: pack v8, td.num nowrap rule
+52:    white-space: nowrap;

@@ -1,0 +1,12 @@
+2026-10-27T23:11:02.036076632Z INFO VerticalProfileRegistry Loaded vertical profile: legal-za
+2026-10-27T23:11:08.340416552Z INFO PackReconciliationRunner Running pack reconciliation for 1 tenants
+2026-10-27T23:11:08.735733260Z INFO TemplatePackInstaller Reconciled template pack legal-za to v8 for tenant tenant_7d218705360b (0 new templates, 7 refreshed, 0 re-pinned after the reconcile block)
+2026-10-27T23:11:08.740472802Z INFO PackInstallService Pack legal-za reconciled to v8 for tenant tenant_7d218705360b (internal path)
+2026-10-27T23:11:08.808795927Z INFO CompliancePackSeeder Compliance pack generic-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T23:11:08.818305177Z INFO CompliancePackSeeder Compliance pack legal-za-individual-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T23:11:08.821072218Z INFO CompliancePackSeeder Compliance pack legal-za-trust-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T23:11:08.823965135Z INFO CompliancePackSeeder Compliance pack sa-fica-company already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T23:11:08.826238635Z INFO CompliancePackSeeder Compliance pack sa-fica-individual already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T23:11:08.873422344Z INFO PackInstallService Pack automation-legal-za already installed (internal path), skipping
+2026-10-27T23:11:08.882861469Z INFO ProjectTemplatePackSeeder Project-template pack legal-za-project-templates already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T23:11:08.913412844Z INFO PackReconciliationRunner Pack reconciliation: checked 1 tenants, 1 succeeded, 0 failed

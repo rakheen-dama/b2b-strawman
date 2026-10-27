@@ -1,0 +1,23 @@
+# after Reset to Default on 'Fee Note (Custom)' 4ddb5375 (UI)
+                  id                  |   name   |  source  
+--------------------------------------+----------+----------
+ c543e678-a7e0-4db8-963d-4b9c18d31e1f | Fee Note | PLATFORM
+(1 row)
+
+# generated_documents for INV-0002 (template id → PLATFORM fee note c543e678, not the clone 4ddb5375)
+                  id                  |             template_id              |          primary_entity_id           |            file_name             |         generated_at          
+--------------------------------------+--------------------------------------+--------------------------------------+----------------------------------+-------------------------------
+ 951a8914-e5a2-4a70-a96c-7b16885bf474 | c543e678-a7e0-4db8-963d-4b9c18d31e1f | 7382c448-cff0-431b-8d11-5ee0825679ce | fee-note-inv-0002-2026-10-27.pdf | 2026-10-27 23:19:49.975412+00
+(1 row)
+
+# INV-0002 + billed time entry
+                  id                  | invoice_number | status |  total  
+--------------------------------------+----------------+--------+---------
+ 7382c448-cff0-431b-8d11-5ee0825679ce | INV-0002       | SENT   | 5750.00
+(1 row)
+
+                  id                  |              invoice_id              
+--------------------------------------+--------------------------------------
+ 71027972-6017-4380-89ec-1b20529a0401 | 7382c448-cff0-431b-8d11-5ee0825679ce
+(1 row)
+

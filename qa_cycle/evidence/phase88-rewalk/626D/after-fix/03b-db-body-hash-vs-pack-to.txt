@@ -1,0 +1,10 @@
+# ADR-356 body hash = sha256(canonical JSON of document_templates.content), computed for the DB row and for the classpath body in the running image; compared to pack.json reconcile 'to' (minus 'sha256:'). (document_templates.content_hash is the install-time hash that also covers CSS, so it is a different value by design.)
+key | pack.json to | sha256(DB content) | sha256(classpath body) | DB==to
+engagement-letter-litigation b05e3603f319acb8 b05e3603f319acb8 b05e3603f319acb8 MATCH
+engagement-letter-conveyancing 32d1cc44e82e9635 32d1cc44e82e9635 32d1cc44e82e9635 MATCH
+engagement-letter-general 271b72a5100f176a 271b72a5100f176a 271b72a5100f176a MATCH
+fee-note-za 09168d1b13d1cc91 09168d1b13d1cc91 09168d1b13d1cc91 MATCH
+statement-of-account a1da22c9737608b4 a1da22c9737608b4 a1da22c9737608b4 MATCH
+matter-closure-letter a1cdbc3f8847ca08 a1cdbc3f8847ca08 a1cdbc3f8847ca08 MATCH
+deed-of-transfer 7c53c49bb5df03c3 7c53c49bb5df03c3 7c53c49bb5df03c3 MATCH
+bond-cancellation-instruction acb5037cd4adb96f acb5037cd4adb96f acb5037cd4adb96f MATCH

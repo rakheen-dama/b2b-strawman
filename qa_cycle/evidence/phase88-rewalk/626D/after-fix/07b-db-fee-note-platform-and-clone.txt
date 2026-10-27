@@ -1,0 +1,6 @@
+                  id                  |       name        |   source   | pack_id  | pack_template_key |          source_template_id          |        source_pack_install_id        | active |          created_at           
+--------------------------------------+-------------------+------------+----------+-------------------+--------------------------------------+--------------------------------------+--------+-------------------------------
+ c543e678-a7e0-4db8-963d-4b9c18d31e1f | Fee Note          | PLATFORM   | legal-za | fee-note-za       |                                      | c569873d-f993-445a-bd58-6e0597f82138 | t      | 2026-10-27 18:22:45.478002+00
+ 4ddb5375-a9c2-454f-b914-841c45975eca | Fee Note (Custom) | ORG_CUSTOM | legal-za | fee-note-za       | c543e678-a7e0-4db8-963d-4b9c18d31e1f |                                      | t      | 2026-10-27 23:17:01.623612+00
+(2 rows)
+

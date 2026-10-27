@@ -1,0 +1,9 @@
+# Client page Sipho Ndlovu loaded in the UI at 2026-10-27T23:17:37Z (server component calls GET /api/templates/readiness?entityType=CUSTOMER; the Document Templates card rendered: Power of Attorney / Letter of Demand / Client Trust Statement / Trust Receipt)
+## backend request log lines mentioning readiness:
+## LocalStack non-ListBuckets requests since 2026-10-27T23:17:37Z:
+2026-10-27T23:17:37.843  INFO --- [et.reactor-1] localstack.request.aws     : AWS s3.GetObject => 200
+GetObject count: 1
+## backend WARN/ERROR since 2026-10-27T23:17:37Z:
+## Attribution of the single GetObject: the browser itself fetched the presigned logo during the page load (Playwright network log, signature redacted):
+36. [GET] http://localhost:4567/docteams-dev/org/tenant_7d218705360b/branding/logo.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20261027T231737Z&X-Amz-SignedHeaders=host&X-Amz-Credential=[REDACTED]&X-Amz-Expires=3600&X-Amz-Signature=[REDACTED] => [200] OK
+=> 1 browser GetObject, 0 backend logo downloads for the readiness call (the controlled API window 05a shows 0 GetObject for 3 readiness calls; the preview control in 06b produced exactly 1).

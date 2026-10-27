@@ -1,0 +1,12 @@
+# Controlled window 2026-10-27T23:15:08Z: direct GET /api/templates/readiness (read-only) for the matter, INV-0001 and the client; then LocalStack S3 request log for the window
+## GET /api/templates/readiness?entityType=PROJECT&entityId=072a0d56-c63a-45d8-afb6-9d44905e0302
+[{"templateId":"6ce14be3-8750-45a5-a44b-d33295e832d1","templateName":"626B probe — letterhead keys","templateSlug":"probe-626b-letterhead-keys","ready":true,"missingFields":[]},{"templateId":"bc89ee05-e496-43b0-ae7e-cecdde3df78b","templateName":"Engagement Letter — Litigation","templateSlug":"engagement-letter-litigation","ready":true,"missingFields":[]},{"templateId":"80791878-6e4d-47fc-acbc-9ec04a2a1c54","templateName":"Engagement Letter — Litigation (Custom)","templateSlug":"engagement-letter-litigation-custom","ready":true,"missingFields":[]},{"templateId":"f304e6f1-f67d-46c3-94e0-85b87c9c
+## GET /api/templates/readiness?entityType=INVOICE&entityId=ed1c7f17-1673-4c52-b194-c778c0763d5a
+[{"templateId":"ec410665-72e3-42bb-bb20-10c3a1a3d6ef","templateName":"Invoice Cover Letter","templateSlug":"invoice-cover-letter","ready":true,"missingFields":[]},{"templateId":"c543e678-a7e0-4db8-963d-4b9c18d31e1f","templateName":"Fee Note","templateSlug":"fee-note","ready":true,"missingFields":[]}]
+HTTP 200
+
+## GET /api/templates/readiness?entityType=CUSTOMER&entityId=a64483ae-9155-4c80-b767-743b9f6b9402
+[{"templateId":"62102f39-d714-43ad-9de5-71852ed08d93","templateName":"Power of Attorney","templateSlug":"power-of-attorney","ready":true,"missingFields":[]},{"templateId":"fa103980-aae2-44ce-9a99-c08c0b719532","templateName":"Letter of Demand","templateSlug":"letter-of-demand","ready":true,"missingFields":[]},{"templateId":"5bbefa2c-d982-4577-87d3-cbbb694283a8","templateName":"Client Trust Statement","templateSlug":"client-trust-statement","ready":true,"missingFields":[]},{"templateId":"5a723620-4ea5-43af-ad61-d7d3240ea684","templateName":"Trust Receipt","templateSlug":"trust-receipt","ready":
+## LocalStack requests since 2026-10-27T23:15:08Z (excluding ListBuckets health probes):
+GetObject count: 0
+## backend WARN/ERROR since 2026-10-27T23:15:08Z:

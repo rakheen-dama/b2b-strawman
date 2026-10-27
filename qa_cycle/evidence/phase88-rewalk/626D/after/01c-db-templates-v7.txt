@@ -1,0 +1,12 @@
+       pack_template_key        |              slug              |  source  |                           content_hash                           |          created_at           |          updated_at           | has_signatory | has_firm_edit 
+--------------------------------+--------------------------------+----------+------------------------------------------------------------------+-------------------------------+-------------------------------+---------------+---------------
+ bond-cancellation-instruction  | bond-cancellation-instruction  | PLATFORM | a77c7bbde8f02edb2ded8a367a2a232e2ab843b8f8687a5a7e104ec9ab30da1a | 2026-10-27 18:22:45.47717+00  | 2026-10-27 18:22:45.477173+00 | f             | f
+ deed-of-transfer               | deed-of-transfer               | PLATFORM | 29d3fc0251d6ea0b5a0ee4d12d0ba1ccc96eed0645ee7a7601732fa33b82d6c0 | 2026-10-27 18:22:45.47525+00  | 2026-10-27 18:22:45.475254+00 | f             | f
+ engagement-letter-conveyancing | engagement-letter-conveyancing | PLATFORM | c8695520e89a44db3309243f9759425e5bc0d70e36d22f22246ced1628997354 | 2026-10-27 18:22:45.464919+00 | 2026-10-27 18:22:45.464923+00 | f             | f
+ engagement-letter-general      | engagement-letter-general      | PLATFORM | aeeb24154c4a578c2c5eaacfe236b0453a00f7f32a46e9479d0644d356bbbd18 | 2026-10-27 18:22:45.465945+00 | 2026-10-27 18:22:45.465947+00 | f             | f
+ engagement-letter-litigation   | engagement-letter-litigation   | PLATFORM | db782aee9a948464d228de72ec3ccc5454af4b902e281fc344e7d8acc67c487b | 2026-10-27 18:22:45.463649+00 | 2026-10-27 18:22:45.463653+00 | f             | f
+ fee-note-za                    | fee-note                       | PLATFORM | 3d43f66b876e70208812349184eeaf09f66ed06e628e9c409445df8c509ada7d | 2026-10-27 18:22:45.478002+00 | 2026-10-27 18:22:45.478027+00 | f             | f
+ matter-closure-letter          | matter-closure-letter          | PLATFORM | 0beac440682fea290674b0412cf736f9a2ee01d1e20e3009f7f6e6c61fc9dc80 | 2026-10-27 18:22:45.471299+00 | 2026-10-27 18:22:45.471302+00 | f             | f
+ statement-of-account           | statement-of-account           | PLATFORM | 81a596a239cb68be8c4d9a4dcbd0970529dd5a9a730eee5b7bbe70e75ac18183 | 2026-10-27 18:22:45.472549+00 | 2026-10-27 18:22:45.472553+00 | f             | f
+(8 rows)
+

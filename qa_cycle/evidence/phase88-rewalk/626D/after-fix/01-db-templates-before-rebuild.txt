@@ -1,0 +1,27 @@
+       pack_template_key        |   source   |                  id                  |                           content_hash                           |          updated_at           | tagged 
+--------------------------------+------------+--------------------------------------+------------------------------------------------------------------+-------------------------------+--------
+ bond-cancellation-instruction  | PLATFORM   | 629a7ecc-763c-4c82-b426-0d1dd98e207b | 2bcd36ae1ef218d1b26d33c9a2e4708506a4e241f176ff3c51bcb96c556f4ede | 2026-10-27 22:34:31.546614+00 | t
+ client-trust-statement         | PLATFORM   | 5bbefa2c-d982-4577-87d3-cbbb694283a8 | 013aadbd7efd769b062608557acf794fca1cc599a8f6284a7ac7b823edbb1b42 | 2026-10-27 18:22:45.469691+00 | t
+ deed-of-transfer               | PLATFORM   | c47c8399-ba10-4f3f-8ca4-7c44a51ff8c1 | 759517379814b1c7347447fb4275e869df474eb3362ca5e91e0dca6c2716b0f5 | 2026-10-27 22:34:31.538656+00 | t
+ engagement-letter-conveyancing | PLATFORM   | 4ee6eab3-0ac6-4930-b644-b1a67a5919f7 | 87fa6527730e879a362d337e976daf06ad21abf384dd770fbfb12acd97c6c062 | 2026-10-27 22:34:31.486223+00 | t
+ engagement-letter-general      | PLATFORM   | 4aa035e5-dcd4-4c4e-9146-c2dcee848e8c | 083fca6958e7829c74b2e5d01dac5e48df857fd0f69d537d8bbbaa67d80204c7 | 2026-10-27 22:34:31.493806+00 | t
+ engagement-letter-litigation   | ORG_CUSTOM | 80791878-6e4d-47fc-acbc-9ec04a2a1c54 |                                                                  | 2026-10-27 22:33:02.692423+00 | f
+ engagement-letter-litigation   | PLATFORM   | bc89ee05-e496-43b0-ae7e-cecdde3df78b | 70d2a8378ff6b07fad460516b6af7078ffc13a331c80ca44be31085229d05de6 | 2026-10-27 22:34:31.472398+00 | t
+ fee-note-za                    | PLATFORM   | c543e678-a7e0-4db8-963d-4b9c18d31e1f | bfba78821713fcdfd06d5888605682476bd541e103dfe0f7f16f743dca761ad9 | 2026-10-27 22:34:31.554936+00 | t
+ founding-affidavit             | PLATFORM   | 172d4dea-bc5f-44b8-a619-e243543c78ea | bdca1f65730dee32df7d3754557839d8b50a0b7166d890c663f528f2a728976d | 2026-10-27 18:22:45.468389+00 | t
+ letter-of-demand               | PLATFORM   | fa103980-aae2-44ce-9a99-c08c0b719532 | 34e69080b1112ad593cb50a37e3e9b0290dcadb508a9049847eec7a52a335d1e | 2026-10-27 18:22:45.469139+00 | t
+ matter-closure-letter          | PLATFORM   | 30854651-553f-4eb1-88af-8a87e5706dd7 | 2adde9490dc8b654f4a304132a4afedae9e9bb99b6704f8fce2ce0a2eb40dc1c | 2026-10-27 22:34:31.520283+00 | t
+ notice-of-motion               | PLATFORM   | 3e376975-c3a3-466d-a22a-23784551dcd6 | d7f1e02bd30324f650f92909f3516ec32f7fbe0da0f6484b36103937236ed331 | 2026-10-27 18:22:45.467465+00 | t
+ offer-to-purchase              | PLATFORM   | 880f4fd6-649c-416a-89ca-b9b9875cd4ed | 28529ecd0118efeb72510c41ba2bb08b10dbd550dc3db97777cd6d30137382ee | 2026-10-27 18:22:45.474254+00 | t
+ power-of-attorney              | PLATFORM   | 62102f39-d714-43ad-9de5-71852ed08d93 | 24652e88b31aa294e87e089f3296905407d78700b10f64d5089ec028c792b053 | 2026-10-27 18:22:45.46675+00  | t
+ power-of-attorney-transfer     | PLATFORM   | 71d50aaf-b928-4296-be84-5545f944dfc6 | c45382f83b9af9de65c9565fa2f8650fbdcf80991d9baeb9617acbc26da3b095 | 2026-10-27 18:22:45.476129+00 | t
+ section-35-cover-letter        | PLATFORM   | fc5db0c9-1f53-465c-9301-ebfbb6913392 | 71fd1df04eecee1f37cad0538ab1aa3404aaca52496a1280c58774182648752b | 2026-10-27 18:22:45.470734+00 | t
+ statement-of-account           | PLATFORM   | e30f171e-2468-4ee6-b1ff-1b52af046bcc | 868b239893d17622a7384c4a05e4befce7e33a43f972466ccb0173ffd1a230ca | 2026-10-27 22:34:31.528237+00 | t
+ trust-receipt                  | PLATFORM   | 5a723620-4ea5-43af-ad61-d7d3240ea684 | c9a6235a9040e9e25f9d4a3159f9a51957ffbeeb8567a0469f3266ef8ada21e4 | 2026-10-27 18:22:45.470254+00 | t
+(18 rows)
+
+ pack_id  | pack_version 
+----------+--------------
+ legal-za | 8
+(1 row)
+

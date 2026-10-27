@@ -1,0 +1,8 @@
+2026-10-27T23:19:49.699825168Z INFO InvoiceTransitionService Marked invoice 7382c448-cff0-431b-8d11-5ee0825679ce as sent
+2026-10-27T23:19:49.961574918Z INFO PdfRenderingService Generated PDF: template=fee-note, entity=7382c448-cff0-431b-8d11-5ee0825679ce, clauses=0, size=4015bytes
+2026-10-27T23:19:49.976206876Z INFO GeneratedDocumentService Created generated document: id=951a8914-e5a2-4a70-a96c-7b16885bf474, template=c543e678-a7e0-4db8-963d-4b9c18d31e1f, entity=INVOICE/7382c448-cff0-431b-8d11-5ee0825679ce
+2026-10-27T23:19:50.008773709Z INFO PortalDocumentNotificationHandler Skipping portal-document-ready: notify_client not requested (template=fee-note, doc=951a8914-e5a2-4a70-a96c-7b16885bf474)
+2026-10-27T23:19:50.645302085Z INFO InvoiceEmailService Invoice email sent for invoice=7382c448-cff0-431b-8d11-5ee0825679ce to=sipho.ndlovu.mvr15e76ef9a@example.com
+2026-10-27T23:20:08.607693302Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T23:20:08.753777552Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+IncorrectResultSize count: 0

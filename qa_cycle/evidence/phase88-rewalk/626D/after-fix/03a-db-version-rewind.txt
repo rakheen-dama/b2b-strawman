@@ -1,0 +1,13 @@
+-- observer recipe (625E/625F): rewind the legal-za pack version to re-open the reconcile gate
+ pack_id  | pack_version 
+----------+--------------
+ legal-za | 8
+(1 row)
+
+UPDATE tenant_7d218705360b.pack_install SET pack_version = '7' WHERE pack_id = 'legal-za';
+UPDATE 1
+ pack_id  | pack_version 
+----------+--------------
+ legal-za | 7
+(1 row)
+

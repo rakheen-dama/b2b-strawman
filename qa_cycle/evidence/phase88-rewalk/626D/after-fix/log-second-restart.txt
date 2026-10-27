@@ -1,0 +1,16 @@
+# second restart at 2026-10-27T23:22:44Z
+2026-10-27T23:23:03.583059258Z INFO PackInstallService Pack legal-za already installed (internal path), skipping
+2026-10-27T23:23:03.681380133Z INFO PackInstallService Pack automation-legal-za already installed (internal path), skipping
+2026-10-27T23:23:03.699326716Z INFO ProjectTemplatePackSeeder Project-template pack legal-za-project-templates already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T23:23:03.744240924Z INFO PackReconciliationRunner Pack reconciliation: checked 1 tenants, 1 succeeded, 0 failed
+# DB after second restart
+ pack_id  | pack_version 
+----------+--------------
+ legal-za | 8
+(1 row)
+
+ legal_za_templates_updated_after_restart 
+------------------------------------------
+                                        0
+(1 row)
+

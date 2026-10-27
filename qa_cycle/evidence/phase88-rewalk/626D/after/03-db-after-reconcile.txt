@@ -1,0 +1,23 @@
+                  id                  | pack_id  | pack_version | item_count |         installed_at          
+--------------------------------------+----------+--------------+------------+-------------------------------
+ c569873d-f993-445a-bd58-6e0597f82138 | legal-za | 8            |         17 | 2026-10-27 18:22:45.461527+00
+(1 row)
+
+       pack_template_key        |   source   |                           content_hash                           |          updated_at           | signatory | logo | banking | on_request | principal_attorney | firm_edit 
+--------------------------------+------------+------------------------------------------------------------------+-------------------------------+-----------+------+---------+------------+--------------------+-----------
+ bond-cancellation-instruction  | PLATFORM   | 2bcd36ae1ef218d1b26d33c9a2e4708506a4e241f176ff3c51bcb96c556f4ede | 2026-10-27 22:34:31.546614+00 | t         | f    | f       | f          | f                  | f
+ deed-of-transfer               | PLATFORM   | 759517379814b1c7347447fb4275e869df474eb3362ca5e91e0dca6c2716b0f5 | 2026-10-27 22:34:31.538656+00 | t         | f    | f       | f          | f                  | f
+ engagement-letter-conveyancing | PLATFORM   | 87fa6527730e879a362d337e976daf06ad21abf384dd770fbfb12acd97c6c062 | 2026-10-27 22:34:31.486223+00 | t         | t    | f       | f          | f                  | f
+ engagement-letter-general      | PLATFORM   | 083fca6958e7829c74b2e5d01dac5e48df857fd0f69d537d8bbbaa67d80204c7 | 2026-10-27 22:34:31.493806+00 | t         | t    | f       | f          | f                  | f
+ engagement-letter-litigation   | ORG_CUSTOM |                                                                  | 2026-10-27 22:33:02.692423+00 | f         | f    | f       | f          | f                  | t
+ engagement-letter-litigation   | PLATFORM   | 70d2a8378ff6b07fad460516b6af7078ffc13a331c80ca44be31085229d05de6 | 2026-10-27 22:34:31.472398+00 | t         | t    | f       | f          | f                  | f
+ fee-note-za                    | PLATFORM   | bfba78821713fcdfd06d5888605682476bd541e103dfe0f7f16f743dca761ad9 | 2026-10-27 22:34:31.554936+00 | f         | t    | t       | f          | f                  | f
+ matter-closure-letter          | PLATFORM   | 2adde9490dc8b654f4a304132a4afedae9e9bb99b6704f8fce2ce0a2eb40dc1c | 2026-10-27 22:34:31.520283+00 | t         | t    | f       | f          | f                  | f
+ statement-of-account           | PLATFORM   | 868b239893d17622a7384c4a05e4befce7e33a43f972466ccb0173ffd1a230ca | 2026-10-27 22:34:31.528237+00 | f         | t    | t       | f          | f                  | f
+(9 rows)
+
+ updated_now | total | untagged 
+-------------+-------+----------
+           8 |    18 |        1
+(1 row)
+

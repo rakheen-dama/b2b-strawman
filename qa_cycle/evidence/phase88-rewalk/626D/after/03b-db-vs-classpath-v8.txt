@@ -1,0 +1,10 @@
+# canonical (jq -cS) sha256 prefix: DB PLATFORM row content vs template-packs/legal-za/<file> in the running image's app.jar
+engagement-letter-litigation db=54c0d9120f25379e v8-classpath=54c0d9120f25379e v7=33098ba8d1f8e72a DB==V8
+engagement-letter-conveyancing db=8643f568eac5cd41 v8-classpath=8643f568eac5cd41 v7=cfb603185b6fbe7f DB==V8
+engagement-letter-general db=0f55354ee42d2119 v8-classpath=0f55354ee42d2119 v7=741eccda3daf81e5 DB==V8
+fee-note-za db=7b0496c759a0e9a1 v8-classpath=7b0496c759a0e9a1 v7=3733e937d9c2d751 DB==V8
+statement-of-account db=9880100cf24842a2 v8-classpath=9880100cf24842a2 v7=e9e4880cc9e0aa0c DB==V8
+matter-closure-letter db=1596430216f0061d v8-classpath=1596430216f0061d v7=bfe8fa3b0bf35b34 DB==V8
+deed-of-transfer db=9c2f1596ef37cc97 v8-classpath=9c2f1596ef37cc97 v7=5ba4e8b2f231c428 DB==V8
+bond-cancellation-instruction db=546c1edd9fa630b6 v8-classpath=546c1edd9fa630b6 v7=4af6ed492eaaa2de DB==V8
+clone 80791878 (ORG_CUSTOM): hash differs from v7 file even minus the edit (the editor re-serialises the doc on save, e.g. node attrs). Still has 'Firm edit 626D.', no org.signatory, no org.logoUrl, updated_at 22:33:02 (before the 22:34:31 reconcile). The reconcile did not touch it.

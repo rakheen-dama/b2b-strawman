@@ -1,0 +1,8 @@
+2026-10-27T22:44:55.717890837Z INFO VerticalProfileRegistry Loaded vertical profile: legal-za
+2026-10-27T22:45:02.153997049Z INFO PackReconciliationRunner Running pack reconciliation for 1 tenants
+2026-10-27T22:45:02.493661424Z INFO PackInstallService Pack legal-za already installed (internal path), skipping
+2026-10-27T22:45:02.554230382Z INFO CompliancePackSeeder Compliance pack legal-za-individual-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T22:45:02.556452716Z INFO CompliancePackSeeder Compliance pack legal-za-trust-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T22:45:02.620453591Z INFO PackInstallService Pack automation-legal-za already installed (internal path), skipping
+2026-10-27T22:45:02.635538591Z INFO ProjectTemplatePackSeeder Project-template pack legal-za-project-templates already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T22:45:02.682831049Z INFO PackReconciliationRunner Pack reconciliation: checked 1 tenants, 1 succeeded, 0 failed

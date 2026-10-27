@@ -1,0 +1,39 @@
+           E2E Test Organization
+           88 Fredman Drive, Illovo Point, 3rd Floor, Sandown 2196, South Africa
+           Tel: +27 11 555 0199
+           Email: accounts@ndlovu-attorneys.co.za
+           Web: https://www.ndlovu-attorneys.co.za
+           VAT Registration No: 4123456789
+           FEE NOTE
+           To: Apex Holdings mvr15e76ef9a
+           12 Rivonia Road
+           Sandton 2196
+           ZA
+           Client VAT Number: 9012345678
+           Matter: Apex Holdings — Shareholders' Agreement Review mvr15e76ef9a
+           Fee Note Number: INV-0001
+           Issue Date: 27 October 2026
+           Due Date: 26 November 2026
+           Currency: ZAR
+           Fees and Disbursements
+                                                            Unit                Total 
+            Description                                Qty Price       VAT      (incl. 
+                                                            (excl.              VAT)
+                                                            VAT)
+             Counsel fees: Counsel's opinion on shareholders' 
+             agreement mvr15e76ef9a (Adv. N. Mokoena SC,     1    R3 500,00   R525,00   R4 025,00
+             2026-10-27)
+            Amount Summary
+            Subtotal (excl. VAT): R3 500,00
+            VAT: R525,00
+            Total Due: R4 025,00
+            Banking details
+            Bank: Standard Bank
+            Branch code: 051001
+            Account number: 0012345678
+            Account type: Cheque
+            Payment reference: INV-0001
+            Please use your fee note number as the payment reference.
+            Where the practice is registered for VAT, this fee note constitutes a tax invoice as defined in 
+            section 20 of the Value-Added Tax Act 89 of 1991.
+            Test Footer 1793137061590

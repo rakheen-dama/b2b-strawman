@@ -1,0 +1,16 @@
+# matter-closure-letter (DB PLATFORM row 30854651) signatory block structure
+paragraph: Yours faithfully,
+conditionalBlock org.signatory.name isNotEmpty 
+  paragraph: {{org.signatory.name}}
+conditionalBlock org.signatory.designation isNotEmpty 
+  paragraph: {{org.signatory.designation}}
+paragraph: {{org.name}}
+# engagement-letter-general
+paragraph: Yours faithfully,
+conditionalBlock org.signatory.name isNotEmpty 
+  paragraph: {{org.signatory.name}}
+conditionalBlock org.signatory.designation isNotEmpty 
+  paragraph: {{org.signatory.designation}}
+paragraph: {{org.name}}
+paragraph: {{org.documentFooterText}}
+# empty <p></p> in the closure preview is the pre-existing 'Reason for closure' body paragraph (identical in after/09-matter-closure-letter-preview-api.html), not the signatory block

@@ -1,0 +1,7 @@
+{
+ "ID": "bFVoYg4CmcDFgSEFV5quZr",
+ "MessageID": "354810536.3.1793143190588@06850236f8f4",
+ "Date": "2026-10-27T23:19:50Z",
+ "Subject": "Fee Note INV-0002 from E2E Test Organization"
+}
+[('INV-0002.pdf', 'application/pdf', 4015, '2')]

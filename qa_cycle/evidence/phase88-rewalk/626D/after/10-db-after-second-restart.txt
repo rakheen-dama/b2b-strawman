@@ -1,0 +1,10 @@
+ pack_version 
+--------------
+ 8
+(1 row)
+
+ updated_since_restart2 
+------------------------
+                      0
+(1 row)
+

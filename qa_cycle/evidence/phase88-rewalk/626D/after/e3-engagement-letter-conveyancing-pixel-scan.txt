@@ -1,0 +1,15 @@
+image XObjects (/Subtype /Image): 1
+  image 120x120
+content-stream colours (hex, op, count):
+  #1b3a4b rg x8
+  #333333 rg x8
+page-1 raster 661x935: coloured (non-grey) sampled pixels = 3733
+  #183848 x2483
+  #087068 x484
+  #f0a020 x484
+  #a89038 x88
+  #588050 x88
+  #207868 x44
+  #e0a028 x44
+  #708848 x4
+  coloured rows span y=69..843

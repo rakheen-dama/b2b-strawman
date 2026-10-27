@@ -90,9 +90,14 @@ public class ActivityService {
    * Formats audit events into activity items, batch-resolving actor names (members for USER actors,
    * portal_contacts for PORTAL_CONTACT actors — one query each, never per row). The single sentence
    * path for the matter feed and Home "Recent Activity" (ADR-349: one formatter, Home delegates),
-   * so the same event reads the same sentence and actor on both. Performs no row access check:
-   * callers select the rows the actor may see. Amounts in the sentences are redacted per {@link
-   * #amountVisibility}. Items are returned in the order of {@code events}.
+   * so the same event reads the same sentence and actor on both. Amounts in the sentences are
+   * redacted per {@link #amountVisibility}. Items are returned in the order of {@code events}.
+   *
+   * <p><b>Caller contract — pre-authorised rows only.</b> This method performs <b>no</b> row access
+   * check (no matter membership, client scoping or entity filtering): it formats whatever it is
+   * given. It is public only so {@code DashboardService} can delegate (ADR-349); every caller must
+   * have already selected rows the actor may see (as {@code getProjectActivity} and the Home feed
+   * query do). Never pass unfiltered audit rows.
    *
    * @param events the audit events to format (already access-filtered by the caller)
    * @param actor the viewer, for amount redaction

@@ -6,7 +6,6 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.template.VariableFormatter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,18 +32,16 @@ public class ActivityMessageFormatter {
    */
   public record AmountVisibility(boolean financial, boolean trust) {
     /** Everything visible — for callers that have already gated on both capabilities. */
-    public static final AmountVisibility ALL = new AmountVisibility(true, true);
+    static final AmountVisibility ALL = new AmountVisibility(true, true);
   }
 
   /** Detail keys whose values are money (rendered through {@link #money}). */
   private static final Set<String> MONEY_KEYS = Set.of("amount", "excess", "budget_amount");
 
-  /** Formats with every amount visible ({@link AmountVisibility#ALL}). */
-  public ActivityItem format(
-      AuditEvent event, Map<UUID, Member> actorMap, Map<UUID, PortalContact> portalContactMap) {
-    return format(event, actorMap, portalContactMap, AmountVisibility.ALL);
-  }
-
+  /**
+   * Formats one audit event as an activity item. {@code visibility} is required (no
+   * all-amounts-visible default) so every caller decides the viewer's amount redaction explicitly.
+   */
   public ActivityItem format(
       AuditEvent event,
       Map<UUID, Member> actorMap,
@@ -603,6 +600,9 @@ public class ActivityMessageFormatter {
   }
 
   private String resolveEntityName(String entityType, Map<String, Object> details) {
+    if (entityType == null) {
+      return "unknown";
+    }
     return switch (entityType) {
       case "task" -> getTitle(details);
       case "document" -> getFileName(details);
@@ -651,10 +651,6 @@ public class ActivityMessageFormatter {
     visible.keySet().removeAll(hidden);
     return visible;
   }
-
-  /** Sentence dates: VariableFormatter's "d MMMM yyyy" pattern, plain text (never HTML-escaped). */
-  private static final DateTimeFormatter SENTENCE_DATE =
-      DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH);
 
   /** R-4: acceptance document name keys, most human first. */
   private static final String[] ACCEPTANCE_DOCUMENT_KEYS = {
@@ -816,14 +812,18 @@ public class ActivityMessageFormatter {
     return prefixed(" of ", money(details, amountKey, null));
   }
 
-  /** R-15: an ISO date (or date-time) as "d MMMM yyyy"; null when absent or unparsable. */
+  /**
+   * R-15: an ISO date (or date-time) as "d MMMM yyyy" through {@link
+   * VariableFormatter#formatDateText} (plain text, the document date pattern); null when absent or
+   * unparsable.
+   */
   private static String date(Map<String, Object> details, String key) {
     String raw = str(details, key);
     if (raw == null || raw.length() < 10) {
       return null;
     }
     try {
-      return LocalDate.parse(raw.substring(0, 10)).format(SENTENCE_DATE);
+      return VariableFormatter.formatDateText(LocalDate.parse(raw.substring(0, 10)));
     } catch (DateTimeParseException e) {
       return null;
     }

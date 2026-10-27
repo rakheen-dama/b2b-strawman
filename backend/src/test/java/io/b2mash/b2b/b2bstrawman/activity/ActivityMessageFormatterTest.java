@@ -47,7 +47,7 @@ class ActivityMessageFormatterTest {
   @Test
   void taskCreatedProducesCorrectMessage() {
     var event = createEvent("task.created", "task", Map.of("title", "Fix login bug"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice created task \"Fix login bug\"");
     assertThat(item.actorName()).isEqualTo("Alice");
     assertThat(item.entityType()).isEqualTo("task");
@@ -63,7 +63,7 @@ class ActivityMessageFormatterTest {
             Map.of(
                 "title", Map.of("from", "Old Title", "to", "Fix login bug"),
                 "assignee_id", Map.of("from", "", "to", UUID.randomUUID().toString())));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice assigned task \"Fix login bug\"");
   }
 
@@ -76,7 +76,7 @@ class ActivityMessageFormatterTest {
             Map.of(
                 "title", Map.of("from", "Fix login bug", "to", "Fix login bug"),
                 "status", Map.of("from", "OPEN", "to", "IN_PROGRESS")));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message())
         .isEqualTo("Alice changed task \"Fix login bug\" status to IN_PROGRESS");
   }
@@ -85,7 +85,7 @@ class ActivityMessageFormatterTest {
   void taskUpdatedGenericProducesUpdateMessage() {
     var event =
         createEvent("task.updated", "task", Map.of("title", Map.of("from", "Old", "to", "New")));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice updated task \"New\"");
   }
 
@@ -103,7 +103,7 @@ class ActivityMessageFormatterTest {
                 "Draft particulars of claim",
                 "assignee_id",
                 Map.of("from", "", "to", UUID.randomUUID().toString())));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice assigned task \"Draft particulars of claim\"");
     assertThat(item.message()).doesNotContain("unknown");
   }
@@ -118,7 +118,7 @@ class ActivityMessageFormatterTest {
                 "title", Map.of("from", "Task", "to", "Task"),
                 "assignee_id", Map.of("from", "", "to", UUID.randomUUID().toString()),
                 "status", Map.of("from", "OPEN", "to", "IN_PROGRESS")));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).contains("assigned task");
   }
 
@@ -129,7 +129,7 @@ class ActivityMessageFormatterTest {
             "task.claimed",
             "task",
             Map.of("title", "Fix login bug", "assignee_id", ACTOR_ID.toString()));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice claimed task \"Fix login bug\"");
   }
 
@@ -140,14 +140,14 @@ class ActivityMessageFormatterTest {
             "task.released",
             "task",
             Map.of("title", "Fix login bug", "previous_assignee_id", ACTOR_ID.toString()));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice released task \"Fix login bug\"");
   }
 
   @Test
   void documentUploadedProducesCorrectMessage() {
     var event = createEvent("document.uploaded", "document", Map.of("file_name", "Q4 Report.pdf"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice uploaded document \"Q4 Report.pdf\"");
     assertThat(item.entityName()).isEqualTo("Q4 Report.pdf");
   }
@@ -155,7 +155,7 @@ class ActivityMessageFormatterTest {
   @Test
   void documentDeletedProducesCorrectMessage() {
     var event = createEvent("document.deleted", "document", Map.of("file_name", "Q4 Report.pdf"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice deleted document \"Q4 Report.pdf\"");
   }
 
@@ -170,7 +170,7 @@ class ActivityMessageFormatterTest {
                 "entity_id", UUID.randomUUID().toString(),
                 "entity_name", "Pre-trial conference preparation",
                 "body", "Great work!"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message())
         .isEqualTo("Alice commented on task \"Pre-trial conference preparation\"");
   }
@@ -185,7 +185,7 @@ class ActivityMessageFormatterTest {
                 "entity_type", "PROJECT",
                 "entity_name", "Kgosi Holdings -- FY2025/26 Year-End Pack",
                 "body", "@Bob Need FS draft by day 30"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message())
         .isEqualTo("Alice commented on matter \"Kgosi Holdings -- FY2025/26 Year-End Pack\"");
     assertThat(item.message()).doesNotContain("'project'");
@@ -201,7 +201,7 @@ class ActivityMessageFormatterTest {
                 "entity_type", "TASK",
                 "entity_id", UUID.randomUUID().toString(),
                 "body", "Great work!"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice commented on task \"task\"");
   }
 
@@ -212,7 +212,7 @@ class ActivityMessageFormatterTest {
             "time_entry.created",
             "time_entry",
             Map.of("duration_minutes", 150, "task_id", UUID.randomUUID().toString()));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).contains("Alice logged 2h 30m on task");
   }
 
@@ -223,7 +223,7 @@ class ActivityMessageFormatterTest {
             "time_entry.created",
             "time_entry",
             Map.of("duration_minutes", 45, "task_id", UUID.randomUUID().toString()));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).contains("logged 45m");
   }
 
@@ -234,14 +234,14 @@ class ActivityMessageFormatterTest {
             "time_entry.created",
             "time_entry",
             Map.of("duration_minutes", 120, "task_id", UUID.randomUUID().toString()));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).contains("logged 2h");
   }
 
   @Test
   void projectMemberAddedProducesCorrectMessage() {
     var event = createEvent("project_member.added", "project_member", Map.of("name", "Bob"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice added Bob to the matter team");
     assertThat(item.entityName()).isEqualTo("Bob");
   }
@@ -249,7 +249,7 @@ class ActivityMessageFormatterTest {
   @Test
   void projectMemberRemovedProducesCorrectMessage() {
     var event = createEvent("project_member.removed", "project_member", Map.of("name", "Bob"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice removed Bob from the matter team");
   }
 
@@ -258,7 +258,7 @@ class ActivityMessageFormatterTest {
     // 625B (ADR-349): the default is the legal generic (verb map + noun map), never the raw
     // "<actor> performed <key> on <entity_type>".
     var event = createEvent("customer.updated", "customer", Map.of());
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice updated the client");
     assertThat(item.message()).doesNotContain("performed").doesNotContain("customer.updated");
   }
@@ -277,7 +277,7 @@ class ActivityMessageFormatterTest {
             null,
             Map.of("title", "Auto-created task"));
     var event = new AuditEvent(record);
-    var item = formatter.format(event, Map.of(), emptyPortalContactMap());
+    var item = formatAll(event, Map.of(), emptyPortalContactMap());
     assertThat(item.actorName()).isEqualTo("System");
     assertThat(item.actorAvatarUrl()).isNull();
     assertThat(item.message()).contains("System created task");
@@ -298,7 +298,7 @@ class ActivityMessageFormatterTest {
             null,
             Map.of("title", "Some task"));
     var event = new AuditEvent(record);
-    var item = formatter.format(event, Map.of(), emptyPortalContactMap());
+    var item = formatAll(event, Map.of(), emptyPortalContactMap());
     assertThat(item.actorName()).isEqualTo("Unknown");
   }
 
@@ -317,7 +317,7 @@ class ActivityMessageFormatterTest {
             null,
             Map.of("actor_name", "Jane Customer", "body", "Hello"));
     var event = new AuditEvent(record);
-    var item = formatter.format(event, Map.of(), emptyPortalContactMap());
+    var item = formatAll(event, Map.of(), emptyPortalContactMap());
     assertThat(item.actorName()).isEqualTo("Jane Customer");
   }
 
@@ -328,7 +328,7 @@ class ActivityMessageFormatterTest {
             "document.generated",
             "generated_document",
             Map.of("file_name", "engagement-letter.pdf", "template_name", "Engagement Letter"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message())
         .isEqualTo(
             "Alice generated document \"engagement-letter.pdf\" from template \"Engagement Letter\"");
@@ -342,7 +342,7 @@ class ActivityMessageFormatterTest {
             "docx_document.generated",
             "generated_document",
             Map.of("fileName", "invoice-acme.docx", "template_name", "Invoice Template"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).contains("generated document").contains("Invoice Template");
   }
 
@@ -355,7 +355,7 @@ class ActivityMessageFormatterTest {
             "information_request.item_accepted",
             "request_item",
             Map.of("request_number", "REQ-0042", "item_name", "ID copy"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice accepted \"ID copy\" for REQ-0042");
     assertThat(item.message()).doesNotContain("unknown");
   }
@@ -373,7 +373,7 @@ class ActivityMessageFormatterTest {
             "information_request.sent",
             "information_request",
             Map.of("request_number", "REQ-0001", "contact_name", "Sipho Dlamini"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Information request REQ-0001 sent to Sipho Dlamini");
   }
 
@@ -389,7 +389,7 @@ class ActivityMessageFormatterTest {
             "information_request.sent",
             "information_request",
             Map.of("request_number", "REQ-0001"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Information request REQ-0001 sent to the client contact");
     assertThat(item.message()).doesNotContain("Alice");
   }
@@ -426,7 +426,7 @@ class ActivityMessageFormatterTest {
             Map.of("file_name", "ID copy.pdf"));
     var event = new AuditEvent(record);
 
-    var item = formatter.format(event, Map.of(), Map.of(portalContactId, contact));
+    var item = formatAll(event, Map.of(), Map.of(portalContactId, contact));
 
     assertThat(item.actorName()).isEqualTo("Sipho Dlamini");
     assertThat(item.actorAvatarUrl()).isNull();
@@ -464,7 +464,7 @@ class ActivityMessageFormatterTest {
             Map.of("file_name", "FICA.pdf"));
     var event = new AuditEvent(record);
 
-    var item = formatter.format(event, Map.of(), Map.of(portalContactId, contact));
+    var item = formatAll(event, Map.of(), Map.of(portalContactId, contact));
 
     assertThat(item.actorName()).isEqualTo("client@example.com");
     assertThat(item.actorAvatarUrl()).isNull();
@@ -493,7 +493,7 @@ class ActivityMessageFormatterTest {
             null,
             Map.of("file_name", "doc.pdf", "actor_name", "Anonymized Contact"));
     var withDetailsEvent = new AuditEvent(withDetailsRecord);
-    var withDetailsItem = formatter.format(withDetailsEvent, Map.of(), Map.of());
+    var withDetailsItem = formatAll(withDetailsEvent, Map.of(), Map.of());
     assertThat(withDetailsItem.actorName()).isEqualTo("Anonymized Contact");
 
     // 3b — orphan with no actor_name in details → final fallback.
@@ -509,10 +509,16 @@ class ActivityMessageFormatterTest {
             null,
             Map.of("file_name", "doc.pdf"));
     var bareEvent = new AuditEvent(bareRecord);
-    var bareItem = formatter.format(bareEvent, Map.of(), Map.of());
+    var bareItem = formatAll(bareEvent, Map.of(), Map.of());
     assertThat(bareItem.actorName()).isEqualTo("Portal user");
     assertThat(bareItem.actorAvatarUrl()).isNull();
     assertThat(bareItem.message()).doesNotContain("System").doesNotContain("Unknown");
+  }
+
+  @Test
+  void nullEntityTypeResolvesUnknownEntityNameInsteadOfThrowing() {
+    var item = formatAll(createEvent("task.created", null, Map.of()), actorMap(), Map.of());
+    assertThat(item.entityName()).isEqualTo("unknown");
   }
 
   // ---------- LZKC-019: portal/document/statement/closure events must render friendly copy ----
@@ -563,8 +569,7 @@ class ActivityMessageFormatterTest {
                 "PROJECT",
                 "customer_id",
                 UUID.randomUUID().toString()));
-    var item =
-        formatter.format(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
+    var item = formatAll(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
     assertThat(item.message())
         .isEqualTo("Sipho Dlamini downloaded document \"statement-of-account-2026-03.pdf\"");
     assertThat(item.message()).doesNotContain("performed");
@@ -579,8 +584,7 @@ class ActivityMessageFormatterTest {
             "document",
             portalContactId,
             Map.of("file_name", "FICA-ID-copy.pdf", "request_id", UUID.randomUUID().toString()));
-    var item =
-        formatter.format(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
+    var item = formatAll(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
     assertThat(item.message())
         .isEqualTo("Sipho Dlamini started uploading document \"FICA-ID-copy.pdf\"");
     assertThat(item.message()).doesNotContain("performed");
@@ -595,8 +599,7 @@ class ActivityMessageFormatterTest {
             "request_item",
             portalContactId,
             Map.of("item_name", "Proof of address", "request_number", "REQ-0042"));
-    var item =
-        formatter.format(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
+    var item = formatAll(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
     assertThat(item.message())
         .isEqualTo("Sipho Dlamini submitted \"Proof of address\" for REQ-0042");
     assertThat(item.message()).doesNotContain("performed");
@@ -610,7 +613,7 @@ class ActivityMessageFormatterTest {
             "information_request.item_submitted",
             "request_item",
             Map.of("item_name", "ID copy", "request_number", "REQ-0007"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice submitted \"ID copy\" for REQ-0007");
     assertThat(item.message()).doesNotContain("performed");
   }
@@ -624,8 +627,7 @@ class ActivityMessageFormatterTest {
             "invoice",
             portalContactId,
             Map.of("invoice_number", "INV-0012", "amount", "1500.00"));
-    var item =
-        formatter.format(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
+    var item = formatAll(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
     assertThat(item.message()).isEqualTo("Sipho Dlamini paid fee note INV-0012");
     assertThat(item.message()).doesNotContain("performed");
   }
@@ -636,8 +638,7 @@ class ActivityMessageFormatterTest {
     var event =
         portalContactEvent(
             "portal.invoice.paid", "invoice", portalContactId, Map.of("invoice_number", ""));
-    var item =
-        formatter.format(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
+    var item = formatAll(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
     assertThat(item.message()).isEqualTo("Sipho Dlamini paid a fee note");
   }
 
@@ -650,8 +651,7 @@ class ActivityMessageFormatterTest {
             "document",
             portalContactId,
             Map.of("file_name", "engagement-letter.pdf"));
-    var item =
-        formatter.format(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
+    var item = formatAll(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
     assertThat(item.message())
         .isEqualTo("Sipho Dlamini acknowledged document \"engagement-letter.pdf\"");
   }
@@ -661,8 +661,7 @@ class ActivityMessageFormatterTest {
     UUID portalContactId = UUID.randomUUID();
     var event =
         portalContactEvent("portal.document.acknowledged", "document", portalContactId, Map.of());
-    var item =
-        formatter.format(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
+    var item = formatAll(event, Map.of(), Map.of(portalContactId, siphoContact(portalContactId)));
     assertThat(item.message()).isEqualTo("Sipho Dlamini acknowledged a document");
     assertThat(item.message()).doesNotContain("performed");
   }
@@ -678,7 +677,7 @@ class ActivityMessageFormatterTest {
                 "project_id", UUID.randomUUID().toString(),
                 "period_start", "2026-03-01",
                 "period_end", "2026-03-31"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message())
         .isEqualTo("Alice generated a statement of account \"statement-of-account-2026-03.pdf\"");
     assertThat(item.message()).doesNotContain("performed");
@@ -693,7 +692,7 @@ class ActivityMessageFormatterTest {
             "document.generated_with_clauses",
             "generated_document",
             Map.of("template_name", "Engagement Letter", "clause_count", 3));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message())
         .isEqualTo("Alice generated a document with clauses from template \"Engagement Letter\"");
     assertThat(item.message()).doesNotContain("performed");
@@ -704,7 +703,7 @@ class ActivityMessageFormatterTest {
     var event =
         createEvent(
             "document.created", "document", Map.of("scope", "PROJECT", "file_name", "Mandate.pdf"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice created document \"Mandate.pdf\"");
     assertThat(item.message()).doesNotContain("performed");
   }
@@ -716,7 +715,7 @@ class ActivityMessageFormatterTest {
             "document.accessed",
             "document",
             Map.of("scope", "PROJECT", "file_name", "Q4 Report.pdf"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice downloaded document \"Q4 Report.pdf\"");
     assertThat(item.message()).doesNotContain("performed");
   }
@@ -729,7 +728,7 @@ class ActivityMessageFormatterTest {
             "document.visibility_changed",
             "document",
             Map.of("visibility", Map.of("from", "INTERNAL", "to", "SHARED")));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice changed document visibility to SHARED");
     assertThat(item.message()).doesNotContain("performed");
   }
@@ -741,7 +740,7 @@ class ActivityMessageFormatterTest {
             "matter_closure.closed",
             "project",
             Map.of("reason", "COMPLETED", "override_used", false));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice closed the matter");
     assertThat(item.message()).doesNotContain("performed");
   }
@@ -753,7 +752,7 @@ class ActivityMessageFormatterTest {
             "matter_closure.reopened",
             "project",
             Map.of("closure_log_id", UUID.randomUUID().toString()));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice reopened the matter");
     assertThat(item.message()).doesNotContain("performed");
   }
@@ -765,7 +764,7 @@ class ActivityMessageFormatterTest {
             "matter.closure.override_used",
             "matter_closure",
             Map.of("justification", "Client instruction", "reason", "COMPLETED"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice used an override to close the matter");
     assertThat(item.message()).doesNotContain("performed");
   }
@@ -779,7 +778,7 @@ class ActivityMessageFormatterTest {
             "collections.policy.updated",
             "org_settings",
             Map.of("stage1_days", Map.of("from", 7, "to", 5)));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice updated the collections policy");
     assertThat(item.message()).doesNotContain("performed");
   }
@@ -791,7 +790,7 @@ class ActivityMessageFormatterTest {
             "collections.reminder.sent",
             "collection_activity",
             Map.of("invoice_number", "INV-0042", "stage", "STAGE_1"));
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice sent a collection reminder for INV-0042");
     assertThat(item.message()).doesNotContain("performed");
     assertThat(item.entityName()).isEqualTo("INV-0042");
@@ -811,7 +810,7 @@ class ActivityMessageFormatterTest {
             null,
             Map.of("invoice_number", "INV-0042"));
     var event = new AuditEvent(record);
-    var item = formatter.format(event, Map.of(), emptyPortalContactMap());
+    var item = formatAll(event, Map.of(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("A collection reminder was cancelled for INV-0042");
     assertThat(item.message()).doesNotContain("performed");
   }
@@ -830,7 +829,7 @@ class ActivityMessageFormatterTest {
             null,
             Map.of("invoice_number", "INV-0042"));
     var event = new AuditEvent(record);
-    var item = formatter.format(event, Map.of(), emptyPortalContactMap());
+    var item = formatAll(event, Map.of(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("INV-0042 was flagged for collections escalation");
     assertThat(item.message()).doesNotContain("performed");
   }
@@ -849,7 +848,7 @@ class ActivityMessageFormatterTest {
             null,
             Map.of());
     var event = new AuditEvent(record);
-    var item = formatter.format(event, Map.of(), emptyPortalContactMap());
+    var item = formatAll(event, Map.of(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("The weekly cash digest was sent");
     assertThat(item.message()).doesNotContain("performed");
   }
@@ -857,7 +856,7 @@ class ActivityMessageFormatterTest {
   @Test
   void collectionActivityEntityNameFallsBackWhenNoInvoiceNumber() {
     var event = createEvent("collections.reminder.sent", "collection_activity", Map.of());
-    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    var item = formatAll(event, actorMap(), emptyPortalContactMap());
     assertThat(item.entityName()).isEqualTo("collection activity");
   }
 
@@ -876,23 +875,30 @@ class ActivityMessageFormatterTest {
     return map;
   }
 
+  /**
+   * Formats as a viewer who sees every amount (owner/admin). Redaction tests pass a restricted
+   * {@link ActivityMessageFormatter.AmountVisibility} via {@link #messageAs} instead.
+   */
+  private ActivityItem formatAll(
+      AuditEvent event, Map<UUID, Member> actorMap, Map<UUID, PortalContact> portalContactMap) {
+    return formatter.format(
+        event, actorMap, portalContactMap, ActivityMessageFormatter.AmountVisibility.ALL);
+  }
+
   private String message(String eventType, String entityType, Map<String, Object> details) {
-    return formatter
-        .format(createEvent(eventType, entityType, details), actorMap(), Map.of())
-        .message();
+    return formatAll(createEvent(eventType, entityType, details), actorMap(), Map.of()).message();
   }
 
   private String systemMessage(String eventType, String entityType, Map<String, Object> details) {
     var record =
         new AuditEventRecord(
             eventType, entityType, ENTITY_ID, null, "SYSTEM", "INTERNAL", null, null, details);
-    return formatter.format(new AuditEvent(record), Map.of(), Map.of()).message();
+    return formatAll(new AuditEvent(record), Map.of(), Map.of()).message();
   }
 
   private String portalMessage(String eventType, String entityType, Map<String, Object> details) {
     UUID portalContactId = UUID.randomUUID();
-    return formatter
-        .format(
+    return formatAll(
             portalContactEvent(eventType, entityType, portalContactId, details),
             Map.of(),
             Map.of(portalContactId, siphoContact(portalContactId)))

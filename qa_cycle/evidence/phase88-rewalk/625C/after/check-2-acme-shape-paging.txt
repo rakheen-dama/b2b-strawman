@@ -1,0 +1,12 @@
+top-level keys: activity=['content', 'page'] legacy=['content', 'page']
+page keys: activity=['number', 'size', 'totalElements', 'totalPages'] legacy=['number', 'size', 'totalElements', 'totalPages']
+row keys equal: True -> ['actorDisplayName', 'actorId', 'actorType', 'details', 'entityId', 'entityType', 'eventType', 'group', 'id', 'ipAddress', 'label', 'occurredAt', 'severity', 'source', 'userAgent']
+legacy totalElements=4 (entity-only branch)
+size=5 page 0: 5 rows, page={'size': 5, 'number': 0, 'totalElements': 15, 'totalPages': 3}
+size=5 page 1: 5 rows, page={'size': 5, 'number': 1, 'totalElements': 15, 'totalPages': 3}
+size=5 page 2: 5 rows, page={'size': 5, 'number': 2, 'totalElements': 15, 'totalPages': 3}
+size=5 page 3: 0 rows, page={'size': 5, 'number': 3, 'totalElements': 15, 'totalPages': 3}
+paged ids total=15 distinct=15 equals size=20 id list in order: True
+newest-first: True
+eventType counts: {"customer.lifecycle.auto_dormancy": 1, "customer.lifecycle.transitioned": 2, "checklist.instance.completed": 1, "checklist.item.skipped": 8, "checklist.item.completed": 1, "checklist.instance.created": 1, "customer.created": 1}
+label set: ["Checklist instance completed", "Checklist instance created", "Checklist item completed", "Checklist item skipped", "Client created", "Client lifecycle auto dormancy", "Client lifecycle transitioned"]

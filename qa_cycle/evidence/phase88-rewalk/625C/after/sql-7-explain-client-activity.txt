@@ -1,0 +1,117 @@
+-- query (WHERE copied from AuditEventRepository.CLIENT_ACTIVITY_WHERE, Acme id substituted)
+SET search_path TO tenant_7d218705360b; SET enable_seqscan = off; EXPLAIN SELECT count(*) FROM audit_events e       WHERE (e.entity_type = 'customer' -- ADR-342: storage key, do not rename
+             AND e.entity_id = CAST('b6dc030f-bb6f-45c6-844f-a673637c5da9' AS UUID))
+         OR (e.entity_type = 'checklist_instance' -- ADR-342: storage key, do not rename
+             AND e.entity_id = ANY(ARRAY(
+               SELECT ci.id FROM checklist_instances ci
+               WHERE ci.customer_id = CAST('b6dc030f-bb6f-45c6-844f-a673637c5da9' AS UUID))))
+         OR (e.entity_type = 'checklist_instance_item' -- ADR-342: storage key, do not rename
+             AND e.entity_id = ANY(ARRAY(
+               SELECT cii.id FROM checklist_instance_items cii
+               JOIN checklist_instances ci ON ci.id = cii.instance_id
+               WHERE ci.customer_id = CAST('b6dc030f-bb6f-45c6-844f-a673637c5da9' AS UUID))))
+         OR (e.entity_type = 'information_request' -- ADR-342: storage key, do not rename
+             AND e.entity_id = ANY(ARRAY(
+               SELECT ir.id FROM information_requests ir
+               WHERE ir.customer_id = CAST('b6dc030f-bb6f-45c6-844f-a673637c5da9' AS UUID))))
+         OR (e.entity_type = 'request_item' -- ADR-342: storage key, do not rename
+             AND e.entity_id = ANY(ARRAY(
+               SELECT ri.id FROM request_items ri
+               JOIN information_requests ir ON ir.id = ri.request_id
+               WHERE ir.customer_id = CAST('b6dc030f-bb6f-45c6-844f-a673637c5da9' AS UUID))))
+         OR (e.entity_type = 'portal_contact' -- ADR-342: storage key, do not rename
+             AND e.entity_id = ANY(ARRAY(
+               SELECT pc.id FROM portal_contacts pc
+               WHERE pc.customer_id = CAST('b6dc030f-bb6f-45c6-844f-a673637c5da9' AS UUID))))
+         OR (e.details->>'customer_id') = CAST('b6dc030f-bb6f-45c6-844f-a673637c5da9' AS TEXT);
+
+-- enable_seqscan=off
+BEGIN
+SET
+SET
+                                                                                                                                                                                                                                                                                                                     QUERY PLAN                                                                                                                                                                                                                                                                                                                     
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=129.59..129.60 rows=1 width=8)
+   InitPlan 1 (returns $0)
+     ->  Bitmap Heap Scan on checklist_instances ci  (cost=4.16..9.50 rows=2 width=16)
+           Recheck Cond: (customer_id = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::uuid)
+           ->  Bitmap Index Scan on idx_checklist_instances_customer  (cost=0.00..4.16 rows=2 width=0)
+                 Index Cond: (customer_id = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::uuid)
+   InitPlan 2 (returns $2)
+     ->  Nested Loop  (cost=0.30..24.59 rows=1 width=16)
+           ->  Index Scan using idx_checklist_instance_items_instance_status on checklist_instance_items cii  (cost=0.14..16.36 rows=36 width=32)
+           ->  Memoize  (cost=0.16..1.51 rows=1 width=16)
+                 Cache Key: cii.instance_id
+                 Cache Mode: logical
+                 ->  Index Scan using checklist_instances_pkey on checklist_instances ci_1  (cost=0.15..1.50 rows=1 width=16)
+                       Index Cond: (id = cii.instance_id)
+                       Filter: (customer_id = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::uuid)
+   InitPlan 3 (returns $3)
+     ->  Index Scan using idx_information_requests_customer on information_requests ir  (cost=0.15..8.17 rows=1 width=16)
+           Index Cond: (customer_id = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::uuid)
+   InitPlan 4 (returns $5)
+     ->  Nested Loop  (cost=0.29..16.33 rows=1 width=16)
+           ->  Index Scan using idx_information_requests_customer on information_requests ir_1  (cost=0.15..8.17 rows=1 width=16)
+                 Index Cond: (customer_id = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::uuid)
+           ->  Index Scan using idx_request_items_request on request_items ri  (cost=0.14..8.15 rows=1 width=32)
+                 Index Cond: (request_id = ir_1.id)
+   InitPlan 5 (returns $6)
+     ->  Index Scan using idx_portal_contacts_customer on portal_contacts pc  (cost=0.14..8.16 rows=1 width=16)
+           Index Cond: (customer_id = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::uuid)
+   ->  Bitmap Heap Scan on audit_events e  (cost=56.06..62.84 rows=3 width=0)
+         Recheck Cond: ((((entity_type)::text = 'customer'::text) AND (entity_id = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::uuid)) OR (((entity_type)::text = 'checklist_instance'::text) AND (entity_id = ANY ($0))) OR (((entity_type)::text = 'checklist_instance_item'::text) AND (entity_id = ANY ($2))) OR (((entity_type)::text = 'information_request'::text) AND (entity_id = ANY ($3))) OR (((entity_type)::text = 'request_item'::text) AND (entity_id = ANY ($5))) OR (((entity_type)::text = 'portal_contact'::text) AND (entity_id = ANY ($6))) OR ((details ->> 'customer_id'::text) = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::text))
+         ->  BitmapOr  (cost=56.06..56.06 rows=3 width=0)
+               ->  Bitmap Index Scan on idx_audit_entity  (cost=0.00..4.15 rows=1 width=0)
+                     Index Cond: (((entity_type)::text = 'customer'::text) AND (entity_id = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::uuid))
+               ->  Bitmap Index Scan on idx_audit_entity  (cost=0.00..9.55 rows=1 width=0)
+                     Index Cond: (((entity_type)::text = 'checklist_instance'::text) AND (entity_id = ANY ($0)))
+               ->  Bitmap Index Scan on idx_audit_entity  (cost=0.00..9.55 rows=1 width=0)
+                     Index Cond: (((entity_type)::text = 'checklist_instance_item'::text) AND (entity_id = ANY ($2)))
+               ->  Bitmap Index Scan on idx_audit_entity  (cost=0.00..9.55 rows=1 width=0)
+                     Index Cond: (((entity_type)::text = 'information_request'::text) AND (entity_id = ANY ($3)))
+               ->  Bitmap Index Scan on idx_audit_entity  (cost=0.00..9.55 rows=1 width=0)
+                     Index Cond: (((entity_type)::text = 'request_item'::text) AND (entity_id = ANY ($5)))
+               ->  Bitmap Index Scan on idx_audit_entity  (cost=0.00..9.55 rows=1 width=0)
+                     Index Cond: (((entity_type)::text = 'portal_contact'::text) AND (entity_id = ANY ($6)))
+               ->  Bitmap Index Scan on idx_audit_customer  (cost=0.00..4.15 rows=1 width=0)
+                     Index Cond: ((details ->> 'customer_id'::text) = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::text)
+(44 rows)
+
+ROLLBACK
+-- default planner settings (enable_seqscan=on), for reference
+BEGIN
+SET
+                                                                                                                                                                                                                                                                                                                  QUERY PLAN                                                                                                                                                                                                                                                                                                                  
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=77.57..77.58 rows=1 width=8)
+   InitPlan 1 (returns $0)
+     ->  Bitmap Heap Scan on checklist_instances ci  (cost=4.16..9.50 rows=2 width=16)
+           Recheck Cond: (customer_id = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::uuid)
+           ->  Bitmap Index Scan on idx_checklist_instances_customer  (cost=0.00..4.16 rows=2 width=0)
+                 Index Cond: (customer_id = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::uuid)
+   InitPlan 2 (returns $2)
+     ->  Nested Loop  (cost=0.16..10.59 rows=1 width=16)
+           ->  Seq Scan on checklist_instance_items cii  (cost=0.00..2.36 rows=36 width=32)
+           ->  Memoize  (cost=0.16..1.51 rows=1 width=16)
+                 Cache Key: cii.instance_id
+                 Cache Mode: logical
+                 ->  Index Scan using checklist_instances_pkey on checklist_instances ci_1  (cost=0.15..1.50 rows=1 width=16)
+                       Index Cond: (id = cii.instance_id)
+                       Filter: (customer_id = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::uuid)
+   InitPlan 3 (returns $3)
+     ->  Index Scan using idx_information_requests_customer on information_requests ir  (cost=0.15..8.17 rows=1 width=16)
+           Index Cond: (customer_id = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::uuid)
+   InitPlan 4 (returns $5)
+     ->  Nested Loop  (cost=0.29..16.33 rows=1 width=16)
+           ->  Index Scan using idx_information_requests_customer on information_requests ir_1  (cost=0.15..8.17 rows=1 width=16)
+                 Index Cond: (customer_id = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::uuid)
+           ->  Index Scan using idx_request_items_request on request_items ri  (cost=0.14..8.15 rows=1 width=32)
+                 Index Cond: (request_id = ir_1.id)
+   InitPlan 5 (returns $6)
+     ->  Index Scan using idx_portal_contacts_customer on portal_contacts pc  (cost=0.14..8.16 rows=1 width=16)
+           Index Cond: (customer_id = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::uuid)
+   ->  Seq Scan on audit_events e  (cost=0.00..24.82 rows=3 width=0)
+         Filter: ((((entity_type)::text = 'customer'::text) AND (entity_id = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::uuid)) OR (((entity_type)::text = 'checklist_instance'::text) AND (entity_id = ANY ($0))) OR (((entity_type)::text = 'checklist_instance_item'::text) AND (entity_id = ANY ($2))) OR (((entity_type)::text = 'information_request'::text) AND (entity_id = ANY ($3))) OR (((entity_type)::text = 'request_item'::text) AND (entity_id = ANY ($5))) OR (((entity_type)::text = 'portal_contact'::text) AND (entity_id = ANY ($6))) OR ((details ->> 'customer_id'::text) = 'b6dc030f-bb6f-45c6-844f-a673637c5da9'::text))
+(29 rows)
+
+ROLLBACK

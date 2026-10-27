@@ -122,7 +122,7 @@ class AuditEventControllerFacetsIntegrationTest extends AbstractIntegrationTest 
   }
 
   @Test
-  void entityTypeFacetsEndpointReturnsTitleCasedLabels() throws Exception {
+  void entityTypeFacetsEndpointReturnsLegalSentenceCasedLabels() throws Exception {
     mockMvc
         .perform(
             get("/api/audit-events/facets/entity-types")

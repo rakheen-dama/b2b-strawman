@@ -1,0 +1,120 @@
+{
+  "content": [
+    {
+      "id": "81d47d40-1e09-4e99-8f36-ec28bf071e8b",
+      "eventType": "checklist.item.skipped",
+      "entityType": "checklist_instance_item",
+      "entityId": "5167f908-8ea7-45ac-8a91-5e1296dec1a9",
+      "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+      "actorType": "USER",
+      "source": "API",
+      "ipAddress": "172.21.0.8",
+      "userAgent": "curl/8.14.1",
+      "details": {
+        "reason": "boot-seed",
+        "itemName": "Proof of Address",
+        "actor_name": "Alice Owner",
+        "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8"
+      },
+      "occurredAt": "2026-10-24T22:51:09.295204Z",
+      "label": "Checklist item skipped",
+      "severity": "INFO",
+      "group": "STANDARD",
+      "actorDisplayName": "Alice Owner"
+    },
+    {
+      "id": "e110bce5-9866-416a-a677-9de259cda74a",
+      "eventType": "checklist.item.skipped",
+      "entityType": "checklist_instance_item",
+      "entityId": "205172f5-492a-4afa-a1f4-a7c34eec39ed",
+      "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+      "actorType": "USER",
+      "source": "API",
+      "ipAddress": "172.21.0.8",
+      "userAgent": "curl/8.14.1",
+      "details": {
+        "reason": "boot-seed",
+        "itemName": "Proof of Identity",
+        "actor_name": "Alice Owner",
+        "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8"
+      },
+      "occurredAt": "2026-10-24T22:51:09.255459Z",
+      "label": "Checklist item skipped",
+      "severity": "INFO",
+      "group": "STANDARD",
+      "actorDisplayName": "Alice Owner"
+    },
+    {
+      "id": "eafab608-40ac-4f44-aeb2-744ad7c6d286",
+      "eventType": "customer.lifecycle.transitioned",
+      "entityType": "customer",
+      "entityId": "b6dc030f-bb6f-45c6-844f-a673637c5da9",
+      "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+      "actorType": "USER",
+      "source": "API",
+      "ipAddress": "172.21.0.8",
+      "userAgent": "curl/8.14.1",
+      "details": {
+        "notes": "E2E seed: start onboarding",
+        "newStatus": "ONBOARDING",
+        "oldStatus": "PROSPECT",
+        "actor_name": "Alice Owner",
+        "checklistsInstantiated": 1
+      },
+      "occurredAt": "2026-10-24T22:51:09.139350Z",
+      "label": "Client lifecycle transitioned",
+      "severity": "INFO",
+      "group": "STANDARD",
+      "actorDisplayName": "Alice Owner"
+    },
+    {
+      "id": "98cd4c02-fae8-418b-b7d7-726ed215a82c",
+      "eventType": "checklist.instance.created",
+      "entityType": "checklist_instance",
+      "entityId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8",
+      "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+      "actorType": "USER",
+      "source": "API",
+      "ipAddress": "172.21.0.8",
+      "userAgent": "curl/8.14.1",
+      "details": {
+        "actor_name": "Alice Owner",
+        "customerId": "b6dc030f-bb6f-45c6-844f-a673637c5da9",
+        "templateId": "b3ef89eb-b8c6-4d2a-9b02-afc26a470097",
+        "templateName": "Legal Individual Client Onboarding"
+      },
+      "occurredAt": "2026-10-24T22:51:09.138030Z",
+      "label": "Checklist instance created",
+      "severity": "INFO",
+      "group": "STANDARD",
+      "actorDisplayName": "Alice Owner"
+    },
+    {
+      "id": "bd19e923-a0d0-4937-9a86-350eecad943e",
+      "eventType": "customer.created",
+      "entityType": "customer",
+      "entityId": "b6dc030f-bb6f-45c6-844f-a673637c5da9",
+      "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+      "actorType": "USER",
+      "source": "API",
+      "ipAddress": "172.21.0.8",
+      "userAgent": "curl/8.14.1",
+      "details": {
+        "name": "Acme Corp",
+        "email": "contact@acme.example.com",
+        "actor_name": "Alice Owner"
+      },
+      "occurredAt": "2026-10-24T22:51:09.024213Z",
+      "label": "Client created",
+      "severity": "INFO",
+      "group": "STANDARD",
+      "actorDisplayName": "Alice Owner"
+    }
+  ],
+  "page": {
+    "size": 5,
+    "number": 2,
+    "totalElements": 15,
+    "totalPages": 3
+  }
+}

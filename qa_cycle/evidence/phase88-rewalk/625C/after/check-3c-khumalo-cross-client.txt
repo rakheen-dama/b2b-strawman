@@ -1,0 +1,10 @@
+client Khumalo Property Holdings mvmzw78f31c9 218397cf-bddb-4fbd-9e9d-872bd4589c6c
+API totalElements=8 rows fetched=8 distinct ids=8
+independent SQL expected union count=8  match=True
+newest-first (occurredAt desc): True
+owned child ids: {"customer": 1, "checklist_instance": 1, "checklist_instance_item": 9, "information_request": 0, "request_item": 0, "portal_contact": 1}
+rows by branch: {'c-details-only': 4, 'a-entity': 3, 'b-child': 1}
+eventType counts: {"trust_payment.approved": 1, "trust_payment.recorded": 1, "trust_deposit.recorded": 1, "customer.linked": 1, "acceptance.created": 1, "customer.lifecycle.transitioned": 1, "checklist.instance.created": 1, "customer.created": 1}
+label by eventType: {"trust_payment.approved": "Trust payment approved", "trust_payment.recorded": "Trust payment recorded", "trust_deposit.recorded": "Trust deposit recorded", "customer.linked": "Client linked", "acceptance.created": "Acceptance created", "customer.lifecycle.transitioned": "Client lifecycle transitioned", "checklist.instance.created": "Checklist instance created", "customer.created": "Client created"}
+rows with details.customer_id present: 4
+VIOLATIONS: 0

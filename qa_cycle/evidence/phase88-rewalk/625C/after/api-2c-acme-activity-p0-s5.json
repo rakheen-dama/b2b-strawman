@@ -1,0 +1,119 @@
+{
+  "content": [
+    {
+      "id": "cbdb6440-bb94-4630-aeb9-d9bf0c276b15",
+      "eventType": "customer.lifecycle.auto_dormancy",
+      "entityType": "customer",
+      "entityId": "b6dc030f-bb6f-45c6-844f-a673637c5da9",
+      "actorId": null,
+      "actorType": "SYSTEM",
+      "source": "INTERNAL",
+      "ipAddress": null,
+      "userAgent": null,
+      "details": {
+        "reason": "auto-dormancy scheduled job",
+        "actor_name": "System",
+        "thresholdDays": 90,
+        "daysSinceActivity": 90
+      },
+      "occurredAt": "2026-10-25T02:16:02.307920Z",
+      "label": "Client lifecycle auto dormancy",
+      "severity": "INFO",
+      "group": "STANDARD",
+      "actorDisplayName": "System"
+    },
+    {
+      "id": "f6e721c6-db30-49c6-8858-1c0faaa6cd5c",
+      "eventType": "customer.lifecycle.transitioned",
+      "entityType": "customer",
+      "entityId": "b6dc030f-bb6f-45c6-844f-a673637c5da9",
+      "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+      "actorType": "USER",
+      "source": "API",
+      "ipAddress": "172.21.0.8",
+      "userAgent": "curl/8.14.1",
+      "details": {
+        "notes": "All onboarding checklists completed",
+        "newStatus": "ACTIVE",
+        "oldStatus": "ONBOARDING",
+        "actor_name": "Alice Owner",
+        "checklistsInstantiated": 0
+      },
+      "occurredAt": "2026-10-24T22:51:09.580768Z",
+      "label": "Client lifecycle transitioned",
+      "severity": "INFO",
+      "group": "STANDARD",
+      "actorDisplayName": "Alice Owner"
+    },
+    {
+      "id": "bd3a2ef1-fb6e-4f8a-b672-663e6f9628ec",
+      "eventType": "checklist.instance.completed",
+      "entityType": "checklist_instance",
+      "entityId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8",
+      "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+      "actorType": "USER",
+      "source": "API",
+      "ipAddress": "172.21.0.8",
+      "userAgent": "curl/8.14.1",
+      "details": {
+        "actor_name": "Alice Owner",
+        "customerId": "b6dc030f-bb6f-45c6-844f-a673637c5da9"
+      },
+      "occurredAt": "2026-10-24T22:51:09.550680Z",
+      "label": "Checklist instance completed",
+      "severity": "INFO",
+      "group": "STANDARD",
+      "actorDisplayName": "Alice Owner"
+    },
+    {
+      "id": "cdb2ea42-0646-479d-a1eb-454a5419ee96",
+      "eventType": "checklist.item.skipped",
+      "entityType": "checklist_instance_item",
+      "entityId": "6a270187-3b1d-4a60-9a57-c937e473ab04",
+      "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+      "actorType": "USER",
+      "source": "API",
+      "ipAddress": "172.21.0.8",
+      "userAgent": "curl/8.14.1",
+      "details": {
+        "reason": "boot-seed",
+        "itemName": "Sanctions Screening",
+        "actor_name": "Alice Owner",
+        "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8"
+      },
+      "occurredAt": "2026-10-24T22:51:09.546290Z",
+      "label": "Checklist item skipped",
+      "severity": "INFO",
+      "group": "STANDARD",
+      "actorDisplayName": "Alice Owner"
+    },
+    {
+      "id": "c7326909-74c0-459a-866a-96ffcf6fcd95",
+      "eventType": "checklist.item.skipped",
+      "entityType": "checklist_instance_item",
+      "entityId": "6ad805bb-261f-4564-ae9c-d09df921c674",
+      "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+      "actorType": "USER",
+      "source": "API",
+      "ipAddress": "172.21.0.8",
+      "userAgent": "curl/8.14.1",
+      "details": {
+        "reason": "boot-seed",
+        "itemName": "FICA Risk Assessment",
+        "actor_name": "Alice Owner",
+        "instanceId": "ba78be61-0e38-45e0-9303-88b0e43c0cb8"
+      },
+      "occurredAt": "2026-10-24T22:51:09.509961Z",
+      "label": "Checklist item skipped",
+      "severity": "INFO",
+      "group": "STANDARD",
+      "actorDisplayName": "Alice Owner"
+    }
+  ],
+  "page": {
+    "size": 5,
+    "number": 0,
+    "totalElements": 15,
+    "totalPages": 3
+  }
+}

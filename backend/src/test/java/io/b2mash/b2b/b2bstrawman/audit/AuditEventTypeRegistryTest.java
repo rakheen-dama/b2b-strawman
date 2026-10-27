@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
  *
  * <p>Coverage focuses on the longest-prefix-wins resolution (architecture §12.3.3): exact match
  * beats prefix, deeper prefix beats shallower, default fallback synthesises an INFO/STANDARD entry
- * with a title-cased label.
+ * with a legal sentence-cased label (AuditEventTypeRegistry.legalLabel).
  */
 class AuditEventTypeRegistryTest {
 
@@ -54,12 +54,63 @@ class AuditEventTypeRegistryTest {
   }
 
   @Test
-  void unknownEventTypeFallsBackToTitleCaseInfoStandard() {
+  void unknownEventTypeFallsBackToLegalSentenceCaseInfoStandard() {
+    // Phase 88 625C (D12, R-8): the synthesised default label is sentence case.
     var resolved = registry.resolve("foo.bar.baz");
     assertThat(resolved.eventType()).isEqualTo("foo.bar.baz");
-    assertThat(resolved.label()).isEqualTo("Foo Bar Baz");
+    assertThat(resolved.label()).isEqualTo("Foo bar baz");
     assertThat(resolved.severity()).isEqualTo(AuditSeverity.INFO);
     assertThat(resolved.group()).isEqualTo(AuditEventGroup.STANDARD);
+  }
+
+  @Test
+  void invoicePrefixReadsFeeNote() {
+    // Phase 88 625C (D12, R-8): stored key invoice.* (ADR-342: storage key, do not rename);
+    // the display label is the legal "Fee note". Labels derive at read time, so history relabels.
+    var resolved = registry.resolve("invoice.sent");
+    assertThat(resolved.eventType()).isEqualTo("invoice.sent");
+    assertThat(resolved.label()).isEqualTo("Fee note");
+    assertThat(resolved.severity()).isEqualTo(AuditSeverity.INFO);
+    assertThat(resolved.group()).isEqualTo(AuditEventGroup.FINANCIAL);
+    assertThat(registry.entries())
+        .filteredOn(e -> e.eventType().equals("invoice.*"))
+        .singleElement()
+        .satisfies(e -> assertThat(e.label()).isEqualTo("Fee note"));
+    assertThat(registry.entries())
+        .extracting(AuditEventTypeMetadata::label)
+        .doesNotContain("Invoice");
+  }
+
+  @Test
+  void defaultLabelLegalMapsTheFirstSegmentInSentenceCase() {
+    // Phase 88 625C (D12, R-8): the six legal head mappings; the rest of the key keeps its words.
+    assertThat(registry.resolve("project.updated").label()).isEqualTo("Matter updated");
+    assertThat(registry.resolve("project.created_from_template").label())
+        .isEqualTo("Matter created from template");
+    assertThat(registry.resolve("customer.lifecycle.transitioned").label())
+        .isEqualTo("Client lifecycle transitioned");
+    assertThat(registry.resolve("project_member.added").label())
+        .isEqualTo("Matter team member added");
+    assertThat(registry.resolve("legal_disbursement.created").label())
+        .isEqualTo("Disbursement created");
+    assertThat(registry.resolve("project_budget.updated").label())
+        .isEqualTo("Matter budget updated");
+    // invoice.* never reaches the default (the prefix entry wins), but the helper maps it too.
+    assertThat(AuditEventTypeRegistry.legalLabel("invoice.voided")).isEqualTo("Fee note voided");
+    // Unmapped heads: underscores become spaces, sentence case.
+    assertThat(registry.resolve("checklist.item.completed").label())
+        .isEqualTo("Checklist item completed");
+    // Entity-type literals (the facet labels share the helper — R-9).
+    assertThat(AuditEventTypeRegistry.legalLabel("project")).isEqualTo("Matter");
+    assertThat(AuditEventTypeRegistry.legalLabel("customer")).isEqualTo("Client");
+    assertThat(AuditEventTypeRegistry.legalLabel("invoice")).isEqualTo("Fee note");
+    assertThat(AuditEventTypeRegistry.legalLabel("legal_disbursement")).isEqualTo("Disbursement");
+    assertThat(AuditEventTypeRegistry.legalLabel("project_member")).isEqualTo("Matter team member");
+    assertThat(AuditEventTypeRegistry.legalLabel("project_budget")).isEqualTo("Matter budget");
+    assertThat(AuditEventTypeRegistry.legalLabel("trust_account")).isEqualTo("Trust account");
+    assertThat(AuditEventTypeRegistry.legalLabel("task")).isEqualTo("Task");
+    assertThat(AuditEventTypeRegistry.legalLabel("")).isEmpty();
+    assertThat(AuditEventTypeRegistry.legalLabel(null)).isEmpty();
   }
 
   @Test

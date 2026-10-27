@@ -1,0 +1,60 @@
+metadata entries: 33
+  metadata invoice.* -> Fee note
+  metadata invoice.partially_paid -> Fee note partially paid
+  metadata invoice.payment_excess -> Fee note payment exceeded balance
+metadata labels containing 'Invoice': []
+audit-events page: {'size': 200, 'number': 0, 'totalElements': 156, 'totalPages': 1}
+resolved eventType -> label (distinct, from size=200 page):
+  acceptance.accepted -> Acceptance accepted
+  acceptance.certificate_generated -> Acceptance certificate generated
+  acceptance.created -> Acceptance created
+  acceptance.declined -> Acceptance declined
+  acceptance.sent -> Acceptance sent
+  acceptance.viewed -> Acceptance viewed
+  adverse_party.created -> Adverse party created
+  billing_rate.created -> Billing rate created
+  checklist.instance.completed -> Checklist instance completed
+  checklist.instance.created -> Checklist instance created
+  checklist.item.completed -> Checklist item completed
+  checklist.item.skipped -> Checklist item skipped
+  customer.created -> Client created
+  customer.lifecycle.auto_dormancy -> Client lifecycle auto dormancy
+  customer.lifecycle.transitioned -> Client lifecycle transitioned
+  customer.linked -> Client linked
+  disbursement.approved -> Disbursement approved
+  disbursement.billed -> Disbursement billed
+  disbursement.created -> Disbursement created
+  disbursement.submitted -> Disbursement submitted
+  disbursement.written_off -> Disbursement written off
+  document.accessed -> Document accessed
+  document.created -> Document created
+  document.generated -> Document generated
+  document.generated_with_clauses -> Document generated with clauses
+  document.uploaded -> Document uploaded
+  invoice.approved -> Fee note
+  invoice.created -> Fee note
+  invoice.partially_paid -> Fee note partially paid
+  invoice.sent -> Fee note
+  matter.closure.override_used -> Matter Closure Override Used
+  matter_closure.closed -> Matter closure closed
+  member.synced -> Member synced
+  org_settings.tax_configured -> Org settings tax configured
+  org_settings.updated -> Org settings updated
+  pack.installed -> Pack installed
+  project.created -> Matter created
+  project.created_from_template -> Matter created from template
+  project.updated -> Matter updated
+  project_member.added -> Matter team member added
+  project_member.removed -> Matter team member removed
+  project_member.role_changed -> Matter team member role changed
+  security.access_denied -> Security Event
+  statement.generated -> Statement generated
+  tax_rate.created -> Tax rate created
+  time_entry.created -> Time entry created
+  trust_account.created -> Trust account created
+  trust_deposit.recorded -> Trust deposit recorded
+  trust_payment.approved -> Trust payment approved
+  trust_payment.recorded -> Trust payment recorded
+labels containing Invoice/Project/Customer: []
+entity-type facets: [{"entityType": "generated_document", "label": "Generated document", "count": 19}, {"entityType": "project", "label": "Matter", "count": 19}, {"entityType": "acceptance_request", "label": "Acceptance request", "count": 16}, {"entityType": "customer", "label": "Client", "count": 15}, {"entityType": "legal_disbursement", "label": "Disbursement", "count": 14}, {"entityType": "trust_transaction", "label": "Trust transaction", "count": 12}, {"entityType": "invoice", "label": "Fee note", "count": 11}, {"entityType": "checklist_instance_item", "label": "Checklist instance item", "count": 9}, {"entityType": "project_member", "label": "Matter team member", "count": 6}, {"entityType": "pack_install", "label": "Pack install", "count": 5}, {"entityType": "adverse_party", "label": "Adverse party", "count": 4}, {"entityType": "checklist_instance", "label": "Checklist instance", "count": 4}, {"entityType": "security", "label": "Security", "count": 4}, {"entityType": "time_entry", "label": "Time entry", "count": 3}, {"entityType": "matter_closure", "label": "Matter closure", "count": 3}, {"entityType": "member", "label": "Member", "count": 3}, {"entityType": "document", "label": "Document", "count": 3}, {"entityType": "org_settings", "label": "Org settings", "count": 2}, {"entityType": "billing_rate", "label": "Billing rate", "count": 2}, {"entityType": "trust_account", "label": "Trust account", "count": 1}, {"entityType": "tax_rate", "label": "Tax rate", "count": 1}]
+event-type facets (label sample): [{"eventType": "document.generated", "label": "Document generated", "severity": "INFO", "group": "STANDARD", "count": 11}, {"eventType": "project.created", "label": "Matter created", "severity": "INFO", "group": "STANDARD", "count": 8}, {"eventType": "checklist.item.skipped", "label": "Checklist item skipped", "severity": "INFO", "group": "STANDARD", "count": 8}, {"eventType": "customer.created", "label": "Client created", "severity": "INFO", "group": "STANDARD", "count": 8}, {"eventType": "project.created_from_template", "label": "Matter created from template", "severity": "INFO", "group": "STANDARD", "count": 6}, {"eventType": "statement.generated", "label": "Statement generated", "severity": "INFO", "group": "STANDARD", "count": 5}, {"eventType": "customer.lifecycle.transitioned", "label": "Client lifecycle transitioned", "severity": "INFO", "group": "STANDARD", "count": 5}, {"eventType": "pack.installed", "label": "Pack installed", "severity": "INFO", "group": "STANDARD", "count": 5}, {"eventType": "disbursement.approved", "label": "Disbursement approved", "severity": "INFO", "group": "STANDARD", "count": 4}, {"eventType": "trust_deposit.recorded", "label": "Trust deposit recorded", "severity": "INFO", "group": "STANDARD", "count": 4}, {"eventType": "matter_closure.closed", "label": "Matter closure closed", "severity": "INFO", "group": "STANDARD", "count": 4}, {"eventType": "disbursement.created", "label": "Disbursement created", "severity": "INFO", "group": "STANDARD", "

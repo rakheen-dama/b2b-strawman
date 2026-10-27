@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventResponse;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
 import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.ClientMatterResponse;
 import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.ClientResponse;
@@ -39,6 +40,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -64,6 +66,7 @@ public class CustomerController {
   private final CustomerReadinessService customerReadinessService;
   private final PortalContactService portalContactService;
   private final InformationRequestService informationRequestService;
+  private final ClientActivityService clientActivityService;
 
   public CustomerController(
       CustomerService customerService,
@@ -74,7 +77,8 @@ public class CustomerController {
       UnbilledTimeSummaryService unbilledTimeSummaryService,
       CustomerReadinessService customerReadinessService,
       PortalContactService portalContactService,
-      InformationRequestService informationRequestService) {
+      InformationRequestService informationRequestService,
+      ClientActivityService clientActivityService) {
     this.customerService = customerService;
     this.customerProjectService = customerProjectService;
     this.invoiceService = invoiceService;
@@ -84,6 +88,7 @@ public class CustomerController {
     this.customerReadinessService = customerReadinessService;
     this.portalContactService = portalContactService;
     this.informationRequestService = informationRequestService;
+    this.clientActivityService = clientActivityService;
   }
 
   @GetMapping
@@ -342,6 +347,17 @@ public class CustomerController {
     customerService.getCustomer(clientId);
     var history = customerLifecycleService.getLifecycleHistory(clientId);
     return ResponseEntity.ok(history);
+  }
+
+  // --- Client activity (Phase 88 625C, U6) ---
+
+  @GetMapping("/{clientId}/activity")
+  @RequiresCapability("TEAM_OVERSIGHT")
+  public ResponseEntity<Page<AuditEventResponse>> getClientActivity(
+      @PathVariable UUID clientId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return ResponseEntity.ok(clientActivityService.getClientActivity(clientId, page, size));
   }
 
   @PostMapping("/dormancy-check")

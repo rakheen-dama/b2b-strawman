@@ -1,0 +1,6 @@
+## Carol (org:member) GET /api/clients/b6dc030f-bb6f-45c6-844f-a673637c5da9/activity
+{"detail":"Insufficient permissions for this operation","instance":"/api/clients/b6dc030f-bb6f-45c6-844f-a673637c5da9/activity","status":403,"title":"Access denied"}
+HTTP 403
+## Alice GET /api/clients/c29a19c4-203e-430f-ac76-b02d3ab2ef93/activity (random UUID)
+{"detail":"No customer found with id c29a19c4-203e-430f-ac76-b02d3ab2ef93","instance":"/api/clients/c29a19c4-203e-430f-ac76-b02d3ab2ef93/activity","status":404,"title":"Customer not found"}
+HTTP 404

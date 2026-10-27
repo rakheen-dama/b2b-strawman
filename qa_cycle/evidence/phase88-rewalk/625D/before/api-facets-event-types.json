@@ -1,0 +1,352 @@
+[
+  {
+    "eventType": "document.generated",
+    "label": "Document generated",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 11
+  },
+  {
+    "eventType": "customer.created",
+    "label": "Client created",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 9
+  },
+  {
+    "eventType": "project.created",
+    "label": "Matter created",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 8
+  },
+  {
+    "eventType": "checklist.item.skipped",
+    "label": "Checklist item skipped",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 8
+  },
+  {
+    "eventType": "project.created_from_template",
+    "label": "Matter created from template",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 6
+  },
+  {
+    "eventType": "customer.lifecycle.transitioned",
+    "label": "Client lifecycle transitioned",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 6
+  },
+  {
+    "eventType": "statement.generated",
+    "label": "Statement generated",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 5
+  },
+  {
+    "eventType": "pack.installed",
+    "label": "Pack installed",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 5
+  },
+  {
+    "eventType": "acceptance.sent",
+    "label": "Acceptance sent",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 4
+  },
+  {
+    "eventType": "checklist.instance.created",
+    "label": "Checklist instance created",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 4
+  },
+  {
+    "eventType": "disbursement.submitted",
+    "label": "Disbursement submitted",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 4
+  },
+  {
+    "eventType": "acceptance.created",
+    "label": "Acceptance created",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 4
+  },
+  {
+    "eventType": "security.access_denied",
+    "label": "Security Event",
+    "severity": "NOTICE",
+    "group": "SECURITY",
+    "count": 4
+  },
+  {
+    "eventType": "disbursement.created",
+    "label": "Disbursement created",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 4
+  },
+  {
+    "eventType": "disbursement.approved",
+    "label": "Disbursement approved",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 4
+  },
+  {
+    "eventType": "trust_payment.recorded",
+    "label": "Trust payment recorded",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 4
+  },
+  {
+    "eventType": "adverse_party.created",
+    "label": "Adverse party created",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 4
+  },
+  {
+    "eventType": "matter_closure.closed",
+    "label": "Matter closure closed",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 4
+  },
+  {
+    "eventType": "trust_deposit.recorded",
+    "label": "Trust deposit recorded",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 4
+  },
+  {
+    "eventType": "trust_payment.approved",
+    "label": "Trust payment approved",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 4
+  },
+  {
+    "eventType": "invoice.created",
+    "label": "Fee note",
+    "severity": "INFO",
+    "group": "FINANCIAL",
+    "count": 3
+  },
+  {
+    "eventType": "matter.closure.override_used",
+    "label": "Matter Closure Override Used",
+    "severity": "CRITICAL",
+    "group": "COMPLIANCE",
+    "count": 3
+  },
+  {
+    "eventType": "time_entry.created",
+    "label": "Time entry created",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 3
+  },
+  {
+    "eventType": "project_member.added",
+    "label": "Matter team member added",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 3
+  },
+  {
+    "eventType": "invoice.sent",
+    "label": "Fee note",
+    "severity": "INFO",
+    "group": "FINANCIAL",
+    "count": 3
+  },
+  {
+    "eventType": "member.synced",
+    "label": "Member synced",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 3
+  },
+  {
+    "eventType": "acceptance.viewed",
+    "label": "Acceptance viewed",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 3
+  },
+  {
+    "eventType": "document.generated_with_clauses",
+    "label": "Document generated with clauses",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 3
+  },
+  {
+    "eventType": "invoice.approved",
+    "label": "Fee note",
+    "severity": "INFO",
+    "group": "FINANCIAL",
+    "count": 3
+  },
+  {
+    "eventType": "billing_rate.created",
+    "label": "Billing rate created",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 2
+  },
+  {
+    "eventType": "acceptance.certificate_generated",
+    "label": "Acceptance certificate generated",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 2
+  },
+  {
+    "eventType": "invoice.partially_paid",
+    "label": "Fee note partially paid",
+    "severity": "INFO",
+    "group": "FINANCIAL",
+    "count": 2
+  },
+  {
+    "eventType": "acceptance.accepted",
+    "label": "Acceptance accepted",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 2
+  },
+  {
+    "eventType": "project_member.role_changed",
+    "label": "Matter team member role changed",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 2
+  },
+  {
+    "eventType": "checklist.item.completed",
+    "label": "Checklist item completed",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 2
+  },
+  {
+    "eventType": "acceptance.declined",
+    "label": "Acceptance declined",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 1
+  },
+  {
+    "eventType": "document.accessed",
+    "label": "Document accessed",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 1
+  },
+  {
+    "eventType": "org_settings.tax_configured",
+    "label": "Org settings tax configured",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 1
+  },
+  {
+    "eventType": "project_member.removed",
+    "label": "Matter team member removed",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 1
+  },
+  {
+    "eventType": "document.uploaded",
+    "label": "Document uploaded",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 1
+  },
+  {
+    "eventType": "disbursement.billed",
+    "label": "Disbursement billed",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 1
+  },
+  {
+    "eventType": "tax_rate.created",
+    "label": "Tax rate created",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 1
+  },
+  {
+    "eventType": "customer.lifecycle.auto_dormancy",
+    "label": "Client lifecycle auto dormancy",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 1
+  },
+  {
+    "eventType": "checklist.instance.completed",
+    "label": "Checklist instance completed",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 1
+  },
+  {
+    "eventType": "trust_account.created",
+    "label": "Trust account created",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 1
+  },
+  {
+    "eventType": "document.created",
+    "label": "Document created",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 1
+  },
+  {
+    "eventType": "org_settings.updated",
+    "label": "Org settings updated",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 1
+  },
+  {
+    "eventType": "project.updated",
+    "label": "Matter updated",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 1
+  },
+  {
+    "eventType": "disbursement.written_off",
+    "label": "Disbursement written off",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 1
+  },
+  {
+    "eventType": "customer.linked",
+    "label": "Client linked",
+    "severity": "INFO",
+    "group": "STANDARD",
+    "count": 1
+  }
+]

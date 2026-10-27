@@ -72,10 +72,16 @@ async function openAuditLogFilteredBy(page: Page, eventType: string) {
   // Phase 87 S9 (ADR-344): /settings/audit-log → /settings/firm?tab=audit-trail
   await page.goto(`${BASE}/settings/firm?tab=audit-trail`);
   await page.waitForLoadState("networkidle");
+  // 625D: Event type is a searchable combobox. Typing the full key and pressing Enter commits it:
+  // the exact facet key is the first option, or — for a key-shaped query not in the facets — the
+  // "Event key starts with …" prefix item is.
   const filter = page.locator("#audit-filter-event-type");
   await expect(filter).toBeVisible({ timeout: 15_000 });
-  await filter.fill(eventType);
-  await filter.press("Tab"); // the filter commits on blur
+  await filter.click();
+  const search = page.getByPlaceholder("Search event types…");
+  await expect(search).toBeVisible();
+  await search.fill(eventType);
+  await search.press("Enter");
   await expect(page).toHaveURL(new RegExp(`eventType=${escapeRegExp(eventType)}`));
   const row = page
     .locator('[data-testid^="audit-row-"]:not([data-testid^="audit-row-details-"])')

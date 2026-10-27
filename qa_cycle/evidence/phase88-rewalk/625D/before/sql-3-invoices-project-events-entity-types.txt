@@ -1,0 +1,55 @@
+                  id                  | invoice_number |     status     |       customer_name        
+--------------------------------------+----------------+----------------+----------------------------
+ b0173b52-ec95-4d36-a145-673e6ccbfe5e | INV-0001       | SENT           | Apex Holdings mvmzw78f31c9
+ a93b0aca-402c-4148-adff-1d1cda0b7d6f | INV-0002       | PARTIALLY_PAID | Sipho Ndlovu mvmzw78f31c9
+ 7b7e7dde-15db-4105-a38c-9da37c3189e5 | INV-0003       | PARTIALLY_PAID | Sipho Ndlovu mvmzw78f31c9
+(3 rows)
+
+       event_type       |              entity_id               | invoice_number |               actor_id               |          occurred_at          
+------------------------+--------------------------------------+----------------+--------------------------------------+-------------------------------
+ invoice.created        | b0173b52-ec95-4d36-a145-673e6ccbfe5e | INV-0001       | 2e38845d-7fd5-4348-9b70-280c5d442df6 | 2026-10-24 22:54:53.454212+00
+ invoice.approved       | b0173b52-ec95-4d36-a145-673e6ccbfe5e | INV-0001       | 2e38845d-7fd5-4348-9b70-280c5d442df6 | 2026-10-24 22:54:54.207495+00
+ invoice.sent           | b0173b52-ec95-4d36-a145-673e6ccbfe5e | INV-0001       | 2e38845d-7fd5-4348-9b70-280c5d442df6 | 2026-10-24 22:54:54.340742+00
+ invoice.created        | a93b0aca-402c-4148-adff-1d1cda0b7d6f | INV-0002       | 2e38845d-7fd5-4348-9b70-280c5d442df6 | 2026-10-24 23:38:51.946341+00
+ invoice.approved       | a93b0aca-402c-4148-adff-1d1cda0b7d6f | INV-0002       | 2e38845d-7fd5-4348-9b70-280c5d442df6 | 2026-10-24 23:39:09.647983+00
+ invoice.sent           | a93b0aca-402c-4148-adff-1d1cda0b7d6f | INV-0002       | 2e38845d-7fd5-4348-9b70-280c5d442df6 | 2026-10-24 23:39:17.483163+00
+ invoice.partially_paid | a93b0aca-402c-4148-adff-1d1cda0b7d6f | INV-0002       | 2e38845d-7fd5-4348-9b70-280c5d442df6 | 2026-10-24 23:39:33.773569+00
+ invoice.created        | 7b7e7dde-15db-4105-a38c-9da37c3189e5 | INV-0003       | 2e38845d-7fd5-4348-9b70-280c5d442df6 | 2026-10-25 00:28:11.912156+00
+ invoice.approved       | 7b7e7dde-15db-4105-a38c-9da37c3189e5 | INV-0003       | 2e38845d-7fd5-4348-9b70-280c5d442df6 | 2026-10-25 00:28:28.579817+00
+ invoice.sent           | 7b7e7dde-15db-4105-a38c-9da37c3189e5 | INV-0003       | 2e38845d-7fd5-4348-9b70-280c5d442df6 | 2026-10-25 00:28:39.740135+00
+ invoice.partially_paid | 7b7e7dde-15db-4105-a38c-9da37c3189e5 | INV-0003       | 2e38845d-7fd5-4348-9b70-280c5d442df6 | 2026-10-25 00:28:58.669443+00
+(11 rows)
+
+          event_type           | count 
+-------------------------------+-------
+ project.created               |     8
+ project.created_from_template |     6
+ matter_closure.closed         |     4
+ project.updated               |     1
+(4 rows)
+
+       entity_type       | count 
+-------------------------+-------
+ generated_document      |    19
+ project                 |    19
+ customer                |    17
+ acceptance_request      |    16
+ legal_disbursement      |    14
+ trust_transaction       |    12
+ invoice                 |    11
+ checklist_instance_item |    10
+ project_member          |     6
+ pack_install            |     5
+ checklist_instance      |     5
+ adverse_party           |     4
+ security                |     4
+ time_entry              |     3
+ matter_closure          |     3
+ member                  |     3
+ document                |     3
+ org_settings            |     2
+ billing_rate            |     2
+ trust_account           |     1
+ tax_rate                |     1
+(21 rows)
+

@@ -19,6 +19,7 @@ import { getEntityTags, setEntityTags } from "./tags";
 import { setEntityFieldGroups } from "./fields";
 import { CLIENTS_PATH, clientPath } from "./paths";
 import { toQuery, type QueryValue } from "./query";
+import type { AuditEventsPage } from "./audit-events";
 import type {
   AggregatedCompletenessResponse,
   AnonymizationPreview,
@@ -139,6 +140,20 @@ export async function getClientLifecycleSummary(): Promise<Record<string, number
 
 export async function runClientDormancyCheck(): Promise<DormancyCheckResult> {
   return api.post<DormancyCheckResult>(`${CLIENTS_PATH}/dormancy-check`);
+}
+
+// ---- Activity (audit) ----
+
+/**
+ * `GET /api/clients/{id}/activity` (625C): the client's paged audit feed — its own rows, rows on
+ * its checklist / information-request children, and rows whose details carry its id. Newest
+ * first; backend default size 20, cap 200; `TEAM_OVERSIGHT`.
+ */
+export async function getClientActivity(
+  clientId: string,
+  params?: { page?: number; size?: number }
+): Promise<AuditEventsPage> {
+  return api.get<AuditEventsPage>(`${clientPath(clientId, "activity")}${toQuery({ ...params })}`);
 }
 
 // ---- Readiness / compliance read models ----

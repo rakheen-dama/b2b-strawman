@@ -1,0 +1,33 @@
+== acme activity:
+total=15
+2026-10-25T02:16:02.307920Z customer.lifecycle.auto_dormancy | Client lifecycle auto dormancy | customer |  -> 
+2026-10-24T22:51:09.580768Z customer.lifecycle.transitioned | Client lifecycle transitioned | customer | ONBOARDING -> ACTIVE
+2026-10-24T22:51:09.550680Z checklist.instance.completed | Checklist instance completed | checklist_instance |  -> 
+2026-10-24T22:51:09.546290Z checklist.item.skipped | Checklist item skipped | checklist_instance_item |  -> 
+2026-10-24T22:51:09.509961Z checklist.item.skipped | Checklist item skipped | checklist_instance_item |  -> 
+2026-10-24T22:51:09.474961Z checklist.item.skipped | Checklist item skipped | checklist_instance_item |  -> 
+2026-10-24T22:51:09.431329Z checklist.item.completed | Checklist item completed | checklist_instance_item |  -> 
+2026-10-24T22:51:09.410188Z checklist.item.skipped | Checklist item skipped | checklist_instance_item |  -> 
+2026-10-24T22:51:09.372250Z checklist.item.skipped | Checklist item skipped | checklist_instance_item |  -> 
+2026-10-24T22:51:09.333456Z checklist.item.skipped | Checklist item skipped | checklist_instance_item |  -> 
+2026-10-24T22:51:09.295204Z checklist.item.skipped | Checklist item skipped | checklist_instance_item |  -> 
+2026-10-24T22:51:09.255459Z checklist.item.skipped | Checklist item skipped | checklist_instance_item |  -> 
+2026-10-24T22:51:09.139350Z customer.lifecycle.transitioned | Client lifecycle transitioned | customer | PROSPECT -> ONBOARDING
+2026-10-24T22:51:09.138030Z checklist.instance.created | Checklist instance created | checklist_instance |  -> 
+2026-10-24T22:51:09.024213Z customer.created | Client created | customer |  -> 
+== acme legacy customer endpoint (tab fetcher):
+total=4
+customer.lifecycle.auto_dormancy | Client lifecycle auto dormancy
+customer.lifecycle.transitioned | Client lifecycle transitioned
+customer.lifecycle.transitioned | Client lifecycle transitioned
+customer.created | Client created
+== observer activity:
+total=4
+2026-10-27T13:31:26.089046Z checklist.item.completed | Checklist item completed | checklist_instance_item |  -> 
+2026-10-27T13:30:54.854457Z customer.lifecycle.transitioned | Client lifecycle transitioned | customer | PROSPECT -> ONBOARDING
+2026-10-27T13:30:54.851951Z checklist.instance.created | Checklist instance created | checklist_instance |  -> 
+2026-10-27T13:30:39.868237Z customer.created | Client created | customer |  -> 
+== observer legacy customer endpoint (tab fetcher):
+total=2
+customer.lifecycle.transitioned | Client lifecycle transitioned
+customer.created | Client created

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { History } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -11,8 +11,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { SeverityPill } from "@/components/audit/severity-pill";
 import { ActorDisplay } from "@/components/audit/actor-display";
 import { AuditDetailsViewer } from "@/components/audit/audit-details-viewer";
+import { entityTypeLabel } from "@/components/audit/entity-type-labels";
 import { fetchEntityAuditPage } from "@/lib/actions/audit-events";
-import type { AuditEventResponse } from "@/lib/api/audit-events";
+import type { AuditEventResponse, AuditEventsPage } from "@/lib/api/audit-events";
+
+/** Fetches one page of the timeline (0-based page, page size). */
+export type AuditTimelinePageLoader = (page: number, size: number) => Promise<AuditEventsPage>;
 
 export interface AuditTimelineProps {
   entityType: string;
@@ -25,13 +29,44 @@ export interface AuditTimelineProps {
    */
   showFilters?: boolean;
   severityPillSize?: "sm" | "md";
+  /**
+   * Page fetcher override (625D). Defaults to the strict by-entity feed
+   * (`fetchEntityAuditPage(entityType, entityId, …)`). The client Activity tab passes the
+   * three-branch `/api/clients/{id}/activity` feed. Held in a latest-value ref: a new function
+   * identity never refetches by itself (the first page reloads only when `entityType`, `entityId`
+   * or `initialPageSize` change); the latest loader is used for the next fetch.
+   */
+  loadPage?: AuditTimelinePageLoader;
+}
+
+function stringDetail(details: Record<string, unknown> | null, key: string): string | null {
+  const value = details?.[key];
+  return typeof value === "string" && value ? value : null;
+}
+
+/**
+ * Context appended to a row's label from its details, so rows that share a label read apart:
+ * the lifecycle from/to (" (ONBOARDING → ACTIVE)") and the checklist item name
+ * (" — Proof of address"). `""` when the details carry nothing usable.
+ */
+export function auditRowSuffix(row: Pick<AuditEventResponse, "eventType" | "details">): string {
+  if (row.eventType === "customer.lifecycle.transitioned") {
+    const from = stringDetail(row.details, "oldStatus");
+    const to = stringDetail(row.details, "newStatus");
+    return from && to ? ` (${from} → ${to})` : "";
+  }
+  if (row.eventType.startsWith("checklist.item.")) {
+    const itemName = stringDetail(row.details, "itemName");
+    return itemName ? ` — ${itemName}` : "";
+  }
+  return "";
 }
 
 /**
  * Chronological vertical timeline of audit events for a single entity.
  *
- * Backend: `GET /api/audit-events/{entityType}/{entityId}` (Epic 507A backend),
- * gated by `TEAM_OVERSIGHT`. Rendered top→bottom DESC by occurredAt.
+ * Backend: `GET /api/audit-events/{entityType}/{entityId}` (Epic 507A backend) by default, or
+ * the caller's `loadPage`; gated by `TEAM_OVERSIGHT`. Rendered top→bottom DESC by occurredAt.
  *
  * Pagination: appends pages via a "Load more" button.
  *
@@ -45,7 +80,21 @@ export function AuditTimeline({
   // accepted so call sites can be future-proofed without churn.
   showFilters: _showFilters = false,
   severityPillSize = "sm",
+  loadPage,
 }: AuditTimelineProps) {
+  // Latest-value ref so an unmemoised caller cannot cause a refetch loop (the effect below is keyed
+  // on entity identity, not on the loader's identity).
+  const loadPageRef = useRef(loadPage);
+  useEffect(() => {
+    loadPageRef.current = loadPage;
+  }, [loadPage]);
+  const fetchPage = useCallback<AuditTimelinePageLoader>(
+    (p, size) =>
+      loadPageRef.current
+        ? loadPageRef.current(p, size)
+        : fetchEntityAuditPage(entityType, entityId, p, size),
+    [entityType, entityId]
+  );
   const [events, setEvents] = useState<AuditEventResponse[]>([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -63,7 +112,7 @@ export function AuditTimeline({
     setEvents([]);
     setPage(0);
     setExpandedId(null);
-    fetchEntityAuditPage(entityType, entityId, 0, initialPageSize)
+    fetchPage(0, initialPageSize)
       .then((res) => {
         if (cancelled) return;
         setEvents(res.content);
@@ -80,14 +129,14 @@ export function AuditTimeline({
     return () => {
       cancelled = true;
     };
-  }, [entityType, entityId, initialPageSize]);
+  }, [fetchPage, initialPageSize]);
 
   const handleLoadMore = useCallback(async () => {
     setIsLoadingMore(true);
     setError(null);
     try {
       const next = page + 1;
-      const res = await fetchEntityAuditPage(entityType, entityId, next, initialPageSize);
+      const res = await fetchPage(next, initialPageSize);
       setEvents((prev) => [...prev, ...res.content]);
       setPage(res.page.number);
       setTotalPages(res.page.totalPages);
@@ -96,7 +145,7 @@ export function AuditTimeline({
     } finally {
       setIsLoadingMore(false);
     }
-  }, [entityType, entityId, page, initialPageSize]);
+  }, [fetchPage, page, initialPageSize]);
 
   if (isLoading) {
     return (
@@ -125,7 +174,7 @@ export function AuditTimeline({
       <EmptyState
         icon={History}
         title="No audit events"
-        description={`No audit events for this ${entityType}`}
+        description={`No audit events for this ${entityTypeLabel(entityType).toLowerCase()}`}
       />
     );
   }
@@ -160,6 +209,7 @@ export function AuditTimeline({
                 <SeverityPill severity={row.severity} size={severityPillSize} />
                 <span className="flex-1 truncate text-slate-800 dark:text-slate-200">
                   {row.label}
+                  {auditRowSuffix(row)}
                 </span>
                 <span className="hidden shrink-0 sm:inline-block">
                   <ActorDisplay

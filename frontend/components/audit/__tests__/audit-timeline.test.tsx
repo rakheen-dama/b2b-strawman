@@ -9,12 +9,16 @@ import type { AuditEventResponse, AuditEventsPage } from "@/lib/api/audit-events
 // regular async functions at runtime; mocking the module replaces them.)
 vi.mock("@/lib/actions/audit-events", () => ({
   fetchEntityAuditPage: vi.fn(),
+  fetchClientActivityPage: vi.fn(),
 }));
 
-import { fetchEntityAuditPage } from "@/lib/actions/audit-events";
-import { AuditTimeline } from "../audit-timeline";
+import { fetchClientActivityPage, fetchEntityAuditPage } from "@/lib/actions/audit-events";
+import { CapabilityProvider } from "@/lib/capabilities";
+import { CustomerAuditTab } from "@/app/(app)/org/[slug]/clients/[id]/audit-tab";
+import { AuditTimeline, auditRowSuffix } from "../audit-timeline";
 
 const mocked = vi.mocked(fetchEntityAuditPage);
+const mockedClientActivity = vi.mocked(fetchClientActivityPage);
 
 function makeRow(
   overrides: Partial<AuditEventResponse> & { id: string; occurredAt: string }
@@ -51,6 +55,7 @@ function makePage(rows: AuditEventResponse[], totalPages = 1, pageNumber = 0): A
 
 beforeEach(() => {
   mocked.mockReset();
+  mockedClientActivity.mockReset();
 });
 
 afterEach(() => {
@@ -104,7 +109,7 @@ describe("<AuditTimeline>", () => {
     render(<AuditTimeline entityType="customer" entityId="cust-1" />);
 
     await waitFor(() => {
-      expect(screen.getByText("No audit events for this customer")).toBeInTheDocument();
+      expect(screen.getByText("No audit events for this client")).toBeInTheDocument();
     });
   });
 
@@ -134,5 +139,176 @@ describe("<AuditTimeline>", () => {
     // Second-page fetch fired with page=1
     expect(mocked).toHaveBeenCalledTimes(2);
     expect(mocked).toHaveBeenLastCalledWith("customer", "cust-1", 1, 20);
+  });
+
+  it("labels the empty-state copy with the legal word, not the storage literal", async () => {
+    mocked.mockResolvedValueOnce(makePage([], 0, 0));
+
+    render(<AuditTimeline entityType="project" entityId="m-1" />);
+
+    expect(await screen.findByText("No audit events for this matter")).toBeInTheDocument();
+  });
+
+  it("uses a supplied loadPage instead of the by-entity fetcher", async () => {
+    const loadPage = vi
+      .fn()
+      .mockResolvedValueOnce(
+        makePage([makeRow({ id: "lp-1", occurredAt: "2026-05-03T10:00:00Z" })], 2, 0)
+      )
+      .mockResolvedValueOnce(
+        makePage([makeRow({ id: "lp-2", occurredAt: "2026-05-02T10:00:00Z" })], 2, 1)
+      );
+
+    render(<AuditTimeline entityType="customer" entityId="cust-1" loadPage={loadPage} />);
+
+    await userEvent.click(await screen.findByTestId("audit-timeline-load-more"));
+    await waitFor(() => expect(screen.getAllByTestId("audit-timeline-row")).toHaveLength(2));
+    expect(loadPage).toHaveBeenNthCalledWith(1, 0, 20);
+    expect(loadPage).toHaveBeenNthCalledWith(2, 1, 20);
+    expect(mocked).not.toHaveBeenCalled();
+  });
+
+  it("an unmemoised inline loadPage does not refetch on re-render; the latest one pages", async () => {
+    const loader = vi
+      .fn()
+      .mockResolvedValue(
+        makePage([makeRow({ id: "lp-1", occurredAt: "2026-05-03T10:00:00Z" })], 2, 0)
+      );
+    const latest = vi
+      .fn()
+      .mockResolvedValue(
+        makePage([makeRow({ id: "lp-2", occurredAt: "2026-05-02T10:00:00Z" })], 2, 1)
+      );
+
+    const { rerender } = render(
+      <AuditTimeline entityType="customer" entityId="cust-1" loadPage={(p, s) => loader(p, s)} />
+    );
+    await screen.findByTestId("audit-timeline-load-more");
+    rerender(
+      <AuditTimeline entityType="customer" entityId="cust-1" loadPage={(p, s) => loader(p, s)} />
+    );
+    rerender(
+      <AuditTimeline entityType="customer" entityId="cust-1" loadPage={(p, s) => latest(p, s)} />
+    );
+    await screen.findByTestId("audit-timeline-load-more");
+    expect(loader).toHaveBeenCalledTimes(1);
+    expect(latest).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByTestId("audit-timeline-load-more"));
+    await waitFor(() => expect(screen.getAllByTestId("audit-timeline-row")).toHaveLength(2));
+    expect(latest).toHaveBeenCalledWith(1, 20);
+    expect(loader).toHaveBeenCalledTimes(1);
+  });
+
+  it("refetches the first page when the entity identity changes", async () => {
+    mocked
+      .mockResolvedValueOnce(makePage([makeRow({ id: "a", occurredAt: "2026-05-03T10:00:00Z" })]))
+      .mockResolvedValueOnce(makePage([makeRow({ id: "b", occurredAt: "2026-05-02T10:00:00Z" })]));
+
+    const { rerender } = render(<AuditTimeline entityType="customer" entityId="cust-1" />);
+    await screen.findByTestId("audit-timeline");
+    rerender(<AuditTimeline entityType="customer" entityId="cust-2" />);
+
+    await waitFor(() => expect(mocked).toHaveBeenLastCalledWith("customer", "cust-2", 0, 20));
+    expect(mocked).toHaveBeenCalledTimes(2);
+  });
+
+  it("appends the lifecycle from/to and the checklist item name to the row label", async () => {
+    mocked.mockResolvedValueOnce(
+      makePage([
+        makeRow({
+          id: "lc",
+          occurredAt: "2026-05-03T10:00:00Z",
+          eventType: "customer.lifecycle.transitioned",
+          label: "Client lifecycle transitioned",
+          details: { oldStatus: "ONBOARDING", newStatus: "ACTIVE" },
+        }),
+        makeRow({
+          id: "ck",
+          occurredAt: "2026-05-02T10:00:00Z",
+          eventType: "checklist.item.completed",
+          entityType: "checklist_instance_item",
+          label: "Checklist item completed",
+          details: { itemName: "Proof of address" },
+        }),
+      ])
+    );
+
+    render(<AuditTimeline entityType="customer" entityId="cust-1" />);
+
+    expect(
+      await screen.findByText("Client lifecycle transitioned (ONBOARDING → ACTIVE)")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Checklist item completed — Proof of address")).toBeInTheDocument();
+  });
+
+  it("auditRowSuffix ignores non-string details and unrelated events", () => {
+    const base = makeRow({ id: "x", occurredAt: "2026-05-03T10:00:00Z" });
+    expect(auditRowSuffix({ ...base, eventType: "project.updated", details: { name: "n" } })).toBe(
+      ""
+    );
+    expect(
+      auditRowSuffix({
+        ...base,
+        eventType: "customer.lifecycle.transitioned",
+        details: { oldStatus: "PROSPECT" },
+      })
+    ).toBe("");
+    expect(
+      auditRowSuffix({
+        ...base,
+        eventType: "checklist.item.skipped",
+        details: { itemName: { from: "a", to: "b" } },
+      })
+    ).toBe("");
+    expect(
+      auditRowSuffix({
+        ...base,
+        eventType: "checklist.item.skipped",
+        details: { itemName: "ID document" },
+      })
+    ).toBe(" — ID document");
+    expect(auditRowSuffix({ ...base, details: null })).toBe("");
+  });
+});
+
+describe("<CustomerAuditTab> (client Activity tab, G-B2)", () => {
+  it("reads the paged client activity feed and renders the checklist rows", async () => {
+    mockedClientActivity.mockResolvedValueOnce(
+      makePage([
+        makeRow({
+          id: "ck-1",
+          occurredAt: "2026-05-03T10:00:00Z",
+          eventType: "checklist.item.completed",
+          entityType: "checklist_instance_item",
+          entityId: "item-1",
+          label: "Checklist item completed",
+          details: { itemName: "Certified ID copy" },
+        }),
+        makeRow({
+          id: "lc-1",
+          occurredAt: "2026-05-02T10:00:00Z",
+          eventType: "customer.lifecycle.transitioned",
+          label: "Client lifecycle transitioned",
+          details: { oldStatus: "ONBOARDING", newStatus: "ACTIVE" },
+        }),
+      ])
+    );
+
+    render(
+      <CapabilityProvider capabilities={["TEAM_OVERSIGHT"]} role="Admin" isAdmin isOwner={false}>
+        <CustomerAuditTab customerId="cust-1" />
+      </CapabilityProvider>
+    );
+
+    expect(
+      await screen.findByText("Checklist item completed — Certified ID copy")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Client lifecycle transitioned (ONBOARDING → ACTIVE)")
+    ).toBeInTheDocument();
+    expect(mockedClientActivity).toHaveBeenCalledWith("cust-1", 0, 20);
+    expect(mockedClientActivity).toHaveBeenCalledTimes(1);
+    expect(mocked).not.toHaveBeenCalled();
   });
 });

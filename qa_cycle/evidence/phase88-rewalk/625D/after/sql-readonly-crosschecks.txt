@@ -1,0 +1,30 @@
+          event_type           | count 
+-------------------------------+-------
+ matter_closure.closed         |     4
+ project.created               |     8
+ project.created_from_template |     6
+ project.updated               |     1
+(4 rows)
+
+ total 
+-------
+   160
+(1 row)
+
+                  id                  |                  cust                  |              template              |                 slug                  |   status    
+--------------------------------------+----------------------------------------+------------------------------------+---------------------------------------+-------------
+ ba78be61-0e38-45e0-9303-88b0e43c0cb8 | Acme Corp                              | Legal Individual Client Onboarding | legal-za-individual-client-onboarding | COMPLETED
+ cc57d406-3895-478c-97c9-755607bff2ed | Sipho Ndlovu mvmzw78f31c9              | Legal Individual Client Onboarding | legal-za-individual-client-onboarding | IN_PROGRESS
+ a8210f89-197d-40e9-8f05-2436ecfeebe5 | Khumalo Property Holdings mvmzw78f31c9 | Legal Individual Client Onboarding | legal-za-individual-client-onboarding | IN_PROGRESS
+ e5278c50-4779-4a10-9137-c1495cb2529e | Observer 625C Test Client              | Legal Individual Client Onboarding | legal-za-individual-client-onboarding | IN_PROGRESS
+(4 rows)
+
+                name                 |                 slug                  
+-------------------------------------+---------------------------------------
+ Generic Client Onboarding           | generic-client-onboarding
+ Legal Individual Client Onboarding  | legal-za-individual-client-onboarding
+ Legal Trust Client Onboarding       | legal-za-trust-client-onboarding
+ Company Client Onboarding (FICA)    | sa-fica-company-onboarding
+ Individual Client Onboarding (FICA) | sa-fica-individual-onboarding
+(5 rows)
+

@@ -1,0 +1,13 @@
+                  id                  |                  name                  | lifecycle_status | inst | items_completed | items_total 
+--------------------------------------+----------------------------------------+------------------+------+-----------------+-------------
+ b6dc030f-bb6f-45c6-844f-a673637c5da9 | Acme Corp                              | DORMANT          |    1 |               1 |           9
+ 31775a3a-1ce2-4de0-8b26-a93202eda787 | Observer 625C Test Client              | ONBOARDING       |    1 |               1 |           9
+ 92c1c419-79d3-4510-a5d6-c336395e5200 | Apex Holdings mvmzw78f31c9             | ONBOARDING       |    0 |               0 |           0
+ 9980e7cc-8cdb-4326-9a5b-37ffffe7cc33 | Apex Holdings tlsg                     | PROSPECT         |    0 |               0 |           0
+ 218397cf-bddb-4fbd-9e9d-872bd4589c6c | Khumalo Property Holdings mvmzw78f31c9 | ONBOARDING       |    1 |               0 |           9
+ 2e12ffe0-5f43-48e3-84f2-a292ab36689e | Moroka Family Trust tlsg               | PROSPECT         |    0 |               0 |           0
+ 0aab7dfb-ce6f-4113-a0c4-52e2d3de308a | QuickCollect Services tlsg             | PROSPECT         |    0 |               0 |           0
+ 1d7cae32-0deb-43fe-af41-a3b9452f3128 | Sipho Ndlovu mvmzw78f31c9              | ONBOARDING       |    1 |               0 |           9
+ 33fbe085-a305-4bcf-8b72-1c97007af7a5 | Sipho Ndlovu tlsg                      | PROSPECT         |    0 |               0 |           0
+(9 rows)
+

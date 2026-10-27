@@ -1,0 +1,26 @@
+[
+  {
+    "actorId": "2e38845d-7fd5-4348-9b70-280c5d442df6",
+    "actorDisplayName": "Alice Owner",
+    "actorType": "USER",
+    "eventCount": 116
+  },
+  {
+    "actorId": "c9ccb6c0-0ce4-44a1-a161-7066b6f9c9be",
+    "actorDisplayName": "Bob Admin",
+    "actorType": "USER",
+    "eventCount": 21
+  },
+  {
+    "actorId": "405bd8bb-b356-41ae-b223-327a903abc17",
+    "actorDisplayName": "Carol Member",
+    "actorType": "USER",
+    "eventCount": 6
+  },
+  {
+    "actorId": "65f788e3-7d32-4125-ade0-1d25a5e0a85a",
+    "actorDisplayName": "Portal Contact",
+    "actorType": "PORTAL_CONTACT",
+    "eventCount": 4
+  }
+]

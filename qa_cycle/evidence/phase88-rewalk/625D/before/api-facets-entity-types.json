@@ -1,0 +1,107 @@
+[
+  {
+    "entityType": "generated_document",
+    "label": "Generated document",
+    "count": 19
+  },
+  {
+    "entityType": "project",
+    "label": "Matter",
+    "count": 19
+  },
+  {
+    "entityType": "customer",
+    "label": "Client",
+    "count": 17
+  },
+  {
+    "entityType": "acceptance_request",
+    "label": "Acceptance request",
+    "count": 16
+  },
+  {
+    "entityType": "legal_disbursement",
+    "label": "Disbursement",
+    "count": 14
+  },
+  {
+    "entityType": "trust_transaction",
+    "label": "Trust transaction",
+    "count": 12
+  },
+  {
+    "entityType": "invoice",
+    "label": "Fee note",
+    "count": 11
+  },
+  {
+    "entityType": "checklist_instance_item",
+    "label": "Checklist instance item",
+    "count": 10
+  },
+  {
+    "entityType": "project_member",
+    "label": "Matter team member",
+    "count": 6
+  },
+  {
+    "entityType": "pack_install",
+    "label": "Pack install",
+    "count": 5
+  },
+  {
+    "entityType": "checklist_instance",
+    "label": "Checklist instance",
+    "count": 5
+  },
+  {
+    "entityType": "adverse_party",
+    "label": "Adverse party",
+    "count": 4
+  },
+  {
+    "entityType": "security",
+    "label": "Security",
+    "count": 4
+  },
+  {
+    "entityType": "time_entry",
+    "label": "Time entry",
+    "count": 3
+  },
+  {
+    "entityType": "matter_closure",
+    "label": "Matter closure",
+    "count": 3
+  },
+  {
+    "entityType": "member",
+    "label": "Member",
+    "count": 3
+  },
+  {
+    "entityType": "document",
+    "label": "Document",
+    "count": 3
+  },
+  {
+    "entityType": "org_settings",
+    "label": "Org settings",
+    "count": 2
+  },
+  {
+    "entityType": "billing_rate",
+    "label": "Billing rate",
+    "count": 2
+  },
+  {
+    "entityType": "trust_account",
+    "label": "Trust account",
+    "count": 1
+  },
+  {
+    "entityType": "tax_rate",
+    "label": "Tax rate",
+    "count": 1
+  }
+]

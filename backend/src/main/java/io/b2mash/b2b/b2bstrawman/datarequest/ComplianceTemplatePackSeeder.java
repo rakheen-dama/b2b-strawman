@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.datarequest;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
 import io.b2mash.b2b.b2bstrawman.seeder.AbstractPackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -39,8 +40,14 @@ public class ComplianceTemplatePackSeeder extends AbstractPackSeeder<TemplatePac
       ObjectMapper objectMapper,
       DocumentTemplateRepository documentTemplateRepository,
       OrgSettingsRepository orgSettingsRepository,
-      TenantTransactionHelper tenantTransactionHelper) {
-    super(resourceResolver, objectMapper, orgSettingsRepository, tenantTransactionHelper);
+      TenantTransactionHelper tenantTransactionHelper,
+      PackVersionGate packVersionGate) {
+    super(
+        resourceResolver,
+        objectMapper,
+        orgSettingsRepository,
+        tenantTransactionHelper,
+        packVersionGate);
     this.documentTemplateRepository = documentTemplateRepository;
   }
 

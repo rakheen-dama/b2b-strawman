@@ -49,4 +49,16 @@ public final class ContentHashUtil {
       throw new IllegalStateException("Failed to canonicalize JSON", e);
     }
   }
+
+  /**
+   * SHA-256 of the canonical JSON (sorted keys, compact) of any JSON-shaped value — the ADR-356
+   * {@code sha256:} body hash used by pack {@code reconcile} entries (Tiptap bodies are {@code
+   * Map}s). Not the same as the install-time {@code content_hash}, which also covers CSS.
+   *
+   * @param json a JSON-shaped value (Map, List, String, Number, Boolean)
+   * @return lowercase hex SHA-256 hash (64 characters)
+   */
+  public static String hashOf(Object json) {
+    return computeHash(canonicalizeJson(CANONICAL_MAPPER.valueToTree(json)));
+  }
 }

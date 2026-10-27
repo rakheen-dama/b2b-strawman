@@ -96,6 +96,11 @@ public class PackCatalogService {
     List<PackCatalogEntry> result = new ArrayList<>();
 
     for (PackInstall install : installs) {
+      // ADR-356 ledger rows of seeder-managed types (CLAUSE / FIELD / REPORT / REQUEST) are
+      // internal bookkeeping for the reconcile version gate — never listed as installed packs.
+      if (!install.getPackType().isInstallerManaged()) {
+        continue;
+      }
       // Try to find the catalog entry from the installers for full metadata
       PackCatalogEntry catalogEntry = findCatalogEntryInternal(install.getPackId());
       if (catalogEntry != null) {

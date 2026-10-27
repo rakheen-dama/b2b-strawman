@@ -9,6 +9,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.packs.PackInstallRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -26,6 +28,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 class PackReconciliationRunnerTest {
 
   private static final String ORG_ID = "org_pack_reconciliation_test";
+  private static final String GATE_ORG_ID = "org_pack_reconcile_gate_test";
 
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
@@ -36,12 +39,16 @@ class PackReconciliationRunnerTest {
   @Autowired private PackInstallRepository packInstallRepository;
 
   private String tenantSchema;
+  private String gateSchema;
 
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(ORG_ID, "Pack Reconciliation Test Org", null);
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+    provisioningService.provisionTenant(GATE_ORG_ID, "Pack Reconcile Gate Test Org", "legal-za");
+    gateSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(GATE_ORG_ID).orElseThrow().getSchemaName();
   }
 
   @Test
@@ -125,6 +132,94 @@ class PackReconciliationRunnerTest {
                           .toList();
                   assertThat(complianceTemplates).isNotEmpty();
                 }));
+  }
+
+  // --- Epic 625E (ADR-356): the reconcile version gate through the real runner ---
+
+  @Test
+  void gateSkipsAtEqualVersion() {
+    Map<String, String> before = gateVersions();
+
+    reconciliationRunner.reconcilePacksForTenant(gateSchema, GATE_ORG_ID);
+
+    assertThat(gateVersions()).isEqualTo(before);
+  }
+
+  @Test
+  void gateRunsAtLowerVersionAndRecordsClasspathVersion() {
+    rewind("common-project", "2", "1"); // FIELD
+    rewind("standard-reports", "1", "0"); // REPORT
+    rewind("fica-onboarding-pack", "1", "0"); // REQUEST
+    rewind("automation-common", "2", "1"); // AUTOMATION_TEMPLATE (installer-managed)
+
+    reconciliationRunner.reconcilePacksForTenant(gateSchema, GATE_ORG_ID);
+
+    Map<String, String> after = gateVersions();
+    assertThat(after)
+        .containsEntry("common-project", "2")
+        .containsEntry("standard-reports", "1")
+        .containsEntry("fica-onboarding-pack", "1")
+        .containsEntry("automation-common", "2");
+
+    // AutomationPackInstaller.reconcile returned true → PackInstallService re-recorded the pack
+    // in the OrgSettings automation list at the classpath version.
+    runInTenant(
+        gateSchema,
+        GATE_ORG_ID,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var entries =
+                      orgSettingsRepository
+                          .findForCurrentTenant()
+                          .orElseThrow()
+                          .getPackStatus()
+                          .getAutomationPackStatus();
+                  assertThat(entries)
+                      .filteredOn(e -> "automation-common".equals(e.get("packId")))
+                      .singleElement()
+                      .satisfies(
+                          e -> assertThat(((Number) e.get("version")).intValue()).isEqualTo(2));
+                }));
+  }
+
+  @Test
+  void gateClosedOnNonNumericVersion() {
+    rewind("legal-za-clauses", "1", "v1-legacy");
+    try {
+      assertThatCode(() -> reconciliationRunner.reconcilePacksForTenant(gateSchema, GATE_ORG_ID))
+          .doesNotThrowAnyException();
+      assertThat(gateVersions()).containsEntry("legal-za-clauses", "v1-legacy");
+    } finally {
+      rewind("legal-za-clauses", "v1-legacy", "1");
+    }
+  }
+
+  /** Rewinds (or restores) a pack_install version with the gate's compare-and-set query. */
+  private void rewind(String packId, String from, String to) {
+    runInTenant(
+        gateSchema,
+        GATE_ORG_ID,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx ->
+                    assertThat(packInstallRepository.compareAndSetVersion(packId, from, to))
+                        .as("rewind %s %s -> %s", packId, from, to)
+                        .isEqualTo(1)));
+  }
+
+  private Map<String, String> gateVersions() {
+    Map<String, String> versions = new TreeMap<>();
+    runInTenant(
+        gateSchema,
+        GATE_ORG_ID,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx ->
+                    packInstallRepository
+                        .findAll()
+                        .forEach(r -> versions.put(r.getPackId(), r.getPackVersion()))));
+    return versions;
   }
 
   private void runInTenant(String schema, Runnable action) {

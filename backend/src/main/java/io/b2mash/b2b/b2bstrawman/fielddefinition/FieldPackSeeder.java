@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.fielddefinition;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.packs.PackType;
+import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
 import io.b2mash.b2b.b2bstrawman.seeder.AbstractPackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -31,8 +33,14 @@ public class FieldPackSeeder extends AbstractPackSeeder<FieldPackDefinition> {
       FieldGroupRepository fieldGroupRepository,
       FieldGroupMemberRepository fieldGroupMemberRepository,
       OrgSettingsRepository orgSettingsRepository,
-      TenantTransactionHelper tenantTransactionHelper) {
-    super(resourceResolver, objectMapper, orgSettingsRepository, tenantTransactionHelper);
+      TenantTransactionHelper tenantTransactionHelper,
+      PackVersionGate packVersionGate) {
+    super(
+        resourceResolver,
+        objectMapper,
+        orgSettingsRepository,
+        tenantTransactionHelper,
+        packVersionGate);
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.fieldGroupRepository = fieldGroupRepository;
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
@@ -51,6 +59,11 @@ public class FieldPackSeeder extends AbstractPackSeeder<FieldPackDefinition> {
   @Override
   protected String getPackTypeName() {
     return "field";
+  }
+
+  @Override
+  protected PackType getPackType() {
+    return PackType.FIELD;
   }
 
   @Override

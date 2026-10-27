@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.settings;
 
+import io.b2mash.b2b.b2bstrawman.packs.PackType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.time.Instant;
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -224,6 +226,50 @@ public class PackStatusSettings {
       return false;
     }
     return this.automationPackStatus.stream().anyMatch(entry -> packId.equals(entry.get("packId")));
+  }
+
+  // --- ADR-356 pack_install backfill source ---
+
+  /**
+   * Version recorded for {@code packId} in the status list that backs {@code type} — the ADR-356
+   * backfill source for {@code pack_install} ledger rows (OQ #14). The field, clause, report and
+   * request lists append without de-duplication, so the highest integer version wins; a non-integer
+   * value is returned verbatim only when no integer entry exists (the version gate then closes with
+   * a WARN).
+   */
+  public Optional<String> appliedVersion(PackType type, String packId) {
+    List<Map<String, Object>> list =
+        switch (type) {
+          case DOCUMENT_TEMPLATE -> templatePackStatus;
+          case AUTOMATION_TEMPLATE -> automationPackStatus;
+          case CLAUSE -> clausePackStatus;
+          case FIELD -> fieldPackStatus;
+          case REPORT -> reportPackStatus;
+          case REQUEST -> requestPackStatus;
+        };
+    if (list == null) {
+      return Optional.empty();
+    }
+    String best = null;
+    Integer bestInt = null;
+    for (var entry : list) {
+      if (!packId.equals(entry.get("packId")) || entry.get("version") == null) {
+        continue;
+      }
+      String version = String.valueOf(entry.get("version"));
+      try {
+        int parsed = Integer.parseInt(version.trim());
+        if (bestInt == null || parsed > bestInt) {
+          best = String.valueOf(parsed);
+          bestInt = parsed;
+        }
+      } catch (NumberFormatException e) {
+        if (best == null) {
+          best = version;
+        }
+      }
+    }
+    return Optional.ofNullable(best);
   }
 
   // --- Project template pack ---

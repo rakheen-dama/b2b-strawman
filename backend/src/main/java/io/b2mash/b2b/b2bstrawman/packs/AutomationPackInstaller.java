@@ -39,6 +39,7 @@ public class AutomationPackInstaller implements PackInstaller {
   private final AutomationExecutionRepository executionRepository;
   private final AutomationTemplateSeeder automationTemplateSeeder;
   private final ObjectMapper objectMapper;
+  private final PackVersionGate packVersionGate;
 
   public AutomationPackInstaller(
       PackInstallRepository packInstallRepository,
@@ -46,13 +47,15 @@ public class AutomationPackInstaller implements PackInstaller {
       AutomationActionRepository actionRepository,
       AutomationExecutionRepository executionRepository,
       AutomationTemplateSeeder automationTemplateSeeder,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      PackVersionGate packVersionGate) {
     this.packInstallRepository = packInstallRepository;
     this.ruleRepository = ruleRepository;
     this.actionRepository = actionRepository;
     this.executionRepository = executionRepository;
     this.automationTemplateSeeder = automationTemplateSeeder;
     this.objectMapper = objectMapper;
+    this.packVersionGate = packVersionGate;
   }
 
   @Override
@@ -150,6 +153,33 @@ public class AutomationPackInstaller implements PackInstaller {
         packId,
         pack.templates().size(),
         tenantId);
+  }
+
+  /**
+   * ADR-356 gate for automation packs: when the installed version is lower than the classpath
+   * version, claims the advance and runs {@link AutomationTemplateSeeder}'s reconcile hook (the
+   * pack's {@code reconcile} block under the one rule). Creates and deletes no rules — a rule added
+   * in a newer pack version is not created for existing tenants.
+   *
+   * @return {@code true} when the recorded version advanced (the caller re-records OrgSettings)
+   */
+  @Override
+  @Transactional
+  public boolean reconcile(String packId, String tenantId) {
+    var loadedPack =
+        automationTemplateSeeder.getAvailablePacks().stream()
+            .filter(lp -> packId.equals(lp.definition().packId()))
+            .findFirst();
+    if (loadedPack.isEmpty()) {
+      return false;
+    }
+    AutomationTemplatePack pack = loadedPack.get().definition();
+    if (!packVersionGate.tryOpen(
+        PackType.AUTOMATION_TEMPLATE, packId, String.valueOf(pack.version()), tenantId)) {
+      return false;
+    }
+    automationTemplateSeeder.reconcileInstalledPack(pack, loadedPack.get().resource(), tenantId);
+    return true;
   }
 
   @Override

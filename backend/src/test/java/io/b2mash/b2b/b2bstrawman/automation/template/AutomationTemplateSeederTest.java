@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.automation.TriggerType;
 import io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateDefinition.AutomationTemplatePack;
 import io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateDefinition.TemplateActionDefinition;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,8 @@ class AutomationTemplateSeederTest {
             ruleRepository,
             actionRepository,
             mock(OrgSettingsRepository.class),
-            mock(TenantTransactionHelper.class));
+            mock(TenantTransactionHelper.class),
+            mock(PackVersionGate.class));
   }
 
   @Test
@@ -62,7 +64,8 @@ class AutomationTemplateSeederTest {
             List.of(
                 template("opt-out-rule", Boolean.FALSE),
                 template("absent-flag-rule", null),
-                template("explicit-true-rule", Boolean.TRUE)));
+                template("explicit-true-rule", Boolean.TRUE)),
+            null);
 
     seeder.applyPackContent(pack, null, "tenant_test");
 

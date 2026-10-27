@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.informationrequest;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.packs.PackType;
+import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
 import io.b2mash.b2b.b2bstrawman.seeder.AbstractPackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -23,8 +25,14 @@ public class RequestPackSeeder extends AbstractPackSeeder<RequestPackDefinition>
       RequestTemplateRepository requestTemplateRepository,
       RequestTemplateItemRepository requestTemplateItemRepository,
       OrgSettingsRepository orgSettingsRepository,
-      TenantTransactionHelper tenantTransactionHelper) {
-    super(resourceResolver, objectMapper, orgSettingsRepository, tenantTransactionHelper);
+      TenantTransactionHelper tenantTransactionHelper,
+      PackVersionGate packVersionGate) {
+    super(
+        resourceResolver,
+        objectMapper,
+        orgSettingsRepository,
+        tenantTransactionHelper,
+        packVersionGate);
     this.requestTemplateRepository = requestTemplateRepository;
     this.requestTemplateItemRepository = requestTemplateItemRepository;
   }
@@ -42,6 +50,11 @@ public class RequestPackSeeder extends AbstractPackSeeder<RequestPackDefinition>
   @Override
   protected String getPackTypeName() {
     return "request";
+  }
+
+  @Override
+  protected PackType getPackType() {
+    return PackType.REQUEST;
   }
 
   @Override

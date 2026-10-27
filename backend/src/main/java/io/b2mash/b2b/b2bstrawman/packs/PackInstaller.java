@@ -47,7 +47,10 @@ public interface PackInstaller {
    * startup reconciliation path ({@code PackInstallService.internalInstall}) when a {@link
    * PackInstall} row already exists, so that content added to a pack in a newer version reaches
    * tenants that installed an earlier version. Implementations must be additive only (never delete
-   * or overwrite tenant content) and idempotent.
+   * or overwrite tenant content) and idempotent. ADR-356: implementations own the version gate for
+   * their type (recorded {@code pack_install} version lower than the classpath version, claimed
+   * with a compare-and-set) and then call the seeder's {@code reconcileInstalledPack} so the pack's
+   * {@code reconcile} block is applied under the one rule.
    *
    * @param packId the unique pack identifier
    * @param tenantId the tenant schema name

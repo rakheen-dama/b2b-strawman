@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,7 +183,17 @@ public class TemplatePackInstaller implements PackInstaller {
     TemplatePackDefinition pack = loadedPack.definition();
 
     String installedVersion = install.getPackVersion();
-    if (pack.version() <= parseVersion(installedVersion)) {
+    OptionalInt installed = PackVersionGate.parseVersion(installedVersion);
+    if (installed.isEmpty()) {
+      log.warn(
+          "Reconcile gate closed: non-numeric installed version '{}' for template pack {} (tenant"
+              + " {})",
+          installedVersion,
+          packId,
+          tenantId);
+      return false;
+    }
+    if (pack.version() <= installed.getAsInt()) {
       return false;
     }
 
@@ -228,6 +239,10 @@ public class TemplatePackInstaller implements PackInstaller {
       documentTemplateRepository.saveAll(freshUntagged);
     }
 
+    // ADR-356: apply the pack's reconcile block (one rule) after the additive create/refresh pass,
+    // so pristine content already refreshed above reads as ALREADY_CURRENT.
+    templatePackSeeder.reconcileInstalledPack(pack, loadedPack.resource(), tenantId);
+
     log.info(
         "Reconciled template pack {} to v{} for tenant {} ({} new templates, {} refreshed)",
         packId,
@@ -266,14 +281,6 @@ public class TemplatePackInstaller implements PackInstaller {
     template.setContentHash(packHash);
     documentTemplateRepository.save(template);
     return true;
-  }
-
-  private static int parseVersion(String version) {
-    try {
-      return Integer.parseInt(version);
-    } catch (NumberFormatException e) {
-      return 1;
-    }
   }
 
   @Override

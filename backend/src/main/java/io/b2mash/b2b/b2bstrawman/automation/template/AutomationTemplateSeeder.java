@@ -7,6 +7,8 @@ import io.b2mash.b2b.b2bstrawman.automation.AutomationRuleRepository;
 import io.b2mash.b2b.b2bstrawman.automation.RuleSource;
 import io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateDefinition.AutomationTemplatePack;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.packs.PackType;
+import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
 import io.b2mash.b2b.b2bstrawman.seeder.AbstractPackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -33,8 +35,14 @@ public class AutomationTemplateSeeder extends AbstractPackSeeder<AutomationTempl
       AutomationRuleRepository ruleRepository,
       AutomationActionRepository actionRepository,
       OrgSettingsRepository orgSettingsRepository,
-      TenantTransactionHelper tenantTransactionHelper) {
-    super(resourceResolver, objectMapper, orgSettingsRepository, tenantTransactionHelper);
+      TenantTransactionHelper tenantTransactionHelper,
+      PackVersionGate packVersionGate) {
+    super(
+        resourceResolver,
+        objectMapper,
+        orgSettingsRepository,
+        tenantTransactionHelper,
+        packVersionGate);
     this.ruleRepository = ruleRepository;
     this.actionRepository = actionRepository;
   }
@@ -52,6 +60,11 @@ public class AutomationTemplateSeeder extends AbstractPackSeeder<AutomationTempl
   @Override
   protected String getPackTypeName() {
     return "automation";
+  }
+
+  @Override
+  protected PackType getPackType() {
+    return PackType.AUTOMATION_TEMPLATE;
   }
 
   @Override

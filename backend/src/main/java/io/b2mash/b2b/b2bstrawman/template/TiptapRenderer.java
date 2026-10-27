@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.template;
 import io.b2mash.b2b.b2bstrawman.clause.Clause;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -97,14 +98,48 @@ public class TiptapRenderer {
     renderNode(document, context, clauses, slugIndex, body, 0, formatHints);
 
     String safeCss = templateCss != null ? templateCss.replaceAll("(?i)</style>", "") : "";
+    // Validated BEFORE interpolation (§13.6.4): an invalid or hostile value falls back to the
+    // default and never reaches the stylesheet.
+    String brandCss =
+        brandCss(BrandColour.validHexOrDefault(brandColorOf(context), BrandColour.DEFAULT));
 
+    // Order: defaults -> brand rules (override the default heading colour) -> template CSS (a
+    // template can still override the brand).
     return "<!DOCTYPE html>\n<html><head>\n<meta charset=\"UTF-8\"/>\n<style>"
         + defaultCss
+        + "\n"
+        + brandCss
         + "\n"
         + safeCss
         + "</style>\n</head><body>\n"
         + body
         + "\n</body></html>";
+  }
+
+  /**
+   * Concrete brand rules (Phase 88 U8, D5, ADR-353, §13.6.4): headings and rule lines only — table
+   * headers keep the neutral palette. {@code hr} is forced solid because the OpenHTMLToPDF
+   * user-agent style is {@code inset}, which draws a two-tone (darkened) line. No Tiptap node emits
+   * {@code class="rule"} or {@code class="letterhead"} today; those selectors serve template CSS
+   * and future renderer support. Caller MUST pass a {@link BrandColour}-validated hex.
+   */
+  static String brandCss(String validatedHex) {
+    return """
+        h1, h2, h3 { color: %1$s; }
+        hr, .rule { border-color: %1$s; }
+        hr { border-style: solid; }
+        .letterhead { border-bottom: 2px solid %1$s; }
+        """
+        .formatted(validatedHex);
+  }
+
+  /** Reads {@code org.brandColor} from the context defensively (null when absent or not text). */
+  private static String brandColorOf(Map<String, Object> context) {
+    return context != null
+            && context.get("org") instanceof Map<?, ?> org
+            && org.get("brandColor") instanceof String colour
+        ? colour
+        : null;
   }
 
   @SuppressWarnings("unchecked")
@@ -284,6 +319,14 @@ public class TiptapRenderer {
       if (current == null) return "";
     }
     String typeHint = formatHints != null ? formatHints.get(key) : null;
+    // An unhinted variable never stringifies a container (Phase 88 626B, ruling R-3):
+    // org.bankingDetails / org.signatory are maps and org.addressLines is a list — templates bind
+    // their leaf keys. Keeps the SoA's legacy whole-map {{org.bankingDetails}} paragraph rendering
+    // "" (as the removed placeholder did) until 626D moves it onto the leaves. Hinted values (e.g.
+    // CURRENCY custom fields stored as {amount, currency} maps) keep their existing formatting.
+    if (typeHint == null && (current instanceof Map<?, ?> || current instanceof Collection<?>)) {
+      return "";
+    }
     Locale renderLocale = context.get("_locale") instanceof Locale l ? l : null;
     return VariableFormatter.format(current, typeHint, renderLocale);
   }

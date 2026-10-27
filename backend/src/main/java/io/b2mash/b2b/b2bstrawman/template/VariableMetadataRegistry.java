@@ -329,7 +329,24 @@ public class VariableMetadataRegistry {
             // Type "image": rendered as an <img> letterhead element by VariableFormatter
             // (LZKC-007). The non-"string" type also routes it into
             // PdfRenderingService.buildFormatHints for every entity type.
-            new VariableInfo("org.logoUrl", "Logo", "image")));
+            new VariableInfo("org.logoUrl", "Logo", "image"),
+            // Firm letterhead (Phase 88 U8, ADR-353) — leaf keys only: org.addressLines (list) and
+            // the org.bankingDetails / org.signatory groups (maps) are not bindable as variables;
+            // org.principal_attorney is a deprecated context-only alias and deliberately not
+            // offered. Type "string" → no format hint (buildFormatHints unchanged).
+            new VariableInfo("org.taxRegistrationNumber", "VAT Registration Number", "string"),
+            new VariableInfo("org.address", "Firm Address", "string"),
+            new VariableInfo("org.phone", "Firm Phone", "string"),
+            new VariableInfo("org.email", "Firm Email", "string"),
+            new VariableInfo("org.website", "Firm Website", "string"),
+            new VariableInfo("org.bankingDetails.bankName", "Bank Name", "string"),
+            new VariableInfo("org.bankingDetails.branchCode", "Branch Code", "string"),
+            new VariableInfo("org.bankingDetails.accountNumber", "Bank Account Number", "string"),
+            new VariableInfo("org.bankingDetails.accountType", "Bank Account Type", "string"),
+            new VariableInfo(
+                "org.bankingDetails.referenceNote", "Payment Reference Note", "string"),
+            new VariableInfo("org.signatory.name", "Signatory Name", "string"),
+            new VariableInfo("org.signatory.designation", "Signatory Designation", "string")));
   }
 
   private VariableGroup buildGeneratedGroup() {

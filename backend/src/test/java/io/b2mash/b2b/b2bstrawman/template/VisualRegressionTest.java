@@ -157,4 +157,53 @@ class VisualRegressionTest {
     // Footer
     assertThat(html).contains("Thank you for your business");
   }
+
+  // --- Brand colour (Phase 88 626B, U8, ADR-353, §13.6.4) — HTML-level goldens (ruling R-6) ---
+
+  private Map<String, Object> engagementContext(Map<String, Object> org) {
+    var context = new HashMap<String, Object>();
+    context.put("org", org);
+    context.put("customer", Map.of("name", "Jane Smith"));
+    context.put(
+        "project",
+        Map.of(
+            "name", "Website Redesign",
+            "status", "IN_PROGRESS",
+            "description", "Full redesign of corporate website"));
+    return context;
+  }
+
+  @Test
+  void engagementLetter_carriesBrandRules() throws IOException {
+    var doc = loadPackTemplate("engagement-letter");
+    var org = new HashMap<String, Object>();
+    org.put("name", "Acme Corp");
+    org.put("brandColor", "#0f766e");
+
+    String html = renderer.render(doc, engagementContext(org), Map.of(), null);
+
+    assertThat(html)
+        .contains("h1, h2, h3 { color: #0f766e; }")
+        .contains("hr, .rule { border-color: #0f766e; }")
+        .contains("hr { border-style: solid; }")
+        .contains(".letterhead { border-bottom: 2px solid #0f766e; }")
+        .contains("<h1>Acme Corp</h1>")
+        .contains("<h2>Engagement Letter</h2>");
+    // D5: table headers keep the neutral palette — no brand rule targets th/table.
+    assertThat(html).doesNotContain("th { color: #0f766e").doesNotContain("th, ");
+  }
+
+  @Test
+  void engagementLetter_defaultBrandWhenUnset() throws IOException {
+    var doc = loadPackTemplate("engagement-letter");
+
+    String html =
+        renderer.render(doc, engagementContext(Map.of("name", "Acme Corp")), Map.of(), null);
+
+    assertThat(html)
+        .contains("h1, h2, h3 { color: #1a1a2e; }")
+        .contains("hr, .rule { border-color: #1a1a2e; }")
+        .contains(".letterhead { border-bottom: 2px solid #1a1a2e; }")
+        .doesNotContain("#0f766e");
+  }
 }

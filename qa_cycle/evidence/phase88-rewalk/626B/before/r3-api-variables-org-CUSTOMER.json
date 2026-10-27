@@ -1,0 +1,36 @@
+{
+  "entityType": "CUSTOMER",
+  "orgGroup": [
+    {
+      "label": "Organization",
+      "prefix": "org",
+      "variables": [
+        {
+          "key": "org.name",
+          "label": "Organization Name",
+          "type": "string"
+        },
+        {
+          "key": "org.defaultCurrency",
+          "label": "Default Currency",
+          "type": "string"
+        },
+        {
+          "key": "org.brandColor",
+          "label": "Brand Color",
+          "type": "string"
+        },
+        {
+          "key": "org.documentFooterText",
+          "label": "Document Footer",
+          "type": "string"
+        },
+        {
+          "key": "org.logoUrl",
+          "label": "Logo",
+          "type": "image"
+        }
+      ]
+    }
+  ]
+}

@@ -10,11 +10,18 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.contentstream.operator.Operator;
+import org.apache.pdfbox.cos.COSNumber;
+import org.apache.pdfbox.pdfparser.PDFStreamParser;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -49,6 +56,7 @@ class PdfRenderingServiceTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private OrgSettingsRepository orgSettingsRepository;
 
   private String tenantSchema;
   private UUID memberIdOwner;
@@ -300,6 +308,105 @@ class PdfRenderingServiceTest {
 
     assertThat(pdf).isNotEmpty();
     assertThat(new String(pdf, 0, 4)).isEqualTo("%PDF");
+  }
+
+  /**
+   * Phase 88 626B (U8, ADR-353, ruling R-6): the tenant brand colour reaches the PDF itself, not
+   * just the HTML. OpenHTMLToPDF has no CSS custom properties, so the only proof is a concrete fill
+   * colour in the page content stream. Uses an h2/h3 template with no custom CSS — {@code
+   * testTemplateId}'s {@code h1 { color: blue; }} would (correctly) override the brand rule.
+   */
+  @Test
+  void brandColourReachesPdfContentStream() {
+    var brandTemplateId = new UUID[1];
+    var priorBrand = new String[1];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var template =
+                      new DocumentTemplate(
+                          TemplateEntityType.PROJECT,
+                          "Brand Colour Template",
+                          "brand-colour-template",
+                          TemplateCategory.ENGAGEMENT_LETTER,
+                          TestDocumentBuilder.doc()
+                              .heading(2, "Brand Heading")
+                              .heading(3, "Brand Subheading")
+                              .paragraph("Body text stays #333.")
+                              .build());
+                  brandTemplateId[0] = documentTemplateRepository.save(template).getId();
+                  priorBrand[0] =
+                      orgSettingsRepository
+                          .findForCurrentTenant()
+                          .orElseThrow()
+                          .getBranding()
+                          .getBrandColor();
+                }));
+
+    try {
+      // Default (no brand colour): #1a1a2e headings, no teal fill anywhere.
+      setBrandColour(null);
+      runInTenant(
+          () ->
+              transactionTemplate.executeWithoutResult(
+                  tx -> {
+                    var result =
+                        pdfRenderingService.generatePdf(
+                            brandTemplateId[0], testProjectId, memberIdOwner);
+                    assertThat(result.htmlPreview()).contains("h1, h2, h3 { color: #1a1a2e; }");
+                    assertThat(hasFillColour(result.pdfBytes(), 0x1a, 0x1a, 0x2e)).isTrue();
+                    assertThat(hasFillColour(result.pdfBytes(), 0x0f, 0x76, 0x6e)).isFalse();
+                  }));
+
+      // Brand colour set: the teal fill (#0f766e ~ 0.059 0.463 0.431 rg) is in the content stream.
+      setBrandColour("#0f766e");
+      runInTenant(
+          () ->
+              transactionTemplate.executeWithoutResult(
+                  tx -> {
+                    var result =
+                        pdfRenderingService.generatePdf(
+                            brandTemplateId[0], testProjectId, memberIdOwner);
+                    assertThat(result.htmlPreview()).contains("h1, h2, h3 { color: #0f766e; }");
+                    assertThat(hasFillColour(result.pdfBytes(), 0x0f, 0x76, 0x6e)).isTrue();
+                  }));
+    } finally {
+      setBrandColour(priorBrand[0]);
+    }
+  }
+
+  private void setBrandColour(String hex) {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
+                  settings.getBranding().setBrandColor(hex);
+                  orgSettingsRepository.save(settings);
+                }));
+  }
+
+  /** True when any page's content stream sets an {@code rg} fill within 1/255 of (r, g, b). */
+  private static boolean hasFillColour(byte[] pdf, int r, int g, int b) {
+    try (var doc = Loader.loadPDF(pdf)) {
+      for (var page : doc.getPages()) {
+        List<Object> tokens = new PDFStreamParser(page).parse();
+        for (int i = 3; i < tokens.size(); i++) {
+          if (tokens.get(i) instanceof Operator op && op.getName().equals("rg")) {
+            int pr = Math.round(((COSNumber) tokens.get(i - 3)).floatValue() * 255);
+            int pg = Math.round(((COSNumber) tokens.get(i - 2)).floatValue() * 255);
+            int pb = Math.round(((COSNumber) tokens.get(i - 1)).floatValue() * 255);
+            if (Math.abs(pr - r) <= 1 && Math.abs(pg - g) <= 1 && Math.abs(pb - b) <= 1) {
+              return true;
+            }
+          }
+        }
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    return false;
   }
 
   // --- Helpers ---

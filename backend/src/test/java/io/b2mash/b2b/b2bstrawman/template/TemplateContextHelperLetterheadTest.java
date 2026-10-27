@@ -1,0 +1,227 @@
+package io.b2mash.b2b.b2bstrawman.template;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.tag.EntityTagRepository;
+import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+/**
+ * Letterhead keys exposed by {@link TemplateContextHelper#buildOrgContext()} (Phase 88 626B, U8,
+ * ADR-353): {@code org.address}, {@code org.addressLines}, {@code org.phone}, {@code org.email},
+ * {@code org.website}, {@code org.bankingDetails.*}, {@code org.signatory.*} and the deprecated
+ * {@code org.principal_attorney} alias. Group maps are {@code null} when every member is blank so a
+ * {@code conditionalBlock isNotEmpty} on the group hides its label.
+ */
+@ExtendWith(MockitoExtension.class)
+class TemplateContextHelperLetterheadTest {
+
+  private static final List<String> LETTERHEAD_KEYS =
+      List.of(
+          "address",
+          "addressLines",
+          "phone",
+          "email",
+          "website",
+          "bankingDetails",
+          "signatory",
+          "principal_attorney");
+
+  @Mock private OrgSettingsRepository orgSettingsRepository;
+  @Mock private MemberRepository memberRepository;
+  @Mock private EntityTagRepository entityTagRepository;
+  @Mock private TagRepository tagRepository;
+  @Mock private StorageService storageService;
+  @Mock private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Mock private OrganizationRepository organizationRepository;
+  @Mock private FieldDefinitionRepository fieldDefinitionRepository;
+
+  @InjectMocks private TemplateContextHelper helper;
+
+  private Map<String, Object> buildWith(OrgSettings settings) {
+    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.ofNullable(settings));
+    return helper.buildOrgContext();
+  }
+
+  private static OrgSettings fullyFilled() {
+    var settings = new OrgSettings("ZAR");
+    settings
+        .getLetterhead()
+        .updateLetterhead(
+            "12 Rissik Street",
+            "Suite 4",
+            null,
+            "Johannesburg",
+            "2001",
+            "South Africa",
+            "+27 11 555 0100",
+            "office@ndlovu.co.za",
+            "https://ndlovu.co.za",
+            "FNB",
+            "250655",
+            "62812345678",
+            "Cheque",
+            "Use the fee note number as reference",
+            "Thandiwe Khumalo",
+            "Director");
+    return settings;
+  }
+
+  @Test
+  void letterhead_keys_present_when_set() {
+    var org = buildWith(fullyFilled());
+
+    assertThat(org.get("address"))
+        .isEqualTo("12 Rissik Street, Suite 4, Johannesburg 2001, South Africa");
+    assertThat(org.get("addressLines"))
+        .isEqualTo(List.of("12 Rissik Street", "Suite 4", "Johannesburg 2001", "South Africa"));
+    assertThat(org.get("phone")).isEqualTo("+27 11 555 0100");
+    assertThat(org.get("email")).isEqualTo("office@ndlovu.co.za");
+    assertThat(org.get("website")).isEqualTo("https://ndlovu.co.za");
+
+    @SuppressWarnings("unchecked")
+    var banking = (Map<String, Object>) org.get("bankingDetails");
+    assertThat(banking)
+        .containsExactly(
+            Map.entry("bankName", "FNB"),
+            Map.entry("branchCode", "250655"),
+            Map.entry("accountNumber", "62812345678"),
+            Map.entry("accountType", "Cheque"),
+            Map.entry("referenceNote", "Use the fee note number as reference"));
+
+    @SuppressWarnings("unchecked")
+    var signatory = (Map<String, Object>) org.get("signatory");
+    assertThat(signatory)
+        .containsExactly(
+            Map.entry("name", "Thandiwe Khumalo"), Map.entry("designation", "Director"));
+  }
+
+  @Test
+  void groups_null_and_address_empty_when_nothing_set() {
+    var org = buildWith(new OrgSettings("ZAR"));
+
+    assertThat(org).containsKeys(LETTERHEAD_KEYS.toArray(String[]::new));
+    assertThat(org.get("address")).isEqualTo("");
+    assertThat(org.get("addressLines")).isEqualTo(List.of());
+    assertThat(org.get("phone")).isNull();
+    assertThat(org.get("email")).isNull();
+    assertThat(org.get("website")).isNull();
+    assertThat(org.get("bankingDetails")).isNull();
+    assertThat(org.get("signatory")).isNull();
+    assertThat(org.get("principal_attorney")).isNull();
+
+    // The renderer's isNotEmpty must read the empty groups as empty (626D's conditionalBlock).
+    var renderer = new TiptapRenderer("");
+    assertThat(renderer.evaluateCondition(org.get("bankingDetails"), "isNotEmpty", null)).isFalse();
+    assertThat(renderer.evaluateCondition(org.get("signatory"), "isNotEmpty", null)).isFalse();
+    assertThat(renderer.evaluateCondition(org.get("address"), "isNotEmpty", null)).isFalse();
+  }
+
+  @Test
+  void whitespace_only_values_are_treated_as_blank() {
+    var settings = new OrgSettings("ZAR");
+    var letterhead = settings.getLetterhead();
+    letterhead.setPhone("   ");
+    letterhead.setBankName(" ");
+    letterhead.setSignatoryName("\t");
+
+    var org = buildWith(settings);
+
+    assertThat(org.get("phone")).isNull();
+    assertThat(org.get("bankingDetails")).isNull();
+    assertThat(org.get("signatory")).isNull();
+    assertThat(org.get("principal_attorney")).isNull();
+  }
+
+  @Test
+  void partial_banking_group_is_a_map_with_null_members() {
+    var settings = new OrgSettings("ZAR");
+    settings.getLetterhead().setBankName("FNB");
+
+    var org = buildWith(settings);
+
+    @SuppressWarnings("unchecked")
+    var banking = (Map<String, Object>) org.get("bankingDetails");
+    assertThat(banking).isNotNull();
+    assertThat(banking)
+        .containsOnlyKeys(
+            "bankName", "branchCode", "accountNumber", "accountType", "referenceNote");
+    assertThat(banking.get("bankName")).isEqualTo("FNB");
+    assertThat(banking.get("branchCode")).isNull();
+    assertThat(banking.get("accountNumber")).isNull();
+    assertThat(banking.get("accountType")).isNull();
+    assertThat(banking.get("referenceNote")).isNull();
+    assertThat(org.get("signatory")).isNull();
+  }
+
+  @Test
+  void principal_attorney_aliases_signatory_name() {
+    var org = buildWith(fullyFilled());
+    assertThat(org.get("principal_attorney")).isEqualTo("Thandiwe Khumalo");
+
+    // Designation alone still yields a signatory group, but the alias stays null.
+    var settings = new OrgSettings("ZAR");
+    settings.getLetterhead().setSignatoryDesignation("Director");
+    var designationOnly = buildWith(settings);
+    assertThat(designationOnly.get("signatory")).isNotNull();
+    assertThat(designationOnly.get("principal_attorney")).isNull();
+  }
+
+  @Test
+  void no_settings_row_branch_has_letterhead_keys() {
+    var org = buildWith(null);
+
+    assertThat(org).containsKeys(LETTERHEAD_KEYS.toArray(String[]::new));
+    assertThat(org.get("address")).isEqualTo("");
+    assertThat(org.get("addressLines")).isEqualTo(List.of());
+    assertThat(org.get("phone")).isNull();
+    assertThat(org.get("email")).isNull();
+    assertThat(org.get("website")).isNull();
+    assertThat(org.get("bankingDetails")).isNull();
+    assertThat(org.get("signatory")).isNull();
+    assertThat(org.get("principal_attorney")).isNull();
+  }
+
+  @Test
+  void existing_org_keys_unchanged() {
+    var settings = fullyFilled();
+    settings.getBranding().setBrandColor("#0f766e");
+    settings.getBranding().setDocumentFooterText("Confidential");
+    settings.getTax().setTaxRegistrationNumber("4123456789");
+
+    var org = buildWith(settings);
+
+    assertThat(org.get("name")).isEqualTo("Unknown Organization");
+    assertThat(org.get("defaultCurrency")).isEqualTo("ZAR");
+    assertThat(org.get("brandColor")).isEqualTo("#0f766e");
+    assertThat(org.get("documentFooterText")).isEqualTo("Confidential");
+    assertThat(org.get("taxRegistrationNumber")).isEqualTo("4123456789");
+    assertThat(org).containsKey("logoUrl");
+    assertThat(org.get("logoUrl")).isNull();
+
+    var noRow = buildWith(null);
+    assertThat(noRow)
+        .containsKeys(
+            "name",
+            "defaultCurrency",
+            "brandColor",
+            "documentFooterText",
+            "taxRegistrationNumber",
+            "logoUrl");
+  }
+}

@@ -150,7 +150,7 @@ class PackReconciliationRunnerTest {
     rewind("common-project", "2", "1"); // FIELD
     rewind("standard-reports", "1", "0"); // REPORT
     rewind("fica-onboarding-pack", "1", "0"); // REQUEST
-    rewind("automation-common", "2", "1"); // AUTOMATION_TEMPLATE (installer-managed)
+    rewind("automation-common", "3", "2"); // AUTOMATION_TEMPLATE (installer-managed)
 
     reconciliationRunner.reconcilePacksForTenant(gateSchema, GATE_ORG_ID);
 
@@ -159,7 +159,7 @@ class PackReconciliationRunnerTest {
         .containsEntry("common-project", "2")
         .containsEntry("standard-reports", "1")
         .containsEntry("fica-onboarding-pack", "1")
-        .containsEntry("automation-common", "2");
+        .containsEntry("automation-common", "3");
 
     // AutomationPackInstaller.reconcile returned true → PackInstallService re-recorded the pack
     // in the OrgSettings automation list at the classpath version.
@@ -179,7 +179,7 @@ class PackReconciliationRunnerTest {
                       .filteredOn(e -> "automation-common".equals(e.get("packId")))
                       .singleElement()
                       .satisfies(
-                          e -> assertThat(((Number) e.get("version")).intValue()).isEqualTo(2));
+                          e -> assertThat(((Number) e.get("version")).intValue()).isEqualTo(3));
                 }));
   }
 

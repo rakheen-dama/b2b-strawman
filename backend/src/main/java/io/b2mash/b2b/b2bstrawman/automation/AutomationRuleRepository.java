@@ -19,4 +19,11 @@ public interface AutomationRuleRepository extends JpaRepository<AutomationRule, 
 
   List<AutomationRule> findByTemplateSlugInAndSourcePackInstallIdIsNullAndSource(
       List<String> templateSlugs, RuleSource source);
+
+  /**
+   * Install-tagged rules with this template slug and source (ADR-356 reconcile target lookup; the
+   * caller narrows to SYSTEM-created rows so API-activated copies are never targeted).
+   */
+  List<AutomationRule> findByTemplateSlugAndSourceAndSourcePackInstallIdIsNotNull(
+      String templateSlug, RuleSource source);
 }

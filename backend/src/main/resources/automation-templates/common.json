@@ -1,6 +1,43 @@
 {
   "packId": "automation-common",
-  "version": 2,
+  "version": 3,
+  "reconcile": [
+    {
+      "entity": "automation_rule",
+      "key": "document-review-notification",
+      "field": "name",
+      "from": "Document Review Notification",
+      "to": "Document uploaded — notify matter lead"
+    },
+    {
+      "entity": "automation_rule",
+      "key": "document-review-notification",
+      "field": "description",
+      "from": "Notifies project owner when a document is accepted",
+      "to": "Notifies the matter lead when a document is uploaded"
+    },
+    {
+      "entity": "automation_rule",
+      "key": "document-review-notification",
+      "field": "actions[0].actionConfig.title",
+      "from": "Document accepted: {{document.name}}",
+      "to": "Document uploaded: {{document.name}}"
+    },
+    {
+      "entity": "automation_rule",
+      "key": "document-review-notification",
+      "field": "actions[0].actionConfig.message",
+      "from": "A document has been accepted in project {{project.name}}.",
+      "to": "{{document.name}} was uploaded to the matter."
+    },
+    {
+      "entity": "automation_rule",
+      "key": "document-review-notification",
+      "field": "enabled",
+      "from": true,
+      "to": false
+    }
+  ],
   "templates": [
     {
       "slug": "task-completion-chain",
@@ -104,9 +141,10 @@
     },
     {
       "slug": "document-review-notification",
-      "name": "Document Review Notification",
-      "description": "Notifies project owner when a document is accepted",
+      "name": "Document uploaded — notify matter lead",
+      "description": "Notifies the matter lead when a document is uploaded",
       "category": "notifications",
+      "defaultEnabled": false,
       "triggerType": "DOCUMENT_ACCEPTED",
       "triggerConfig": {},
       "conditions": [],
@@ -115,8 +153,8 @@
           "actionType": "SEND_NOTIFICATION",
           "actionConfig": {
             "recipientType": "PROJECT_OWNER",
-            "title": "Document accepted: {{document.name}}",
-            "message": "A document has been accepted in project {{project.name}}."
+            "title": "Document uploaded: {{document.name}}",
+            "message": "{{document.name}} was uploaded to the matter."
           },
           "delayDuration": null,
           "delayUnit": null,

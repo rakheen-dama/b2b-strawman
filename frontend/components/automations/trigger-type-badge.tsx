@@ -11,7 +11,7 @@ const TRIGGER_TYPE_CONFIG: Record<
   INVOICE_STATUS_CHANGED: { label: "Invoice Status", variant: "warning" },
   TIME_ENTRY_CREATED: { label: "Time Entry", variant: "outline" },
   BUDGET_THRESHOLD_REACHED: { label: "Budget Threshold", variant: "warning" },
-  DOCUMENT_ACCEPTED: { label: "Document Accepted", variant: "success" },
+  DOCUMENT_ACCEPTED: { label: "Document uploaded", variant: "success" },
   INFORMATION_REQUEST_COMPLETED: { label: "Request Completed", variant: "lead" },
   FIELD_DATE_APPROACHING: { label: "Date Approaching", variant: "warning" },
   SCHEDULED: { label: "Scheduled", variant: "outline" },

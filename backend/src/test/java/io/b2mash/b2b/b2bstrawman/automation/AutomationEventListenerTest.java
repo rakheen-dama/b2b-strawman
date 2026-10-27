@@ -605,7 +605,8 @@ class AutomationEventListenerTest {
                     Map.of())))
         .isNull();
 
-    // DocumentUploadedEvent -> DOCUMENT_ACCEPTED
+    // DocumentUploadedEvent -> DOCUMENT_ACCEPTED (enum name unchanged, D4; displayed as "Document
+    // uploaded")
     assertThat(
             TriggerTypeMapping.getTriggerType(
                 new DocumentUploadedEvent(

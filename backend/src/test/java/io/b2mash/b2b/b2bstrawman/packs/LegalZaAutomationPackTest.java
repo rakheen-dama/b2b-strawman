@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.packs;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.automation.AutomationActionRepository;
 import io.b2mash.b2b.b2bstrawman.automation.AutomationRule;
 import io.b2mash.b2b.b2bstrawman.automation.AutomationRuleRepository;
 import io.b2mash.b2b.b2bstrawman.automation.RuleSource;
@@ -33,6 +34,10 @@ import org.springframework.transaction.support.TransactionTemplate;
  * PackCatalogService.getPackIdsForProfile}) filters by the pack's own {@code verticalProfile}
  * field, not by the profile JSON's {@code packs.automation} key, so the pack DOES auto-install. If
  * this test passes on unchanged code, B-05's premise is disproven.
+ *
+ * <p>It also pins the universal {@code automation-common} pack's D4 rule on a fresh legal-za tenant
+ * (625F, G-B13): {@code document-review-notification} seeds disabled with the "Document uploaded"
+ * copy.
  */
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -54,6 +59,7 @@ class LegalZaAutomationPackTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private AutomationRuleRepository ruleRepository;
+  @Autowired private AutomationActionRepository actionRepository;
   @Autowired private PackInstallRepository packInstallRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -129,6 +135,37 @@ class LegalZaAutomationPackTest {
                               assertThat(allowed)
                                   .as("Rule '%s' triggerType must be in the enum", r.getName())
                                   .contains(r.getTriggerType()));
+                }));
+  }
+
+  @Test
+  void commonDocumentRuleSeedsDisabledWithUploadedCopy() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var install =
+                      packInstallRepository.findByPackId("automation-common").orElseThrow();
+                  assertThat(install.getPackVersion()).isEqualTo("3");
+                  var rules =
+                      ruleRepository.findBySourcePackInstallId(install.getId()).stream()
+                          .filter(r -> "document-review-notification".equals(r.getTemplateSlug()))
+                          .toList();
+                  assertThat(rules).hasSize(1);
+                  var rule = rules.getFirst();
+                  assertThat(rule.getCreatedBy()).isEqualTo(new UUID(0L, 0L));
+                  assertThat(rule.getName()).isEqualTo("Document uploaded — notify matter lead");
+                  assertThat(rule.getDescription())
+                      .isEqualTo("Notifies the matter lead when a document is uploaded");
+                  assertThat(rule.isEnabled()).as("D4: seeds disabled").isFalse();
+                  assertThat(rule.getTriggerType()).isEqualTo(TriggerType.DOCUMENT_ACCEPTED);
+                  assertThat(rule.getContentHash()).matches("[0-9a-f]{64}");
+                  var actions = actionRepository.findByRuleIdOrderBySortOrder(rule.getId());
+                  assertThat(actions).hasSize(1);
+                  assertThat(actions.getFirst().getActionConfig())
+                      .containsEntry("title", "Document uploaded: {{document.name}}")
+                      .containsEntry("message", "{{document.name}} was uploaded to the matter.")
+                      .containsEntry("recipientType", "PROJECT_OWNER");
                 }));
   }
 

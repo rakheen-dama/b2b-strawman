@@ -2,36 +2,100 @@
   "type": "doc",
   "content": [
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.logoUrl", "operator": "isNotEmpty" },
       "content": [
-        { "type": "variable", "attrs": { "key": "org.logoUrl" } }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "variable", "attrs": { "key": "org.logoUrl" } }
+          ]
+        }
       ]
     },
     {
       "type": "heading",
       "attrs": { "level": 1 },
       "content": [
-        { "type": "text", "text": "FEE NOTE" }
-      ]
-    },
-    { "type": "horizontalRule" },
-    {
-      "type": "paragraph",
-      "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "From:" },
-        { "type": "text", "text": " " },
         { "type": "variable", "attrs": { "key": "org.name" } }
       ]
     },
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.address", "operator": "isNotEmpty" },
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "VAT Registration No:" },
-        { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "org.taxRegistrationNumber" } }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "variable", "attrs": { "key": "org.address" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.phone", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Tel:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "org.phone" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.email", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Email:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "org.email" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.website", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Web:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "org.website" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.taxRegistrationNumber", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "VAT Registration No:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "org.taxRegistrationNumber" } }
+          ]
+        }
       ]
     },
     { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [
+        { "type": "text", "text": "FEE NOTE" }
+      ]
+    },
     {
       "type": "paragraph",
       "content": [
@@ -41,28 +105,113 @@
       ]
     },
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "customer.addressLine1", "operator": "isNotEmpty" },
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Client VAT Number:" },
-        { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "customerVatNumber" } }
-      ]
-    },
-    { "type": "horizontalRule" },
-    {
-      "type": "paragraph",
-      "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Matter:" },
-        { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "project.name" } }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "variable", "attrs": { "key": "customer.addressLine1" } }
+          ]
+        }
       ]
     },
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "customer.addressLine2", "operator": "isNotEmpty" },
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Matter Reference:" },
-        { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "project.referenceNumber" } }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "variable", "attrs": { "key": "customer.addressLine2" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "customer.city", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "variable", "attrs": { "key": "customer.city" } },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "customer.postalCode" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "customer.city", "operator": "isEmpty" },
+      "content": [
+        {
+          "type": "conditionalBlock",
+          "attrs": { "fieldKey": "customer.postalCode", "operator": "isNotEmpty" },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "variable", "attrs": { "key": "customer.postalCode" } }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "customer.country", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "variable", "attrs": { "key": "customer.country" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "customerVatNumber", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Client VAT Number:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "customerVatNumber" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "project.name", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Matter:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "project.name" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "project.referenceNumber", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Matter Reference:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "project.referenceNumber" } }
+          ]
+        }
       ]
     },
     { "type": "horizontalRule" },
@@ -83,11 +232,17 @@
       ]
     },
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "invoice.dueDate", "operator": "isNotEmpty" },
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Due Date:" },
-        { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "invoice.dueDate" } }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Due Date:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "invoice.dueDate" } }
+          ]
+        }
       ]
     },
     {
@@ -153,16 +308,90 @@
     },
     { "type": "horizontalRule" },
     {
-      "type": "heading",
-      "attrs": { "level": 3 },
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.bankingDetails", "operator": "isNotEmpty" },
       "content": [
-        { "type": "text", "text": "Payment Details" }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "content": [
-        { "type": "text", "text": "Please use the fee note number as your payment reference. Banking details are available on request or as provided in your engagement letter. Kindly settle this fee note by the due date." }
+        {
+          "type": "heading",
+          "attrs": { "level": 3 },
+          "content": [{ "type": "text", "text": "Banking details" }]
+        },
+        {
+          "type": "conditionalBlock",
+          "attrs": { "fieldKey": "org.bankingDetails.bankName", "operator": "isNotEmpty" },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "text", "marks": [{ "type": "bold" }], "text": "Bank:" },
+                { "type": "text", "text": " " },
+                { "type": "variable", "attrs": { "key": "org.bankingDetails.bankName" } }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "conditionalBlock",
+          "attrs": { "fieldKey": "org.bankingDetails.branchCode", "operator": "isNotEmpty" },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "text", "marks": [{ "type": "bold" }], "text": "Branch code:" },
+                { "type": "text", "text": " " },
+                { "type": "variable", "attrs": { "key": "org.bankingDetails.branchCode" } }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "conditionalBlock",
+          "attrs": { "fieldKey": "org.bankingDetails.accountNumber", "operator": "isNotEmpty" },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "text", "marks": [{ "type": "bold" }], "text": "Account number:" },
+                { "type": "text", "text": " " },
+                { "type": "variable", "attrs": { "key": "org.bankingDetails.accountNumber" } }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "conditionalBlock",
+          "attrs": { "fieldKey": "org.bankingDetails.accountType", "operator": "isNotEmpty" },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "text", "marks": [{ "type": "bold" }], "text": "Account type:" },
+                { "type": "text", "text": " " },
+                { "type": "variable", "attrs": { "key": "org.bankingDetails.accountType" } }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Payment reference:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "invoice.invoiceNumber" } }
+          ]
+        },
+        {
+          "type": "conditionalBlock",
+          "attrs": { "fieldKey": "org.bankingDetails.referenceNote", "operator": "isNotEmpty" },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "variable", "attrs": { "key": "org.bankingDetails.referenceNote" } }
+              ]
+            }
+          ]
+        }
       ]
     },
     {

@@ -148,8 +148,28 @@
       "content": [{ "type": "text", "text": "____________________________" }]
     },
     {
-      "type": "paragraph",
-      "content": [{ "type": "variable", "attrs": { "key": "org.principal_attorney" } }]
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.signatory.name", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "variable", "attrs": { "key": "org.signatory.name" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.signatory.designation", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "variable", "attrs": { "key": "org.signatory.designation" } }
+          ]
+        }
+      ]
     },
     {
       "type": "paragraph",

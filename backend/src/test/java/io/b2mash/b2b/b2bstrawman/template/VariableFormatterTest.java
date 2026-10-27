@@ -143,6 +143,57 @@ class VariableFormatterTest {
     assertThat(VariableFormatter.format("  ", "image")).isEmpty();
   }
 
+  /**
+   * Phase 88 626D (ruling R-1): {@code org.logoUrl} may be a {@code data:} URI of the logo bytes
+   * (PNG/JPEG) so the PDF renderer never fetches the logo over the network.
+   */
+  @Test
+  void image_type_hint_accepts_strict_png_and_jpeg_data_uris() {
+    assertThat(VariableFormatter.format("data:image/png;base64,iVBORw0KGgo=", "image"))
+        .isEqualTo(
+            "<img class=\"letterhead-logo\" src=\"data:image/png;base64,iVBORw0KGgo=\""
+                + " alt=\"Logo\"/>");
+    assertThat(VariableFormatter.format("data:image/jpeg;base64,/9j/4AAQSkZJRg==", "image"))
+        .isEqualTo(
+            "<img class=\"letterhead-logo\" src=\"data:image/jpeg;base64,/9j/4AAQSkZJRg==\""
+                + " alt=\"Logo\"/>");
+  }
+
+  @Test
+  void image_type_hint_rejects_other_data_uris() {
+    assertThat(VariableFormatter.format("data:image/svg+xml;base64,PHN2Zz4=", "image")).isEmpty();
+    assertThat(VariableFormatter.format("data:text/html;base64,PHNjcmlwdD4=", "image")).isEmpty();
+    assertThat(VariableFormatter.format("data:image/png,rawbytes", "image")).isEmpty();
+    assertThat(VariableFormatter.format("data:image/png;base64,abc\"onerror=x", "image")).isEmpty();
+    assertThat(VariableFormatter.format("data:image/png;base64,", "image")).isEmpty();
+    assertThat(VariableFormatter.format("javascript:alert(1)", "image")).isEmpty();
+  }
+
+  /**
+   * 626D review F-2: an {@link InlineLogo} renders its lazily loaded data URI (still held to the
+   * strict PNG/JPEG form), or its presigned URL when the bytes are unavailable; without the image
+   * hint it prints the presigned URL as before 626D.
+   */
+  @Test
+  void image_type_hint_renders_an_inline_logo_data_uri_or_its_presigned_url() {
+    var inlined =
+        new InlineLogo("https://s3.test/logo.png", () -> "data:image/png;base64,iVBORw0=");
+    assertThat(VariableFormatter.format(inlined, "image"))
+        .isEqualTo(
+            "<img class=\"letterhead-logo\" src=\"data:image/png;base64,iVBORw0=\" alt=\"Logo\"/>");
+
+    var unavailable = new InlineLogo("https://s3.test/logo.png?a=1&b=2", () -> null);
+    assertThat(VariableFormatter.format(unavailable, "image"))
+        .isEqualTo(
+            "<img class=\"letterhead-logo\" src=\"https://s3.test/logo.png?a=1&amp;b=2\""
+                + " alt=\"Logo\"/>");
+
+    var malformed = new InlineLogo("https://s3.test/logo.png", () -> "data:text/html;base64,PA==");
+    assertThat(VariableFormatter.format(malformed, "image")).isEmpty();
+
+    assertThat(VariableFormatter.format(inlined, null)).isEqualTo("https://s3.test/logo.png");
+  }
+
   @Test
   void image_type_hint_null_value_returns_empty_string() {
     assertThat(VariableFormatter.format(null, "image")).isEmpty();

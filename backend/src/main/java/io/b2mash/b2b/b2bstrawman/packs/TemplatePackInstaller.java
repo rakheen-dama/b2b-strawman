@@ -114,8 +114,7 @@ public class TemplatePackInstaller implements PackInstaller {
 
     // Check if templates already exist from a prior seeder run (e.g., during provisioning).
     // If so, tag them with this install. Otherwise, create them fresh.
-    var untaggedPackTemplates =
-        documentTemplateRepository.findByPackIdAndSourcePackInstallIdIsNull(packId);
+    var untaggedPackTemplates = documentTemplateRepository.findUntaggedPackSeeded(packId);
 
     UUID installId = install.getId();
     if (!untaggedPackTemplates.isEmpty()) {
@@ -130,8 +129,7 @@ public class TemplatePackInstaller implements PackInstaller {
       templatePackSeeder.applyPackContent(pack, loadedPack.resource(), tenantId);
 
       // Tag the newly created templates
-      var freshUntagged =
-          documentTemplateRepository.findByPackIdAndSourcePackInstallIdIsNull(packId);
+      var freshUntagged = documentTemplateRepository.findUntaggedPackSeeded(packId);
       for (DocumentTemplate dt : freshUntagged) {
         dt.setSourcePackInstallId(installId);
         dt.setContentHash(computeTemplateHash(dt));
@@ -151,8 +149,9 @@ public class TemplatePackInstaller implements PackInstaller {
    * classpath pack version is newer than the installed version:
    *
    * <ul>
-   *   <li>creates any pack templates that do not exist in the tenant (matched by {@code packId +
-   *       packTemplateKey}) and tags them with the existing install;
+   *   <li>creates any pack templates that do not exist in the tenant (pack-seeded rows matched by
+   *       {@code packId + packTemplateKey}; clones never match, a key with more than one
+   *       pack-seeded row is WARN-logged and skipped) and tags them with the existing install;
    *   <li>refreshes the content/CSS of existing pack templates the tenant has <b>not</b> modified
    *       (stored content hash still matches the row's current content) to the classpath version —
    *       this is how content fixes (e.g. LZKC-010's {@code invoice.number} placeholder typo) reach
@@ -221,11 +220,20 @@ public class TemplatePackInstaller implements PackInstaller {
     int created = 0;
     int refreshed = 0;
     for (var templateDef : pack.templates()) {
-      var existing =
-          documentTemplateRepository.findByPackIdAndPackTemplateKey(
-              packId, templateDef.templateKey());
-      if (existing.isPresent()) {
-        if (refreshIfUnmodified(existing.get(), templateDef, loadedPack.resource())) {
+      // Clone-safe: a firm's clone shares packId + packTemplateKey and is never refreshed.
+      var existing = documentTemplateRepository.findPackSeeded(packId, templateDef.templateKey());
+      if (existing.size() > 1) {
+        log.warn(
+            "Template pack {} '{}' has {} pack-seeded rows for tenant {} — skipping its"
+                + " refresh/create (resolve the duplicate by hand)",
+            packId,
+            templateDef.templateKey(),
+            existing.size(),
+            tenantId);
+        continue;
+      }
+      if (!existing.isEmpty()) {
+        if (refreshIfUnmodified(existing.getFirst(), templateDef, loadedPack.resource())) {
           refreshed++;
         }
         continue;
@@ -235,8 +243,7 @@ public class TemplatePackInstaller implements PackInstaller {
     }
 
     if (created > 0) {
-      var freshUntagged =
-          documentTemplateRepository.findByPackIdAndSourcePackInstallIdIsNull(packId);
+      var freshUntagged = documentTemplateRepository.findUntaggedPackSeeded(packId);
       for (DocumentTemplate dt : freshUntagged) {
         dt.setSourcePackInstallId(install.getId());
         dt.setContentHash(computeTemplateHash(dt));

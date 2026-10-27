@@ -1,0 +1,8 @@
+image_xobjects=0
+rg 0.10588 0.22745 0.29412 #1b3a4b x5
+rg 0.2 0.2 0.2 #333333 x4
+rg 0.96078 0.96078 0.96078 #f5f5f5 x1
+rg 0.93333 0.93333 0.93333 #eeeeee x1
+rg 0.86667 0.86667 0.86667 #dddddd x1
+f1-fee-note-INV-0001-1.ppm 661 x 935 {'brand #1b3a4b': 9589, 'teal #0f766e': 0, 'navy #1a1a2e': 0} saturated_px=9589
+f1-fee-note-INV-0001-2.ppm 661 x 935 {'brand #1b3a4b': 3572, 'teal #0f766e': 0, 'navy #1a1a2e': 0} saturated_px=3572

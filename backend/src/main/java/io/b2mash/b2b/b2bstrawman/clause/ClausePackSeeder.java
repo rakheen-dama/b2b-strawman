@@ -138,9 +138,12 @@ public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
         seededClauses.stream().collect(Collectors.toMap(Clause::getSlug, Function.identity()));
 
     for (ClausePackDefinition.TemplateAssociation assoc : pack.templateAssociations()) {
+      // Clone-safe: associations go on the pack-seeded template, never a firm clone.
       var templateOpt =
-          documentTemplateRepository.findByPackIdAndPackTemplateKey(
-              assoc.templatePackId(), assoc.templateKey());
+          documentTemplateRepository
+              .findPackSeeded(assoc.templatePackId(), assoc.templateKey())
+              .stream()
+              .findFirst();
 
       if (templateOpt.isEmpty()) {
         log.warn(

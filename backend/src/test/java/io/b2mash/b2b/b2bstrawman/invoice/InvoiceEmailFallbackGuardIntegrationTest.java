@@ -108,8 +108,8 @@ class InvoiceEmailFallbackGuardIntegrationTest {
                   // Simulate a tenant where pack reconciliation failed / never delivered the fee
                   // note: the legal-za pack is installed but fee-note-za is absent.
                   documentTemplateRepository
-                      .findByPackIdAndPackTemplateKey("legal-za", "fee-note-za")
-                      .ifPresent(documentTemplateRepository::delete);
+                      .findPackSeeded("legal-za", "fee-note-za")
+                      .forEach(documentTemplateRepository::delete);
 
                   // Decoy: an active generic INVOICE-type template (the old cover letter). The
                   // pre-guard fallback chain would pick this and attach the wrong document.

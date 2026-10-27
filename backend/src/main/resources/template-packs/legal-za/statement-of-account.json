@@ -281,13 +281,83 @@
     },
     { "type": "horizontalRule" },
     {
-      "type": "heading",
-      "attrs": { "level": 3 },
-      "content": [{ "type": "text", "text": "Payment Instructions" }]
-    },
-    {
-      "type": "paragraph",
-      "content": [{ "type": "variable", "attrs": { "key": "org.bankingDetails" } }]
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "org.bankingDetails", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "heading",
+          "attrs": { "level": 3 },
+          "content": [{ "type": "text", "text": "Payment Instructions" }]
+        },
+        {
+          "type": "conditionalBlock",
+          "attrs": { "fieldKey": "org.bankingDetails.bankName", "operator": "isNotEmpty" },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "text", "marks": [{ "type": "bold" }], "text": "Bank:" },
+                { "type": "text", "text": " " },
+                { "type": "variable", "attrs": { "key": "org.bankingDetails.bankName" } }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "conditionalBlock",
+          "attrs": { "fieldKey": "org.bankingDetails.branchCode", "operator": "isNotEmpty" },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "text", "marks": [{ "type": "bold" }], "text": "Branch code:" },
+                { "type": "text", "text": " " },
+                { "type": "variable", "attrs": { "key": "org.bankingDetails.branchCode" } }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "conditionalBlock",
+          "attrs": { "fieldKey": "org.bankingDetails.accountNumber", "operator": "isNotEmpty" },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "text", "marks": [{ "type": "bold" }], "text": "Account number:" },
+                { "type": "text", "text": " " },
+                { "type": "variable", "attrs": { "key": "org.bankingDetails.accountNumber" } }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "conditionalBlock",
+          "attrs": { "fieldKey": "org.bankingDetails.accountType", "operator": "isNotEmpty" },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "text", "marks": [{ "type": "bold" }], "text": "Account type:" },
+                { "type": "text", "text": " " },
+                { "type": "variable", "attrs": { "key": "org.bankingDetails.accountType" } }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "conditionalBlock",
+          "attrs": { "fieldKey": "org.bankingDetails.referenceNote", "operator": "isNotEmpty" },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "variable", "attrs": { "key": "org.bankingDetails.referenceNote" } }
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "type": "paragraph",

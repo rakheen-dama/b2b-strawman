@@ -1,0 +1,164 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [{ "type": "variable", "attrs": { "key": "org.name" } }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "Instruction to Cancel Bond" }]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Matter: " },
+        { "type": "variable", "attrs": { "key": "project.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "To: " },
+        { "type": "variable", "attrs": { "key": "project.customFields.bond_institution" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Dear Sir / Madam," }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Instruction to Cancel Mortgage Bond" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "We act on behalf of our client, named below, in respect of the cancellation of the mortgage bond registered over the property described hereunder. Kindly furnish us with the original title deed, bond cancellation figures, and consent to cancellation (Form J) as soon as possible."
+        }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Client" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Name: " },
+        { "type": "variable", "attrs": { "key": "customer.name" } }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "customer.customFields.id_passport_number",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "ID / Passport Number: " },
+            { "type": "variable", "attrs": { "key": "customer.customFields.id_passport_number" } }
+          ]
+        }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Property" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Property Address: " },
+        { "type": "variable", "attrs": { "key": "project.customFields.property_address" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Erf Number: " },
+        { "type": "variable", "attrs": { "key": "project.customFields.erf_number" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Deeds Office: " },
+        { "type": "variable", "attrs": { "key": "project.customFields.deeds_office" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Bond" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Bond Institution: " },
+        { "type": "variable", "attrs": { "key": "project.customFields.bond_institution" } }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "project.customFields.bond_number",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Bond Number: " },
+            { "type": "variable", "attrs": { "key": "project.customFields.bond_number" } }
+          ]
+        }
+      ]
+    },
+    { "type": "clauseBlock", "attrs": { "slug": "cost-of-cancellation" } },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Please direct all correspondence in this matter to the undersigned."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "text", "text": "Yours faithfully," }]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "variable", "attrs": { "key": "org.principal_attorney" } }]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "variable", "attrs": { "key": "org.name" } }]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "variable", "attrs": { "key": "org.documentFooterText" } }]
+    }
+  ]
+}

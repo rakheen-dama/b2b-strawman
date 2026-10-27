@@ -104,14 +104,14 @@ class ConveyancingTemplatePackTest {
                 tx -> {
                   var otp =
                       documentTemplateRepository
-                          .findByPackIdAndPackTemplateKey(PACK_ID, "offer-to-purchase")
-                          .orElseThrow();
+                          .findPackSeeded(PACK_ID, "offer-to-purchase")
+                          .getFirst();
                   assertThat(otp.isAcceptanceEligible()).isTrue();
 
                   var poaTransfer =
                       documentTemplateRepository
-                          .findByPackIdAndPackTemplateKey(PACK_ID, "power-of-attorney-transfer")
-                          .orElseThrow();
+                          .findPackSeeded(PACK_ID, "power-of-attorney-transfer")
+                          .getFirst();
                   assertThat(poaTransfer.isAcceptanceEligible()).isTrue();
                 }));
   }
@@ -124,14 +124,14 @@ class ConveyancingTemplatePackTest {
                 tx -> {
                   var deed =
                       documentTemplateRepository
-                          .findByPackIdAndPackTemplateKey(PACK_ID, "deed-of-transfer")
-                          .orElseThrow();
+                          .findPackSeeded(PACK_ID, "deed-of-transfer")
+                          .getFirst();
                   assertThat(deed.isAcceptanceEligible()).isFalse();
 
                   var bondCancel =
                       documentTemplateRepository
-                          .findByPackIdAndPackTemplateKey(PACK_ID, "bond-cancellation-instruction")
-                          .orElseThrow();
+                          .findPackSeeded(PACK_ID, "bond-cancellation-instruction")
+                          .getFirst();
                   assertThat(bondCancel.isAcceptanceEligible()).isFalse();
                 }));
   }

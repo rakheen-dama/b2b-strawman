@@ -1,0 +1,21 @@
+Method: expected hash = sha256 of jq -cjS '{content: .}' over the classpath file (== TemplatePackInstaller.computeContentHash with css=null; sorted keys, compact).
+DB-current hash = same recipe over document_templates.content (exported via psql content::text, then jq -cjS, wrapped as {content:...}). css column checked separately.
+Worktree HEAD cdb3e819f
+pack_template_key                stored=db  stored=cp  db=cp      css_null
+engagement-letter-litigation     yes        yes        yes        true
+engagement-letter-conveyancing   yes        yes        yes        true
+engagement-letter-general        yes        yes        yes        true
+power-of-attorney                yes        yes        yes        true
+notice-of-motion                 yes        yes        yes        true
+founding-affidavit               yes        yes        yes        true
+letter-of-demand                 yes        yes        yes        true
+client-trust-statement           yes        yes        yes        true
+trust-receipt                    yes        yes        yes        true
+section-35-cover-letter          yes        yes        yes        true
+matter-closure-letter            yes        yes        yes        true
+statement-of-account             yes        yes        yes        true
+offer-to-purchase                yes        yes        yes        true
+deed-of-transfer                 yes        yes        yes        true
+power-of-attorney-transfer       yes        yes        yes        true
+bond-cancellation-instruction    yes        yes        yes        true
+fee-note-za                      yes        yes        yes        true

@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -22,6 +23,7 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.contentstream.operator.Operator;
 import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.pdfparser.PDFStreamParser;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -57,6 +59,7 @@ class PdfRenderingServiceTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
+  @Autowired private TiptapRenderer tiptapRenderer;
 
   private String tenantSchema;
   private UUID memberIdOwner;
@@ -374,6 +377,58 @@ class PdfRenderingServiceTest {
     } finally {
       setBrandColour(priorBrand[0]);
     }
+  }
+
+  /**
+   * G88-M8 (Phase 88 626D, ruling R-4): in the emailed INV-0001 fee note the narrow VAT column
+   * wrapped amounts mid-number ("R525," / "00"). Renders the shipped legal-za fee-note body with
+   * INV-0001-shaped lines (long description) to PDF and checks the extracted text keeps every money
+   * cell on one line. Whitespace is deliberately NOT collapsed — a wrap shows up as a line break.
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  void feeNoteMoneyCellsNeverWrapMidNumber() throws IOException {
+    Map<String, Object> body;
+    try (var in =
+        new org.springframework.core.io.ClassPathResource(
+                "template-packs/legal-za/fee-note-za.json")
+            .getInputStream()) {
+      body = new tools.jackson.databind.ObjectMapper().readValue(in, Map.class);
+    }
+    String description =
+        "Counsel fees: Counsel's opinion on shareholders' agreement mvr15e76ef9a"
+            + " (Adv. N. Mokoena SC, 2026-10-27)";
+    var context = new HashMap<String, Object>();
+    context.put("org", Map.of("name", "Ndlovu Attorneys Inc."));
+    context.put("customer", Map.of("name", "Apex Holdings mvr15e76ef9a"));
+    context.put("_locale", VariableFormatter.resolveLocale("ZAR"));
+    context.put(
+        "invoice", Map.of("invoiceNumber", "INV-0001", "currency", "ZAR", "total", "5865.00"));
+    context.put(
+        "lines",
+        List.of(
+            Map.of(
+                "description", description,
+                "quantity", "1",
+                "unitPrice", "3500.00",
+                "taxAmount", "525.00",
+                "lineTotal", "4025.00"),
+            Map.of(
+                "description", description,
+                "quantity", "1",
+                "unitPrice", "1800.00",
+                "taxAmount", "270.00",
+                "lineTotal", "2070.00")));
+
+    String html = tiptapRenderer.render(body, context, Map.of(), null, Map.of());
+    byte[] pdf = pdfRenderingService.htmlToPdf(html);
+
+    String text;
+    try (var doc = Loader.loadPDF(pdf)) {
+      text = new PDFTextStripper().getText(doc);
+    }
+    assertThat(text).contains("R525,00").contains("R270,00");
+    assertThat(text).doesNotContain("R525,\n").doesNotContain("R270,\n");
   }
 
   private void setBrandColour(String hex) {

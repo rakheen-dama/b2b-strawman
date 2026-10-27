@@ -121,8 +121,8 @@ class AcceptanceDeclineIntegrationTest {
                 tx -> {
                   var template =
                       documentTemplateRepository
-                          .findByPackIdAndPackTemplateKey("legal-za", "engagement-letter-general")
-                          .orElseThrow();
+                          .findPackSeeded("legal-za", "engagement-letter-general")
+                          .getFirst();
                   templateId = template.getId();
                   templateName = template.getName();
                   var matter = createMatter("Dlamini property", "sipho.decline@test.com");

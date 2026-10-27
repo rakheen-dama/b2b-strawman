@@ -1,0 +1,65 @@
+{
+    "content": [
+        {
+            "id": "d4f3e6de-bd71-4a1e-83f1-5fa2ae3859ab",
+            "message": "Alice Owner generated a statement of account \"statement-of-account-625a-observer-closure-override-2026-10-25.pdf\"",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "generated_document",
+            "entityId": "5f69d320-7b9b-48d1-b4b6-752c51c279b0",
+            "entityName": "statement-of-account-625a-observer-closure-override-2026-10-25.pdf",
+            "eventType": "statement.generated",
+            "occurredAt": "2026-10-25T00:30:26.478969Z"
+        },
+        {
+            "id": "32a4a769-2d67-4400-a621-2c9c34127dcd",
+            "message": "Alice Owner generated document \"matter-closure-letter-625a-observer-closure-override-2026-10-25.pdf\" from template \"Matter Closure Letter\"",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "generated_document",
+            "entityId": "26145114-81a6-4fa6-a89e-040fbb11fa11",
+            "entityName": "matter-closure-letter-625a-observer-closure-override-2026-10-25.pdf",
+            "eventType": "document.generated",
+            "occurredAt": "2026-10-25T00:30:26.364317Z"
+        },
+        {
+            "id": "5bd9110d-fead-495a-9571-ae6783c35850",
+            "message": "Alice Owner used an override to close the matter",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "matter_closure",
+            "entityId": "013caa57-a83a-41b0-b579-cc464d3a335e",
+            "entityName": "unknown",
+            "eventType": "matter.closure.override_used",
+            "occurredAt": "2026-10-25T00:30:26.261654Z"
+        },
+        {
+            "id": "da19d591-edc7-43f9-85bf-56951a9180de",
+            "message": "Alice Owner closed the matter",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "project",
+            "entityId": "8ca3c73d-fb8d-4aed-99f0-cc12dbe9bdd6",
+            "entityName": "unknown",
+            "eventType": "matter_closure.closed",
+            "occurredAt": "2026-10-25T00:30:26.261185Z"
+        },
+        {
+            "id": "779cade9-1f5d-4b0c-8432-a51765dc3ea8",
+            "message": "Alice Owner performed project.created_from_template on project",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "project",
+            "entityId": "8ca3c73d-fb8d-4aed-99f0-cc12dbe9bdd6",
+            "entityName": "unknown",
+            "eventType": "project.created_from_template",
+            "occurredAt": "2026-10-25T00:30:05.473209Z"
+        }
+    ],
+    "page": {
+        "size": 50,
+        "number": 0,
+        "totalElements": 5,
+        "totalPages": 1
+    }
+}

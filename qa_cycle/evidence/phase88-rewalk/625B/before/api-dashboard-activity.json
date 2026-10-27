@@ -1,0 +1,137 @@
+[
+    {
+        "eventId": "0b06d5e4-8252-40b2-b785-54ceb835f0a3",
+        "eventType": "trust_payment.approved",
+        "description": "Bob Admin performed trust_payment.approved",
+        "actorName": "Bob Admin",
+        "matterId": "9a27cd08-76fc-44b1-8c41-a8dd1aa1af22",
+        "matterName": "Estate Late Ndlovu 625A repro",
+        "occurredAt": "2026-10-25T00:45:38.014444Z"
+    },
+    {
+        "eventId": "65fbc6ca-f156-4086-a477-17a9ca3edcb7",
+        "eventType": "trust_payment.recorded",
+        "description": "Alice Owner performed trust_payment.recorded",
+        "actorName": "Alice Owner",
+        "matterId": "9a27cd08-76fc-44b1-8c41-a8dd1aa1af22",
+        "matterName": "Estate Late Ndlovu 625A repro",
+        "occurredAt": "2026-10-25T00:45:21.591828Z"
+    },
+    {
+        "eventId": "bcc8bd77-e179-4b50-ac9c-efeb182d2166",
+        "eventType": "trust_deposit.recorded",
+        "description": "Alice Owner performed trust_deposit.recorded",
+        "actorName": "Alice Owner",
+        "matterId": "9a27cd08-76fc-44b1-8c41-a8dd1aa1af22",
+        "matterName": "Estate Late Ndlovu 625A repro",
+        "occurredAt": "2026-10-25T00:44:53.504222Z"
+    },
+    {
+        "eventId": "d17f90fd-9e30-4759-9e16-8901c49db532",
+        "eventType": "customer.linked",
+        "description": "Alice Owner performed customer.linked",
+        "actorName": "Alice Owner",
+        "matterId": "9a27cd08-76fc-44b1-8c41-a8dd1aa1af22",
+        "matterName": "Estate Late Ndlovu 625A repro",
+        "occurredAt": "2026-10-25T00:44:05.576635Z"
+    },
+    {
+        "eventId": "d4f3e6de-bd71-4a1e-83f1-5fa2ae3859ab",
+        "eventType": "statement.generated",
+        "description": "Alice Owner performed statement.generated",
+        "actorName": "Alice Owner",
+        "matterId": "8ca3c73d-fb8d-4aed-99f0-cc12dbe9bdd6",
+        "matterName": "625A observer closure override",
+        "occurredAt": "2026-10-25T00:30:26.478969Z"
+    },
+    {
+        "eventId": "32a4a769-2d67-4400-a621-2c9c34127dcd",
+        "eventType": "document.generated",
+        "description": "Alice Owner performed document.generated",
+        "actorName": "Alice Owner",
+        "matterId": "8ca3c73d-fb8d-4aed-99f0-cc12dbe9bdd6",
+        "matterName": "625A observer closure override",
+        "occurredAt": "2026-10-25T00:30:26.364317Z"
+    },
+    {
+        "eventId": "5bd9110d-fead-495a-9571-ae6783c35850",
+        "eventType": "matter.closure.override_used",
+        "description": "Alice Owner performed matter.closure.override_used",
+        "actorName": "Alice Owner",
+        "matterId": "8ca3c73d-fb8d-4aed-99f0-cc12dbe9bdd6",
+        "matterName": "625A observer closure override",
+        "occurredAt": "2026-10-25T00:30:26.261654Z"
+    },
+    {
+        "eventId": "da19d591-edc7-43f9-85bf-56951a9180de",
+        "eventType": "matter_closure.closed",
+        "description": "Alice Owner performed matter_closure.closed",
+        "actorName": "Alice Owner",
+        "matterId": "8ca3c73d-fb8d-4aed-99f0-cc12dbe9bdd6",
+        "matterName": "625A observer closure override",
+        "occurredAt": "2026-10-25T00:30:26.261185Z"
+    },
+    {
+        "eventId": "779cade9-1f5d-4b0c-8432-a51765dc3ea8",
+        "eventType": "project.created_from_template",
+        "description": "Alice Owner performed project.created_from_template",
+        "actorName": "Alice Owner",
+        "matterId": "8ca3c73d-fb8d-4aed-99f0-cc12dbe9bdd6",
+        "matterName": "625A observer closure override",
+        "occurredAt": "2026-10-25T00:30:05.473209Z"
+    },
+    {
+        "eventId": "4d2dd40d-84ca-41cc-bc38-3b8e883ff088",
+        "eventType": "invoice.partially_paid",
+        "description": "Alice Owner performed invoice.partially_paid",
+        "actorName": "Alice Owner",
+        "matterId": "9a27cd08-76fc-44b1-8c41-a8dd1aa1af22",
+        "matterName": "Estate Late Ndlovu 625A repro",
+        "occurredAt": "2026-10-25T00:28:58.669443Z"
+    },
+    {
+        "eventId": "fcc61df7-6941-404b-9eae-c7e8715bfe54",
+        "eventType": "invoice.sent",
+        "description": "Alice Owner performed invoice.sent",
+        "actorName": "Alice Owner",
+        "matterId": "9a27cd08-76fc-44b1-8c41-a8dd1aa1af22",
+        "matterName": "Estate Late Ndlovu 625A repro",
+        "occurredAt": "2026-10-25T00:28:39.740135Z"
+    },
+    {
+        "eventId": "dfdc6ee9-e1a1-4856-a4bc-aebda70b2769",
+        "eventType": "invoice.approved",
+        "description": "Alice Owner performed invoice.approved",
+        "actorName": "Alice Owner",
+        "matterId": "9a27cd08-76fc-44b1-8c41-a8dd1aa1af22",
+        "matterName": "Estate Late Ndlovu 625A repro",
+        "occurredAt": "2026-10-25T00:28:28.579817Z"
+    },
+    {
+        "eventId": "3e98b27f-6d61-406d-8250-078b20eb7a88",
+        "eventType": "invoice.created",
+        "description": "Alice Owner created a invoice",
+        "actorName": "Alice Owner",
+        "matterId": "9a27cd08-76fc-44b1-8c41-a8dd1aa1af22",
+        "matterName": "Estate Late Ndlovu 625A repro",
+        "occurredAt": "2026-10-25T00:28:11.912156Z"
+    },
+    {
+        "eventId": "cfe38638-117d-4397-8f3a-b2ccd679214c",
+        "eventType": "time_entry.created",
+        "description": "Alice Owner created a time_entry",
+        "actorName": "Alice Owner",
+        "matterId": "9a27cd08-76fc-44b1-8c41-a8dd1aa1af22",
+        "matterName": "Estate Late Ndlovu 625A repro",
+        "occurredAt": "2026-10-25T00:26:59.741877Z"
+    },
+    {
+        "eventId": "d0051b1c-869b-4c7d-826d-fa7898971402",
+        "eventType": "acceptance.declined",
+        "description": "System performed acceptance.declined",
+        "actorName": "System",
+        "matterId": "9a27cd08-76fc-44b1-8c41-a8dd1aa1af22",
+        "matterName": "Estate Late Ndlovu 625A repro",
+        "occurredAt": "2026-10-25T00:26:34.065911Z"
+    }
+]

@@ -1,0 +1,318 @@
+{
+    "content": [
+        {
+            "id": "0b06d5e4-8252-40b2-b785-54ceb835f0a3",
+            "message": "Bob Admin performed trust_payment.approved on trust_transaction",
+            "actorName": "Bob Admin",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=BA",
+            "entityType": "trust_transaction",
+            "entityId": "a0e634c2-f086-45d6-b3dd-bebbdbad0945",
+            "entityName": "unknown",
+            "eventType": "trust_payment.approved",
+            "occurredAt": "2026-10-25T00:45:38.014444Z"
+        },
+        {
+            "id": "65fbc6ca-f156-4086-a477-17a9ca3edcb7",
+            "message": "Alice Owner performed trust_payment.recorded on trust_transaction",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "trust_transaction",
+            "entityId": "a0e634c2-f086-45d6-b3dd-bebbdbad0945",
+            "entityName": "unknown",
+            "eventType": "trust_payment.recorded",
+            "occurredAt": "2026-10-25T00:45:21.591828Z"
+        },
+        {
+            "id": "bcc8bd77-e179-4b50-ac9c-efeb182d2166",
+            "message": "Alice Owner performed trust_deposit.recorded on trust_transaction",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "trust_transaction",
+            "entityId": "b57003e0-f353-44d4-9058-ae575e7440fd",
+            "entityName": "unknown",
+            "eventType": "trust_deposit.recorded",
+            "occurredAt": "2026-10-25T00:44:53.504222Z"
+        },
+        {
+            "id": "d17f90fd-9e30-4759-9e16-8901c49db532",
+            "message": "Alice Owner performed customer.linked on customer",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "customer",
+            "entityId": "218397cf-bddb-4fbd-9e9d-872bd4589c6c",
+            "entityName": "unknown",
+            "eventType": "customer.linked",
+            "occurredAt": "2026-10-25T00:44:05.576635Z"
+        },
+        {
+            "id": "4d2dd40d-84ca-41cc-bc38-3b8e883ff088",
+            "message": "Alice Owner performed invoice.partially_paid on invoice",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "invoice",
+            "entityId": "7b7e7dde-15db-4105-a38c-9da37c3189e5",
+            "entityName": "unknown",
+            "eventType": "invoice.partially_paid",
+            "occurredAt": "2026-10-25T00:28:58.669443Z"
+        },
+        {
+            "id": "fcc61df7-6941-404b-9eae-c7e8715bfe54",
+            "message": "Alice Owner performed invoice.sent on invoice",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "invoice",
+            "entityId": "7b7e7dde-15db-4105-a38c-9da37c3189e5",
+            "entityName": "unknown",
+            "eventType": "invoice.sent",
+            "occurredAt": "2026-10-25T00:28:39.740135Z"
+        },
+        {
+            "id": "dfdc6ee9-e1a1-4856-a4bc-aebda70b2769",
+            "message": "Alice Owner performed invoice.approved on invoice",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "invoice",
+            "entityId": "7b7e7dde-15db-4105-a38c-9da37c3189e5",
+            "entityName": "unknown",
+            "eventType": "invoice.approved",
+            "occurredAt": "2026-10-25T00:28:28.579817Z"
+        },
+        {
+            "id": "3e98b27f-6d61-406d-8250-078b20eb7a88",
+            "message": "Alice Owner performed invoice.created on invoice",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "invoice",
+            "entityId": "7b7e7dde-15db-4105-a38c-9da37c3189e5",
+            "entityName": "unknown",
+            "eventType": "invoice.created",
+            "occurredAt": "2026-10-25T00:28:11.912156Z"
+        },
+        {
+            "id": "cfe38638-117d-4397-8f3a-b2ccd679214c",
+            "message": "Alice Owner logged 2h on task \"Open estate bank account\"",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "time_entry",
+            "entityId": "5af9bad1-c9bc-418e-926e-182d4a302574",
+            "entityName": "Open estate bank account",
+            "eventType": "time_entry.created",
+            "occurredAt": "2026-10-25T00:26:59.741877Z"
+        },
+        {
+            "id": "d0051b1c-869b-4c7d-826d-fa7898971402",
+            "message": "Sipho Ndlovu mvmzw78f31c9 performed acceptance.declined on acceptance_request",
+            "actorName": "Sipho Ndlovu mvmzw78f31c9",
+            "actorAvatarUrl": null,
+            "entityType": "acceptance_request",
+            "entityId": "85838bb1-fee2-45d9-8c9d-1b541b6e171a",
+            "entityName": "unknown",
+            "eventType": "acceptance.declined",
+            "occurredAt": "2026-10-25T00:26:34.065911Z"
+        },
+        {
+            "id": "40254ff0-3ea3-4bed-8160-a9cb13362605",
+            "message": "Sipho Ndlovu mvmzw78f31c9 performed acceptance.viewed on acceptance_request",
+            "actorName": "Sipho Ndlovu mvmzw78f31c9",
+            "actorAvatarUrl": null,
+            "entityType": "acceptance_request",
+            "entityId": "85838bb1-fee2-45d9-8c9d-1b541b6e171a",
+            "entityName": "unknown",
+            "eventType": "acceptance.viewed",
+            "occurredAt": "2026-10-25T00:26:27.752074Z"
+        },
+        {
+            "id": "de866834-2afe-48a2-aecb-9934c4b971ac",
+            "message": "Alice Owner performed acceptance.sent on acceptance_request",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "acceptance_request",
+            "entityId": "85838bb1-fee2-45d9-8c9d-1b541b6e171a",
+            "entityName": "unknown",
+            "eventType": "acceptance.sent",
+            "occurredAt": "2026-10-25T00:26:15.430447Z"
+        },
+        {
+            "id": "797604a9-ba35-4227-a3ad-0bb6073907a9",
+            "message": "Alice Owner performed acceptance.created on acceptance_request",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "acceptance_request",
+            "entityId": "85838bb1-fee2-45d9-8c9d-1b541b6e171a",
+            "entityName": "unknown",
+            "eventType": "acceptance.created",
+            "occurredAt": "2026-10-25T00:26:15.414962Z"
+        },
+        {
+            "id": "fdb2b09f-7e3a-4875-8ea7-6e79d44e9dec",
+            "message": "Alice Owner generated document \"standard-engagement-letter-estate-late-ndlovu-625a-repro-2026-10-25.pdf\" from template \"Standard Engagement Letter\"",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "generated_document",
+            "entityId": "f4ae15d3-2b55-4fb5-8a66-6779b998acd1",
+            "entityName": "standard-engagement-letter-estate-late-ndlovu-625a-repro-2026-10-25.pdf",
+            "eventType": "document.generated",
+            "occurredAt": "2026-10-25T00:25:50.971711Z"
+        },
+        {
+            "id": "e3ba7a5b-7115-4c43-bf0d-441facb31c4f",
+            "message": "System performed acceptance.certificate_generated on acceptance_request",
+            "actorName": "System",
+            "actorAvatarUrl": null,
+            "entityType": "acceptance_request",
+            "entityId": "38a00027-a0a3-4ca1-9e76-7ec813a1bbfc",
+            "entityName": "unknown",
+            "eventType": "acceptance.certificate_generated",
+            "occurredAt": "2026-10-25T00:25:21.082371Z"
+        },
+        {
+            "id": "73ba4d5f-a46f-4bd5-9b6b-ad3134e2e4dd",
+            "message": "Sipho Ndlovu mvmzw78f31c9 performed acceptance.accepted on acceptance_request",
+            "actorName": "Sipho Ndlovu mvmzw78f31c9",
+            "actorAvatarUrl": null,
+            "entityType": "acceptance_request",
+            "entityId": "38a00027-a0a3-4ca1-9e76-7ec813a1bbfc",
+            "entityName": "unknown",
+            "eventType": "acceptance.accepted",
+            "occurredAt": "2026-10-25T00:25:21.004736Z"
+        },
+        {
+            "id": "3cdf5b67-7213-4bbd-b343-61c60963deaf",
+            "message": "Sipho Ndlovu mvmzw78f31c9 performed acceptance.viewed on acceptance_request",
+            "actorName": "Sipho Ndlovu mvmzw78f31c9",
+            "actorAvatarUrl": null,
+            "entityType": "acceptance_request",
+            "entityId": "38a00027-a0a3-4ca1-9e76-7ec813a1bbfc",
+            "entityName": "unknown",
+            "eventType": "acceptance.viewed",
+            "occurredAt": "2026-10-25T00:25:15.139012Z"
+        },
+        {
+            "id": "8400196f-e642-4a3b-a4b2-cdf4e179eaab",
+            "message": "Alice Owner performed acceptance.sent on acceptance_request",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "acceptance_request",
+            "entityId": "38a00027-a0a3-4ca1-9e76-7ec813a1bbfc",
+            "entityName": "unknown",
+            "eventType": "acceptance.sent",
+            "occurredAt": "2026-10-25T00:24:58.941276Z"
+        },
+        {
+            "id": "d52a6d39-3ec3-42de-8907-c4c9adb1b6cf",
+            "message": "Alice Owner performed acceptance.created on acceptance_request",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "acceptance_request",
+            "entityId": "38a00027-a0a3-4ca1-9e76-7ec813a1bbfc",
+            "entityName": "unknown",
+            "eventType": "acceptance.created",
+            "occurredAt": "2026-10-25T00:24:58.909326Z"
+        },
+        {
+            "id": "d25bb9c9-bf41-4573-a3e1-3f3f0cc8a971",
+            "message": "Alice Owner generated document \"engagement-letter-general-estate-late-ndlovu-625a-repro-2026-10-25.pdf\" from template \"Engagement Letter \u2014 General\"",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "generated_document",
+            "entityId": "f97491cc-a73d-4ebf-b40e-b074d3963be0",
+            "entityName": "engagement-letter-general-estate-late-ndlovu-625a-repro-2026-10-25.pdf",
+            "eventType": "document.generated",
+            "occurredAt": "2026-10-25T00:24:25.172538Z"
+        },
+        {
+            "id": "8bd7fdb8-7e69-47b7-90ef-5c80cf7f82c7",
+            "message": "Bob Admin performed trust_payment.approved on trust_transaction",
+            "actorName": "Bob Admin",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=BA",
+            "entityType": "trust_transaction",
+            "entityId": "341c2ff9-17c2-477a-b75d-adfd9bb38206",
+            "entityName": "unknown",
+            "eventType": "trust_payment.approved",
+            "occurredAt": "2026-10-25T00:23:37.328161Z"
+        },
+        {
+            "id": "d1eed73a-d4e2-4a77-9543-2b2c51d7afc0",
+            "message": "Alice Owner performed trust_payment.recorded on trust_transaction",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "trust_transaction",
+            "entityId": "341c2ff9-17c2-477a-b75d-adfd9bb38206",
+            "entityName": "unknown",
+            "eventType": "trust_payment.recorded",
+            "occurredAt": "2026-10-25T00:23:17.250447Z"
+        },
+        {
+            "id": "8f7fa0ff-2ab9-4558-b0d7-d5c6623ece24",
+            "message": "Alice Owner performed trust_deposit.recorded on trust_transaction",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "trust_transaction",
+            "entityId": "be72f588-1e42-4d66-9d5e-c37a6fce1c59",
+            "entityName": "unknown",
+            "eventType": "trust_deposit.recorded",
+            "occurredAt": "2026-10-25T00:22:37.125988Z"
+        },
+        {
+            "id": "7ad23594-dde8-40f9-95c2-649b3de9dc08",
+            "message": "Alice Owner performed invoice.partially_paid on invoice",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "invoice",
+            "entityId": "a93b0aca-402c-4148-adff-1d1cda0b7d6f",
+            "entityName": "unknown",
+            "eventType": "invoice.partially_paid",
+            "occurredAt": "2026-10-24T23:39:33.773569Z"
+        },
+        {
+            "id": "4e856e1a-c782-45c0-a1ae-67fde80c561f",
+            "message": "Alice Owner performed invoice.sent on invoice",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "invoice",
+            "entityId": "a93b0aca-402c-4148-adff-1d1cda0b7d6f",
+            "entityName": "unknown",
+            "eventType": "invoice.sent",
+            "occurredAt": "2026-10-24T23:39:17.483163Z"
+        },
+        {
+            "id": "a427d63a-50a3-4722-8826-37e2ed76b733",
+            "message": "Alice Owner logged 4h on task \"Obtain death certificate & will\"",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "time_entry",
+            "entityId": "e1f1a29b-81ae-40c5-b481-f491d7d9e201",
+            "entityName": "Obtain death certificate & will",
+            "eventType": "time_entry.created",
+            "occurredAt": "2026-10-24T23:38:24.998364Z"
+        },
+        {
+            "id": "fc77cee7-dfa2-4b32-a49d-2c4a6dd0b4c2",
+            "message": "Alice Owner generated document \"engagement-letter-general-estate-late-ndlovu-625a-repro-2026-10-24.pdf\" from template \"Engagement Letter \u2014 General\"",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "generated_document",
+            "entityId": "86bf061e-76bb-42fe-ab49-6aec0ab7d7cc",
+            "entityName": "engagement-letter-general-estate-late-ndlovu-625a-repro-2026-10-24.pdf",
+            "eventType": "document.generated",
+            "occurredAt": "2026-10-24T23:36:40.875471Z"
+        },
+        {
+            "id": "2d0f097d-632e-4f10-a71c-2d568eccdf98",
+            "message": "Alice Owner performed project.created_from_template on project",
+            "actorName": "Alice Owner",
+            "actorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+            "entityType": "project",
+            "entityId": "9a27cd08-76fc-44b1-8c41-a8dd1aa1af22",
+            "entityName": "unknown",
+            "eventType": "project.created_from_template",
+            "occurredAt": "2026-10-24T23:33:26.847767Z"
+        }
+    ],
+    "page": {
+        "size": 50,
+        "number": 0,
+        "totalElements": 28,
+        "totalPages": 1
+    }
+}

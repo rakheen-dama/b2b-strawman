@@ -1,0 +1,23 @@
+SET
+                  id                  | clerk_user_id  |     name     |  role  |  slug  
+--------------------------------------+----------------+--------------+--------+--------
+ 2e38845d-7fd5-4348-9b70-280c5d442df6 | user_e2e_alice | Alice Owner  | Owner  | owner
+ c9ccb6c0-0ce4-44a1-a161-7066b6f9c9be | user_e2e_bob   | Bob Admin    | Admin  | admin
+ 405bd8bb-b356-41ae-b223-327a903abc17 | user_e2e_carol | Carol Member | Member | member
+(3 rows)
+
+  slug  |                                                                                                                                                                                                       caps                                                                                                                                                                                                       
+--------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ admin  | AI_EXECUTE, AI_MANAGE, AI_REVIEW, APPROVE_DISBURSEMENTS, APPROVE_TRUST_PAYMENT, AUTOMATIONS, CLOSE_MATTER, CUSTOMER_MANAGEMENT, FINANCIAL_VISIBILITY, GENERATE_STATEMENT_OF_ACCOUNT, INVOICING, MANAGE_COMPLIANCE, MANAGE_DISBURSEMENTS, MANAGE_LEGAL, MANAGE_TRUST, PROJECT_MANAGEMENT, TEAM_OVERSIGHT, VIEW_LEGAL, VIEW_TRUST, WRITE_OFF_DISBURSEMENTS
+ member | AI_EXECUTE, GENERATE_STATEMENT_OF_ACCOUNT, MANAGE_DISBURSEMENTS, VIEW_LEGAL, VIEW_TRUST
+ owner  | AI_EXECUTE, AI_MANAGE, AI_REVIEW, APPROVE_DISBURSEMENTS, APPROVE_TRUST_PAYMENT, AUTOMATIONS, CLOSE_MATTER, CUSTOMER_MANAGEMENT, FINANCIAL_VISIBILITY, GENERATE_STATEMENT_OF_ACCOUNT, INVOICING, MANAGE_COMPLIANCE, MANAGE_COMPLIANCE_DESTRUCTIVE, MANAGE_DISBURSEMENTS, MANAGE_LEGAL, MANAGE_TRUST, OVERRIDE_MATTER_CLOSURE, PROJECT_MANAGEMENT, TEAM_OVERSIGHT, VIEW_LEGAL, VIEW_TRUST, WRITE_OFF_DISBURSEMENTS
+(3 rows)
+
+ member_id | override_value | id | clerk_user_id | email | name | avatar_url | created_at | updated_at | org_role_id 
+-----------+----------------+----+---------------+-------+------+------------+------------+------------+-------------
+(0 rows)
+
+ id 
+----
+(0 rows)
+

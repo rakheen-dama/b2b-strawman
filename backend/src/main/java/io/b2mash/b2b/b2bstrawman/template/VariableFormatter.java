@@ -72,15 +72,32 @@ public final class VariableFormatter {
     };
   }
 
-  private static String formatCurrency(Object value, Locale locale) {
+  /**
+   * Formats a currency amount as <b>plain text</b> (not HTML-escaped) for non-HTML sinks such as
+   * the activity feed, whose strings React renders verbatim. Same locale/NumberFormat path as the
+   * document renderer's {@code format(value, "currency", locale)}: en-ZA gives {@code R50 000,00}
+   * with the JDK's U+00A0 grouping separator.
+   *
+   * @param value the raw amount (BigDecimal, Number or numeric String)
+   * @param locale the formatting locale; falls back to ZA if null
+   * @return the formatted amount, {@code String.valueOf(value)} if it is not numeric, or {@code ""}
+   *     for null
+   */
+  public static String formatCurrencyText(Object value, Locale locale) {
+    if (value == null) return "";
     try {
       BigDecimal amount = new BigDecimal(String.valueOf(value));
       // NumberFormat is not thread-safe, so create a new instance each time
-      NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(locale);
-      return HtmlUtils.htmlEscape(currencyFormat.format(amount));
+      NumberFormat currencyFormat =
+          NumberFormat.getCurrencyInstance(locale != null ? locale : ZA_LOCALE);
+      return currencyFormat.format(amount);
     } catch (NumberFormatException e) {
-      return HtmlUtils.htmlEscape(String.valueOf(value));
+      return String.valueOf(value);
     }
+  }
+
+  private static String formatCurrency(Object value, Locale locale) {
+    return HtmlUtils.htmlEscape(formatCurrencyText(value, locale));
   }
 
   private static String formatDate(Object value) {

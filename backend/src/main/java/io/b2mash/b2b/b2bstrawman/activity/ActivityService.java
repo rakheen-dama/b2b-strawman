@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import java.time.Instant;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -77,7 +78,24 @@ public class ActivityService {
         auditEventRepository.findByProjectId(
             projectId.toString(), normalizedEntityType, since, pageable);
 
-    // 4. Batch-resolve USER actor names from members table
+    // 4. Resolve actors in batch and format (shared with Home recent activity)
+    var items = formatEvents(events.getContent());
+
+    return new PageImpl<>(items, pageable, events.getTotalElements());
+  }
+
+  /**
+   * Formats audit events into activity items, batch-resolving actor names (members for USER actors,
+   * portal_contacts for PORTAL_CONTACT actors — one query each, never per row). The single sentence
+   * path for the matter feed and Home "Recent Activity" (ADR-349: one formatter, Home delegates),
+   * so the same event reads the same sentence and actor on both. Performs no access check: callers
+   * select the rows the actor may see. Items are returned in the order of {@code events}.
+   *
+   * @param events the audit events to format (already access-filtered by the caller)
+   * @return one activity item per event, same order
+   */
+  @Transactional(readOnly = true)
+  public List<ActivityItem> formatEvents(List<AuditEvent> events) {
     var memberActorIds =
         events.stream()
             .filter(e -> !"PORTAL_CONTACT".equals(e.getActorType()))
@@ -89,7 +107,6 @@ public class ActivityService {
         memberRepository.findAllById(memberActorIds).stream()
             .collect(Collectors.toMap(Member::getId, Function.identity()));
 
-    // 5. Batch-resolve PORTAL_CONTACT actor names from portal_contacts table
     var portalContactIds =
         events.stream()
             .filter(e -> "PORTAL_CONTACT".equals(e.getActorType()))
@@ -101,12 +118,8 @@ public class ActivityService {
         portalContactRepository.findAllById(portalContactIds).stream()
             .collect(Collectors.toMap(PortalContact::getId, Function.identity()));
 
-    // 6. Format each event using the actor maps
-    var items =
-        events.stream()
-            .map(event -> activityMessageFormatter.format(event, actorMap, portalContactMap))
-            .toList();
-
-    return new PageImpl<>(items, pageable, events.getTotalElements());
+    return events.stream()
+        .map(event -> activityMessageFormatter.format(event, actorMap, portalContactMap))
+        .toList();
   }
 }

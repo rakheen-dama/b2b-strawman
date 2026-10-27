@@ -34,7 +34,9 @@ import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeAll;
@@ -60,6 +62,10 @@ import org.springframework.transaction.support.TransactionTemplate;
  * postPayment). Reads back through {@code GET /api/matters/{id}/activity} and the stored details of
  * {@code findByProjectId}. Every assertion is scoped to the entities the test created (count-bleed
  * rule).
+ *
+ * <p>625B ("one formatter, Home delegates"): the same rows read as legal sentences on the feed, and
+ * Home Recent Activity ({@code GET /api/dashboard/activity}) shows the same sentence and actor for
+ * the same event — including the portal contact (not "System") on acceptance rows.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -183,6 +189,34 @@ class MatterFeedIntegrationTest {
         .andExpect(
             jsonPath("$.content[?(@.eventType == 'acceptance.viewed')].actorName")
                 .value(hasItem(CONTACT_NAME)));
+
+    // 625B: legal sentences on the feed, and Home reads the same sentence + actor per event.
+    String fileName =
+        rows.stream()
+            .filter(e -> "acceptance.sent".equals(e.getEventType()))
+            .findFirst()
+            .orElseThrow()
+            .getDetails()
+            .get("document_file_name")
+            .toString();
+    var feed = feedItems(m.projectId());
+    assertThat(sentences(feed, "acceptance.sent"))
+        .containsExactly(
+            "Thandi Owner sent \"" + fileName + "\" to " + CONTACT_NAME + " for acceptance");
+    assertThat(sentences(feed, "acceptance.viewed"))
+        .containsExactly(CONTACT_NAME + " viewed a document sent for acceptance");
+    assertThat(sentences(feed, "acceptance.accepted"))
+        .containsExactly(CONTACT_NAME + " accepted a document sent for acceptance");
+    var home = assertHomeReadsTheFeedSentences(m.projectId(), feed, 50);
+    assertThat(home)
+        .filteredOn(h -> "acceptance.accepted".equals(h.get("eventType")))
+        .singleElement()
+        .satisfies(
+            h -> {
+              assertThat(h.get("actorName")).isEqualTo(CONTACT_NAME);
+              assertThat(h.get("description"))
+                  .isEqualTo(CONTACT_NAME + " accepted a document sent for acceptance");
+            });
   }
 
   @Test
@@ -206,6 +240,16 @@ class MatterFeedIntegrationTest {
         .containsEntry("project_id", m.projectId().toString())
         .containsEntry("customer_id", m.customerId().toString())
         .containsEntry("decline_reason", "Fees too high");
+
+    // 625B: the portal contact (not "System") declined — on the feed AND on Home.
+    var feed = feedItems(m.projectId());
+    assertThat(sentences(feed, "acceptance.declined"))
+        .containsExactly(CONTACT_NAME + " declined a document sent for acceptance");
+    var home = assertHomeReadsTheFeedSentences(m.projectId(), feed, 49);
+    assertThat(home)
+        .filteredOn(h -> "acceptance.declined".equals(h.get("eventType")))
+        .singleElement()
+        .satisfies(h -> assertThat(h.get("actorName")).isEqualTo(CONTACT_NAME));
   }
 
   @Test
@@ -241,6 +285,19 @@ class MatterFeedIntegrationTest {
                         "trust_deposit.recorded",
                         "trust_payment.recorded",
                         "trust_payment.approved")));
+
+    // 625B: money through VariableFormatter (JDK en-ZA, U+00A0 grouping) + the trust reference.
+    var feed = feedItems(m.projectId());
+    assertThat(sentences(feed, "trust_deposit.recorded"))
+        .containsExactly("Thandi Owner recorded a trust deposit of R50\u00a0000,00 (DEP-MF-1)");
+    assertThat(sentences(feed, "trust_payment.recorded"))
+        .containsExactly("Thandi Owner recorded a trust payment of R2\u00a0500,00 (PAY-MF-1)");
+    assertThat(sentences(feed, "trust_payment.approved"))
+        .containsExactly("Bob Approver approved the trust payment of R2\u00a0500,00");
+    var home = assertHomeReadsTheFeedSentences(m.projectId(), feed, 48);
+    assertThat(home)
+        .extracting(h -> h.get("eventType"))
+        .contains("trust_deposit.recorded", "trust_payment.recorded", "trust_payment.approved");
   }
 
   @Test
@@ -248,7 +305,9 @@ class MatterFeedIntegrationTest {
     var m = newMatter("Estate Late Dlamini — fee note", "mf.inv@test.com");
     UUID timeEntryId = billableTimeEntry(m.projectId());
     String invoiceId = createDraft(m.customerId(), timeEntryId);
-    postOk("/api/invoices/" + invoiceId + "/approve", null);
+    var approved = postOk("/api/invoices/" + invoiceId + "/approve", null);
+    String number =
+        JsonPath.read(approved.getResponse().getContentAsString(), "$.invoiceNumber").toString();
     var sent = postOk("/api/invoices/" + invoiceId + "/send", "{\"overrideWarnings\": true}");
     var total =
         new BigDecimal(
@@ -283,6 +342,33 @@ class MatterFeedIntegrationTest {
         .andExpect(
             jsonPath("$.content[*].eventType")
                 .value(hasItems("invoice.created", "invoice.approved", "invoice.sent")));
+
+    // 625B: fee-note words, the INV number and the part payment amount; Home reads the same.
+    var feed = feedItems(m.projectId());
+    assertThat(sentences(feed, "invoice.created"))
+        .containsExactly("Thandi Owner created a draft fee note");
+    assertThat(sentences(feed, "invoice.approved"))
+        .containsExactly("Thandi Owner approved fee note " + number);
+    assertThat(sentences(feed, "invoice.sent"))
+        .containsExactly("Thandi Owner sent fee note " + number);
+    assertThat(sentences(feed, "invoice.partially_paid"))
+        .containsExactly("Thandi Owner recorded a part payment of R100,00 on fee note " + number);
+    assertThat(sentences(feed, "invoice.paid"))
+        .singleElement()
+        .satisfies(
+            s ->
+                assertThat(s)
+                    .startsWith("Thandi Owner recorded a payment of R")
+                    .endsWith(" on fee note " + number + " — paid in full"));
+    var home = assertHomeReadsTheFeedSentences(m.projectId(), feed, 47);
+    assertThat(home)
+        .extracting(h -> h.get("eventType"))
+        .contains(
+            "invoice.created",
+            "invoice.approved",
+            "invoice.sent",
+            "invoice.partially_paid",
+            "invoice.paid");
   }
 
   // --- helpers ---
@@ -453,6 +539,64 @@ class MatterFeedIntegrationTest {
             get("/api/matters/" + projectId + "/activity?size=50")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
         .andExpect(status().isOk());
+  }
+
+  /** The matter's HTTP feed items ({@code id, message, actorName, eventType, ...}). */
+  private List<Map<String, Object>> feedItems(UUID projectId) throws Exception {
+    String body =
+        mockMvc
+            .perform(
+                get("/api/matters/" + projectId + "/activity?size=50")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    return JsonPath.read(body, "$.content");
+  }
+
+  private static List<String> sentences(List<Map<String, Object>> feed, String eventType) {
+    return feed.stream()
+        .filter(i -> eventType.equals(i.get("eventType")))
+        .map(i -> (String) i.get("message"))
+        .toList();
+  }
+
+  /**
+   * 625B (ADR-349 "one formatter, Home delegates"): every Home Recent Activity row of this matter
+   * carries the SAME description and actor as the feed row of the same event. Home is cached per
+   * (member, role, limit) for 3 minutes, so each test passes a limit no other method uses and calls
+   * Home after all of its writes; this method's rows are the newest in the tenant.
+   */
+  private List<Map<String, Object>> assertHomeReadsTheFeedSentences(
+      UUID projectId, List<Map<String, Object>> feed, int limit) throws Exception {
+    String body =
+        mockMvc
+            .perform(
+                get("/api/dashboard/activity")
+                    .param("limit", String.valueOf(limit))
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    List<Map<String, Object>> all = JsonPath.read(body, "$");
+    var home = all.stream().filter(h -> projectId.toString().equals(h.get("matterId"))).toList();
+    Map<Object, Map<String, Object>> feedById = new HashMap<>();
+    feed.forEach(i -> feedById.put(i.get("id"), i));
+    assertThat(home).isNotEmpty();
+    assertThat(home)
+        .allSatisfy(
+            h -> {
+              var f = feedById.get(h.get("eventId"));
+              assertThat(f).as("Home row %s is on the matter feed", h.get("eventType")).isNotNull();
+              assertThat(h.get("description")).isEqualTo(f.get("message"));
+              assertThat(h.get("actorName")).isEqualTo(f.get("actorName"));
+              assertThat((String) h.get("description"))
+                  .doesNotContain("performed")
+                  .doesNotContain((String) h.get("eventType"));
+            });
+    return home;
   }
 
   private static String id(MvcResult result) throws Exception {

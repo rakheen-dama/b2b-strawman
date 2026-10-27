@@ -22,6 +22,23 @@ class VariableFormatterTest {
   }
 
   @Test
+  void currencyText_is_plain_text_not_html_escaped() {
+    // 625B: the activity feed is rendered verbatim by React, so the plain-text variant keeps the
+    // JDK's U+00A0 grouping separator instead of "&nbsp;".
+    assertThat(
+            VariableFormatter.formatCurrencyText(
+                "50000.00", VariableFormatter.resolveLocale("ZAR")))
+        .isEqualTo("R50\u00a0000,00")
+        .doesNotContain("&");
+    assertThat(VariableFormatter.formatCurrencyText(new java.math.BigDecimal("1500"), null))
+        .isEqualTo("R1\u00a0500,00");
+    assertThat(VariableFormatter.formatCurrencyText("1500", VariableFormatter.resolveLocale("USD")))
+        .isEqualTo("$1,500.00");
+    assertThat(VariableFormatter.formatCurrencyText(null, null)).isEmpty();
+    assertThat(VariableFormatter.formatCurrencyText("R&D", null)).isEqualTo("R&D");
+  }
+
+  @Test
   void currency_invalid_number_falls_back_to_raw() {
     assertThat(VariableFormatter.format("not-a-number", "currency")).isEqualTo("not-a-number");
   }

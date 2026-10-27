@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.dashboard;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.b2mash.b2b.b2bstrawman.activity.ActivityItem;
+import io.b2mash.b2b.b2bstrawman.activity.ActivityService;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.audit.CrossProjectActivityProjection;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudget;
@@ -111,6 +113,7 @@ public class DashboardService {
   private final ClientLedgerService clientLedgerService;
   private final TrustReconciliationRepository trustReconciliationRepository;
   private final DisbursementRepository disbursementRepository;
+  private final ActivityService activityService;
   private final Clock clock;
 
   private final Cache<String, Object> projectCache =
@@ -136,6 +139,7 @@ public class DashboardService {
       ClientLedgerService clientLedgerService,
       TrustReconciliationRepository trustReconciliationRepository,
       DisbursementRepository disbursementRepository,
+      ActivityService activityService,
       Clock clock) {
     this.taskRepository = taskRepository;
     this.timeEntryRepository = timeEntryRepository;
@@ -153,6 +157,7 @@ public class DashboardService {
     this.clientLedgerService = clientLedgerService;
     this.trustReconciliationRepository = trustReconciliationRepository;
     this.disbursementRepository = disbursementRepository;
+    this.activityService = activityService;
     this.clock = clock;
   }
 
@@ -902,39 +907,35 @@ public class DashboardService {
     } else {
       rows = auditEventRepository.findCrossProjectActivityForMember(actor.memberId(), limit);
     }
+    if (rows.isEmpty()) {
+      return List.of();
+    }
+
+    // ADR-349 "one formatter, Home delegates": the queries above still select (and order) the rows
+    // this actor may see; the sentence and actor come from the matter feed's formatter path, so
+    // the same event reads the same on Home and on the matter Activity tab (incl. portal contacts,
+    // which the query's members-only join reported as "System"). One batch load, no N+1.
+    List<UUID> eventIds = rows.stream().map(CrossProjectActivityProjection::getEventId).toList();
+    Map<UUID, ActivityItem> formatted = new HashMap<>();
+    activityService
+        .formatEvents(auditEventRepository.findAllById(eventIds))
+        .forEach(item -> formatted.put(item.id(), item));
 
     return rows.stream()
+        .filter(row -> formatted.containsKey(row.getEventId()))
         .map(
-            row ->
-                new CrossMatterActivityItem(
-                    row.getEventId(),
-                    row.getEventType(),
-                    buildActivityDescription(row.getEventType(), row.getActorName()),
-                    row.getActorName(),
-                    row.getProjectId(),
-                    row.getProjectName(),
-                    row.getOccurredAt()))
+            row -> {
+              ActivityItem item = formatted.get(row.getEventId());
+              return new CrossMatterActivityItem(
+                  row.getEventId(),
+                  row.getEventType(),
+                  item.message(),
+                  item.actorName(),
+                  row.getProjectId(),
+                  row.getProjectName(),
+                  row.getOccurredAt());
+            })
         .toList();
-  }
-
-  private String buildActivityDescription(String eventType, String actorName) {
-    String actor = actorName != null ? actorName : "System";
-    if (eventType == null) {
-      return actor + " performed an action";
-    }
-    String[] parts = eventType.split("\\.");
-    if (parts.length < 2) {
-      return actor + " performed " + eventType;
-    }
-    String entity = parts[0];
-    String action = parts[1];
-    return switch (action) {
-      case "created" -> actor + " created a " + entity;
-      case "updated" -> actor + " updated a " + entity;
-      case "deleted" -> actor + " deleted a " + entity;
-      case "uploaded" -> actor + " uploaded a " + entity;
-      default -> actor + " performed " + eventType;
-    };
   }
 
   private String lookupCustomerName(UUID projectId) {

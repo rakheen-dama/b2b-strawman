@@ -1,0 +1,5 @@
+ letterhead_signatory_name | letterhead_city |          updated_at          
+---------------------------+-----------------+------------------------------
+ Thandiwe Khumalo          | Sandton         | 2026-10-27 19:23:29.90809+00
+(1 row)
+

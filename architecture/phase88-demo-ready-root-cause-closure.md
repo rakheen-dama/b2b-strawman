@@ -1448,7 +1448,7 @@ Read `backend/CLAUDE.md` and `frontend/CLAUDE.md` before touching either tree. E
 // settings/LetterheadSettings.java
 /**
  * Firm letterhead and banking group (Phase 88 U8). Persisted inline on org_settings via @Embedded +
- * @AttributeOverride on OrgSettings; all columns nullable (tenant V4 §4). Setters do NOT bump
+ * @AttributeOverride on OrgSettings; all columns nullable (tenant §4 — shipped as V7, 626A). Setters do NOT bump
  * OrgSettings.updatedAt — Hibernate dirty-checks the embedded columns.
  */
 @Embeddable
@@ -1464,14 +1464,14 @@ public class LetterheadSettings {
 // settings/OrgSettings.java
 @Embedded
 @AttributeOverride(name = "addressLine1", column = @Column(name = "letterhead_address_line1", length = 255))
-// … one override per field — column names pinned so OrgSettingsSchemaSnapshotTest sees exactly V4 §4 …
+// … one override per field — column names pinned so OrgSettingsSchemaSnapshotTest sees exactly §4 (V7) …
 private LetterheadSettings letterhead = new LetterheadSettings();
 
 /** Never null (lazy-init like getBranding()). */
 public LetterheadSettings getLetterhead() { if (letterhead == null) letterhead = new LetterheadSettings(); return letterhead; }
 ```
 
-Checklist for any new settings column: embeddable field → `@AttributeOverride` → V4 section → `OrgSettingsSchemaSnapshotTest.EXPECTED_SNAPSHOT` updated deliberately → `OrgSettingsEmbeddableNullReloadTest` extended when nullable → DTO + controller + form.
+Checklist for any new settings column: embeddable field → `@AttributeOverride` → next-free tenant migration (626A: V7) → `OrgSettingsSchemaSnapshotTest.EXPECTED_SNAPSHOT` updated deliberately → `OrgSettingsEmbeddableNullReloadTest` extended when nullable → DTO + controller + form.
 
 ### 13.8.4 Repository JPQL / native patterns
 

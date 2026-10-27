@@ -1,7 +1,7 @@
 {
-  "commit": "977419fa8",
-  "command": "cd backend && ./mvnw spotless:apply && bash scripts/verify.sh -q (preflight + caffeinate -is ./mvnw verify; fresh worktree-epic-625G)",
+  "commit": "99420af96",
+  "command": "cd backend && bash scripts/verify.sh -q (./mvnw verify under caffeinate, preflight-guarded)",
   "exit": 0,
-  "ts": "2026-10-27T18:37:18Z",
-  "summary": "Slice 625G epic gate BE-VERIFY on main 977419fa8: 6006 testcases / 0 failures / 0 errors / 26 skipped across 726 reports, 15:44 min, spotless no diff (= 625F)"
+  "ts": "2026-10-27T19:42:45Z",
+  "summary": "Slice 626A PR #1685 head 99420af96: 6033 testcases / 0 failures / 0 errors / 26 skipped — 15:15 min; Backend CI pass 21m13s"
 }

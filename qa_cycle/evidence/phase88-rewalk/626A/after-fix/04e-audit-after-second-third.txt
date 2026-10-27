@@ -1,0 +1,13 @@
+                  id                  |          occurred_at          |                                                                                                                                                details                                                                                                                                                 
+--------------------------------------+-------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ bebe976b-019d-4523-9220-a6160b8d8b44 | 2026-10-27 19:10:13.83788+00  | {"actor_name": "Alice Owner", "changed_fields": ["addressLine1", "addressLine2", "addressLine3", "city", "postalCode", "country", "phone", "email", "website", "bankName", "bankBranchCode", "bankAccountNumber", "bankAccountType", "paymentReferenceNote", "signatoryName", "signatoryDesignation"]}
+ cb0b8124-9065-4860-b292-97cbcd05e727 | 2026-10-27 19:10:32.623195+00 | {"actor_name": "Alice Owner", "changed_fields": ["bankName", "bankBranchCode", "bankAccountNumber", "bankAccountType", "paymentReferenceNote"]}
+ e85072ca-17f6-45e8-8106-ed4afe312de7 | 2026-10-27 19:10:32.800206+00 | {"actor_name": "Alice Owner", "changed_fields": ["addressLine3", "website"]}
+ 629542b4-f22a-4bbe-b1c5-4c56148ac503 | 2026-10-27 19:10:58.349483+00 | {"actor_name": "Bob Admin", "changed_fields": ["addressLine3", "website", "bankName", "bankBranchCode", "bankAccountNumber", "bankAccountType", "paymentReferenceNote", "signatoryName"]}
+ e322d898-1150-4ef5-ab8d-e650d6204af2 | 2026-10-27 19:12:50.724954+00 | {"actor_name": "Alice Owner", "changed_fields": ["signatoryName"]}
+ 25945e75-2501-4950-b00d-ed275cfe9c20 | 2026-10-27 19:23:04.153976+00 | {"actor_name": "Alice Owner", "changed_fields": ["email"]}
+ b06b43f5-38d0-45c4-b511-a2e78ac07492 | 2026-10-27 19:23:08.336625+00 | {"actor_name": "Alice Owner", "changed_fields": ["email"]}
+ 099244ad-fc2f-43bf-a0b2-78f5dbca4cd7 | 2026-10-27 19:23:18.43625+00  | {"actor_name": "Alice Owner", "changed_fields": ["bankBranchCode"]}
+ 41b0befc-d97c-49e8-936f-6021e46e3d3f | 2026-10-27 19:23:29.687186+00 | {"actor_name": "Alice Owner", "changed_fields": ["bankBranchCode"]}
+(9 rows)
+

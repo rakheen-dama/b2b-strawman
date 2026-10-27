@@ -1,0 +1,6 @@
+### PATCH /api/settings/letterhead  (2026-10-27T19:23:18Z)
+--- request body:
+{"addressLine1":"12 Rivonia Road","addressLine2":"Illovo Point, 3rd Floor","addressLine3":"Illovo","city":"Sandton","postalCode":"2196","country":"South Africa","phone":"+27 11 555 0142","email":"info@ndlovu-attorneys.co.za","website":"https://www.khumalo-attorneys.co.za","bankName":"First National Bank","bankBranchCode":"123456789012345678901","bankAccountNumber":"62812345678","bankAccountType":"Cheque","paymentReferenceNote":"Please use your fee note number as the payment reference.","signatoryName":"Thandiwe Khumalo","signatoryDesignation":"Director"}
+--- response:
+{"detail":"1 field(s) have validation errors","instance":"/api/settings/letterhead","status":400,"title":"Validation failed","fieldErrors":[{"message":"bankBranchCode must be at most 20 characters","field":"bankBranchCode"}]}
+HTTP_STATUS=400

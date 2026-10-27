@@ -1,0 +1,5 @@
+image_xobjects=0
+rg 0.10588 0.22745 0.29412 #1b3a4b x6
+rg 0.2 0.2 0.2 #333333 x6
+e2-engagement-letter-general-1.ppm 661 x 935 {'brand #1b3a4b': 5624, 'teal #0f766e': 0, 'navy #1a1a2e': 0} saturated_px=5624
+e2-engagement-letter-general-2.ppm 661 x 935 {'brand #1b3a4b': 1338, 'teal #0f766e': 0, 'navy #1a1a2e': 0} saturated_px=1338

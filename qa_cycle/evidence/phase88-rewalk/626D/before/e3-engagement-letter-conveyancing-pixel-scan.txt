@@ -1,0 +1,6 @@
+image_xobjects=0
+rg 0.2 0.2 0.2 #333333 x8
+rg 0.10588 0.22745 0.29412 #1b3a4b x7
+e3-engagement-letter-conveyancing-1.ppm 661 x 935 {'brand #1b3a4b': 5458, 'teal #0f766e': 0, 'navy #1a1a2e': 0} saturated_px=5458
+e3-engagement-letter-conveyancing-2.ppm 661 x 935 {'brand #1b3a4b': 292, 'teal #0f766e': 0, 'navy #1a1a2e': 0} saturated_px=292
+e3-engagement-letter-conveyancing-3.ppm 661 x 935 {'brand #1b3a4b': 1569, 'teal #0f766e': 0, 'navy #1a1a2e': 0} saturated_px=1569

@@ -1,0 +1,13 @@
+2026-10-27T20:15:52.572647004Z PackReconciliationRunner Running pack reconciliation for 1 tenants
+2026-10-27T20:15:52.696877212Z PackInstallService Pack common already installed (internal path), skipping
+2026-10-27T20:15:52.701797920Z PackInstallService Pack compliance-za already installed (internal path), skipping
+2026-10-27T20:15:52.714162504Z PackInstallService Pack legal-za already installed (internal path), skipping
+2026-10-27T20:15:52.747245004Z CompliancePackSeeder Compliance pack generic-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T20:15:52.751871712Z CompliancePackSeeder Compliance pack legal-za-individual-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T20:15:52.753333712Z CompliancePackSeeder Compliance pack legal-za-trust-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T20:15:52.754646212Z CompliancePackSeeder Compliance pack sa-fica-company already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T20:15:52.755986420Z CompliancePackSeeder Compliance pack sa-fica-individual already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T20:15:52.785397337Z PackInstallService Pack automation-common already installed (internal path), skipping
+2026-10-27T20:15:52.796305504Z PackInstallService Pack automation-legal-za already installed (internal path), skipping
+2026-10-27T20:15:52.807689254Z ProjectTemplatePackSeeder Project-template pack legal-za-project-templates already applied for tenant tenant_7d218705360b, reconciling settings
+2026-10-27T20:15:52.843807837Z PackReconciliationRunner Pack reconciliation: checked 1 tenants, 1 succeeded, 0 failed

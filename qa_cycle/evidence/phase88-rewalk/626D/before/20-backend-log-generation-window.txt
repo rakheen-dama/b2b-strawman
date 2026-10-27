@@ -1,0 +1,82 @@
+2026-10-27T21:30:52.273749545Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=time_reminder_check, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:30:52.514757337Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_delayed, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:30:52.522614878Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_payment_poll, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:30:54.656243463Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:30:55.476950838Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:31:25.548207713Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:31:54.763166379Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:31:55.586411463Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:32:25.636222421Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:32:54.818764671Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:32:55.666477130Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:33:25.688538255Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:33:54.855676171Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:33:55.706396338Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:34:25.721643338Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:34:51.813385044Z INFO OrgSettingsService Updated letterhead settings: changedFields=[phone]
+2026-10-27T21:34:54.870199796Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:34:55.740628546Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:35:25.760044963Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:35:54.896850004Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:35:55.776553421Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:36:05.885446343Z INFO OrgSettingsService Updated letterhead settings: changedFields=[phone]
+2026-10-27T21:36:25.789845213Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:36:54.913697838Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:36:55.797020755Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:37:25.819230755Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:37:40.152705345Z INFO OrgSettingsService Updated org settings with branding: currency=ZAR, brandColor=#1a8f6e
+2026-10-27T21:37:40.184226303Z INFO OrgSettingsService Updated tax settings: taxLabel=VAT, taxInclusive=false
+2026-10-27T21:37:41.943385137Z INFO OrgSettingsService Updated org settings with branding: currency=ZAR, brandColor=#1a8f6e
+2026-10-27T21:37:41.976562512Z INFO OrgSettingsService Updated tax settings: taxLabel=VAT, taxInclusive=false
+2026-10-27T21:37:46.890473209Z INFO OrgSettingsService Updated org settings with branding: currency=ZAR, brandColor=#1b3a4b
+2026-10-27T21:37:46.925164542Z INFO OrgSettingsService Updated tax settings: taxLabel=VAT, taxInclusive=false
+2026-10-27T21:37:49.785512043Z INFO BillingRateService Created billing rate a8a4243b-7894-4c28-ab78-76f92535b25e for member ca2a4c89-742c-4a8f-a2b2-3a935fd4281a scope=MEMBER_DEFAULT
+2026-10-27T21:37:54.935985754Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:37:55.829427338Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:38:25.849825796Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:38:54.957721171Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:38:55.874947005Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:39:25.898709880Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:39:54.975568838Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:39:55.918473838Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:40:25.948295880Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:40:54.988713004Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:40:55.955057671Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:41:25.982914713Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:41:55.035436004Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:41:56.000724713Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:42:26.020043296Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:42:55.100347546Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:42:56.030270505Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:43:26.068235171Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:43:55.121781921Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:43:56.116642755Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:44:26.128328005Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:44:55.140140171Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:44:56.140823171Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:45:26.165128505Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:45:52.326146670Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=time_reminder_check, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:45:52.591603795Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_delayed, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:45:52.601089170Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_payment_poll, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:45:55.164818213Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:45:56.174683796Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:46:26.189596130Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:46:55.226910629Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:46:56.206826546Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:47:26.211162838Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:47:55.224788504Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:47:56.200536421Z INFO DefaultJobEnqueuer fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+2026-10-27T21:48:16.058891667Z WARN PDType1Font Using fallback font LiberationSans for base font Courier-BoldOblique
+2026-10-27T21:48:16.060174125Z WARN PDType1Font Using fallback font LiberationSans for base font Courier-Oblique
+2026-10-27T21:48:16.060457208Z WARN PDType1Font Using fallback font LiberationSans for base font Courier-Bold
+2026-10-27T21:48:16.060749958Z WARN PDType1Font Using fallback font LiberationSans for base font Courier
+2026-10-27T21:48:16.061070125Z WARN PDType1Font Using fallback font LiberationSans for base font Times-BoldItalic
+2026-10-27T21:48:16.061445667Z WARN PDType1Font Using fallback font LiberationSans for base font Times-Italic
+2026-10-27T21:48:16.062110208Z WARN PDType1Font Using fallback font LiberationSans for base font Times-Bold
+2026-10-27T21:48:16.063037833Z WARN PDType1Font Using fallback font LiberationSans for base font Times-Roman
+2026-10-27T21:48:16.063452625Z WARN PDType1Font Using fallback font LiberationSans for base font Helvetica-BoldOblique
+2026-10-27T21:48:16.063998083Z WARN PDType1Font Using fallback font LiberationSans for base font Helvetica-Oblique
+2026-10-27T21:48:16.064348125Z WARN PDType1Font Using fallback font LiberationSans for base font Helvetica-Bold
+2026-10-27T21:48:16.065192875Z WARN PDType1Font Using fallback font LiberationSans for base font Helvetica
+2026-10-27T21:48:16.065547625Z WARN PDType1Font Using fallback font LiberationSans for base font Symbol
+2026-10-27T21:48:16.065958583Z WARN PDType1Font Using fallback font LiberationSans for base font ZapfDingbats

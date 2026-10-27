@@ -1,0 +1,22 @@
+SET
+                  id                  |              pack_id              |      pack_type      | pack_version |             pack_name             |         installed_at          | installed_by_member_id | item_count 
+--------------------------------------+-----------------------------------+---------------------+--------------+-----------------------------------+-------------------------------+------------------------+------------
+ 49001413-2889-4503-a28c-0923f2524813 | common-project                    | FIELD               | 2            | common-project                    | 2026-10-27 18:22:45.292471+00 |                        |          0
+ 5d065ac2-8294-407a-8950-26c1c5424590 | common-task                       | FIELD               | 2            | common-task                       | 2026-10-27 18:22:45.292471+00 |                        |          0
+ 8c4a0be5-6db6-42a6-b15c-3f750de5594a | conveyancing-za-project           | FIELD               | 1            | conveyancing-za-project           | 2026-10-27 18:22:45.292471+00 |                        |          0
+ 36c69ee9-bbae-4fb1-8fbd-601d4fa7e607 | legal-za-customer                 | FIELD               | 2            | legal-za-customer                 | 2026-10-27 18:22:45.292471+00 |                        |          0
+ 2d7017ee-f144-4cd8-a803-6cf9e9c84e4a | legal-za-project                  | FIELD               | 2            | legal-za-project                  | 2026-10-27 18:22:45.292471+00 |                        |          0
+ 6fc0bc1f-fd50-4233-a3fc-9cd6ea67b675 | common                            | DOCUMENT_TEMPLATE   | 3            | Common Templates                  | 2026-10-27 18:22:45.39419+00  |                        |          3
+ eb577c93-c582-4e15-a4b2-aa21fe396746 | compliance-za                     | DOCUMENT_TEMPLATE   | 1            | South Africa Compliance Templates | 2026-10-27 18:22:45.439972+00 |                        |          1
+ c569873d-f993-445a-bd58-6e0597f82138 | legal-za                          | DOCUMENT_TEMPLATE   | 7            | SA Legal Templates                | 2026-10-27 18:22:45.461527+00 |                        |         17
+ 8c717ed5-84e4-4b61-ac85-c4f30fc9e3ea | conveyancing-za-clauses           | CLAUSE              | 1            | conveyancing-za-clauses           | 2026-10-27 18:22:45.523032+00 |                        |          0
+ 8b58cd2b-9dd1-47e7-ab28-017838894a12 | legal-za-clauses                  | CLAUSE              | 1            | legal-za-clauses                  | 2026-10-27 18:22:45.523032+00 |                        |          0
+ d218dcf8-60cd-4dbf-ab08-a7d30412cbb8 | standard-clauses                  | CLAUSE              | 1            | standard-clauses                  | 2026-10-27 18:22:45.523032+00 |                        |          0
+ 541b7ebf-f5a6-4b01-821c-637ebfdb725b | standard-reports                  | REPORT              | 1            | standard-reports                  | 2026-10-27 18:22:45.741001+00 |                        |          0
+ c098a762-1df8-4d13-935b-6b2cccad649b | conveyancing-intake-za            | REQUEST             | 1            | conveyancing-intake-za            | 2026-10-27 18:22:45.768442+00 |                        |          0
+ 35b2d3b5-6897-4f56-baa4-50bd62816cfb | fica-onboarding-pack              | REQUEST             | 1            | fica-onboarding-pack              | 2026-10-27 18:22:45.768442+00 |                        |          0
+ 9937725e-74b7-4c9c-8bdf-f730cbef389e | legal-za-liquidation-distribution | REQUEST             | 1            | legal-za-liquidation-distribution | 2026-10-27 18:22:45.768442+00 |                        |          0
+ 76181e19-2149-4f32-8e2e-674efe3fbea2 | automation-common                 | AUTOMATION_TEMPLATE | 3            | automation-common                 | 2026-10-27 18:22:45.800122+00 |                        |          6
+ ec18f636-d33e-4ecb-a52b-f5e82aaf1940 | automation-legal-za               | AUTOMATION_TEMPLATE | 2            | automation-legal-za               | 2026-10-27 18:22:45.849175+00 |                        |          4
+(17 rows)
+

@@ -1,0 +1,543 @@
+- generic:
+  - link [aria-hidden]:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary [aria-hidden]:
+      - generic: Kazi
+      - generic: E2E Test Organization
+      - button:
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Today
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/dashboard
+              - text: Home
+            - link:
+              - /url: /org/e2e-test-org/my-work
+              - text: My work
+            - link:
+              - /url: /org/e2e-test-org/diary
+              - text: Diary
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+            - link:
+              - /url: /org/e2e-test-org/matters/new
+              - text: New matter
+            - link:
+              - /url: /org/e2e-test-org/conflict-check
+              - text: Conflict check
+            - link:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+              - text: Adverse parties
+            - link:
+              - /url: /org/e2e-test-org/ai/reviews
+              - text: AI reviews
+        - generic:
+          - button [expanded]:
+            - generic: Clients
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/clients
+              - text: Clients
+            - link:
+              - /url: /org/e2e-test-org/compliance
+              - text: FICA & compliance
+            - link:
+              - /url: /org/e2e-test-org/compliance/requests
+              - text: Data requests
+        - generic:
+          - button:
+            - generic: Fees
+        - generic:
+          - button:
+            - generic: Trust
+        - generic:
+          - button:
+            - generic: Firm
+      - generic:
+        - link:
+          - /url: /platform-admin/access-requests
+          - text: Platform Admin
+      - generic:
+        - link:
+          - /url: /org/e2e-test-org/notifications
+          - text: Notifications
+      - generic:
+        - generic: AO
+        - generic:
+          - paragraph: Alice Owner
+          - paragraph: alice@e2e-test.local
+    - generic:
+      - banner:
+        - navigation [aria-hidden]:
+          - link:
+            - /url: /org/e2e-test-org/dashboard
+            - text: E2E Test Organization
+          - generic: Clients
+        - generic:
+          - generic [aria-hidden]:
+            - generic: e2e-test-org
+          - generic [aria-hidden]:
+            - button: AO
+          - generic:
+            - button "Notifications":
+              - generic: 7 unread notifications
+              - generic [aria-hidden]: "7"
+      - main [aria-hidden]:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - heading [level=1]: Clients
+                  - paragraph: 9 clients
+                - generic:
+                  - button: New Client
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - button
+                      - generic:
+                        - tablist:
+                          - tab [selected]: All clients
+                          - tab: Active
+                          - tab: FICA outstanding
+                          - tab: With trust balance
+                    - button: Save View
+                - generic:
+                  - search:
+                    - generic:
+                      - textbox:
+                        - /placeholder: Search clients…
+                  - generic:
+                    - group:
+                      - link:
+                        - /url: /org/e2e-test-org/clients
+                        - text: All
+                      - link:
+                        - /url: /org/e2e-test-org/clients?lifecycleStatus=PROSPECT
+                        - text: Prospect
+                      - link:
+                        - /url: /org/e2e-test-org/clients?lifecycleStatus=ONBOARDING
+                        - text: Onboarding
+                      - link:
+                        - /url: /org/e2e-test-org/clients?lifecycleStatus=ACTIVE
+                        - text: Active
+                      - link:
+                        - /url: /org/e2e-test-org/clients?lifecycleStatus=DORMANT
+                        - text: Dormant
+                      - link:
+                        - /url: /org/e2e-test-org/clients?lifecycleStatus=OFFBOARDING
+                        - text: Offboarding
+                      - link:
+                        - /url: /org/e2e-test-org/clients?lifecycleStatus=OFFBOARDED
+                        - text: Offboarded
+                    - link:
+                      - /url: /org/e2e-test-org/clients?showIncomplete=true
+                      - text: Show incomplete
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - table:
+                        - caption: Clients — All clients
+                        - rowgroup:
+                          - row:
+                            - columnheader:
+                              - link:
+                                - /url: /org/e2e-test-org/clients?sortBy=name&sortDir=desc
+                                - text: Client
+                                - generic [aria-hidden]: ↑
+                            - columnheader:
+                              - link:
+                                - /url: /org/e2e-test-org/clients?sortBy=lifecycleStatus&sortDir=asc
+                                - text: Lifecycle
+                            - columnheader:
+                              - link:
+                                - /url: /org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc
+                                - text: FICA
+                            - columnheader:
+                              - link:
+                                - /url: /org/e2e-test-org/clients?sortBy=openMatterCount&sortDir=asc
+                                - generic:
+                                  - generic: Open
+                                  - generic: matters
+                            - columnheader:
+                              - link:
+                                - /url: /org/e2e-test-org/clients?sortBy=outstanding&sortDir=asc
+                                - generic:
+                                  - generic: Outstanding
+                                  - generic: fee notes
+                            - columnheader:
+                              - link:
+                                - /url: /org/e2e-test-org/clients?sortBy=trustBalance&sortDir=asc
+                                - generic:
+                                  - generic: Trust
+                                  - generic: balance
+                            - columnheader:
+                              - link:
+                                - /url: /org/e2e-test-org/clients?sortBy=completeness&sortDir=asc
+                                - text: Completeness
+                            - columnheader:
+                              - link:
+                                - /url: /org/e2e-test-org/clients?sortBy=createdAt&sortDir=asc
+                                - text: Created
+                            - columnheader:
+                              - generic: Actions
+                        - rowgroup:
+                          - row:
+                            - cell:
+                              - generic:
+                                - link:
+                                  - /url: /org/e2e-test-org/clients/9480013d-c8b0-432d-b9b8-6984f20d69eb
+                                  - text: Acme Corp
+                                - generic: Individual
+                            - cell:
+                              - generic: Active
+                            - cell:
+                              - generic:
+                                - generic: Done
+                                - generic: 28 Oct 2026
+                            - cell: "1"
+                            - cell: —
+                            - cell: R 0,00
+                            - cell:
+                              - generic: N/A
+                            - cell: 28 Oct 2026
+                            - cell:
+                              - button:
+                                - generic: Client actions
+                          - row:
+                            - cell:
+                              - generic:
+                                - link:
+                                  - /url: /org/e2e-test-org/clients/c8ee8208-08e1-464e-bbf2-6870e72eb0e1
+                                  - text: Apex Holdings 5vui
+                                - generic: Individual
+                            - cell:
+                              - generic: Prospect
+                            - cell: Not started
+                            - cell: "0"
+                            - cell: —
+                            - cell: R 0,00
+                            - cell:
+                              - generic: N/A
+                            - cell: 28 Oct 2026
+                            - cell:
+                              - button:
+                                - generic: Client actions
+                          - row:
+                            - cell:
+                              - generic:
+                                - link:
+                                  - /url: /org/e2e-test-org/clients/cbe29885-4710-4db4-a974-2cb4d8c9b121
+                                  - text: Apex Holdings mvsk8fppefc6
+                                - generic: Company
+                            - cell:
+                              - generic: Onboarding
+                            - cell: Not started
+                            - cell: "0"
+                            - cell: R 4 025,00 · 1
+                            - cell: R 0,00
+                            - cell:
+                              - generic: N/A
+                            - cell: 28 Oct 2026
+                            - cell:
+                              - button:
+                                - generic: Client actions
+                          - row:
+                            - cell:
+                              - generic:
+                                - link:
+                                  - /url: /org/e2e-test-org/clients/f8892d07-fdf7-43f9-a013-a491d00bf224
+                                  - text: Khumalo Property Holdings mvsk8fppefc6
+                                - generic: Individual
+                            - cell:
+                              - generic: Onboarding
+                            - cell:
+                              - generic: In progress
+                            - cell: "1"
+                            - cell: —
+                            - cell: R 0,00
+                            - cell:
+                              - generic: N/A
+                            - cell: 28 Oct 2026
+                            - cell:
+                              - button:
+                                - generic: Client actions
+                          - row:
+                            - cell:
+                              - generic:
+                                - link:
+                                  - /url: /org/e2e-test-org/clients/2303878b-452c-43a0-9105-18ff9ab5e9b0
+                                  - text: LC Cust avnn
+                                - generic: Individual
+                            - cell:
+                              - generic: Prospect
+                            - cell: Not started
+                            - cell: "0"
+                            - cell: —
+                            - cell: R 0,00
+                            - cell:
+                              - generic: N/A
+                            - cell: 28 Oct 2026
+                            - cell:
+                              - button:
+                                - generic: Client actions
+                          - row:
+                            - cell:
+                              - generic:
+                                - link:
+                                  - /url: /org/e2e-test-org/clients/762ee72f-130f-4885-9df1-7f25879b402e
+                                  - text: Moroka Family Trust 5vui
+                                - generic: Individual
+                            - cell:
+                              - generic: Prospect
+                            - cell: Not started
+                            - cell: "0"
+                            - cell: —
+                            - cell: R 0,00
+                            - cell:
+                              - generic: N/A
+                            - cell: 28 Oct 2026
+                            - cell:
+                              - button:
+                                - generic: Client actions
+                          - row:
+                            - cell:
+                              - generic:
+                                - link:
+                                  - /url: /org/e2e-test-org/clients/21c7cb11-99a4-4ea6-a803-cc809b51a20b
+                                  - text: QuickCollect Services 5vui
+                                - generic: Individual
+                            - cell:
+                              - generic: Prospect
+                            - cell: Not started
+                            - cell: "0"
+                            - cell: —
+                            - cell: R 0,00
+                            - cell:
+                              - generic: N/A
+                            - cell: 28 Oct 2026
+                            - cell:
+                              - button:
+                                - generic: Client actions
+                          - row:
+                            - cell:
+                              - generic:
+                                - link:
+                                  - /url: /org/e2e-test-org/clients/d65df10b-f93f-43ba-9832-4c8fd627534d
+                                  - text: Sipho Ndlovu 5vui
+                                - generic: Individual
+                            - cell:
+                              - generic: Prospect
+                            - cell: Not started
+                            - cell: "0"
+                            - cell: —
+                            - cell: R 0,00
+                            - cell:
+                              - generic: N/A
+                            - cell: 28 Oct 2026
+                            - cell:
+                              - button:
+                                - generic: Client actions
+                          - row:
+                            - cell:
+                              - generic:
+                                - link:
+                                  - /url: /org/e2e-test-org/clients/bca2b1b8-dce6-4dda-a149-c89c36d63eed
+                                  - text: Sipho Ndlovu mvsk8fppefc6
+                                - generic: Individual
+                            - cell:
+                              - generic: Onboarding
+                            - cell:
+                              - generic: In progress
+                            - cell: "1"
+                            - cell: —
+                            - cell: R 3 750,00
+                            - cell:
+                              - generic: N/A
+                            - cell: 28 Oct 2026
+                            - cell:
+                              - button:
+                                - generic: Client actions
+                - paragraph: Showing 9 clients
+  - generic [aria-hidden]:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - alert
+  - dialog [ref=f174e240]:
+    - generic [ref=f174e241]:
+      - generic [ref=f174e242]:
+        - heading "Create Client" [level=2] [ref=f174e243]
+        - paragraph [ref=f174e244]: Step 1 of 2 — Add a new client to your organization.
+      - generic [ref=f174e246]:
+        - generic [ref=f174e247]:
+          - generic [ref=f174e248]: Name
+          - textbox "Name" [active] [ref=f174e249]:
+            - /placeholder: Client name
+        - generic [ref=f174e250]:
+          - generic [ref=f174e251]: Type
+          - combobox "Type" [ref=f174e252]:
+            - option "Individual" [selected]
+            - option "Company"
+            - option "Trust"
+        - generic [ref=f174e253]:
+          - generic [ref=f174e254]: Email
+          - textbox "Email" [ref=f174e255]:
+            - /placeholder: client@example.com
+        - generic [ref=f174e256]:
+          - generic [ref=f174e257]:
+            - text: Phone
+            - generic [ref=f174e258]: (optional)
+          - textbox "Phone (optional)" [ref=f174e259]:
+            - /placeholder: +1 (555) 000-0000
+        - generic [ref=f174e260]:
+          - generic [ref=f174e261]:
+            - text: Tax Number
+            - generic [ref=f174e262]: (required to send a fee note; collectable later)
+          - textbox "Tax Number (required to send a fee note; collectable later)" [ref=f174e263]:
+            - /placeholder: e.g. VAT or tax registration number
+        - generic [ref=f174e264]:
+          - generic [ref=f174e265]:
+            - text: Notes
+            - generic [ref=f174e266]: (optional)
+          - textbox "Notes (optional)" [ref=f174e267]:
+            - /placeholder: Any additional notes about this client...
+        - generic [ref=f174e268]:
+          - heading "Address" [level=3] [ref=f174e269]
+          - generic [ref=f174e270]:
+            - generic [ref=f174e271]:
+              - generic [ref=f174e272]:
+                - text: Address Line 1
+                - generic [ref=f174e273]: (optional)
+              - textbox "Address Line 1 (optional)" [ref=f174e274]
+            - generic [ref=f174e275]:
+              - generic [ref=f174e276]:
+                - text: Address Line 2
+                - generic [ref=f174e277]: (optional)
+              - textbox "Address Line 2 (optional)" [ref=f174e278]
+            - generic [ref=f174e279]:
+              - generic [ref=f174e280]:
+                - generic [ref=f174e281]: City
+                - textbox "City" [ref=f174e282]
+              - generic [ref=f174e283]:
+                - generic [ref=f174e284]: State / Province
+                - textbox "State / Province" [ref=f174e285]
+            - generic [ref=f174e286]:
+              - generic [ref=f174e287]:
+                - generic [ref=f174e288]: Postal Code
+                - textbox "Postal Code" [ref=f174e289]
+              - generic [ref=f174e290]:
+                - generic [ref=f174e291]:
+                  - text: Country
+                  - generic [ref=f174e292]: (required for activation)
+                - combobox "Country (required for activation)" [ref=f174e293]:
+                  - option "Select country…" [selected]
+                  - option "South Africa (ZA)"
+                  - option "United States (US)"
+                  - option "United Kingdom (GB)"
+                  - option "Australia (AU)"
+                  - option "Canada (CA)"
+                  - option "New Zealand (NZ)"
+                  - option "Ireland (IE)"
+                  - option "Germany (DE)"
+                  - option "France (FR)"
+                  - option "Spain (ES)"
+                  - option "Italy (IT)"
+                  - option "Portugal (PT)"
+                  - option "Netherlands (NL)"
+                  - option "Belgium (BE)"
+                  - option "Switzerland (CH)"
+                  - option "Austria (AT)"
+                  - option "Denmark (DK)"
+                  - option "Sweden (SE)"
+                  - option "Norway (NO)"
+                  - option "Finland (FI)"
+                  - option "Poland (PL)"
+                  - option "Czechia (CZ)"
+                  - option "Hungary (HU)"
+                  - option "Greece (GR)"
+                  - option "Turkey (TR)"
+                  - option "Israel (IL)"
+                  - option "United Arab Emirates (AE)"
+                  - option "Saudi Arabia (SA)"
+                  - option "Egypt (EG)"
+                  - option "Kenya (KE)"
+                  - option "Nigeria (NG)"
+                  - option "Ghana (GH)"
+                  - option "Morocco (MA)"
+                  - option "Mozambique (MZ)"
+                  - option "Botswana (BW)"
+                  - option "Namibia (NA)"
+                  - option "Zimbabwe (ZW)"
+                  - option "Zambia (ZM)"
+                  - option "Mauritius (MU)"
+                  - option "India (IN)"
+                  - option "Pakistan (PK)"
+                  - option "Bangladesh (BD)"
+                  - option "Singapore (SG)"
+                  - option "Malaysia (MY)"
+                  - option "Indonesia (ID)"
+                  - option "Philippines (PH)"
+                  - option "Thailand (TH)"
+                  - option "Vietnam (VN)"
+                  - option "Japan (JP)"
+                  - option "South Korea (KR)"
+                  - option "China (CN)"
+                  - option "Hong Kong (HK)"
+                  - option "Taiwan (TW)"
+                  - option "Brazil (BR)"
+                  - option "Argentina (AR)"
+                  - option "Mexico (MX)"
+                  - option "Chile (CL)"
+        - generic [ref=f174e294]:
+          - heading "Contact" [level=3] [ref=f174e295]
+          - generic [ref=f174e296]:
+            - generic [ref=f174e297]:
+              - generic [ref=f174e298]: Contact Name
+              - textbox "Contact Name" [ref=f174e299]
+            - generic [ref=f174e300]:
+              - generic [ref=f174e301]: Contact Email
+              - textbox "Contact Email" [ref=f174e302]
+            - generic [ref=f174e303]:
+              - generic [ref=f174e304]: Contact Phone
+              - textbox "Contact Phone" [ref=f174e305]
+        - generic [ref=f174e306]:
+          - heading "Business Details" [level=3] [ref=f174e307]
+          - generic [ref=f174e308]:
+            - generic [ref=f174e309]:
+              - generic [ref=f174e310]: Registration Number
+              - textbox "Registration Number" [ref=f174e311]
+            - generic [ref=f174e312]:
+              - generic [ref=f174e313]: Entity Type
+              - combobox "Entity Type" [ref=f174e314]:
+                - option "Select entity type…" [selected]
+                - option "Individual"
+                - option "Sole Proprietor"
+                - option "Pty Ltd (Private Company)"
+                - option "Close Corporation"
+                - option "Partnership"
+                - option "Trust"
+                - option "Non-Profit"
+                - option "Public Company"
+            - generic [ref=f174e315]:
+              - generic [ref=f174e316]: Financial Year End
+              - textbox "Financial Year End" [ref=f174e317]
+      - generic [ref=f174e318]:
+        - button "Cancel" [ref=f174e319]
+        - button "Next" [ref=f174e320]
+      - button "Close" [ref=f174e321]

@@ -1,7 +1,7 @@
 {
-  "commit": "01eba16e5",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build",
+  "commit": "5cd76cc68",
+  "command": "cd frontend && pnpm install && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build",
   "exit": 0,
-  "ts": "2026-10-28T19:55:40Z",
-  "summary": "628A FE-GATE on 01eba16e5: lint 0 errors / 91 warnings, format clean, vitest 431 files / 3424 passed / 2 skipped, build OK (final head a1a368101 differs only by an e2e spec line reverted to main); fresh-stack E2E-LEGAL lifecycle 75/4/5/14 (carried A1/A2/A4/A6), depth-ii 38/0/5"
+  "ts": "2026-10-28T22:42:35Z",
+  "summary": "628B FE-GATE on 5cd76cc68 (final head, detached gate worktree): lint 0 errors / 91 warnings, format clean, vitest 433 files / 3485 passed / 2 skipped, build OK; fresh-stack (e2e-down/up from 5cd76cc68) E2E-LEGAL lifecycle 75/4/5/14 (carried A1/A2/A4/A6), depth-ii 38/0/5; default navigation+settings on bd9d01fcd 29/1/15/1 — the 1 (packs.spec:94 strict-mode) A/B'd: fails identically on main 835f53338 → 628F"
 }

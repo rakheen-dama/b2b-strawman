@@ -1,0 +1,17 @@
+- generic [active] [ref=f116e1]:
+  - link "Skip to content" [ref=f116e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f116e3]:
+    - generic [ref=f116e4]: DocTeams
+    - generic [ref=f116e5]:
+      - heading "E2E Test Login" [level=1] [ref=f116e6]
+      - generic [ref=f116e7]:
+        - generic [ref=f116e8]:
+          - generic [ref=f116e9]: Select User
+          - combobox "Select User" [ref=f116e10]:
+            - option "Alice (Owner)" [selected]
+            - option "Bob (Admin)"
+            - option "Carol (Member)"
+        - button "Sign In" [ref=f116e11]
+  - region "Notifications alt+T"
+  - alert [ref=f116e12]

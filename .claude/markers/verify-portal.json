@@ -1,7 +1,7 @@
 {
-  "commit": "01eba16e5",
+  "commit": "5cd76cc68",
   "command": "cd portal && pnpm lint && pnpm format:check && pnpm test && pnpm build",
   "exit": 0,
-  "ts": "2026-10-28T19:55:40Z",
-  "summary": "628A PORTAL-GATE on 01eba16e5 (shared @b2mash/ui Badge change): lint 0 errors, format clean, vitest 44 files / 238 passed, build OK"
+  "ts": "2026-10-28T22:42:35Z",
+  "summary": "628B PORTAL-GATE on 5cd76cc68: lint 0 errors / 4 warnings, format clean, vitest 44 files / 243 passed (portal terminology guard twin + drift check), build OK"
 }

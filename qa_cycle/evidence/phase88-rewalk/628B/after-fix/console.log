@@ -1,0 +1,70 @@
+[  401633ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rJ (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:62714)
+    at rZ (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:63747)
+    at http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:158439
+    at sy (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:163600)
+    at sh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:154852)
+    at http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:149670
+    at sr (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:149771)
+    at sq (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:176352)
+    at MessagePort.O (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:3360)
+[  429707ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rJ (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:62714)
+    at rZ (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:63747)
+    at http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:158439
+    at sy (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:163600)
+    at sh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:154852)
+    at http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:149670
+    at sr (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:149771)
+    at sq (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:176352)
+    at MessagePort.O (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:3360)
+[  471406ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rJ (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:62714)
+    at rZ (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:63747)
+    at http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:158439
+    at sy (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:163600)
+    at sh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:154852)
+    at http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:149670
+    at sr (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:149771)
+    at sq (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:176352)
+    at MessagePort.O (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:3360)
+[  473388ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rJ (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:62714)
+    at rZ (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:63747)
+    at http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:158439
+    at sy (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:163600)
+    at sh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:154852)
+    at http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:149670
+    at sr (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:149771)
+    at sq (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:176352)
+    at MessagePort.O (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:3360)
+[  475350ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rJ (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:62714)
+    at rZ (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:63747)
+    at http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:158439
+    at sy (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:163600)
+    at sh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:154852)
+    at http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:149670
+    at sr (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:149771)
+    at sq (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:176352)
+    at MessagePort.O (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:3360)
+[  477346ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rJ (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:62714)
+    at rZ (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:63747)
+    at http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:158439
+    at sy (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:163600)
+    at sh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:154852)
+    at http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:149670
+    at sr (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:149771)
+    at sq (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:176352)
+    at MessagePort.O (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:3360)
+[  479364ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rJ (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:62714)
+    at rZ (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:63747)
+    at http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:158439
+    at sy (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:163600)
+    at sh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:154852)
+    at http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:149670
+    at sr (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:149771)
+    at sq (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:176352)
+    at MessagePort.O (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:3360)

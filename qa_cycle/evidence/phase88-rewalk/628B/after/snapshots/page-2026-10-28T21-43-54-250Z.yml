@@ -1,0 +1,72 @@
+- generic [active] [ref=f174e1]:
+  - link "Skip to content" [ref=f174e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f174e3]:
+    - complementary [ref=f174e4]:
+      - generic [ref=f174e5]: Kazi
+      - generic [ref=f174e8]: E2E Test Organization
+      - button "Search, Command K" [ref=f174e12]:
+        - text: Search...
+        - generic [ref=f174e16]: ⌘K
+      - navigation "Main navigation" [ref=f174e17]:
+        - generic [ref=f174e18]:
+          - button "Today" [expanded] [ref=f174e19]
+          - generic [ref=f174e23]:
+            - link "Home" [ref=f174e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f174e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f174e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f174e36]:
+          - button "Matters" [expanded] [ref=f174e37]
+          - generic [ref=f174e41]:
+            - link "Matters" [ref=f174e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f174e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f174e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f174e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f174e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f174e65]:
+          - button "Clients" [expanded] [ref=f174e66]
+          - generic [ref=f174e70]:
+            - link "Clients" [ref=f174e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f174e77] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f174e81] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f174e87]
+        - button "Trust" [ref=f174e93]
+        - button "Firm" [ref=f174e99]
+      - link "Platform Admin" [ref=f174e105] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f174e110] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f174e115]:
+        - generic [ref=f174e116]: AO
+        - generic [ref=f174e117]:
+          - paragraph [ref=f174e118]: Alice Owner
+          - paragraph [ref=f174e119]: alice@e2e-test.local
+    - generic [ref=f174e120]:
+      - banner [ref=f174e121]:
+        - navigation "Breadcrumb" [ref=f174e122]:
+          - link "E2E Test Organization" [ref=f174e123] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=f174e124]: Clients
+        - generic [ref=f174e128]:
+          - generic [ref=f174e129]: e2e-test-org
+          - button "AO" [ref=f174e132]
+          - button "Notifications" [ref=f174e134]:
+            - generic [ref=f174e135]: 7 unread notifications
+            - generic [aria-hidden] [ref=f174e136]: "7"
+      - main [ref=f174e137]
+  - generic [ref=f174e235]:
+    - heading "Command Palette" [level=2] [ref=f174e236]
+    - paragraph [ref=f174e237]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f174e238]

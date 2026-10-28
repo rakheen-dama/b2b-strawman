@@ -1,0 +1,108 @@
+- generic [active] [ref=f229e1]:
+  - link "Skip to content" [ref=f229e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f229e3]:
+    - complementary [ref=f229e4]:
+      - generic [ref=f229e5]: Kazi
+      - generic [ref=f229e8]: E2E Test Organization
+      - button "Search, Command K" [ref=f229e12]:
+        - text: Search...
+        - generic [ref=f229e16]: ⌘K
+      - navigation "Main navigation" [ref=f229e17]:
+        - generic [ref=f229e18]:
+          - button "Today" [expanded] [ref=f229e19]
+          - generic [ref=f229e23]:
+            - link "Home" [ref=f229e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f229e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f229e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f229e36]:
+          - button "Matters" [expanded] [ref=f229e37]
+          - generic [ref=f229e41]:
+            - link "Matters" [ref=f229e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f229e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f229e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f229e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f229e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f229e65]:
+          - button "Clients" [expanded] [ref=f229e66]
+          - generic [ref=f229e70]:
+            - link "Clients" [ref=f229e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f229e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f229e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f229e86]
+        - button "Trust" [ref=f229e92]
+        - button "Firm" [ref=f229e98]
+      - link "Platform Admin" [ref=f229e104] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f229e109] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f229e114]:
+        - generic [ref=f229e115]: AO
+        - generic [ref=f229e116]:
+          - paragraph [ref=f229e117]: Alice Owner
+          - paragraph [ref=f229e118]: alice@e2e-test.local
+    - generic [ref=f229e119]:
+      - banner [ref=f229e120]:
+        - navigation "Breadcrumb" [ref=f229e121]:
+          - link "E2E Test Organization" [ref=f229e122] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Clients" [ref=f229e225] [cursor=pointer]:
+            - /url: /org/e2e-test-org/clients
+          - generic "Sipho Ndlovu mvso1vzf2585" [ref=f229e229]
+        - generic [ref=f229e127]:
+          - generic [ref=f229e128]: e2e-test-org
+          - button "AO" [ref=f229e131]
+          - button "Notifications" [ref=f229e133]:
+            - generic [ref=f229e134]: 7 unread notifications
+            - generic [aria-hidden] [ref=f229e135]: "7"
+      - main [ref=f229e136]:
+        - generic [ref=f229e231]:
+          - link "Back to Clients" [ref=f229e233] [cursor=pointer]:
+            - /url: /org/e2e-test-org/clients
+          - generic [ref=f229e238]:
+            - generic [ref=f229e239]:
+              - heading "Sipho Ndlovu mvso1vzf2585" [level=1] [ref=f229e240]
+              - generic [ref=f229e241]: Onboarding
+              - generic [ref=f229e245]:
+                - term [ref=f229e246]:
+                  - generic [ref=f229e247]: ID
+                - definition [ref=f229e248]: "8501015800087"
+              - paragraph [ref=f229e249]: sipho.ndlovu.mvso1vzf2585@example.com
+              - paragraph [ref=f229e250]: Since 29 Oct 2026 · 2 matters
+            - generic [ref=f229e251]:
+              - button "Activate Client" [ref=f229e252]
+              - button "More actions" [ref=f229e253]
+          - generic [ref=f229e255]:
+            - tablist [ref=f229e256]:
+              - tab "Details" [ref=f229e257] [cursor=pointer]
+              - tab "Overview" [ref=f229e260] [cursor=pointer]
+              - tab "Matters" [ref=f229e261] [cursor=pointer]
+              - tab "Fees · Fee notes" [selected] [ref=f229e264] [cursor=pointer]:
+                - text: Fees
+                - generic [ref=f229e265]: · Fee notes
+              - tab "FICA & compliance" [ref=f229e269] [cursor=pointer]
+              - tab "Activity" [ref=f229e272] [cursor=pointer]
+            - tabpanel [ref=f229e273]:
+              - generic [ref=f229e274]:
+                - generic [ref=f229e275]:
+                  - heading "Fee notes" [level=2] [ref=f229e277]
+                  - button "New fee note" [ref=f229e278]
+                - generic [ref=f229e279]:
+                  - heading "No fee notes yet" [level=2] [ref=f229e283]
+                  - paragraph [ref=f229e284]: Generate fee note from unbilled time entries
+  - generic [ref=f229e197]:
+    - heading "Command Palette" [level=2] [ref=f229e198]
+    - paragraph [ref=f229e199]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f229e200]

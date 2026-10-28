@@ -25,7 +25,9 @@ import org.springframework.test.web.servlet.MockMvc;
  * LZKC-009 (sites 1 + 2) — firm-side "Invoice" terminology leaks on legal-za tenants:
  *
  * <ul>
- *   <li>Site 1: the invoice HTML preview header/title must read "Fee Note: DRAFT" for legal-za.
+ *   <li>Site 1: the fee-note HTML preview must read "FEE NOTE" for legal-za (since Phase 88 626E
+ *       the preview is the {@code fee-note-za} Tiptap template — the retired Thymeleaf preview and
+ *       its generic "Invoice: DRAFT" control are gone).
  *   <li>Site 2: the send-validation tax-number copy must say "fee note" (Phase 88 G-C6: INDIVIDUAL
  *       → warning copy, COMPANY/TRUST → blocking copy).
  * </ul>
@@ -47,7 +49,7 @@ class InvoiceTerminologyLegalZaTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private InvoiceRepository invoiceRepository;
-  @Autowired private InvoiceRenderingService invoiceRenderingService;
+  @Autowired private InvoiceService invoiceService;
   @Autowired private InvoiceValidationService invoiceValidationService;
 
   private String legalSchema;
@@ -116,24 +118,11 @@ class InvoiceTerminologyLegalZaTest {
     String html =
         ScopedValue.where(RequestScopes.TENANT_ID, legalSchema)
             .where(RequestScopes.ORG_ID, LEGAL_ORG_ID)
-            .call(() -> invoiceRenderingService.renderPreview(invoiceId));
+            .call(() -> invoiceService.renderPreview(invoiceId, legalMemberId));
 
-    assertThat(html).contains("Fee Note: DRAFT");
-    assertThat(html).doesNotContain("Invoice: DRAFT");
-  }
-
-  @Test
-  void renderPreview_genericTenant_headerStillSaysInvoice() {
-    UUID invoiceId =
-        persistDraftInvoice(genericSchema, genericCustomerId, genericMemberId, "Generic Firm");
-
-    String html =
-        ScopedValue.where(RequestScopes.TENANT_ID, genericSchema)
-            .where(RequestScopes.ORG_ID, GENERIC_ORG_ID)
-            .call(() -> invoiceRenderingService.renderPreview(invoiceId));
-
-    assertThat(html).contains("Invoice: DRAFT");
-    assertThat(html).doesNotContain("Fee Note: DRAFT");
+    assertThat(html).contains("<h2>FEE NOTE</h2>");
+    assertThat(html).contains("DRAFT &mdash; not yet issued");
+    assertThat(html).doesNotContain("INVOICE");
   }
 
   // --- Site 2: send-validation copy ---

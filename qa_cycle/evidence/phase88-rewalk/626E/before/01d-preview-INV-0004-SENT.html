@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html lang="en">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title th:text="(${invoiceTerm} != null ? ${invoiceTerm} : 'Invoice') + ' ' + (${invoice.invoiceNumber} != null ? ${invoice.invoiceNumber} : 'DRAFT')">Invoice Preview</title>
+    <title>Fee Note INV-0004</title>
     <style>
         /* Reset and Base */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -228,25 +228,18 @@
 <!-- Header -->
 <div class="header">
     <div class="header-left">
-        <h1 th:text="${invoice.orgName}">Organization Name</h1>
-        <div th:if="${taxRegistrationNumber != null}" class="tax-registration">
-            <span th:text="${taxRegistrationLabel}">Tax Number</span>:
-            <span th:text="${taxRegistrationNumber}">4012345678</span>
+        <h1>E2E Test Organization</h1>
+        <div class="tax-registration">
+            <span>Tax Number</span>:
+            <span>4123456789</span>
         </div>
     </div>
     <div class="header-right">
-        <div class="invoice-number"
-             th:text="(${invoiceTerm} != null ? ${invoiceTerm} : 'Invoice') + ': ' + (${invoice.invoiceNumber} != null ? ${invoice.invoiceNumber} : 'DRAFT')">
-            Invoice: INV-0001
-        </div>
-        <div class="meta-line" th:if="${invoice.issueDate != null}"
-             th:text="'Date: ' + ${invoice.issueDate}">Date: 2025-01-31</div>
-        <div class="meta-line" th:if="${invoice.dueDate != null}"
-             th:text="'Due: ' + ${invoice.dueDate}">Due: 2025-02-28</div>
-        <div th:if="${invoice.status != null}">
-            <span class="status-badge"
-                  th:classappend="'status-' + ${invoice.status.name()}"
-                  th:text="${invoice.status.name()}">DRAFT</span>
+        <div class="invoice-number">Fee Note: INV-0004</div>
+        <div class="meta-line">Date: 2026-10-27</div>
+        <div class="meta-line">Due: 2026-11-27</div>
+        <div>
+            <span class="status-badge status-SENT">SENT</span>
         </div>
     </div>
 </div>
@@ -254,45 +247,49 @@
 <!-- Bill To -->
 <div class="bill-to">
     <h2>Bill To</h2>
-    <div class="customer-name" th:text="${invoice.customerName}">Customer Name</div>
-    <div class="customer-detail" th:if="${invoice.customerEmail != null}"
-         th:text="${invoice.customerEmail}">email@example.com</div>
-    <div class="customer-detail" th:if="${invoice.customerAddress != null}"
-         th:text="${invoice.customerAddress}">123 Main St</div>
+    <div class="customer-name">Sipho Ndlovu mvr15e76ef9a</div>
+    <div class="customer-detail">sipho.ndlovu.mvr15e76ef9a@example.com</div>
+    
 </div>
 
 <!-- Line Items -->
 <div class="line-items">
-    <div th:each="entry : ${groupedLines}" class="project-group">
-        <div class="project-heading" th:text="${entry.key}">Project Name</div>
+    <div class="project-group">
+        <div class="project-heading">626E closure arithmetic repro</div>
         <table>
             <thead>
                 <tr>
-                    <th th:style="${hasPerLineTax} ? 'width: 40%;' : 'width: 50%;'">Description</th>
+                    <th style="width: 40%;">Description</th>
                     <th class="num" style="width: 15%;">Qty</th>
                     <th class="num" style="width: 15%;">Rate</th>
-                    <th class="num" th:style="${hasPerLineTax} ? 'width: 15%;' : 'width: 20%;'">Amount</th>
-                    <th th:if="${hasPerLineTax}" class="num tax-col" th:text="${taxLabel}">Tax</th>
+                    <th class="num" style="width: 15%;">Amount</th>
+                    <th class="num tax-col">VAT</th>
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="line : ${entry.value}">
-                    <td th:text="${line.description}">Backend API development</td>
-                    <td class="num" th:text="${#numbers.formatDecimal(line.quantity, 1, 4)}">2.0000</td>
-                    <td class="num" th:text="${#numbers.formatDecimal(line.unitPrice, 1, 2)}">1800.00</td>
-                    <td class="num" th:text="${#numbers.formatDecimal(line.amount, 1, 2)}">3600.00</td>
-                    <td th:if="${hasPerLineTax}" class="num tax-col">
-                        <span th:if="${line.taxExempt}">Exempt</span>
-                        <span th:unless="${line.taxExempt}"
-                              th:text="${line.taxRateName != null} ? ${line.taxRateName + ' ' + line.taxRatePercent + '%'} : ''">VAT 15%</span>
+                <tr>
+                    <td>2026-10-28 · Alice Owner · 626E settlement negotiations</td>
+                    <td class="num">1.0000</td>
+                    <td class="num">2500.00</td>
+                    <td class="num">2500.00</td>
+                    <td class="num tax-col">
+                        
+                        <span>VAT — Standard 15.00%</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Deeds office fees: 626E deeds office search (Deeds Office Pretoria, 2026-10-27)</td>
+                    <td class="num">1.0000</td>
+                    <td class="num">1250.00</td>
+                    <td class="num">1250.00</td>
+                    <td class="num tax-col">
+                        
+                        <span>Zero-rated 0.00%</span>
                     </td>
                 </tr>
             </tbody>
         </table>
-        <div class="project-subtotal"
-             th:text="'Subtotal: ' + ${#numbers.formatDecimal(groupSubtotals.get(entry.key), 1, 2)}">
-            Subtotal: 0.00
-        </div>
+        <div class="project-subtotal">Subtotal: 3750.00</div>
     </div>
 </div>
 
@@ -301,41 +298,32 @@
     <table>
         <tr>
             <td class="label">Subtotal</td>
-            <td class="value" th:text="${#numbers.formatDecimal(invoice.subtotal, 1, 2)}">0.00</td>
+            <td class="value">3750.00</td>
         </tr>
         <!-- Legacy: single tax row (no per-line tax) -->
-        <tr th:if="${!hasPerLineTax}">
-            <td class="label">Tax</td>
-            <td class="value" th:text="${#numbers.formatDecimal(invoice.taxAmount, 1, 2)}">0.00</td>
-        </tr>
+        
         <!-- Per-line tax: breakdown by rate -->
-        <tr th:each="breakdownEntry : ${taxBreakdown}">
-            <td class="label" th:text="${breakdownEntry.rateName + ' (' + breakdownEntry.ratePercent + '%)'}">VAT (15%)</td>
-            <td class="value" th:text="${#numbers.formatDecimal(breakdownEntry.taxAmount, 1, 2)}">2250.00</td>
-        </tr>
-        <!-- Tax-inclusive note -->
-        <tr th:if="${taxInclusive && hasPerLineTax}">
-            <td colspan="2" class="tax-note">
-                All amounts include <span th:text="${taxLabel}">Tax</span>
-            </td>
+        <tr>
+            <td class="label">VAT — Standard (15.00%)</td>
+            <td class="value">375.00</td>
         </tr>
         <tr>
-            <td class="label" th:text="'Total (' + ${invoice.currency} + ')'">Total (ZAR)</td>
-            <td class="value" th:text="${#numbers.formatDecimal(invoice.total, 1, 2)}">0.00</td>
+            <td class="label">Zero-rated (0.00%)</td>
+            <td class="value">0.00</td>
+        </tr>
+        <!-- Tax-inclusive note -->
+        
+        <tr>
+            <td class="label">Total (ZAR)</td>
+            <td class="value">4125.00</td>
         </tr>
     </table>
 </div>
 
 <!-- Footer -->
 <div class="footer">
-    <div class="footer-row" th:if="${invoice.paymentTerms != null}">
-        <span class="footer-label">Payment Terms:</span>
-        <span th:text="${invoice.paymentTerms}">Net 30</span>
-    </div>
-    <div class="footer-row" th:if="${invoice.notes != null}">
-        <span class="footer-label">Notes:</span>
-        <span th:text="${invoice.notes}">January 2025 services</span>
-    </div>
+    
+    
 </div>
 
 </body>

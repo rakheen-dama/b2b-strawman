@@ -1,0 +1,28 @@
+-- select i.invoice_number, i.status, i.subtotal, i.tax_amount, i.total, i.amount_paid from tenant_7d218705360b.invoices i where i.id in (select invoice_id from tenant_7d218705360b.invoice_lines where project_id='b9174723-4c60-402d-9055-301221368b32') order by 1;
+ invoice_number | status | subtotal | tax_amount |  total  | amount_paid 
+----------------+--------+----------+------------+---------+-------------
+ INV-0003       | PAID   |  7950.00 |    1192.50 | 9142.50 |     9142.50
+ INV-0004       | SENT   |  3750.00 |     375.00 | 4125.00 |        0.00
+(2 rows)
+
+-- select l.line_type, sum(l.amount) amount_excl_vat, sum(l.tax_amount) vat, sum(l.amount+l.tax_amount) incl_vat from tenant_7d218705360b.invoice_lines l join tenant_7d218705360b.invoices i on i.id=l.invoice_id where l.project_id='b9174723-4c60-402d-9055-301221368b32' and i.status in ('SENT','PAID','PARTIALLY_PAID') group by rollup(l.line_type) order by 1;
+  line_type   | amount_excl_vat |   vat   | incl_vat 
+--------------+-----------------+---------+----------
+ DISBURSEMENT |         1700.00 |   67.50 |  1767.50
+ TIME         |        10000.00 | 1500.00 | 11500.00
+              |        11700.00 | 1567.50 | 13267.50
+(3 rows)
+
+-- select category, amount, vat_amount, approval_status, billing_status from tenant_7d218705360b.legal_disbursements where project_id='b9174723-4c60-402d-9055-301221368b32';
+     category      | amount  | vat_amount | approval_status | billing_status 
+-------------------+---------+------------+-----------------+----------------
+ SHERIFF_FEES      |  450.00 |      67.50 | APPROVED        | BILLED
+ DEEDS_OFFICE_FEES | 1250.00 |       0.00 | APPROVED        | BILLED
+(2 rows)
+
+-- select sum(case when transaction_type in ('DEPOSIT','TRANSFER_IN') then amount else 0 end) - sum(case when transaction_type not in ('DEPOSIT','TRANSFER_IN') then amount else 0 end) approx_balance, string_agg(transaction_type||':'||amount||':'||status, ', ') from tenant_7d218705360b.trust_transactions where project_id='b9174723-4c60-402d-9055-301221368b32';
+ approx_balance |        string_agg         
+----------------+---------------------------
+       38000.00 | DEPOSIT:38000.00:RECORDED
+(1 row)
+

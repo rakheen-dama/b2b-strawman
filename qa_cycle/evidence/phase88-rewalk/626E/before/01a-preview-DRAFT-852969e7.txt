@@ -1,0 +1,33 @@
+Fee Note DRAFT
+E2E Test Organization
+Tax Number
+:
+4123456789
+Fee Note: DRAFT
+DRAFT
+Bill To
+Sipho Ndlovu mvr15e76ef9a
+sipho.ndlovu.mvr15e76ef9a@example.com
+626E draft fee note repro
+Description
+Qty
+Rate
+Amount
+VAT
+2026-10-28 · Alice Owner · 626E draft fee note work
+1.5000
+2500.00
+3750.00
+VAT — Standard 15.00%
+Sheriff fees: 626E service of notice (Sheriff Randburg, 2026-10-27)
+1.0000
+300.00
+300.00
+VAT — Standard 15.00%
+Subtotal: 4050.00
+Subtotal
+4050.00
+VAT — Standard (15.00%)
+607.50
+Total (ZAR)
+4657.50

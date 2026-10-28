@@ -635,6 +635,11 @@ class StatementOfAccountContextBuilderTest {
             "disbursements.entries rows MUST be Map (GAP-L-71) — this is the exact path that blew"
                 + " up in QA Day 60 cycle 1 with ClassCastException on DisbursementStatementDto")
         .isInstanceOf(Map.class);
+    @SuppressWarnings("unchecked")
+    var disbRow = (Map<String, Object>) disbEntries.get(0);
+    assertThat(disbRow)
+        .as("626E G-C12: each disbursement row carries the client-facing category label")
+        .containsEntry("categoryLabel", "Sheriff fees");
 
     @SuppressWarnings("unchecked")
     var trustMap = (Map<String, Object>) context.get("trust");
@@ -657,7 +662,7 @@ class StatementOfAccountContextBuilderTest {
    * render the actual installed SoA template through {@link TiptapRenderer}. Before GAP-L-71's fix
    * this would throw {@code ClassCastException} at {@code TiptapRenderer:309} on the first
    * iteration of the disbursements loop. The assertion that the rendered HTML contains the
-   * disbursement description ("Sheriff Fees") + the fee narrative ("Drafting motion") + trust
+   * disbursement description ("Service of summons") + the fee narrative ("Drafting motion") + trust
    * transaction reference ("DEP-001") catches any future template that adds another loop-table on a
    * typed-DTO list without re-applying the adapter.
    */
@@ -677,7 +682,7 @@ class StatementOfAccountContextBuilderTest {
             UUID.randomUUID(),
             LocalDate.of(2026, 4, 6),
             DisbursementCategory.SHERIFF_FEES,
-            "Sheriff Fees",
+            "Service of summons",
             new BigDecimal("1250.00"),
             new BigDecimal("0.00"),
             "Sheriff",
@@ -741,7 +746,10 @@ class StatementOfAccountContextBuilderTest {
         .as("Render must include the fee narrative from the fees.entries loop")
         .contains("Drafting motion")
         .as("Render must include the disbursement description from the disbursements.entries loop")
-        .contains("Sheriff Fees")
+        .contains("Service of summons")
+        .as("626E G-C12: the Category column prints the sentence-case label, not the enum key")
+        .contains("<td>Sheriff fees</td>")
+        .doesNotContain("SHERIFF_FEES")
         .as("Render must include the trust deposit reference from the trust.deposits loop")
         .contains("DEP-001")
         .as("Render must include the trust payment reference from the trust.payments loop")

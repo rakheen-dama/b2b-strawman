@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,19 +41,24 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * Unit test for the ADR-356 {@code document_template} reconcile resolver of {@link
- * TemplatePackSeeder} (Phase 88 626D): the legal-za v8 {@code reconcile} block takes a pristine v7
- * body to the shipped v8 body under the one rule; firm-edited bodies and clones are never written.
- * No Spring context: repositories are mocked and {@code reconcileInstalledPack} is called directly
- * with the real classpath {@code pack.json}. The real-Hibernate path (installer gate, refresh pass,
- * hash re-pin) is covered by {@code packs.LegalZaTemplateReconcileIntegrationTest}.
+ * TemplatePackSeeder} (Phase 88 626D, v9 in 626E): the legal-za {@code reconcile} block takes a
+ * pristine v7 body (and, for the three templates re-edited in v9, a pristine v8 body) to the
+ * shipped body under the one rule; firm-edited bodies and clones are never written. No Spring
+ * context: repositories are mocked and {@code reconcileInstalledPack} is called directly with the
+ * real classpath {@code pack.json}. The real-Hibernate path (installer gate, refresh pass, hash
+ * re-pin) is covered by {@code packs.LegalZaTemplateReconcileIntegrationTest}.
  */
 class TemplatePackSeederReconcileTest {
 
   static final String PACK_ID = "legal-za";
   static final String PACK_JSON = "template-packs/legal-za/pack.json";
   static final String V7_FIXTURES = "fixtures/template-packs/legal-za-v7/";
+  static final String V8_FIXTURES = "fixtures/template-packs/legal-za-v8/";
 
-  /** Every template body rewritten in v8 (626.8 + ruling R-2), one reconcile entry each. */
+  /**
+   * Every template body rewritten in v8 (626.8 + ruling R-2), one v7 → shipped reconcile entry
+   * each.
+   */
   static final List<String> RECONCILED_KEYS =
       List.of(
           "engagement-letter-litigation",
@@ -63,6 +69,13 @@ class TemplatePackSeederReconcileTest {
           "matter-closure-letter",
           "deed-of-transfer",
           "bond-cancellation-instruction");
+
+  /**
+   * Template bodies re-edited in v9 (626E: fee-note DRAFT conditionals, SoA {@code categoryLabel},
+   * closure-letter VAT line), one extra v8 → shipped entry each, appended after the v7 entries.
+   */
+  static final List<String> V9_EDITED_KEYS =
+      List.of("fee-note-za", "statement-of-account", "matter-closure-letter");
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -81,7 +94,7 @@ class TemplatePackSeederReconcileTest {
         new PackInstall(
             PACK_ID,
             PackType.DOCUMENT_TEMPLATE,
-            "8",
+            "9",
             "SA Legal Templates",
             Instant.now(),
             null,
@@ -107,28 +120,31 @@ class TemplatePackSeederReconcileTest {
   // --- shipped-pack guard (rulings R-11 / R-12) ---
 
   /**
-   * Every entry of the shipped legal-za {@code reconcile} block is a {@code document_template}
-   * {@code content} entry whose {@code from} is the v7 body (test fixture copied from git before
-   * the edit) and whose {@code to} is the body shipped on the classpath — a later body tweak
-   * without re-computing {@code to} fails here, not at a tenant's boot.
+   * The shipped legal-za {@code reconcile} block: one entry per v8-rewritten template whose {@code
+   * from} is the v7 body, then one entry per v9-re-edited template whose {@code from} is the v8
+   * body (test fixtures copied from git before each edit); every {@code to} is the body shipped on
+   * the classpath — a later body tweak without re-computing {@code to} fails here, not at a
+   * tenant's boot.
    */
   @Test
-  void shippedPack_reconcileBlock_takesEachV7BodyToTheShippedBody() {
-    assertThat(shippedPack.version()).isEqualTo(8);
+  void shippedPack_reconcileBlock_takesEachPriorBodyToTheShippedBody() {
+    assertThat(shippedPack.version()).isEqualTo(9);
     var entries = PackReconcileEntry.parse(PACK_ID, shippedPack.reconcile());
-    assertThat(entries)
-        .extracting(PackReconcileEntry::key)
-        .containsExactlyElementsOf(RECONCILED_KEYS);
+    var expectedKeys = new ArrayList<>(RECONCILED_KEYS);
+    expectedKeys.addAll(V9_EDITED_KEYS);
+    assertThat(entries).extracting(PackReconcileEntry::key).containsExactlyElementsOf(expectedKeys);
 
-    for (PackReconcileEntry entry : entries) {
+    for (int i = 0; i < entries.size(); i++) {
+      PackReconcileEntry entry = entries.get(i);
+      boolean fromV8 = i >= RECONCILED_KEYS.size();
       assertThat(entry.entity()).as(entry.key()).isEqualTo("document_template");
       assertThat(entry.field()).as(entry.key()).isEqualTo("content");
       assertThat(shippedPack.templates())
           .as("reconcile key %s is a templateKey of the pack", entry.key())
           .anyMatch(t -> entry.key().equals(t.templateKey()));
       assertThat(entry.from())
-          .as("%s from = sha256 of the v7 body", entry.key())
-          .isEqualTo(hashRef(v7Body(entry.key())));
+          .as("%s from = sha256 of the %s body", entry.key(), fromV8 ? "v8" : "v7")
+          .isEqualTo(hashRef(fromV8 ? v8Body(entry.key()) : v7Body(entry.key())));
       assertThat(entry.to())
           .as("%s to = sha256 of the shipped body", entry.key())
           .isEqualTo(hashRef(shippedBody(entry.key())));
@@ -151,7 +167,7 @@ class TemplatePackSeederReconcileTest {
 
     for (DocumentTemplate row : rows) {
       assertThat(ContentHashUtil.hashOf(row.getContent()))
-          .as("%s carries the shipped v8 body", row.getPackTemplateKey())
+          .as("%s carries the shipped body", row.getPackTemplateKey())
           .isEqualTo(ContentHashUtil.hashOf(shippedBody(row.getPackTemplateKey())));
     }
     assertThat(rows.getFirst().getCss()).isEqualTo("p { margin: 0; }");
@@ -179,6 +195,46 @@ class TemplatePackSeederReconcileTest {
                     && m.contains("'fee-note-za'"));
   }
 
+  @Test
+  void pristineV8Rows_ofTheV9EditedTemplates_reachTheV9Body() {
+    var rows = new ArrayList<DocumentTemplate>();
+    for (String key : V9_EDITED_KEYS) {
+      rows.add(platformRow(key, v8Body(key)));
+    }
+    stubInstallRows(rows);
+
+    var logs = captureLogs(() -> seeder.reconcileInstalledPack(shippedPack, packResource, "t"));
+
+    for (DocumentTemplate row : rows) {
+      assertThat(ContentHashUtil.hashOf(row.getContent()))
+          .as("%s carries the shipped v9 body", row.getPackTemplateKey())
+          .isEqualTo(ContentHashUtil.hashOf(shippedBody(row.getPackTemplateKey())));
+    }
+    assertThat(logs)
+        .filteredOn(m -> m.startsWith("Reconcile applied"))
+        .hasSize(V9_EDITED_KEYS.size());
+    assertThat(logs).noneMatch(m -> m.startsWith("Reconcile entry ignored"));
+  }
+
+  @Test
+  void firmEditedV8Row_isLeftAlone() {
+    Map<String, Object> edited =
+        withExtraParagraph(v8Body("statement-of-account"), "Our own SoA wording");
+    var soa = platformRow("statement-of-account", edited);
+    stubInstallRows(List.of(soa));
+
+    var logs = captureLogs(() -> seeder.reconcileInstalledPack(shippedPack, packResource, "t"));
+
+    assertThat(soa.getContent()).isEqualTo(edited);
+    assertThat(logs)
+        .anyMatch(
+            m ->
+                m.startsWith("Reconcile skipped (edited)")
+                    && m.contains("pack=legal-za")
+                    && m.contains("'statement-of-account'"));
+    assertThat(logs).noneMatch(m -> m.startsWith("Reconcile applied"));
+  }
+
   /**
    * The resolver asks only for this install's pack-seeded rows ({@code findPackSeededByInstall}:
    * PLATFORM, not a clone, tagged with the install — the predicate is JPQL, proven against real
@@ -191,7 +247,8 @@ class TemplatePackSeederReconcileTest {
 
     var logs = captureLogs(() -> seeder.reconcileInstalledPack(shippedPack, packResource, "t"));
 
-    verify(templateRepository).findPackSeededByInstall(installId, "fee-note-za");
+    // fee-note-za has two entries since v9 (v7 → shipped, v8 → shipped): resolved once per entry.
+    verify(templateRepository, times(2)).findPackSeededByInstall(installId, "fee-note-za");
     assertThat(logs)
         .anyMatch(
             m ->
@@ -327,6 +384,10 @@ class TemplatePackSeederReconcileTest {
 
   static Map<String, Object> v7Body(String key) {
     return readBody(V7_FIXTURES + key + ".json");
+  }
+
+  static Map<String, Object> v8Body(String key) {
+    return readBody(V8_FIXTURES + key + ".json");
   }
 
   static Map<String, Object> shippedBody(String key) {

@@ -1,6 +1,6 @@
 {
   "packId": "legal-za",
-  "version": 8,
+  "version": 9,
   "reconcile": [
     {
       "entity": "document_template",
@@ -28,21 +28,21 @@
       "key": "fee-note-za",
       "field": "content",
       "from": "sha256:8fe45ddaf17355e7f7e4d44cd222aa2286703bc0af169e08772d5604afa658f2",
-      "to": "sha256:09168d1b13d1cc91d6fb98518ab9d1603affa99e11ec9b87597342d98c4fe8e9"
+      "to": "sha256:841ecc2205b2d32294e663b19e5b8b86ea22febf84836e2f747ed796bc1d207c"
     },
     {
       "entity": "document_template",
       "key": "statement-of-account",
       "field": "content",
       "from": "sha256:2666b54742b49d86e136d6883b0a19e2bd9ac2df1eacc2de34e66551770a2427",
-      "to": "sha256:a1da22c9737608b44109abcc5e7ef5aaa8a80d9b0184d0079416573b76dcc3d1"
+      "to": "sha256:4781c668eb863f979e1fad22ea328a29e7783683b5172ec551a75eccb3d9baea"
     },
     {
       "entity": "document_template",
       "key": "matter-closure-letter",
       "field": "content",
       "from": "sha256:4e0e5f393ca9d5d4f787a99070424122a6f8dcec058acb112bf212b82351abf1",
-      "to": "sha256:a1cdbc3f8847ca0885157daaa68015b26ebe594caf0f5a1ecc075e9b7d039fc2"
+      "to": "sha256:37966992c10dc51041f1d33628e9bca993ef5919476a70e308fd1bfc48702cf1"
     },
     {
       "entity": "document_template",
@@ -57,6 +57,27 @@
       "field": "content",
       "from": "sha256:baaa3d306e1893adcf69f6b35d366bff64e899ac76e67cff233df904bdb7249b",
       "to": "sha256:acb5037cd4adb96fbc9ff86c5e878a916f4772b9f93bea99eadc4bb87cb2095f"
+    },
+    {
+      "entity": "document_template",
+      "key": "fee-note-za",
+      "field": "content",
+      "from": "sha256:09168d1b13d1cc91d6fb98518ab9d1603affa99e11ec9b87597342d98c4fe8e9",
+      "to": "sha256:841ecc2205b2d32294e663b19e5b8b86ea22febf84836e2f747ed796bc1d207c"
+    },
+    {
+      "entity": "document_template",
+      "key": "statement-of-account",
+      "field": "content",
+      "from": "sha256:a1da22c9737608b44109abcc5e7ef5aaa8a80d9b0184d0079416573b76dcc3d1",
+      "to": "sha256:4781c668eb863f979e1fad22ea328a29e7783683b5172ec551a75eccb3d9baea"
+    },
+    {
+      "entity": "document_template",
+      "key": "matter-closure-letter",
+      "field": "content",
+      "from": "sha256:a1cdbc3f8847ca0885157daaa68015b26ebe594caf0f5a1ecc075e9b7d039fc2",
+      "to": "sha256:37966992c10dc51041f1d33628e9bca993ef5919476a70e308fd1bfc48702cf1"
     }
   ],
   "verticalProfile": "legal-za",

@@ -1,9 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
@@ -17,6 +23,8 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
+import io.b2mash.b2b.b2bstrawman.template.PdfRenderingService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
@@ -24,6 +32,8 @@ import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -36,6 +46,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
 
+/**
+ * {@code GET /api/invoices/{id}/preview} — Phase 88 626E (A6, one renderer): the preview is the
+ * fee-note Tiptap template the client's emailed PDF uses ({@code
+ * GeneratedDocumentService.resolveDefaultInvoiceTemplate}), rendered through the same pipeline. The
+ * Thymeleaf {@code invoice-preview.html} path is gone.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
@@ -46,6 +62,23 @@ class InvoicePreviewIntegrationTest {
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_inv_preview_test";
   private static final String ORG_ID_B = "org_inv_preview_test_b";
+  private static final String ORG_ID_NO_TPL = "org_inv_preview_no_tpl";
+
+  /** The firm's banking reference note — speaks of "your fee note number", so issued-only. */
+  private static final String REFERENCE_NOTE =
+      "Please use your fee note number as the payment reference.";
+
+  private static final String BANKING_LETTERHEAD =
+      """
+      {
+        "bankName": "Preview Bank",
+        "bankBranchCode": "250655",
+        "bankAccountNumber": "62012345678",
+        "bankAccountType": "Cheque",
+        "paymentReferenceNote": "%s"
+      }
+      """
+          .formatted(REFERENCE_NOTE);
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -58,16 +91,22 @@ class InvoicePreviewIntegrationTest {
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private InvoiceLineRepository invoiceLineRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private DocumentTemplateRepository documentTemplateRepository;
+  @Autowired private PdfRenderingService pdfRenderingService;
 
   private String tenantSchema;
   private UUID memberIdOwner;
   private UUID customerId;
   private UUID projectId;
   private UUID invoiceId;
+  private UUID noTemplateInvoiceId;
+  private UUID issuedInvoiceId;
+  private String issuedInvoiceNumber;
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Preview Test Org", null);
+    // 626E (OD-12): legal-za — the product is legal-only; the fee note is the legal-za pack's.
+    provisioningService.provisionTenant(ORG_ID, "Preview Test Org", "legal-za");
 
     memberIdOwner =
         UUID.fromString(
@@ -178,6 +217,64 @@ class InvoicePreviewIntegrationTest {
                       BigDecimal subtotal = line1.getAmount().add(line2.getAmount());
                       invoice.recalculateTotals(subtotal, false, BigDecimal.ZERO, false);
                       invoiceRepository.save(invoice);
+
+                      // Second fee note — issued below through the real approve/send endpoints.
+                      var issued =
+                          new Invoice(
+                              customerId,
+                              "ZAR",
+                              "Preview Corp",
+                              "preview@test.com",
+                              "123 Test Street, Cape Town",
+                              "Preview Test Org",
+                              memberIdOwner);
+                      issued = invoiceRepository.save(issued);
+                      issuedInvoiceId = issued.getId();
+                      var issuedLine =
+                          new InvoiceLine(
+                              issued.getId(),
+                              projectId,
+                              null,
+                              "Consultation on lease",
+                              new BigDecimal("1.0000"),
+                              new BigDecimal("2000.00"),
+                              0);
+                      invoiceLineRepository.save(issuedLine);
+                      issued.recalculateTotals(
+                          issuedLine.getAmount(), false, BigDecimal.ZERO, false);
+                      invoiceRepository.save(issued);
+                    }));
+
+    // Firm banking details incl. the reference note (626E F-1: the note is gated on the number).
+    mockMvc
+        .perform(
+            patch("/api/settings/letterhead")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(BANKING_LETTERHEAD))
+        .andExpect(status().isOk());
+
+    // Issue the second fee note: approve stamps number + issue date, send moves it to SENT.
+    mockMvc
+        .perform(
+            post("/api/invoices/" + issuedInvoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner")))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            post("/api/invoices/" + issuedInvoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"overrideWarnings\": true}"))
+        .andExpect(status().isOk());
+    issuedInvoiceNumber =
+        inTenant(
+            () ->
+                transactionTemplate.execute(
+                    tx -> {
+                      var issued = invoiceRepository.findById(issuedInvoiceId).orElseThrow();
+                      assertThat(issued.getStatus()).isEqualTo(InvoiceStatus.SENT);
+                      return issued.getInvoiceNumber();
                     }));
 
     // --- Tenant B (for cross-tenant isolation test) ---
@@ -189,6 +286,69 @@ class InvoicePreviewIntegrationTest {
         "inv_preview_owner_b@test.com",
         "Preview Owner B",
         "owner");
+
+    // --- Tenant with no fee-note template (pack row missing) → preview 409 ---
+    provisioningService.provisionTenant(ORG_ID_NO_TPL, "Preview No Template Org", "legal-za");
+    UUID noTplOwner =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID_NO_TPL,
+                "user_inv_preview_no_tpl_owner",
+                "inv_preview_no_tpl_owner@test.com",
+                "No Template Owner",
+                "owner"));
+    String noTplSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_NO_TPL).orElseThrow().getSchemaName();
+    ScopedValue.where(RequestScopes.TENANT_ID, noTplSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID_NO_TPL)
+        .where(RequestScopes.MEMBER_ID, noTplOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      documentTemplateRepository
+                          .findPackSeeded("legal-za", "fee-note-za")
+                          .forEach(documentTemplateRepository::delete);
+                      var customer =
+                          customerRepository.save(
+                              createActiveCustomer("No Tpl Corp", "no_tpl@test.com", noTplOwner));
+                      var invoice =
+                          invoiceRepository.save(
+                              new Invoice(
+                                  customer.getId(),
+                                  "ZAR",
+                                  "No Tpl Corp",
+                                  "no_tpl@test.com",
+                                  null,
+                                  "Preview No Template Org",
+                                  noTplOwner));
+                      noTemplateInvoiceId = invoice.getId();
+                    }));
+  }
+
+  private String previewBody() throws Exception {
+    return mockMvc
+        .perform(
+            get("/api/invoices/" + invoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner")))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+  }
+
+  private <T> T inTenant(java.util.function.Supplier<T> action) {
+    Object[] holder = new Object[1];
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(() -> holder[0] = action.get());
+    @SuppressWarnings("unchecked")
+    T value = (T) holder[0];
+    return value;
   }
 
   @Test
@@ -198,47 +358,123 @@ class InvoicePreviewIntegrationTest {
             get("/api/invoices/" + invoiceId + "/preview")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner")))
         .andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
+        .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+        .andExpect(content().string(startsWith("<!DOCTYPE html>")))
+        .andExpect(content().string(containsString("<h2>FEE NOTE</h2>")));
   }
 
   @Test
-  void shouldIncludeInvoiceNumberAndCustomerName() throws Exception {
+  void shouldIncludeFirmClientAndDraftBanner() throws Exception {
     mockMvc
         .perform(
             get("/api/invoices/" + invoiceId + "/preview")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner")))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Preview Corp")))
-        .andExpect(content().string(containsString("Preview Test Org")))
-        .andExpect(content().string(containsString("preview@test.com")))
-        .andExpect(content().string(containsString("DRAFT")));
+        .andExpect(content().string(containsString("<h1>Preview Test Org</h1>")))
+        .andExpect(content().string(containsString("<strong>To:</strong> Preview Corp")))
+        // OD-11 a: a DRAFT shows the banner; the number / issue date / payment reference
+        // lines are gated on their values, so no empty "Fee Note Number:" label.
+        .andExpect(content().string(containsString("DRAFT &mdash; not yet issued")))
+        .andExpect(content().string(not(containsString("Fee Note Number:"))))
+        .andExpect(content().string(not(containsString("Issue Date:"))))
+        .andExpect(content().string(not(containsString("Payment reference:"))))
+        // 626E F-1: banking renders on a draft, but the firm's "use your fee note number"
+        // note is gated on the number with the Payment reference line.
+        .andExpect(content().string(containsString("Preview Bank")))
+        .andExpect(content().string(not(containsString("Please use your fee note number"))));
   }
 
   @Test
-  void shouldIncludeGroupedLineItems() throws Exception {
+  void issuedFeeNote_showsNumberIssueDateAndPaymentReference_withoutDraftBanner() throws Exception {
+    assertThat(issuedInvoiceNumber).isNotBlank();
+    mockMvc
+        .perform(
+            get("/api/invoices/" + issuedInvoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner")))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Fee Note Number:")))
+        .andExpect(content().string(containsString(issuedInvoiceNumber)))
+        .andExpect(content().string(containsString("Issue Date:")))
+        .andExpect(content().string(containsString("Payment reference:")))
+        .andExpect(content().string(containsString(REFERENCE_NOTE)))
+        .andExpect(content().string(not(containsString("DRAFT &mdash; not yet issued"))))
+        .andExpect(content().string(not(containsString("not yet issued"))));
+  }
+
+  @Test
+  void shouldIncludeLineItems() throws Exception {
     mockMvc
         .perform(
             get("/api/invoices/" + invoiceId + "/preview")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner")))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Website Redesign")))
-        .andExpect(content().string(containsString("Backend API dev")))
-        .andExpect(content().string(containsString("Other Items")))
+        .andExpect(
+            content().string(containsString("Backend API dev -- 2025-01-20 -- Preview Owner")))
         .andExpect(content().string(containsString("Project setup fee")));
   }
 
   @Test
-  void shouldIncludeTotals() throws Exception {
+  void shouldIncludeTotalsFormattedAsCurrency() throws Exception {
+    // 2.5 × 1 800 + 1 × 5 000 = 9 500; manual tax 675 → 10 175 (JDK en-ZA, NBSP grouping).
     mockMvc
         .perform(
             get("/api/invoices/" + invoiceId + "/preview")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner")))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Subtotal")))
-        .andExpect(content().string(containsString("Tax")))
-        .andExpect(content().string(containsString("Total (ZAR)")))
-        .andExpect(content().string(containsString("Net 30")))
-        .andExpect(content().string(containsString("January 2025 services")));
+        .andExpect(
+            content().string(containsString("Subtotal (excl. VAT):</strong> R9&nbsp;500,00")))
+        .andExpect(content().string(containsString("VAT:</strong> R675,00")))
+        .andExpect(content().string(containsString("Total Due:</strong> R10&nbsp;175,00")))
+        .andExpect(content().string(not(containsString("9500.00"))));
+  }
+
+  @Test
+  void previewHtml_equalsTheSentPdfHtml() throws Exception {
+    String body = previewBody();
+
+    String sentHtml =
+        inTenant(
+            () -> {
+              var feeNote =
+                  documentTemplateRepository.findPackSeeded("legal-za", "fee-note-za").getFirst();
+              return pdfRenderingService
+                  .generatePdf(feeNote.getId(), invoiceId, memberIdOwner)
+                  .htmlPreview();
+            });
+
+    assertThat(body).as("preview == the emailed fee-note PDF's HTML (A6)").isEqualTo(sentHtml);
+  }
+
+  @Test
+  void previewHtml_rendersToPdf_withFormattedAmounts() throws Exception {
+    String body = previewBody();
+
+    byte[] pdf = pdfRenderingService.htmlToPdf(body);
+    String text;
+    try (var doc = Loader.loadPDF(pdf)) {
+      text = new PDFTextStripper().getText(doc).replaceAll("[\\s\\u00a0]+", " ");
+    }
+
+    assertThat(text)
+        .contains("FEE NOTE")
+        .contains("DRAFT \u2014 not yet issued")
+        .contains("R10 175,00")
+        .contains("Project setup fee");
+  }
+
+  @Test
+  void shouldReturn409WhenNoFeeNoteTemplate() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/invoices/" + noTemplateInvoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID_NO_TPL, "user_inv_preview_no_tpl_owner")))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.status").value(409))
+        .andExpect(jsonPath("$.title").value("No fee note template"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(containsString("Settings \u203a Documents \u203a Templates")))
+        .andExpect(jsonPath("$.code").value("invoice.preview.no_template"));
   }
 
   @Test

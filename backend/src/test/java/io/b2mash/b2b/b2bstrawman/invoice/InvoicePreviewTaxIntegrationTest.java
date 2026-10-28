@@ -37,6 +37,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
 
+/**
+ * Tax rendering in the fee-note preview. Since Phase 88 626E the preview is the legal-za {@code
+ * fee-note-za} Tiptap template the client receives (A6, one renderer), so these tests pin what the
+ * client's PDF prints: VAT registration number, the VAT column on the lines table and the Amount
+ * Summary (Subtotal (excl. VAT) / VAT / Total Due). The retired Thymeleaf preview's per-rate
+ * breakdown, per-line rate names, tax-inclusive note and {@code tax-col} markup are not part of the
+ * fee note (follow-ups recorded on PR for 626E).
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
@@ -79,7 +87,7 @@ class InvoicePreviewTaxIntegrationTest {
   @BeforeAll
   void setUp() throws Exception {
     // --- Tenant 1: Exclusive tax ---
-    provisioningService.provisionTenant(ORG_ID, "Tax Preview Test Org", null);
+    provisioningService.provisionTenant(ORG_ID, "Tax Preview Test Org", "legal-za");
 
     memberIdOwner =
         UUID.fromString(
@@ -218,7 +226,7 @@ class InvoicePreviewTaxIntegrationTest {
                     }));
 
     // --- Tenant 2: Inclusive tax ---
-    provisioningService.provisionTenant(ORG_ID_INCLUSIVE, "Tax Inclusive Org", null);
+    provisioningService.provisionTenant(ORG_ID_INCLUSIVE, "Tax Inclusive Org", "legal-za");
 
     memberIdInclusive =
         UUID.fromString(
@@ -299,12 +307,16 @@ class InvoicePreviewTaxIntegrationTest {
 
   @Test
   void previewContainsTaxBreakdownSection() throws Exception {
+    // 10 × 1 800 = 18 000 at 15% → VAT 2 700; exempt 5 × 2 000 = 10 000 → total 30 700.
     mockMvc
         .perform(
             get("/api/invoices/" + taxInvoiceId + "/preview")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_tax_owner")))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("VAT (15.00%)")));
+        .andExpect(
+            content().string(containsString("Subtotal (excl. VAT):</strong> R28&nbsp;000,00")))
+        .andExpect(content().string(containsString("VAT:</strong> R2&nbsp;700,00")))
+        .andExpect(content().string(containsString("Total Due:</strong> R30&nbsp;700,00")));
   }
 
   @Test
@@ -314,8 +326,7 @@ class InvoicePreviewTaxIntegrationTest {
             get("/api/invoices/" + taxInvoiceId + "/preview")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_tax_owner")))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("VAT Number")))
-        .andExpect(content().string(containsString("4012345678")));
+        .andExpect(content().string(containsString("VAT Registration No:</strong> 4012345678")));
   }
 
   @Test
@@ -325,38 +336,44 @@ class InvoicePreviewTaxIntegrationTest {
             get("/api/invoices/" + taxInvoiceId + "/preview")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_tax_owner")))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("VAT 15.00%")));
+        .andExpect(content().string(containsString("<th>VAT</th>")))
+        .andExpect(content().string(containsString("<td class=\"num\">R2&nbsp;700,00</td>")));
   }
 
   @Test
-  void previewShowsInclusiveNoteWhenTaxInclusive() throws Exception {
-    mockMvc
-        .perform(
-            get("/api/invoices/" + inclusiveInvoiceId + "/preview")
-                .with(TestJwtFactory.ownerJwt(ORG_ID_INCLUSIVE, "user_inv_preview_tax_incl")))
-        .andExpect(status().isOk())
-        .andExpect(content().string(containsString("All amounts include")))
-        .andExpect(content().string(containsString("VAT")));
-  }
-
-  @Test
-  void previewLegacyInvoiceShowsFlatTax() throws Exception {
-    mockMvc
-        .perform(
-            get("/api/invoices/" + legacyInvoiceId + "/preview")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_tax_owner")))
-        .andExpect(status().isOk())
-        .andExpect(content().string(containsString(">Tax<")));
-  }
-
-  @Test
-  void previewExemptLinesShowExemptLabel() throws Exception {
+  void previewExemptLineShowsZeroVat() throws Exception {
     mockMvc
         .perform(
             get("/api/invoices/" + taxInvoiceId + "/preview")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_tax_owner")))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("Exempt")));
+        .andExpect(content().string(containsString("Consulting (exempt)")))
+        .andExpect(content().string(containsString("<td class=\"num\">R0,00</td>")));
+  }
+
+  @Test
+  void previewTaxInclusiveInvoiceRendersTheInclusiveTotal() throws Exception {
+    // Tax-inclusive per-line note: total == subtotal == 11 500 (VAT 1 500 inside).
+    mockMvc
+        .perform(
+            get("/api/invoices/" + inclusiveInvoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID_INCLUSIVE, "user_inv_preview_tax_incl")))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Inclusive service")))
+        .andExpect(content().string(containsString("VAT:</strong> R1&nbsp;500,00")))
+        .andExpect(content().string(containsString("Total Due:</strong> R11&nbsp;500,00")));
+  }
+
+  @Test
+  void previewLegacyInvoiceShowsFlatTax() throws Exception {
+    // Legacy note: manual invoice-level tax 500 on a 5 000 line → total 5 500.
+    mockMvc
+        .perform(
+            get("/api/invoices/" + legacyInvoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_tax_owner")))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("VAT:</strong> R500,00")))
+        .andExpect(content().string(containsString("Total Due:</strong> R5&nbsp;500,00")));
   }
 
   @Test
@@ -374,22 +391,6 @@ class InvoicePreviewTaxIntegrationTest {
     assertThat(pdf).isNotEmpty();
     // PDF magic bytes: %PDF
     assertThat(new String(pdf, 0, 4)).isEqualTo("%PDF");
-  }
-
-  @Test
-  void previewLegacyInvoiceNoTaxColumn() throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                get("/api/invoices/" + legacyInvoiceId + "/preview")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_tax_owner")))
-            .andExpect(status().isOk())
-            .andReturn();
-
-    String html = result.getResponse().getContentAsString();
-    // Extract the body section (after <body>) to ignore CSS class definitions in <style>
-    String body = html.substring(html.indexOf("<body>"));
-    assertThat(body).doesNotContain("tax-col");
   }
 
   // --- JWT Helpers ---

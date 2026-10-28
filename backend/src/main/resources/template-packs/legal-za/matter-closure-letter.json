@@ -74,6 +74,13 @@
     {
       "type": "paragraph",
       "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "VAT: " },
+        { "type": "variable", "attrs": { "key": "matter.total_vat" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Total disbursements: " },
         { "type": "variable", "attrs": { "key": "matter.total_disbursements" } }
       ]

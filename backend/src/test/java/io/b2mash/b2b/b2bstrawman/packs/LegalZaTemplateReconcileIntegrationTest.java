@@ -37,16 +37,17 @@ import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * Real-Hibernate test of the legal-za v8 pack content reconcile (Phase 88 626D, ADR-356): the
- * startup path {@code PackInstallService.internalInstall} → {@code TemplatePackInstaller.reconcile}
- * (version gate → refresh pass → pristine snapshot → {@code
+ * Real-Hibernate test of the legal-za pack content reconcile (Phase 88 626D v8, ADR-356; 626E v9):
+ * the startup path {@code PackInstallService.internalInstall} → {@code
+ * TemplatePackInstaller.reconcile} (version gate → refresh pass → pristine snapshot → {@code
  * TemplatePackSeeder.resolveReconcileTarget} → content-hash re-pin) takes every rewritten template
- * from its v7 body to the shipped v8 body, keeps firm edits, never touches a clone, and is a no-op
- * at equal version and on a second run.
+ * from its v7 body (or, for the three templates re-edited in v9, its v8 body) to the shipped v9
+ * body, keeps firm edits, never touches a clone, and is a no-op at equal version and on a second
+ * run.
  *
- * <p>A v7 tenant is simulated by writing each rewritten row's exact v7 body (test fixture copied
- * from git before the edit) with its install-time hash pinned (pristine), then rewinding {@code
- * pack_install.pack_version} by one. Each test re-runs the simulation, so tests are
+ * <p>A v7 (v8) tenant is simulated by writing each rewritten row's exact v7 (v8) body (test fixture
+ * copied from git before the edit) with its install-time hash pinned (pristine), then rewinding
+ * {@code pack_install.pack_version} by one. Each test re-runs the simulation, so tests are
  * order-independent; assertions target this tenant's rows by pack key only (no global counts).
  */
 @SpringBootTest
@@ -57,7 +58,7 @@ class LegalZaTemplateReconcileIntegrationTest {
 
   private static final String ORG_ID = "org_legal_za_template_reconcile_test";
   private static final String PACK_ID = "legal-za";
-  private static final String CURRENT_VERSION = "8";
+  private static final String CURRENT_VERSION = "9";
   private static final List<String> RECONCILED_KEYS =
       List.of(
           "engagement-letter-litigation",
@@ -68,6 +69,10 @@ class LegalZaTemplateReconcileIntegrationTest {
           "matter-closure-letter",
           "deed-of-transfer",
           "bond-cancellation-instruction");
+
+  /** Template bodies re-edited in v9 (626E), reconciled from their v8 body. */
+  private static final List<String> V9_EDITED_KEYS =
+      List.of("fee-note-za", "statement-of-account", "matter-closure-letter");
 
   /**
    * A legal-za template outside the reconcile block with no clause links: deleted to force a
@@ -93,9 +98,9 @@ class LegalZaTemplateReconcileIntegrationTest {
     schema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
 
-  /** (a) Pristine v7 rows reach the v8 bodies, hashes re-pinned, nothing reads as edited. */
+  /** (a) Pristine v7 rows reach the shipped bodies, hashes re-pinned, nothing reads as edited. */
   @Test
-  void pristineV7Templates_reachTheV8Bodies_andStayPristine() {
+  void pristineV7Templates_reachTheShippedBodies_andStayPristine() {
     simulateV7Tenant(rows -> {}, true);
 
     packInstallService.internalInstall(PACK_ID, schema);
@@ -105,7 +110,7 @@ class LegalZaTemplateReconcileIntegrationTest {
           for (String key : RECONCILED_KEYS) {
             var row = packRow(key);
             assertThat(ContentHashUtil.hashOf(row.getContent()))
-                .as("%s carries the shipped v8 body", key)
+                .as("%s carries the shipped body", key)
                 .isEqualTo(ContentHashUtil.hashOf(shippedBody(key)));
             assertThat(row.getContentHash())
                 .as("%s hash re-pinned to the new content", key)
@@ -158,11 +163,11 @@ class LegalZaTemplateReconcileIntegrationTest {
 
   /**
    * (c) The refresh pass skips a row whose css was edited (stored hash ≠ content + css), but its
-   * body is still byte-identical to v7 — the reconcile block applies the v8 body, keeps the css and
-   * does not re-pin (the row was not pristine).
+   * body is still byte-identical to v7 — the reconcile block applies the shipped body, keeps the
+   * css and does not re-pin (the row was not pristine).
    */
   @Test
-  void cssEditedRowWithV7Body_getsTheV8BodyFromTheReconcileBlock_cssKept_notRepinned() {
+  void cssEditedRowWithV7Body_getsTheShippedBodyFromTheReconcileBlock_cssKept_notRepinned() {
     String css = "p { color: #333333; }";
     var pinned = new ArrayList<String>();
     simulateV7Tenant(
@@ -189,6 +194,66 @@ class LegalZaTemplateReconcileIntegrationTest {
             m ->
                 m.startsWith("Reconcile applied")
                     && m.contains("'engagement-letter-conveyancing'"));
+  }
+
+  /** (a') 626E: pristine v8 rows of the three v9-re-edited templates reach the v9 bodies. */
+  @Test
+  void pristineV8Rows_reachTheV9Bodies() {
+    simulateV8Tenant(rows -> {}, true);
+
+    packInstallService.internalInstall(PACK_ID, schema);
+
+    inTenantTx(
+        () -> {
+          for (String key : V9_EDITED_KEYS) {
+            var row = packRow(key);
+            assertThat(ContentHashUtil.hashOf(row.getContent()))
+                .as("%s carries the shipped v9 body", key)
+                .isEqualTo(ContentHashUtil.hashOf(shippedBody(key)));
+            assertThat(row.getContentHash())
+                .as("%s hash re-pinned to the new content", key)
+                .isEqualTo(
+                    templatePackInstaller.computeContentHash(row.getContent(), row.getCss()));
+          }
+          assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+          return null;
+        });
+    String reason = uninstallReason();
+    assertThat(reason == null ? "" : reason)
+        .as("reconciled rows must not read as edited")
+        .doesNotContain("edited");
+  }
+
+  /**
+   * (c') 626E: a css-edited SoA row still on the v8 body is skipped by the refresh pass; the v8 →
+   * v9 reconcile entry applies the v9 body ({@code categoryLabel}), keeps the css and does not
+   * re-pin.
+   */
+  @Test
+  void cssEditedV8SoaRow_getsTheV9BodyFromTheReconcileBlock_cssKept() {
+    String css = "td { padding: 2pt; }";
+    var pinned = new ArrayList<String>();
+    simulateV8Tenant(
+        rows -> {
+          var row = rows.get("statement-of-account");
+          pinned.add(row.getContentHash());
+          row.updateContent(row.getName(), row.getDescription(), row.getContent(), css);
+        },
+        true);
+
+    var logs = captureSeederLogs(() -> packInstallService.internalInstall(PACK_ID, schema));
+
+    inTenantTx(
+        () -> {
+          var row = packRow("statement-of-account");
+          assertThat(ContentHashUtil.hashOf(row.getContent()))
+              .isEqualTo(ContentHashUtil.hashOf(shippedBody("statement-of-account")));
+          assertThat(row.getCss()).isEqualTo(css);
+          assertThat(row.getContentHash()).isEqualTo(pinned.getFirst());
+          return null;
+        });
+    assertThat(logs)
+        .anyMatch(m -> m.startsWith("Reconcile applied") && m.contains("'statement-of-account'"));
   }
 
   /**
@@ -439,14 +504,30 @@ class LegalZaTemplateReconcileIntegrationTest {
    * applies {@code firmEdits}, then (optionally) rewinds the recorded install version by one.
    */
   private void simulateV7Tenant(Consumer<Map<String, DocumentTemplate>> firmEdits, boolean rewind) {
+    simulateTenant(LegalZaTemplateReconcileIntegrationTest::v7Body, firmEdits, rewind);
+  }
+
+  /**
+   * A v8 tenant: the three v9-re-edited rows carry their v8 body, every other rewritten row its
+   * shipped body (unchanged since v8); hashes pinned, then (optionally) rewound by one version.
+   */
+  private void simulateV8Tenant(Consumer<Map<String, DocumentTemplate>> firmEdits, boolean rewind) {
+    simulateTenant(
+        key -> V9_EDITED_KEYS.contains(key) ? v8Body(key) : shippedBody(key), firmEdits, rewind);
+  }
+
+  private void simulateTenant(
+      java.util.function.Function<String, Map<String, Object>> bodyFor,
+      Consumer<Map<String, DocumentTemplate>> firmEdits,
+      boolean rewind) {
     inTenantTx(
         () -> {
           var rows = new LinkedHashMap<String, DocumentTemplate>();
           for (String key : RECONCILED_KEYS) {
             var row = packRow(key);
-            Map<String, Object> v7 = v7Body(key);
-            row.updateContent(row.getName(), row.getDescription(), v7, null);
-            row.setContentHash(templatePackInstaller.computeContentHash(v7, null));
+            Map<String, Object> body = bodyFor.apply(key);
+            row.updateContent(row.getName(), row.getDescription(), body, null);
+            row.setContentHash(templatePackInstaller.computeContentHash(body, null));
             rows.put(key, row);
           }
           firmEdits.accept(rows);
@@ -493,6 +574,10 @@ class LegalZaTemplateReconcileIntegrationTest {
 
   private static Map<String, Object> v7Body(String key) {
     return readBody("fixtures/template-packs/legal-za-v7/" + key + ".json");
+  }
+
+  private static Map<String, Object> v8Body(String key) {
+    return readBody("fixtures/template-packs/legal-za-v8/" + key + ".json");
   }
 
   private static Map<String, Object> shippedBody(String key) {

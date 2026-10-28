@@ -236,7 +236,7 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     const dialog = await generateStatement(page, tab);
     const closingBalanceOwing = await verifyStatementPreview(dialog);
     await expect(page.getByText("Statement generated")).toBeVisible();
-    // Dismiss with Escape (the footer sits below the fold at 1280×800 until the dialog body scrolls)
+    // Dismiss with Escape (the dialog footer sits below the fold at the default 1280×720 viewport)
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
 

@@ -4,8 +4,8 @@
  * Exercises:
  *   - Day 75 (Epic 489): Thandi closes a clean matter (all 9 gates pass,
  *     trust balance = R0). Reason = CONCLUDED, generateClosureLetter = true.
- *     Verify matter → CLOSED, closure letter created, retention policy
- *     inserted with end_date = today + 5 years (ADR-249).
+ *     Verify matter → CLOSED, closure letter created, and the Overview retention
+ *     card shows the scheduled deletion date, close date + 5 years (ADR-354).
  *   - Day 85 (Epic 490): Matter with failing trust-balance gate:
  *       Pass A — Bob (Admin, no OVERRIDE_MATTER_CLOSURE): dialog advances to
  *                step 3 "Cannot close", override toggle hidden; API returns 409.
@@ -286,8 +286,8 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
     await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-75-matter-closed-success");
 
-    // 75.10 (part 1): closure starts the retention clock (ADR-249). The scheduled deletion
-    // date is checked by the 75.10 fixme below.
+    // 75.10 (part 1): closure starts the retention clock (ADR-354). The scheduled deletion
+    // date is checked by the next test.
     const retention = page.getByTestId("retention-card");
     await expect(retention).toContainText(/clock started on/i, { timeout: 15_000 });
 
@@ -300,17 +300,9 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
   });
 
   // ── 75.10 (part 2): retention card shows the scheduled deletion date ──
-  // FIXME(depth-ii:retention-period-unconfigurable) PRODUCT BUG (reproduced): the closed
-  // matter's retention card renders data-state="unconfigured" ("Your firm's matter-retention
-  // period isn't configured yet") instead of the deletion date (closure + 5 years). On the
-  // freshly provisioned tenant org_settings.legal_matter_retention_years is NULL — the column
-  // DEFAULT 5 (V1__baseline.sql) is bypassed by the entity insert — and nothing can set it:
-  // DataProtectionSettings.setLegalMatterRetentionYears has no callers (no settings endpoint),
-  // and the card's "Configure retention period →" link opens Settings → Data Protection, which
-  // has no retention-years field. Closure itself uses the 5-year fallback
-  // (getEffectiveLegalMatterRetentionYears) while GET /api/projects/{id} reports
-  // retentionEndsOn = null, so the date is never shown.
-  test.fixme("Alice: Closed matter's retention card shows the deletion date (closure + 5 years)", async ({
+  // The persisted retention end (ADR-354): close date + the firm period, default 5 years. The
+  // e2e tenant is seeded at 5 and no spec changes the setting.
+  test("Alice: Closed matter's retention card shows the deletion date (closure + 5 years)", async ({
     page,
   }) => {
     await loginAs(page, "alice");
@@ -319,6 +311,23 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
     await expect(retention).toHaveAttribute("data-state", "active", { timeout: 15_000 });
     await expect(retention).toContainText(/permanently deleted on/);
     await expect(retention).toContainText(String(new Date().getFullYear() + 5));
+    const scheduledDeletion = retention.getByTestId("retention-card-scheduled-deletion");
+    await expect(scheduledDeletion).toContainText(String(new Date().getFullYear() + 5));
+    await expect(scheduledDeletion).toContainText("firm default 5 years");
+
+    // Full date: the deletion date is the UTC calendar date of the close + 5 years, and the card
+    // renders "Clock started on" from that same UTC date, so derive the expected date from the
+    // card itself (no dependence on when the run happens relative to UTC midnight). A 29 Feb
+    // close lands on 28 Feb — close year + 5 is never a leap year.
+    const clock = /Clock started on\s+(\d{1,2})\s+(\S+)\s+(\d{4})/.exec(
+      (await retention.textContent()) ?? ""
+    );
+    expect(clock, "retention card renders the clock start date").not.toBeNull();
+    const [, clockDay, clockMonth, clockYear] = clock!;
+    const leapDay = clockDay === "29" && clockMonth.startsWith("Feb");
+    const expectedDeletion = `${leapDay ? "28" : clockDay} ${clockMonth} ${Number(clockYear) + 5}`;
+    await expect(scheduledDeletion).toContainText(`Scheduled deletion: ${expectedDeletion}`);
+    await expect(retention).toContainText(`permanently deleted on ${expectedDeletion}`);
   });
 
   // ── 85.5-85.9: Admin (Bob) — override not available, step 3 ───────

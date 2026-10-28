@@ -52,8 +52,30 @@ vi.mock("@/components/compliance/FicaStatusCard", () => ({
   FicaStatusCard: () => <div data-testid="fica-status-card" />,
 }));
 
+// The retention card's firm-period note reads the firm setting (Phase 88 U17, ADR-354).
+// lib/api/settings imports "server-only", so it is mocked here.
+const { mockGetOrgSettings } = vi.hoisted(() => ({ mockGetOrgSettings: vi.fn() }));
+vi.mock("@/lib/api/settings", () => ({
+  getOrgSettings: () => mockGetOrgSettings(),
+}));
+
 vi.mock("@/components/legal/retention-card", () => ({
-  RetentionCard: () => <div data-testid="retention-card" />,
+  RetentionCard: ({
+    status,
+    retentionEndsOn,
+    firmRetentionYears,
+  }: {
+    status: string;
+    retentionEndsOn: string | null;
+    firmRetentionYears: number | null;
+  }) => (
+    <div
+      data-testid="retention-card"
+      data-status={status}
+      data-ends-on={retentionEndsOn ?? ""}
+      data-years={firmRetentionYears === null ? "null" : String(firmRetentionYears)}
+    />
+  ),
 }));
 
 vi.mock("@/components/projects/upcoming-deadlines-tile", () => ({
@@ -98,6 +120,7 @@ const defaultProps = {
 describe("KPIDashboard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetOrgSettings.mockResolvedValue({ defaultCurrency: "ZAR", legalMatterRetentionYears: 5 });
   });
 
   afterEach(() => {
@@ -185,5 +208,52 @@ describe("KPIDashboard", () => {
     render(jsx);
 
     expect(screen.queryByTestId("setup-progress-bar")).not.toBeInTheDocument();
+  });
+
+  describe("retention card firm setting (Phase 88 U17)", () => {
+    const closedProps = {
+      ...defaultProps,
+      projectStatus: "CLOSED",
+      retentionClockStartedAt: "2026-10-22T06:44:25.034385Z",
+      retentionEndsOn: "2031-10-22",
+    };
+
+    it("passes the firm's matter retention years to the card for a CLOSED matter", async () => {
+      const jsx = await KPIDashboard(closedProps);
+      render(jsx);
+
+      const card = screen.getByTestId("retention-card");
+      expect(card).toHaveAttribute("data-years", "5");
+      expect(card).toHaveAttribute("data-ends-on", "2031-10-22");
+      expect(mockGetOrgSettings).toHaveBeenCalledTimes(1);
+    });
+
+    it("passes the current setting for a COMPLETED matter", async () => {
+      mockGetOrgSettings.mockResolvedValue({
+        defaultCurrency: "ZAR",
+        legalMatterRetentionYears: 7,
+      });
+      const jsx = await KPIDashboard({ ...defaultProps, projectStatus: "COMPLETED" });
+      render(jsx);
+
+      expect(screen.getByTestId("retention-card")).toHaveAttribute("data-years", "7");
+    });
+
+    it("passes null when the settings read fails (the overview still renders)", async () => {
+      mockGetOrgSettings.mockRejectedValue(new Error("settings down"));
+      const jsx = await KPIDashboard(closedProps);
+      render(jsx);
+
+      expect(screen.getByTestId("retention-card")).toHaveAttribute("data-years", "null");
+      expect(screen.getByTestId("project-health-header")).toBeInTheDocument();
+    });
+
+    it("does not read settings for an ACTIVE matter (no card to annotate)", async () => {
+      const jsx = await KPIDashboard(defaultProps);
+      render(jsx);
+
+      expect(mockGetOrgSettings).not.toHaveBeenCalled();
+      expect(screen.getByTestId("retention-card")).toHaveAttribute("data-years", "null");
+    });
   });
 });

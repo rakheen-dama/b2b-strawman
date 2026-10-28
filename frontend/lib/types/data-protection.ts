@@ -5,6 +5,8 @@ export interface UpdateDataProtectionSettingsRequest {
   financialRetentionMonths?: number;
   informationOfficerName?: string | null;
   informationOfficerEmail?: string | null;
+  /** Phase 88 U17 (ADR-354): 1–30 whole years; null or absent leaves the stored value. Owner only. */
+  legalMatterRetentionYears?: number | null;
 }
 
 export interface DsarRequest {

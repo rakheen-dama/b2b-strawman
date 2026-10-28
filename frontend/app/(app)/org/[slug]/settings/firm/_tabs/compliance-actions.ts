@@ -1,6 +1,8 @@
 "use server";
 
 import { api, ApiError } from "@/lib/api";
+import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { revalidatePath } from "next/cache";
 import type {
   RetentionPolicy,
@@ -9,8 +11,10 @@ import type {
   CreateRetentionPolicyRequest,
   UpdateRetentionPolicyRequest,
   UpdateComplianceSettingsRequest,
+  UpdateDataProtectionSettingsRequest,
   CompliancePackDetail,
 } from "@/lib/types";
+import { matterRetentionYearsSchema, MATTER_RETENTION_OWNER_ONLY_MESSAGE } from "@/lib/schemas";
 
 interface ActionResult {
   success: boolean;
@@ -44,6 +48,53 @@ export async function updateComplianceSettings(
   }
 
   revalidatePath(`/org/${slug}/settings/firm`);
+  return { success: true };
+}
+
+/**
+ * Firm matter retention period (Phase 88 U17, ADR-354). Rides the data-protection settings PATCH,
+ * which is owner-only on the backend, and sends only `legalMatterRetentionYears` — every other
+ * field is absent, so the backend keeps its stored value. The new period applies to matters
+ * closed from now on; already-closed matters keep their stamped deletion date.
+ */
+export async function updateMatterRetentionYears(
+  slug: string,
+  years: number
+): Promise<ActionResult> {
+  const { orgSlug } = await getAuthContext();
+  if (slug !== orgSlug) {
+    return { success: false, error: "Organization mismatch." };
+  }
+
+  const caps = await fetchMyCapabilities();
+  if (!caps.isOwner) {
+    return { success: false, error: MATTER_RETENTION_OWNER_ONLY_MESSAGE };
+  }
+
+  // Same 1–30 whole-years rule as the form; the backend's 400 only says "1 field(s) have
+  // validation errors", so reject here with the field's own message.
+  const parsed = matterRetentionYearsSchema.safeParse(years);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message ?? "Retention period must be between 1 and 30 years.",
+    };
+  }
+
+  const body: UpdateDataProtectionSettingsRequest = { legalMatterRetentionYears: parsed.data };
+  try {
+    await api.patch("/api/settings/data-protection", body);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return { success: false, error: MATTER_RETENTION_OWNER_ONLY_MESSAGE };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${orgSlug}/settings/firm`);
   return { success: true };
 }
 

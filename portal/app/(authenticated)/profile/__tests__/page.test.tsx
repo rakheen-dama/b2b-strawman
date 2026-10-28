@@ -87,7 +87,8 @@ describe("ProfilePage", () => {
     expect(screen.getByText("alice@acme.com")).toBeInTheDocument();
   });
 
-  it("shows customer name", async () => {
+  // Phase 88 628B (R-17): the term is "Client", never "Customer".
+  it("shows the client name under a Client label", async () => {
     mockPortalGet.mockResolvedValue({
       contactId: "contact-1",
       clientId: "cust-1",
@@ -102,6 +103,8 @@ describe("ProfilePage", () => {
     await waitFor(() => {
       expect(screen.getByText("Acme Corp")).toBeInTheDocument();
     });
+    expect(screen.getByText("Client")).toBeInTheDocument();
+    expect(screen.queryByText("Customer")).not.toBeInTheDocument();
   });
 
   // LZKC-031 PR-2 (class D): role codes map to client-facing labels, not a

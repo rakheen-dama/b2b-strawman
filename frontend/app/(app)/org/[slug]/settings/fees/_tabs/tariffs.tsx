@@ -5,7 +5,10 @@ import { HelpTip } from "@/components/help-tip";
 import type { OrgSettings, OrgMember, BillingRate, CostRate } from "@/lib/types";
 import type { SettingsTabProps } from "@/components/settings/settings-family-page";
 
-/** Fees & Trust › Tariffs tab (Phase 87 S9, ADR-341) — the former rates settings page's loader. */
+/**
+ * Fees & Trust › Rates tab (id `tariffs`, Phase 87 S9, ADR-341; labelled "Rates" by Phase 88 628B,
+ * D11) — the former rates settings page's loader.
+ */
 export async function renderTariffsTab({ slug }: SettingsTabProps) {
   const capData = await fetchMyCapabilities();
 

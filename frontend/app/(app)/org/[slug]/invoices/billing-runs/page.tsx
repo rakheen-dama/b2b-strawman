@@ -24,7 +24,7 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ sl
   if (!isAdmin) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Billing Runs</h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Fee runs</h1>
         <p className="text-slate-600 dark:text-slate-400">
           You do not have permission to view billing runs. Only admins and owners can access this
           page.
@@ -52,7 +52,7 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ sl
     <div className="space-y-8">
       {/* Page Header */}
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Fee notes</h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Fee runs</h1>
         <Button asChild size="sm">
           <Link href={`/org/${slug}/invoices/billing-runs/new`}>
             <Plus className="mr-1.5 size-4" />
@@ -73,7 +73,7 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ sl
           href={`/org/${slug}/invoices/billing-runs`}
           className="border-b-2 border-slate-900 px-4 py-2 text-sm font-medium text-slate-900 dark:border-slate-100 dark:text-slate-100"
         >
-          Billing Runs
+          Fee runs
         </Link>
       </div>
 
@@ -100,8 +100,8 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ sl
       {billingRuns.length === 0 ? (
         <EmptyState
           icon={Layers}
-          title="No billing runs"
-          description="Create a billing run to generate fee notes for multiple clients at once."
+          title="No fee runs yet"
+          description="Start a fee run to generate fee notes for multiple clients at once."
           actionLabel="New Billing Run"
           actionHref={`/org/${slug}/invoices/billing-runs/new`}
         />

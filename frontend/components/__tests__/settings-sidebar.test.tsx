@@ -174,13 +174,16 @@ describe("SettingsSidebar — the five families from SETTINGS_FAMILIES (616E)", 
     expect(screen.getByRole("link", { name: "Templates" })).not.toHaveAttribute("aria-current");
   });
 
-  it("marks Connections › Xero on /settings/connections/xero/sync-log", () => {
+  it("marks Connections › Integrations on /settings/connections/xero/sync-log", () => {
     renderRail("/org/acme/settings/connections/xero/sync-log", OWNER);
     expect(screen.getByRole("link", { name: "Connections" })).toHaveAttribute(
       "aria-current",
       "page"
     );
-    expect(screen.getByRole("link", { name: "Xero" })).toHaveAttribute("aria-current", "true");
+    expect(screen.getByRole("link", { name: "Integrations" })).toHaveAttribute(
+      "aria-current",
+      "true"
+    );
   });
 
   it("has no Security or Coming soon entry", () => {

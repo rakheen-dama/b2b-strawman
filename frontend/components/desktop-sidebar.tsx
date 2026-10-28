@@ -70,13 +70,16 @@ export function DesktopSidebar({
         <span className="text-base font-bold tracking-tight text-white">Kazi</span>
       </div>
       <div className="mx-4 border-t border-white/10" />
+      {/* The brand colour is an accent bar, never the name's text colour: a dark brand colour
+          (#1B3A4B) on the slate-950 rail was illegible (G-A3, Phase 88 628B). */}
       <div className="flex items-center gap-2 px-4 py-3">
         <span
-          className="truncate text-xs font-medium opacity-80"
-          style={{ color: "var(--brand-color)" }}
-        >
-          {orgName ?? slug}
-        </span>
+          aria-hidden="true"
+          data-testid="org-brand-accent"
+          className="h-4 w-[3px] shrink-0 rounded-full"
+          style={{ backgroundColor: "var(--brand-color)" }}
+        />
+        <span className="truncate text-xs font-medium text-white/80">{orgName ?? slug}</span>
       </div>
       <div className="mx-4 border-t border-white/10" />
 

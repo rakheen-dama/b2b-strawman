@@ -141,6 +141,29 @@ describe("ClientHeaderCard", () => {
     expect(screen.queryByTestId("xero-badge")).not.toBeInTheDocument();
   });
 
+  // Phase 88 628B (G-B1, R-11): the record-status badge only shows when the client is not ACTIVE
+  // (or has no lifecycle badge to show) — no more "Active Active" / "Active Prospect".
+  it("shows only the lifecycle badge for an ACTIVE client", () => {
+    render(<ClientHeaderCard {...defaultProps} lifecycleStatus="PROSPECT" />);
+    expect(screen.queryByTestId("customer-status-badge")).not.toBeInTheDocument();
+    expect(screen.getByTestId("lifecycle-badge")).toHaveTextContent("PROSPECT");
+  });
+
+  it("shows the Archived record badge (and Restore) for an ARCHIVED client", () => {
+    render(
+      <ClientHeaderCard {...defaultProps} customerStatus="ARCHIVED" lifecycleStatus="ACTIVE" />
+    );
+    expect(screen.getByTestId("customer-status-badge")).toHaveTextContent("Archived");
+    expect(screen.getByTestId("lifecycle-badge")).toBeInTheDocument();
+    expect(screen.getByTestId("smart-primary-action")).toHaveTextContent("Restore");
+  });
+
+  it("falls back to the Active record badge when there is no lifecycle status", () => {
+    render(<ClientHeaderCard {...defaultProps} lifecycleStatus={null} />);
+    expect(screen.getByTestId("customer-status-badge")).toHaveTextContent("Active");
+    expect(screen.queryByTestId("lifecycle-badge")).not.toBeInTheDocument();
+  });
+
   // Phase 88 G-B9: id_passport_number facts strip under the client name
   it("renders the ID number facts strip as a dl with a visible ID prefix", () => {
     render(

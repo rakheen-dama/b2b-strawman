@@ -106,6 +106,10 @@ export function ClientHeaderCard({
   headerFields = [],
 }: ClientHeaderCardProps) {
   const statusBadge = STATUS_BADGE[customerStatus];
+  // The record status (Active / Archived) and the lifecycle status share a row; an ACTIVE record
+  // beside a lifecycle badge read "Active Prospect" / "Active Active" (G-B1). Show the record badge
+  // only when it says something the lifecycle badge does not (Phase 88 628B, R-11).
+  const showRecordBadge = customerStatus !== "ACTIVE" || lifecycleStatus === null;
   const smartAction = getSmartPrimaryAction(lifecycleStatus, customerStatus);
   const isAnonymized = lifecycleStatus === "ANONYMIZED";
 
@@ -124,9 +128,11 @@ export function ClientHeaderCard({
 
           {/* Row 2 — Badges */}
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={statusBadge.variant} data-testid="customer-status-badge">
-              {statusBadge.label}
-            </Badge>
+            {showRecordBadge && (
+              <Badge variant={statusBadge.variant} data-testid="customer-status-badge">
+                {statusBadge.label}
+              </Badge>
+            )}
             {lifecycleStatus && (
               <span data-testid="lifecycle-badge">
                 <LifecycleStatusBadge status={lifecycleStatus} />

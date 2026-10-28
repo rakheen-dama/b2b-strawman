@@ -185,7 +185,7 @@ export default async function InvoicesPage({
           href={`/org/${slug}/invoices/billing-runs`}
           className="border-b-2 border-transparent px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
         >
-          Billing Runs
+          Fee runs
         </Link>
       </div>
 

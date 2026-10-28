@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   NON_ROUTABLE_PREFIXES,
+  PARENT_SEGMENT_FALLBACKS,
   SEGMENT_LABELS,
   isLinkableBreadcrumbPrefix,
 } from "@/components/breadcrumbs";
@@ -94,5 +95,33 @@ describe("SEGMENT_LABELS vs app/(app)/org/[slug] routes (616E)", () => {
     );
     expect(settingsSegments.size).toBeGreaterThan(5);
     for (const s of settingsSegments) expect(SEGMENT_LABELS[s], s).toBeDefined();
+  });
+});
+
+// Phase 88 628B (628.4, R-4): the crumb label is SEGMENT_LABELS[segment] ?? the parent's fallback
+// ?? the raw segment. These two invariants make the raw-segment branch unreachable for any route on
+// disk: every literal segment is labelled, and every [param] segment's parent has a fallback.
+describe("every org/[slug]/** crumb has a label (628B)", () => {
+  // The literal segment directly above each dynamic segment ("matters" for matters/[id]).
+  const paramParents = new Set(
+    [...routePatterns].flatMap((p) => {
+      const parts = p.split("/");
+      return parts.flatMap((part, i) => (part.startsWith("[") && i > 0 ? [parts[i - 1]] : []));
+    })
+  );
+
+  it("finds the dynamic routes", () => {
+    expect(paramParents.has("matters")).toBe(true);
+    expect(paramParents.has("reports")).toBe(true);
+  });
+
+  it("labels every literal segment on disk", () => {
+    expect([...segmentsOnDisk].filter((s) => SEGMENT_LABELS[s] === undefined).sort()).toEqual([]);
+  });
+
+  it("has a fallback for the parent of every [param] segment", () => {
+    expect(
+      [...paramParents].filter((s) => PARENT_SEGMENT_FALLBACKS[s] === undefined).sort()
+    ).toEqual([]);
   });
 });

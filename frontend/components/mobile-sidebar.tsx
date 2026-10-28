@@ -70,8 +70,15 @@ export function MobileSidebar({
           <SheetDescription className="sr-only">Main navigation menu</SheetDescription>
         </div>
         <div className="mx-4 border-t border-white/10" />
+        {/* Brand colour as an accent bar, as on the desktop rail (G-A3, Phase 88 628B). */}
         <div className="flex items-center gap-2 px-4 py-3">
-          <span className="truncate text-sm text-white/60">{orgName ?? slug}</span>
+          <span
+            aria-hidden="true"
+            data-testid="org-brand-accent"
+            className="h-4 w-[3px] shrink-0 rounded-full"
+            style={{ backgroundColor: "var(--brand-color)" }}
+          />
+          <span className="truncate text-sm text-white/80">{orgName ?? slug}</span>
         </div>
         <div className="mx-4 border-t border-white/10" />
 

@@ -15,6 +15,7 @@ import { SubscriptionProvider } from "@/lib/subscription-context";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { CommandPaletteProvider } from "@/components/command-palette-provider";
 import { RecentItemsProvider } from "@/components/recent-items-provider";
+import { BreadcrumbLabelProvider } from "@/components/breadcrumb-label-provider";
 import type { BillingResponse } from "@/lib/internal-api";
 
 export default async function OrgLayout({
@@ -115,45 +116,56 @@ export default async function OrgLayout({
         terminologyNamespace={terminologyNamespace}
       >
         <RecentItemsProvider>
-          <CommandPaletteProvider slug={slug}>
-            <div className="flex min-h-screen">
-              <DesktopSidebar
-                slug={slug}
-                orgName={orgName}
-                groups={groups}
-                userName={userInfo.name}
-                userEmail={userInfo.email}
-                brandColor={brandColor}
-                logoUrl={logoUrl}
-              />
-              <div className="flex flex-1 flex-col">
-                <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-slate-200/60 bg-slate-100/80 px-4 backdrop-blur-md md:px-6 dark:border-slate-800/60 dark:bg-slate-950/90">
-                  <MobileSidebar
-                    slug={slug}
-                    orgName={orgName}
-                    groups={groups}
-                    userName={userInfo.name}
-                    userEmail={userInfo.email}
-                    brandColor={brandColor}
-                    logoUrl={logoUrl}
-                  />
-                  <Breadcrumbs slug={slug} orgName={orgName} />
-                  <div className="ml-auto flex items-center gap-3">
-                    <AuthHeaderControls />
-                    <NotificationBell orgSlug={slug} />
-                  </div>
-                </header>
-                <main id="main-content" className="bg-background flex-1 dark:bg-slate-950">
-                  <SubscriptionProvider billingResponse={billingData}>
-                    <SubscriptionBanner billingResponse={billingData} slug={slug} />
-                    <div className="mx-auto max-w-7xl px-6 py-6 lg:px-10">
-                      <ErrorBoundary>{children}</ErrorBoundary>
+          {/* Entity pages publish their name for the last crumb (Phase 88 628B); both the header's
+              <Breadcrumbs> and the page {children} sit inside it. */}
+          <BreadcrumbLabelProvider>
+            <CommandPaletteProvider slug={slug}>
+              <div className="flex min-h-screen">
+                <DesktopSidebar
+                  slug={slug}
+                  orgName={orgName}
+                  groups={groups}
+                  userName={userInfo.name}
+                  userEmail={userInfo.email}
+                  brandColor={brandColor}
+                  logoUrl={logoUrl}
+                />
+                {/* min-w-0 (Phase 88 628B, G-D15): a flex item's default min-width is its content's
+                    min-content width, so a wide table or tab strip used to widen this column and
+                    the whole document (1440px viewport: 1519px) instead of scrolling in its own
+                    box. */}
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-slate-200/60 bg-slate-100/80 px-4 backdrop-blur-md md:px-6 dark:border-slate-800/60 dark:bg-slate-950/90">
+                    <MobileSidebar
+                      slug={slug}
+                      orgName={orgName}
+                      groups={groups}
+                      userName={userInfo.name}
+                      userEmail={userInfo.email}
+                      brandColor={brandColor}
+                      logoUrl={logoUrl}
+                    />
+                    <Breadcrumbs slug={slug} orgName={orgName} />
+                    <div className="ml-auto flex items-center gap-3">
+                      <AuthHeaderControls />
+                      <NotificationBell orgSlug={slug} />
                     </div>
-                  </SubscriptionProvider>
-                </main>
+                  </header>
+                  <main
+                    id="main-content"
+                    className="bg-background min-w-0 flex-1 dark:bg-slate-950"
+                  >
+                    <SubscriptionProvider billingResponse={billingData}>
+                      <SubscriptionBanner billingResponse={billingData} slug={slug} />
+                      <div className="mx-auto max-w-7xl px-6 py-6 lg:px-10">
+                        <ErrorBoundary>{children}</ErrorBoundary>
+                      </div>
+                    </SubscriptionProvider>
+                  </main>
+                </div>
               </div>
-            </div>
-          </CommandPaletteProvider>
+            </CommandPaletteProvider>
+          </BreadcrumbLabelProvider>
         </RecentItemsProvider>
       </OrgProfileProvider>
     </CapabilityProvider>

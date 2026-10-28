@@ -208,8 +208,8 @@ describe("CommandPaletteDialog", () => {
         "Settings › Matters › Tags",
         "Settings › Documents › Templates",
         "Settings › Documents › Clauses",
-        "Settings › Fees & Trust › Tariffs",
-        "Settings › Connections › Xero",
+        "Settings › Fees & Trust › Rates",
+        "Settings › Connections › Integrations",
         "Settings › Connections › Notifications",
       ]);
     });
@@ -252,7 +252,7 @@ describe("CommandPaletteDialog", () => {
         typeof useRouter
       >);
       renderDialog();
-      await userEvent.setup().click(screen.getByText("Settings › Fees & Trust › Tariffs"));
+      await userEvent.setup().click(screen.getByText("Settings › Fees & Trust › Rates"));
       expect(settingsMockPush).toHaveBeenCalledWith("/org/test-org/settings/fees?tab=tariffs");
     });
 

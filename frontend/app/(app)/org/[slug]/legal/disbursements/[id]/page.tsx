@@ -3,6 +3,7 @@ import { handleApiError } from "@/lib/api";
 import { isModuleEnabledServer } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getDisbursement, type DisbursementResponse } from "@/lib/api/legal-disbursements";
+import { BreadcrumbLabel } from "@/components/breadcrumb-label-provider";
 import { DisbursementDetailClient } from "./detail-client";
 
 export default async function DisbursementDetailPage({
@@ -40,11 +41,18 @@ export default async function DisbursementDetailPage({
   }
 
   return (
-    <DisbursementDetailClient
-      slug={slug}
-      disbursement={disbursement}
-      canApprove={canApprove}
-      canWriteOff={canWriteOff}
-    />
+    <>
+      {/* Last crumb = the disbursement's description (supplier when it has none), not its id. */}
+      <BreadcrumbLabel
+        href={`/org/${slug}/legal/disbursements/${id}`}
+        label={disbursement.description || disbursement.supplierName}
+      />
+      <DisbursementDetailClient
+        slug={slug}
+        disbursement={disbursement}
+        canApprove={canApprove}
+        canWriteOff={canWriteOff}
+      />
+    </>
   );
 }

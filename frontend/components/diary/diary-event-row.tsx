@@ -71,18 +71,30 @@ interface DiaryEventRowProps {
   slug: string;
   /** Show the event's date (overdue band rows, which sit outside a day). */
   showDate?: boolean;
+  /**
+   * `compact` (Week view day cells, ~150 px wide at 1440): the time sits above the title and the
+   * title wraps to two lines instead of truncating beside the time (G-D20, Phase 88 628B). The
+   * full title is on the link's `title` tooltip.
+   */
+  density?: "default" | "compact";
 }
 
 /**
  * Compact diary row used by the Day and Week views and the Overdue strip: the row link plus, as a
  * sibling (a button cannot nest inside a link), the row's actions menu when it has any.
  */
-export function DiaryEventRow({ event, slug, showDate = false }: DiaryEventRowProps) {
+export function DiaryEventRow({
+  event,
+  slug,
+  showDate = false,
+  density = "default",
+}: DiaryEventRowProps) {
   const time = formatDiaryTime(event.time);
   const subtype = event.kind === "COURT_DATE" ? humaniseSubtype(event.subtype) : null;
   const reference = event.matterReference ?? null;
   const feeEarner = event.feeEarnerName ?? null;
   const isTask = event.kind === "TASK_DUE";
+  const compact = density === "compact";
 
   return (
     <div className="flex items-start gap-1">
@@ -90,6 +102,8 @@ export function DiaryEventRow({ event, slug, showDate = false }: DiaryEventRowPr
         href={`/org/${slug}${event.href}`}
         data-kind={event.kind}
         data-testid={`diary-event-${event.id}`}
+        data-density={density}
+        title={compact ? event.title : undefined}
         className={cn(
           "focus-visible:ring-ring flex min-w-0 flex-1 items-start gap-2 rounded-md py-1.5 pr-2 pl-2 text-sm outline-none hover:bg-slate-50 focus-visible:ring-2 dark:hover:bg-slate-800/50",
           kindRailClass(event.kind)
@@ -98,7 +112,7 @@ export function DiaryEventRow({ event, slug, showDate = false }: DiaryEventRowPr
         <DiaryKindIcon kind={event.kind} className="mt-0.5" />
         <span className="sr-only">{DIARY_KIND_SINGULAR[event.kind]}</span>
         <span className="min-w-0 flex-1">
-          <span className="flex items-baseline gap-2">
+          <span className={compact ? "flex flex-col" : "flex items-baseline gap-2"}>
             {time && (
               <span className="font-mono text-xs text-slate-600 tabular-nums dark:text-slate-400">
                 {time}
@@ -106,7 +120,7 @@ export function DiaryEventRow({ event, slug, showDate = false }: DiaryEventRowPr
             )}
             <span
               className={cn(
-                "truncate font-medium",
+                compact ? "line-clamp-2 font-medium break-words" : "truncate font-medium",
                 isTask ? "text-muted-foreground" : "text-slate-900 dark:text-slate-100"
               )}
             >

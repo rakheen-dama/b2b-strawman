@@ -279,7 +279,7 @@ describe("Documents + Fees tab gating (D19/D20)", () => {
     }
   });
 
-  it("keeps Tariffs (the Fees first tab) open to members", () => {
+  it("keeps Rates (the Fees first tab, id tariffs) open to members", () => {
     expect(resolveSettingsTab(getSettingsFamily("fees"), "tariffs", MEMBER).forbidden).toBeNull();
   });
 });
@@ -287,7 +287,7 @@ describe("Documents + Fees tab gating (D19/D20)", () => {
 describe("Connections tab gating (D7/D24)", () => {
   const connections = getSettingsFamily("connections");
 
-  it("falls a member back to Xero for the gated Connections tabs", () => {
+  it("falls a member back to Integrations (id xero) for the gated Connections tabs", () => {
     for (const tabId of ["mcp", "ai", "packs", "automations"]) {
       const { tab, forbidden } = resolveSettingsTab(connections, tabId, MEMBER);
       expect(tab.id, tabId).toBe("xero");
@@ -295,7 +295,7 @@ describe("Connections tab gating (D7/D24)", () => {
     }
   });
 
-  it("keeps Xero (the Connections first tab) and Notifications open to members", () => {
+  it("keeps Integrations (the Connections first tab, id xero) and Notifications open to members", () => {
     expect(resolveSettingsTab(connections, "xero", MEMBER).forbidden).toBeNull();
     expect(resolveSettingsTab(connections, "notifications", MEMBER)).toEqual({
       tab: findTab("connections", "notifications"),
@@ -366,5 +366,30 @@ describe("settings redirect rows ↔ SETTINGS_FAMILIES (616E, §12.7.3)", () => 
         .filter((r) => !r.destination.startsWith(SETTINGS))
         .map((r) => [r.source, r.destination])
     ).toEqual([["/org/:slug/settings/team", "/org/:slug/team"]]);
+  });
+});
+
+// Phase 88 628B (628.4, D11, R-8/R-9; ADR-341): the labels change, the ids (?tab=, redirects,
+// palette, Playwright) do not.
+describe("Rates and Integrations labels (D11)", () => {
+  it('labels the Fees first tab "Rates" and keeps its id tariffs', () => {
+    const tab = findTab("fees", "tariffs");
+    expect(tab?.label).toBe("Rates");
+    expect(getSettingsFamily("fees").tabs[0].id).toBe("tariffs");
+    expect(tab?.keywords).toEqual(["rates", "rates & currency"]);
+  });
+
+  it('labels the Connections first tab "Integrations" and keeps its id xero', () => {
+    const tab = findTab("connections", "xero");
+    expect(tab?.label).toBe("Integrations");
+    expect(getSettingsFamily("connections").tabs[0].id).toBe("xero");
+    expect(tab?.description).toBe("Connect accounting, AI, signing and email providers");
+    expect(tab?.keywords).toContain("xero");
+  });
+
+  it("no settings tab is labelled Tariffs or Xero any more", () => {
+    const labels = SETTINGS_FAMILIES.flatMap((f) => f.tabs.map((t) => t.label));
+    expect(labels).not.toContain("Tariffs");
+    expect(labels).not.toContain("Xero");
   });
 });

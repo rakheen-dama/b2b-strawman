@@ -125,13 +125,15 @@ describe("Firm settings family page", () => {
     expect(loaders.general).toHaveBeenCalledTimes(1);
   });
 
-  // Browser-found (1024px: document 1250px wide): the w-max strip must scroll inside an
-  // inline-size-contained box, or its width widens the whole page. jsdom has no layout, so this
-  // pins the containment class.
-  it("keeps the tab strip in its own inline-size-contained scroll box", async () => {
+  // Browser-found (1024px: document 1250px wide): the w-max strip must scroll inside its own box.
+  // 616A worked around the app shell's missing `min-w-0` with `@container`; 628B put `min-w-0` on
+  // the shell column and <main>, so the plain overflow box is enough. jsdom has no layout, so this
+  // pins the scroll box (the scrollWidth A/B in the browser is the authority).
+  it("keeps the tab strip in its own scroll box", async () => {
     await renderFirm();
     const box = screen.getByRole("tablist", { name: "Firm settings" }).parentElement!;
-    expect(box).toHaveClass("@container", "overflow-x-auto");
+    expect(box).toHaveClass("overflow-x-auto");
+    expect(box).not.toHaveClass("@container");
   });
 
   it("gives an admin the same eight tabs", async () => {
@@ -288,7 +290,7 @@ describe("Firm settings family page", () => {
       await renderFees("trust-accounting");
       expect(mockGetOrgSettings).toHaveBeenCalledTimes(1);
       expect(feeTabNames()).toEqual([
-        "Tariffs",
+        "Rates",
         "Tax",
         "Time recording",
         "Collections",
@@ -300,10 +302,10 @@ describe("Firm settings family page", () => {
     it("treats modules as disabled when GET /api/settings fails, and still renders", async () => {
       mockGetOrgSettings.mockRejectedValue(new Error("network"));
       await renderFees("trust-accounting");
-      expect(feeTabNames()).toEqual(["Tariffs", "Tax", "Time recording", "Collections"]);
+      expect(feeTabNames()).toEqual(["Rates", "Tax", "Time recording", "Collections"]);
       expect(screen.getByText("tariffs panel")).toBeInTheDocument();
       expect(screen.getByRole("status")).toHaveTextContent(
-        /don.t have access to Trust accounting — showing Tariffs instead/
+        /don.t have access to Trust accounting — showing Rates instead/
       );
     });
   });

@@ -162,9 +162,7 @@ export default async function ClientsPage({
   const { t } = createMessages("empty-states");
 
   return (
-    // Single minmax(0, 1fr) grid column: the page reports no min-content width, so the wide table
-    // scrolls inside its own container instead of widening the app shell.
-    <div className="grid grid-cols-1 gap-6">
+    <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>

@@ -122,7 +122,9 @@ export function DisbursementListView({
   }
 
   return (
-    <div className="overflow-x-auto" data-testid="disbursement-list">
+    // relative: the row Actions trigger's sr-only label is position:absolute — without a positioned
+    // ancestor inside this scroll box it escapes the clip and widens the document (G88-M4).
+    <div className="relative overflow-x-auto" data-testid="disbursement-list">
       <table className="w-full">
         <thead>
           <tr className="border-b border-slate-200 dark:border-slate-800">

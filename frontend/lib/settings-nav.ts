@@ -218,8 +218,10 @@ const FAMILIES = [
     icon: Banknote,
     tabs: [
       {
+        // Labelled "Rates" (D11, Phase 88 628B): the panel is billing/cost rates and the default
+        // currency; the LSSA tariffs live at Fees › Tariffs (/legal/tariffs). The id stays (ADR-341).
         id: "tariffs",
-        label: "Tariffs",
+        label: "Rates",
         description: "Manage billing rates, cost rates, and default currency",
         keywords: ["rates", "rates & currency"],
         // Ungated by ruling (D20, 616C): the family's first tab must stay ungated; the loader keeps
@@ -277,10 +279,12 @@ const FAMILIES = [
     icon: Plug,
     tabs: [
       {
+        // Labelled "Integrations" (D11, Phase 88 628B): the panel is every integration card (Xero,
+        // AI, signing, email), not Xero alone. The id stays for the redirects (ADR-341).
         id: "xero",
-        label: "Xero",
-        description: "Connect Xero and view its sync status",
-        keywords: ["integrations", "accounting"],
+        label: "Integrations",
+        description: "Connect accounting, AI, signing and email providers",
+        keywords: ["integrations", "accounting", "xero"],
       },
       {
         id: "mcp",

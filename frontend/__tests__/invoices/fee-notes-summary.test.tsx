@@ -182,6 +182,16 @@ describe("Fee notes summary tiles (Phase 88 620C)", () => {
     expect(screen.getByTestId("fee-notes-paid-this-month")).toBeInTheDocument();
   });
 
+  // Phase 88 628B (D11, R-6): the sub-nav tab follows the sidebar word "Fee runs".
+  it('labels the sub-nav tab to the fee runs page "Fee runs"', async () => {
+    await renderPage();
+    expect(screen.getByRole("link", { name: "Fee runs" })).toHaveAttribute(
+      "href",
+      "/org/acme/invoices/billing-runs"
+    );
+    expect(screen.queryByText("Billing Runs")).not.toBeInTheDocument();
+  });
+
   it("admin (inherits FINANCIAL_VISIBILITY) fetches the summary", async () => {
     mockCaps.mockResolvedValue(ADMIN);
     await renderPage();

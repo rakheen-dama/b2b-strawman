@@ -44,6 +44,9 @@ jobs:
               - 'gateway/**'
             portal:
               - 'portal/**'
+              # The portal terminology guard drift-checks its scanner copy against these (628B).
+              - 'frontend/__tests__/no-terminology-remnants.test.ts'
+              - 'frontend/__tests__/helpers/source-scan.ts'
               - 'packages/**'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'

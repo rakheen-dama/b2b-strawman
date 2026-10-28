@@ -77,7 +77,7 @@ export default function ProjectDetailPage() {
       setData({ project, tasks, documents, comments, summary });
     } catch (err) {
       if (!isMountedRef.current || requestId !== requestIdRef.current) return;
-      setError(err instanceof Error ? err.message : "Failed to load project");
+      setError(err instanceof Error ? err.message : "Failed to load matter");
     } finally {
       if (isMountedRef.current && requestId === requestIdRef.current) {
         setIsLoading(false);

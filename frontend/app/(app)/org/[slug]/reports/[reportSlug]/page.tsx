@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { BreadcrumbLabel } from "@/components/breadcrumb-label-provider";
 import { getReportDefinition } from "@/lib/api/reports";
 import { handleApiError } from "@/lib/api";
 import { ReportRunner } from "@/components/reports/report-runner";
@@ -21,6 +22,8 @@ export default async function ReportDetailPage({
 
   return (
     <div className="space-y-8">
+      {/* Last crumb = the report name, never the URL slug. */}
+      <BreadcrumbLabel href={`/org/${slug}/reports/${reportSlug}`} label={definition!.name} />
       <div>
         <Link
           href={`/org/${slug}/reports`}

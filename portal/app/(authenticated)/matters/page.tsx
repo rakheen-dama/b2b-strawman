@@ -56,7 +56,7 @@ export default function ProjectsPage() {
       const data = await portalGet<PortalMatter[]>("/portal/matters");
       setProjects(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load projects");
+      setError(err instanceof Error ? err.message : "Failed to load matters");
     } finally {
       setIsLoading(false);
     }

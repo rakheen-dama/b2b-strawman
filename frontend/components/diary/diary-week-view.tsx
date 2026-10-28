@@ -28,7 +28,8 @@ interface DiaryWeekViewProps {
 }
 
 const WEEK_GRID = "grid grid-cols-1 gap-2 md:grid-cols-7";
-const DAY_CARD = "gap-0 py-0 md:min-h-24";
+// min-w-0: a day cell may shrink below its rows' content width (the rows wrap; G-D20).
+const DAY_CARD = "min-w-0 gap-0 py-0 md:min-h-24";
 
 /**
  * Week view — Mon–Sun day cells as a one-row `role="grid"` with a roving tab stop (Arrow keys,
@@ -88,7 +89,7 @@ export function DiaryWeekView({
                 {dayEvents.length > 0 && (
                   <div className="flex flex-col gap-1 p-1.5">
                     {dayEvents.map((event) => (
-                      <DiaryEventRow key={event.id} event={event} slug={slug} />
+                      <DiaryEventRow key={event.id} event={event} slug={slug} density="compact" />
                     ))}
                   </div>
                 )}

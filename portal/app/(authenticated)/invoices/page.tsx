@@ -32,7 +32,7 @@ export default function InvoicesPage() {
       const data = await portalGet<PortalInvoice[]>("/portal/invoices");
       setInvoices(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load invoices");
+      setError(err instanceof Error ? err.message : "Failed to load fee notes");
     } finally {
       setIsLoading(false);
     }

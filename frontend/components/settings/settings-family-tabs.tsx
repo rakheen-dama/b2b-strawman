@@ -78,11 +78,10 @@ export function SettingsFamilyTabs({ label, tabs, activeTab, children }: Setting
     <Tabs value={shownTab} onValueChange={handleValueChange} activationMode="manual">
       {/* The strip scrolls on its own at narrow widths: the settings rail is desktop-only
           (settings/layout.tsx wraps it in `hidden md:block`; it has no mobile pill row — D11).
-          `@container` (inline-size containment) keeps the `w-max` strip's width out of the page's
-          min-content width — the app shell's flex column has no `min-w-0`, so without it the strip
-          widened the whole page (1024px viewport: document 1250px wide) instead of scrolling in its
-          own box. */}
-      <div className="@container -mx-1 overflow-x-auto px-1 pb-1">
+          The app shell's content column and <main> carry `min-w-0` (Phase 88 628B), so the `w-max`
+          strip scrolls inside this box instead of widening the page; 616A's `@container`
+          workaround for the missing `min-w-0` is retired. */}
+      <div className="-mx-1 overflow-x-auto px-1 pb-1">
         <TabsList aria-label={label} className="w-max">
           {tabs.map((tab) => (
             <TabsTrigger key={tab.id} value={tab.id}>

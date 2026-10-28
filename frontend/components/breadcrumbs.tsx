@@ -3,10 +3,11 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { useBreadcrumbLabels } from "@/components/breadcrumb-label-provider";
 
 export const SEGMENT_LABELS: Record<string, string> = {
-  // Core nav
-  dashboard: "Dashboard",
+  // Core nav. Labels follow the sidebar words, sentence case (Phase 88 628B, D11).
+  dashboard: "Home",
   matters: "Matters",
   team: "Team",
   settings: "Settings",
@@ -16,27 +17,39 @@ export const SEGMENT_LABELS: Record<string, string> = {
   fees: "Fees & Trust",
   connections: "Connections",
   // Kept settings sub-route segments (§12.7.1). Labels for deleted settings routes are pruned —
-  // components/__tests__/breadcrumbs-routes.test.ts fails on a label with no segment on disk.
+  // components/__tests__/breadcrumbs-routes.test.ts fails on a label with no segment on disk, and
+  // on a segment on disk with no label.
   templates: "Templates",
   checklists: "Checklists",
-  "request-templates": "Request Templates",
+  "request-templates": "Request templates",
+  // The Xero sync-log sub-route (the Connections tab itself is labelled "Integrations").
   xero: "Xero",
   "sync-log": "Sync log",
   history: "History",
   automations: "Automations",
   executions: "Executions",
+  // Shared action segments (matters/new, billing-runs/new, settings/…/new, …/[id]/edit).
+  new: "New",
+  edit: "Edit",
   // Other live segments (/notifications, /invoices/collections, /compliance).
   notifications: "Notifications",
-  collections: "Collections",
-  compliance: "Compliance",
+  // "Debtors" in the sidebar and the page h1; the Fees & Trust settings tab stays "Collections".
+  collections: "Debtors",
+  compliance: "FICA & compliance",
+  requests: "Data requests",
   // Additional segments
   clients: "Clients",
-  "my-work": "My Work",
+  "my-work": "My work",
   // Vertical module pages
-  "trust-accounting": "Trust Accounting",
-  "conflict-check": "Conflict Check",
-  "client-ledgers": "Client Ledgers",
+  "trust-accounting": "Trust accounting",
+  "conflict-check": "Conflict check",
+  "client-ledgers": "Client ledgers",
+  transactions: "Transactions",
+  reconciliation: "Reconciliation",
+  interest: "Interest",
+  investments: "Investments",
   invoices: "Fee notes",
+  "billing-runs": "Fee runs",
   // Phase 87 S6a (612A): nav-zone pages
   unbilled: "Unbilled work",
   reports: "Reports",
@@ -48,23 +61,31 @@ export const SEGMENT_LABELS: Record<string, string> = {
   disbursements: "Disbursements",
   tariffs: "Tariffs",
   ai: "AI",
-  reviews: "Reviews",
+  reviews: "AI reviews",
   timesheet: "Timesheet",
   "information-requests": "Information requests",
 };
 
-/** Segments that contain dynamic child routes (e.g. /matters/[id]) */
-const PARENT_SEGMENT_FALLBACKS: Record<string, string> = {
+/**
+ * Label for a dynamic segment (an id, or a slug such as /reports/[reportSlug]) by its parent
+ * segment, used when the page publishes no entity name (BreadcrumbLabelProvider). The routes test
+ * requires an entry for the parent of every [param] route on disk.
+ */
+export const PARENT_SEGMENT_FALLBACKS: Record<string, string> = {
   matters: "Matter",
   settings: "Settings",
   clients: "Client",
   invoices: "Fee note",
-  "client-ledgers": "Client Ledger",
+  "billing-runs": "Fee run",
+  "client-ledgers": "Client ledger",
+  disbursements: "Disbursement",
+  requests: "Data request",
+  "information-requests": "Information request",
+  reports: "Report",
+  checklists: "Checklist template",
+  "request-templates": "Request template",
+  templates: "Template",
 };
-
-function isUuid(value: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
-}
 
 /**
  * Intermediate prefixes (relative to /org/[slug]/) that have child routes but no
@@ -108,6 +129,7 @@ interface BreadcrumbsProps {
 
 export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
   const pathname = usePathname();
+  const publishedLabels = useBreadcrumbLabels();
 
   // Strip the /org/[slug]/ prefix to get the relative path segments
   const prefix = `/org/${slug}/`;
@@ -129,15 +151,20 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
       {segments.map((segment, index) => {
         const isLast = index === segments.length - 1;
         const parentSegment = index > 0 ? segments[index - 1] : undefined;
-        const label =
-          SEGMENT_LABELS[segment] ??
-          (isUuid(segment) && parentSegment
-            ? (PARENT_SEGMENT_FALLBACKS[parentSegment] ?? segment)
-            : segment);
 
         // Build the href for intermediate segments
         const prefixSegments = segments.slice(0, index + 1);
         const href = `/org/${slug}/${prefixSegments.join("/")}`;
+
+        // The entity name the page published for this exact href wins; then the segment's label;
+        // then, for a dynamic segment (id or slug), its parent's singular. Every segment on disk is
+        // covered by one of the two maps (breadcrumbs-routes.test.ts), so the raw segment is a
+        // last resort for unknown paths only.
+        const label =
+          publishedLabels.get(href) ??
+          SEGMENT_LABELS[segment] ??
+          (parentSegment ? PARENT_SEGMENT_FALLBACKS[parentSegment] : undefined) ??
+          segment;
 
         return (
           <span key={href} className="flex items-center gap-1">

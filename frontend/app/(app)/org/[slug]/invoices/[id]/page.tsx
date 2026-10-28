@@ -28,6 +28,7 @@ import { PROMOTED_INVOICE_SLUGS } from "@/lib/constants/promoted-field-slugs";
 import { XeroStatusChip } from "@/components/invoices/XeroStatusChip";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { BreadcrumbLabel } from "@/components/breadcrumb-label-provider";
 import { CollectionsHistoryTable } from "@/components/collections/collections-history-table";
 import { getInvoiceActivities, type CollectionActivityResponse } from "@/lib/api/collections";
 
@@ -119,8 +120,14 @@ export default async function InvoiceDetailPage({
     // Non-fatal: custom fields section won't render
   }
 
+  // Last crumb = the fee-note number; a draft has none yet, so its crumb stays "Fee note".
+  const feeNoteNumber = invoice!.invoiceNumber;
+
   return (
     <div className="space-y-8">
+      {feeNoteNumber && (
+        <BreadcrumbLabel href={`/org/${slug}/invoices/${id}`} label={feeNoteNumber} />
+      )}
       {/* Back link */}
       <div className="flex items-center justify-between">
         <Link

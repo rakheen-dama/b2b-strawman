@@ -43,7 +43,7 @@ export default function InvoiceDetailPage() {
       );
       setInvoice(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load invoice");
+      setError(err instanceof Error ? err.message : "Failed to load fee note");
     } finally {
       setIsLoading(false);
     }

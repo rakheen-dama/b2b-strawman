@@ -41,6 +41,7 @@ function makeDocument(overrides: Partial<Document> = {}): Document {
     scope: "CUSTOMER",
     clientId: "c1",
     visibility: "INTERNAL",
+    source: "MANUAL",
     uploadedBy: "m1",
     uploadedAt: "2024-06-01T00:00:00Z",
     createdAt: "2024-06-01T00:00:00Z",

@@ -45,7 +45,13 @@ import { createMessages } from "@/lib/messages";
 import { ContractReviewButton, isReviewableDocument } from "@/components/ai/contract-review-button";
 import { DraftingDialog } from "@/components/ai/drafting-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { Document, DocumentStatus, DocumentScope, TemplateListResponse } from "@/lib/types";
+import type {
+  Document,
+  DocumentSource,
+  DocumentStatus,
+  DocumentScope,
+  TemplateListResponse,
+} from "@/lib/types";
 
 // --- Upload state reducer ---
 
@@ -122,6 +128,11 @@ const SCOPE_BADGE: Record<
   ORG: { label: "Org", variant: "neutral" },
   PROJECT: { label: "Project", variant: "default" },
   CUSTOMER: { label: "Customer", variant: "lead" },
+};
+
+// Provenance label next to the file name. Only documents attached through a comment are labelled.
+const SOURCE_LABEL: Partial<Record<DocumentSource, string>> = {
+  COMMENT: "Comment",
 };
 
 // --- Component ---
@@ -436,6 +447,7 @@ export function DocumentsPanel({
                 const Icon = getFileIcon(doc.contentType);
                 const statusBadge = STATUS_BADGE[doc.status];
                 const scopeBadge = doc.scope ? SCOPE_BADGE[doc.scope] : null;
+                const sourceLabel = doc.source ? SOURCE_LABEL[doc.source] : undefined;
                 const isExpanded = expandedDocId === doc.id;
                 const colSpan = showScope ? 6 : 5;
                 return (
@@ -447,23 +459,30 @@ export function DocumentsPanel({
                       )}
                     >
                       <TableCell>
-                        <button
-                          type="button"
-                          className="flex min-w-0 items-center gap-1.5 text-left"
-                          onClick={() => setExpandedDocId(isExpanded ? null : doc.id)}
-                          aria-expanded={isExpanded}
-                          aria-label={`${isExpanded ? "Collapse" : "Expand"} comments for ${doc.fileName}`}
-                        >
-                          {isExpanded ? (
-                            <ChevronDown className="size-3.5 shrink-0 text-slate-400" />
-                          ) : (
-                            <ChevronRight className="size-3.5 shrink-0 text-slate-400" />
+                        <div className="flex min-w-0 items-center gap-2">
+                          <button
+                            type="button"
+                            className="flex min-w-0 items-center gap-1.5 text-left"
+                            onClick={() => setExpandedDocId(isExpanded ? null : doc.id)}
+                            aria-expanded={isExpanded}
+                            aria-label={`${isExpanded ? "Collapse" : "Expand"} comments for ${doc.fileName}`}
+                          >
+                            {isExpanded ? (
+                              <ChevronDown className="size-3.5 shrink-0 text-slate-400" />
+                            ) : (
+                              <ChevronRight className="size-3.5 shrink-0 text-slate-400" />
+                            )}
+                            <Icon className="size-4 shrink-0 text-slate-400 dark:text-slate-500" />
+                            <span className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">
+                              {doc.fileName}
+                            </span>
+                          </button>
+                          {sourceLabel && (
+                            <Badge variant="neutral" className="shrink-0">
+                              {sourceLabel}
+                            </Badge>
                           )}
-                          <Icon className="size-4 shrink-0 text-slate-400 dark:text-slate-500" />
-                          <span className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">
-                            {doc.fileName}
-                          </span>
-                        </button>
+                        </div>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         <span className="text-sm text-slate-600 dark:text-slate-400">

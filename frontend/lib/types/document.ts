@@ -8,6 +8,14 @@ export type DocumentScope = "ORG" | "PROJECT" | "CUSTOMER";
 
 export type DocumentVisibility = "INTERNAL" | "SHARED" | "PORTAL";
 
+/** Provenance of a document (Document.Source constants). COMMENT = attached through a comment. */
+export type DocumentSource =
+  | "MANUAL"
+  | "AI_GENERATED"
+  | "TEMPLATE_GENERATED"
+  | "EMAIL_INGEST"
+  | "COMMENT";
+
 export interface Document {
   id: string;
   matterId: string | null;
@@ -18,6 +26,7 @@ export interface Document {
   scope: DocumentScope;
   clientId: string | null;
   visibility: DocumentVisibility;
+  source: DocumentSource;
   uploadedBy: string | null;
   uploadedByName: string | null;
   uploadedAt: string | null;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { startTransition, useRef, useState, type FormEvent, type ReactNode } from "react";
 import type { VariantProps } from "class-variance-authority";
 import { Button, buttonVariants } from "@b2mash/ui/button";
 import {
@@ -14,10 +14,16 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@b2mash/ui/label";
 import { updateComment } from "@/lib/actions/comments";
-import type { Comment } from "@/lib/types";
+import { CommentAttachmentsField } from "@/components/comments/comment-attachments-field";
+import { useCommentAttachments } from "@/components/comments/use-comment-attachments";
+import type { Comment, CommentAttachment } from "@/lib/types";
 
 type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>;
 type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>["size"]>;
+
+function sameIds(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((id, i) => id === b[i]);
+}
 
 interface EditCommentDialogProps {
   comment: Comment;
@@ -48,39 +54,98 @@ export function EditCommentDialog({
 }: EditCommentDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Synchronous in-flight flag: the submit handler runs inside a transition, so `isSubmitting` is not
+  // committed (and not visible to the close handler or a second submit) until it has finished.
+  const submittingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
+  // Attachments already on the comment that the user is keeping (removable chips).
+  const [kept, setKept] = useState<CommentAttachment[]>(comment.attachments ?? []);
+  // Controlled draft, initialised from the comment on open: survives a handled failure (as the chips
+  // do), so a retry never saves the original body over the user's edit.
+  const [body, setBody] = useState(comment.body);
+  const [visibility, setVisibility] = useState<string>(comment.visibility);
+  const attachments = useCommentAttachments({
+    slug: orgSlug,
+    projectId,
+    existingCount: kept.length,
+  });
 
-  async function handleSubmit(formData: FormData) {
+  // onSubmit + startTransition rather than `<form action>`: the same transition, minus React's
+  // automatic form reset, which a controlled <select> does not survive (its DOM would fall back to
+  // the first option while state keeps the user's choice).
+  function handleFormSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    startTransition(() => handleSubmit());
+  }
+
+  async function handleSubmit() {
+    if (submittingRef.current) return;
     setError(null);
 
-    const body = formData.get("body")?.toString().trim() ?? "";
-    if (!body) {
+    const trimmedBody = body.trim();
+    if (!trimmedBody) {
       setError("Comment cannot be empty.");
       return;
     }
 
-    const visibility = canManageVisibility ? formData.get("visibility")?.toString() : undefined;
-
     setIsSubmitting(true);
+    submittingRef.current = true;
 
     try {
-      const result = await updateComment(orgSlug, projectId, comment.id, body, visibility);
+      const confirmed = await attachments.confirmAll();
+      if (!confirmed.ok) {
+        setError(confirmed.error);
+        return;
+      }
+
+      // Kept attachments first (original order), then the newly confirmed uploads. The key is
+      // sent only when the set changed: omitted = unchanged, so a visibility-only edit never
+      // re-sends (and so never re-applies the attach rule to) the comment's documents.
+      const originalIds = (comment.attachments ?? []).map((a) => a.documentId);
+      const finalIds = [...kept.map((a) => a.documentId), ...confirmed.documentIds];
+      const attachmentDocumentIds = sameIds(finalIds, originalIds) ? undefined : finalIds;
+
+      const result = await updateComment(
+        orgSlug,
+        projectId,
+        comment.id,
+        trimmedBody,
+        canManageVisibility ? visibility : undefined,
+        attachmentDocumentIds
+      );
       if (result.success) {
+        attachments.reset();
         setOpen(false);
         onCommentChange?.();
       } else {
-        setError(result.error ?? "Failed to update comment.");
+        setError(
+          attachments.describeRejection(
+            result.error ?? "Failed to update comment.",
+            result.attachmentDocumentId,
+            kept
+          )
+        );
       }
     } catch {
       setError("An unexpected error occurred.");
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }
 
   function handleOpenChange(newOpen: boolean) {
+    // Escape / overlay / close button while saving: releasing now would cancel uploads that
+    // confirmAll is in the middle of confirming.
+    if (!newOpen && submittingRef.current) return;
     if (newOpen) {
       setError(null);
+      setKept(comment.attachments ?? []);
+      setBody(comment.body);
+      setVisibility(comment.visibility);
+    } else {
+      // Closing without saving: release staged (still PENDING) uploads.
+      attachments.releaseStaged();
     }
     setOpen(newOpen);
   }
@@ -96,7 +161,7 @@ export function EditCommentDialog({
         size={triggerSize}
         className={triggerClassName}
         aria-label={triggerAriaLabel}
-        onClick={() => setOpen(true)}
+        onClick={() => handleOpenChange(true)}
       >
         {triggerIcon}
         {triggerLabel}
@@ -106,13 +171,14 @@ export function EditCommentDialog({
           <DialogTitle>Edit Comment</DialogTitle>
           <DialogDescription>Update your comment.</DialogDescription>
         </DialogHeader>
-        <form action={handleSubmit} className="space-y-4">
+        <form onSubmit={handleFormSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="edit-comment-body">Comment</Label>
             <Textarea
               id="edit-comment-body"
               name="body"
-              defaultValue={comment.body}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
               required
               disabled={isSubmitting}
             />
@@ -124,7 +190,8 @@ export function EditCommentDialog({
               <select
                 id="edit-comment-visibility"
                 name="visibility"
-                defaultValue={comment.visibility}
+                value={visibility}
+                onChange={(e) => setVisibility(e.target.value)}
                 disabled={isSubmitting}
                 className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800"
               >
@@ -134,18 +201,31 @@ export function EditCommentDialog({
             </div>
           )}
 
+          <CommentAttachmentsField
+            attachments={attachments}
+            kept={kept}
+            onRemoveKept={(documentId) =>
+              setKept((prev) => prev.filter((a) => a.documentId !== documentId))
+            }
+            disabled={isSubmitting}
+            shared={canManageVisibility && visibility === "SHARED"}
+          />
+
           {error && <p className="text-destructive text-sm">{error}</p>}
 
           <DialogFooter>
             <Button
               type="button"
               variant="plain"
-              onClick={() => setOpen(false)}
+              onClick={() => handleOpenChange(false)}
               disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              disabled={isSubmitting || attachments.isBusy || attachments.hasErrors}
+            >
               {isSubmitting ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>

@@ -13,6 +13,26 @@ import type { Comment } from "@/lib/types";
 interface ActionResult {
   success: boolean;
   error?: string;
+  /** Set when the backend rejected one specific attachment (422 "Attachment not allowed"). */
+  attachmentDocumentId?: string;
+}
+
+const ATTACHMENT_NOT_ALLOWED = "Attachment not allowed";
+
+/**
+ * Maps the backend's 422 "Attachment not allowed" ProblemDetail. Its detail names the document by
+ * raw UUID, so the offending id is passed through for the form to show the file name instead.
+ */
+function attachmentErrorResult(error: ApiError): ActionResult | null {
+  if (error.status !== 422 || error.detail?.title !== ATTACHMENT_NOT_ALLOWED) {
+    return null;
+  }
+  const documentId = error.detail.documentId;
+  return {
+    success: false,
+    error: error.message,
+    ...(typeof documentId === "string" ? { attachmentDocumentId: documentId } : {}),
+  };
 }
 
 export async function fetchComments(
@@ -61,7 +81,8 @@ export async function createComment(
   entityType: string,
   entityId: string,
   body: string,
-  visibility?: string
+  visibility?: string,
+  attachmentDocumentIds?: string[]
 ): Promise<ActionResult> {
   if (!body.trim()) {
     return { success: false, error: "Comment cannot be empty." };
@@ -73,10 +94,13 @@ export async function createComment(
       entityId,
       body: body.trim(),
       ...(visibility ? { visibility } : {}),
+      ...(attachmentDocumentIds && attachmentDocumentIds.length > 0
+        ? { attachmentDocumentIds }
+        : {}),
     });
   } catch (error) {
     if (error instanceof ApiError) {
-      return { success: false, error: error.message };
+      return attachmentErrorResult(error) ?? { success: false, error: error.message };
     }
     return { success: false, error: "An unexpected error occurred." };
   }
@@ -91,7 +115,9 @@ export async function updateComment(
   projectId: string,
   commentId: string,
   body: string,
-  visibility?: string
+  visibility?: string,
+  /** undefined = leave the attachments unchanged; a list (including []) replaces them. */
+  attachmentDocumentIds?: string[]
 ): Promise<ActionResult> {
   if (!body.trim()) {
     return { success: false, error: "Comment cannot be empty." };
@@ -101,9 +127,14 @@ export async function updateComment(
     await updateMatterComment(projectId, commentId, {
       body: body.trim(),
       ...(visibility ? { visibility } : {}),
+      ...(attachmentDocumentIds ? { attachmentDocumentIds } : {}),
     });
   } catch (error) {
     if (error instanceof ApiError) {
+      const attachmentError = attachmentErrorResult(error);
+      if (attachmentError) {
+        return attachmentError;
+      }
       if (error.status === 403) {
         return {
           success: false,

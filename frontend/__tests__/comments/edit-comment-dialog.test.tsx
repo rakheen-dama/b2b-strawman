@@ -1,14 +1,60 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { EditCommentDialog } from "@/components/comments/edit-comment-dialog";
-import type { Comment } from "@/lib/types";
+import type { Comment, CommentAttachment } from "@/lib/types";
 
 const mockUpdateComment = vi.fn();
 
 vi.mock("@/lib/actions/comments", () => ({
   updateComment: (...args: unknown[]) => mockUpdateComment(...args),
 }));
+
+const mockInitiateUpload = vi.fn();
+const mockConfirmUpload = vi.fn();
+const mockCancelUpload = vi.fn();
+const mockGetDownloadUrl = vi.fn();
+
+vi.mock("@/app/(app)/org/[slug]/matters/[id]/actions", () => ({
+  initiateUpload: (...args: unknown[]) => mockInitiateUpload(...args),
+  confirmUpload: (...args: unknown[]) => mockConfirmUpload(...args),
+  cancelUpload: (...args: unknown[]) => mockCancelUpload(...args),
+  getDownloadUrl: (...args: unknown[]) => mockGetDownloadUrl(...args),
+}));
+
+/** Minimal XMLHttpRequest stand-in: every PUT succeeds synchronously. */
+class FakeXhr {
+  upload: {
+    onprogress: ((e: { lengthComputable: boolean; loaded: number; total: number }) => void) | null;
+  } = { onprogress: null };
+  onload: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+  onabort: (() => void) | null = null;
+  status = 0;
+  open() {}
+  setRequestHeader() {}
+  send() {
+    this.upload.onprogress?.({ lengthComputable: true, loaded: 1, total: 1 });
+    this.status = 200;
+    this.onload?.();
+  }
+  abort() {
+    this.onabort?.();
+  }
+}
+
+const LETTER: CommentAttachment = {
+  documentId: "doc-a",
+  fileName: "letter.pdf",
+  contentType: "application/pdf",
+  size: 2048,
+};
+const RECEIPT: CommentAttachment = {
+  documentId: "doc-b",
+  fileName: "receipt.pdf",
+  contentType: "application/pdf",
+  size: 1024,
+};
 
 function makeComment(overrides: Partial<Comment> = {}): Comment {
   return {
@@ -21,34 +67,58 @@ function makeComment(overrides: Partial<Comment> = {}): Comment {
     authorAvatarUrl: null,
     body: "Original comment body",
     visibility: "INTERNAL",
+    source: "INTERNAL",
     parentId: null,
     createdAt: "2026-02-10T10:00:00Z",
     updatedAt: "2026-02-10T10:00:00Z",
+    attachments: [],
     ...overrides,
   };
+}
+
+function renderDialog(
+  triggerLabel: string,
+  comment: Comment = makeComment(),
+  canManageVisibility = false
+) {
+  return render(
+    <EditCommentDialog
+      comment={comment}
+      orgSlug="acme"
+      projectId="p1"
+      canManageVisibility={canManageVisibility}
+      triggerLabel={triggerLabel}
+    />
+  );
+}
+
+function fileInput(): HTMLInputElement {
+  return document.querySelector('[role="dialog"] input[type="file"]') as HTMLInputElement;
 }
 
 describe("EditCommentDialog", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubGlobal("XMLHttpRequest", FakeXhr);
+    mockInitiateUpload.mockResolvedValue({
+      success: true,
+      documentId: "doc-new",
+      presignedUrl: "https://s3.example.com/put-new",
+    });
+    mockConfirmUpload.mockResolvedValue({ success: true });
+    mockCancelUpload.mockResolvedValue({ success: true });
+    mockUpdateComment.mockResolvedValue({ success: true });
   });
 
   afterEach(() => {
     cleanup();
+    vi.unstubAllGlobals();
   });
 
   it("opens dialog with pre-filled comment body", async () => {
     const user = userEvent.setup();
 
-    render(
-      <EditCommentDialog
-        comment={makeComment()}
-        orgSlug="acme"
-        projectId="p1"
-        canManageVisibility={false}
-        triggerLabel="Edit comment open"
-      />
-    );
+    renderDialog("Edit comment open");
 
     await user.click(screen.getByRole("button", { name: "Edit comment open" }));
 
@@ -56,18 +126,9 @@ describe("EditCommentDialog", () => {
   });
 
   it("saves updated body via updateComment", async () => {
-    mockUpdateComment.mockResolvedValue({ success: true });
     const user = userEvent.setup();
 
-    render(
-      <EditCommentDialog
-        comment={makeComment()}
-        orgSlug="acme"
-        projectId="p1"
-        canManageVisibility={false}
-        triggerLabel="Edit comment save"
-      />
-    );
+    renderDialog("Edit comment save");
 
     await user.click(screen.getByRole("button", { name: "Edit comment save" }));
 
@@ -82,6 +143,7 @@ describe("EditCommentDialog", () => {
         "p1",
         "c1",
         "Updated comment body",
+        undefined,
         undefined
       );
     });
@@ -91,15 +153,7 @@ describe("EditCommentDialog", () => {
     const user = userEvent.setup();
 
     // Without visibility management
-    const { unmount } = render(
-      <EditCommentDialog
-        comment={makeComment()}
-        orgSlug="acme"
-        projectId="p1"
-        canManageVisibility={false}
-        triggerLabel="Edit no visibility"
-      />
-    );
+    const { unmount } = renderDialog("Edit no visibility");
 
     await user.click(screen.getByRole("button", { name: "Edit no visibility" }));
     expect(screen.queryByLabelText("Visibility")).not.toBeInTheDocument();
@@ -108,17 +162,303 @@ describe("EditCommentDialog", () => {
     cleanup();
 
     // With visibility management
-    render(
-      <EditCommentDialog
-        comment={makeComment()}
-        orgSlug="acme"
-        projectId="p1"
-        canManageVisibility={true}
-        triggerLabel="Edit with visibility"
-      />
-    );
+    renderDialog("Edit with visibility", makeComment(), true);
 
     await user.click(screen.getByRole("button", { name: "Edit with visibility" }));
     expect(screen.getByLabelText("Visibility")).toBeInTheDocument();
+  });
+
+  it("shows the comment's existing attachments as removable chips", async () => {
+    const user = userEvent.setup();
+
+    renderDialog("Edit chips shown", makeComment({ attachments: [LETTER, RECEIPT] }));
+    await user.click(screen.getByRole("button", { name: "Edit chips shown" }));
+
+    expect(screen.getByText("letter.pdf")).toBeInTheDocument();
+    expect(screen.getByText("receipt.pdf")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove letter.pdf" })).toHaveAttribute(
+      "type",
+      "button"
+    );
+  });
+
+  it("visibility change keeps chips and does not re-send the attachment ids", async () => {
+    const user = userEvent.setup();
+
+    renderDialog("Edit visibility chips", makeComment({ attachments: [LETTER] }), true);
+    await user.click(screen.getByRole("button", { name: "Edit visibility chips" }));
+
+    await user.selectOptions(screen.getByLabelText("Visibility"), "SHARED");
+
+    expect(screen.getByText("letter.pdf")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove letter.pdf" })).toBeInTheDocument();
+    expect(
+      screen.getByText("Attachments on a client-visible comment are shared with the client.")
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(mockUpdateComment).toHaveBeenCalledWith(
+        "acme",
+        "p1",
+        "c1",
+        "Original comment body",
+        "SHARED",
+        undefined
+      );
+    });
+  });
+
+  it("removing one chip sends the remaining ids in their original order", async () => {
+    const user = userEvent.setup();
+
+    renderDialog("Edit remove one", makeComment({ attachments: [LETTER, RECEIPT] }));
+    await user.click(screen.getByRole("button", { name: "Edit remove one" }));
+
+    await user.click(screen.getByRole("button", { name: "Remove letter.pdf" }));
+    expect(screen.queryByText("letter.pdf")).not.toBeInTheDocument();
+    // An attached document is not a pending upload: removal never cancels it.
+    expect(mockCancelUpload).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(mockUpdateComment).toHaveBeenCalledWith(
+        "acme",
+        "p1",
+        "c1",
+        "Original comment body",
+        undefined,
+        ["doc-b"]
+      );
+    });
+  });
+
+  it("removing every chip sends an empty list", async () => {
+    const user = userEvent.setup();
+
+    renderDialog("Edit remove all", makeComment({ attachments: [LETTER] }));
+    await user.click(screen.getByRole("button", { name: "Edit remove all" }));
+
+    await user.click(screen.getByRole("button", { name: "Remove letter.pdf" }));
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(mockUpdateComment).toHaveBeenCalledWith(
+        "acme",
+        "p1",
+        "c1",
+        "Original comment body",
+        undefined,
+        []
+      );
+    });
+  });
+
+  it("adding a file confirms it and appends it after the kept ids", async () => {
+    const user = userEvent.setup();
+
+    renderDialog("Edit add file", makeComment({ attachments: [LETTER] }));
+    await user.click(screen.getByRole("button", { name: "Edit add file" }));
+
+    await user.upload(
+      fileInput(),
+      new File(["%PDF-1.4 new"], "new.pdf", { type: "application/pdf" })
+    );
+    await screen.findByText("new.pdf");
+    expect(mockConfirmUpload).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(mockUpdateComment).toHaveBeenCalledWith(
+        "acme",
+        "p1",
+        "c1",
+        "Original comment body",
+        undefined,
+        ["doc-a", "doc-new"]
+      );
+    });
+    expect(mockConfirmUpload).toHaveBeenCalledWith("acme", "p1", "doc-new");
+    expect(mockCancelUpload).not.toHaveBeenCalled();
+  });
+
+  it("names a rejected kept attachment by its file name on a 422", async () => {
+    mockUpdateComment.mockResolvedValue({
+      success: false,
+      error: "Document doc-a cannot be attached to a client-visible comment",
+      attachmentDocumentId: "doc-a",
+    });
+    const user = userEvent.setup();
+
+    renderDialog("Edit kept rejected", makeComment({ attachments: [LETTER, RECEIPT] }));
+    await user.click(screen.getByRole("button", { name: "Edit kept rejected" }));
+
+    await user.click(screen.getByRole("button", { name: "Remove receipt.pdf" }));
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(
+      await screen.findByText("Document letter.pdf cannot be attached to a client-visible comment")
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/doc-a/)).not.toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("Escape while saving neither closes the dialog nor releases the staged upload", async () => {
+    let resolveConfirm: (value: { success: boolean }) => void = () => {};
+    mockConfirmUpload.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveConfirm = resolve;
+        })
+    );
+    const user = userEvent.setup();
+
+    renderDialog("Edit escape saving", makeComment({ attachments: [LETTER] }));
+    await user.click(screen.getByRole("button", { name: "Edit escape saving" }));
+
+    await user.upload(
+      fileInput(),
+      new File(["%PDF-1.4 new"], "new.pdf", { type: "application/pdf" })
+    );
+    await screen.findByText("new.pdf");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(mockConfirmUpload).toHaveBeenCalledWith("acme", "p1", "doc-new"));
+
+    await user.keyboard("{Escape}");
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(mockCancelUpload).not.toHaveBeenCalled();
+
+    resolveConfirm({ success: true });
+    await waitFor(() => {
+      expect(mockUpdateComment).toHaveBeenCalledWith(
+        "acme",
+        "p1",
+        "c1",
+        "Original comment body",
+        undefined,
+        ["doc-a", "doc-new"]
+      );
+    });
+    expect(mockCancelUpload).not.toHaveBeenCalled();
+  });
+
+  it("keeps the edited body and visibility when a staged confirm fails, then saves them", async () => {
+    mockConfirmUpload.mockResolvedValue({ success: false, error: "Upload not found" });
+    const user = userEvent.setup();
+
+    renderDialog("Edit confirm fails", makeComment({ attachments: [LETTER] }), true);
+    await user.click(screen.getByRole("button", { name: "Edit confirm fails" }));
+
+    const textarea = screen.getByLabelText("Comment");
+    await user.clear(textarea);
+    await user.type(textarea, "Edited body");
+    await user.selectOptions(screen.getByLabelText("Visibility"), "SHARED");
+    await user.upload(
+      fileInput(),
+      new File(["%PDF-1.4 new"], "new.pdf", { type: "application/pdf" })
+    );
+    await screen.findByText("new.pdf");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("new.pdf: Upload not found")).toBeInTheDocument();
+    expect(mockUpdateComment).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Comment")).toHaveValue("Edited body");
+    expect(screen.getByLabelText("Visibility")).toHaveValue("SHARED");
+
+    // Drop the failed chip and save: the edit (not the original body) is persisted.
+    await user.click(screen.getByRole("button", { name: "Remove new.pdf" }));
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(mockUpdateComment).toHaveBeenCalledWith(
+        "acme",
+        "p1",
+        "c1",
+        "Edited body",
+        "SHARED",
+        undefined
+      );
+    });
+  });
+
+  it("keeps the edited body when updateComment fails", async () => {
+    mockUpdateComment.mockResolvedValue({ success: false, error: "Server error" });
+    const user = userEvent.setup();
+
+    renderDialog("Edit update fails");
+    await user.click(screen.getByRole("button", { name: "Edit update fails" }));
+
+    const textarea = screen.getByLabelText("Comment");
+    await user.clear(textarea);
+    await user.type(textarea, "Edited body");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("Server error")).toBeInTheDocument();
+    expect(screen.getByLabelText("Comment")).toHaveValue("Edited body");
+  });
+
+  it("re-opening after cancel resets the body and visibility from the comment", async () => {
+    const user = userEvent.setup();
+
+    renderDialog("Edit cancel body", makeComment(), true);
+    await user.click(screen.getByRole("button", { name: "Edit cancel body" }));
+
+    const textarea = screen.getByLabelText("Comment");
+    await user.clear(textarea);
+    await user.type(textarea, "Abandoned edit");
+    await user.selectOptions(screen.getByLabelText("Visibility"), "SHARED");
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+    await user.click(screen.getByRole("button", { name: "Edit cancel body" }));
+    expect(screen.getByLabelText("Comment")).toHaveValue("Original comment body");
+    expect(screen.getByLabelText("Visibility")).toHaveValue("INTERNAL");
+  });
+
+  it("ignores a second Save while the first save is still in flight", async () => {
+    let resolveUpdate: (value: { success: boolean }) => void = () => {};
+    mockUpdateComment.mockImplementation(() => new Promise((resolve) => (resolveUpdate = resolve)));
+    const user = userEvent.setup();
+
+    renderDialog("Edit double save");
+    await user.click(screen.getByRole("button", { name: "Edit double save" }));
+    const textarea = screen.getByLabelText("Comment");
+    await user.clear(textarea);
+    await user.type(textarea, "Saved once");
+
+    const form = screen.getByRole("button", { name: "Save" }).closest("form")!;
+    fireEvent.submit(form);
+    await waitFor(() => expect(mockUpdateComment).toHaveBeenCalledTimes(1));
+    fireEvent.submit(form);
+
+    await act(async () => resolveUpdate({ success: true }));
+    expect(mockUpdateComment).toHaveBeenCalledTimes(1);
+  });
+
+  it("cancel releases staged uploads and re-opening resets the chips", async () => {
+    const user = userEvent.setup();
+
+    renderDialog("Edit cancel staged", makeComment({ attachments: [LETTER] }));
+    await user.click(screen.getByRole("button", { name: "Edit cancel staged" }));
+
+    await user.upload(
+      fileInput(),
+      new File(["%PDF-1.4 new"], "new.pdf", { type: "application/pdf" })
+    );
+    await screen.findByText("new.pdf");
+    await user.click(screen.getByRole("button", { name: "Remove letter.pdf" }));
+
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(mockCancelUpload).toHaveBeenCalledWith("doc-new");
+    expect(mockCancelUpload).toHaveBeenCalledTimes(1);
+    expect(mockUpdateComment).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "Edit cancel staged" }));
+    expect(await screen.findByText("letter.pdf")).toBeInTheDocument();
+    expect(screen.queryByText("new.pdf")).not.toBeInTheDocument();
   });
 });

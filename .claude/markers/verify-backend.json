@@ -1,7 +1,7 @@
 {
-  "commit": "0c9acf7b9e03105416194f653abf289fa05a7bcd",
-  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q (./mvnw verify, worktree-epic-627D @0c9acf7b9 = PR #1696 final head)",
+  "commit": "45107cec338e8b427fc03abca9aad8e7c4e8ae6e",
+  "command": "cd backend && bash scripts/verify.sh -q (./mvnw verify, worktree-epic-627H @45107cec3 = PR #1699 final head)",
   "exit": 0,
-  "ts": "2026-10-28T09:49:28Z",
-  "summary": "Slice 627D (profitability CSV endpoint) BE verify on final head 0c9acf7b9: 6208 tests / 0 failures / 0 errors / 26 skipped (baseline 6187 → +21: ReportControllerTest 9 + ProfitabilityCsvExporterTest 12). Backend CI run 40663990630 success on 0c9acf7b9."
+  "ts": "2026-10-28T14:28:02Z",
+  "summary": "Slice 627H (comment attachments backend, tenant V9) BE verify (627.18 BE-VERIFY for 627D + 627H) on final head 45107cec3: 6238 tests / 0 failures / 0 errors / 26 skipped (baseline 6208 \u2192 +30; the new classes CommentAttachmentIntegrationTest 21 + V9CommentAttachmentsTest 8 account for 29). Earlier verifies on 3f5380e8e (6236) and f022281c3 (6238) also green. Backend CI run 40701142678 success on 45107cec3."
 }

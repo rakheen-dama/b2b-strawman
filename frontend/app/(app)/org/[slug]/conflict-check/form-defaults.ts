@@ -28,7 +28,7 @@ function isCheckType(value: string): value is PerformConflictCheckFormData["chec
  * Form defaults from the page's search params, filled in from the resolved `customerId` client.
  * Callers: the client overflow menu (customerId + checkedName) and the New Matter dialog link-out
  * (customerId + checkType=NEW_MATTER, Phase 88 G-A6). The ID number never travels in the URL
- * (POPIA, ruling R-17): it comes from the client's structural `idNumber`. Explicit query values
+ * (personal data — POPIA): it comes from the client's structural `idNumber`. Explicit query values
  * win over the client's. An unknown checkType is ignored (form default applies).
  */
 export function buildConflictCheckFormDefaults(

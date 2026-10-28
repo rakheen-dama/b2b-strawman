@@ -60,8 +60,9 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
     },
   });
 
-  // Conflict-check link-out (G-A6). Only the client id travels in the URL; the conflict-check
-  // page resolves the name + ID number server-side (POPIA, ruling R-17).
+  // Conflict-check link-out (G-A6), opened in a new tab so the half-filled form survives. Only the
+  // client id travels in the URL — no name or ID number (POPIA) — so the conflict-check page
+  // resolves them server-side.
   const selectedCustomerId = useWatch({ control: form.control, name: "customerId" });
   const conflictCheckParams = new URLSearchParams({ checkType: "NEW_MATTER" });
   if (selectedCustomerId) conflictCheckParams.set("customerId", selectedCustomerId);
@@ -297,8 +298,14 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                   Run a conflict of interest check before creating this matter.
                 </p>
                 <Button asChild variant="outline" size="sm" className="mt-3">
-                  <Link href={conflictCheckHref} data-testid="new-matter-conflict-check-link">
+                  <Link
+                    href={conflictCheckHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid="new-matter-conflict-check-link"
+                  >
                     Run a conflict check first →
+                    <span className="sr-only"> (opens in a new tab)</span>
                   </Link>
                 </Button>
               </div>

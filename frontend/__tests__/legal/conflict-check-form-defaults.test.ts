@@ -41,7 +41,8 @@ describe("buildConflictCheckFormDefaults (conflict-check page prefill, G-A6)", (
     ).toEqual({ customerId: "c-1", checkedName: "Acme Holdings" });
   });
 
-  // R-17: the New Matter link carries only customerId; the page resolves the client server-side.
+  // The New Matter link carries only customerId (no name / ID number in the URL — POPIA), so the
+  // page resolves the client server-side.
   describe("with the resolved client details", () => {
     const CLIENT_ID = "11111111-1111-4111-8111-111111111111";
 

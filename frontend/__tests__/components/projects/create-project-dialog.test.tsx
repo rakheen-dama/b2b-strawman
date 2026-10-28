@@ -122,8 +122,9 @@ describe("CreateProjectDialog promoted fields (Epic 464)", () => {
 });
 
 // Phase 88 G-A6: the stale "Coming Soon" card becomes a link-out to the conflict-check page,
-// prefilled with the selected client. R-17: only checkType + customerId travel in the URL (no
-// name, no ID number — POPIA); the conflict-check page resolves the client server-side.
+// prefilled with the selected client. Only checkType + customerId travel in the URL (no name, no
+// ID number — POPIA); the conflict-check page resolves the client server-side. It opens in a new
+// tab so the half-filled New Matter form is not lost.
 describe("CreateProjectDialog conflict-check link (G-A6)", () => {
   const CLIENT_ID = "11111111-1111-4111-8111-111111111111";
 
@@ -175,6 +176,19 @@ describe("CreateProjectDialog conflict-check link (G-A6)", () => {
     expect(link).toHaveAttribute("href", "/org/acme/conflict-check?checkType=NEW_MATTER");
     expect(screen.queryByText("Coming Soon")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /run conflict check/i })).not.toBeInTheDocument();
+  });
+
+  it("opens the conflict check in a new tab so the half-filled form is kept", async () => {
+    const user = userEvent.setup();
+    renderDialogWithConflictCheck();
+
+    await user.click(screen.getByText(/new matter/i));
+
+    const link = await screen.findByRole("link", { name: /run a conflict check first/i });
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    expect(link).toHaveAccessibleName(/opens in a new tab/i);
+    expect(link).toHaveTextContent(/^Run a conflict check first →/);
   });
 
   it("passes only the selected client's id in the link, never its name or ID number", async () => {

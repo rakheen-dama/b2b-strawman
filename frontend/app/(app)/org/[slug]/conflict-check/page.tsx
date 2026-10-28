@@ -1,35 +1,10 @@
-import { notFound, unstable_rethrow } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getOrgSettings } from "@/lib/api/settings";
-import { getClient } from "@/lib/api/clients";
-import { isUuid } from "@/components/audit/filter-params";
 import { fetchConflictChecks, fetchCustomers, fetchProjects } from "./actions";
 import { ConflictCheckClient } from "./conflict-check-client";
-import {
-  buildConflictCheckFormDefaults,
-  type ConflictCheckClientDetails,
-  type ConflictCheckSearchParams,
-} from "./form-defaults";
+import { buildConflictCheckFormDefaults, type ConflictCheckSearchParams } from "./form-defaults";
+import { resolveClientDetails } from "./resolve-client";
 import type { ConflictCheck } from "@/lib/types";
-
-/**
- * The `customerId` client's name + structural ID number for the form prefill. The ID number is
- * resolved here rather than carried in the URL (POPIA, Phase 88 ruling R-17). A failed lookup
- * (404/403/network) leaves the page on its other defaults; Next control flow (re-login redirect)
- * still propagates.
- */
-async function resolveClientDetails(
-  customerId: string | undefined
-): Promise<ConflictCheckClientDetails | null> {
-  if (!customerId || !isUuid(customerId)) return null;
-  try {
-    const client = await getClient(customerId);
-    return { name: client.name, idNumber: client.idNumber };
-  } catch (error) {
-    unstable_rethrow(error);
-    console.error("Failed to resolve conflict-check client:", error);
-    return null;
-  }
-}
 
 export default async function ConflictCheckPage({
   params,
@@ -62,11 +37,6 @@ export default async function ConflictCheckPage({
     );
   }
 
-  const initialFormDefaults = buildConflictCheckFormDefaults(
-    query,
-    await resolveClientDetails(query.customerId)
-  );
-
   let initialChecks: ConflictCheck[] = [];
   let initialTotal = 0;
 
@@ -80,13 +50,17 @@ export default async function ConflictCheckPage({
 
   // Pre-fetch customers + projects for the form selectors so the dropdowns
   // hydrate on first render instead of relying on a client-side useEffect
-  // that silently eats errors (GAP-L-29).
-  const [customersResult, projectsResult] = await Promise.allSettled([
-    fetchCustomers(),
-    fetchProjects(),
+  // that silently eats errors (GAP-L-29). The `customerId` client lookup for the form prefill
+  // runs in the same batch; it resolves null on failure and rejects only for Next control flow
+  // (re-login redirect), which Promise.all propagates.
+  const [clientDetails, [customersResult, projectsResult]] = await Promise.all([
+    resolveClientDetails(query.customerId),
+    Promise.allSettled([fetchCustomers(), fetchProjects()]),
   ]);
   const initialCustomers = customersResult.status === "fulfilled" ? customersResult.value : [];
   const initialProjects = projectsResult.status === "fulfilled" ? projectsResult.value : [];
+
+  const initialFormDefaults = buildConflictCheckFormDefaults(query, clientDetails);
 
   return (
     <div className="space-y-6">

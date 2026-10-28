@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useState, type FormEvent } from "react";
+import { startTransition, useRef, useState, type FormEvent } from "react";
 import { Button } from "@b2mash/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@b2mash/ui/label";
@@ -28,6 +28,9 @@ export function AddCommentForm({
   onCommentChange,
 }: AddCommentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Synchronous in-flight flag: the submit handler runs inside a transition, so `isSubmitting` is
+  // not committed until it has finished and cannot block a second submit on its own.
+  const submittingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   // Controlled draft: survives a handled failure (the chips stay too); cleared only on success.
   const [body, setBody] = useState("");
@@ -43,6 +46,7 @@ export function AddCommentForm({
   }
 
   async function handleSubmit() {
+    if (submittingRef.current) return;
     setError(null);
 
     const trimmedBody = body.trim();
@@ -52,6 +56,7 @@ export function AddCommentForm({
     }
 
     setIsSubmitting(true);
+    submittingRef.current = true;
 
     try {
       const confirmed = await attachments.confirmAll();
@@ -85,6 +90,7 @@ export function AddCommentForm({
     } catch {
       setError("An unexpected error occurred.");
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }

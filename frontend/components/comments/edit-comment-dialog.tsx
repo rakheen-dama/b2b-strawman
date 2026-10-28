@@ -54,8 +54,8 @@ export function EditCommentDialog({
 }: EditCommentDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Synchronous in-flight flag: the form action runs inside a transition, so `isSubmitting` is not
-  // committed (and not visible to the close handler) until the action has finished.
+  // Synchronous in-flight flag: the submit handler runs inside a transition, so `isSubmitting` is not
+  // committed (and not visible to the close handler or a second submit) until it has finished.
   const submittingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   // Attachments already on the comment that the user is keeping (removable chips).
@@ -79,6 +79,7 @@ export function EditCommentDialog({
   }
 
   async function handleSubmit() {
+    if (submittingRef.current) return;
     setError(null);
 
     const trimmedBody = body.trim();

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { EditCommentDialog } from "@/components/comments/edit-comment-dialog";
 import type { Comment, CommentAttachment } from "@/lib/types";
@@ -416,6 +416,26 @@ describe("EditCommentDialog", () => {
     await user.click(screen.getByRole("button", { name: "Edit cancel body" }));
     expect(screen.getByLabelText("Comment")).toHaveValue("Original comment body");
     expect(screen.getByLabelText("Visibility")).toHaveValue("INTERNAL");
+  });
+
+  it("ignores a second Save while the first save is still in flight", async () => {
+    let resolveUpdate: (value: { success: boolean }) => void = () => {};
+    mockUpdateComment.mockImplementation(() => new Promise((resolve) => (resolveUpdate = resolve)));
+    const user = userEvent.setup();
+
+    renderDialog("Edit double save");
+    await user.click(screen.getByRole("button", { name: "Edit double save" }));
+    const textarea = screen.getByLabelText("Comment");
+    await user.clear(textarea);
+    await user.type(textarea, "Saved once");
+
+    const form = screen.getByRole("button", { name: "Save" }).closest("form")!;
+    fireEvent.submit(form);
+    await waitFor(() => expect(mockUpdateComment).toHaveBeenCalledTimes(1));
+    fireEvent.submit(form);
+
+    await act(async () => resolveUpdate({ success: true }));
+    expect(mockUpdateComment).toHaveBeenCalledTimes(1);
   });
 
   it("cancel releases staged uploads and re-opening resets the chips", async () => {

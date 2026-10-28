@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { act, cleanup, render, renderHook, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AddCommentForm } from "@/components/comments/add-comment-form";
 import { CommentItem } from "@/components/comments/comment-item";
@@ -632,6 +640,25 @@ describe("AddCommentForm", () => {
     expect(
       screen.getByText("Attachments on a client-visible comment are shared with the client.")
     ).toBeInTheDocument();
+  });
+
+  it("ignores a second submit while the first post is still in flight", async () => {
+    let resolveCreate: (value: { success: boolean }) => void = () => {};
+    mockCreateComment.mockImplementation(() => new Promise((resolve) => (resolveCreate = resolve)));
+    const user = userEvent.setup();
+    renderForm(false);
+
+    await user.type(screen.getByLabelText("Add a comment"), "Once only");
+    const form = screen.getByRole("button", { name: "Post Comment" }).closest("form")!;
+    fireEvent.submit(form);
+    await waitFor(() => expect(mockCreateComment).toHaveBeenCalledTimes(1));
+    fireEvent.submit(form);
+
+    await act(async () => resolveCreate({ success: true }));
+    await waitFor(() => {
+      expect(screen.getByLabelText("Add a comment")).toHaveValue("");
+    });
+    expect(mockCreateComment).toHaveBeenCalledTimes(1);
   });
 
   it("clears the body and resets visibility to the default after a successful post", async () => {

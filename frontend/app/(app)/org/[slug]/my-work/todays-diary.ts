@@ -1,7 +1,17 @@
 import { rethrowOnExpiredSession } from "@/lib/auth/expiry-server";
 import { getDiary } from "@/app/(app)/org/[slug]/diary/diary-actions";
-import { addDays, UPCOMING_DIARY_DAYS } from "@/app/(app)/org/[slug]/diary/diary-types";
-import type { TodaysDiaryEvents } from "@/components/dashboard/todays-agenda";
+import {
+  addDays,
+  UPCOMING_DIARY_DAYS,
+  type DiaryEventResponse,
+} from "@/app/(app)/org/[slug]/diary/diary-types";
+
+/**
+ * A GET /api/diary result for the current user — Today's diary or the Upcoming window.
+ * `"unidentified"` = the signed-in user couldn't be matched to a member, so there is no personal
+ * diary to show; `null` = the diary could not be loaded.
+ */
+export type DiaryEventsResult = DiaryEventResponse[] | "unidentified" | null;
 
 /**
  * My work's "Today's diary" (Phase 87 613D, §12.6.3): GET /api/diary?from=today&to=today — today's
@@ -20,7 +30,7 @@ export async function loadTodaysDiary(
   today: string,
   currentMemberId: string | null,
   options: { firmWide?: boolean } = {}
-): Promise<TodaysDiaryEvents> {
+): Promise<DiaryEventsResult> {
   // Firm-wide → no filter; otherwise the caller's own diary, or "unidentified" without a member.
   const scope = options.firmWide ? {} : currentMemberId ? { feeEarnerId: currentMemberId } : null;
   if (!scope) return "unidentified";
@@ -48,7 +58,7 @@ export async function loadTodaysDiary(
 export async function loadUpcomingDiary(
   today: string,
   currentMemberId: string | null
-): Promise<TodaysDiaryEvents> {
+): Promise<DiaryEventsResult> {
   if (!currentMemberId) return "unidentified";
   try {
     const diary = await getDiary({

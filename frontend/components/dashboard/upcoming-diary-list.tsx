@@ -1,25 +1,30 @@
 import Link from "next/link";
 import { DiaryEventRow } from "@/components/diary/diary-event-row";
-import {
-  UPCOMING_DIARY_DAYS,
-  type DiaryEventResponse,
-} from "@/app/(app)/org/[slug]/diary/diary-types";
+import { addDays, UPCOMING_DIARY_DAYS } from "@/app/(app)/org/[slug]/diary/diary-types";
+import type { DiaryEventsResult } from "@/app/(app)/org/[slug]/my-work/todays-diary";
 
 /** Rows shown before "+n more" — the Diary owns the full window. */
 const MAX_UPCOMING_ROWS = 5;
 
-/** The Diary's List view filtered to the signed-in fee earner — "See all upcoming" / "+n more". */
-export function upcomingDiaryHref(slug: string): string {
-  return `/org/${slug}/diary?view=list&feeEarner=mine`;
+/** Shown by both Upcoming and Next deadline, so the two never disagree. */
+export const UPCOMING_UNIDENTIFIED_COPY = "Couldn't identify your member profile.";
+export const UPCOMING_LOAD_FAILED_COPY = "The upcoming diary could not be loaded.";
+
+/**
+ * The Diary's List view for the signed-in fee earner, opened at the month containing `from`. The
+ * List view shows one calendar month (`?from=` snaps to the 1st), so the anchor decides which
+ * rows are visible.
+ */
+export function upcomingDiaryHref(slug: string, from: string): string {
+  return `/org/${slug}/diary?view=list&from=${from}&feeEarner=mine`;
 }
 
 interface UpcomingDiaryListProps {
   slug: string;
-  /**
-   * GET /api/diary from tomorrow through today + 14 for the current user, in server order.
-   * `"unidentified"` = no member profile; `null` = could not be loaded.
-   */
-  events: DiaryEventResponse[] | "unidentified" | null;
+  /** Server "today" (yyyy-MM-dd) — the window starts the day after. */
+  today: string;
+  /** GET /api/diary from tomorrow through today + 14 for the current user, in server order. */
+  events: DiaryEventsResult;
 }
 
 /**
@@ -27,10 +32,9 @@ interface UpcomingDiaryListProps {
  * for the next 14 days where the user is the fee earner (task assignee, else matter lead). Each
  * row shows its date, because the rows span days.
  */
-export function UpcomingDiaryList({ slug, events }: UpcomingDiaryListProps) {
+export function UpcomingDiaryList({ slug, today, events }: UpcomingDiaryListProps) {
   const rows = Array.isArray(events) ? events : [];
   const hiddenCount = rows.length - MAX_UPCOMING_ROWS;
-  const href = upcomingDiaryHref(slug);
 
   return (
     <div data-testid="upcoming-diary" className="min-w-0">
@@ -39,16 +43,16 @@ export function UpcomingDiaryList({ slug, events }: UpcomingDiaryListProps) {
           Upcoming · next {UPCOMING_DIARY_DAYS} days
         </p>
         <Link
-          href={href}
+          href={upcomingDiaryHref(slug, addDays(today, 1))}
           className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
         >
-          See all upcoming
+          Open diary list
         </Link>
       </div>
       {events === "unidentified" ? (
-        <p className="text-sm text-slate-400">Couldn&apos;t identify your member profile.</p>
+        <p className="text-sm text-slate-400">{UPCOMING_UNIDENTIFIED_COPY}</p>
       ) : events === null ? (
-        <p className="text-sm text-slate-400">The upcoming diary could not be loaded.</p>
+        <p className="text-sm text-slate-400">{UPCOMING_LOAD_FAILED_COPY}</p>
       ) : rows.length === 0 ? (
         <p className="text-sm text-slate-400">
           Nothing in the diary for the next {UPCOMING_DIARY_DAYS} days
@@ -63,8 +67,9 @@ export function UpcomingDiaryList({ slug, events }: UpcomingDiaryListProps) {
         </ul>
       )}
       {hiddenCount > 0 && (
+        // Opens the month of the first hidden row, so that row is on screen.
         <Link
-          href={href}
+          href={upcomingDiaryHref(slug, rows[MAX_UPCOMING_ROWS].date)}
           className="mt-2 inline-block text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
         >
           +{hiddenCount} more

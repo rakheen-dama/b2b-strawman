@@ -3,24 +3,20 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@b2mash/ui/badge";
 import { formatDuration } from "@/lib/format";
 import { DIARY_KIND_SINGULAR, DiaryEventRow } from "@/components/diary/diary-event-row";
-import {
-  daysBetween,
-  formatDiaryDay,
-  type DiaryEventResponse,
-} from "@/app/(app)/org/[slug]/diary/diary-types";
+import { daysBetween, formatDiaryDay } from "@/app/(app)/org/[slug]/diary/diary-types";
+import type { DiaryEventsResult } from "@/app/(app)/org/[slug]/my-work/todays-diary";
 import type { MyWorkTimeEntryItem } from "@/lib/types";
-import { UpcomingDiaryList } from "./upcoming-diary-list";
+import {
+  UPCOMING_LOAD_FAILED_COPY,
+  UPCOMING_UNIDENTIFIED_COPY,
+  UpcomingDiaryList,
+} from "./upcoming-diary-list";
 
 /** Rows shown before "+n more" — the Diary owns the full day. */
 const MAX_DIARY_ROWS = 5;
 
-/**
- * A GET /api/diary result for the current user: Today's diary (today's rows plus the open-overdue
- * band, Phase 87 613D) or the Upcoming window (tomorrow through today + 14, Phase 88 G-D5).
- * `"unidentified"` = the signed-in user couldn't be matched to a member, so there is no personal
- * diary to show; `null` = the diary could not be loaded.
- */
-export type TodaysDiaryEvents = DiaryEventResponse[] | "unidentified" | null;
+/** Today's diary (today's rows plus the open-overdue band, Phase 87 613D) — used by Home too. */
+export type TodaysDiaryEvents = DiaryEventsResult;
 
 interface TodaysAgendaProps {
   slug: string;
@@ -28,7 +24,7 @@ interface TodaysAgendaProps {
   today: string;
   diaryEvents: TodaysDiaryEvents;
   /** GET /api/diary from tomorrow through today + 14 for the current user — Upcoming + Next deadline. */
-  upcomingEvents: TodaysDiaryEvents;
+  upcomingEvents: DiaryEventsResult;
   todayEntries: MyWorkTimeEntryItem[];
   weeklyCapacityHours?: number;
 }
@@ -183,8 +179,11 @@ export function TodaysAgenda({
           <p className="mb-2 text-[11px] font-medium tracking-wider text-slate-500 uppercase">
             Next Deadline
           </p>
-          {upcomingEvents === null ? (
-            <p className="text-sm text-slate-400">Upcoming deadlines could not be loaded.</p>
+          {/* Same copy as the Upcoming list: both read the same result. */}
+          {upcomingEvents === "unidentified" ? (
+            <p className="text-sm text-slate-400">{UPCOMING_UNIDENTIFIED_COPY}</p>
+          ) : upcomingEvents === null ? (
+            <p className="text-sm text-slate-400">{UPCOMING_LOAD_FAILED_COPY}</p>
           ) : !nextDeadline ? (
             <p className="text-sm text-slate-400">No upcoming deadlines</p>
           ) : (
@@ -220,7 +219,7 @@ export function TodaysAgenda({
 
       {/* Upcoming — full width below the grid; quarter-width cells are too narrow for diary rows */}
       <div className="mt-4 border-t pt-4">
-        <UpcomingDiaryList slug={slug} events={upcomingEvents} />
+        <UpcomingDiaryList slug={slug} today={today} events={upcomingEvents} />
       </div>
     </div>
   );

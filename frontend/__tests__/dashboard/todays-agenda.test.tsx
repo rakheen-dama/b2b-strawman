@@ -315,13 +315,52 @@ describe("TodaysAgenda", () => {
     expect(within(rows[0]).getByText(formatDiaryDay(daysFromNow(2)))).toBeInTheDocument();
     expect(within(section).getByText("Upcoming task 4")).toBeInTheDocument();
     expect(within(section).queryByText("Upcoming task 5")).not.toBeInTheDocument();
+    // "+n more" opens the List view at the first hidden row (Upcoming task 5); the header link
+    // opens it at tomorrow, where the window starts.
     expect(within(section).getByRole("link", { name: "+2 more" })).toHaveAttribute(
       "href",
-      "/org/acme/diary?view=list&feeEarner=mine"
+      `/org/acme/diary?view=list&from=${daysFromNow(6)}&feeEarner=mine`
     );
-    expect(within(section).getByRole("link", { name: "See all upcoming" })).toHaveAttribute(
+    expect(within(section).getByRole("link", { name: "Open diary list" })).toHaveAttribute(
       "href",
-      "/org/acme/diary?view=list&feeEarner=mine"
+      `/org/acme/diary?view=list&from=${daysFromNow(1)}&feeEarner=mine`
+    );
+  });
+
+  // The Diary's List view shows one calendar month, so "+n more" must anchor on the month that
+  // holds the first hidden row — here November, while the window starts in October.
+  it("anchors '+n more' on the first hidden row's month when the window crosses a month end", () => {
+    const dates = [
+      "2026-10-29",
+      "2026-10-30",
+      "2026-10-31",
+      "2026-11-01",
+      "2026-11-02",
+      "2026-11-03",
+      "2026-11-05",
+    ];
+    const upcoming = dates.map((date, i) =>
+      makeEvent({ id: `m-t${i + 1}`, date, title: `Month task ${i + 1}` })
+    );
+
+    render(
+      <TodaysAgenda
+        slug="acme"
+        today="2026-10-28"
+        diaryEvents={[]}
+        todayEntries={emptyEntries}
+        upcomingEvents={upcoming}
+      />
+    );
+
+    const section = screen.getByTestId("upcoming-diary");
+    expect(within(section).getByRole("link", { name: "+2 more" })).toHaveAttribute(
+      "href",
+      "/org/acme/diary?view=list&from=2026-11-03&feeEarner=mine"
+    );
+    expect(within(section).getByRole("link", { name: "Open diary list" })).toHaveAttribute(
+      "href",
+      "/org/acme/diary?view=list&from=2026-10-29&feeEarner=mine"
     );
   });
 
@@ -359,9 +398,12 @@ describe("TodaysAgenda", () => {
 
     expect(
       within(screen.getByTestId("next-deadline")).getByText(
-        "Upcoming deadlines could not be loaded."
+        "The upcoming diary could not be loaded."
       )
     ).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId("next-deadline")).queryByText("No upcoming deadlines")
+    ).not.toBeInTheDocument();
     expect(
       within(screen.getByTestId("upcoming-diary")).getByText(
         "The upcoming diary could not be loaded."
@@ -369,7 +411,7 @@ describe("TodaysAgenda", () => {
     ).toBeInTheDocument();
   });
 
-  it("does not crash when the member is unidentified for the upcoming diary", () => {
+  it("says the member couldn't be identified in Next deadline and Upcoming alike", () => {
     render(
       <TodaysAgenda
         slug="acme"
@@ -380,10 +422,18 @@ describe("TodaysAgenda", () => {
       />
     );
 
+    const deadline = screen.getByTestId("next-deadline");
     expect(
-      within(screen.getByTestId("next-deadline")).getByText("No upcoming deadlines")
+      within(deadline).getByText("Couldn't identify your member profile.")
     ).toBeInTheDocument();
-    expect(screen.getByTestId("upcoming-diary")).toBeInTheDocument();
+    expect(within(deadline).queryByText("No upcoming deadlines")).not.toBeInTheDocument();
+    const upcoming = screen.getByTestId("upcoming-diary");
+    expect(
+      within(upcoming).getByText("Couldn't identify your member profile.")
+    ).toBeInTheDocument();
+    expect(
+      within(upcoming).queryByText("Nothing in the diary for the next 14 days")
+    ).not.toBeInTheDocument();
   });
 
   it("handles an empty diary without crashing", () => {

@@ -73,7 +73,11 @@ export function MatterHeaderCard({
             )}
           </div>
 
-          <HeaderFactsStrip fields={headerFields} testIdPrefix="matter-header-field" />
+          <HeaderFactsStrip
+            fields={headerFields}
+            testId="matter-header-fields"
+            itemTestIdPrefix="matter-header-field"
+          />
 
           {customers.length > 0 && (
             <div className="text-sm text-slate-600 dark:text-slate-400">

@@ -136,7 +136,11 @@ export function ClientHeaderCard({
             {xeroConnected && <XeroContactBadge customerId={customerId} slug={slug} />}
           </div>
 
-          <HeaderFactsStrip fields={headerFields} testIdPrefix="client-header-field" />
+          <HeaderFactsStrip
+            fields={headerFields}
+            testId="client-header-fields"
+            itemTestIdPrefix="client-header-field"
+          />
 
           {/* Row 3 — Contact */}
           {(email || phone) && (

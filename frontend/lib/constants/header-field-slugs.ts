@@ -14,7 +14,7 @@ export const HEADER_FIELD_SLUGS = {
 } as const satisfies Record<string, readonly string[]>;
 
 /** Visible short prefix per slug; slugs without one get a screen-reader-only label. */
-export const HEADER_FIELD_PREFIXES: Readonly<Record<string, string>> = {
+export const HEADER_FIELD_PREFIXES: Readonly<Partial<Record<string, string>>> = {
   case_number: "Case no.",
   id_passport_number: "ID",
 };

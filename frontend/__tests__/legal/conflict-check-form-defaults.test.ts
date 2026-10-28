@@ -40,4 +40,73 @@ describe("buildConflictCheckFormDefaults (conflict-check page prefill, G-A6)", (
       buildConflictCheckFormDefaults({ customerId: "c-1", checkedName: "Acme Holdings" })
     ).toEqual({ customerId: "c-1", checkedName: "Acme Holdings" });
   });
+
+  // R-17: the New Matter link carries only customerId; the page resolves the client server-side.
+  describe("with the resolved client details", () => {
+    const CLIENT_ID = "11111111-1111-4111-8111-111111111111";
+
+    it("fills name and ID number from the client", () => {
+      expect(
+        buildConflictCheckFormDefaults(
+          { checkType: "NEW_MATTER", customerId: CLIENT_ID },
+          { name: "Sipho Ndlovu", idNumber: " 8501015800087 " }
+        )
+      ).toEqual({
+        checkType: "NEW_MATTER",
+        customerId: CLIENT_ID,
+        checkedName: "Sipho Ndlovu",
+        checkedIdNumber: "8501015800087",
+      });
+    });
+
+    it("lets explicit query values win over the client's", () => {
+      expect(
+        buildConflictCheckFormDefaults(
+          { customerId: CLIENT_ID, checkedName: "S. Ndlovu", checkedIdNumber: "9001015800083" },
+          { name: "Sipho Ndlovu", idNumber: "8501015800087" }
+        )
+      ).toEqual({
+        customerId: CLIENT_ID,
+        checkedName: "S. Ndlovu",
+        checkedIdNumber: "9001015800083",
+      });
+    });
+
+    it("adds the client's ID number to the overflow-menu link (customerId + checkedName)", () => {
+      expect(
+        buildConflictCheckFormDefaults(
+          { customerId: CLIENT_ID, checkedName: "Sipho Ndlovu" },
+          { name: "Sipho Ndlovu", idNumber: "8501015800087" }
+        )
+      ).toEqual({
+        customerId: CLIENT_ID,
+        checkedName: "Sipho Ndlovu",
+        checkedIdNumber: "8501015800087",
+      });
+    });
+
+    it.each([null, "", "   "])("ignores a blank client ID number %j", (idNumber) => {
+      expect(
+        buildConflictCheckFormDefaults(
+          { customerId: CLIENT_ID },
+          { name: "Acme Holdings", idNumber }
+        )
+      ).toEqual({ customerId: CLIENT_ID, checkedName: "Acme Holdings" });
+    });
+
+    it("still drops an invalid check type", () => {
+      expect(
+        buildConflictCheckFormDefaults(
+          { checkType: "BOGUS", customerId: CLIENT_ID },
+          { name: "Sipho Ndlovu", idNumber: null }
+        )
+      ).toEqual({ customerId: CLIENT_ID, checkedName: "Sipho Ndlovu" });
+    });
+
+    it("treats a null client (lookup failed or skipped) as no details", () => {
+      expect(
+        buildConflictCheckFormDefaults({ checkType: "NEW_MATTER", customerId: CLIENT_ID }, null)
+      ).toEqual({ checkType: "NEW_MATTER", customerId: CLIENT_ID });
+    });
+  });
 });

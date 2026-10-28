@@ -1,9 +1,35 @@
-import { notFound } from "next/navigation";
+import { notFound, unstable_rethrow } from "next/navigation";
 import { getOrgSettings } from "@/lib/api/settings";
+import { getClient } from "@/lib/api/clients";
+import { isUuid } from "@/components/audit/filter-params";
 import { fetchConflictChecks, fetchCustomers, fetchProjects } from "./actions";
 import { ConflictCheckClient } from "./conflict-check-client";
-import { buildConflictCheckFormDefaults, type ConflictCheckSearchParams } from "./form-defaults";
+import {
+  buildConflictCheckFormDefaults,
+  type ConflictCheckClientDetails,
+  type ConflictCheckSearchParams,
+} from "./form-defaults";
 import type { ConflictCheck } from "@/lib/types";
+
+/**
+ * The `customerId` client's name + structural ID number for the form prefill. The ID number is
+ * resolved here rather than carried in the URL (POPIA, Phase 88 ruling R-17). A failed lookup
+ * (404/403/network) leaves the page on its other defaults; Next control flow (re-login redirect)
+ * still propagates.
+ */
+async function resolveClientDetails(
+  customerId: string | undefined
+): Promise<ConflictCheckClientDetails | null> {
+  if (!customerId || !isUuid(customerId)) return null;
+  try {
+    const client = await getClient(customerId);
+    return { name: client.name, idNumber: client.idNumber };
+  } catch (error) {
+    unstable_rethrow(error);
+    console.error("Failed to resolve conflict-check client:", error);
+    return null;
+  }
+}
 
 export default async function ConflictCheckPage({
   params,
@@ -13,7 +39,7 @@ export default async function ConflictCheckPage({
   searchParams?: Promise<ConflictCheckSearchParams>;
 }) {
   const { slug } = await params;
-  const initialFormDefaults = buildConflictCheckFormDefaults((await searchParams) ?? {});
+  const query = (await searchParams) ?? {};
 
   let settings;
   try {
@@ -35,6 +61,11 @@ export default async function ConflictCheckPage({
       </div>
     );
   }
+
+  const initialFormDefaults = buildConflictCheckFormDefaults(
+    query,
+    await resolveClientDetails(query.customerId)
+  );
 
   let initialChecks: ConflictCheck[] = [];
   let initialTotal = 0;

@@ -143,11 +143,17 @@ describe("MatterHeaderCard facts strip (G-B9)", () => {
   it("separates the facts with decorative dots hidden from screen readers", () => {
     renderCard("ACTIVE", RAF_FIELDS);
 
-    const separators = screen
-      .getByTestId("matter-header-fields")
-      .querySelectorAll('[aria-hidden="true"]');
+    const strip = screen.getByTestId("matter-header-fields");
+    const separators = within(strip).getAllByText("·");
     expect(separators).toHaveLength(2);
-    separators.forEach((sep) => expect(sep).toHaveTextContent("·"));
+    separators.forEach((sep) => expect(sep).toHaveAttribute("aria-hidden", "true"));
+
+    // The visible strip (screen-reader-only terms removed) reads in field order.
+    const visible = strip.cloneNode(true) as HTMLElement;
+    visible.querySelectorAll(".sr-only").forEach((node) => node.remove());
+    expect(visible.textContent).toMatch(
+      /^Case no\.\s*1234\/2026\s*·\s*Gauteng Local Division\s*·\s*Road Accident Fund$/
+    );
   });
 
   it("renders no strip when no header field is set", () => {

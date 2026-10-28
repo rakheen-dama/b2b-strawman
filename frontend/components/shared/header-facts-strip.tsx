@@ -3,8 +3,10 @@ import { HEADER_FIELD_PREFIXES, type HeaderField } from "@/lib/constants/header-
 
 interface HeaderFactsStripProps {
   fields: HeaderField[];
-  /** The `dl` gets `${testIdPrefix}s`, each term/value pair `${testIdPrefix}-${slug}`. */
-  testIdPrefix: string;
+  /** `data-testid` of the `dl`, e.g. "matter-header-fields". */
+  testId: string;
+  /** Each term/value pair gets `${itemTestIdPrefix}-${slug}`, e.g. "matter-header-field". */
+  itemTestIdPrefix: string;
 }
 
 /**
@@ -14,13 +16,13 @@ interface HeaderFactsStripProps {
  * Accessible `dl`: every value has a term — a visible short prefix (HEADER_FIELD_PREFIXES) or a
  * screen-reader-only field name. The "·" separators are decorative (aria-hidden).
  */
-export function HeaderFactsStrip({ fields, testIdPrefix }: HeaderFactsStripProps) {
+export function HeaderFactsStrip({ fields, testId, itemTestIdPrefix }: HeaderFactsStripProps) {
   if (fields.length === 0) return null;
 
   return (
     <dl
       className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-sm text-slate-600 dark:text-slate-400"
-      data-testid={`${testIdPrefix}s`}
+      data-testid={testId}
     >
       {fields.map((field, index) => {
         const prefix = HEADER_FIELD_PREFIXES[field.slug];
@@ -29,7 +31,7 @@ export function HeaderFactsStrip({ fields, testIdPrefix }: HeaderFactsStripProps
           <div
             key={field.slug}
             className="flex items-baseline"
-            data-testid={`${testIdPrefix}-${field.slug}`}
+            data-testid={`${itemTestIdPrefix}-${field.slug}`}
           >
             <dt className={cn("flex items-baseline gap-1.5", hasVisibleTerm && "mr-1.5")}>
               {index > 0 && (

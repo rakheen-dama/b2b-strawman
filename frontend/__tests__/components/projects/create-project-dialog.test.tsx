@@ -122,7 +122,8 @@ describe("CreateProjectDialog promoted fields (Epic 464)", () => {
 });
 
 // Phase 88 G-A6: the stale "Coming Soon" card becomes a link-out to the conflict-check page,
-// prefilled with the selected client (existing page params + checkType=NEW_MATTER).
+// prefilled with the selected client. R-17: only checkType + customerId travel in the URL (no
+// name, no ID number — POPIA); the conflict-check page resolves the client server-side.
 describe("CreateProjectDialog conflict-check link (G-A6)", () => {
   const CLIENT_ID = "11111111-1111-4111-8111-111111111111";
 
@@ -176,7 +177,7 @@ describe("CreateProjectDialog conflict-check link (G-A6)", () => {
     expect(screen.queryByRole("button", { name: /run conflict check/i })).not.toBeInTheDocument();
   });
 
-  it("prefills the selected client into the link", async () => {
+  it("passes only the selected client's id in the link, never its name or ID number", async () => {
     const user = userEvent.setup();
     renderDialogWithConflictCheck();
 
@@ -192,11 +193,13 @@ describe("CreateProjectDialog conflict-check link (G-A6)", () => {
     expect(url.pathname).toBe("/org/acme/conflict-check");
     expect(url.searchParams.get("checkType")).toBe("NEW_MATTER");
     expect(url.searchParams.get("customerId")).toBe(CLIENT_ID);
-    expect(url.searchParams.get("checkedName")).toBe("Sipho Ndlovu");
-    expect(url.searchParams.get("checkedIdNumber")).toBe("8501015800087");
+    expect([...url.searchParams.keys()].sort()).toEqual(["checkType", "customerId"]);
+    expect(href).not.toContain("checkedIdNumber");
+    expect(href).not.toContain("checkedName");
+    expect(href).not.toContain("8501015800087");
   });
 
-  it("omits the ID number when the selected client has none", async () => {
+  it("drops the client id again when the client is cleared", async () => {
     const user = userEvent.setup();
     renderDialogWithConflictCheck();
 
@@ -204,13 +207,12 @@ describe("CreateProjectDialog conflict-check link (G-A6)", () => {
     const clientSelect = await screen.findByLabelText(/^client/i);
     await screen.findByRole("option", { name: "Acme Holdings" });
     await user.selectOptions(clientSelect, "22222222-2222-4222-8222-222222222222");
+    await user.selectOptions(clientSelect, "");
 
-    const href = screen
-      .getByRole("link", { name: /run a conflict check first/i })
-      .getAttribute("href")!;
-    const url = new URL(href, "http://localhost");
-    expect(url.searchParams.get("checkedName")).toBe("Acme Holdings");
-    expect(url.searchParams.has("checkedIdNumber")).toBe(false);
+    expect(screen.getByRole("link", { name: /run a conflict check first/i })).toHaveAttribute(
+      "href",
+      "/org/acme/conflict-check?checkType=NEW_MATTER"
+    );
   });
 
   it("hides the conflict-check card when the conflict_check module is off", async () => {

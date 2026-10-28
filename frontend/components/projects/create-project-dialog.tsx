@@ -60,16 +60,11 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
     },
   });
 
-  // Conflict-check link-out (G-A6): the conflict-check page prefills from these params.
+  // Conflict-check link-out (G-A6). Only the client id travels in the URL; the conflict-check
+  // page resolves the name + ID number server-side (POPIA, ruling R-17).
   const selectedCustomerId = useWatch({ control: form.control, name: "customerId" });
-  const selectedCustomer = customers.find((c) => c.id === selectedCustomerId);
   const conflictCheckParams = new URLSearchParams({ checkType: "NEW_MATTER" });
-  if (selectedCustomer) {
-    conflictCheckParams.set("customerId", selectedCustomer.id);
-    conflictCheckParams.set("checkedName", selectedCustomer.name);
-    const idNumber = selectedCustomer.idNumber?.trim();
-    if (idNumber) conflictCheckParams.set("checkedIdNumber", idNumber);
-  }
+  if (selectedCustomerId) conflictCheckParams.set("customerId", selectedCustomerId);
   const conflictCheckHref = `/org/${slug}/conflict-check?${conflictCheckParams.toString()}`;
 
   useEffect(() => {

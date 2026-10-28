@@ -1,7 +1,7 @@
 import { Badge } from "@b2mash/ui/badge";
 
-const methodVariantMap: Record<string, "neutral" | "pro"> = {
-  COMPLIMENTARY: "pro",
+const methodVariantMap: Record<string, "neutral" | "lead"> = {
+  COMPLIMENTARY: "lead",
   MANUAL: "neutral",
 };
 

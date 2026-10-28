@@ -150,7 +150,7 @@ All authenticated routes are org-scoped under `(app)/org/[slug]/`.
 Components started from Shadcn scaffolding but **have been customized** with project-specific variants and slate styling. The base primitives below (Button, Badge, Card, Input) now live in `@b2mash/ui`; Dialog/AlertDialog/Textarea and other composites remain in `components/ui/`. Key customizations:
 
 - **Button** — Pill-shaped (`rounded-full`) primary/accent/soft/destructive variants. `soft` and `plain` variants added. Accent uses `bg-teal-600`.
-- **Badge** — Semantic variants: `lead`, `member`, `owner`, `admin`, `starter`, `pro`, `success`, `warning`, `destructive`, `neutral`.
+- **Badge** — Semantic variants: `lead`, `member`, `owner`, `admin`, `success`, `warning`, `destructive`, `neutral`.
 - **Card** — Slate borders, `shadow-sm` lift, `rounded-lg` (sharp, structured). Hover elevation on interactive cards.
 - **Input / Textarea** — Slate border, `focus-visible:ring-slate-500` focus ring.
 - **Dialog / AlertDialog** — `bg-slate-950/25` backdrop, `rounded-xl`, Motion enter/exit animations.

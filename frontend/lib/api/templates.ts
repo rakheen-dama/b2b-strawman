@@ -35,7 +35,7 @@ export interface ProjectTemplateResponse {
   namePattern: string;
   description: string | null;
   billableDefault: boolean;
-  source: "MANUAL" | "FROM_PROJECT";
+  source: "MANUAL" | "FROM_PROJECT" | "SEEDER";
   sourceMatterId: string | null;
   active: boolean;
   taskCount: number;

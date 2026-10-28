@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import useSWR from "swr";
 import {
   Calculator,
@@ -59,7 +58,6 @@ interface IntegrationCardProps {
   integration: OrgIntegration | null;
   providers: string[];
   slug: string;
-  tier?: string;
 }
 
 export function IntegrationCard({
@@ -69,7 +67,6 @@ export function IntegrationCard({
   integration,
   providers,
   slug,
-  tier,
 }: IntegrationCardProps) {
   const [isTogglingProvider, setIsTogglingProvider] = useState(false);
   const [isTogglingEnabled, setIsTogglingEnabled] = useState(false);
@@ -81,7 +78,6 @@ export function IntegrationCard({
   const hasProvider = !!integration?.providerSlug;
   const isEnabled = !!integration?.enabled;
   const hasKey = !!integration?.keySuffix;
-  const isStarter = domain === "AI" && tier === "STARTER";
 
   // Fetch AI models when domain is AI and key is configured
   const shouldFetchModels = domain === "AI" && hasKey;
@@ -179,7 +175,6 @@ export function IntegrationCard({
               <Icon className="size-5 text-slate-600 dark:text-slate-400" />
             </div>
             <CardTitle className="font-display text-lg">{label}</CardTitle>
-            {domain === "AI" && tier !== "PRO" && <Badge variant="pro">PRO</Badge>}
           </div>
           {getStatusBadge()}
         </div>
@@ -190,21 +185,6 @@ export function IntegrationCard({
           <p className="text-destructive text-sm" role="alert">
             {error}
           </p>
-        )}
-
-        {/* STARTER tier upgrade prompt */}
-        {isStarter && (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              AI Assistant requires the PRO plan
-            </p>
-            <Link
-              href={`/org/${slug}/settings/billing`}
-              className="mt-2 inline-flex items-center text-sm text-teal-600 hover:text-teal-700"
-            >
-              Upgrade to Pro
-            </Link>
-          </div>
         )}
 
         {/* Provider selector */}
@@ -218,7 +198,7 @@ export function IntegrationCard({
           <Select
             value={integration?.providerSlug ?? ""}
             onValueChange={handleProviderChange}
-            disabled={isTogglingProvider || isStarter}
+            disabled={isTogglingProvider}
           >
             <SelectTrigger id={`provider-${domain}`} className="w-full">
               <SelectValue placeholder="Select provider" />
@@ -250,7 +230,7 @@ export function IntegrationCard({
                     {"••••" + integration.keySuffix}
                   </span>
                   <SetApiKeyDialog slug={slug} domain={domain}>
-                    <Button variant="outline" size="sm" disabled={isStarter}>
+                    <Button variant="outline" size="sm">
                       Update Key
                     </Button>
                   </SetApiKeyDialog>
@@ -258,7 +238,7 @@ export function IntegrationCard({
                     variant="outline"
                     size="sm"
                     onClick={handleDeleteKey}
-                    disabled={isDeletingKey || isStarter}
+                    disabled={isDeletingKey}
                     className="text-destructive hover:text-destructive"
                   >
                     {isDeletingKey ? "Removing..." : "Remove Key"}
@@ -266,7 +246,7 @@ export function IntegrationCard({
                 </>
               ) : (
                 <SetApiKeyDialog slug={slug} domain={domain}>
-                  <Button variant="outline" size="sm" disabled={isStarter}>
+                  <Button variant="outline" size="sm">
                     Set API Key
                   </Button>
                 </SetApiKeyDialog>
@@ -287,7 +267,7 @@ export function IntegrationCard({
             <Select
               value={currentModel ?? ""}
               onValueChange={handleModelChange}
-              disabled={isUpdatingModel || isLoadingModels || isStarter}
+              disabled={isUpdatingModel || isLoadingModels}
             >
               <SelectTrigger id={`model-${domain}`} className="w-full">
                 <SelectValue placeholder={isLoadingModels ? "Loading models..." : "Select model"} />
@@ -317,7 +297,7 @@ export function IntegrationCard({
               id={`enabled-${domain}`}
               checked={isEnabled}
               onCheckedChange={handleToggle}
-              disabled={!hasProvider || isTogglingEnabled || isStarter}
+              disabled={!hasProvider || isTogglingEnabled}
             />
           </div>
         )}

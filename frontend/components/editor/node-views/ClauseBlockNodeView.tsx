@@ -43,7 +43,7 @@ export function ClauseBlockNodeView({ node, deleteNode }: NodeViewProps) {
           </span>
 
           {required && (
-            <Badge variant="pro" className="text-xs">
+            <Badge variant="lead" className="text-xs">
               Required
             </Badge>
           )}

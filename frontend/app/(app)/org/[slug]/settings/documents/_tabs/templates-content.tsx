@@ -175,7 +175,7 @@ export function TemplatesContent({ slug, templates, settings, canManage }: Templ
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
                         {template.source === "PLATFORM" ? (
-                          <Badge variant="pro">Platform</Badge>
+                          <Badge variant="neutral">Platform</Badge>
                         ) : (
                           <Badge variant="lead">Custom</Badge>
                         )}

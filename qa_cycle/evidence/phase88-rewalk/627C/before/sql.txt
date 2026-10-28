@@ -1,0 +1,72 @@
+# 627C before — SQL evidence (e2e-postgres, tenant tenant_7d218705360b), captured 2026-10-28T07:36:00Z
+# Stack provenance: e2e-backend/e2e-frontend images built 2026-10-28T07:21Z from compose working_dir /Users/rakheendama/Projects/2026/worktree-epic-627B (627B branch; head fa0225e72 per merge record); containers started 07:21Z.
+
+$ select * from public.org_schema_mapping;
+                  id                  | external_org_id |     schema_name     |          created_at           | shard_id 
+--------------------------------------+-----------------+---------------------+-------------------------------+----------
+ 7406e458-d668-43fd-9655-083bd45d6962 | e2e-test-org    | tenant_7d218705360b | 2026-10-28 07:21:43.860387+00 | primary
+(1 row)
+
+
+$ select version, description, installed_on from tenant_7d218705360b.flyway_schema_history order by installed_rank desc limit 3;
+ version |              description              |        installed_on        
+---------+---------------------------------------+----------------------------
+ 8       | phase88 retention comment attachments | 2026-10-28 07:21:43.008325
+ 7       | phase88 letterhead                    | 2026-10-28 07:21:43.00069
+ 6       | phase88 audit customer index          | 2026-10-28 07:21:42.993427
+(3 rows)
+
+
+$ select table_name, column_name, data_type from information_schema.columns where table_schema='tenant_7d218705360b' and ((table_name='projects' and column_name like 'retention%') or column_name='legal_matter_retention_years');
+  table_name  |         column_name          |          data_type          
+--------------+------------------------------+-----------------------------
+ projects     | retention_clock_started_at   | timestamp without time zone
+ projects     | retention_ends_on            | date
+ org_settings | legal_matter_retention_years | integer
+(3 rows)
+
+
+$ select legal_matter_retention_years from tenant_7d218705360b.org_settings;
+ legal_matter_retention_years 
+------------------------------
+                            5
+(1 row)
+
+
+## --- Initial state (captured 07:32Z, before any action by this reproducer) ---
+                  id                  |                                name                                | status |           closed_at           | completed_at | retention_clock_started_at | retention_ends_on
+ 5f760d69-07b4-4745-9867-6d14aad3940e | Ndlovu v RAF — Depth II mvrsgjlw9b22                               | CLOSED | 2026-10-28 07:26:18.614637+00 |              | 2026-10-28 07:26:18.614637 | 2031-10-28
+ bafe73ff-9ea6-4648-9793-f47589aaa329 | Ndlovu — transition repro mvrsgjlw9b22                             | ACTIVE |                               |              |                            |
+ b6548bbe-1052-44d9-8b4f-09034a23fa51 | Apex Holdings — Shareholders' Agreement Review mvrsgjlw9b22        | CLOSED | 2026-10-28 07:26:12.897322+00 |              | 2026-10-28 07:26:12.897322 | 2031-10-28
+ (8 other matters ACTIVE, all retention columns NULL)
+
+## bafe73ff after UI Complete Matter (07:33:42Z): status COMPLETED, completed_at 07:33:42, retention_clock_started_at NULL, retention_ends_on NULL
+## b6548bbe after UI Reopen (07:34:18Z): status ACTIVE, closed_at NULL, completed_at NULL, retention_clock_started_at 2026-10-28 07:26:12.897322 (kept), retention_ends_on NULL (cleared)
+## b6548bbe after UI Complete Matter (07:34:25Z): status COMPLETED, completed_at 07:34:25.798706, retention_clock_started_at 2026-10-28 07:26:12.897322, retention_ends_on NULL
+
+## --- Final state ---
+$ select id, name, status, closed_at, completed_at, retention_clock_started_at, retention_ends_on from tenant_7d218705360b.projects order by created_at;
+                  id                  |                                name                                |  status   |           closed_at           |         completed_at          | retention_clock_started_at | retention_ends_on 
+--------------------------------------+--------------------------------------------------------------------+-----------+-------------------------------+-------------------------------+----------------------------+-------------------
+ 1e827d1d-cd7a-41e2-b9af-207c268d88e7 | Website Redesign                                                   | ACTIVE    |                               |                               |                            | 
+ d59d4845-c066-46a9-a951-ca66853efcdb | Ndlovu v RAF dywn                                                  | ACTIVE    |                               |                               |                            | 
+ 36130950-bcd4-4374-b3f4-5a46e4b2d842 | Estate Late Peter Moroka dywn                                      | ACTIVE    |                               |                               |                            | 
+ 2d408ff6-22da-4650-b4e1-06aecef44f30 | QC Debt Recovery #1 dywn                                           | ACTIVE    |                               |                               |                            | 
+ 922a7f02-a6a5-4d7b-bc17-7395dc2bca75 | Ndlovu Property Dispute fppv                                       | ACTIVE    |                               |                               |                            | 
+ 05f8d4f2-2583-4d04-b373-6306367c73c2 | Apex Annual Returns fppv                                           | ACTIVE    |                               |                               |                            | 
+ cb7cecfd-72bd-47b1-88bb-1b6aa18129ed | Team spec mvrsga4vd7d7                                             | ACTIVE    |                               |                               |                            | 
+ 5f760d69-07b4-4745-9867-6d14aad3940e | Ndlovu v RAF — Depth II mvrsgjlw9b22                               | CLOSED    | 2026-10-28 07:26:18.614637+00 |                               | 2026-10-28 07:26:18.614637 | 2031-10-28
+ bafe73ff-9ea6-4648-9793-f47589aaa329 | Ndlovu — transition repro mvrsgjlw9b22                             | COMPLETED |                               | 2026-10-28 07:33:42.038437+00 |                            | 
+ bc816084-d5af-4d5c-8c43-59a771a339ec | Khumalo Property Holdings — Erf 1234 Sandton Transfer mvrsgjlw9b22 | ACTIVE    |                               |                               |                            | 
+ b6548bbe-1052-44d9-8b4f-09034a23fa51 | Apex Holdings — Shareholders' Agreement Review mvrsgjlw9b22        | COMPLETED |                               | 2026-10-28 07:34:25.798706+00 | 2026-10-28 07:26:12.897322 | 
+(11 rows)
+
+
+$ select record_type, trigger_event, retention_days, action, active from tenant_7d218705360b.retention_policies order by record_type;
+ record_type |    trigger_event    | retention_days | action | active 
+-------------+---------------------+----------------+--------+--------
+ AUDIT_EVENT | RECORD_CREATED      |           2555 | FLAG   | t
+ CUSTOMER    | CUSTOMER_OFFBOARDED |           1825 | FLAG   | t
+(2 rows)
+
+

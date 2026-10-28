@@ -46,8 +46,8 @@ Closing the estate matter on Day 75 showed "Retention isn't configured yet" (G-D
 **Consequences**:
 
 - Positive:
-  - Closing on Day 75 shows "Scheduled deletion 2031-10-22" on the matter (G-D3).
-  - `day-75-85-closure.spec.ts:297` is un-fixme'd.
+  - Closing on Day 75 shows "Scheduled deletion: 22 Oct 2031 (firm default 5 years)" on the matter (G-D3). The "(firm default 5 years)" note appears only when the matter's own stamped period (UTC close date → `retention_ends_on`) and the current firm setting are both 5; otherwise the card says "(N-year retention period)". A COMPLETED matter shows no date.
+  - `day-75-85-closure.spec.ts:313` is un-fixme'd (627C, PR #1695).
   - A matter completed on Day 60 and closed on Day 75 anchors on Day 75.
 - Negative:
   - `RetentionClockIntegrationTest:67,86` (`setsOnFirstCompletion`) is rewritten to "sets on close, resets on re-close, untouched by complete".

@@ -1,7 +1,7 @@
 {
-  "commit": "8e8c118d79bff732d6523f3280f16e09b0fa5d17",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build (worktree-epic-627A, NODE_OPTIONS=\"\")",
+  "commit": "32425c851c5be4d67ed88af91030669ddf8af4d6",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build (worktree-epic-627C, NODE_OPTIONS=\"\")",
   "exit": 0,
-  "ts": "2026-10-28T05:44:41Z",
-  "summary": "Slice 627A FE-GATE on 8e8c118d7 (PR #1693 final head, orchestrator run): lint 0 errors / 91 warnings; format clean; vitest 425 files / 3281 passed / 2 skipped; build OK; CI Frontend pass. E2E-LEGAL fresh stack on a16fec0f8 (product-equivalent): lifecycle 74/4/5/14 (carried day-00:282, day-30:32, day-45:41, day-90:179), depth-ii 35/1/6/1 — day-14:335 networkidle timeout reproduced identically on main c94a6e18f (A/B), pre-existing, routed to 627K/628E."
+  "ts": "2026-10-28T08:25:00Z",
+  "summary": "Slice 627C FE-GATE on 32425c851 (PR #1695 final head, orchestrator run): lint 0 errors; format clean; vitest 428 files / 3336 passed / 2 skipped; build OK; CI Frontend pass. E2E-LEGAL fresh stack on 32425c851: lifecycle 74/4/5/14 (carried day-00:282, day-30:32, day-45:41, day-90:179), depth-ii 38/0/5 (un-fixme'd day-75-85-closure:305 retention card green; day-14:335 passed this run)."
 }

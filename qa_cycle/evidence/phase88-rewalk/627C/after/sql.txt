@@ -1,0 +1,76 @@
+== O3 after close b6548bbe (Alice, UI Close Matter, reason Concluded) ==
+          utc_now           
+----------------------------
+ 2026-10-28 07:58:37.645072
+(1 row)
+
+                  id                  | status |           closed_at           | retention_clock_started_at | retention_ends_on 
+--------------------------------------+--------+-------------------------------+----------------------------+-------------------
+ b6548bbe-1052-44d9-8b4f-09034a23fa51 | CLOSED | 2026-10-28 07:58:24.420225+00 | 2026-10-28 07:58:24.420225 | 2031-10-28
+(1 row)
+
+== O4 after reopen b6548bbe ==
+                  id                  | status | closed_at | retention_clock_started_at | retention_ends_on 
+--------------------------------------+--------+-----------+----------------------------+-------------------
+ b6548bbe-1052-44d9-8b4f-09034a23fa51 | ACTIVE |           | 2026-10-28 07:58:24.420225 | 
+(1 row)
+
+== O4 after re-close b6548bbe (ACTIVE -> Close Matter directly) ==
+                  id                  | status |           closed_at           | retention_clock_started_at | retention_ends_on 
+--------------------------------------+--------+-------------------------------+----------------------------+-------------------
+ b6548bbe-1052-44d9-8b4f-09034a23fa51 | CLOSED | 2026-10-28 07:59:19.529302+00 | 2026-10-28 07:59:19.529302 | 2031-10-28
+(1 row)
+
+== O5 after Alice saves 7 ==
+ legal_matter_retention_years 
+------------------------------
+                            7
+(1 row)
+
+            event_type            |    entity_type     |               actor_id               |          occurred_at          |                                                                                                                                                                                         details                                                                                                                                                                                          
+----------------------------------+--------------------+--------------------------------------+-------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ data.protection.settings.updated | org_settings       | 66d3a61b-741d-4ba7-b997-e9df27d500b2 | 2026-10-28 08:00:05.470268+00 | {"org_role": "owner", "member_id": "66d3a61b-741d-4ba7-b997-e9df27d500b2", "actor_name": "Alice Owner", "jurisdiction": "", "retention_enabled": false, "legal_matter_retention_years": 7}
+ statement.generated              | generated_document | 66d3a61b-741d-4ba7-b997-e9df27d500b2 | 2026-10-28 07:59:19.624627+00 | {"file_name": "statement-of-account-apex-holdings-shareholders-agreement-review-mvrsgj-2026-10-28.pdf", "actor_name": "Alice Owner", "period_end": "2026-10-28", "project_id": "b6548bbe-1052-44d9-8b4f-09034a23fa51", "template_id": "1753ca31-9c47-48e8-ad25-7ed0ff0c2d20", "period_start": "2026-10-28", "notify_client": false, "shared_with_client": false}
+ document.generated               | generated_document | 66d3a61b-741d-4ba7-b997-e9df27d500b2 | 2026-10-28 07:59:19.585142+00 | {"file_name": "matter-closure-letter-apex-holdings-shareholders-agreement-review-mvrsgjlw9b22-2026-10-28.pdf", "file_size": 1814, "actor_name": "Alice Owner", "project_id": "b6548bbe-1052-44d9-8b4f-09034a23fa51", "template_name": "Matter Closure Letter", "primary_entity_id": "b6548bbe-1052-44d9-8b4f-09034a23fa51", "save_to_documents": true, "primary_entity_type": "PROJECT"}
+(3 rows)
+
+== O6 years=7: b6548bbe reopened + re-closed; 5f760d69 frozen ==
+                  id                  |  status   |           closed_at           | retention_clock_started_at | retention_ends_on 
+--------------------------------------+-----------+-------------------------------+----------------------------+-------------------
+ 5f760d69-07b4-4745-9867-6d14aad3940e | CLOSED    | 2026-10-28 07:26:18.614637+00 | 2026-10-28 07:26:18.614637 | 2031-10-28
+ bafe73ff-9ea6-4648-9793-f47589aaa329 | COMPLETED |                               |                            | 
+ b6548bbe-1052-44d9-8b4f-09034a23fa51 | CLOSED    | 2026-10-28 08:01:27.425037+00 | 2026-10-28 08:01:27.425037 | 2033-10-28
+(3 rows)
+
+== O8 final state (after Alice restores years=5) ==
+          utc_now           
+----------------------------
+ 2026-10-28 08:04:45.148942
+(1 row)
+
+ legal_matter_retention_years 
+------------------------------
+                            5
+(1 row)
+
+            event_type            |          occurred_at          | years |    actor    
+----------------------------------+-------------------------------+-------+-------------
+ data.protection.settings.updated | 2026-10-28 08:00:05.470268+00 | 7     | Alice Owner
+ data.protection.settings.updated | 2026-10-28 08:03:41.82796+00  | 5     | Alice Owner
+(2 rows)
+
+                  id                  |  status   |           closed_at           | retention_clock_started_at | retention_ends_on 
+--------------------------------------+-----------+-------------------------------+----------------------------+-------------------
+ 5f760d69-07b4-4745-9867-6d14aad3940e | CLOSED    | 2026-10-28 07:26:18.614637+00 | 2026-10-28 07:26:18.614637 | 2031-10-28
+ bafe73ff-9ea6-4648-9793-f47589aaa329 | COMPLETED |                               |                            | 
+ b6548bbe-1052-44d9-8b4f-09034a23fa51 | CLOSED    | 2026-10-28 08:01:27.425037+00 | 2026-10-28 08:01:27.425037 | 2033-10-28
+(3 rows)
+
+        email         
+----------------------
+ alice@e2e-test.local
+(1 row)
+
+== backend PATCH /api/settings/data-protection log lines (last 15m) ==
+{"@timestamp":"2026-10-28T08:00:05.468913337Z","log":{"level":"INFO","logger":"io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-5639"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Updated data protection settings: jurisdiction=null, retentionEnabled=false","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"2df33127-3105-405d-95d4-dac90714a54a","memberId":"66d3a61b-741d-4ba7-b997-e9df27d500b2","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-10-28T08:03:41.826944340Z","log":{"level":"INFO","logger":"io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-6218"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Updated data protection settings: jurisdiction=null, retentionEnabled=false","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"024648a7-3df1-4095-9722-90a6921be6f2","memberId":"66d3a61b-741d-4ba7-b997-e9df27d500b2","ecs":{"version":"8.11"}}

@@ -1,0 +1,15 @@
+├ ƒ /org/[slug]/trust-accounting/reports
+├ ƒ /org/[slug]/trust-accounting/transactions
+├ ƒ /platform-admin/access-requests
+├ ƒ /platform-admin/billing
+├ ƒ /platform-admin/demo
+├ ○ /request-access
+├ ƒ /sign-in
+└ ○ /signed-out
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

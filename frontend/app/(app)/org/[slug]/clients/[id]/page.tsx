@@ -205,7 +205,7 @@ export default async function CustomerDetailPage({
   }
 
   // Header facts strip (G-B9): the ID shows the structural idNumber first (what the Edit dialog
-  // writes and the conflict check matches), falling back to the legacy id_passport_number (R-19).
+  // writes and the conflict check matches), falling back to the legacy id_passport_number custom field.
   const headerFields = buildHeaderFields(
     HEADER_FIELD_SLUGS.CUSTOMER,
     clientHeaderFieldValues(customer.customFields, customer.idNumber),

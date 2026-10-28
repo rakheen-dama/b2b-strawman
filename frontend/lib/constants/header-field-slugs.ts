@@ -8,15 +8,18 @@ import type { FieldDefinitionResponse } from "@/lib/types";
  * future work). Not to be confused with PROMOTED_*_SLUGS (promoted-field-slugs.ts) — those
  * slugs became structural columns; these stay in `customFields`.
  */
+/** The client ID / passport number pack field (legal-za `legal-za-customer.json`). */
+export const CLIENT_ID_SLUG = "id_passport_number";
+
 export const HEADER_FIELD_SLUGS = {
   PROJECT: ["case_number", "court_name", "opposing_party"],
-  CUSTOMER: ["id_passport_number"],
+  CUSTOMER: [CLIENT_ID_SLUG],
 } as const satisfies Record<string, readonly string[]>;
 
 /** Visible short prefix per slug; slugs without one get a screen-reader-only label. */
 export const HEADER_FIELD_PREFIXES: Readonly<Partial<Record<string, string>>> = {
   case_number: "Case no.",
-  id_passport_number: "ID",
+  [CLIENT_ID_SLUG]: "ID",
 };
 
 export interface HeaderField {
@@ -44,12 +47,13 @@ export function buildHeaderFields(
 
 /**
  * Client header values: the structural `idNumber` (what the Edit dialog writes and the conflict
- * check matches) wins over the legacy `id_passport_number` custom field when non-blank (R-19).
+ * check matches) wins over the legacy `id_passport_number` custom field when non-blank — the two
+ * stores can diverge because the Edit dialog updates only the structural column.
  */
 export function clientHeaderFieldValues(
   customFields: Record<string, unknown> | null | undefined,
   idNumber: string | null | undefined
 ): Record<string, unknown> {
   const structural = idNumber?.trim();
-  return structural ? { ...customFields, id_passport_number: structural } : { ...customFields };
+  return structural ? { ...customFields, [CLIENT_ID_SLUG]: structural } : { ...customFields };
 }

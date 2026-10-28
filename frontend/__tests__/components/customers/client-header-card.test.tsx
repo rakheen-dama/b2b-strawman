@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { ClientHeaderCard } from "@/components/customers/client-header-card";
 import type { ClientHeaderCardProps } from "@/components/customers/client-header-card";
 
@@ -139,5 +139,28 @@ describe("ClientHeaderCard", () => {
     expect(screen.getByTestId("lifecycle-badge")).toHaveTextContent("ANONYMIZED");
     expect(screen.queryByTestId("kyc-badge")).not.toBeInTheDocument();
     expect(screen.queryByTestId("xero-badge")).not.toBeInTheDocument();
+  });
+
+  // Phase 88 G-B9: id_passport_number facts strip under the client name
+  it("renders the ID number facts strip as a dl with a visible ID prefix", () => {
+    render(
+      <ClientHeaderCard
+        {...defaultProps}
+        headerFields={[
+          { slug: "id_passport_number", label: "ID / Passport Number", value: "8501015800087" },
+        ]}
+      />
+    );
+    const strip = screen.getByTestId("client-header-fields");
+    expect(strip.tagName).toBe("DL");
+    const term = within(strip).getByText("ID");
+    expect(term.tagName).toBe("DT");
+    expect(term).not.toHaveClass("sr-only");
+    expect(within(strip).getByText("8501015800087").tagName).toBe("DD");
+  });
+
+  it("renders no facts strip without headerFields", () => {
+    render(<ClientHeaderCard {...defaultProps} />);
+    expect(screen.queryByTestId("client-header-fields")).not.toBeInTheDocument();
   });
 });

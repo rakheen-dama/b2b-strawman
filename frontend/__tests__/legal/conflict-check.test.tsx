@@ -114,6 +114,30 @@ describe("ConflictCheckForm", () => {
     expect(screen.getByLabelText("Registration Number")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Run Conflict Check/i })).toBeInTheDocument();
   });
+
+  // Phase 88 G-A6: the New Matter dialog links here with the selected client prefilled
+  it("prefills name, ID number, client and check type from the New Matter link-out", () => {
+    render(
+      <ConflictCheckForm
+        slug="acme"
+        initialCustomers={[{ id: "11111111-1111-4111-8111-111111111111", name: "Sipho Ndlovu" }]}
+        initialProjects={[]}
+        initialFormDefaults={{
+          checkedName: "Sipho Ndlovu",
+          checkedIdNumber: "8501015800087",
+          customerId: "11111111-1111-4111-8111-111111111111",
+          checkType: "NEW_MATTER",
+        }}
+      />
+    );
+
+    expect(screen.getByLabelText("Name to Check *")).toHaveValue("Sipho Ndlovu");
+    expect(screen.getByLabelText("ID Number")).toHaveValue("8501015800087");
+    expect(screen.getByLabelText("Check Type *")).toHaveValue("NEW_MATTER");
+    expect(screen.getByLabelText("Client (optional)")).toHaveValue(
+      "11111111-1111-4111-8111-111111111111"
+    );
+  });
 });
 
 describe("ConflictCheckResultDisplay", () => {

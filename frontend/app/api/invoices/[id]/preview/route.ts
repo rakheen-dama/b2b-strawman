@@ -1,20 +1,29 @@
 import "server-only";
 import { API_BASE, getAuthFetchOptions } from "@/lib/api/client";
 import { NextResponse } from "next/server";
-import { previewErrorCopy, renderPreviewErrorHtml } from "@/lib/invoice-preview-error";
+import {
+  previewErrorCopy,
+  renderPreviewErrorHtml,
+  type PreviewErrorCopy,
+} from "@/lib/invoice-preview-error";
 import type { ProblemDetail } from "@/lib/types";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function errorPage(status: number, problem: ProblemDetail | null) {
-  return new NextResponse(renderPreviewErrorHtml(previewErrorCopy(status, problem)), {
+const INVALID_LINK_COPY: PreviewErrorCopy = {
+  title: "Preview unavailable",
+  body: "This preview link is not valid.",
+};
+
+function errorPage(status: number, copy: PreviewErrorCopy) {
+  return new NextResponse(renderPreviewErrorHtml(copy), {
     status,
     headers: { "Content-Type": "text/html; charset=utf-8" },
   });
 }
 
 /**
- * Pure gateway proxy for invoice HTML preview.
+ * Gateway proxy for the invoice HTML preview, with a standalone HTML error page.
  *
  * The backend already enforces @RequiresCapability("INVOICING") — no need
  * for a redundant fetchMyCapabilities() call here. Removing it fixes the
@@ -22,21 +31,22 @@ function errorPage(status: number, problem: ProblemDetail | null) {
  * (OBS-5006).
  *
  * The preview opens in a new tab, outside the app shell, so every error (a missing session or any
- * non-OK upstream response, e.g. 409 invoice.preview.no_template) renders a readable, escaped HTML
- * page with the status preserved, never the raw ProblemDetail JSON (Phase 88 626F).
+ * non-OK upstream response, e.g. 409 invoice.preview.no_template, or this route's own malformed-id
+ * 400) renders a readable, escaped HTML page with the status preserved, never plain text or the raw
+ * ProblemDetail JSON (Phase 88 626F, R-2).
  */
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   if (!UUID_RE.test(id)) {
-    return new NextResponse("Bad Request", { status: 400 });
+    return errorPage(400, INVALID_LINK_COPY);
   }
 
   let authOptions: { headers: Record<string, string>; credentials?: RequestCredentials };
   try {
     authOptions = await getAuthFetchOptions("GET");
   } catch {
-    return errorPage(401, null);
+    return errorPage(401, previewErrorCopy(401, null));
   }
 
   const response = await fetch(`${API_BASE}/api/invoices/${id}/preview`, {
@@ -49,7 +59,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     if ((response.headers.get("content-type") ?? "").includes("json")) {
       problem = (await response.json().catch(() => null)) as ProblemDetail | null;
     }
-    return errorPage(response.status, problem);
+    return errorPage(response.status, previewErrorCopy(response.status, problem));
   }
 
   const html = await response.text();

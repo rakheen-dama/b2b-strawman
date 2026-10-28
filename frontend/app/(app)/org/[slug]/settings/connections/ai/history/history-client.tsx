@@ -14,7 +14,7 @@ import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { ChevronLeft, ChevronRight, Activity } from "lucide-react";
 import type { AiExecutionListItem } from "@/lib/api/ai";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrencyFromCents } from "@/lib/format";
 
 interface ExecutionHistoryClientProps {
   slug: string;
@@ -37,10 +37,6 @@ function getStatusVariant(status: string) {
     default:
       return "neutral" as const;
   }
-}
-
-function formatCostZAR(costCents: number): string {
-  return formatCurrency(costCents / 100);
 }
 
 function formatDuration(ms: number | null): string {
@@ -122,7 +118,7 @@ export function ExecutionHistoryClient({
                   <Badge variant={getStatusVariant(exec.status)}>{exec.status}</Badge>
                 </TableCell>
                 <TableCell className="text-right font-mono text-xs tabular-nums">
-                  {formatCostZAR(exec.costCents)}
+                  {formatCurrencyFromCents(exec.costCents)}
                 </TableCell>
                 <TableCell className="text-right font-mono text-xs text-slate-600 tabular-nums dark:text-slate-400">
                   {(exec.inputTokens + exec.outputTokens).toLocaleString()}

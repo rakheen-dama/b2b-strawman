@@ -38,7 +38,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import type { DraftingResponse, VariableFill } from "@/lib/api/ai";
 import type { TemplateListResponse } from "@/lib/types";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrencyFromCents } from "@/lib/format";
 
 interface DraftingDialogProps {
   projectId: string;
@@ -50,10 +50,6 @@ interface DraftingDialogProps {
 }
 
 type Step = "SELECT_TEMPLATE" | "LOADING" | "RESULTS" | "CONFIRMED";
-
-function formatZarCents(cents: number): string {
-  return formatCurrency(cents / 100);
-}
 
 export function DraftingDialog({
   projectId,
@@ -356,7 +352,7 @@ export function DraftingDialog({
             {/* Execution metadata */}
             {result && (
               <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-                <span>Cost: {formatZarCents(result.costCents)}</span>
+                <span>Cost: {formatCurrencyFromCents(result.costCents)}</span>
                 {result.durationMs && <span>Completed in {result.durationMs}ms</span>}
                 <Link
                   href={`/org/${slug}/settings/ai/history`}

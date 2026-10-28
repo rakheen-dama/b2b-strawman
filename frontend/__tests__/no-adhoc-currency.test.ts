@@ -14,7 +14,11 @@ import allowlist from "./no-adhoc-currency.allowlist.json";
 // file + trimmed line text (not line numbers, which drift); every entry must stay live.
 
 const SCAN_ROOTS = ["app", "components", "lib"];
-const CURRENCY_MARKER = /(\bR\s?\$\{|\bR\s\{|\bZAR\b|\$\{(curr|currency)\}|["'`]R\s?["'`]\s*\+)/;
+// Markers: `R ${…}` / `R${…}` (template), `R {…}` / `R{…}` (JSX text), "ZAR", any `${…currency…}` /
+// `${…Currency…}` / `${curr}` interpolation (e.g. `${expense.currency}`, `${currencyCode}`), and a
+// "R " string concatenation.
+const CURRENCY_MARKER =
+  /(\bR\s?\$\{|\bR\s?\{|\bZAR\b|\$\{curr\}|\$\{[\w.]*[cC]urrency[\w.]*\}|["'`]R\s?["'`]\s*\+)/;
 const TO_FIXED_2 = /\.toFixed\(2\)/;
 
 interface AllowEntry {
@@ -50,14 +54,23 @@ describe("no ad-hoc money formatting (Phase 88 626F, arch §13.8.5)", () => {
       "    return `${curr} ${amount.toFixed(2)}`;",
       '  const s = "R " + total.toFixed(2);',
       "  const z = `${amount.toFixed(2)} ZAR`;",
+      "  const e = `${expense.currency} ${expense.amount.toFixed(2)}`;",
+      "  const c = `${currencyCode} ${total.toFixed(2)}`;",
+      "  const i = `${amount.toFixed(2)} ${invoice.currency}`;",
+      "  <span>R{(row.amountCents / 100).toFixed(2)}</span>",
+      "  <td>R {line.total.toFixed(2)}</td>",
       "  {(rate * 100).toFixed(2)}%",
+      "  {`${(margin * 100).toFixed(2)}%`}",
+      "  <span>{(utilisation * 100).toFixed(2)}%</span>",
       "  `${(bytes / 1024).toFixed(1)} KB`",
       "  // return `R ${amount.toFixed(2)}`;",
       "   * `R ${amount.toFixed(2)}` was the old formatter",
       "  {formatCurrency(item.amount)}",
       "  const r = Number(value).toFixed(2);",
     ].join("\n");
-    expect(adHocMoneyLines("sample.tsx", sample).map((h) => h.line)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(adHocMoneyLines("sample.tsx", sample).map((h) => h.line)).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+    ]);
   });
 
   it("scans the real source tree", () => {

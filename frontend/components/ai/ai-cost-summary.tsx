@@ -1,5 +1,5 @@
 import { Progress } from "@/components/ui/progress";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrencyFromCents } from "@/lib/format";
 
 interface AiCostSummaryProps {
   costSummary: {
@@ -10,10 +10,6 @@ interface AiCostSummaryProps {
     periodStart: string;
     periodEnd: string;
   } | null;
-}
-
-function formatZarCents(cents: number): string {
-  return formatCurrency(cents / 100);
 }
 
 function formatPeriod(dateStr: string): string {
@@ -59,7 +55,7 @@ export function AiCostSummary({ costSummary }: AiCostSummaryProps) {
         <div>
           <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Current Spend</p>
           <p className="text-2xl font-semibold text-slate-950 dark:text-slate-50">
-            {formatZarCents(currentMonthSpentCents)}
+            {formatCurrencyFromCents(currentMonthSpentCents)}
           </p>
         </div>
 
@@ -68,14 +64,14 @@ export function AiCostSummary({ costSummary }: AiCostSummaryProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-600 dark:text-slate-400">
-                of {formatZarCents(monthlyBudgetCents)} budget
+                of {formatCurrencyFromCents(monthlyBudgetCents)} budget
               </span>
               <span className={`font-medium ${progressColor}`}>{Math.round(percentage)}%</span>
             </div>
             <Progress value={percentage} className="h-2" />
             {remainingBudgetCents !== null && remainingBudgetCents > 0 && (
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                {formatZarCents(remainingBudgetCents)} remaining
+                {formatCurrencyFromCents(remainingBudgetCents)} remaining
               </p>
             )}
             {remainingBudgetCents !== null && remainingBudgetCents <= 0 && (

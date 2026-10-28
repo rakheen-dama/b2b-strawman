@@ -12,7 +12,7 @@ import { invokeMatterIntakeAction } from "@/app/(app)/org/[slug]/matters/new/int
 import { approveGateAction, rejectGateAction } from "@/app/(app)/org/[slug]/ai/reviews/actions";
 import type { MatterIntakeResponse } from "@/lib/api/ai";
 import Link from "next/link";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrencyFromCents } from "@/lib/format";
 
 interface MatterIntakePanelProps {
   customerId: string;
@@ -28,10 +28,6 @@ type PanelState =
   | { phase: "LOADING" }
   | { phase: "SUCCESS"; result: MatterIntakeResponse }
   | { phase: "ERROR"; message: string };
-
-function formatZarCents(cents: number): string {
-  return formatCurrency(cents / 100);
-}
 
 function getDisabledReason(
   props: Pick<MatterIntakePanelProps, "isAiConfigured" | "customerId" | "description">
@@ -159,7 +155,7 @@ export function MatterIntakePanel({
 
             {/* Execution metadata */}
             <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-              <span>Cost: {formatZarCents(state.result.costCents)}</span>
+              <span>Cost: {formatCurrencyFromCents(state.result.costCents)}</span>
               <span>Completed in {state.result.durationMs}ms</span>
               <Link
                 href={`/org/${slug}/settings/ai/history`}

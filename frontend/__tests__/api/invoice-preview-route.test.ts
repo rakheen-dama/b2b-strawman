@@ -153,10 +153,23 @@ describe("GET /api/invoices/[id]/preview", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("rejects a non-UUID id with 400 before calling the backend", async () => {
+  it("rejects a non-UUID id with a 400 HTML error page before calling the backend", async () => {
     const res = await call("not-a-uuid");
+    const body = await res.text();
 
     expect(res.status).toBe(400);
+    expect(res.headers.get("content-type")).toBe("text/html; charset=utf-8");
+    expect(body).toMatch(/^<!doctype html>/i);
+    expect(body).toContain("<h1>Preview unavailable</h1>");
+    expect(body).toContain("This preview link is not valid.");
+    expect(body).not.toBe("Bad Request");
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("escapes a malformed id rather than echoing it into the 400 page", async () => {
+    const body = await (await call('<img src=x onerror="alert(1)">')).text();
+
+    expect(body).not.toContain("<img");
+    expect(body).not.toContain("onerror");
   });
 });

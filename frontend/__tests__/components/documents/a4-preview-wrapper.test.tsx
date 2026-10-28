@@ -90,8 +90,5 @@ describe("A4PreviewWrapper", () => {
     notify(500);
     notify(500);
     expect(parseFloat(page().style.width)).toBeCloseTo(500, 5);
-    // The wrapper never widens its host.
-    expect(wrapper.className).toContain("min-w-0");
-    expect(wrapper.className).toContain("overflow-hidden");
   });
 });

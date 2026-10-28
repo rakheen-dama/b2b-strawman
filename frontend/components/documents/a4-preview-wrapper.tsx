@@ -35,8 +35,13 @@ export function A4PreviewWrapper({ html, className }: A4PreviewWrapperProps) {
     <div
       ref={containerRef}
       className={cn(
-        // Dark surround — PDF viewer feel. min-w-0 + overflow-hidden: never widen the host (G-C4).
-        "min-w-0 overflow-hidden rounded-lg bg-slate-800 p-6 dark:bg-slate-900",
+        // Dark surround — PDF viewer feel. G-C4: `contain: inline-size` makes this box contribute
+        // no intrinsic inline size from the scaled page, so its width comes only from its
+        // container and contentRect is the true available width (the preview can grow AND
+        // shrink). Without it, a host sized by min-content (e.g. a grid item with min-width:auto)
+        // takes the page's width, and every width W becomes a fixed point of contentRect = W.
+        // (min-w-0 here would do nothing — this is a block child, not the grid item.)
+        "overflow-hidden rounded-lg bg-slate-800 p-6 [contain:inline-size] dark:bg-slate-900",
         className
       )}
       data-testid="a4-preview-wrapper"

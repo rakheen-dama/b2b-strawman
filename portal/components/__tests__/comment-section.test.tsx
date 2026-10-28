@@ -256,6 +256,7 @@ describe("CommentSection attachment chips", () => {
       expect(mockWindowOpen).toHaveBeenCalledWith(
         "https://s3.example.com/masters?sig=1",
         "_blank",
+        "noopener,noreferrer",
       );
     });
   });
@@ -303,6 +304,7 @@ describe("CommentSection attachment chips", () => {
     expect(mockWindowOpen).toHaveBeenCalledWith(
       "https://s3.example.com/masters?sig=2",
       "_blank",
+      "noopener,noreferrer",
     );
   });
 
@@ -345,6 +347,7 @@ describe("CommentSection attachment chips", () => {
       expect(mockWindowOpen).toHaveBeenCalledWith(
         "https://s3.example.com/masters?sig=3",
         "_blank",
+        "noopener,noreferrer",
       );
     });
     expect(within(list).queryByRole("alert")).not.toBeInTheDocument();

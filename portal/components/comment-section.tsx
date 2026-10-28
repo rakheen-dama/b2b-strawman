@@ -28,7 +28,8 @@ function AttachmentChip({ attachment }: AttachmentChipProps) {
       const presignedUrl = await fetchDocumentDownloadUrl(
         attachment.documentId,
       );
-      window.open(presignedUrl, "_blank");
+      // noopener: the opened file must not be able to navigate the portal tab.
+      window.open(presignedUrl, "_blank", "noopener,noreferrer");
     } catch {
       // A 401 is handled by portalFetch (clear auth, go to /login);
       // anything else stays on the page with an inline error.

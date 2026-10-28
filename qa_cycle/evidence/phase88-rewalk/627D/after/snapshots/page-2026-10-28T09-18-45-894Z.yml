@@ -1,0 +1,60 @@
+- generic [active] [ref=f1e1]:
+  - link "Skip to content" [ref=f1e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f1e3]:
+    - complementary [ref=f1e4]:
+      - generic [ref=f1e5]: Kazi
+      - generic [ref=f1e8]: E2E Test Organization
+      - button "Search, Command K" [ref=f1e11]:
+        - text: Search...
+        - generic [ref=f1e15]: ⌘K
+      - navigation "Main navigation" [ref=f1e16]:
+        - generic [ref=f1e17]:
+          - button "Today" [expanded] [ref=f1e18]
+          - generic [ref=f1e22]:
+            - link "Home" [ref=f1e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f1e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f1e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f1e36]:
+          - button "Matters" [expanded] [ref=f1e37]
+          - generic [ref=f1e41]:
+            - link "Matters" [ref=f1e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f1e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f1e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f1e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f1e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f1e65]:
+          - button "Clients" [expanded] [ref=f1e66]
+          - generic [ref=f1e70]:
+            - link "Clients" [ref=f1e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f1e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f1e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f1e86]
+        - button "Trust" [ref=f1e92]
+        - button "Firm" [ref=f1e98]
+      - link "Platform Admin" [ref=f1e104] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f1e109] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+    - generic [ref=f1e113]:
+      - banner [ref=f1e114]:
+        - navigation "Breadcrumb" [ref=f1e115]:
+          - link "E2E Test Organization" [ref=f1e116] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=f1e117]: Dashboard
+        - generic [ref=f1e121]:
+          - button "…" [ref=f1e123]
+          - button "Notifications" [ref=f1e125]
+      - main [ref=f1e127]
+  - region "Notifications alt+T"

@@ -1,0 +1,200 @@
+- generic [active] [ref=f7e1]:
+  - link "Skip to content" [ref=f7e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f7e3]:
+    - complementary [ref=f7e4]:
+      - generic [ref=f7e5]: Kazi
+      - generic [ref=f7e8]: E2E Test Organization
+      - button "Search, Command K" [ref=f7e11]:
+        - text: Search...
+        - generic [ref=f7e15]: ⌘K
+      - navigation "Main navigation" [ref=f7e16]:
+        - generic [ref=f7e17]:
+          - button "Today" [expanded] [ref=f7e18]
+          - generic [ref=f7e22]:
+            - link "Home" [ref=f7e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f7e27] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f7e31] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f7e35]:
+          - button "Matters" [expanded] [ref=f7e36]
+          - generic [ref=f7e40]:
+            - link "Matters" [ref=f7e41] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f7e46] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f7e48] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f7e53] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f7e59] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f7e64]:
+          - button "Clients" [expanded] [ref=f7e65]
+          - generic [ref=f7e69]:
+            - link "Clients" [ref=f7e70] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f7e75] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f7e79] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f7e85]
+        - button "Trust" [ref=f7e91]
+        - button "Firm" [ref=f7e97]
+      - link "Platform Admin" [ref=f7e103] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f7e108] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f7e113]:
+        - generic [ref=f7e114]: AO
+        - generic [ref=f7e115]:
+          - paragraph [ref=f7e116]: Alice Owner
+          - paragraph [ref=f7e117]: alice@e2e-test.local
+    - generic [ref=f7e118]:
+      - banner [ref=f7e119]:
+        - navigation "Breadcrumb" [ref=f7e120]:
+          - link "E2E Test Organization" [ref=f7e121] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Reports" [ref=f7e180] [cursor=pointer]:
+            - /url: /org/e2e-test-org/reports
+          - generic [ref=f7e181]: Profitability
+        - generic [ref=f7e126]:
+          - generic [ref=f7e127]: e2e-test-org
+          - button "AO" [ref=f7e130]
+          - button "Notifications" [ref=f7e132]:
+            - generic [ref=f7e133]: 7 unread notifications
+            - generic [aria-hidden] [ref=f7e185]: "7"
+      - main [ref=f7e134]:
+        - generic [ref=f7e186]:
+          - generic [ref=f7e187]:
+            - heading "Profitability" [level=1] [ref=f7e188]
+            - paragraph [ref=f7e189]: Team utilization, matter profitability, and client profitability across your organization
+            - paragraph [ref=f7e190]: Costs reflect logged expenses only; disbursements are shown as fee-note lines
+          - generic [ref=f7e191]:
+            - generic [ref=f7e192]:
+              - generic [ref=f7e194]:
+                - generic [ref=f7e195]:
+                  - text: Team Utilization
+                  - 'button "Help: Utilisation rate" [ref=f7e196] [cursor=pointer]'
+                - generic [ref=f7e200]:
+                  - generic [ref=f7e201]: From
+                  - textbox "From" [ref=f7e202]: 2026-10-01
+                  - generic [ref=f7e203]: To
+                  - textbox "To" [ref=f7e204]: 2026-10-28
+              - table [ref=f7e207]:
+                - rowgroup [ref=f7e208]:
+                  - row [ref=f7e209]:
+                    - columnheader [ref=f7e210]
+                    - columnheader [ref=f7e211]:
+                      - button "Name" [ref=f7e212]
+                    - columnheader [ref=f7e216]:
+                      - button "Total Hours" [ref=f7e217]
+                    - columnheader [ref=f7e221]:
+                      - button "Billable" [ref=f7e222]
+                    - columnheader [ref=f7e226]:
+                      - button "Non-Billable" [ref=f7e227]
+                    - columnheader [ref=f7e231]:
+                      - button "Utilization %" [ref=f7e232]
+                - rowgroup [ref=f7e236]:
+                  - row [ref=f7e237]:
+                    - cell [ref=f7e238]:
+                      - button "Expand currency breakdown" [ref=f7e239]
+                    - cell "Alice Owner" [ref=f7e242]
+                    - cell "3.3h" [ref=f7e243]
+                    - cell "3.3h" [ref=f7e244]
+                    - cell "0.0h" [ref=f7e245]
+                    - cell "100.0%" [ref=f7e246]
+            - generic [ref=f7e251]:
+              - generic [ref=f7e253]:
+                - generic [ref=f7e254]:
+                  - text: Matter Profitability
+                  - 'button "Help: Profitability margin" [ref=f7e255] [cursor=pointer]'
+                - generic [ref=f7e259]:
+                  - generic [ref=f7e260]: From
+                  - textbox "From" [ref=f7e261]: 2026-10-01
+                  - generic [ref=f7e262]: To
+                  - textbox "To" [ref=f7e263]: 2026-10-28
+              - table [ref=f7e266]:
+                - rowgroup [ref=f7e267]:
+                  - row [ref=f7e268]:
+                    - columnheader [ref=f7e269]:
+                      - button "Matter" [ref=f7e270]
+                    - columnheader [ref=f7e274]:
+                      - button "Client" [ref=f7e275]
+                    - columnheader "Currency" [ref=f7e279]
+                    - columnheader [ref=f7e280]:
+                      - button "Billable Hours" [ref=f7e281]
+                    - columnheader [ref=f7e285]:
+                      - button "Revenue" [ref=f7e286]
+                    - columnheader [ref=f7e290]:
+                      - button "Cost" [ref=f7e291]
+                    - columnheader [ref=f7e295]:
+                      - button "Margin" [ref=f7e296]
+                    - columnheader [ref=f7e300]:
+                      - button "Margin %" [ref=f7e301]
+                - rowgroup [ref=f7e305]:
+                  - row [ref=f7e306]:
+                    - cell "Khumalo Property Holdings — Erf 1234 Sandton Transfer mvrufhuu82bf" [ref=f7e307]
+                    - cell "Khumalo Property Holdings mvrufhuu82bf" [ref=f7e308]
+                    - cell "ZAR" [ref=f7e309]
+                    - cell "1.3h" [ref=f7e310]
+                    - cell "R 3 333,33" [ref=f7e311]
+                    - cell "R 1 646,08" [ref=f7e312]
+                    - cell "R 1 687,25" [ref=f7e313]
+                    - cell "50.6%" [ref=f7e314]
+                  - row [ref=f7e316]:
+                    - cell "Ndlovu v RAF — Depth II mvrufhuu82bf" [ref=f7e317]
+                    - cell "Sipho Ndlovu mvrufhuu82bf" [ref=f7e318]
+                    - cell "ZAR" [ref=f7e319]
+                    - cell "2.0h" [ref=f7e320]
+                    - cell "R 5 000,00" [ref=f7e321]
+                    - cell "N/A" [ref=f7e322]
+                    - cell "N/A" [ref=f7e323]
+                    - cell "N/A" [ref=f7e325]
+            - generic [ref=f7e327]:
+              - generic [ref=f7e329]:
+                - generic [ref=f7e330]: Client Profitability
+                - generic [ref=f7e331]:
+                  - generic [ref=f7e332]: From
+                  - textbox "From" [ref=f7e333]: 2026-10-01
+                  - generic [ref=f7e334]: To
+                  - textbox "To" [ref=f7e335]: 2026-10-28
+              - table [ref=f7e338]:
+                - rowgroup [ref=f7e339]:
+                  - row [ref=f7e340]:
+                    - columnheader [ref=f7e341]
+                    - columnheader [ref=f7e342]:
+                      - button "Customer" [ref=f7e343]
+                    - columnheader "Currency" [ref=f7e347]
+                    - columnheader [ref=f7e348]:
+                      - button "Revenue" [ref=f7e349]
+                    - columnheader [ref=f7e353]:
+                      - button "Cost" [ref=f7e354]
+                    - columnheader [ref=f7e358]:
+                      - button "Margin" [ref=f7e359]
+                    - columnheader [ref=f7e363]:
+                      - button "Margin %" [ref=f7e364]
+                - rowgroup [ref=f7e368]:
+                  - row [ref=f7e369] [cursor=pointer]:
+                    - cell [ref=f7e370]
+                    - cell "Sipho Ndlovu mvrufhuu82bf" [ref=f7e373]
+                    - cell "ZAR" [ref=f7e374]
+                    - cell "R 5 000,00" [ref=f7e375]
+                    - cell "N/A" [ref=f7e376]
+                    - cell "—" [ref=f7e377]
+                    - cell "—" [ref=f7e378]
+                  - row [ref=f7e379] [cursor=pointer]:
+                    - cell [ref=f7e380]
+                    - cell "Khumalo Property Holdings mvrufhuu82bf" [ref=f7e383]
+                    - cell "ZAR" [ref=f7e384]
+                    - cell "R 3 333,33" [ref=f7e385]
+                    - cell "R 1 646,08" [ref=f7e386]
+                    - cell "R 1 687,25" [ref=f7e387]
+                    - cell "50.6%" [ref=f7e388]
+  - generic [ref=f7e176]:
+    - heading "Command Palette" [level=2] [ref=f7e177]
+    - paragraph [ref=f7e178]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f7e179]

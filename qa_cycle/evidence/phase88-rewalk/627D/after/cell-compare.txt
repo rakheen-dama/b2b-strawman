@@ -1,0 +1,12 @@
+row 1: MATCH
+o1-alice-wide.csv: 1 data rows, header ok, CRLF ok, no BOM
+row 1: MATCH
+o4-alice-nodates.csv: 1 data rows, header ok, CRLF ok, no BOM
+row 1: MATCH
+o4-alice-fromonly.csv: 1 data rows, header ok, CRLF ok, no BOM
+row 1: MATCH
+row 2: MATCH
+o5-alice-wide.csv: 2 data rows, header ok, CRLF ok, no BOM
+row 1: MATCH
+row 2: MATCH
+o5-alice-default.csv: 2 data rows, header ok, CRLF ok, no BOM

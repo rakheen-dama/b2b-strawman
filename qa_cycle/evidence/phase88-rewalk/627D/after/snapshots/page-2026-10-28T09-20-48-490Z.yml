@@ -1,0 +1,108 @@
+- generic [active] [ref=f7e1]:
+  - link "Skip to content" [ref=f7e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f7e3]:
+    - complementary [ref=f7e4]:
+      - generic [ref=f7e5]: Kazi
+      - generic [ref=f7e8]: E2E Test Organization
+      - button "Search, Command K" [ref=f7e11]:
+        - text: Search...
+        - generic [ref=f7e15]: ⌘K
+      - navigation "Main navigation" [ref=f7e16]:
+        - generic [ref=f7e17]:
+          - button "Today" [expanded] [ref=f7e18]
+          - generic [ref=f7e22]:
+            - link "Home" [ref=f7e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f7e27] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f7e31] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f7e35]:
+          - button "Matters" [expanded] [ref=f7e36]
+          - generic [ref=f7e40]:
+            - link "Matters" [ref=f7e41] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f7e46] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f7e48] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f7e53] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f7e59] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f7e64]:
+          - button "Clients" [expanded] [ref=f7e65]
+          - generic [ref=f7e69]:
+            - link "Clients" [ref=f7e70] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f7e75] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f7e79] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f7e85]
+        - button "Trust" [ref=f7e91]
+        - button "Firm" [ref=f7e97]
+      - link "Platform Admin" [ref=f7e103] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f7e108] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f7e113]:
+        - generic [ref=f7e114]: AO
+        - generic [ref=f7e115]:
+          - paragraph [ref=f7e116]: Alice Owner
+          - paragraph [ref=f7e117]: alice@e2e-test.local
+    - generic [ref=f7e118]:
+      - banner [ref=f7e119]:
+        - navigation "Breadcrumb" [ref=f7e120]:
+          - link "E2E Test Organization" [ref=f7e121] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=f7e122]: Reports
+        - generic [ref=f7e126]:
+          - generic [ref=f7e127]: e2e-test-org
+          - button "AO" [ref=f7e130]
+          - button "Notifications" [ref=f7e132]
+      - main [ref=f7e134]:
+        - generic [ref=f7e137]:
+          - heading "Reports" [level=1] [ref=f7e139]
+          - generic [ref=f7e140]:
+            - heading "Firm performance" [level=2] [ref=f7e141]
+            - link "Profitability Team utilization, matter profitability, and client profitability across your organization Run report →" [ref=f7e143] [cursor=pointer]:
+              - /url: /org/e2e-test-org/reports/profitability
+              - generic [ref=f7e144]:
+                - generic [ref=f7e145]:
+                  - generic [ref=f7e146]: Profitability
+                  - generic [ref=f7e147]: Team utilization, matter profitability, and client profitability across your organization
+                - generic [ref=f7e148]: Run report →
+          - generic [ref=f7e149]:
+            - heading "Financial" [level=2] [ref=f7e150]
+            - link "Invoice Aging Report Outstanding invoices grouped by age bucket. Run report →" [ref=f7e152] [cursor=pointer]:
+              - /url: /org/e2e-test-org/reports/invoice-aging
+              - generic [ref=f7e153]:
+                - generic [ref=f7e154]:
+                  - generic [ref=f7e155]: Invoice Aging Report
+                  - generic [ref=f7e156]: Outstanding invoices grouped by age bucket.
+                - generic [ref=f7e157]: Run report →
+          - generic [ref=f7e158]:
+            - heading "Project" [level=2] [ref=f7e159]
+            - link "Project Profitability Report Revenue vs. cost per project for a date range. Run report →" [ref=f7e161] [cursor=pointer]:
+              - /url: /org/e2e-test-org/reports/project-profitability
+              - generic [ref=f7e162]:
+                - generic [ref=f7e163]:
+                  - generic [ref=f7e164]: Project Profitability Report
+                  - generic [ref=f7e165]: Revenue vs. cost per project for a date range.
+                - generic [ref=f7e166]: Run report →
+          - generic [ref=f7e167]:
+            - heading "Time & Attendance" [level=2] [ref=f7e168]
+            - link "Timesheet Report Time entries grouped by member, project, or date for a given period. Run report →" [ref=f7e170] [cursor=pointer]:
+              - /url: /org/e2e-test-org/reports/timesheet
+              - generic [ref=f7e171]:
+                - generic [ref=f7e172]:
+                  - generic [ref=f7e173]: Timesheet Report
+                  - generic [ref=f7e174]: Time entries grouped by member, project, or date for a given period.
+                - generic [ref=f7e175]: Run report →
+  - generic [ref=f7e176]:
+    - heading "Command Palette" [level=2] [ref=f7e177]
+    - paragraph [ref=f7e178]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f7e179]

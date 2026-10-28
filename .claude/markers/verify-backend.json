@@ -1,7 +1,7 @@
 {
-  "commit": "fa0225e725c3a54084e5d02cbaeca834269dff43",
-  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q (./mvnw verify, worktree-epic-627B @fa0225e72 = PR #1694 final head, squash f78b041f6)",
+  "commit": "0c9acf7b9e03105416194f653abf289fa05a7bcd",
+  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q (./mvnw verify, worktree-epic-627D @0c9acf7b9 = PR #1696 final head)",
   "exit": 0,
-  "ts": "2026-10-28T07:20:00Z",
-  "summary": "Slice 627B BE-VERIFY (627.6) on final head fa0225e72: 6187 tests / 0 failures / 0 errors / 26 skipped (baseline 6159 → +28). Earlier head c8371067c also green (6184). Backend CI run 40647043268 success on fa0225e72."
+  "ts": "2026-10-28T09:49:28Z",
+  "summary": "Slice 627D (profitability CSV endpoint) BE verify on final head 0c9acf7b9: 6208 tests / 0 failures / 0 errors / 26 skipped (baseline 6187 → +21: ReportControllerTest 9 + ProfitabilityCsvExporterTest 12). Backend CI run 40663990630 success on 0c9acf7b9."
 }

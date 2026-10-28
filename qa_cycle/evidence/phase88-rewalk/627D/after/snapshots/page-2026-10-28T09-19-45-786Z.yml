@@ -1,0 +1,288 @@
+- generic [active] [ref=f4e1]:
+  - link "Skip to content" [ref=f4e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f4e3]:
+    - complementary [ref=f4e4]:
+      - generic [ref=f4e5]: Kazi
+      - generic [ref=f4e8]: E2E Test Organization
+      - button "Search, Command K" [ref=f4e11]:
+        - text: Search...
+        - generic [ref=f4e15]: ⌘K
+      - navigation "Main navigation" [ref=f4e16]:
+        - generic [ref=f4e17]:
+          - button "Today" [expanded] [ref=f4e18]
+          - generic [ref=f4e22]:
+            - link "Home" [ref=f4e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f4e27] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f4e31] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f4e35]:
+          - button "Matters" [expanded] [ref=f4e36]
+          - generic [ref=f4e40]:
+            - link "Matters" [ref=f4e41] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f4e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f4e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f4e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f4e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f4e65]:
+          - button "Clients" [expanded] [ref=f4e66]
+          - generic [ref=f4e70]:
+            - link "Clients" [ref=f4e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f4e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f4e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f4e86]
+        - button "Trust" [ref=f4e92]
+        - button "Firm" [ref=f4e98]
+      - link "Platform Admin" [ref=f4e104] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f4e109] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f4e114]:
+        - generic [ref=f4e115]: AO
+        - generic [ref=f4e116]:
+          - paragraph [ref=f4e117]: Alice Owner
+          - paragraph [ref=f4e118]: alice@e2e-test.local
+    - generic [ref=f4e119]:
+      - banner [ref=f4e120]:
+        - navigation "Breadcrumb" [ref=f4e121]:
+          - link "E2E Test Organization" [ref=f4e122] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=f4e123]: Matters
+        - generic [ref=f4e127]:
+          - generic [ref=f4e128]: e2e-test-org
+          - button "AO" [ref=f4e131]
+          - button "Notifications" [ref=f4e133]:
+            - generic [ref=f4e134]: 7 unread notifications
+            - generic [aria-hidden] [ref=f4e135]: "7"
+      - main [ref=f4e136]:
+        - generic [ref=f4e139]:
+          - generic [ref=f4e140]:
+            - generic [ref=f4e141]:
+              - heading "Matters" [level=1] [ref=f4e142]
+              - paragraph [ref=f4e143]: 9 matters
+            - generic [ref=f4e144]:
+              - button "New from Template" [disabled]
+              - button "New Matter" [ref=f4e146]
+          - generic [ref=f4e147]:
+            - generic [ref=f4e149]:
+              - generic [ref=f4e150]:
+                - 'button "Help: Saved views" [ref=f4e155] [cursor=pointer]'
+                - tablist [ref=f4e160]:
+                  - tab "My matters" [ref=f4e161]
+                  - tab "Open matters" [selected] [ref=f4e162]
+                  - tab "Awaiting fee note" [ref=f4e163]
+                  - tab "Dormant" [ref=f4e164]
+              - button "Save View" [ref=f4e165]
+            - generic [ref=f4e166]:
+              - search "Search matters" [ref=f4e167]:
+                - textbox "Search matters…" [ref=f4e172]
+              - generic [ref=f4e173]:
+                - link "Active" [ref=f4e174] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/matters
+                - link "Completed" [ref=f4e175] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/matters?status=COMPLETED
+                - link "Archived" [ref=f4e176] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/matters?status=ARCHIVED
+                - link "Closed" [ref=f4e177] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/matters?status=CLOSED
+                - link "All" [ref=f4e178] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/matters?status=ALL
+          - generic [ref=f4e179]:
+            - table [ref=f4e183]:
+              - caption [ref=f4e184]: Matters — Open matters
+              - rowgroup [ref=f4e185]:
+                - row [ref=f4e186]:
+                  - columnheader [ref=f4e187]:
+                    - link "Reference" [ref=f4e188] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/matters?sort=referenceNumber&dir=asc
+                  - columnheader [ref=f4e189]:
+                    - link "Matter" [ref=f4e190] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/matters?sort=name&dir=asc
+                  - columnheader [ref=f4e191]:
+                    - link "Client" [ref=f4e192] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/matters?sort=clientName&dir=asc
+                  - columnheader [ref=f4e193]:
+                    - link "Fee earner" [ref=f4e194] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/matters?sort=feeEarnerName&dir=asc
+                  - columnheader [ref=f4e195]:
+                    - link "Status" [ref=f4e196] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/matters?sort=status&dir=asc
+                  - columnheader [ref=f4e197]:
+                    - link "Unbilled" [ref=f4e198] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/matters?sort=unbilled&dir=asc
+                  - columnheader [ref=f4e199]:
+                    - link "Trust" [ref=f4e200] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/matters?sort=trustBalance&dir=asc
+                  - columnheader [ref=f4e201]:
+                    - link "Next in diary" [ref=f4e202] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/matters?sort=nextDiaryDate&dir=desc
+                      - text: Next in diary
+                      - generic [aria-hidden] [ref=f4e203]: ↑
+                  - columnheader "Actions" [ref=f4e204]
+              - rowgroup [ref=f4e206]:
+                - row [ref=f4e207] [cursor=pointer]:
+                  - cell "—" [ref=f4e208]
+                  - cell [ref=f4e209]:
+                    - link "Apex Annual Returns eou4" [ref=f4e211]:
+                      - /url: /org/e2e-test-org/matters/b88c5b12-0078-4b9b-9129-3483edfb3c0a
+                  - cell "—" [ref=f4e212]
+                  - cell "Alice Owner" [ref=f4e213]:
+                    - generic [ref=f4e214]:
+                      - generic [aria-hidden] [ref=f4e215]: AO
+                      - generic "Alice Owner" [ref=f4e216]
+                  - cell "Active" [ref=f4e217]
+                  - cell "—" [ref=f4e219]
+                  - cell "—" [ref=f4e220]
+                  - cell "—" [ref=f4e221]
+                  - cell [ref=f4e222]:
+                    - button "Matter actions" [ref=f4e223]
+                - row [ref=f4e225] [cursor=pointer]:
+                  - cell "—" [ref=f4e226]
+                  - cell [ref=f4e227]:
+                    - link "Estate Late Peter Moroka czvm" [ref=f4e229]:
+                      - /url: /org/e2e-test-org/matters/7c8ac874-1ab8-49fb-8687-301a0d2773fe
+                  - cell "—" [ref=f4e230]
+                  - cell "Alice Owner" [ref=f4e231]:
+                    - generic [ref=f4e232]:
+                      - generic [aria-hidden] [ref=f4e233]: AO
+                      - generic "Alice Owner" [ref=f4e234]
+                  - cell "Active" [ref=f4e235]
+                  - cell "—" [ref=f4e237]
+                  - cell "—" [ref=f4e238]
+                  - cell "—" [ref=f4e239]
+                  - cell [ref=f4e240]:
+                    - button "Matter actions" [ref=f4e241]
+                - row [ref=f4e243] [cursor=pointer]:
+                  - cell "—" [ref=f4e244]
+                  - cell [ref=f4e245]:
+                    - link "Khumalo Property Holdings — Erf 1234 Sandton Transfer mvrufhuu82bf" [ref=f4e247]:
+                      - /url: /org/e2e-test-org/matters/e9a34cc8-a5bf-48d7-8d68-7ab0605bb5d3
+                  - cell [ref=f4e248]:
+                    - link "Khumalo Property Holdings mvrufhuu82bf" [ref=f4e249]:
+                      - /url: /org/e2e-test-org/clients/20d49c57-99aa-4a22-89de-941340afa846
+                  - cell "Alice Owner" [ref=f4e250]:
+                    - generic [ref=f4e251]:
+                      - generic [aria-hidden] [ref=f4e252]: AO
+                      - generic "Alice Owner" [ref=f4e253]
+                  - cell "Active" [ref=f4e254]
+                  - cell "—" [ref=f4e256]
+                  - cell "R 0,00" [ref=f4e257]
+                  - cell "—" [ref=f4e258]
+                  - cell [ref=f4e259]:
+                    - button "Matter actions" [ref=f4e260]
+                - row [ref=f4e262] [cursor=pointer]:
+                  - cell "—" [ref=f4e263]
+                  - cell [ref=f4e264]:
+                    - link "Ndlovu — transition repro mvrufhuu82bf" [ref=f4e266]:
+                      - /url: /org/e2e-test-org/matters/569e3047-81b7-4a7c-9d8d-64ed60195aba
+                  - cell [ref=f4e267]:
+                    - link "Sipho Ndlovu mvrufhuu82bf" [ref=f4e268]:
+                      - /url: /org/e2e-test-org/clients/cebc62bc-a6ed-461c-8542-e8026580777d
+                  - cell "Alice Owner" [ref=f4e269]:
+                    - generic [ref=f4e270]:
+                      - generic [aria-hidden] [ref=f4e271]: AO
+                      - generic "Alice Owner" [ref=f4e272]
+                  - cell "Active" [ref=f4e273]
+                  - cell "R 150,00" [ref=f4e275]
+                  - cell "R 3 750,00" [ref=f4e276]
+                  - cell "—" [ref=f4e277]
+                  - cell [ref=f4e278]:
+                    - button "Matter actions" [ref=f4e279]
+                - row [ref=f4e281] [cursor=pointer]:
+                  - cell "—" [ref=f4e282]
+                  - cell [ref=f4e283]:
+                    - link "Ndlovu Property Dispute eou4" [ref=f4e285]:
+                      - /url: /org/e2e-test-org/matters/c18bc86d-bfdb-4c2a-bd19-b3e10bed28d7
+                  - cell "—" [ref=f4e286]
+                  - cell "Alice Owner" [ref=f4e287]:
+                    - generic [ref=f4e288]:
+                      - generic [aria-hidden] [ref=f4e289]: AO
+                      - generic "Alice Owner" [ref=f4e290]
+                  - cell "Active" [ref=f4e291]
+                  - cell "—" [ref=f4e293]
+                  - cell "—" [ref=f4e294]
+                  - cell "—" [ref=f4e295]
+                  - cell [ref=f4e296]:
+                    - button "Matter actions" [ref=f4e297]
+                - row [ref=f4e299] [cursor=pointer]:
+                  - cell "—" [ref=f4e300]
+                  - cell [ref=f4e301]:
+                    - link "Ndlovu v RAF czvm" [ref=f4e303]:
+                      - /url: /org/e2e-test-org/matters/1a47c083-45c0-45a6-94ca-fc2f10ddd088
+                  - cell "—" [ref=f4e304]
+                  - cell "Alice Owner" [ref=f4e305]:
+                    - generic [ref=f4e306]:
+                      - generic [aria-hidden] [ref=f4e307]: AO
+                      - generic "Alice Owner" [ref=f4e308]
+                  - cell "Active" [ref=f4e309]
+                  - cell "—" [ref=f4e311]
+                  - cell "—" [ref=f4e312]
+                  - cell "—" [ref=f4e313]
+                  - cell [ref=f4e314]:
+                    - button "Matter actions" [ref=f4e315]
+                - row [ref=f4e317] [cursor=pointer]:
+                  - cell "—" [ref=f4e318]
+                  - cell [ref=f4e319]:
+                    - 'link "QC Debt Recovery #1 czvm" [ref=f4e321]':
+                      - /url: /org/e2e-test-org/matters/e044a16b-e0ef-42ea-98a6-b678f38813cf
+                  - cell "—" [ref=f4e322]
+                  - cell "Alice Owner" [ref=f4e323]:
+                    - generic [ref=f4e324]:
+                      - generic [aria-hidden] [ref=f4e325]: AO
+                      - generic "Alice Owner" [ref=f4e326]
+                  - cell "Active" [ref=f4e327]
+                  - cell "—" [ref=f4e329]
+                  - cell "—" [ref=f4e330]
+                  - cell "—" [ref=f4e331]
+                  - cell [ref=f4e332]:
+                    - button "Matter actions" [ref=f4e333]
+                - row [ref=f4e335] [cursor=pointer]:
+                  - cell "—" [ref=f4e336]
+                  - cell [ref=f4e337]:
+                    - link "Team spec mvruf95y3ff6" [ref=f4e339]:
+                      - /url: /org/e2e-test-org/matters/02a5b152-175a-414e-bbe6-f717d985dc60
+                  - cell "—" [ref=f4e340]
+                  - cell "Carol Member" [ref=f4e341]:
+                    - generic [ref=f4e342]:
+                      - generic [aria-hidden] [ref=f4e343]: CM
+                      - generic "Carol Member" [ref=f4e344]
+                  - cell "Active" [ref=f4e345]
+                  - cell "—" [ref=f4e347]
+                  - cell "—" [ref=f4e348]
+                  - cell "—" [ref=f4e349]
+                  - cell [ref=f4e350]:
+                    - button "Matter actions" [ref=f4e351]
+                - row [ref=f4e353] [cursor=pointer]:
+                  - cell "—" [ref=f4e354]
+                  - cell [ref=f4e355]:
+                    - link "Website Redesign" [ref=f4e357]:
+                      - /url: /org/e2e-test-org/matters/5351ad13-5ada-475f-8136-8db4388e3cee
+                  - cell [ref=f4e358]:
+                    - link "Acme Corp" [ref=f4e359]:
+                      - /url: /org/e2e-test-org/clients/05c48dab-c17d-40dd-852f-dec450db7e30
+                  - cell "Alice Owner" [ref=f4e360]:
+                    - generic [ref=f4e361]:
+                      - generic [aria-hidden] [ref=f4e362]: AO
+                      - generic "Alice Owner" [ref=f4e363]
+                  - cell "Active" [ref=f4e364]
+                  - cell "—" [ref=f4e366]
+                  - cell "R 0,00" [ref=f4e367]
+                  - cell "—" [ref=f4e368]
+                  - cell [ref=f4e369]:
+                    - button "Matter actions" [ref=f4e370]
+            - paragraph [ref=f4e372]: Showing 9 matters
+  - generic [ref=f4e373]:
+    - heading "Command Palette" [level=2] [ref=f4e374]
+    - paragraph [ref=f4e375]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f4e376]

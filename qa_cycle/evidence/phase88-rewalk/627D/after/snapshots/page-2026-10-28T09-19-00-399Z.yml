@@ -1,0 +1,198 @@
+- generic [ref=f2e1]:
+  - link "Skip to content" [ref=f2e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f2e3]:
+    - complementary [ref=f2e4]:
+      - generic [ref=f2e5]: Kazi
+      - generic [ref=f2e8]: E2E Test Organization
+      - button "Search, Command K" [ref=f2e11]:
+        - text: Search...
+        - generic [ref=f2e15]: ⌘K
+      - navigation "Main navigation" [ref=f2e16]:
+        - generic [ref=f2e17]:
+          - button "Today" [expanded] [ref=f2e18]
+          - generic [ref=f2e22]:
+            - link "Home" [ref=f2e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f2e27] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f2e31] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f2e35]:
+          - button "Matters" [expanded] [ref=f2e36]
+          - generic [ref=f2e40]:
+            - link "Matters" [ref=f2e41] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f2e46] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f2e48] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f2e53] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f2e59] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f2e64]:
+          - button "Clients" [expanded] [ref=f2e65]
+          - generic [ref=f2e69]:
+            - link "Clients" [ref=f2e70] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f2e75] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f2e79] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f2e85]
+        - button "Trust" [ref=f2e91]
+        - button "Firm" [ref=f2e97]
+      - link "Platform Admin" [ref=f2e103] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f2e108] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f2e113]:
+        - generic [ref=f2e114]: AO
+        - generic [ref=f2e115]:
+          - paragraph [ref=f2e116]: Alice Owner
+          - paragraph [ref=f2e117]: alice@e2e-test.local
+    - generic [ref=f2e118]:
+      - banner [ref=f2e119]:
+        - navigation "Breadcrumb" [ref=f2e120]:
+          - link "E2E Test Organization" [ref=f2e121] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Settings" [ref=f2e125] [cursor=pointer]:
+            - /url: /org/e2e-test-org/settings
+          - generic [ref=f2e126]: Fees & Trust
+        - generic [ref=f2e130]:
+          - generic [ref=f2e131]: e2e-test-org
+          - button "AO" [ref=f2e134]
+          - button "Notifications" [ref=f2e136]:
+            - generic [ref=f2e137]: 7 unread notifications
+            - generic [aria-hidden] [ref=f2e286]: "7"
+      - main [ref=f2e138]:
+        - generic [ref=f2e141]:
+          - complementary [ref=f2e142]:
+            - navigation "Settings navigation" [ref=f2e143]:
+              - list [ref=f2e144]:
+                - listitem [ref=f2e145]:
+                  - link "Firm" [ref=f2e146] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/firm
+                - listitem [ref=f2e151]:
+                  - link "Matters" [ref=f2e152] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/matters
+                - listitem [ref=f2e157]:
+                  - link "Documents" [ref=f2e158] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/documents
+                - listitem [ref=f2e162]:
+                  - link "Fees & Trust" [ref=f2e163] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/fees
+                  - list [ref=f2e167]:
+                    - listitem [ref=f2e168]:
+                      - link "Tariffs" [ref=f2e169] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/fees?tab=tariffs
+                    - listitem [ref=f2e170]:
+                      - link "Tax" [ref=f2e171] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/fees?tab=tax
+                    - listitem [ref=f2e172]:
+                      - link "Time recording" [ref=f2e173] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/fees?tab=time-recording
+                    - listitem [ref=f2e174]:
+                      - link "Fee runs" [ref=f2e175] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/fees?tab=fee-runs
+                    - listitem [ref=f2e176]:
+                      - link "Collections" [ref=f2e177] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/fees?tab=collections
+                    - listitem [ref=f2e178]:
+                      - link "Trust accounting" [ref=f2e179] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/fees?tab=trust-accounting
+                - listitem [ref=f2e180]:
+                  - link "Connections" [ref=f2e181] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/connections
+          - generic [ref=f2e185]:
+            - tablist "Fees & Trust settings" [ref=f2e187]:
+              - tab "Tariffs" [selected] [ref=f2e188]
+              - tab "Tax" [ref=f2e189]
+              - tab "Time recording" [ref=f2e190]
+              - tab "Fee runs" [ref=f2e191]
+              - tab "Collections" [ref=f2e192]
+              - tab "Trust accounting" [ref=f2e193]
+            - tabpanel "Tariffs" [ref=f2e194]:
+              - generic [ref=f2e195]:
+                - generic [ref=f2e196]:
+                  - heading [level=1] [ref=f2e197]:
+                    - text: Rates & Currency
+                    - 'button "Help: Rate hierarchy" [ref=f2e198] [cursor=pointer]'
+                  - paragraph [ref=f2e202]: Manage billing rates, cost rates, and the default currency for your organization.
+                - generic [ref=f2e203]:
+                  - generic [ref=f2e205]:
+                    - generic [ref=f2e206]:
+                      - heading [level=2] [ref=f2e207]:
+                        - text: Default Currency
+                        - 'button "Help: Currency settings" [ref=f2e208] [cursor=pointer]'
+                      - paragraph [ref=f2e212]: This currency will be pre-selected when creating new rates.
+                    - combobox [ref=f2e213]: ZAR — South African Rand
+                  - generic [ref=f2e214]:
+                    - 'button "Help: Rate snapshots" [ref=f2e215] [cursor=pointer]'
+                    - paragraph [ref=f2e219]: Rate changes only affect new time entries. Existing entries and invoices retain their original snapshotted rate.
+                  - generic [ref=f2e220]:
+                    - tablist [ref=f2e221]:
+                      - tab "Billing Rates" [ref=f2e222]
+                      - tab "Cost Rates" [active] [selected] [ref=f2e223]
+                    - tabpanel "Cost Rates" [ref=f2e287]:
+                      - heading [level=3] [ref=f2e288]:
+                        - text: Cost Rates
+                        - 'button "Help: Cost rates vs. billing rates" [ref=f2e289] [cursor=pointer]'
+                      - table [ref=f2e295]:
+                        - rowgroup [ref=f2e296]:
+                          - row [ref=f2e297]:
+                            - columnheader "Member" [ref=f2e298]
+                            - columnheader "Hourly Cost" [ref=f2e299]
+                            - columnheader "Currency" [ref=f2e300]
+                            - columnheader "Effective From" [ref=f2e301]
+                            - columnheader "Effective To" [ref=f2e302]
+                            - columnheader "Actions" [ref=f2e303]
+                        - rowgroup [ref=f2e304]:
+                          - row [ref=f2e305]:
+                            - cell [ref=f2e306]:
+                              - generic [ref=f2e307]:
+                                - generic [aria-hidden] [ref=f2e308]: AO
+                                - generic [ref=f2e309]:
+                                  - paragraph [ref=f2e310]: Alice Owner
+                                  - paragraph [ref=f2e311]: alice@e2e-test.local
+                            - cell "Not set" [ref=f2e312]
+                            - cell "—" [ref=f2e313]
+                            - cell "—" [ref=f2e314]
+                            - cell "—" [ref=f2e315]
+                            - cell [ref=f2e316]:
+                              - button "Add rate for Alice Owner" [ref=f2e318]:
+                                - generic [ref=f2e319]: Add Rate
+                          - row [ref=f2e320]:
+                            - cell [ref=f2e321]:
+                              - generic [ref=f2e322]:
+                                - generic [aria-hidden] [ref=f2e323]: BA
+                                - generic [ref=f2e324]:
+                                  - paragraph [ref=f2e325]: Bob Admin
+                                  - paragraph [ref=f2e326]: bob@e2e-test.local
+                            - cell "Not set" [ref=f2e327]
+                            - cell "—" [ref=f2e328]
+                            - cell "—" [ref=f2e329]
+                            - cell "—" [ref=f2e330]
+                            - cell [ref=f2e331]:
+                              - button "Add rate for Bob Admin" [ref=f2e333]:
+                                - generic [ref=f2e334]: Add Rate
+                          - row [ref=f2e335]:
+                            - cell [ref=f2e336]:
+                              - generic [ref=f2e337]:
+                                - generic [aria-hidden] [ref=f2e338]: CM
+                                - generic [ref=f2e339]:
+                                  - paragraph [ref=f2e340]: Carol Member
+                                  - paragraph [ref=f2e341]: carol@e2e-test.local
+                            - cell "Not set" [ref=f2e342]
+                            - cell "—" [ref=f2e343]
+                            - cell "—" [ref=f2e344]
+                            - cell "—" [ref=f2e345]
+                            - cell [ref=f2e346]:
+                              - button "Add rate for Carol Member" [ref=f2e348]:
+                                - generic [ref=f2e349]: Add Rate
+  - generic [ref=f2e282]:
+    - heading "Command Palette" [level=2] [ref=f2e283]
+    - paragraph [ref=f2e284]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f2e285]

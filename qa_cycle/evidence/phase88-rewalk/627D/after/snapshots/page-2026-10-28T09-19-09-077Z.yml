@@ -1,0 +1,279 @@
+- generic:
+  - link [aria-hidden]:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary [aria-hidden]:
+      - generic: Kazi
+      - generic: E2E Test Organization
+      - button:
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Today
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/dashboard
+              - text: Home
+            - link:
+              - /url: /org/e2e-test-org/my-work
+              - text: My work
+            - link:
+              - /url: /org/e2e-test-org/diary
+              - text: Diary
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+            - link:
+              - /url: /org/e2e-test-org/matters/new
+              - text: New matter
+            - link:
+              - /url: /org/e2e-test-org/conflict-check
+              - text: Conflict check
+            - link:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+              - text: Adverse parties
+            - link:
+              - /url: /org/e2e-test-org/ai/reviews
+              - text: AI reviews
+        - generic:
+          - button [expanded]:
+            - generic: Clients
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/clients
+              - text: Clients
+            - link:
+              - /url: /org/e2e-test-org/compliance
+              - text: FICA & compliance
+            - link:
+              - /url: /org/e2e-test-org/compliance/requests
+              - text: Data requests
+        - generic:
+          - button:
+            - generic: Fees
+        - generic:
+          - button:
+            - generic: Trust
+        - generic:
+          - button:
+            - generic: Firm
+      - generic:
+        - link:
+          - /url: /platform-admin/access-requests
+          - text: Platform Admin
+      - generic:
+        - link:
+          - /url: /org/e2e-test-org/notifications
+          - text: Notifications
+      - generic:
+        - generic: AO
+        - generic:
+          - paragraph: Alice Owner
+          - paragraph: alice@e2e-test.local
+    - generic:
+      - banner:
+        - navigation [aria-hidden]:
+          - link:
+            - /url: /org/e2e-test-org/dashboard
+            - text: E2E Test Organization
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/settings
+              - text: Settings
+          - generic: Fees & Trust
+        - generic:
+          - generic [aria-hidden]:
+            - generic: e2e-test-org
+          - generic [aria-hidden]:
+            - button: AO
+          - generic:
+            - button "Notifications":
+              - generic: 7 unread notifications
+              - generic [aria-hidden]: "7"
+      - main [aria-hidden]:
+        - generic:
+          - generic:
+            - generic:
+              - complementary:
+                - navigation:
+                  - list:
+                    - listitem:
+                      - link:
+                        - /url: /org/e2e-test-org/settings/firm
+                        - text: Firm
+                    - listitem:
+                      - link:
+                        - /url: /org/e2e-test-org/settings/matters
+                        - text: Matters
+                    - listitem:
+                      - link:
+                        - /url: /org/e2e-test-org/settings/documents
+                        - text: Documents
+                    - listitem:
+                      - link:
+                        - /url: /org/e2e-test-org/settings/fees
+                        - text: Fees & Trust
+                      - list:
+                        - listitem:
+                          - link:
+                            - /url: /org/e2e-test-org/settings/fees?tab=tariffs
+                            - text: Tariffs
+                        - listitem:
+                          - link:
+                            - /url: /org/e2e-test-org/settings/fees?tab=tax
+                            - text: Tax
+                        - listitem:
+                          - link:
+                            - /url: /org/e2e-test-org/settings/fees?tab=time-recording
+                            - text: Time recording
+                        - listitem:
+                          - link:
+                            - /url: /org/e2e-test-org/settings/fees?tab=fee-runs
+                            - text: Fee runs
+                        - listitem:
+                          - link:
+                            - /url: /org/e2e-test-org/settings/fees?tab=collections
+                            - text: Collections
+                        - listitem:
+                          - link:
+                            - /url: /org/e2e-test-org/settings/fees?tab=trust-accounting
+                            - text: Trust accounting
+                    - listitem:
+                      - link:
+                        - /url: /org/e2e-test-org/settings/connections
+                        - text: Connections
+              - generic:
+                - generic:
+                  - generic:
+                    - tablist:
+                      - tab [selected]: Tariffs
+                      - tab: Tax
+                      - tab: Time recording
+                      - tab: Fee runs
+                      - tab: Collections
+                      - tab: Trust accounting
+                  - tabpanel:
+                    - generic:
+                      - generic:
+                        - heading [level=1]:
+                          - text: Rates & Currency
+                          - button
+                        - paragraph: Manage billing rates, cost rates, and the default currency for your organization.
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - heading [level=2]:
+                                - text: Default Currency
+                                - button
+                              - paragraph: This currency will be pre-selected when creating new rates.
+                            - combobox: ZAR — South African Rand
+                        - generic:
+                          - button
+                          - paragraph: Rate changes only affect new time entries. Existing entries and invoices retain their original snapshotted rate.
+                        - generic:
+                          - tablist:
+                            - tab: Billing Rates
+                            - tab [selected]: Cost Rates
+                          - tabpanel:
+                            - heading [level=3]:
+                              - text: Cost Rates
+                              - button
+                            - generic:
+                              - generic:
+                                - table:
+                                  - rowgroup:
+                                    - row:
+                                      - columnheader: Member
+                                      - columnheader: Hourly Cost
+                                      - columnheader: Currency
+                                      - columnheader: Effective From
+                                      - columnheader: Effective To
+                                      - columnheader: Actions
+                                  - rowgroup:
+                                    - row:
+                                      - cell:
+                                        - generic:
+                                          - generic [aria-hidden]: AO
+                                          - generic:
+                                            - paragraph: Alice Owner
+                                            - paragraph: alice@e2e-test.local
+                                      - cell: Not set
+                                      - cell: —
+                                      - cell: —
+                                      - cell: —
+                                      - cell:
+                                        - generic:
+                                          - button [expanded]:
+                                            - generic: Add Rate
+                                    - row:
+                                      - cell:
+                                        - generic:
+                                          - generic [aria-hidden]: BA
+                                          - generic:
+                                            - paragraph: Bob Admin
+                                            - paragraph: bob@e2e-test.local
+                                      - cell: Not set
+                                      - cell: —
+                                      - cell: —
+                                      - cell: —
+                                      - cell:
+                                        - generic:
+                                          - button:
+                                            - generic: Add Rate
+                                    - row:
+                                      - cell:
+                                        - generic:
+                                          - generic [aria-hidden]: CM
+                                          - generic:
+                                            - paragraph: Carol Member
+                                            - paragraph: carol@e2e-test.local
+                                      - cell: Not set
+                                      - cell: —
+                                      - cell: —
+                                      - cell: —
+                                      - cell:
+                                        - generic:
+                                          - button:
+                                            - generic: Add Rate
+  - generic [aria-hidden]:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - alert
+  - dialog [ref=f2e351]:
+    - generic [ref=f2e352]:
+      - generic [ref=f2e353]:
+        - heading "Add Rate" [level=2] [ref=f2e354]
+        - paragraph [ref=f2e355]: Create a new rate for Alice Owner.
+      - generic [ref=f2e356]:
+        - generic [ref=f2e357]:
+          - generic [ref=f2e358]: Rate Type
+          - generic [ref=f2e359]:
+            - button "Billing Rate" [ref=f2e360]
+            - button "Cost Rate" [active] [ref=f2e361]
+        - generic [ref=f2e362]:
+          - generic [ref=f2e363]: Hourly Cost
+          - spinbutton "Hourly Cost" [ref=f2e364]
+        - generic [ref=f2e365]:
+          - generic [ref=f2e366]: Currency
+          - combobox [ref=f2e367]: ZAR — South African Rand
+        - generic [ref=f2e368]:
+          - generic [ref=f2e369]: Effective From
+          - textbox "Effective From" [ref=f2e370]: 2026-10-28
+        - generic [ref=f2e371]:
+          - generic [ref=f2e372]:
+            - text: Effective To
+            - generic [ref=f2e373]: (optional)
+          - textbox "Effective To (optional)" [ref=f2e374]
+        - generic [ref=f2e375]:
+          - button "Cancel" [ref=f2e376]
+          - button "Create Rate" [ref=f2e377]
+      - button "Close" [ref=f2e378]

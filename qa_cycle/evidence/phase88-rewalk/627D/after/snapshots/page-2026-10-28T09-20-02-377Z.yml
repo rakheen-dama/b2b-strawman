@@ -1,0 +1,417 @@
+- generic:
+  - link [aria-hidden]:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary [aria-hidden]:
+      - generic: Kazi
+      - generic: E2E Test Organization
+      - button:
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Today
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/dashboard
+              - text: Home
+            - link:
+              - /url: /org/e2e-test-org/my-work
+              - text: My work
+            - link:
+              - /url: /org/e2e-test-org/diary
+              - text: Diary
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+            - link:
+              - /url: /org/e2e-test-org/matters/new
+              - text: New matter
+            - link:
+              - /url: /org/e2e-test-org/conflict-check
+              - text: Conflict check
+            - link:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+              - text: Adverse parties
+            - link:
+              - /url: /org/e2e-test-org/ai/reviews
+              - text: AI reviews
+        - generic:
+          - button [expanded]:
+            - generic: Clients
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/clients
+              - text: Clients
+            - link:
+              - /url: /org/e2e-test-org/compliance
+              - text: FICA & compliance
+            - link:
+              - /url: /org/e2e-test-org/compliance/requests
+              - text: Data requests
+        - generic:
+          - button:
+            - generic: Fees
+        - generic:
+          - button:
+            - generic: Trust
+        - generic:
+          - button:
+            - generic: Firm
+      - generic:
+        - link:
+          - /url: /platform-admin/access-requests
+          - text: Platform Admin
+      - generic:
+        - link:
+          - /url: /org/e2e-test-org/notifications
+          - text: Notifications
+      - generic:
+        - generic: AO
+        - generic:
+          - paragraph: Alice Owner
+          - paragraph: alice@e2e-test.local
+    - generic:
+      - banner:
+        - navigation [aria-hidden]:
+          - link:
+            - /url: /org/e2e-test-org/dashboard
+            - text: E2E Test Organization
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+          - generic: Matter
+        - generic:
+          - generic [aria-hidden]:
+            - generic: e2e-test-org
+          - generic [aria-hidden]:
+            - button: AO
+          - generic:
+            - button "Notifications":
+              - generic: 7 unread notifications
+              - generic [aria-hidden]: "7"
+      - main [aria-hidden]:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/e2e-test-org/matters
+                  - text: Back to Matters
+                - generic:
+                  - button: Generate Document
+                  - button: Generate Statement of Account
+                  - button:
+                    - generic: More actions
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: Khumalo Property Holdings — Erf 1234 Sandton Transfer mvrufhuu82bf
+                    - generic:
+                      - generic: Active
+                      - generic: CONVEYANCING
+                    - generic:
+                      - link:
+                        - /url: /org/e2e-test-org/clients/20d49c57-99aa-4a22-89de-941340afa846
+                        - text: Khumalo Property Holdings mvrufhuu82bf
+                  - generic:
+                    - button: Close Matter
+                    - button: Complete Matter
+                    - button
+              - generic:
+                - tablist:
+                  - tab: Details
+                  - tab: Overview
+                  - tab [selected]:
+                    - text: Work
+                    - generic: · Tasks
+                  - tab: Fees
+                  - tab: Client
+                  - tab: Diary
+                  - tab: Activity
+                - tabpanel:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - heading [level=2]: Tasks
+                        - generic: "12"
+                      - button: New Task
+                    - generic:
+                      - generic:
+                        - generic:
+                          - button
+                        - generic:
+                          - tablist:
+                            - tab [selected]: All
+                      - button: Save View
+                    - group:
+                      - button: All
+                      - button [pressed]: Open
+                      - button [pressed]: In Progress
+                      - button: Done
+                      - button: Cancelled
+                      - button: My Tasks
+                      - button: Recurring
+                    - generic:
+                      - generic:
+                        - table:
+                          - rowgroup:
+                            - row:
+                              - columnheader: Priority
+                              - columnheader: Title
+                              - columnheader: Status
+                              - columnheader: Assignee
+                              - columnheader: Due Date
+                              - columnheader: Actions
+                          - rowgroup:
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Close matter
+                              - cell:
+                                - generic: Open
+                              - cell: Unassigned
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button: Log Time
+                                  - button: Claim
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Finalise financial statement & disburse
+                              - cell:
+                                - generic: Open
+                              - cell: Unassigned
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button: Log Time
+                                  - button: Claim
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Registration & collection of title deed
+                              - cell:
+                                - generic: Open
+                              - cell: Unassigned
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button: Log Time
+                                  - button: Claim
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Respond to Deeds Office notes
+                              - cell:
+                                - generic: Open
+                              - cell: Unassigned
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button [expanded]: Log Time
+                                  - button: Claim
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Lodge documents at Deeds Office
+                              - cell:
+                                - generic: Open
+                              - cell: Unassigned
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button: Log Time
+                                  - button: Claim
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Draft power of attorney to pass transfer
+                              - cell:
+                                - generic: Open
+                              - cell: Unassigned
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button: Log Time
+                                  - button: Claim
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Draft deed of transfer
+                              - cell:
+                                - generic: Open
+                              - cell: Unassigned
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button: Log Time
+                                  - button: Claim
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Obtain transfer duty receipt
+                              - cell:
+                                - generic: Open
+                              - cell: Unassigned
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button: Log Time
+                                  - button: Claim
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Obtain rates clearance figures
+                              - cell:
+                                - generic: Open
+                              - cell: Unassigned
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button: Log Time
+                                  - button: Claim
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Obtain FICA documentation from parties
+                              - cell:
+                                - generic: Open
+                              - cell: Unassigned
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button: Log Time
+                                  - button: Claim
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Draft offer to purchase / review OTP
+                              - cell:
+                                - generic: Open
+                              - cell: Unassigned
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button: Log Time
+                                  - button: Claim
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Receive instruction & conflict check
+                              - cell:
+                                - generic: Open
+                              - cell: Unassigned
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button: Log Time
+                                  - button: Claim
+  - generic [aria-hidden]:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - alert
+  - dialog [ref=f6e437]:
+    - generic [ref=f6e438]:
+      - generic [ref=f6e439]:
+        - heading "Log Time" [level=2] [ref=f6e440]
+        - paragraph [ref=f6e441]: Record time spent on this task.
+      - generic [ref=f6e442]:
+        - generic [ref=f6e443]:
+          - generic [ref=f6e444]: Duration
+          - generic [ref=f6e445]:
+            - generic [ref=f6e446]:
+              - spinbutton "0" [active] [ref=f6e447]
+              - generic [ref=f6e448]: h
+            - generic [ref=f6e449]:
+              - spinbutton "0" [ref=f6e450]
+              - generic [ref=f6e451]: m
+        - generic [ref=f6e452]:
+          - generic [ref=f6e453]: Date
+          - textbox "Date" [ref=f6e454]: 2026-10-28
+        - generic [ref=f6e455]:
+          - generic [ref=f6e456]:
+            - text: Description
+            - generic [ref=f6e457]: (optional)
+          - textbox "Description (optional)" [ref=f6e458]:
+            - /placeholder: What did you work on?
+        - generic [ref=f6e459]:
+          - checkbox "Billable" [checked] [ref=f6e460]
+          - generic [ref=f6e461]: Billable
+          - 'button "Help: Billable vs. non-billable time" [ref=f6e462] [cursor=pointer]'
+        - paragraph [ref=f6e468]:
+          - text: "Billing rate: R 2 500,00/hr"
+          - generic [ref=f6e469]: (member default)
+        - generic [ref=f6e470]:
+          - button "Cancel" [ref=f6e471]
+          - button "Log Time" [ref=f6e472]
+      - button "Close" [ref=f6e473]

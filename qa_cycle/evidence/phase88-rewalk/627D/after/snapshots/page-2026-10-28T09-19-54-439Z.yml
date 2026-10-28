@@ -1,0 +1,115 @@
+- generic [active] [ref=f5e1]:
+  - link "Skip to content" [ref=f5e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f5e3]:
+    - complementary [ref=f5e4]:
+      - generic [ref=f5e5]: Kazi
+      - generic [ref=f5e8]: E2E Test Organization
+      - button "Search, Command K" [ref=f5e11]:
+        - text: Search...
+        - generic [ref=f5e15]: ⌘K
+      - navigation "Main navigation" [ref=f5e16]:
+        - generic [ref=f5e17]:
+          - button "Today" [expanded] [ref=f5e18]
+          - generic [ref=f5e22]:
+            - link "Home" [ref=f5e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f5e27] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f5e31] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f5e35]:
+          - button "Matters" [expanded] [ref=f5e36]
+          - generic [ref=f5e40]:
+            - link "Matters" [ref=f5e41] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f5e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f5e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f5e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f5e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f5e65]:
+          - button "Clients" [expanded] [ref=f5e66]
+          - generic [ref=f5e70]:
+            - link "Clients" [ref=f5e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f5e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f5e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f5e86]
+        - button "Trust" [ref=f5e92]
+        - button "Firm" [ref=f5e98]
+      - link "Platform Admin" [ref=f5e104] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f5e109] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f5e114]:
+        - generic [ref=f5e115]: AO
+        - generic [ref=f5e116]:
+          - paragraph [ref=f5e117]: Alice Owner
+          - paragraph [ref=f5e118]: alice@e2e-test.local
+    - generic [ref=f5e119]:
+      - banner [ref=f5e120]:
+        - navigation "Breadcrumb" [ref=f5e121]:
+          - link "E2E Test Organization" [ref=f5e122] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Matters" [ref=f5e126] [cursor=pointer]:
+            - /url: /org/e2e-test-org/matters
+          - generic [ref=f5e127]: Matter
+        - generic [ref=f5e131]:
+          - generic [ref=f5e132]: e2e-test-org
+          - button "AO" [ref=f5e135]
+          - button "Notifications" [ref=f5e137]:
+            - generic [ref=f5e138]: 7 unread notifications
+            - generic [aria-hidden] [ref=f5e139]: "7"
+      - main [ref=f5e140]:
+        - generic [ref=f5e143]:
+          - generic [ref=f5e144]:
+            - link "Back to Matters" [ref=f5e145] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - generic [ref=f5e148]:
+              - button "Generate Document" [ref=f5e149]
+              - button "Generate Statement of Account" [ref=f5e150]
+              - button "More actions" [ref=f5e151]
+          - generic [ref=f5e154]:
+            - generic [ref=f5e155]:
+              - heading "Khumalo Property Holdings — Erf 1234 Sandton Transfer mvrufhuu82bf" [level=1] [ref=f5e156]
+              - generic [ref=f5e157]:
+                - generic [ref=f5e158]: Active
+                - generic [ref=f5e159]: CONVEYANCING
+              - link "Khumalo Property Holdings mvrufhuu82bf" [ref=f5e161] [cursor=pointer]:
+                - /url: /org/e2e-test-org/clients/20d49c57-99aa-4a22-89de-941340afa846
+            - generic [ref=f5e162]:
+              - button "Close Matter" [ref=f5e163]
+              - button "Complete Matter" [ref=f5e164]
+              - button [ref=f5e165]
+          - generic [ref=f5e166]:
+            - tablist [ref=f5e167]:
+              - tab "Details" [ref=f5e168] [cursor=pointer]
+              - tab "Overview" [ref=f5e171] [cursor=pointer]
+              - tab "Work" [ref=f5e172] [cursor=pointer]
+              - tab "Fees · Time recording" [selected] [ref=f5e175] [cursor=pointer]:
+                - text: Fees
+                - generic [ref=f5e176]: · Time recording
+              - tab "Client" [ref=f5e180] [cursor=pointer]
+              - tab "Diary" [ref=f5e183] [cursor=pointer]
+              - tab "Activity" [ref=f5e184] [cursor=pointer]
+            - tabpanel [ref=f5e187]:
+              - generic [ref=f5e188]:
+                - generic [ref=f5e189]:
+                  - generic [ref=f5e190]: From
+                  - textbox [ref=f5e191]
+                  - generic [ref=f5e192]: To
+                  - textbox [ref=f5e193]
+                - generic [ref=f5e194]:
+                  - heading "No time tracked yet" [level=2] [ref=f5e198]
+                  - paragraph [ref=f5e199]: Log time on tasks to see project time summaries here
+  - generic [ref=f5e200]:
+    - heading "Command Palette" [level=2] [ref=f5e201]
+    - paragraph [ref=f5e202]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f5e203]

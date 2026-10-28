@@ -27,10 +27,12 @@ interface DiaryWeekViewProps {
   onSelectDay?: (iso: string) => void;
 }
 
-// Seven columns from lg only: at md the day cells are too narrow for readable titles (G-D20).
-const WEEK_GRID = "grid grid-cols-1 gap-2 lg:grid-cols-7";
+// Seven columns only once the grid's own box is @4xl (56rem) wide — a container query, not a
+// viewport breakpoint, because the sidebar takes 240 px: at a 1024 px window a viewport `lg:` grid
+// left each day ~92 px and its titles unreadable (G-D20). Narrower boxes list the days in one column.
+const WEEK_GRID = "grid grid-cols-1 gap-2 @4xl:grid-cols-7";
 // min-w-0: a day cell may shrink below its rows' content width (the rows wrap; G-D20).
-const DAY_CARD = "min-w-0 gap-0 py-0 lg:min-h-24";
+const DAY_CARD = "min-w-0 gap-0 py-0 @4xl:min-h-24";
 
 /**
  * Week view — Mon–Sun day cells as a one-row `role="grid"` with a roving tab stop (Arrow keys,
@@ -57,7 +59,7 @@ export function DiaryWeekView({
     <div className="space-y-4">
       <DiaryOverdueStrip band={band} slug={slug} />
 
-      <div role="grid" aria-label={`Week of ${formatDiaryDate(from)}`}>
+      <div role="grid" aria-label={`Week of ${formatDiaryDate(from)}`} className="@container">
         <div role="row" className={WEEK_GRID} data-testid="diary-week-grid">
           {days.map((iso) => {
             const isToday = iso === today;
@@ -106,19 +108,21 @@ export function DiaryWeekView({
 /** Loading shape for the Week view: seven day cells with placeholder rows. */
 export function DiaryWeekSkeleton() {
   return (
-    <div className={WEEK_GRID} data-testid="diary-week-skeleton" aria-busy="true">
-      {Array.from({ length: 7 }, (_, i) => (
-        <Card key={i} className={DAY_CARD} data-testid="diary-week-skeleton-day">
-          <div className="border-b border-slate-200/80 px-3 py-2 dark:border-slate-800/80">
-            <Skeleton className="h-4 w-16" />
-          </div>
-          <div className="flex flex-col gap-1.5 p-1.5">
-            {Array.from({ length: (i % 3) + 1 }, (_, j) => (
-              <Skeleton key={j} className="h-8 w-full" />
-            ))}
-          </div>
-        </Card>
-      ))}
+    <div className="@container">
+      <div className={WEEK_GRID} data-testid="diary-week-skeleton" aria-busy="true">
+        {Array.from({ length: 7 }, (_, i) => (
+          <Card key={i} className={DAY_CARD} data-testid="diary-week-skeleton-day">
+            <div className="border-b border-slate-200/80 px-3 py-2 dark:border-slate-800/80">
+              <Skeleton className="h-4 w-16" />
+            </div>
+            <div className="flex flex-col gap-1.5 p-1.5">
+              {Array.from({ length: (i % 3) + 1 }, (_, j) => (
+                <Skeleton key={j} className="h-8 w-full" />
+              ))}
+            </div>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

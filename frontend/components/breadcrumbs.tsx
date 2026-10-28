@@ -141,12 +141,13 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
   return (
     // min-w-0: the nav sits in the fixed-height (h-14) header beside the bell and avatar, so a long
     // published entity name must not wrap the header or push them — the nav shrinks and the last
-    // crumb truncates, with the full name in its title.
+    // crumb truncates, with the full name in its title. Below `sm` only the last crumb shows: on a
+    // phone the org root and middle crumbs cannot shrink and would draw under the org switcher.
     <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm">
       {/* Org name as root link (falls back to slug) */}
       <Link
         href={`/org/${slug}/dashboard`}
-        className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+        className="hidden text-slate-600 transition-colors hover:text-slate-900 sm:inline dark:text-slate-400 dark:hover:text-white"
       >
         {orgName ?? slug}
       </Link>
@@ -172,9 +173,13 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
         return (
           <span
             key={href}
-            className={isLast ? "flex min-w-0 items-center gap-1" : "flex items-center gap-1"}
+            className={
+              isLast ? "flex min-w-0 items-center gap-1" : "hidden items-center gap-1 sm:flex"
+            }
           >
-            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+            <ChevronRight
+              className={`h-3.5 w-3.5 shrink-0 text-slate-400${isLast ? "hidden sm:block" : ""}`}
+            />
             {isLast ? (
               <span
                 title={label}

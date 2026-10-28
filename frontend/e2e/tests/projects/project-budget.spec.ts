@@ -131,8 +131,7 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
 
     if (!hasTab) {
       // Budget tab might have a different name or not be visible
-      // Phase 88 628A (ADR-357): label — Budget → Fee estimate
-      const anyBudgetTab = page.getByText("Fee estimate").first();
+      const anyBudgetTab = page.getByText("Budget").first();
       const hasBudgetText = await anyBudgetTab.isVisible({ timeout: 3000 }).catch(() => false);
       if (!hasBudgetText) {
         test.skip(true, "Budget tab not visible on project detail page");

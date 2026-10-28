@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 // ---------------------------------------------------------------------------
@@ -263,5 +263,72 @@ describe("MatterTabs with GroupedTabBar integration", () => {
       );
       unmount();
     }
+  });
+
+  // -------------------------------------------------------------------------
+  // Phase 88 G-B14 / G88-M12: the URL is the single source of truth — a click writes ?tab=
+  // through window.history.replaceState (no RSC round-trip), and no local tab state exists.
+  // -------------------------------------------------------------------------
+
+  describe("URL-as-source tabs (G-B14)", () => {
+    let replaceStateSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      replaceStateSpy = vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      replaceStateSpy.mockRestore();
+    });
+
+    it("writes ?tab=time when Fees is clicked on a ?tab=tasks landing", () => {
+      mockSearchParams = new URLSearchParams("tab=tasks");
+      render(<MatterTabs {...baseProps} />);
+      expect(screen.getByTestId("tab-group-work")).toHaveAttribute("aria-selected", "true");
+
+      // Fees is inactive, so its trigger navigates to its first sub-tab (time recording).
+      fireEvent.click(screen.getByTestId("tab-group-finance"));
+
+      expect(replaceStateSpy).toHaveBeenCalledTimes(1);
+      expect(replaceStateSpy).toHaveBeenCalledWith(null, "", "?tab=time");
+      // No soft navigation: the page segment never reads ?tab= server-side.
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
+
+    it("writes ?tab= on a click when the page was opened without one", () => {
+      render(<MatterTabs {...baseProps} />);
+
+      fireEvent.click(screen.getByTestId("tab-group-finance"));
+
+      expect(replaceStateSpy).toHaveBeenCalledWith(null, "", "?tab=time");
+    });
+
+    it("keeps other query params (taskId) when switching tabs", () => {
+      mockSearchParams = new URLSearchParams("tab=tasks&taskId=t-1");
+      render(<MatterTabs {...baseProps} />);
+
+      fireEvent.click(screen.getByTestId("tab-group-overview"));
+
+      expect(replaceStateSpy).toHaveBeenCalledTimes(1);
+      const url = String(replaceStateSpy.mock.calls[0][2]);
+      const params = new URLSearchParams(url.replace(/^\?/, ""));
+      expect(params.get("tab")).toBe("overview");
+      expect(params.get("taskId")).toBe("t-1");
+    });
+
+    it("renders whatever tab the URL says, even after a click (no local tab state)", () => {
+      const { rerender } = render(<MatterTabs {...baseProps} />);
+
+      // A click alone does not switch the panel — the URL update does (replaceState is stubbed
+      // here, so the URL stays empty and Overview stays selected).
+      fireEvent.click(screen.getByTestId("tab-group-finance"));
+      rerender(<MatterTabs {...baseProps} />);
+      expect(screen.getByTestId("tab-group-overview")).toHaveAttribute("aria-selected", "true");
+
+      mockSearchParams = new URLSearchParams("tab=time");
+      rerender(<MatterTabs {...baseProps} />);
+      expect(screen.getByTestId("tab-group-finance")).toHaveAttribute("aria-selected", "true");
+      expect(screen.getByText("Time")).toBeInTheDocument();
+    });
   });
 });

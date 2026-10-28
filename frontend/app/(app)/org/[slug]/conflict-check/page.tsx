@@ -2,33 +2,19 @@ import { notFound } from "next/navigation";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchConflictChecks, fetchCustomers, fetchProjects } from "./actions";
 import { ConflictCheckClient } from "./conflict-check-client";
+import { buildConflictCheckFormDefaults, type ConflictCheckSearchParams } from "./form-defaults";
+import { resolveClientDetails } from "./resolve-client";
 import type { ConflictCheck } from "@/lib/types";
-import type { PerformConflictCheckFormData } from "@/lib/schemas/legal";
 
 export default async function ConflictCheckPage({
   params,
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{
-    customerId?: string;
-    checkedName?: string;
-    checkedIdNumber?: string;
-  }>;
+  searchParams?: Promise<ConflictCheckSearchParams>;
 }) {
   const { slug } = await params;
-  const resolvedSearchParams = (await searchParams) ?? {};
-
-  const initialFormDefaults: Partial<PerformConflictCheckFormData> = {};
-  if (resolvedSearchParams.customerId) {
-    initialFormDefaults.customerId = resolvedSearchParams.customerId;
-  }
-  if (resolvedSearchParams.checkedName) {
-    initialFormDefaults.checkedName = resolvedSearchParams.checkedName;
-  }
-  if (resolvedSearchParams.checkedIdNumber) {
-    initialFormDefaults.checkedIdNumber = resolvedSearchParams.checkedIdNumber;
-  }
+  const query = (await searchParams) ?? {};
 
   let settings;
   try {
@@ -64,13 +50,17 @@ export default async function ConflictCheckPage({
 
   // Pre-fetch customers + projects for the form selectors so the dropdowns
   // hydrate on first render instead of relying on a client-side useEffect
-  // that silently eats errors (GAP-L-29).
-  const [customersResult, projectsResult] = await Promise.allSettled([
-    fetchCustomers(),
-    fetchProjects(),
+  // that silently eats errors (GAP-L-29). The `customerId` client lookup for the form prefill
+  // runs in the same batch; it resolves null on failure and rejects only for Next control flow
+  // (re-login redirect), which Promise.all propagates.
+  const [clientDetails, [customersResult, projectsResult]] = await Promise.all([
+    resolveClientDetails(query.customerId),
+    Promise.allSettled([fetchCustomers(), fetchProjects()]),
   ]);
   const initialCustomers = customersResult.status === "fulfilled" ? customersResult.value : [];
   const initialProjects = projectsResult.status === "fulfilled" ? projectsResult.value : [];
+
+  const initialFormDefaults = buildConflictCheckFormDefaults(query, clientDetails);
 
   return (
     <div className="space-y-6">

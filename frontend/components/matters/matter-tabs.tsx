@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { Tabs as TabsPrimitive } from "radix-ui";
 import { useOrgProfile } from "@/lib/org-profile";
@@ -111,11 +111,9 @@ export function MatterTabs({
   const searchParams = useSearchParams();
   // Old ?tab= ids (customers, expenses, …) resolve to their renamed tab (LEGACY_TAB_IDS, §12.6.5).
   const tabParam = aliasLegacyTabId(searchParams.get("tab"));
-  const urlTab = tabParam && validTabIds.has(tabParam) ? (tabParam as TabId) : null;
-  const [userTab, setUserTab] = useState<TabId | null>(null);
+  // The URL is the single source of truth (G-B14): no local tab state, a click writes ?tab=.
+  const requestedTab = tabParam && validTabIds.has(tabParam) ? (tabParam as TabId) : null;
   const { isModuleEnabled } = useOrgProfile();
-
-  const requestedTab = urlTab ?? userTab;
 
   // Module-gated tabs: only show when both the panel is provided and the module is enabled
   const showCourtDates = !!courtDatesPanel && isModuleEnabled("court_calendar");
@@ -204,7 +202,11 @@ export function MatterTabs({
     requestedTab && visibleTabIds.has(requestedTab) ? requestedTab : "overview";
 
   const handleTabChange = (tabId: string) => {
-    setUserTab(tabId as TabId);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tabId);
+    // Unlike customer-grouped-tabs (router.replace), the heavy matter page never reads ?tab=
+    // server-side, so native replaceState updates useSearchParams without an RSC round-trip.
+    window.history.replaceState(null, "", `?${params.toString()}`);
   };
 
   return (

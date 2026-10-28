@@ -1,9 +1,26 @@
+import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { SUGGESTED_WORK_TYPES } from "@/lib/constants/work-types";
+
+vi.mock("next/link", () => ({
+  default: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}));
 
 const mockCreateProject = vi.fn();
 const mockFetchActiveCustomers = vi.fn();
@@ -101,5 +118,126 @@ describe("CreateProjectDialog promoted fields (Epic 464)", () => {
     expect(formData.get("referenceNumber")).toBe("REF-001");
     expect(formData.get("priority")).toBe("HIGH");
     expect(formData.get("workType")).toBe("Consulting");
+  });
+});
+
+// Phase 88 G-A6: the stale "Coming Soon" card becomes a link-out to the conflict-check page,
+// prefilled with the selected client. Only checkType + customerId travel in the URL (no name, no
+// ID number — POPIA); the conflict-check page resolves the client server-side. It opens in a new
+// tab so the half-filled New Matter form is not lost.
+describe("CreateProjectDialog conflict-check link (G-A6)", () => {
+  const CLIENT_ID = "11111111-1111-4111-8111-111111111111";
+
+  function renderDialogWithConflictCheck() {
+    return render(
+      <OrgProfileProvider
+        verticalProfile="legal-za"
+        enabledModules={["conflict_check"]}
+        terminologyNamespace={null}
+      >
+        <CreateProjectDialog slug="acme" />
+      </OrgProfileProvider>
+    );
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockFetchActiveCustomers.mockResolvedValue([
+      {
+        id: CLIENT_ID,
+        name: "Sipho Ndlovu",
+        idNumber: " 8501015800087 ",
+        email: "sipho@example.co.za",
+        phone: null,
+        status: "ACTIVE",
+      },
+      {
+        id: "22222222-2222-4222-8222-222222222222",
+        name: "Acme Holdings",
+        idNumber: "   ",
+        email: null,
+        phone: null,
+        status: "ACTIVE",
+      },
+    ]);
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("replaces the Coming Soon stub with an enabled link-out", async () => {
+    const user = userEvent.setup();
+    renderDialogWithConflictCheck();
+
+    await user.click(screen.getByText(/new matter/i));
+
+    const link = await screen.findByRole("link", { name: /run a conflict check first/i });
+    expect(link).toHaveAttribute("href", "/org/acme/conflict-check?checkType=NEW_MATTER");
+    expect(screen.queryByText("Coming Soon")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /run conflict check/i })).not.toBeInTheDocument();
+  });
+
+  it("opens the conflict check in a new tab so the half-filled form is kept", async () => {
+    const user = userEvent.setup();
+    renderDialogWithConflictCheck();
+
+    await user.click(screen.getByText(/new matter/i));
+
+    const link = await screen.findByRole("link", { name: /run a conflict check first/i });
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    expect(link).toHaveAccessibleName(/opens in a new tab/i);
+    expect(link).toHaveTextContent(/^Run a conflict check first →/);
+  });
+
+  it("passes only the selected client's id in the link, never its name or ID number", async () => {
+    const user = userEvent.setup();
+    renderDialogWithConflictCheck();
+
+    await user.click(screen.getByText(/new matter/i));
+    const clientSelect = await screen.findByLabelText(/^client/i);
+    await screen.findByRole("option", { name: "Sipho Ndlovu" });
+    await user.selectOptions(clientSelect, CLIENT_ID);
+
+    const href = screen
+      .getByRole("link", { name: /run a conflict check first/i })
+      .getAttribute("href")!;
+    const url = new URL(href, "http://localhost");
+    expect(url.pathname).toBe("/org/acme/conflict-check");
+    expect(url.searchParams.get("checkType")).toBe("NEW_MATTER");
+    expect(url.searchParams.get("customerId")).toBe(CLIENT_ID);
+    expect([...url.searchParams.keys()].sort()).toEqual(["checkType", "customerId"]);
+    expect(href).not.toContain("checkedIdNumber");
+    expect(href).not.toContain("checkedName");
+    expect(href).not.toContain("8501015800087");
+  });
+
+  it("drops the client id again when the client is cleared", async () => {
+    const user = userEvent.setup();
+    renderDialogWithConflictCheck();
+
+    await user.click(screen.getByText(/new matter/i));
+    const clientSelect = await screen.findByLabelText(/^client/i);
+    await screen.findByRole("option", { name: "Acme Holdings" });
+    await user.selectOptions(clientSelect, "22222222-2222-4222-8222-222222222222");
+    await user.selectOptions(clientSelect, "");
+
+    expect(screen.getByRole("link", { name: /run a conflict check first/i })).toHaveAttribute(
+      "href",
+      "/org/acme/conflict-check?checkType=NEW_MATTER"
+    );
+  });
+
+  it("hides the conflict-check card when the conflict_check module is off", async () => {
+    const user = userEvent.setup();
+    renderDialog();
+
+    await user.click(screen.getByText(/new matter/i));
+    await screen.findByLabelText(/reference number/i);
+
+    expect(
+      screen.queryByRole("link", { name: /run a conflict check first/i })
+    ).not.toBeInTheDocument();
   });
 });

@@ -7,7 +7,9 @@ import { MATTER_STATUS_BADGE } from "@/lib/constants/matter-status";
 import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";
 import { MatterClosureAction } from "@/components/projects/matter-closure-action";
 import { MatterReopenAction } from "@/components/projects/matter-reopen-action";
+import { HeaderFactsStrip } from "@/components/shared/header-facts-strip";
 import { formatDate } from "@/lib/format";
+import type { HeaderField } from "@/lib/constants/header-field-slugs";
 import type { MatterStatus, Client } from "@/lib/types";
 
 interface MatterHeaderCardProps {
@@ -20,6 +22,8 @@ interface MatterHeaderCardProps {
   customers: Pick<Client, "id" | "name">[];
   slug: string;
   isAdmin: boolean;
+  /** Case number / court / opposing party facts (HEADER_FIELD_SLUGS.PROJECT, Phase 88 G-B9). */
+  headerFields?: HeaderField[];
 }
 
 export function MatterHeaderCard({
@@ -32,6 +36,7 @@ export function MatterHeaderCard({
   customers,
   slug,
   isAdmin,
+  headerFields = [],
 }: MatterHeaderCardProps) {
   const statusBadge = MATTER_STATUS_BADGE[projectStatus];
 
@@ -68,6 +73,12 @@ export function MatterHeaderCard({
             )}
           </div>
 
+          <HeaderFactsStrip
+            fields={headerFields}
+            testId="matter-header-fields"
+            itemTestIdPrefix="matter-header-field"
+          />
+
           {customers.length > 0 && (
             <div className="text-sm text-slate-600 dark:text-slate-400">
               <Link
@@ -85,14 +96,13 @@ export function MatterHeaderCard({
 
         {/* Lifecycle actions */}
         <div className="flex shrink-0 items-center gap-2" data-testid="header-lifecycle-actions">
-          {projectStatus === "ACTIVE" && (
-            <MatterClosureAction
-              slug={slug}
-              projectId={projectId}
-              projectName={projectName}
-              projectStatus={projectStatus}
-            />
-          )}
+          {/* Self-gates on the matter_closure module, ACTIVE|COMPLETED and CLOSE_MATTER (G-D2). */}
+          <MatterClosureAction
+            slug={slug}
+            projectId={projectId}
+            projectName={projectName}
+            projectStatus={projectStatus}
+          />
           {projectStatus === "CLOSED" && (
             <MatterReopenAction
               slug={slug}

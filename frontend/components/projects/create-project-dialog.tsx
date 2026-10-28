@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import Link from "next/link";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@b2mash/ui/button";
 import {
@@ -31,7 +32,6 @@ import { createMessages } from "@/lib/messages";
 import { scrollToFirstError } from "@/lib/error-handler";
 import { useSubscription } from "@/lib/subscription-context";
 import { ModuleGate } from "@/components/module-gate";
-import { Badge } from "@b2mash/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { createProjectSchema, type CreateProjectFormData } from "@/lib/schemas/project";
 import { nativeSelectClassName } from "@/lib/styles/native-select";
@@ -59,6 +59,14 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
       workType: "",
     },
   });
+
+  // Conflict-check link-out (G-A6), opened in a new tab so the half-filled form survives. Only the
+  // client id travels in the URL — no name or ID number (POPIA) — so the conflict-check page
+  // resolves them server-side.
+  const selectedCustomerId = useWatch({ control: form.control, name: "customerId" });
+  const conflictCheckParams = new URLSearchParams({ checkType: "NEW_MATTER" });
+  if (selectedCustomerId) conflictCheckParams.set("customerId", selectedCustomerId);
+  const conflictCheckHref = `/org/${slug}/conflict-check?${conflictCheckParams.toString()}`;
 
   useEffect(() => {
     if (open) {
@@ -276,19 +284,29 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
             />
             {error && <p className="text-destructive text-sm">{error}</p>}
             <ModuleGate module="conflict_check">
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
+              <div
+                className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
+                data-testid="new-matter-conflict-check"
+              >
                 <div className="flex items-center gap-2">
                   <ShieldAlert className="size-4 text-slate-500" />
                   <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Conflict Check
                   </p>
-                  <Badge variant="neutral">Coming Soon</Badge>
                 </div>
                 <p className="text-muted-foreground mt-2 text-sm">
                   Run a conflict of interest check before creating this matter.
                 </p>
-                <Button type="button" variant="outline" size="sm" disabled className="mt-3">
-                  Run Conflict Check
+                <Button asChild variant="outline" size="sm" className="mt-3">
+                  <Link
+                    href={conflictCheckHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid="new-matter-conflict-check-link"
+                  >
+                    Run a conflict check first →
+                    <span className="sr-only"> (opens in a new tab)</span>
+                  </Link>
                 </Button>
               </div>
             </ModuleGate>

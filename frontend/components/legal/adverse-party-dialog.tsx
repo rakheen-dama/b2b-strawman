@@ -37,6 +37,7 @@ const PARTY_TYPES = [
   { value: "TRUST", label: "Trust" },
   { value: "CLOSE_CORPORATION", label: "Close Corporation" },
   { value: "PARTNERSHIP", label: "Partnership" },
+  { value: "GOVERNMENT", label: "Government / organ of state" },
   { value: "OTHER", label: "Other" },
 ] as const;
 

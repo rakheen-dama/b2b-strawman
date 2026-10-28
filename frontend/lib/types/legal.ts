@@ -110,6 +110,7 @@ export type AdversePartyType =
   | "TRUST"
   | "CLOSE_CORPORATION"
   | "PARTNERSHIP"
+  | "GOVERNMENT"
   | "OTHER";
 
 export interface AdverseParty {

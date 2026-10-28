@@ -217,7 +217,7 @@ describe("My Work page renders new layout components", () => {
           today="2026-10-21"
           diaryEvents={[]}
           todayEntries={[]}
-          upcomingDeadlines={[]}
+          upcomingEvents={[]}
           weeklyCapacityHours={40}
         />
         <WeeklyRhythmStrip
@@ -233,6 +233,7 @@ describe("My Work page renders new layout components", () => {
     expect(screen.getByTestId("todays-diary")).toBeInTheDocument();
     expect(screen.getByTestId("time-progress-today")).toBeInTheDocument();
     expect(screen.getByTestId("next-deadline")).toBeInTheDocument();
+    expect(screen.getByTestId("upcoming-diary")).toBeInTheDocument();
     expect(screen.getByTestId("weekly-rhythm-strip")).toBeInTheDocument();
   });
 });

@@ -163,8 +163,9 @@ function InviteFormUI({
   const isCustomRole = selectedRole && !selectedRole.isSystem;
   const roleCapabilities = new Set(selectedRole?.capabilities ?? []);
 
-  const totalUsed = currentMembers + pendingInvitations;
-  const isAtLimit = maxMembers > 0 && totalUsed >= maxMembers;
+  // Pending invitations reserve seats against a member cap (maxMembers 0 = unlimited), but they
+  // are not members, so the seat line counts them separately.
+  const isAtLimit = maxMembers > 0 && currentMembers + pendingInvitations >= maxMembers;
 
   function isEffectivelyEnabled(cap: string): boolean {
     if (overrides.includes(`-${cap}`)) return false;
@@ -377,13 +378,7 @@ function InviteFormUI({
       {/* Seat usage (no plan-tier ceiling — unlimited members) */}
       <div className="space-y-1.5">
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          {totalUsed} member{totalUsed !== 1 ? "s" : ""}
-          {pendingInvitations > 0 && (
-            <>
-              {" "}
-              <span className="text-slate-400">({pendingInvitations} pending)</span>
-            </>
-          )}
+          {`${currentMembers} member${currentMembers !== 1 ? "s" : ""} · ${pendingInvitations} pending invitation${pendingInvitations !== 1 ? "s" : ""}`}
         </p>
       </div>
 

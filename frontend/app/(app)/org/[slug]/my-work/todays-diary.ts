@@ -1,5 +1,6 @@
 import { rethrowOnExpiredSession } from "@/lib/auth/expiry-server";
 import { getDiary } from "@/app/(app)/org/[slug]/diary/diary-actions";
+import { addDays, UPCOMING_DIARY_DAYS } from "@/app/(app)/org/[slug]/diary/diary-types";
 import type { TodaysDiaryEvents } from "@/components/dashboard/todays-agenda";
 
 /**
@@ -29,6 +30,37 @@ export async function loadTodaysDiary(
   } catch (error) {
     await rethrowOnExpiredSession(error);
     console.error("Failed to load today's diary:", error);
+    return null;
+  }
+}
+
+/**
+ * My work's "Upcoming" list and "Next deadline" (Phase 88 G-D5): GET /api/diary from tomorrow
+ * through today + 14, without the overdue band (Today's diary already shows it), scoped to the
+ * current user — fee earner = task assignee, else the matter lead, so a matter lead sees that
+ * matter's court dates. The backend takes a member id, not "me"; without a resolved member there
+ * is no personal diary, so it returns `"unidentified"` and never falls back to the firm's diary.
+ * Server order (date, then court dates first within a day) is kept as is.
+ *
+ * Fails soft like loadTodaysDiary: an expired-session 401 goes to the branded re-login, any other
+ * error returns `null`.
+ */
+export async function loadUpcomingDiary(
+  today: string,
+  currentMemberId: string | null
+): Promise<TodaysDiaryEvents> {
+  if (!currentMemberId) return "unidentified";
+  try {
+    const diary = await getDiary({
+      from: addDays(today, 1),
+      to: addDays(today, UPCOMING_DIARY_DAYS),
+      feeEarnerId: currentMemberId,
+      includeOverdue: false,
+    });
+    return diary.events;
+  } catch (error) {
+    await rethrowOnExpiredSession(error);
+    console.error("Failed to load the upcoming diary:", error);
     return null;
   }
 }

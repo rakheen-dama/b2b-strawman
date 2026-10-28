@@ -71,8 +71,46 @@ describe("InviteMemberForm", () => {
     await renderForm({ maxMembers: 10, currentMembers: 3, orgSlug: "acme" });
 
     // Unlimited members — ceiling display removed (GAP-L-20)
-    expect(screen.getByText("3 members")).toBeInTheDocument();
+    expect(screen.getByText("3 members · 0 pending invitations")).toBeInTheDocument();
     expect(screen.queryByText(/of 10 members/)).not.toBeInTheDocument();
+  });
+
+  // Phase 88 G-D12: pending invitations are not members — the seat line counts them separately.
+  it("counts pending invitations separately from members", async () => {
+    mockListInvitations.mockResolvedValue([
+      {
+        id: "inv-1",
+        emailAddress: "a@example.com",
+        role: "org:member",
+        status: "PENDING",
+        createdAt: "2026-10-28T08:00:00Z",
+      },
+      {
+        id: "inv-2",
+        emailAddress: "b@example.com",
+        role: "org:admin",
+        status: "PENDING",
+        createdAt: "2026-10-28T08:00:00Z",
+      },
+    ]);
+    await renderForm({ maxMembers: 0, currentMembers: 3, orgSlug: "acme" });
+
+    expect(await screen.findByText("3 members · 2 pending invitations")).toBeInTheDocument();
+  });
+
+  it("uses singulars for one member and one pending invitation", async () => {
+    mockListInvitations.mockResolvedValue([
+      {
+        id: "inv-1",
+        emailAddress: "a@example.com",
+        role: "org:member",
+        status: "PENDING",
+        createdAt: "2026-10-28T08:00:00Z",
+      },
+    ]);
+    await renderForm({ maxMembers: 0, currentMembers: 1, orgSlug: "acme" });
+
+    expect(await screen.findByText("1 member · 1 pending invitation")).toBeInTheDocument();
   });
 
   it("submits invite and shows success message", async () => {

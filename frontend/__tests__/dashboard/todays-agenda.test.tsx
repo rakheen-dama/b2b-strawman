@@ -1,9 +1,8 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { TodaysAgenda } from "@/components/dashboard/todays-agenda";
-import type { DiaryEventResponse } from "@/app/(app)/org/[slug]/diary/diary-types";
+import { formatDiaryDay, type DiaryEventResponse } from "@/app/(app)/org/[slug]/diary/diary-types";
 import type { MyWorkTimeEntryItem } from "@/lib/types";
-import type { PersonalDeadline } from "@/lib/dashboard-types";
 
 // Mock next/link
 vi.mock("next/link", () => ({
@@ -50,7 +49,6 @@ function makeEvent(o: Partial<DiaryEventResponse> & { id: string }): DiaryEventR
 }
 
 const emptyEntries: MyWorkTimeEntryItem[] = [];
-const emptyDeadlines: PersonalDeadline[] = [];
 
 describe("TodaysAgenda", () => {
   afterEach(() => {
@@ -77,7 +75,7 @@ describe("TodaysAgenda", () => {
         today={today()}
         diaryEvents={events}
         todayEntries={emptyEntries}
-        upcomingDeadlines={emptyDeadlines}
+        upcomingEvents={[]}
       />
     );
 
@@ -106,7 +104,7 @@ describe("TodaysAgenda", () => {
         today={today()}
         diaryEvents={[makeEvent({ id: "o1", date: daysFromNow(-3), overdue: true })]}
         todayEntries={emptyEntries}
-        upcomingDeadlines={emptyDeadlines}
+        upcomingEvents={[]}
       />
     );
 
@@ -125,7 +123,7 @@ describe("TodaysAgenda", () => {
           makeEvent({ id: "t1" }),
         ]}
         todayEntries={emptyEntries}
-        upcomingDeadlines={emptyDeadlines}
+        upcomingEvents={[]}
       />
     );
 
@@ -141,7 +139,7 @@ describe("TodaysAgenda", () => {
         today={today()}
         diaryEvents={[makeEvent({ id: "t1" })]}
         todayEntries={emptyEntries}
-        upcomingDeadlines={emptyDeadlines}
+        upcomingEvents={[]}
       />
     );
 
@@ -157,7 +155,7 @@ describe("TodaysAgenda", () => {
         today={today()}
         diaryEvents={events}
         todayEntries={emptyEntries}
-        upcomingDeadlines={emptyDeadlines}
+        upcomingEvents={[]}
       />
     );
 
@@ -176,7 +174,7 @@ describe("TodaysAgenda", () => {
         today={today()}
         diaryEvents={null}
         todayEntries={emptyEntries}
-        upcomingDeadlines={emptyDeadlines}
+        upcomingEvents={[]}
       />
     );
 
@@ -194,7 +192,7 @@ describe("TodaysAgenda", () => {
         today={today()}
         diaryEvents="unidentified"
         todayEntries={emptyEntries}
-        upcomingDeadlines={emptyDeadlines}
+        upcomingEvents={[]}
       />
     );
 
@@ -232,7 +230,7 @@ describe("TodaysAgenda", () => {
         today={today()}
         diaryEvents={[]}
         todayEntries={entries}
-        upcomingDeadlines={emptyDeadlines}
+        upcomingEvents={[]}
         weeklyCapacityHours={40}
       />
     );
@@ -242,14 +240,22 @@ describe("TodaysAgenda", () => {
     expect(screen.getByText("2h 15m")).toBeInTheDocument();
   });
 
-  it("renders next deadline", () => {
-    const deadlines: PersonalDeadline[] = [
-      {
-        taskId: "t1",
-        taskName: "Ship feature",
-        matterName: "Alpha Project",
-        dueDate: daysFromNow(5),
-      },
+  // Phase 88 G-D5: Next deadline is the first row of the upcoming diary (tomorrow through
+  // today + 14). Fixtures are in server order — date, then court dates first within a day
+  // (DiaryService.ORDER) — and the agenda does not re-sort.
+  it("renders the next deadline from the first upcoming row (court date first within its day)", () => {
+    const upcoming = [
+      makeEvent({
+        id: "u-cd1",
+        kind: "COURT_DATE",
+        date: daysFromNow(3),
+        time: "10:00:00",
+        title: "Case Management Conference",
+        status: "SCHEDULED",
+        matterName: "Mthembu v RAF",
+        href: "/matters/m2?tab=court-dates&courtDateId=u-cd1",
+      }),
+      makeEvent({ id: "u-t1", date: daysFromNow(3), title: "Prepare CMC bundle" }),
     ];
 
     render(
@@ -258,15 +264,126 @@ describe("TodaysAgenda", () => {
         today={today()}
         diaryEvents={[]}
         todayEntries={emptyEntries}
-        upcomingDeadlines={deadlines}
+        upcomingEvents={upcoming}
       />
     );
 
-    const deadlineSection = screen.getByTestId("next-deadline");
-    expect(deadlineSection).toBeInTheDocument();
-    expect(screen.getByText("Ship feature")).toBeInTheDocument();
-    expect(screen.getByText("Alpha Project")).toBeInTheDocument();
-    expect(screen.getByText("5d remaining")).toBeInTheDocument();
+    const deadline = screen.getByTestId("next-deadline");
+    expect(
+      within(deadline).getByText(`Court date · ${formatDiaryDay(daysFromNow(3))}`)
+    ).toBeInTheDocument();
+    expect(
+      within(deadline).getByRole("link", { name: "Case Management Conference" })
+    ).toHaveAttribute("href", "/org/acme/matters/m2?tab=court-dates&courtDateId=u-cd1");
+    expect(within(deadline).getByText("Mthembu v RAF")).toBeInTheDocument();
+    expect(within(deadline).getByText("3d remaining")).toBeInTheDocument();
+    expect(within(deadline).queryByText("Prepare CMC bundle")).not.toBeInTheDocument();
+  });
+
+  it("lists upcoming rows with dates in server order, capped at five, then '+n more'", () => {
+    const upcoming = [
+      makeEvent({
+        id: "u-cd1",
+        kind: "COURT_DATE",
+        date: daysFromNow(2),
+        time: "10:00:00",
+        title: "Case Management Conference",
+        status: "SCHEDULED",
+      }),
+      ...Array.from({ length: 6 }, (_, i) =>
+        makeEvent({ id: `u-t${i + 1}`, date: daysFromNow(2 + i), title: `Upcoming task ${i + 1}` })
+      ),
+    ];
+
+    render(
+      <TodaysAgenda
+        slug="acme"
+        today={today()}
+        diaryEvents={[]}
+        todayEntries={emptyEntries}
+        upcomingEvents={upcoming}
+      />
+    );
+
+    const section = screen.getByTestId("upcoming-diary");
+    expect(within(section).getByText("Upcoming · next 14 days")).toBeInTheDocument();
+    const rows = within(section).getAllByRole("listitem");
+    expect(rows).toHaveLength(5);
+    expect(rows[0]).toHaveTextContent("Case Management Conference");
+    expect(rows[1]).toHaveTextContent("Upcoming task 1");
+    // Rows span days, so each shows its date.
+    expect(within(rows[0]).getByText(formatDiaryDay(daysFromNow(2)))).toBeInTheDocument();
+    expect(within(section).getByText("Upcoming task 4")).toBeInTheDocument();
+    expect(within(section).queryByText("Upcoming task 5")).not.toBeInTheDocument();
+    expect(within(section).getByRole("link", { name: "+2 more" })).toHaveAttribute(
+      "href",
+      "/org/acme/diary?view=list&feeEarner=mine"
+    );
+    expect(within(section).getByRole("link", { name: "See all upcoming" })).toHaveAttribute(
+      "href",
+      "/org/acme/diary?view=list&feeEarner=mine"
+    );
+  });
+
+  it("shows the empty upcoming copy and no next deadline when nothing is upcoming", () => {
+    render(
+      <TodaysAgenda
+        slug="acme"
+        today={today()}
+        diaryEvents={[]}
+        todayEntries={emptyEntries}
+        upcomingEvents={[]}
+      />
+    );
+
+    expect(
+      within(screen.getByTestId("upcoming-diary")).getByText(
+        "Nothing in the diary for the next 14 days"
+      )
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId("next-deadline")).getByText("No upcoming deadlines")
+    ).toBeInTheDocument();
+  });
+
+  it("says the upcoming diary could not be loaded when the load failed", () => {
+    render(
+      <TodaysAgenda
+        slug="acme"
+        today={today()}
+        diaryEvents={[]}
+        todayEntries={emptyEntries}
+        upcomingEvents={null}
+      />
+    );
+
+    expect(
+      within(screen.getByTestId("next-deadline")).getByText(
+        "Upcoming deadlines could not be loaded."
+      )
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId("upcoming-diary")).getByText(
+        "The upcoming diary could not be loaded."
+      )
+    ).toBeInTheDocument();
+  });
+
+  it("does not crash when the member is unidentified for the upcoming diary", () => {
+    render(
+      <TodaysAgenda
+        slug="acme"
+        today={today()}
+        diaryEvents="unidentified"
+        todayEntries={emptyEntries}
+        upcomingEvents="unidentified"
+      />
+    );
+
+    expect(
+      within(screen.getByTestId("next-deadline")).getByText("No upcoming deadlines")
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("upcoming-diary")).toBeInTheDocument();
   });
 
   it("handles an empty diary without crashing", () => {
@@ -276,7 +393,7 @@ describe("TodaysAgenda", () => {
         today={today()}
         diaryEvents={[]}
         todayEntries={emptyEntries}
-        upcomingDeadlines={emptyDeadlines}
+        upcomingEvents={[]}
       />
     );
 

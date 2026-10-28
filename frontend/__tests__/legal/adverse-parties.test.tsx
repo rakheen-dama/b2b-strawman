@@ -66,6 +66,10 @@ vi.mock("@/lib/api", () => ({
 // --- Imports after mocks ---
 
 import { AdversePartyRegistryClient } from "@/app/(app)/org/[slug]/legal/adverse-parties/adverse-party-registry-client";
+import {
+  createAdverseParty,
+  fetchProjects,
+} from "@/app/(app)/org/[slug]/legal/adverse-parties/actions";
 import { AdversePartyDialog } from "@/components/legal/adverse-party-dialog";
 import { LinkAdversePartyDialog } from "@/components/legal/link-adverse-party-dialog";
 import { NAV_GROUPS } from "@/lib/nav-items";
@@ -124,6 +128,24 @@ describe("AdversePartyRegistryClient", () => {
   });
 });
 
+describe("AdversePartyRegistryClient — Government party type", () => {
+  it("shows a Government badge and offers the Government filter option", () => {
+    const parties: AdverseParty[] = [
+      makeAdverseParty({
+        id: "ap-raf",
+        name: "Road Accident Fund",
+        partyType: "GOVERNMENT",
+        registrationNumber: null,
+      }),
+    ];
+
+    render(<AdversePartyRegistryClient initialParties={parties} initialTotal={1} slug="acme" />);
+
+    expect(screen.getByText("Government")).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Government / organ of state" })).toBeInTheDocument();
+  });
+});
+
 describe("AdversePartyDialog", () => {
   it("opens create dialog and submits new party", async () => {
     const user = userEvent.setup();
@@ -148,6 +170,28 @@ describe("AdversePartyDialog", () => {
 
     // Submit
     await user.click(screen.getByRole("button", { name: "Create Party" }));
+  });
+});
+
+describe("AdversePartyDialog — Government party type", () => {
+  it("offers Government / organ of state and submits partyType GOVERNMENT", async () => {
+    const user = userEvent.setup();
+
+    render(<AdversePartyDialog slug="acme" />);
+
+    await user.click(screen.getByTestId("create-adverse-party-trigger"));
+    await user.type(screen.getByLabelText("Name *"), "Road Accident Fund");
+    await user.selectOptions(screen.getByLabelText("Party Type *"), "GOVERNMENT");
+    expect(screen.getByRole("option", { name: "Government / organ of state" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Create Party" }));
+
+    await vi.waitFor(() =>
+      expect(vi.mocked(createAdverseParty)).toHaveBeenCalledWith(
+        "acme",
+        expect.objectContaining({ name: "Road Accident Fund", partyType: "GOVERNMENT" })
+      )
+    );
   });
 });
 
@@ -189,6 +233,29 @@ describe("LinkAdversePartyDialog", () => {
     expect(screen.getByText("Co-Accused")).toBeInTheDocument();
     expect(screen.getByText("Related Entity")).toBeInTheDocument();
     expect(screen.getByText("Guarantor")).toBeInTheDocument();
+  });
+});
+
+describe("LinkAdversePartyDialog — matter list", () => {
+  it("lists matters from the flat array fetchProjects resolves to", async () => {
+    // GET /api/matters is a flat list; fetchProjects hands the dialog that array as is.
+    vi.mocked(fetchProjects).mockResolvedValueOnce([
+      { id: "m-1", name: "Mthembu v Road Accident Fund" },
+    ]);
+
+    render(
+      <LinkAdversePartyDialog
+        open={true}
+        onOpenChange={vi.fn()}
+        adversePartyId="ap-1"
+        adversePartyName="Road Accident Fund"
+        slug="acme"
+      />
+    );
+
+    expect(
+      await screen.findByRole("option", { name: "Mthembu v Road Accident Fund" })
+    ).toBeInTheDocument();
   });
 });
 

@@ -48,7 +48,7 @@ describe("PendingInvitations (keycloak mode)", () => {
         id: "inv-1",
         emailAddress: "alice@example.com",
         role: "org:admin",
-        status: "pending",
+        status: "PENDING",
         createdAt: "2026-01-15",
       },
     ]);
@@ -66,7 +66,7 @@ describe("PendingInvitations (keycloak mode)", () => {
         id: "inv-1",
         emailAddress: "bob@example.com",
         role: "org:member",
-        status: "pending",
+        status: "PENDING",
         createdAt: "2026-01-15",
       },
     ]);
@@ -86,7 +86,7 @@ describe("PendingInvitations (keycloak mode)", () => {
           id: "inv-1",
           emailAddress: "carol@example.com",
           role: "org:member",
-          status: "pending",
+          status: "PENDING",
           createdAt: "2026-01-15",
         },
       ])

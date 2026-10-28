@@ -110,14 +110,21 @@ interface BackendInvitation {
 
 async function listInvitationsBff(): Promise<MappedInvitation[]> {
   try {
-    const raw = await api.get<{ invitations: BackendInvitation[] }>("/api/invitations");
-    return (raw?.invitations ?? []).map((inv) => ({
-      id: inv.id,
-      emailAddress: inv.email,
-      role: normalizeRole(inv.roleSlug),
-      status: inv.status,
-      createdAt: inv.createdAt,
-    }));
+    // Open invitations only. Without the filter the backend returns every status, so invitations
+    // that were already accepted showed as pending and were counted in the seat line. The client
+    // filter keeps that true even if the query parameter is ever ignored.
+    const raw = await api.get<{ invitations: BackendInvitation[] }>(
+      "/api/invitations?status=PENDING"
+    );
+    return (raw?.invitations ?? [])
+      .filter((inv) => inv.status === "PENDING")
+      .map((inv) => ({
+        id: inv.id,
+        emailAddress: inv.email,
+        role: normalizeRole(inv.roleSlug),
+        status: inv.status,
+        createdAt: inv.createdAt,
+      }));
   } catch (err: unknown) {
     console.error("Failed to list invitations:", err);
     return [];

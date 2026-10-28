@@ -1,0 +1,30 @@
+restart at 2026-10-28T02:52:42Z
+UP after ~20s
+Reconciling CLAUSE conveyancing lines since restart: 0
+2026-10-28T02:52:55.429384543Z Started BackendApplication in 12.122 seconds (process running for 12.458)
+2026-10-28T02:52:55.651194919Z Running pack reconciliation for 1 tenants
+2026-10-28T02:52:55.949905627Z Pack reconciliation: checked 1 tenants, 1 succeeded, 0 failed
+SET
+         pack_id         | pack_version 
+-------------------------+--------------
+ conveyancing-za-clauses | 2
+(1 row)
+
+                slug                 |   source   | assoc 
+-------------------------------------+------------+-------
+ bond-cancellation-instruction       | PLATFORM   |     1
+ deed-of-transfer                    | PLATFORM   |     3
+ engagement-letter-conveyancing      | PLATFORM   |     5
+ engagement-letter-general           | PLATFORM   |     5
+ engagement-letter-litigation        | PLATFORM   |     6
+ engagement-letter-litigation-custom | ORG_CUSTOM |     0
+ offer-to-purchase                   | PLATFORM   |     7
+ power-of-attorney-to-pass-transfer  | PLATFORM   |     1
+ standard-engagement-letter          | PLATFORM   |    12
+(9 rows)
+
+ total |            latest             
+-------+-------------------------------
+    40 | 2026-10-28 02:47:46.455345+00
+(1 row)
+

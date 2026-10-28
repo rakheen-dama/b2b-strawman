@@ -1,0 +1,45 @@
+SET
+         pack_id         | pack_type | pack_version |         installed_at          
+-------------------------+-----------+--------------+-------------------------------
+ conveyancing-za-clauses | CLAUSE    | 1            | 2026-10-27 18:22:45.523032+00
+ legal-za-clauses        | CLAUSE    | 1            | 2026-10-27 18:22:45.523032+00
+ standard-clauses        | CLAUSE    | 1            | 2026-10-27 18:22:45.523032+00
+(3 rows)
+
+                  id                  |       pack_template_key        |                  name                   |   source   | clone | assoc 
+--------------------------------------+--------------------------------+-----------------------------------------+------------+-------+-------
+ 629a7ecc-763c-4c82-b426-0d1dd98e207b | bond-cancellation-instruction  | Bond Cancellation Instruction           | PLATFORM   | f     |     0
+ c47c8399-ba10-4f3f-8ca4-7c44a51ff8c1 | deed-of-transfer               | Deed of Transfer                        | PLATFORM   | f     |     0
+ 4ee6eab3-0ac6-4930-b644-b1a67a5919f7 | engagement-letter-conveyancing | Engagement Letter — Conveyancing        | PLATFORM   | f     |     5
+ 4aa035e5-dcd4-4c4e-9146-c2dcee848e8c | engagement-letter-general      | Engagement Letter — General             | PLATFORM   | f     |     5
+ bc89ee05-e496-43b0-ae7e-cecdde3df78b | engagement-letter-litigation   | Engagement Letter — Litigation          | PLATFORM   | f     |     6
+ 80791878-6e4d-47fc-acbc-9ec04a2a1c54 | engagement-letter-litigation   | Engagement Letter — Litigation (Custom) | ORG_CUSTOM | t     |     0
+ 880f4fd6-649c-416a-89ca-b9b9875cd4ed | offer-to-purchase              | Offer to Purchase                       | PLATFORM   | f     |     0
+ 71d50aaf-b928-4296-be84-5545f944dfc6 | power-of-attorney-transfer     | Power of Attorney to Pass Transfer      | PLATFORM   | f     |     0
+(8 rows)
+
+SET
+                  id                  |                slug                 | pack_id  |       pack_template_key        |   source   | count 
+--------------------------------------+-------------------------------------+----------+--------------------------------+------------+-------
+ 4ee6eab3-0ac6-4930-b644-b1a67a5919f7 | engagement-letter-conveyancing      | legal-za | engagement-letter-conveyancing | PLATFORM   |     5
+ 4aa035e5-dcd4-4c4e-9146-c2dcee848e8c | engagement-letter-general           | legal-za | engagement-letter-general      | PLATFORM   |     5
+ bc89ee05-e496-43b0-ae7e-cecdde3df78b | engagement-letter-litigation        | legal-za | engagement-letter-litigation   | PLATFORM   |     6
+ 80791878-6e4d-47fc-acbc-9ec04a2a1c54 | engagement-letter-litigation-custom | legal-za | engagement-letter-litigation   | ORG_CUSTOM |     0
+ f304e6f1-f67d-46c3-94e0-85b87c9cdf69 | standard-engagement-letter          | common   | engagement-letter              | PLATFORM   |    12
+(5 rows)
+
+ total_template_clauses 
+------------------------
+                     28
+(1 row)
+
+ count 
+-------
+     1
+(1 row)
+
+SET
+bond-cancellation-instruction|cost-of-cancellation
+offer-to-purchase|voetstoots,occupation-date,suspensive-bond,transfer-duty-liability,fica-compliance,rates-clearance,jurisdiction-za
+deed-of-transfer|transfer-duty-liability,rates-clearance,body-corporate-clearance
+power-of-attorney-transfer|fica-compliance

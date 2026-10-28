@@ -1,0 +1,42 @@
+SET
+         pack_id         | pack_type | pack_version |         installed_at          
+-------------------------+-----------+--------------+-------------------------------
+ conveyancing-za-clauses | CLAUSE    | 2            | 2026-10-27 18:22:45.523032+00
+ legal-za-clauses        | CLAUSE    | 1            | 2026-10-27 18:22:45.523032+00
+ standard-clauses        | CLAUSE    | 1            | 2026-10-27 18:22:45.523032+00
+(3 rows)
+
+                slug                 |       pack_template_key        |   source   | clone | assoc 
+-------------------------------------+--------------------------------+------------+-------+-------
+ bond-cancellation-instruction       | bond-cancellation-instruction  | PLATFORM   | f     |     1
+ deed-of-transfer                    | deed-of-transfer               | PLATFORM   | f     |     3
+ standard-engagement-letter          | engagement-letter              | PLATFORM   | f     |    12
+ engagement-letter-conveyancing      | engagement-letter-conveyancing | PLATFORM   | f     |     5
+ engagement-letter-general           | engagement-letter-general      | PLATFORM   | f     |     5
+ engagement-letter-litigation        | engagement-letter-litigation   | PLATFORM   | f     |     6
+ engagement-letter-litigation-custom | engagement-letter-litigation   | ORG_CUSTOM | t     |     0
+ offer-to-purchase                   | offer-to-purchase              | PLATFORM   | f     |     7
+ power-of-attorney-to-pass-transfer  | power-of-attorney-transfer     | PLATFORM   | f     |     1
+(9 rows)
+
+ total_template_clauses 
+------------------------
+                     40
+(1 row)
+
+       pack_template_key       |           slug           | sort_order | required |       clause_pack       |          created_at           
+-------------------------------+--------------------------+------------+----------+-------------------------+-------------------------------
+ bond-cancellation-instruction | cost-of-cancellation     |          0 | f        | conveyancing-za-clauses | 2026-10-28 02:47:46.455345+00
+ deed-of-transfer              | transfer-duty-liability  |          0 | f        | conveyancing-za-clauses | 2026-10-28 02:47:46.430583+00
+ deed-of-transfer              | rates-clearance          |          1 | f        | conveyancing-za-clauses | 2026-10-28 02:47:46.436311+00
+ deed-of-transfer              | body-corporate-clearance |          2 | f        | conveyancing-za-clauses | 2026-10-28 02:47:46.444497+00
+ offer-to-purchase             | voetstoots               |          0 | t        | conveyancing-za-clauses | 2026-10-28 02:47:46.389216+00
+ offer-to-purchase             | occupation-date          |          1 | f        | conveyancing-za-clauses | 2026-10-28 02:47:46.395448+00
+ offer-to-purchase             | suspensive-bond          |          2 | t        | conveyancing-za-clauses | 2026-10-28 02:47:46.401216+00
+ offer-to-purchase             | transfer-duty-liability  |          3 | t        | conveyancing-za-clauses | 2026-10-28 02:47:46.406224+00
+ offer-to-purchase             | fica-compliance          |          4 | t        | conveyancing-za-clauses | 2026-10-28 02:47:46.411284+00
+ offer-to-purchase             | rates-clearance          |          5 | f        | conveyancing-za-clauses | 2026-10-28 02:47:46.41665+00
+ offer-to-purchase             | jurisdiction-za          |          6 | f        | conveyancing-za-clauses | 2026-10-28 02:47:46.422639+00
+ power-of-attorney-transfer    | fica-compliance          |          0 | f        | conveyancing-za-clauses | 2026-10-28 02:47:46.449976+00
+(12 rows)
+

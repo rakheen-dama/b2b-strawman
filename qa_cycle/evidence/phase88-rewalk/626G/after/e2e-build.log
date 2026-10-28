@@ -1,0 +1,188 @@
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.08kB done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 934B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/eclipse-temurin:25-jdk
+#3 ...
+
+#4 [auth] library/eclipse-temurin:pull token for registry-1.docker.io
+#4 DONE 0.0s
+
+#5 [internal] load metadata for docker.io/library/eclipse-temurin:25-jre-alpine
+#5 DONE 1.7s
+
+#3 [internal] load metadata for docker.io/library/eclipse-temurin:25-jdk
+#3 DONE 2.0s
+
+#6 [internal] load .dockerignore
+#6 transferring context: 140B done
+#6 DONE 0.0s
+
+#7 [runner 1/5] FROM docker.io/library/eclipse-temurin:25-jre-alpine@sha256:b7528962e65d43064d8a8b67ba175367896bc948363ea2d3fcd7f10d34e1f048
+#7 DONE 0.0s
+
+#8 [builder  1/10] FROM docker.io/library/eclipse-temurin:25-jdk@sha256:3ab7fc8d0b4ade8fef96903fb36767c1dbb4fd1535dcfad85b59c17afbbb5857
+#8 resolve docker.io/library/eclipse-temurin:25-jdk@sha256:3ab7fc8d0b4ade8fef96903fb36767c1dbb4fd1535dcfad85b59c17afbbb5857 done
+#8 DONE 0.0s
+
+#9 [internal] load build context
+#9 transferring context: 16.37MB 0.6s done
+#9 DONE 0.7s
+
+#10 [builder  2/10] WORKDIR /build
+#10 CACHED
+
+#11 [builder  3/10] COPY mvnw .
+#11 CACHED
+
+#12 [builder  4/10] COPY .mvn .mvn
+#12 CACHED
+
+#13 [builder  5/10] COPY pom.xml .
+#13 CACHED
+
+#14 [builder  6/10] RUN ./mvnw dependency:go-offline -B
+#14 CACHED
+
+#15 [builder  7/10] COPY src src
+#15 DONE 0.5s
+
+#16 [builder  8/10] RUN ./mvnw clean package -DskipTests -B
+#16 1.457 [INFO] Scanning for projects...
+#16 1.667 [INFO] 
+#16 1.667 [INFO] -----------------< io.b2mash.b2b:b2b-strawman-backend >-----------------
+#16 1.667 [INFO] Building backend 0.0.1-SNAPSHOT
+#16 1.667 [INFO]   from pom.xml
+#16 1.667 [INFO] --------------------------------[ jar ]---------------------------------
+#16 2.810 [INFO] Downloading from spring-milestones: https://repo.spring.io/milestone/org/antlr/antlr4-runtime/4.13.2/antlr4-runtime-4.13.2.jar
+#16 2.810 [INFO] Downloading from spring-milestones: https://repo.spring.io/milestone/org/apache/pdfbox/fontbox/3.0.3/fontbox-3.0.3.jar
+#16 4.281 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/antlr/antlr4-runtime/4.13.2/antlr4-runtime-4.13.2.jar
+#16 4.281 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/pdfbox/fontbox/3.0.3/fontbox-3.0.3.jar
+#16 4.438 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/antlr/antlr4-runtime/4.13.2/antlr4-runtime-4.13.2.jar (326 kB at 2.1 MB/s)
+#16 4.467 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/pdfbox/fontbox/3.0.3/fontbox-3.0.3.jar (1.6 MB at 8.8 MB/s)
+#16 4.477 [INFO] 
+#16 4.477 [INFO] --- clean:3.5.0:clean (default-clean) @ b2b-strawman-backend ---
+#16 4.522 [INFO] 
+#16 4.522 [INFO] --- spotless:3.2.1:check (default) @ b2b-strawman-backend ---
+#16 4.856 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/googlejavaformat/google-java-format/1.28.0/google-java-format-1.28.0.pom
+#16 4.887 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/googlejavaformat/google-java-format/1.28.0/google-java-format-1.28.0.pom (11 kB at 362 kB/s)
+#16 4.889 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/googlejavaformat/google-java-format-parent/1.28.0/google-java-format-parent-1.28.0.pom
+#16 4.913 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/googlejavaformat/google-java-format-parent/1.28.0/google-java-format-parent-1.28.0.pom (13 kB at 543 kB/s)
+#16 4.916 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/guava/guava/32.1.3-jre/guava-32.1.3-jre.pom
+#16 4.944 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/guava/32.1.3-jre/guava-32.1.3-jre.pom (13 kB at 459 kB/s)
+#16 4.945 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/guava/guava-parent/32.1.3-jre/guava-parent-32.1.3-jre.pom
+#16 4.971 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/guava-parent/32.1.3-jre/guava-parent-32.1.3-jre.pom (20 kB at 804 kB/s)
+#16 4.973 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.pom
+#16 4.999 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.pom (2.4 kB at 93 kB/s)
+#16 5.000 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/guava/guava-parent/26.0-android/guava-parent-26.0-android.pom
+#16 5.029 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/guava-parent/26.0-android/guava-parent-26.0-android.pom (10 kB at 364 kB/s)
+#16 5.031 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.pom
+#16 5.054 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.pom (2.3 kB at 99 kB/s)
+#16 5.057 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/checkerframework/checker-qual/3.37.0/checker-qual-3.37.0.pom
+#16 5.085 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/checkerframework/checker-qual/3.37.0/checker-qual-3.37.0.pom (2.1 kB at 75 kB/s)
+#16 5.086 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_annotations/2.21.1/error_prone_annotations-2.21.1.pom
+#16 5.114 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_annotations/2.21.1/error_prone_annotations-2.21.1.pom (1.8 kB at 68 kB/s)
+#16 5.115 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_parent/2.21.1/error_prone_parent-2.21.1.pom
+#16 5.150 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_parent/2.21.1/error_prone_parent-2.21.1.pom (13 kB at 356 kB/s)
+#16 5.152 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/j2objc/j2objc-annotations/2.8/j2objc-annotations-2.8.pom
+#16 5.176 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/j2objc/j2objc-annotations/2.8/j2objc-annotations-2.8.pom (2.9 kB at 122 kB/s)
+#16 5.179 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/googlejavaformat/google-java-format/1.28.0/google-java-format-1.28.0.jar
+#16 5.179 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/guava/guava/32.1.3-jre/guava-32.1.3-jre.jar
+#16 5.180 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar
+#16 5.181 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar
+#16 5.182 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/checkerframework/checker-qual/3.37.0/checker-qual-3.37.0.jar
+#16 5.220 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/googlejavaformat/google-java-format/1.28.0/google-java-format-1.28.0.jar (281 kB at 6.7 MB/s)
+#16 5.220 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_annotations/2.21.1/error_prone_annotations-2.21.1.jar
+#16 5.238 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar (4.6 kB at 78 kB/s)
+#16 5.238 [INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/google/j2objc/j2objc-annotations/2.8/j2objc-annotations-2.8.jar
+#16 5.239 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar (2.2 kB at 38 kB/s)
+#16 5.256 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_annotations/2.21.1/error_prone_annotations-2.21.1.jar (17 kB at 227 kB/s)
+#16 5.257 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/checkerframework/checker-qual/3.37.0/checker-qual-3.37.0.jar (224 kB at 3.0 MB/s)
+#16 5.262 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/j2objc/j2objc-annotations/2.8/j2objc-annotations-2.8.jar (9.3 kB at 116 kB/s)
+#16 5.264 [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/guava/32.1.3-jre/guava-32.1.3-jre.jar (3.0 MB at 36 MB/s)
+#16 5.284 [INFO] Index file does not exist. Fallback to an empty index
+#16 5.323 WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+#16 5.323 WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.diffplug.spotless.java.ModuleHelper (file:/root/.m2/repository/com/diffplug/spotless/spotless-lib/4.3.0/spotless-lib-4.3.0.jar)
+#16 5.323 WARNING: Please consider reporting this to the maintainers of class com.diffplug.spotless.java.ModuleHelper
+#16 5.323 WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+#16 14.68 [INFO] Spotless.Java is keeping 2176 files clean - 0 needs changes to be clean, 2176 were already clean, 0 were skipped because caching determined they were already clean
+#16 14.69 [INFO] 
+#16 14.69 [INFO] --- resources:3.3.1:resources (default-resources) @ b2b-strawman-backend ---
+#16 14.76 [INFO] Copying 6 resources from src/main/resources to target/classes
+#16 14.78 [INFO] Copying 99 resources from src/main/resources to target/classes
+#16 14.80 [INFO] 
+#16 14.80 [INFO] --- compiler:3.14.1:compile (default-compile) @ b2b-strawman-backend ---
+#16 14.91 [INFO] Recompiling the module because of changed source code.
+#16 14.91 [INFO] Compiling 1420 source files with javac [debug parameters release 25] to target/classes
+#16 22.51 [INFO] /build/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestApprovalService.java: Some input files use or override a deprecated API.
+#16 22.51 [INFO] /build/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestApprovalService.java: Recompile with -Xlint:deprecation for details.
+#16 22.51 [INFO] /build/src/main/java/io/b2mash/b2b/b2bstrawman/reporting/TimesheetReportQuery.java: /build/src/main/java/io/b2mash/b2b/b2bstrawman/reporting/TimesheetReportQuery.java uses unchecked or unsafe operations.
+#16 22.51 [INFO] /build/src/main/java/io/b2mash/b2b/b2bstrawman/reporting/TimesheetReportQuery.java: Recompile with -Xlint:unchecked for details.
+#16 22.51 [INFO] 
+#16 22.51 [INFO] --- resources:3.3.1:testResources (default-testResources) @ b2b-strawman-backend ---
+#16 22.53 [INFO] Copying 33 resources from src/test/resources to target/test-classes
+#16 22.54 [INFO] 
+#16 22.54 [INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ b2b-strawman-backend ---
+#16 22.58 [INFO] Recompiling the module because of changed dependency.
+#16 22.58 [INFO] Compiling 756 source files with javac [debug parameters release 25] to target/test-classes
+#16 33.99 [INFO] /build/src/test/java/io/b2mash/b2b/b2bstrawman/audit/export/AuditPdfExporterIntegrationTest.java: Some input files use or override a deprecated API.
+#16 33.99 [INFO] /build/src/test/java/io/b2mash/b2b/b2bstrawman/audit/export/AuditPdfExporterIntegrationTest.java: Recompile with -Xlint:deprecation for details.
+#16 33.99 [INFO] /build/src/test/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsScanIdempotencyTest.java: Some input files use unchecked or unsafe operations.
+#16 33.99 [INFO] /build/src/test/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsScanIdempotencyTest.java: Recompile with -Xlint:unchecked for details.
+#16 33.99 [INFO] 
+#16 33.99 [INFO] --- surefire:3.5.4:test (default-test) @ b2b-strawman-backend ---
+#16 34.10 [INFO] Tests are skipped.
+#16 34.10 [INFO] 
+#16 34.10 [INFO] --- asciidoctor:2.2.1:process-asciidoc (generate-docs) @ b2b-strawman-backend ---
+#16 34.60 [INFO] sourceDirectory /build/src/docs/asciidoc does not exist
+#16 34.60 [INFO] sourceDirectory /build/src/asciidoc does not exist
+#16 34.60 [INFO] sourceDirectory /build/src/main/asciidoc does not exist
+#16 34.60 [INFO] No sourceDirectory found. Skipping processing
+#16 34.60 [INFO] 
+#16 34.60 [INFO] --- jar:3.4.2:jar (default-jar) @ b2b-strawman-backend ---
+#16 34.98 [INFO] Building jar: /build/target/b2b-strawman-backend-0.0.1-SNAPSHOT.jar
+#16 35.12 [INFO] 
+#16 35.12 [INFO] --- spring-boot:4.0.2:repackage (repackage) @ b2b-strawman-backend ---
+#16 36.30 [INFO] Replacing main artifact /build/target/b2b-strawman-backend-0.0.1-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+#16 36.30 [INFO] The original artifact has been renamed to /build/target/b2b-strawman-backend-0.0.1-SNAPSHOT.jar.original
+#16 36.30 [INFO] ------------------------------------------------------------------------
+#16 36.30 [INFO] BUILD SUCCESS
+#16 36.30 [INFO] ------------------------------------------------------------------------
+#16 36.31 [INFO] Total time:  34.867 s
+#16 36.31 [INFO] Finished at: 2026-10-28T02:47:22Z
+#16 36.31 [INFO] ------------------------------------------------------------------------
+#16 DONE 36.6s
+
+#17 [builder  9/10] RUN java -Djarmode=tools -jar target/*.jar extract --destination extracted
+#17 DONE 1.6s
+
+#18 [builder 10/10] RUN mv extracted/*.jar extracted/app.jar
+#18 DONE 0.3s
+
+#19 [runner 2/5] WORKDIR /app
+#19 CACHED
+
+#20 [runner 3/5] RUN addgroup --system --gid 1001 spring &&     adduser --system --uid 1001 spring
+#20 CACHED
+
+#21 [runner 4/5] RUN apk add --no-cache curl
+#21 CACHED
+
+#22 [runner 5/5] COPY --from=builder --chown=spring:spring /build/extracted/ ./
+#22 DONE 0.2s
+
+#23 exporting to image
+#23 exporting layers
+#23 exporting layers 0.2s done
+#23 writing image sha256:b485a3d179bcf6307adeceeb6525ca01e63c6ba9010ed97895e3658486e87931 done
+#23 naming to docker.io/library/docteams-e2e-backend
+#23 naming to docker.io/library/docteams-e2e-backend done
+#23 DONE 0.2s
+
+#24 resolving provenance for metadata file
+#24 DONE 0.0s
+ docteams-e2e-backend  Built

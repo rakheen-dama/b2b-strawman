@@ -1,7 +1,7 @@
 {
-  "commit": "32425c851c5be4d67ed88af91030669ddf8af4d6",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build (worktree-epic-627C, NODE_OPTIONS=\"\")",
+  "commit": "eab2ca2703533edfe0f569f5842c40b6f0a7cbd4",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build (detached worktree-627E-gate, NODE_OPTIONS=\"\")",
   "exit": 0,
-  "ts": "2026-10-28T08:25:00Z",
-  "summary": "Slice 627C FE-GATE on 32425c851 (PR #1695 final head, orchestrator run): lint 0 errors; format clean; vitest 428 files / 3336 passed / 2 skipped; build OK; CI Frontend pass. E2E-LEGAL fresh stack on 32425c851: lifecycle 74/4/5/14 (carried day-00:282, day-30:32, day-45:41, day-90:179), depth-ii 38/0/5 (un-fixme'd day-75-85-closure:305 retention card green; day-14:335 passed this run)."
+  "ts": "2026-10-28T10:37:29Z",
+  "summary": "Slice 627E FE-GATE on eab2ca270 (PR #1697; final head 06f0337bd differs only in docs/evidence — frontend/packages/lockfile diff empty): lint 0 errors; format clean; vitest 428 files / 3356 passed / 2 skipped; build OK; CI Frontend pass (06f0337bd: first run Turbopack next/font/google resolve failure, re-run pass). E2E-LEGAL fresh stack on eab2ca270: lifecycle 74/4/5/14 (carried day-00:282, day-30:32, day-45:41, day-90:179), depth-ii 38/0/5 (= baseline). KC-observed O1/O4/O5/O6/O8 PASS, O2/O3 PARTIAL (pre-existing backend causes)."
 }

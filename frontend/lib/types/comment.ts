@@ -1,3 +1,11 @@
+/** One document attached to a comment (CommentController.CommentAttachmentResponse). */
+export interface CommentAttachment {
+  documentId: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+}
+
 export interface Comment {
   id: string;
   entityType: string;
@@ -12,4 +20,6 @@ export interface Comment {
   parentId: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Always present from the backend (empty list when none), ordered by attach position. */
+  attachments: CommentAttachment[];
 }

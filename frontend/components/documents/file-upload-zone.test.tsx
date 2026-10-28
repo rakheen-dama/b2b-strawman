@@ -83,4 +83,46 @@ describe("FileUploadZone", () => {
     expect(input.accept).toContain(".docx");
     expect(input.accept).toContain(".png");
   });
+
+  it("renders a compact single-line variant with a custom label that still selects files", async () => {
+    const onFilesSelected = vi.fn();
+    const { container } = render(
+      <FileUploadZone
+        onFilesSelected={onFilesSelected}
+        compact
+        label="Attach files (drop or click to browse)"
+      />
+    );
+
+    const zone = within(container).getByRole("button");
+    expect(zone).toHaveTextContent("Attach files (drop or click to browse)");
+    expect(
+      screen.queryByText("Drag and drop files here, or click to browse")
+    ).not.toBeInTheDocument();
+    expect(zone.className).not.toContain("p-6");
+
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(["hello"], "test.pdf", { type: "application/pdf" });
+    await userEvent.upload(input, file);
+
+    expect(onFilesSelected).toHaveBeenCalledWith([file]);
+  });
+
+  it("keeps the default rendering when compact and label are omitted", () => {
+    const { container } = render(<FileUploadZone onFilesSelected={vi.fn()} />);
+
+    const zone = within(container).getByRole("button");
+    expect(zone.className).toContain("p-6");
+    expect(screen.getByTestId("upload-icon")).toBeInTheDocument();
+  });
+
+  it("opens the file picker exactly once per click (the input's own click does not re-trigger it)", () => {
+    const clickSpy = vi.spyOn(HTMLInputElement.prototype, "click");
+    const { container } = render(<FileUploadZone onFilesSelected={vi.fn()} />);
+
+    fireEvent.click(within(container).getByRole("button"));
+
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+    clickSpy.mockRestore();
+  });
 });

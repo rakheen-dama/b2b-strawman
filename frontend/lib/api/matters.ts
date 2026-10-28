@@ -125,11 +125,15 @@ export interface CreateMatterCommentRequest {
   entityId: string;
   body: string;
   visibility?: string;
+  /** Matter documents (status UPLOADED) to attach, in display order; at most 5. */
+  attachmentDocumentIds?: string[];
 }
 
 export interface UpdateMatterCommentRequest {
   body: string;
   visibility?: string;
+  /** Omit = attachments unchanged; a list replaces the set in order; [] clears it. */
+  attachmentDocumentIds?: string[];
 }
 
 // ---- Core CRUD ----

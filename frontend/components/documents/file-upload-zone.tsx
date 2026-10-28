@@ -8,9 +8,20 @@ import { ACCEPT_ATTRIBUTE } from "@/lib/upload-validation";
 interface FileUploadZoneProps {
   onFilesSelected: (files: File[]) => void;
   disabled?: boolean;
+  /** Single-line, low-height variant for use inside forms (e.g. the comment composer). */
+  compact?: boolean;
+  /** Overrides the primary prompt text. */
+  label?: string;
 }
 
-export function FileUploadZone({ onFilesSelected, disabled = false }: FileUploadZoneProps) {
+const DEFAULT_LABEL = "Drag and drop files here, or click to browse";
+
+export function FileUploadZone({
+  onFilesSelected,
+  disabled = false,
+  compact = false,
+  label = DEFAULT_LABEL,
+}: FileUploadZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -53,9 +64,14 @@ export function FileUploadZone({ onFilesSelected, disabled = false }: FileUpload
     [disabled, onFilesSelected]
   );
 
-  const handleClick = useCallback(() => {
-    if (!disabled) inputRef.current?.click();
-  }, [disabled]);
+  const handleClick = useCallback(
+    (e?: React.MouseEvent) => {
+      // The hidden input's own click bubbles back up here; re-clicking it would recurse.
+      if (e && e.target === inputRef.current) return;
+      if (!disabled) inputRef.current?.click();
+    },
+    [disabled]
+  );
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,7 +101,9 @@ export function FileUploadZone({ onFilesSelected, disabled = false }: FileUpload
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={cn(
-        "cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors",
+        "cursor-pointer rounded-lg border-2 border-dashed",
+        compact ? "px-3 py-2" : "p-6",
+        "text-center transition-colors",
         isDragOver
           ? "border-primary bg-primary/5"
           : "border-muted-foreground/25 hover:border-muted-foreground/50",
@@ -101,9 +119,18 @@ export function FileUploadZone({ onFilesSelected, disabled = false }: FileUpload
         className="hidden"
         disabled={disabled}
       />
-      <Upload className="text-muted-foreground mx-auto size-8" />
-      <p className="mt-2 text-sm font-medium">Drag and drop files here, or click to browse</p>
-      <p className="text-muted-foreground mt-1 text-xs">Max 100 MB per file</p>
+      {compact ? (
+        <p className="text-muted-foreground flex items-center justify-center gap-2 text-sm">
+          <Upload className="size-4 shrink-0" />
+          {label}
+        </p>
+      ) : (
+        <>
+          <Upload className="text-muted-foreground mx-auto size-8" />
+          <p className="mt-2 text-sm font-medium">{label}</p>
+          <p className="text-muted-foreground mt-1 text-xs">Max 100 MB per file</p>
+        </>
+      )}
     </div>
   );
 }

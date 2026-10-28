@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,14 +89,23 @@ public class Project {
   private Instant closedAt;
 
   /**
-   * Retention clock anchor (ADR-249 minimal slice). Stamped exactly once on the first transition to
-   * COMPLETED and never overwritten — re-completing a reopened matter preserves the earliest anchor
-   * so the retention sweep evaluates against the original trigger. When Phase 67 (GAP-L-07)
-   * introduces a distinct CLOSED state, the stamp moves from {@code complete(...)} to {@code
-   * close(...)}; this column does not change.
+   * Retention clock anchor (ADR-249, ADR-354). Stamped with the close instant by {@link
+   * #closeMatter(Instant, int)} on EVERY close — a re-close after a reopen is a fresh anchor. Kept
+   * across {@link #reopenMatter()} for audit (the next close overwrites it). {@link
+   * #complete(UUID)} never touches it: completion is not closure.
    */
   @Column(name = "retention_clock_started_at")
   private Instant retentionClockStartedAt;
+
+  /**
+   * Per-matter retention end (Phase 88 U17, ADR-354): the UTC date of the close plus the firm's
+   * retention years, stamped by {@link #closeMatter(Instant, int)} on every close (a re-close
+   * re-stamps it) and cleared by {@link #reopenMatter()}. Null for every matter that is not CLOSED.
+   * Persisted so the obligation is frozen at close time — a later change to the firm's years does
+   * not move it — and read as-is by {@code MatterResponse}, with no read-time fallback.
+   */
+  @Column(name = "retention_ends_on")
+  private LocalDate retentionEndsOn;
 
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "custom_fields", columnDefinition = "jsonb")
@@ -199,6 +209,10 @@ public class Project {
     return retentionClockStartedAt;
   }
 
+  public LocalDate getRetentionEndsOn() {
+    return retentionEndsOn;
+  }
+
   public String getReferenceNumber() {
     return referenceNumber;
   }
@@ -246,21 +260,15 @@ public class Project {
   }
 
   /**
-   * Marks project COMPLETED. Records completedAt, completedBy, and (on first transition only)
-   * retentionClockStartedAt. Only valid from ACTIVE. Re-completing a reopened project preserves the
-   * earliest retention anchor — ADR-249 (minimal slice; final home is close() in Phase 67).
+   * Marks project COMPLETED. Records completedAt and completedBy. Only valid from ACTIVE.
+   * Completion does not start the retention clock — only closing the matter does (ADR-249,
+   * ADR-354).
    */
   public void complete(UUID memberId) {
     requireTransition(ProjectStatus.COMPLETED, "complete");
     this.status = ProjectStatus.COMPLETED;
     this.completedAt = Instant.now();
     this.completedBy = memberId;
-    // Retention clock starts on the FIRST transition to COMPLETED and is never re-stamped
-    // by subsequent re-completions. When Phase 67 introduces CLOSED, move this assignment to
-    // close(...) — see ADR-249.
-    if (this.retentionClockStartedAt == null) {
-      this.retentionClockStartedAt = this.completedAt;
-    }
     this.updatedAt = Instant.now();
   }
 
@@ -289,35 +297,38 @@ public class Project {
   }
 
   /**
-   * Marks the project CLOSED (Phase 67, ADR-248). Valid from ACTIVE or COMPLETED. Records {@code
-   * closedAt} and, on the first transition only, stamps {@code retentionClockStartedAt} (ADR-249 —
-   * the canonical anchor now lives here rather than in {@link #complete(UUID)}, per the field's
-   * javadoc).
+   * Marks the project CLOSED (Phase 67, ADR-248). Valid from ACTIVE or COMPLETED. Stamps {@code
+   * closedAt} and {@code retentionClockStartedAt} with {@code now} on EVERY close and persists
+   * {@code retentionEndsOn} = the UTC calendar date of {@code now} + {@code retentionYears}
+   * (calendar-year arithmetic, so a leap-day close lands on 28 February). A re-close after a reopen
+   * resets all three — a fresh anchor (ADR-249, ADR-354). The acting member is recorded on the
+   * closure log by {@code MatterClosureService}, not here.
    *
-   * <p>489A-minimal signature: takes only the acting member id. The full {@code closeMatter(UUID,
-   * ClosureRequest)} service hook lands in 489B.
+   * @throws IllegalArgumentException if {@code retentionYears} is less than 1
    */
-  @SuppressWarnings("unused") // memberId captured by MatterClosureService in 489B
-  public void closeMatter(UUID memberId) {
+  public void closeMatter(Instant now, int retentionYears) {
+    if (retentionYears < 1) {
+      throw new IllegalArgumentException(
+          "retentionYears must be at least 1 (got " + retentionYears + ")");
+    }
     requireTransition(ProjectStatus.CLOSED, "close");
     this.status = ProjectStatus.CLOSED;
-    this.closedAt = Instant.now();
-    if (this.retentionClockStartedAt == null) {
-      this.retentionClockStartedAt = this.closedAt;
-    }
+    this.closedAt = now;
+    this.retentionClockStartedAt = now;
+    this.retentionEndsOn = now.atZone(ZoneOffset.UTC).toLocalDate().plusYears(retentionYears);
     this.updatedAt = Instant.now();
   }
 
   /**
-   * Reopens a CLOSED matter back to ACTIVE (Phase 67, ADR-248). Clears {@code closedAt} but
-   * deliberately preserves {@code retentionClockStartedAt} — the canonical anchor is the earliest
-   * closure event, and the soft-cancel of retention lives on the RetentionPolicy row (ADR-249;
-   * wired in 489B).
+   * Reopens a CLOSED matter back to ACTIVE (Phase 67, ADR-248). Clears {@code closedAt} and {@code
+   * retentionEndsOn} — an open matter has no scheduled retention end — but keeps {@code
+   * retentionClockStartedAt} for audit; the next close overwrites it (ADR-354).
    */
   public void reopenMatter() {
     requireTransition(ProjectStatus.ACTIVE, "reopen");
     this.status = ProjectStatus.ACTIVE;
     this.closedAt = null;
+    this.retentionEndsOn = null;
     this.updatedAt = Instant.now();
   }
 

@@ -9,7 +9,6 @@ import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
@@ -93,7 +92,6 @@ public class MatterClosureService {
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final StatementService statementService;
-  private final RetentionPolicyRepository retentionPolicyRepository;
   private final MemberNameResolver memberNameResolver;
 
   /**
@@ -116,7 +114,6 @@ public class MatterClosureService {
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       StatementService statementService,
-      RetentionPolicyRepository retentionPolicyRepository,
       MemberNameResolver memberNameResolver,
       @Lazy MatterClosureService self) {
     this.orderedGates = gates.stream().sorted(Comparator.comparingInt(ClosureGate::order)).toList();
@@ -130,7 +127,6 @@ public class MatterClosureService {
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.statementService = statementService;
-    this.retentionPolicyRepository = retentionPolicyRepository;
     this.memberNameResolver = memberNameResolver;
     this.self = self;
   }
@@ -207,9 +203,8 @@ public class MatterClosureService {
       }
     }
 
-    // GAP-L-96 (TODO 489C resolved): retention_policies MATTER row is now seeded inside
-    // performClose() — see ensureMatterRetentionPolicy() invoked from the transactional core.
-    // The row is tenant-wide (UNIQUE on record_type+trigger_event), idempotent across closures.
+    // retentionEndsAt is the persisted projects.retention_ends_on stamped by the close (ADR-354),
+    // so the closure response and the matter detail always report the same date.
     return new CloseMatterResponse(
         projectId,
         internal.status(),
@@ -243,7 +238,15 @@ public class MatterClosureService {
 
     // 3. Transition the project. The entity enforces ACTIVE/COMPLETED → CLOSED via
     //    requireTransition(); it throws InvalidStateException if the source status is wrong.
-    project.closeMatter(actingMemberId);
+    //    Years come from the firm setting (seeded 5; the effective getter covers a legacy NULL
+    //    row). The entity persists retentionEndsOn = close date + years and re-stamps it on
+    //    every re-close (ADR-354).
+    int retentionYears =
+        orgSettingsService
+            .getOrCreateForCurrentTenant()
+            .getDataProtection()
+            .getEffectiveLegalMatterRetentionYears();
+    project.closeMatter(Instant.now(), retentionYears);
     var savedProject = projectRepository.save(project);
 
     // 4. Persist the closure log with the serialised gate report + override details.
@@ -313,67 +316,12 @@ public class MatterClosureService {
         MatterClosedEvent.of(
             projectId, savedLog.getId(), req.reason().name(), req.override(), actingMemberId));
 
-    // 7. ADR-249 / GAP-L-96: ensure a tenant-wide retention policy row exists for closed matters.
-    //    Idempotent — subsequent closures reuse the same row (UNIQUE on
-    //    (record_type, trigger_event)). Best-effort: any failure must not abort the close.
-    int retentionYears =
-        orgSettingsService
-            .getOrCreateForCurrentTenant()
-            .getDataProtection()
-            .getEffectiveLegalMatterRetentionYears();
-    ensureMatterRetentionPolicy(retentionYears);
-
-    // 8. Build intermediate result (letter id is filled in by the outer orchestrator).
-    LocalDate retentionEndsAt =
-        savedProject.getClosedAt().atZone(ZoneOffset.UTC).toLocalDate().plusYears(retentionYears);
-
+    // 7. Build intermediate result (letter id is filled in by the outer orchestrator).
     return new CloseInternalResult(
         savedProject.getStatus().name(),
         savedProject.getClosedAt(),
         savedLog.getId(),
-        retentionEndsAt);
-  }
-
-  /**
-   * GAP-L-96 / ADR-249: ensure a tenant-wide {@code retention_policies} row exists for {@code
-   * record_type='MATTER'} on first matter closure for this tenant. The row is forward-compatibility
-   * for the planned retention sweeper extension; subsequent closures reuse the same row (UNIQUE on
-   * {@code (record_type, trigger_event)}).
-   *
-   * <p>Uses an atomic {@code INSERT ... ON CONFLICT DO NOTHING} so concurrent closes on the same
-   * tenant cannot race past an existence check and conflict at outer-transaction flush. The single
-   * SQL statement is race-proof at the DB level — no pre-check, no two-phase pattern, no commit-
-   * time exception that could abort {@code performClose}.
-   *
-   * <p>{@code retentionDays = retentionYears * 365}. Trigger event {@code MATTER_CLOSED}, action
-   * {@code ARCHIVE}. Note: MATTER is NOT in the financial-record-types list, so the JURISDICTION
-   * minimum-months check that lives inside {@code RetentionPolicyService.create} does not apply —
-   * and we intentionally bypass that service to keep the insert path atomic at the repository
-   * layer.
-   */
-  private void ensureMatterRetentionPolicy(int retentionYears) {
-    final int retentionDays;
-    try {
-      retentionDays = Math.multiplyExact(retentionYears, 365);
-    } catch (ArithmeticException overflow) {
-      // Defense-in-depth: OrgSettings now caps retentionYears at 100 (@Max), so this branch is
-      // unreachable in practice. Guarded anyway so a future relaxation of the cap or a direct
-      // DB write that bypasses bean validation cannot silently produce a negative retention_days
-      // value via Integer overflow.
-      log.warn(
-          "Skipping MATTER retention-policy seed: retentionYears={} overflows when multiplied by"
-              + " 365",
-          retentionYears,
-          overflow);
-      return;
-    }
-    try {
-      retentionPolicyRepository.insertIfAbsent("MATTER", retentionDays, "MATTER_CLOSED", "ARCHIVE");
-    } catch (RuntimeException e) {
-      // The atomic upsert already absorbs the race; this catch only handles unrelated runtime
-      // failures (e.g. driver-level connection issues) and ensures the close proceeds.
-      log.warn("Failed to seed MATTER retention policy on closure; close proceeds", e);
-    }
+        savedProject.getRetentionEndsOn());
   }
 
   /**
@@ -482,25 +430,30 @@ public class MatterClosureService {
 
     var project = requireProject(projectId);
 
-    // Retention window check. The canonical retention anchor is the project's
-    // retentionClockStartedAt (stamped on first close, preserved across reopens). Use calendar-year
-    // arithmetic via LocalDate + plusYears so leap years don't bite.
-    Instant anchor = project.getRetentionClockStartedAt();
-    if (anchor == null) {
-      // Fall back to closedAt — at this point the project must be CLOSED, so closedAt is set.
-      anchor = project.getClosedAt();
+    // Retention window check (ADR-249, ADR-354): the frozen per-matter end date stamped at close is
+    // the obligation — a later change to the firm's years does not move it. A CLOSED row without a
+    // persisted end date (legacy, never backfilled) recomputes it from the close anchor + the
+    // firm's current years. The anchor is closed_at first — it is the true close, whereas a legacy
+    // retention clock may hold the completion time — and the clock only when closed_at is missing,
+    // matching the tenant migration's backfill. Calendar-year arithmetic via LocalDate + plusYears
+    // so leap years don't bite.
+    LocalDate retentionEndsOn = project.getRetentionEndsOn();
+    if (retentionEndsOn == null) {
+      Instant anchor =
+          project.getClosedAt() != null
+              ? project.getClosedAt()
+              : project.getRetentionClockStartedAt();
+      if (anchor == null) {
+        throw new InvalidStateException(
+            "Cannot reopen matter", "Project has no retention anchor — it was never closed.");
+      }
+      int retentionYears =
+          orgSettingsService
+              .getOrCreateForCurrentTenant()
+              .getDataProtection()
+              .getEffectiveLegalMatterRetentionYears();
+      retentionEndsOn = anchor.atZone(ZoneOffset.UTC).toLocalDate().plusYears(retentionYears);
     }
-    if (anchor == null) {
-      throw new InvalidStateException(
-          "Cannot reopen matter", "Project has no retention anchor — it was never closed.");
-    }
-    int retentionYears =
-        orgSettingsService
-            .getOrCreateForCurrentTenant()
-            .getDataProtection()
-            .getEffectiveLegalMatterRetentionYears();
-    LocalDate retentionEndsOn =
-        anchor.atZone(ZoneOffset.UTC).toLocalDate().plusYears(retentionYears);
     if (LocalDate.now(ZoneOffset.UTC).isAfter(retentionEndsOn)) {
       throw new RetentionElapsedException(projectId, retentionEndsOn);
     }

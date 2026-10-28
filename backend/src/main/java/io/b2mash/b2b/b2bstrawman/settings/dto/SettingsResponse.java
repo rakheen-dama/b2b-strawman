@@ -46,6 +46,8 @@ public record SettingsResponse(
     Integer financialRetentionMonths,
     String informationOfficerName,
     String informationOfficerEmail,
+    // Phase 88 U17 (ADR-354): firm matter-retention period in years (seeded 5)
+    Integer legalMatterRetentionYears,
     // Epic 498A: Firm-wide portal digest cadence (WEEKLY / BIWEEKLY / OFF)
     String portalDigestCadence,
     // Phase 88 U8 (ADR-353): firm letterhead group — never null (all-null object when unset)

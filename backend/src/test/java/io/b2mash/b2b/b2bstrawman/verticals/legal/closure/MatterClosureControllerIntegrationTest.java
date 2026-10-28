@@ -13,11 +13,13 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.DataProtectionSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
-import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -476,12 +478,12 @@ class MatterClosureControllerIntegrationTest {
                 .content(closeBody))
         .andExpect(status().isOk());
 
-    // Backdate the retention anchor to a fixed instant far in the past: 2000-01-15 + 7 years
-    // = 2007-01-15, which is before today, so reopen must hit the retention-elapsed branch.
+    // Backdate the persisted retention end date (stamped at close) to a fixed day in the past:
+    // the reopen guard reads this frozen per-matter date, so 2007-01-15 must block the reopen.
     jdbcTemplate.update(
-        "UPDATE \"%s\".projects SET retention_clock_started_at = ? WHERE id = ?"
+        "UPDATE \"%s\".projects SET retention_ends_on = ? WHERE id = ?"
             .formatted(legalTenantSchema),
-        java.sql.Timestamp.from(Instant.parse("2000-01-15T00:00:00Z")),
+        java.sql.Date.valueOf("2007-01-15"),
         projectId);
 
     mockMvc
@@ -513,8 +515,8 @@ class MatterClosureControllerIntegrationTest {
   @Test
   void matterDetail_returnsRetentionEndsOn_forClosedMatter_whenRetentionYearsConfigured()
       throws Exception {
-    // Arrange: explicitly configure retention years (the migration default of 5 isn't applied
-    // by Hibernate when inserting a fresh OrgSettings row — see OrgSettings.java).
+    // Arrange: configure a non-default retention period so the persisted end date proves the close
+    // used the firm's setting rather than the seeded default.
     runInLegalTenant(
         () ->
             transactionTemplate.executeWithoutResult(
@@ -546,7 +548,7 @@ class MatterClosureControllerIntegrationTest {
                 .content(closeBody))
         .andExpect(status().isOk());
 
-    // Act + Assert: matter detail returns retentionEndsOn populated.
+    // Act + Assert: matter detail returns the persisted end date = UTC close date + 7 years.
     mockMvc
         .perform(
             get("/api/matters/" + projectId)
@@ -555,7 +557,8 @@ class MatterClosureControllerIntegrationTest {
         .andExpect(jsonPath("$.id").value(projectId.toString()))
         .andExpect(jsonPath("$.status").value("CLOSED"))
         .andExpect(jsonPath("$.retentionClockStartedAt").isNotEmpty())
-        .andExpect(jsonPath("$.retentionEndsOn").isNotEmpty());
+        .andExpect(
+            jsonPath("$.retentionEndsOn").value(closedOnUtc(projectId).plusYears(7).toString()));
   }
 
   @Test
@@ -582,47 +585,48 @@ class MatterClosureControllerIntegrationTest {
   }
 
   @Test
-  void matterDetail_returnsNullRetentionEndsOn_forClosedMatter_whenRetentionYearsUnset()
-      throws Exception {
-    // Clear retention years on the org so the detail endpoint returns null + logs a warning.
-    runInLegalTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var settings = orgSettingsService.getOrCreateForCurrentTenant();
-                  settings.getDataProtection().setLegalMatterRetentionYears(null);
-                  orgSettingsRepository.save(settings);
-                }));
+  void matterDetail_closedWithUnsetYears_persistsEffectiveDefault() throws Exception {
+    // A firm whose retention years are NULL (a legacy row the migration has not backfilled) still
+    // gets a scheduled end date: the close stamps the effective default of 5 years.
+    setLegalRetentionYears(null);
+    try {
+      UUID projectId = createProject("Retention Detail Unconfigured Matter");
 
-    UUID projectId = createProject("Retention Detail Unconfigured Matter");
+      String closeBody =
+          """
+          {
+            "reason": "CONCLUDED",
+            "notes": "Close without configured retention years.",
+            "generateClosureLetter": false,
+            "override": true,
+            "overrideJustification": "%s"
+          }
+          """
+              .formatted(VALID_JUSTIFICATION);
+      mockMvc
+          .perform(
+              post("/api/matters/" + projectId + "/closure/close")
+                  .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(closeBody))
+          .andExpect(status().isOk());
 
-    String closeBody =
-        """
-        {
-          "reason": "CONCLUDED",
-          "notes": "Close without configured retention years.",
-          "generateClosureLetter": false,
-          "override": true,
-          "overrideJustification": "%s"
-        }
-        """
-            .formatted(VALID_JUSTIFICATION);
-    mockMvc
-        .perform(
-            post("/api/matters/" + projectId + "/closure/close")
-                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(closeBody))
-        .andExpect(status().isOk());
-
-    mockMvc
-        .perform(
-            get("/api/matters/" + projectId)
-                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value("CLOSED"))
-        .andExpect(jsonPath("$.retentionClockStartedAt").isNotEmpty())
-        .andExpect(jsonPath("$.retentionEndsOn").value(org.hamcrest.Matchers.nullValue()));
+      String expected =
+          closedOnUtc(projectId)
+              .plusYears(DataProtectionSettings.DEFAULT_LEGAL_MATTER_RETENTION_YEARS)
+              .toString();
+      mockMvc
+          .perform(
+              get("/api/matters/" + projectId)
+                  .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner")))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.status").value("CLOSED"))
+          .andExpect(jsonPath("$.retentionClockStartedAt").isNotEmpty())
+          .andExpect(jsonPath("$.retentionEndsOn").value(expected));
+    } finally {
+      // Restore the seeded value so sibling methods are not order-dependent.
+      setLegalRetentionYears(DataProtectionSettings.DEFAULT_LEGAL_MATTER_RETENTION_YEARS);
+    }
   }
 
   // ==========================================================================
@@ -640,6 +644,32 @@ class MatterClosureControllerIntegrationTest {
                   id[0] = projectRepository.saveAndFlush(project).getId();
                 }));
     return id[0];
+  }
+
+  private void setLegalRetentionYears(Integer years) {
+    runInLegalTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var settings = orgSettingsService.getOrCreateForCurrentTenant();
+                  settings.getDataProtection().setLegalMatterRetentionYears(years);
+                  orgSettingsRepository.save(settings);
+                }));
+  }
+
+  /** The matter's persisted close instant as a UTC calendar date. */
+  private LocalDate closedOnUtc(UUID projectId) {
+    final LocalDate[] day = new LocalDate[1];
+    runInLegalTenant(
+        () ->
+            day[0] =
+                projectRepository
+                    .findById(projectId)
+                    .orElseThrow()
+                    .getClosedAt()
+                    .atZone(ZoneOffset.UTC)
+                    .toLocalDate());
+    return day[0];
   }
 
   private void runInLegalTenant(Runnable action) {

@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.Statement;
 import java.time.Instant;
 import java.util.UUID;
@@ -42,6 +43,11 @@ import org.springframework.test.web.servlet.MockMvc;
  * letterhead_*} columns are nullable, so every tenant that has not filled the letterhead reloads it
  * as NULL — {@link OrgSettings#getLetterhead()} lazily re-creates it, and writes through the lazily
  * created group must persist.
+ *
+ * <p>Phase 88 U17 (ADR-354, tenant V8): a fresh settings row now persists {@code
+ * legal_matter_retention_years = 5} — the column's {@code DEFAULT 5} was bypassed by the entity's
+ * explicit-NULL insert, so the embeddable seeds it. A legacy NULL row (nulled above) still reads
+ * NULL and falls back to the effective default.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -366,6 +372,41 @@ class OrgSettingsEmbeddableNullReloadTest {
               .isEqualTo("Thandi Mathebula");
           assertThat(fresh.getLetterhead().addressJoined()).isEmpty();
         });
+  }
+
+  /**
+   * Phase 88 U17 (ADR-354): a newly created settings row persists the firm's matter-retention
+   * period as 5 years — closure and the matter detail read the same stored value.
+   */
+  @Test
+  void dataProtectionYears_seededFiveOnCreation() throws Exception {
+    var idRef = new AtomicReference<UUID>();
+    runInTenant(() -> idRef.set(orgSettingsRepository.save(new OrgSettings("ZAR")).getId()));
+    UUID id = idRef.get();
+
+    runInTenant(
+        () ->
+            assertThat(
+                    orgSettingsRepository
+                        .findById(id)
+                        .orElseThrow()
+                        .getDataProtection()
+                        .getLegalMatterRetentionYears())
+                .as("a fresh settings row carries the seeded 5-year retention period")
+                .isEqualTo(DataProtectionSettings.DEFAULT_LEGAL_MATTER_RETENTION_YEARS));
+
+    try (Connection conn = dataSource.getConnection();
+        Statement stmt = conn.createStatement()) {
+      stmt.execute("SET search_path TO " + tenantSchema);
+      try (ResultSet rs =
+          stmt.executeQuery(
+              "SELECT legal_matter_retention_years FROM org_settings WHERE id = '" + id + "'")) {
+        assertThat(rs.next()).isTrue();
+        assertThat(rs.getObject(1))
+            .as("the stored column value, not just the effective fallback, is 5")
+            .isEqualTo(5);
+      }
+    }
   }
 
   private void runInTenant(Runnable action) {

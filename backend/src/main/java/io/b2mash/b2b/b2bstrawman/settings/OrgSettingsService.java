@@ -33,7 +33,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,6 +141,9 @@ public class OrgSettingsService {
                 null, // financialRetentionMonths
                 null, // informationOfficerName
                 null, // informationOfficerEmail
+                // No row yet: report the default a close would use (Phase 88 U17, ADR-354).
+                DataProtectionSettings
+                    .DEFAULT_LEGAL_MATTER_RETENTION_YEARS, // legalMatterRetentionYears
                 PortalDigestCadence.WEEKLY.name(), // portalDigestCadence
                 LetterheadSettingsResponse.EMPTY)); // letterhead
   }
@@ -352,6 +354,8 @@ public class OrgSettingsService {
         settings.getDataProtection().getFinancialRetentionMonths(),
         settings.getDataProtection().getInformationOfficerName(),
         settings.getDataProtection().getInformationOfficerEmail(),
+        // Effective (non-null) years, so the response always shows the value a close would stamp.
+        settings.getDataProtection().getEffectiveLegalMatterRetentionYears(),
         settings.getPortal().getEffectivePortalDigestCadence().name(),
         toLetterheadResponse(settings.getLetterhead()));
   }
@@ -381,25 +385,6 @@ public class OrgSettingsService {
         .findForCurrentTenant()
         .map(OrgSettings::getDefaultCurrency)
         .orElse(DEFAULT_CURRENCY);
-  }
-
-  /**
-   * Returns the raw {@code legal_matter_retention_years} value for the current tenant — without
-   * applying the {@link DataProtectionSettings#DEFAULT_LEGAL_MATTER_RETENTION_YEARS} fallback.
-   * Returns {@link Optional#empty()} when no settings row exists, when the column is null, or when
-   * the stored value is &le; 0 (defensive — the DB CHECK enforces &ge; 1, but legacy rows or future
-   * schema widening shouldn't surface a misleading retention end-date).
-   *
-   * <p>Used by the matter detail endpoint (GAP-OBS-Day60-RetentionShape) where a missing/zero value
-   * must surface as {@code retentionEndsOn = null} rather than masking a misconfigured tenant with
-   * the silent 5-year default.
-   */
-  @Transactional(readOnly = true)
-  public Optional<Integer> getRawLegalMatterRetentionYears() {
-    return orgSettingsRepository
-        .findForCurrentTenant()
-        .map(s -> s.getDataProtection().getLegalMatterRetentionYears())
-        .filter(years -> years != null && years > 0);
   }
 
   /**
@@ -1129,8 +1114,11 @@ public class OrgSettingsService {
   }
 
   /**
-   * Updates data protection settings (jurisdiction, retention config, information officer).
-   * OWNER-only — validates financial retention minimum against jurisdiction statutory minimum.
+   * Updates data protection settings (jurisdiction, retention config, information officer, matter
+   * retention years). OWNER-only — validates financial retention minimum against jurisdiction
+   * statutory minimum. A null request component leaves the stored value unchanged; the matter
+   * retention years (1–30, bean-validated on the request) apply only to matters closed afterwards —
+   * already-closed matters keep the end date stamped at their close (ADR-354).
    */
   @Transactional
   public SettingsResponse updateDataProtectionSettings(
@@ -1180,6 +1168,11 @@ public class OrgSettingsService {
             request.informationOfficerEmail() != null
                 ? request.informationOfficerEmail()
                 : settings.getDataProtection().getInformationOfficerEmail());
+    if (request.legalMatterRetentionYears() != null) {
+      settings
+          .getDataProtection()
+          .setLegalMatterRetentionYears(request.legalMatterRetentionYears());
+    }
     settings.touchUpdatedAt();
     settings = orgSettingsRepository.save(settings);
 
@@ -1212,7 +1205,10 @@ public class OrgSettingsService {
                     "member_id",
                     actor.memberId().toString(),
                     "org_role",
-                    actor.orgRole()))
+                    actor.orgRole(),
+                    // The effective getter keeps Map.of null-free even for a legacy NULL row.
+                    "legal_matter_retention_years",
+                    settings.getDataProtection().getEffectiveLegalMatterRetentionYears()))
             .build());
 
     return toSettingsResponse(settings);

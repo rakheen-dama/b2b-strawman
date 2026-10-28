@@ -25,7 +25,9 @@ import jakarta.validation.constraints.Min;
  * as a primitive {@code boolean} (defaults to {@code false}) and the embedded never fully
  * materialises as NULL on reload; the remaining columns are nullable. {@code
  * financial_retention_months} reproduces its former field-initialiser default (60) so a fresh
- * embeddable persists the same value the entity used to.
+ * embeddable persists the same value the entity used to. {@code legal_matter_retention_years} is
+ * seeded the same way (5, Phase 88 U17 / ADR-354): its V1 {@code DEFAULT 5} never applied because
+ * the entity insert writes an explicit NULL; tenant V8 backfills rows created before the seed.
  *
  * <p>Field-level setters here intentionally do NOT bump {@code OrgSettings.updatedAt}; the
  * embeddable has no reference to the owning entity's timestamp. Hibernate dirty-checks the embedded
@@ -56,14 +58,15 @@ public class DataProtectionSettings {
   private String informationOfficerEmail;
 
   /**
-   * Retention period (in years) for CLOSED legal matters (Phase 67, ADR-249). When null, defaults
-   * to {@link #DEFAULT_LEGAL_MATTER_RETENTION_YEARS} — expose via {@link
-   * #getEffectiveLegalMatterRetentionYears()}.
+   * Retention period (in years) for CLOSED legal matters (Phase 67, ADR-249). Seeded to {@link
+   * #DEFAULT_LEGAL_MATTER_RETENTION_YEARS} on creation so closure and the read side agree on a
+   * stored, firm-editable value (Phase 88 U17, ADR-354). A legacy NULL row still falls back to the
+   * default via {@link #getEffectiveLegalMatterRetentionYears()}.
    */
   @Column(name = "legal_matter_retention_years")
   @Min(value = 1, message = "legalMatterRetentionYears must be at least 1")
   @Max(value = 100, message = "legalMatterRetentionYears must be at most 100")
-  private Integer legalMatterRetentionYears;
+  private Integer legalMatterRetentionYears = DEFAULT_LEGAL_MATTER_RETENTION_YEARS;
 
   protected DataProtectionSettings() {}
 
@@ -121,8 +124,8 @@ public class DataProtectionSettings {
 
   /**
    * Returns the effective legal-matter retention years, falling back to {@link
-   * #DEFAULT_LEGAL_MATTER_RETENTION_YEARS} when unset. Used by the retention-clock machinery
-   * (ADR-249) when anchoring a retention policy on matter closure.
+   * #DEFAULT_LEGAL_MATTER_RETENTION_YEARS} when unset. Used by matter closure to stamp the
+   * per-matter retention end date, and by reopen for legacy CLOSED rows without one (ADR-354).
    */
   public int getEffectiveLegalMatterRetentionYears() {
     return legalMatterRetentionYears != null

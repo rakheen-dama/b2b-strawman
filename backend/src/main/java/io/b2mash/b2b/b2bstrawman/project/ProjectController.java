@@ -85,9 +85,8 @@ public class ProjectController {
     // ADR-342: storage key, do not rename
     var tags = entityTagService.getEntityTags("PROJECT", matterId);
     var memberNames = projectService.resolveProjectMemberNames(List.of(pwr.matter()));
-    LocalDate retentionEndsOn = projectService.computeRetentionEndsOn(pwr.matter());
     return ResponseEntity.ok(
-        MatterResponse.from(pwr.matter(), pwr.matterRole(), tags, memberNames, retentionEndsOn));
+        MatterResponse.from(pwr.matter(), pwr.matterRole(), tags, memberNames));
   }
 
   @PostMapping

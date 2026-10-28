@@ -10,16 +10,16 @@ import org.springframework.web.ErrorResponseException;
 
 /**
  * Thrown by {@code MatterClosureService.reopen} when the retention window for the matter has
- * elapsed. The retention anchor is {@code project.retentionClockStartedAt} when present, with
- * {@code project.closedAt} as a fallback for legacy rows. Eligibility condition:
+ * elapsed. The end date is the persisted {@code project.retentionEndsOn} stamped at close
+ * (ADR-354); a legacy CLOSED row without one falls back to {@code closedAt} (or {@code
+ * retentionClockStartedAt} when closedAt is missing) + the firm's current years. Eligibility
+ * condition:
  *
  * <pre>
- *   retentionAnchor + orgSettings.legalMatterRetentionYears &lt; now
+ *   today (UTC) &gt; retentionEndsOn
  * </pre>
  *
- * <p>Once retention has elapsed a matter cannot be reopened — Phase 67 §67.3.6, ADR-249. Note: the
- * minimal 489B slice does not yet persist a retention_policies row / soft-cancel on reopen — see
- * TODO(489C) in {@code MatterClosureService}.
+ * <p>Once retention has elapsed a matter cannot be reopened — Phase 67 §67.3.6, ADR-249.
  */
 public class RetentionElapsedException extends ErrorResponseException {
 

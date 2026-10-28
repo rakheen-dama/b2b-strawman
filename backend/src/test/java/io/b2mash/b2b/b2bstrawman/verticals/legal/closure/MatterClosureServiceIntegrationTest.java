@@ -42,8 +42,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -264,6 +264,7 @@ class MatterClosureServiceIntegrationTest {
   void
       close_withOverrideAndCapability_transitionsToClosed_persistsLog_stampsRetention_emitsEvent() {
     UUID projectId = createProject("Override Success Matter");
+    final LocalDate[] reportedEndsAt = new LocalDate[1];
 
     runInTenantAsOwner(
         () -> {
@@ -286,6 +287,7 @@ class MatterClosureServiceIntegrationTest {
           assertThat(response.closedAt()).isNotNull();
           assertThat(response.closureLogId()).isNotNull();
           assertThat(response.retentionEndsAt()).isNotNull();
+          reportedEndsAt[0] = response.retentionEndsAt();
         });
 
     // Assert project persisted as CLOSED + log row is present
@@ -296,7 +298,13 @@ class MatterClosureServiceIntegrationTest {
                   var project = projectRepository.findById(projectId).orElseThrow();
                   assertThat(project.getStatus()).isEqualTo(ProjectStatus.CLOSED);
                   assertThat(project.getClosedAt()).isNotNull();
-                  assertThat(project.getRetentionClockStartedAt()).isNotNull();
+                  assertThat(project.getRetentionClockStartedAt()).isEqualTo(project.getClosedAt());
+                  // The end date is persisted on the matter (close date in UTC + the firm's
+                  // seeded 5 years), and the closure response reports exactly that value.
+                  assertThat(project.getRetentionEndsOn())
+                      .isEqualTo(
+                          project.getClosedAt().atZone(ZoneOffset.UTC).toLocalDate().plusYears(5));
+                  assertThat(reportedEndsAt[0]).isEqualTo(project.getRetentionEndsOn());
 
                   var log =
                       matterClosureLogRepository
@@ -395,8 +403,10 @@ class MatterClosureServiceIntegrationTest {
                   var project = projectRepository.findById(projectId).orElseThrow();
                   assertThat(project.getStatus()).isEqualTo(ProjectStatus.ACTIVE);
                   assertThat(project.getClosedAt()).isNull();
-                  // Retention clock must be PRESERVED across reopen
+                  // Retention clock must be PRESERVED across reopen (kept for audit) while the
+                  // scheduled end date is cleared — an open matter has no retention end.
                   assertThat(project.getRetentionClockStartedAt()).isNotNull();
+                  assertThat(project.getRetentionEndsOn()).isNull();
 
                   var log =
                       matterClosureLogRepository
@@ -507,13 +517,11 @@ class MatterClosureServiceIntegrationTest {
                     null),
                 memberId));
 
-    // Backdate the retention anchor far past the retention window (default 7 years at OrgSettings).
-    // Setting retentionClockStartedAt to 100 years ago guarantees retentionEndsOn < today.
-    Instant longAgo = Instant.now().minus(365L * 100, ChronoUnit.DAYS);
+    // Backdate the persisted retention end date (stamped at close) into the past: the reopen guard
+    // reads this frozen per-matter date, so an end date 95 years ago must block the reopen.
     jdbcTemplate.update(
-        "UPDATE \"%s\".projects SET retention_clock_started_at = ? WHERE id = ?"
-            .formatted(tenantSchema),
-        java.sql.Timestamp.from(longAgo),
+        "UPDATE \"%s\".projects SET retention_ends_on = ? WHERE id = ?".formatted(tenantSchema),
+        java.sql.Date.valueOf(LocalDate.now(ZoneOffset.UTC).minusYears(95)),
         projectId);
 
     runInTenantAsOwner(
@@ -523,6 +531,55 @@ class MatterClosureServiceIntegrationTest {
                         matterClosureService.reopen(
                             projectId, new ReopenRequest(VALID_REOPEN_NOTES), memberId))
                 .isInstanceOf(RetentionElapsedException.class));
+  }
+
+  @Test
+  void reopen_legacyClosedRowWithoutEndDate_anchorsOnClosedAtNotOnRetentionClock() {
+    UUID projectId = createProject("Legacy Closed Without End Date Matter");
+
+    runInTenantAsOwner(
+        () ->
+            matterClosureService.close(
+                projectId,
+                new ClosureRequest(
+                    ClosureReason.CONCLUDED,
+                    null,
+                    false,
+                    false,
+                    true,
+                    VALID_JUSTIFICATION,
+                    null,
+                    null),
+                memberId));
+
+    // Shape of a legacy CLOSED row that was never backfilled: no persisted end date, a close long
+    // ago, and a retention clock that is recent (the old complete() stamped completion time, which
+    // need not be the close). The guard must anchor on the close, so retention has elapsed even
+    // though the clock alone would say the window is still open.
+    jdbcTemplate.update(
+        ("UPDATE \"%s\".projects SET retention_ends_on = NULL,"
+                + " closed_at = TIMESTAMPTZ '2006-01-15 10:00:00+00',"
+                + " retention_clock_started_at = (now() AT TIME ZONE 'UTC') WHERE id = ?")
+            .formatted(tenantSchema),
+        projectId);
+    Integer years =
+        jdbcTemplate.queryForObject(
+            "SELECT COALESCE(legal_matter_retention_years, 5) FROM \"%s\".org_settings LIMIT 1"
+                .formatted(tenantSchema),
+            Integer.class);
+    LocalDate expectedEndsOn = LocalDate.of(2006, 1, 15).plusYears(years);
+
+    runInTenantAsOwner(
+        () ->
+            assertThatThrownBy(
+                    () ->
+                        matterClosureService.reopen(
+                            projectId, new ReopenRequest(VALID_REOPEN_NOTES), memberId))
+                .isInstanceOfSatisfying(
+                    RetentionElapsedException.class,
+                    ex ->
+                        assertThat(ex.getBody().getProperties())
+                            .containsEntry("retentionEndedOn", expectedEndsOn.toString())));
   }
 
   // ==========================================================================
@@ -978,12 +1035,14 @@ class MatterClosureServiceIntegrationTest {
   }
 
   // ==========================================================================
-  // GAP-L-96 / ADR-249 — retention_policies MATTER row seed on close
+  // ADR-354 — closure no longer seeds a firm-wide retention_policies MATTER row: the per-matter
+  // retention end lives on projects.retention_ends_on.
   // ==========================================================================
 
   @Test
-  void close_seedsMatterRetentionPolicyIfMissing() {
-    UUID projectId = createProject("L-96 Retention Policy Seed Matter");
+  void close_doesNotSeedFirmWideRetentionPolicy() {
+    UUID projectId = createProject("No Firm-Wide Retention Policy Matter");
+    long before = countMatterRetentionPolicies();
 
     runInTenantAsOwner(
         () ->
@@ -1000,74 +1059,19 @@ class MatterClosureServiceIntegrationTest {
                     null),
                 memberId));
 
-    runInTenantAsOwner(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var policy =
-                      retentionPolicyRepository
-                          .findByRecordTypeAndTriggerEvent("MATTER", "MATTER_CLOSED")
-                          .orElseThrow(
-                              () ->
-                                  new AssertionError(
-                                      "GAP-L-96: expected a MATTER retention policy row after"
-                                          + " first matter closure (ADR-249)"));
-                  // Default OrgSettings.legalMatterRetentionYears = 5 (per OrgSettings.java:36)
-                  assertThat(policy.getRetentionDays()).isEqualTo(5 * 365);
-                  assertThat(policy.getAction()).isEqualTo("ARCHIVE");
-                  assertThat(policy.isActive()).isTrue();
-                }));
+    assertThat(countMatterRetentionPolicies() - before)
+        .as("closing a matter must not insert a firm-wide MATTER retention policy row")
+        .isZero();
   }
 
-  @Test
-  void close_isIdempotentOnSecondClosure_doesNotThrow_keepsExactlyOneMatterPolicyRow() {
-    UUID projectIdA = createProject("L-96 Idempotent Close A");
-    UUID projectIdB = createProject("L-96 Idempotent Close B");
-
-    runInTenantAsOwner(
+  private long countMatterRetentionPolicies() {
+    return runInTenantReturning(
         () ->
-            matterClosureService.close(
-                projectIdA,
-                new ClosureRequest(
-                    ClosureReason.CONCLUDED,
-                    null,
-                    false,
-                    false,
-                    true,
-                    VALID_JUSTIFICATION,
-                    null,
-                    null),
-                memberId));
-
-    // Second close on the same tenant — must NOT throw a ResourceConflictException, must NOT
-    // mark the outer transaction rollback-only, and must leave exactly ONE MATTER policy row.
-    runInTenantAsOwner(
-        () ->
-            matterClosureService.close(
-                projectIdB,
-                new ClosureRequest(
-                    ClosureReason.CONCLUDED,
-                    null,
-                    false,
-                    false,
-                    true,
-                    VALID_JUSTIFICATION,
-                    null,
-                    null),
-                memberId));
-
-    runInTenantAsOwner(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  long matterPolicies =
-                      retentionPolicyRepository.findByActive(true).stream()
-                          .filter(p -> "MATTER".equals(p.getRecordType()))
-                          .count();
-                  assertThat(matterPolicies)
-                      .as("Idempotent — second close must not insert a duplicate MATTER policy")
-                      .isEqualTo(1);
-                }));
+            transactionTemplate.execute(
+                tx ->
+                    retentionPolicyRepository.findAll().stream()
+                        .filter(p -> "MATTER".equals(p.getRecordType()))
+                        .count()));
   }
 
   // ==========================================================================

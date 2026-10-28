@@ -24,7 +24,6 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
@@ -55,7 +54,6 @@ class ProjectServiceTest {
   @Mock private ProjectFieldService projectFieldService;
   @Mock private ProjectDeletionGuard projectDeletionGuard;
   @Mock private CustomerProjectRepository customerProjectRepository;
-  @Mock private OrgSettingsService orgSettingsService;
   @InjectMocks private ProjectService service;
 
   @Test
